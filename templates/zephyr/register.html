@@ -1,3 +1,7 @@
+{% extends "zephyr/base.html" %}
+
+{% block content %}
+
 <form method="post" action="{% url register %}">{% csrf_token %}
 <table>
 <tr>
@@ -10,6 +14,8 @@
 </tr>
 </table>
 
-<input type="submit" value="register" />
+<input type="submit" value="Register" />
 <input type="hidden" name="next" value="{{ next }}" />
 </form>
+
+{% endblock %}

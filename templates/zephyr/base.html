@@ -5,18 +5,42 @@
 <head>
     <title>Zephyr</title>
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            /* Make room for the topbar */
+            padding-top: 50px;
+        }
+
+        /* From bootstrap-responsive.css */
+        .navbar .brand {
+            padding-right: 10px;
+            padding-left:  10px;
+            margin: 0 0 0 -5px;
+        }
+    </style>
 </head>
 
 <body>
 <script src="/static/bootstrap/js/bootstrap.min.js"></script>
 
-{% if not user.is_authenticated %}<a href="/accounts/login/?next=/">login</a> | <a
-    href="/accounts/register/">register</a>{% endif %}
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="brand" href="#">Humbug</a>
+            <ul class="nav">
+{% block nav %}
+{% endblock %}
+            </ul>
+        </div>
+    </div>
+</div>
 
-{% if user.is_authenticated %}<a href="/accounts/logout/?next=/">logout</a>{% endif %}
+<div class="container">
 
 {% block content %}
 {% endblock %}
+
+</div>
 
 </body>
 

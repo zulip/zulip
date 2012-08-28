@@ -1,1 +1,6 @@
-<a href="/accounts/login/?next=/">login</a> | <a href="/accounts/register/">register</a>
+{% extends "zephyr/base.html" %}
+
+{% block nav %}
+<li><a href="/accounts/login/?next=/">Log in</a></li>
+<li><a href="/accounts/register/">Register</a></li>
+{% endblock %}
