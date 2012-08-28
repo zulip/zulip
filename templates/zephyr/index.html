@@ -135,12 +135,8 @@ $(function() {
   setInterval(get_updates, 1000);
 });
 
-function get_updates() {
-    var last_received = $("tr:last").attr("id");
-    $.post("get_updates", {last_received: last_received},
-           function(data) {
-               $.each(data, function(index, zephyr) {
-                   var new_str = "<tr id=" + zephyr.id + "> \
+function add_message(index, zephyr) {
+    var new_str = "<tr id=" + zephyr.id + "> \
 <td class='pointer'><p></p></td> \
 <td class='zephyr'> \
 <p><span onclick='narrow('" + zephyr.display_recipient + "','" + zephyr.id + "')' class='zephyr_class' style='background-color: yellow;'>" + zephyr.display_recipient +
@@ -148,8 +144,14 @@ function get_updates() {
 zephyr.content +
 "</p></td> \
 </tr>"
-                   $("#table tr:last").after(new_str);
-               });
+    $("#table tr:last").after(new_str);
+}
+
+function get_updates() {
+    var last_received = $("tr:last").attr("id");
+    $.post("get_updates", {last_received: last_received},
+           function(data) {
+               $.each(data, add_message);
     }, "json");
 }
 </script>
