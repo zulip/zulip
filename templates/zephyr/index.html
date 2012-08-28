@@ -4,9 +4,9 @@
 <h1>Hello {{ user_profile.user.username }}!</h1>
 
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
- 
+
 <script type="text/javascript">
-$.ajaxSetup({ 
+$.ajaxSetup({
      beforeSend: function(xhr, settings) {
          function getCookie(name) {
              var cookieValue = null;
@@ -27,7 +27,7 @@ $.ajaxSetup({
              // Only send the token to relative URLs i.e. locally.
              xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
          }
-     } 
+     }
 });
 
 $(document).keyup(function(event) {
@@ -64,7 +64,21 @@ function narrow(class_name) {
         function() {
             if ($(this).text() != class_name) {
                 $(this).parents("tr").hide();
-            }       
+            } else {
+                // If you've narrowed on an instance and then click on the class, that should unhide the other instances on that class.
+                $(this).parents("tr").show();
+	    }
+        }
+    );
+}
+
+function narrow_instance(class_name, instance) {
+    $("tr").each(
+        function() {
+            if (($(this).find("span.zephyr_class").text() != class_name) ||
+		($(this).find("span.zephyr_instance").text() != instance)) {
+                $(this).hide();
+	    }
         }
     );
 }
@@ -86,7 +100,8 @@ function get_updates() {
                    var new_str = "<tr id=tr_" + new_max_id + "> \
 <td class='pointer' id=" + zephyr.id + "><p></p></td> \
 <td class='zephyr'> \
-<p><span onclick='narrow('" + zephyr.zephyr_class + "')' class='zephyr_class' style='background-color: yellow;'>" + zephyr.zephyr_class + "</span> / " + zephyr.instance + " / " + zephyr.sender + "<br />" +
+<p><span onclick='narrow('" + zephyr.zephyr_class.name + "')' class='zephyr_class' style='background-color: yellow;'>" + zephyr.zephyr_class.name +
+"</span> / <span onclick='narrow_instance('" + zephyr.zephyr_class.name + "','" + zephyr.instance + "')' class='zephyr_instance' style='background-color: green;'>" + zephyr.instance + "</span> / " + zephyr.sender + "<br />" +
 zephyr.content +
 "</p></td> \
 </tr>"
@@ -112,7 +127,7 @@ Content: <input type="textarea" rows="4" name="new_zephyr" id="new_zephyr" value
 <tr id=tr_{{ forloop.counter }}>
 <td class="pointer" id={{ zephyr.id }}>{% if user_profile.pointer == zephyr.id %}<p id="selected">-&gt;{% else %}<p>{% endif %}</p></td>
 <td class="zephyr">
-<p><span onclick="narrow('{{ zephyr.zephyr_class.name }}')" class="zephyr_class" style="background-color: yellow;">{{ zephyr.zephyr_class.name }}</span> / {{ zephyr.instance }} / {{ zephyr.sender.user.username }}<br />
+<p><span onclick="narrow('{{ zephyr.zephyr_class.name }}')" class="zephyr_class" style="background-color: yellow;">{{ zephyr.zephyr_class.name }}</span> / <span onclick="narrow_instance('{{ zephyr.zephyr_class.name }}', '{{ zephyr.instance }}')" class="zephyr_instance" style="background-color: green;">{{ zephyr.instance }}</span> / {{ zephyr.sender.user.username }}<br />
 {{ zephyr.content }}
 </p></td>
 </tr>
