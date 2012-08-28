@@ -157,41 +157,54 @@ function get_updates() {
 }
 </script>
 
-<form action="/zephyr/" method="post" class="zephyr">
-{% csrf_token %}
-<div class="row-fluid">
-<div class="span6">
-    <label>Class</label>
-    <input type="text" name="class" id="class" value="" />
-</div>
-<div class="span6">
-    <label>Instance</label>
-    <input type="text" name="instance" id="instance" value="" />
-</div>
-</div>
-<div class="row-fluid">
-<div class="span12">
-<label>Content</label> <textarea rows="4" cols="60" name="new_zephyr" id="new_zephyr" value="" /></textarea>
-<input type="submit" value="Zephyr" />
-</div>
-</div>
-</form>
+<div class="tabbable container">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#class-message" data-toggle="tab">Class message</a></li>
+        <li><a href="#personal-message" data-toggle="tab">Personal message</a></li>
+    </ul>
 
-<form action="/personal-zephyr/" method="post" class="zephyr">
-{% csrf_token %}
-<div class="row-fluid">
-<div class="span6">
-    <label>User</label>
-    <input type="text" name="recipient" id="recipient" value="" />
+    <div class="tab-content">
+        <div class="tab-pane active" id="class-message">
+            <form action="/zephyr/" method="post" class="zephyr">
+                {% csrf_token %}
+                <div class="row-fluid">
+                    <div class="span6">
+                        <label>Class</label>
+                        <input type="text" name="class" id="class" value="" />
+                    </div>
+                    <div class="span6">
+                        <label>Instance</label>
+                        <input type="text" name="instance" id="instance" value="" />
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <label>Content</label> <textarea rows="4" cols="60" name="new_zephyr" id="new_zephyr" value="" /></textarea>
+                        <input type="submit" value="Zephyr" />
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="tab-pane" id="personal-message">
+            <form action="/personal-zephyr/" method="post" class="zephyr">
+                {% csrf_token %}
+                <div class="row-fluid">
+                    <div class="span6">
+                        <label>User</label>
+                        <input type="text" name="recipient" id="recipient" value="" />
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <label>Content</label>
+                        <textarea rows="4" cols="60" name="new_personal_zephyr" id="new_personal_zephyr" value="" /></textarea>
+                        <input type="submit" name="personal_zephyr" value="Send Personal" />
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
-<div class="row-fluid">
-<div class="span12">
-    <label>Content</label>
-    <textarea rows="4" cols="60" name="new_personal_zephyr" id="new_personal_zephyr" value="" /></textarea>
-<input type="submit" name="personal_zephyr" value="Send Personal" />
-</div>
-</div>
-</form>
 
 <span id="unhide" style="background-color: aqua;" onclick="unhide()">Unhide</span>
 
