@@ -20,7 +20,7 @@ class Zephyr(models.Model):
     content = models.CharField(max_length=200)
     pub_date = models.DateTimeField('date published')
 
-def create_user_profile(sender, **kwargs):
+def create_user_profile(**kwargs):
     """When creating a new user, make a profile for him or her."""
     u = kwargs["instance"]
     if not UserProfile.objects.filter(user=u):
