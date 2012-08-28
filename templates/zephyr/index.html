@@ -31,32 +31,39 @@ $.ajaxSetup({
 });
 
 $(document).keyup(function(event) {
-if (event.keyCode == 38 || event.keyCode == 40) {
-    p = $("#selected");
-    tr = $(p).closest("tr");
-    td = $(p).closest("td");
+    if (event.keyCode == 38 || event.keyCode == 40) {
+        p = $("#selected");
+        tr = $(p).closest("tr");
+        td = $(p).closest("td");
 
-    if (event.keyCode == 40) {
-        offset = 1;
-    } else {
-        offset = -1;
-    }
-    new_index = parseInt(tr.attr("id").substr(3), 10) + offset;
-    if ($("#tr_" + new_index).length > 0) {
-        new_td = $("#tr_" + new_index).children(".pointer");
-        new_td.html('<p id="selected">-&gt;</p>');
-        td.empty();
-        $.post('update', {pointer: new_td.attr("id")});
-
-        if ($(new_td).offset().top < $("#main_div").offset().top) {
-            $("#main_div").scrollTop($("#main_div").scrollTop() - 75);
+        if (event.keyCode == 40) {
+            offset = 1;
+        } else {
+            offset = -1;
         }
+        new_index = parseInt(tr.attr("id").substr(3), 10) + offset;
+        if ($("#tr_" + new_index).length > 0) {
+            new_td = $("#tr_" + new_index).children(".pointer");
+            new_td.html('<p id="selected">-&gt;</p>');
+            td.empty();
+            $.post('update', {pointer: new_td.attr("id")});
 
-        if ($(new_td).offset().top + $(new_td).height() > $("#main_div").offset().top + $("#main_div").height()) {
-            $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
+            if ($(new_td).offset().top < $("#main_div").offset().top) {
+                $("#main_div").scrollTop($("#main_div").scrollTop() - 75);
+            }
+
+            if ($(new_td).offset().top + $(new_td).height() > $("#main_div").offset().top + $("#main_div").height()) {
+                $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
+            }
         }
+    } else if (event.keyCode == 82) { // 'r' keypress, for responding to a zephyr
+        var parent = $("#selected").parents("tr");
+        var zephyr_class = parent.find("span.zephyr_class").text();
+	var instance = parent.find("span.zephyr_instance").text();
+        $("#class").val(zephyr_class);
+        $("#instance").val(instance);
+        $("#new_zephyr").focus();
     }
-}
 });
 
 function narrow(class_name) {
@@ -115,7 +122,7 @@ zephyr.content +
 {% csrf_token %}
 Class: <input type="text" name="class" id="class" value="" />
 Instance: <input type="text" name="instance" id="instance" value="" /><br />
-Content: <input type="textarea" rows="4" name="new_zephyr" id="new_zephyr" value="" />
+Content: <textarea rows="4" cols="60" name="new_zephyr" id="new_zephyr" value="" /></textarea>
 <input type="submit" value="Zephyr" />
 </form>
 
