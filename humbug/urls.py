@@ -1,4 +1,6 @@
+from django.conf import settings
 from django.conf.urls import patterns, include, url
+import os.path
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -14,6 +16,8 @@ urlpatterns = patterns('',
     url(r'^accounts/login/', 'django.contrib.auth.views.login', {'template_name': 'zephyr/login.html'}),
     url(r'^accounts/logout/', 'django.contrib.auth.views.logout', {'template_name': 'zephyr/index.html'}),
     url(r'^accounts/register/', 'zephyr.views.register', name='register'),
+    url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
+        {'document_root': os.path.join(settings.SITE_ROOT, 'static/')})
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
