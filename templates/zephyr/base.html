@@ -1,4 +1,13 @@
+<!DOCTYPE html>
 {% autoescape off %}
+<html>
+
+<head>
+    <title>Zephyr</title>
+</head>
+
+<body>
+
 {% if not user.is_authenticated %}<a href="/accounts/login/?next=/">login</a> | <a
     href="/accounts/register/">register</a>{% endif %}
 
@@ -6,4 +15,9 @@
 
 {% block content %}
 {% endblock %}
+
+</body>
+
+</html>
+
 {% endautoescape %}
