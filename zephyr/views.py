@@ -65,7 +65,7 @@ def update(request):
     if request.POST.get('pointer'):
         user_profile.pointer = request.POST.get("pointer")
         user_profile.save()
-    return HttpResponse(simplejson.dumps({}), mimetype='application/javascript')
+    return HttpResponse(simplejson.dumps({}), mimetype='application/json')
 
 def get_updates(request):
     if not request.POST:
@@ -90,7 +90,7 @@ def get_updates(request):
                                 })
 
     return HttpResponse(simplejson.dumps(new_zephyr_list),
-                        mimetype='application/javascript')
+                        mimetype='application/json')
 
 @login_required
 def personal_zephyr(request):
