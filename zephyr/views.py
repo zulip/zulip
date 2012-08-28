@@ -111,7 +111,7 @@ def personal_zephyr(request):
     new_zephyr.content = request.POST['new_personal_zephyr']
     new_zephyr.recipient = recipient
     new_zephyr.instance = u''
-    new_zephyr.pub_date = datetime.datetime.utcnow()
+    new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
     new_zephyr.save()
 
     return HttpResponseRedirect(reverse('zephyr.views.home'))
@@ -136,7 +136,7 @@ def zephyr(request):
     new_zephyr.content = request.POST['new_zephyr']
     new_zephyr.recipient = recipient
     new_zephyr.instance = request.POST['instance']
-    new_zephyr.pub_date = datetime.datetime.utcnow()
+    new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
     new_zephyr.save()
 
     return HttpResponseRedirect(reverse('zephyr.views.home'))

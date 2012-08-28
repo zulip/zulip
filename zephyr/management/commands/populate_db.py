@@ -1,4 +1,5 @@
 from django.core.management.base import NoArgsCommand
+from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient
@@ -47,7 +48,7 @@ class Command(NoArgsCommand):
             new_zephyr.recipient = Recipient.objects.get(id=random.choice(recipients))
             zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.pk)
             new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
-            new_zephyr.pub_date = datetime.datetime.utcnow()
+            new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
             new_zephyr.save()
 
         self.stdout.write("Successfully populated test database.\n")
