@@ -1,0 +1,56 @@
+{
+  "alert": {
+    "id": 6294535,
+    "name": "alert.name",
+    "runbook_url": "http://www.google.pl",
+    "version": 2,
+    "description": "descrription"
+  },
+  "account": "lizonr@gmail.com",
+  "trigger_time": 1459415502,
+  "conditions": [
+    {
+      "id": 3543146,
+      "type": "below",
+      "threshold": 44,
+      "summary_function": "sum",
+      "duration": 300
+    },
+    {
+      "id": 3651148,
+      "type": "absent",
+      "summary_function": "average",
+      "duration": 300
+    },
+    {
+      "id": 3651902,
+      "type": "above",
+      "threshold": 9,
+      "summary_function": "derivative",
+      "duration": 300
+    }
+  ],
+  "violations": {
+    "test-source": [
+      {
+        "metric": "librato.cpu.percent.idle",
+        "value": 2,
+        "recorded_at": 1459415502,
+        "condition_violated": 3543146
+      },
+      {
+        "metric": "librato.swap.swap.cached",
+        "value": 42,
+        "recorded_at": 1459415502,
+        "condition_violated": 3651148
+      },
+      {
+        "metric": "librato.swap.swap.cached",
+        "value": 51,
+        "recorded_at": 1459415502,
+        "condition_violated": 3651902
+      }
+    ]
+  },
+  "triggered_by_user_test": true
+}

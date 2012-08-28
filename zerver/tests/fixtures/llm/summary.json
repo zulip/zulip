@@ -1,0 +1,50 @@
+{
+  "model": "groq/llama-3.3-70b-versatile",
+  "messages": [
+    {
+      "content": "The following is a chat conversation in the Zulip team chat app. channel: Zulip features, topic: New feature launch",
+      "role": "system"
+    },
+    {
+      "content": "[{\"sender\":\"Iago\",\"content\":\"Zulip just launched a feature to generate summary of messages.\"},{\"sender\":\"Iago\",\"content\":\"Sounds awesome! This will **greatly** help me when catching up.\"}]",
+      "role": "user"
+    },
+    {
+      "content": "Succinctly summarize this conversation based only on the information provided, in up to 4 sentences, for someone who is familiar with the context. Mention key conclusions and actions, if any. Refer to specific people as appropriate. Don't use an intro phrase. You can use Zulip's CommonMark based formatting.",
+      "role": "user"
+    }
+  ],
+  "response": {
+    "id": "chatcmpl-0ed48d2e-8956-444f-be81-f5d55392a280",
+    "created": 1738495155,
+    "model": "groq/llama-3.3-70b-versatile",
+    "object": "chat.completion",
+    "system_fingerprint": "fp_c0cfa69934",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "Iago announced that Zulip has launched a feature to generate summaries of messages. This feature will **greatly** help Iago when catching up. No actions were specified in the conversation. Iago seems to be looking forward to using this new feature.",
+          "role": "assistant",
+          "tool_calls": null,
+          "function_call": null
+        }
+      }
+    ],
+    "usage": {
+      "completion_tokens": 53,
+      "prompt_tokens": 178,
+      "total_tokens": 231,
+      "completion_tokens_details": null,
+      "prompt_tokens_details": null,
+      "queue_time": 0.146625071,
+      "prompt_time": 0.041886488,
+      "completion_time": 0.261543978,
+      "total_time": 0.303430466
+    },
+    "x_groq": {
+      "id": "req_01jk365q8afcht4th8crf3mhbg"
+    }
+  }
+}

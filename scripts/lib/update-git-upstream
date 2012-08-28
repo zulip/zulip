@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -eu
+
+upstream_url="https://github.com/zulip/zulip.git"
+if ! git remote | grep -qx upstream; then
+    git remote add upstream "$upstream_url"
+else
+    git remote set-url upstream "$upstream_url"
+fi
+
+git fetch --prune --quiet --tags --all

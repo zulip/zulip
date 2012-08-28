@@ -1,0 +1,44 @@
+<div id="{{prefix}}-bot-list" class="settings-section" data-name="bots">
+    <div class="bot-settings-tip banner-wrapper" id="{{prefix}}-bot-settings-tip">
+    </div>
+    <div class="clear-float"></div>
+    <div>
+        {{> ../components/action_button
+          label=(t "Add a new bot")
+          variant="subtle"
+          intent="brand"
+          custom_classes="add-a-new-bot"
+          hidden=(not can_create_new_bots)
+          }}
+    </div>
+    <div class="tab-container"></div>
+    <div id="{{prefix}}-all-bots-list" class="bot-settings-section user-or-bot-settings-section" data-bot-settings-section="all-bots">
+        <div class="bot-list-error banner-wrapper"></div>
+        {{> bot_list
+          section_name="all_bots"
+          section_title=(t "All bots")
+          dropdown_widget_name=all_bots_list_dropdown_widget_name
+          prefix=prefix
+          }}
+    </div>
+    <div id="{{prefix}}-your-bots-list" class="bot-settings-section user-or-bot-settings-section" data-bot-settings-section="your-bots">
+        <div class="bot-list-error banner-wrapper"></div>
+        <div class="config-download-text">
+            <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
+            <a type="submit" download="botserverrc" class="hidden-botserverrc-download" hidden></a>
+            {{> ../components/icon_button
+              icon="download"
+              intent="brand"
+              custom_classes="download-botserverrc-file tippy-zulip-delayed-tooltip"
+              data-tippy-content=(t "Download botserverrc")
+              }}
+        </div>
+
+        {{> bot_list
+          section_name="your_bots"
+          section_title=(t "Your bots")
+          dropdown_widget_name=your_bots_list_dropdown_widget_name
+          prefix=prefix
+          }}
+    </div>
+</div>

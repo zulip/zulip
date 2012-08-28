@@ -1,0 +1,22 @@
+diff --git a/index.d.mts b/index.d.mts
+index 34c92eab4027ece9180f8204bc373510bc51ec2f..e1166df032ffbe0614a8c7d8abc78cbaf3106a4b 100644
+--- a/index.d.mts
++++ b/index.d.mts
+@@ -1,4 +1,5 @@
+ /// <reference path="index.d.ts" />
+ 
++export const jQuery: JQueryStatic;
++export const $: JQueryStatic;
+ export default jQuery;
+-export { jQuery, jQuery as $ };
+diff --git a/slim.d.mts b/slim.d.mts
+index 34c92eab4027ece9180f8204bc373510bc51ec2f..e1166df032ffbe0614a8c7d8abc78cbaf3106a4b 100644
+--- a/slim.d.mts
++++ b/slim.d.mts
+@@ -1,4 +1,5 @@
+ /// <reference path="index.d.ts" />
+ 
++export const jQuery: JQueryStatic;
++export const $: JQueryStatic;
+ export default jQuery;
+-export { jQuery, jQuery as $ };

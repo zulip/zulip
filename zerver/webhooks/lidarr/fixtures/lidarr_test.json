@@ -1,0 +1,16 @@
+{
+    "albums": [
+      {
+        "id": 123,
+        "title": "Test title",
+        "qualityVersion": 0
+      }
+    ],
+    "eventType": "Test",
+    "artist": {
+      "id": 1,
+      "name": "Test Name",
+      "path": "C:\\testpath",
+      "mbId": "aaaaa-aaa-aaaa-aaaaaa"
+    }
+}

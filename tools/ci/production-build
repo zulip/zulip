@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# In short, this provisions a Zulip development environment and then
+# builds a Zulip release tarball (the same way we build them for an
+# actual release).  The actual test job will then install that.
+
+set -e
+set -x
+
+# Provisioning may fail due to many issues but most of the times a network
+# connection issue is the reason. So we are going to retry entire provisioning
+# once again if that fixes our problem.
+tools/provision --build-release-tarball-only || {
+    ret=$?
+    if [ "$ret" = 1 ]; then
+        echo "\`provision\`: Something went wrong with the provisioning, might be a network issue, Retrying to provision..."
+        tools/provision --build-release-tarball-only
+    else
+        echo "\`provision\`: Something REALLY BAD went wrong with the provisioning, not retrying."
+        exit "$ret"
+    fi
+}
+
+source tools/ci/activate-venv
+
+if ! ./tools/build-release-tarball test; then
+    echo "Attempting to output failure logging data"
+    cat /tmp/tmp.*/update-prod-static.log || true
+    exit 1
+fi
+
+# Move all the required artifacts to /tmp/production-build
+# that will be later sent down to downstream install jobs.
+mkdir /tmp/production-build
+mv /tmp/tmp.*/zulip-server-test.tar.gz /tmp/production-build
+cp -a \
+    tools/ci/success-http-headers.template.txt \
+    tools/ci/production-install \
+    tools/ci/production-verify \
+    tools/ci/production-upgrade \
+    tools/ci/production-pgroonga \
+    tools/ci/production-upgrade-pg \
+    tools/ci/generate-failure-message \
+    package.json pnpm-lock.yaml \
+    /tmp/production-build
+
+# Check that webpack bundles use only ES2022 syntax.
+# Use the pnpm binary installed by tools/provision.
+PNPM="/usr/local/bin/pnpm"
+tar -C /tmp -xzf /tmp/production-build/zulip-server-test.tar.gz zulip-server-test/prod-static/serve/webpack-bundles
+(
+    GLOBIGNORE="/tmp/zulip-server-test/prod-static/serve/webpack-bundles/katex*.js"
+    "$PNPM" exec es-check es2022 /tmp/zulip-server-test/prod-static/serve/webpack-bundles/*.js
+)

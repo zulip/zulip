@@ -1,0 +1,29 @@
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+
+import UserGroupPlusIcon from "~icons/zulip-icon/user-group-plus";
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/gear/group-settings" />
+
+      1. Click **Create user group** on the right, or click the
+         **create new user group** (<UserGroupPlusIcon />)
+         icon in the upper right.
+      1. Fill out the requested information, and click **Continue to add
+         members**.
+      1. Under **Add members**, enter groups and users you want to add. You can enter
+         a `#channel` to add all subscribers to the group. Click **Add**.
+      1. Click **Create** to create the group.
+    </FlattenedSteps>
+
+    <ZulipNote>
+      **Note**: You will only see the **Create user group** button if you have
+      permission to create user groups.
+    </ZulipNote>
+  </TabItem>
+</Tabs>

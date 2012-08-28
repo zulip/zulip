@@ -1,0 +1,61 @@
+<form method="POST" class="support-form">
+    <b>Required plan tier for discounts and fixed prices</b>:<br />
+    <i>Updates will not change any pre-existing plans or scheduled upgrades.</i><br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <select name="required_plan_tier">
+        {% for plan_tier in PLAN_TYPES %}
+            {% if sponsorship_data.required_plan_tier == plan_tier.value %}
+                <option value="{{ plan_tier.value }}" selected>{{ plan_tier.name }}</option>
+            {% else %}
+                <option value="{{ plan_tier.value }}">{{ plan_tier.name }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <button type="submit" class="support-submit-button">Update</button>
+</form>
+
+<form method="POST" class="discounted-price-form support-form">
+    <b>Discounted price <i class="fa fa-question-circle-o" data-tippy-content="
+        Needs required plan tier to be set.<br />
+        Default price for tier will be used if discounted price for the schedule is not specified or is 0.<br />
+        Updates will change pre-existing plans and scheduled upgrades.<br />
+        Any prorated licenses for the current billing cycle will be billed at the updated discounted rate.<br />
+        Customer will lose flat discounted months regardless of value specified.<br />
+        " data-tippy-allowHTML="true" data-tippy-maxWidth="auto"></i></b>
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    {% if has_fixed_price %}
+    <input type="number" value="{{ sponsorship_data.monthly_discounted_price }}" placeholder="Monthly discounted price" disabled />
+    <input type="number" value="{{ sponsorship_data.annual_discounted_price }}" placeholder="Annual discounted price" disabled />
+    <button type="submit" class="support-submit-button" disabled>Update</button>
+    {% else %}
+    <span>Monthly (cents)</span>
+    <input type="number" name="monthly_discounted_price" value="{{ sponsorship_data.monthly_discounted_price }}" placeholder="Monthly discounted price" data-original-monthly-price="{{ sponsorship_data.original_monthly_plan_price }}"
+      {% if sponsorship_data.required_plan_tier %}
+      required
+      {% else %}
+      disabled
+      {% endif %}
+      />
+    <span>Annual (cents)</span>
+    <input type="number" name="annual_discounted_price" value="{{ sponsorship_data.annual_discounted_price }}" placeholder="Annual discounted price" data-original-annual-price="{{ sponsorship_data.original_annual_plan_price }}"
+      {% if sponsorship_data.required_plan_tier %}
+      required
+      {% else %}
+      disabled
+      {% endif %}
+      />
+    <button type="submit" class="support-submit-button">Update</button>
+    {% endif %}
+</form>
+
+{% if not has_fixed_price and (sponsorship_data.monthly_discounted_price or sponsorship_data.annual_discounted_price or sponsorship_data.minimum_licenses) %}
+<form method="POST" class="support-form">
+    <b>Minimum licenses</b>:<br />
+    {{ csrf_input }}
+    <input type="hidden" name="{{ remote_type }}" value="{{ remote_id }}" />
+    <input type="number" name="minimum_licenses" value="{{ sponsorship_data.minimum_licenses }}" required />
+    <button type="submit" class="support-submit-button">Update</button>
+</form>
+{% endif %}

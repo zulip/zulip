@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+import shlex
+import subprocess
+import sys
+
+
+def exit(message: str) -> None:
+    print("PROBLEM!")
+    print(message)
+    sys.exit(1)
+
+
+def run(command: list[str]) -> None:
+    print(f"\n>>> {shlex.join(command)}")
+    subprocess.check_call(command)
+
+
+def check_output(command: list[str]) -> str:
+    return subprocess.check_output(command, text=True)
+
+
+def get_git_branch() -> str:
+    command = ["git", "rev-parse", "--abbrev-ref", "HEAD"]
+    output = check_output(command)
+    return output.strip()
+
+
+def check_git_pristine() -> None:
+    command = ["git", "status", "--porcelain"]
+    output = check_output(command)
+    if output.strip():
+        exit("Git is not pristine:\n" + output)
+
+
+def ensure_on_clean_main() -> None:
+    branch = get_git_branch()
+    if branch != "main":
+        exit(f"You are still on a feature branch: {branch}")
+    check_git_pristine()
+    run(["git", "fetch", "upstream", "main"])
+    run(["git", "rebase", "upstream/main"])
+
+
+def create_pull_branch(pull_id: int) -> None:
+    run(["git", "fetch", "upstream", f"pull/{pull_id}/head"])
+    run(["git", "checkout", "-B", f"review-{pull_id}", "FETCH_HEAD"])
+    run(["git", "rebase", "upstream/main"])
+    run(["git", "log", "upstream/main..", "--oneline"])
+    run(["git", "diff", "upstream/main..", "--name-status"])
+
+    print()
+    print(f"PR: {pull_id}")
+    print(subprocess.check_output(["git", "log", "HEAD~..", "--pretty=format:Author: %an"]))
+
+
+def review_pr() -> None:
+    try:
+        pull_id = int(sys.argv[1])
+    except Exception:
+        exit("please provide an integer pull request id")
+
+    ensure_on_clean_main()
+    create_pull_branch(pull_id)
+
+
+if __name__ == "__main__":
+    review_pr()

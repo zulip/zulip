@@ -1,0 +1,8 @@
+<div id="{{stream_key}}">
+    {{> inbox_row stream_row}}
+    <div class="inbox-topic-container">
+        {{#each topic_rows}}
+            {{> inbox_row .}}
+        {{/each}}
+    </div>
+</div>

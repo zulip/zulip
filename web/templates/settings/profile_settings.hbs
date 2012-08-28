@@ -1,0 +1,80 @@
+<div id="profile-settings" class="settings-section" data-name="profile">
+    <div class="profile-settings-form">
+        <div class="profile-main-panel inline-block">
+            <h3 class="inline-block" id="user-profile-header">{{t "Profile" }}</h3>
+            <div id="user_details_section">
+                <div class="full-name-change-container">
+                    <div class="input-group inline-block grid user-name-parent">
+                        <div class="user-name-section inline-block">
+                            <label for="full_name" class="settings-field-label inline-block {{#unless user_can_change_name}}cursor-text{{/unless}}">{{t "Name" }}</label>
+                            <div class="alert-notification full-name-status"></div>
+                            <div class="settings-profile-user-field-hint">{{t "How your account is displayed in Zulip." }}</div>
+                            <div id="full_name_input_container" {{#unless user_can_change_name}}class="disabled_setting_tooltip"{{/unless}}>
+                                <input id="full_name" name="full_name" class="settings_text_input" type="text" value="{{ current_user.full_name }}" {{#unless user_can_change_name}}disabled="disabled"{{/unless}} maxlength="{{max_user_name_length}}" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form class="timezone-setting-form">
+                    <div class="input-group grid">
+                        <label for="user_timezone_widget" class="settings-field-label inline-block">{{t "Time zone" }}</label>
+                        <div class="alert-notification timezone-setting-status"></div>
+                        <div class="timezone-input">
+                            {{> ../dropdown_widget_with_label
+                              widget_name="user_timezone"
+                              label=""
+                              value_type="string"
+                              value=settings_object.timezone
+                              custom_classes="timezone-dropdown-widget"
+                              }}
+                        </div>
+                    </div>
+                    <div id="automatically_offer_update_time_zone_container">
+                        {{> settings_checkbox
+                          setting_name="automatically_offer_update_time_zone"
+                          is_checked=settings_object.web_suggest_update_timezone
+                          label=settings_label.web_suggest_update_timezone
+                          }}
+                    </div>
+                </form>
+
+                <form class="custom-profile-fields-form grid"></form>
+            </div>
+        </div>
+
+        <div class="profile-side-panel">
+            <div class="inline-block user-avatar-section">
+                {{> image_upload_widget
+                  widget = "user-avatar"
+                  upload_text = (t "Upload new profile picture")
+                  delete_text = (t "Delete profile picture")
+                  disabled_text = (t "Avatar changes are disabled in this organization.")
+                  is_editable_by_current_user = user_can_change_avatar
+                  image = current_user.avatar_url_medium}}
+                <div id="user-avatar-source">
+                    <a href="https://en.gravatar.com/" target="_blank" rel="noopener noreferrer">{{t "Avatar from Gravatar" }}</a>
+                </div>
+            </div>
+            <div class="user-details">
+                <div id="user_role_details" class="input-group">
+                    <span class="user-details-title">{{t "Role" }}:</span>
+                    <span class="user-details-desc">{{user_role_text}}</span>
+                </div>
+
+                <div class="input-group">
+                    <span class="user-details-title">{{t "Joined" }}: </span>
+                    <span class="user-details-desc">{{date_joined_text}}</span>
+                </div>
+            </div>
+            {{> ../components/action_button
+              label=(t "Preview profile")
+              variant="subtle"
+              intent="brand"
+              id="show_my_user_profile_modal"
+              icon="external-link"
+              aria-hidden="true"
+              }}
+        </div>
+    </div>
+</div>

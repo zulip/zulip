@@ -1,0 +1,59 @@
+{{#if error_message}}
+    {{error_message}}
+{{else}}
+    {{#if (and (eq newly_added_member_count 0) (eq ignored_deactivated_member_count 0))}}
+        {{#unless (or (eq already_added_user_count 0) (eq already_added_subgroups_count 0))}}
+            {{t "All users and groups were already members."}}
+        {{else unless (eq already_added_user_count 0)}}
+            {{t "All users were already members."}}
+        {{else}}
+            {{t "All groups were already members."}}
+        {{/unless}}
+    {{else}}
+        {{#if (not total_member_count_exceeds_five)}}
+            {{#unless (eq newly_added_member_count 0)}}
+                {{t "Added:" }} {{> member_links members=additions.newly_added_members}}.&nbsp;
+            {{/unless}}
+            {{#unless (eq already_added_member_count 0)}}
+                {{t "Already a member:"}} {{> member_links members=additions.already_added_members}}.
+            {{/unless}}
+            {{#unless (eq ignored_deactivated_users_count 0)}}
+                {{t "Ignored deactivated users:"}} {{> member_links members=additions.ignored_deactivated_users}}.
+            {{/unless}}
+            {{#unless (eq ignored_deactivated_groups_count 0)}}
+                {{t "Ignored deactivated groups:"}} {{> member_links members=additions.ignored_deactivated_groups}}.
+            {{/unless}}
+        {{else}}
+            {{#unless (eq newly_added_member_count 0)}}
+                {{t "Added:"}}
+                {{#unless (or (eq newly_added_user_count 0) (eq newly_added_subgroups_count 0))}}
+                    {{t "{newly_added_user_count, plural, one {# user} other {# users}} and {newly_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                {{else unless (eq newly_added_user_count 0)}}
+                    {{t "{newly_added_user_count, plural, one {# user.} other {# users.}}"}}
+                {{else unless (eq newly_added_subgroups_count 0)}}
+                    {{t "{newly_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                {{/unless}}
+            {{/unless}}
+            {{#unless (eq already_added_member_count 0)}}
+                {{t "Already a member:"}}
+                {{#unless (or (eq already_added_user_count 0) (eq already_added_subgroups_count 0))}}
+                    {{t "{already_added_user_count, plural, one {# user} other {# users}} and {already_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                {{else unless (eq already_added_user_count 0)}}
+                    {{t "{already_added_user_count, plural, one {# user.} other {# users.}}"}}
+                {{else unless (eq already_added_subgroups_count 0)}}
+                    {{t "{already_added_subgroups_count, plural, one {# group.} other {# groups.}}"}}
+                {{/unless}}
+            {{/unless}}
+            {{#unless (eq ignored_deactivated_member_count 0)}}
+                {{t "Ignored deactivated:"}}
+                {{#unless (or (eq ignored_deactivated_users_count 0) (eq ignored_deactivated_groups_count 0))}}
+                    {{t "{ignored_deactivated_users_count, plural, one {# user} other {# users}} and {ignored_deactivated_groups_count, plural, one {# group.} other {# groups.}}"}}
+                {{else unless (eq ignored_deactivated_users_count 0)}}
+                    {{t "{ignored_deactivated_users_count, plural, one {# user.} other {# users.}}"}}
+                {{else unless (eq ignored_deactivated_groups_count 0)}}
+                    {{t "{ignored_deactivated_groups_count, plural, one {# group.} other {# groups.}}"}}
+                {{/unless}}
+            {{/unless}}
+        {{/if}}
+    {{/if}}
+{{/if}}

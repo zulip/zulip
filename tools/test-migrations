@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -e
+echo 'Testing whether migrations are consistent with models'
+
+# Check if any migration looks to have a meaningless 'auto' name,
+# other than the existing handful from 2016 and 2017.
+new_auto_named_migrations=$(./manage.py showmigrations \
+    | grep -E ' [0-9]{4}_auto_' \
+    | grep -Eve ' [0-9]{4}_auto_201[67]' \
+        -e ' 0052_auto_fix_realmalias_realm_nullable' \
+        -e ' 0003_auto_20150817_1733' \
+        -e ' 0002_auto_20150110_0810' \
+        -e ' 0002_auto_20190420_0723' \
+        -e ' 0009_auto_20191118_0520' \
+        -e ' 0007_auto_20201201_1019' \
+    | sed 's/\[[x ]\] /  /' \
+    || true)
+if [ "$new_auto_named_migrations" != "" ]; then
+    echo "ERROR: New migrations with unclear automatically generated names."
+    echo "Please rename these migrations to have readable names:"
+    echo
+    echo "$new_auto_named_migrations"
+    echo
+    echo 'See https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html for advice.'
+    echo
+    exit 1
+fi
+
+if ! ./manage.py makemigrations --check --dry-run; then
+    echo
+    # shellcheck disable=SC2016
+    echo 'ERROR: Migrations are not consistent with models!  Fix with `./tools/renumber-migrations`.'
+    echo 'See https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html for details.'
+    echo
+    exit 1
+fi
+
+echo "Success!  Migrations are consistent with models."

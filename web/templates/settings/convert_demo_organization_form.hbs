@@ -1,0 +1,15 @@
+<div id="convert-demo-organization-form">
+    {{#unless user_has_email_set}}
+    <div class="demo-organization-add-email-banner banner-wrapper"></div>
+    {{/unless}}
+    <p>{{t "Everyone will need to log in again at the new URL for your organization." }}</p>
+    <form class="subdomain-setting modal-form">
+        <div class="input-group">
+            <label for="string_id" class="inline-block modal-field-label">{{t "Organization URL" }}</label>
+            <div id="subdomain_input_container">
+                <input id="new_subdomain" type="text" class="modal_text_input" autocomplete="off" name="string_id" placeholder="{{t 'acme' }}"/>
+                <label for="string_id" class="domain_label">.{{ realm_domain }}</label>
+            </div>
+        </div>
+    </form>
+</div>

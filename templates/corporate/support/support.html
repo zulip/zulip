@@ -1,0 +1,148 @@
+{% extends "zerver/base.html" %}
+{% set entrypoint = "support" %}
+
+{# User activity. #}
+
+{% block title %}
+<title>Support panel | Zulip</title>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <form class="support-search-form">
+        <center>
+            <input type="text" name="q" class="input-xxlarge search-query" placeholder="full names, emails, string_ids, organization URLs separated by commas" value="{{ request.GET.get('q', '') }}" autofocus />
+            <button type="submit" class="support-search-button">Search</button>
+        </center>
+    </form>
+
+    {% if error_message %}
+    <div class="alert alert-danger">
+        <center>
+            {{ error_message }}
+        </center>
+    </div>
+    {% elif success_message %}
+    <div class="alert alert-success">
+        <center>
+            {{ success_message }}
+        </center>
+    </div>
+    {% endif %}
+
+    <div id="query-results">
+        {% for user in users %}
+        {% set realm = user.realm %}
+        <div class="support-query-result user-support-container">
+            {% if not user.is_active %}
+            {% set user_information_class = "user-information-section user-deactivated" %}
+            {% else %}
+            {% set user_information_class = "user-information-section" %}
+            {% endif %}
+            <div class="{{user_information_class}}">
+                <span class="cloud-label">Cloud {% if user.is_bot%}bot{% else %}user{% endif %}</span>
+                {% if not user.is_active %}
+                <span class="deactivated-label">DEACTIVATED</span>
+                {% endif %}
+                <h3>{{ user.full_name }}</h3>
+                <b>Email</b>: {{ user.delivery_email }}<br />
+                <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br />
+                <b>Role</b>: {{ user.get_role_name() }}<br />
+                {% if user.is_bot and user.bot_owner %}
+                <b>Bot owner</b>: {{ user.bot_owner.delivery_email }}<br />
+                {% endif %}
+                <form method="POST" class="delete-user-form">
+                    {{ csrf_input }}
+                    <input type="hidden" name="realm_id" value="{{ realm.id }}" />
+                    <input type="hidden" name="delete_user_by_id" value="{{ user.id }}" />
+                    <button data-email="{{ user.delivery_email }}" data-string-id="{{ realm.string_id }}" class="delete-user-button">Delete user (danger)</button>
+                </form>
+            </div>
+            {% if realm.deactivated %}
+            {% set user_realm_information_class = "user-realm-information-section realm-deactivated" %}
+            {% else %}
+            {% set user_realm_information_class = "user-realm-information-section" %}
+            {% endif %}
+            <div class="{{user_realm_information_class}}">
+                {% with %}
+                    {% set dollar_amount = dollar_amount %}
+                    {% include "corporate/support/realm_details.html" %}
+                {% endwith %}
+            </div>
+        </div>
+        {% endfor %}
+
+        {% for realm in realms %}
+        {% if realm.deactivated %}
+        {% set realm_query_result_class = "support-query-result realm-deactivated" %}
+        {% else %}
+        {% set realm_query_result_class = "support-query-result" %}
+        {% endif %}
+        <div class="{{realm_query_result_class}}">
+            {% with %}
+                {% set dollar_amount = dollar_amount %}
+                {% include "corporate/support/realm_details.html" %}
+            {% endwith %}
+        </div>
+        {% endfor %}
+
+        {% for confirmation in confirmations %}
+        {% set object = confirmation.object %}
+        <div class="support-query-result confirmation-container">
+            <div class="confirmation-information-section">
+                <span class="cloud-label">Cloud confirmation</span>
+                {% if confirmation.type == Confirmation.USER_REGISTRATION %}
+                <h3>Pre-registration user</h3>
+                {% set email = object.email %}
+                {% set realm = object.realm %}
+                {% set show_realm_details = True %}
+                {% elif confirmation.type == Confirmation.NEW_REALM_USER_REGISTRATION %}
+                <h3>Realm creation</h3>
+                {% set email = object.email %}
+                {% set show_realm_details = False %}
+                {% elif confirmation.type == Confirmation.INVITATION %}
+                <h3>Invite</h3>
+                {% set email = object.email %}
+                {% set realm = object.realm %}
+                {% set show_realm_details = True %}
+                {% elif confirmation.type == Confirmation.MULTIUSE_INVITE %}
+                <h3>Multiuse invite</h3>
+                {% set realm = object.realm %}
+                {% set show_realm_details = False %}
+                {% elif confirmation.type == Confirmation.REALM_REACTIVATION %}
+                <h3>Realm reactivation</h3>
+                {% set realm = object.realm %}
+                {% set show_realm_details = False %}
+                {% endif %}
+                {% if email %}
+                <b>Email</b>: {{ email }}<br />
+                {% endif %}
+                <b>Link</b>: {{ confirmation.url }}
+                <a title="Copy link" class="copy-button" data-clipboard-text="{{ confirmation.url }}">
+                    <i class="fa fa-copy"></i>
+                </a><br />
+                <b>Expires in</b>: {{ confirmation.expires_in }}<br />
+                {% if confirmation.link_status %}
+                <b>Status</b>: {{ confirmation.link_status  }}<br />
+                {% endif %}
+            </div>
+            <div class="confirmation-realm-section">
+                {% if show_realm_details %}
+                    {% with %}
+                        {% set dollar_amount = dollar_amount %}
+                        {% include "corporate/support/realm_details.html" %}
+                    {% endwith %}
+                {% elif realm %}
+                    <span class="cloud-label">Cloud realm</span>
+                    <h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
+                    <b>Realm subdomain</b>: {{ realm.subdomain }}
+                {% else %}
+                    <span class="cloud-label">Cloud realm</span>
+                    <h3>N/A</h3>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

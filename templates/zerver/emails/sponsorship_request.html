@@ -1,0 +1,57 @@
+{% extends "zerver/emails/email_base_messages.html" %}
+
+{% block content %}
+<br />
+
+{% if is_cloud_organization %}
+<b>Zulip Cloud</b>
+{% else %}
+<b>Self-hosted</b>
+{% endif %}
+
+<br /><br />
+
+<b>Support URL</b>: <a class="sponsorship_request_link" href="{{ support_url }}">{{ support_url }}</a>
+
+<br /><br />
+
+<b>Website</b>: <a class="sponsorship_request_link" href="{{ website }}">{{ website }}</a>
+
+<br /><br />
+
+<b>Organization type</b>: {{ organization_type }}
+
+<br /><br />
+
+<b>Description</b>:
+<br />
+{{ description }}
+
+<br /><br />
+
+<b>How do you plan to use Zulip?</b>
+<br />
+{{ plan_to_use_zulip }}
+
+<br /><br />
+
+<b>Expected users</b>: {{ expected_total_users }}
+
+<br /><br />
+
+<b>Paid staff</b>: {{ paid_users_count }}
+<br />
+<b>Description of paid staff</b>:
+<br />
+{{ paid_users_description }}
+
+<br /><br />
+
+<b>Requested by</b>: {{ requested_by }} ({{ user_role }})
+
+{% if requested_plan %}
+<br /><br />
+<b>Requested plan</b>: {{ requested_plan }}
+{% endif %}
+
+{% endblock %}

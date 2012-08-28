@@ -1,0 +1,14 @@
+.gitignore
+.gitattributes
+corporate/
+static/
+web/
+tools/
+zilencer/
+templates/corporate
+templates/zilencer
+puppet/kandra
+zproject/dev_settings.py
+zproject/test_settings.py
+zerver/tests
+starlight_help/

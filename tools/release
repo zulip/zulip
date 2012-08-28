@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+set -eu
+
+cd "$(dirname "$0")/.."
+
+if [ -z "${1:-}" ]; then
+    echo "Usage: $0 version"
+    exit 1
+fi
+
+fail() {
+    echo "$1"
+    exit 1
+}
+
+version="$1"
+
+# Check version is a form we expect
+[[ "$version" =~ ^[0-9]+\.[0-9]+(-[a-z0-9]+)?$ ]] \
+    || fail "Version $version does not look like a full release!"
+
+# Check we're on `main` or `\d+\.x`
+branch=$(git rev-parse --abbrev-ref HEAD)
+[ "$branch" == "main" ] || [[ "$branch" =~ ^[0-9]+\.x$ ]] || [ "$branch" == "${version}-branch" ] \
+    || fail "Current branch '$branch' is not 'main' or a release branch"
+
+is_prerelease=
+if [[ "$version" =~ -[0-9a-z]+$ ]]; then
+    is_prerelease=1
+fi
+
+is_major_release=
+if [[ "$version" =~ ^[0-9]+\.0(-[0-9a-z]+)?$ ]]; then
+    [ "$branch" == "main" ] \
+        || fail "Did not expect $version to be released from $branch, expected main"
+    if [ -z "$is_prerelease" ]; then
+        is_major_release=1
+    fi
+else
+    expected_branch="$(echo "$version" | perl -ple 's/\..*/.x/')"
+    [ "$branch" == "$expected_branch" ] \
+        || fail "Did not expect $version to be released from $branch, expected $expected_branch"
+fi
+
+# shellcheck source=lib/git-tools.bash
+. "$(dirname "$0")"/lib/git-tools.bash
+require_clean_work_tree 'build and upload a release'
+
+# Check the commit message
+commit_msg=$(git rev-list --format=%B --max-count=1 HEAD | tail -n +2)
+[ "$commit_msg" == "Release Zulip Server $version." ] \
+    || fail "Expected commit message: Release Zulip Server $version."
+
+# Provision
+echo "Provisioning.."
+if ! ./tools/provision >/dev/null; then
+    cat var/log/provision.log
+    fail "Provisioning failed!"
+fi
+
+# Check lint passes for the changelog
+./tools/lint --skip gitlint docs/overview/changelog.md \
+    || fail "Changelog does not pass lint"
+./tools/test-documentation --skip-external-links \
+    || fail "Changelog links do not validate"
+./tools/run-codespell docs/overview/changelog.md \
+    || fail "Changelog does not pass spellcheck"
+
+# Check the date is correct for the release
+release_lines=$(grep -x -m 1 -A2 "### Zulip Server $version" docs/overview/changelog.md) \
+    || fail "docs/overview/changelog.md does not contain a line for $version"
+release_date_line=$(echo "$release_lines" | grep -x -E -m 1 '_Released ([0-9-]+)_') \
+    || fail "docs/overview/changelog.md does not contain the release date for $version"
+expected_date="$(TZ=America/Los_Angeles date +%F)"
+[ "$release_date_line" == "_Released ${expected_date}_" ] \
+    || fail "Date in docs/overview/changelog.md does not match '$expected_date'"
+
+extract_version() {
+    python3 -c 'import sys, version; print(getattr(version, sys.argv[1]))' "$1"
+}
+
+# Check ZULIP_VERSION and LATEST_RELEASE_VERSION are set appropriately
+[ "$(extract_version "ZULIP_VERSION")" == "$version" ] \
+    || fail "ZULIP_VERSION in version.py does not match $version"
+
+if [ -z "$is_prerelease" ]; then
+    [ "$(extract_version "LATEST_RELEASE_VERSION")" == "$version" ] \
+        || fail "LATEST_RELEASE_VERSION in version.py does not match $version"
+
+    if [ -n "$is_major_release" ]; then
+        [ "$(extract_version "LATEST_MAJOR_VERSION")" == "$version" ] \
+            || fail "LATEST_MAJOR_VERSION in version.py does not match $version"
+
+        # Check that there is an API version bump, which is documented
+        changed_api_level=$(git diff-tree -G API_FEATURE_LEVEL HEAD -- version.py)
+        [ -n "$changed_api_level" ] || fail "$version did not adjust API_FEATURE_LEVEL in version.py"
+        feature_level="$(extract_version "API_FEATURE_LEVEL")"
+        grep -q -F -x "**Feature level $feature_level**" api_docs/changelog.md \
+            || fail "Feature level $feature_level is not documented in api_docs/changelog.md"
+    fi
+fi
+
+# Check we are auth'd to Github, so we can upload the release
+type gh >/dev/null 2>&1 \
+    || fail "The 'gh' CLI tool is not installed; see https://cli.github.com/"
+gh auth status \
+    || fail "Not authenticated to github"
+
+# Extract the changelog, print it
+changelog_anchor="zulip-server-${version//./-}"
+changelog=$(VERSION="$version" perl -nle '$v=quotemeta($ENV{VERSION}); print if $rc = /^### Zulip Server $v/ .. /^#{1,3} Zulip Server (?!$v)/ and $rc !~ /E0/' docs/overview/changelog.md)
+echo "$changelog"
+
+echo -e "\n\n(pausing for 15s, ^C to cancel)"
+sleep 15
+
+git tag "$version"
+
+OUTPUT_DIR=$(mktemp -d)
+export OUTPUT_DIR
+
+./tools/build-release-tarball "$version"
+
+TARBALL="$OUTPUT_DIR/zulip-server-$version.tar.gz"
+if ! [ -f "$TARBALL" ]; then
+    echo "Did not find expected $TARBALL!"
+    exit 1
+fi
+
+./tools/upload-release "$TARBALL"
+
+# Push the commits
+remote="$(git config zulip.zulipRemote)" || remote=upstream
+git push "$remote" "$branch:$branch"
+git push "$remote" "$version"
+
+# Upload to Github
+params=()
+if [ -n "$is_prerelease" ]; then
+    params+=("--prerelease")
+fi
+gh release create "$version" \
+    --title "Zulip Server $version" \
+    --notes "[Complete release notes](https://zulip.readthedocs.io/en/latest/overview/changelog.html#${changelog_anchor})" \
+    "${params[@]}" \
+    "$TARBALL"

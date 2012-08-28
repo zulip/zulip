@@ -1,0 +1,25 @@
+{
+  "error": {
+    "id": "1705190192091077626",
+    "error_message": "Error message from logger",
+    "error_class": "ZeroDivisionError",
+    "file": "file.py",
+    "line_number": 2,
+    "project": {
+      "id": 125209,
+      "name": "ZulipIntegrationTest"
+    },
+    "last_notice": {
+      "id": "1705189516072954676",
+      "request_url": null,
+      "backtrace": [
+        "file.py:2:in \u003cmodule\u003e"
+      ]
+    },
+    "environment": "dev",
+    "first_occurred_at": "2016-06-10T17:07:10.760639Z",
+    "last_occurred_at": "2016-06-10T17:07:10.76Z",
+    "times_occurred": 1
+  },
+  "airbrake_error_url": "https:\/\/zulip.airbrake.io\/projects\/125209\/groups\/1705190192091077626"
+}

@@ -1,0 +1,71 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>{{ _("Find your accounts") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+
+<div class="app find-account-page flex full-page">
+    <div class="inline-block new-style">
+        <div class="lead">
+            <h1 class="get-started">{{ _("Find your Zulip accounts") }}</h1>
+        </div>
+
+        <div class="app-main find-account-page-container white-box">
+            {% if emails %}
+            <div id="results">
+                <p>
+                    {% trans %}
+                    Emails sent! The addresses entered on the previous page are listed below:
+                    {% endtrans %}
+                </p>
+
+                <ul>
+                    {% for email in emails %}
+                    <li>{{ email }}</li>
+                    {% endfor %}
+                </ul>
+
+                {% trans %}
+                If you don't receive an email, you can
+                <a href="{{ current_url }}">find accounts for another email address</a>.
+                {% endtrans %}
+
+                {% include 'zerver/dev_env_email_access_details.html' %}
+
+            </div>
+            {% else %}
+            <div class="find-account-form">
+                <p>
+                    {% if corporate_enabled %}
+                        {% trans %}Enter your email address to receive an email with the URLs for all the Zulip Cloud organizations in which you have active accounts.{% endtrans %}
+                    {% else %}
+                        {% trans %}Enter your email address to receive an email with the URLs for all the Zulip organizations on this server in which you have active accounts.{% endtrans %}
+                    {% endif %}
+                    {% trans %}If you have also forgotten your password, you can <a href="/help/change-your-password">reset it</a>.{% endtrans %}
+                </p>
+                <form class="form-inline" id="find_account" name="email_form"
+                  action="{{ current_url }}" method="post">
+                    {{ csrf_input }}
+                    <div class="input-box moving-label horizontal">
+                        <div class="inline-block relative">
+                            <input type="text" autofocus id="emails" name="emails" required />
+                            <label for="emails">{{ _('Email address') }}</label>
+                        </div>
+                        <button type="submit">{{ _('Find accounts') }}</button>
+                    </div>
+                    <div class="find-account-form-tip"><i>{{ form.emails.help_text }}</i></div>
+                </form>
+                <div id="errors"></div>
+                {% if form.emails.errors %}
+                    {% for error in form.emails.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

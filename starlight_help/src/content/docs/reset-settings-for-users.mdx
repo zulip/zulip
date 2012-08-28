@@ -1,0 +1,46 @@
+---
+title: Reset settings for users
+---
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import DefaultUserSettingsList from "../include/_DefaultUserSettingsList.mdx";
+
+import ResetIcon from "~icons/zulip-icon/reset";
+
+<AdminOnly />
+
+Organization administrators can reset preference and notification
+settings for users to the [organization
+default](/help/configure-default-new-user-settings). You can choose
+to reset settings for all users, or only those who have not
+personally configured the setting.
+
+Settings administrators can reset include:
+
+<DefaultUserSettingsList />
+
+Privacy settings can be [configured for new
+users](/help/configure-default-new-user-settings), but cannot be
+reset for existing users.
+
+## Reset settings for users
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/default-user-settings" />
+
+  1. Next to the setting you want to reset, click the **Reset users
+     to default** (<ResetIcon />) icon.
+
+  1. Select the desired option for **Users whose configuration should
+     be changed**.
+
+  1. Click **Confirm**.
+</FlattenedSteps>
+
+## Related articles
+
+* [Configure default settings for new users](/help/configure-default-new-user-settings)
+* [Customize settings for new users](/help/customize-settings-for-new-users)
+* [Manage a user](/help/manage-a-user)

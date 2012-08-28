@@ -1,0 +1,21 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "id": "6961d38729675009a437c3bf",
+            "type": "company",
+            "deleted": true
+        }
+    },
+    "links": {},
+    "id": "notif_e821a7f7-2785-47d6-8fdd-dd43095fe523",
+    "topic": "company.deleted",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768019067,
+    "created_at": 1768019066,
+    "self": null
+}

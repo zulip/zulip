@@ -1,0 +1,93 @@
+{
+  "_links": {
+    "self": "https://api2.frontapp.com/events/evt_28du6my"
+  },
+  "id": "evt_28du6my",
+  "type": "assign",
+  "emitted_at": 1518307894.354,
+  "conversation": {
+    "_links": {
+      "self": "https://api2.frontapp.com/conversations/cnv_keo696",
+      "related": {
+        "events": "https://api2.frontapp.com/conversations/cnv_keo696/events",
+        "followers": "https://api2.frontapp.com/conversations/cnv_keo696/followers",
+        "messages": "https://api2.frontapp.com/conversations/cnv_keo696/messages",
+        "comments": "https://api2.frontapp.com/conversations/cnv_keo696/comments",
+        "inboxes": "https://api2.frontapp.com/conversations/cnv_keo696/inboxes"
+      }
+    },
+    "id": "cnv_keo696",
+    "subject": "",
+    "status": "invisible",
+    "assignee": {
+      "_links": {
+        "self": "https://api2.frontapp.com/teammates/tea_40yq",
+        "related": {
+          "inboxes": "https://api2.frontapp.com/teammates/tea_40yq/inboxes",
+          "conversations": "https://api2.frontapp.com/teammates/tea_40yq/conversations"
+        }
+      },
+      "id": "tea_40yq",
+      "email": "leela@planet-express.com",
+      "username": "leela",
+      "first_name": "Leela",
+      "last_name": "Turanga",
+      "is_admin": true,
+      "is_available": true
+    },
+    "recipient": {
+      "_links": {
+        "related": {
+          "contact": "https://api2.frontapp.com/contacts/crd_62euuy"
+        }
+      },
+      "handle": "calculon@momsbot.com",
+      "role": "to"
+    },
+    "tags": [],
+    "last_message": {},
+    "created_at": 1518307874.673
+  },
+  "source": {
+    "_meta": {
+      "type": "teammate"
+    },
+    "data": {
+      "_links": {
+        "self": "https://api2.frontapp.com/teammates/tea_40yq",
+        "related": {
+          "inboxes": "https://api2.frontapp.com/teammates/tea_40yq/inboxes",
+          "conversations": "https://api2.frontapp.com/teammates/tea_40yq/conversations"
+        }
+      },
+      "id": "tea_40yq",
+      "email": "leela@planet-express.com",
+      "username": "leela",
+      "first_name": "Leela",
+      "last_name": "Turanga",
+      "is_admin": true,
+      "is_available": true
+    }
+  },
+  "target": {
+    "_meta": {
+      "type": "teammate"
+    },
+    "data": {
+      "_links": {
+        "self": "https://api2.frontapp.com/teammates/tea_40yq",
+        "related": {
+          "inboxes": "https://api2.frontapp.com/teammates/tea_40yq/inboxes",
+          "conversations": "https://api2.frontapp.com/teammates/tea_40yq/conversations"
+        }
+      },
+      "id": "tea_40yq",
+      "email": "leela@planet-express.com",
+      "username": "leela",
+      "first_name": "Leela",
+      "last_name": "Turanga",
+      "is_admin": true,
+      "is_available": true
+    }
+  }
+}

@@ -1,0 +1,298 @@
+import logging
+from datetime import datetime, timezone
+from typing import Any
+from urllib.parse import urljoin
+
+from django.http import HttpRequest, HttpResponse
+
+from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.response import json_success
+from zerver.lib.timestamp import datetime_to_global_time
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.models import UserProfile
+
+LOG_ENTRY_MESSAGE_TEMPLATE = """
+{severity_emoji} **New message event:** [{title}]({web_link})
+```quote
+**level:** {level}
+**timestamp:** {global_time}
+```
+"""
+
+EXCEPTION_MESSAGE_TEMPLATE = """
+{severity_emoji} **New exception:** [{title}]({web_link})
+```quote
+**level:** {level}
+**timestamp:** {global_time}
+**filename:** {filename}
+```
+"""
+
+EXCEPTION_MESSAGE_TEMPLATE_WITH_TRACEBACK = (
+    EXCEPTION_MESSAGE_TEMPLATE
+    + """
+Traceback:
+```{syntax_highlight_as}
+{pre_context}---> {context_line}{post_context}\
+```
+"""
+)
+# Because of the \n added at the end of each context element,
+# this will actually look better in the traceback.
+
+ISSUE_CREATED_MESSAGE_TEMPLATE = """
+{severity_emoji} **New issue created:** {title}
+```quote
+**level:** {level}
+**timestamp:** {global_time}
+**assignee:** {assignee}
+```
+"""
+
+ISSUE_ASSIGNED_MESSAGE_TEMPLATE = """
+Issue **{title}** has now been assigned to **{assignee}** by **{actor}**.
+"""
+
+ISSUE_RESOLVED_MESSAGE_TEMPLATE = """
+Issue **{title}** was marked as resolved by **{actor}**.
+"""
+
+ISSUE_IGNORED_MESSAGE_TEMPLATE = """
+Issue **{title}** was ignored by **{actor}**.
+"""
+
+# Maps "platform" name provided by Sentry to the Pygments lexer name
+syntax_highlight_as_map = {
+    "go": "go",
+    "java": "java",
+    "javascript": "javascript",
+    "node": "javascript",
+    "python": "python3",
+    "ruby": "ruby",
+}
+
+severity_emoji_map = {
+    "fatal": ":red_circle:",
+    "error": ":orange_circle:",
+    "warning": ":yellow_circle:",
+    "log": ":white_circle:",
+    "info": ":blue_circle:",
+    "debug": ":purple_circle:",
+}
+
+
+def get_global_time(dt_str: str) -> str:
+    dt = datetime.fromisoformat(dt_str)
+    return datetime_to_global_time(dt)
+
+
+def is_sample_event(event: dict[str, Any]) -> bool:
+    # This is just a heuristic to detect the sample event, this should
+    # not be used for making important behavior decisions.
+    title = event.get("title", "")
+    if title == "This is an example Python exception":
+        return True
+    return False
+
+
+def convert_lines_to_traceback_string(lines: list[str] | None) -> str:
+    traceback = ""
+    if lines is not None:
+        for line in lines:
+            if line == "":
+                traceback += "\n"
+            else:
+                traceback += f"     {line}\n"
+    return traceback
+
+
+def handle_exception_or_log_entry_payloads(event: dict[str, Any]) -> tuple[str, str]:
+    """
+    Handles `event_alert` and `error` event types. They can both be
+    triggered by either an exception or a log entry.
+    """
+
+    topic_name = event["title"]
+    platform_name = event["platform"]
+    syntax_highlight_as = syntax_highlight_as_map.get(platform_name, "")
+    if syntax_highlight_as == "":  # nocoverage
+        logging.info("Unknown Sentry platform: %s", platform_name)
+
+    severity_emoji = severity_emoji_map.get(event["level"], "")
+    # We shouldn't support the officially deprecated Raven series of
+    # Python SDKs.
+    if platform_name == "python" and int(event["version"]) < 7 and not is_sample_event(event):
+        # The sample event is still an old "version" -- accept it even
+        # though we don't accept events from the old Python SDK.
+        raise UnsupportedWebhookEventTypeError("Raven SDK")
+    context = {
+        "title": topic_name,
+        "severity_emoji": severity_emoji,
+        "level": event["level"],
+        "web_link": event["web_url"],
+        "global_time": get_global_time(event["datetime"]),
+    }
+
+    if "exception" in event:
+        # The event was triggered by a sentry.capture_exception() call
+        # (in the Python Sentry SDK) or something similar.
+
+        filename = event["metadata"].get("filename", None)
+
+        stacktrace = None
+        for value in reversed(event["exception"]["values"]):
+            if "stacktrace" in value:
+                stacktrace = value["stacktrace"]
+                break
+
+        if stacktrace and filename:
+            exception_frame = None
+            for frame in reversed(stacktrace["frames"]):
+                if frame.get("filename", None) == filename:
+                    exception_frame = frame
+                    break
+
+            if (
+                exception_frame
+                and "context_line" in exception_frame
+                and exception_frame["context_line"] is not None
+            ):
+                pre_context = convert_lines_to_traceback_string(
+                    exception_frame.get("pre_context", None)
+                )
+                context_line = exception_frame["context_line"] + "\n"
+                post_context = convert_lines_to_traceback_string(
+                    exception_frame.get("post_context", None)
+                )
+
+                context.update(
+                    syntax_highlight_as=syntax_highlight_as,
+                    filename=filename,
+                    pre_context=pre_context,
+                    context_line=context_line,
+                    post_context=post_context,
+                )
+
+                body = EXCEPTION_MESSAGE_TEMPLATE_WITH_TRACEBACK.format(**context).strip()
+                return (topic_name, body)
+
+        context.update(filename=filename)  # nocoverage
+        body = EXCEPTION_MESSAGE_TEMPLATE.format(**context).strip()  # nocoverage
+        return (topic_name, body)  # nocoverage
+
+    elif "logentry" in event:
+        # The event was triggered by a sentry.capture_message() call
+        # (in the Python Sentry SDK) or something similar.
+        body = LOG_ENTRY_MESSAGE_TEMPLATE.format(**context).strip()
+
+    else:
+        raise UnsupportedWebhookEventTypeError("unknown-event type")
+
+    return (topic_name, body)
+
+
+def handle_issue_payload(
+    action: str, issue: dict[str, Any], actor: dict[str, Any]
+) -> tuple[str, str]:
+    topic_name = issue["title"]
+    global_time = get_global_time(issue["lastSeen"])
+    severity_emoji = severity_emoji_map.get(issue["level"], "")
+
+    if issue["assignedTo"]:
+        if issue["assignedTo"]["type"] == "team":
+            assignee = "team {}".format(issue["assignedTo"]["name"])
+        else:
+            assignee = issue["assignedTo"]["name"]
+    else:
+        assignee = "No one"
+
+    if action == "created":
+        context = {
+            "title": topic_name,
+            "severity_emoji": severity_emoji,
+            "level": issue["level"],
+            "global_time": global_time,
+            "assignee": assignee,
+        }
+        body = ISSUE_CREATED_MESSAGE_TEMPLATE.format(**context).strip()
+
+    elif action == "resolved":
+        context = {
+            "title": topic_name,
+            "actor": actor["name"],
+        }
+        body = ISSUE_RESOLVED_MESSAGE_TEMPLATE.format(**context)
+
+    elif action == "assigned":
+        context = {
+            "title": topic_name,
+            "assignee": assignee,
+            "actor": actor["name"],
+        }
+        body = ISSUE_ASSIGNED_MESSAGE_TEMPLATE.format(**context)
+
+    elif action == "ignored":
+        context = {
+            "title": topic_name,
+            "actor": actor["name"],
+        }
+        body = ISSUE_IGNORED_MESSAGE_TEMPLATE.format(**context)
+
+    else:
+        raise UnsupportedWebhookEventTypeError(f"{action} action")
+
+    return (topic_name, body)
+
+
+def transform_webhook_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    """Attempt to use webhook payload for the notification.
+
+    When the integration is configured as a webhook, instead of being added as
+    an internal integration, the payload is slightly different, but has all the
+    required information for sending a notification. We transform this payload to
+    look like the payload from a "properly configured" integration.
+    """
+    event = payload.get("event", {})
+    event_id = event["event_id"]
+    event_path = f"events/{event_id}/"
+    event["web_url"] = urljoin(payload["url"], event_path)
+    timestamp = event.get("timestamp", event["received"])
+    event["datetime"] = datetime.fromtimestamp(timestamp, timezone.utc).isoformat(
+        timespec="microseconds"
+    )
+    return payload
+
+
+ALL_EVENT_TYPES = ["event_alert", "issue", "error"]
+
+
+@webhook_view("Sentry", all_event_types=ALL_EVENT_TYPES)
+@typed_endpoint
+def api_sentry_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    payload: JsonBodyPayload[dict[str, Any]],
+) -> HttpResponse:
+    # This webhook integration uses the payload structure instead of the
+    # Sentry-Hook-Resource header to determine the type of event.
+    # TODO: Investigate switching to use headers for event types.
+    data = payload.get("data", None) or transform_webhook_payload(payload)
+    event_type = None
+    match data:
+        case {"issue": issue_data}:
+            event_type = "issue"
+            topic_name, body = handle_issue_payload(payload["action"], issue_data, payload["actor"])
+        case {"event": event_data}:
+            event_type = "event_alert"
+            topic_name, body = handle_exception_or_log_entry_payloads(event_data)
+        case {"error": event_data}:
+            event_type = "error"
+            topic_name, body = handle_exception_or_log_entry_payloads(event_data)
+        case _:  # nocoverage
+            raise UnsupportedWebhookEventTypeError(str(list(data.keys())))
+
+    check_send_webhook_message(request, user_profile, topic_name, body, event_type)
+    return json_success(request)

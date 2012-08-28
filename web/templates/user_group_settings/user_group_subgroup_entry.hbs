@@ -1,0 +1,11 @@
+<tr data-subgroup-id="{{group_id}}" class="hidden-remove-button-row">
+    <td class="subgroup-name panel_user_list">
+        {{> ../user_group_display_only_pill .}}
+    </td>
+    <td class="empty-email-col-for-user-group"></td>
+    {{#if can_remove_members}}
+    <td class="remove remove-button-wrapper remove-button-column">
+        {{> ../components/icon_button icon="close" custom_classes="hidden-remove-button remove-subgroup-button tippy-zulip-delayed-tooltip" intent="danger" aria-label=(t "Remove") data-tippy-content=(t "Remove") }}
+    </td>
+    {{/if}}
+</tr>

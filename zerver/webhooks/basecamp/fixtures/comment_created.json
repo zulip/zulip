@@ -1,0 +1,69 @@
+{
+  "id": 657037928,
+  "kind": "comment_created",
+  "details": {
+    "notified_recipient_ids": []
+  },
+  "created_at": "2017-03-13T08:31:54.661+01:00",
+  "recording": {
+    "id": 427058780,
+    "status": "active",
+    "created_at": "2017-03-13T08:31:54.647+01:00",
+    "updated_at": "2017-03-13T08:31:54.647+01:00",
+    "type": "Comment",
+    "url": "https://3.basecampapi.com/3688623/buckets/2957043/comments/427058780.json",
+    "app_url": "https://3.basecamp.com/3688623/buckets/2957043/todos/427055624#__recording_427058780",
+    "parent": {
+      "id": 427055624,
+      "title": "New task",
+      "type": "Todo",
+      "url": "https://3.basecampapi.com/3688623/buckets/2957043/todos/427055624.json",
+      "app_url": "https://3.basecamp.com/3688623/buckets/2957043/todos/427055624"
+    },
+    "bucket": {
+      "id": 2957043,
+      "name": "Zulip HQ",
+      "type": "Project"
+    },
+    "creator": {
+      "id": 10695738,
+      "attachable_sgid": "BAh7CEkiCGdpZAY6BkVUSSIpZ2lkOi8vYmMzL1BlcnNvbi8xMDY5NTczOD9leHBpcmVzX2luBjsAVEkiDHB1cnBvc2UGOwBUSSIPYXR0YWNoYWJsZQY7AFRJIg9leHBpcmVzX2F0BjsAVDA=--eb8f230d022d5e8ab202e2f62a86f767219c1c83",
+      "name": "Tomasz",
+      "email_address": "tomaszkolek0@gmail.com",
+      "personable_type": "User",
+      "title": null,
+      "bio": null,
+      "created_at": "2017-03-07T07:21:08.088+01:00",
+      "updated_at": "2017-03-07T07:21:27.633+01:00",
+      "admin": true,
+      "owner": true,
+      "time_zone": "Europe/Amsterdam",
+      "avatar_url": "https://3.basecamp-static.com/3688623/people/BAhpAzo0ow==--9f2bd7e6c043c8b45d6afb82efc1a897fbbee92c/avatar-64-x4",
+      "company": {
+        "id": 796227,
+        "name": "Zulip"
+      }
+    },
+    "title": "Re: New task",
+    "content": "\u003cdiv\u003eComment\u003c/div\u003e"
+  },
+  "creator": {
+    "id": 10695738,
+    "attachable_sgid": "BAh7CEkiCGdpZAY6BkVUSSIpZ2lkOi8vYmMzL1BlcnNvbi8xMDY5NTczOD9leHBpcmVzX2luBjsAVEkiDHB1cnBvc2UGOwBUSSIPYXR0YWNoYWJsZQY7AFRJIg9leHBpcmVzX2F0BjsAVDA=--eb8f230d022d5e8ab202e2f62a86f767219c1c83",
+    "name": "Tomasz",
+    "email_address": "tomaszkolek0@gmail.com",
+    "personable_type": "User",
+    "title": null,
+    "bio": null,
+    "created_at": "2017-03-07T07:21:08.088+01:00",
+    "updated_at": "2017-03-07T07:21:27.633+01:00",
+    "admin": true,
+    "owner": true,
+    "time_zone": "Europe/Amsterdam",
+    "avatar_url": "https://3.basecamp-static.com/3688623/people/BAhpAzo0ow==--9f2bd7e6c043c8b45d6afb82efc1a897fbbee92c/avatar-64-x4",
+    "company": {
+      "id": 796227,
+      "name": "Zulip"
+    }
+  }
+}

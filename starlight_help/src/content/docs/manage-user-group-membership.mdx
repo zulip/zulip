@@ -1,0 +1,38 @@
+---
+title: Manage a user's group membership
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import AddUsersToAGroup from "../include/_AddUsersToAGroup.mdx";
+import DependsOnPermissions from "../include/_DependsOnPermissions.mdx";
+import RemoveUsersFromAGroup from "../include/_RemoveUsersFromAGroup.mdx";
+import RightSidebarViewProfile from "../include/_RightSidebarViewProfile.mdx";
+
+## View a user's group membership
+
+<FlattenedSteps>
+  <RightSidebarViewProfile />
+
+  1. Select the **User groups** tab.
+</FlattenedSteps>
+
+## Add a user to a group
+
+<AddUsersToAGroup />
+
+## Remove user or group from a group
+
+<RemoveUsersFromAGroup />
+
+## Related articles
+
+* [User groups](/help/user-groups)
+* [Manage user groups](/help/user-groups)
+* [Mention a user or group](/help/mention-a-user-or-group)
+* [Create user groups](/help/create-user-groups)
+* [User roles](/help/user-roles)
+
+[configure-invites]: /help/configure-who-can-invite-to-channels

@@ -1,0 +1,66 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block title %}
+<title>{{ _("Accept the Terms of Service") }} | Zulip</title>
+{% endblock %}
+
+{#
+Allow the user to accept a TOS, creating an email record of that fact.
+Users only hit this page if they are coming from a migration or other update of the TOS;
+the registration flow has its own (nearly identical) copy of the fields below in register.html.
+#}
+
+{% block portico_content %}
+
+<div class="account-accept-terms-page flex full-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            <h1 class="get-started">{{ _("Welcome to Zulip") }}</h1>
+        </div>
+
+        <div class="white-box">
+            <form method="post" id="registration" action="{{ url('accept_terms') }}">
+                {{ csrf_input }}
+                <div id="registration-email">
+                    <label for="id_email">{{ _("Email") }}</label>
+                    <div class="controls fakecontrol">{{ email }}</div>
+                    {% if first_time_login %}
+                    {% include 'zerver/create_user/new_user_email_address_visibility.html' %}
+                    {% endif %}
+                </div>
+
+                {% if first_time_terms_of_service_message_template %}
+                {% include first_time_terms_of_service_message_template %}
+                {% elif terms_of_service_message %}
+                <div class="description">
+                    <p>{{ terms_of_service_message |safe }}</p>
+                </div>
+                {% endif %}
+
+                {% if terms_of_service %}
+                {% include 'zerver/create_user/terms_of_service_form_field.html' %}
+                {% if first_time_terms_of_service_message_template %}
+                <div class="input-group">
+                    <label for="id_enable_marketing_emails_first_login" class="inline-block checkbox marketing_emails_checkbox">
+                        <input id="id_enable_marketing_emails_first_login" type="checkbox" name="enable_marketing_emails"
+                          checked="checked" />
+                        <span class="rendered-checkbox"></span>
+                        {% trans %}Subscribe me to Zulip's low-traffic newsletter (a few emails a year).{% endtrans %}
+                    </label>
+                </div>
+                {% endif %}
+                {% endif %}
+                <div class="controls">
+                    <button id="accept_tos_button" type="submit">{{ _('Continue') }}</button>
+                    <input type="hidden" name="next" value="{{ next }}" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% if first_time_login %}
+{% include 'zerver/create_user/change_email_address_visibility_modal.html' %}
+{% endif %}
+
+{% endblock %}

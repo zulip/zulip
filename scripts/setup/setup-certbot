@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+set -e
+
+usage() {
+    cat <<EOF >&2
+Usage: $0 --email=admin@example.com [--method={webroot|standalone}] \
+hostname.example.com [another.example.com]
+EOF
+    exit 1
+}
+
+if [ "$EUID" -ne 0 ]; then
+    echo "Error: This script must be run as root" >&2
+    exit 1
+fi
+
+method=webroot
+args="$(getopt -o '' --long help,email:,method:,agree-tos -n "$0" -- "$@")"
+eval "set -- $args"
+agree_tos=()
+while true; do
+    case "$1" in
+        --email)
+            EMAIL="$2"
+            shift
+            shift
+            ;;
+        --method)
+            method="$2"
+            shift
+            shift
+            ;;
+        --agree-tos)
+            agree_tos=(--agree-tos)
+            shift
+            ;;
+        --help)
+            show_help=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+# Parse the remaining arguments as Subject Alternative Names to pass to certbot
+HOSTNAMES=()
+for arg; do
+    HOSTNAMES+=(-d "$arg")
+done
+DOMAIN=$1
+
+if [ -n "$show_help" ]; then
+    usage
+fi
+
+if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
+    usage
+fi
+
+case "$method" in
+    standalone)
+        method_args=(--standalone --no-directory-hooks)
+        ;;
+    webroot)
+        method_args=(--webroot '--webroot-path=/var/lib/zulip/certbot-webroot/')
+        ;;
+    *)
+        usage
+        ;;
+esac
+
+# If we aren't being run interactively, default to keeping the
+# existing certificate (rather than burning through a renewal)
+# If run interactively, certbot will prompt.
+default_keep=()
+if [ ! -t 0 ]; then
+    default_keep=(--keep-until-expiring)
+fi
+
+# We need to know _which_ domain is Zulip's, in the symlink deploy
+# hook, so we pass this down
+export ZULIP_DOMAIN="$DOMAIN"
+
+# Certbot does not run deploy hooks on new certificates
+# (certbot/certbot#9978) so we will need to fake it if so
+if [ -d "/etc/letsencrypt/live/$DOMAIN/" ]; then
+    needs_hooks=0
+else
+    needs_hooks=1
+fi
+
+certbot certonly "${method_args[@]}" \
+    "${HOSTNAMES[@]}" -m "$EMAIL" \
+    "${agree_tos[@]}" \
+    "${default_keep[@]}" \
+    --no-eff-email
+
+# "certbot certonly" before version 3.2.0 does not run deploy hooks,
+# so we fake running them.
+if [ "$needs_hooks" = "1" ]; then
+    export RENEWED_DOMAINS="$*"
+    if [ "$method" == "webroot" ]; then
+        for deploy_hook in /etc/letsencrypt/renewal-hooks/deploy/*; do
+            "$deploy_hook"
+        done
+    fi
+fi
+echo "Certbot SSL certificate configuration succeeded."

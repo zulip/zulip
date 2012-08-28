@@ -1,0 +1,455 @@
+import logging
+import time
+from abc import ABC, abstractmethod
+from datetime import timedelta
+from ipaddress import IPv6Network, ip_network
+from pathlib import Path
+from typing import Optional
+
+import orjson
+import redis.commands.core
+from django.conf import settings
+from django.http import HttpRequest
+from django.utils.timesince import timeuntil
+from django.utils.timezone import now as timezone_now
+from django.utils.translation import ngettext
+from pybreaker import CircuitBreaker, CircuitBreakerError
+from typing_extensions import override
+
+from zerver.lib import redis_utils
+from zerver.lib.cache import cache_with_key
+from zerver.lib.exceptions import RateLimitedError
+from zerver.lib.redis_utils import get_redis_client
+from zerver.models import UserProfile
+
+# Rate limiting using the GCRA (Generic Cell Rate Algorithm), a leaky-bucket
+# variant that stores one TAT (Theoretical Arrival Time) per rule in Redis.
+
+client = get_redis_client()
+
+logger = logging.getLogger(__name__)
+
+
+class RateLimitedObject(ABC):
+    def __init__(self, backend: Optional["type[RateLimiterBackend]"] = None) -> None:
+        if backend is not None:
+            self.backend: type[RateLimiterBackend] = backend
+        else:
+            self.backend = RedisRateLimiterBackend
+
+    def _rate_limit_entity(self) -> tuple[bool, float, int, float]:
+        # Returns (ratelimited, secs_to_freedom, calls_remaining, secs_to_reset)
+        return self.backend.rate_limit_entity(
+            self.key(), self.get_rules(), self.max_api_calls(), self.max_api_window()
+        )
+
+    def rate_limit(self) -> tuple[bool, float]:
+        # Returns (ratelimited, secs_to_freedom)
+        ratelimited, secs_to_freedom, _, _ = self._rate_limit_entity()
+        return ratelimited, secs_to_freedom
+
+    def rate_limit_request(self, request: HttpRequest) -> None:
+        from zerver.lib.request import RequestNotes
+
+        ratelimited, secs_to_freedom, calls_remaining, secs_to_reset = self._rate_limit_entity()
+        request_notes = RequestNotes.get_notes(request)
+
+        request_notes.ratelimits_applied.append(
+            RateLimitResult(
+                entity=self,
+                secs_to_freedom=secs_to_freedom if ratelimited else secs_to_reset,
+                remaining=0 if ratelimited else calls_remaining,
+                over_limit=ratelimited,
+            )
+        )
+        # Abort this request if the user is over their rate limits
+        if ratelimited:
+            # Pass information about what kind of entity got limited in the exception:
+            raise RateLimitedError(secs_to_freedom)
+
+    def block_access(self, seconds: int) -> None:
+        """Manually blocks an entity for the desired number of seconds"""
+        self.backend.block_access(self.key(), seconds)
+
+    def unblock_access(self) -> None:
+        self.backend.unblock_access(self.key())
+
+    def clear_history(self) -> None:
+        self.backend.clear_history(self.key())
+
+    def max_api_calls(self) -> int:
+        """Returns the API rate limit for the highest limit"""
+        return self.get_rules()[-1][1]
+
+    def max_api_window(self) -> int:
+        """Returns the API time window for the highest limit"""
+        return self.get_rules()[-1][0]
+
+    def api_calls_left(self) -> tuple[int, float]:
+        """Returns how many API calls in this range this client has, as well as when
+        the rate-limit will be reset to 0"""
+        max_window = self.max_api_window()
+        max_calls = self.max_api_calls()
+        return self.backend.get_api_calls_left(self.key(), max_window, max_calls)
+
+    def get_rules(self) -> list[tuple[int, int]]:
+        """
+        This is a simple wrapper meant to protect against having to deal with
+        an empty list of rules, as it would require fiddling with that special case
+        all around this system. "9999 max request per seconds" should be a good proxy
+        for "no rules".
+        """
+        rules_list = self.rules()
+        return rules_list or [(1, 9999)]
+
+    @abstractmethod
+    def key(self) -> str:
+        pass
+
+    @abstractmethod
+    def rules(self) -> list[tuple[int, int]]:
+        pass
+
+
+class RateLimitedUser(RateLimitedObject):
+    def __init__(self, user: UserProfile, domain: str = "api_by_user") -> None:
+        self.user_id = user.id
+        self.rate_limits = user.rate_limits
+        self.domain = domain
+        super().__init__()
+
+    @override
+    def key(self) -> str:
+        return f"{type(self).__name__}:{self.user_id}:{self.domain}"
+
+    @override
+    def rules(self) -> list[tuple[int, int]]:
+        # user.rate_limits are general limits, applicable to the domain 'api_by_user'
+        if self.rate_limits != "" and self.domain == "api_by_user":
+            result: list[tuple[int, int]] = []
+            for limit in self.rate_limits.split(","):
+                (seconds, requests) = limit.split(":", 2)
+                result.append((int(seconds), int(requests)))
+            return result
+        return settings.RATE_LIMITING_RULES[self.domain]
+
+
+class RateLimitedIPAddr(RateLimitedObject):
+    def __init__(
+        self, ip_addr: str, domain: str = "api_by_ip", ipv6_network_prefix: int = 64
+    ) -> None:
+        self.ip_addr = ip_addr
+        self.ipv6_network_prefix = ipv6_network_prefix
+        self.domain = domain
+        super().__init__()
+
+    @override
+    def key(self) -> str:
+        if self.ip_addr != "tor-exit-node" and isinstance(
+            network := ip_network(self.ip_addr), IPv6Network
+        ):
+            # For IPv6 we use the network portion of that IPv6.
+            # This essentially tells us which bucket should this IPv6 belong to.
+            # For example:
+            # The network portion of 2001:0db8:ce1:12::8a2e:0370
+            # is 2001:db8:ce1:12::/64
+            ip_addr_key = str(network.supernet(new_prefix=self.ipv6_network_prefix))
+        else:
+            ip_addr_key = self.ip_addr
+
+        # The angle brackets are important since an IPv6 address contains :
+        return f"{type(self).__name__}:<{ip_addr_key}>:{self.domain}"
+
+    @override
+    def rules(self) -> list[tuple[int, int]]:
+        return settings.RATE_LIMITING_RULES[self.domain]
+
+
+class RateLimitedEndpoint(RateLimitedObject):
+    def __init__(self, endpoint_name: str) -> None:
+        self.endpoint_name = endpoint_name
+        super().__init__()
+
+    @override
+    def key(self) -> str:
+        return f"{type(self).__name__}:{self.endpoint_name}"
+
+    @override
+    def rules(self) -> list[tuple[int, int]]:
+        return settings.ABSOLUTE_USAGE_LIMITS_BY_ENDPOINT[self.endpoint_name]
+
+
+class RateLimiterBackend(ABC):
+    @classmethod
+    @abstractmethod
+    def block_access(cls, entity_key: str, seconds: int) -> None:
+        """Manually blocks an entity for the desired number of seconds"""
+
+    @classmethod
+    @abstractmethod
+    def unblock_access(cls, entity_key: str) -> None:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def clear_history(cls, entity_key: str) -> None:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def get_api_calls_left(
+        cls, entity_key: str, range_seconds: int, max_calls: int
+    ) -> tuple[int, float]:
+        pass
+
+    @classmethod
+    @abstractmethod
+    def rate_limit_entity(
+        cls, entity_key: str, rules: list[tuple[int, int]], max_api_calls: int, max_api_window: int
+    ) -> tuple[bool, float, int, float]:
+        # Returns (ratelimited, secs_to_freedom, calls_remaining, secs_to_reset)
+        pass
+
+
+class RedisRateLimiterBackend(RateLimiterBackend):
+    _script: redis.commands.core.Script | None = None
+
+    # When True, pass time.time() to the Lua script instead of using
+    # Redis TIME.  This lets tests control the rate-limiting clock via
+    # mock.patch("time.time") or time_machine without wall-clock sleeps.
+    _testing_clock: bool = settings.TEST_SUITE
+
+    @classmethod
+    def get_keys(cls, entity_key: str) -> tuple[str, str]:
+        prefix = f"{redis_utils.REDIS_KEY_PREFIX}ratelimit:{entity_key}"
+        return f"{prefix}:gcra", f"{prefix}:block"
+
+    @classmethod
+    def _get_script(cls) -> redis.commands.core.Script:
+        if cls._script is None:
+            script_text = Path(__file__).with_suffix(".lua").read_text()
+            cls._script = client.register_script(script_text)
+        return cls._script
+
+    @classmethod
+    @override
+    def block_access(cls, entity_key: str, seconds: int) -> None:
+        """Manually blocks an entity for the desired number of seconds"""
+        _, blocking_key = cls.get_keys(entity_key)
+        with client.pipeline() as pipe:
+            pipe.set(blocking_key, 1)
+            pipe.expire(blocking_key, seconds)
+            pipe.execute()
+
+    @classmethod
+    @override
+    def unblock_access(cls, entity_key: str) -> None:
+        _, blocking_key = cls.get_keys(entity_key)
+        client.delete(blocking_key)
+
+    @classmethod
+    @override
+    def clear_history(cls, entity_key: str) -> None:
+        for key in cls.get_keys(entity_key):
+            client.delete(key)
+
+    @classmethod
+    @override
+    def get_api_calls_left(
+        cls, entity_key: str, range_seconds: int, max_calls: int
+    ) -> tuple[int, float]:
+        gcra_key, _ = cls.get_keys(entity_key)
+        if cls._testing_clock:
+            now = time.time()
+        else:  # nocoverage
+            redis_time = client.time()
+            now = redis_time[0] + redis_time[1] / 1_000_000
+        field = f"{range_seconds}:{max_calls}"
+        stored_tat = client.hget(gcra_key, field)
+        if stored_tat is None:
+            return max_calls, 0
+
+        tat = float(stored_tat)
+        calls_remaining = max(0, int((now + range_seconds - tat) * max_calls // range_seconds))
+        secs_to_reset = tat - now
+        return calls_remaining, secs_to_reset
+
+    @classmethod
+    @override
+    def rate_limit_entity(
+        cls, entity_key: str, rules: list[tuple[int, int]], max_api_calls: int, max_api_window: int
+    ) -> tuple[bool, float, int, float]:
+        assert rules
+        gcra_key, block_key = cls.get_keys(entity_key)
+
+        # Build args: num_rules, w1, l1, w2, l2, ...[, now]
+        # The Lua script uses Redis TIME internally for clock
+        # consistency; tests may pass a trailing timestamp override.
+        args: list[float | int] = [len(rules)]
+        for window, limit in rules:
+            args.append(window)
+            args.append(limit)
+        if cls._testing_clock:
+            args.append(time.time())
+
+        result = cls._get_script()(keys=[block_key, gcra_key], args=args)
+
+        ratelimited = result[0] == b"1"
+        secs_to_freedom = float(result[1])
+        calls_remaining = int(result[2])
+        secs_to_reset = float(result[3])
+
+        return ratelimited, secs_to_freedom, calls_remaining, secs_to_reset
+
+
+class RateLimitResult:
+    def __init__(
+        self, entity: RateLimitedObject, secs_to_freedom: float, over_limit: bool, remaining: int
+    ) -> None:
+        if over_limit:
+            assert not remaining
+
+        self.entity = entity
+        self.secs_to_freedom = secs_to_freedom
+        self.over_limit = over_limit
+        self.remaining = remaining
+
+
+class RateLimitedSpectatorAttachmentAccessByFile(RateLimitedObject):
+    def __init__(self, path_id: str) -> None:
+        self.path_id = path_id
+        super().__init__()
+
+    @override
+    def key(self) -> str:
+        return f"{type(self).__name__}:{self.path_id}"
+
+    @override
+    def rules(self) -> list[tuple[int, int]]:
+        return settings.RATE_LIMITING_RULES["spectator_attachment_access_by_file"]
+
+
+def rate_limit_spectator_attachment_access_by_file(path_id: str) -> None:
+    ratelimited, _ = RateLimitedSpectatorAttachmentAccessByFile(path_id).rate_limit()
+    if ratelimited:
+        raise RateLimitedError
+
+
+def is_local_addr(addr: str) -> bool:
+    return addr in ("127.0.0.1", "::1")
+
+
+get_tor_ips_breaker = CircuitBreaker(fail_max=2, reset_timeout=60 * 10)
+
+
+@cache_with_key(lambda: "tor_ip_addresses:", timeout=60 * 60)
+@get_tor_ips_breaker
+def get_tor_ips() -> set[str]:
+    if not settings.RATE_LIMIT_TOR_TOGETHER:
+        return set()
+
+    # Cron job in /etc/cron.d/fetch-tor-exit-nodes fetches this
+    # hourly; we cache it in memcached to prevent going to disk on
+    # every unauth'd request.  In case of failures to read, we
+    # circuit-break so 2 failures cause a 10-minute backoff.
+
+    with open(settings.TOR_EXIT_NODE_FILE_PATH, "rb") as f:
+        exit_node_list = orjson.loads(f.read())
+
+    # This should always be non-empty; if it's empty, assume something
+    # went wrong with writing and treat it as a non-existent file.
+    # Circuit-breaking will ensure that we back off on re-reading the
+    # file.
+    if len(exit_node_list) == 0:
+        raise OSError("File is empty")
+
+    return set(exit_node_list)
+
+
+def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
+    from zerver.lib.request import RequestNotes
+
+    # Don't rate limit requests from Django that come from our own servers,
+    # and don't rate-limit dev instances
+    client = RequestNotes.get_notes(request).client
+    return (client is not None and client.name.lower() == "internal") and (
+        is_local_addr(request.META["REMOTE_ADDR"]) or settings.DEBUG_RATE_LIMITING
+    )
+
+
+def rate_limit_user(request: HttpRequest, user: UserProfile, domain: str) -> None:
+    """Returns whether or not a user was rate limited. Will raise a RateLimitedError exception
+    if the user has been rate limited, otherwise returns and modifies request to contain
+    the rate limit information"""
+    if not should_rate_limit(request):
+        return
+
+    RateLimitedUser(user, domain=domain).rate_limit_request(request)
+
+
+def rate_limit_request_by_ip(request: HttpRequest, domain: str) -> None:
+    if not should_rate_limit(request):
+        return
+
+    # REMOTE_ADDR is set by SetRemoteAddrFromRealIpHeader in conjunction
+    # with the nginx configuration to guarantee this to be *the* correct
+    # IP address to use - without worrying we'll grab the IP of a proxy.
+    ip_addr = request.META["REMOTE_ADDR"]
+    assert ip_addr
+
+    try:
+        # We lump all TOR exit nodes into one bucket; this prevents
+        # abuse from TOR, while still allowing some access to these
+        # endpoints for legitimate users.  Checking for local
+        # addresses is a shortcut somewhat for ease of testing without
+        # mocking the TOR endpoint in every test.
+        if is_local_addr(ip_addr):
+            pass
+        elif ip_addr in get_tor_ips():
+            ip_addr = "tor-exit-node"
+    except (OSError, CircuitBreakerError) as err:
+        # In the event that we can't get an updated list of TOR exit
+        # nodes, assume the IP is _not_ one, and leave it unchanged.
+        # We log a warning so that this endpoint being taken out of
+        # service doesn't silently remove this functionality.
+        logger.warning("Failed to fetch TOR exit node list: %s", err)
+    RateLimitedIPAddr(ip_addr, domain=domain).rate_limit_request(request)
+
+
+def rate_limit_endpoint_absolute(endpoint_name: str) -> None:
+    ratelimited, secs_to_freedom = RateLimitedEndpoint(endpoint_name).rate_limit()
+    if ratelimited:
+        raise RateLimitedError(secs_to_freedom)
+
+
+def should_rate_limit(request: HttpRequest) -> bool:
+    if not settings.RATE_LIMITING:
+        return False
+
+    if client_is_exempt_from_rate_limiting(request):
+        return False
+
+    return True
+
+
+def readable_expiry_string_for_html(seconds_till_expiry: int) -> str:
+    now = timezone_now()
+    expires_in_datetime = now + timedelta(seconds=seconds_till_expiry)
+
+    if seconds_till_expiry <= 60:
+        # timeuntil truncates this case to "0 minutes"
+        #
+        # We use \xa0 as the whitespace to be consistent with
+        # timeuntil.
+        # If you want the regular " ", see readable_expiry_string_for_plaintext.
+        return ngettext(
+            "{secs}{nbsp}second",
+            "{secs}{nbsp}seconds",
+            seconds_till_expiry,
+        ).format(secs=seconds_till_expiry, nbsp="\xa0")
+
+    return timeuntil(expires_in_datetime)
+
+
+def readable_expiry_string_for_plaintext(seconds_till_expiry: int) -> str:
+    return readable_expiry_string_for_html(seconds_till_expiry).replace("\xa0", " ")

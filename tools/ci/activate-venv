@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+ZULIP_PATH="$(dirname "${BASH_SOURCE[0]}")/../.."
+source "$ZULIP_PATH/.venv/bin/activate"
+source "$ZULIP_PATH"/tools/python-warnings.bash
+echo "Using $VIRTUAL_ENV"

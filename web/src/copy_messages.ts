@@ -1,0 +1,713 @@
+// Because this logic is heavily focused around managing browser quirks,
+// this module is currently tested manually and via
+// by web/e2e-tests/copy_messages.test.ts, not with node tests.
+import $ from "jquery";
+import assert from "minimalistic-assert";
+
+import render_copied_recipient_header from "../templates/copied_recipient_header.hbs";
+
+import * as blueslip from "./blueslip.ts";
+import * as message_lists from "./message_lists.ts";
+import * as rows from "./rows.ts";
+import {the} from "./util.ts";
+
+type RangeContainer = "start" | "end";
+
+function find_boundary_tr(
+    $initial_tr: JQuery,
+    iterate_row: ($tr: JQuery) => JQuery,
+): [number, boolean] | undefined {
+    let j;
+    let skip_same_td_check = false;
+    let $tr = $initial_tr;
+
+    // If the selection boundary is somewhere that does not have a
+    // parent tr, we should let the browser handle the copy-paste
+    // entirely on its own
+    if ($tr.length === 0) {
+        return undefined;
+    }
+
+    // If the selection boundary is on a table row that does not have an
+    // associated message id (because the user clicked between messages),
+    // then scan downwards until we hit a table row with a message id.
+    // To ensure we can't enter an infinite loop, bail out (and let the
+    // browser handle the copy-paste on its own) if we don't hit what we
+    // are looking for within 10 rows.
+    for (j = 0; !$tr.is(".message_row") && j < 10; j += 1) {
+        $tr = iterate_row($tr);
+    }
+    if (j === 10) {
+        return undefined;
+    } else if (j !== 0) {
+        // If we updated tr, then we are not dealing with a selection
+        // that is entirely within one td, and we can skip the same td
+        // check (In fact, we need to because it won't work correctly
+        // in this case)
+        skip_same_td_check = true;
+    }
+    return [rows.id($tr), skip_same_td_check];
+}
+
+function construct_recipient_header($message_row: JQuery): JQuery {
+    const $header = rows.get_message_recipient_header($message_row);
+    const date_text = $header.find(".recipient_row_date").text().trim();
+
+    const $header_without_date = $header.clone();
+    $header_without_date.find(".recipient_row_date").remove();
+    const recipient_text = $header_without_date.text().replaceAll(/\s+/g, " ").trim();
+
+    return $(render_copied_recipient_header({recipient_text, date_text}));
+}
+
+// Returns the selected `.message_content`s in the current range.
+function get_selected_message_content_elements(): NodeListOf<HTMLElement> | undefined {
+    return document
+        .getSelection()
+        ?.getRangeAt(0)
+        .cloneContents()
+        .querySelectorAll(".message_content");
+}
+
+// Returns the the inner HTML of the `.message_content` element
+// for the first or last message of a single range selection.
+// The caller is expected to only pass the first or last message
+// from a selection range, as the intermediate selected messages
+// anyways contain the entire `.message_content` HTML.
+function get_html_for_bookend_message_content(
+    type: RangeContainer,
+    original_message_content_element: Element,
+    selected_message_content_element: Node | undefined,
+): string {
+    assert(window.getSelection()?.rangeCount === 1);
+    assert(
+        selected_message_content_element !== undefined &&
+            selected_message_content_element instanceof HTMLElement,
+    );
+
+    // Special case for /me messages.
+    // We wrap the /me message content in a `div` to ensure newlines are
+    // inserted before and after the message content, which is important
+    // when copy pasting multiple messages.
+    if (selected_message_content_element.classList.contains("status-message")) {
+        return `<div>` + selected_message_content_element.outerHTML + `</div>`;
+    }
+
+    // If the selected `.message_content` HTML is same as the complete `.message_content` HTML,
+    // we return early and don't append/prepend ellipsis text.
+    if (
+        selected_message_content_element.innerHTML.trim() ===
+        original_message_content_element.innerHTML.trim()
+    ) {
+        return selected_message_content_element.innerHTML;
+    }
+
+    // The ellipsis marks where the partial selection was truncated, so it
+    // belongs within the text flow of the truncated paragraph. Inserting it
+    // inside the first/last paragraph (rather than as a sibling of it) keeps
+    // turndown from rendering it on its own line, separated from the text by
+    // a blank line.
+    const $ellipsis_span = $("<span>").text("...");
+    const $content_children = $(selected_message_content_element).children();
+    if (type === "start") {
+        const $first_child = $content_children.first();
+        if ($first_child.is("p")) {
+            the($first_child).prepend(the($ellipsis_span));
+        } else {
+            selected_message_content_element.prepend(the($ellipsis_span));
+        }
+    } else {
+        const $last_child = $content_children.last();
+        if ($last_child.is("p")) {
+            the($last_child).append(the($ellipsis_span));
+        } else {
+            selected_message_content_element.append(the($ellipsis_span));
+        }
+    }
+    return selected_message_content_element.innerHTML;
+}
+
+function is_container_within_message_row(type: RangeContainer): boolean {
+    const range_count = window.getSelection()?.rangeCount;
+    assert(range_count && range_count > 1);
+
+    const target_range_idx = type === "start" ? 0 : range_count - 1;
+    const range = window.getSelection()!.getRangeAt(target_range_idx);
+    const container = type === "start" ? range.startContainer : range.endContainer;
+    assert(container !== undefined);
+    return get_nearest_html_element(container)?.closest(".message_row") !== null;
+}
+
+function maybe_expand_selection_for_first_and_last_messages(
+    copy_rows: JQuery[],
+    range_count: number,
+): void {
+    // This is only meant for a multi-message selection involving
+    // multiple ranges.
+    assert(range_count > 1 && copy_rows.length > 1);
+
+    if (navigator.userAgent.includes("Chrome")) {
+        blueslip.error("Multiple ranges detected in Chrome for a multi-message selection.");
+    }
+
+    // We only want to expand the selection ranges if start/end range lies within a message.
+    // Not having these checks could alter the range in weird ways, like a message header
+    // selection getting removed to select the first message that follows that header.
+    if (is_container_within_message_row("start")) {
+        const $start = copy_rows[0];
+        assert($start?.[0] !== undefined);
+        const start_node = the($start.find(".message_content"));
+        window.getSelection()?.getRangeAt(0).setStartBefore(start_node);
+    }
+
+    if (is_container_within_message_row("end")) {
+        const $end = copy_rows.at(-1);
+        assert($end?.[0] !== undefined);
+        const end_node = the($end.find(".message_content"));
+        window
+            .getSelection()
+            ?.getRangeAt(range_count - 1)
+            .setEndAfter(end_node);
+    }
+}
+/*
+The techniques we use in this code date back to
+2013 and may be obsolete today (and may not have
+been even the best workaround back then).
+
+https://github.com/zulip/zulip/commit/fc0b7c00f16316a554349f0ad58c6517ebdd7ac4
+
+The idea is that we build a temp div, let jQuery process the
+selection, then restore the selection on a zero-second timer back
+to the original selection.
+
+Do not be afraid to change this code if you understand
+how modern browsers deal with copy/paste.  Just test
+your changes carefully.
+*/
+function construct_copy_div($div: JQuery, start_id: number, end_id: number): void {
+    if (message_lists.current === undefined) {
+        return;
+    }
+    let $first_message_element;
+    let $last_message_element;
+    const copy_rows = rows.visible_range(start_id, end_id);
+    const range_count = window.getSelection()?.rangeCount;
+    if (range_count && range_count > 1) {
+        // Expand selection to select content from all the messages
+        // belonging to the multi-message selection.
+        // We do this only for Firefox where multi-message selections are
+        // broken down into multiple-ranges.
+
+        // NOTE: FF 147 introduces Chrome-like behavior by not splitting up
+        // the selection into multiple ranges for non-selectable elements.
+        // We should get rid of this when that becomes the baseline.
+        // Details: https://github.com/zulip/zulip/pull/35100#issuecomment-4683858639
+        maybe_expand_selection_for_first_and_last_messages(copy_rows, range_count);
+    } else {
+        // Instead of copying the entire content of the first and last message,
+        // we only use the content that is part of the selection.
+        // This is only done on Chrome for now, because of the behavior of having
+        // a single range for a multi-message selection.
+        const selected_message_content_elements = get_selected_message_content_elements();
+        assert(selected_message_content_elements !== undefined);
+        // Case where the last message doesn't have any highlighted `.message_content`.
+        // Here, end_id is set to id of the message whose username at the top
+        // was highlighted, but has no highlighted `.message_content`.
+        // (See analyze_selection for details.)
+        // So the actually useful/contentful last message of this selection is
+        // at copy_rows[copy_rows.length - 2]
+        if (selected_message_content_elements.length === copy_rows.length - 1) {
+            copy_rows.splice(-1, 1);
+            if (copy_rows.length === 0) {
+                // In case this just involved selecting the username of a message.
+                return;
+            }
+        }
+        assert(copy_rows[0] && copy_rows.at(-1));
+        const first_selected_message_content_element = the(copy_rows[0]).querySelector(
+            ".message_content",
+        );
+        const last_selected_message_content_element = the(copy_rows.at(-1)!).querySelector(
+            ".message_content",
+        );
+        assert(first_selected_message_content_element && last_selected_message_content_element);
+        $first_message_element = $(
+            get_html_for_bookend_message_content(
+                "start",
+                first_selected_message_content_element,
+                selected_message_content_elements[0],
+            ),
+        );
+
+        // We don't want to append the same content as the first message in the selection
+        // if we are trying to get the `.message_content` HTML for the last
+        // message when there is only one `.message_content` in the selected range.
+        if (selected_message_content_elements.length > 1) {
+            const len = selected_message_content_elements.length;
+            $last_message_element = $(
+                get_html_for_bookend_message_content(
+                    "end",
+                    last_selected_message_content_element,
+                    selected_message_content_elements[len - 1],
+                ),
+            );
+        }
+    }
+
+    const $start_row = copy_rows[0];
+    assert($start_row !== undefined);
+    const $start_recipient_row = rows.get_message_recipient_row($start_row);
+    const start_recipient_row_id = rows.id_for_recipient_row($start_recipient_row);
+    let should_include_start_recipient_header = false;
+    let last_recipient_row_id = start_recipient_row_id;
+
+    for (let i = 0; i < copy_rows.length; i += 1) {
+        const $row = copy_rows[i];
+        assert($row !== undefined && $row[0] instanceof HTMLElement);
+        const recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row($row));
+        let added_recipient_header = false;
+        // if we found a message from another recipient,
+        // it means that we have messages from several recipients,
+        // so we have to add new recipient's bar to final copied message
+        // and wouldn't forget to add start_recipient's bar at the beginning of final message
+        if (recipient_row_id !== last_recipient_row_id) {
+            construct_recipient_header($row).appendTo($div);
+            last_recipient_row_id = recipient_row_id;
+            should_include_start_recipient_header = true;
+            added_recipient_header = true;
+        }
+        const message = message_lists.current.get(rows.id($row));
+        assert(message !== undefined);
+        let $content;
+
+        if (i === 0 && $first_message_element) {
+            $content = $first_message_element;
+        } else if (i === copy_rows.length - 1 && $last_message_element) {
+            $content = $last_message_element;
+        } else {
+            $content = $(message.content);
+        }
+
+        // A recipient header already separates itself from the following
+        // sender name with a newline. Between consecutive messages from the
+        // same recipient there is no header, so we insert an empty paragraph
+        // to keep a blank line separating each message's body from the next
+        // message's sender name.
+        if (i > 0 && !added_recipient_header) {
+            $div.append($("<p>"));
+        }
+
+        $div.append($("<b>").text(message.sender_full_name + ": "));
+
+        // A leading paragraph is moved into a div so that the `no extra
+        // newline` turndown rule keeps just a single newline (instead of a
+        // blank line) between the sender name and the message body. We only
+        // unwrap this first paragraph; any following block content, such as a
+        // list, is left untouched so that its structure is preserved.
+        const $first_content_element = $content.first();
+        if ($first_content_element.is("p")) {
+            $div.append($("<div>").append($first_content_element.contents()));
+            $content = $content.slice(1);
+        }
+
+        $div.append($content);
+    }
+
+    if (should_include_start_recipient_header) {
+        construct_recipient_header($start_row).prependTo($div);
+    }
+}
+
+// We want to grab the closest katex span up the tree
+// in cases where we can resolve the selected katex expression
+// from a math block into an inline expression.
+// The returned element from this function
+// is the one we call 'closest' on.
+function get_nearest_html_element(node: Node | null): Element | null {
+    if (node === null || node instanceof Element) {
+        return node;
+    }
+    return node.parentElement;
+}
+
+// selection_element will be either the start_element or end_element
+function expand_range_based_on_katex_parent(
+    selection_element: Element,
+    is_range_start: boolean,
+    range: Range,
+): void {
+    // Here, we have three cases:
+    // 1. This element lies within a math block expression i.e. within a  `.katex-display`
+    // 2. This element lies within an inline math expression i.e. inside a `.katex` span
+    // with no `.katex-display` parent for that `.katex`
+    // 3. This element does not lie within a math expression, we directly return without expansion.
+    // We cascade through these cases, expanding the range and prioritizing math blocks over expressions
+    // in case we encounter them.
+
+    const is_within_math_block = selection_element.closest(".katex-display") !== null;
+    const is_within_math_expression = selection_element.closest(".katex") !== null;
+    if (!is_within_math_block && !is_within_math_expression) {
+        return;
+    }
+    if (is_within_math_block) {
+        // One might think that this will break in case of empty katex-display(s)
+        // being the start or end node which is/are created when we insert
+        // some extra newlines within a math block.
+        // However, is it not possible to select those empty katex-displays
+        // as per my observation on Chrome and Firefox.
+        if (is_range_start) {
+            range.setStart(selection_element.closest(".katex-display")!, 0);
+        } else {
+            // The offset 1 selects the only child of `.katex-display`
+            // which is `.katex`.
+            range.setEnd(selection_element.closest(".katex-display")!, 1);
+        }
+    } else {
+        if (is_range_start) {
+            range.setStart(selection_element.closest(".katex")!, 0);
+        } else {
+            // The offset 2 selects the two children of `.katex`
+            // namely `.katex-mathml` and `.katex-html`
+            range.setEnd(selection_element.closest(".katex")!, 2);
+        }
+    }
+}
+
+function improve_time_selection_range(range: Range): void {
+    const start_element = get_nearest_html_element(range.startContainer);
+    const end_element = get_nearest_html_element(range.endContainer);
+    if (!start_element || !end_element) {
+        return;
+    }
+
+    const start_time = start_element.closest("time");
+    const end_time = end_element.closest("time");
+
+    if (!start_time && !end_time) {
+        return;
+    }
+
+    // Chrome strips <time> and .timestamp-content-wrapper from the
+    // paste HTML, so wrap the date text in a <span data-datetime> that
+    // the paste handler can read.
+    for (const time of new Set([start_time, end_time])) {
+        if (!time) {
+            continue;
+        }
+        const datetime = time.getAttribute("datetime");
+        const wrapper = time.querySelector(".timestamp-content-wrapper");
+        if (!datetime || !wrapper) {
+            continue;
+        }
+        for (const child of wrapper.childNodes) {
+            if (child.nodeType === Node.TEXT_NODE && child.nodeValue?.trim()) {
+                const span = document.createElement("span");
+                span.setAttribute("data-datetime", datetime);
+                child.replaceWith(span);
+                span.append(child);
+                break;
+            }
+        }
+    }
+
+    if (start_time) {
+        range.setStartBefore(start_time);
+    }
+    if (end_time) {
+        range.setEndAfter(end_time);
+    }
+}
+
+/*
+    Our paste behavior for KaTeX relies on processing the MathML
+    annotations generated by KaTeX in `<annotation>` tags. This
+    function is responsible for expanding selections of math copied
+    out of Zulip to ensure the annotations are included in what is
+    copied, so that it pastes nicely.
+
+    We expand the selection range only in the following cases:
+
+    1. Either the startContainer or endContainer or both are within an
+       inline expression where the range covers one or more math
+       expressions.
+    2. Either the startContainer, endContainer, or both are within a
+       math block where the range covers one or more math expressions.
+
+    In principle, we only need to expand the start of the selection
+    range for the cases where multiple expressions are selected
+    because the end of the range always contains the annotation
+    element in case it lies within the math block.
+
+    But, we still expand the end of the range to select the complete
+    expression, since our paste handler has no way to split the
+    annotation, so we'll always be converting entire expressions.
+*/
+function improve_katex_selection_range(range: Range): void {
+    const start_element = get_nearest_html_element(range.startContainer);
+    const end_element = get_nearest_html_element(range.endContainer);
+    if (!end_element || !start_element) {
+        return;
+    }
+
+    // Only perform expansion if either the start or end element
+    // is itself a `.katex` element or is contained within one.
+    if (end_element.closest(".katex") === null && start_element.closest(".katex") === null) {
+        return;
+    }
+
+    expand_range_based_on_katex_parent(start_element, true, range);
+    expand_range_based_on_katex_parent(end_element, false, range);
+}
+
+function maybe_update_range_for_code_blocks(range: Range, ev: ClipboardEvent): boolean {
+    const element = get_nearest_html_element(range.startContainer)?.parentElement;
+    const is_selection_within_code_element = element?.nodeName === "CODE";
+    if (is_selection_within_code_element) {
+        const start = range.startContainer.parentElement?.closest(".codehilite");
+        const end = range.endContainer.parentElement?.closest(".codehilite");
+
+        const is_selection_within_codehilite_element = start && end;
+        // Selections that go beyond the code block always end up containing
+        // the outer `.codehilite` div, so expansion is not required for those cases.
+        if (is_selection_within_codehilite_element) {
+            // We create a new element that contains selected content
+            // wrapped inside a `.codehilite` element containing the language metadata
+            // This element is then stored in the clipboard.
+            const clone: Node = start.cloneNode(false);
+            assert(clone instanceof HTMLElement);
+            const pre = document.createElement("pre");
+            const code = document.createElement("code");
+            pre.append(code);
+            code.append(range.cloneContents());
+            clone.append(pre);
+            ev.clipboardData?.setData("text/html", clone.outerHTML);
+            ev.clipboardData?.setData("text", clone.textContent ?? "");
+            return true;
+        }
+    }
+    return false;
+}
+
+export function copy_handler(ev: ClipboardEvent): boolean {
+    // This is the main handler for copying message content via
+    // `Ctrl+C` in Zulip (note that this is totally independent of the
+    // "select region" copy behavior on Linux; that is handled
+    // entirely by the browser, our HTML layout, and our use of the
+    // no-select CSS classes).  We put considerable effort
+    // into producing a nice result that pastes well into other tools.
+    // Our user-facing specification is the following:
+    //
+    // * If the selection is contained within a single message, we
+    //   want to just copy the portion that was selected, which we
+    //   implement by letting the browser handle the Ctrl+C event.
+    //
+    // * Otherwise, we want to copy the bodies of all messages that
+    //   were partially covered by the selection.
+
+    const selection = window.getSelection();
+    assert(selection !== null);
+
+    const analysis = analyze_selection(selection);
+    const start_id = analysis.start_id;
+    const end_id = analysis.end_id;
+    const skip_same_td_check = analysis.skip_same_td_check;
+
+    if (start_id === undefined || end_id === undefined || start_id > end_id) {
+        // In this case either the starting message or the ending
+        // message is not defined, so this is definitely not a
+        // multi-message selection and we can let the browser handle
+        // the copy.
+        //
+        // Also, if our logic is not sound about the selection range
+        // (start_id > end_id), we let the browser handle the copy.
+        //
+        // NOTE: `startContainer (~ start_id)` and `endContainer (~ end_id)`
+        // of a `Range` are always from top to bottom in the DOM tree, independent
+        // of the direction of the selection.
+        // TODO: Add a reference for this statement, I just tested
+        // it in console for various selection directions and found this
+        // to be the case not sure why there is no online reference for it.
+        return false;
+    }
+
+    if (!skip_same_td_check && start_id === end_id) {
+        // Check whether the selection both starts and ends in the
+        // same message and let the browser handle the copying.
+
+        // Firefox uses multiple ranges when selecting multiple messages.
+        // See https://drafts.csswg.org/css-ui-4/#valdef-user-select-none
+        // Instead of relying on Selection API's anchorNode and focusNode,
+        // we iterate over all ranges and expand them if needed.
+        //
+        // The reason is that anchorNode and focusNode only reflect the first range,
+        // which becomes an issue in Firefox. When the selection spans multiple ranges,
+        // for example, due to `user-select: none` elements in between the selection,
+        // Firefox creates disjoint ranges but only sets anchor/focus for the first one.
+        //
+        // So to handle multi-range selections correctly (especially in Firefox),
+        // we process all ranges individually.
+        let custom_handle_copy = false;
+        for (let i = 0; i < selection.rangeCount; i += 1) {
+            improve_time_selection_range(selection.getRangeAt(i));
+            improve_katex_selection_range(selection.getRangeAt(i));
+
+            if (maybe_update_range_for_code_blocks(selection.getRangeAt(i), ev)) {
+                // This will not disturb katex expansions because the clipboard
+                // altering code will only be triggered if and only if the selection
+                // lies completely within a `.codehilite` block.
+                // We let the browser handle the copy event for all other cases.
+                custom_handle_copy = true;
+            }
+        }
+        return custom_handle_copy;
+    }
+
+    // We've now decided to handle the copy event ourselves.
+    //
+    // We construct a temporary div for what we want the copy to pick up.
+    // We construct the div only once, rather than for each range as we can
+    // determine the starting and ending point with more confidence for the
+    // whole selection. When constructing for each `Range`, there is a high
+    // chance for overlaps between same message ids, avoiding which is much
+    // more difficult since we can get a range (start_id and end_id) for
+    // each selection `Range`.
+    const $div = $("<div>");
+    construct_copy_div($div, start_id, end_id);
+
+    const html_content = $div.html().trim();
+    const plain_text = $div.text().trim();
+    ev.clipboardData?.setData("text/html", html_content);
+    ev.clipboardData?.setData("text/plain", plain_text);
+
+    // Tell the keyboard code that we did the copy ourselves, and thus
+    // the browser should not handle the copy.
+    return true;
+}
+
+export function analyze_selection(selection: Selection): {
+    ranges: Range[];
+    start_id: number | undefined;
+    end_id: number | undefined;
+    skip_same_td_check: boolean;
+} {
+    // Here we analyze our selection to determine if part of a message
+    // or multiple messages are selected.
+    //
+    // Firefox and Chrome handle selection of multiple messages
+    // differently. Firefox typically creates multiple ranges for the
+    // selection, whereas Chrome typically creates just one.
+    //
+    // Our goal in the below loop is to compute and be prepared to
+    // analyze the combined range of the selections, and copy their
+    // full content.
+
+    let i;
+    let range;
+    const ranges = [];
+    let $startc;
+    let $endc;
+    let $initial_end_tr;
+    let start_id;
+    let end_id;
+    let start_data;
+    let end_data;
+    // skip_same_td_check is true whenever we know for a fact that the
+    // selection covers multiple messages (and thus we should no
+    // longer consider letting the browser handle the copy event).
+    let skip_same_td_check = false;
+
+    for (i = 0; i < selection.rangeCount; i += 1) {
+        range = selection.getRangeAt(i);
+        ranges.push(range);
+
+        $startc = $(range.startContainer);
+        start_data = find_boundary_tr(
+            $startc
+                .parents(".selectable_row, .message_header")
+                .not(".overlay-message-header")
+                .first(),
+            ($row) => $row.next(),
+        );
+        if (start_data === undefined) {
+            // Skip any selection sections that don't intersect a message.
+            continue;
+        }
+        // start_id is the Zulip message ID of the first message
+        // touched by the selection.
+        start_id ??= start_data[0];
+
+        $endc = $(range.endContainer);
+        $initial_end_tr = get_end_tr_from_endc($endc);
+        end_data = find_boundary_tr($initial_end_tr, ($row) => $row.prev());
+
+        if (end_data === undefined) {
+            // Skip any selection sections that don't intersect a message.
+            continue;
+        }
+        if (end_data[0] !== undefined) {
+            end_id = end_data[0];
+        }
+
+        if (start_data[1] || end_data[1]) {
+            // If the find_boundary_tr call for either the first or
+            // the last message covered by the selection
+            skip_same_td_check = true;
+        }
+    }
+
+    return {
+        ranges,
+        start_id,
+        end_id,
+        skip_same_td_check,
+    };
+}
+
+function get_end_tr_from_endc($endc: JQuery<Node>): JQuery {
+    if ($endc.attr("id") === "bottom_whitespace" || $endc.closest("#compose").length > 0) {
+        // If the selection ends in the bottom whitespace, we should
+        // act as though the selection ends on the final message.
+        // This handles the issue that Chrome seems to like selecting
+        // the compose_close button when you go off the end of the
+        // last message
+        return rows.last_visible();
+    }
+
+    // Sometimes (especially when three click selecting in Chrome) the selection
+    // can end in a hidden element in e.g. the next message, a date divider.
+    // We can tell this is the case because the selection isn't inside a
+    // `messagebox-content` div, which is where the message text itself is.
+    // TODO: Ideally make it so that the selection cannot end there.
+    // For now, we find the message row directly above wherever the
+    // selection ended.
+    if ($endc.closest(".messagebox-content").length === 0) {
+        // If the selection ends within the message following the selected
+        // messages, go back to use the actual last message.
+        if ($endc.parents(".message_row").length > 0) {
+            const $parent_msg = $endc.parents(".message_row").first();
+            return $parent_msg.prev(".message_row");
+        }
+        // If it's not in a .message_row, it's probably in a .message_header and
+        // we can use the last message from the previous recipient_row.
+        // NOTE: It is possible that the selection started and ended inside the
+        // message header and in that case we would be returning the message before
+        // the selected header if it exists, but that is not the purpose of this
+        // function to handle.
+        if ($endc.parents(".message_header").length > 0) {
+            const $overflow_recipient_row = $endc.parents(".recipient_row").first();
+            return $overflow_recipient_row.prev(".recipient_row").children(".message_row").last();
+        }
+        // If somehow we get here, do the default return.
+    }
+
+    return $endc.parents(".selectable_row").first();
+}
+
+export function initialize(): void {
+    document.addEventListener("copy", (ev) => {
+        if (copy_handler(ev)) {
+            ev.preventDefault();
+        }
+    });
+}

@@ -1,0 +1,17 @@
+pnpm-lock.yaml
+/api_docs/**/*.md
+/corporate/tests/stripe_fixtures
+/help/**/*.md
+/locale
+/templates/**/*.md
+/tools/setup/emoji/emoji_map.json
+/web/third/*
+!/web/third/marked
+/web/third/marked/*
+!/web/third/marked/lib
+/web/third/marked/lib/*
+!/web/third/marked/lib/marked.d.cts
+/zerver/tests/fixtures
+/zerver/webhooks/*/doc.md
+/zerver/webhooks/github/githubsponsors.md
+/zerver/webhooks/*/fixtures

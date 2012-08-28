@@ -1,0 +1,82 @@
+{
+    "version": "v1.0.0",
+    "entity": {
+        "type": "organisation",
+        "role": "steward",
+        "name": "Kandra Labs, Inc.",
+        "email": "support@zulip.com",
+        "description": "Guiding the Zulip community in developing a world-class organized team chat product with apps for every major desktop and mobile platform requires leadership from a talented, dedicated team. We believe that the only sustainable model is for our core team to be compensated fairly for their time. We have thus founded a company (Kandra Labs) to steward and financially support Zulip’s development. We are growing our business sustainably, without venture capital funding. VCs are incentivized to push companies to gamble for explosive growth. Often, the result is that a company with a useful product burns rapidly through its resources and goes out of business. We have built Zulip as a sustainable business (also supported by SBIR grants from the US National Science Foundation), and are being thoughtful about our pace of spending. Funding our company without venture capital also allows us to live by our values, without investor pressure to compromise them when doing so might be “good business” or “what everyone does”.",
+        "webpageUrl": {
+            "url": "https://zulip.com/values/",
+            "wellKnown": "https://zulip.com/.well-known/funding-manifest-urls"
+        }
+    },
+    "projects": [
+        {
+            "guid": "zulip",
+            "name": "Zulip",
+            "description": "Zulip is an open-source team chat application designed for seamless remote and hybrid work. With conversations organized by topic, Zulip is ideal for both live and asynchronous communication. Zulip’s 100% open-source software is available as a cloud service or a self-hosted solution, and is used by thousands of organizations around the world. An important part of Zulip’s mission is ensuring that worthy organizations, from programming-language developers to research communities, are able to use Zulip whether or not they have funding. For this reason, we sponsor Zulip Cloud Standard for open source projects, non-profits, education, and academic research. This program has grown exponentially since its inception; today we are proud to fully sponsor Zulip hosting for several hundred organizations. Support from the community will help us continue to afford these programs as their popularity grows.        ",
+            "webpageUrl": {
+                "url": "https://zulip.com/",
+                "wellKnown": "https://zulip.com/.well-known/funding-manifest-urls"
+            },
+            "repositoryUrl": {
+                "url": "https://github.com/zulip"
+            },
+            "licenses": ["spdx:Apache-2.0"],
+            "tags": ["communication", "team-chat", "collaboration"]
+        }
+    ],
+    "funding": {
+        "channels": [
+            {
+                "guid": "github-sponsors",
+                "type": "payment-provider",
+                "address": "https://github.com/sponsors/zulip",
+                "description": "Preferred channel for sponsoring Zulip, since GitHub Sponsors does not charge any fees to sponsored projects."
+            },
+            {
+                "guid": "patreon",
+                "type": "payment-provider",
+                "address": "https://patreon.com/zulip"
+            },
+            {
+                "guid": "open-collective",
+                "type": "payment-provider",
+                "address": "https://opencollective.com/zulip"
+            }
+        ],
+        "plans": [
+            {
+                "guid": "github-sponsors",
+                "status": "active",
+                "name": "Support Zulip",
+                "description": "Contribute to Zulip's development and free hosting for open source projects and other worthy organizations!",
+                "amount": 0,
+                "currency": "USD",
+                "frequency": "monthly",
+                "channels": ["github-sponsors"]
+            },
+            {
+                "guid": "patreon",
+                "status": "active",
+                "name": "Support Zulip",
+                "description": "Contribute to Zulip's development and free hosting for open source projects and other worthy organizations!",
+                "amount": 0,
+                "currency": "USD",
+                "frequency": "monthly",
+                "channels": ["patreon"]
+            },
+            {
+                "guid": "open-collective",
+                "status": "active",
+                "name": "Support Zulip",
+                "description": "Contribute to Zulip's development and free hosting for open source projects and other worthy organizations!",
+                "amount": 0,
+                "currency": "USD",
+                "frequency": "monthly",
+                "channels": ["open-collective"]
+            }
+        ]
+    }
+}

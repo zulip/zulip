@@ -1,0 +1,6 @@
+<div class="push-notification-status">
+    <p class="support-section-header">📶 Push notification status:</p>
+    <b>Can push</b>: {{ status.can_push }}<br />
+    <b>Expected end</b>: {{ format_optional_datetime(status.expected_end, True) }}<br />
+    <b>Message</b>: {{ status.message }}<br />
+</div>

@@ -1,0 +1,9 @@
+{{#if rendered_description}}
+<div class="sub-stream-description {{#if use_view_only_styling}}settings-view-only-textarea{{/if}} rendered_markdown">
+    {{rendered_markdown rendered_description}}
+</div>
+{{else}}
+<span class="sub-stream-description no-description">
+    {{t "No description." }}
+</span>
+{{/if}}

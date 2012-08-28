@@ -1,0 +1,5 @@
+{
+  "Edit #{stream_name}": "#{stream_name} සංස්කරණය",
+  "Error removing user from #{stream_name}": "#{stream_name} වෙතින් පරිශීලක ඉවත් කිරීමේ දෝෂයකි",
+  "You have muted <z-stream-topic></z-stream-topic>.": "ඔබ <z-stream-topic></z-stream-topic> නිහඬ කර ඇත."
+}

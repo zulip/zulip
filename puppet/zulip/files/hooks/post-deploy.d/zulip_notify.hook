@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+
+source "$(dirname "$0")/../common/zulip_notify.sh"
+
+echo "zulip_notify: Sending notify of $from .. $to ($commit_count commits) for $deploy_environment to $zulip_notify_server"
+
+zulip_send "Finished ${deploy_environment} deploy of [${commit_count} new commits](https://github.com/zulip/zulip/compare/${from}...${to}) on $(hostname)"

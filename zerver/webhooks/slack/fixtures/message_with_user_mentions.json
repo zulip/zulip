@@ -1,0 +1,69 @@
+{
+  "token": "CqCsBJmXoNSHaNCt3wGWYSEe",
+  "team_id": "T06NRA6HM3P",
+  "context_team_id": "T06NRA6HM3P",
+  "context_enterprise_id": null,
+  "api_app_id": "A0757RM31HN",
+  "event": {
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1719209649.631399",
+    "client_msg_id": "ec2b7c8f-8530-43cc-9287-9f7617d5d335",
+    "text": "<@U074VRHQ11T> <@U074G5E1ANR> <@U06NU4E26M9> hello, this is a message with mentions",
+    "team": "T06NRA6HM3P",
+    "blocks": [
+      {
+        "type": "rich_text",
+        "block_id": "UST8x",
+        "elements": [
+          {
+            "type": "rich_text_section",
+            "elements": [
+              {
+                "type": "user",
+                "user_id": "U074VRHQ11T"
+              },
+              {
+                "type": "text",
+                "text": " "
+              },
+              {
+                "type": "user",
+                "user_id": "U074G5E1ANR"
+              },
+              {
+                "type": "text",
+                "text": " "
+              },
+              {
+                "type": "user",
+                "user_id": "U06NU4E26M9"
+              },
+              {
+                "type": "text",
+                "text": " hello, this is a message with mentions"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "channel": "C06NRA6JLER",
+    "event_ts": "1719209649.631399",
+    "channel_type": "channel"
+  },
+  "type": "event_callback",
+  "event_id": "Ev079B6N3H53",
+  "event_time": 1719209649,
+  "authorizations": [
+    {
+      "enterprise_id": null,
+      "team_id": "T06NRA6HM3P",
+      "user_id": "U074G5E1ANR",
+      "is_bot": true,
+      "is_enterprise_install": false
+    }
+  ],
+  "is_ext_shared_channel": false,
+  "event_context": "4-eyJldCI6Im1lc3NhZ2UiLCJ0aWQiOiJUMDZOUkE2SE0zUCIsImFpZCI6IkEwNzU3Uk0zMUhOIiwiY2lkIjoiQzA2TlJBNkpMRVIifQ"
+}

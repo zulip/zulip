@@ -1,0 +1,83 @@
+{
+  "id": 277927122,
+  "number": "42",
+  "config": {
+    "language": "ruby",
+    "os": [
+      "linux"
+    ],
+    "dist": "focal",
+    "notifications": {
+      "webhooks": [
+        {
+          "urls": [
+            "https://41da-49-37-250-179.ngrok-free.app/api/v1/external/travis?api_key=pDmnOb1fCfy181J2aTz8k2FI3dlxcXEV&stream=7"
+          ],
+          "on_success": "always",
+          "on_failure": "always",
+          "on_start": "always"
+        }
+      ]
+    }
+  },
+  "type": "pull_request",
+  "state": "failed",
+  "status": 1,
+  "result": 1,
+  "status_message": "Failed",
+  "result_message": "Failed",
+  "started_at": "2026-04-15T16:39:52Z",
+  "finished_at": "2026-04-15T16:40:15Z",
+  "duration": 23,
+  "build_url": "https://app.travis-ci.com/sathwikshetty33/travis-test/builds/277927122",
+  "commit_id": 1291891363,
+  "commit": "853c38dfecb99b75e9d4987fba0c4f58eab0bae3",
+  "base_commit": "6864d112b255e2c26cfc48882594397c4e561bab",
+  "head_commit": "b2b0af11c1d6e03fe390050a97506c0a2f437d5a",
+  "branch": "main",
+  "message": "feat: Created Name.txt.",
+  "compare_url": "https://github.com/sathwikshetty33/travis-test/pull/2",
+  "committed_at": "2026-04-15T16:38:07Z",
+  "author_name": "Sathwik Shetty",
+  "author_email": "sathwikshetty2k5@gmail.com",
+  "committer_name": "GitHub",
+  "committer_email": "noreply@github.com",
+  "pull_request": true,
+  "pull_request_number": 2,
+  "pull_request_title": "feat: Add Name.txt.",
+  "tag": null,
+  "repository": {
+    "id": 29853331,
+    "name": "travis-test",
+    "owner_name": "sathwikshetty33",
+    "url": null
+  },
+  "matrix": [
+    {
+      "id": 638911273,
+      "repository_id": 29853331,
+      "parent_id": 277927122,
+      "number": "42.1",
+      "state": "failed",
+      "config": {
+        "os": "linux",
+        "language": "ruby",
+        "dist": "focal"
+      },
+      "status": 1,
+      "result": 1,
+      "commit": "853c38dfecb99b75e9d4987fba0c4f58eab0bae3",
+      "branch": "main",
+      "message": "feat: Created Name.txt.",
+      "compare_url": "https://github.com/sathwikshetty33/travis-test/pull/2",
+      "started_at": "2026-04-15T16:39:52Z",
+      "finished_at": "2026-04-15T16:40:15Z",
+      "committed_at": "2026-04-15T16:38:07Z",
+      "author_name": "Sathwik Shetty",
+      "author_email": "sathwikshetty2k5@gmail.com",
+      "committer_name": "GitHub",
+      "committer_email": "noreply@github.com",
+      "allow_failure": null
+    }
+  ]
+}

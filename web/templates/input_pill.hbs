@@ -1,0 +1,55 @@
+<div class='pill {{#if deactivated}} deactivated-pill {{/if~}}'
+  {{~#unless (eq user_id undefined)}}data-user-id="{{user_id}}"{{/unless~}}
+  {{~#unless (eq group_id undefined)}}data-user-group-id="{{group_id}}"{{/unless~}}
+  {{~#unless (eq stream_id undefined)}}data-stream-id="{{stream_id}}"{{/unless~}}
+  {{~#if data_syntax}}data-syntax="{{data_syntax}}"{{/if}} tabindex=0>
+    {{#if has_image}}
+    <img class="pill-image" src="{{img_src}}" />
+    <div class="pill-image-border"></div>
+    {{#if deactivated}}
+        <span class="fa fa-ban slashed-circle-icon"></span>
+    {{/if}}
+    {{/if}}
+    <span class="pill-label">
+        {{#if is_email_pill}}
+            {{~#if invited_user_name}}
+                <span class="invited-user-name">{{invited_user_name}}</span>
+            {{~/if~}}
+        {{/if}}
+        <span class="pill-value">
+            {{#if has_stream}}
+                {{> decorated_channel_name stream=stream }}
+            {{else}}
+                {{#if is_combined_channel_topic}}
+                {{sign}}{{> decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false}} &gt;<span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}> {{topic_display_name}}</span>
+                {{else}}
+                {{#if is_empty_string_topic}}
+                {{sign}}topic:{{#if topic_display_name}}<span class="empty-topic-display"> {{topic_display_name}}</span>{{/if}}
+                {{else}}
+                {{~ display_value }}
+                {{/if}}
+                {{/if}}
+            {{/if}}
+        </span>
+        {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
+        {{~#if has_status~}}
+            {{~> status_emoji status_emoji_info~}}
+        {{~/if~}}
+        {{~#if is_bot~}}
+            <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
+        {{~/if~}}
+        {{~#if show_group_members_count~}}
+        &nbsp;<span class="group-members-count">({{group_members_count}})</span>
+        {{~/if~}}
+    </span>
+    {{#if show_expand_button}}
+    <div class="expand">
+        <a role="button" class="zulip-icon zulip-icon-expand-both-diagonals pill-expand-button" aria-label="{{t 'Expand' }}"></a>
+    </div>
+    {{/if}}
+    {{#unless disabled}}
+    <div class="exit">
+        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="{{t 'Remove' }}"></a>
+    </div>
+    {{/unless}}
+</div>

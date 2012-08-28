@@ -1,0 +1,74 @@
+{{! Client-side Handlebars template for rendering the trailing bookend. }}
+<div class="{{#if is_trailing_bookend}}trailing_bookend {{/if}}bookend">
+    {{#if is_spectator}}
+        <span class="recent-topics-link bookend-label">
+            <a href="#recent">{{t "Browse recent conversations" }}</a>
+        </span>
+    {{else}}
+        {{#if deactivated}}
+            <span class="stream-status bookend-label">
+                {{t "This channel has been archived." }}
+            </span>
+        {{else if subscribed }}
+            <span class="stream-status bookend-label">
+                {{#tr}}
+                    You subscribed to <z-stream-name></z-stream-name>. <channel-settings-link></channel-settings-link>
+                    {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
+                    {{#*inline "channel-settings-link"}} <a class="bookend-channel-settings-link" href="#channels/{{stream_id}}/{{stream_name}}/personal">{{t 'Manage channel settings'}}</a>{{/inline}}
+                {{/tr}}
+            </span>
+        {{else if just_unsubscribed }}
+            {{#if is_trailing_bookend}}
+                <div class="not-subscribed-banner banner banner-info">
+                    <span class="banner-content">
+                        <span class="banner-label">
+                            {{#tr}}
+                                Because you aren't subscribed to <z-stream-name></z-stream-name>, you won't see new messages, reactions, and other updates.
+                                {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
+                            {{/tr}}
+                        </span>
+                        <span class="banner-action-buttons">
+                            <button class="load-newer-messages-button action-button action-button-borderless-info" type="button">
+                                <span class="action-button-label">{{t 'Load updates'}}</span>
+                            </button>
+                            {{#if can_subscribe}}
+                                <button class="stream_sub_unsub_button action-button action-button-quiet-info" type="button">
+                                    <span class="action-button-label">{{t 'Subscribe'}}</span>
+                                </button>
+                            {{/if}}
+                        </span>
+                    </span>
+                </div>
+            {{else}}
+                <span class="stream-status bookend-label">
+                    {{#tr}}
+                        You unsubscribed from <z-stream-name></z-stream-name>. <channel-settings-link></channel-settings-link>
+                        {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
+                        {{#*inline "channel-settings-link"}} <a class="bookend-channel-settings-link" href="#channels/{{stream_id}}/{{stream_name}}/general">{{t 'View in channel settings'}}</a>{{/inline}}
+                    {{/tr}}
+                </span>
+            {{/if}}
+        {{else}}
+            <div class="not-subscribed-banner banner banner-info">
+                <span class="banner-content">
+                    <span class="banner-label">
+                        {{#tr}}
+                            Because you aren't subscribed to <z-stream-name></z-stream-name>, you won't see new messages, reactions, and other updates.
+                            {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
+                        {{/tr}}
+                    </span>
+                    <span class="banner-action-buttons">
+                        <button class="load-newer-messages-button action-button action-button-borderless-info" type="button">
+                            <span class="action-button-label">{{t 'Load updates'}}</span>
+                        </button>
+                        {{#if can_subscribe}}
+                            <button class="stream_sub_unsub_button action-button action-button-quiet-info" type="button">
+                                <span class="action-button-label">{{t 'Subscribe'}}</span>
+                            </button>
+                        {{/if}}
+                    </span>
+                </span>
+            </div>
+        {{/if}}
+    {{/if}}
+</div>

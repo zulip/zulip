@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -e
+
+usage() {
+    cat <<'EOF'
+Usage:
+  optimize-svg [--check] [filename]
+  optimize-svg --help
+
+Options:
+  --check
+      This will check for unoptimized SVG files rather than automatically optimizing them.
+      This allows us to run the script in CI.
+  [filename]
+      The filename of the SVG file to optimize, located in static/images/integrations/logos.
+      If not provided, all files in the directory will be optimized.
+
+EOF
+}
+
+# Shell option parsing.  Over time, we'll want to move some of the
+# environment variables below into this self-documenting system.
+args="$(getopt -o '' --long help,check -n "$0" -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --help)
+            usage
+            exit 0
+            ;;
+        --check)
+            CHECK_UNOPTIMIZED=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
+
+if [ "$#" -gt 1 ]; then
+    usage >&2
+    exit 1
+fi
+
+ZULIP_PATH="$(readlink -f "$(dirname "$0")"/../..)"
+PNPM="/usr/local/bin/pnpm"
+BASE_PATH="static/images/integrations/logos"
+
+if [ "$#" -eq 0 ]; then
+    FILE_PATH="$BASE_PATH"
+    SVGO_FLAG="-f"
+else
+    FILE_PATH="$BASE_PATH/$1"
+    SVGO_FLAG=""
+fi
+
+if [ -n "$CHECK_UNOPTIMIZED" ]; then
+    TEMP_PATH=$(mktemp -d svgo_temp_XXXXXX)
+    RESULT=$("$PNPM" exec svgo -o "$TEMP_PATH" $SVGO_FLAG "$FILE_PATH" | grep -o '\.[0-9]% = ' | wc -l)
+    rm -rf "$TEMP_PATH"
+    if [ "$RESULT" -ge 1 ]; then
+        echo "ERROR: svgo detected unoptimized SVG file(s)." 1>&2
+        echo "Please run tools/setup/optimize-svg and commit the file changes to optimize them."
+        exit 1
+    else
+        echo "SUCCESS: SVG file(s) are optimized!"
+    fi
+else
+    "$PNPM" exec svgo -q $SVGO_FLAG "$FILE_PATH"
+    if [ "$#" -eq 0 ]; then
+        "$ZULIP_PATH"/tools/setup/generate_integration_bots_avatars.py
+    fi
+fi

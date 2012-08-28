@@ -1,0 +1,1 @@
+{% trans %}Reminder: Join {{referrer_name}} at {{ referrer_realm_name }}{% endtrans %}

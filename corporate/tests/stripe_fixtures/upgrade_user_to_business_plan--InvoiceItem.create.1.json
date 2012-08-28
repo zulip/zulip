@@ -1,0 +1,34 @@
+{
+  "amount": 200000,
+  "currency": "usd",
+  "customer": "upgrade_user_to_business_plan--Customer.create.1.json",
+  "customer_account": null,
+  "date": 1000000000,
+  "description": "Zulip Business",
+  "discountable": false,
+  "discounts": [],
+  "id": "upgrade_user_to_business_plan--InvoiceItem.create.1.json",
+  "invoice": "upgrade_user_to_business_plan--Event.list.1.json",
+  "livemode": false,
+  "metadata": {},
+  "net_amount": 200000,
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1357095845,
+    "start": 1325473445
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "8000"
+  },
+  "proration": false,
+  "quantity": 25,
+  "quantity_decimal": "25",
+  "tax_rates": [],
+  "test_clock": null
+}

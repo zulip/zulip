@@ -1,0 +1,61 @@
+{
+  "ok": true,
+  "channel": {
+    "id": "C012AB3CD",
+    "name": "Slack general",
+    "is_channel": true,
+    "is_group": false,
+    "is_im": false,
+    "is_mpim": false,
+    "is_private": false,
+    "created": 1654868334,
+    "is_archived": false,
+    "is_general": true,
+    "unlinked": 0,
+    "name_normalized": "Slack general",
+    "is_shared": false,
+    "is_frozen": false,
+    "is_org_shared": false,
+    "is_pending_ext_shared": false,
+    "pending_shared": [],
+    "context_team_id": "T123ABC456",
+    "updated": 1723130875818,
+    "parent_conversation": null,
+    "creator": "U123ABC456",
+    "is_ext_shared": false,
+    "shared_team_ids": [
+      "T123ABC456"
+    ],
+    "pending_connected_team_ids": [],
+    "topic": {
+      "value": "For public discussion of generalities",
+      "creator": "W012A3BCD",
+      "last_set": 1449709364
+    },
+    "purpose": {
+      "value": "This part of the workspace is for fun. Make fun here.",
+      "creator": "W012A3BCD",
+      "last_set": 1449709364
+    },
+    "properties": {
+      "tabs": [
+        {
+          "id": "workflows",
+          "label": "",
+          "type": "workflows"
+        },
+        {
+          "id": "files",
+          "label": "",
+          "type": "files"
+        },
+        {
+          "id": "bookmarks",
+          "label": "",
+          "type": "bookmarks"
+        }
+      ]
+    },
+    "previous_names": []
+  }
+}

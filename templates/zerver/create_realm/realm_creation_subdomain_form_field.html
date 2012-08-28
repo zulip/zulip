@@ -1,0 +1,35 @@
+<div class="realm-creation-editable-inputs {% if user_registration_form and not form.realm_subdomain.errors %}hide{% endif %}">
+    <div class="input-box">
+        <label class="static org-url">
+            {{ _('Organization URL') }}
+        </label>
+        {% if root_domain_available %}
+        <label class="checkbox static" for="realm_in_root_domain">
+            <input type="checkbox" name="realm_in_root_domain" id="realm_in_root_domain"
+              {% if not form.realm_subdomain.value() and not form.realm_subdomain.errors %}checked="checked"{% endif %}/>
+            <span class="rendered-checkbox"></span>
+            {% trans %}Use {{ external_host }}{% endtrans %}
+        </label>
+        {% endif %}
+
+        <div id="subdomain_section" {% if root_domain_available and
+          not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
+            <div class="or"><span>{{ _('OR') }}</span></div>
+            <div class="inline-block relative">
+                <input id="id_team_subdomain"
+                  class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
+                  placeholder="acme"
+                  value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
+                  name="realm_subdomain" maxlength="{{ MAX_REALM_SUBDOMAIN_LENGTH }}"
+                  {% if root_domain_landing_page %}required{% endif %} />
+                <label for="id_team_subdomain" class="realm_subdomain_label">.{{ external_host }}</label>
+                <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
+            </div>
+            {% if form.realm_subdomain.errors %}
+                {% for error in form.realm_subdomain.errors %}
+                <p class="error help-inline text-error team_subdomain_error_server">{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>

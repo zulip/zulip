@@ -1,0 +1,15 @@
+{% extends "zerver/emails/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_url }}/email_logo.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+<p>
+    {% trans %}Your request for Zulip sponsorship has been approved! Your organization has been upgraded to the <a href="{{ plans_link }}">Zulip Community plan</a>.{% endtrans %}
+</p>
+<p>
+    {% trans %}If you could <a href="{{ link_to_zulip }}">list Zulip as a sponsor on your website</a>, we would really appreciate it!{% endtrans %}
+</p>
+
+{% endblock %}

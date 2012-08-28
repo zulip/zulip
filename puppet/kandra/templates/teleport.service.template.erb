@@ -1,0 +1,15 @@
+[Unit]
+Description=Teleport <%= @part %> Service
+After=network.target
+
+[Service]
+Type=simple
+Restart=on-failure
+EnvironmentFile=-/etc/default/teleport_<%= @part %>
+ExecStart=/usr/local/bin/teleport start --pid-file=/run/teleport_<%= @part %>.pid --config=/etc/teleport_<%= @part %>.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/run/teleport_<%= @part %>.pid
+LimitNOFILE=524288
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,157 @@
+global:
+  # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  scrape_interval: 15s
+  # Evaluate rules every 15 seconds. The default is every 1 minute.
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "grafana"
+    static_configs:
+      - targets: ["localhost:3000"]
+
+  - job_name: "pushgateway"
+    scrape_interval: 2m
+    honor_labels: true
+    static_configs:
+      - targets: ["localhost:9091"]
+
+  - job_name: "wal-g"
+    scrape_interval: 5m
+    scrape_timeout: 20s
+    static_configs:
+      - targets:
+<% @backup_buckets.each do |bucket| -%>
+        - <%= bucket %>
+<% end -%>
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_bucket
+      - source_labels: [__param_bucket]
+        target_label: bucket
+      - target_label: __address__
+        replacement: localhost:9188
+
+  - job_name: "vector"
+    scrape_interval: 30s
+    scrape_timeout: 3s
+    static_configs:
+      - targets: ["localhost:9081"]
+
+  - job_name: "node"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=node_exporter"
+        refresh_interval: 1m
+    relabel_configs: &relabels
+      # This relabel config is reused across all teleport-sd scrape configs.  Because
+      # of https://github.com/prometheus/prometheus/issues/2347 (lack of <<: support),
+      # we include some exporter-specific rules in here, with a source_label/regex pair.
+      - source_labels: ["exporter"]
+        regex: rabbitmq
+        # Rabbitmq should use the heaver-weight but more useful per-object endpoint
+        target_label: __metrics_path__
+        replacement: "/metrics/per-object"
+      - source_labels: ["role"]
+        regex: "(prod|staging)_app_frontend"
+        # Prod and staging get a deploy=
+        replacement: "${1}"
+        target_label: "deploy"
+      - source_labels: ["role"]
+        regex: "chat"
+        # So does chat.zulip.org
+        replacement: "prod"
+        target_label: "deploy"
+      - source_labels: ["exporter"]
+        regex: "node_exporter"
+        # The historical node_exporter data does not like getting a surprise deploy=
+        # label, so strip it off
+        target_label: "deploy"
+        replacement: ""
+      - action: labeldrop
+        # Finally, strip Teleport-specific labels
+        regex: "type|exporter|name"
+
+  - job_name: "camo"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=camo"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "smokescreen"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=smokescreen"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "redis"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=redis_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "postgres"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=postgres_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "access_logs"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=grok_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "uwsgi"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=uwsgi_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "rabbitmq"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=rabbitmq"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "tornado"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=process_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "memcached"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=memcached_exporter"
+        refresh_interval: 1m
+    relabel_configs: *relabels
+
+  - job_name: "tusd"
+    proxy_url: "http://127.0.0.1:8080"
+    scheme: http
+    http_sd_configs:
+      - url: "http://127.0.0.1:9092/targets?type=prometheus&exporter=tusd"
+        refresh_interval: 1m
+    relabel_configs: *relabels

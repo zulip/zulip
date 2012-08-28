@@ -1,0 +1,72 @@
+{
+    "event_name": "new_item",
+    "data": {
+        "item": {
+            "public_item_id": null,
+            "integrations_data": {},
+            "level_lock": 0,
+            "last_activated_timestamp": 1515470048,
+            "assigned_user_id": null,
+            "group_status": 1,
+            "hash": "31cd6a4aee99a094c09f3724bf2bc2288bcd0c9d",
+            "id": 496445267,
+            "environment": "production",
+            "title_lock": 0,
+            "title": "An Error",
+            "last_occurrence_id": 35686638471,
+            "last_occurrence_timestamp": 1515470048,
+            "platform": 0,
+            "first_occurrence_timestamp": 1515470048,
+            "project_id": 162774,
+            "resolved_in_version": null,
+            "status": 1,
+            "unique_occurrences": null,
+            "group_item_id": null,
+            "last_occurrence": {
+                "body": {
+                    "message": {
+                        "body": "An Error"
+                    }
+                },
+                "uuid": "9342eca6-09e7-4bab-89f1-ff16da631853",
+                "language": "python 3.6.3",
+                "level": "error",
+                "timestamp": 1515470048,
+                "server": {
+                    "host": "DESKTOP-6LMFI2P",
+                    "pid": 11348,
+                    "argv": [
+                        "C:\\Python27\\rollbartest.py"
+                    ]
+                },
+                "environment": "production",
+                "framework": "unknown",
+                "notifier": {
+                    "version": "0.13.17",
+                    "name": "pyrollbar"
+                },
+                "metadata": {
+                    "access_token": "7ac6f65439684ac386a6a3950ba7059b",
+                    "debug": {
+                        "routes": {
+                            "start_time": 1513455858783,
+                            "counters": {
+                                "post_item": 20484633
+                            }
+                        }
+                    },
+                    "customer_timestamp": 1515470047,
+                    "api_server_hostname": "api03",
+                    "timestamp_ms": 1515470048909
+                }
+            },
+            "framework": 13,
+            "total_occurrences": 1,
+            "level": 40,
+            "counter": 7,
+            "last_modified_by": 2147,
+            "first_occurrence_id": 35686638471,
+            "activating_occurrence_id": 35686638471
+        }
+    }
+}

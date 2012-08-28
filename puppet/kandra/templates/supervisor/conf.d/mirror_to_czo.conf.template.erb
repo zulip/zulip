@@ -1,0 +1,13 @@
+[program:mirror_to_czo]
+# We record the hash of the script so that we can update this file
+# with it, which will make `supervisorctl reread && supervisorctl
+# update` restart this job.
+command=uv run --no-sync /usr/local/bin/mirror_to_czo
+directory=/home/zulip/deployments/current/
+process_name=mirror_to_czo_<%= @script_hash %>
+priority=10
+autostart=true
+autorestart=true
+user=zulip
+redirect_stderr=true
+stdout_logfile=/var/log/zulip/mirror_to_czo.log

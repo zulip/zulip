@@ -1,0 +1,9 @@
+<p>{{t "User configurations for this setting will be reset to the organization default." }}</p>
+
+<div class="input-group">
+    <label for="users_to_reset_configuration">{{t "Users whose configuration should be changed"}}</label>
+    <select name="users_to_reset_configuration" class="modal_select bootstrap-focus-style" id="users_to_reset_configuration" data-setting-widget-type="string">
+        <option value="everyone">{{t "Everyone"}}</option>
+        <option value="skip_edited">{{t "Users who have not personally configured this setting"}}</option>
+    </select>
+</div>

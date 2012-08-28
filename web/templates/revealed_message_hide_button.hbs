@@ -1,0 +1,7 @@
+{{#if is_inline_hide_button}}
+    <span class="inline-hide-button-space-wrapper"> </span>
+{{/if}}
+<button data-message-id="{{message_id}}" class="action-button rehide-muted-user-message {{#if is_inline_hide_button}}inline-hide-button{{else}}block-hide-button{{/if}}" tabindex="0" aria-label="{{t 'Hide message from muted user' }}">
+    <i class="zulip-icon zulip-icon-hide"></i>
+    <span class="action-button-label">{{t 'Hide'}}</span>
+</button>

@@ -1,0 +1,222 @@
+#!/usr/bin/env python3
+import os
+import re
+import sys
+from collections import defaultdict
+
+import orjson
+
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../")
+sys.path.append(ZULIP_PATH)
+
+from tools.setup.emoji.custom_emoji_names import CUSTOM_EMOJI_NAME_MAPS
+from tools.setup.emoji.emoji_setup_utils import get_emoji_code
+from zerver.lib.emoji_utils import hex_codepoint_to_emoji, unqualify_emoji
+
+CLDR_DATA_FILE = os.path.join(
+    ZULIP_PATH, "node_modules", "cldr-annotations-full", "annotations", "en", "annotations.json"
+)
+CLDR_DERIVED_DATA_FILE = os.path.join(
+    ZULIP_PATH,
+    "node_modules",
+    "cldr-annotations-derived-full",
+    "annotationsDerived",
+    "en",
+    "annotations.json",
+)
+EMOJI_DATA_FILE = os.path.join(ZULIP_PATH, "node_modules", "emoji-datasource-google", "emoji.json")
+OUT_EMOJI_FILE = os.path.join(ZULIP_PATH, "tools", "setup", "emoji", "emoji_names.py")
+
+with open(EMOJI_DATA_FILE, "rb") as fp:
+    EMOJI_DATA = orjson.loads(fp.read())
+with open(CLDR_DATA_FILE, "rb") as fp:
+    CLDR_DATA = orjson.loads(fp.read())["annotations"]["annotations"]
+with open(CLDR_DERIVED_DATA_FILE, "rb") as fp:
+    CLDR_DATA.update(orjson.loads(fp.read())["annotationsDerived"]["annotations"])
+
+# We don't include most clock emojis. See `custom_emoji_names` for more context.
+SKIPPED_CLOCK_EMOJI_CODES = [
+    "1f550",
+    "1f551",
+    "1f552",
+    "1f553",
+    "1f554",
+    "1f555",
+    "1f556",
+    "1f558",
+    "1f559",
+    "1f55a",
+    "1f55b",
+    "1f55c",
+    "1f55d",
+    "1f55e",
+    "1f55f",
+    "1f560",
+    "1f561",
+    "1f562",
+    "1f563",
+    "1f564",
+    "1f565",
+    "1f566",
+    "1f567",
+]
+
+# We don't include the skin tones as emojis that one can search for on their own.
+SKIN_TONE_EMOJI_CODES = [
+    "1f3fb",
+    "1f3fc",
+    "1f3fd",
+    "1f3fe",
+    "1f3ff",
+]
+
+
+def cleanup_name(name: str) -> str:
+    replacements = {
+        " ": "_",
+        "-": "_",
+        "–": "_",
+        "“": "",
+        "”": "",
+        ":": "",
+        ".": "",
+        ",": "",
+        "(": "",
+        ")": "",
+        "&": "and",
+        "‘": "",
+        "’": "",
+        "'": "",
+    }
+    for before, after in replacements.items():
+        name = name.replace(before, after)
+    name = re.sub(r"_{2,}", "_", name)
+    return name.lower()
+
+
+def convert_non_ascii_chars(name: str) -> str:
+    replacements = {
+        "è": "e",
+        "ǐ": "i",
+        "ó": "o",
+        "ā": "a",
+        "ō": "o",
+        "ñ": "n",
+        "ô": "o",
+        "ç": "c",
+        "é": "e",
+        "ã": "a",
+        "í": "i",
+        "å": "a",
+        "ü": "u",
+    }
+    for before, after in replacements.items():
+        name = name.replace(before, after)
+    assert name.isascii(), (
+        f"{name} still contains non-ascii characters. Add them to convert_non_ascii_chars."
+    )
+    return name
+
+
+def main() -> None:
+    all_emojis = {}
+    all_canonical_names = set()
+
+    alias_to_emoji_code = defaultdict(list)
+
+    # STEP 1: Generate first draft of all_emojis.
+    for emoji_dict in EMOJI_DATA:
+        emoji_code = get_emoji_code(emoji_dict)
+        if emoji_code in SKIPPED_CLOCK_EMOJI_CODES or emoji_code in SKIN_TONE_EMOJI_CODES:
+            continue
+
+        if emoji_code in CUSTOM_EMOJI_NAME_MAPS:
+            canonical_name = cleanup_name(CUSTOM_EMOJI_NAME_MAPS[emoji_code]["canonical_name"])
+            if canonical_name in all_canonical_names:
+                raise Exception(
+                    f"{canonical_name} was already added with a different codepoint. "
+                    f"Rename it in `custom_emoji_names` or add an entry for {emoji_code}."
+                )
+            all_canonical_names.add(canonical_name)
+            all_emojis[emoji_code] = CUSTOM_EMOJI_NAME_MAPS[emoji_code]
+        else:
+            # create the unicode character(s) for the emoji, since this is the key into the CLDR data
+            # We can't just use emoji_dict["non_qualified"] because of this upstream bug:
+            # https://github.com/iamcal/emoji-data/pull/217
+            emoji = unqualify_emoji(hex_codepoint_to_emoji(emoji_dict["unified"]))
+            if emoji not in CLDR_DATA:
+                print(
+                    f"{emoji} not found in custom emoji name maps, but also not found in CLDR data. Skipping."
+                )
+                continue
+            # CLDR_DATA[emoji] is of the form {'default': [...], 'tts': [...]}
+            # * "tts" is what's used for text-to-speech and always has one item, so we use that
+            #    as the canonical name.
+            # * "default" has several items in it that we use as aliases.
+            # See also: https://www.unicode.org/reports/tr35/tr35-general.html#14-annotations-and-labels
+            assert len(CLDR_DATA[emoji]["tts"]) == 1
+            canonical_name = cleanup_name(CLDR_DATA[emoji]["tts"][0].strip())
+            if canonical_name in all_canonical_names:
+                raise Exception(
+                    f"{canonical_name} was already added with a different codepoint. "
+                    f"Rename it in `custom_emoji_names` or add an entry for {emoji_code}."
+                )
+            aliases = [cleanup_name(alias.strip()) for alias in CLDR_DATA[emoji]["default"]]
+            all_emojis[emoji_code] = {"canonical_name": canonical_name, "aliases": aliases}
+            all_canonical_names.add(canonical_name)
+
+    # STEP 2: We don't support having aliases that collide with canonical names for emoji, so remove them.
+    for emoji_code, emoji_names in all_emojis.items():
+        # Copy the list to not iterate while elements are being deleted.
+        aliases = emoji_names["aliases"][:]
+        for alias in aliases:
+            if alias in all_canonical_names:
+                emoji_names["aliases"].remove(alias)
+            else:
+                alias_to_emoji_code[alias].append(emoji_code)  # This is used in STEP 3.
+
+    # STEP 3: We don't support multiple emoji sharing the same alias, but the CLDR data
+    # doesn't have that same restriction, so we have to fix this up to have unique aliases.
+    # If the alias was specifically specified in custom_emoji_names, then we can keep just
+    # that one, but otherwise there's no particular emoji that is an obvious candidate
+    # for the alias so just remove the alias for all relevant emoji.
+    for alias in alias_to_emoji_code:
+        if len(alias_to_emoji_code[alias]) > 1:
+            for emoji_code in alias_to_emoji_code[alias]:
+                if emoji_code not in CUSTOM_EMOJI_NAME_MAPS:
+                    all_emojis[emoji_code]["aliases"].remove(alias)
+
+    # STEP 4: We keep non-ascii (non-"English") characters in some emoji names if that's the correct
+    # way to spell that word, but always add an alias for an ascii-only version of the word.
+    for emoji_names in all_emojis.values():
+        for name in [emoji_names["canonical_name"]] + emoji_names["aliases"]:
+            # These are known names where we don't have an ascii-only version and there are ascii aliases
+            # that a user can still enter instead to get the same emoji.
+            if name in ["ココ", "サ", "指", "空"]:
+                assert any(alias.isascii() for alias in emoji_names["aliases"])
+                continue
+            if not name.isascii():
+                ascii_alias = convert_non_ascii_chars(name)
+                # Now no other emoji can use this alias.
+                for code in alias_to_emoji_code[ascii_alias]:
+                    all_emojis[code]["aliases"].remove(ascii_alias)
+                emoji_names["aliases"].append(ascii_alias)
+
+    # STEP 5: Write final dictionary to `emoji_names.py`.
+    with open(OUT_EMOJI_FILE, "w") as f:
+        f.write(
+            "from typing import Any\n\n"
+            "# Generated with `generate_emoji_names`.\n\n"
+            "EMOJI_NAME_MAPS: dict[str, dict[str, Any]] = {\n"
+        )
+        for key, emoji_names in all_emojis.items():
+            f.write(f"    {key!r}: {emoji_names!r},\n")
+        f.write("}\n")
+
+    print(
+        "\n\nDone! You should run the linter to format emoji_names.py with `./tools/lint --fix -m --only ruff-format`"
+    )
+
+
+if __name__ == "__main__":
+    main()

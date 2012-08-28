@@ -1,0 +1,7 @@
+{
+    "extends": "astro/tsconfigs/strictest",
+    "compilerOptions": {
+        "types": ["unplugin-icons/types/astro"],
+    },
+    "include": [".astro/types.d.ts", "**/*", "src/.remarkrc.js"],
+}

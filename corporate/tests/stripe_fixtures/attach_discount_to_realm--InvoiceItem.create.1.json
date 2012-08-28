@@ -1,0 +1,34 @@
+{
+  "amount": 7200,
+  "currency": "usd",
+  "customer": "attach_discount_to_realm--Customer.create.1.json",
+  "customer_account": null,
+  "date": 1000000000,
+  "description": "Zulip Cloud Standard",
+  "discountable": false,
+  "discounts": [],
+  "id": "attach_discount_to_realm--InvoiceItem.create.1.json",
+  "invoice": "attach_discount_to_realm--Event.list.1.json",
+  "livemode": false,
+  "metadata": {},
+  "net_amount": 7200,
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1357095845,
+    "start": 1325473445
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "1200"
+  },
+  "proration": false,
+  "quantity": 6,
+  "quantity_decimal": "6",
+  "tax_rates": [],
+  "test_clock": null
+}

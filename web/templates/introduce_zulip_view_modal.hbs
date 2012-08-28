@@ -1,0 +1,54 @@
+<div id="introduce-zulip-view-modal">
+    <p>
+        {{#if (eq zulip_view "inbox")}}
+            {{#tr}}
+                You’ll see a list of <z-highlight>conversations</z-highlight> where you have <z-highlight>unread messages</z-highlight>, organized by channel.
+                {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+            {{/tr}}
+        {{else if (eq zulip_view "recent_conversations")}}
+            {{#tr}}
+                You’ll see a list of <z-highlight>ongoing conversations</z-highlight>.
+                {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+            {{/tr}}
+        {{/if}}
+
+        {{#tr}}
+            Each conversation is <z-highlight>labeled with a topic</z-highlight> by the person who started it.
+            {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+        {{/tr}}
+    </p>
+    <p>
+        {{t 'Click on a conversation to view it. To return here, you can:'}}
+    </p>
+    <ul>
+        <li>
+            {{#tr}}
+                Use the <z-highlight>back</z-highlight> button in your browser or desktop app.
+                {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+            {{/tr}}
+        </li>
+        <li>
+            {{#if (eq zulip_view "inbox")}}
+                {{#tr}}
+                    Click <z-icon-inbox></z-icon-inbox> <z-highlight>Inbox</z-highlight> in the left sidebar.
+                    {{#*inline "z-icon-inbox"}}<i class="zulip-icon zulip-icon-inbox" aria-hidden="true"></i>{{/inline}}
+                    {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+                {{/tr}}
+            {{else if (eq zulip_view "recent_conversations")}}
+                {{#tr}}
+                    Click <z-icon-recent></z-icon-recent> <z-highlight>Recent conversations</z-highlight> in the left sidebar.
+                    {{#*inline "z-icon-recent"}}<i class="zulip-icon zulip-icon-recent" aria-hidden="true"></i>{{/inline}}
+                    {{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+                {{/tr}}
+            {{/if}}
+        </li>
+        {{#if current_home_view_and_escape_navigation_enabled}}
+            <li>
+                {{#tr}}
+                    Use <z-button>Esc</z-button> to go to your home view.
+                    {{#*inline "z-button"}}<span class="keyboard-button">{{> @partial-block}}</span>{{/inline}}
+                {{/tr}}
+            </li>
+        {{/if}}
+    </ul>
+</div>

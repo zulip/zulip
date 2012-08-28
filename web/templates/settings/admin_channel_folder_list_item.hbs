@@ -1,0 +1,40 @@
+<tr class="channel-folder-row movable-row" data-channel-folder-id="{{id}}">
+    <td>
+        {{#if is_admin}}
+        <span class="move-handle">
+            <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+            <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+        </span>
+        {{/if}}
+        <span class="channel-folder-name">{{folder_name}}</span>
+    </td>
+    <td>
+        <span class="channel-folder-description rendered-markdown">{{rendered_markdown rendered_description}}</span>
+    </td>
+    {{#if is_admin}}
+    <td class="actions">
+        {{> ../components/icon_button
+          icon="folder-cog"
+          intent="neutral"
+          custom_classes="tippy-zulip-delayed-tooltip edit-channel-folder-button"
+          data-tippy-content=(t "Manage folder")
+          }}
+        {{> ../components/icon_button
+          icon="trash"
+          intent="danger"
+          custom_classes="tippy-zulip-delayed-tooltip archive-channel-folder-button"
+          data-tippy-content=(t "Delete")
+          aria-label=(t "Delete")
+          }}
+    </td>
+    {{else}}
+    <td class="actions">
+        {{> ../components/icon_button
+          icon="preview"
+          intent="neutral"
+          custom_classes="tippy-zulip-delayed-tooltip edit-channel-folder-button"
+          data-tippy-content=(t "View details")
+          }}
+    </td>
+    {{/if}}
+</tr>

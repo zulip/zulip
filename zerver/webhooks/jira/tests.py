@@ -1,0 +1,166 @@
+from unittest.mock import patch
+
+from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
+from zerver.lib.test_classes import WebhookTestCase
+from zerver.models.realms import get_realm
+
+
+class JiraHookTests(WebhookTestCase):
+    def test_custom_channel(self) -> None:
+        api_key = self.test_user.api_key
+        self.subscribe(self.test_user, "jira_custom")
+        url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
+        msg = self.send_webhook_payload(
+            self.test_user,
+            url,
+            self.get_body("issue_created"),
+            content_type="application/json",
+        )
+        expected_content = """
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+
+* **Priority**: Major
+* **Assignee**: no one
+""".strip()
+        self.assert_channel_message(
+            message=msg,
+            channel_name="jira_custom",
+            topic_name="BUG-15: New bug with hook",
+            content=expected_content,
+        )
+
+    def test_created(self) -> None:
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = """
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+
+* **Priority**: Major
+* **Assignee**: no one
+""".strip()
+        self.check_webhook("issue_created", expected_topic_name, expected_message)
+
+    def test_ignored_events(self) -> None:
+        ignored_actions = [
+            "attachment_created",
+            "issuelink_created",
+            "issuelink_deleted",
+            "jira:version_released",
+            "jira:worklog_updated",
+            "sprint_closed",
+            "sprint_started",
+            "worklog_created",
+            "worklog_updated",
+        ]
+        for action in ignored_actions:
+            url = self.build_webhook_url()
+            payload = dict(webhookEvent=action)
+            with patch("zerver.webhooks.jira.view.check_send_webhook_message") as m:
+                result = self.client_post(url, payload, content_type="application/json")
+            self.assertFalse(m.called)
+            self.assert_json_success(result)
+
+    def test_created_with_unicode(self) -> None:
+        expected_topic_name = "BUG-15: New bug with à hook"
+        expected_message = """
+@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with à hook](http://lfranchi.com:8080/browse/BUG-15):
+
+* **Priority**: Major
+* **Assignee**: no one
+""".strip()
+        self.check_webhook("issue_created_with_unicode", expected_topic_name, expected_message)
+
+    def test_created_assignee(self) -> None:
+        expected_topic_name = "TEST-4: Test Created Assignee"
+        expected_message = """
+Leonardo Franchi [Administrator] created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4):
+
+* **Priority**: Major
+* **Assignee**: Leonardo Franchi [Administrator]
+""".strip()
+        self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
+
+    def test_deleted(self) -> None:
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = "@_**Othello, the Moor of Venice|12** deleted [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."
+        self.check_webhook("issue_deleted", expected_topic_name, expected_message)
+
+    def test_reassigned(self) -> None:
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = """@_**Othello, the Moor of Venice|12** updated [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) (assigned to @_**Othello, the Moor of Venice|12**):
+
+* Changed assignee to @_**Othello, the Moor of Venice|12**"""
+        self.check_webhook("issue_updated__reassigned", expected_topic_name, expected_message)
+
+    def test_priority_updated(self) -> None:
+        expected_topic_name = "TEST-1: Fix That"
+        expected_message = """Leonardo Franchi [Administrator] updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1) (assigned to Leonardo Franchi [Administrator]):
+
+* Changed priority from **Critical** to **Major**"""
+        self.check_webhook("issue_updated__priority", expected_topic_name, expected_message)
+
+    def test_status_changed(self) -> None:
+        expected_topic_name = "TEST-1: Fix That"
+        expected_message = """@_**Othello, the Moor of Venice|12** updated [TEST-1: Fix That](https://zulipp.atlassian.net/browse/TEST-1):
+
+* Changed status from **To Do** to **In Progress**"""
+        self.check_webhook("issue_updated__status", expected_topic_name, expected_message)
+
+    def test_comment_created(self) -> None:
+        expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
+        expected_message = """Hemanth V. Alluri commented on [SP-1: Add support for newer format Jira issue comment events](https://f20171170.atlassian.net/browse/SP-1)\n``` quote\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~!\n**Niloth**\n@_**King Hamlet|10**\n```"""
+        self.check_webhook("comment_created", expected_topic_name, expected_message)
+
+    def test_comment_created_no_issue_details(self) -> None:
+        expected_topic_name = "10000: Upgrade Jira to get the issue title here."
+        expected_message = """Hemanth V. Alluri commented on 10000: Upgrade Jira to get the issue title here.\n``` quote\nSounds like it’s pretty important. I’ll get this fixed ASAP!\n```"""
+        self.check_webhook(
+            "comment_created_no_issue_details", expected_topic_name, expected_message
+        )
+
+    def test_comment_updated(self) -> None:
+        expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
+        expected_message = """Hemanth V. Alluri updated their comment on [SP-1: Add support for newer format Jira issue comment events](https://f20171170.atlassian.net/browse/SP-1)\n``` quote\nThis is a very important issue! I’m on it!\n```"""
+        self.check_webhook("comment_updated", expected_topic_name, expected_message)
+
+    def test_comment_deleted(self) -> None:
+        expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
+        expected_message = """Hemanth V. Alluri deleted their comment on [SP-1: Add support for newer format Jira issue comment events](https://f20171170.atlassian.net/browse/SP-1)\n``` quote\n~~This is a very important issue! I’m on it!~~\n```"""
+        self.check_webhook("comment_deleted", expected_topic_name, expected_message)
+
+    def test_anomalous_webhook_payload_error(self) -> None:
+        with self.assertRaises(AssertionError) as e:
+            self.check_webhook(
+                fixture_name="example_anomalous_payload",
+                expected_topic="",
+                expected_message="",
+                expect_noop=True,
+            )
+
+        self.assertIn(
+            "Unable to parse request: Did Jira generate this event?",
+            e.exception.args[0],
+        )
+
+    def test_created_silent_mention_by_email_fallback(self) -> None:
+        othello = self.example_user("othello")
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = f"""
+@_**{othello.full_name}|{othello.id}** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+
+* **Priority**: Major
+* **Assignee**: no one
+""".strip()
+        self.check_webhook("issue_created", expected_topic_name, expected_message)
+
+    def test_comment_created_silent_mention_atlassian_account_id(self) -> None:
+        realm = get_realm("zulip")
+        atlassian_field = try_add_realm_default_custom_profile_field(realm, "atlassian")
+        hamlet = self.example_user("hamlet")
+        test_account_id = "5c76b994e1bcdf6294d0eb0f"
+        self.set_user_custom_profile_data(
+            hamlet, [{"id": atlassian_field.id, "value": test_account_id}]
+        )
+
+        expected_topic_name = "SP-1: Add support for newer format Jira issue comment events"
+        expected_message = f"""@_**{hamlet.full_name}|{hamlet.id}** commented on [SP-1: Add support for newer format Jira issue comment events](https://f20171170.atlassian.net/browse/SP-1)\n``` quote\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~!\n**Niloth**\n@_**{hamlet.full_name}|{hamlet.id}**\n```"""
+        self.check_webhook("comment_created", expected_topic_name, expected_message)

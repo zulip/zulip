@@ -1,0 +1,103 @@
+#set-user-status-modal {
+    /* A narrower width is more attractive for this modal. */
+    width: 384px;
+
+    .user-status-content-wrapper {
+        display: grid;
+        grid-template:
+            "status-icon search-input clear-search" auto / auto minmax(0, 1fr)
+            auto;
+        align-items: center;
+        outline: 1px solid hsl(0deg 0% 0% / 60%);
+        outline-offset: -1px;
+        border-radius: 4px;
+        background-color: var(--color-background-input);
+
+        & input.user-status {
+            grid-area: search-input;
+            line-height: 1.25em; /* 20px at 16px/em */
+            padding: 0.5em 0.125em; /* 8px 2px at 16px/1em */
+            width: 100%;
+            /* Override default input height */
+            height: unset;
+            border: none;
+            outline: none;
+            box-shadow: none;
+            /* Transparent here is to allow the input
+               background set on the wrapper to show
+               through. */
+            background-color: transparent;
+            margin: 0;
+
+            &:focus {
+                box-shadow: none;
+            }
+        }
+
+        #clear_status_message_button {
+            grid-area: clear-search;
+            padding: 0.5em; /* 8px at 16px/1em */
+            margin: 0.125em; /* 2px at 16px/1em */
+        }
+
+        .status-emoji-wrapper {
+            display: flex;
+            padding: 0.375em; /* 6px at 16px/1em */
+            margin: 0.125em; /* 2px at 16px/1em */
+            border-radius: 4px;
+            cursor: pointer;
+
+            .selected-emoji,
+            .smiley-icon {
+                width: 1.25em; /* 20px at 16px/em */
+                height: 1.25em; /* 20px at 16px/em */
+                cursor: pointer;
+            }
+
+            .smiley-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--color-modal-selectable-icon);
+
+                &:hover {
+                    text-decoration: none;
+                }
+            }
+
+            &:hover,
+            &.active-emoji-picker-reference {
+                background-color: var(
+                    --background-color-modal-selectable-icon-hover
+                );
+
+                .smiley-icon {
+                    color: var(--color-modal-selectable-icon-hover);
+                }
+            }
+        }
+    }
+
+    .user-status-options {
+        padding-top: 15px;
+
+        .user-status-value {
+            /* We set the gap between the status emoji and text
+               in the default user status options to match the gap
+               between the corresponding emoji and text of the
+               custom user status input.
+               6px (emoji button padding)
+               + 2px (emoji button margin)
+               + 2px (input padding) */
+            gap: 0.625em; /* 10px at 16px/em */
+
+            .status-emoji {
+                /* Size and align status emoji to match
+                   the top line of the modal. */
+                height: 1.25em; /* 20px at 16px/em */
+                width: 1.25em; /* 20px at 16px/em */
+                margin: 0;
+            }
+        }
+    }
+}

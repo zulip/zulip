@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+
+"""
+This tool is for updating API key field `zuliprc` files of dummy users
+in development environment, with the correct keys from the database.
+Ensure running this outside of vagrant environment.
+Usage:
+./tools/update-zuliprc-api-field /path/to/zuliprc_dev
+"""
+
+import argparse
+import configparser
+import os
+import shlex
+import subprocess
+import sys
+
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ZULIP_PATH)
+from scripts.lib.zulip_tools import is_vagrant_env_host
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument(
+    "path", metavar="FILE", nargs="+", help="config file of dummy users in development server"
+)
+args = parser.parse_args()
+
+zuliprc_paths_list = args.path
+for zuliprc_path in zuliprc_paths_list:
+    zuliprc = configparser.ConfigParser()
+    result = ""
+    try:
+        with open(zuliprc_path) as f:
+            zuliprc.read_file(f, zuliprc_path)
+        api_details = zuliprc["api"]
+        email = api_details["email"]
+        key = api_details["key"]
+        site = api_details["site"]
+        if "localhost" not in site:
+            result = "ABORTED"
+            reason = "Script to be used for development server config files only"
+    except (KeyError, configparser.MissingSectionHeaderError):
+        result = "FAILURE"
+        reason = "Could not parse file due to missing required fields/sections"
+    except FileNotFoundError:
+        result = "ABORTED"
+        reason = "No zuliprc file found at specified path"
+
+    if result not in ("ABORTED", "FAILURE"):
+        # Make sure the cwd is the root of Zulip checkout.
+        os.chdir(ZULIP_PATH)
+
+        if is_vagrant_env_host(ZULIP_PATH):
+            arguments = [
+                "vagrant",
+                "ssh",
+                "--command",
+                "./manage.py print_initial_password " + shlex.quote(email),
+            ]
+        else:
+            # Support users who don't have vagrant based setup
+            arguments = ["./manage.py", "print_initial_password", email]
+        # We redirect 'stderr' to 'stdout' to avoid 'Connection to 127.0.0.1 closed'
+        # appearing after this script finishes.
+        output = subprocess.check_output(arguments, stderr=subprocess.STDOUT, text=True)
+        new_key = output.split()[6]
+
+        if new_key != key:
+            try:
+                zuliprc.set("api", "key", new_key)
+                with open(zuliprc_path, "w+") as w:
+                    zuliprc.write(w)
+                result = "SUCCESS"
+                reason = f"API field updated for user {email}"
+            except OSError:
+                result = "FAILURE"
+                reason = "Writing to file unsuccessful"
+        else:
+            result = "SUCCESS"
+            reason = f"API key for user {email} is already consistent"
+    print(f"{zuliprc_path}: {result}: {reason}")

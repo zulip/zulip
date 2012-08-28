@@ -1,0 +1,110 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {run_test} = require("./lib/test.cjs");
+const blueslip = require("./lib/zblueslip.cjs");
+
+const reload_state = mock_esm("../src/reload_state", {
+    is_in_progress: () => false,
+});
+const server_events_state = mock_esm("../src/server_events_state", {
+    has_received_first_events_response: () => true,
+});
+const settings_data = mock_esm("../src/settings_data");
+
+const people = zrequire("people");
+const {set_realm} = zrequire("state_data");
+
+set_realm(make_realm());
+
+const me = make_user({
+    email: "me@example.com",
+    user_id: 30,
+    full_name: "Me Myself",
+    timezone: "America/Los_Angeles",
+});
+
+people.init();
+people.add_active_user(me);
+people.initialize_current_user(me.user_id);
+
+run_test("report_late_add", ({override}) => {
+    override(settings_data, "user_can_access_all_other_users", () => true);
+    blueslip.expect("error", "Added user late");
+    people.report_late_add(55, "foo@example.com");
+
+    // Before the first /json/events poll has returned, the people
+    // store may legitimately lack users created after the /register
+    // snapshot, so we demote the error to a log.
+    override(server_events_state, "has_received_first_events_response", () => false);
+    blueslip.expect("log", "Added user late", 2);
+    people.report_late_add(55, "foo@example.com");
+    override(server_events_state, "has_received_first_events_response", () => true);
+
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    override(reload_state, "is_in_progress", () => true);
+    people.report_late_add(55, "foo@example.com");
+
+    override(reload_state, "is_in_progress", () => false);
+    blueslip.expect("log", "Message was sent by an inaccessible user");
+    people.report_late_add(55, "foo@example.com");
+});
+
+run_test("add_missing_people_for_message_reactions", ({override}) => {
+    override(settings_data, "user_can_access_all_other_users", () => true);
+
+    const unknown_user_id = 8888;
+    assert.ok(!people.is_known_user_id(unknown_user_id));
+
+    blueslip.expect("error", "Added user late");
+    people.add_missing_people_for_message_reactions([
+        {user_id: me.user_id},
+        {user_id: unknown_user_id},
+    ]);
+
+    // Known user (me) is unchanged; unknown user is now in the store.
+    assert.ok(people.is_known_user_id(unknown_user_id));
+});
+
+run_test("blueslip", () => {
+    const unknown_email = "alicebobfred@example.com";
+
+    blueslip.expect("error", "Unknown user_id");
+    people.get_actual_name_from_user_id(9999);
+
+    blueslip.expect("warn", "No user_id provided");
+    const person = make_user({
+        email: "person@example.com",
+        user_id: undefined,
+        full_name: "Person Person",
+    });
+    people.add_active_user(person);
+
+    blueslip.expect("warn", "Unknown emails");
+    people.email_list_to_user_ids_string([unknown_email]);
+
+    const message = {
+        type: "private",
+        display_recipient: [],
+        sender_id: me.user_id,
+    };
+    blueslip.expect("error", "Empty recipient list in message", 3);
+    people.pm_with_user_ids(message);
+    people.all_user_ids_in_pm(message);
+    assert.equal(people.pm_perma_link(message), undefined);
+
+    blueslip.expect("error", "Unknown user_id in maybe_get_user_by_id");
+    blueslip.expect("error", "Unknown people in message");
+    const url = people.pm_with_url({type: "private", display_recipient: [{id: 42}]});
+    assert.equal(url.indexOf("unk"), url.length - 3);
+
+    blueslip.expect("error", "Undefined field id");
+    assert.equal(people.my_custom_profile_data(undefined), undefined);
+
+    blueslip.expect("error", "Trying to set undefined field id");
+    people.set_custom_profile_field_data(me.user_id, {});
+});

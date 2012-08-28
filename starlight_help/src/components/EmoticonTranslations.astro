@@ -1,0 +1,30 @@
+---
+import {getCollection} from "astro:content";
+
+const emoticons = (await getCollection("emoticons")).toSorted(
+    (a, b) => a.data.order - b.data.order,
+);
+---
+
+<table>
+    <thead>
+        <tr>
+            <th>Emoticon</th>
+            <th>Emoji</th>
+        </tr>
+    </thead>
+    <tbody>
+        {
+            emoticons.map((entry) => (
+                <tr>
+                    <td>
+                        <code>{entry.id}</code>
+                    </td>
+                    <td>
+                        <img src={entry.data.image.src} alt={entry.data.emoji} class="emoji-big" />
+                    </td>
+                </tr>
+            ))
+        }
+    </tbody>
+</table>

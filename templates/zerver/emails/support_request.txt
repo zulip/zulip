@@ -1,0 +1,8 @@
+Support URL: {{ support_url }}
+
+Subject: {{ request_subject }}
+
+Message:
+{{ request_message }}
+
+Requested by: {{ requested_by }} ({{ user_role }})

@@ -1,0 +1,45 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block title %}
+<title>{{ _("Reset your password") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+
+<div class="flex new-style app portico-page">
+    <div class="inline-block">
+        <div class="lead">
+            <h1 class="get-started">{{ _('Reset your password') }}</h1>
+        </div>
+
+        <div class="app-main forgot-password-container white-box new-style">
+
+            <p>{{ _("Forgot your password? No problem, we'll send a link to reset your password to the email you signed up with.") }}</p>
+
+            <form method="post" action="{{ url('password_reset') }}">
+                {{ csrf_input }}
+                <div class="new-style">
+                    <div class="input-box horizontal">
+                        <div class="inline-block relative">
+                            <label for="id_email" class="">{{ _('Email') }}</label>
+                            <input id="id_email" class="required" type="text" name="email"
+                              value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
+                              maxlength="100" placeholder="{{ _("Enter your email address") }}" autofocus required />
+                            {% if form.email.errors %}
+                                {% for error in form.email.errors %}
+                                <div class="alert alert-error">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <button type="submit">{{ _('Send reset link') }}</button>
+
+                    </div>
+                </div>
+            </form>
+            {% include 'zerver/include/back_to_login_component.html' %}
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

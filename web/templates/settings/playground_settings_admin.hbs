@@ -1,0 +1,96 @@
+<div id="playground-settings" class="settings-section" data-name="playground-settings">
+    <div>
+        <p>
+            {{#tr}}
+                Code playgrounds are interactive in-browser development environments,
+                that are designed to make
+                it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks>
+                that are tagged with a programming language will have a button visible on
+                hover that allows users to open the code block on the code playground site.
+                {{#*inline "z-link-code-blocks"}}<a href="/help/code-blocks" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </p>
+        <p>
+            {{t "For example, to configure a code playground for code blocks tagged as Rust,
+              you can set:" }}
+        </p>
+        <ul>
+            <li>
+                {{t "Language" }}: <span class="rendered_markdown"><code>Rust</code></span>
+            </li>
+            <li>
+                {{t "Name" }}: <span class="rendered_markdown"><code>Rust playground</code></span>
+            </li>
+            <li>
+                {{t "URL template" }}: <span class="rendered_markdown"><code>https://play.rust-lang.org/?code={code}</code></span>
+            </li>
+        </ul>
+        <p>
+            {{#tr}}
+                For more examples and technical details, see the <z-link>help center documentation</z-link>
+                on adding code playgrounds.
+                {{#*inline "z-link"}}<a href="/help/code-blocks#code-playgrounds" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{/tr}}
+        </p>
+
+        {{#if is_admin}}
+        <form class="admin-playground-form">
+            <div class="add-new-playground-box settings-highlight-box">
+                <div class="new-playground-form wrapper">
+                    <div class="settings-section-title">
+                        {{t "Add a new code playground" }}
+                        {{> ../help_link_widget link="/help/code-blocks#code-playgrounds" }}
+                    </div>
+                    <div class="alert" id="admin-playground-status"></div>
+                    <div class="input-group">
+                        <label for="playground_pygments_language"> {{t "Language" }}</label>
+                        <input type="text" id="playground_pygments_language" class="settings_text_input" name="pygments_language" autocomplete="off" placeholder="Rust" />
+                    </div>
+                    <div class="input-group">
+                        <label for="playground_name"> {{t "Name" }}</label>
+                        <input type="text" id="playground_name" class="settings_text_input" name="playground_name" autocomplete="off" placeholder="Rust playground" />
+                    </div>
+                    <div class="input-group">
+                        <label for="playground_url_template"> {{t "URL template" }}</label>
+                        <input type="text" id="playground_url_template" class="settings_text_input" name="url_template" placeholder="https://play.rust-lang.org/?code={code}" />
+                    </div>
+                    {{> ../components/action_button
+                      id="submit_playground_button"
+                      label=(t "Add code playground")
+                      variant="subtle"
+                      intent="brand"
+                      type="submit"
+                      }}
+                </div>
+            </div>
+        </form>
+        {{/if}}
+
+        <div class="settings_panel_list_header">
+            <h3>{{t "Code playgrounds"}}</h3>
+            {{> filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter code playgrounds')}}
+        </div>
+
+        <div class="progressive-table-wrapper" data-simplebar data-simplebar-tab-index="-1">
+            <table class="table table-striped wrapped-table admin_playgrounds_table">
+                <thead class="table-sticky-headers">
+                    <tr>
+                        <th class="active" data-sort="alphabetic" data-sort-prop="pygments_language">{{t "Language" }}
+                            <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                        </th>
+                        <th data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}
+                            <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                        </th>
+                        <th data-sort="alphabetic" data-sort-prop="url_template">{{t "URL template" }}
+                            <i class="table-sortable-arrow zulip-icon zulip-icon-sort-arrow-down"></i>
+                        </th>
+                        {{#if is_admin}}
+                        <th class="actions">{{t "Actions" }}</th>
+                        {{/if}}
+                    </tr>
+                </thead>
+                <tbody id="admin_playgrounds_table" data-empty="{{t 'No playgrounds configured.' }}" data-search-results-empty="{{t 'No playgrounds match your current filter.' }}"></tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,55 @@
+{% extends "zerver/portico_error_pages/portico_error_page.html" %}
+
+{% block title %}
+<title>{{ _("Internal server error") }} | Zulip</title>
+{% endblock %}
+
+{% block customhead %}
+{{ super() }}
+<meta http-equiv="refresh" content="60;URL='/'" />
+{% endblock %}
+
+{% block error_page_content %}
+<img src="{{ static('images/errors/500art.svg') }}" alt=""/>
+<div class="errorbox">
+    <div class="errorcontent">
+        <h1 class="lead">{{ _("Internal server error") }}</h1>
+        {% if corporate_enabled %}
+            <!-- Keep in sync with web/html/5xx-cloud.html -->
+            <p>
+                {% trans %}
+                Something went wrong. Sorry about that! We're aware of
+                the problem and are working to fix it.
+                Zulip will load automatically once it is working again.
+                {% endtrans %}
+            </p>
+            <p>
+                {% trans status_url="https://status.zulip.com/" %}
+                Please check <a href="{{status_url}}">Zulip Cloud status</a> for
+                more information, and <a href="mailto:{{support_email}}">contact
+                Zulip support</a> with any questions.
+                {% endtrans %}
+            </p>
+        {% else %}
+            <!-- Keep in sync with web/html/5xx.html -->
+            <p>
+                {% trans %}
+                Something went wrong. Sorry about that!
+                Zulip will load automatically once it is working again.
+                {% endtrans %}
+            </p>
+            <p>
+                {% trans %}
+                <a href="mailto:{{support_email}}">Contact this server's administrators</a> for support.
+                {% endtrans %}
+            </p>
+            <p>
+                {% trans troubleshooting_url="https://zulip.readthedocs.io/en/latest/production/troubleshooting.html" %}
+                If you administer this server, you may want to check out the
+                <a href="{{troubleshooting_url}}">Zulip server troubleshooting guide</a>.
+                {% endtrans %}
+            </p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+<div class="drafts-list overlay-messages-list" data-simplebar data-simplebar-tab-index="-1">
+    <div class="no-drafts no-overlay-messages">
+        {{t 'No drafts.'}}
+    </div>
+
+    <div id="drafts-from-conversation">
+        {{#with narrow_drafts_header}}
+            {{#if is_dm_with_self}}
+                <h2>{{t "Drafts from conversation with yourself"}}</h2>
+            {{else if dm_recipient_string}}
+                <h2>{{#tr}}Drafts from conversation with {dm_recipient_string}{{/tr}}</h2>
+            {{else}}
+                <h2>
+                    {{~#tr}}
+                        Drafts from <z-recipient></z-recipient>
+                        {{#*inline "z-recipient"}}
+                            {{#if stream}}
+                                {{~> decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false}}
+                            {{else if channel_name_fallback~}}
+                                #{{channel_name_fallback}}
+                            {{~/if}}
+                            {{~#if topic}} &gt; {{topic}}{{/if}}
+                        {{/inline}}
+                    {{/tr~}}
+                </h2>
+            {{/if}}
+        {{/with}}
+        {{#each narrow_drafts}}
+            {{> draft .}}
+        {{/each}}
+    </div>
+    <div id="other-drafts">
+        <h2 id="other-drafts-header">{{t "Other drafts" }}</h2>
+        {{#each other_drafts}}
+            {{> draft .}}
+        {{/each}}
+    </div>
+</div>

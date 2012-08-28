@@ -1,0 +1,19 @@
+
+---
+{% if remote_server_email %}
+{% if released_version %}
+You are receiving this email because you opted into release notifications.
+{% else %}
+You are receiving this email to update you about important changes to Zulip's Terms of Service.
+
+Unsubscribe: {{ unsubscribe_link }}
+{% endif %}
+{% elif unsubscribe_link %}
+{{ _("Manage email preferences") }}:
+
+{{ realm_url }}/#settings/notifications
+
+{{ _("Unsubscribe from marketing emails") }}:
+
+{{ unsubscribe_link }}
+{% endif %}

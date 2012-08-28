@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euxo pipefail
+
+version="4.0.6"
+sha256=d0048944763c18f91bc67e043aafa64c2c53f6246547c9474311efbc05ccfe66
+
+tmpdir="$(mktemp -d)"
+trap 'rm -r "$tmpdir"' EXIT
+cd "$tmpdir"
+tarball="pgroonga-$version.tar.gz"
+curl -fLO --retry 3 "https://github.com/pgroonga/pgroonga/releases/download/$version/$tarball"
+sha256sum -c <<<"$sha256 $tarball"
+tar -xzf "$tarball"
+cd "pgroonga-$version"
+
+meson setup build .
+meson install -C build

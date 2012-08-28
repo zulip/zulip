@@ -1,0 +1,148 @@
+# GIF picker integrations
+
+This page documents the server-level configuration required to enable
+GIPHY or Tenor integrations to [add GIFs in your message][help-center-giphy] on
+a self-hosted Zulip server.
+
+:::{note}
+If API keys are configured for multiple integrations, Zulip will prioritize
+Tenor, followed by KLIPY, and then GIPHY.
+:::
+
+## GIPHY
+
+To enable the GIPHY integration, you need to get a beta or production API key
+from [GIPHY](https://developers.giphy.com/).
+
+### Apply for API key
+
+1. [Create a GIPHY account](https://giphy.com/join).
+
+1. Create a GIPHY API key by clicking “Create an App” on the
+   [Developer Dashboard][giphy-dashboard].
+
+1. Choose **SDK** as product type and click **Next Step**.
+
+1. Enter a name and a description for your app and click on **Create
+   New App**. The hostname for your Zulip server is a fine name.
+
+1. You will receive a [rate-limited][giphy-beta-api] beta API key, which
+   may be sufficient for smaller Zulip servers.
+
+1. (_optional_) If the beta API key rate limit is too low for your
+   organization, apply for a production API key by following the
+   instructions provided by GIPHY when you receive your beta API key.
+   Note that when submitting a screenshot to request a production API
+   key, GIPHY expects the screenshot to show the full page (including
+   the URL).
+
+You can then configure your Zulip server to use GIPHY API as
+follows:
+
+1. In `/etc/zulip/settings.py`, enter your GIPHY API key as
+   `GIPHY_API_KEY = "<Your API key from GIPHY>"`.
+
+   GIPHY API keys are not secrets -- GIPHY expects every browser or
+   other client connecting to your Zulip server will receive a copy --
+   which is why they are configured in `settings.py` and not
+   `zulip-secrets.conf`.
+
+1. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
+Congratulations! You've configured the GIPHY integration for your
+Zulip server. Your users can now use the integration as described in
+[the help center article][help-center-giphy]. (A browser reload may
+be required).
+
+## Tenor
+
+To enable the Tenor GIF integration, you will need to create
+a production API key from Tenor.
+
+### Create a Tenor API key
+
+1. Navigate to the [Google Cloud Console](https://console.cloud.google.com/)
+   and either sign in with an existing Google account or create a new one.
+
+1. Choose an existing Google Cloud project where you want to enable the
+   Tenor API, or create a new project if necessary.
+
+1. In the Google Cloud Console, search for "Tenor API" in the search bar.
+
+1. Select the Tenor API from the results and click "Enable" to activate
+   it for your project.
+
+1. After enabling the API, go to the "Credentials" section within your project.
+
+1. Click "Create credentials" and choose "API Key" from the dropdown menu.
+
+1. While configuring the API key, you can optionally restrict it to only
+   call the Tenor API.
+
+1. Store the newly generated API key.
+
+You can then configure your Zulip server to use the Tenor API
+as follows:
+
+1. In `/etc/zulip/settings.py`, enter your Tenor API key as
+   `TENOR_API_KEY = "<Your API key from the Google Cloud Console>"`.
+
+   Just like GIPHY API keys, Tenor API keys are not secrets -- Tenor expects
+   every browser or other client connecting to your Zulip server will
+   receive a copy -- which is why they are configured in `settings.py` and not
+   `zulip-secrets.conf`.
+
+1. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
+Congratulations! You've configured the Tenor integration for your
+Zulip server. Your users can now use the integration as described in
+[the help center article][help-center-giphy]. (A browser reload may
+be required).
+
+## KLIPY
+
+To enable the KLIPY GIF integration, you will need to create
+a test or production API key from KLIPY.
+
+### Create a KLIPY API key
+
+1. On the KLIPY Developer page, navigate to the [API Keys section](https://partner.klipy.com/api-keys)
+
+1. Select **Add Platform** and enter the details of your Zulip server.
+
+1. In the **Create API Key** modal, enter the relevant details and select **Create**.
+
+1. You will receive a [rate-limited][klipy-api-key-rate-limit] test API key, which
+   may be sufficient for smaller Zulip servers.
+
+1. (_optional_) If the test API key rate limit is too low for your Zulip server,
+   you can click on the **three-dot button** on the right and select **Request Production**.
+   Enter the necessary details and select **Apply**.
+
+1. Store the newly generated API key.
+
+You can then configure your Zulip server to use the KLIPY API
+as follows:
+
+1. In `/etc/zulip/settings.py`, enter your KLIPY API key as
+   `KLIPY_API_KEY = "<Your API key>"`.
+
+   Just like GIPHY API keys, KLIPY API keys are not secrets -- KLIPY expects
+   every browser or other client connecting to your Zulip server will
+   receive a copy -- which is why they are configured in `settings.py` and not
+   `zulip-secrets.conf`.
+
+1. Restart the Zulip server with
+   `/home/zulip/deployments/current/scripts/restart-server`.
+
+Congratulations! You've configured the KLIPY integration for your
+Zulip server. Your users can now use the integration as described in
+[the help center article][help-center-giphy]. (A browser reload may
+be required).
+
+[help-center-giphy]: https://zulip.com/help/animated-gifs-from-giphy
+[giphy-dashboard]: https://developers.giphy.com/dashboard/
+[giphy-beta-api]: https://support.giphy.com/hc/en-us/articles/360035340511
+[klipy-api-key-rate-limit]: https://partner.klipy.com/faqs#4

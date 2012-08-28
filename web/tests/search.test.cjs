@@ -1,0 +1,387 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
+
+const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
+
+const people = zrequire("people");
+const search = zrequire("search");
+const search_pill = zrequire("search_pill");
+const search_suggestion = zrequire("search_suggestion");
+const {set_current_user, set_realm} = zrequire("state_data");
+const stream_data = zrequire("stream_data");
+
+const current_user = {};
+set_current_user(current_user);
+const realm = make_realm();
+set_realm(realm);
+
+function stub_pills() {
+    const $pill_container = $("#searchbox-input-container.pill-container");
+    const $pill_input = $.create("pill_input");
+    $pill_container.set_find_results(".input", $pill_input);
+    $pill_input[0].before = noop;
+}
+
+set_global("getSelection", () => ({
+    modify: noop,
+}));
+
+let typeahead_forced_open = false;
+let search_typeahead;
+
+const verona = make_stream({
+    subscribed: true,
+    color: "blue",
+    name: "Verona",
+    stream_id: 1,
+});
+stream_data.add_sub_for_tests(verona);
+
+const zoe = {
+    email: "user7@zulipdev.com",
+    user_id: 3,
+    full_name: "Zoe",
+};
+people.add_active_user(zoe, "server_events");
+
+run_test("initialize", ({override, override_rewire, mock_template}) => {
+    const $search_query_box = $("#search_query");
+    const $searchbox_form = $("#searchbox_form");
+    stub_pills();
+
+    mock_template("search_list_item.hbs", true, (_data, html) => html);
+    mock_template("search_description.hbs", true, (_data, html) => html);
+
+    let expected_pill_display_value = "";
+    let input_pill_displayed = false;
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(data.display_value, expected_pill_display_value);
+        input_pill_displayed = true;
+        return html;
+    });
+
+    override_rewire(search_suggestion, "max_num_of_search_results", 999);
+    let terms;
+
+    function mock_pill_removes(widget) {
+        const pills = widget._get_pills_for_testing();
+        for (const pill of pills) {
+            pill.$element[0].remove = noop;
+        }
+    }
+
+    let opts;
+    override(bootstrap_typeahead, "Typeahead", (input_element, opts_) => {
+        opts = opts_;
+        assert.equal(input_element.$element[0], $search_query_box[0]);
+        assert.equal(opts.items, 999);
+        assert.equal(opts.helpOnEmptyStrings(), true);
+        assert.equal(opts.matcher("")(), true);
+
+        search_typeahead = {
+            shown: false,
+            lookup() {
+                typeahead_forced_open = true;
+            },
+            hide() {
+                this.shown = false;
+            },
+        };
+        return search_typeahead;
+    });
+
+    search.initialize({
+        on_narrow_search() {},
+    });
+
+    {
+        {
+            const search_suggestions = ["dm", "dm:"];
+
+            /* Test highlighter */
+            let expected_value = `<div class="search_list_item">\n            <div class="description">Search for dm</div>\n    \n</div>\n`;
+            assert.equal(opts.item_html("dm")(search_suggestions[0]), expected_value);
+
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\ndm:\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n    </div>\n</div>\n</span>\n            <div class="description">Direct messages with</div>\n</div>\n`;
+            assert.equal(opts.item_html("dm")(search_suggestions[1]), expected_value);
+
+            /* Test sorter */
+            assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
+        }
+
+        {
+            const search_suggestions = ["ver", "stream:Verona"];
+
+            /* Test highlighter */
+            let description_html = "Search for ver";
+            let expected_value = `<div class="search_list_item">\n            <div class="description">Search for ver</div>\n    \n</div>\n`;
+            assert.equal(opts.item_html("ver")(search_suggestions[0]), expected_value);
+
+            const search_string = "channel: Verona";
+            const verona_decorated = `<span class="decorated-channel-name-wrapper inline-decorated-channel-name"><span class="channel-privacy-type-icon"><i class="zulip-icon zulip-icon-hashtag" aria-hidden="true"></i></span><span class="decorated-channel-name">Verona</span></span>`;
+            description_html = `Messages in ${verona_decorated}`;
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class='pill ' tabindex=0>\n    <span class="pill-label">\n        <span class="pill-value">\n${search_string}\n        </span></span>\n    <div class="exit">\n        <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n    </div>\n</div>\n</span>\n            <div class="description">${description_html}</div>\n</div>\n`;
+            assert.equal(opts.item_html("ver")(search_suggestions[1]), expected_value);
+
+            /* Test sorter */
+            assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
+        }
+
+        {
+            const search_suggestions = [
+                "zo",
+                `sender:${zoe.user_id}`,
+                `dm:${zoe.user_id}`,
+                `dm-including:${zoe.user_id}`,
+                `mentions:${zoe.user_id}`,
+            ];
+
+            /* Test highlighter */
+            const description_html = "Search for zo";
+            let expected_value = `<div class="search_list_item">\n            <div class="description">${description_html}</div>\n    \n</div>\n`;
+            assert.equal(opts.item_html("zo")(search_suggestions[0]), expected_value);
+
+            override(realm, "realm_enable_guest_user_indicator", true);
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">sender:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            assert.equal(opts.item_html("zo")(search_suggestions[1]), expected_value);
+
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            assert.equal(opts.item_html("zo")(search_suggestions[2]), expected_value);
+
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">dm-including:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            assert.equal(opts.item_html("zo")(search_suggestions[3]), expected_value);
+
+            expected_value = `<div class="search_list_item">\n            <span class="pill-container"><div class="user-pill-container pill" tabindex=0>\n    <span class="pill-label">mentions:\n    </span>\n        <div class="pill" data-user-id="3">\n            <img class="pill-image" src="/avatar/3" />\n            <div class="pill-image-border"></div>\n            <span class="pill-label">\n                <span class="pill-value">Zoe</span></span>\n            <div class="exit">\n                <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="translated: Remove"></a>\n            </div>\n        </div>\n</div>\n</span>\n    \n</div>\n`;
+            assert.equal(opts.item_html("zo")(search_suggestions[4]), expected_value);
+
+            /* Test sorter */
+            assert.equal(opts.sorter(search_suggestions.strings), search_suggestions.strings);
+        }
+
+        {
+            /* Test updater */
+            const _setup = (terms) => {
+                const pills = search.search_pill_widget._get_pills_for_testing();
+                for (const pill of pills) {
+                    pill.$element[0].remove = noop;
+                }
+                search_pill.set_search_bar_contents(
+                    terms,
+                    search.search_pill_widget,
+                    false,
+                    (text) => $search_query_box.text(text),
+                );
+            };
+
+            terms = [
+                {
+                    negated: false,
+                    operator: "search",
+                    operand: "ver",
+                },
+            ];
+            expected_pill_display_value = null;
+            _setup(terms);
+            input_pill_displayed = false;
+            mock_pill_removes(search.search_pill_widget);
+            assert.equal(opts.updater("ver"), "ver");
+            assert.ok(!input_pill_displayed);
+
+            const verona_stream_id = verona.stream_id.toString();
+            terms = [
+                {
+                    negated: false,
+                    operator: "channel",
+                    operand: verona_stream_id,
+                },
+            ];
+            expected_pill_display_value = "channel: Verona";
+            _setup(terms);
+            input_pill_displayed = false;
+            mock_pill_removes(search.search_pill_widget);
+            assert.equal(opts.updater(`channel:${verona_stream_id}`), "");
+            assert.ok(input_pill_displayed);
+
+            override_rewire(search, "is_using_input_method", true);
+            _setup(terms);
+            input_pill_displayed = false;
+            mock_pill_removes(search.search_pill_widget);
+            assert.equal(opts.updater(`channel:${verona_stream_id}`), "");
+            assert.ok(input_pill_displayed);
+        }
+
+        {
+            /* Test hideAfterSelect */
+            // An empty search bar means the selected term became a pill,
+            // so the typeahead should hide.
+            $search_query_box.text("");
+            assert.ok(opts.hideAfterSelect());
+
+            // A bare operator still needs an operand, so keep the
+            // typeahead open.
+            $search_query_box.text("channel:");
+            assert.ok(!opts.hideAfterSelect());
+
+            // A complete operator term is done, so hide the typeahead.
+            $search_query_box.text("channel:Verona");
+            assert.ok(opts.hideAfterSelect());
+
+            // A plain search term is also complete, so hide.
+            $search_query_box.text("ver");
+            assert.ok(opts.hideAfterSelect());
+        }
+    }
+
+    $search_query_box.text("test string");
+
+    override_rewire(search, "is_using_input_method", false);
+    $searchbox_form.trigger("compositionend");
+    assert.ok(search.is_using_input_method);
+
+    const keydown = $searchbox_form.get_on_handler("keydown");
+    let default_prevented = false;
+    let ev = {
+        type: "keydown",
+        which: 15,
+        preventDefault() {
+            default_prevented = true;
+        },
+    };
+    $search_query_box.trigger("blur");
+    assert.equal(keydown(ev), undefined);
+    assert.ok(!default_prevented);
+
+    ev.key = "Enter";
+    assert.equal(keydown(ev), undefined);
+    assert.ok(!default_prevented);
+
+    ev.key = "Enter";
+    $search_query_box.trigger("focus");
+    assert.equal(keydown(ev), undefined);
+    assert.ok(default_prevented);
+
+    ev = {
+        type: "keyup",
+    };
+
+    const _setup = (terms) => {
+        const pills = search.search_pill_widget._get_pills_for_testing();
+        for (const pill of pills) {
+            pill.$element[0].remove = noop;
+        }
+        search_pill.set_search_bar_contents(terms, search.search_pill_widget, false, (text) =>
+            $search_query_box.text(text),
+        );
+    };
+
+    terms = [
+        {
+            negated: false,
+            operator: "search",
+            operand: "",
+        },
+    ];
+    _setup(terms);
+
+    ev.key = "a";
+    /* istanbul ignore next */
+    $search_query_box.trigger("blur");
+    $searchbox_form.trigger(ev);
+
+    let search_exited = false;
+    override_rewire(search, "exit_search", () => {
+        search_exited = true;
+    });
+
+    ev.key = "Enter";
+    $search_query_box.trigger("blur");
+    $searchbox_form.trigger(ev);
+    assert.ok(!search_exited);
+
+    ev.key = "Enter";
+    $search_query_box.trigger("focus");
+    $searchbox_form.trigger(ev);
+    assert.ok(search_exited);
+
+    terms = [
+        {
+            negated: false,
+            operator: "search",
+            operand: "ver",
+        },
+    ];
+    expected_pill_display_value = "ver";
+    _setup(terms);
+    ev.key = "Enter";
+    override_rewire(search, "is_using_input_method", true);
+    $searchbox_form.trigger(ev);
+    // No change on first Enter keyup event
+    assert.ok($search_query_box.is(":focus"));
+    $searchbox_form.trigger(ev);
+    assert.ok(!$search_query_box.is(":focus"));
+});
+
+run_test("initiate_search", ({override_rewire}) => {
+    let search_bar_opened = false;
+    override_rewire(search, "open_search_bar_and_close_narrow_description", () => {
+        search_bar_opened = true;
+    });
+    $.set_results(".navbar-search.expanded", []);
+    $("#search_query").text("");
+    search.initiate_search();
+    assert.ok(typeahead_forced_open);
+    assert.ok(search_bar_opened);
+    assert.equal($("#search_query").text(), "");
+});
+
+run_test("close_search", () => {
+    search_typeahead.shown = true;
+    $(".navbar-search").addClass("expanded");
+
+    search.close_search();
+
+    assert.equal(search_typeahead.shown, false);
+    assert.ok(!$(".navbar-search").hasClass("expanded"));
+});
+
+run_test("create_item_from_search_string with invalid string", () => {
+    search_pill.create_item_from_search_string("is:invalid");
+    const pills = search.search_pill_widget._get_pills_for_testing();
+    assert.equal(pills.length, 0);
+});
+
+run_test("set_search_bar_contents with duplicate pills", () => {
+    const duplicate_attachment_terms = [
+        {
+            negated: false,
+            operator: "has",
+            operand: "attachment",
+        },
+        {
+            negated: false,
+            operator: "has",
+            operand: "attachment",
+        },
+    ];
+    search_pill.set_search_bar_contents(
+        duplicate_attachment_terms,
+        search.search_pill_widget,
+        false,
+        noop,
+    );
+    const pills = search.search_pill_widget._get_pills_for_testing();
+    assert.equal(pills.length, 1);
+    assert.deepEqual(pills[0].item, {
+        type: "generic_operator",
+        operator: "has",
+        operand: "attachment",
+        negated: false,
+    });
+});

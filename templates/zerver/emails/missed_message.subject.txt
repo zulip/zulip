@@ -1,0 +1,20 @@
+{% if show_message_content %}
+    {% if group_pm %} {% trans %}Group DMs with {{ direct_message_group_display_name }}{% endtrans %}
+    {% elif private_message %} {% trans %}DMs with {{ sender_str }}{% endtrans %}
+    {% elif stream_email_notify or mention or followed_topic_email_notify %}
+        {#
+        Some email clients, like Gmail Web (as of 2022), will auto-thread
+        emails that share a subject and recipients, but will disregard
+        [Bracketed Prefixes] in the style of old-school mailing lists. We take
+        advantage of this to retain thread continuity in email notifications
+        even after a topic is resolved.
+        #}
+        {% if topic_resolved %}{% trans %}[resolved] #{{ channel_name }} > {{ topic_name }}{% endtrans %}
+        {% else %}#{{ channel_name }} > {{ topic_name }}
+        {% endif %}
+    {% endif %}
+{% else %}
+    {% trans %}New messages{% endtrans %}
+{% endif %}
+{% if include_realm_name_in_missedmessage_emails_subject %} [{{ realm_str }}]
+{% endif %}

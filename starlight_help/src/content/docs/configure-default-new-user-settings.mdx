@@ -1,0 +1,70 @@
+---
+title: Configure default settings for new users
+---
+
+import FlattenedList from "../../components/FlattenedList.astro";
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import DefaultUserSettingsList from "../include/_DefaultUserSettingsList.mdx";
+import SaveChanges from "../include/_SaveChanges.mdx";
+
+<AdminOnly />
+
+You can configure the default values of personal preference settings for new
+users joining your organization. This lets you customize the Zulip experience to
+match how your organization is using Zulip.
+
+Users will be able to customize their own settings once they join.
+If needed, administrators can [reset settings for
+users](/help/reset-settings-for-users) to the organization default.
+
+Administrators can customize defaults for all personal preference
+settings, including the following:
+
+<FlattenedList>
+  * Privacy settings:
+    * Displaying [availability](/help/status-and-availability) to other users
+    * Allowing others to see when the user has [read
+      messages](/help/read-receipts)
+    * Allowing others to see when the user is [typing a
+      message](/help/typing-notifications)
+
+  <DefaultUserSettingsList />
+</FlattenedList>
+
+## Configure default settings for new users
+
+Users will have the initial settings that are configured at the time when they
+accept the invitation, so there's no need to update or revoke invitations when
+you change default settings.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/default-user-settings" />
+
+  1. Review all settings and adjust as needed.
+</FlattenedSteps>
+
+## Configure default language for new users
+
+Your organization's [language](/help/configure-organization-language) will be
+the default language for new users when Zulip cannot detect their language
+preferences from their browser, including all users [created via the Zulip
+API](/api/create-user).
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-settings" />
+
+  1. Under **Automated messages and emails**, change the **Language for
+     automated messages and invitation emails**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+## Related articles
+
+* [Reset settings for users](/help/reset-settings-for-users)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [Customize settings for new users](/help/customize-settings-for-new-users)
+* [Set default channels for new users](/help/set-default-channels-for-new-users)
+* [Invite users to join](/help/invite-users-to-join)

@@ -1,0 +1,57 @@
+diff --git a/runtime.d.ts b/runtime.d.ts
+index 0d5105eb73794b7ab88a7c30502977d10a836f45..a8e8768addd7c424eb8e82372eb3d955582eb456 100644
+--- a/runtime.d.ts
++++ b/runtime.d.ts
+@@ -1,5 +1,3 @@
+ import Handlebars = require('handlebars')
+ 
+-declare module "handlebars/runtime" {
+-   
+-}
+\ No newline at end of file
++export = Handlebars;
+diff --git a/types/index.d.ts b/types/index.d.ts
+index 3f2f8b792edbd621d06c399ff4c722234f233742..3b3d8cb0d3c9f264b00104c3ea0ba96a2e63d485 100644
+--- a/types/index.d.ts
++++ b/types/index.d.ts
+@@ -14,7 +14,8 @@
+  */
+ // TypeScript Version: 2.3
+ 
+-declare namespace Handlebars {
++declare global {
++namespace Handlebars {
+   export interface TemplateDelegate<T = any> {
+       (context: T, options?: RuntimeOptions): string;
+   }
+@@ -243,7 +244,7 @@ interface PrecompileOptions extends CompileOptions {
+   destName?: string;
+ }
+ 
+-declare namespace hbs {
++namespace hbs {
+   // for backward compatibility of this typing
+   type SafeString = Handlebars.SafeString;
+ 
+@@ -264,7 +265,7 @@ interface Logger {
+ 
+ type CompilerInfo = [number/* revision */, string /* versions */];
+ 
+-declare namespace hbs {
++namespace hbs {
+   namespace AST {
+       interface Node {
+           type: string;
+@@ -412,11 +413,6 @@ declare namespace hbs {
+       }
+   }
+ }
+-
+-declare module "handlebars" {
+-  export = Handlebars;
+ }
+ 
+-declare module "handlebars/runtime" {
+-  export = Handlebars;
+-}
++export = Handlebars;

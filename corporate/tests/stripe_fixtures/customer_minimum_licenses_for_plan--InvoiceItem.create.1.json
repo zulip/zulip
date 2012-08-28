@@ -1,0 +1,34 @@
+{
+  "amount": 72000,
+  "currency": "usd",
+  "customer": "customer_minimum_licenses_for_plan--Customer.create.1.json",
+  "customer_account": null,
+  "date": 1000000000,
+  "description": "Zulip Cloud Plus",
+  "discountable": false,
+  "discounts": [],
+  "id": "customer_minimum_licenses_for_plan--InvoiceItem.create.1.json",
+  "invoice": "customer_minimum_licenses_for_plan--Event.list.1.json",
+  "livemode": false,
+  "metadata": {},
+  "net_amount": 72000,
+  "object": "invoiceitem",
+  "parent": null,
+  "period": {
+    "end": 1357095845,
+    "start": 1325473445
+  },
+  "pricing": {
+    "price_details": {
+      "price": "price_NORMALIZED",
+      "product": "prod_NORMALIZED"
+    },
+    "type": "price_details",
+    "unit_amount_decimal": "12000"
+  },
+  "proration": false,
+  "quantity": 6,
+  "quantity_decimal": "6",
+  "tax_rates": [],
+  "test_clock": null
+}

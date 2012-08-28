@@ -1,0 +1,44 @@
+.dev-help-page {
+    .white-box {
+        width: 40%;
+        margin: 0 auto;
+    }
+
+    .dev-help-header {
+        text-align: center;
+        margin-bottom: 1em;
+    }
+
+    .invalid-path-error {
+        color: hsl(1.1deg 44.7% 50.4%);
+        font-weight: 400;
+        display: block;
+        text-align: center;
+        margin-top: 1em;
+    }
+
+    .dev-help-actions {
+        margin-top: 1.5em;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+
+        .dev-help-action-button {
+            display: inline-block;
+            font-weight: 400;
+            color: hsl(170deg 41% 52%);
+            border: 1px solid hsl(170deg 41% 52%);
+            border-radius: 4px;
+            padding: 6px 12px;
+
+            transition:
+                color 0.3s ease,
+                border-color 0.3s ease;
+
+            &:hover {
+                color: hsl(156deg 62% 61%);
+                border-color: hsl(156deg 62% 61%);
+            }
+        }
+    }
+}

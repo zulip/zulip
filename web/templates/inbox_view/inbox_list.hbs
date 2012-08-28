@@ -1,0 +1,25 @@
+{{> inbox_folder_row
+  header_id="inbox-dm-header"
+  is_header_visible=has_dms_post_filter
+  is_dm_header=true
+  is_collapsed=is_dms_collapsed
+  has_unread_mention=has_unread_mention
+  unread_count=unread_dms_count
+  }}
+<div id="inbox-direct-messages-container" class="inbox-folder-components">
+    {{#each (map_entries dms_dict)}}
+        {{> inbox_row this.[1]}}
+    {{/each}}
+</div>
+{{#each folders_with_stream_rows}}
+    {{> inbox_folder_with_channels
+      id=id
+      name=name
+      header_id=header_id
+      is_header_visible=is_header_visible
+      is_collapsed=is_collapsed
+      has_unread_mention=has_unread_mention
+      unread_count=unread_count
+      stream_rows=stream_rows
+      }}
+{{/each}}

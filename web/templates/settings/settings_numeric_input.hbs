@@ -1,0 +1,18 @@
+{{#unless (eq render_only false)}}
+<div class="input-group {{#if is_disabled}}control-label-disabled{{/if}}">
+    <label for="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}" class="{{setting_name}}_label" id="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}_label">
+        {{label}}
+        {{#if label_parens_text}}
+        (<i>{{label_parens_text}}</i>)
+        {{/if}}
+        {{#if help_link}}
+        {{> ../help_link_widget link=help_link }}
+        {{/if}}
+        {{#if help_icon_tooltip_text}}
+        <i class="tippy-zulip-tooltip fa fa-info-circle settings-info-icon" {{#if hide_tooltip}}style="display: none;"{{/if}} data-tippy-content="{{help_icon_tooltip_text}}"></i>
+        {{/if}}
+    </label>
+    <input type="text" inputmode="numeric" pattern="\d*" value="{{setting_value}}" class="{{setting_name}} settings_text_input setting-widget prop-element" name="{{setting_name}}" data-setting-widget-type="number"
+      id="{{#if prefix}}{{prefix}}{{/if}}{{setting_name}}" {{#if is_disabled}}disabled{{/if}} />
+</div>
+{{/unless}}

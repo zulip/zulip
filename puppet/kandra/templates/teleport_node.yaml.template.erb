@@ -1,0 +1,42 @@
+# See https://goteleport.com/docs/config-reference/
+teleport:
+  ca_pin: "sha256:062db37249ea74c450579da8f02043b317cb8a174d653bb5090a89752d68efe7"
+  auth_servers:
+    # Use the proxy address, to support running the app_service, which requires
+    # a reverse tunnel.
+    - teleport.zulipchat.net:443
+<% if @is_ec2 -%>
+  join_params:
+    method: iam
+    token_name: iam-token
+<% else -%>
+  join_params:
+    method: token
+    token_name: <%= @join_token %>
+<% end %>
+ssh_service:
+  enabled: "yes"
+  commands:
+    - name: hostname
+      command: ["/bin/hostname"]
+      period: 1h0m0s
+    - name: uname
+      command: ["/usr/bin/uptrack-uname", "-r"]
+      period: 1h0m0s
+    - name: distro
+      command:
+        ["/bin/sh", "-c", '. /etc/os-release && printf "%s\n" "$PRETTY_NAME"']
+      period: 1h0m0s
+    - name: classes
+      command:
+        - /usr/bin/crudini
+        - --get
+        - /etc/zulip/zulip.conf
+        - machine
+        - puppet_classes
+      period: 1h0m0s
+
+proxy_service:
+  enabled: no
+auth_service:
+  enabled: no

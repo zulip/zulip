@@ -1,0 +1,15 @@
+{% trans -%}
+Hi,
+{%- endtrans %}
+
+
+{% trans -%}
+We received a request to change the email address for the Zulip account on {{ realm_url }} from {{ old_email }} to {{ new_email }}. To confirm this change, please click below:
+{%- endtrans %}
+
+
+{{ activate_url }}
+
+{% trans -%}
+If you did not request this change, please contact us immediately at <{{ support_email }}>.
+{%- endtrans %}

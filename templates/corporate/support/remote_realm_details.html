@@ -1,0 +1,106 @@
+<div class="remote-realm-container">
+    <div class="remote-realm-information">
+        <span class="remote-label">Remote realm</span>
+        <h3>{{ remote_realm.name }}</h3>
+        {% if remote_realm.realm_locally_deleted %}
+            <p class="support-section-header">Remote realm is locally deleted 🛑</p>
+        {% endif %}
+        {% if remote_realm.registration_deactivated %}
+            <p class="support-section-header">Remote realm registration deactivated 🛑</p>
+        {% endif %}
+        {% if remote_realm.realm_deactivated %}
+            <p class="support-section-header">Remote realm is deactivated on remote server 🛑</p>
+        {% endif %}
+        {% if remote_realm.plan_type == SPONSORED_PLAN_TYPE %}
+            <p class="support-section-header">On 100% sponsored Zulip Community plan 🎉</p>
+        {% endif %}
+        {% if support_data[remote_realm.id].sponsorship_data.has_discount %}
+            <p class="support-section-header">Has a discount 💸</p>
+        {% endif %}
+        <b>Remote realm host:</b> {{ remote_realm.host }}<br />
+        {% set billing_emails_string = get_remote_realm_billing_user_emails(remote_realm) %}
+        <b>Billing users</b>: {{ billing_emails_string }}
+        {% if billing_emails_string %}
+        <a title="Copy emails" class="copy-button" data-clipboard-text="{{ billing_emails_string }}">
+            <i class="fa fa-copy"></i>
+        </a>
+        {% endif %}
+        <br />
+        <b>Date created</b>: {{ support_data[remote_realm.id].date_created.strftime('%d %B %Y') }}<br />
+        <b>UUID</b>: {{ remote_realm.uuid }}<br />
+        <br />
+        {% with %}
+            {% set realm = remote_realm %}
+            {% set user_data = support_data[remote_realm.id].user_data %}
+            {% include 'corporate/support/basic_realm_data.html' %}
+        {% endwith %}
+        <br />
+        <b>Mobile user count</b>: {{ support_data[remote_realm.id].mobile_push_data.total_mobile_users }}<br />
+        <b>7-day mobile pushes count</b>: {{ support_data[remote_realm.id].mobile_push_data.mobile_pushes_forwarded }}<br />
+        <b>Last push notification date</b>: {{ support_data[remote_realm.id].mobile_push_data.last_mobile_push_sent }}<br />
+    </div>
+
+    {% with %}
+        {% set status = support_data[remote_realm.id].mobile_push_data.push_notification_status %}
+        {% include 'corporate/support/push_status_details.html' %}
+    {% endwith %}
+
+    {% if remote_server_deactivated %}
+    <div class="support-sponsorship-container">
+        {% with %}
+            {% set sponsorship_data = support_data[remote_realm.id].sponsorship_data %}
+            {% set dollar_amount = dollar_amount %}
+            {% include 'corporate/support/sponsorship_details.html' %}
+        {% endwith %}
+    </div>
+    {% elif remote_realm.plan_type != SPONSORED_PLAN_TYPE %}
+    <div class="support-sponsorship-container">
+        {% with %}
+            {% set sponsorship_data = support_data[remote_realm.id].sponsorship_data %}
+            {% set PLAN_TYPES = REMOTE_PLAN_TIERS %}
+            {% set remote_id = remote_realm.id %}
+            {% set remote_type = "remote_realm_id" %}
+            {% set has_fixed_price = support_data[remote_realm.id].plan_data.has_fixed_price %}
+            {% include 'corporate/support/sponsorship_forms_support.html' %}
+        {% endwith %}
+    </div>
+    {% endif %}
+
+    {% if support_data[remote_realm.id].plan_data.current_plan %}
+    <div class="current-plan-container">
+        {% with %}
+            {% set plan_data = support_data[remote_realm.id].plan_data %}
+            {% set dollar_amount = dollar_amount %}
+            {% include 'corporate/support/current_plan_details.html' %}
+        {% endwith %}
+
+        {% with %}
+            {% set current_plan = support_data[remote_realm.id].plan_data.current_plan %}
+            {% set remote_id = remote_realm.id %}
+            {% set remote_type = "remote_realm_id" %}
+            {% include 'corporate/support/current_plan_forms_support.html' %}
+        {% endwith %}
+    </div>
+    {% endif %}
+
+    {% if support_data[remote_realm.id].plan_data.next_plan %}
+    <div class="next-plan-container">
+        {% with %}
+            {% set plan_data = support_data[remote_realm.id].plan_data %}
+            {% set dollar_amount = dollar_amount %}
+            {% set remote_id = remote_realm.id %}
+            {% set remote_type = "remote_realm_id" %}
+            {% include 'corporate/support/next_plan_details.html' %}
+        {% endwith %}
+    </div>
+    {% elif not remote_server_deactivated %}
+    <div class="next-plan-container">
+        {% with %}
+            {% set plan_data = support_data[remote_realm.id].plan_data %}
+            {% set remote_id = remote_realm.id %}
+            {% set remote_type = "remote_realm_id" %}
+            {% include 'corporate/support/next_plan_forms_support.html' %}
+        {% endwith %}
+    </div>
+    {% endif %}
+</div>

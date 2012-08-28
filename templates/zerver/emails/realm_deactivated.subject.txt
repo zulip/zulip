@@ -1,0 +1,1 @@
+{% trans %}Your Zulip organization {{ realm_name }} has been deactivated{% endtrans %}

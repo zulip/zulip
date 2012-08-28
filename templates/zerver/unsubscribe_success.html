@@ -1,0 +1,38 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>{{ _("Email settings updated") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                <h1>{{ _("Email settings updated") }}</h1>
+            </div>
+
+            <div class="white-box">
+                <p>
+                    {% trans %}
+                    You've successfully unsubscribed from Zulip {{ subscription_type }} emails for
+                    <a href="{{ realm_url }}">{{ realm_name }}</a>.
+                    {% endtrans %}
+                </p>
+
+                {% if subscription_type != "welcome" %}
+                <p>
+                    {% trans %}
+                    You can undo this change or review your preferences in your
+                    <a href="{{ realm_url }}/#settings/notifications">notification settings</a>.
+                    {% endtrans %}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

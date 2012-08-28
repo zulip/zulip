@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(os.path.dirname(TOOLS_DIR))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+
+from zerver.openapi.merge_api_changelogs import get_feature_level
+
+
+def get_pull_request_number_or_commit_hash() -> str:
+    github_token = os.environ["GITHUB_TOKEN"]
+    repo = os.environ["GITHUB_REPOSITORY"]
+    commit_hash = os.environ["GITHUB_SHA"]
+
+    url = f"https://api.github.com/repos/{repo}/commits/{commit_hash}/pulls"
+    headers = {
+        "Accept": "application/vnd.github.groot-preview+json",
+        "Authorization": f"token {github_token}",
+    }
+
+    try:
+        req = Request(url, headers=headers)
+        with urlopen(req) as response:
+            pull_requests = json.load(response)
+        if len(pull_requests) > 0:
+            return f"#{pull_requests[0]['number']}"
+        return commit_hash
+    except Exception:
+        return commit_hash
+
+
+def get_changelog_entries() -> str:
+    changelog_path = Path("api_docs/changelog.md")
+    feature_level_pattern = re.compile(r"\*\*Feature level \d+\*\*")
+    current_feature_level_found = False
+    changelog_entries = ""
+
+    with open(changelog_path) as file:
+        for line in file:
+            if re.fullmatch(feature_level_pattern, line.strip()):
+                if current_feature_level_found:
+                    break
+                current_feature_level_found = True
+                continue
+
+            if current_feature_level_found:
+                changelog_entries += line
+
+    return changelog_entries.replace("\n  ", " ")
+
+
+def get_feature_level_before_commit() -> int:
+    with open(os.environ["GITHUB_EVENT_PATH"]) as f:
+        event = json.load(f)
+
+    before_sha = event["before"]
+    version_file_path = "version.py"
+
+    try:
+        version_content_before_commit = subprocess.check_output(
+            ["git", "show", f"{before_sha}:{version_file_path}"], text=True
+        )
+    except subprocess.CalledProcessError:
+        sys.exit(1)
+
+    lines = version_content_before_commit.split("\n")
+    for line in lines:
+        if line.startswith("API_FEATURE_LEVEL = "):
+            match = re.search(r"\d+", line)
+            if match:
+                return int(match.group())
+    return 0
+
+
+if __name__ == "__main__":
+    pull_request = get_pull_request_number_or_commit_hash()
+
+    feature_level = get_feature_level(update_feature_level=False) - 1
+    if feature_level <= get_feature_level_before_commit():
+        sys.exit(1)
+
+    changelog_entries = get_changelog_entries()
+    topic = f"new feature level: {feature_level}"
+
+    content = f"{pull_request} has updated the API documentation for the following endpoints: \n{changelog_entries}"
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a") as f:
+            f.write(f"topic={topic}\n")
+            f.write("content<<EOF\n")
+            f.write(f"{content.strip()}\n")
+            f.write("EOF\n")

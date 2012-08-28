@@ -1,0 +1,77 @@
+---
+title: Schedule a reminder
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import GoToReminders from "../include/_GoToReminders.mdx";
+import MessageActions from "../include/_MessageActions.mdx";
+
+import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
+import TrashIcon from "~icons/zulip-icon/trash";
+
+Zulip allows you to schedule a reminder for a message at a later time. The
+reminder is delivered to you as a [direct message](/help/direct-messages) by
+Notification Bot at the scheduled time. For example, you might schedule a
+reminder for a message to reply to when you have more time, or one about a task
+to take care of.
+
+You can also [schedule a message](/help/schedule-a-message) to be sent to any
+conversation at a later time.
+
+## Schedule a reminder
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <MessageActions />
+
+      1. Click on the **ellipsis** (<MoreVerticalIcon />).
+      1. Click **Remind me about this**.
+      1. *(optional)* Add a note for yourself. You can use Zulip's standard [Markdown
+         formatting](/help/format-your-message-using-markdown).
+      1. Select one of the suggested scheduling options, or pick a custom time.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Delete a reminder
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToReminders />
+
+      1. Click the **delete** (<TrashIcon />)
+         icon on the reminder that you want to delete.
+    </FlattenedSteps>
+
+    <KeyboardTip>
+      You can also use <kbd>Backspace</kbd> within the reminders view to
+      delete the selected reminder.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>
+
+## View reminders
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToReminders />
+    </FlattenedSteps>
+
+    <ZulipTip>
+      A note on the message will indicate that you have a reminder scheduled.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Star a message](/help/star-a-message)
+* [Marking messages as unread](/help/marking-messages-as-unread)
+* [Schedule a message](/help/schedule-a-message)

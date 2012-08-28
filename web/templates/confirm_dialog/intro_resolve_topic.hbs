@@ -1,0 +1,6 @@
+{{#tr}}
+You're marking the topic <z-highlight>{topic_name}</z-highlight> as resolved. This adds a ✔ at the beginning of the topic name to let everyone know that this conversation is done. <z-link>Learn more</z-link>
+{{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/resolve-a-topic">{{>
+    @partial-block}}</a>{{/inline}}
+{{#*inline "z-highlight"}}<b class="highlighted-element">{{> @partial-block}}</b>{{/inline}}
+{{/tr}}

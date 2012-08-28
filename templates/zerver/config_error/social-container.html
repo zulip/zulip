@@ -1,0 +1,17 @@
+{% extends "zerver/config_error/container.html" %}
+
+{% block error_content %}
+    {% if development  %}
+        <p>
+            For more information, have a look at the
+            <a href="https://zulip.readthedocs.io/en/latest/development/authentication.html#{{ social_backend_name }}">authentication setup guide</a>
+            for the development environment.
+        </p>
+    {% else %}
+        <p>
+            For more information, have a look at our
+            <a href="https://zulip.readthedocs.io/en/latest/production/authentication-methods.html">authentication setup guide</a>
+            and the comments in <code>{{ settings_comments_path }}</code>.
+        </p>
+    {% endif %}
+{% endblock %}

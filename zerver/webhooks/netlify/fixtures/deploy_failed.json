@@ -1,0 +1,41 @@
+{
+    "id":"5b64d77c02ed83730664c2f6",
+    "site_id":"6f2ad239-fce7-4b54-81fe-873d4fcf5c78",
+    "build_id":"5b64d77c02ed83730664c2f7",
+    "state":"error",
+    "name":"objective-jepsen-35fbb2",
+    "url":"http://objective-jepsen-35fbb2.netlify.com",
+    "ssl_url":"https://objective-jepsen-35fbb2.netlify.com",
+    "admin_url":"https://app.netlify.com/sites/objective-jepsen-35fbb2",
+    "deploy_url":"http://5b78192ac9659217dbf7c9aa.objective-jepsen-35fbb2.netlify.com",
+    "deploy_ssl_url":"https://5b78192ac9659217dbf7c9aa--objective-jepsen-35fbb2.netlify.com",
+    "created_at":"2018-08-03T22:30:20.261Z",
+    "updated_at":"2018-08-03T22:30:27.734Z",
+    "user_id":"5b64d15c82d3f16bcbbdcdbe",
+    "error_message":"failed during stage 'building site': Build script returned non-zero exit code: 127",
+    "required":[
+
+    ],
+    "required_functions":null,
+    "commit_ref":null,
+    "review_id":null,
+    "branch":"master",
+    "commit_url":null,
+    "skipped":null,
+    "locked":null,
+    "log_access_attributes":{
+        "type":"firebase",
+        "url":"https://netlify.firebaseio.com/builds/5b64d77c02ed83730664c2f7/log"
+    },
+    "title":null,
+    "review_url":null,
+    "published_at":null,
+    "context":"production",
+    "deploy_time":null,
+    "available_functions":[
+
+    ],
+    "summary":{
+
+    }
+}

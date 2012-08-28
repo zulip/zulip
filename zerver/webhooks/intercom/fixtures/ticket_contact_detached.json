@@ -1,0 +1,145 @@
+{
+    "type": "notification_event",
+    "app_id": "abc123def",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "ticket": {
+                "type": "ticket",
+                "id": 215472629353977,
+                "url": "https://app.intercom.com/a/apps/abc123def/conversations/215472629353977",
+                "custom_attributes": {
+                    "_default_title_": {
+                        "value": null,
+                        "type": "string"
+                    },
+                    "_default_description_": {
+                        "value": null,
+                        "type": "string"
+                    },
+                    "Platforms": {
+                        "value": null,
+                        "type": "string"
+                    },
+                    "Root cause": {
+                        "value": null,
+                        "type": "string"
+                    }
+                },
+                "state": "submitted",
+                "ticket_type": "Tickets",
+                "ticket_type_description": "When a customer query can’t be instantly resolved, convert to support request ticket to ensure the right details are captured and allow customers to keep track of progress.",
+                "ticket_type_emoji": "🎟",
+                "ticket_custom_state_admin_label": "Submitted",
+                "ticket_custom_state_user_label": "Submitted"
+            },
+            "contact": {
+                "type": "contact",
+                "id": "6961f75992dc9c41aeee94c6",
+                "workspace_id": "abc123def",
+                "external_id": "100",
+                "role": "user",
+                "email": "lead_signup_fixture_ui@example.com",
+                "phone": null,
+                "formatted_phone": null,
+                "name": "leadu",
+                "avatar": null,
+                "owner_id": null,
+                "social_profiles": {
+                    "type": "list",
+                    "data": []
+                },
+                "has_hard_bounced": false,
+                "marked_email_as_spam": false,
+                "unsubscribed_from_emails": false,
+                "created_at": "2026-01-10T06:53:13.684+00:00",
+                "updated_at": "2026-01-11T07:48:44.707+00:00",
+                "signed_up_at": null,
+                "last_seen_at": null,
+                "last_replied_at": null,
+                "last_contacted_at": "2026-01-11T07:48:44.000+00:00",
+                "last_email_opened_at": null,
+                "last_email_clicked_at": null,
+                "language_override": null,
+                "browser": null,
+                "browser_version": null,
+                "browser_language": null,
+                "os": null,
+                "location": {
+                    "type": "location",
+                    "country": null,
+                    "region": null,
+                    "city": null,
+                    "country_code": null,
+                    "continent_code": null
+                },
+                "android_app_name": null,
+                "android_app_version": null,
+                "android_device": null,
+                "android_os_version": null,
+                "android_sdk_version": null,
+                "android_last_seen_at": null,
+                "ios_app_name": null,
+                "ios_app_version": null,
+                "ios_device": null,
+                "ios_os_version": null,
+                "ios_sdk_version": null,
+                "ios_last_seen_at": null,
+                "custom_attributes": {},
+                "tags": {
+                    "type": "list",
+                    "data": [],
+                    "url": "/contacts/6961f75992dc9c41aeee94c6/tags",
+                    "total_count": 0,
+                    "has_more": false
+                },
+                "notes": {
+                    "type": "list",
+                    "data": [],
+                    "url": "/contacts/6961f75992dc9c41aeee94c6/notes",
+                    "total_count": 0,
+                    "has_more": false
+                },
+                "companies": {
+                    "type": "list",
+                    "data": [],
+                    "url": "/contacts/6961f75992dc9c41aeee94c6/companies",
+                    "total_count": 0,
+                    "has_more": false
+                },
+                "opted_out_subscription_types": {
+                    "type": "list",
+                    "data": [],
+                    "url": "/contacts/6961f75992dc9c41aeee94c6/subscriptions",
+                    "total_count": 0,
+                    "has_more": false
+                },
+                "opted_in_subscription_types": {
+                    "type": "list",
+                    "data": [],
+                    "url": "/contacts/6961f75992dc9c41aeee94c6/subscriptions",
+                    "total_count": 0,
+                    "has_more": false
+                },
+                "utm_campaign": null,
+                "utm_content": null,
+                "utm_medium": null,
+                "utm_source": null,
+                "utm_term": null,
+                "referrer": null,
+                "sms_consent": false,
+                "unsubscribed_from_sms": false,
+                "enabled_push_messaging": null
+            }
+        }
+    },
+    "links": {},
+    "id": "notif_bce453db-05b4-4d76-b58b-a2e72362711f",
+    "topic": "ticket.contact.detached",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1768117767,
+    "created_at": 1768117767,
+    "self": null
+}

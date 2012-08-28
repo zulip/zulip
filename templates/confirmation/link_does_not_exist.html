@@ -1,0 +1,19 @@
+{% extends "zerver/portico_error_pages/portico_error_page.html" %}
+
+{% block title %}
+<title>{{ _("Confirmation link does not exist") }} | Zulip</title>
+{% endblock %}
+
+{% block error_page_content %}
+<img src="{{ static('images/errors/400art.svg') }}" alt=""/>
+<div class="errorbox">
+    <div class="errorcontent">
+        <h1 class="lead">{{ _("Whoops. We couldn't find your confirmation link in the system.") }}</h1>
+        <p>
+            {% trans %}
+            Anyway, shoot us a line at {{ support_email_html_tag }} and we'll get this resolved shortly.
+            {% endtrans %}
+        </p>
+    </div>
+</div>
+{% endblock %}

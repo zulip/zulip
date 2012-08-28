@@ -1,0 +1,159 @@
+<div class="stream_settings_header" data-stream-id="{{sub.stream_id}}">
+    <div class="tab-container"></div>
+</div>
+<div class="subscription_settings" data-stream-id="{{sub.stream_id}}">
+    <div class="inner-box">
+        <div class="small-window-alert-notification-container">
+            <div class="stream_change_property_info alert-notification"></div>
+        </div>
+        <div class="stream-creation-confirmation-banner"></div>
+        <div class="stream_section" data-stream-section="general">
+            {{#with sub}}
+            <div class="stream-settings-tip-container">
+                {{> stream_settings_tip .}}
+            </div>
+            <div class="channel-description-box">
+                <label class="settings-field-label {{#unless can_change_name_description}}cursor-text{{/unless}}"
+                  for="{{#if can_change_name_description}}open_stream_info_modal{{/if}}">
+                    {{t "Description" }}
+                    {{> ../help_link_widget link="/help/change-the-channel-description" }}
+                </label>
+                <div class="channel-description-field">
+                    <div class="stream-description">
+                        {{> stream_description
+                          rendered_description=rendered_description
+                          use_view_only_styling=true
+                          }}
+                    </div>
+                    {{> ../components/icon_button
+                      icon="edit"
+                      intent="neutral"
+                      custom_classes="tippy-zulip-delayed-tooltip"
+                      id="open_stream_info_modal"
+                      data-tippy-content=(t 'Edit channel name and description' )
+                      hidden=(not can_change_name_description)
+                      }}
+                </div>
+            </div>
+            <div class="creator_details stream_details_box">
+                {{> ../creator_details .}}
+            </div>
+            {{/with}}
+
+            <div class="stream-settings-subsection settings-subsection-parent">
+                <div class="subsection-header">
+                    <h3 class="stream_setting_subsection_title">
+                        {{t "Settings" }}
+                    </h3>
+                    {{> ../settings/settings_save_discard_widget section_name="channel-general-settings" show_save_discard_buttons=true}}
+                </div>
+
+                {{> channel_folder .
+                  is_stream_edit=true
+                  channel_folder_widget_name="folder_id"
+                  }}
+
+                <div class="default-push-notifications">
+                    {{> ../settings/settings_checkbox
+                      prefix="id_"
+                      setting_name="default_push_notifications"
+                      is_checked=(lookup sub "default_push_notifications")
+                      label=(t "Mobile push notifications enabled by default")
+                      tooltip_message=push_notifications_tooltip
+                      }}
+                </div>
+
+                <div class="input-group stream-email-box">
+                    <label for="copy_stream_email_button" class="settings-field-label">
+                        {{t "Email address" }}
+                        {{> ../help_link_widget link="/help/message-a-channel-by-email" }}
+                    </label>
+                    {{> ../components/action_button
+                      label=(t "Generate email address")
+                      variant="subtle"
+                      intent="neutral"
+                      type="button"
+                      custom_classes="copy_email_button"
+                      id="copy_stream_email_button"
+                      }}
+                </div>
+            </div>
+        </div>
+
+        <div id="personal-stream-settings" class="stream_section" data-stream-section="personal">
+            <div class="subsection-parent">
+                <div class="subsection-header">
+                    <h3 class="stream_setting_subsection_title inline-block">{{t "Personal settings" }}</h3>
+                    <div class="stream_change_property_status alert-notification"></div>
+                </div>
+                {{#each other_settings}}
+                    <div class="input-group">
+                        {{> stream_settings_checkbox
+                          setting_name=name
+                          is_checked=is_checked
+                          is_muted=(lookup ../sub "is_muted")
+                          stream_id=(lookup ../sub "stream_id")
+                          notification_setting=false
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
+                          label=label}}
+                    </div>
+                {{/each}}
+                <div class="input-group">
+                    <label class="settings-field-label channel-color-label">{{t "Channel color" }}</label>
+                    <button class="action-button action-button-subtle-neutral stream-settings-color-selector choose_stream_color" data-stream-id="{{ sub.stream_id }}">
+                        <span class="stream-settings-color-preview" style="background: {{sub.color}};"></span>
+                        <span class="stream-settings-color-selector-label">{{t "Change color"}}</span>
+                    </button>
+                </div>
+            </div>
+            <div class="subsection-parent">
+                <div class="subsection-header">
+                    <h4 class="stream_setting_subsection_title">{{t "Notification settings" }}</h4>
+                    <div class="stream_change_property_status alert-notification"></div>
+                </div>
+                <div class="input-group">
+                    {{> ../components/action_button
+                      label=(t "Reset to default notifications")
+                      variant="subtle"
+                      intent="neutral"
+                      custom_classes="reset-stream-notifications-button"
+                      type="button"
+                      }}
+                </div>
+                {{#each notification_settings}}
+                    <div class="input-group">
+                        {{> stream_settings_checkbox
+                          setting_name=name
+                          is_checked=is_checked
+                          stream_id=(lookup ../sub "stream_id")
+                          notification_setting=true
+                          disabled_realm_setting=disabled_realm_setting
+                          is_disabled=is_disabled
+                          label=label}}
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+
+        <div class="stream_section" data-stream-section="subscribers">
+            {{#with sub}}
+            <div class="edit_subscribers_for_stream">
+                {{> stream_members .}}
+            </div>
+            {{/with}}
+        </div>
+
+        <div class="stream_section channel-permissions" data-stream-section="permissions">
+            <div class="stream-settings-tip-container">
+                {{> stream_settings_tip
+                  can_change_stream_permissions_requiring_metadata_access=sub.can_change_stream_permissions_requiring_metadata_access }}
+            </div>
+            {{> channel_permissions .
+              prefix="id_"
+              is_stream_edit=true
+              history_public_to_subscribers=sub.history_public_to_subscribers
+              }}
+        </div>
+    </div>
+</div>

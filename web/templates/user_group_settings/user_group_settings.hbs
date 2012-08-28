@@ -1,0 +1,61 @@
+<div class="group_settings_header">
+    <div class="tab-container"></div>
+</div>
+<div class="user_group_settings_wrapper" data-group-id="{{group.id}}">
+    <div class="inner-box">
+
+        <div class="group_general_settings group_setting_section" data-group-section="general">
+            <div class="group-reactivation-error-banner"></div>
+            <div class="group-banner"></div>
+            <label class="group-setting-label" for="open_group_info_modal">
+                {{t "Description" }}
+            </label>
+            <div class="group-description-field">
+                <div class="user-group-description">
+                    {{> ../user_group_settings/user_group_description
+                      rendered_description=group.description }}
+                </div>
+                {{#unless group.is_system_group}}
+                    {{> ../components/icon_button icon="edit" intent="neutral" custom_classes="open-group-info-button tippy-zulip-delayed-tooltip"
+                      data-tippy-content=(t 'Change group info') id="open_group_info_modal" }}
+                {{/unless}}
+            </div>
+            <div class="creator_details group_detail_box">
+                {{> ../creator_details .
+                  group_id=group.id }}
+            </div>
+            {{#unless group.is_system_group}}
+                <div class="group-permissions settings-subsection-parent" id="group_permission_settings">
+                    <div class="subsection-header">
+                        <h3 class="user_group_setting_subsection_title">
+                            {{t "Group permissions" }}
+                            {{> ../help_link_widget link="/help/manage-user-groups#configure-group-permissions"}}
+                        </h3>
+                        {{> ../settings/settings_save_discard_widget section_name="group-permissions" show_save_discard_buttons=true }}
+                    </div>
+
+                    {{> group_permissions prefix="id_" group_setting_labels=all_group_setting_labels.group}}
+                </div>
+            {{/unless}}
+        </div>
+
+        <div class="group_member_settings group_setting_section" data-group-section="members">
+            <div class="edit_members_for_user_group">
+                {{> user_group_members .}}
+            </div>
+        </div>
+
+        <div class="group_setting_section" data-group-section="permissions">
+            <div class="group-assigned-permissions">
+                <span class="no-permissions-for-group-text {{#unless group_has_no_permissions}}hide{{/unless}}">
+                    {{#if group.is_system_group}}
+                        {{t 'This role has no assigned permissions.'}}
+                    {{else}}
+                        {{t 'This group has no assigned permissions.'}}
+                    {{/if}}
+                </span>
+                {{> group_permission_settings .}}
+            </div>
+        </div>
+    </div>
+</div>

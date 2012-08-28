@@ -1,0 +1,911 @@
+/* Override `width: 100vw` from marketing_page.css, which makes
+   html wider than the visible content area when a classic scrollbar
+   is present — the CSS `vw` unit always includes the scrollbar's
+   width. That shifts every centered element rightward by half the
+   scrollbar width, producing asymmetric side margins on the gradient.
+   `scrollbar-gutter: stable` reserves gutter space even when no
+   scrollbar is shown, preventing layout jiggle when switching between
+   categories whose heights differ enough to add or remove the
+   vertical scrollbar. */
+html:has(.portico-landing.integrations) {
+    width: auto;
+    scrollbar-gutter: stable;
+}
+
+.portico-landing.integrations {
+    --color-integrations-category-text: hsl(223deg 6% 35%);
+    /* Card-style border used for `.integration-lozenge` tiles on the
+       catalog and `.eligible_realm` rows on /communities. */
+    --color-integrations-card-border: hsl(0deg 0% 88%);
+    --color-integrations-card-border-hover: hsl(0deg 0% 73%);
+
+    color: hsl(0deg 0% 27%);
+    font-weight: normal;
+    /* Extra gradient space below the main card before the footer.
+       This is padding-bottom on .portico-landing (not margin-bottom
+       on .main), so the blue gradient background fills the space
+       instead of margin-collapsing through to an invisible external
+       gap. */
+    padding-bottom: 60px;
+
+    /* Modern blue gradient background, matching /plans and the homepage.
+       This replaces the complex multi-layer gradient system from
+       zerver/gradients.html (which is no longer included on these pages). */
+    background: linear-gradient(
+        180deg,
+        var(--color-background-gradient-start) 0%,
+        var(--color-background-gradient-end) 100%
+    );
+
+    & h1,
+    h2,
+    h3 {
+        &:hover::after {
+            content: none;
+        }
+    }
+
+    .markdown {
+        font-size: 1.1rem;
+    }
+
+    .main {
+        width: calc(100% - 100px);
+        max-width: 1170px;
+        margin: 0 auto;
+        border-radius: 10px;
+        background-color: hsl(0deg 0% 100%);
+
+        /* The catalog page gets a gray content area so the white
+           integration cards stand out. Specific integration doc pages
+           keep the default white content background. */
+        &:has(.catalog) {
+            background-color: hsl(0deg 0% 96%);
+        }
+
+        & img {
+            /* Replace the Bootstrap image reset that the new
+               integrations_bundle no longer provides. Without these,
+               images embedded in integration instructions render at
+               their natural size and overflow the content column. */
+            max-width: 100%;
+            height: auto;
+            vertical-align: middle;
+            box-shadow: none;
+            border: none;
+        }
+
+        /* Below 1000px the sidebar is hidden, so narrow the main's
+           own side margins at the same breakpoint. This keeps the
+           "blue gradient strip" on each side of the main card
+           consistently sized across the two primary layouts. */
+        @media (width <= 1000px) {
+            width: calc(100% - 50px);
+        }
+
+        @media (width <= 450px) {
+            width: 100%;
+        }
+    }
+
+    .padded-content {
+        /* `.integration-request` already supplies 20px of bottom
+           padding, so we only need a small bottom gap here to give
+           the buttons breathing room inside the gray card. */
+        padding: 50px 0 20px;
+
+        .inner-content {
+            min-height: 870px;
+        }
+
+        @media (width <= 450px) {
+            padding: 40px 0 20px;
+        }
+
+        /* On doc pages at narrow widths the header is a compact
+           logo + name + back row, so it needs less top breathing
+           room than the catalog page's tall heading block. */
+        &:has(#integration-instructions-group) {
+            @media (width <= 1000px) {
+                padding-top: 25px;
+            }
+        }
+    }
+
+    & ol li {
+        list-style: none;
+
+        & ul li {
+            list-style: inherit;
+        }
+    }
+
+    /* Left-align the header block with the cards column, so the title,
+       subtitle, and search box don't spill into the sidebar area. The
+       sidebar column below takes 230 px (200 sidebar + 30 gutter),
+       and the first visible `.integration-lozenge` sits another 5 px
+       further right due to its own horizontal margin, so we pad the
+       header block to start at 265 px from the main card's left edge
+       to land on the card's visible left edge. At narrow widths, the
+       sidebar is hidden and the header reverts to its original
+       near-full-width layout. */
+    .integration-main-text {
+        padding: 0 30px 0 265px;
+
+        @media (width <= 1000px) {
+            padding: 0 30px;
+        }
+    }
+
+    .portico-page-heading {
+        font-size: 2.5em;
+        font-weight: 300;
+        line-height: 1.2;
+        text-align: center;
+        /* When the heading wraps to multiple lines at narrow widths,
+           balance the line widths so the top line doesn't end up much
+           longer than the bottom (which makes a centered title look
+           visually off-center). */
+        text-wrap: balance;
+
+        /* At widths where the sidebar is visible, left-align the
+           title so its left edge matches the left edge of the cards
+           column below. */
+        @media (width > 1000px) {
+            text-align: left;
+        }
+    }
+
+    .portico-page-subheading {
+        font-weight: 400;
+        font-size: 1.1em;
+        color: hsl(0deg 0% 40%);
+        line-height: 1.2;
+        text-align: center;
+
+        @media (width > 1000px) {
+            text-align: left;
+        }
+    }
+
+    /* Markdown-style blue links used in the page subheading and in
+       content areas that render user-facing text. */
+    .portico-page-subheading a,
+    .integration-instructions a,
+    .eligible_realm_end_notice a {
+        color: var(--color-link);
+        text-decoration: underline;
+        text-decoration-color: var(--color-link-underline);
+        text-underline-offset: 0.1176em;
+
+        &:hover {
+            color: var(--color-link-hover);
+            text-decoration-color: var(--color-link-underline-hover);
+        }
+    }
+
+    #integration-search {
+        margin-bottom: 30px;
+        padding: 0 30px 0 265px;
+
+        @media (width <= 1000px) {
+            padding: 0 30px;
+            margin-bottom: 10px;
+        }
+
+        .searchbar {
+            display: flex;
+            justify-content: center;
+            margin: 30px auto 0;
+
+            /* At widths where the sidebar is visible, left-align the
+               search box so its left edge matches the left edge of
+               the cards column below. */
+            @media (width > 1000px) {
+                justify-content: flex-start;
+            }
+
+            .searchbar-reset {
+                position: relative;
+                width: 100%;
+                max-width: 500px;
+
+                .search_input {
+                    /* border-box so width:100% includes the 70px of
+                       horizontal padding; otherwise the search box
+                       overflows its 500px cap by padding width. */
+                    box-sizing: border-box;
+                    font-size: 1em;
+                    font-family: inherit;
+
+                    width: 100%;
+                    height: 45px;
+                    padding: 0 20px 0 50px;
+                    border-radius: 5px;
+                    border: 1px solid hsl(0deg 0% 80%);
+                    display: block;
+                    color: hsl(0deg 0% 33%);
+                    margin-bottom: 10px;
+                    transition: border-color linear 0.2s;
+
+                    &:focus {
+                        border-color: var(--color-link);
+                        outline: 0;
+                    }
+                }
+
+                & .zulip-icon-search {
+                    position: absolute;
+                    left: 18px;
+                    top: 13px;
+                    font-size: 18px;
+                    color: hsl(0deg 0% 53%);
+                    pointer-events: none;
+                }
+            }
+        }
+    }
+
+    .catalog {
+        /* `flow-root` makes .catalog a new block formatting context
+           that contains the floated sidebar, so when a category has
+           few cards the sidebar doesn't overflow past .catalog's
+           bottom into the page background below. */
+        display: flow-root;
+        margin-top: 20px;
+        padding: 0 30px;
+        min-height: 500px;
+
+        .integration-categories-sidebar {
+            float: left;
+            width: 200px;
+            padding: 0 30px 0 0;
+            margin: 0;
+
+            &.sticky {
+                position: sticky;
+                top: 40px;
+                margin: auto;
+                height: 490px;
+                z-index: 10;
+            }
+
+            & h3 {
+                font-weight: 700;
+                font-size: 1.1em;
+                margin: 0 0 5px;
+                color: var(--color-integrations-category-text);
+            }
+
+            /* Visually separate "Custom integrations" (the second h3)
+               from the last category pill above it. */
+            & h3 ~ h3 {
+                margin-top: 20px;
+            }
+
+            & a {
+                display: block;
+                text-decoration: none;
+                font-weight: 400;
+                font-size: 0.95em;
+                padding: 6px 10px;
+                margin: 2px 0;
+                border-radius: 5px;
+                color: var(--color-integrations-category-text);
+                cursor: pointer;
+
+                &:hover {
+                    color: hsl(223deg 6% 15%);
+                }
+
+                &.selected {
+                    background-color: hsl(0deg 0% 100%);
+                    color: hsl(223deg 6% 25%);
+                    /* !important is needed to override the
+                       `.portico-landing a:not(.button) {
+                       font-weight: inherit !important }` rule
+                       in marketing_page.css. */
+                    font-weight: 600 !important;
+                }
+            }
+
+            @media (width <= 1000px) {
+                display: none;
+            }
+        }
+    }
+
+    .integration-categories-dropdown {
+        display: none;
+
+        /* Match the search box at narrow widths: the outer container
+           takes 30px horizontal padding, and the inner elements
+           (toggle + list) cap at 500px and center within the content
+           area — mirroring the `#integration-search { padding: 0 30px }`
+           + `.searchbar-reset { max-width: 500px }` structure. */
+        @media (width <= 1000px) {
+            display: block;
+            margin: 0;
+            padding: 0 30px;
+
+            & h3 {
+                font-weight: 400;
+                font-size: 1.1em;
+                text-align: left;
+                margin: 0;
+                padding: 12px 20px;
+
+                &.heading {
+                    font-weight: 600;
+                }
+            }
+
+            .integration-toggle-categories-dropdown,
+            .dropdown-list {
+                /* border-box so the 1px border is included in the
+                   500px cap, matching the search input's dimensions
+                   exactly. */
+                box-sizing: border-box;
+                width: 100%;
+                max-width: 500px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .integration-toggle-categories-dropdown {
+                cursor: pointer;
+                display: flex;
+                position: relative;
+                padding: 0;
+                align-items: center;
+                justify-content: space-between;
+                /* White background so the toggle button stands out
+                   from the gray catalog content area, matching the
+                   white-highlight selected pill in the wide-window
+                   sidebar. */
+                background-color: hsl(0deg 0% 100%);
+                border: 1px solid hsl(0deg 0% 80%);
+                /* Match the rounded corners of the search input. */
+                border-radius: 5px;
+            }
+
+            & i {
+                margin-right: 10px;
+                font-size: 24px;
+            }
+
+            /* The outer box is on the list container, so the items
+               inside have no borders and no dividers between them.
+               `border-top: 0` lets the list visually continue the
+               toggle's bottom edge without a double line. Only the
+               bottom corners are rounded; `overflow: hidden` clips
+               the selected item's white background so it doesn't
+               extend past the rounded border at the bottom. */
+            .dropdown-list {
+                display: none;
+                cursor: pointer;
+                padding: 0;
+                border: 1px solid hsl(0deg 0% 80%);
+                border-top: 0;
+                border-radius: 0 0 5px 5px;
+                overflow: hidden;
+
+                & a {
+                    display: block;
+                    text-decoration: none;
+                    font-weight: 400;
+                    font-size: 1em;
+                    padding: 12px 20px;
+                    color: var(--color-integrations-category-text);
+
+                    &:hover {
+                        color: hsl(223deg 6% 15%);
+                    }
+
+                    &.selected {
+                        background-color: hsl(0deg 0% 100%);
+                        color: hsl(223deg 6% 25%);
+                        font-weight: 600 !important;
+                    }
+                }
+            }
+        }
+
+        /* While the dropdown list is open, square the toggle's
+           bottom corners so they meet the list's straight top edge
+           cleanly instead of showing a rounded-to-straight seam.
+           jQuery's `slideToggle` sets `style="display: block"` inline
+           on the list when open, which we detect via :has(). */
+        &:has(.dropdown-list[style*="display: block"])
+            .integration-toggle-categories-dropdown {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+    }
+
+    .integration-lozenges {
+        overflow: hidden;
+        text-align: left;
+
+        @media (width <= 1000px) {
+            text-align: center;
+        }
+
+        /* The lozenge cards are wrapped in bare <a> tags, which
+           inherit the browser-default underline. Suppress it so
+           the underline doesn't peek through the whitespace gaps
+           between inline-block cards as visible dashes. */
+        & > a {
+            text-decoration: none;
+        }
+    }
+
+    .integration-lozenge {
+        vertical-align: top;
+        width: 153px;
+        height: 200px;
+        padding: 0 4px;
+        margin: 7px 5px;
+        border-radius: 5px;
+        border: 1px solid var(--color-integrations-card-border);
+        background-color: hsl(0deg 0% 100%);
+        color: var(--color-integrations-category-text);
+        text-align: center;
+        transition: 0.3s ease;
+        transition-property: border-color;
+
+        &:not([hidden]) {
+            display: inline-block;
+        }
+
+        &:hover {
+            border-color: var(--color-integrations-card-border-hover);
+        }
+
+        .integration-secondary-line-text {
+            margin: 0;
+            line-height: 10px;
+            font-size: 0.65em;
+            font-weight: 400;
+        }
+
+        .integration-category,
+        .realm-category {
+            font-size: 0.85em;
+            margin-top: 5px;
+            font-weight: 400;
+            color: hsl(216deg 23% 13% / 50%);
+        }
+
+        &.without-category {
+            height: 180px;
+        }
+
+        .integration-logo {
+            margin: 34px auto 20px;
+            height: 60px;
+        }
+
+        .fa-plus {
+            font-size: 59px;
+        }
+
+        .integration-name {
+            font-size: 1.2em;
+            font-weight: 400;
+            margin: 10px 4px 0;
+
+            &.with-secondary {
+                font-size: 1.1em;
+                margin-top: 4px;
+            }
+        }
+
+        @media (width <= 830px) {
+            width: 134px;
+            height: 180px;
+
+            .integration-logo {
+                margin: 34px auto 15px;
+                height: 45px;
+            }
+
+            .fa-plus {
+                font-size: 45px;
+            }
+
+            .integration-name {
+                font-size: 1em;
+            }
+
+            .integration-category,
+            .realm-category {
+                font-size: 0.8em;
+            }
+        }
+
+        @media (width <= 375px) {
+            width: 120px;
+        }
+
+        @media (width <= 357px) {
+            width: 108px;
+            height: 160px;
+
+            &.without-category {
+                height: 140px;
+            }
+
+            .integration-logo {
+                margin: 28px auto 10px;
+                height: 45px;
+            }
+
+            .integration-name {
+                font-size: 0.9em;
+            }
+
+            .integration-category,
+            .realm-category {
+                font-size: 0.77em;
+            }
+        }
+    }
+
+    .integration-request {
+        font-size: 1em;
+        /* Generous top/bottom padding so the "Don't see an integration
+           you need?" section has visible breathing room between the
+           last row of cards above and the section content below. */
+        padding: 40px 0 20px;
+
+        /* At widths where the header is left-aligned, left-align
+           the bottom section to match. The 5px left padding lines
+           up the text with the visible card edges, since each
+           `.integration-lozenge` has a 5px horizontal margin. */
+        @media (width > 1000px) {
+            text-align: left;
+            padding-left: 5px;
+        }
+
+        & p {
+            margin: 0 0 20px;
+        }
+
+        /* Lay out the /why-zulip-style hero-buttons as a flex row,
+           since the flex rule in marketing_page.css is scoped to
+           .why-page and its siblings. Centered at narrow widths,
+           left-aligned at wide widths to match the header. */
+        .hero-buttons {
+            display: flex;
+            flex-flow: row wrap;
+            justify-content: center;
+
+            @media (width > 1000px) {
+                justify-content: flex-start;
+                /* Each .button has 10px margin from marketing_page.css,
+                   which pushes its visible border right of the text
+                   above. Pull the flex container left to compensate. */
+                margin-left: -10px;
+            }
+        }
+    }
+
+    /* -- integration instructions -- */
+
+    #integration-instructions-group {
+        padding: 0 50px;
+        display: flex;
+
+        .integration-instruction-block {
+            display: flex;
+            flex-direction: column;
+            /* Let the left column size to its widest child (the logo
+               box, or a long category pill) plus a right-padding
+               gutter. The instructions column uses `flex: 1` to fill
+               the remaining space. */
+            flex-shrink: 0;
+            padding-right: 30px;
+
+            .integration-lozenge {
+                width: 125px;
+                height: auto;
+                padding: 0 5px 20px;
+                /* Align the top of the logo card with the visible
+                   cap-height of the title's first character. This
+                   `margin-top` is tuned so that the card's top edge
+                   sits on the same horizontal line as the top of
+                   the "Z" (or equivalent cap-height glyph) in the
+                   h1 title, not on its typographic ascender line.
+                   The value balances the 15px top margin the shared
+                   markdown rules give h1 plus the half-leading and
+                   ascender offset that sit above the visible glyph
+                   in Source Sans 3 VF at the h1's font-size. */
+                margin: 25px 21px 20px;
+                order: 1;
+
+                .integration-category,
+                .realm-category {
+                    display: none;
+                }
+
+                @media (width <= 1000px) {
+                    border: none;
+
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: space-between;
+                    height: auto;
+                    width: auto;
+                    margin: unset;
+                    padding: unset;
+
+                    .integration-logo {
+                        /* Override the shared catalog-card rule at
+                           `@media (width <= 830px)` that shrinks logos
+                           to 45px — the doc-page header should keep the
+                           full-size logo at every width. */
+                        height: 60px;
+                        margin: 0;
+                    }
+
+                    .integration-name {
+                        font-size: 1.2em !important;
+                        margin: 0 0 0 20px;
+                    }
+                }
+            }
+
+            .name {
+                display: none;
+                font-size: 1.4em;
+                font-weight: 400;
+                margin: 0;
+                padding-bottom: 35px;
+            }
+
+            .categories {
+                order: 2;
+                /* Left-align the pills with the logo box above, which
+                   has `margin: 0 21px 20px` on `.integration-lozenge`. */
+                margin-left: 21px;
+
+                /* Each category is its own <a> wrapping an <h3>. Lay
+                   them out as a vertical flex column so the pills are
+                   sized to their content (like in-app pills) instead
+                   of stretching to a fixed width. */
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+
+                & a {
+                    text-decoration: none;
+                }
+
+                .integration-category,
+                .realm-category {
+                    font-size: 0.95em;
+                    font-weight: 400;
+                    padding: 5px 14px;
+                    margin: 0 0 6px;
+                    border-radius: 14px;
+                    background-color: hsl(210deg 94% 42% / 10%);
+                    color: hsl(210deg 70% 35%);
+
+                    &:hover {
+                        background-color: hsl(210deg 94% 42% / 17%);
+                        color: hsl(210deg 70% 28%);
+                    }
+                }
+            }
+
+            #integration-list-link {
+                margin-left: 30px;
+                order: 3;
+                color: var(--color-integrations-category-text);
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+
+                .zulip-icon-arrow-left {
+                    font-size: 16px;
+                    margin-right: 5px;
+                }
+
+                /* Show "Back to list" on wide screens, "Back" on
+                   narrow where space is limited. */
+                .integrations-back-label-short {
+                    display: none;
+                }
+
+                @media (width <= 1000px) {
+                    .integrations-back-label-long {
+                        display: none;
+                    }
+
+                    .integrations-back-label-short {
+                        display: inline;
+                    }
+                }
+
+                &:hover {
+                    color: hsl(223deg 6% 15%);
+                }
+
+                @media (width >= 1000px) {
+                    margin-top: 15px;
+                }
+            }
+
+            @media (width <= 1000px) {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+                /* Drop the column-gutter padding on the right so
+                   the back-link reaches the card's right edge
+                   instead of sitting 30 px inside it. */
+                padding: 0 0 12px;
+                border-bottom: 1px solid hsl(0deg 0% 88%);
+            }
+
+            @media (width <= 1000px) {
+                .name {
+                    display: block;
+                }
+
+                .categories {
+                    display: none;
+                }
+            }
+        }
+
+        .integration-instructions {
+            .logos_disclaimer {
+                font-size: 14px;
+                font-style: italic;
+            }
+
+            @media (width >= 1000px) {
+                /* Fill whatever space the left column leaves after
+                   sizing to its widest child. min-width: 0 lets the
+                   column shrink below its intrinsic content size when
+                   the viewport is narrow. */
+                flex: 1;
+                min-width: 0;
+            }
+
+            @media (width <= 1000px) {
+                margin-left: 0;
+
+                & h1:first-child {
+                    margin-top: 0;
+                }
+            }
+        }
+
+        @media (width <= 1000px) {
+            flex-direction: column;
+        }
+
+        @media (width <= 768px) {
+            padding: 0 25px;
+        }
+
+        @media (width <= 450px) {
+            padding: 0 12px;
+        }
+    }
+}
+
+.portico-landing.integrations.communities {
+    .main {
+        max-width: 900px;
+    }
+
+    /* `.eligible_realm` has no horizontal margin, unlike
+       `.integration-lozenge` which has a 5 px left/right margin, so
+       the communities heading needs 5 px less left padding than the
+       integrations heading to line up with the first realm's visible
+       left edge. */
+    .integration-main-text {
+        padding-left: 260px;
+
+        @media (width <= 1000px) {
+            padding-left: 30px;
+        }
+    }
+
+    .portico-page-heading {
+        color: hsl(0deg 0% 0%);
+        font-size: 44px;
+    }
+
+    .portico-page-subheading {
+        font-weight: 300;
+        color: hsl(0deg 0% 20%);
+        max-width: 800px;
+        line-height: 150%;
+        margin: auto;
+    }
+
+    .integration-categories-sidebar h3 {
+        color: hsl(0deg 0% 0%);
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .catalog {
+        margin-top: 50px;
+    }
+
+    .eligible_realms {
+        display: flex;
+        flex-direction: column;
+
+        .eligible_realm {
+            display: flex;
+            margin-bottom: 12px;
+            padding: 15px 20px;
+            border: 1px solid var(--color-integrations-card-border);
+            border-radius: 6px;
+            transition: border-color 0.3s ease;
+            background-color: hsl(0deg 0% 100%);
+            /* The card itself is an <a>, which would otherwise inherit
+               the underline from `.portico-landing a:not(.button)` in
+               marketing_page.css and visibly underline the name and
+               description text inside it. */
+            text-decoration: none;
+
+            &:hover {
+                border-color: var(--color-integrations-card-border-hover);
+            }
+
+            .eligible_realm_logo {
+                display: flex;
+                margin-right: 20px;
+                width: 60px;
+                height: 60px;
+            }
+
+            .eligible_realm_details {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                .eligible_realm_name {
+                    font-weight: 400;
+                    font-size: 21px;
+                    color: hsl(220.6deg 20% 33.3%);
+                    line-height: 23px;
+                    margin: 0 0 2px;
+                }
+
+                .eligible_realm_description {
+                    font-weight: 400;
+                    font-size: 15px;
+                    color: hsl(220deg 2.7% 56.5%);
+                    line-height: 19px;
+                    margin: 0;
+                    /* For restricting text to only two lines.
+                       See https://caniuse.com/?search=display%3A%20-webkit-box for support. */
+                    overflow: hidden;
+                    display: -webkit-box; /* stylelint-disable-line value-no-vendor-prefix */
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                }
+            }
+        }
+
+        & hr {
+            margin: 10px 0;
+            border: 0;
+            border-top: 1px solid hsl(0deg 0% 93%);
+        }
+
+        .eligible_realm_end_notice {
+            text-align: center;
+            font-size: 18px;
+        }
+    }
+}

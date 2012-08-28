@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+this_dir=${BASH_SOURCE[0]%/*}
+# shellcheck source=lib/git-tools.bash
+. "${this_dir}"/lib/git-tools.bash
+
+require_clean_work_tree 'check out PR as branch'
+
+request_id="$1"
+remote=${2:-"upstream"}
+
+set -x
+git fetch "$remote" "pull/$request_id/head"
+git checkout -B "review-${request_id}" "$remote/main"
+git reset --hard FETCH_HEAD
+git pull --rebase

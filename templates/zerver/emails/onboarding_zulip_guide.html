@@ -1,0 +1,42 @@
+{% extends "zerver/emails/email_base_default.html" %}
+
+{% block illustration %}
+<img src="{{ email_images_base_url }}/email_logo.png" alt=""/>
+{% endblock %}
+
+{% block content %}
+
+<p>{{ _("As you are getting started with Zulip, we'd love to help you discover how it can work best for your needs. Check out this guide to key Zulip features for organizations like yours!") }}</p>
+
+
+{% if organization_type == "business" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide for businesses") }}</a>
+{% elif organization_type == "opensource" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide for open-source projects") }}</a>
+{% elif organization_type == "education" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide for education") }}</a>
+{% elif organization_type == "research" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide for research") }}</a>
+{% elif organization_type == "event" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide for events and conferences") }}</a>
+{% elif organization_type == "nonprofit" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide for non-profits") }}</a>
+{% elif organization_type == "community" %}
+<a class="button" href="{{ zulip_guide_link }}">{{ _("View Zulip guide for communities") }}</a>
+{% endif %}
+
+<p>
+    {% if corporate_enabled %}
+        {{macros.contact_us_zulip_cloud(support_email)}}
+    {% else %}
+        {{macros.contact_us_self_hosted(support_email)}}
+    {% endif %}
+</p>
+
+{% endblock %}
+
+{% block manage_preferences %}
+
+<p><a href="{{ unsubscribe_link }}">{% trans %}Unsubscribe from welcome emails for {{ realm_name }}{% endtrans %}</a></p>
+
+{% endblock %}

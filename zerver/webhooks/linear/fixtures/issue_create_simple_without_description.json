@@ -1,0 +1,39 @@
+{
+    "action": "create",
+    "createdAt": "2023-04-11T09:47:53.218Z",
+    "data": {
+        "id": "21e12515-fe5e-4923-88a1-e9ace5056473",
+        "createdAt": "2023-04-11T09:47:53.218Z",
+        "updatedAt": "2023-04-11T09:47:53.218Z",
+        "number": 42,
+        "title": "Drop-down overflow in the select menu.",
+        "priority": 2,
+        "boardOrder": 0,
+        "sortOrder": -26718,
+        "teamId": "9e383f51-2629-4f19-97ff-451cc2f0a0ad",
+        "previousIdentifiers": [],
+        "creatorId": "674c90c8-35ea-454d-8ca4-5548258fd795",
+        "stateId": "a19a64b3-1d56-4ecb-b40e-d14aee5e9368",
+        "priorityLabel": "High",
+        "subscriberIds": [
+            "674c90c8-35ea-454d-8ca4-5548258fd795"
+        ],
+        "labelIds": [],
+        "state": {
+            "id": "a19a64b3-1d56-4ecb-b40e-d14aee5e9368",
+            "color": "#e2e2e2",
+            "name": "Todo",
+            "type": "unstarted"
+        },
+        "team": {
+            "id": "9e383f51-2629-4f19-97ff-451cc2f0a0ad",
+            "key": "WEB",
+            "name": "Webhooks"
+        },
+        "labels": []
+    },
+    "url": "https://linear.app/webhooks/issue/WEB-42/drop-down-overflow-in-the-select-menu",
+    "type": "Issue",
+    "organizationId": "7a661544-df08-4cd1-a1e3-5ec611898806",
+    "webhookTimestamp": 1681206473447
+}

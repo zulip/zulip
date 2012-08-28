@@ -1,0 +1,32 @@
+[
+    {
+        "text": "message body text",
+        "user": "U061A5N1G",
+        "ts": "1434139102.000002",
+        "thread_ts": "1434139102.000002",
+        "channel_name": "random"
+    },
+    {
+        "text": "random",
+        "user": "U061A5N1G",
+        "ts": "1439868294.000007",
+        "parent_user_id": "U061A5N1G",
+        "thread_ts": "1434139102.000002",
+        "channel_name": "random"
+    },
+    {
+        "text": "another thread message",
+        "user": "U061A1R2R",
+        "ts": "1539868294.000007",
+        "thread_ts": "1539868294.000007",
+        "channel_name": "random"
+    },
+    {
+        "text": "another reply",
+        "user": "U061A1R2R",
+        "ts": "1449868294.000007",
+        "parent_user_id": "U061A5N1G",
+        "thread_ts": "1539868294.000007",
+        "channel_name": "random"
+    }
+]

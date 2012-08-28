@@ -1,0 +1,57 @@
+{
+   "event":"check_in_missing",
+   "message":"[Zulip Integration] MISSING: Zulip hasn't checked in for 6 minutes",
+   "project":{
+      "id":54639,
+      "name":"Zulip Integration",
+      "token":"d144e04c",
+      "created_at":"2017-12-29T14:18:50.512753Z",
+      "disable_public_links":false,
+      "pivotal_project_id":null,
+      "asana_workspace_id":null,
+      "github_project":null,
+      "environments":[
+
+      ],
+      "owner":{
+         "id":57245,
+         "email":"madelf1337@gmail.com",
+         "name":"Pranav Kulkarni"
+      },
+      "last_notice_at":null,
+      "earliest_notice_at":"2017-11-29T14:59:09.234554Z",
+      "unresolved_fault_count":0,
+      "fault_count":0,
+      "active":true,
+      "users":[
+         {
+            "id":57245,
+            "email":"madelf1337@gmail.com",
+            "name":"Pranav Kulkarni"
+         }
+      ],
+      "sites":[
+         {
+            "id":"59ad71ac-6d2e-4fd0-a04f-b5c916c8f57e",
+            "active":true,
+            "last_checked_at":"2017-12-29T14:59:09.191265Z",
+            "name":"Zulip",
+            "state":"up",
+            "url":"https://zulipint.slack.com"
+         }
+      ],
+      "team_id":34534
+   },
+   "check_in":{
+      "state":"missing",
+      "schedule_type":"simple",
+      "reported_at":"2017-12-29T14:53:02.498067Z",
+      "expected_at":"2017-12-29T15:04:08.980590Z",
+      "missed_count":1,
+      "grace_period":60,
+      "id":"15mIYe",
+      "name":"Zulip",
+      "url":"https://api.honeybadger.io/v1/check_in/15mIYe",
+      "report_period":300
+   }
+}

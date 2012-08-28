@@ -1,0 +1,12 @@
+deb [signed-by=/etc/apt/keyrings/pgdg.asc] http://apt.postgresql.org/pub/repos/apt/ noble-pgdg main
+deb-src [signed-by=/etc/apt/keyrings/pgdg.asc] http://apt.postgresql.org/pub/repos/apt/ noble-pgdg main
+
+deb [signed-by=/etc/apt/keyrings/pgroonga-ppa.asc] http://ppa.launchpad.net/groonga/ppa/ubuntu noble main
+deb-src [signed-by=/etc/apt/keyrings/pgroonga-ppa.asc] http://ppa.launchpad.net/groonga/ppa/ubuntu noble main
+
+deb [signed-by=/etc/apt/keyrings/strukturag.asc] https://ppa.launchpadcontent.net/strukturag/libheif/ubuntu/ noble main
+deb-src [signed-by=/etc/apt/keyrings/strukturag.asc] https://ppa.launchpadcontent.net/strukturag/libheif/ubuntu/ noble main
+
+# libde265 in 24.04 is up-to-date, so the PPA doesn't provide 24.04 packages
+#deb [signed-by=/etc/apt/keyrings/strukturag.asc] https://ppa.launchpadcontent.net/strukturag/libde265/ubuntu/ noble main
+#deb-src [signed-by=/etc/apt/keyrings/strukturag.asc] https://ppa.launchpadcontent.net/strukturag/libde265/ubuntu/ noble main

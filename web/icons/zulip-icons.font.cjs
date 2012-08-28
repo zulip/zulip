@@ -1,0 +1,11 @@
+"use strict";
+
+module.exports = {
+    files: ["./*.svg"],
+    fontName: "zulip-icons",
+    classPrefix: "zulip-icon-",
+    baseSelector: ".zulip-icon",
+    cssTemplate: "./template.hbs",
+    ligature: false,
+    types: ["woff2"], // https://github.com/jeerbl/webfonts-loader/pull/219
+};

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# This is a thin wrapper around the upgrade-from-git script (scripts/lib/upgrade-zulip-from-git).
+# This wrapper exists to log output to /var/log/zulip/upgrade.log for debugging.
+
+set -e
+
+if [ "$EUID" -ne 0 ]; then
+    basename=$(basename "$0")
+    echo "Error: $basename must be run as root." >&2
+    exit 1
+fi
+
+"$(dirname "$0")/lib/upgrade-zulip-from-git" "$@" 2>&1 | tee -a /var/log/zulip/upgrade.log
+failed=${PIPESTATUS[0]}
+
+if [ "$failed" -ne 0 ]; then
+    echo -e '\033[0;31m'
+    echo "Zulip upgrade failed (exit code $failed)!"
+    echo
+    echo -n "The upgrade process is designed to be idempotent, so you can retry "
+    echo -n "after resolving whatever issue caused the failure (there should be a traceback above). "
+    echo -n "A log of this installation is available in /var/log/zulip/upgrade.log"
+    echo -e '\033[0m'
+    exit "$failed"
+fi

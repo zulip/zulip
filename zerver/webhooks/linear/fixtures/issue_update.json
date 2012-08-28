@@ -1,0 +1,84 @@
+{
+    "action": "update",
+    "createdAt": "2023-04-11T10:16:53.022Z",
+    "data": {
+        "id": "3443a709-f2b5-46f2-a136-a0445fd432be",
+        "createdAt": "2023-04-11T10:10:15.037Z",
+        "updatedAt": "2023-04-11T10:16:53.022Z",
+        "number": 44,
+        "title": "This is regarding the outage that we faced on 11/12/22 from 2000 to 2200 and also on 25/12/22 from 0000 to 0230",
+        "priority": 1,
+        "boardOrder": 0,
+        "sortOrder": -2036,
+        "startedAt": "2023-04-11T10:10:15.093Z",
+        "teamId": "9e383f51-2629-4f19-97ff-451cc2f0a0ad",
+        "cycleId": "eaef2755-de5b-4342-accb-79060378493f",
+        "previousIdentifiers": [],
+        "creatorId": "674c90c8-35ea-454d-8ca4-5548258fd795",
+        "assigneeId": "674c90c8-35ea-454d-8ca4-5548258fd795",
+        "stateId": "a2530cac-36a0-4b6d-9af0-6357784035d4",
+        "priorityLabel": "Urgent",
+        "subscriberIds": [
+            "674c90c8-35ea-454d-8ca4-5548258fd795"
+        ],
+        "labelIds": [
+            "6e4da2ed-ee8b-4b19-9cf8-40e5603e04c1",
+            "56111f1a-e733-49f2-856a-c42318bb8739",
+            "196379c2-287d-436d-962c-b2c0ce8281a1",
+            "926b0916-05e2-4e8b-a7c6-96bc2c763326"
+        ],
+        "description": "The outage that occurred on the above-mentioned date is a cause for concern as it could have significant implications for the organization and its users. A prolonged outage can result in lost revenue, productivity, and customer confidence. Therefore, it is essential to conduct a detailed assessment and analysis to identify the root cause of the outage and take appropriate measures to prevent its recurrence.\n\nThe analysis process may involve the use of specialized tools and techniques to help pinpoint the exact cause of the outage. Once the root cause has been identified, the organization can take steps to implement effective solutions that can mitigate the risk of a similar outage happening in the future. The assessment and analysis process will help the organization to develop a more robust and reliable IT infrastructure that can provide uninterrupted services to its users.",
+        "descriptionData": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"text\":\"The outage that occurred on the above-mentioned date is a cause for concern as it could have significant implications for the organization and its users. A prolonged outage can result in lost revenue, productivity, and customer confidence. Therefore, it is essential to conduct a detailed assessment and analysis to identify the root cause of the outage and take appropriate measures to prevent its recurrence.\",\"type\":\"text\"}]},{\"type\":\"paragraph\",\"content\":[{\"text\":\"The analysis process may involve the use of specialized tools and techniques to help pinpoint the exact cause of the outage. Once the root cause has been identified, the organization can take steps to implement effective solutions that can mitigate the risk of a similar outage happening in the future. The assessment and analysis process will help the organization to develop a more robust and reliable IT infrastructure that can provide uninterrupted services to its users.\",\"type\":\"text\"}]}]}",
+        "assignee": {
+            "id": "674c90c8-35ea-454d-8ca4-5548258fd795",
+            "name": "Satyam Bansal"
+        },
+        "cycle": {
+            "id": "eaef2755-de5b-4342-accb-79060378493f",
+            "number": 1,
+            "startsAt": "2023-04-05T18:30:00.000Z",
+            "endsAt": "2023-04-12T18:30:00.000Z"
+        },
+        "state": {
+            "id": "a2530cac-36a0-4b6d-9af0-6357784035d4",
+            "color": "#f2c94c",
+            "name": "In Progress",
+            "type": "started"
+        },
+        "team": {
+            "id": "9e383f51-2629-4f19-97ff-451cc2f0a0ad",
+            "key": "WEB",
+            "name": "Webhooks"
+        },
+        "labels": [
+            {
+                "id": "56111f1a-e733-49f2-856a-c42318bb8739",
+                "color": "#4EA7FC",
+                "name": "Improvement"
+            },
+            {
+                "id": "196379c2-287d-436d-962c-b2c0ce8281a1",
+                "color": "#BB87FC",
+                "name": "Feature"
+            },
+            {
+                "id": "6e4da2ed-ee8b-4b19-9cf8-40e5603e04c1",
+                "color": "#EB5757",
+                "name": "Bug"
+            },
+            {
+                "id": "926b0916-05e2-4e8b-a7c6-96bc2c763326",
+                "color": "#26b5ce",
+                "name": "Custom Label"
+            }
+        ]
+    },
+    "updatedFrom": {
+        "updatedAt": "2023-04-11T10:13:05.980Z",
+        "title": "This is regarding the outage that we faced during 11/12/22 from 2000 to 2200."
+    },
+    "url": "https://linear.app/webhooks/issue/WEB-44/this-is-regarding-the-outage-that-we-faced-on-111222-from-2000-to-2200",
+    "type": "Issue",
+    "organizationId": "7a661544-df08-4cd1-a1e3-5ec611898806",
+    "webhookTimestamp": 1681208213456
+}

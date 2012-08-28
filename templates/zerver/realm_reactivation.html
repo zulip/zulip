@@ -1,0 +1,18 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block title %}
+<title>{{ _("Organization successfully reactivated") }} | Zulip</title>
+{% endblock %}
+
+{% block portico_content %}
+<div class="app portico-page">
+    <div class="app-main portico-page-container center-block flex full-page account-creation new-style">
+        <div class="inline-block">
+
+            <div class="get-started">
+                <h1>{{ _("Your organization has been successfully reactivated.") }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

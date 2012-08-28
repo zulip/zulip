@@ -1,0 +1,208 @@
+---
+import {SHOW_RELATIVE_LINKS} from "astro:env/client";
+
+/* eslint-disable import/extensions */
+import BuildingIcon from "~icons/zulip-icon/building";
+import GearIcon from "~icons/zulip-icon/gear";
+import ToolIcon from "~icons/zulip-icon/tool";
+/* eslint-enable import/extensions */
+
+const PERSONAL_SETTINGS_TYPE = "Personal settings";
+const ORGANIZATION_SETTINGS_TYPE = "Organization settings";
+
+// This list has been transformed one-off from `help_settings_links.py`, we
+// have added a comment in that file to update this list in case of any
+// changes.
+const setting_link_mapping: Record<
+    string,
+    {
+        setting_type: string;
+        setting_name: string;
+        setting_link: string;
+    }
+> = {
+    // a mapping from the setting target that is the same as the final URL
+    // breadcrumb to that setting to the name of its setting type, the setting
+    // name as it appears in the user interface, and a relative link that can
+    // be used to get to that setting
+    profile: {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Profile",
+        setting_link: "/#settings/profile",
+    },
+    "account-and-privacy": {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Account & privacy",
+        setting_link: "/#settings/account-and-privacy",
+    },
+    preferences: {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Preferences",
+        setting_link: "/#settings/preferences",
+    },
+    notifications: {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Notifications",
+        setting_link: "/#settings/notifications",
+    },
+    "your-bots": {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Bots",
+        setting_link: "/#settings/your-bots",
+    },
+    "alert-words": {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Alert words",
+        setting_link: "/#settings/alert-words",
+    },
+    "uploaded-files": {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Uploaded files",
+        setting_link: "/#settings/uploaded-files",
+    },
+    topics: {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Topics",
+        setting_link: "/#settings/topics",
+    },
+    "muted-users": {
+        setting_type: PERSONAL_SETTINGS_TYPE,
+        setting_name: "Muted users",
+        setting_link: "/#settings/muted-users",
+    },
+    "organization-profile": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Organization profile",
+        setting_link: "/#organization/organization-profile",
+    },
+    "organization-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Organization settings",
+        setting_link: "/#organization/organization-settings",
+    },
+    "organization-permissions": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Organization permissions",
+        setting_link: "/#organization/organization-permissions",
+    },
+    "default-user-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Default user settings",
+        setting_link: "/#organization/organization-level-user-defaults",
+    },
+    "emoji-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Custom emoji",
+        setting_link: "/#organization/emoji-settings",
+    },
+    "auth-methods": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Authentication methods",
+        setting_link: "/#organization/auth-methods",
+    },
+    users: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Users",
+        setting_link: "/#organization/users/active",
+    },
+    imported: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Users",
+        setting_link: "/#organization/users/imported",
+    },
+    deactivated: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Users",
+        setting_link: "/#organization/users/deactivated",
+    },
+    invitations: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Users",
+        setting_link: "/#organization/users/invitations",
+    },
+    bots: {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Bots",
+        setting_link: "/#organization/bots",
+    },
+    "default-channels-list": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Default channels",
+        setting_link: "/#organization/default-channels-list",
+    },
+    "linkifier-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Linkifiers",
+        setting_link: "/#organization/linkifier-settings",
+    },
+    "playground-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Code playgrounds",
+        setting_link: "/#organization/playground-settings",
+    },
+    "profile-field-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Custom profile fields",
+        setting_link: "/#organization/profile-field-settings",
+    },
+    "channel-folder-settings": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Channel folders",
+        setting_link: "/#organization/channel-folders",
+    },
+    "data-exports-admin": {
+        setting_type: ORGANIZATION_SETTINGS_TYPE,
+        setting_name: "Data exports",
+        setting_link: "/#organization/data-exports-admin",
+    },
+};
+
+const {setting_key} = Astro.props;
+
+const {setting_type, setting_name, setting_link} = setting_link_mapping[setting_key]!;
+---
+
+<ol>
+    {
+        SHOW_RELATIVE_LINKS ? (
+            // The "Bots" label appears in both Personal and
+            // Organization settings in the user interface, so we need special
+            // text for this setting.
+            // As for the the case of "Users", it refers to the Users tab in
+            // organization settings. Since the users tab has multiple sub tabs
+            // like active, deactivated etc., we need a way to point to them.
+            setting_name === "Bots" || setting_name === "Users" ? (
+                <li>
+                    Navigate to the <a href={setting_link}>{setting_name}</a> tab of the{" "}
+                    <b>{setting_type}</b> menu.
+                </li>
+            ) : (
+                <li>
+                    Go to <a href={setting_link}>{setting_name}</a>.
+                </li>
+            )
+        ) : (
+            <>
+                <li>
+                    Click on the <b>gear</b> (<GearIcon />) icon in the upper right corner of the
+                    web or desktop app.
+                </li>
+                <li>
+                    Select{" "}
+                    <b>
+                        {setting_type === ORGANIZATION_SETTINGS_TYPE ? (
+                            <BuildingIcon />
+                        ) : (
+                            <ToolIcon />
+                        )}{" "}
+                        {setting_type}
+                    </b>
+                    .
+                </li>
+                <li>
+                    On the left, click <b>{setting_name}</b>.
+                </li>
+            </>
+        )
+    }
+</ol>

@@ -1,0 +1,100 @@
+
+{
+    "ou=users,dc=zulip,dc=com": {
+        "ou": "users"
+    },
+
+    "uid=hamlet,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["King Hamlet"],
+        "uid": ["hamlet"],
+        "mail": ["hamlet@zulip.com"],
+        "userAccountControl": ["512"],
+        "sn": ["Hamlet"],
+        "homePhone": ["123456789"],
+        "birthDate": ["1900-09-08"],
+        "jpegPhoto": "file:static/images/test-images/avatars/example_profile_picture.png"
+    },
+
+    "uid=cordelia,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["Cordelia, Lear's daughter"],
+        "uid": ["cordelia"],
+        "mail": ["cordelia@zulip.com"],
+        "sn": ["Cordelia"]
+    },
+
+    "uid=letham,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["aaron"],
+        "uid": ["letham"],
+        "mail": ["aaron@zulip.com"],
+        "sn": ["aaron"]
+    },
+
+    "uid=newuser,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["New LDAP fullname"],
+        "uid": ["newuser"],
+        "sn": ["shortname"],
+        "homePhone": ["a-new-number"],
+        "jpegPhoto": "file:static/images/test-images/avatars/example_profile_picture.png"
+    },
+
+    "uid=newuser_splitname,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["Last"],
+        "uid": ["newuser_splitname"],
+        "sn": ["First"]
+    },
+
+    "uid=newuser_with_email,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["New LDAP fullname"],
+        "uid": ["newuser_with_email"],
+        "sn": ["shortname"],
+        "mail": ["newuser_email@zulip.com"]
+    },
+
+    "uid=newuser_email_as_uid@zulip.com,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["New LDAP fullname"],
+        "uid": ["newuser_email_as_uid@zulip.com"],
+        "sn": ["shortname"]
+    },
+
+    "uid=user1_with_shared_email,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["New LDAP fullname"],
+        "uid": ["user1_with_shared_email"],
+        "sn": ["shortname"],
+        "mail": ["shared_email@zulip.com"]
+    },
+
+    "uid=user2_with_shared_email,ou=users,dc=zulip,dc=com": {
+        "objectClass": ["user"],
+        "cn": ["New LDAP fullname"],
+        "uid": ["user2_with_shared_email"],
+        "sn": ["shortname"],
+        "mail": ["shared_email@zulip.com"]
+    },
+
+    "ou=groups,dc=zulip,dc=com": {
+        "ou": "groups"
+    },
+    "cn=cool_test_group,ou=groups,dc=zulip,dc=com": {
+        "objectClass": ["groupOfUniqueNames"],
+        "cn": ["cool_test_group"],
+        "uniqueMember": [
+            "uid=hamlet,ou=users,dc=zulip,dc=com"
+        ]
+    },
+    "cn=another_test_group,ou=groups,dc=zulip,dc=com": {
+        "objectClass": ["groupOfUniqueNames"],
+        "cn": ["another_test_group"],
+        "uniqueMember": [
+            "uid=hamlet,ou=users,dc=zulip,dc=com",
+            "uid=cordelia,ou=users,dc=zulip,dc=com"
+        ]
+    }
+}

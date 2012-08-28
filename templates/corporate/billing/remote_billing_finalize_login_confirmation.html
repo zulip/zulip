@@ -1,0 +1,81 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "billing_auth" %}
+
+{% block title %}
+<title>
+    {% if next_page and next_page == "deactivate" %}
+    Log in to deactivate registration for {{ host }} | Zulip
+    {% else %}
+    Log in to Zulip plan management for {{ host }} | Zulip
+    {% endif %}
+</title>
+{% endblock %}
+
+{% block portico_content %}
+<div id="remote-billing-confirm-login-page" class="register-account flex full-page">
+    <div class="center-block new-style">
+        <div class="pitch">
+            {% if next_page and next_page == "deactivate" %}
+            <h1>Log in to deactivate registration for<br/>{{ host }}</h1>
+            {% else %}
+            <h1>Log in to Zulip plan management for<br/>{{ host }}</h1>
+            {% endif %}
+        </div>
+        <div class="white-box">
+            <form id="remote-billing-confirm-login-form" method="post" action="{{ action_url }}">
+                {{ csrf_input }}
+                <div class="input-box remote-billing-confirm-login-form-field">
+                    <label for="full_name" class="inline-block label-title">Name</label>
+                    {% if not user_full_name %}
+                    <input id="full_name" name="full_name" class="required" type="text" />
+                    <div id="remote-billing-confirm-login-form-full_name-error" class="alert alert-danger remote-billing-confirm-login-form-field-error full_name-error"></div>
+                    {% else %}
+                    <div class="not-editable-realm-field">
+                        {{ user_full_name }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="input-box remote-billing-confirm-login-form-field">
+                    <label for="user-email" class="inline-block label-title">
+                        Email
+                    </label>
+                    <div id="user-email" class="not-editable-realm-field">
+                        {{ user_email }}
+                    </div>
+                </div>
+                <!-- user_full_name is not present only when user first logs in which also perfect to set email preferences  -->
+                {% if (not user_full_name) and (not (next_page and next_page == "deactivate")) %}
+                <div class="input-group remote-billing-confirm-email-subscription-form-field">
+                    <label for="enable-major-release-emails" class="checkbox">
+                        <input id="enable-major-release-emails" name="enable_major_release_emails" type="checkbox" value="true" checked="checked" />
+                        <span class="rendered-checkbox"></span>
+                        Sign me up for emails about <strong>major Zulip releases</strong> and other big announcements (a few times a year)
+                    </label>
+                    <label for="enable-maintenance-release-emails" class="checkbox">
+                        <input id="enable-maintenance-release-emails" name="enable_maintenance_release_emails" type="checkbox" value="true" checked="checked" />
+                        <span class="rendered-checkbox"></span>
+                        Sign me up for emails about <strong>all Zulip releases</strong>, including security and maintenance releases (recommended for server administrators)
+                    </label>
+                </div>
+                {% endif %}
+                {% if tos_consent_needed %}
+                <div class="input-group terms-of-service remote-billing-confirm-login-form-field" id="remote-billing-confirm-login-tos-wrapper">
+                    <label for="remote-billing-confirm-login-tos" class="checkbox">
+                        <input id="remote-billing-confirm-login-tos" name="tos_consent" class="required" type="checkbox" value="true" />
+                        <span class="rendered-checkbox"></span>
+                        I agree to the <a href="{{ root_domain_url }}/policies/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a>.
+                    </label>
+                    <div id="remote-billing-confirm-login-form-tos_consent-error" class="alert alert-danger remote-billing-confirm-login-form-field-error tos_consent-error"></div>
+                </div>
+                {% endif %}
+                <div class="upgrade-button-container">
+                    <button type="submit" id="remote-billing-confirm-login-button" class="stripe-button-el invoice-button">
+                        <span class="remote-billing-confirm-login-button-text">Continue</span>
+                        <img class="loader remote-billing-button-loader" src="{{ static('images/loading/loader-white.svg') }}" alt="" />
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

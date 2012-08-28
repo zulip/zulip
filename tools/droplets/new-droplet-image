@@ -1,0 +1,72 @@
+#!/bin/bash
+
+set -eux
+
+if [[ $(id -u) -eq 0 ]]; then
+    # First pass through -- make the zulip user
+
+    # Add the zulipdev user, let it sudo
+    useradd -U -G sudo -m zulipdev -s /bin/bash
+    echo "zulipdev ALL=(ALL) NOPASSWD:ALL" >>/etc/sudoers.d/90-cloud-init-users
+
+    # Re-run as zulip for the remainder, which is below. We disable
+    # the shellcheck because we _do_ want to read $0 as root, as it's
+    # potentially not readable as zulipdev.
+    # shellcheck disable=SC2024
+    sudo -u zulipdev bash <"$0"
+
+    # Clear out the authorized_keys; this is filled in when the image
+    # is cloned.
+    true >~/.ssh/authorized_keys
+
+    # Clear history and reboot
+    true >~/.bash_history && history -c && rm "$0" && shutdown -h now
+    exit 0
+fi
+
+# This section is run as zulipdev
+cd
+
+# Set up an empty authorized_keys with the right permissions; this is
+# filled in when the image is cloned.
+mkdir -p .ssh
+chmod 700 .ssh
+true >.ssh/authorized_keys
+chmod 600 .ssh/authorized_keys
+
+(
+    # Set up Zulip
+    git clone https://github.com/zulip/zulip
+    cd zulip
+    git remote rename origin upstream
+
+    # Provision
+    ./tools/provision
+
+    # Make sure the nodename in RabbitMQ is not host-dependent
+    sudo perl -pi -e 's/#?NODENAME=.*/NODENAME=zulip\@localhost/' /etc/rabbitmq/rabbitmq-env.conf
+    sudo service rabbitmq-server stop
+    sudo rm -rf /var/lib/rabbitmq/mnesia/
+    sudo service rabbitmq-server start
+
+    # Re-provision for the new rabbitmq nodename
+    ./tools/provision
+
+    # Make sure it's clean
+    git clean -f
+)
+
+(
+    # Set up python-zulip-api
+    git clone https://github.com/zulip/python-zulip-api
+    cd python-zulip-api
+    git remote rename origin upstream
+)
+
+# rabbitmq-server's /var/lib/rabbitmq/.erlang.cookie is a secret, and
+# should not be included in the base image
+sudo service rabbitmq-server stop
+sudo rm /var/lib/rabbitmq/.erlang.cookie
+
+# Clear our history
+true >~/.bash_history && history -c && exit

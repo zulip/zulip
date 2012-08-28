@@ -1,0 +1,1096 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+
+const {mock_banners} = require("./lib/compose_banner.cjs");
+const {
+    quote_message_template,
+    forward_channel_message_template,
+    forward_direct_message_template,
+} = require("./lib/compose_helpers.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {make_stub} = require("./lib/stub.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
+const $ = require("./lib/zjquery.cjs");
+
+const {set_current_user} = zrequire("state_data");
+const user_groups = zrequire("user_groups");
+const {initialize_user_settings} = zrequire("user_settings");
+const {will_produce_broken_stream_topic_link} = zrequire("topic_link_util");
+
+initialize_user_settings({
+    user_settings: {
+        default_language: "en",
+    },
+});
+
+const nobody = make_user_group({
+    name: "role:nobody",
+    id: 1,
+    members: new Set(),
+    is_system_group: true,
+    direct_subgroup_ids: new Set(),
+});
+const everyone = make_user_group({
+    name: "role:everyone",
+    id: 2,
+    members: new Set([30]),
+    is_system_group: true,
+    direct_subgroup_ids: new Set(),
+});
+user_groups.initialize({realm_user_groups: [nobody, everyone]});
+
+set_global("document", {});
+
+set_global("requestAnimationFrame", (func) => func());
+
+const autosize = noop;
+autosize.update = noop;
+mock_esm("autosize", {default: autosize});
+mock_esm("../src/compose_tooltips", {
+    initialize_compose_tooltips: noop,
+    dismiss_intro_go_to_conversation_tooltip: noop,
+});
+const message_fetch_raw_content = mock_esm("../src/message_fetch_raw_content");
+
+const compose_fade = mock_esm("../src/compose_fade", {
+    clear_compose: noop,
+    set_focused_recipient: noop,
+    update_all: noop,
+});
+const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+const compose_ui = mock_esm("../src/compose_ui", {
+    autosize_textarea: noop,
+    is_expanded: () => false,
+    set_focus: noop,
+    compute_placeholder_text: noop,
+});
+const narrow_state = mock_esm("../src/narrow_state", {
+    set_compose_defaults: noop,
+    filter: noop,
+});
+
+mock_esm("../src/reload_state", {
+    is_in_progress: () => false,
+    set_csrf_failed_handler: noop,
+    is_pending: () => true,
+});
+mock_esm("../src/drafts", {
+    update_draft: noop,
+    update_compose_draft_count: noop,
+    get_last_restorable_draft_based_on_compose_state: noop,
+    set_compose_draft_id: noop,
+});
+mock_esm("../src/unread_ops", {
+    notify_server_message_read: noop,
+});
+mock_esm("../src/message_lists", {
+    current: {
+        can_mark_messages_read: () => true,
+    },
+});
+mock_esm("../src/resize", {
+    reset_compose_message_max_height: noop,
+});
+mock_esm("../src/popovers", {
+    hide_all: noop,
+});
+mock_esm("../src/saved_snippets_ui", {
+    setup_saved_snippets_dropdown_widget_if_needed: noop,
+});
+mock_esm("../src/dropdown_widget", {
+    DropdownWidget: function DropdownWidget() {
+        this.current_value = undefined;
+        this.setup = noop;
+    },
+});
+
+const people = zrequire("people");
+
+const compose_state = zrequire("compose_state");
+const compose_actions = zrequire("compose_actions");
+const compose_reply = zrequire("compose_reply");
+const message_lists = zrequire("message_lists");
+const stream_data = zrequire("stream_data");
+const compose_recipient = zrequire("compose_recipient");
+const {set_realm} = zrequire("state_data");
+const sub_store = zrequire("sub_store");
+
+const realm = make_realm({
+    realm_topics_policy: "disable_empty_topic",
+});
+set_realm(realm);
+
+const start = compose_actions.start;
+const cancel = compose_actions.cancel;
+const respond_to_message = compose_reply.respond_to_message;
+const reply_with_mention = compose_reply.reply_with_mention;
+const quote_messages = compose_reply.quote_messages;
+
+function assert_visible(sel) {
+    assert.ok($(sel).visible());
+}
+
+function assert_hidden(sel) {
+    assert.ok(!$(sel).visible());
+}
+
+function override_private_message_recipient_ids({override}) {
+    let recipient_emails;
+    let recipient_user_ids;
+    override(compose_pm_pill, "set_from_user_ids", (value) => {
+        recipient_user_ids = value;
+        recipient_emails = value.map((user_id) => people.get_by_user_id(user_id).email).join(",");
+    });
+    override(compose_pm_pill, "get_emails", () => recipient_emails, {unused: false});
+    override(compose_pm_pill, "get_user_ids", () => recipient_user_ids, {unused: false});
+}
+
+function test(label, f) {
+    run_test(label, (helpers) => {
+        people.init();
+        compose_state.set_message_type(undefined);
+        compose_recipient.initialize();
+        f(helpers);
+    });
+}
+
+function stub_message_row($textarea) {
+    const $stub = $.set_results("message_row_stub", []);
+    $textarea.set_closest_results(".message_row", $stub);
+}
+
+test("initial_state", () => {
+    assert.equal(compose_state.composing(), false);
+    assert.equal(compose_state.get_message_type(), undefined);
+    assert.equal(compose_state.has_message_content(), false);
+});
+
+test("start", ({override, override_rewire, mock_template}) => {
+    mock_banners();
+    window.addEventListener = noop;
+    override_private_message_recipient_ids({override});
+    override_rewire(compose_actions, "autosize_message_content", noop);
+    override_rewire(compose_actions, "expand_compose_box", noop);
+    override_rewire(compose_actions, "complete_starting_tasks", noop);
+    override_rewire(compose_actions, "blur_compose_inputs", noop);
+    override_rewire(compose_actions, "clear_textarea", noop);
+    const $elem = $("#send_message_form");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
+    stub_message_row($textarea);
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
+
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+    override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
+    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
+    override_rewire(stream_data, "can_create_new_topics_in_stream", () => true);
+    mock_template("decorated_channel_name.hbs", false, () => "");
+
+    let compose_defaults;
+    override(narrow_state, "set_compose_defaults", () => compose_defaults);
+    override(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, $textarea, replace_all, replace_all_without_undo_support) => {
+            $textarea.val(content);
+            assert.ok(!replace_all);
+            assert.ok(replace_all_without_undo_support);
+        },
+    );
+
+    // Start stream message
+    compose_defaults = {
+        stream_id: undefined,
+        topic: "topic1",
+    };
+
+    let opts = {
+        message_type: "stream",
+    };
+    start(opts);
+
+    assert.ok($("#compose").hasClass("compose-box-open"));
+    assert_visible("#compose-channel-recipient");
+    assert_hidden("#compose-direct-recipient");
+
+    assert.equal(compose_state.stream_name(), "");
+    assert.equal(compose_state.topic(), "topic1");
+    assert.equal(compose_state.get_message_type(), "stream");
+    assert.ok(compose_state.composing());
+
+    // Autofill stream field for single subscription
+    const denmark = make_stream({
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+    });
+    stream_data.add_sub_for_tests(denmark);
+
+    compose_defaults = {
+        trigger: "clear topic button",
+    };
+
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
+    assert.equal(compose_state.stream_name(), "Denmark");
+    assert.equal(compose_state.topic(), "");
+
+    compose_defaults = {
+        trigger: "compose_hotkey",
+    };
+
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
+    assert.equal(compose_state.stream_name(), "Denmark");
+    assert.equal(compose_state.topic(), "");
+
+    const social = make_stream({
+        color: "red",
+        name: "social",
+        stream_id: 2,
+    });
+    stream_data.add_sub_for_tests(social);
+
+    compose_state.set_stream_id("");
+    // More than 1 subscription, do not autofill
+    opts = {
+        message_type: "stream",
+    };
+    start(opts);
+    assert.equal(compose_state.stream_name(), "");
+    assert.equal(compose_state.topic(), "");
+    stream_data.clear_subscriptions();
+
+    const user1 = make_user();
+    people._add_user(user1);
+    const me = make_user();
+    set_current_user(me);
+
+    // Start direct message
+    compose_defaults = {
+        private_message_recipient_ids: [user1.user_id],
+    };
+
+    opts = {
+        message_type: "private",
+        content: "hello",
+    };
+
+    start(opts);
+
+    assert.ok($("#compose").hasClass("compose-box-open"));
+    assert_hidden("input#stream_message_recipient_topic");
+    assert_visible("#compose-direct-recipient");
+
+    assert.deepEqual(compose_state.private_message_recipient_ids(), [user1.user_id]);
+    assert.equal($("textarea#compose-textarea").val(), "hello");
+    assert.equal(compose_state.get_message_type(), "private");
+    assert.ok(compose_state.composing());
+
+    // Triggered by new direct message
+    opts = {
+        message_type: "private",
+        trigger: "new direct message",
+    };
+
+    start(opts);
+
+    assert.deepEqual(compose_state.private_message_recipient_ids(), []);
+    assert.equal(compose_state.get_message_type(), "private");
+    assert.ok(compose_state.composing());
+
+    // Cancel compose.
+    let pill_cleared;
+    compose_pm_pill.clear = () => {
+        pill_cleared = true;
+    };
+
+    let abort_xhr_called = false;
+    compose_actions.register_compose_cancel_hook(() => {
+        abort_xhr_called = true;
+    });
+    $("textarea#compose-textarea").set_height(50);
+
+    cancel();
+    assert.ok(abort_xhr_called);
+    assert.ok(pill_cleared);
+    assert.ok(!$("#compose").hasClass("compose-box-open"));
+    assert.ok(!compose_state.composing());
+});
+
+test("respond_to_message", ({override, override_rewire, mock_template}) => {
+    mock_banners();
+    override_rewire(compose_actions, "complete_starting_tasks", noop);
+    override_rewire(compose_actions, "clear_textarea", noop);
+    const $elem = $("#send_message_form");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
+    stub_message_row($textarea);
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
+
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+    override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
+    override_private_message_recipient_ids({override});
+    mock_template("decorated_channel_name.hbs", false, () => "");
+
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
+
+    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
+
+    // Test direct message
+    const person = make_user({
+        user_id: 22,
+        email: "alice@example.com",
+        full_name: "Alice",
+    });
+    people.add_active_user(person);
+
+    let msg = {
+        type: "private",
+        sender_id: person.user_id,
+    };
+    override(message_lists.current, "get", (id) => (id === 100 ? msg : undefined));
+
+    let opts = {
+        reply_type: "personal",
+        message_id: 100,
+    };
+
+    respond_to_message(opts);
+    assert.deepEqual(compose_state.private_message_recipient_ids(), [person.user_id]);
+    assert.equal(compose_state.private_message_recipient_emails(), "alice@example.com");
+
+    // Test stream
+    const denmark = make_stream({
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+    });
+    stream_data.add_sub_for_tests(denmark);
+
+    msg = {
+        type: "stream",
+        stream_id: denmark.stream_id,
+        topic: "python",
+    };
+    override(message_lists.current, "selected_message", () => msg);
+
+    opts = {};
+
+    respond_to_message(opts);
+    assert.equal(compose_state.stream_name(), "Denmark");
+});
+
+test("reply_with_mention", ({override, override_rewire, mock_template}) => {
+    mock_banners();
+    compose_state.set_message_type("stream");
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+    override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
+    override_rewire(compose_actions, "complete_starting_tasks", noop);
+    override_rewire(compose_actions, "clear_textarea", noop);
+    const $elem = $("#send_message_form");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
+    stub_message_row($textarea);
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
+
+    override_private_message_recipient_ids({override});
+    mock_template("decorated_channel_name.hbs", false, () => "");
+
+    override_rewire(stream_data, "can_post_messages_in_stream", () => true);
+
+    const denmark = make_stream({
+        color: "blue",
+        name: "Denmark",
+        stream_id: 1,
+    });
+    stream_data.add_sub_for_tests(denmark);
+
+    const msg = {
+        type: "stream",
+        stream_id: denmark.stream_id,
+        topic: "python",
+        sender_full_name: "Bob Roberts",
+        sender_id: 40,
+    };
+    override(message_lists.current, "selected_message", () => msg);
+
+    let syntax_to_insert;
+    override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+        syntax_to_insert = syntax;
+    });
+
+    const opts = {};
+
+    reply_with_mention(opts);
+    assert.equal(compose_state.stream_name(), "Denmark");
+    assert.equal(syntax_to_insert, "@**Bob Roberts**");
+
+    // Test for extended mention syntax
+    const bob_1 = {
+        user_id: 30,
+        email: "bob1@example.com",
+        full_name: "Bob Roberts",
+    };
+    people.add_active_user(bob_1);
+    const bob_2 = {
+        user_id: 40,
+        email: "bob2@example.com",
+        full_name: "Bob Roberts",
+    };
+    people.add_active_user(bob_2);
+
+    reply_with_mention(opts);
+    assert.equal(compose_state.stream_name(), "Denmark");
+    assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
+});
+
+test("quote_messages", ({disallow, override, override_rewire}) => {
+    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
+    override_rewire(compose_recipient, "update_recipient_row_attention_level", noop);
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);
+    const $elem = $("#send_message_form");
+    const $textarea = $("textarea#compose-textarea");
+    const $indicator = $("#compose-limit-indicator");
+    stub_message_row($textarea);
+    $elem.set_find_results(".message-textarea", $textarea);
+    $elem.set_find_results(".message-limit-indicator", $indicator);
+
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
+
+    mock_banners();
+    compose_state.set_message_type("stream");
+    const steve = {
+        user_id: 90,
+        email: "steve@example.com",
+        full_name: "Steve Stephenson",
+    };
+    people.add_active_user(steve);
+
+    const alice = {
+        user_id: 101,
+        email: "alice@example.com",
+        full_name: "Alice",
+    };
+    people.add_active_user(alice);
+
+    const bob = {
+        user_id: 102,
+        email: "bob@example.com",
+        full_name: "Bob",
+    };
+    people.add_active_user(bob);
+
+    const clara = {
+        user_id: 103,
+        email: "clara@example.com",
+        full_name: "Clara",
+    };
+    people.add_active_user(clara);
+
+    override_rewire(compose_actions, "complete_starting_tasks", noop);
+    override_rewire(compose_actions, "clear_textarea", noop);
+    override_private_message_recipient_ids({override});
+
+    let selected_message;
+    override(message_lists.current, "get", (id) => (id === 100 ? selected_message : undefined));
+
+    let expected_replacement;
+    let replaced;
+    override(compose_ui, "replace_syntax", (syntax, replacement) => {
+        assert.equal(syntax, "translated: [Quoting…]");
+        assert.equal(replacement, expected_replacement);
+        replaced = true;
+    });
+
+    const channel_id = 20;
+    const channel_object = {
+        subscribed: false,
+        name: "Denmark",
+        stream_id: channel_id,
+    };
+    const denmark_stream = make_stream(channel_object);
+
+    sub_store.add_hydrated_sub(channel_id, channel_object);
+
+    selected_message = {
+        type: "stream",
+        stream_id: denmark_stream.stream_id,
+        topic: "python",
+        sender_full_name: "Steve Stephenson",
+        sender_id: 90,
+        id: 10,
+    };
+    let success_function;
+    override(
+        message_fetch_raw_content,
+        "get_raw_content_for_single_message",
+        ({_message_id, on_success, _on_error}) => {
+            success_function = on_success;
+        },
+    );
+
+    function run_success_callback() {
+        success_function("Testing.");
+    }
+
+    override(compose_ui, "insert_syntax_and_focus", (syntax, _$textarea, mode) => {
+        assert.equal(syntax, "translated: [Quoting…]");
+        assert.equal(mode, "block");
+    });
+
+    let opts = {
+        reply_type: "personal",
+        message_id: 100,
+    };
+
+    override_rewire(compose_state, "topic", (topic) => {
+        if (opts.forward_message) {
+            assert.equal(topic, "");
+        }
+    });
+
+    $("textarea#compose-textarea").attr("id", "compose-textarea");
+
+    replaced = false;
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
+    quote_messages(opts);
+
+    run_success_callback();
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+        message_id: 100,
+        forward_message: true,
+    };
+    replaced = false;
+
+    override(compose_ui, "insert_and_scroll_into_view", noop);
+
+    expected_replacement = forward_channel_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
+
+    quote_messages(opts);
+
+    run_success_callback();
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+        message_id: 100,
+    };
+
+    selected_message = {
+        type: "stream",
+        stream_id: denmark_stream.stream_id,
+        topic: "test",
+        sender_full_name: "Steve Stephenson",
+        sender_id: 90,
+        raw_content: "Testing.",
+        id: 10,
+    };
+
+    replaced = false;
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
+
+    disallow(message_fetch_raw_content, "get_raw_content_for_single_message");
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+        message_id: 100,
+        forward_message: true,
+    };
+    replaced = false;
+    expected_replacement = forward_channel_message_template({
+        channel_object,
+        selected_message,
+        fence: "```",
+        content: "Testing.",
+    });
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+    };
+    override(message_lists.current, "selected_id", () => 100);
+
+    selected_message = {
+        type: "stream",
+        stream_id: denmark_stream.stream_id,
+        topic: "test",
+        sender_full_name: "Steve Stephenson",
+        sender_id: 90,
+        raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
+        id: 10,
+    };
+
+    replaced = false;
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message,
+        fence: "````",
+        content: selected_message.raw_content,
+    });
+
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    opts = {
+        reply_type: "personal",
+        forward_message: true,
+    };
+    replaced = false;
+    expected_replacement = forward_channel_message_template({
+        channel_object,
+        selected_message,
+        fence: "````",
+        content: selected_message.raw_content,
+    });
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    // Group direct message to 3 other users
+    let group_dm_recipients = [steve, alice, bob, clara];
+    selected_message = {
+        type: "private",
+        sender_full_name: steve.full_name,
+        sender_id: 90,
+        display_recipient: group_dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 101,
+        raw_content: "Hi yall",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}**, @_**${bob.full_name}**, and @_**${clara.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    // Group direct message to only 2 other users
+    group_dm_recipients = [steve, alice, bob];
+    selected_message = {
+        type: "private",
+        sender_full_name: steve.full_name,
+        sender_id: 90,
+        display_recipient: group_dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 102,
+        raw_content: "Hi you two",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}** and @_**${bob.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    // Other's group direct message
+    group_dm_recipients = [steve, alice, bob];
+    selected_message = {
+        type: "private",
+        sender_full_name: bob.full_name,
+        sender_id: bob.user_id,
+        display_recipient: group_dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 102,
+        raw_content: "Oh hi",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}** and @_**${steve.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    // Direct message to other user
+    let dm_recipients = [steve, alice];
+    selected_message = {
+        type: "private",
+        sender_full_name: steve.full_name,
+        sender_id: 90,
+        display_recipient: dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 102,
+        raw_content: "Hi Alice",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${alice.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    // Other user's direct message
+    dm_recipients = [steve, alice];
+    selected_message = {
+        type: "private",
+        sender_full_name: alice.full_name,
+        sender_id: alice.user_id,
+        display_recipient: dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 103,
+        raw_content: "Hi Steve",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${steve.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    // One's own direct message
+    dm_recipients = [steve];
+    selected_message = {
+        type: "private",
+        sender_full_name: alice.full_name,
+        sender_id: steve.user_id,
+        display_recipient: dm_recipients.map((user) => ({
+            email: user.email,
+            full_name: user.full_name,
+            id: user.user_id,
+        })),
+        id: 104,
+        raw_content: "It's just me",
+    };
+
+    expected_replacement = forward_direct_message_template({
+        direct_message: selected_message,
+        dm_recipient_string: `@_**${steve.full_name}**`,
+        fence: "```",
+        content: selected_message.raw_content,
+    });
+
+    opts = {
+        reply_type: "personal",
+        message_id: selected_message.id,
+        forward_message: true,
+    };
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    const topic_with_invalid_characters = "[zulip/zulip>topic]";
+    assert.ok(will_produce_broken_stream_topic_link(topic_with_invalid_characters));
+
+    selected_message = {
+        type: "stream",
+        stream_id: denmark_stream.stream_id,
+        topic: topic_with_invalid_characters,
+        sender_full_name: steve.full_name,
+        sender_id: steve.user_id,
+        raw_content: "test invalid topic",
+        id: 11,
+    };
+    opts = {
+        reply_type: "personal",
+        forward_message: true,
+        message_id: selected_message.id,
+    };
+
+    const html_entity_encoded_topic_name = "&#91;zulip/zulip&gt;topic&#93;";
+    const url_encoded_topic_name = ".5Bzulip.2Fzulip.3Etopic.5D";
+
+    const near_url = `http://zulip.zulipdev.com/#narrow/channel/${selected_message.stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/near/${selected_message.id}`;
+    const fallback_stream_id = stream_data.get_stream_id(channel_object.name);
+    const fallback_url = `#narrow/channel/${fallback_stream_id}-${channel_object.name}/topic/${url_encoded_topic_name}/with/${selected_message.id}`;
+    const topic_link_syntax = `[#${channel_object.name} > ${html_entity_encoded_topic_name}](${fallback_url})`;
+
+    const fence = "```";
+    expected_replacement = `translated: @_**${selected_message.sender_full_name}|${selected_message.sender_id}** [said](${near_url}) in ${topic_link_syntax}:
+${fence}quote
+${selected_message.raw_content}
+${fence}`;
+    replaced = false;
+    override(message_lists.current, "get", (id) =>
+        id === selected_message.id ? selected_message : undefined,
+    );
+    quote_messages(opts);
+    assert.ok(replaced);
+
+    // Quoting a highlighted(selected) part of a message using the ">" hotkey trigger
+    // should pass the message_id of the message whose text is highlighted in
+    // the `opts` to respond_to_message, to ensure the recipients of that message
+    // are used as the recipients when opening the composebox to quote.
+    opts = {
+        trigger: "hotkey",
+    };
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => [50]);
+    override_rewire(compose_reply, "get_message_selection", () => "Hello world");
+
+    const stub = make_stub();
+    override_rewire(compose_reply, "respond_to_message", stub.f);
+
+    const highlighted_message = {
+        id: 50,
+        type: "stream",
+        stream_id: denmark_stream.stream_id,
+        topic: "test",
+        sender_full_name: "Steve Stephenson",
+        sender_id: 90,
+        raw_content: "[unselected text] Hello world [some extra text that is also not selected]",
+    };
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message: highlighted_message,
+        fence: "```",
+        content: "Hello world",
+    });
+    override(message_lists.current, "get", (id) => (id === 50 ? highlighted_message : undefined));
+    quote_messages(opts);
+    const {opts: opts_when_message_has_selection} = stub.get_args("opts");
+    assert.equal(opts_when_message_has_selection.trigger, "hotkey");
+    assert.equal(opts_when_message_has_selection.message_id, 50);
+    assert.ok(message_lists.current.selected_id() !== 50);
+
+    // If message text from some message is not highlighted(selected) when using the ">" hotkey
+    // to quote, then message_id passed to `respond_to_message` will be same as as the
+    // id of the message having the pointer.
+    const message_with_pointer = highlighted_message;
+    override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);
+    override(message_lists.current, "selected_id", () => 100);
+    override(message_lists.current, "get", (id) => (id === 100 ? message_with_pointer : undefined));
+    opts = {trigger: "hotkey"};
+
+    expected_replacement = quote_message_template({
+        channel_object,
+        selected_message: message_with_pointer,
+        fence: "```",
+        content: message_with_pointer.raw_content,
+    });
+    quote_messages(opts);
+    const {opts: opts_when_message_has_no_selection} = stub.get_args("opts");
+    assert.equal(opts_when_message_has_no_selection.trigger, "hotkey");
+    assert.equal(opts_when_message_has_no_selection.message_id, 100);
+});
+
+test("focus_in_empty_compose", () => {
+    document.activeElement = {id: "compose-textarea"};
+    compose_state.set_message_type("stream");
+    $("textarea#compose-textarea").val("");
+    assert.ok(compose_state.focus_in_empty_compose());
+
+    compose_state.set_message_type(undefined);
+    assert.ok(!compose_state.focus_in_empty_compose());
+
+    $("textarea#compose-textarea").val("foo");
+    assert.ok(!compose_state.focus_in_empty_compose());
+
+    $("textarea#compose-textarea").trigger("blur");
+    assert.ok(!compose_state.focus_in_empty_compose());
+});
+
+test("on_narrow", ({override, override_rewire}) => {
+    let narrowed_by_topic_reply;
+    override(narrow_state, "narrowed_by_topic_reply", () => narrowed_by_topic_reply);
+
+    let narrowed_by_pm_reply;
+    override(narrow_state, "narrowed_by_pm_reply", () => narrowed_by_pm_reply);
+
+    const steve = {
+        user_id: 90,
+        email: "steve@example.com",
+        full_name: "Steve Stephenson",
+        is_bot: false,
+    };
+    people.add_active_user(steve);
+
+    const bot = {
+        user_id: 91,
+        email: "bot@example.com",
+        full_name: "Steve's bot",
+        is_bot: true,
+    };
+    people.add_active_user(bot);
+
+    user_groups.initialize({realm_user_groups: [nobody, everyone]});
+    let cancel_called = false;
+    override_rewire(compose_actions, "cancel", () => {
+        cancel_called = true;
+    });
+    compose_actions.on_narrow({
+        force_close: true,
+    });
+    assert.ok(cancel_called);
+
+    let on_topic_narrow_called = false;
+    override_rewire(compose_actions, "on_topic_narrow", () => {
+        on_topic_narrow_called = true;
+    });
+    narrowed_by_topic_reply = true;
+    compose_actions.on_narrow({
+        force_close: false,
+    });
+    assert.ok(on_topic_narrow_called);
+
+    let update_message_list_called = false;
+    narrowed_by_topic_reply = false;
+    compose_fade.update_message_list = () => {
+        update_message_list_called = true;
+    };
+    compose_state.message_content("foo");
+    compose_actions.on_narrow({
+        force_close: false,
+    });
+    assert.ok(update_message_list_called);
+
+    compose_state.message_content("");
+    let start_called = false;
+    override_rewire(compose_actions, "start", () => {
+        start_called = true;
+    });
+    narrowed_by_pm_reply = true;
+    override(realm, "realm_direct_message_permission_group", nobody.id);
+    override(realm, "realm_direct_message_initiator_group", everyone.id);
+    let compose_defaults;
+    override(narrow_state, "set_compose_defaults", () => compose_defaults);
+    compose_defaults = {
+        private_message_recipient_ids: [steve.user_id],
+    };
+    compose_actions.on_narrow({
+        force_close: false,
+        trigger: "not-search",
+    });
+    assert.ok(!start_called);
+
+    compose_defaults = {
+        private_message_recipient_ids: [bot.user_id],
+    };
+    compose_actions.on_narrow({
+        force_close: false,
+        trigger: "not-search",
+    });
+    assert.ok(start_called);
+
+    start_called = false;
+    compose_defaults = {
+        private_message_recipient_ids: [],
+    };
+    compose_actions.on_narrow({
+        force_close: false,
+        trigger: "search",
+    });
+    assert.ok(!start_called);
+
+    narrowed_by_pm_reply = false;
+    cancel_called = false;
+    compose_actions.on_narrow({
+        force_close: false,
+    });
+    assert.ok(cancel_called);
+});

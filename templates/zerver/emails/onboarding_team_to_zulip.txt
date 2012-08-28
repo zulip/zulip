@@ -1,0 +1,19 @@
+{% trans %}If you've already decided to use Zulip for your organization, welcome! You can use our guide for moving to Zulip to get started.{% endtrans %} [ {{ get_organization_started }} ]
+
+{% trans %}Otherwise, here is some advice we often hear from customers for evaluating any team chat product:{% endtrans %}
+
+
+1. {% trans %}Invite your teammates to explore with you and share their unique perspectives.{% endtrans %} [ {{ invite_users }} ] {% trans %}Use the app itself to chat about your impressions.{% endtrans %}
+
+2. {% trans %}Run a week-long trial with your team, without using any other chat tools. This is the only way to truly experience how a new chat app will help your team communicate.{% endtrans %} [ {{ trying_out_zulip }} ]
+
+{% trans %}Zulip is designed to enable efficient communication, and we hope these tips help your team experience it in action.{% endtrans %} [ {{ why_zulip }} ]
+
+{% if corporate_enabled %}
+    {% trans %}Do you have questions or feedback to share? Contact us at {{ support_email }} — we'd love to help!{% endtrans %}
+{% else %}
+    {% trans %}If you have any questions, please contact this Zulip server's administrators at {{ support_email }}.{% endtrans %}
+{% endif %}
+
+----
+{% trans %}Unsubscribe from welcome emails for {{ realm_name }}{% endtrans %}: {{ unsubscribe_link }}

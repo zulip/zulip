@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+# Lint all commit messages that are newer than upstream/main if running
+# locally or the commits in the push or PR if in CircleCI.
+
+# The rules can be found in /.gitlint
+
+repository="zulip/zulip"
+
+if [[ "
+$(git remote -v)
+" =~ '
+'([^[:space:]]*)[[:space:]]*(https://github\.com/|ssh://git@github\.com/|git@github\.com:)"$repository"(\.git|/)?\ \(fetch\)'
+' ]]; then
+    remote=${BASH_REMATCH[1]}
+else
+    remote=upstream
+fi
+
+upstream_commits=$(git rev-parse "refs/remotes/$remote/main" --glob="refs/remotes/$remote/*.x")
+mapfile -t upstream_commits <<<"$upstream_commits"
+base=$(git merge-base HEAD "${upstream_commits[@]}")
+
+commits=$(git rev-list --count "$base..HEAD")
+if [ "$commits" -gt 0 ]; then
+    # Only run gitlint with non-empty commit lists, to avoid a printed
+    # warning.
+    gitlint --commits "$base..HEAD"
+fi

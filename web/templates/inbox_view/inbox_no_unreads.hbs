@@ -1,0 +1,19 @@
+<div id="inbox-empty-without-search"  class="inbox-empty-text">
+    <div class="inbox-empty-illustration"></div>
+    <div class="inbox-empty-title">
+        {{t "There are no unread messages in your inbox."}}
+    </div>
+    <div class="inbox-empty-action inbox-empty-action-default">
+        {{#tr}}
+            You might be interested in <z-link>recent conversations</z-link>.
+            {{#*inline "z-link"}}<a class="inbox-empty-action-link" href="#recent">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </div>
+    <div class="inbox-empty-action inbox-empty-action-filtered">
+        {{#tr}}
+            You can <z-link-unfollowed>include topics you don't follow</z-link-unfollowed> or <z-link>view recent conversations</z-link>.
+            {{#*inline "z-link-unfollowed"}}<a class="inbox-empty-action-link inbox-toggle-followed-filter">{{> @partial-block}}</a>{{/inline}}
+            {{#*inline "z-link"}}<a class="inbox-empty-action-link" href="#recent">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </div>
+</div>

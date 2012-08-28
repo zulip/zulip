@@ -1,0 +1,45 @@
+{
+    "default": {
+        "text": 31,
+        "javascript": 27,
+        "python": 26,
+        "java": 25,
+        "go": 24,
+        "rust": 23,
+        "html": 22,
+        "css": 21,
+        "sql": 20,
+        "bash": 19,
+        "powershell": 18,
+        "c#": 17,
+        "php": 16,
+        "typescript": 15,
+        "c++": 14,
+        "c": 13,
+        "kotlin": 12,
+        "ruby": 11,
+        "asm": 10,
+        "vb.net": 9,
+        "swift": 8,
+        "r": 7,
+        "objective-c": 6,
+        "dart": 5,
+        "scala": 4,
+        "perl": 3,
+        "haskell": 2,
+        "julia": 1
+    },
+    "custom": {
+        "latex": 10,
+        "math": 28,
+        "quote": 30,
+        "spoiler": 29
+    },
+    "aliases": {
+        "js": 27,
+        "csharp": 17,
+        "cpp": 14,
+        "tex": 10,
+        "vbnet": 9
+    }
+}

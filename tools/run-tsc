@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+ZULIP_PATH="$(dirname "$0")/.."
+exec "$ZULIP_PATH/node_modules/.bin/tsc" --project "$ZULIP_PATH" "$@"

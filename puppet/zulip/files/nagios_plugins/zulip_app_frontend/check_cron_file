@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+"""
+Nagios plugin paired with a cron job.  This just verifies that the
+file output by the cron job is correct.
+"""
+
+import sys
+import time
+
+
+def nagios_from_file(results_file: str, max_time_diff: int = 60 * 2) -> tuple[int, str]:
+    """Returns a nagios-appropriate string and return code obtained by
+    parsing the desired file on disk. The file on disk should be of format
+
+    %s|%s % (timestamp, nagios_string)
+
+    This file is created by various nagios checking cron jobs such as
+    check-rabbitmq-queues and check-rabbitmq-consumers"""
+
+    try:
+        with open(results_file) as f:
+            data = f.read().strip()
+    except FileNotFoundError:
+        state = "UNKNOWN"
+        ret = 3
+        data = "Results file is missing"
+    else:
+        pieces = data.split("|")
+
+        if len(pieces) != 4:
+            state = "UNKNOWN"
+            ret = 3
+            data = "Results file malformed"
+        else:
+            timestamp = int(pieces[0])
+
+            time_diff = int(time.time() - timestamp)
+            if time_diff > max_time_diff:
+                ret = 3
+                state = "UNKNOWN"
+                data = "Results file is stale"
+            else:
+                ret = int(pieces[1])
+                state = pieces[2]
+                data = pieces[3]
+
+    return (ret, f"{state}: {data}")
+
+
+if __name__ == "__main__":
+    RESULTS_FILE = sys.argv[1]
+    extra_args = {}
+    if len(sys.argv) > 2:
+        extra_args["max_time_diff"] = int(sys.argv[2])
+    ret, result = nagios_from_file(RESULTS_FILE, **extra_args)
+
+    print(result)
+    sys.exit(ret)

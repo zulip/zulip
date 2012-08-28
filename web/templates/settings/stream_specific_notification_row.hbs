@@ -1,0 +1,22 @@
+<tr class="stream-notifications-row" data-stream-id="{{stream.stream_id}}">
+    <td class="stream-controls">
+        <span class="stream-privacy-original-color-{{stream.stream_id}} stream-privacy filter-icon" style="color: {{stream.color}}">
+            {{> ../stream_privacy
+              invite_only=stream.invite_only
+              is_web_public=stream.is_web_public }}
+        </span>
+        {{stream.stream_name}}
+        <i class="zulip-icon icon-button-brand zulip-icon-mute tippy-zulip-delayed-tooltip unmute_stream" role="button" tabindex="0" data-tippy-content="{{t 'Unmute' }}" aria-label="{{t 'Unmute' }}" {{#unless muted}}style="display: none;"{{/unless}}></i>
+        <i class="zulip-icon icon-button-neutral zulip-icon-reset tippy-zulip-delayed-tooltip reset_stream_notifications" role="button" tabindex="0" data-tippy-content="{{t 'Reset to default notifications' }}" aria-label="{{t 'Reset to default notifications' }}"></i>
+    </td>
+    {{#each stream_specific_notification_settings}}
+        {{> notification_settings_checkboxes
+          setting_name=this
+          prefix=(lookup ../stream "stream_id")
+          is_checked=(lookup ../stream this)
+          is_disabled=(lookup ../is_disabled this)
+          is_mobile_checkbox=(eq this "push_notifications")
+          push_notifications_disabled=../push_notifications_disabled
+          }}
+    {{/each}}
+</tr>

@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+
+import argparse
+import logging
+import os
+import sys
+import time
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+import psycopg2
+import psycopg2.extensions
+from psycopg2.sql import SQL, Identifier
+
+from scripts.lib.zulip_tools import su_to_zulip
+
+su_to_zulip()
+os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
+from django.conf import settings
+
+parser = argparse.ArgumentParser(
+    description="Reindex all text indexes, for glibc upgrades.  This will take a write lock on every table, unless --concurrently is passed."
+)
+parser.add_argument(
+    "--concurrently", action="store_true", help="reindex concurrently, on Pg ≥ 11; takes longer"
+)
+parser.add_argument("--force", action="store_true", help="run the reindexing")
+options = parser.parse_args()
+
+logging.Formatter.converter = time.gmtime
+logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
+logger = logging.getLogger("reindex-textual-data")
+logger.setLevel(logging.DEBUG)
+
+pg_args = {}
+pg_args["host"] = settings.DATABASES["default"]["HOST"]
+pg_args["port"] = settings.DATABASES["default"].get("PORT")
+pg_args["password"] = settings.DATABASES["default"].get("PASSWORD")
+pg_args["user"] = settings.DATABASES["default"]["USER"]
+pg_args["dbname"] = settings.DATABASES["default"]["NAME"]
+pg_args["sslmode"] = settings.DATABASES["default"]["OPTIONS"].get("sslmode")
+pg_args["connect_timeout"] = "600"
+
+# connection_factory=None lets mypy understand the return type
+conn = psycopg2.connect(connection_factory=None, **pg_args)
+conn.autocommit = True
+
+cursor = conn.cursor()
+cursor.execute(
+    """
+SELECT
+        irel.relname AS index_name,
+        trel.relname AS table_name,
+        pg_size_pretty(pg_table_size(i.indrelid)) AS size
+FROM
+        pg_index AS i
+        JOIN pg_class AS trel ON trel.oid = i.indrelid
+        JOIN pg_namespace AS tnsp ON trel.relnamespace = tnsp.oid
+        JOIN pg_class AS irel ON irel.oid = i.indexrelid
+        JOIN pg_attribute AS a ON a.attrelid = i.indexrelid
+        WHERE tnsp.nspname = 'zulip'
+        AND a.attcollation != 0
+GROUP BY 1, 2, i.indrelid
+ORDER BY pg_table_size(i.indrelid) ASC
+"""
+)
+reindex_targets = cursor.fetchall()
+
+if not options.force:
+    print("Would reindex the following indexes:")
+    for index, _, _ in reindex_targets:
+        print(f"  {index}")
+    print(
+        """
+
+Re-run with --force to reindex these.  Without --concurrently, these
+index rebuilds will TAKE A WRITE LOCK on their respective tables,
+which means that production traffic will be affected.
+
+On PostgreSQL 11 and above, you can pass --concurrently, which will do
+the index rebuilds without taking such a lock. We recommend only using
+--concurrently if the Zulip server will be serving traffic while
+running this tool, because concurrent reindexing takes longer to
+complete even if the server is not running.
+"""
+    )
+    sys.exit(0)
+
+had_failures = False
+for index_name, table_name, index_size in reindex_targets:
+    if options.concurrently:
+        command = SQL("REINDEX INDEX CONCURRENTLY {}").format(Identifier(index_name))
+    else:
+        command = SQL("REINDEX INDEX {}").format(Identifier(index_name))
+
+    logger.info("%s -- on %s, %s", command, table_name, index_size)
+    try:
+        cursor.execute(command)
+    except psycopg2.OperationalError as e:
+        logger.warning("Failed to reindex %s: %s", index_name, e)
+        had_failures = True
+
+if not had_failures:
+    sys.exit(0)
+
+print(
+    """
+=========================> REINDEXING FAILED <=========================
+
+Reindexing failed on one or more indexes; this is generally caused
+by duplicate rows that had been incorrectly inserted because of
+corrupted database indexes.  This happens, for example, when glibc was
+upgraded to 2.28 or higher, which has a different ordering of text
+("collation") than earlier versions.  Because of the new ordering,
+entries in the indexes are not found (because they exist in a
+different place), which results in duplicates being created in the
+database for columns which should be unique.
+
+There is no generalized tool to fix these duplicate rows, but in most cases
+the database can be repaired with some manual work.  We are using
+this chat.zulip.org for support around such repairs:
+
+  https://chat.zulip.org/#narrow/channel/31-production-help/topic/database.20corruption
+
+This tool has regenerated all database indexes that do not have duplicate rows.
+Once you have manually repaired duplicate rows, you can rerun this command
+to regenerate the rest.
+
+It is reasonable to run your Zulip server to avoid downtime while you
+plan the manual repair work. Additional duplicate rows may be created
+for any corrupted index that has not yet been regenerated. But any new
+duplicate rows will be similar to existing duplicate rows that you
+already need to manually repair.
+    """
+)
+sys.exit(1)
