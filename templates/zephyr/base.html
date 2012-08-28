@@ -4,9 +4,11 @@
 
 <head>
     <title>Zephyr</title>
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
+<script src="/static/bootstrap/js/bootstrap.min.js"></script>
 
 {% if not user.is_authenticated %}<a href="/accounts/login/?next=/">login</a> | <a
     href="/accounts/register/">register</a>{% endif %}
