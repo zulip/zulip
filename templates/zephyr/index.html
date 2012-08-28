@@ -94,6 +94,7 @@ function narrow(class_name, target_zephyr) {
     );
     $("#selected").closest("td").empty();
     $("#" + target_zephyr).children("td:first").html('<p id="selected">&gt;</p>');
+    $.post("update", {pointer: target_zephyr});
 
     // Try to keep the zephyr in the same place on the screen after narrowing.
     scroll_to_zephyr(target_zephyr, old_top);
@@ -111,6 +112,7 @@ function narrow_instance(class_name, instance, target_zephyr) {
     );
     $("#selected").closest("td").empty();
     $("#" + target_zephyr).children("td:first").html('<p id="selected">&gt;</p>');
+    $.post("update", {pointer: target_zephyr});
 
     // Try to keep the zephyr in the same place on the screen after narrowing.
     scroll_to_zephyr(target_zephyr, old_top);
