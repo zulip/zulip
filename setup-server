@@ -1,0 +1,11 @@
+#!/bin/sh
+resize2fs /dev/xvda1
+apt-get update
+apt-get upgrade
+apt-get install sudo emacs screen git
+
+cat >>/etc/apt/sources.list <<EOF
+deb http://backports.debian.org/debian-backports squeeze-backports main
+deb-src http://backports.debian.org/debian-backports squeeze-backports main
+EOF
+apt-get install -t squeeze-backports python-django
