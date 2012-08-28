@@ -1,4 +1,5 @@
 # Django settings for humbug project.
+import os
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -43,9 +44,9 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
-# Absolute filesystem path to the directory that will hold user-uploaded files.
-# Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = ''
+SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
+TEMPLATE_DIRS = ( os.path.join(SITE_ROOT, '..', 'templates'),)
+print TEMPLATE_DIRS
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -101,13 +102,6 @@ ROOT_URLCONF = 'humbug.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'humbug.wsgi.application'
-
-TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-    '/Users/jesstess/dev/humbug/templates',
-)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
