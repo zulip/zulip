@@ -4,3 +4,29 @@
 <li><a href="/accounts/login/?next=/">Log in</a></li>
 <li><a href="/accounts/register/">Register</a></li>
 {% endblock %}
+
+{% block content %}
+<div class="hero-unit">
+    <div class="row-fluid">
+        <div class="span5">
+            <h1>Humbug</h1>
+            <h2>Zephyr for the masses (?)</h2>
+        </div>
+        <div class="span7">
+            <p>Here we describe what makes it so great.</p>
+
+            <p>With several features such as:
+            <ul>
+                <li>Sending messages</li>
+                <li>Reading messages</li>
+                <li>Incessant polling</li>
+            </ul></p>
+
+            <p>
+                <a class="btn btn-primary btn-large" href=/accounts/login/?next=/">Log in &raquo;</a>
+                <a class="btn btn-primary btn-large" href=/accounts/register/">Register &raquo;</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
