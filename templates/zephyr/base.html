@@ -1,0 +1,9 @@
+{% autoescape off %}
+{% if not user.is_authenticated %}<a href="/accounts/login/?next=/">login</a> | <a
+    href="/accounts/register/">register</a>{% endif %}
+
+{% if user.is_authenticated %}<a href="/accounts/logout/?next=/">logout</a>{% endif %}
+
+{% block content %}
+{% endblock %}
+{% endautoescape %}

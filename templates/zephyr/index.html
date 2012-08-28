@@ -1,0 +1,123 @@
+{% extends "zephyr/base.html" %}
+
+{% block content %}
+<h1>Hello {{ user_profile.user.username }}!</h1>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+ 
+<script type="text/javascript">
+$.ajaxSetup({ 
+     beforeSend: function(xhr, settings) {
+         function getCookie(name) {
+             var cookieValue = null;
+             if (document.cookie && document.cookie != '') {
+                 var cookies = document.cookie.split(';');
+                 for (var i = 0; i < cookies.length; i++) {
+                     var cookie = jQuery.trim(cookies[i]);
+                     // Does this cookie string begin with the name we want?
+                 if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                     break;
+                 }
+             }
+         }
+         return cookieValue;
+         }
+         if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+             // Only send the token to relative URLs i.e. locally.
+             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+         }
+     } 
+});
+
+$(document).keyup(function(event) {
+if (event.keyCode == 38 || event.keyCode == 40) {
+    p = $("#selected");
+    tr = $(p).closest("tr");
+    td = $(p).closest("td");
+
+    if (event.keyCode == 40) {
+        offset = 1;
+    } else {
+        offset = -1;
+    }
+    new_index = parseInt(tr.attr("id").substr(3), 10) + offset;
+    if ($("#tr_" + new_index).length > 0) {
+        new_td = $("#tr_" + new_index).children(".pointer");
+        new_td.html('<p id="selected">-&gt;</p>');
+        td.empty();
+        $.post('update', {pointer: new_td.attr("id")});
+
+        if ($(new_td).offset().top < $("#main_div").offset().top) {
+            $("#main_div").scrollTop($("#main_div").scrollTop() - 75);
+        }
+
+        if ($(new_td).offset().top + $(new_td).height() > $("#main_div").offset().top + $("#main_div").height()) {
+            $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
+        }
+    }
+}
+});
+
+function narrow(class_name) {
+    $("span.zephyr_class").each(
+        function() {
+            if ($(this).text() != class_name) {
+                $(this).parents("tr").hide();
+            }       
+        }
+    );
+}
+
+function unhide() {
+    $("tr").show();
+}
+
+$(function() {
+  setInterval(get_updates, 1000);
+});
+
+function get_updates() {
+    var pointer = $("tr:last").children("td").first().attr("id");
+    $.post('get_updates', {pointer: pointer},
+           function(data) {
+               $.each(data, function(index, zephyr) {
+                   var new_max_id = parseInt($("tr:last").attr("id").substr(3), 10) + 1;
+                   var new_str = "<tr id=tr_" + new_max_id + "> \
+<td class='pointer' id=" + zephyr.id + "><p></p></td> \
+<td class='zephyr'> \
+<p><span onclick='narrow('" + zephyr.zephyr_class + "')' class='zephyr_class' style='background-color: yellow;'>" + zephyr.zephyr_class + "</span> / " + zephyr.instance + " / " + zephyr.sender + "<br />" +
+zephyr.content +
+"</p></td> \
+</tr>"
+                   $("#table tr:last").after(new_str);
+               });
+    }, "json");
+}
+</script>
+
+<form action="/zephyr/" method="post">
+{% csrf_token %}
+Class: <input type="text" name="class" id="class" value="" />
+Instance: <input type="text" name="instance" id="instance" value="" /><br />
+Content: <input type="textarea" rows="4" name="new_zephyr" id="new_zephyr" value="" />
+<input type="submit" value="Zephyr" />
+</form>
+
+<span id="unhide" style="background-color: aqua;" onclick="unhide()">Unhide</span>
+
+<div id="main_div" style="height: 400px; overflow-y: scroll;">
+<table id="table">
+{% for zephyr in zephyrs %}
+<tr id=tr_{{ forloop.counter }}>
+<td class="pointer" id={{ zephyr.id }}>{% if user_profile.pointer == zephyr.id %}<p id="selected">-&gt;{% else %}<p>{% endif %}</p></td>
+<td class="zephyr">
+<p><span onclick="narrow('{{ zephyr.zephyr_class.name }}')" class="zephyr_class" style="background-color: yellow;">{{ zephyr.zephyr_class.name }}</span> / {{ zephyr.instance }} / {{ zephyr.sender.user.username }}<br />
+{{ zephyr.content }}
+</p></td>
+</tr>
+{% endfor %}
+</table>
+</div>
+
+{% endblock %}
