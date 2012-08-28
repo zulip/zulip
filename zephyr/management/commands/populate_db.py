@@ -10,7 +10,7 @@ class Command(NoArgsCommand):
     help = "Populate a test database"
 
     def handle_noargs(self, **options):
-        for klass in [Zephyr, ZephyrClass, UserProfile, User]:
+        for klass in [Zephyr, ZephyrClass, UserProfile, User, Recipient]:
             klass.objects.all().delete()
         
         # Create test Users (UserProfiles are automatically created).
@@ -50,4 +50,4 @@ class Command(NoArgsCommand):
             new_zephyr.pub_date = datetime.datetime.utcnow()
             new_zephyr.save()
 
-        self.stdout.write("Successfully populated test database.")
+        self.stdout.write("Successfully populated test database.\n")
