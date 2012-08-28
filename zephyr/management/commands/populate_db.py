@@ -1,7 +1,7 @@
 from django.core.management.base import NoArgsCommand
 
 from django.contrib.auth.models import User
-from zephyr.models import Zephyr, UserProfile, ZephyrClass
+from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient
 
 import datetime
 import random
@@ -23,6 +23,11 @@ class Command(NoArgsCommand):
             new_class = ZephyrClass()
             new_class.name = name
             new_class.save()
+
+            recipient = Recipient()
+            recipient.user_or_class = new_class.pk
+            recipient.type = "class"
+            recipient.save()
         
         # Create some test zephyrs, including:
         # - multiple classes
@@ -30,7 +35,7 @@ class Command(NoArgsCommand):
         # - multiple zephyrs per instance
         # - both single and multi-line content
         users = [user.id for user in User.objects.all()]
-        zephyr_classes = [klass.id for klass in ZephyrClass.objects.all()]
+        recipients = [klass.id for klass in Recipient.objects.all()]
         texts = file("zephyr/management/commands/test_zephyrs.txt", "r").readlines()
         offset = 0
         while offset < len(texts):
@@ -39,8 +44,9 @@ class Command(NoArgsCommand):
             length = random.randint(1, 5)
             new_zephyr.content = "".join(texts[offset: offset + length])
             offset += length
-            new_zephyr.zephyr_class = ZephyrClass.objects.get(id=random.choice(zephyr_classes))
-            new_zephyr.instance = new_zephyr.zephyr_class.name + str(random.randint(1, 3))
+            new_zephyr.recipient = Recipient.objects.get(id=random.choice(recipients))
+            zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.pk)
+            new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
             new_zephyr.pub_date = datetime.datetime.utcnow()
             new_zephyr.save()
 

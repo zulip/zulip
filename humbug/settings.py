@@ -46,7 +46,6 @@ USE_TZ = True
 
 SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
 TEMPLATE_DIRS = ( os.path.join(SITE_ROOT, '..', 'templates'),)
-print TEMPLATE_DIRS
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.

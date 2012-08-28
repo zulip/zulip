@@ -9,9 +9,13 @@ class UserProfile(models.Model):
 class ZephyrClass(models.Model):
     name = models.CharField(max_length=30)
 
+class Recipient(models.Model):
+    user_or_class = models.IntegerField()
+    type = models.CharField(max_length=30)
+
 class Zephyr(models.Model):
     sender = models.ForeignKey(UserProfile)
-    zephyr_class = models.ForeignKey(ZephyrClass)
+    recipient = models.ForeignKey(Recipient) # personal or class
     instance = models.CharField(max_length=30)
     content = models.CharField(max_length=200)
     pub_date = models.DateTimeField('date published')

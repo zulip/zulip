@@ -138,8 +138,8 @@ function get_updates() {
                    var new_str = "<tr id=" + zephyr.id + "> \
 <td class='pointer'><p></p></td> \
 <td class='zephyr'> \
-<p><span onclick='narrow('" + zephyr.zephyr_class.name + "','" + zephyr.id + "')' class='zephyr_class' style='background-color: yellow;'>" + zephyr.zephyr_class.name +
-"</span> / <span onclick='narrow_instance('" + zephyr.zephyr_class.name + "','" + zephyr.instance + "','" + zephyr.id + "')' class='zephyr_instance' style='background-color: green;'>" + zephyr.instance + "</span> / " + zephyr.sender + "<br />" +
+<p><span onclick='narrow('" + zephyr.zephyr_class + "','" + zephyr.id + "')' class='zephyr_class' style='background-color: yellow;'>" + zephyr.zephyr_class +
+"</span> / <span onclick='narrow_instance('" + zephyr.zephyr_class + "','" + zephyr.instance + "','" + zephyr.id + "')' class='zephyr_instance' style='background-color: green;'>" + zephyr.instance + "</span> / " + zephyr.sender + "<br />" +
 zephyr.content +
 "</p></td> \
 </tr>"
@@ -165,7 +165,7 @@ Content: <textarea rows="4" cols="60" name="new_zephyr" id="new_zephyr" value=""
 <tr id={{ zephyr.id }}>
 <td class="pointer">{% if user_profile.pointer == zephyr.id %}<p id="selected">&gt;{% else %}<p>{% endif %}</p></td>
 <td class="zephyr">
-<p><span onclick="narrow('{{ zephyr.zephyr_class.name }}', '{{ zephyr.id }}')" class="zephyr_class" style="background-color: yellow;">{{ zephyr.zephyr_class.name }}</span> / <span onclick="narrow_instance('{{ zephyr.zephyr_class.name }}', '{{ zephyr.instance }}', '{{ zephyr.id }}')" class="zephyr_instance" style="background-color: green;">{{ zephyr.instance }}</span> / {{ zephyr.sender.user.username }}<br />
+<p><span onclick="narrow('{{ zephyr.zephyr_class }}', '{{ zephyr.id }}')" class="zephyr_class" style="background-color: yellow;">{{ zephyr.zephyr_class }}</span> / <span onclick="narrow_instance('{{ zephyr.zephyr_class }}', '{{ zephyr.instance }}', '{{ zephyr.id }}')" class="zephyr_instance" style="background-color: green;">{{ zephyr.instance }}</span> / {{ zephyr.sender.user.username }}<br />
 {{ zephyr.content }}
 </p></td>
 </tr>
