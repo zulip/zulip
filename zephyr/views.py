@@ -41,9 +41,12 @@ def home(request):
 
     zephyrs = Zephyr.objects.all()
     for zephyr in zephyrs:
-        # This is gross, but we'll probably be denormalizing this soon anyway.
-        zephyr_class = ZephyrClass.objects.get(pk=zephyr.recipient.user_or_class)
-        zephyr.zephyr_class = zephyr_class.name
+        if zephyr.recipient.type == "class":
+            zephyr_class = ZephyrClass.objects.get(pk=zephyr.recipient.user_or_class)
+            zephyr.display_recipient = zephyr_class.name
+        else:
+            user = User.objects.get(pk=zephyr.recipient.user_or_class)
+            zephyr.display_recipient = user.username
 
     user = request.user
     user_profile = UserProfile.objects.get(user=user)
@@ -72,10 +75,16 @@ def get_updates(request):
     new_zephyrs = Zephyr.objects.filter(id__gt=pointer)
     new_zephyr_list = []
     for zephyr in new_zephyrs:
-        zephyr_class = ZephyrClass.objects.get(pk=zephyr.recipient.user_or_class)
+        if zephyr.recipient.type == "class":
+            zephyr_class = ZephyrClass.objects.get(pk=zephyr.recipient.user_or_class)
+            display_recipient = zephyr_class.name
+        else:
+            user = User.objects.get(pk=zephyr.recipient.user_or_class)
+            display_recipient = user.username
+
         new_zephyr_list.append({"id": zephyr.id,
                                 "sender": zephyr.sender.user.username,
-                                "zephyr_class": zephyr_class.name,
+                                "display_recipient": display_recipient,
                                 "instance": zephyr.instance,
                                 "content": zephyr.content
                                 })
@@ -85,20 +94,26 @@ def get_updates(request):
 
 @login_required
 def personal_zephyr(request):
-    username = request.POST['username']
+    username = request.POST['recipient']
     if User.objects.filter(username=username):
         user = User.objects.get(username=username)
     else:
         # Do something reasonable.
-        pass
+        return HttpResponseRedirect(reverse('zephyr.views.home'))
+
+    recipient = Recipient()
+    recipient.user_or_class = user.pk
+    recipient.type = "personal"
+    recipient.save()
 
     new_zephyr = Zephyr()
     new_zephyr.sender = UserProfile.objects.get(user=request.user)
-    new_zephyr.content = request.POST['new_zephyr']
-    new_zephyr.zephyr_class = username
-    new_zephyr.instance = request.POST['instance']
+    new_zephyr.content = request.POST['new_personal_zephyr']
+    new_zephyr.recipient = recipient
+    new_zephyr.instance = u''
     new_zephyr.pub_date = datetime.datetime.utcnow()
     new_zephyr.save()
+
     return HttpResponseRedirect(reverse('zephyr.views.home'))
 
 @login_required
