@@ -99,7 +99,8 @@ function narrow(class_name, target_zephyr) {
     scroll_to_zephyr(target_zephyr, old_top);
 }
 
-function narrow_instance(class_name, instance) {
+function narrow_instance(class_name, instance, target_zephyr) {
+    var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
     $("tr").each(
         function() {
             if (($(this).find("span.zephyr_class").text() != class_name) ||
@@ -108,6 +109,11 @@ function narrow_instance(class_name, instance) {
 	    }
         }
     );
+    $("#selected").closest("td").empty();
+    $("#" + target_zephyr).children("td:first").html('<p id="selected">&gt;</p>');
+
+    // Try to keep the zephyr in the same place on the screen after narrowing.
+    scroll_to_zephyr(target_zephyr, old_top);
 }
 
 function unhide() {
@@ -131,7 +137,7 @@ function get_updates() {
 <td class='pointer'><p></p></td> \
 <td class='zephyr'> \
 <p><span onclick='narrow('" + zephyr.zephyr_class.name + "','" + zephyr.id + "')' class='zephyr_class' style='background-color: yellow;'>" + zephyr.zephyr_class.name +
-"</span> / <span onclick='narrow_instance('" + zephyr.zephyr_class.name + "','" + zephyr.instance + "')' class='zephyr_instance' style='background-color: green;'>" + zephyr.instance + "</span> / " + zephyr.sender + "<br />" +
+"</span> / <span onclick='narrow_instance('" + zephyr.zephyr_class.name + "','" + zephyr.instance + "','" + zephyr.id + "')' class='zephyr_instance' style='background-color: green;'>" + zephyr.instance + "</span> / " + zephyr.sender + "<br />" +
 zephyr.content +
 "</p></td> \
 </tr>"
@@ -157,7 +163,7 @@ Content: <textarea rows="4" cols="60" name="new_zephyr" id="new_zephyr" value=""
 <tr id={{ zephyr.id }}>
 <td class="pointer">{% if user_profile.pointer == zephyr.id %}<p id="selected">&gt;{% else %}<p>{% endif %}</p></td>
 <td class="zephyr">
-<p><span onclick="narrow('{{ zephyr.zephyr_class.name }}', '{{ zephyr.id }}')" class="zephyr_class" style="background-color: yellow;">{{ zephyr.zephyr_class.name }}</span> / <span onclick="narrow_instance('{{ zephyr.zephyr_class.name }}', '{{ zephyr.instance }}')" class="zephyr_instance" style="background-color: green;">{{ zephyr.instance }}</span> / {{ zephyr.sender.user.username }}<br />
+<p><span onclick="narrow('{{ zephyr.zephyr_class.name }}', '{{ zephyr.id }}')" class="zephyr_class" style="background-color: yellow;">{{ zephyr.zephyr_class.name }}</span> / <span onclick="narrow_instance('{{ zephyr.zephyr_class.name }}', '{{ zephyr.instance }}', '{{ zephyr.id }}')" class="zephyr_instance" style="background-color: green;">{{ zephyr.instance }}</span> / {{ zephyr.sender.user.username }}<br />
 {{ zephyr.content }}
 </p></td>
 </tr>
