@@ -6,6 +6,7 @@
     <title>Zephyr</title>
     <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/styles/zephyr.css" rel="stylesheet">
+    <link href="/static/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
     {# We need to import jQuery before Bootstrap #}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
     <script src="/static/bootstrap/js/bootstrap.min.js"></script>
@@ -15,12 +16,24 @@
 
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
-        <div class="container">
-            <a class="brand" href="#">Humbug</a>
-            <ul class="nav">
+        <div class="container-fluid">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="/">Humbug</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
 {% block nav %}
 {% endblock %}
-            </ul>
+                </ul>
+{% if user.is_authenticated %}
+                <p class="navbar-text pull-right">
+                    Logged in as {{ user_profile.user.username }}
+                </p>
+{% endif %}
+            </div>
         </div>
     </div>
 </div>

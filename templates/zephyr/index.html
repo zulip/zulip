@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block content %}
-<h1>Hello {{ user_profile.user.username }}!</h1>
 
 <script type="text/javascript">
 $.ajaxSetup({
@@ -158,24 +157,45 @@ function get_updates() {
 }
 </script>
 
-<form action="/zephyr/" method="post">
+<form action="/zephyr/" method="post" class="zephyr">
 {% csrf_token %}
-Class: <input type="text" name="class" id="class" value="" />
-Instance: <input type="text" name="instance" id="instance" value="" /><br />
-Content: <textarea rows="4" cols="60" name="new_zephyr" id="new_zephyr" value="" /></textarea>
-<input type="submit" name="zephyr" value="Zephyr" />
+<div class="row-fluid">
+<div class="span6">
+    <label>Class</label>
+    <input type="text" name="class" id="class" value="" />
+</div>
+<div class="span6">
+    <label>Instance</label>
+    <input type="text" name="instance" id="instance" value="" />
+</div>
+</div>
+<div class="row-fluid">
+<div class="span12">
+<label>Content</label> <textarea rows="4" cols="60" name="new_zephyr" id="new_zephyr" value="" /></textarea>
+<input type="submit" value="Zephyr" />
+</div>
+</div>
 </form>
 
-<form action="/personal-zephyr/" method="post">
+<form action="/personal-zephyr/" method="post" class="zephyr">
 {% csrf_token %}
-User: <input type="text" name="recipient" id="recipient" value="" /><br />
-Content: <textarea rows="4" cols="60" name="new_personal_zephyr" id="new_personal_zephyr" value="" /></textarea>
+<div class="row-fluid">
+<div class="span6">
+    <label>User</label>
+    <input type="text" name="recipient" id="recipient" value="" />
+</div>
+<div class="row-fluid">
+<div class="span12">
+    <label>Content</label>
+    <textarea rows="4" cols="60" name="new_personal_zephyr" id="new_personal_zephyr" value="" /></textarea>
 <input type="submit" name="personal_zephyr" value="Send Personal" />
+</div>
+</div>
 </form>
 
 <span id="unhide" style="background-color: aqua;" onclick="unhide()">Unhide</span>
 
-<div id="main_div" style="height: 400px; overflow-y: scroll;">
+<div id="main_div">
 <table id="table">
 {% for zephyr in zephyrs %}
 <tr id={{ zephyr.id }}>

@@ -2,19 +2,18 @@
 
 {% block content %}
 
-<form method="post" action="{% url register %}">{% csrf_token %}
-<table>
-<tr>
-    <td>{{ form.username.label_tag }}</td>
-    <td>{{ form.username }}</td>
-</tr>
-<tr>
-    <td>{{ form.password.label_tag }}</td>
-    <td>{{ form.password }}</td>
-</tr>
-</table>
+<h1>Register for an account</h1>
 
-<input type="submit" value="Register" />
+<form method="post" action="{% url register %}">
+{% csrf_token %}
+
+{{ form.username.label_tag }}
+{{ form.username }}
+
+{{ form.password.label_tag }}
+{{ form.password }}
+
+<input type="submit" value="Register" /><br />
 <input type="hidden" name="next" value="{{ next }}" />
 </form>
 

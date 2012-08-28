@@ -3,9 +3,20 @@ body {
     padding-top: 50px;
 }
 
-/* From bootstrap-responsive.css */
-.navbar .brand {
-    padding-right: 10px;
-    padding-left:  10px;
-    margin: 0 0 0 -5px;
+.top-content {
+    padding-left: 10px;
+    padding-right: 20px;
+}
+
+#main_div {
+    height: 400px;
+    overflow-y: scroll;
+}
+
+form.zephyr input {
+    width: 100%;
+}
+
+form.zephyr textarea {
+    width: 100%;
 }
