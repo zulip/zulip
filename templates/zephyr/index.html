@@ -1,5 +1,9 @@
 {% extends "zephyr/base.html" %}
 
+{% block nav %}
+<li><a href="/accounts/logout?next=/">Log out</a></li>
+{% endblock %}
+
 {% block content %}
 <h1>Hello {{ user_profile.user.username }}!</h1>
 
