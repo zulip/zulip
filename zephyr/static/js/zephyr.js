@@ -197,10 +197,6 @@ function unhide() {
     $("#narrow_indicator").html("");
 }
 
-$(function() {
-  setInterval(get_updates, 1000);
-});
-
 function newline2br(content) {
     return content.replace(/\n/g, '<br />');
 }
@@ -228,10 +224,19 @@ function add_message(index, zephyr) {
     $("#table tr:last").after(new_str);
 }
 
-function get_updates() {
+function get_updates_longpoll(data) {
+    if (data && data.zephyrs) {
+	$.each(data.zephyrs, add_message);
+    }
     var last_received = $("tr:last").attr("id");
-    $.post("get_updates", {last_received: last_received},
-           function(data) {
-               $.each(data, add_message);
-    }, "json");
+    $.post("get_updates_longpoll",
+	   {last_received: last_received},
+	    function(data) {
+		get_updates_longpoll(data);
+	    }, "json");
 }
+
+$(document).ready(function() {
+    get_updates_longpoll()
+});
+

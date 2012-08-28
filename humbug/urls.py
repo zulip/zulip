@@ -9,7 +9,7 @@ import os.path
 urlpatterns = patterns('',
     url(r'^$', 'zephyr.views.home', name='home'),
     url(r'^update$', 'zephyr.views.update', name='update'),
-    url(r'^get_updates$', 'zephyr.views.get_updates', name='get_updates'),
+    url(r'^get_updates_longpoll$', 'zephyr.views.get_updates_longpoll', name='get_updates_longpoll'),
     url(r'^zephyr/', 'zephyr.views.zephyr', name='zephyr'),
     url(r'^personal-zephyr/', 'zephyr.views.personal_zephyr', name='personal_zephyr'),
     url(r'^accounts/home/', 'zephyr.views.accounts_home', name='accounts_home'),
@@ -17,7 +17,7 @@ urlpatterns = patterns('',
     url(r'^accounts/logout/', 'django.contrib.auth.views.logout', {'template_name': 'zephyr/index.html'}),
     url(r'^accounts/register/', 'zephyr.views.register', name='register'),
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
-        {'document_root': os.path.join(settings.SITE_ROOT, 'static/')})
+        {'document_root': os.path.join(settings.SITE_ROOT, '..', 'zephyr', 'static/')})
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

@@ -8,9 +8,11 @@ from django.shortcuts import render
 from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
-from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
-    Recipient, get_display_recipient
+from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, get_display_recipient, filter_by_subscriptions
 from zephyr.forms import RegistrationForm
+
+import tornado.web
+from zephyr.decorator import asynchronous
 
 import datetime
 import simplejson
@@ -41,7 +43,7 @@ def home(request):
     if not request.user.is_authenticated():
         return HttpResponseRedirect('accounts/home/')
 
-    zephyrs = filter_by_subscription(Zephyr.objects.all(), request.user)
+    zephyrs = filter_by_subscriptions(Zephyr.objects.all(), request.user)
     for zephyr in zephyrs:
         zephyr.display_recipient = get_display_recipient(zephyr.recipient)
 
@@ -64,37 +66,39 @@ def update(request):
         user_profile.save()
     return HttpResponse(simplejson.dumps({}), mimetype='application/json')
 
-def filter_by_subscription(zephyrs, user):
-    userprofile = UserProfile.objects.get(user=user)
-    subscribed_zephyrs = []
-    subscriptions = [sub.recipient_id for sub in Subscription.objects.filter(userprofile_id=userprofile)]
-    for zephyr in zephyrs:
-        # If you are subscribed to the personal or class, or if you sent the personal, you can see the zephyr.
-        if (zephyr.recipient in subscriptions) or \
-                ((zephyr.sender == userprofile) and zephyr.recipient.type == "personal"):
-            subscribed_zephyrs.append(zephyr)
-
-    return subscribed_zephyrs
-
-def get_updates(request):
+@asynchronous
+def get_updates_longpoll(request, handler):
     if not request.POST:
-        # Do something
+        # TODO: Do something
         pass
+   
     last_received = request.POST.get('last_received')
-    new_zephyrs = filter_by_subscription(Zephyr.objects.filter(id__gt=last_received),
-                                         request.user)
-    new_zephyr_list = []
-    for zephyr in new_zephyrs:
-        new_zephyr_list.append({"id": zephyr.id,
-                                "sender": zephyr.sender.user.username,
-                                "type": zephyr.recipient.type,
-                                "display_recipient": get_display_recipient(zephyr.recipient),
-                                "instance": zephyr.instance,
-                                "content": zephyr.content
-                                })
+    if not last_received:
+        # TODO: return error?
+        pass
 
-    return HttpResponse(simplejson.dumps(new_zephyr_list),
-                        mimetype='application/json')
+    user = request.user
+    user_profile = UserProfile.objects.get(user=user)
+
+    def on_receive(zephyrs):
+        if handler.request.connection.stream.closed():
+            return
+        new_zephyr_list = []
+        for zephyr in zephyrs:
+            new_zephyr_list.append({"id": zephyr.id,
+                                    "sender": zephyr.sender.user.username,
+                                    "display_recipient": get_display_recipient(zephyr.recipient),
+                                    "type": zephyr.recipient.type,
+                                    "instance": zephyr.instance,
+                                    "content": zephyr.content
+                                    })
+        try:
+            handler.finish({'zephyrs': new_zephyr_list})
+        except socket.error, e:
+            pass
+
+    # We need to replace this abstraction with the message list
+    user_profile.add_callback(handler.async_callback(on_receive), last_received)
 
 @login_required
 def personal_zephyr(request):
