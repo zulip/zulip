@@ -37,22 +37,21 @@ $(document).keydown(function(event) {
         td = $(p).closest("td");
 
         if (event.keyCode == 40) { // down arrow
-            offset = 1;
+            // There are probably more verbose but more efficient ways to do this.
+            next_zephyr = tr.nextAll(":not(:hidden):first");
         } else { // up arrow
-            offset = -1;
+            next_zephyr = tr.prevAll(":not(:hidden):first");
         }
-        new_index = parseInt(tr.attr("id").substr(3), 10) + offset;
-        if ($("#tr_" + new_index).length > 0) {
-            new_td = $("#tr_" + new_index).children(".pointer");
-            new_td.html('<p id="selected">&gt;</p>');
-            td.empty();
-            $.post('update', {pointer: new_td.attr("id")});
+        if (next_zephyr.length != 0) { // We are not at the bottom or top of the zephyrs.
+            next_zephyr.children("td:first").html('<p id="selected">&gt;</p>');
+            td.empty(); // Clear the previous arrow.
+            $.post("update", {pointer: next_zephyr.attr("id")});
 
-            if ($(new_td).offset().top < $("#main_div").offset().top) {
+            if ($(next_zephyr).offset().top < $("#main_div").offset().top) {
                 $("#main_div").scrollTop($("#main_div").scrollTop() - 75);
             }
 
-            if ($(new_td).offset().top + $(new_td).height() > $("#main_div").offset().top + $("#main_div").height()) {
+            if ($(next_zephyr).offset().top + $(next_zephyr).height() > $("#main_div").offset().top + $("#main_div").height()) {
                 $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
             }
         }
@@ -66,7 +65,23 @@ $(document).keydown(function(event) {
     }
 });
 
-function narrow(class_name) {
+function scroll_to_zephyr(target_zephyr, old_offset) {
+    // target_zephyr is an id.
+    // old_offset is how far from the top of the scroll area the
+    // zephyr was before any narrowing or unnarrowing happened.
+    var height_above_zephyr = 0;
+    $("#table tr:lt(" + $("#" + target_zephyr).index() + ")").each(function() {
+        if (!$(this).is(":hidden")) {
+            height_above_zephyr += $(this).height();
+        }
+    });
+    $("#main_div").scrollTop(height_above_zephyr + old_offset);
+}
+
+
+function narrow(class_name, target_zephyr) {
+    // We want the zephyr on which the narrow happened to stay in the same place if possible.
+    var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
     $("span.zephyr_class").each(
         function() {
             if ($(this).text() != class_name) {
@@ -77,6 +92,11 @@ function narrow(class_name) {
 	    }
         }
     );
+    $("#selected").closest("td").empty();
+    $("#" + target_zephyr).children("td:first").html('<p id="selected">&gt;</p>');
+
+    // Try to keep the zephyr in the same place on the screen after narrowing.
+    scroll_to_zephyr(target_zephyr, old_top);
 }
 
 function narrow_instance(class_name, instance) {
@@ -92,6 +112,10 @@ function narrow_instance(class_name, instance) {
 
 function unhide() {
     $("tr").show();
+
+    p = $("#selected");
+    tr = $(p).closest("tr");
+    scroll_to_zephyr(tr.attr("id"), 0);
 }
 
 $(function() {
@@ -99,15 +123,14 @@ $(function() {
 });
 
 function get_updates() {
-    var pointer = $("tr:last").children("td").first().attr("id");
-    $.post('get_updates', {pointer: pointer},
+    var pointer = $("tr:last").attr("id");
+    $.post("get_updates", {pointer: pointer},
            function(data) {
                $.each(data, function(index, zephyr) {
-                   var new_max_id = parseInt($("tr:last").attr("id").substr(3), 10) + 1;
-                   var new_str = "<tr id=tr_" + new_max_id + "> \
-<td class='pointer' id=" + zephyr.id + "><p></p></td> \
+                   var new_str = "<tr id=" + zephyr.id + "> \
+<td class='pointer'><p></p></td> \
 <td class='zephyr'> \
-<p><span onclick='narrow('" + zephyr.zephyr_class.name + "')' class='zephyr_class' style='background-color: yellow;'>" + zephyr.zephyr_class.name +
+<p><span onclick='narrow('" + zephyr.zephyr_class.name + "','" + zephyr.id + "')' class='zephyr_class' style='background-color: yellow;'>" + zephyr.zephyr_class.name +
 "</span> / <span onclick='narrow_instance('" + zephyr.zephyr_class.name + "','" + zephyr.instance + "')' class='zephyr_instance' style='background-color: green;'>" + zephyr.instance + "</span> / " + zephyr.sender + "<br />" +
 zephyr.content +
 "</p></td> \
@@ -131,10 +154,10 @@ Content: <textarea rows="4" cols="60" name="new_zephyr" id="new_zephyr" value=""
 <div id="main_div" style="height: 400px; overflow-y: scroll;">
 <table id="table">
 {% for zephyr in zephyrs %}
-<tr id=tr_{{ forloop.counter }}>
-<td class="pointer" id={{ zephyr.id }}>{% if user_profile.pointer == zephyr.id %}<p id="selected">&gt;{% else %}<p>{% endif %}</p></td>
+<tr id={{ zephyr.id }}>
+<td class="pointer">{% if user_profile.pointer == zephyr.id %}<p id="selected">&gt;{% else %}<p>{% endif %}</p></td>
 <td class="zephyr">
-<p><span onclick="narrow('{{ zephyr.zephyr_class.name }}')" class="zephyr_class" style="background-color: yellow;">{{ zephyr.zephyr_class.name }}</span> / <span onclick="narrow_instance('{{ zephyr.zephyr_class.name }}', '{{ zephyr.instance }}')" class="zephyr_instance" style="background-color: green;">{{ zephyr.instance }}</span> / {{ zephyr.sender.user.username }}<br />
+<p><span onclick="narrow('{{ zephyr.zephyr_class.name }}', '{{ zephyr.id }}')" class="zephyr_class" style="background-color: yellow;">{{ zephyr.zephyr_class.name }}</span> / <span onclick="narrow_instance('{{ zephyr.zephyr_class.name }}', '{{ zephyr.instance }}')" class="zephyr_instance" style="background-color: green;">{{ zephyr.instance }}</span> / {{ zephyr.sender.user.username }}<br />
 {{ zephyr.content }}
 </p></td>
 </tr>
