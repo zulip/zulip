@@ -136,8 +136,8 @@ $(function() {
 });
 
 function get_updates() {
-    var pointer = $("tr:last").attr("id");
-    $.post("get_updates", {pointer: pointer},
+    var last_received = $("tr:last").attr("id");
+    $.post("get_updates", {last_received: last_received},
            function(data) {
                $.each(data, function(index, zephyr) {
                    var new_str = "<tr id=" + zephyr.id + "> \

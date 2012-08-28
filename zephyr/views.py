@@ -71,8 +71,8 @@ def get_updates(request):
     if not request.POST:
         # Do something
         pass
-    pointer = request.POST.get('pointer')
-    new_zephyrs = Zephyr.objects.filter(id__gt=pointer)
+    last_received = request.POST.get('last_received')
+    new_zephyrs = Zephyr.objects.filter(id__gt=last_received)
     new_zephyr_list = []
     for zephyr in new_zephyrs:
         if zephyr.recipient.type == "class":
