@@ -24,3 +24,19 @@ form.zephyr textarea {
 #unhide {
     margin-top: 5px;
 }
+
+.zephyr_class {
+  background-color: #b94a48;
+}
+
+.zephyr_instance {
+  background-color: #468847;
+}
+
+.zephyr_personal_recipient {
+  background-color: #3a87ad;
+}
+
+.zephyr_sender {
+  background-color: #3a87ad;
+}
