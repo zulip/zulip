@@ -75,6 +75,7 @@ $(document).keydown(function(event) {
         $("#class").val(zephyr_class);
         $("#instance").val(instance);
         $("#new_zephyr").focus();
+	event.preventDefault();
     }
 });
 
