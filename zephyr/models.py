@@ -23,6 +23,13 @@ class UserProfile(models.Model):
     def __repr__(self):
         return "<UserProfile: %s>" % (self.user.username,)
 
+def create_user_profile(**kwargs):
+    """When creating a new user, make a profile for him or her."""
+    u = kwargs["instance"]
+    if not UserProfile.objects.filter(user=u):
+        UserProfile(user=u, pointer=-1).save()
+post_save.connect(create_user_profile, sender=User)
+
 class ZephyrClass(models.Model):
     name = models.CharField(max_length=30)
 
@@ -48,9 +55,9 @@ class Zephyr(models.Model):
         display_recipient = get_display_recipient(self.recipient)
         return "<Zephyr: %s / %s / %r>" % (display_recipient, self.instance, self.sender)
 
-def create_user_profile(**kwargs):
-    """When creating a new user, make a profile for him or her."""
-    u = kwargs["instance"]
-    if not UserProfile.objects.filter(user=u):
-        UserProfile(user=u, pointer=-1).save()
-post_save.connect(create_user_profile, sender=User)
+class Subscription(models.Model):
+    userprofile_id = models.ForeignKey(UserProfile)
+    recipient_id = models.ForeignKey(Recipient)
+
+    def __repr__(self):
+        return "<Subscription: %r -> %r>" % (self.userprofile_id, self.recipient_id)

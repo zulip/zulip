@@ -8,7 +8,8 @@ from django.shortcuts import render
 from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
-from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, get_display_recipient
+from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
+    Recipient, get_display_recipient
 from zephyr.forms import RegistrationForm
 
 import datetime
@@ -40,7 +41,7 @@ def home(request):
     if not request.user.is_authenticated():
         return HttpResponseRedirect('accounts/home/')
 
-    zephyrs = Zephyr.objects.all()
+    zephyrs = filter_by_subscription(Zephyr.objects.all(), request.user)
     for zephyr in zephyrs:
         zephyr.display_recipient = get_display_recipient(zephyr.recipient)
 
@@ -63,12 +64,25 @@ def update(request):
         user_profile.save()
     return HttpResponse(simplejson.dumps({}), mimetype='application/json')
 
+def filter_by_subscription(zephyrs, user):
+    userprofile = UserProfile.objects.get(user=user)
+    subscribed_zephyrs = []
+    subscriptions = [sub.recipient_id for sub in Subscription.objects.filter(userprofile_id=userprofile)]
+    for zephyr in zephyrs:
+        # If you are subscribed to the personal or class, or if you sent the personal, you can see the zephyr.
+        if (zephyr.recipient in subscriptions) or \
+                ((zephyr.sender == userprofile) and zephyr.recipient.type == "personal"):
+            subscribed_zephyrs.append(zephyr)
+
+    return subscribed_zephyrs
+
 def get_updates(request):
     if not request.POST:
         # Do something
         pass
     last_received = request.POST.get('last_received')
-    new_zephyrs = Zephyr.objects.filter(id__gt=last_received)
+    new_zephyrs = filter_by_subscription(Zephyr.objects.filter(id__gt=last_received),
+                                         request.user)
     new_zephyr_list = []
     for zephyr in new_zephyrs:
         new_zephyr_list.append({"id": zephyr.id,
@@ -90,10 +104,10 @@ def personal_zephyr(request):
         # Do something reasonable.
         return HttpResponseRedirect(reverse('zephyr.views.home'))
 
-    recipient = Recipient()
-    recipient.user_or_class = user.pk
-    recipient.type = "personal"
-    recipient.save()
+    # Right now, you can't make recipients on the fly by sending zephyrs to new
+    # classes or people.
+    user_profile = UserProfile.objects.get(user=user)
+    recipient = Recipient.objects.get(user_or_class=user_profile.id, type="personal")
 
     new_zephyr = Zephyr()
     new_zephyr.sender = UserProfile.objects.get(user=request.user)
@@ -115,10 +129,9 @@ def zephyr(request):
         my_class.name = class_name
         my_class.save()
 
-    recipient = Recipient()
-    recipient.user_or_class = my_class.pk
-    recipient.type = "class"
-    recipient.save()
+    # Right now, you can't make recipients on the fly by sending zephyrs to new
+    # classes or people.
+    recipient = Recipient.objects.get(user_or_class=my_class.id, type="class")
 
     new_zephyr = Zephyr()
     new_zephyr.sender = UserProfile.objects.get(user=request.user)
