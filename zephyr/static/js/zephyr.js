@@ -91,6 +91,29 @@ function hide_personals() {
     );
 }
 
+function narrow_personals(target_zephyr) {
+    var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
+
+    $("span.zephyr_personal_recipient").each(
+        function() {
+            $(this).parents("tr").show();
+        }
+    );
+    $("span.zephyr_class").each(
+        function() {
+            $(this).parents("tr").hide();
+        }
+    );
+
+    $("#selected").closest("td").empty();
+    $("#" + target_zephyr).children("td:first").html(selected_tag);
+    $.post("update", {pointer: target_zephyr});
+    scroll_to_zephyr(target_zephyr, old_top);
+
+    $("#unhide").removeAttr("disabled");
+    $("#narrow_indicator").html("Showing personals");
+}
+
 function narrow(class_name, target_zephyr) {
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
     var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
@@ -171,8 +194,8 @@ function add_message(index, zephyr) {
                    zephyr.instance + "','" + zephyr.id + "')\" class='label zephyr_instance'>" +
                    zephyr.instance + "</span> ";
     } else {
-        new_str += "<span onclick=\"narrow('" + zephyr.display_recipient + "','" + zephyr.id
-                   + "')\" class='label zephyr_personal_recipient'>" + zephyr.display_recipient + "</span>"
+        new_str += "<span onclick=\"narrow_personals('" + zephyr.id + "')\" class='label zephyr_personal_recipient'>" +
+                   zephyr.display_recipient + "</span>"
                    + " &larr; ";
     }
     new_str += "<span onclick=\"prepare_personal('" + zephyr.sender + "')\" class='label zephyr_sender'>"
