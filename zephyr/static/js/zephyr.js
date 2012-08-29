@@ -1,3 +1,14 @@
+function resize_main_div() {
+    // Resize main_div to exactly take up remaining vertical space.
+    var div = $('#main_div');
+    div.height(div.height() + $(window).height() - $('body').height());
+}
+$(function () {
+    resize_main_div();
+    $(window).resize(resize_main_div);
+    $('#zephyr-type-tabs a').on('shown', function (e) { resize_main_div(); });
+});
+
 $.ajaxSetup({
      beforeSend: function(xhr, settings) {
          function getCookie(name) {
