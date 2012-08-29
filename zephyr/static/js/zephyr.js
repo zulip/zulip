@@ -168,7 +168,6 @@ function add_message(index, zephyr) {
 	+ zephyr.content +
 	"</p></td>" +
 	"</tr>"
-    alert(new_str);
     $("#table tr:last").after(new_str);
 }
 
