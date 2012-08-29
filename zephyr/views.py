@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
-from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient
+from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, get_display_recipient
 from zephyr.forms import RegistrationForm
 
 import datetime
@@ -42,12 +42,7 @@ def home(request):
 
     zephyrs = Zephyr.objects.all()
     for zephyr in zephyrs:
-        if zephyr.recipient.type == "class":
-            zephyr_class = ZephyrClass.objects.get(pk=zephyr.recipient.user_or_class)
-            zephyr.display_recipient = zephyr_class.name
-        else:
-            user = User.objects.get(pk=zephyr.recipient.user_or_class)
-            zephyr.display_recipient = user.username
+        zephyr.display_recipient = get_display_recipient(zephyr.recipient)
 
     user = request.user
     user_profile = UserProfile.objects.get(user=user)
@@ -76,16 +71,9 @@ def get_updates(request):
     new_zephyrs = Zephyr.objects.filter(id__gt=last_received)
     new_zephyr_list = []
     for zephyr in new_zephyrs:
-        if zephyr.recipient.type == "class":
-            zephyr_class = ZephyrClass.objects.get(pk=zephyr.recipient.user_or_class)
-            display_recipient = zephyr_class.name
-        else:
-            user = User.objects.get(pk=zephyr.recipient.user_or_class)
-            display_recipient = user.username
-
         new_zephyr_list.append({"id": zephyr.id,
                                 "sender": zephyr.sender.user.username,
-                                "display_recipient": display_recipient,
+                                "display_recipient": get_display_recipient(zephyr.recipient),
                                 "instance": zephyr.instance,
                                 "content": zephyr.content
                                 })
