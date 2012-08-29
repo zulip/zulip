@@ -8,6 +8,24 @@
 
 <script type="text/javascript" src="/static/js/zephyr.js"></script>
 
+<span id="unhide" style="background-color: aqua;" onclick="unhide()">Unhide</span>
+
+<div id="main_div">
+<table id="table">
+{% for zephyr in zephyrs %}
+<tr id={{ zephyr.id }}>
+<td class="pointer">{% if user_profile.pointer == zephyr.id %}<p id="selected">&gt;{% else %}<p>{% endif %}</p></td>
+<td class="zephyr">
+<p><span onclick="narrow('{{ zephyr.display_recipient }}', '{{ zephyr.id }}')" class="zephyr_class" style="background-color: {% if zephyr.recipient.type == 'class' %}yellow{% else %}magenta{% endif %};">{{ zephyr.display_recipient }}</span> /
+<span onclick="narrow_instance('{{ zephyr.display_recipient }}', '{{ zephyr.instance }}', '{{ zephyr.id }}')" class="zephyr_instance" style="background-color: green;">{{ zephyr.instance }}</span> /
+<span onclick="prepare_personal('{{ zephyr.sender.user.username }}')" style="background-color: magenta;">{{ zephyr.sender.user.username }}</span><br />
+{{ zephyr.content }}
+</p></td>
+</tr>
+{% endfor %}
+</table>
+</div>
+
 <div class="tabbable container">
     <ul class="nav nav-tabs">
         <li class="active"><a href="#class-message" data-toggle="tab">Class message</a></li>
@@ -55,24 +73,6 @@
             </form>
         </div>
     </div>
-</div>
-
-<span id="unhide" style="background-color: aqua;" onclick="unhide()">Unhide</span>
-
-<div id="main_div">
-<table id="table">
-{% for zephyr in zephyrs %}
-<tr id={{ zephyr.id }}>
-<td class="pointer">{% if user_profile.pointer == zephyr.id %}<p id="selected">&gt;{% else %}<p>{% endif %}</p></td>
-<td class="zephyr">
-<p><span onclick="narrow('{{ zephyr.display_recipient }}', '{{ zephyr.id }}')" class="zephyr_class" style="background-color: {% if zephyr.recipient.type == 'class' %}yellow{% else %}magenta{% endif %};">{{ zephyr.display_recipient }}</span> /
-<span onclick="narrow_instance('{{ zephyr.display_recipient }}', '{{ zephyr.instance }}', '{{ zephyr.id }}')" class="zephyr_instance" style="background-color: green;">{{ zephyr.instance }}</span> /
-<span onclick="prepare_personal('{{ zephyr.sender.user.username }}')" style="background-color: magenta;">{{ zephyr.sender.user.username }}</span><br />
-{{ zephyr.content }}
-</p></td>
-</tr>
-{% endfor %}
-</table>
 </div>
 
 {% endblock %}
