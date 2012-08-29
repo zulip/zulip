@@ -36,7 +36,7 @@ $.ajaxSetup({
 selected_tag = '<p id="selected">&#x25b6;</p>'
 
 function textarea_in_focus() {
-    return $("#class").is(":focus") || $("#instance").is(":focus") || $("#new_zephyr").is(":focus") || $("#new_personal_zephyr").is("focus");
+    return $("#class").is(":focus") || $("#instance").is(":focus") || $("#new_zephyr").is(":focus") || $("#new_personal_zephyr").is(":focus") || $("#recipient").is(":focus");
 }
 
 $(document).keydown(function(event) {
