@@ -21,8 +21,17 @@ form.zephyr textarea {
     width: 95%;
 }
 
-#unhide {
+#narrow_bar {
     margin-top: 5px;
+}
+
+#unhide {
+    vertical-align: middle;
+}
+
+#narrow_indicator {
+    vertical-align: middle;
+    margin-left: 5px;
 }
 
 .zephyr_class {

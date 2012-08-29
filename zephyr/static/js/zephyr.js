@@ -90,6 +90,9 @@ function narrow(class_name, target_zephyr) {
 
     // Try to keep the zephyr in the same place on the screen after narrowing.
     scroll_to_zephyr(target_zephyr, old_top);
+
+    $("#unhide").removeAttr("disabled");
+    $("#narrow_indicator").html("Showing <span class='label zephyr_class'>" + class_name + "</span>");
 }
 
 function narrow_instance(class_name, instance, target_zephyr) {
@@ -108,6 +111,10 @@ function narrow_instance(class_name, instance, target_zephyr) {
 
     // Try to keep the zephyr in the same place on the screen after narrowing.
     scroll_to_zephyr(target_zephyr, old_top);
+
+    $("#unhide").removeAttr("disabled");
+    $("#narrow_indicator").html("Showing <span class='label zephyr_class'>" + class_name
+      + "</span> <span class='label zephyr_instance'>" + instance + "</span>");
 }
 
 function prepare_personal(username) {
@@ -121,6 +128,9 @@ function unhide() {
     p = $("#selected");
     tr = $(p).closest("tr");
     scroll_to_zephyr(tr.attr("id"), 0);
+
+    $("#unhide").attr("disabled", "disabled");
+    $("#narrow_indicator").html("");
 }
 
 $(function() {
