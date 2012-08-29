@@ -33,7 +33,7 @@ $.ajaxSetup({
      }
 });
 
-selected_tag = '<p id="selected">&gt;</p>'
+selected_tag = '<p id="selected">&#x25b6;</p>'
 
 $(document).keydown(function(event) {
     if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
