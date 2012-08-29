@@ -128,14 +128,23 @@ $(function() {
 });
 
 function add_message(index, zephyr) {
-    var new_str = "<tr id=" + zephyr.id + "> \
-<td class='pointer'><p></p></td> \
-<td class='zephyr'> \
-<p><span onclick='narrow('" + zephyr.display_recipient + "','" + zephyr.id + "')' class='zephyr_class' style='background-color: yellow;'>" + zephyr.display_recipient +
-"</span> / <span onclick='narrow_instance('" + zephyr.display_recipient + "','" + zephyr.instance + "','" + zephyr.id + "')' class='zephyr_instance' style='background-color: green;'>" + zephyr.instance + "</span> / " + zephyr.sender + "<br />" +
-zephyr.content +
-"</p></td> \
-</tr>"
+    var recipient_color;
+    if (zephyr.type == "class") {
+	recipient_color = "yellow";
+    } else {
+	recipient_color = "magenta";
+    }
+
+    var new_str = "<tr id=" + zephyr.id + ">" +
+	"<td class='pointer'><p></p></td>" +
+	"<td class='zephyr'>" +
+	"<p><span onclick=\"narrow('" + zephyr.display_recipient + "','" + zephyr.id + "')\" class='zephyr_class' style='background-color: " + recipient_color + ";'>" + zephyr.display_recipient +
+	"</span> / <span onclick=\"narrow_instance('" + zephyr.display_recipient + "','" + zephyr.instance + "','" + zephyr.id + "')\" class='zephyr_instance' style='background-color: green;'>" +
+	zephyr.instance + "</span> / <span onclick=\"prepare_personal('" + zephyr.sender + "')\" style='background-color: magenta;'>" + zephyr.sender + "</span><br />"
+	+ zephyr.content +
+	"</p></td>" +
+	"</tr>"
+    alert(new_str);
     $("#table tr:last").after(new_str);
 }
 

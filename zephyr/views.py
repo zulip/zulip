@@ -87,6 +87,7 @@ def get_updates(request):
     for zephyr in new_zephyrs:
         new_zephyr_list.append({"id": zephyr.id,
                                 "sender": zephyr.sender.user.username,
+                                "type": zephyr.recipient.type,
                                 "display_recipient": get_display_recipient(zephyr.recipient),
                                 "instance": zephyr.instance,
                                 "content": zephyr.content
