@@ -9,7 +9,9 @@ autofocus('#id_username');
 <h1>Log in</h1>
 
 {% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
+<div class="alert alert-error">
+    Your username and password didn't match. Please try again.
+</div>
 {% endif %}
 
 <form method="post" action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
