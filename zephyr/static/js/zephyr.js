@@ -35,8 +35,16 @@ $.ajaxSetup({
 
 selected_tag = '<p id="selected">&#x25b6;</p>'
 
+function textarea_in_focus() {
+    return $("#class").is(":focus") || $("#instance").is(":focus") || $("#new_zephyr").is(":focus") || $("#new_personal_zephyr").is("focus");
+}
+
 $(document).keydown(function(event) {
     if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
+	// Remove focus from zephyr creation.
+	$("#new_zephyr").blur();
+	$("#new_personal_zephyr").blur();
+
         p = $("#selected");
         tr = $(p).closest("tr");
         td = $(p).closest("td");
@@ -60,7 +68,7 @@ $(document).keydown(function(event) {
                 $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
             }
         }
-    } else if (event.keyCode == 82) { // 'r' keypress, for responding to a zephyr
+    } else if ((event.keyCode == 82) && !textarea_in_focus()) { // 'r' keypress, for responding to a zephyr
         var parent = $("#selected").parents("tr");
         var zephyr_class = parent.find("span.zephyr_class").text();
 	var instance = parent.find("span.zephyr_instance").text();
