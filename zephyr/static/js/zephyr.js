@@ -9,6 +9,15 @@ $(function () {
     $('#zephyr-type-tabs a').on('shown', function (e) { resize_main_div(); });
 });
 
+$(function() {
+    $('#zephyr-type-tabs a[href="#class-message"]').on('shown', function (e) {
+        $('#class-message input:not(:hidden):first').focus().select();
+    });
+    $('#zephyr-type-tabs a[href="#personal-message"]').on('shown', function (e) {
+        $('#personal-message input:not(:hidden):first').focus().select();
+    });
+});
+
 $.ajaxSetup({
      beforeSend: function(xhr, settings) {
          function getCookie(name) {
