@@ -29,6 +29,17 @@ form.zephyr textarea {
     margin-left: 5px;
 }
 
+.zephyr_label_clickable:hover {
+    background-color: #999999;
+    cursor: pointer;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 .zephyr_class {
   background-color: #b94a48;
 }

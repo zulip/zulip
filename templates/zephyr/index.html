@@ -18,14 +18,14 @@
 <p>
 
 {% if zephyr.recipient.type == 'class' %}
-<span onclick="narrow('{{ zephyr.display_recipient }}', '{{ zephyr.id }}')" class="label zephyr_class">{{ zephyr.display_recipient }}</span>
-<span onclick="narrow_instance('{{ zephyr.display_recipient }}', '{{ zephyr.instance }}', '{{ zephyr.id }}')" class="label zephyr_instance">{{ zephyr.instance }}</span>
+<span onclick="narrow('{{ zephyr.display_recipient }}', '{{ zephyr.id }}')" class="label zephyr_label_clickable zephyr_class">{{ zephyr.display_recipient }}</span>
+<span onclick="narrow_instance('{{ zephyr.display_recipient }}', '{{ zephyr.instance }}', '{{ zephyr.id }}')" class="label zephyr_label_clickable zephyr_instance">{{ zephyr.instance }}</span>
 {% else %}
-<span onclick="narrow_personals('{{ zephyr.id }}')" class="label zephyr_personal_recipient">{{ zephyr.display_recipient }}</span>
+<span onclick="narrow_personals('{{ zephyr.id }}')" class="label zephyr_label_clickable zephyr_personal_recipient">{{ zephyr.display_recipient }}</span>
 &larr;
 {% endif %}
 
-<span onclick="prepare_personal('{{ zephyr.sender.user.username }}')" class="label zephyr_sender">{{ zephyr.sender.user.username }}</span><br />
+<span onclick="prepare_personal('{{ zephyr.sender.user.username }}')" class="label zephyr_label_clickable zephyr_sender">{{ zephyr.sender.user.username }}</span><br />
 {{ zephyr.content|linebreaksbr }}
 </p></td>
 </tr>

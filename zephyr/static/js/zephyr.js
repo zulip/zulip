@@ -202,16 +202,16 @@ function add_message(index, zephyr) {
 	"<td class='zephyr'><p>";
     if (zephyr.type == "class") {
         new_str += "<span onclick=\"narrow('" + zephyr.display_recipient + "','" + zephyr.id
-                   + "')\" class='label zephyr_class'>" + zephyr.display_recipient + "</span> "
+                   + "')\" class='label zephyr_label_clickable zephyr_class'>" + zephyr.display_recipient + "</span> "
                 +  "<span onclick=\"narrow_instance('" + zephyr.display_recipient + "','" +
-                   zephyr.instance + "','" + zephyr.id + "')\" class='label zephyr_instance'>" +
+                   zephyr.instance + "','" + zephyr.id + "')\" class='label zephyr_label_clickable zephyr_instance'>" +
                    zephyr.instance + "</span> ";
     } else {
-        new_str += "<span onclick=\"narrow_personals('" + zephyr.id + "')\" class='label zephyr_personal_recipient'>" +
+        new_str += "<span onclick=\"narrow_personals('" + zephyr.id + "')\" class='label zephyr_label_clickable zephyr_personal_recipient'>" +
                    zephyr.display_recipient + "</span>"
                    + " &larr; ";
     }
-    new_str += "<span onclick=\"prepare_personal('" + zephyr.sender + "')\" class='label zephyr_sender'>"
+    new_str += "<span onclick=\"prepare_personal('" + zephyr.sender + "')\" class='label zephyr_label_clickable zephyr_sender'>"
         + zephyr.sender + "</span><br />"
 	+ newline2br(zephyr.content) +
 	"</p></td>" +
