@@ -33,6 +33,8 @@ $.ajaxSetup({
      }
 });
 
+selected_tag = '<p id="selected">&gt;</p>'
+
 $(document).keydown(function(event) {
     if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
         p = $("#selected");
@@ -46,7 +48,7 @@ $(document).keydown(function(event) {
             next_zephyr = tr.prevAll(":not(:hidden):first");
         }
         if (next_zephyr.length != 0) { // We are not at the bottom or top of the zephyrs.
-            next_zephyr.children("td:first").html('<p id="selected">&gt;</p>');
+            next_zephyr.children("td:first").html(selected_tag);
             td.empty(); // Clear the previous arrow.
             $.post("update", {pointer: next_zephyr.attr("id")});
 
@@ -96,7 +98,7 @@ function narrow(class_name, target_zephyr) {
         }
     );
     $("#selected").closest("td").empty();
-    $("#" + target_zephyr).children("td:first").html('<p id="selected">&gt;</p>');
+    $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
 
     // Try to keep the zephyr in the same place on the screen after narrowing.
@@ -117,7 +119,7 @@ function narrow_instance(class_name, instance, target_zephyr) {
         }
     );
     $("#selected").closest("td").empty();
-    $("#" + target_zephyr).children("td:first").html('<p id="selected">&gt;</p>');
+    $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
 
     // Try to keep the zephyr in the same place on the screen after narrowing.
