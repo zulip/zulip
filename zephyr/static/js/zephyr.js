@@ -152,22 +152,25 @@ $(function() {
 });
 
 function add_message(index, zephyr) {
-    var recipient_class;
-    if (zephyr.type == "class") {
-	recipient_class = "zephyr_class";
-    } else {
-	recipient_class = "zephyr_personal_recipient";
-    }
-
     var new_str = "<tr id=" + zephyr.id + ">" +
 	"<td class='pointer'><p></p></td>" +
-	"<td class='zephyr'>" +
-	"<p><span onclick=\"narrow('" + zephyr.display_recipient + "','" + zephyr.id + "')\" class='label " + recipient_class + "'>" + zephyr.display_recipient +
-	"</span> <span onclick=\"narrow_instance('" + zephyr.display_recipient + "','" + zephyr.instance + "','" + zephyr.id + "')\" class='label zephyr_instance'>" +
-	zephyr.instance + "</span> <span onclick=\"prepare_personal('" + zephyr.sender + "')\" class='label zephyr_sender'>" + zephyr.sender + "</span><br />"
+	"<td class='zephyr'><p>";
+    if (zephyr.type == "class") {
+        new_str += "<span onclick=\"narrow('" + zephyr.display_recipient + "','" + zephyr.id
+                   + "')\" class='label zephyr_class'>" + zephyr.display_recipient + "</span> "
+                +  "<span onclick=\"narrow_instance('" + zephyr.display_recipient + "','" +
+                   zephyr.instance + "','" + zephyr.id + "')\" class='label zephyr_instance'>" +
+                   zephyr.instance + "</span> ";
+    } else {
+        new_str += "<span onclick=\"narrow('" + zephyr.display_recipient + "','" + zephyr.id
+                   + "')\" class='label zephyr_personal_recipient'>" + zephyr.display_recipient + "</span>"
+                   + " &larr; ";
+    }
+    new_str += "<span onclick=\"prepare_personal('" + zephyr.sender + "')\" class='label zephyr_sender'>"
+        + zephyr.sender + "</span><br />"
 	+ zephyr.content +
 	"</p></td>" +
-	"</tr>"
+	"</tr>";
     $("#table tr:last").after(new_str);
 }
 

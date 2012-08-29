@@ -16,7 +16,13 @@
 <td class="pointer">{% if user_profile.pointer == zephyr.id %}<p id="selected">&#x25b6;{% else %}<p>{% endif %}</p></td>
 <td class="zephyr">
 <p><span onclick="narrow('{{ zephyr.display_recipient }}', '{{ zephyr.id }}')" class="label {% if zephyr.recipient.type == 'class' %}zephyr_class{% else %}zephyr_personal_recipient{% endif %}">{{ zephyr.display_recipient }}</span>
+
+{% if zephyr.recipient.type == 'class' %}
 <span onclick="narrow_instance('{{ zephyr.display_recipient }}', '{{ zephyr.instance }}', '{{ zephyr.id }}')" class="label zephyr_instance">{{ zephyr.instance }}</span>
+{% else %}
+&larr;
+{% endif %}
+
 <span onclick="prepare_personal('{{ zephyr.sender.user.username }}')" class="label zephyr_sender">{{ zephyr.sender.user.username }}</span><br />
 {{ zephyr.content }}
 </p></td>
