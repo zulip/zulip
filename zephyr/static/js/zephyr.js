@@ -83,6 +83,13 @@ function scroll_to_zephyr(target_zephyr, old_offset) {
     $("#main_div").scrollTop(height_above_zephyr + old_offset);
 }
 
+function hide_personals() {
+    $("span.zephyr_personal_recipient").each(
+        function() {
+            $(this).parents("tr").hide();
+        }
+    );
+}
 
 function narrow(class_name, target_zephyr) {
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
@@ -97,6 +104,7 @@ function narrow(class_name, target_zephyr) {
 	    }
         }
     );
+    hide_personals();
     $("#selected").closest("td").empty();
     $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
@@ -118,6 +126,7 @@ function narrow_instance(class_name, instance, target_zephyr) {
 	    }
         }
     );
+    hide_personals();
     $("#selected").closest("td").empty();
     $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
