@@ -20,3 +20,7 @@ form.zephyr input {
 form.zephyr textarea {
     width: 95%;
 }
+
+#unhide {
+    margin-top: 5px;
+}

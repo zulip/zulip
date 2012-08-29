@@ -8,9 +8,8 @@
 
 <script type="text/javascript" src="/static/js/zephyr.js"></script>
 
-<span id="unhide" style="background-color: aqua;" onclick="unhide()">Unhide</span>
-
-<div id="main_div">
+<div class="row-fluid">
+<div id="main_div" class="span12">
 <table id="table">
 {% for zephyr in zephyrs %}
 <tr id={{ zephyr.id }}>
@@ -25,6 +24,15 @@
 {% endfor %}
 </table>
 </div>
+</div>
+
+<div class="row-fluid">
+    <div class="span12">
+        <button id="unhide" class="btn" onclick="unhide()">Show all</button>
+    </div>
+</div>
+
+<hr />
 
 <div class="tabbable container">
     <ul class="nav nav-tabs">
