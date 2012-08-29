@@ -118,6 +118,7 @@ function narrow_instance(class_name, instance, target_zephyr) {
 }
 
 function prepare_personal(username) {
+    $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
     $("#recipient").val(username);
     $("#new_personal_zephyr").focus();
 }
