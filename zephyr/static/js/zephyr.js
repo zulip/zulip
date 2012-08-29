@@ -183,6 +183,10 @@ $(function() {
   setInterval(get_updates, 1000);
 });
 
+function newline2br(content) {
+    return content.replace(/\n/g, '<br />');
+}
+
 function add_message(index, zephyr) {
     var new_str = "<tr id=" + zephyr.id + ">" +
 	"<td class='pointer'><p></p></td>" +
@@ -200,7 +204,7 @@ function add_message(index, zephyr) {
     }
     new_str += "<span onclick=\"prepare_personal('" + zephyr.sender + "')\" class='label zephyr_sender'>"
         + zephyr.sender + "</span><br />"
-	+ zephyr.content +
+	+ newline2br(zephyr.content) +
 	"</p></td>" +
 	"</tr>";
     $("#table tr:last").after(new_str);
