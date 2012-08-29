@@ -1,7 +1,7 @@
 function resize_main_div() {
     // Resize main_div to exactly take up remaining vertical space.
     var div = $('#main_div');
-    div.height(div.height() + $(window).height() - $('body').height());
+    div.height(Math.max(200, div.height() + $(window).height() - $('body').height()));
 }
 $(function () {
     resize_main_div();
