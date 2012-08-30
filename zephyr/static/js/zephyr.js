@@ -83,12 +83,23 @@ $(function() {
 
 selected_tag = '<p id="selected">&#x25b6;</p>'
 
-function textarea_in_focus() {
-    return $("#class").is(":focus") || $("#instance").is(":focus") || $("#new_zephyr").is(":focus") || $("#new_personal_zephyr").is(":focus") || $("#recipient").is(":focus");
-}
+var allow_hotkeys = true;
+
+// NB: This just binds to current elements, and won't bind to elements
+// created after ready() is called.
+
+$(document).ready(function() {
+    $('input, textarea, button').focus(function() {
+          allow_hotkeys = false;
+    });
+
+    $('input, textarea, button').blur(function() {
+          allow_hotkeys = true;
+    });
+});
 
 $(document).keydown(function(event) {
-    if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
+    if (allow_hotkeys && (event.keyCode == 38 || event.keyCode == 40)) { // down or up arrow
 	// Remove focus from zephyr creation.
 	$("#new_zephyr").blur();
 	$("#new_personal_zephyr").blur();
@@ -116,7 +127,7 @@ $(document).keydown(function(event) {
                 $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
             }
         }
-    } else if ((event.keyCode == 82) && !textarea_in_focus()) { // 'r' keypress, for responding to a zephyr
+    } else if ((event.keyCode == 82) && allow_hotkeys) { // 'r' keypress, for responding to a zephyr
         var parent = $("#selected").parents("tr");
         var zephyr_class = parent.find("span.zephyr_class").text();
 	var instance = parent.find("span.zephyr_instance").text();
