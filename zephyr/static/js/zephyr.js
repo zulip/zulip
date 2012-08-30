@@ -131,10 +131,17 @@ $(document).keydown(function(event) {
             var parent = $("#selected").parents("tr");
             var zephyr_class = parent.find("span.zephyr_class").text();
             var instance = parent.find("span.zephyr_instance").text();
-            $("#class").val(zephyr_class);
-            $("#instance").val(instance);
-            $("#new_zephyr").focus();
-            $("#new_zephyr").select();
+            if (zephyr_class != '') {
+                $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
+                $("#class").val(zephyr_class);
+                $("#instance").val(instance);
+                $("#new_zephyr").focus();
+                $("#new_zephyr").select();
+            } else { // No instance, must be a personal
+                prepare_personal(parent.find("span.zephyr_sender").text());
+                $("#new_personal_zephyr").focus();
+                $("#new_personal_zephyr").select();
+            }
             event.preventDefault();
         } else if (event.keyCode == 71) { // 'g' keypress, set trigger for "go to"
             goto_pressed = true;
