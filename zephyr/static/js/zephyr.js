@@ -43,8 +43,36 @@ $.ajaxSetup({
 });
 
 $(function() {
-    $("#class-message form").ajaxForm();
-    $("#personal-message form").ajaxForm();
+    var status_classes = 'alert-error alert-success alert-info';
+    var send_status = $('#send-status');
+    var buttons = $('#class-message, #personal-message').find('input[type="submit"]');
+    var options = {
+        beforeSubmit: function (form, _options) {
+            send_status.removeClass(status_classes)
+                       .addClass('alert-info')
+                       .text('Sending')
+                       .stop(true).fadeTo(0,1);
+            buttons.attr('disabled', 'disabled');
+        },
+        success: function (resp, statusText, xhr, form) {
+            form.find('textarea').val('');
+            send_status.removeClass(status_classes)
+                       .addClass('alert-success')
+                       .text('Sent message')
+                       .stop(true).fadeTo(0,1).delay(1000).fadeOut(1000);
+            buttons.removeAttr('disabled');
+        },
+        error: function() {
+            send_status.removeClass(status_classes)
+                       .addClass('alert-error')
+                       .text('Error sending message')
+                       .stop(true).fadeTo(0,1);
+            buttons.removeAttr('disabled');
+        }
+    };
+    send_status.hide();
+    $("#class-message form").ajaxForm(options);
+    $("#personal-message form").ajaxForm(options);
 });
 
 selected_tag = '<p id="selected">&#x25b6;</p>'

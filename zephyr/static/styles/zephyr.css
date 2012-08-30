@@ -55,3 +55,9 @@ form.zephyr textarea {
 .zephyr_sender {
   background-color: #3a87ad;
 }
+
+/* Like .nav-tabs > li > a */
+#send-status {
+    padding: 8px 14px 8px 14px;
+    line-height: 20px;
+}
