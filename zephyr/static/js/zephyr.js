@@ -42,6 +42,11 @@ $.ajaxSetup({
      }
 });
 
+$(function() {
+    $("#class-message form").ajaxForm();
+    $("#personal-message form").ajaxForm();
+});
+
 selected_tag = '<p id="selected">&#x25b6;</p>'
 
 function textarea_in_focus() {
