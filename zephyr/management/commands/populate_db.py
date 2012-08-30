@@ -22,21 +22,16 @@ class Command(NoArgsCommand):
         
         # Create public classes.
         for name in ["Verona", "Denmark", "Scotland", "Venice", "Rome"]:
-            new_class = ZephyrClass()
-            new_class.name = name
+            new_class = ZephyrClass(name=name)
             new_class.save()
 
-            recipient = Recipient()
-            recipient.user_or_class = new_class.pk
-            recipient.type = "class"
+            recipient = Recipient(user_or_class=new_class.pk, type="class")
             recipient.save()
 
         # Create personals.
         profiles = UserProfile.objects.all()
         for profile in profiles:
-            recipient = Recipient()
-            recipient.user_or_class = profile.pk
-            recipient.type = "personal"
+            recipient = Recipient(user_or_class=profile.pk, type="personal")
             recipient.save()            
         
         # Create some test zephyrs, including:
@@ -65,17 +60,15 @@ class Command(NoArgsCommand):
         # - people have full or partial views on the test classes.
         for i, profile in enumerate(profiles):
             # Subscribe to personal messages.
-            new_subscription = Subscription()
-            new_subscription.userprofile_id = profile
-            new_subscription.recipient_id = Recipient.objects.get(
-                user_or_class=profile.pk, type="personal")
+            recipient_id = Recipient.objects.get(user_or_class=profile.pk, type="personal")
+            new_subscription = Subscription(userprofile_id=profile,
+                                            recipient_id=recipient_id)
             new_subscription.save()
 
             # Subscribe to some classes.
             for recipient in recipient_classes[:int(len(recipient_classes) * float(i)/len(profiles)) + 1]:
-                new_subscription = Subscription()
-                new_subscription.userprofile_id = profile
-                new_subscription.recipient_id = Recipient.objects.get(id=recipient)
+                new_subscription = Subscription(userprofile_id=profile,
+                                                recipient_id=Recipient.objects.get(id=recipient))
                 new_subscription.save()
 
         self.stdout.write("Successfully populated test database.\n")

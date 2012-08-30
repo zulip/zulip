@@ -95,24 +95,23 @@ def get_updates_longpoll(request, handler):
 
 @login_required
 def personal_zephyr(request):
-    username = request.POST['recipient']
-    if User.objects.filter(username=username):
-        user = User.objects.get(username=username)
+    recipient_username = request.POST['recipient']
+    if User.objects.filter(username=recipient_username):
+        recipient_user = User.objects.get(username=recipient_username)
     else:
         # Do something reasonable.
         return HttpResponse('')
 
     # Right now, you can't make recipients on the fly by sending zephyrs to new
     # classes or people.
-    user_profile = UserProfile.objects.get(user=user)
-    recipient = Recipient.objects.get(user_or_class=user_profile.id, type="personal")
+    recipient_user_profile = UserProfile.objects.get(user=recipient_user)
+    recipient = Recipient.objects.get(user_or_class=recipient_user_profile.id, type="personal")
+    sender = UserProfile.objects.get(user=request.user)
+    content = request.POST['new_personal_zephyr']
+    pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
 
-    new_zephyr = Zephyr()
-    new_zephyr.sender = UserProfile.objects.get(user=request.user)
-    new_zephyr.content = request.POST['new_personal_zephyr']
-    new_zephyr.recipient = recipient
-    new_zephyr.instance = u''
-    new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
+    new_zephyr = Zephyr(sender=sender, recipient=recipient, content=content,
+                        instance=u'', pub_date=pub_date)
     new_zephyr.save()
 
     return HttpResponse('')
@@ -186,24 +185,21 @@ def add_subscriptions(request):
         if zephyr_class:
             zephyr_class = zephyr_class[0]
         else:
-            zephyr_class = ZephyrClass()
-            zephyr_class.name = sub_name
+            zephyr_class = ZephyrClass(name=sub_name)
             zephyr_class.save()
 
-        recipient = Recipient()
-        recipient.user_or_class = zephyr_class.pk
-        recipient.type = "class"
+        recipient = Recipient(user_or_class=zephyr_class.pk, type="class")
         recipient.save()
 
-        subscription = Subscription.objects.filter(userprofile_id=user_profile, recipient_id=zephyr_class.id)
+        subscription = Subscription.objects.filter(userprofile_id=user_profile,
+                                                   recipient_id=zephyr_class.id)
         if subscription:
             subscription = subscription[0]
             subscription.active = True
             subscription.save()
         else:
-            new_subscription = Subscription()
-            new_subscription.userprofile_id = user_profile
-            new_subscription.recipient_id = recipient
+            new_subscription = Subscription(userprofile_id=user_profile,
+                                            recipient_id=recipient)
             new_subscription.save()
 
     return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
