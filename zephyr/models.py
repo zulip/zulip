@@ -86,12 +86,14 @@ class Zephyr(models.Model):
 
 def send_zephyr(**kwargs):
     zephyr = kwargs["instance"]
+    print repr(zephyr)
     if zephyr.recipient.type == "personal":
         recipients = UserProfile.objects.filter(user=zephyr.recipient.user_or_class)
         assert(len(recipients) == 1)
     elif zephyr.recipient.type == "class":
         recipients = [UserProfile.objects.get(user=s.userprofile_id) for
                       s in Subscription.objects.filter(recipient_id=zephyr.recipient, active=True)]
+        print recipients
     else:
         raise
     for recipient in recipients:
@@ -110,7 +112,7 @@ class Subscription(models.Model):
 def filter_by_subscriptions(zephyrs, user):
     userprofile = UserProfile.objects.get(user=user)
     subscribed_zephyrs = []
-    subscriptions = [sub.recipient_id for sub in Subscription.objects.filter(userprofile_id=userprofile)]
+    subscriptions = [sub.recipient_id for sub in Subscription.objects.filter(userprofile_id=userprofile, active=True)]
     for zephyr in zephyrs:
         # If you are subscribed to the personal or class, or if you sent the personal, you can see the zephyr.
         if (zephyr.recipient in subscriptions) or \
