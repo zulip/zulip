@@ -8,29 +8,15 @@
 
 <script type="text/javascript" src="/static/jquery/jquery.form.js"></script>
 <script type="text/javascript" src="/static/js/zephyr.js"></script>
+<script type="text/javascript">
+var initial_zephyr_json = {{ zephyr_json }};
+</script>
 
 <div class="row-fluid">
 <div id="main_div" class="span12">
 <table id="table">
-{% for zephyr in zephyrs %}
-<tr id={{ zephyr.id }}>
-<td class="pointer">{% if user_profile.pointer == zephyr.id %}<p id="selected">&#x25b6;{% else %}<p>{% endif %}</p></td>
-<td class="zephyr">
-<p>
-
-{% if zephyr.recipient.type == 'class' %}
-<span onclick="narrow('{{ zephyr.display_recipient }}', '{{ zephyr.id }}')" class="label zephyr_label_clickable zephyr_class">{{ zephyr.display_recipient }}</span>
-<span onclick="narrow_instance('{{ zephyr.display_recipient }}', '{{ zephyr.instance }}', '{{ zephyr.id }}')" class="label zephyr_label_clickable zephyr_instance">{{ zephyr.instance }}</span>
-{% else %}
-<span onclick="narrow_personals('{{ zephyr.id }}')" class="label zephyr_label_clickable zephyr_personal_recipient">{{ zephyr.display_recipient }}</span>
-&larr;
-{% endif %}
-
-<span onclick="prepare_personal('{{ zephyr.sender.user.username }}')" class="label zephyr_label_clickable zephyr_sender">{{ zephyr.sender.user.username }}</span><br />
-{{ zephyr.content|linebreaksbr }}
-</p></td>
-</tr>
-{% endfor %}
+<tr><td class="pointer"><p id="selected">&#x25b6;</p></td><td>dummy row, FIXME</td></tr>
+{# Zephyrs go here #}
 </table>
 </div>
 </div>

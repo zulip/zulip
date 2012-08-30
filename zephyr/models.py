@@ -76,6 +76,14 @@ class Zephyr(models.Model):
         display_recipient = get_display_recipient(self.recipient)
         return "<Zephyr: %s / %s / %r>" % (display_recipient, self.instance, self.sender)
 
+    def to_dict(self):
+        return {'id'               : self.id,
+                'sender'           : self.sender.user.username,
+                'type'             : self.recipient.type,
+                'display_recipient': get_display_recipient(self.recipient),
+                'instance'         : self.instance,
+                'content'          : self.content }
+
 def send_zephyr(**kwargs):
     zephyr = kwargs["instance"]
     if zephyr.recipient.type == "personal":

@@ -8,7 +8,8 @@ from django.shortcuts import render
 from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
-from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, get_display_recipient, filter_by_subscriptions
+from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
+    Recipient, filter_by_subscriptions
 from zephyr.forms import RegistrationForm
 
 import tornado.web
@@ -44,15 +45,16 @@ def home(request):
         return HttpResponseRedirect('accounts/home/')
 
     zephyrs = filter_by_subscriptions(Zephyr.objects.all(), request.user)
-    for zephyr in zephyrs:
-        zephyr.display_recipient = get_display_recipient(zephyr.recipient)
 
     user = request.user
     user_profile = UserProfile.objects.get(user=user)
     if user_profile.pointer == -1 and zephyrs:
         user_profile.pointer = min([zephyr.id for zephyr in zephyrs])
         user_profile.save()
-    return render_to_response('zephyr/index.html', {'zephyrs': zephyrs, 'user_profile': user_profile},
+    zephyr_json = simplejson.dumps([zephyr.to_dict() for zephyr in zephyrs])
+    return render_to_response('zephyr/index.html',
+                              {'zephyr_json' : zephyr_json,
+                               'user_profile': user_profile },
                               context_instance=RequestContext(request))
 
 def update(request):
@@ -83,17 +85,8 @@ def get_updates_longpoll(request, handler):
     def on_receive(zephyrs):
         if handler.request.connection.stream.closed():
             return
-        new_zephyr_list = []
-        for zephyr in zephyrs:
-            new_zephyr_list.append({"id": zephyr.id,
-                                    "sender": zephyr.sender.user.username,
-                                    "display_recipient": get_display_recipient(zephyr.recipient),
-                                    "type": zephyr.recipient.type,
-                                    "instance": zephyr.instance,
-                                    "content": zephyr.content
-                                    })
         try:
-            handler.finish({'zephyrs': new_zephyr_list})
+            handler.finish({'zephyrs': [zephyr.to_dict() for zephyr in zephyrs]})
         except socket.error, e:
             pass
 

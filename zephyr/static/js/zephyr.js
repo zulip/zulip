@@ -257,6 +257,10 @@ function add_message(index, zephyr) {
     $("#table tr:last").after(new_str);
 }
 
+$(function() {
+  $(initial_zephyr_json).each(add_message);
+});
+
 function get_updates_longpoll(data) {
     if (data && data.zephyrs) {
 	$.each(data.zephyrs, add_message);
