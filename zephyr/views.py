@@ -100,7 +100,7 @@ def personal_zephyr(request):
         user = User.objects.get(username=username)
     else:
         # Do something reasonable.
-        return HttpResponseRedirect(reverse('zephyr.views.home'))
+        return HttpResponse('')
 
     # Right now, you can't make recipients on the fly by sending zephyrs to new
     # classes or people.
@@ -115,7 +115,7 @@ def personal_zephyr(request):
     new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
     new_zephyr.save()
 
-    return HttpResponseRedirect(reverse('zephyr.views.home'))
+    return HttpResponse('')
 
 @login_required
 def zephyr(request):
@@ -139,4 +139,4 @@ def zephyr(request):
     new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
     new_zephyr.save()
 
-    return HttpResponseRedirect(reverse('zephyr.views.home'))
+    return HttpResponse('')
