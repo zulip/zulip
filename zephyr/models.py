@@ -91,7 +91,7 @@ def send_zephyr(**kwargs):
         assert(len(recipients) == 1)
     elif zephyr.recipient.type == "class":
         recipients = [UserProfile.objects.get(user=s.userprofile_id) for
-                      s in Subscription.objects.filter(recipient_id=zephyr.recipient)]
+                      s in Subscription.objects.filter(recipient_id=zephyr.recipient, active=True)]
     else:
         raise
     for recipient in recipients:

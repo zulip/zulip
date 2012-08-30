@@ -9,7 +9,7 @@ from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
-    Recipient, filter_by_subscriptions
+    Recipient, filter_by_subscriptions, get_display_recipient
 from zephyr.forms import RegistrationForm
 
 import tornado.web
@@ -140,3 +140,31 @@ def zephyr(request):
     new_zephyr.save()
 
     return HttpResponse('')
+
+@login_required
+def subscriptions(request):
+    userprofile = UserProfile.objects.get(user=request.user)
+    subscriptions = Subscription.objects.filter(userprofile_id=userprofile, active=True)
+    # For now, don't display the subscription for your ability to receive personals.
+    sub_names = [get_display_recipient(sub.recipient_id) for sub in subscriptions if sub.recipient_id.type != "personal"]
+
+    return render_to_response('zephyr/subscriptions.html',
+                              {'subscriptions': sub_names, 'user_profile': userprofile},
+                              context_instance=RequestContext(request))
+
+@login_required
+def manage_subscriptions(request):
+    if not request.POST:
+        # Do something reasonable.
+        return
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    unsubs = request.POST.getlist('subscription')
+    for sub_name in unsubs:
+        zephyr_class = ZephyrClass.objects.get(name=sub_name)
+        subscription = Subscription.objects.get(
+            userprofile_id=user_profile.id, recipient_id=zephyr_class.id)
+        subscription.active = False
+        subscription.save()
+
+    return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
