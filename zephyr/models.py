@@ -86,14 +86,12 @@ class Zephyr(models.Model):
 
 def send_zephyr(**kwargs):
     zephyr = kwargs["instance"]
-    print repr(zephyr)
     if zephyr.recipient.type == "personal":
         recipients = UserProfile.objects.filter(user=zephyr.recipient.user_or_class)
         assert(len(recipients) == 1)
     elif zephyr.recipient.type == "class":
         recipients = [UserProfile.objects.get(user=s.userprofile_id) for
                       s in Subscription.objects.filter(recipient_id=zephyr.recipient, active=True)]
-        print recipients
     else:
         raise
     for recipient in recipients:
