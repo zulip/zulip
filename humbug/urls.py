@@ -18,6 +18,7 @@ urlpatterns = patterns('',
     url(r'^accounts/register/', 'zephyr.views.register', name='register'),
     url(r'^subscriptions/$', 'zephyr.views.subscriptions', name='subscriptions'),
     url(r'^subscriptions/manage/$', 'zephyr.views.manage_subscriptions', name='manage_subscriptions'),
+    url(r'^subscriptions/add/$', 'zephyr.views.add_subscriptions', name='add_subscriptions'),
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': os.path.join(settings.SITE_ROOT, '..', 'zephyr', 'static/')})
 

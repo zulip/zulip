@@ -162,9 +162,48 @@ def manage_subscriptions(request):
     unsubs = request.POST.getlist('subscription')
     for sub_name in unsubs:
         zephyr_class = ZephyrClass.objects.get(name=sub_name)
+        recipient = Recipient.objects.get(user_or_class=zephyr_class.id, type="class")
         subscription = Subscription.objects.get(
-            userprofile_id=user_profile.id, recipient_id=zephyr_class.id)
+            userprofile_id=user_profile.id, recipient_id=recipient)
         subscription.active = False
         subscription.save()
+
+    return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
+
+@login_required
+def add_subscriptions(request):
+    if not request.POST:
+        # Do something reasonable.
+        return
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    new_subs = request.POST.get('new_subscriptions')
+    if not new_subs:
+        return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
+
+    for sub_name in new_subs.split(","):
+        zephyr_class = ZephyrClass.objects.filter(name=sub_name)
+        if zephyr_class:
+            zephyr_class = zephyr_class[0]
+        else:
+            zephyr_class = ZephyrClass()
+            zephyr_class.name = sub_name
+            zephyr_class.save()
+
+        recipient = Recipient()
+        recipient.user_or_class = zephyr_class.pk
+        recipient.type = "class"
+        recipient.save()
+
+        subscription = Subscription.objects.filter(userprofile_id=user_profile, recipient_id=zephyr_class.id)
+        if subscription:
+            subscription = subscription[0]
+            subscription.active = True
+            subscription.save()
+        else:
+            new_subscription = Subscription()
+            new_subscription.userprofile_id = user_profile
+            new_subscription.recipient_id = recipient
+            new_subscription.save()
 
     return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
