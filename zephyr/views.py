@@ -188,11 +188,15 @@ def add_subscriptions(request):
             zephyr_class = ZephyrClass(name=sub_name)
             zephyr_class.save()
 
-        recipient = Recipient(user_or_class=zephyr_class.pk, type="class")
+        recipient = Recipient.objects.filter(user_or_class=zephyr_class.pk, type="class")
+        if recipient:
+            recipient = recipient[0]
+        else:
+            recipient = Recipient(user_or_class=zephyr_class.pk, type="class")
         recipient.save()
 
         subscription = Subscription.objects.filter(userprofile_id=user_profile,
-                                                   recipient_id=zephyr_class.id)
+                                                   recipient_id=recipient)
         if subscription:
             subscription = subscription[0]
             subscription.active = True
