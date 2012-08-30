@@ -235,26 +235,36 @@ function newline2br(content) {
 }
 
 function add_message(index, zephyr) {
-    var new_str = "<tr id=" + zephyr.id + ">" +
-	"<td class='pointer'><p></p></td>" +
-	"<td class='zephyr'><p>";
-    if (zephyr.type == "class") {
-        new_str += "<span onclick=\"narrow('" + zephyr.display_recipient + "','" + zephyr.id
-                   + "')\" class='label zephyr_label_clickable zephyr_class'>" + zephyr.display_recipient + "</span> "
-                +  "<span onclick=\"narrow_instance('" + zephyr.display_recipient + "','" +
-                   zephyr.instance + "','" + zephyr.id + "')\" class='label zephyr_label_clickable zephyr_instance'>" +
-                   zephyr.instance + "</span> ";
+    var zephyr_para = $('<p />');
+    var new_label = function (text, classes, on_click) {
+        zephyr_para.append($('<span />')
+            .text(text)
+            .addClass('label zephyr_label_clickable ' + classes)
+            .click(on_click));
+        zephyr_para.append('&nbsp;');
+    };
+
+    if (zephyr.type == 'class') {
+        new_label(zephyr.display_recipient, 'zephyr_class',
+            function (e) { narrow(zephyr.display_recipient, zephyr.id); });
+        new_label(zephyr.instance, 'zephyr_instance',
+            function (e) { narrow_instance(zephyr.display_recipient,
+                                           zephyr.instance, zephyr.id); });
     } else {
-        new_str += "<span onclick=\"narrow_personals('" + zephyr.id + "')\" class='label zephyr_label_clickable zephyr_personal_recipient'>" +
-                   zephyr.display_recipient + "</span>"
-                   + " &larr; ";
+        new_label(zephyr.display_recipient, 'zephyr_personal_recipient',
+            function (e) { narrow_personals(zephyr.id); });
+        zephyr_para.append('&larr;&nbsp;');
     }
-    new_str += "<span onclick=\"prepare_personal('" + zephyr.sender + "')\" class='label zephyr_label_clickable zephyr_sender'>"
-        + zephyr.sender + "</span><br />"
-	+ newline2br(zephyr.content) +
-	"</p></td>" +
-	"</tr>";
-    $("#table tr:last").after(new_str);
+
+    new_label(zephyr.sender, 'zephyr_sender',
+             function (e) { prepare_personal(zephyr.sender); });
+
+    zephyr_para.append('<br />' + newline2br(zephyr.content));
+
+    $('#table tr:last').after($('<tr />')
+        .attr('id', zephyr.id)
+        .append('<td class="pointer"><p></p></td>')
+        .append($('<td />').append(zephyr_para)));
 }
 
 $(function() {
