@@ -46,6 +46,7 @@ $(function() {
     var status_classes = 'alert-error alert-success alert-info';
     var send_status = $('#send-status');
     var buttons = $('#class-message, #personal-message').find('input[type="submit"]');
+
     var options = {
         beforeSubmit: function (form, _options) {
             send_status.removeClass(status_classes)
@@ -65,11 +66,16 @@ $(function() {
         error: function() {
             send_status.removeClass(status_classes)
                        .addClass('alert-error')
-                       .text('Error sending message')
+                       .html('Error sending message ')
+                       .append($('<span />')
+                           .addClass('send-status-close').html('&times;')
+                           .click(function () { send_status.stop(true).fadeOut(500); }))
                        .stop(true).fadeTo(0,1);
+
             buttons.removeAttr('disabled');
         }
     };
+
     send_status.hide();
     $("#class-message form").ajaxForm(options);
     $("#personal-message form").ajaxForm(options);

@@ -61,3 +61,22 @@ form.zephyr textarea {
     padding: 8px 14px 8px 14px;
     line-height: 20px;
 }
+
+/* Like .alert .close */
+.send-status-close {
+    font-size:   17px;
+    font-weight: bold;
+    color:       black;
+    text-shadow: 0 1px 0 white;
+    opacity:     .2;
+    filter:      alpha(opacity=20);
+    margin-left: 5px;
+    position:    relative;
+    top:         1px;
+}
+
+.send-status-close:hover {
+    cursor:  pointer;
+    opacity: .4;
+    filter:  alpha(opacity=40);
+}
