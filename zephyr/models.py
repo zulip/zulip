@@ -102,6 +102,7 @@ post_save.connect(send_zephyr, sender=Zephyr)
 class Subscription(models.Model):
     userprofile_id = models.ForeignKey(UserProfile)
     recipient_id = models.ForeignKey(Recipient)
+    active = models.BooleanField(default=True)
 
     def __repr__(self):
         return "<Subscription: %r -> %r>" % (self.userprofile_id, self.recipient_id)
