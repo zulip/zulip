@@ -134,6 +134,7 @@ $(document).keydown(function(event) {
             $("#class").val(zephyr_class);
             $("#instance").val(instance);
             $("#new_zephyr").focus();
+            $("#new_zephyr").select();
             event.preventDefault();
         } else if (event.keyCode == 71) { // 'g' keypress, set trigger for "go to"
             goto_pressed = true;
