@@ -98,43 +98,72 @@ $(document).ready(function() {
     });
 });
 
+var goto_pressed = false;
+
 $(document).keydown(function(event) {
-    if (allow_hotkeys && (event.keyCode == 38 || event.keyCode == 40)) { // down or up arrow
-	// Remove focus from zephyr creation.
-	$("#new_zephyr").blur();
-	$("#new_personal_zephyr").blur();
+    if (allow_hotkeys) {
 
-        p = $("#selected");
-        tr = $(p).closest("tr");
-        td = $(p).closest("td");
+        if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
+            p = $("#selected");
+            tr = $(p).closest("tr");
+            td = $(p).closest("td");
 
-        if (event.keyCode == 40) { // down arrow
-            // There are probably more verbose but more efficient ways to do this.
-            next_zephyr = tr.nextAll(":not(:hidden):first");
-        } else { // up arrow
-            next_zephyr = tr.prevAll(":not(:hidden):first");
-        }
-        if (next_zephyr.length != 0) { // We are not at the bottom or top of the zephyrs.
-            next_zephyr.children("td:first").html(selected_tag);
-            td.empty(); // Clear the previous arrow.
-            $.post("update", {pointer: next_zephyr.attr("id")});
-
-            if ($(next_zephyr).offset().top < $("#main_div").offset().top) {
-                $("#main_div").scrollTop($("#main_div").scrollTop() - 75);
+            if (event.keyCode == 40) { // down arrow
+                // There are probably more verbose but more efficient ways to do this.
+                next_zephyr = tr.nextAll(":not(:hidden):first");
+            } else { // up arrow
+                next_zephyr = tr.prevAll(":not(:hidden):first");
             }
+            if (next_zephyr.length != 0) { // We are not at the bottom or top of the zephyrs.
+                next_zephyr.children("td:first").html(selected_tag);
+                td.empty(); // Clear the previous arrow.
+                $.post("update", {pointer: next_zephyr.attr("id")});
 
-            if ($(next_zephyr).offset().top + $(next_zephyr).height() > $("#main_div").offset().top + $("#main_div").height()) {
-                $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
+                if ($(next_zephyr).offset().top < $("#main_div").offset().top) {
+                    $("#main_div").scrollTop($("#main_div").scrollTop() - 75);
+                }
+
+                if ($(next_zephyr).offset().top + $(next_zephyr).height() > $("#main_div").offset().top + $("#main_div").height()) {
+                    $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
+                }
             }
+        } else if (event.keyCode == 82) { // 'r' keypress, for responding to a zephyr
+            var parent = $("#selected").parents("tr");
+            var zephyr_class = parent.find("span.zephyr_class").text();
+            var instance = parent.find("span.zephyr_instance").text();
+            $("#class").val(zephyr_class);
+            $("#instance").val(instance);
+            $("#new_zephyr").focus();
+            event.preventDefault();
+        } else if (event.keyCode == 71) { // 'g' keypress, set trigger for "go to"
+            goto_pressed = true;
+            event.preventDefault();
+        } else if (goto_pressed && event.keyCode == 67) { // 'c' keypress, for narrow-by-recipient
+            var parent = $("#selected").parents("tr");
+            var zephyr_class = parent.find("span.zephyr_class").text();
+            narrow(zephyr_class, parent.attr("id"));
+            event.preventDefault()
+        } else if (goto_pressed && event.keyCode == 73) { // 'i' keypress, for narrow-by-instance
+            var parent = $("#selected").parents("tr");
+            var zephyr_class = parent.find("span.zephyr_class").text();
+            var zephyr_instance = parent.find("span.zephyr_instance").text();
+            narrow_instance(zephyr_class, zephyr_instance, parent.attr("id"));
+            event.preventDefault()
+        } else if (goto_pressed && event.keyCode == 80) { // 'p' keypress, for narrow-to-personals
+            narrow_personals($("#selected").parents("tr").attr("id"));
+            event.preventDefault();
+        } else if (goto_pressed && event.keyCode == 65) { // 'a' keypress, for unnarrow
+            unhide();
+            event.preventDefault();
         }
-    } else if ((event.keyCode == 82) && allow_hotkeys) { // 'r' keypress, for responding to a zephyr
-        var parent = $("#selected").parents("tr");
-        var zephyr_class = parent.find("span.zephyr_class").text();
-	var instance = parent.find("span.zephyr_instance").text();
-        $("#class").val(zephyr_class);
-        $("#instance").val(instance);
-        $("#new_zephyr").focus();
-	event.preventDefault();
+
+        if (event.keyCode != 71) { // not 'g'
+            goto_pressed = false;
+        }
+
+    } else if (event.keyCode == 27) { // Esc pressed
+        $('input, textarea, button').blur();
+        event.preventDefault();
     }
 });
 
