@@ -85,6 +85,24 @@ selected_tag = '<p id="selected">&#x25b6;</p>'
 
 var allow_hotkeys = true;
 
+function select_zephyr(next_zephyr) { 
+    p = $("#selected");
+    td = $(p).closest("td");
+    if (next_zephyr.length != 0) { // We are not at the bottom or top of the zephyrs.
+        next_zephyr.children("td:first").html(selected_tag);
+        td.empty(); // Clear the previous arrow.
+        $.post("update", {pointer: next_zephyr.attr("id")});
+
+        if ($(next_zephyr).offset().top < $("#main_div").offset().top) {
+            $("#main_div").scrollTop($("#main_div").scrollTop() - 75);
+        }
+
+        if ($(next_zephyr).offset().top + $(next_zephyr).height() > $("#main_div").offset().top + $("#main_div").height()) {
+            $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
+        }
+    }
+}
+
 // NB: This just binds to current elements, and won't bind to elements
 // created after ready() is called.
 
@@ -96,37 +114,28 @@ $(document).ready(function() {
     $('input, textarea, button').blur(function() {
           allow_hotkeys = true;
     });
+    $("body").delegate("p", "click", function(){
+        select_zephyr($(this).parent().parent());
+    });
 });
 
 var goto_pressed = false;
+
 
 $(document).keydown(function(event) {
     if (allow_hotkeys) {
 
         if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
+
             p = $("#selected");
             tr = $(p).closest("tr");
-            td = $(p).closest("td");
-
             if (event.keyCode == 40) { // down arrow
                 // There are probably more verbose but more efficient ways to do this.
                 next_zephyr = tr.nextAll(":not(:hidden):first");
             } else { // up arrow
                 next_zephyr = tr.prevAll(":not(:hidden):first");
             }
-            if (next_zephyr.length != 0) { // We are not at the bottom or top of the zephyrs.
-                next_zephyr.children("td:first").html(selected_tag);
-                td.empty(); // Clear the previous arrow.
-                $.post("update", {pointer: next_zephyr.attr("id")});
-
-                if ($(next_zephyr).offset().top < $("#main_div").offset().top) {
-                    $("#main_div").scrollTop($("#main_div").scrollTop() - 75);
-                }
-
-                if ($(next_zephyr).offset().top + $(next_zephyr).height() > $("#main_div").offset().top + $("#main_div").height()) {
-                    $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
-                }
-            }
+            select_zephyr(next_zephyr);    
         } else if (event.keyCode == 82) { // 'r' keypress, for responding to a zephyr
             var parent = $("#selected").parents("tr");
             var zephyr_class = parent.find("span.zephyr_class").text();
