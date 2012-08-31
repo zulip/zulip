@@ -194,32 +194,23 @@ function scroll_to_selected() {
 
 }
 
-function hide_personals() {
-    $("span.zephyr_personal_recipient").each(
-        function() {
-            $(this).parents("tr").hide();
-        }
-    );
-}
-
 function narrow_personals(target_zephyr) {
     var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
-
-    $("span.zephyr_personal_recipient").each(
+    $("tr").each(
         function() {
-            $(this).parents("tr").show();
-        }
-    );
-            event.preventDefault();
-    $("span.zephyr_class").each(
-        function() {
-            $(this).parents("tr").hide();
+            if ($(this).find("span.zephyr_personal_recipient").length) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
         }
     );
 
     $("#selected").closest("td").empty();
     $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
+
+    // Try to keep the zephyr in the same place on the screen after narrowing.
     scroll_to_zephyr(target_zephyr, old_top);
 
     $("#unhide").removeAttr("disabled");
@@ -229,17 +220,17 @@ function narrow_personals(target_zephyr) {
 function narrow_class(class_name, target_zephyr) {
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
     var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
-    $("span.zephyr_class").each(
+    $("tr").each(
         function() {
-            if ($(this).text() != class_name) {
-                $(this).parents("tr").hide();
+            if ($(this).find("span.zephyr_class").length &&
+                $(this).find("span.zephyr_class").text() == class_name) {
+                $(this).show();
             } else {
-                // If you've narrowed on an instance and then click on the class, that should unhide the other instances on that class.
-                $(this).parents("tr").show();
+                $(this).hide();
             }
         }
     );
-    hide_personals();
+
     $("#selected").closest("td").empty();
     $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
@@ -254,13 +245,16 @@ function narrow_instance(class_name, instance, target_zephyr) {
     var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
     $("tr").each(
         function() {
-            if (($(this).find("span.zephyr_class").text() != class_name) ||
-                ($(this).find("span.zephyr_instance").text() != instance)) {
+            if ($(this).find("span.zephyr_class").length &&
+                $(this).find("span.zephyr_class").text() == class_name &&
+                $(this).find("span.zephyr_instance").text() == instance) {
+                $(this).show();
+            } else {
                 $(this).hide();
             }
         }
     );
-    hide_personals();
+
     $("#selected").closest("td").empty();
     $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
