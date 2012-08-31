@@ -80,3 +80,12 @@ form.zephyr textarea {
     opacity: .4;
     filter:  alpha(opacity=40);
 }
+
+#connection-error {
+    margin-top: 5px;
+    display: none;
+}
+
+#connection-error .alert {
+    margin-bottom: auto;
+}

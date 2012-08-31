@@ -334,15 +334,32 @@ $(function() {
   $(initial_zephyr_json).each(add_message);
 });
 
+var longpoll_failures = 0;
+
 function get_updates_longpoll(data) {
     if (data && data.zephyrs) {
 	$.each(data.zephyrs, add_message);
     }
     var last_received = $("tr:last").attr("id");
-    $.post("get_updates_longpoll",
-           { last_received: last_received },
-           function (data) { get_updates_longpoll(data); },
-           "json");
+    $.ajax({
+        type:     'POST',
+        url:      'get_updates_longpoll',
+        data:     { last_received: last_received },
+        dataType: 'json',
+        success: function (data) {
+            longpoll_failures = 0;
+            get_updates_longpoll(data);
+        },
+        error: function () {
+            longpoll_failures += 1;
+            if (longpoll_failures >= 6) {
+                $('#connection-error').show();
+                resize_main_div();
+            } else {
+                setTimeout(get_updates_longpoll, 5*1000);
+            }
+        }
+    });
 }
 
 $(function () {
