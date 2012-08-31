@@ -54,6 +54,7 @@ $(function() {
                        .text('Sending')
                        .stop(true).fadeTo(0,1);
             buttons.attr('disabled', 'disabled');
+            buttons.blur()
         },
         success: function (resp, statusText, xhr, form) {
             form.find('textarea').val('');
