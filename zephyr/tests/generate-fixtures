@@ -1,0 +1,3 @@
+#!/bin/sh
+
+python manage.py dumpdata auth.User zephyr.UserProfile zephyr.ZephyrClass zephyr.Recipient zephyr.Subscription zephyr.Zephyr > zephyr/fixtures/zephyrs.json
