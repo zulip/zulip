@@ -19,5 +19,6 @@ import subprocess
 args = sys.stdin.read()
 oldrev, newrev, refname = args.split()
 
-if refname in ["refs/heads/master"]:
-    subprocess.check_call("env -u GIT_DIR /home/humbug/humbug/update-deployment".split())
+if refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
+    subprocess.check_call(["env", "-u", "GIT_DIR", "/home/humbug/humbug/tools/update-deployment",
+                           oldrev, newrev, refname])

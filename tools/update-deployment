@@ -1,5 +1,49 @@
-#!/bin/sh
-cd /home/humbug/humbug
-git fetch >/dev/null
-git reset --hard origin/master >/dev/null
-echo "Updated deployed version of humbug application!"
+#!/usr/bin/python
+import os
+import sys
+import subprocess
+
+def check_output(*popenargs, **kwargs):
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        cmd = kwargs.get("args")
+        if cmd is None:
+            cmd = popenargs[0]
+        raise subprocess.CalledProcessError(retcode, cmd, output=output)
+    return output
+
+subprocess.check_output = check_output
+
+# Color codes
+OKBLUE = '\033[94m'
+OKGREEN = '\033[92m'
+WARNING = '\033[93m'
+FAIL = '\033[91m'
+ENDC = '\033[0m'
+
+os.chdir("/home/humbug/humbug")
+if len(sys.argv) > 1:
+    oldrev = sys.argv[1]
+    newrev = sys.argv[2]
+    refname = sys.argv[3]
+
+subprocess.check_call(["git", "fetch"], stdout=open('/dev/null', 'w'))
+subprocess.check_call(["git", "reset", "--hard", "origin/master"], stdout=open('/dev/null', 'w'))
+#subprocess.check_call(["python", "manage.py", "syncdb"], stdout=open('/dev/null', 'w'))
+
+print OKGREEN + "Updated deployed version of humbug application!" + ENDC
+
+if newrev == '0000000000000000000000000000000000000000':
+    # 0000000000000000000000000000000000000000 means we're deleting the ref
+    commits = ''
+else:
+    commits = subprocess.check_output(["git", "log", "%s..%s" % (oldrev, newrev)])
+
+if '[schema]' in commits:
+    print
+    print FAIL + "Schema change detected!  Please make the appropriate changes manually." + ENDC
+    print
