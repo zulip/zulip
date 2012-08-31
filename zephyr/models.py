@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.db.models.signals import post_save
 
 def get_display_recipient(recipient):
@@ -87,8 +88,9 @@ class Zephyr(models.Model):
 def send_zephyr(**kwargs):
     zephyr = kwargs["instance"]
     if zephyr.recipient.type == "personal":
-        recipients = UserProfile.objects.filter(user=zephyr.recipient.user_or_class)
-        assert(len(recipients) == 1)
+        recipients = UserProfile.objects.filter(Q(user=zephyr.recipient.user_or_class) | Q(user=zephyr.sender))
+        # You always have sender and recipient users for personals.
+        assert(len(recipients) == 2)
     elif zephyr.recipient.type == "class":
         recipients = [UserProfile.objects.get(user=s.userprofile_id) for
                       s in Subscription.objects.filter(recipient_id=zephyr.recipient, active=True)]
