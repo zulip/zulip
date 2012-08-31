@@ -93,12 +93,9 @@ function select_zephyr(next_zephyr) {
         next_zephyr.children("td:first").html(selected_tag);
         $.post("update", {pointer: next_zephyr.attr("id")});
 
-        if ($(next_zephyr).offset().top < $("#main_div").offset().top) {
-            $("#main_div").scrollTop($("#main_div").scrollTop() - 75);
-        }
-
-        if ($(next_zephyr).offset().top + $(next_zephyr).height() > $("#main_div").offset().top + $("#main_div").height()) {
-            $("#main_div").scrollTop($("#main_div").scrollTop() + 75);
+        if (($(next_zephyr).offset().top < $("#main_div").offset().top) ||
+            ($(next_zephyr).offset().top + $(next_zephyr).height() > $("#main_div").offset().top + $("#main_div").height())) {
+            scroll_to_selected();
         }
     }
 }
@@ -136,6 +133,7 @@ $(document).keydown(function(event) {
                 next_zephyr = tr.prevAll(":not(:hidden):first");
             }
             select_zephyr(next_zephyr);    
+            event.preventDefault();
         } else if (event.keyCode == 82) { // 'r' keypress, for responding to a zephyr
             var parent = $("#selected").parents("tr");
             var zephyr_class = parent.find("span.zephyr_class").text();
@@ -184,17 +182,10 @@ $(document).keydown(function(event) {
     }
 });
 
-function scroll_to_zephyr(target_zephyr, old_offset) {
-    // target_zephyr is an id.
-    // old_offset is how far from the top of the scroll area the
-    // zephyr was before any narrowing or unnarrowing happened.
-    var height_above_zephyr = 0;
-    $("#table tr:lt(" + $("#" + target_zephyr).index() + ")").each(function() {
-        if (!$(this).is(":hidden")) {
-            height_above_zephyr += $(this).height();
-        }
-    });
-    $("#main_div").scrollTop(height_above_zephyr + old_offset);
+function scroll_to_selected() {
+    $('#main_div').scrollTop(0);
+    $('#main_div').scrollTop($("#selected").offset().top - $('#main_div').height()/1.5);
+
 }
 
 function hide_personals() {
@@ -213,6 +204,7 @@ function narrow_personals(target_zephyr) {
             $(this).parents("tr").show();
         }
     );
+            event.preventDefault();
     $("span.zephyr_class").each(
         function() {
             $(this).parents("tr").hide();
@@ -246,8 +238,7 @@ function narrow(class_name, target_zephyr) {
     $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
 
-    // Try to keep the zephyr in the same place on the screen after narrowing.
-    scroll_to_zephyr(target_zephyr, old_top);
+    scroll_to_selected();
 
     $("#unhide").removeAttr("disabled");
     $("#narrow_indicator").html("Showing <span class='label zephyr_class'>" + class_name + "</span>");
@@ -268,8 +259,7 @@ function narrow_instance(class_name, instance, target_zephyr) {
     $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
 
-    // Try to keep the zephyr in the same place on the screen after narrowing.
-    scroll_to_zephyr(target_zephyr, old_top);
+    scroll_to_selected();
 
     $("#unhide").removeAttr("disabled");
     $("#narrow_indicator").html("Showing <span class='label zephyr_class'>" + class_name
@@ -285,9 +275,7 @@ function prepare_personal(username) {
 function unhide() {
     $("tr").show();
 
-    p = $("#selected");
-    tr = $(p).closest("tr");
-    scroll_to_zephyr(tr.attr("id"), 0);
+    scroll_to_selected();
 
     $("#unhide").attr("disabled", "disabled");
     $("#narrow_indicator").html("");
