@@ -146,7 +146,12 @@ $(document).keydown(function(event) {
                 $("#new_zephyr").focus();
                 $("#new_zephyr").select();
             } else { // No instance, must be a personal
-                prepare_personal(parent.find("span.zephyr_sender").text());
+
+                var recipient = parent.find("span.zephyr_sender").text();
+                if (recipient == username) { // that is, we sent the original message
+                    recipient = parent.find("span.zephyr_personal_recipient").text();
+                }
+                prepare_personal(recipient);
                 $("#new_personal_zephyr").focus();
                 $("#new_personal_zephyr").select();
             }
