@@ -66,7 +66,7 @@ $(function() {
         error: function() {
             send_status.removeClass(status_classes)
                        .addClass('alert-error')
-                       .html('Error sending message ')
+                       .text('Error sending message ')
                        .append($('<span />')
                            .addClass('send-status-close').html('&times;')
                            .click(function () { send_status.stop(true).fadeOut(500); }))
