@@ -210,8 +210,7 @@ function narrow_personals(target_zephyr) {
     $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
 
-    // Try to keep the zephyr in the same place on the screen after narrowing.
-    scroll_to_zephyr(target_zephyr, old_top);
+    scroll_to_selected()
 
     $("#unhide").removeAttr("disabled");
     $("#narrow_indicator").html("Showing personals");
