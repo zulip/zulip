@@ -1,0 +1,5 @@
+#!/bin/sh
+cd /home/humbug/humbug
+git fetch >/dev/null
+git reset --hard origin/master >/dev/null
+echo "Updated deployed version of humbug application!"
