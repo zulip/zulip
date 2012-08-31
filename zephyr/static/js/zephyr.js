@@ -89,8 +89,8 @@ function select_zephyr(next_zephyr) {
     p = $("#selected");
     td = $(p).closest("td");
     if (next_zephyr.length != 0) { // We are not at the bottom or top of the zephyrs.
-        next_zephyr.children("td:first").html(selected_tag);
         td.empty(); // Clear the previous arrow.
+        next_zephyr.children("td:first").html(selected_tag);
         $.post("update", {pointer: next_zephyr.attr("id")});
 
         if ($(next_zephyr).offset().top < $("#main_div").offset().top) {
