@@ -194,17 +194,10 @@ function scroll_to_selected() {
 
 }
 
-function narrow_personals(target_zephyr) {
+function do_narrow(target_zephyr, description, filter_function) {
+    // We want the zephyr on which the narrow happened to stay in the same place if possible.
     var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
-    $("tr").each(
-        function() {
-            if ($(this).find("span.zephyr_personal_recipient").length) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        }
-    );
+    $("tr").each(filter_function);
 
     $("#selected").closest("td").empty();
     $("#" + target_zephyr).children("td:first").html(selected_tag);
@@ -213,56 +206,51 @@ function narrow_personals(target_zephyr) {
     scroll_to_selected()
 
     $("#unhide").removeAttr("disabled");
-    $("#narrow_indicator").html("Showing personals");
+    $("#narrow_indicator").html(description);
+}
+
+function narrow_personals(target_zephyr) {
+    var message = "Showing personals";
+    do_narrow(target_zephyr, message,
+              function() {
+                  if ($(this).find("span.zephyr_personal_recipient").length) {
+                      $(this).show();
+                  } else {
+                      $(this).hide();
+                  }
+              }
+             );
 }
 
 function narrow_class(class_name, target_zephyr) {
-    // We want the zephyr on which the narrow happened to stay in the same place if possible.
-    var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
-    $("tr").each(
-        function() {
-            if ($(this).find("span.zephyr_class").length &&
-                $(this).find("span.zephyr_class").text() == class_name) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        }
-    );
-
-    $("#selected").closest("td").empty();
-    $("#" + target_zephyr).children("td:first").html(selected_tag);
-    $.post("update", {pointer: target_zephyr});
-
-    scroll_to_selected();
-
-    $("#unhide").removeAttr("disabled");
-    $("#narrow_indicator").html("Showing <span class='label zephyr_class'>" + class_name + "</span>");
+    var message = "Showing <span class='label zephyr_class'>" + class_name + "</span>";
+    do_narrow(target_zephyr, message,
+              function() {
+                  if ($(this).find("span.zephyr_class").length &&
+                      $(this).find("span.zephyr_class").text() == class_name) {
+                      $(this).show();
+                  } else {
+                      $(this).hide();
+                  }
+              }
+             );
 }
 
 function narrow_instance(class_name, instance, target_zephyr) {
+    var message = "Showing <span class='label zephyr_class'>" + class_name
+        + "</span> <span class='label zephyr_instance'>" + instance + "</span>";
     var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
-    $("tr").each(
-        function() {
-            if ($(this).find("span.zephyr_class").length &&
-                $(this).find("span.zephyr_class").text() == class_name &&
-                $(this).find("span.zephyr_instance").text() == instance) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        }
-    );
-
-    $("#selected").closest("td").empty();
-    $("#" + target_zephyr).children("td:first").html(selected_tag);
-    $.post("update", {pointer: target_zephyr});
-
-    scroll_to_selected();
-
-    $("#unhide").removeAttr("disabled");
-    $("#narrow_indicator").html("Showing <span class='label zephyr_class'>" + class_name
-      + "</span> <span class='label zephyr_instance'>" + instance + "</span>");
+    do_narrow(target_zephyr, message,
+              function() {
+                  if ($(this).find("span.zephyr_class").length &&
+                      $(this).find("span.zephyr_class").text() == class_name &&
+                      $(this).find("span.zephyr_instance").text() == instance) {
+                      $(this).show();
+                  } else {
+                      $(this).hide();
+                  }
+              }
+             );
 }
 
 function prepare_personal(username) {
