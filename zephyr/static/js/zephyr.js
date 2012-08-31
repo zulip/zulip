@@ -226,7 +226,7 @@ function narrow_personals(target_zephyr) {
     $("#narrow_indicator").html("Showing personals");
 }
 
-function narrow(class_name, target_zephyr) {
+function narrow_class(class_name, target_zephyr) {
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
     var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
     $("span.zephyr_class").each(
@@ -303,7 +303,7 @@ function add_message(index, zephyr) {
 
     if (zephyr.type == 'class') {
         new_label(zephyr.display_recipient, 'zephyr_class',
-            function (e) { narrow(zephyr.display_recipient, zephyr.id); });
+            function (e) { narrow_class(zephyr.display_recipient, zephyr.id); });
         new_label(zephyr.instance, 'zephyr_instance',
             function (e) { narrow_instance(zephyr.display_recipient,
                                            zephyr.instance, zephyr.id); });
