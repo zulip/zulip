@@ -340,13 +340,12 @@ function get_updates_longpoll(data) {
     }
     var last_received = $("tr:last").attr("id");
     $.post("get_updates_longpoll",
-	   {last_received: last_received},
-	    function(data) {
-		get_updates_longpoll(data);
-	    }, "json");
+           { last_received: last_received },
+           function (data) { get_updates_longpoll(data); },
+           "json");
 }
 
-$(document).ready(function() {
-    get_updates_longpoll()
+$(function () {
+    get_updates_longpoll();
 });
 
