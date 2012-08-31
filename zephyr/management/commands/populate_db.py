@@ -14,7 +14,8 @@ class Command(NoArgsCommand):
         for klass in [Zephyr, ZephyrClass, UserProfile, User, Recipient, Subscription]:
             klass.objects.all().delete()
         
-        # Create test Users (UserProfiles are automatically created).
+        # Create test Users (UserProfiles are automatically created,
+        # as are subscriptions to the ability to receive personals).
         usernames = ["othello", "iago", "prospero", "cordelia", "hamlet"]
         for username in usernames:
             u = User.objects.create_user(username=username, password=username)
@@ -27,12 +28,6 @@ class Command(NoArgsCommand):
 
             recipient = Recipient(user_or_class=new_class.pk, type="class")
             recipient.save()
-
-        # Create personals.
-        profiles = UserProfile.objects.all()
-        for profile in profiles:
-            recipient = Recipient(user_or_class=profile.pk, type="personal")
-            recipient.save()            
         
         # Create some test zephyrs, including:
         # - multiple classes
@@ -50,21 +45,14 @@ class Command(NoArgsCommand):
             new_zephyr.content = "".join(texts[offset: offset + length])
             offset += length
             new_zephyr.recipient = Recipient.objects.get(id=random.choice(recipient_classes))
-            zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.pk)
+            zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.user_or_class)
             new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
             new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
             new_zephyr.save()
 
-        # Create subscriptions, including:
-        # - everyone can receive personal message to them, but not to others.
-        # - people have full or partial views on the test classes.
+        # Create subscriptions
+        profiles = UserProfile.objects.all()
         for i, profile in enumerate(profiles):
-            # Subscribe to personal messages.
-            recipient_id = Recipient.objects.get(user_or_class=profile.pk, type="personal")
-            new_subscription = Subscription(userprofile_id=profile,
-                                            recipient_id=recipient_id)
-            new_subscription.save()
-
             # Subscribe to some classes.
             for recipient in recipient_classes[:int(len(recipient_classes) * float(i)/len(profiles)) + 1]:
                 new_subscription = Subscription(userprofile_id=profile,

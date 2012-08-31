@@ -49,7 +49,12 @@ def create_user_profile(**kwargs):
     """When creating a new user, make a profile for him or her."""
     u = kwargs["instance"]
     if not UserProfile.objects.filter(user=u):
-        UserProfile(user=u, pointer=-1).save()
+        profile = UserProfile(user=u, pointer=-1)
+        profile.save()
+        # Auto-sub to the ability to receive personals.
+        recipient = Recipient(user_or_class=profile.pk, type="personal")
+        recipient.save()
+        Subscription(userprofile_id=profile, recipient_id=recipient).save()
 post_save.connect(create_user_profile, sender=User)
 
 class ZephyrClass(models.Model):
@@ -89,8 +94,9 @@ def send_zephyr(**kwargs):
     zephyr = kwargs["instance"]
     if zephyr.recipient.type == "personal":
         recipients = UserProfile.objects.filter(Q(user=zephyr.recipient.user_or_class) | Q(user=zephyr.sender))
-        # You always have sender and recipient users for personals.
-        assert(len(recipients) == 2)
+        # For personals, you send out either 1 or 2 copies of the zephyr, for
+        # personals to yourself or to someone else, respectively.
+        assert((len(recipients) == 1) or (len(recipients) == 2))
     elif zephyr.recipient.type == "class":
         recipients = [UserProfile.objects.get(user=s.userprofile_id) for
                       s in Subscription.objects.filter(recipient_id=zephyr.recipient, active=True)]
