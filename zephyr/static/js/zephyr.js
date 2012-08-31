@@ -236,7 +236,7 @@ function narrow(class_name, target_zephyr) {
             } else {
                 // If you've narrowed on an instance and then click on the class, that should unhide the other instances on that class.
                 $(this).parents("tr").show();
-	    }
+            }
         }
     );
     hide_personals();
@@ -255,9 +255,9 @@ function narrow_instance(class_name, instance, target_zephyr) {
     $("tr").each(
         function() {
             if (($(this).find("span.zephyr_class").text() != class_name) ||
-		($(this).find("span.zephyr_instance").text() != instance)) {
+                ($(this).find("span.zephyr_instance").text() != instance)) {
                 $(this).hide();
-	    }
+            }
         }
     );
     hide_personals();
@@ -332,7 +332,7 @@ var longpoll_failures = 0;
 
 function get_updates_longpoll(data) {
     if (data && data.zephyrs) {
-	$.each(data.zephyrs, add_message);
+        $.each(data.zephyrs, add_message);
     }
     var last_received = $("tr:last").attr("id");
     $.ajax({

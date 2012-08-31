@@ -14,20 +14,20 @@
   <div id="current_subscriptions" class="span12">
     <form action="/subscriptions/manage/" method="post" class="subscriptions">{% csrf_token %}
       <table id="current_subscriptions_table">
-	<tr>
-	  <th>Unsubscribe?</th>
-	  <th>Class</th>
-	</tr>
-	<tr>
-	  {% for subscription in subscriptions %}
-	  <td class="checkbox">
-	    <input type="checkbox" name="subscription" value="{{ subscription }}" /></input>
-	  </td>
-	  <td class="subscription">
-	    {{ subscription }}
-	  </td>
-	</tr>
-	{% endfor %}
+        <tr>
+          <th>Unsubscribe?</th>
+          <th>Class</th>
+        </tr>
+        <tr>
+          {% for subscription in subscriptions %}
+          <td class="checkbox">
+            <input type="checkbox" name="subscription" value="{{ subscription }}" /></input>
+          </td>
+          <td class="subscription">
+            {{ subscription }}
+          </td>
+        </tr>
+        {% endfor %}
       </table>
       <input type="submit" name="change_subscriptions" value="Change subscriptions" class="btn" />
     </form>
