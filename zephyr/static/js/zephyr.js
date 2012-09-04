@@ -295,10 +295,8 @@ $(function () {
     $.get('/static/templates/zephyr.html', function (template) {
         ich.addTemplate('zephyr', template);
         $(initial_zephyr_json).each(add_message);
+        select_zephyr($("#" + initial_pointer));
         get_updates_longpoll();
-        $.get('get_state', function(data) {
-                select_zephyr($("#" + data.pointer));
-            }, dataType="json");
     });
 });
 
