@@ -6,6 +6,9 @@ from django.db.models import Q
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscription, filter_by_subscriptions
 
 import datetime
+import os
+import subprocess
+subprocess.call("zephyr/tests/generate-fixtures");
 
 class AuthedTestCase(TestCase):
     def login(self, username, password):
@@ -203,3 +206,4 @@ class ClassZephyrsTest(AuthedTestCase):
 
         self.assertEqual(old_non_subscriber_zephyrs, new_non_subscriber_zephyrs)
         self.assertEqual(new_subscriber_zephyrs, [elt + 1 for elt in old_subscriber_zephyrs])
+
