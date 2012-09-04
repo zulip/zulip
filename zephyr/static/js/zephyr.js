@@ -115,10 +115,6 @@ $(document).ready(function() {
     $("body").delegate("p", "click", function(){
         select_zephyr($(this).parent().parent());
     });
-
-    $.get('get_state', function(data) {
-	    select_zephyr($("#" + data.pointer));
-	}, dataType="json");
 });
 
 var goto_pressed = false;
@@ -300,6 +296,9 @@ $(function () {
         ich.addTemplate('zephyr', template);
         $(initial_zephyr_json).each(add_message);
         get_updates_longpoll();
+        $.get('get_state', function(data) {
+                select_zephyr($("#" + data.pointer));
+            }, dataType="json");
     });
 });
 
