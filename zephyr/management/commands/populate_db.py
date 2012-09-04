@@ -1,4 +1,4 @@
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
@@ -6,11 +6,20 @@ from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscript
 
 import datetime
 import random
+from optparse import make_option
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = "Populate a test database"
 
-    def handle_noargs(self, **options):
+    option_list = BaseCommand.option_list + (
+        make_option('-n', '--num-zephyrs',
+                    dest='num_zephyrs',
+                    type='int',
+                    default=100,
+                    help='The number of zephyrs to create.'),
+        )
+
+    def handle(self, **options):
         for klass in [Zephyr, ZephyrClass, UserProfile, User, Recipient, Subscription]:
             klass.objects.all().delete()
         
@@ -38,17 +47,20 @@ class Command(NoArgsCommand):
         recipient_classes = [klass.id for klass in Recipient.objects.filter(type="class")]
         texts = file("zephyr/management/commands/test_zephyrs.txt", "r").readlines()
         offset = 0
-        while offset < len(texts):
+        num_zephyrs = 0
+        while num_zephyrs < options["num_zephyrs"]:
             new_zephyr = Zephyr()
             new_zephyr.sender = UserProfile.objects.get(id=random.choice(users))
             length = random.randint(1, 5)
             new_zephyr.content = "".join(texts[offset: offset + length])
             offset += length
+            offset = offset % len(texts)
             new_zephyr.recipient = Recipient.objects.get(id=random.choice(recipient_classes))
             zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.user_or_class)
             new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
             new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
             new_zephyr.save()
+            num_zephyrs += 1
 
         # Create subscriptions
         profiles = UserProfile.objects.all()
