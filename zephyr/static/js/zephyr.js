@@ -198,10 +198,27 @@ function scroll_to_selected() {
 
 }
 
+function home_view(element) {
+    return true;
+}
+
+var current_view_predicate = home_view;
+
+function current_view(element) {
+    if (current_view_predicate(element)) {
+        element.show()
+    } else {
+        element.hide()
+    }
+}
+
 function do_narrow(target_zephyr, description, filter_function) {
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
     var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
-    $("tr").each(filter_function);
+    current_view_predicate = filter_function;
+    $("tr").each(function() {
+        current_view($(this))
+    });
 
     $("#selected").closest("td").empty();
     $("#" + target_zephyr).children("td:first").html(selected_tag);
@@ -216,12 +233,8 @@ function do_narrow(target_zephyr, description, filter_function) {
 function narrow_personals(target_zephyr) {
     var message = "Showing personals";
     do_narrow(target_zephyr, message,
-              function() {
-                  if ($(this).find("span.zephyr_personal_recipient").length) {
-                      $(this).show();
-                  } else {
-                      $(this).hide();
-                  }
+              function(element) {
+                  return (element.find("span.zephyr_personal_recipient").length > 0);
               }
              );
 }
@@ -229,13 +242,9 @@ function narrow_personals(target_zephyr) {
 function narrow_class(class_name, target_zephyr) {
     var message = "Showing <span class='label zephyr_class'>" + class_name + "</span>";
     do_narrow(target_zephyr, message,
-              function() {
-                  if ($(this).find("span.zephyr_class").length &&
-                      $(this).find("span.zephyr_class").text() == class_name) {
-                      $(this).show();
-                  } else {
-                      $(this).hide();
-                  }
+              function(element) {
+                  return (element.find("span.zephyr_class").length > 0 &&
+                          element.find("span.zephyr_class").text() == class_name);
               }
              );
 }
@@ -243,16 +252,11 @@ function narrow_class(class_name, target_zephyr) {
 function narrow_instance(class_name, instance, target_zephyr) {
     var message = "Showing <span class='label zephyr_class'>" + class_name
         + "</span> <span class='label zephyr_instance'>" + instance + "</span>";
-    var old_top = $("#main_div").offset().top - $("#" + target_zephyr).offset().top;
     do_narrow(target_zephyr, message,
-              function() {
-                  if ($(this).find("span.zephyr_class").length &&
-                      $(this).find("span.zephyr_class").text() == class_name &&
-                      $(this).find("span.zephyr_instance").text() == instance) {
-                      $(this).show();
-                  } else {
-                      $(this).hide();
-                  }
+              function(element) {
+                  return (element.find("span.zephyr_class").length > 0 &&
+                          element.find("span.zephyr_class").text() == class_name &&
+                          element.find("span.zephyr_instance").text() == instance);
               }
              );
 }
@@ -264,6 +268,7 @@ function prepare_personal(username) {
 }
 
 function unhide() {
+    current_view_predicate = home_view;
     $("tr").show();
 
     scroll_to_selected();
