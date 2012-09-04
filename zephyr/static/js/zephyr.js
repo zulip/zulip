@@ -226,7 +226,18 @@ function do_narrow(target_zephyr, description, filter_function) {
     $("#narrow_indicator").html(description);
 }
 
+function narrow_huddle(target_zephyr) {
+    // This probably should be specific to a particular group chat, not all of them
+    var message = "Showing group chats";
+    do_narrow(target_zephyr, message,
+              function(element) {
+                  return (element.find("span.zephyr_huddle_recipient").length > 0);
+              }
+             );
+}
+
 function narrow_personals(target_zephyr) {
+    // This probably should be specific to a particular person, not all of them
     var message = "Showing personals";
     do_narrow(target_zephyr, message,
               function(element) {
