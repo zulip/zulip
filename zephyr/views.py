@@ -52,9 +52,25 @@ def home(request):
         user_profile.pointer = min([zephyr.id for zephyr in zephyrs])
         user_profile.save()
     zephyr_json = simplejson.dumps([zephyr.to_dict() for zephyr in zephyrs])
+
+    personals = filter_by_subscriptions(Zephyr.objects.filter(
+        recipient__type="personal").all(), request.user)
+    people = simplejson.dumps(list(
+            {get_display_recipient(zephyr.recipient) for zephyr in personals}))
+
+    publics = filter_by_subscriptions(Zephyr.objects.filter(
+        recipient__type="class").all(), request.user)
+    classes = simplejson.dumps(list(
+            {get_display_recipient(zephyr.recipient) for zephyr in publics}))
+    instances = simplejson.dumps(list(
+        {zephyr.instance for zephyr in publics}))
+
     return render_to_response('zephyr/index.html',
                               {'zephyr_json' : zephyr_json,
-                               'user_profile': user_profile },
+                               'user_profile': user_profile,
+                               'people'      : people,
+                               'classes'     : classes,
+                               'instances'   : instances},
                               context_instance=RequestContext(request))
 
 @login_required

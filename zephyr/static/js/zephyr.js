@@ -277,9 +277,45 @@ function newline2br(content) {
     return content.replace(/\n/g, '<br />');
 }
 
+function update_autocomplete() {
+    class_list.sort();
+    instance_list.sort();
+    people_list.sort();
+
+    $( "#class" ).autocomplete({
+        source: class_list
+    });
+    $( "#instance" ).autocomplete({
+        source: instance_list
+    });
+    $( "#recipient" ).autocomplete({
+        source: people_list
+    });
+}
+
 function add_message(index, zephyr) {
-    if (zephyr.type == 'personal') {
+    if (zephyr.type == 'class') {
+        if ($.inArray(zephyr.display_recipient, class_list) == -1) {
+            class_list.push(zephyr.display_recipient);
+            update_autocomplete();
+        }
+        if ($.inArray(zephyr.instance, instance_list) == -1) {
+            instance_list.push(zephyr.instance);
+            update_autocomplete();
+        }
+    } else {
         zephyr.is_personal = true;
+
+        if (zephyr.display_recipient != username &&
+                $.inArray(zephyr.display_recipient, people_list) == -1) {
+            people_list.push(zephyr.display_recipient);
+            update_autocomplete();
+        }
+        if (zephyr.sender != username &&
+                $.inArray(zephyr.sender, people_list) == -1) {
+            people_list.push(zephyr.sender);
+            update_autocomplete();
+        }
     }
     zephyr.html_content = newline2br(zephyr.content);
 
@@ -330,3 +366,7 @@ function get_updates_longpoll(data) {
         }
     });
 }
+
+$(function() {
+    update_autocomplete();
+});
