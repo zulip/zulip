@@ -202,9 +202,9 @@ var current_view_predicate = home_view;
 
 function current_view(element) {
     if (current_view_predicate(element)) {
-        element.show()
+        element.show();
     } else {
-        element.hide()
+        element.hide();
     }
 }
 
