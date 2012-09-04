@@ -57,6 +57,7 @@ def home(request):
                                'user_profile': user_profile },
                               context_instance=RequestContext(request))
 
+@login_required
 def update(request):
     if not request.POST:
         # Do something
