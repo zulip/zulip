@@ -22,13 +22,13 @@ class AuthedTestCase(TestCase):
             recipient = UserProfile.objects.get(user=User.objects.get(username=recipient_name))
         else:
             recipient = ZephyrClass.objects.get(name=recipient_name)
-        recipient = Recipient.objects.get(user_or_class=recipient.id, type=zephyr_type)
+        recipient = Recipient.objects.get(type_id=recipient.id, type=zephyr_type)
         pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
         Zephyr(sender=sender, recipient=recipient, instance="test", pub_date=pub_date).save()
 
     def users_subscribed_to_class(self, class_name):
         zephyr_class = ZephyrClass.objects.get(name=class_name)
-        recipient = Recipient.objects.get(user_or_class=zephyr_class.id, type="class")
+        recipient = Recipient.objects.get(type_id=zephyr_class.id, type="class")
         subscriptions = Subscription.objects.filter(recipient_id=recipient)
 
         return [subscription.userprofile_id.user for subscription in subscriptions]
@@ -103,7 +103,7 @@ class PersonalZephyrsTest(AuthedTestCase):
         new_zephyrs = self.zephyr_stream(user)
         self.assertEqual(len(new_zephyrs) - len(old_zephyrs), 1)
 
-        recipient = Recipient.objects.get(user_or_class=user.pk, type="personal")
+        recipient = Recipient.objects.get(type_id=user.pk, type="personal")
         self.assertEqual(new_zephyrs[-1].recipient, recipient)
 
     def test_personal_to_self(self):
@@ -126,7 +126,7 @@ class PersonalZephyrsTest(AuthedTestCase):
         self.assertEqual(old_zephyrs, new_zephyrs)
 
         user = User.objects.get(username="test1")
-        recipient = Recipient.objects.get(user_or_class=user.pk, type="personal")
+        recipient = Recipient.objects.get(type_id=user.pk, type="personal")
         self.assertEqual(self.zephyr_stream(user)[-1].recipient, recipient)
 
     def test_personal(self):
@@ -163,7 +163,7 @@ class PersonalZephyrsTest(AuthedTestCase):
 
         sender = User.objects.get(username="hamlet")
         receiver = User.objects.get(username="othello")
-        recipient = Recipient.objects.get(user_or_class=receiver.pk, type="personal")
+        recipient = Recipient.objects.get(type_id=receiver.pk, type="personal")
         self.assertEqual(self.zephyr_stream(sender)[-1].recipient, recipient)
         self.assertEqual(self.zephyr_stream(receiver)[-1].recipient, recipient)
 

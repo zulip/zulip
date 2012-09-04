@@ -122,7 +122,7 @@ def personal_zephyr(request):
     # Right now, you can't make recipients on the fly by sending zephyrs to new
     # classes or people.
     recipient_user_profile = UserProfile.objects.get(user=recipient_user)
-    recipient = Recipient.objects.get(user_or_class=recipient_user_profile.id, type="personal")
+    recipient = Recipient.objects.get(type_id=recipient_user_profile.id, type="personal")
     sender = UserProfile.objects.get(user=request.user)
     content = request.POST['new_personal_zephyr']
     pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
@@ -145,7 +145,7 @@ def zephyr(request):
 
     # Right now, you can't make recipients on the fly by sending zephyrs to new
     # classes or people.
-    recipient = Recipient.objects.get(user_or_class=my_class.id, type="class")
+    recipient = Recipient.objects.get(type_id=my_class.id, type="class")
 
     new_zephyr = Zephyr()
     new_zephyr.sender = UserProfile.objects.get(user=request.user)
@@ -178,7 +178,7 @@ def manage_subscriptions(request):
     unsubs = request.POST.getlist('subscription')
     for sub_name in unsubs:
         zephyr_class = ZephyrClass.objects.get(name=sub_name)
-        recipient = Recipient.objects.get(user_or_class=zephyr_class.id, type="class")
+        recipient = Recipient.objects.get(type_id=zephyr_class.id, type="class")
         subscription = Subscription.objects.get(
             userprofile_id=user_profile.id, recipient_id=recipient)
         subscription.active = False
@@ -205,11 +205,11 @@ def add_subscriptions(request):
             zephyr_class = ZephyrClass(name=sub_name)
             zephyr_class.save()
 
-        recipient = Recipient.objects.filter(user_or_class=zephyr_class.pk, type="class")
+        recipient = Recipient.objects.filter(type_id=zephyr_class.pk, type="class")
         if recipient:
             recipient = recipient[0]
         else:
-            recipient = Recipient(user_or_class=zephyr_class.pk, type="class")
+            recipient = Recipient(type_id=zephyr_class.pk, type="class")
         recipient.save()
 
         subscription = Subscription.objects.filter(userprofile_id=user_profile,

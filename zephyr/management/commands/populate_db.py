@@ -35,7 +35,7 @@ class Command(BaseCommand):
             new_class = ZephyrClass(name=name)
             new_class.save()
 
-            recipient = Recipient(user_or_class=new_class.pk, type="class")
+            recipient = Recipient(type_id=new_class.pk, type="class")
             recipient.save()
         
         # Create some test zephyrs, including:
@@ -56,7 +56,7 @@ class Command(BaseCommand):
             offset += length
             offset = offset % len(texts)
             new_zephyr.recipient = Recipient.objects.get(id=random.choice(recipient_classes))
-            zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.user_or_class)
+            zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.type_id)
             new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
             new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
             new_zephyr.save()

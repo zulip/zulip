@@ -11,10 +11,10 @@ def get_display_recipient(recipient):
     name, for a class, or the username, for a user).
     """
     if recipient.type == "class":
-        zephyr_class = ZephyrClass.objects.get(pk=recipient.user_or_class)
+        zephyr_class = ZephyrClass.objects.get(pk=recipient.type_id)
         return zephyr_class.name
     else:
-        user = User.objects.get(pk=recipient.user_or_class)
+        user = User.objects.get(pk=recipient.type_id)
         return user.username
 
 callback_table = {}
@@ -52,7 +52,7 @@ def create_user_profile(**kwargs):
         profile = UserProfile(user=u, pointer=-1)
         profile.save()
         # Auto-sub to the ability to receive personals.
-        recipient = Recipient(user_or_class=profile.pk, type="personal")
+        recipient = Recipient(type_id=profile.pk, type="personal")
         recipient.save()
         Subscription(userprofile_id=profile, recipient_id=recipient).save()
 post_save.connect(create_user_profile, sender=User)
@@ -64,12 +64,12 @@ class ZephyrClass(models.Model):
         return "<ZephyrClass: %s>" % (self.name,)
 
 class Recipient(models.Model):
-    user_or_class = models.IntegerField()
+    type_id = models.IntegerField()
     type = models.CharField(max_length=30)
 
     def __repr__(self):
         display_recipient = get_display_recipient(self)
-        return "<Recipient: %s (%d, %s)>" % (display_recipient, self.user_or_class, self.type)
+        return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
 
 class Zephyr(models.Model):
     sender = models.ForeignKey(UserProfile)
@@ -93,7 +93,7 @@ class Zephyr(models.Model):
 def send_zephyr(**kwargs):
     zephyr = kwargs["instance"]
     if zephyr.recipient.type == "personal":
-        recipients = UserProfile.objects.filter(Q(user=zephyr.recipient.user_or_class) | Q(user=zephyr.sender))
+        recipients = UserProfile.objects.filter(Q(user=zephyr.recipient.type_id) | Q(user=zephyr.sender))
         # For personals, you send out either 1 or 2 copies of the zephyr, for
         # personals to yourself or to someone else, respectively.
         assert((len(recipients) == 1) or (len(recipients) == 2))
