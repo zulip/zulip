@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.db.models.signals import post_save
+import hashlib
 
 def get_display_recipient(recipient):
     """
@@ -13,6 +14,10 @@ def get_display_recipient(recipient):
     if recipient.type == "class":
         zephyr_class = ZephyrClass.objects.get(pk=recipient.type_id)
         return zephyr_class.name
+    elif recipient.type == "huddle":
+        user_list = [UserProfile.objects.get(user=s.userprofile_id) for s in
+                     Subscription.objects.filter(recipient_id=recipient.id)]
+        return [{'name': user.user.username} for user in user_list]
     else:
         user = User.objects.get(pk=recipient.type_id)
         return user.username
@@ -66,6 +71,7 @@ class ZephyrClass(models.Model):
 class Recipient(models.Model):
     type_id = models.IntegerField()
     type = models.CharField(max_length=30)
+    # Valid types are {personal, class, huddle}
 
     def __repr__(self):
         display_recipient = get_display_recipient(self)
@@ -73,7 +79,7 @@ class Recipient(models.Model):
 
 class Zephyr(models.Model):
     sender = models.ForeignKey(UserProfile)
-    recipient = models.ForeignKey(Recipient) # personal or class
+    recipient = models.ForeignKey(Recipient)
     instance = models.CharField(max_length=30)
     content = models.CharField(max_length=200)
     pub_date = models.DateTimeField('date published')
@@ -97,7 +103,7 @@ def send_zephyr(**kwargs):
         # For personals, you send out either 1 or 2 copies of the zephyr, for
         # personals to yourself or to someone else, respectively.
         assert((len(recipients) == 1) or (len(recipients) == 2))
-    elif zephyr.recipient.type == "class":
+    elif zephyr.recipient.type == "class" or zephyr.recipient.type == "huddle":
         recipients = [UserProfile.objects.get(user=s.userprofile_id) for
                       s in Subscription.objects.filter(recipient_id=zephyr.recipient, active=True)]
     else:
@@ -114,6 +120,30 @@ class Subscription(models.Model):
 
     def __repr__(self):
         return "<Subscription: %r -> %r>" % (self.userprofile_id, self.recipient_id)
+
+class Huddle(models.Model):
+    huddle_hash = models.CharField(max_length=40)
+
+def get_huddle(id_list):
+    hash_key = ''
+    for uid in sorted(id_list):
+        hash_key += str(uid) + ', '
+    huddle_hash = hashlib.sha1(hash_key).hexdigest()
+    if Huddle.objects.filter(huddle_hash=huddle_hash):
+        return Huddle.objects.get(huddle_hash=huddle_hash)
+    else:
+        # since we don't have one, make a new huddle
+        huddle = Huddle(huddle_hash = huddle_hash)
+        huddle.save()
+        recipient = Recipient(type_id=huddle.pk, type="huddle")
+        recipient.save()
+
+        # Add subscriptions
+        for uid in id_list:
+            s = Subscription(recipient_id = recipient,
+                             userprofile_id = UserProfile.objects.get(id=uid))
+            s.save()
+        return huddle
 
 def filter_by_subscriptions(zephyrs, user):
     userprofile = UserProfile.objects.get(user=user)

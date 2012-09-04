@@ -295,6 +295,7 @@ function update_autocomplete() {
 
 function add_message(index, zephyr) {
     if (zephyr.type == 'class') {
+        zephyr.is_class = true;
         if ($.inArray(zephyr.display_recipient, class_list) == -1) {
             class_list.push(zephyr.display_recipient);
             update_autocomplete();
@@ -303,6 +304,8 @@ function add_message(index, zephyr) {
             instance_list.push(zephyr.instance);
             update_autocomplete();
         }
+    } else if (zephyr.type == "huddle") {
+        zephyr.is_huddle = true;
     } else {
         zephyr.is_personal = true;
 

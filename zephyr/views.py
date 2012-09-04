@@ -9,7 +9,7 @@ from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
-    Recipient, filter_by_subscriptions, get_display_recipient
+    Recipient, filter_by_subscriptions, get_display_recipient, get_huddle
 from zephyr.forms import RegistrationForm
 
 import tornado.web
@@ -128,11 +128,21 @@ def zephyr(request):
             my_class.save()
         recipient = Recipient.objects.get(type_id=my_class.id, type="class")
     elif zephyr_type == "personal":
-        recipient_username = request.POST['recipient']
-        if User.objects.filter(username=recipient_username):
-            recipient_user = User.objects.get(username=recipient_username)
-        recipient_user_profile = UserProfile.objects.get(user=recipient_user)
-        recipient = Recipient.objects.get(type_id=recipient_user_profile.id, type="personal")
+        recipient_data = request.POST['recipient']
+        if ',' in recipient_data:
+            # This is actually a huddle message
+            recipients = [r.strip() for r in recipient_data.split(',')]
+            recipient_ids = [UserProfile.objects.get(user=User.objects.get(username=r)).id
+                             for r in recipients]
+            # Include the sender in the new huddle
+            recipient_ids.append(UserProfile.objects.get(user=request.user).id)
+            huddle = get_huddle(recipient_ids)
+            recipient = Recipient.objects.get(type_id=huddle.pk, type="huddle")
+        else:
+            if User.objects.filter(username=recipient_data):
+                recipient_user = User.objects.get(username=recipient_data)
+            recipient_user_profile = UserProfile.objects.get(user=recipient_user)
+            recipient = Recipient.objects.get(type_id=recipient_user_profile.id, type="personal")
     else:
         # Do something smarter here
         raise
