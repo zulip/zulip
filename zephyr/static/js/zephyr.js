@@ -282,41 +282,25 @@ function newline2br(content) {
 }
 
 function add_message(index, zephyr) {
-    var zephyr_para = $('<p />');
-    var new_label = function (text, classes, on_click) {
-        zephyr_para.append($('<span />')
-            .text(text)
-            .addClass('label zephyr_label_clickable ' + classes)
-            .click(on_click));
-        zephyr_para.append('&nbsp;');
-    };
-
-    if (zephyr.type == 'class') {
-        new_label(zephyr.display_recipient, 'zephyr_class',
-            function (e) { narrow_class(zephyr.display_recipient, zephyr.id); });
-        new_label(zephyr.instance, 'zephyr_instance',
-            function (e) { narrow_instance(zephyr.display_recipient,
-                                           zephyr.instance, zephyr.id); });
-    } else {
-        new_label(zephyr.display_recipient, 'zephyr_personal_recipient',
-            function (e) { narrow_personals(zephyr.id); });
-        zephyr_para.append('&larr;&nbsp;');
+    if (zephyr.type == 'personal') {
+        zephyr.is_personal = true;
     }
+    zephyr.html_content = newline2br(zephyr.content);
 
-    new_label(zephyr.sender, 'zephyr_sender',
-             function (e) { prepare_personal(zephyr.sender); });
-
-    zephyr_para.append('<br />' + newline2br(zephyr.content));
-
-    $('#table').append('<tr id=' + zephyr.id + '></tr>');
-    var new_zephyr_row = $("tr:last");
-    new_zephyr_row.append('<td class="pointer"><p></p></td>')
-        .append($('<td />').append(zephyr_para));
-    current_view($('tr[id="' + zephyr.id + '"]'));
+    var new_tr = $('<tr />').attr('id', zephyr.id);
+    $('#table').append(new_tr);
+    new_tr.append(ich.zephyr(zephyr));
+    current_view(new_tr);
 }
 
-$(function() {
-  $(initial_zephyr_json).each(add_message);
+$(function () {
+    /* We can't easily embed this client-side template in index.html,
+       because its syntax conflicts with Django's. */
+    $.get('/static/templates/zephyr.html', function (template) {
+        ich.addTemplate('zephyr', template);
+        $(initial_zephyr_json).each(add_message);
+        get_updates_longpoll();
+    });
 });
 
 var longpoll_failures = 0;
@@ -349,8 +333,3 @@ function get_updates_longpoll(data) {
         }
     });
 }
-
-$(function () {
-    get_updates_longpoll();
-});
-

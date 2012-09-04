@@ -1,0 +1,19 @@
+{{! Client-side Mustache template for rendering zephyrs.}}
+<td class="pointer"><p></p></td>
+<td><p>
+    {{#is_personal}}
+        <span class="label zephyr_label_clickable zephyr_personal_recipient"
+              onclick="narrow_personals({{id}})">{{display_recipient}}</span>
+        &larr;
+    {{/is_personal}}
+    {{^is_personal}}
+        <span class="label zephyr_label_clickable zephyr_class"
+              onclick="narrow_class('{{display_recipient}}', {{id}})">{{display_recipient}}</span>
+        <span class="label zephyr_label_clickable zephyr_instance"
+              onclick="narrow_class('{{display_recipient}}', '{{instance}}', {{id}})">{{instance}}</span>
+    {{/is_personal}}
+    <span class="label zephyr_label_clickable zephyr_sender"
+          onclick="prepare_personal('{{sender}}')">{{sender}}</span>
+    <br />
+    {{{html_content}}}
+</p></td>
