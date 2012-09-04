@@ -68,6 +68,16 @@ def update(request):
         user_profile.save()
     return HttpResponse(simplejson.dumps({}), mimetype='application/json')
 
+@login_required
+def get_state(request):
+    if not request.GET:
+        # Do something
+        pass
+
+    user_profile = UserProfile.objects.get(user=request.user)
+    return HttpResponse(simplejson.dumps({"pointer": user_profile.pointer}),
+                        mimetype='application/json')
+
 @asynchronous
 def get_updates_longpoll(request, handler):
     if not request.POST:

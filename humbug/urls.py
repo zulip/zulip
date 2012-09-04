@@ -9,6 +9,7 @@ import os.path
 urlpatterns = patterns('',
     url(r'^$', 'zephyr.views.home', name='home'),
     url(r'^update$', 'zephyr.views.update', name='update'),
+    url(r'^get_state$', 'zephyr.views.get_state', name='get_state'),
     url(r'^get_updates_longpoll$', 'zephyr.views.get_updates_longpoll', name='get_updates_longpoll'),
     url(r'^zephyr/', 'zephyr.views.zephyr', name='zephyr'),
     url(r'^personal-zephyr/', 'zephyr.views.personal_zephyr', name='personal_zephyr'),
