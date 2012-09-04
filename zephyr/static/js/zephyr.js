@@ -308,10 +308,10 @@ function add_message(index, zephyr) {
 
     zephyr_para.append('<br />' + newline2br(zephyr.content));
 
-    $('#table tr:last').after($('<tr />')
-        .attr('id', zephyr.id)
-        .append('<td class="pointer"><p></p></td>')
-        .append($('<td />').append(zephyr_para)));
+    $('#table').append('<tr id=' + zephyr.id + '></tr>');
+    var new_zephyr_row = $("tr:last");
+    new_zephyr_row.append('<td class="pointer"><p></p></td>')
+        .append($('<td />').append(zephyr_para));
     current_view($('tr[id="' + zephyr.id + '"]'));
 }
 
@@ -325,7 +325,10 @@ function get_updates_longpoll(data) {
     if (data && data.zephyrs) {
         $.each(data.zephyrs, add_message);
     }
-    var last_received = $("tr:last").attr("id");
+    var last_received = 0;
+    if ($("tr:last").attr("id")) {
+        last_received = $("tr:last").attr("id");
+    }
     $.ajax({
         type:     'POST',
         url:      'get_updates_longpoll',
