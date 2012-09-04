@@ -53,6 +53,7 @@ var people_list = {{ people }};
     <div class="tab-content">
         <div class="tab-pane active" id="class-message">
             <form action="/zephyr/" method="post" class="zephyr">
+                <input type="hidden" name="type" value="class" />
                 {% csrf_token %}
                 <div class="row-fluid">
                     <div class="span6">
@@ -73,7 +74,8 @@ var people_list = {{ people }};
             </form>
         </div>
         <div class="tab-pane" id="personal-message">
-            <form action="/personal-zephyr/" method="post" class="zephyr">
+            <form action="/zephyr/" method="post" class="zephyr">
+                <input type="hidden" name="type" value="personal" />
                 {% csrf_token %}
                 <div class="row-fluid">
                     <div class="span6">
@@ -84,7 +86,7 @@ var people_list = {{ people }};
                 <div class="row-fluid">
                     <div class="span12">
                         <label>Content</label>
-                        <textarea rows="4" cols="60" name="new_personal_zephyr" id="new_personal_zephyr" value="" /></textarea>
+                        <textarea rows="4" cols="60" name="new_zephyr" id="new_personal_zephyr" value="" /></textarea>
                         <input type="submit" name="personal_zephyr" value="Send personal" class="btn" />
                     </div>
                 </div>

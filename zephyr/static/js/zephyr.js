@@ -145,7 +145,7 @@ $(document).keydown(function(event) {
                 $("#instance").val(instance);
                 $("#new_zephyr").focus();
                 $("#new_zephyr").select();
-            } else { // No instance, must be a personal
+            } else { // No class, must be a personal
 
                 var recipient = parent.find("span.zephyr_sender").text();
                 if (recipient == username) { // that is, we sent the original message

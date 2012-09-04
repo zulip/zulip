@@ -112,47 +112,37 @@ def get_updates_longpoll(request, handler):
     user_profile.add_callback(handler.async_callback(on_receive), last_received)
 
 @login_required
-def personal_zephyr(request):
-    recipient_username = request.POST['recipient']
-    if User.objects.filter(username=recipient_username):
-        recipient_user = User.objects.get(username=recipient_username)
-    else:
-        # Do something reasonable.
-        return HttpResponse('')
-
-    # Right now, you can't make recipients on the fly by sending zephyrs to new
-    # classes or people.
-    recipient_user_profile = UserProfile.objects.get(user=recipient_user)
-    recipient = Recipient.objects.get(type_id=recipient_user_profile.id, type="personal")
-    sender = UserProfile.objects.get(user=request.user)
-    content = request.POST['new_personal_zephyr']
-    pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-
-    new_zephyr = Zephyr(sender=sender, recipient=recipient, content=content,
-                        instance=u'', pub_date=pub_date)
-    new_zephyr.save()
-
-    return HttpResponse('')
-
-@login_required
 def zephyr(request):
-    class_name = request.POST['class']
-    if ZephyrClass.objects.filter(name=class_name):
-        my_class = ZephyrClass.objects.get(name=class_name)
-    else:
-        my_class = ZephyrClass()
-        my_class.name = class_name
-        my_class.save()
+    if not request.POST:
+        # TODO: Do something
+        pass
 
-    # Right now, you can't make recipients on the fly by sending zephyrs to new
-    # classes or people.
-    recipient = Recipient.objects.get(type_id=my_class.id, type="class")
+    zephyr_type = request.POST["type"]
+    if zephyr_type == 'class':
+        class_name = request.POST['class']
+        if ZephyrClass.objects.filter(name=class_name):
+            my_class = ZephyrClass.objects.get(name=class_name)
+        else:
+            my_class = ZephyrClass()
+            my_class.name = class_name
+            my_class.save()
+        recipient = Recipient.objects.get(type_id=my_class.id, type="class")
+    elif zephyr_type == "personal":
+        recipient_username = request.POST['recipient']
+        if User.objects.filter(username=recipient_username):
+            recipient_user = User.objects.get(username=recipient_username)
+        recipient_user_profile = UserProfile.objects.get(user=recipient_user)
+        recipient = Recipient.objects.get(type_id=recipient_user_profile.id, type="personal")
+    else:
+        # Do something smarter here
+        raise
 
     new_zephyr = Zephyr()
     new_zephyr.sender = UserProfile.objects.get(user=request.user)
     new_zephyr.content = request.POST['new_zephyr']
     new_zephyr.recipient = recipient
-    new_zephyr.instance = request.POST['instance']
+    if zephyr_type == "class":
+        new_zephyr.instance = request.POST['instance']
     new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
     new_zephyr.save()
 

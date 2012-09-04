@@ -58,7 +58,7 @@ class PublicURLTest(TestCase):
         """
         urls = {200: ["/accounts/home/", "/accounts/login/", "/accounts/logout/",
                       "/accounts/register/"],
-                302: ["/", "/zephyr/", "/personal-zephyr/", "/subscriptions/",
+                302: ["/", "/zephyr/", "/subscriptions/",
                       "/subscriptions/manage/", "/subscriptions/add/"]
                 }
         for status_code, url_set in urls.iteritems():
