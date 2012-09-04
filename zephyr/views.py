@@ -38,8 +38,8 @@ def register(request):
 
 def accounts_home(request):
     return render_to_response('zephyr/accounts_home.html',
-                              context_instance=RequestContext(request))    
-    
+                              context_instance=RequestContext(request))
+
 def home(request):
     if not request.user.is_authenticated():
         return HttpResponseRedirect('accounts/home/')
@@ -90,7 +90,7 @@ def get_updates_longpoll(request, handler):
     if not request.POST:
         # TODO: Do something
         pass
-   
+
     last_received = request.POST.get('last_received')
     if not last_received:
         # TODO: return error?
