@@ -312,6 +312,7 @@ function add_message(index, zephyr) {
         .attr('id', zephyr.id)
         .append('<td class="pointer"><p></p></td>')
         .append($('<td />').append(zephyr_para)));
+    current_view($('tr[id="' + zephyr.id + '"]'));
 }
 
 $(function() {
