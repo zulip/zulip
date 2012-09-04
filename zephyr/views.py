@@ -17,6 +17,7 @@ from zephyr.decorator import asynchronous
 
 import datetime
 import simplejson
+import socket
 
 def register(request):
     if request.method == 'POST':
