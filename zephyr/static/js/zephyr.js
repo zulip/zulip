@@ -207,7 +207,7 @@ function do_narrow(target_zephyr, description, filter_function) {
     $("#" + target_zephyr).children("td:first").html(selected_tag);
     $.post("update", {pointer: target_zephyr});
 
-    scroll_to_selected()
+    scroll_to_selected();
 
     $("#unhide").removeAttr("disabled");
     $("#narrow_indicator").html(description);
