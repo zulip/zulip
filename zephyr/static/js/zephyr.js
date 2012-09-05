@@ -171,7 +171,7 @@ $(document).keydown(function(event) {
             narrow_instance(zephyr_class, zephyr_instance, parent.attr("id"));
             event.preventDefault()
         } else if (goto_pressed && event.keyCode == 80) { // 'p' keypress, for narrow-to-personals
-            narrow_personals($("#selected").parents("tr").attr("id"));
+            narrow_all_personals($("#selected").parents("tr").attr("id"));
             event.preventDefault();
         } else if (goto_pressed && event.keyCode == 65) { // 'a' keypress, for unnarrow
             unhide();
@@ -236,14 +236,31 @@ function narrow_huddle(target_zephyr) {
              );
 }
 
-function narrow_personals(target_zephyr) {
-    // This probably should be specific to a particular person, not all of them
+function narrow_all_personals(target_zephyr) {
+    // Narrow to all personals
     var message = "Showing personals";
     do_narrow(target_zephyr, message,
               function(element) {
                   return (element.find("span.zephyr_personal_recipient").length > 0);
               }
-             );
+              );
+}
+
+function narrow_personals(target_zephyr) {
+    // Narrow to personals with a specific user
+    var message = "Showing personals";
+    var target_recipient = $("#" + target_zephyr).find("span.zephyr_personal_recipient").text();
+    var target_sender = $("#" + target_zephyr).find("span.zephyr_sender").text();
+    do_narrow(target_zephyr, message,
+              function(element) {
+                  var recipient = element.find("span.zephyr_personal_recipient");
+                  var sender = element.find("span.zephyr_sender");
+
+                  return ((recipient.length > 0) &&
+                          ((recipient.text() == target_recipient) && (sender.text() == target_sender)) ||
+                          ((recipient.text() == target_sender) && (sender.text() == target_recipient)));
+              }
+              );
 }
 
 function narrow_class(class_name, target_zephyr) {
