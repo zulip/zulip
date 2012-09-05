@@ -29,6 +29,7 @@
 
     ProxyPassReverse /    http://127.0.0.1:9991
     RewriteRule ^(.*) http://127.0.0.1:9991$1 [P]
+    ProxyTimeout 1200
 
     ErrorLog /var/log/apache2/error.log
     LogLevel warn
