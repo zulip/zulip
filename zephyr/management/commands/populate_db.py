@@ -38,7 +38,11 @@ class Command(BaseCommand):
                     type='float',
                     default=15,
                     help='The percent of messages to be personals.'),
-
+        make_option('--stickyness',
+                    dest='stickyness',
+                    type='float',
+                    default=20,
+                    help='The percent of messages to repeat recent folks.'),
         )
 
     def handle(self, **options):
@@ -99,7 +103,9 @@ class Command(BaseCommand):
         offset = 0
         num_zephyrs = 0
         random_max = 1000000
+        recipients = {}
         while num_zephyrs < options["num_zephyrs"]:
+            saved_data = ''
             new_zephyr = Zephyr()
             length = random.randint(1, 5)
             new_zephyr.content = "".join(texts[offset: offset + length])
@@ -107,24 +113,46 @@ class Command(BaseCommand):
             offset = offset % len(texts)
 
             randkey = random.randint(1, random_max)
-            if (randkey <= random_max * options["percent_huddles"] / 100.):
-                # huddle
+            if (num_zephyrs > 0 and
+                random.randint(1, random_max) * 100. / random_max < options["stickyness"]):
+                # Use an old recipient
+                zephyr_type, recipient, saved_data = recipients[num_zephyrs - 1]
+                if zephyr_type == "personal":
+                    personals_pair = saved_data
+                    random.shuffle(personals_pair)
+                elif zephyr_type == "class":
+                    new_zephyr.instance = saved_data
+                    new_zephyr.recipient = recipient
+                elif zephyr_type == "huddle":
+                    new_zephyr.recipient = recipient
+            elif (randkey <= random_max * options["percent_huddles"] / 100.):
+                zephyr_type = "huddle"
                 new_zephyr.recipient = Recipient.objects.get(type="huddle", type_id=random.choice(recipient_huddles))
-                new_zephyr.sender = UserProfile.objects.get(id=random.choice(huddle_members[new_zephyr.recipient.type_id]))
             elif (randkey <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.):
-                # personals
-                pair = random.choice(personals_pairs)
-                random.shuffle(pair)
-                new_zephyr.recipient = Recipient.objects.get(type="personal", type_id=pair[0])
-                new_zephyr.sender = UserProfile.objects.get(id=pair[1])
+                zephyr_type = "personal"
+                personals_pair = random.choice(personals_personals_pairs)
+                random.shuffle(personals_pair)
             elif (randkey <= random_max * 1.0):
-                # class
+                zephyr_type = "class"
                 new_zephyr.recipient = Recipient.objects.get(type="class", type_id=random.choice(recipient_classes))
+
+            if zephyr_type == "huddle":
+                new_zephyr.sender = UserProfile.objects.get(id=random.choice(huddle_members[new_zephyr.recipient.type_id]))
+            elif zephyr_type == "personal":
+                new_zephyr.recipient = Recipient.objects.get(type="personal", type_id=personals_pair[0])
+                new_zephyr.sender = UserProfile.objects.get(id=personals_pair[1])
+                saved_data = personals_pair
+            elif zephyr_type == "class":
                 zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.type_id)
-                new_zephyr.sender = UserProfile.objects.get(id=random.choice(users))
+                # Pick a random subscriber to the class
+                new_zephyr.sender = random.choice(Subscription.objects.filter(recipient_id=new_zephyr.recipient.id)).userprofile_id
                 new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
+                saved_data = new_zephyr.instance
+
             new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
             new_zephyr.save()
+
+            recipients[num_zephyrs] = [zephyr_type, new_zephyr.recipient, saved_data]
             num_zephyrs += 1
 
         self.stdout.write("Successfully populated test database.\n")
