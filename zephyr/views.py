@@ -167,7 +167,8 @@ def subscriptions(request):
     userprofile = UserProfile.objects.get(user=request.user)
     subscriptions = Subscription.objects.filter(userprofile_id=userprofile, active=True)
     # For now, don't display the subscription for your ability to receive personals.
-    sub_names = [get_display_recipient(sub.recipient_id) for sub in subscriptions if sub.recipient_id.type != "personal"]
+    sub_names = [get_display_recipient(sub.recipient_id) for sub in subscriptions
+                 if sub.recipient_id.type == "class"]
 
     return render_to_response('zephyr/subscriptions.html',
                               {'subscriptions': sub_names, 'user_profile': userprofile},
