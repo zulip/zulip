@@ -51,6 +51,16 @@ var people_list = {{ people }};
     </ul>
 
     <div class="tab-content">
+        <div class="alert" id="class-dne">
+            <p>The class <span class="classname" id="class-dne-name"></span> does not exist.</p>
+            <a id="create-it" class="btn btn-primary" href="#">Create and send</a>
+            <a class="btn" onClick="$('#class-dne').stop(true).fadeOut(500);">Cancel message</a>
+        </div>
+        <div class="alert" id="class-nosub">
+            <p>You're not subscribed to the class <span class="classname" id="class-nosub-name"></span>.</p>
+            <a id="sub-it" class="btn btn-primary" href="#">Subscribe and send</a>
+            <a class="btn" onClick="$('#class-nosub').stop(true).fadeOut(500);">Cancel message</a>
+        </div>
         <div class="tab-pane active" id="class-message">
             <form action="/zephyr/" method="post" class="zephyr">
                 <input type="hidden" name="type" value="class" />

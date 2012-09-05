@@ -20,6 +20,13 @@ import datetime
 import simplejson
 import socket
 
+def require_post(view_func):
+    def _wrapped_view_func(request, *args, **kwargs):
+        if request.method != "POST":
+            return HttpResponseBadRequest('This form can only be submitted by POST.')
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view_func
+
 def json_response(res_type="success", msg="", status=200):
     return HttpResponse(content=simplejson.dumps({"result":res_type, "msg":msg}),
                         mimetype='application/json', status=status)
@@ -95,10 +102,8 @@ def home(request):
                               context_instance=RequestContext(request))
 
 @login_required
+@require_post
 def update(request):
-    if not request.POST:
-        # Do something
-        pass
     user = request.user
     user_profile = UserProfile.objects.get(user=user)
     if request.POST.get('pointer'):
@@ -107,11 +112,8 @@ def update(request):
     return json_success()
 
 @asynchronous
+@require_post
 def get_updates_longpoll(request, handler):
-    if not request.POST:
-        # TODO: Do something
-        pass
-
     last_received = request.POST.get('last_received')
     if not last_received:
         # TODO: return error?
@@ -132,11 +134,8 @@ def get_updates_longpoll(request, handler):
     user_profile.add_callback(handler.async_callback(on_receive), last_received)
 
 @login_required
+@require_post
 def zephyr(request):
-    if not request.POST:
-        # TODO: Do something
-        pass
-
     user_profile = UserProfile.objects.get(user=request.user)
     zephyr_type = request.POST["type"]
     if zephyr_type == 'class':
@@ -262,3 +261,7 @@ def add_subscriptions(request):
             new_subscription.save()
 
     return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
+
+@login_required
+def class_exists(request, zephyr_class):
+    return HttpResponse(bool(ZephyrClass.objects.filter(name=zephyr_class)))

@@ -90,6 +90,18 @@ form.zephyr textarea {
     display: none;
 }
 
+#class-dne {
+    display: none;
+}
+
+#class-nosub {
+    display: none;
+}
+
+span.classname {
+    font-weight: bold;
+}
+
 #connection-error .alert {
     margin-bottom: auto;
 }

@@ -42,6 +42,12 @@ $.ajaxSetup({
      }
 });
 
+function sub(zephyr_class) {
+    // Supports multiple classes, separate by commas.
+    // TODO: check the return value and handle an error condition
+    $.post('/subscriptions/add/', {new_subscriptions: zephyr_class});
+}
+
 $(function() {
     var status_classes = 'alert-error alert-success alert-info';
     var send_status = $('#send-status');
@@ -56,6 +62,42 @@ $(function() {
                        .stop(true).fadeTo(0,1);
             buttons.attr('disabled', 'disabled');
             buttons.blur()
+            var okay = true;
+            $.ajaxSetup({async:false}); // so we get blocking gets
+            $.get("subscriptions/exists/" + $("#class").val(), function(data) {
+                if (data == "False") {
+                    // The class doesn't exist
+                    okay = false;
+                    send_status.removeClass(status_classes)
+                    send_status.toggle();
+                    $('#class-dne-name').text($("#class").val());
+                    $('#class-dne').show();
+                    $('#create-it').focus()
+                                   .click(function() {
+                        sub($("#class").val());
+                        $("#class-message form").ajaxSubmit();
+                        $('#class-dne').stop(true).fadeOut(500);
+                                   });
+                    buttons.removeAttr('disabled');
+                }
+            });
+            $.ajaxSetup({async:true});
+            if (okay && class_list.indexOf($("#class").val()) == -1) {
+                // You're not subbed to the class
+                okay = false;
+                send_status.removeClass(status_classes);
+                send_status.toggle();
+                $('#class-nosub-name').text($("#class").val());
+                $('#class-nosub').show();
+                $('#sub-it').focus()
+                            .click(function() {
+                        sub($("#class").val());
+                        $("#class-message form").ajaxSubmit();
+                        $('#class-nosub').stop(true).fadeOut(500);
+                            });
+                buttons.removeAttr('disabled');
+            }
+            return okay;
         },
         success: function (resp, statusText, xhr, form) {
             form.find('textarea').val('');
