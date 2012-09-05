@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.shortcuts import render
@@ -18,6 +18,16 @@ from zephyr.decorator import asynchronous
 import datetime
 import simplejson
 import socket
+
+def json_response(res_type="success", msg="", status=200):
+    return HttpResponse(content=simplejson.dumps({"result":res_type, "msg":msg}),
+                        mimetype='application/json', status=status)
+
+def json_success():
+    return json_response()
+
+def json_error(msg):
+    return json_response(res_type="error", msg=msg, status=400)
 
 def register(request):
     if request.method == 'POST':
@@ -87,7 +97,7 @@ def update(request):
     if request.POST.get('pointer'):
         user_profile.pointer = request.POST.get("pointer")
         user_profile.save()
-    return HttpResponse(simplejson.dumps({}), mimetype='application/json')
+    return json_success()
 
 @asynchronous
 def get_updates_longpoll(request, handler):
@@ -147,9 +157,7 @@ def zephyr(request):
         else:
             # This is actually a personal message
             if not User.objects.filter(username=recipient_data):
-                return HttpResponseBadRequest(
-                    simplejson.dumps({"result":"error", "msg":"Invalid username"}),
-                    content_type="application/json")
+                return json_error("Invalid username")
 
             recipient_user = User.objects.get(username=recipient_data)
             recipient_user_profile = UserProfile.objects.get(user=recipient_user)
