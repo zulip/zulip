@@ -126,9 +126,7 @@ class Huddle(models.Model):
     huddle_hash = models.CharField(max_length=40)
 
 def get_huddle(id_list):
-    hash_key = ''
-    for uid in sorted(id_list):
-        hash_key += str(uid) + ', '
+    hash_key = ",".join([str(x) for x in sorted(id_list)])
     huddle_hash = hashlib.sha1(hash_key).hexdigest()
     if Huddle.objects.filter(huddle_hash=huddle_hash):
         return Huddle.objects.get(huddle_hash=huddle_hash)
