@@ -15,8 +15,8 @@ def get_display_recipient(recipient):
         zephyr_class = ZephyrClass.objects.get(pk=recipient.type_id)
         return zephyr_class.name
     elif recipient.type == "huddle":
-        user_list = [UserProfile.objects.get(user=s.userprofile_id) for s in
-                     Subscription.objects.filter(recipient_id=recipient.id)]
+        user_list = [UserProfile.objects.get(user=s.userprofile) for s in
+                     Subscription.objects.filter(recipient=recipient)]
         return [{'name': user.user.username} for user in user_list]
     else:
         user = User.objects.get(pk=recipient.type_id)
@@ -70,7 +70,7 @@ def create_user_profile(user, realm):
         # Auto-sub to the ability to receive personals.
         recipient = Recipient(type_id=profile.pk, type="personal")
         recipient.save()
-        Subscription(userprofile_id=profile, recipient_id=recipient).save()
+        Subscription(userprofile=profile, recipient=recipient).save()
 
 class ZephyrClass(models.Model):
     name = models.CharField(max_length=30)
@@ -114,8 +114,8 @@ def send_zephyr(**kwargs):
         # personals to yourself or to someone else, respectively.
         assert((len(recipients) == 1) or (len(recipients) == 2))
     elif zephyr.recipient.type == "class" or zephyr.recipient.type == "huddle":
-        recipients = [UserProfile.objects.get(user=s.userprofile_id) for
-                      s in Subscription.objects.filter(recipient_id=zephyr.recipient, active=True)]
+        recipients = [UserProfile.objects.get(user=s.userprofile) for
+                      s in Subscription.objects.filter(recipient=zephyr.recipient, active=True)]
     else:
         raise
     for recipient in recipients:
@@ -124,12 +124,12 @@ def send_zephyr(**kwargs):
 post_save.connect(send_zephyr, sender=Zephyr)
 
 class Subscription(models.Model):
-    userprofile_id = models.ForeignKey(UserProfile)
-    recipient_id = models.ForeignKey(Recipient)
+    userprofile = models.ForeignKey(UserProfile)
+    recipient = models.ForeignKey(Recipient)
     active = models.BooleanField(default=True)
 
     def __repr__(self):
-        return "<Subscription: %r -> %r>" % (self.userprofile_id, self.recipient_id)
+        return "<Subscription: %r -> %r>" % (self.userprofile, self.recipient)
 
 class Huddle(models.Model):
     huddle_hash = models.CharField(max_length=40)
@@ -149,15 +149,15 @@ def get_huddle(id_list):
 
         # Add subscriptions
         for uid in id_list:
-            s = Subscription(recipient_id = recipient,
-                             userprofile_id = UserProfile.objects.get(id=uid))
+            s = Subscription(recipient = recipient,
+                             userprofile = UserProfile.objects.get(id=uid))
             s.save()
         return huddle
 
 def filter_by_subscriptions(zephyrs, user):
     userprofile = UserProfile.objects.get(user=user)
     subscribed_zephyrs = []
-    subscriptions = [sub.recipient_id for sub in Subscription.objects.filter(userprofile_id=userprofile, active=True)]
+    subscriptions = [sub.recipient for sub in Subscription.objects.filter(userprofile=userprofile, active=True)]
     for zephyr in zephyrs:
         # If you are subscribed to the personal or class, or if you sent the personal, you can see the zephyr.
         if (zephyr.recipient in subscriptions) or \

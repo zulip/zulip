@@ -94,9 +94,9 @@ class Command(BaseCommand):
         for i, profile in enumerate(profiles):
             # Subscribe to some classes.
             for recipient in recipient_classes[:int(len(recipient_classes) * float(i)/len(profiles)) + 1]:
-                new_subscription = Subscription(userprofile_id=profile,
-                                                recipient_id=Recipient.objects.get(type="class",
-                                                                                   type_id=recipient))
+                new_subscription = Subscription(userprofile=profile,
+                                                recipient=Recipient.objects.get(type="class",
+                                                                                type_id=recipient))
                 new_subscription.save()
 
         # Create some test zephyrs, including:
@@ -151,7 +151,7 @@ class Command(BaseCommand):
             elif zephyr_type == "class":
                 zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.type_id)
                 # Pick a random subscriber to the class
-                new_zephyr.sender = random.choice(Subscription.objects.filter(recipient_id=new_zephyr.recipient.id)).userprofile_id
+                new_zephyr.sender = random.choice(Subscription.objects.filter(recipient=new_zephyr.recipient)).userprofile
                 new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
                 saved_data = new_zephyr.instance
 

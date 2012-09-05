@@ -32,9 +32,9 @@ class AuthedTestCase(TestCase):
     def users_subscribed_to_class(self, class_name):
         zephyr_class = ZephyrClass.objects.get(name=class_name)
         recipient = Recipient.objects.get(type_id=zephyr_class.id, type="class")
-        subscriptions = Subscription.objects.filter(recipient_id=recipient)
+        subscriptions = Subscription.objects.filter(recipient=recipient)
 
-        return [subscription.userprofile_id.user for subscription in subscriptions]
+        return [subscription.userprofile.user for subscription in subscriptions]
 
     def zephyr_stream(self, user):
         return filter_by_subscriptions(Zephyr.objects.all(), user)

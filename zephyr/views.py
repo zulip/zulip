@@ -195,10 +195,10 @@ def zephyr(request):
 @login_required
 def subscriptions(request):
     userprofile = UserProfile.objects.get(user=request.user)
-    subscriptions = Subscription.objects.filter(userprofile_id=userprofile, active=True)
+    subscriptions = Subscription.objects.filter(userprofile=userprofile, active=True)
     # For now, don't display the subscription for your ability to receive personals.
-    sub_names = [get_display_recipient(sub.recipient_id) for sub in subscriptions
-                 if sub.recipient_id.type == "class"]
+    sub_names = [get_display_recipient(sub.recipient) for sub in subscriptions
+                 if sub.recipient.type == "class"]
 
     return render_to_response('zephyr/subscriptions.html',
                               {'subscriptions': sub_names, 'user_profile': userprofile},
@@ -216,7 +216,7 @@ def manage_subscriptions(request):
         zephyr_class = ZephyrClass.objects.get(name=sub_name)
         recipient = Recipient.objects.get(type_id=zephyr_class.id, type="class")
         subscription = Subscription.objects.get(
-            userprofile_id=user_profile.id, recipient_id=recipient)
+            userprofile=user_profile, recipient=recipient)
         subscription.active = False
         subscription.save()
 
@@ -248,15 +248,15 @@ def add_subscriptions(request):
             recipient = Recipient(type_id=zephyr_class.pk, type="class")
         recipient.save()
 
-        subscription = Subscription.objects.filter(userprofile_id=user_profile,
-                                                   recipient_id=recipient)
+        subscription = Subscription.objects.filter(userprofile=user_profile,
+                                                   recipient=recipient)
         if subscription:
             subscription = subscription[0]
             subscription.active = True
             subscription.save()
         else:
-            new_subscription = Subscription(userprofile_id=user_profile,
-                                            recipient_id=recipient)
+            new_subscription = Subscription(userprofile=user_profile,
+                                            recipient=recipient)
             new_subscription.save()
 
     return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
