@@ -162,7 +162,7 @@ $(document).keydown(function(event) {
         } else if (goto_pressed && event.keyCode == 67) { // 'c' keypress, for narrow-by-recipient
             var parent = $("#selected").parents("tr");
             var zephyr_class = parent.find("span.zephyr_class").text();
-            narrow(zephyr_class, parent.attr("id"));
+            narrow_class(zephyr_class, parent.attr("id"));
             event.preventDefault()
         } else if (goto_pressed && event.keyCode == 73) { // 'i' keypress, for narrow-by-instance
             var parent = $("#selected").parents("tr");
