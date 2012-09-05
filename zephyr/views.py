@@ -9,7 +9,8 @@ from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
-    Recipient, filter_by_subscriptions, get_display_recipient, get_huddle
+    Recipient, filter_by_subscriptions, get_display_recipient, get_huddle, \
+    create_user_profile, Realm
 from zephyr.forms import RegistrationForm
 
 import tornado.web
@@ -35,10 +36,16 @@ def register(request):
         if form.is_valid():
             username = request.POST['username']
             password = request.POST['password']
-            u = User.objects.create_user(username=username, password=password)
-            u.save()
-            user = authenticate(username=username, password=password)
-            login(request, user)
+            domain = request.POST['domain']
+            realm = Realm.objects.filter(domain=domain)
+            if not realm:
+                realm = Realm(domain=domain)
+            else:
+                realm = Realm.objects.get(domain=domain)
+            user = User.objects.create_user(username=username, password=password)
+            user.save()
+            create_user_profile(user, realm)
+            login(request, authenticate(username=username, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))
     else:
         form = RegistrationForm()

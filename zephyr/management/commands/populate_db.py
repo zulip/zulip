@@ -3,7 +3,7 @@ from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
-    Subscription, Huddle, get_huddle
+    Subscription, Huddle, get_huddle, Realm, create_user_profile
 
 import datetime
 import random
@@ -50,15 +50,21 @@ class Command(BaseCommand):
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
 
-        for klass in [Zephyr, ZephyrClass, UserProfile, User, Recipient, Subscription, Huddle]:
+        for klass in [Zephyr, ZephyrClass, UserProfile, User, Recipient,
+                      Realm, Subscription, Huddle]:
             klass.objects.all().delete()
+
+        # Create a test realm
+        realm = Realm(domain="humbughq.com")
+        realm.save()
 
         # Create test Users (UserProfiles are automatically created,
         # as are subscriptions to the ability to receive personals).
         usernames = ["othello", "iago", "prospero", "cordelia", "hamlet"]
         for username in usernames:
-            u = User.objects.create_user(username=username, password=username)
-            u.save()
+            user = User.objects.create_user(username=username, password=username)
+            user.save()
+            create_user_profile(user, realm)
         users = [user.id for user in User.objects.all()]
 
         # Create public classes.
@@ -130,7 +136,7 @@ class Command(BaseCommand):
                 new_zephyr.recipient = Recipient.objects.get(type="huddle", type_id=random.choice(recipient_huddles))
             elif (randkey <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.):
                 zephyr_type = "personal"
-                personals_pair = random.choice(personals_personals_pairs)
+                personals_pair = random.choice(personals_pairs)
                 random.shuffle(personals_pair)
             elif (randkey <= random_max * 1.0):
                 zephyr_type = "class"

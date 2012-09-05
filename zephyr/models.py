@@ -24,9 +24,18 @@ def get_display_recipient(recipient):
 
 callback_table = {}
 
+class Realm(models.Model):
+    domain = models.CharField(max_length=40)
+
+    def __repr__(self):
+        return "<Realm: %s %s>" % (self.domain, self.id)
+    def __str__(self):
+        return self.__repr__()
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     pointer = models.IntegerField()
+    realm = models.ForeignKey(Realm)
 
     # The user receives this message
     def receive(self, message):
@@ -49,19 +58,19 @@ class UserProfile(models.Model):
         callback_table.setdefault(self.user.id, []).append(cb)
 
     def __repr__(self):
-        return "<UserProfile: %s>" % (self.user.username,)
+        return "<UserProfile: %s %s>" % (self.user.username, self.realm)
+    def __str__(self):
+        return self.__repr__()
 
-def create_user_profile(**kwargs):
+def create_user_profile(user, realm):
     """When creating a new user, make a profile for him or her."""
-    u = kwargs["instance"]
-    if not UserProfile.objects.filter(user=u):
-        profile = UserProfile(user=u, pointer=-1)
+    if not UserProfile.objects.filter(user=user):
+        profile = UserProfile(user=user, pointer=-1, realm_id=realm.id)
         profile.save()
         # Auto-sub to the ability to receive personals.
         recipient = Recipient(type_id=profile.pk, type="personal")
         recipient.save()
         Subscription(userprofile_id=profile, recipient_id=recipient).save()
-post_save.connect(create_user_profile, sender=User)
 
 class ZephyrClass(models.Model):
     name = models.CharField(max_length=30)

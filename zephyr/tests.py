@@ -17,7 +17,7 @@ class AuthedTestCase(TestCase):
 
     def register(self, username, password):
         return self.client.post('/accounts/register/',
-                                {'username':username, 'password':password})
+                                {'username':username, 'password':password, 'domain':'humbughq.com'})
 
     def send_zephyr(self, sender_name, recipient_name, zephyr_type):
         sender = UserProfile.objects.get(user=User.objects.get(username=sender_name))
