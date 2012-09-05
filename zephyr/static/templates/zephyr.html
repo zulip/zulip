@@ -2,6 +2,8 @@
 <td class="pointer"><p></p></td>
 <td><p>
     {{#is_huddle}}
+        <span class="hidden zephyr_huddle_recipients_list
+                     ">{{#display_recipient}}{{name}}, {{/display_recipient}}</span>
         {{#display_recipient}}
         <span class="label zephyr_label_clickable zephyr_huddle_recipient"
               onclick="narrow_huddle({{id}})">{{name}}</span>

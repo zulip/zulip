@@ -132,6 +132,8 @@ def zephyr(request):
         if ',' in recipient_data:
             # This is actually a huddle message
             recipients = [r.strip() for r in recipient_data.split(',')]
+            # Filter out any trailing commas
+            recipients = [r for r in recipients if r]
             recipient_ids = [UserProfile.objects.get(user=User.objects.get(username=r)).id
                              for r in recipients]
             # Include the sender in the new huddle
