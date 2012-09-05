@@ -48,6 +48,7 @@ $(function() {
     var buttons = $('#class-message, #personal-message').find('input[type="submit"]');
 
     var options = {
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
         beforeSubmit: function (form, _options) {
             send_status.removeClass(status_classes)
                        .addClass('alert-info')
@@ -64,10 +65,16 @@ $(function() {
                        .stop(true).fadeTo(0,1).delay(1000).fadeOut(1000);
             buttons.removeAttr('disabled');
         },
-        error: function() {
+        error: function(xhr) {
+            var response = "Error sending message";
+            if (xhr.status.toString().charAt(0) == "4") {
+                // Only display the error response for 4XX, where we've crafted
+                // a nice response.
+                response += ": " + $.parseJSON(xhr.responseText).msg;
+            }
             send_status.removeClass(status_classes)
                        .addClass('alert-error')
-                       .text('Error sending message ')
+                       .text(response)
                        .append($('<span />')
                            .addClass('send-status-close').html('&times;')
                            .click(function () { send_status.stop(true).fadeOut(500); }))
