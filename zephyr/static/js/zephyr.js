@@ -404,6 +404,8 @@ function get_updates_longpoll() {
         success: function (data) {
             console.log(new Date() + ': longpoll success');
             longpoll_failures = 0;
+            $('#connection-error').hide();
+
             if (data && data.zephyrs) {
                 $.each(data.zephyrs, add_message);
             }
@@ -414,20 +416,23 @@ function get_updates_longpoll() {
                 // Retry indefinitely on timeout.
                 console.log(new Date() + ': longpoll timed out');
                 longpoll_failures = 0;
+                $('#connection-error').hide();
             } else {
                 console.log(new Date() + ': longpoll failed with ' + error_type +
                             ' (' + longpoll_failures + ' failures)');
                 longpoll_failures += 1;
             }
 
-            if (longpoll_failures >= 6) {
-                console.log(new Date() + ': longpoll giving up')
+            if (longpoll_failures >= 5) {
                 $('#connection-error').show();
-                resize_main_div();
             } else {
-                console.log(new Date() + ': longpoll retrying')
-                setTimeout(get_updates_longpoll, 5*1000);
+                $('#connection-error').hide();
             }
+            resize_main_div();
+
+            var retry_sec = Math.min(90, Math.exp(longpoll_failures/2));
+            console.log(new Date() + ': longpoll retrying in ' + retry_sec + ' seconds');
+            setTimeout(get_updates_longpoll, retry_sec*1000);
         }
     });
 }
