@@ -15,7 +15,7 @@ def asynchronous(method):
         try:
             v = method(request, request._tornado_handler, *args, **kwargs)
             if v == None or type(v) == types.GeneratorType:
-                raise TornadoAsyncException 
+                raise TornadoAsyncException
         except _DefGen_Return, e:
             request._tornado_handler.finish(e.value.content)
         return v

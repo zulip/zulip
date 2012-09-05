@@ -4,7 +4,7 @@ from django.conf import settings
 import os
 import sys
 import tornado.web
- 
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--noreload', action='store_false',
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         # setup unbuffered I/O
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
         sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
- 
+
         if len(addrport) == 0:
             self.run_one(**options)
         elif len(addrport) == 1:
@@ -43,7 +43,6 @@ class Command(BaseCommand):
                     plist.pop(0)
                 else:
                     plist[0].join()
-            
 
     def run_one(self, addrport, **options):
         import django
@@ -60,10 +59,10 @@ class Command(BaseCommand):
                 addr, port = '', addrport
         if not addr:
             addr = '127.0.0.1'
- 
+
         if not port.isdigit():
             raise CommandError("%r is not a valid port number." % port)
- 
+
         auto_reload = options.get('auto_reload', False)
         xheaders = options.get('xheaders', True)
         no_keep_alive = options.get('no_keep_alive', False)
@@ -73,7 +72,7 @@ class Command(BaseCommand):
             import logging
             logger = logging.getLogger()
             logger.setLevel(logging.INFO)
- 
+
         def inner_run():
             from django.conf import settings
             from django.utils import translation
@@ -84,7 +83,7 @@ class Command(BaseCommand):
             print "\nDjango version %s" % (django.get_version())
             print "Tornado server is running at http://%s:%s/" % (addr, port)
             print "Quit the server with %s." % quit_command
-            
+
             from tornado.web import FallbackHandler, StaticFileHandler
             django_app = wsgi.WSGIContainer(WSGIHandler())
 
@@ -103,7 +102,7 @@ class Command(BaseCommand):
                 ioloop.IOLoop.instance().start()
             except KeyboardInterrupt:
                 sys.exit(0)
- 
+
         if auto_reload:
             from tornado import autoreload
             autoreload.start()
@@ -135,7 +134,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         self._auto_finish = False
 
     def prepare(func):
-        """Patches the Cookie header in the Tornado request to fulfull                                                       
+        """Patches the Cookie header in the Tornado request to fulfull
         Django's strict string-type cookie policy"""
         def inner_func(self,**kwargs):
             if u'Cookie' in self.request.headers:
@@ -165,7 +164,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             response = self.get_response(request)
 
             if not response:
-                return 
+                return
 
             # Apply response middleware
             for middleware_method in self._response_middleware:
@@ -187,7 +186,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         self.write(response.content)
         self.finish()
-    
+
 
     def head(self):
         self.get()
@@ -253,11 +252,11 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         view_name = callback.func_name
                     except AttributeError:
                         view_name = callback.__class__.__name__ + '.__call__'
-                    raise ValueError("The view %s.%s returned None." % 
+                    raise ValueError("The view %s.%s returned None." %
                                      (callback.__module__, view_name))
 
-                # If the response supports deferred rendering, apply template                   
-                # response middleware and the render the response                               
+                # If the response supports deferred rendering, apply template
+                # response middleware and the render the response
                 if hasattr(response, 'render') and callable(response.render):
                     for middleware_method in self._template_response_middleware:
                         response = middleware_method(request, response)
@@ -306,11 +305,11 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             urlresolvers.set_urlconf(None)
 
         try:
-            # Apply response middleware, regardless of the response                             
+            # Apply response middleware, regardless of the response
             for middleware_method in self._response_middleware:
                 response = middleware_method(request, response)
             response = self.apply_response_fixes(request, response)
-        except: # Any exception should be gathered and handled                                  
+        except: # Any exception should be gathered and handled
             signals.got_request_exception.send(sender=self.__class__, request=request)
             response = self.handle_uncaught_exception(request, resolver, sys.exc_info())
 

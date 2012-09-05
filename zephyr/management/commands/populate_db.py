@@ -22,14 +22,14 @@ class Command(BaseCommand):
     def handle(self, **options):
         for klass in [Zephyr, ZephyrClass, UserProfile, User, Recipient, Subscription]:
             klass.objects.all().delete()
-        
+
         # Create test Users (UserProfiles are automatically created,
         # as are subscriptions to the ability to receive personals).
         usernames = ["othello", "iago", "prospero", "cordelia", "hamlet"]
         for username in usernames:
             u = User.objects.create_user(username=username, password=username)
             u.save()
-        
+
         # Create public classes.
         for name in ["Verona", "Denmark", "Scotland", "Venice", "Rome"]:
             new_class = ZephyrClass(name=name)
@@ -37,7 +37,7 @@ class Command(BaseCommand):
 
             recipient = Recipient(type_id=new_class.pk, type="class")
             recipient.save()
-        
+
         # Create some test zephyrs, including:
         # - multiple classes
         # - multiple instances per class
