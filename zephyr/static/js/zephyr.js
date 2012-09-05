@@ -406,7 +406,7 @@ function get_updates_longpoll() {
             if (data && data.zephyrs) {
                 $.each(data.zephyrs, add_message);
             }
-            get_updates_longpoll();
+            setTimeout(get_updates_longpoll, 0);
         },
         error: function () {
             longpoll_failures += 1;
