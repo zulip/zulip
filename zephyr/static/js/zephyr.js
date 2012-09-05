@@ -145,13 +145,13 @@ $(document).keydown(function(event) {
                 $("#instance").val(instance);
                 $("#new_zephyr").focus();
                 $("#new_zephyr").select();
-            } else { // No class, must be a personal
-
+            } else { // must be a personal
                 var recipient = parent.find("span.zephyr_sender").text();
                 if (recipient == username) { // that is, we sent the original message
                     recipient = parent.find("span.zephyr_personal_recipient").text();
                 }
-                prepare_personal(recipient);
+                $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
+                $("#recipient").val(recipient);
                 $("#new_personal_zephyr").focus();
                 $("#new_personal_zephyr").select();
             }
@@ -283,12 +283,6 @@ function narrow_instance(class_name, instance, target_zephyr) {
                           element.find("span.zephyr_instance").text() == instance);
               }
              );
-}
-
-function prepare_personal(username) {
-    $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
-    $("#recipient").val(username);
-    $("#new_personal_zephyr").focus();
 }
 
 function unhide() {
