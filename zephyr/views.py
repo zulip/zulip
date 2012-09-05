@@ -137,7 +137,7 @@ def zephyr(request):
             recipients = [r for r in recipients if r]
             recipient_ids = [UserProfile.objects.get(user=User.objects.get(username=r)).id
                              for r in recipients]
-            # Make sure the sender is included in the new huddle
+            # Make sure the sender is included in the huddle
             recipient_ids.append(UserProfile.objects.get(user=request.user).id)
             huddle = get_huddle(recipient_ids)
             recipient = Recipient.objects.get(type_id=huddle.pk, type="huddle")
