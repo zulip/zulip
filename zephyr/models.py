@@ -41,8 +41,9 @@ class UserProfile(models.Model):
     def add_callback(self, cb, last_received):
         global callback_table
 
-        # This filter should also restrict to the current user's subs
-        new_zephyrs = Zephyr.objects.filter(id__gt=last_received)
+        new_zephyrs = filter_by_subscriptions(
+                Zephyr.objects.filter(id__gt=last_received), self.user)
+
         if new_zephyrs:
             return cb(new_zephyrs)
         callback_table.setdefault(self.user.id, []).append(cb)
