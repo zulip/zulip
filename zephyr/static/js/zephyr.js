@@ -86,7 +86,7 @@ selected_tag = '<p id="selected">&#x25b6;</p>'
 
 var allow_hotkeys = true;
 
-function select_zephyr(next_zephyr) { 
+function select_zephyr(next_zephyr) {
     p = $("#selected");
     td = $(p).closest("td");
     if (next_zephyr.length != 0) { // We are not at the bottom or top of the zephyrs.
@@ -133,7 +133,7 @@ $(document).keydown(function(event) {
             } else { // up arrow
                 next_zephyr = tr.prevAll(":not(:hidden):first");
             }
-            select_zephyr(next_zephyr);    
+            select_zephyr(next_zephyr);
             event.preventDefault();
         } else if (event.keyCode == 82) { // 'r' keypress, for responding to a zephyr
             var parent = $("#selected").parents("tr");
