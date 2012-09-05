@@ -129,8 +129,7 @@ $(document).keydown(function(event) {
 
         if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
 
-            p = $("#selected");
-            tr = $(p).closest("tr");
+            var tr = $("#selected").closest("tr");
             if (event.keyCode == 40) { // down arrow
                 // There are probably more verbose but more efficient ways to do this.
                 next_zephyr = tr.nextAll(":not(:hidden):first");
