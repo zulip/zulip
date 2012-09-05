@@ -70,8 +70,9 @@ class Command(BaseCommand):
 
         if settings.DEBUG:
             import logging
+            logging.basicConfig(level=logging.INFO,
+                format='%(asctime)s %(levelname)-8s %(message)s')
             logger = logging.getLogger()
-            logger.setLevel(logging.INFO)
 
         def inner_run():
             from django.conf import settings
