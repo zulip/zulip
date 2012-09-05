@@ -397,21 +397,26 @@ function get_updates_longpoll(data) {
     if ($("tr:last").attr("id")) {
         last_received = $("tr:last").attr("id");
     }
+    console.log(new Date() + ': longpoll started');
     $.ajax({
         type:     'POST',
         url:      'get_updates_longpoll',
         data:     { last_received: last_received },
         dataType: 'json',
         success: function (data) {
+            console.log(new Date() + ': longpoll success');
             longpoll_failures = 0;
             get_updates_longpoll(data);
         },
         error: function () {
             longpoll_failures += 1;
+            console.log(new Date() + ': longpoll failed (' + longpoll_failures + ' failures)');
             if (longpoll_failures >= 6) {
+                console.log(new Date() + ': longpoll giving up')
                 $('#connection-error').show();
                 resize_main_div();
             } else {
+                console.log(new Date() + ': longpoll retrying')
                 setTimeout(get_updates_longpoll, 5*1000);
             }
         }
