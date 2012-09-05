@@ -400,6 +400,7 @@ function get_updates_longpoll() {
         url:      'get_updates_longpoll',
         data:     { last_received: last_received },
         dataType: 'json',
+        timeout:  10*60*1000, // 10 minutes in ms
         success: function (data) {
             console.log(new Date() + ': longpoll success');
             longpoll_failures = 0;
@@ -408,9 +409,17 @@ function get_updates_longpoll() {
             }
             setTimeout(get_updates_longpoll, 0);
         },
-        error: function () {
-            longpoll_failures += 1;
-            console.log(new Date() + ': longpoll failed (' + longpoll_failures + ' failures)');
+        error: function (xhr, error_type, exn) {
+            if (error_type == 'timeout') {
+                // Retry indefinitely on timeout.
+                console.log(new Date() + ': longpoll timed out');
+                longpoll_failures = 0;
+            } else {
+                console.log(new Date() + ': longpoll failed with ' + error_type +
+                            ' (' + longpoll_failures + ' failures)');
+                longpoll_failures += 1;
+            }
+
             if (longpoll_failures >= 6) {
                 console.log(new Date() + ': longpoll giving up')
                 $('#connection-error').show();
