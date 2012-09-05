@@ -367,7 +367,14 @@ $(function () {
     $.get('/static/templates/zephyr.html', function (template) {
         ich.addTemplate('zephyr', template);
         $(initial_zephyr_json).each(add_message);
-        select_zephyr($("#" + initial_pointer));
+
+        var selected = $("#" + initial_pointer);
+        if (selected.length == 0) {
+            // initial_pointer names a zephyr we can't see
+            selected = $("tr:first");
+        }
+        select_zephyr(selected);
+
         get_updates_longpoll();
     });
 });
