@@ -151,8 +151,13 @@ def zephyr(request):
             recipients = [r.strip() for r in recipient_data.split(',')]
             # Ignore any blank recipients
             recipients = [r for r in recipients if r]
-            recipient_ids = [UserProfile.objects.get(user=User.objects.get(username=r)).id
-                             for r in recipients]
+            recipient_ids = []
+            for recipient in recipients:
+                try:
+                    recipient_ids.append(
+                        UserProfile.objects.get(user=User.objects.get(username=recipient)).id)
+                except User.DoesNotExist, e:
+                    return json_error("Invalid username '%s'" % (recipient))
             # Make sure the sender is included in the huddle
             recipient_ids.append(UserProfile.objects.get(user=request.user).id)
             huddle = get_huddle(recipient_ids)
