@@ -137,14 +137,16 @@ def zephyr(request):
         # TODO: Do something
         pass
 
+    user_profile = UserProfile.objects.get(user=request.user)
     zephyr_type = request.POST["type"]
     if zephyr_type == 'class':
         class_name = request.POST['class']
-        if ZephyrClass.objects.filter(name=class_name):
-            my_class = ZephyrClass.objects.get(name=class_name)
+        if ZephyrClass.objects.filter(name=class_name, realm=user_profile.realm):
+            my_class = ZephyrClass.objects.get(name=class_name, realm=user_profile.realm)
         else:
             my_class = ZephyrClass()
             my_class.name = class_name
+            my.realm = user_profile.realm
             my_class.save()
         try:
             recipient = Recipient.objects.get(type_id=my_class.id, type="class")
@@ -213,7 +215,7 @@ def manage_subscriptions(request):
 
     unsubs = request.POST.getlist('subscription')
     for sub_name in unsubs:
-        zephyr_class = ZephyrClass.objects.get(name=sub_name)
+        zephyr_class = ZephyrClass.objects.get(name=sub_name, realm=user_profile.realm)
         recipient = Recipient.objects.get(type_id=zephyr_class.id, type="class")
         subscription = Subscription.objects.get(
             userprofile=user_profile, recipient=recipient)
@@ -234,11 +236,11 @@ def add_subscriptions(request):
         return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
 
     for sub_name in new_subs.split(","):
-        zephyr_class = ZephyrClass.objects.filter(name=sub_name)
+        zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)
         if zephyr_class:
             zephyr_class = zephyr_class[0]
         else:
-            zephyr_class = ZephyrClass(name=sub_name)
+            zephyr_class = ZephyrClass(name=sub_name, realm=user_profile.realm)
             zephyr_class.save()
 
         recipient = Recipient.objects.filter(type_id=zephyr_class.pk, type="class")

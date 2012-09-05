@@ -3,7 +3,8 @@ from django.test import TestCase
 from django.utils.timezone import utc
 from django.db.models import Q
 
-from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscription, filter_by_subscriptions
+from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscription, \
+    filter_by_subscriptions, Realm
 
 import datetime
 import os
@@ -24,13 +25,14 @@ class AuthedTestCase(TestCase):
         if zephyr_type == "personal":
             recipient = UserProfile.objects.get(user=User.objects.get(username=recipient_name))
         else:
-            recipient = ZephyrClass.objects.get(name=recipient_name)
+            recipient = ZephyrClass.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=zephyr_type)
         pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
         Zephyr(sender=sender, recipient=recipient, instance="test", pub_date=pub_date).save()
 
-    def users_subscribed_to_class(self, class_name):
-        zephyr_class = ZephyrClass.objects.get(name=class_name)
+    def users_subscribed_to_class(self, class_name, realm_domain):
+        realm = Realm.objects.get(domain=realm_domain)
+        zephyr_class = ZephyrClass.objects.get(name=class_name, realm=realm)
         recipient = Recipient.objects.get(type_id=zephyr_class.id, type="class")
         subscriptions = Subscription.objects.filter(recipient=recipient)
 
@@ -182,7 +184,7 @@ class ClassZephyrsTest(AuthedTestCase):
         If you send a zephyr to a class, everyone subscribed to the class
         receives the zephyr.
         """
-        subscribers = self.users_subscribed_to_class("Scotland")
+        subscribers = self.users_subscribed_to_class("Scotland", "humbughq.com")
         old_subscriber_zephyrs = []
         for subscriber in subscribers:
             old_subscriber_zephyrs.append(len(self.zephyr_stream(subscriber)))

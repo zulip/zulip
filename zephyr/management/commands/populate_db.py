@@ -69,7 +69,7 @@ class Command(BaseCommand):
 
         # Create public classes.
         for name in ["Verona", "Denmark", "Scotland", "Venice", "Rome"]:
-            new_class = ZephyrClass(name=name)
+            new_class = ZephyrClass(name=name, realm=realm)
             new_class.save()
 
             recipient = Recipient(type_id=new_class.pk, type="class")

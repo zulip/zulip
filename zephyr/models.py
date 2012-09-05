@@ -74,6 +74,7 @@ def create_user_profile(user, realm):
 
 class ZephyrClass(models.Model):
     name = models.CharField(max_length=30)
+    realm = models.ForeignKey(Realm)
 
     def __repr__(self):
         return "<ZephyrClass: %s>" % (self.name,)
