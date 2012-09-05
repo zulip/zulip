@@ -238,18 +238,20 @@ function do_narrow(target_zephyr, description, filter_function) {
 }
 
 function narrow_huddle(target_zephyr) {
-    // This probably should be specific to a particular group chat, not all of them
-    var message = "Showing group chats";
+    var parent = $("#" + target_zephyr);
+    var recipients = parent.find("span.zephyr_huddle_recipients_list").text();
+    var message = "Showing group chats with " + recipients;
     do_narrow(target_zephyr, message,
               function(element) {
-                  return (element.find("span.zephyr_huddle_recipient").length > 0);
+                  return (element.find("span.zephyr_huddle_recipient").length > 0 &&
+                          element.find("span.zephyr_huddle_recipients_list").text() == recipients);
               }
              );
 }
 
 function narrow_all_personals(target_zephyr) {
     // Narrow to all personals
-    var message = "Showing personals";
+    var message = "Showing all personals";
     do_narrow(target_zephyr, message,
               function(element) {
                   return (element.find("span.zephyr_personal_recipient").length > 0);
@@ -259,9 +261,15 @@ function narrow_all_personals(target_zephyr) {
 
 function narrow_personals(target_zephyr) {
     // Narrow to personals with a specific user
-    var message = "Showing personals";
     var target_recipient = $("#" + target_zephyr).find("span.zephyr_personal_recipient").text();
     var target_sender = $("#" + target_zephyr).find("span.zephyr_sender").text();
+    var other_party;
+    if (target_recipient == username) {
+        other_party = target_sender;
+    } else {
+        other_party = target_recipient;
+    }
+    var message = "Showing personals with " + other_party;
     do_narrow(target_zephyr, message,
               function(element) {
                   var recipient = element.find("span.zephyr_personal_recipient");
