@@ -130,9 +130,10 @@ def zephyr(request):
     elif zephyr_type == "personal":
         recipient_data = request.POST['recipient']
         if ',' in recipient_data:
-            # This is actually a huddle message
+            # This is actually a huddle message, which shares the
+            # "personal" zephyr sending form
             recipients = [r.strip() for r in recipient_data.split(',')]
-            # Filter out any trailing commas
+            # Ignore any blank recipients
             recipients = [r for r in recipients if r]
             recipient_ids = [UserProfile.objects.get(user=User.objects.get(username=r)).id
                              for r in recipients]
@@ -142,6 +143,7 @@ def zephyr(request):
             huddle = get_huddle(recipient_ids)
             recipient = Recipient.objects.get(type_id=huddle.pk, type="huddle")
         else:
+            # This is actually a personal message
             if User.objects.filter(username=recipient_data):
                 recipient_user = User.objects.get(username=recipient_data)
             recipient_user_profile = UserProfile.objects.get(user=recipient_user)
