@@ -389,10 +389,7 @@ $(function () {
 
 var longpoll_failures = 0;
 
-function get_updates_longpoll(data) {
-    if (data && data.zephyrs) {
-        $.each(data.zephyrs, add_message);
-    }
+function get_updates_longpoll() {
     var last_received = 0;
     if ($("tr:last").attr("id")) {
         last_received = $("tr:last").attr("id");
@@ -406,7 +403,10 @@ function get_updates_longpoll(data) {
         success: function (data) {
             console.log(new Date() + ': longpoll success');
             longpoll_failures = 0;
-            get_updates_longpoll(data);
+            if (data && data.zephyrs) {
+                $.each(data.zephyrs, add_message);
+            }
+            get_updates_longpoll();
         },
         error: function () {
             longpoll_failures += 1;
