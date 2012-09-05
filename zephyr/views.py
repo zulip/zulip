@@ -139,7 +139,10 @@ def zephyr(request):
             my_class = ZephyrClass()
             my_class.name = class_name
             my_class.save()
-        recipient = Recipient.objects.get(type_id=my_class.id, type="class")
+        try:
+            recipient = Recipient.objects.get(type_id=my_class.id, type="class")
+        except Recipient.DoesNotExist:
+            return json_error("Invalid class")
     elif zephyr_type == "personal":
         recipient_data = request.POST['recipient']
         if ',' in recipient_data:
