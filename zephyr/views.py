@@ -104,11 +104,21 @@ def home(request):
 @login_required
 @require_post
 def update(request):
-    user = request.user
-    user_profile = UserProfile.objects.get(user=user)
-    if request.POST.get('pointer'):
-        user_profile.pointer = request.POST.get("pointer")
-        user_profile.save()
+    user_profile = UserProfile.objects.get(user=request.user)
+    pointer = request.POST.get('pointer')
+    if not pointer:
+        return json_error("Missing pointer")
+
+    try:
+        pointer = int(pointer)
+    except ValueError:
+        return json_error("Invalid pointer: must be an integer")
+
+    if pointer < 0:
+        return json_error("Invalid pointer value")
+
+    user_profile.pointer = pointer
+    user_profile.save()
     return json_success()
 
 @asynchronous
