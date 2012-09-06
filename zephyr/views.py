@@ -143,8 +143,23 @@ def get_updates_longpoll(request, handler):
     # We need to replace this abstraction with the message list
     user_profile.add_callback(handler.async_callback(on_receive), last_received)
 
+@login_required
+@require_post
 def zephyr(request):
     return zephyr_backend(request, request.user)
+
+@login_required
+@require_post
+def forge_zephyr(request, username):
+    user_profile = UserProfile.objects.get(user=request.user)
+    try:
+        user = User.objects.get(username=username)
+    except UserProfile.DoesNotExist:
+        # forge a user for this person
+        user = User.objects.create_user(username=username, password="test")
+        user.save()
+        create_user_profile(user, user_profile.realm)
+    return zephyr_backend(request, user)
 
 @login_required
 @require_post
