@@ -198,12 +198,8 @@ $(function () {
     $('input, textarea, button').focus(function () {
           allow_hotkeys = false;
     });
-
     $('input, textarea, button').blur(function () {
           allow_hotkeys = true;
-    });
-    $("body").delegate("p", "click", function (){
-        select_zephyr(get_id($(this).parent().parent()));
     });
 });
 
