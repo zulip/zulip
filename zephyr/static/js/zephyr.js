@@ -62,6 +62,10 @@ $(function() {
                        .stop(true).fadeTo(0,1);
             buttons.attr('disabled', 'disabled');
             buttons.blur()
+
+            if ($("#class-message:visible")[0] == undefined) {// we're not dealing with classes
+                return true;
+            }
             var okay = true;
             $.ajaxSetup({async:false}); // so we get blocking gets
             $.get("subscriptions/exists/" + $("#class").val(), function(data) {
