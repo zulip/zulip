@@ -31,19 +31,27 @@ def browser_login(br):
 
 # example: send_zephyr("Verona", "Auto2", "test")
 def send_zephyr(sender, klass, instance, content):
-    br = mechanize.Browser()
-    hack_content = "Message from MIT Zephyr sender %s\n" % (sender,) + content
-    csrf = browser_login(br)
     br.addheaders.append(('X-CSRFToken', csrf))
-    zephyr_data = urllib.urlencode([('type', 'class'), ('class', klass),
-                                    ('instance', instance), ('new_zephyr', hack_content)])
-    br.open("https://app.humbughq.com/zephyr/", zephyr_data)
+    zephyr_data = urllib.urlencode([('type', 'class'), ('class', klass), ('sender', sender),
+                                    ('instance', instance), ('new_zephyr', content)])
+    br.open("https://app.humbughq.com/forge_zephyr/", zephyr_data)
+
+br = mechanize.Browser()
+csrf = browser_login(br)
 
 import zephyr
 subs = zephyr.Subscriptions()
-subs.add(('tabbott-test2', '*', '*'))
+subs_list = """\
+"""
 
+print subs_list
+for sub in subs_list.split():
+    subs.add((sub, '*', '*'))
+
+print "Starting receive loop"
 while True:
     notice = zephyr.receive(block=True)
     [zsig, body] = notice.message.split("\x00")
+    sys.stdout.write("received a message on %s from %s..." % (notice.cls, notice.sender))
     send_zephyr(notice.sender, notice.cls, notice.instance, body)
+    print "forwarded"
