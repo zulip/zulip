@@ -143,9 +143,12 @@ def get_updates_longpoll(request, handler):
     # We need to replace this abstraction with the message list
     user_profile.add_callback(handler.async_callback(on_receive), last_received)
 
+def zephyr(request):
+    return zephyr_backend(request, request.user)
+
 @login_required
 @require_post
-def zephyr(request):
+def zephyr_backend(request, sender):
     user_profile = UserProfile.objects.get(user=request.user)
     zephyr_type = request.POST["type"]
     if zephyr_type == 'class':
@@ -195,7 +198,7 @@ def zephyr(request):
         raise
 
     new_zephyr = Zephyr()
-    new_zephyr.sender = UserProfile.objects.get(user=request.user)
+    new_zephyr.sender = UserProfile.objects.get(user=sender)
     new_zephyr.content = request.POST['new_zephyr']
     new_zephyr.recipient = recipient
     if zephyr_type == "class":
