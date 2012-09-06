@@ -203,7 +203,7 @@ def zephyr(request):
     new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
     new_zephyr.save()
 
-    return HttpResponse('')
+    return json_success()
 
 @login_required
 def subscriptions(request):
