@@ -302,14 +302,16 @@ class ZephyrPOSTTest(AuthedTestCase):
 
     def test_zephyr_to_nonexistent_class(self):
         """
-        Zephyring to a nonexistent class returns error JSON.
+        Zephyring to a nonexistent class creates the class and is successful.
         """
         self.login("hamlet", "hamlet")
+        self.assertFalse(ZephyrClass.objects.filter(name="nonexistent_class"))
         result = self.client.post("/zephyr/", {"type": "class",
-                                               "class": "foo nonexistent",
+                                               "class": "nonexistent_class",
                                                "new_zephyr": "Test message",
                                                "instance": "Test instance"})
-        self.assert_json_error(result, "Invalid class")
+        self.assert_json_success(result)
+        self.assertTrue(ZephyrClass.objects.filter(name="nonexistent_class"))
 
     def test_personal_zephyr(self):
         """
