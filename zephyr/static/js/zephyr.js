@@ -279,7 +279,7 @@ function home_view(element) {
 
 var current_view_predicate = home_view;
 
-function current_view(element) {
+function apply_view(element) {
     if (current_view_predicate(element)) {
         element.show();
     } else {
@@ -291,8 +291,8 @@ function do_narrow(description, filter_function) {
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
     var old_top = $("#main_div").offset().top - get_selected_zephyr_row().offset().top;
     current_view_predicate = filter_function;
-    $("tr").each(function() {
-        current_view($(this))
+    $("tr").each(function () {
+        apply_view($(this));
     });
 
     select_zephyr(selected_zephyr_id);
@@ -421,7 +421,7 @@ function add_message(index, zephyr) {
     var new_tr = $('<tr />').attr('id', zephyr.id);
     $('#table').append(new_tr);
     new_tr.append(ich.zephyr(zephyr));
-    current_view(new_tr);
+    apply_view(new_tr);
 }
 
 $(function () {
