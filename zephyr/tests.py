@@ -285,3 +285,48 @@ class PointerTest(AuthedTestCase):
         result = self.client.post("/update", {"pointer": -2})
         self.assert_json_error(result, "Invalid pointer value")
         self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+
+class ZephyrPOSTTest(AuthedTestCase):
+    fixtures = ['zephyrs.json']
+
+    def test_zephyr_to_class(self):
+        """
+        Zephyring to a class to which you are subscribed is successful.
+        """
+        self.login("hamlet", "hamlet")
+        result = self.client.post("/zephyr/", {"type": "class",
+                                               "class": "Verona",
+                                               "new_zephyr": "Test message",
+                                               "instance": "Test instance"})
+        self.assert_json_success(result)
+
+    def test_zephyr_to_nonexistent_class(self):
+        """
+        Zephyring to a nonexistent class returns error JSON.
+        """
+        self.login("hamlet", "hamlet")
+        result = self.client.post("/zephyr/", {"type": "class",
+                                               "class": "foo nonexistent",
+                                               "new_zephyr": "Test message",
+                                               "instance": "Test instance"})
+        self.assert_json_error(result, "Invalid class")
+
+    def test_personal_zephyr(self):
+        """
+        Sending a personal zephyr to a valid username is successful.
+        """
+        self.login("hamlet", "hamlet")
+        result = self.client.post("/zephyr/", {"type": "personal",
+                                               "new_zephyr": "Test message",
+                                               "recipient": "othello"})
+        self.assert_json_success(result)
+
+    def test_personal_zephyr_to_nonexistent_user(self):
+        """
+        Sending a personal zephyr to an invalid username returns error JSON.
+        """
+        self.login("hamlet", "hamlet")
+        result = self.client.post("/zephyr/", {"type": "personal",
+                                               "new_zephyr": "Test message",
+                                               "recipient": "nonexistent"})
+        self.assert_json_error(result, "Invalid username")
