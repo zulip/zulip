@@ -135,9 +135,7 @@ $(function() {
     $("#personal-message form").ajaxForm(options);
 });
 
-var selected_tag = '<p id="selected">&#x25b6;</p>'
-
-var allow_hotkeys = true;
+var tag_for_selected = '<p id="selected">&#x25b6;</p>';
 
 function select_zephyr(next_zephyr) {
     if (next_zephyr.length == 0) {
@@ -148,7 +146,7 @@ function select_zephyr(next_zephyr) {
     // Clear the previous arrow.
     $("#selected").closest("td").empty();
 
-    next_zephyr.children("td:first").html(selected_tag);
+    next_zephyr.children("td:first").html(tag_for_selected);
     $.post("update", {pointer: next_zephyr.attr("id")});
 
     if (($(next_zephyr).offset().top < $("#main_div").offset().top) ||
@@ -157,6 +155,9 @@ function select_zephyr(next_zephyr) {
         scroll_to_selected();
     }
 }
+
+var allow_hotkeys = true;
+var goto_pressed = false;
 
 // NB: This just binds to current elements, and won't bind to elements
 // created after ready() is called.
@@ -173,9 +174,6 @@ $(document).ready(function() {
         select_zephyr($(this).parent().parent());
     });
 });
-
-var goto_pressed = false;
-
 
 $(document).keydown(function(event) {
     if (allow_hotkeys) {
@@ -281,7 +279,7 @@ function do_narrow(target_zephyr, description, filter_function) {
     });
 
     $("#selected").closest("td").empty();
-    $("#" + target_zephyr).children("td:first").html(selected_tag);
+    $("#" + target_zephyr).children("td:first").html(tag_for_selected);
     $.post("update", {pointer: target_zephyr});
 
     scroll_to_selected();
@@ -441,7 +439,6 @@ $(function () {
 });
 
 var longpoll_failures = 0;
-
 function get_updates_longpoll() {
     var last_received = 0;
     if ($("tr:last").attr("id")) {
