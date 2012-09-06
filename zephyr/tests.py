@@ -8,6 +8,7 @@ from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscript
 
 import datetime
 import os
+import simplejson
 import subprocess
 subprocess.call("zephyr/tests/generate-fixtures");
 
@@ -217,3 +218,53 @@ class ClassZephyrsTest(AuthedTestCase):
         self.assertEqual(old_non_subscriber_zephyrs, new_non_subscriber_zephyrs)
         self.assertEqual(new_subscriber_zephyrs, [elt + 1 for elt in old_subscriber_zephyrs])
 
+class PointerTest(AuthedTestCase):
+    fixtures = ['zephyrs.json']
+
+    def test_update_pointer(self):
+        """
+        Posting a pointer to /update (in the form {"pointer": pointer}) changes
+        the pointer we store for your UserProfile.
+        """
+        self.login("hamlet", "hamlet")
+        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        result = self.client.post("/update", {"pointer": 1})
+        self.assertEquals(result.status_code, 200)
+        self.assertEquals(simplejson.loads(result.content).get("result"), "success")
+        self.assertEquals(self.get_userprofile("hamlet").pointer, 1)
+
+    def test_missing_pointer(self):
+        """
+        Posting json to /update which does not contain a pointer key/value pair
+        returns a 400 and error message.
+        """
+        self.login("hamlet", "hamlet")
+        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        result = self.client.post("/update", {"foo": 1})
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(simplejson.loads(result.content).get("result"), "error")
+        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+
+    def test_invalid_pointer(self):
+        """
+        Posting json to /update with an invalid pointer returns a 400 and error
+        message.
+        """
+        self.login("hamlet", "hamlet")
+        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        result = self.client.post("/update", {"pointer": "foo"})
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(simplejson.loads(result.content).get("result"), "error")
+        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+
+    def test_pointer_out_of_range(self):
+        """
+        Posting json to /update with an out of range (< 0) pointer returns a 400
+        and error message.
+        """
+        self.login("hamlet", "hamlet")
+        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        result = self.client.post("/update", {"pointer": -2})
+        self.assertEquals(result.status_code, 400)
+        self.assertEquals(simplejson.loads(result.content).get("result"), "error")
+        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
