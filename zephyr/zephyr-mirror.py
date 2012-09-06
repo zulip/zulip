@@ -2,6 +2,7 @@
 import mechanize
 import re
 import urllib
+import cgi
 
 import sys, logging
 logger = logging.getLogger("mechanize")
@@ -53,5 +54,5 @@ while True:
     notice = zephyr.receive(block=True)
     [zsig, body] = notice.message.split("\x00")
     sys.stdout.write("received a message on %s from %s..." % (notice.cls, notice.sender))
-    send_zephyr(notice.sender, notice.cls, notice.instance, body)
+    send_zephyr(cgi.escape(notice.sender), cgi.escape(notice.cls), cgi.escape(notice.instance), cgi.escape(body))
     print "forwarded"
