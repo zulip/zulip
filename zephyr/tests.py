@@ -50,6 +50,27 @@ class AuthedTestCase(TestCase):
     def zephyr_stream(self, user):
         return filter_by_subscriptions(Zephyr.objects.all(), user)
 
+    def assert_json_success(self, result):
+        """
+        Successful POSTs return a 200 and JSON of the form {"result": "success",
+        "msg": ""}.
+        """
+        self.assertEquals(result.status_code, 200)
+        json = simplejson.loads(result.content)
+        self.assertEquals(json.get("result"), "success")
+        # We have a msg key for consistency with errors, but it typically has an
+        # empty value.
+        self.assertTrue("msg" in json)
+
+    def assert_json_error(self, result, msg):
+        """
+        Invalid POSTs return a 400 and JSON of the form {"result": "error",
+        "msg": "reason"}.
+        """
+        self.assertEquals(result.status_code, 400)
+        json = simplejson.loads(result.content)
+        self.assertEquals(json.get("result"), "error")
+        self.assertEquals(json.get("msg"), msg)
 
 class PublicURLTest(TestCase):
     """
@@ -229,8 +250,7 @@ class PointerTest(AuthedTestCase):
         self.login("hamlet", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
         result = self.client.post("/update", {"pointer": 1})
-        self.assertEquals(result.status_code, 200)
-        self.assertEquals(simplejson.loads(result.content).get("result"), "success")
+        self.assert_json_success(result)
         self.assertEquals(self.get_userprofile("hamlet").pointer, 1)
 
     def test_missing_pointer(self):
@@ -241,8 +261,7 @@ class PointerTest(AuthedTestCase):
         self.login("hamlet", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
         result = self.client.post("/update", {"foo": 1})
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(simplejson.loads(result.content).get("result"), "error")
+        self.assert_json_error(result, "Missing pointer")
         self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
 
     def test_invalid_pointer(self):
@@ -253,8 +272,7 @@ class PointerTest(AuthedTestCase):
         self.login("hamlet", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
         result = self.client.post("/update", {"pointer": "foo"})
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(simplejson.loads(result.content).get("result"), "error")
+        self.assert_json_error(result, "Invalid pointer: must be an integer")
         self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
 
     def test_pointer_out_of_range(self):
@@ -265,6 +283,5 @@ class PointerTest(AuthedTestCase):
         self.login("hamlet", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
         result = self.client.post("/update", {"pointer": -2})
-        self.assertEquals(result.status_code, 400)
-        self.assertEquals(simplejson.loads(result.content).get("result"), "error")
+        self.assert_json_error(result, "Invalid pointer value")
         self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
