@@ -155,7 +155,7 @@ def zephyr(request):
         else:
             my_class = ZephyrClass()
             my_class.name = class_name
-            my.realm = user_profile.realm
+            my_class.realm = user_profile.realm
             my_class.save()
         try:
             recipient = Recipient.objects.get(type_id=my_class.id, type="class")
