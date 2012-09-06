@@ -63,6 +63,7 @@ service apache2 restart
 mkdir -p /home/wiki/wiki/static/img
 cp wiki/gitit.conf /home/wiki/wiki/
 cp wiki/logo.png   /home/wiki/wiki/static/img/
+cp wiki/custom.css /home/wiki/wiki/static/css/
 chown -R wiki:wiki /home/wiki/wiki
 
 # Install Python packages from PyPi
