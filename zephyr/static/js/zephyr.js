@@ -137,13 +137,34 @@ $(function () {
 
 var tag_for_selected = '<p id="selected">&#x25b6;</p>';
 var selected_zephyr_id = 0;  /* to be filled in on document.ready */
+var last_received = -1;
+
+function get_selected_zephyr_row() {
+    return $('#' + selected_zephyr_id);
+}
+
+function get_all_zephyr_rows() {
+    return $('tr');
+}
+
+function get_next_visible(zephyr_row) {
+    return zephyr_row.nextAll(':visible:first');
+}
+
+function get_prev_visible(zephyr_row) {
+    return zephyr_row.prevAll(':visible:first');
+}
+
+function get_id(zephyr_row) {
+    return zephyr_row.attr('id');
+}
 
 function select_zephyr(zephyr_id) {
     var next_zephyr = $('#' + zephyr_id);
 
     /* If the zephyr exists but is hidden, try to find the next visible one. */
     if (next_zephyr.length != 0 && next_zephyr.is(':hidden')) {
-        next_zephyr = next_zephyr.nextAll(':not(:hidden):first');
+        next_zephyr = get_next_visible(next_zephyr);
     }
 
     /* Fall back to the first visible zephyr. */
@@ -151,7 +172,7 @@ function select_zephyr(zephyr_id) {
         next_zephyr = $('tr:not(:hidden):first');
     }
 
-    selected_zephyr_id = next_zephyr.attr('id');
+    selected_zephyr_id = get_id(next_zephyr);
 
     // Clear the previous arrow.
     $("#selected").closest("td").empty();
@@ -165,10 +186,6 @@ function select_zephyr(zephyr_id) {
          main_div.offset().top + main_div.height())) {
         scroll_to_selected();
     }
-}
-
-function get_selected_zephyr_row() {
-    return $('#' + selected_zephyr_id);
 }
 
 var allow_hotkeys = true;
@@ -186,7 +203,7 @@ $(function () {
           allow_hotkeys = true;
     });
     $("body").delegate("p", "click", function (){
-        select_zephyr($(this).parent().parent().attr('id'));
+        select_zephyr(get_id($(this).parent().parent()));
     });
 });
 
@@ -194,16 +211,14 @@ $(document).keydown(function (event) {
     if (allow_hotkeys) {
 
         if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
-
-            var tr = get_selected_zephyr_row();
+            var next_zephyr;
             if (event.keyCode == 40) { // down arrow
-                // There are probably more verbose but more efficient ways to do this.
-                next_zephyr = tr.nextAll(":not(:hidden):first");
+                next_zephyr = get_next_visible(get_selected_zephyr_row());
             } else { // up arrow
-                next_zephyr = tr.prevAll(":not(:hidden):first");
+                next_zephyr = get_prev_visible(get_selected_zephyr_row());
             }
             if (next_zephyr.length != 0) {
-                select_zephyr(next_zephyr.attr('id'));
+                select_zephyr(get_id(next_zephyr));
             }
             event.preventDefault();
         } else if (event.keyCode == 82) { // 'r' keypress, for responding to a zephyr
@@ -291,7 +306,7 @@ function do_narrow(description, filter_function) {
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
     var old_top = $("#main_div").offset().top - get_selected_zephyr_row().offset().top;
     current_view_predicate = filter_function;
-    $("tr").each(function () {
+    get_all_zephyr_rows().each(function () {
         apply_view($(this));
     });
 
@@ -361,7 +376,7 @@ function narrow_instance(class_name, instance) {
 
 function unhide() {
     current_view_predicate = home_view;
-    $("tr").show();
+    get_all_zephyr_rows().show();
 
     scroll_to_selected();
 
@@ -390,6 +405,8 @@ function update_autocomplete() {
 }
 
 function add_message(index, zephyr) {
+    last_received = Math.max(last_received, zephyr.id);
+
     if (zephyr.type == 'class') {
         zephyr.is_class = true;
         if ($.inArray(zephyr.display_recipient, class_list) == -1) {
@@ -437,10 +454,6 @@ $(function () {
 
 var longpoll_failures = 0;
 function get_updates_longpoll() {
-    var last_received = 0;
-    if ($("tr:last").attr("id")) {
-        last_received = $("tr:last").attr("id");
-    }
     console.log(new Date() + ': longpoll started');
     $.ajax({
         type:     'POST',
