@@ -80,8 +80,8 @@ def home(request):
         recipient__type="class").all(), request.user)
 
     subscriptions = Subscription.objects.filter(userprofile_id=user_profile, active=True)
-    classes = simplejson.dumps([get_display_recipient(sub.recipient_id) for sub in subscriptions
-                                     if sub.recipient_id.type == "class"])
+    classes = simplejson.dumps([get_display_recipient(sub.recipient) for sub in subscriptions
+                                     if sub.recipient.type == "class"])
 
     instances = simplejson.dumps(list(
             set(zephyr.instance for zephyr in publics)))
