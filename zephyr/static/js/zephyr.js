@@ -67,25 +67,26 @@ $(function () {
                 return true;
             }
             var okay = true;
-            $.ajaxSetup({async:false}); // so we get blocking gets
-            $.get("subscriptions/exists/" + $("#class").val(), function(data) {
-                if (data == "False") {
-                    // The class doesn't exist
-                    okay = false;
-                    send_status.removeClass(status_classes)
-                    send_status.toggle();
-                    $('#class-dne-name').text($("#class").val());
-                    $('#class-dne').show();
-                    $('#create-it').focus()
-                                   .click(function() {
-                        sub($("#class").val());
-                        $("#class-message form").ajaxSubmit();
-                        $('#class-dne').stop(true).fadeOut(500);
-                                   });
-                    buttons.removeAttr('disabled');
+            $.ajax({
+                url: "subscriptions/exists/" + $("#class").val(),
+                async: false,
+                success: function (data) {
+                    if (data == "False") {
+                        // The class doesn't exist
+                        okay = false;
+                        send_status.removeClass(status_classes)
+                        send_status.toggle();
+                        $('#class-dne-name').text($("#class").val());
+                        $('#class-dne').show();
+                        $('#create-it').focus().click(function() {
+                            sub($("#class").val());
+                            $("#class-message form").ajaxSubmit();
+                            $('#class-dne').stop(true).fadeOut(500);
+                        });
+                        buttons.removeAttr('disabled');
+                    }
                 }
             });
-            $.ajaxSetup({async:true});
             if (okay && class_list.indexOf($("#class").val()) == -1) {
                 // You're not subbed to the class
                 okay = false;
