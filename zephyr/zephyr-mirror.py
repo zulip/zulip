@@ -52,7 +52,7 @@ for sub in subs_list.split():
 print "Starting receive loop"
 while True:
     notice = zephyr.receive(block=True)
-    [zsig, body] = notice.message.split("\x00")
+    [zsig, body] = notice.message.split("\x00", 1)
     sys.stdout.write("received a message on %s from %s..." % (notice.cls, notice.sender))
     send_zephyr(cgi.escape(notice.sender), cgi.escape(notice.cls), cgi.escape(notice.instance), cgi.escape(body))
     print "forwarded"
