@@ -9,7 +9,7 @@ $(function () {
     $('#zephyr-type-tabs a').on('shown', function (e) { resize_main_div(); });
 });
 
-$(function() {
+$(function () {
     $('#zephyr-type-tabs a[href="#class-message"]').on('shown', function (e) {
         $('#class-message input:not(:hidden):first').focus().select();
     });
@@ -19,7 +19,7 @@ $(function() {
 });
 
 $.ajaxSetup({
-     beforeSend: function(xhr, settings) {
+     beforeSend: function (xhr, settings) {
          function getCookie(name) {
              var cookieValue = null;
              if (document.cookie && document.cookie != '') {
@@ -48,7 +48,7 @@ function sub(zephyr_class) {
     $.post('/subscriptions/add/', {new_subscriptions: zephyr_class});
 }
 
-$(function() {
+$(function () {
     var status_classes = 'alert-error alert-success alert-info';
     var send_status = $('#send-status');
     var buttons = $('#class-message, #personal-message').find('input[type="submit"]');
@@ -111,7 +111,7 @@ $(function() {
                        .stop(true).fadeTo(0,1).delay(1000).fadeOut(1000);
             buttons.removeAttr('disabled');
         },
-        error: function(xhr) {
+        error: function (xhr) {
             var response = "Error sending message";
             if (xhr.status.toString().charAt(0) == "4") {
                 // Only display the error response for 4XX, where we've crafted
@@ -177,20 +177,20 @@ var goto_pressed = false;
 // NB: This just binds to current elements, and won't bind to elements
 // created after ready() is called.
 
-$(document).ready(function() {
-    $('input, textarea, button').focus(function() {
+$(function () {
+    $('input, textarea, button').focus(function () {
           allow_hotkeys = false;
     });
 
-    $('input, textarea, button').blur(function() {
+    $('input, textarea, button').blur(function () {
           allow_hotkeys = true;
     });
-    $("body").delegate("p", "click", function(){
+    $("body").delegate("p", "click", function (){
         select_zephyr($(this).parent().parent().attr('id'));
     });
 });
 
-$(document).keydown(function(event) {
+$(document).keydown(function (event) {
     if (allow_hotkeys) {
 
         if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
@@ -484,6 +484,6 @@ function get_updates_longpoll() {
     });
 }
 
-$(function() {
+$(function () {
     update_autocomplete();
 });
