@@ -438,14 +438,9 @@ function add_message(index, zephyr) {
 }
 
 $(function () {
-    /* We can't easily embed this client-side template in index.html,
-       because its syntax conflicts with Django's. */
-    $.get('/static/templates/zephyr.html', function (template) {
-        ich.addTemplate('zephyr', template);
-        $(initial_zephyr_json).each(add_message);
-        select_zephyr(initial_pointer);
-        get_updates_longpoll();
-    });
+    $(initial_zephyr_json).each(add_message);
+    select_zephyr(initial_pointer);
+    get_updates_longpoll();
 });
 
 var longpoll_failures = 0;

@@ -1,5 +1,7 @@
 {% extends "zephyr/base.html" %}
 
+{% load jstemplate %}
+
 {% block nav %}
 <li><a href="/accounts/logout?next=/">Log out</a></li>
 <li><a href="/subscriptions/">Manage subscriptions</a></li>
@@ -7,6 +9,7 @@
 
 {% block content %}
 
+{% icanhazjs "zephyr" %}
 <script type="text/javascript" src="/static/third/jquery/jquery.form.js"></script>
 <script type="text/javascript" src="/static/third/ich/ICanHaz.min.js"></script>
 <script type="text/javascript" src="/static/js/zephyr.js"></script>
