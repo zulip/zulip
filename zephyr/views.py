@@ -155,7 +155,7 @@ def forge_zephyr(request):
     user_profile = UserProfile.objects.get(user=request.user)
     try:
         user = User.objects.get(username=username)
-    except UserProfile.DoesNotExist:
+    except User.DoesNotExist:
         # forge a user for this person
         user = User.objects.create_user(username=username, password="test")
         user.save()
