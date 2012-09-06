@@ -136,7 +136,6 @@ $(function () {
     $("#personal-message form").ajaxForm(options);
 });
 
-var tag_for_selected = '<p id="selected">&#x25b6;</p>';
 var selected_zephyr_id = 0;  /* to be filled in on document.ready */
 var last_received = -1;
 
@@ -178,7 +177,7 @@ function select_zephyr(zephyr_id) {
     // Clear the previous arrow.
     $("#selected").closest("td").empty();
 
-    next_zephyr.children("td:first").html(tag_for_selected);
+    next_zephyr.children("td:first").html('<p id="selected">&#x25b6;</p>');
     $.post("update", { pointer: selected_zephyr_id });
 
     var main_div = $("#main_div");
