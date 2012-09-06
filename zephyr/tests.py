@@ -330,3 +330,11 @@ class ZephyrPOSTTest(AuthedTestCase):
                                                "new_zephyr": "Test message",
                                                "recipient": "nonexistent"})
         self.assert_json_error(result, "Invalid username")
+
+    def test_invalid_type(self):
+        """
+        Sending a zephyr of unknown type returns error JSON.
+        """
+        self.login("hamlet", "hamlet")
+        result = self.client.post("/zephyr/", {"type": "invalid type"})
+        self.assert_json_error(result, "Invalid zephyr type")
