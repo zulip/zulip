@@ -150,7 +150,8 @@ def zephyr(request):
 
 @login_required
 @require_post
-def forge_zephyr(request, username):
+def forge_zephyr(request):
+    username = request.POST['sender']
     user_profile = UserProfile.objects.get(user=request.user)
     try:
         user = User.objects.get(username=username)
