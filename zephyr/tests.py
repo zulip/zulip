@@ -5,6 +5,8 @@ from django.db.models import Q
 
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscription, \
     filter_by_subscriptions, Realm
+from zephyr.views import get_updates_longpoll
+from zephyr.decorator import TornadoAsyncException
 
 import datetime
 import simplejson
@@ -341,3 +343,77 @@ class ZephyrPOSTTest(AuthedTestCase):
                                                "new_zephyr": "Test message",
                                                "recipient": "othello"})
         self.assert_json_error(result, "Invalid zephyr type")
+
+class DummyHandler(object):
+    def __init__(self, callback):
+        self.callback = callback
+
+    def async_callback(self, _):
+        return self.callback
+
+class POSTRequestMock(object):
+    method = "POST"
+
+    def __init__(self, post_data, user, assert_callback):
+        self.POST = post_data
+        self.user = user
+        self._tornado_handler = DummyHandler(assert_callback)
+
+class GetUpdatesLongpollTest(AuthedTestCase):
+    fixtures = ['zephyrs.json']
+
+    def test_get_updates(self):
+        """
+        get_updates_longpoll returns zephyrs with IDs greater than the
+        last_received ID.
+        """
+        self.login("hamlet", "hamlet")
+        user = User.objects.get(username="hamlet")
+
+        def callback(zephyrs):
+            correct_zephyrs = filter_by_subscriptions(Zephyr.objects.all(), user)
+            for zephyr in zephyrs:
+                self.assertTrue(zephyr in correct_zephyrs)
+                self.assertTrue(zephyr.id > 1)
+
+        request = POSTRequestMock({"last_received": 1}, user, callback)
+        # get_updates_longpoll returns None, which raises an exception in the
+        # @asynchronous decorator, which raises a TornadoAsyncException. So this
+        # is expected, but should probably change.
+        self.assertRaises(TornadoAsyncException, get_updates_longpoll, request)
+
+    def test_beyond_last_zephyr(self):
+        """
+        If your last_received zephyr is greater than the greatest Zephyr ID, you
+        don't get any new zephyrs.
+        """
+        self.login("hamlet", "hamlet")
+        user = User.objects.get(username="hamlet")
+        last_received = max(zephyr.id for zephyr in Zephyr.objects.all()) + 100
+        zephyrs = []
+
+        def callback(data):
+            # We can't make asserts in this nested function, so save the data
+            # and assert in the parent.
+            zephyrs = data
+
+        request = POSTRequestMock({"last_received": last_received}, user, callback)
+        self.assertRaises(TornadoAsyncException, get_updates_longpoll, request)
+        self.assertEquals(len(zephyrs), 0)
+
+    def test_missing_last_received(self):
+        """
+        Calling get_updates_longpoll without a last_received key/value pair
+        returns a 400 and error message.
+        """
+        self.login("hamlet", "hamlet")
+        user = User.objects.get(username="hamlet")
+
+        def callback(zephyrs):
+            correct_zephyrs = filter_by_subscriptions(Zephyr.objects.all(), user)
+            for zephyr in zephyrs:
+                self.assertTrue(zephyr in correct_zephyrs)
+                self.assertTrue(zephyr.id > 1)
+
+        request = POSTRequestMock({}, user, callback)
+        self.assert_json_error(get_updates_longpoll(request), "Missing last_received argument")
