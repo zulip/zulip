@@ -136,24 +136,32 @@ $(function() {
 });
 
 var tag_for_selected = '<p id="selected">&#x25b6;</p>';
+var selected_zephyr_id = 0;  /* to be filled in on document.ready */
 
-function select_zephyr(next_zephyr) {
+function select_zephyr(zephyr_id) {
+    var next_zephyr = $('#' + zephyr_id);
     if (next_zephyr.length == 0) {
         // No match, e.g. bottom or top of page
         return;
     }
+    selected_zephyr_id = zephyr_id;
 
     // Clear the previous arrow.
     $("#selected").closest("td").empty();
 
     next_zephyr.children("td:first").html(tag_for_selected);
-    $.post("update", {pointer: next_zephyr.attr("id")});
+    $.post("update", { pointer: zephyr_id });
 
-    if (($(next_zephyr).offset().top < $("#main_div").offset().top) ||
-        ($(next_zephyr).offset().top + $(next_zephyr).height() >
-         $("#main_div").offset().top + $("#main_div").height())) {
+    var main_div = $("#main_div");
+    if ((next_zephyr.offset().top < main_div.offset().top) ||
+        (next_zephyr.offset().top + next_zephyr.height() >
+         main_div.offset().top + main_div.height())) {
         scroll_to_selected();
     }
+}
+
+function get_selected_zephyr_row() {
+    return $('#' + selected_zephyr_id);
 }
 
 var allow_hotkeys = true;
@@ -171,7 +179,7 @@ $(document).ready(function() {
           allow_hotkeys = true;
     });
     $("body").delegate("p", "click", function(){
-        select_zephyr($(this).parent().parent());
+        select_zephyr($(this).parent().parent().attr('id'));
     });
 });
 
@@ -180,17 +188,17 @@ $(document).keydown(function(event) {
 
         if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
 
-            var tr = $("#selected").closest("tr");
+            var tr = get_selected_zephyr_row();
             if (event.keyCode == 40) { // down arrow
                 // There are probably more verbose but more efficient ways to do this.
                 next_zephyr = tr.nextAll(":not(:hidden):first");
             } else { // up arrow
                 next_zephyr = tr.prevAll(":not(:hidden):first");
             }
-            select_zephyr(next_zephyr);
+            select_zephyr(next_zephyr.attr('id'));
             event.preventDefault();
         } else if (event.keyCode == 82) { // 'r' keypress, for responding to a zephyr
-            var parent = $("#selected").parents("tr");
+            var parent = get_selected_zephyr_row();
             var zephyr_class = parent.find("span.zephyr_class").text();
             var zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
             var zephyr_personal = parent.find("span.zephyr_personal_recipient").text();
@@ -222,18 +230,18 @@ $(document).keydown(function(event) {
             goto_pressed = true;
             event.preventDefault();
         } else if (goto_pressed && event.keyCode == 67) { // 'c' keypress, for narrow-by-recipient
-            var parent = $("#selected").parents("tr");
+            var parent = get_selected_zephyr_row();
             var zephyr_class = parent.find("span.zephyr_class").text();
-            narrow_class(zephyr_class, parent.attr("id"));
+            narrow_class(zephyr_class, selected_zephyr_id);
             event.preventDefault()
         } else if (goto_pressed && event.keyCode == 73) { // 'i' keypress, for narrow-by-instance
-            var parent = $("#selected").parents("tr");
+            var parent = get_selected_zephyr_row();
             var zephyr_class = parent.find("span.zephyr_class").text();
             var zephyr_instance = parent.find("span.zephyr_instance").text();
-            narrow_instance(zephyr_class, zephyr_instance, parent.attr("id"));
+            narrow_instance(zephyr_class, zephyr_instance, selected_zephyr_id);
             event.preventDefault()
         } else if (goto_pressed && event.keyCode == 80) { // 'p' keypress, for narrow-to-personals
-            narrow_all_personals($("#selected").parents("tr").attr("id"));
+            narrow_all_personals(selected_zephyr_id);
             event.preventDefault();
         } else if (goto_pressed && event.keyCode == 65) { // 'a' keypress, for unnarrow
             unhide();
@@ -251,9 +259,9 @@ $(document).keydown(function(event) {
 });
 
 function scroll_to_selected() {
-    $('#main_div').scrollTop(0);
-    $('#main_div').scrollTop($("#selected").offset().top - $('#main_div').height()/1.5);
-
+    var main_div = $('#main_div');
+    main_div.scrollTop(0);
+    main_div.scrollTop(get_selected_zephyr_row().offset().top - main_div.height()/1.5);
 }
 
 function home_view(element) {
@@ -426,14 +434,7 @@ $(function () {
     $.get('/static/templates/zephyr.html', function (template) {
         ich.addTemplate('zephyr', template);
         $(initial_zephyr_json).each(add_message);
-
-        var selected = $("#" + initial_pointer);
-        if (selected.length == 0) {
-            // initial_pointer names a zephyr we can't see
-            selected = $("tr:first");
-        }
-        select_zephyr(selected);
-
+        select_zephyr(initial_pointer);
         get_updates_longpoll();
     });
 });
