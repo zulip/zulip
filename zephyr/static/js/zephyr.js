@@ -135,7 +135,7 @@ $(function() {
     $("#personal-message form").ajaxForm(options);
 });
 
-selected_tag = '<p id="selected">&#x25b6;</p>'
+var selected_tag = '<p id="selected">&#x25b6;</p>'
 
 var allow_hotkeys = true;
 
