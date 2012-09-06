@@ -157,6 +157,8 @@ def zephyr(request):
             my_class.name = class_name
             my_class.realm = user_profile.realm
             my_class.save()
+            recipient = Recipient(type_id=my_class.id, type="class")
+            recipient.save()
         try:
             recipient = Recipient.objects.get(type_id=my_class.id, type="class")
         except Recipient.DoesNotExist:
