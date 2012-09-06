@@ -20,10 +20,18 @@ class AuthedTestCase(TestCase):
         return self.client.post('/accounts/register/',
                                 {'username':username, 'password':password, 'domain':'humbughq.com'})
 
+    def get_userprofile(self, username):
+        """
+        Given a username, return the UserProfile object for the User that has
+        that name.
+        """
+        # Usernames are unique, even across Realms.
+        return UserProfile.objects.get(user=User.objects.get(username=username))
+
     def send_zephyr(self, sender_name, recipient_name, zephyr_type):
-        sender = UserProfile.objects.get(user=User.objects.get(username=sender_name))
+        sender = self.get_userprofile(sender_name)
         if zephyr_type == "personal":
-            recipient = UserProfile.objects.get(user=User.objects.get(username=recipient_name))
+            recipient = self.get_userprofile(recipient_name)
         else:
             recipient = ZephyrClass.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=zephyr_type)
