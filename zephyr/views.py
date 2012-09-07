@@ -240,10 +240,8 @@ def subscriptions(request):
                               context_instance=RequestContext(request))
 
 @login_required
+@require_post
 def manage_subscriptions(request):
-    if not request.POST:
-        # Do something reasonable.
-        return
     user_profile = UserProfile.objects.get(user=request.user)
 
     unsubs = request.POST.getlist('subscription')
@@ -258,10 +256,8 @@ def manage_subscriptions(request):
     return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
 
 @login_required
+@require_post
 def add_subscriptions(request):
-    if not request.POST:
-        # Do something reasonable.
-        return
     user_profile = UserProfile.objects.get(user=request.user)
 
     new_subs = request.POST.get('new_subscriptions')
