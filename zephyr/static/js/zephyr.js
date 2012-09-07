@@ -21,10 +21,10 @@ $(function () {
 $.ajaxSetup({
     beforeSend: function (xhr, settings) {
         function getCookie(name) {
-            var cookieValue = null;
+            var i, cookies, cookieValue = null;
             if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
+                cookies = document.cookie.split(';');
+                for (i = 0; i < cookies.length; i++) {
                     var cookie = jQuery.trim(cookies[i]);
                     // Does this cookie string begin with the name we want?
                     if (cookie.substring(0, name.length + 1) === (name + '=')) {
@@ -204,10 +204,10 @@ $(function () {
 });
 
 $(document).keydown(function (event) {
+    var parent, zephyr_class, zephyr_huddle, zephyr_personal, instance, next_zephyr;
     if (allow_hotkeys) {
 
         if (event.keyCode === 38 || event.keyCode === 40) { // down or up arrow
-            var next_zephyr;
             if (event.keyCode === 40) { // down arrow
                 next_zephyr = get_next_visible(get_selected_zephyr_row());
             } else { // up arrow
@@ -218,11 +218,11 @@ $(document).keydown(function (event) {
             }
             event.preventDefault();
         } else if (event.keyCode === 82) { // 'r' keypress, for responding to a zephyr
-            var parent = get_selected_zephyr_row();
-            var zephyr_class = parent.find("span.zephyr_class").text();
-            var zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
-            var zephyr_personal = parent.find("span.zephyr_personal_recipient").text();
-            var instance = parent.find("span.zephyr_instance").text();
+            parent = get_selected_zephyr_row();
+            zephyr_class = parent.find("span.zephyr_class").text();
+            zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
+            zephyr_personal = parent.find("span.zephyr_personal_recipient").text();
+            instance = parent.find("span.zephyr_instance").text();
             if (zephyr_class !== '') {
                 $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
                 $("#class").val(zephyr_class);
@@ -250,14 +250,14 @@ $(document).keydown(function (event) {
             goto_pressed = true;
             event.preventDefault();
         } else if (goto_pressed && event.keyCode === 67) { // 'c' keypress, for narrow-by-recipient
-            var parent = get_selected_zephyr_row();
-            var zephyr_class = parent.find("span.zephyr_class").text();
+            parent = get_selected_zephyr_row();
+            zephyr_class = parent.find("span.zephyr_class").text();
             narrow_class(zephyr_class);
             event.preventDefault()
         } else if (goto_pressed && event.keyCode === 73) { // 'i' keypress, for narrow-by-instance
-            var parent = get_selected_zephyr_row();
-            var zephyr_class = parent.find("span.zephyr_class").text();
-            var zephyr_instance = parent.find("span.zephyr_instance").text();
+            parent = get_selected_zephyr_row();
+            zephyr_class = parent.find("span.zephyr_class").text();
+            zephyr_instance = parent.find("span.zephyr_instance").text();
             narrow_instance(zephyr_class, zephyr_instance);
             event.preventDefault()
         } else if (goto_pressed && event.keyCode === 80) { // 'p' keypress, for narrow-to-personals
