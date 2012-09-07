@@ -199,21 +199,6 @@ function select_zephyr(zephyr_id) {
     }
 }
 
-var allow_hotkeys = true;
-var goto_pressed = false;
-
-// NB: This just binds to current elements, and won't bind to elements
-// created after ready() is called.
-
-$(function () {
-    $('input, textarea, button').focus(function () {
-        allow_hotkeys = false;
-    });
-    $('input, textarea, button').blur(function () {
-        allow_hotkeys = true;
-    });
-});
-
 function process_hotkey(code) {
     var parent, zephyr_class, zephyr_huddle, zephyr_personal, zephyr_instance, next_zephyr;
     switch (code) {
@@ -227,7 +212,7 @@ function process_hotkey(code) {
         if (next_zephyr.length !== 0) {
             select_zephyr(get_id(next_zephyr));
         }
-        return true;
+        return process_hotkey;
 
     case 82: // 'r': respond to zephyr
         parent = get_selected_zephyr_row();
@@ -257,11 +242,10 @@ function process_hotkey(code) {
             $("#new_personal_zephyr").focus();
             $("#new_personal_zephyr").select();
         }
-        return true;
+        return process_key_in_input;
 
     case 71: // 'g': start of "go to" command
-        goto_pressed = true;
-        return true;
+        return process_goto_hotkey;
     }
 
     return false;
@@ -274,44 +258,61 @@ function process_goto_hotkey(code) {
         parent = get_selected_zephyr_row();
         zephyr_class = parent.find("span.zephyr_class").text();
         narrow_class(zephyr_class);
-        return true;
+        break;
 
     case 73: // 'i': narrow by instance
         parent = get_selected_zephyr_row();
         zephyr_class = parent.find("span.zephyr_class").text();
         zephyr_instance = parent.find("span.zephyr_instance").text();
         narrow_instance(zephyr_class, zephyr_instance);
-        return true;
+        break;
 
     case 80: // 'p': narrow to personals
         narrow_all_personals();
-        return true;
+        break;
 
     case 65: // 'a': un-narrow
         unhide();
-        return true;
+        break;
     }
 
+    /* Always return to the initial hotkey mode, even
+       with an unrecognized "go to" command. */
+    return process_hotkey;
+}
+
+function process_key_in_input(code) {
+    if (code === 27) {
+        // User hit Escape key
+        $('input, textarea, button').blur();
+        return process_hotkey;
+    }
     return false;
 }
 
+/* The current handler function for keydown events.
+   It should return a new handler, or 'false' to
+   decline to handle the event. */
+var keydown_handler = process_hotkey;
+
 $(document).keydown(function (event) {
-    if (allow_hotkeys) {
-        if (process_hotkey(event.keyCode)) {
-            event.preventDefault();
-        } else if (goto_pressed) {
-            if (process_goto_hotkey(event.keyCode)) {
-                event.preventDefault();
-            }
-        }
-    } else if (event.keyCode === 27) { // Esc pressed
-        $('input, textarea, button').blur();
+    var result = keydown_handler(event.keyCode);
+    if (typeof result === 'function') {
+        keydown_handler = result;
         event.preventDefault();
     }
+});
 
-    if (event.keyCode !== 71) { // not 'g'
-        goto_pressed = false;
-    }
+// NB: This just binds to current elements, and won't bind to elements
+// created after ready() is called.
+
+$(function () {
+    $('input, textarea, button').focus(function () {
+        keydown_handler = process_key_in_input;
+    });
+    $('input, textarea, button').blur(function () {
+        keydown_handler = process_hotkey;
+    });
 });
 
 function home_view(element) {
