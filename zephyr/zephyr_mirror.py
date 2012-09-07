@@ -28,11 +28,9 @@ def browser_login():
     soup = BeautifulSoup.BeautifulSoup(browser.submit().read())
     csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})['value']
 
-# example: send_zephyr("Verona", "Auto2", "test")
-def send_zephyr(sender, klass, instance, content):
+def send_zephyr(zeph):
     browser.addheaders.append(('X-CSRFToken', csrf_token))
-    zephyr_data = urllib.urlencode([('type', 'class'), ('class', klass), ('sender', sender),
-                                    ('instance', instance), ('new_zephyr', content)])
+    zephyr_data = urllib.urlencode(zeph.items())
     browser.open("https://app.humbughq.com/forge_zephyr/", zephyr_data)
 
 subs_list = """\
@@ -46,6 +44,8 @@ if __name__ == '__main__':
     import logging
     import zephyr
     import BeautifulSoup
+    import traceback
+    import simplejson
 
     browser_login()
 
@@ -53,10 +53,36 @@ if __name__ == '__main__':
     for sub in subs_list:
         subs.add((sub, '*', '*'))
 
-    print "Starting receive loop"
-    while True:
-        notice = zephyr.receive(block=True)
-        zsig, body = notice.message.split("\x00", 1)
-        print "received a message on %s from %s..." % (notice.cls, notice.sender) ,
-        send_zephyr(cgi.escape(notice.sender), cgi.escape(notice.cls), cgi.escape(notice.instance), cgi.escape(body))
-        print "forwarded"
+    try:
+        with open('zephyrs', 'r') as log:
+            for ln in log:
+                zeph = simplejson.loads(ln)
+                print "sending saved message to %s from %s..." % (zeph['class'], zeph['sender'])
+                send_zephyr(zeph)
+    except:
+        print >>sys.stderr, 'Could not load zephyr log'
+        traceback.print_exc()
+
+    with open('zephyrs', 'a') as log:
+        print "Starting receive loop"
+        while True:
+            notice = zephyr.receive(block=True)
+            zsig, body = notice.message.split("\x00", 1)
+            if notice.cls not in subs_list:
+                continue
+            zeph = { 'type'      : 'class',
+                     'time'      : str(notice.time),
+                     'sender'    : notice.sender,
+                     'class'     : notice.cls,
+                     'instance'  : notice.instance,
+                     'zsig'      : zsig,  # logged here but not used by app
+                     'new_zephyr': body }
+            for k,v in zeph.items():
+                zeph[k] = cgi.escape(v)
+
+            log.write(simplejson.dumps(zeph) + '\n')
+            log.flush()
+
+            print "received a message on %s from %s..." % (zeph['class'], zeph['sender'])
+            send_zephyr(zeph)
+            print "forwarded"
