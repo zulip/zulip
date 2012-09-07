@@ -5,6 +5,7 @@ import cgi
 import sys
 import logging
 import zephyr
+import BeautifulSoup
 
 logger = logging.getLogger("mechanize")
 logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -20,19 +21,17 @@ def browser_login():
     # browser.set_debug_responses(True)
     # browser.set_debug_redirects(True)
     # browser.set_handle_refresh(False)
+
     browser.add_password("https://app.humbughq.com/", "tabbott", "xxxxxxxxxxxxxxxxx", "wiki")
     browser.open("https://app.humbughq.com/")
     browser.follow_link(text_regex="\s*Log in\s*")
     browser.select_form(nr=0)
     browser["username"] = "iago"
     browser["password"] = "iago"
-    response = browser.submit()
-    # This is a horrible horrible hack
-    data = "".join(response.readlines())
-    val = data.index("csrfmiddlewaretoken")
 
     global csrf_token
-    csrf_token = data[val+28:val+60]
+    soup = BeautifulSoup.BeautifulSoup(browser.submit().read())
+    csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})['value']
 
 # example: send_zephyr("Verona", "Auto2", "test")
 def send_zephyr(sender, klass, instance, content):
