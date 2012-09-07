@@ -1,3 +1,9 @@
+/*jslint browser: true, devel: true, sloppy: true,
+    plusplus: true, nomen: true, regexp: true */
+/*global $: false, jQuery: false, ich: false,
+    initial_zephyr_json: false, initial_pointer: false, username: false,
+    class_list: false, instance_list: false, people_list: false */
+
 function resize_main_div() {
     // Resize main_div to exactly take up remaining vertical space.
     var div = $('#main_div');
