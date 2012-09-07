@@ -10,7 +10,7 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
     Recipient, filter_by_subscriptions, get_display_recipient, get_huddle, \
-    create_user_profile, Realm, UserMessage
+    create_user_profile, Realm, UserMessage, create_zephyr_class
 from zephyr.forms import RegistrationForm
 
 import tornado.web
@@ -287,11 +287,7 @@ def add_subscriptions(request):
             zephyr_class = zephyr_class[0]
             recipient = Recipient.objects.get(type_id=zephyr_class.pk, type="class")
         else:
-            zephyr_class = ZephyrClass(name=sub_name, realm=user_profile.realm)
-            zephyr_class.save()
-
-            recipient = Recipient(type_id=zephyr_class.pk, type="class")
-            recipient.save()
+            (_, recipient) = create_zephyr_class(sub_name, user_profile.realm)
 
         subscription = Subscription.objects.filter(userprofile=user_profile,
                                                    recipient=recipient)

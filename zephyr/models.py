@@ -84,6 +84,14 @@ class ZephyrClass(models.Model):
     def __str__(self):
         return self.__repr__()
 
+def create_zephyr_class(name, realm):
+    zephyr_class = ZephyrClass(name=name, realm=realm)
+    zephyr_class.save()
+
+    recipient = Recipient(type_id=zephyr_class.id, type="class")
+    recipient.save()
+    return (zephyr_class, recipient)
+
 class Recipient(models.Model):
     type_id = models.IntegerField()
     type = models.CharField(max_length=30)

@@ -3,7 +3,8 @@ from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
-    Subscription, Huddle, get_huddle, Realm, create_user_profile, UserMessage
+    Subscription, Huddle, get_huddle, Realm, create_user_profile, UserMessage, \
+    create_zephyr_class
 from zephyr.zephyr_mirror import subs_list
 
 import datetime
@@ -24,11 +25,7 @@ def create_classes(class_list, realm):
         if ZephyrClass.objects.filter(name=name, realm=realm):
             # We're trying to create the same zephyr class twice!
             raise
-        new_class = ZephyrClass(name=name, realm=realm)
-        new_class.save()
-
-        recipient = Recipient(type_id=new_class.pk, type="class")
-        recipient.save()
+        create_zephyr_class(name, realm)
 
 class Command(BaseCommand):
     help = "Populate a test database"
