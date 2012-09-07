@@ -53,15 +53,16 @@ if __name__ == '__main__':
     for sub in subs_list:
         subs.add((sub, '*', '*'))
 
-    try:
-        with open('zephyrs', 'r') as log:
-            for ln in log:
-                zeph = simplejson.loads(ln)
-                print "sending saved message to %s from %s..." % (zeph['class'], zeph['sender'])
-                send_zephyr(zeph)
-    except:
-        print >>sys.stderr, 'Could not load zephyr log'
-        traceback.print_exc()
+    if sys.argv[1:] == ['--resend-log']:
+        try:
+            with open('zephyrs', 'r') as log:
+                for ln in log:
+                    zeph = simplejson.loads(ln)
+                    print "sending saved message to %s from %s..." % (zeph['class'], zeph['sender'])
+                    send_zephyr(zeph)
+        except:
+            print >>sys.stderr, 'Could not load zephyr log'
+            traceback.print_exc()
 
     with open('zephyrs', 'a') as log:
         print "Starting receive loop"
