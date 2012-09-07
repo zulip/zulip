@@ -78,7 +78,7 @@ $(function () {
                         send_status.toggle();
                         $('#class-dne-name').text($("#class").val());
                         $('#class-dne').show();
-                        $('#create-it').focus().click(function() {
+                        $('#create-it').focus().click(function () {
                             sub($("#class").val());
                             $("#class-message form").ajaxSubmit();
                             $('#class-dne').stop(true).fadeOut(500);
@@ -94,12 +94,11 @@ $(function () {
                 send_status.toggle();
                 $('#class-nosub-name').text($("#class").val());
                 $('#class-nosub').show();
-                $('#sub-it').focus()
-                            .click(function() {
-                        sub($("#class").val());
-                        $("#class-message form").ajaxSubmit();
-                        $('#class-nosub').stop(true).fadeOut(500);
-                            });
+                $('#sub-it').focus().click(function () {
+                    sub($("#class").val());
+                    $("#class-message form").ajaxSubmit();
+                    $('#class-nosub').stop(true).fadeOut(500);
+                });
                 buttons.removeAttr('disabled');
             }
             return okay;
