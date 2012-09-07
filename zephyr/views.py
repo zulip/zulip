@@ -83,26 +83,26 @@ def home(request):
     # consider specially some sort of "buddy list" who e.g. you've
     # talked to before, but for small organizations, the right list is
     # everyone in your realm.
-    people = simplejson.dumps([profile.user.username for profile in
-                               UserProfile.objects.filter(realm=user_profile.realm) if
-                               profile != user_profile])
+    people = [profile.user.username for profile in
+              UserProfile.objects.filter(realm=user_profile.realm) if
+              profile != user_profile]
 
     publics = filter_by_subscriptions(Zephyr.objects.filter(
         recipient__type="class").all(), request.user)
 
     subscriptions = Subscription.objects.filter(userprofile_id=user_profile, active=True)
-    classes = simplejson.dumps([get_display_recipient(sub.recipient) for sub in subscriptions
-                                     if sub.recipient.type == "class"])
+    classes = [get_display_recipient(sub.recipient) for sub in subscriptions
+               if sub.recipient.type == "class"]
 
-    instances = simplejson.dumps(list(
-            set(zephyr.instance for zephyr in publics)))
+    instances = list(set([zephyr.instance for zephyr in zephyrs
+                          if zephyr.recipient.type == "class"]))
 
     return render_to_response('zephyr/index.html',
                               {'zephyr_json' : zephyr_json,
                                'user_profile': user_profile,
-                               'people'      : people,
-                               'classes'     : classes,
-                               'instances'   : instances},
+                               'people'      : simplejson.dumps(people),
+                               'classes'     : simplejson.dumps(classes),
+                               'instances'   : simplejson.dumps(instances)},
                               context_instance=RequestContext(request))
 
 @login_required
