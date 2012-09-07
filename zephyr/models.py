@@ -11,10 +11,10 @@ def get_display_recipient(recipient):
     returns: an appropriate string describing the recipient (the class
     name, for a class, or the username, for a user).
     """
-    if recipient.type == "class":
+    if recipient.type == Recipient.CLASS:
         zephyr_class = ZephyrClass.objects.get(pk=recipient.type_id)
         return zephyr_class.name
-    elif recipient.type == "huddle":
+    elif recipient.type == Recipient.HUDDLE:
         user_list = [UserProfile.objects.get(user=s.userprofile) for s in
                      Subscription.objects.filter(recipient=recipient)]
         return [{'name': user.user.username} for user in user_list]
@@ -72,7 +72,7 @@ def create_user_profile(user, realm):
         profile = UserProfile(user=user, pointer=-1, realm_id=realm.id)
         profile.save()
         # Auto-sub to the ability to receive personals.
-        recipient = Recipient(type_id=profile.pk, type="personal")
+        recipient = Recipient(type_id=profile.pk, type=Recipient.PERSONAL)
         recipient.save()
         Subscription(userprofile=profile, recipient=recipient).save()
 
@@ -89,14 +89,27 @@ def create_zephyr_class(name, realm):
     zephyr_class = ZephyrClass(name=name, realm=realm)
     zephyr_class.save()
 
-    recipient = Recipient(type_id=zephyr_class.id, type="class")
+    recipient = Recipient(type_id=zephyr_class.id, type=Recipient.CLASS)
     recipient.save()
     return (zephyr_class, recipient)
 
 class Recipient(models.Model):
     type_id = models.IntegerField()
-    type = models.CharField(max_length=30)
+    type = models.PositiveSmallIntegerField()
     # Valid types are {personal, class, huddle}
+    PERSONAL = 1
+    CLASS = 2
+    HUDDLE = 3
+
+    def type_name(self):
+        if self.type == self.PERSONAL:
+            return "personal"
+        elif self.type == self.CLASS:
+            return "class"
+        elif self.type == self.HUDDLE:
+            return "huddle"
+        else:
+            raise
 
     def __repr__(self):
         display_recipient = get_display_recipient(self)
@@ -118,7 +131,7 @@ class Zephyr(models.Model):
     def to_dict(self):
         return {'id'               : self.id,
                 'sender'           : self.sender.user.username,
-                'type'             : self.recipient.type,
+                'type'             : self.recipient.type_name(),
                 'display_recipient': get_display_recipient(self.recipient),
                 'instance'         : self.instance,
                 'content'          : self.content }
@@ -137,12 +150,13 @@ class UserMessage(models.Model):
 
 def send_zephyr(**kwargs):
     zephyr = kwargs["instance"]
-    if zephyr.recipient.type == "personal":
+    if zephyr.recipient.type == Recipient.PERSONAL:
         recipients = UserProfile.objects.filter(Q(user=zephyr.recipient.type_id) | Q(user=zephyr.sender))
         # For personals, you send out either 1 or 2 copies of the zephyr, for
         # personals to yourself or to someone else, respectively.
         assert((len(recipients) == 1) or (len(recipients) == 2))
-    elif zephyr.recipient.type == "class" or zephyr.recipient.type == "huddle":
+    elif (zephyr.recipient.type == Recipient.CLASS or
+          zephyr.recipient.type == Recipient.HUDDLE):
         recipients = [UserProfile.objects.get(user=s.userprofile) for
                       s in Subscription.objects.filter(recipient=zephyr.recipient, active=True)]
     else:
@@ -163,6 +177,8 @@ class Subscription(models.Model):
         return self.__repr__()
 
 class Huddle(models.Model):
+    # TODO: We should consider whether using
+    # CommaSeparatedIntegerField would be better.
     huddle_hash = models.CharField(max_length=40)
 
 def get_huddle(id_list):
@@ -175,7 +191,7 @@ def get_huddle(id_list):
         # since we don't have one, make a new huddle
         huddle = Huddle(huddle_hash = huddle_hash)
         huddle.save()
-        recipient = Recipient(type_id=huddle.pk, type="huddle")
+        recipient = Recipient(type_id=huddle.pk, type=Recipient.HUDDLE)
         recipient.save()
 
         # Add subscriptions
@@ -197,7 +213,7 @@ def filter_by_subscriptions(zephyrs, user):
         # If you are subscribed to the personal or class, or if you
         # sent the personal, you can see the zephyr.
         if (zephyr.recipient in subscriptions) or \
-                (zephyr.recipient.type == "personal" and
+                (zephyr.recipient.type == Recipient.PERSONAL and
                  zephyr.sender == userprofile):
             subscribed_zephyrs.append(zephyr)
 

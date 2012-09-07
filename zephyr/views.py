@@ -89,10 +89,10 @@ def home(request):
 
     subscriptions = Subscription.objects.filter(userprofile_id=user_profile, active=True)
     classes = [get_display_recipient(sub.recipient) for sub in subscriptions
-               if sub.recipient.type == "class"]
+               if sub.recipient.type == Recipient.CLASS]
 
     instances = list(set([zephyr.instance for zephyr in zephyrs
-                          if zephyr.recipient.type == "class"]))
+                          if zephyr.recipient.type == Recipient.CLASS]))
 
     return render_to_response('zephyr/index.html',
                               {'zephyr_json' : zephyr_json,
@@ -170,8 +170,8 @@ def zephyr_backend(request, sender):
     if "new_zephyr" not in request.POST:
         return json_error("Missing message contents")
 
-    zephyr_type = request.POST["type"]
-    if zephyr_type == 'class':
+    zephyr_type_name = request.POST["type"]
+    if zephyr_type_name == 'class':
         if "class" not in request.POST:
             return json_error("Missing class")
         if "instance" not in request.POST:
@@ -185,13 +185,13 @@ def zephyr_backend(request, sender):
             my_class.name = class_name
             my_class.realm = user_profile.realm
             my_class.save()
-            recipient = Recipient(type_id=my_class.id, type="class")
+            recipient = Recipient(type_id=my_class.id, type=Recipient.CLASS)
             recipient.save()
         try:
-            recipient = Recipient.objects.get(type_id=my_class.id, type="class")
+            recipient = Recipient.objects.get(type_id=my_class.id, type=Recipient.CLASS)
         except Recipient.DoesNotExist:
             return json_error("Invalid class")
-    elif zephyr_type == "personal":
+    elif zephyr_type_name == 'personal':
         if "recipient" not in request.POST:
             return json_error("Missing recipient")
 
@@ -212,7 +212,7 @@ def zephyr_backend(request, sender):
             # Make sure the sender is included in the huddle
             recipient_ids.append(UserProfile.objects.get(user=request.user).id)
             huddle = get_huddle(recipient_ids)
-            recipient = Recipient.objects.get(type_id=huddle.pk, type="huddle")
+            recipient = Recipient.objects.get(type_id=huddle.pk, type=Recipient.HUDDLE)
         else:
             # This is actually a personal message
             if not User.objects.filter(username=recipient_data):
@@ -220,7 +220,8 @@ def zephyr_backend(request, sender):
 
             recipient_user = User.objects.get(username=recipient_data)
             recipient_user_profile = UserProfile.objects.get(user=recipient_user)
-            recipient = Recipient.objects.get(type_id=recipient_user_profile.id, type="personal")
+            recipient = Recipient.objects.get(type_id=recipient_user_profile.id,
+                                              type=Recipient.PERSONAL)
     else:
         return json_error("Invalid zephyr type")
 
@@ -228,7 +229,7 @@ def zephyr_backend(request, sender):
     new_zephyr.sender = UserProfile.objects.get(user=sender)
     new_zephyr.content = request.POST['new_zephyr']
     new_zephyr.recipient = recipient
-    if zephyr_type == "class":
+    if zephyr_type_name == 'class':
         new_zephyr.instance = request.POST['instance']
     new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
     new_zephyr.save()
@@ -241,7 +242,7 @@ def subscriptions(request):
     subscriptions = Subscription.objects.filter(userprofile=userprofile, active=True)
     # For now, don't display the subscription for your ability to receive personals.
     sub_names = [get_display_recipient(sub.recipient) for sub in subscriptions
-                 if sub.recipient.type == "class"]
+                 if sub.recipient.type == Recipient.CLASS]
 
     return render_to_response('zephyr/subscriptions.html',
                               {'subscriptions': sub_names, 'user_profile': userprofile},
@@ -257,7 +258,8 @@ def manage_subscriptions(request):
     unsubs = request.POST.getlist('subscription')
     for sub_name in unsubs:
         zephyr_class = ZephyrClass.objects.get(name=sub_name, realm=user_profile.realm)
-        recipient = Recipient.objects.get(type_id=zephyr_class.id, type="class")
+        recipient = Recipient.objects.get(type_id=zephyr_class.id,
+                                          type=Recipient.CLASS)
         subscription = Subscription.objects.get(
             userprofile=user_profile, recipient=recipient)
         subscription.active = False
@@ -283,7 +285,8 @@ def add_subscriptions(request):
         zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)
         if zephyr_class:
             zephyr_class = zephyr_class[0]
-            recipient = Recipient.objects.get(type_id=zephyr_class.pk, type="class")
+            recipient = Recipient.objects.get(type_id=zephyr_class.id,
+                                              type=Recipient.CLASS)
         else:
             (_, recipient) = create_zephyr_class(sub_name, user_profile.realm)
 

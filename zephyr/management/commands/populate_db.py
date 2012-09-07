@@ -97,8 +97,9 @@ class Command(BaseCommand):
         for i in range(0, options["num_personals"]):
             personals_pairs.append(random.sample(users, 2))
 
-        recipient_classes = [klass.type_id for klass in Recipient.objects.filter(type="class")]
-        recipient_huddles = [h.type_id for h in Recipient.objects.filter(type="huddle")]
+        recipient_classes = [klass.type_id for klass in
+                             Recipient.objects.filter(type=Recipient.CLASS)]
+        recipient_huddles = [h.type_id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
 
         # Create subscriptions to classes
         profiles = UserProfile.objects.all()
@@ -106,7 +107,7 @@ class Command(BaseCommand):
             # Subscribe to some classes.
             for recipient in recipient_classes[:int(len(recipient_classes) * float(i)/len(profiles)) + 1]:
                 new_subscription = Subscription(userprofile=profile,
-                                                recipient=Recipient.objects.get(type="class",
+                                                recipient=Recipient.objects.get(type=Recipient.CLASS,
                                                                                 type_id=recipient))
                 new_subscription.save()
 
@@ -134,35 +135,40 @@ class Command(BaseCommand):
                 random.randint(1, random_max) * 100. / random_max < options["stickyness"]):
                 # Use an old recipient
                 zephyr_type, recipient, saved_data = recipients[num_zephyrs - 1]
-                if zephyr_type == "personal":
+                if zephyr_type == Recipient.PERSONAL:
                     personals_pair = saved_data
                     random.shuffle(personals_pair)
-                elif zephyr_type == "class":
+                elif zephyr_type == Recipient.CLASS:
                     new_zephyr.instance = saved_data
                     new_zephyr.recipient = recipient
-                elif zephyr_type == "huddle":
+                elif zephyr_type == Recipient.HUDDLE:
                     new_zephyr.recipient = recipient
             elif (randkey <= random_max * options["percent_huddles"] / 100.):
-                zephyr_type = "huddle"
-                new_zephyr.recipient = Recipient.objects.get(type="huddle", type_id=random.choice(recipient_huddles))
+                zephyr_type = Recipient.HUDDLE
+                new_zephyr.recipient = Recipient.objects.get(type=Recipient.HUDDLE,
+                                                             type_id=random.choice(recipient_huddles))
             elif (randkey <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.):
-                zephyr_type = "personal"
+                zephyr_type = Recipient.PERSONAL
                 personals_pair = random.choice(personals_pairs)
                 random.shuffle(personals_pair)
             elif (randkey <= random_max * 1.0):
-                zephyr_type = "class"
-                new_zephyr.recipient = Recipient.objects.get(type="class", type_id=random.choice(recipient_classes))
+                zephyr_type = Recipient.CLASS
+                new_zephyr.recipient = Recipient.objects.get(type=Recipient.CLASS,
+                                                             type_id=random.choice(recipient_classes))
 
-            if zephyr_type == "huddle":
-                new_zephyr.sender = UserProfile.objects.get(id=random.choice(huddle_members[new_zephyr.recipient.type_id]))
-            elif zephyr_type == "personal":
-                new_zephyr.recipient = Recipient.objects.get(type="personal", type_id=personals_pair[0])
+            if zephyr_type == Recipient.HUDDLE:
+                sender_id = random.choice(huddle_members[new_zephyr.recipient.type_id])
+                new_zephyr.sender = UserProfile.objects.get(id=sender_id)
+            elif zephyr_type == Recipient.PERSONAL:
+                new_zephyr.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
+                                                             type_id=personals_pair[0])
                 new_zephyr.sender = UserProfile.objects.get(id=personals_pair[1])
                 saved_data = personals_pair
-            elif zephyr_type == "class":
+            elif zephyr_type == Recipient.CLASS:
                 zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.type_id)
                 # Pick a random subscriber to the class
-                new_zephyr.sender = random.choice(Subscription.objects.filter(recipient=new_zephyr.recipient)).userprofile
+                new_zephyr.sender = random.choice(Subscription.objects.filter(
+                        recipient=new_zephyr.recipient)).userprofile
                 new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
                 saved_data = new_zephyr.instance
 
@@ -182,7 +188,7 @@ class Command(BaseCommand):
         profiles = UserProfile.objects.all()
         for cls in subs_list:
             zephyr_class = ZephyrClass.objects.get(name=cls, realm=realm)
-            recipient = Recipient.objects.get(type="class", type_id=zephyr_class.id)
+            recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=zephyr_class.id)
             for i, profile in enumerate(profiles):
             # Subscribe to some classes.
                 new_subscription = Subscription(userprofile=profile, recipient=recipient)

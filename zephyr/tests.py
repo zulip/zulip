@@ -30,7 +30,7 @@ class AuthedTestCase(TestCase):
 
     def send_zephyr(self, sender_name, recipient_name, zephyr_type):
         sender = self.get_userprofile(sender_name)
-        if zephyr_type == "personal":
+        if zephyr_type == Recipient.PERSONAL:
             recipient = self.get_userprofile(recipient_name)
         else:
             recipient = ZephyrClass.objects.get(name=recipient_name, realm=sender.realm)
@@ -41,7 +41,7 @@ class AuthedTestCase(TestCase):
     def users_subscribed_to_class(self, class_name, realm_domain):
         realm = Realm.objects.get(domain=realm_domain)
         zephyr_class = ZephyrClass.objects.get(name=class_name, realm=realm)
-        recipient = Recipient.objects.get(type_id=zephyr_class.id, type="class")
+        recipient = Recipient.objects.get(type_id=zephyr_class.id, type=Recipient.CLASS)
         subscriptions = Subscription.objects.filter(recipient=recipient)
 
         return [subscription.userprofile.user for subscription in subscriptions]
@@ -133,11 +133,11 @@ class PersonalZephyrsTest(AuthedTestCase):
         self.register("test", "test")
         user = User.objects.get(username='test')
         old_zephyrs = self.zephyr_stream(user)
-        self.send_zephyr("test", "test", "personal")
+        self.send_zephyr("test", "test", Recipient.PERSONAL)
         new_zephyrs = self.zephyr_stream(user)
         self.assertEqual(len(new_zephyrs) - len(old_zephyrs), 1)
 
-        recipient = Recipient.objects.get(type_id=user.pk, type="personal")
+        recipient = Recipient.objects.get(type_id=user.pk, type=Recipient.PERSONAL)
         self.assertEqual(new_zephyrs[-1].recipient, recipient)
 
     def test_personal_to_self(self):
@@ -151,7 +151,7 @@ class PersonalZephyrsTest(AuthedTestCase):
         for user in old_users:
             old_zephyrs.append(len(self.zephyr_stream(user)))
 
-        self.send_zephyr("test1", "test1", "personal")
+        self.send_zephyr("test1", "test1", Recipient.PERSONAL)
 
         new_zephyrs = []
         for user in old_users:
@@ -160,7 +160,7 @@ class PersonalZephyrsTest(AuthedTestCase):
         self.assertEqual(old_zephyrs, new_zephyrs)
 
         user = User.objects.get(username="test1")
-        recipient = Recipient.objects.get(type_id=user.pk, type="personal")
+        recipient = Recipient.objects.get(type_id=user.pk, type=Recipient.PERSONAL)
         self.assertEqual(self.zephyr_stream(user)[-1].recipient, recipient)
 
     def test_personal(self):
@@ -180,7 +180,7 @@ class PersonalZephyrsTest(AuthedTestCase):
         for user in other_users:
             old_other_zephyrs.append(len(self.zephyr_stream(user)))
 
-        self.send_zephyr("hamlet", "othello", "personal")
+        self.send_zephyr("hamlet", "othello", Recipient.PERSONAL)
 
         # Users outside the conversation don't get the zephyr.
         new_other_zephyrs = []
@@ -197,7 +197,7 @@ class PersonalZephyrsTest(AuthedTestCase):
 
         sender = User.objects.get(username="hamlet")
         receiver = User.objects.get(username="othello")
-        recipient = Recipient.objects.get(type_id=receiver.pk, type="personal")
+        recipient = Recipient.objects.get(type_id=receiver.pk, type=Recipient.PERSONAL)
         self.assertEqual(self.zephyr_stream(sender)[-1].recipient, recipient)
         self.assertEqual(self.zephyr_stream(receiver)[-1].recipient, recipient)
 
@@ -225,7 +225,7 @@ class ClassZephyrsTest(AuthedTestCase):
 
         a_subscriber = subscribers[0].username
         self.login(a_subscriber, a_subscriber)
-        self.send_zephyr(a_subscriber, "Scotland", "class")
+        self.send_zephyr(a_subscriber, "Scotland", Recipient.CLASS)
 
         new_subscriber_zephyrs = []
         for subscriber in subscribers:
