@@ -78,10 +78,14 @@ def home(request):
         user_profile.save()
     zephyr_json = simplejson.dumps([zephyr.to_dict() for zephyr in zephyrs])
 
-    personals = filter_by_subscriptions(Zephyr.objects.filter(
-        recipient__type="personal").all(), request.user)
-    people = simplejson.dumps(list(
-            set(get_display_recipient(zephyr.recipient) for zephyr in personals)))
+    # Populate personals autocomplete list based on everyone in your
+    # realm.  Later we might want a 2-layer autocomplete, where we
+    # consider specially some sort of "buddy list" who e.g. you've
+    # talked to before, but for small organizations, the right list is
+    # everyone in your realm.
+    people = simplejson.dumps([profile.user.username for profile in
+                               UserProfile.objects.filter(realm=user_profile.realm) if
+                               profile != user_profile])
 
     publics = filter_by_subscriptions(Zephyr.objects.filter(
         recipient__type="class").all(), request.user)
