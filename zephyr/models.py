@@ -42,6 +42,9 @@ class UserProfile(models.Model):
         global callback_table
 
         # Should also store in permanent database the receipt
+        um = UserMessage(user_profile=self, message=message)
+        um.save()
+
         for cb in callback_table.get(self.user.id, []):
             cb([message])
 
@@ -78,6 +81,8 @@ class ZephyrClass(models.Model):
 
     def __repr__(self):
         return "<ZephyrClass: %s>" % (self.name,)
+    def __str__(self):
+        return self.__repr__()
 
 class Recipient(models.Model):
     type_id = models.IntegerField()
@@ -98,6 +103,8 @@ class Zephyr(models.Model):
     def __repr__(self):
         display_recipient = get_display_recipient(self.recipient)
         return "<Zephyr: %s / %s / %r>" % (display_recipient, self.instance, self.sender)
+    def __str__(self):
+        return self.__repr__()
 
     def to_dict(self):
         return {'id'               : self.id,
@@ -106,6 +113,18 @@ class Zephyr(models.Model):
                 'display_recipient': get_display_recipient(self.recipient),
                 'instance'         : self.instance,
                 'content'          : self.content }
+
+class UserMessage(models.Model):
+    user_profile = models.ForeignKey(UserProfile)
+    message = models.ForeignKey(Zephyr)
+    # We're not using the archived field for now, but create it anyway
+    # since this table will be an unpleasant one to do schema changes
+    # on later
+    archived = models.BooleanField()
+
+    def __repr__(self):
+        display_recipient = get_display_recipient(self.message.recipient)
+        return "<UserMessage: %s / %s>" % (display_recipient, self.user_profile.user.username)
 
 def send_zephyr(**kwargs):
     zephyr = kwargs["instance"]
@@ -131,6 +150,8 @@ class Subscription(models.Model):
 
     def __repr__(self):
         return "<Subscription: %r -> %r>" % (self.userprofile, self.recipient)
+    def __str__(self):
+        return self.__repr__()
 
 class Huddle(models.Model):
     huddle_hash = models.CharField(max_length=40)

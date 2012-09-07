@@ -10,7 +10,7 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
     Recipient, filter_by_subscriptions, get_display_recipient, get_huddle, \
-    create_user_profile, Realm
+    create_user_profile, Realm, UserMessage
 from zephyr.forms import RegistrationForm
 
 import tornado.web
@@ -68,11 +68,11 @@ def accounts_home(request):
 def home(request):
     if not request.user.is_authenticated():
         return HttpResponseRedirect('accounts/home/')
+    user_profile = UserProfile.objects.get(user=request.user)
 
-    zephyrs = filter_by_subscriptions(Zephyr.objects.all(), request.user)
+    zephyrs = [um.message for um in
+               UserMessage.objects.filter(user_profile=user_profile)]
 
-    user = request.user
-    user_profile = UserProfile.objects.get(user=user)
     if user_profile.pointer == -1 and zephyrs:
         user_profile.pointer = min([zephyr.id for zephyr in zephyrs])
         user_profile.save()
