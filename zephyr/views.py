@@ -130,8 +130,7 @@ def update(request):
 def get_updates_longpoll(request, handler):
     last_received = request.POST.get('last_received')
     if not last_received:
-        # TODO: return error?
-        pass
+        return json_error("Missing last_received argument")
 
     user = request.user
     user_profile = UserProfile.objects.get(user=user)
