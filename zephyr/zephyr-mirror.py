@@ -1,20 +1,15 @@
 #!/usr/bin/python
-import mechanize
-import urllib
-import cgi
-import sys
-import logging
-import zephyr
-import BeautifulSoup
 
-logger = logging.getLogger("mechanize")
-logger.addHandler(logging.StreamHandler(sys.stdout))
-logger.setLevel(logging.INFO)
-
-browser = mechanize.Browser()
+browser = None
 csrf_token = None
 
 def browser_login():
+    logger = logging.getLogger("mechanize")
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger.setLevel(logging.INFO)
+
+    global browser
+    browser = mechanize.Browser()
     browser.set_handle_robots(False)
     ## debugging code to consider
     # browser.set_debug_http(True)
@@ -40,19 +35,28 @@ def send_zephyr(sender, klass, instance, content):
                                     ('instance', instance), ('new_zephyr', content)])
     browser.open("https://app.humbughq.com/forge_zephyr/", zephyr_data)
 
-browser_login()
-
 subs_list = """\
-"""
+""".split()
 
-subs = zephyr.Subscriptions()
-for sub in subs_list.split():
-    subs.add((sub, '*', '*'))
+if __name__ == '__main__':
+    import mechanize
+    import urllib
+    import cgi
+    import sys
+    import logging
+    import zephyr
+    import BeautifulSoup
 
-print "Starting receive loop"
-while True:
-    notice = zephyr.receive(block=True)
-    zsig, body = notice.message.split("\x00", 1)
-    print "received a message on %s from %s..." % (notice.cls, notice.sender) ,
-    send_zephyr(cgi.escape(notice.sender), cgi.escape(notice.cls), cgi.escape(notice.instance), cgi.escape(body))
-    print "forwarded"
+    browser_login()
+
+    subs = zephyr.Subscriptions()
+    for sub in subs_list:
+        subs.add((sub, '*', '*'))
+
+    print "Starting receive loop"
+    while True:
+        notice = zephyr.receive(block=True)
+        zsig, body = notice.message.split("\x00", 1)
+        print "received a message on %s from %s..." % (notice.cls, notice.sender) ,
+        send_zephyr(cgi.escape(notice.sender), cgi.escape(notice.cls), cgi.escape(notice.instance), cgi.escape(body))
+        print "forwarded"
