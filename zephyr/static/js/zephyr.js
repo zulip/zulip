@@ -158,6 +158,12 @@ function get_id(zephyr_row) {
     return zephyr_row.attr('id');
 }
 
+function scroll_to_selected() {
+    var main_div = $('#main_div');
+    main_div.scrollTop(0);
+    main_div.scrollTop(get_selected_zephyr_row().offset().top - main_div.height()/1.5);
+}
+
 function select_zephyr(zephyr_id) {
     var next_zephyr = $('#' + zephyr_id);
 
@@ -276,12 +282,6 @@ $(document).keydown(function (event) {
         event.preventDefault();
     }
 });
-
-function scroll_to_selected() {
-    var main_div = $('#main_div');
-    main_div.scrollTop(0);
-    main_div.scrollTop(get_selected_zephyr_row().offset().top - main_div.height()/1.5);
-}
 
 function home_view(element) {
     return true;
