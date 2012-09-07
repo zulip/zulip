@@ -129,9 +129,7 @@ def get_updates_longpoll(request, handler):
     last_received = request.POST.get('last_received')
     if not last_received:
         return json_error("Missing last_received argument")
-
-    user = request.user
-    user_profile = UserProfile.objects.get(user=user)
+    user_profile = UserProfile.objects.get(user=request.user)
 
     def on_receive(zephyrs):
         if handler.request.connection.stream.closed():
