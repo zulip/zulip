@@ -19,6 +19,7 @@ from zephyr.decorator import asynchronous
 import datetime
 import simplejson
 import socket
+import re
 
 def require_post(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
@@ -166,8 +167,18 @@ def forge_zephyr(request):
 @require_post
 def zephyr_backend(request, sender):
     user_profile = UserProfile.objects.get(user=request.user)
+    if "type" not in request.POST:
+        return json_error("Missing type")
+    if "new_zephyr" not in request.POST:
+        return json_error("Missing message contents")
+
     zephyr_type = request.POST["type"]
     if zephyr_type == 'class':
+        if "class" not in request.POST:
+            return json_error("Missing class")
+        if "instance" not in request.POST:
+            return json_error("Missing instance")
+
         class_name = request.POST['class']
         if ZephyrClass.objects.filter(name=class_name, realm=user_profile.realm):
             my_class = ZephyrClass.objects.get(name=class_name, realm=user_profile.realm)
@@ -183,6 +194,9 @@ def zephyr_backend(request, sender):
         except Recipient.DoesNotExist:
             return json_error("Invalid class")
     elif zephyr_type == "personal":
+        if "recipient" not in request.POST:
+            return json_error("Missing recipient")
+
         recipient_data = request.POST['recipient']
         if ',' in recipient_data:
             # This is actually a huddle message, which shares the
@@ -239,6 +253,8 @@ def subscriptions(request):
 @require_post
 def manage_subscriptions(request):
     user_profile = UserProfile.objects.get(user=request.user)
+    if 'subscription' not in request.POST:
+        return json_error("Missing subscriptions")
 
     unsubs = request.POST.getlist('subscription')
     for sub_name in unsubs:
@@ -256,12 +272,16 @@ def manage_subscriptions(request):
 def add_subscriptions(request):
     user_profile = UserProfile.objects.get(user=request.user)
 
-    new_subs = request.POST.get('new_subscriptions')
-    if not new_subs:
+    if "new_subscriptions" not in request.POST:
         return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
 
-    for sub_name in [s.strip() for s in new_subs.split(",")]:
-        # TODO: this should also check subscription names for not using crazy characters
+    new_subs = [s.strip() for s in
+                request.POST.get('new_subscriptions').split(",")]
+    for sub_name in new_subs:
+        if not re.match('^[a-zA-z0-9_-]+$', sub_name):
+            return json_error("Invalid characters in class names")
+
+    for sub_name in new_subs:
         zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)
         if zephyr_class:
             zephyr_class = zephyr_class[0]
