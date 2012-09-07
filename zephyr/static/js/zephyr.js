@@ -216,17 +216,20 @@ $(function () {
 
 function process_hotkey(code) {
     var parent, zephyr_class, zephyr_huddle, zephyr_personal, zephyr_instance, next_zephyr;
-    if (code === 38 || code === 40) { // down or up arrow
-        if (code === 40) { // down arrow
+    switch (code) {
+    case 40: // down arrow
+    case 38: // up arrow
+        if (code === 40) {
             next_zephyr = get_next_visible(get_selected_zephyr_row());
-        } else { // up arrow
+        } else {
             next_zephyr = get_prev_visible(get_selected_zephyr_row());
         }
         if (next_zephyr.length !== 0) {
             select_zephyr(get_id(next_zephyr));
         }
         return true;
-    } else if (code === 82) { // 'r' keypress, for responding to a zephyr
+
+    case 82: // 'r': respond to zephyr
         parent = get_selected_zephyr_row();
         zephyr_class = parent.find("span.zephyr_class").text();
         zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
@@ -255,7 +258,8 @@ function process_hotkey(code) {
             $("#new_personal_zephyr").select();
         }
         return true;
-    } else if (code === 71) { // 'g' keypress, set trigger for "go to"
+
+    case 71: // 'g': start of "go to" command
         goto_pressed = true;
         return true;
     }
@@ -265,21 +269,25 @@ function process_hotkey(code) {
 
 function process_goto_hotkey(code) {
     var parent, zephyr_class, zephyr_instance;
-    if (code === 67) { // 'c' keypress, for narrow-by-recipient
+    switch (code) {
+    case 67: // 'c': narrow by recipient
         parent = get_selected_zephyr_row();
         zephyr_class = parent.find("span.zephyr_class").text();
         narrow_class(zephyr_class);
         return true;
-    } else if (code === 73) { // 'i' keypress, for narrow-by-instance
+
+    case 73: // 'i': narrow by instance
         parent = get_selected_zephyr_row();
         zephyr_class = parent.find("span.zephyr_class").text();
         zephyr_instance = parent.find("span.zephyr_instance").text();
         narrow_instance(zephyr_class, zephyr_instance);
         return true;
-    } else if (code === 80) { // 'p' keypress, for narrow-to-personals
+
+    case 80: // 'p': narrow to personals
         narrow_all_personals();
         return true;
-    } else if (code === 65) { // 'a' keypress, for unnarrow
+
+    case 65: // 'a': un-narrow
         unhide();
         return true;
     }
