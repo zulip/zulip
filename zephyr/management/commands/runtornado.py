@@ -4,6 +4,7 @@ from django.conf import settings
 import os
 import sys
 import tornado.web
+import logging
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -69,10 +70,8 @@ class Command(BaseCommand):
         quit_command = 'CTRL-C'
 
         if settings.DEBUG:
-            import logging
             logging.basicConfig(level=logging.INFO,
                 format='%(asctime)s %(levelname)-8s %(message)s')
-            logger = logging.getLogger()
 
         def inner_run():
             from django.conf import settings
@@ -278,7 +277,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         finally:
                             receivers = signals.got_request_exception.send(sender=self.__class__, request=request)
             except exceptions.PermissionDenied:
-                logger.warning(
+                logging.warning(
                     'Forbidden (Permission denied): %s', request.path,
                     extra={
                         'status_code': 403,
