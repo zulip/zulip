@@ -188,11 +188,14 @@ def get_huddle(id_list):
 def filter_by_subscriptions(zephyrs, user):
     userprofile = UserProfile.objects.get(user=user)
     subscribed_zephyrs = []
-    subscriptions = [sub.recipient for sub in Subscription.objects.filter(userprofile=userprofile, active=True)]
+    subscriptions = [sub.recipient for sub in
+                     Subscription.objects.filter(userprofile=userprofile, active=True)]
     for zephyr in zephyrs:
-        # If you are subscribed to the personal or class, or if you sent the personal, you can see the zephyr.
+        # If you are subscribed to the personal or class, or if you
+        # sent the personal, you can see the zephyr.
         if (zephyr.recipient in subscriptions) or \
-                (zephyr.recipient.type == "personal" and zephyr.sender == userprofile):
+                (zephyr.recipient.type == "personal" and
+                 zephyr.sender == userprofile):
             subscribed_zephyrs.append(zephyr)
 
     return subscribed_zephyrs
