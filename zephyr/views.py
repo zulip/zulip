@@ -285,16 +285,13 @@ def add_subscriptions(request):
         zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)
         if zephyr_class:
             zephyr_class = zephyr_class[0]
+            recipient = Recipient.objects.get(type_id=zephyr_class.pk, type="class")
         else:
             zephyr_class = ZephyrClass(name=sub_name, realm=user_profile.realm)
             zephyr_class.save()
 
-        recipient = Recipient.objects.filter(type_id=zephyr_class.pk, type="class")
-        if recipient:
-            recipient = recipient[0]
-        else:
             recipient = Recipient(type_id=zephyr_class.pk, type="class")
-        recipient.save()
+            recipient.save()
 
         subscription = Subscription.objects.filter(userprofile=user_profile,
                                                    recipient=recipient)
