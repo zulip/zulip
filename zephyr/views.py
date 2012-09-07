@@ -268,7 +268,8 @@ def add_subscriptions(request):
     if not new_subs:
         return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
 
-    for sub_name in new_subs.split(","):
+    for sub_name in [s.strip() for s in new_subs.split(",")]:
+        # TODO: this should also check subscription names for not using crazy characters
         zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)
         if zephyr_class:
             zephyr_class = zephyr_class[0]
