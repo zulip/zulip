@@ -22,12 +22,12 @@ $.ajaxSetup({
     beforeSend: function (xhr, settings) {
         function getCookie(name) {
             var cookieValue = null;
-            if (document.cookie && document.cookie != '') {
+            if (document.cookie && document.cookie !== '') {
                 var cookies = document.cookie.split(';');
                 for (var i = 0; i < cookies.length; i++) {
                     var cookie = jQuery.trim(cookies[i]);
                     // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                         break;
                     }
@@ -63,7 +63,7 @@ $(function () {
             buttons.attr('disabled', 'disabled');
             buttons.blur()
 
-            if ($("#class-message:visible")[0] == undefined) {// we're not dealing with classes
+            if ($("#class-message:visible")[0] === undefined) {// we're not dealing with classes
                 return true;
             }
             var okay = true;
@@ -71,7 +71,7 @@ $(function () {
                 url: "subscriptions/exists/" + $("#class").val(),
                 async: false,
                 success: function (data) {
-                    if (data == "False") {
+                    if (data === "False") {
                         // The class doesn't exist
                         okay = false;
                         send_status.removeClass(status_classes)
@@ -87,7 +87,7 @@ $(function () {
                     }
                 }
             });
-            if (okay && class_list.indexOf($("#class").val()) == -1) {
+            if (okay && class_list.indexOf($("#class").val()) === -1) {
                 // You're not subbed to the class
                 okay = false;
                 send_status.removeClass(status_classes);
@@ -114,7 +114,7 @@ $(function () {
         },
         error: function (xhr) {
             var response = "Error sending message";
-            if (xhr.status.toString().charAt(0) == "4") {
+            if (xhr.status.toString().charAt(0) === "4") {
                 // Only display the error response for 4XX, where we've crafted
                 // a nice response.
                 response += ": " + $.parseJSON(xhr.responseText).msg;
@@ -163,12 +163,12 @@ function select_zephyr(zephyr_id) {
     var next_zephyr = $('#' + zephyr_id);
 
     /* If the zephyr exists but is hidden, try to find the next visible one. */
-    if (next_zephyr.length != 0 && next_zephyr.is(':hidden')) {
+    if (next_zephyr.length !== 0 && next_zephyr.is(':hidden')) {
         next_zephyr = get_next_visible(next_zephyr);
     }
 
     /* Fall back to the first visible zephyr. */
-    if (next_zephyr.length == 0) {
+    if (next_zephyr.length === 0) {
         next_zephyr = $('tr:not(:hidden):first');
     }
 
@@ -206,38 +206,38 @@ $(function () {
 $(document).keydown(function (event) {
     if (allow_hotkeys) {
 
-        if (event.keyCode == 38 || event.keyCode == 40) { // down or up arrow
+        if (event.keyCode === 38 || event.keyCode === 40) { // down or up arrow
             var next_zephyr;
-            if (event.keyCode == 40) { // down arrow
+            if (event.keyCode === 40) { // down arrow
                 next_zephyr = get_next_visible(get_selected_zephyr_row());
             } else { // up arrow
                 next_zephyr = get_prev_visible(get_selected_zephyr_row());
             }
-            if (next_zephyr.length != 0) {
+            if (next_zephyr.length !== 0) {
                 select_zephyr(get_id(next_zephyr));
             }
             event.preventDefault();
-        } else if (event.keyCode == 82) { // 'r' keypress, for responding to a zephyr
+        } else if (event.keyCode === 82) { // 'r' keypress, for responding to a zephyr
             var parent = get_selected_zephyr_row();
             var zephyr_class = parent.find("span.zephyr_class").text();
             var zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
             var zephyr_personal = parent.find("span.zephyr_personal_recipient").text();
             var instance = parent.find("span.zephyr_instance").text();
-            if (zephyr_class != '') {
+            if (zephyr_class !== '') {
                 $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
                 $("#class").val(zephyr_class);
                 $("#instance").val(instance);
                 $("#new_zephyr").focus();
                 $("#new_zephyr").select();
-            } else if (zephyr_huddle != '') {
+            } else if (zephyr_huddle !== '') {
                 var recipients = parent.find("span.zephyr_huddle_recipients_list").text();
                 $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
                 $("#recipient").val(recipients);
                 $("#new_personal_zephyr").focus();
                 $("#new_personal_zephyr").select();
-            } else if (zephyr_personal != '') {
+            } else if (zephyr_personal !== '') {
                 var recipient = parent.find("span.zephyr_sender").text();
-                if (recipient == username) { // that is, we sent the original message
+                if (recipient === username) { // that is, we sent the original message
                     recipient = parent.find("span.zephyr_personal_recipient").text();
                 }
                 $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
@@ -246,33 +246,33 @@ $(document).keydown(function (event) {
                 $("#new_personal_zephyr").select();
             }
             event.preventDefault();
-        } else if (event.keyCode == 71) { // 'g' keypress, set trigger for "go to"
+        } else if (event.keyCode === 71) { // 'g' keypress, set trigger for "go to"
             goto_pressed = true;
             event.preventDefault();
-        } else if (goto_pressed && event.keyCode == 67) { // 'c' keypress, for narrow-by-recipient
+        } else if (goto_pressed && event.keyCode === 67) { // 'c' keypress, for narrow-by-recipient
             var parent = get_selected_zephyr_row();
             var zephyr_class = parent.find("span.zephyr_class").text();
             narrow_class(zephyr_class);
             event.preventDefault()
-        } else if (goto_pressed && event.keyCode == 73) { // 'i' keypress, for narrow-by-instance
+        } else if (goto_pressed && event.keyCode === 73) { // 'i' keypress, for narrow-by-instance
             var parent = get_selected_zephyr_row();
             var zephyr_class = parent.find("span.zephyr_class").text();
             var zephyr_instance = parent.find("span.zephyr_instance").text();
             narrow_instance(zephyr_class, zephyr_instance);
             event.preventDefault()
-        } else if (goto_pressed && event.keyCode == 80) { // 'p' keypress, for narrow-to-personals
+        } else if (goto_pressed && event.keyCode === 80) { // 'p' keypress, for narrow-to-personals
             narrow_all_personals();
             event.preventDefault();
-        } else if (goto_pressed && event.keyCode == 65) { // 'a' keypress, for unnarrow
+        } else if (goto_pressed && event.keyCode === 65) { // 'a' keypress, for unnarrow
             unhide();
             event.preventDefault();
         }
 
-        if (event.keyCode != 71) { // not 'g'
+        if (event.keyCode !== 71) { // not 'g'
             goto_pressed = false;
         }
 
-    } else if (event.keyCode == 27) { // Esc pressed
+    } else if (event.keyCode === 27) { // Esc pressed
         $('input, textarea, button').blur();
         event.preventDefault();
     }
@@ -318,7 +318,7 @@ function narrow_huddle() {
     var message = "Showing group chats with " + recipients;
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_huddle_recipient").length > 0 &&
-                element.find("span.zephyr_huddle_recipients_list").text() == recipients);
+                element.find("span.zephyr_huddle_recipients_list").text() === recipients);
     });
 }
 
@@ -336,7 +336,7 @@ function narrow_personals() {
     var target_recipient = target_zephyr.find("span.zephyr_personal_recipient").text();
     var target_sender = target_zephyr.find("span.zephyr_sender").text();
     var other_party;
-    if (target_recipient == username) {
+    if (target_recipient === username) {
         other_party = target_sender;
     } else {
         other_party = target_recipient;
@@ -347,8 +347,8 @@ function narrow_personals() {
         var sender = element.find("span.zephyr_sender");
 
         return ((recipient.length > 0) &&
-            ((recipient.text() == target_recipient) && (sender.text() == target_sender)) ||
-            ((recipient.text() == target_sender) && (sender.text() == target_recipient)));
+            ((recipient.text() === target_recipient) && (sender.text() === target_sender)) ||
+            ((recipient.text() === target_sender) && (sender.text() === target_recipient)));
     });
 }
 
@@ -356,7 +356,7 @@ function narrow_class(class_name) {
     var message = "Showing <span class='label zephyr_class'>" + class_name + "</span>";
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_class").length > 0 &&
-                element.find("span.zephyr_class").text() == class_name);
+                element.find("span.zephyr_class").text() === class_name);
     });
 }
 
@@ -365,8 +365,8 @@ function narrow_instance(class_name, instance) {
         + "</span> <span class='label zephyr_instance'>" + instance + "</span>";
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_class").length > 0 &&
-                element.find("span.zephyr_class").text() == class_name &&
-                element.find("span.zephyr_instance").text() == instance);
+                element.find("span.zephyr_class").text() === class_name &&
+                element.find("span.zephyr_instance").text() === instance);
     });
 }
 
@@ -403,28 +403,28 @@ function update_autocomplete() {
 function add_message(index, zephyr) {
     last_received = Math.max(last_received, zephyr.id);
 
-    if (zephyr.type == 'class') {
+    if (zephyr.type === 'class') {
         zephyr.is_class = true;
-        if ($.inArray(zephyr.display_recipient, class_list) == -1) {
+        if ($.inArray(zephyr.display_recipient, class_list) === -1) {
             class_list.push(zephyr.display_recipient);
             update_autocomplete();
         }
-        if ($.inArray(zephyr.instance, instance_list) == -1) {
+        if ($.inArray(zephyr.instance, instance_list) === -1) {
             instance_list.push(zephyr.instance);
             update_autocomplete();
         }
-    } else if (zephyr.type == "huddle") {
+    } else if (zephyr.type === "huddle") {
         zephyr.is_huddle = true;
     } else {
         zephyr.is_personal = true;
 
-        if (zephyr.display_recipient != username &&
-                $.inArray(zephyr.display_recipient, people_list) == -1) {
+        if (zephyr.display_recipient !== username &&
+                $.inArray(zephyr.display_recipient, people_list) === -1) {
             people_list.push(zephyr.display_recipient);
             update_autocomplete();
         }
-        if (zephyr.sender != username &&
-                $.inArray(zephyr.sender, people_list) == -1) {
+        if (zephyr.sender !== username &&
+                $.inArray(zephyr.sender, people_list) === -1) {
             people_list.push(zephyr.sender);
             update_autocomplete();
         }
@@ -463,7 +463,7 @@ function get_updates_longpoll() {
             setTimeout(get_updates_longpoll, 0);
         },
         error: function (xhr, error_type, exn) {
-            if (error_type == 'timeout') {
+            if (error_type === 'timeout') {
                 // Retry indefinitely on timeout.
                 console.log(new Date() + ': longpoll timed out');
                 longpoll_failures = 0;
