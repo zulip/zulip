@@ -136,7 +136,7 @@ def get_updates_longpoll(request, handler):
             return
         try:
             handler.finish({'zephyrs': [zephyr.to_dict() for zephyr in zephyrs]})
-        except socket.error, e:
+        except socket.error:
             pass
 
     # We need to replace this abstraction with the message list
@@ -207,7 +207,7 @@ def zephyr_backend(request, sender):
                 try:
                     recipient_ids.append(
                         UserProfile.objects.get(user=User.objects.get(username=recipient)).id)
-                except User.DoesNotExist, e:
+                except User.DoesNotExist:
                     return json_error("Invalid username '%s'" % (recipient))
             # Make sure the sender is included in the huddle
             recipient_ids.append(UserProfile.objects.get(user=request.user).id)
