@@ -4,10 +4,31 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
     Subscription, Huddle, get_huddle, Realm, create_user_profile, UserMessage
+from zephyr.zephyr_mirror import subs_list
 
 import datetime
 import random
 from optparse import make_option
+
+def create_users(username_list, realm):
+    for username in username_list:
+        if User.objects.filter(username=username):
+            # We're trying to create the same user twice!
+            raise
+        user = User.objects.create_user(username=username, password=username)
+        user.save()
+        create_user_profile(user, realm)
+
+def create_classes(class_list, realm):
+    for name in class_list:
+        if ZephyrClass.objects.filter(name=name, realm=realm):
+            # We're trying to create the same zephyr class twice!
+            raise
+        new_class = ZephyrClass(name=name, realm=realm)
+        new_class.save()
+
+        recipient = Recipient(type_id=new_class.pk, type="class")
+        recipient.save()
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -61,19 +82,12 @@ class Command(BaseCommand):
         # Create test Users (UserProfiles are automatically created,
         # as are subscriptions to the ability to receive personals).
         usernames = ["othello", "iago", "prospero", "cordelia", "hamlet"]
-        for username in usernames:
-            user = User.objects.create_user(username=username, password=username)
-            user.save()
-            create_user_profile(user, realm)
+        create_users(usernames, realm)
         users = [user.id for user in User.objects.all()]
 
         # Create public classes.
-        for name in ["Verona", "Denmark", "Scotland", "Venice", "Rome"]:
-            new_class = ZephyrClass(name=name, realm=realm)
-            new_class.save()
-
-            recipient = Recipient(type_id=new_class.pk, type="class")
-            recipient.save()
+        class_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
+        create_classes(class_list, realm)
 
         # Create several initial huddles
         huddle_members = {}
@@ -160,5 +174,21 @@ class Command(BaseCommand):
 
             recipients[num_zephyrs] = [zephyr_type, new_zephyr.recipient, saved_data]
             num_zephyrs += 1
+
+        # Create internal users
+        internal_usernames = []
+        create_users(internal_usernames, realm)
+
+        create_classes(subs_list, realm)
+
+        # Now subscribe everyone to these classes
+        profiles = UserProfile.objects.all()
+        for cls in subs_list:
+            zephyr_class = ZephyrClass.objects.get(name=cls, realm=realm)
+            recipient = Recipient.objects.get(type="class", type_id=zephyr_class.id)
+            for i, profile in enumerate(profiles):
+            # Subscribe to some classes.
+                new_subscription = Subscription(userprofile=profile, recipient=recipient)
+                new_subscription.save()
 
         self.stdout.write("Successfully populated test database.\n")
