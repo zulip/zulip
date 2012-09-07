@@ -150,7 +150,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
     def get(self):
         from tornado.wsgi import WSGIContainer
-        from django.core.handlers.wsgi import WSGIRequest, STATUS_CODE_TEXT
+        from django.core.handlers.wsgi import WSGIRequest
         import urllib
 
         environ  = WSGIContainer.environ(self.request)
@@ -172,9 +172,6 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             response = self.apply_response_fixes(request, response)
         finally:
             signals.request_finished.send(sender=self.__class__)
-
-        status_text = STATUS_CODE_TEXT.get(response.status_code, "UNKNOWN")
-        status = '%s (%s)' % (response.status_code, status_text)
 
         self.set_status(response.status_code)
         for h in response.items():
@@ -275,7 +272,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         try:
                             response = self.handle_uncaught_exception(request, resolver, sys.exc_info())
                         finally:
-                            receivers = signals.got_request_exception.send(sender=self.__class__, request=request)
+                            signals.got_request_exception.send(sender=self.__class__, request=request)
             except exceptions.PermissionDenied:
                 logging.warning(
                     'Forbidden (Permission denied): %s', request.path,
@@ -298,7 +295,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 raise
             except Exception, e:
                 exc_info = sys.exc_info()
-                receivers = signals.got_request_exception.send(sender=self.__class__, request=request)
+                signals.got_request_exception.send(sender=self.__class__, request=request)
                 return self.handle_uncaught_exception(request, resolver, exc_info)
         finally:
             # Reset urlconf on the way out for isolation
