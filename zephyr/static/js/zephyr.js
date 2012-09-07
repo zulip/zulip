@@ -61,7 +61,7 @@ $(function () {
                        .text('Sending')
                        .stop(true).fadeTo(0,1);
             buttons.attr('disabled', 'disabled');
-            buttons.blur()
+            buttons.blur();
 
             if ($("#class-message:visible")[0] === undefined) {// we're not dealing with classes
                 return true;
@@ -74,7 +74,7 @@ $(function () {
                     if (data === "False") {
                         // The class doesn't exist
                         okay = false;
-                        send_status.removeClass(status_classes)
+                        send_status.removeClass(status_classes);
                         send_status.toggle();
                         $('#class-dne-name').text($("#class").val());
                         $('#class-dne').show();
@@ -253,13 +253,13 @@ $(document).keydown(function (event) {
             parent = get_selected_zephyr_row();
             zephyr_class = parent.find("span.zephyr_class").text();
             narrow_class(zephyr_class);
-            event.preventDefault()
+            event.preventDefault();
         } else if (goto_pressed && event.keyCode === 73) { // 'i' keypress, for narrow-by-instance
             parent = get_selected_zephyr_row();
             zephyr_class = parent.find("span.zephyr_class").text();
             zephyr_instance = parent.find("span.zephyr_instance").text();
             narrow_instance(zephyr_class, zephyr_instance);
-            event.preventDefault()
+            event.preventDefault();
         } else if (goto_pressed && event.keyCode === 80) { // 'p' keypress, for narrow-to-personals
             narrow_all_personals();
             event.preventDefault();
