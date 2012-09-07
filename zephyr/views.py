@@ -123,6 +123,7 @@ def update(request):
     user_profile.save()
     return json_success()
 
+@login_required
 @asynchronous
 @require_post
 def get_updates_longpoll(request, handler):
