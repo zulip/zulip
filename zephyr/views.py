@@ -9,11 +9,10 @@ from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
-    Recipient, filter_by_subscriptions, get_display_recipient, get_huddle, \
+    Recipient, get_display_recipient, get_huddle, \
     create_user_profile, Realm, UserMessage, create_zephyr_class
 from zephyr.forms import RegistrationForm
 
-import tornado.web
 from zephyr.decorator import asynchronous
 
 import datetime

@@ -1,4 +1,3 @@
-import tornado.web
 import types
 
 class TornadoAsyncException(Exception): pass

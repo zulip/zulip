@@ -7,7 +7,6 @@ from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscript
     filter_by_subscriptions, Realm
 
 import datetime
-import os
 import simplejson
 import subprocess
 subprocess.call("zephyr/tests/generate-fixtures");

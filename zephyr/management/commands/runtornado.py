@@ -85,7 +85,7 @@ class Command(BaseCommand):
             print "Tornado server is running at http://%s:%s/" % (addr, port)
             print "Quit the server with %s." % quit_command
 
-            from tornado.web import FallbackHandler, StaticFileHandler
+            from tornado.web import FallbackHandler
             django_app = wsgi.WSGIContainer(WSGIHandler())
 
             try:
@@ -150,7 +150,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         return inner_func
 
     def get(self):
-        from tornado.wsgi import HTTPRequest, WSGIContainer
+        from tornado.wsgi import WSGIContainer
         from django.core.handlers.wsgi import WSGIRequest, STATUS_CODE_TEXT
         import urllib
 

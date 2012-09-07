@@ -1,7 +1,7 @@
 from django.core.management.base import NoArgsCommand
 
 from django.contrib.auth.models import User
-from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscription
+from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient
 from django.contrib.sessions.models import Session
 
 class Command(NoArgsCommand):
