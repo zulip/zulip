@@ -345,9 +345,9 @@ function narrow_personals() {
         var recipient = element.find("span.zephyr_personal_recipient");
         var sender = element.find("span.zephyr_sender");
 
-        return ((recipient.length > 0) &&
-            ((recipient.text() === target_recipient) && (sender.text() === target_sender)) ||
-            ((recipient.text() === target_sender) && (sender.text() === target_recipient)));
+        return (recipient.length > 0) &&
+            (((recipient.text() === target_recipient) && (sender.text() === target_sender)) ||
+             ((recipient.text() === target_sender) && (sender.text() === target_recipient)));
     });
 }
 
