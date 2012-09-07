@@ -185,6 +185,9 @@ def get_huddle(id_list):
             s.save()
         return huddle
 
+# This is currently dead code since all the places where we used to
+# use it now have faster implementations, but I expect this to be
+# potentially useful for code in the future, so not deleting it yet.
 def filter_by_subscriptions(zephyrs, user):
     userprofile = UserProfile.objects.get(user=user)
     subscribed_zephyrs = []
