@@ -87,9 +87,6 @@ def home(request):
               UserProfile.objects.filter(realm=user_profile.realm) if
               profile != user_profile]
 
-    publics = filter_by_subscriptions(Zephyr.objects.filter(
-        recipient__type="class").all(), request.user)
-
     subscriptions = Subscription.objects.filter(userprofile_id=user_profile, active=True)
     classes = [get_display_recipient(sub.recipient) for sub in subscriptions
                if sub.recipient.type == "class"]
