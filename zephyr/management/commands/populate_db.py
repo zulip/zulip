@@ -51,7 +51,7 @@ class Command(BaseCommand):
             return
 
         for klass in [Zephyr, ZephyrClass, UserProfile, User, Recipient,
-                      Realm, Subscription, Huddle]:
+                      Realm, Subscription, Huddle, UserMessage]:
             klass.objects.all().delete()
 
         # Create a test realm
