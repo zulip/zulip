@@ -6,7 +6,7 @@ table.sourceCode { width: 100%; }
 td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
 td.sourceCode { padding-left: 5px; }
 
-pre.sourceCode {
+pre {
     padding-left: 20px;
 }
 
