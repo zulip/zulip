@@ -6,21 +6,21 @@
                      ">{{#display_recipient}}{{name}},{{/display_recipient}}</span>
         {{#display_recipient}}
         <span class="zephyr_label_clickable zephyr_huddle_recipient"
-              onclick="narrow_huddle({{id}})">{{name}}</span>
+              onclick="select_zephyr({{id}}); narrow_huddle();">{{name}}</span>
         {{/display_recipient}}
         &larr;
     {{/is_huddle}}
     {{#is_personal}}
         <span class="zephyr_label_clickable zephyr_personal_recipient"
-              onclick="narrow_personals({{id}})">{{display_recipient}}</span>
+              onclick="select_zephyr({{id}}); narrow_personals();">{{display_recipient}}</span>
         &larr;
     {{/is_personal}}
     {{#is_class}}
         <span class="zephyr_label_clickable zephyr_class"
-              onclick="narrow_class('{{display_recipient}}', {{id}})">{{display_recipient}}</span>
+              onclick="select_zephyr({{id}}); narrow_class('{{display_recipient}}');">{{display_recipient}}</span>
         <br/>
         <span class="zephyr_label_clickable zephyr_instance"
-              onclick="narrow_instance('{{display_recipient}}', '{{instance}}', {{id}})">{{instance}}</span>
+              onclick="select_zephyr({{id}}); narrow_instance('{{display_recipient}}', '{{instance}}');">{{instance}}</span>
     {{/is_class}}
     <br />
 </td>
