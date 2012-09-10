@@ -245,19 +245,13 @@ function process_hotkey(code) {
 }
 
 function process_goto_hotkey(code) {
-    var parent, zephyr_class, zephyr_instance;
     switch (code) {
     case 67: // 'c': narrow by recipient
-        parent = get_selected_zephyr_row();
-        zephyr_class = parent.find("span.zephyr_class").text();
-        narrow_class(zephyr_class);
+        narrow_class();
         break;
 
     case 73: // 'i': narrow by instance
-        parent = get_selected_zephyr_row();
-        zephyr_class = parent.find("span.zephyr_class").text();
-        zephyr_instance = parent.find("span.zephyr_instance").text();
-        narrow_instance(zephyr_class, zephyr_instance);
+        narrow_instance();
         break;
 
     case 80: // 'p': narrow to personals
@@ -378,21 +372,26 @@ function narrow_personals() {
     });
 }
 
-function narrow_class(class_name) {
-    var message = "Showing <span class='label zephyr_class'>" + class_name + "</span>";
+function narrow_class() {
+    var parent = get_selected_zephyr_row();
+    var zephyr_class = parent.find("span.zephyr_class").text();
+    var message = "Showing <span class='label zephyr_class'>" + zephyr_class + "</span>";
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_class").length > 0 &&
-                element.find("span.zephyr_class").text() === class_name);
+                element.find("span.zephyr_class").text() === zephyr_class);
     });
 }
 
-function narrow_instance(class_name, instance) {
-    var message = "Showing <span class='label zephyr_class'>" + class_name
-        + "</span> <span class='label zephyr_instance'>" + instance + "</span>";
+function narrow_instance() {
+    var parent = get_selected_zephyr_row();
+    var zephyr_class = parent.find("span.zephyr_class").text();
+    var zephyr_instance = parent.find("span.zephyr_instance").text();
+    var message = "Showing <span class='label zephyr_class'>" + zephyr_class
+        + "</span> <span class='label zephyr_instance'>" + zephyr_instance + "</span>";
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_class").length > 0 &&
-                element.find("span.zephyr_class").text() === class_name &&
-                element.find("span.zephyr_instance").text() === instance);
+                element.find("span.zephyr_class").text() === zephyr_class &&
+                element.find("span.zephyr_instance").text() === zephyr_instance);
     });
 }
 

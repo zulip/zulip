@@ -17,10 +17,10 @@
     {{/is_personal}}
     {{#is_class}}
         <span class="zephyr_label_clickable zephyr_class"
-              onclick="select_zephyr({{id}}); narrow_class('{{display_recipient}}');">{{display_recipient}}</span>
+              onclick="select_zephyr({{id}}); narrow_class();">{{display_recipient}}</span>
         <br/>
         <span class="zephyr_label_clickable zephyr_instance"
-              onclick="select_zephyr({{id}}); narrow_instance('{{display_recipient}}', '{{instance}}');">{{instance}}</span>
+              onclick="select_zephyr({{id}}); narrow_instance();">{{instance}}</span>
     {{/is_class}}
     <br />
 </td>
