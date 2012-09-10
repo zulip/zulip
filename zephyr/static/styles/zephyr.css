@@ -37,12 +37,17 @@ div.zephyr_comp {
 
 }
 
+td.pointer {
+    vertical-align: top;
+}
+
 td.zephyr_recipient {
     vertical-align: top;
     text-align: right;
     padding: 10px;
     max-width: 10em;
 }
+
 span.zephyr_class {
     font-weight: bold;
     font-size: 120%;
