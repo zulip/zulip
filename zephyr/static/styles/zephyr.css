@@ -1,64 +1,120 @@
-.top-content {
-    padding-left: 10px;
-    padding-right: 20px;
+body {
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    overflow: hidden
 }
 
-#main_div {
-    height: 400px;
+span.realname {
+    font-weight: bold;
+    font-size: 150%;
+}
+
+span.email {
+    color: gray;
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+}
+
+div.zephyr_well {
+    background-color: white;
+    border: none;
+}
+
+ul.nav-zephyr {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+div.zephyr_list {
     overflow-y: scroll;
+    background-color: #EEE;
+    padding-left: 30px;
+    padding-right: 30px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+}
+div.zephyr_comp {
+    background-color: #EEE;
+
 }
 
-form.zephyr input {
-    width: 95%;
+td.zephyr_recipient {
+    vertical-align: top;
+    text-align: right;
+    padding: 10px
+}
+span.zephyr_class {
+    font-weight: bold;
+    font-size: 120%;
+    width: 15px;
 }
 
-form.zephyr textarea {
-    width: 95%;
+span.zephyr_instance {
+    font-size: 120%;
+    padding-right: 5px;
 }
 
-#narrow_bar {
-    margin-top: 5px;
+span.zephyr_sender {
+    font-weight: bold;
 }
 
-#unhide {
-    vertical-align: middle;
+span.zephyr_time {
+    color: gray;
+    float: right;
+    position: relative;
+    right: -25px;
 }
 
-#narrow_indicator {
-    vertical-align: middle;
-    margin-left: 5px;
+p.zephyr_text {
+    margin-left: 45px;
+}
+td.messagebox {
+    width: 100%;
+    padding: 8px 35px 8px 14px;
+    margin-bottom: 20px;
+    background-color: white;
+    border: 1px solid gray;
 }
 
-.zephyr_label_clickable:hover {
-    background-color: #999999;
-    cursor: pointer;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+img.profile_picture {
+    display: block;
+    float: left;
+    margin: 0 15px 15px 0;
+    max-height: 30px;
 }
 
-.zephyr_class {
-  background-color: #b94a48;
+div.alert {
+    max-width: 20%;
 }
 
-.zephyr_instance {
-  background-color: #468847;
+
+div.zephyr_compose {
+    display: none;
+    position: fixed;
+    bottom: 0px;
+    background: white;
+    width: 52.8%;
+}
+a.button-slide {
+  display: block;
+  width: 420px;
+  padding: 2px;
+  margin: 0 auto;
+  background-color: white;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  -webkit-box-shadow: 0 1px 5px rgba(0,0,0,0.75);
+  -moz-box-shadow: 0 1px 5px rgba(0,0,0,0.75);
+  box-shadow: 0 1px 5px rgba(0,0,0,0.75);
+  position: absolute;
+  bottom: 0px;
+  left: 40%;
 }
 
-.zephyr_personal_recipient {
-  background-color: #3a87ad;
-}
-
-.zephyr_huddle_recipient {
-  background-color: #3a87ad;
-}
-
-.zephyr_sender {
-  background-color: #3a87ad;
-}
 
 /* Like .nav-tabs > li > a */
 #send-status {
@@ -104,4 +160,16 @@ span.classname {
 
 #connection-error .alert {
     margin-bottom: auto;
+}
+
+textarea.zephyr_message {
+    width: 100%;
+    height: 100%;
+}
+textarea:focus {
+    outline: none;
+    border: gray;
+}
+input.zephyr_recipient_box {
+    width: 90px;
 }

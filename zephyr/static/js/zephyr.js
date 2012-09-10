@@ -4,17 +4,6 @@
     initial_zephyr_json: false, initial_pointer: false, username: false,
     class_list: false, instance_list: false, people_list: false */
 
-function resize_main_div() {
-    // Resize main_div to exactly take up remaining vertical space.
-    var div = $('#main_div');
-    div.height(Math.max(200, div.height() + $(window).height() - $('body').height()));
-}
-$(function () {
-    resize_main_div();
-    $(window).resize(resize_main_div);
-    $('#zephyr-type-tabs a').on('shown', function (e) { resize_main_div(); });
-});
-
 $(function () {
     $('#zephyr-type-tabs a[href="#class-message"]').on('shown', function (e) {
         $('#class-message input:not(:hidden):first').focus().select();
@@ -66,6 +55,8 @@ $(function () {
                        .addClass('alert-info')
                        .text('Sending')
                        .stop(true).fadeTo(0,1);
+            $('.zephyr_compose').slideToggle('fast');
+            $(".button-slide").show();
             buttons.attr('disabled', 'disabled');
             buttons.blur();
 
@@ -215,6 +206,8 @@ function process_hotkey(code) {
         return process_hotkey;
 
     case 82: // 'r': respond to zephyr
+        $('.zephyr_compose').slideToggle('fast');
+        $(".button-slide").hide();
         parent = get_selected_zephyr_row();
         zephyr_class = parent.find("span.zephyr_class").text();
         zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
@@ -285,6 +278,8 @@ function process_key_in_input(code) {
     if (code === 27) {
         // User hit Escape key
         $('input, textarea, button').blur();
+	$('.zephyr_compose').slideToggle('fast');
+	$(".button-slide").show();
         return process_hotkey;
     }
     return false;
@@ -510,7 +505,6 @@ function get_updates_longpoll() {
             } else {
                 $('#connection-error').hide();
             }
-            resize_main_div();
 
             var retry_sec = Math.min(90, Math.exp(longpoll_failures/2));
             console.log(new Date() + ': longpoll retrying in ' + retry_sec + ' seconds');
@@ -521,4 +515,10 @@ function get_updates_longpoll() {
 
 $(function () {
     update_autocomplete();
+});
+$(document).ready(function(){
+  $(".button-slide").click(function(){
+    $(".zephyr_compose").slideToggle("fast");
+    $(".button-slide").hide();
+  });
 });
