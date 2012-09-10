@@ -212,7 +212,7 @@ def zephyr_backend(request, sender):
             # Make sure the sender is included in the huddle
             recipient_ids.append(UserProfile.objects.get(user=request.user).id)
             huddle = get_huddle(recipient_ids)
-            recipient = Recipient.objects.get(type_id=huddle.pk, type=Recipient.HUDDLE)
+            recipient = Recipient.objects.get(type_id=huddle.id, type=Recipient.HUDDLE)
         else:
             # This is actually a personal message
             if not User.objects.filter(username=recipient_data):

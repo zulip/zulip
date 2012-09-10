@@ -165,7 +165,7 @@ class Command(BaseCommand):
                 new_zephyr.sender = UserProfile.objects.get(id=personals_pair[1])
                 saved_data = personals_pair
             elif zephyr_type == Recipient.CLASS:
-                zephyr_class = ZephyrClass.objects.get(pk=new_zephyr.recipient.type_id)
+                zephyr_class = ZephyrClass.objects.get(id=new_zephyr.recipient.type_id)
                 # Pick a random subscriber to the class
                 new_zephyr.sender = random.choice(Subscription.objects.filter(
                         recipient=new_zephyr.recipient)).userprofile

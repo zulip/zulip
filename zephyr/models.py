@@ -12,14 +12,14 @@ def get_display_recipient(recipient):
     name, for a class, or the username, for a user).
     """
     if recipient.type == Recipient.CLASS:
-        zephyr_class = ZephyrClass.objects.get(pk=recipient.type_id)
+        zephyr_class = ZephyrClass.objects.get(id=recipient.type_id)
         return zephyr_class.name
     elif recipient.type == Recipient.HUDDLE:
         user_list = [UserProfile.objects.get(user=s.userprofile) for s in
                      Subscription.objects.filter(recipient=recipient)]
         return [{'name': user.user.username} for user in user_list]
     else:
-        user = User.objects.get(pk=recipient.type_id)
+        user = User.objects.get(id=recipient.type_id)
         return user.username
 
 callback_table = {}
@@ -72,7 +72,7 @@ def create_user_profile(user, realm):
         profile = UserProfile(user=user, pointer=-1, realm_id=realm.id)
         profile.save()
         # Auto-sub to the ability to receive personals.
-        recipient = Recipient(type_id=profile.pk, type=Recipient.PERSONAL)
+        recipient = Recipient(type_id=profile.id, type=Recipient.PERSONAL)
         recipient.save()
         Subscription(userprofile=profile, recipient=recipient).save()
 
@@ -191,7 +191,7 @@ def get_huddle(id_list):
         # since we don't have one, make a new huddle
         huddle = Huddle(huddle_hash = huddle_hash)
         huddle.save()
-        recipient = Recipient(type_id=huddle.pk, type=Recipient.HUDDLE)
+        recipient = Recipient(type_id=huddle.id, type=Recipient.HUDDLE)
         recipient.save()
 
         # Add subscriptions

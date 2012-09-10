@@ -107,7 +107,7 @@ class LoginTest(AuthedTestCase):
     def test_login(self):
         self.login("hamlet", "hamlet")
         user = User.objects.get(username='hamlet')
-        self.assertEqual(self.client.session['_auth_user_id'], user.pk)
+        self.assertEqual(self.client.session['_auth_user_id'], user.id)
 
     def test_login_bad_password(self):
         self.login("hamlet", "wrongpassword")
@@ -116,7 +116,7 @@ class LoginTest(AuthedTestCase):
     def test_register(self):
         self.register("test", "test")
         user = User.objects.get(username='test')
-        self.assertEqual(self.client.session['_auth_user_id'], user.pk)
+        self.assertEqual(self.client.session['_auth_user_id'], user.id)
 
     def test_logout(self):
         self.login("hamlet", "hamlet")
@@ -139,7 +139,7 @@ class PersonalZephyrsTest(AuthedTestCase):
         new_zephyrs = self.zephyr_stream(user)
         self.assertEqual(len(new_zephyrs) - len(old_zephyrs), 1)
 
-        recipient = Recipient.objects.get(type_id=user.pk, type=Recipient.PERSONAL)
+        recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
         self.assertEqual(new_zephyrs[-1].recipient, recipient)
 
     def test_personal_to_self(self):
@@ -162,7 +162,7 @@ class PersonalZephyrsTest(AuthedTestCase):
         self.assertEqual(old_zephyrs, new_zephyrs)
 
         user = User.objects.get(username="test1")
-        recipient = Recipient.objects.get(type_id=user.pk, type=Recipient.PERSONAL)
+        recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
         self.assertEqual(self.zephyr_stream(user)[-1].recipient, recipient)
 
     def test_personal(self):
@@ -199,7 +199,7 @@ class PersonalZephyrsTest(AuthedTestCase):
 
         sender = User.objects.get(username="hamlet")
         receiver = User.objects.get(username="othello")
-        recipient = Recipient.objects.get(type_id=receiver.pk, type=Recipient.PERSONAL)
+        recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         self.assertEqual(self.zephyr_stream(sender)[-1].recipient, recipient)
         self.assertEqual(self.zephyr_stream(receiver)[-1].recipient, recipient)
 
