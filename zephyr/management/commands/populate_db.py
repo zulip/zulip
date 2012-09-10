@@ -61,6 +61,12 @@ class Command(BaseCommand):
                     type='float',
                     default=20,
                     help='The percent of messages to repeat recent folks.'),
+        make_option('--nodelete',
+                    action="store_false",
+                    default=True,
+                    dest='delete',
+                    help='Whether to delete all the existing messages.'),
+
         )
 
     def handle(self, **options):
@@ -68,29 +74,48 @@ class Command(BaseCommand):
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
 
-        for klass in [Zephyr, ZephyrClass, UserProfile, User, Recipient,
-                      Realm, Subscription, Huddle, UserMessage]:
-            klass.objects.all().delete()
-
-        # Create a test realm
-        realm = Realm(domain="humbughq.com")
-        realm.save()
-
-        # Create test Users (UserProfiles are automatically created,
-        # as are subscriptions to the ability to receive personals).
         usernames = ["othello", "iago", "prospero", "cordelia", "hamlet"]
-        create_users(usernames, realm)
+        class_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
+
+        if options["delete"]:
+            for klass in [Zephyr, ZephyrClass, UserProfile, User, Recipient,
+                          Realm, Subscription, Huddle, UserMessage]:
+                klass.objects.all().delete()
+
+            # Create a test realm
+            realm = Realm(domain="humbughq.com")
+            realm.save()
+
+            # Create test Users (UserProfiles are automatically created,
+            # as are subscriptions to the ability to receive personals).
+            create_users(usernames, realm)
+
+            # Create public classes.
+            create_classes(class_list, realm)
+            recipient_classes = [klass.type_id for klass in
+                                 Recipient.objects.filter(type=Recipient.CLASS)]
+
+            # Create subscriptions to classes
+            profiles = UserProfile.objects.all()
+            for i, profile in enumerate(profiles):
+                # Subscribe to some classes.
+                for recipient in recipient_classes[:int(len(recipient_classes) *
+                                                        float(i)/len(profiles)) + 1]:
+                    r = Recipient.objects.get(type=Recipient.CLASS, type_id=recipient)
+                    new_subscription = Subscription(userprofile=profile,
+                                                    recipient=r)
+                    new_subscription.save()
+        else:
+            realm = Realm.objects.get(domain="humbughq.com")
+            recipient_classes = [klass.type_id for klass in
+                                 Recipient.objects.filter(type=Recipient.CLASS)]
+
+        # Extract a list of all users
         users = [user.id for user in User.objects.all()]
 
-        # Create public classes.
-        class_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
-        create_classes(class_list, realm)
-
         # Create several initial huddles
-        huddle_members = {}
         for i in range(0, options["num_huddles"]):
-            user_ids = random.sample(users, random.randint(3, 4))
-            huddle_members[get_huddle(user_ids).id] = user_ids
+            get_huddle(random.sample(users, random.randint(3, 4)))
 
         # Create several initial pairs for personals
         personals_pairs = []
@@ -101,15 +126,10 @@ class Command(BaseCommand):
                              Recipient.objects.filter(type=Recipient.CLASS)]
         recipient_huddles = [h.type_id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
 
-        # Create subscriptions to classes
-        profiles = UserProfile.objects.all()
-        for i, profile in enumerate(profiles):
-            # Subscribe to some classes.
-            for recipient in recipient_classes[:int(len(recipient_classes) * float(i)/len(profiles)) + 1]:
-                new_subscription = Subscription(userprofile=profile,
-                                                recipient=Recipient.objects.get(type=Recipient.CLASS,
-                                                                                type_id=recipient))
-                new_subscription.save()
+        huddle_members = {}
+        for h in recipient_huddles:
+            huddle_members[h] = [s.userprofile.id for s in
+                                 Subscription.objects.filter(recipient=h)]
 
         # Create some test zephyrs, including:
         # - multiple classes
@@ -178,20 +198,21 @@ class Command(BaseCommand):
             recipients[num_zephyrs] = [zephyr_type, new_zephyr.recipient, saved_data]
             num_zephyrs += 1
 
-        # Create internal users
-        internal_usernames = []
-        create_users(internal_usernames, realm)
+        if options["delete"]:
+            # Create internal users
+            internal_usernames = []
+            create_users(internal_usernames, realm)
 
-        create_classes(subs_list, realm)
+            create_classes(subs_list, realm)
 
-        # Now subscribe everyone to these classes
-        profiles = UserProfile.objects.all()
-        for cls in subs_list:
-            zephyr_class = ZephyrClass.objects.get(name=cls, realm=realm)
-            recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=zephyr_class.id)
-            for i, profile in enumerate(profiles):
-            # Subscribe to some classes.
-                new_subscription = Subscription(userprofile=profile, recipient=recipient)
-                new_subscription.save()
+            # Now subscribe everyone to these classes
+            profiles = UserProfile.objects.all()
+            for cls in subs_list:
+                zephyr_class = ZephyrClass.objects.get(name=cls, realm=realm)
+                recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=zephyr_class.id)
+                for i, profile in enumerate(profiles):
+                    # Subscribe to some classes.
+                    new_subscription = Subscription(userprofile=profile, recipient=recipient)
+                    new_subscription.save()
 
-        self.stdout.write("Successfully populated test database.\n")
+            self.stdout.write("Successfully populated test database.\n")
