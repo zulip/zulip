@@ -26,7 +26,6 @@ ul.nav-zephyr {
 div.zephyr_list {
     overflow-y: scroll;
     background-color: #EEE;
-    padding-left: 30px;
     padding-right: 30px;
     position: absolute;
     top: 0;
@@ -41,7 +40,8 @@ div.zephyr_comp {
 td.zephyr_recipient {
     vertical-align: top;
     text-align: right;
-    padding: 10px
+    padding: 10px;
+    max-width: 10em;
 }
 span.zephyr_class {
     font-weight: bold;
