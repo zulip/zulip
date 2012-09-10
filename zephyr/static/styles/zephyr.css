@@ -39,6 +39,7 @@ div.zephyr_comp {
 
 td.pointer {
     vertical-align: top;
+    padding: 10px;
 }
 
 td.zephyr_recipient {
