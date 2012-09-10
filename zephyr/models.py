@@ -134,7 +134,9 @@ class Zephyr(models.Model):
                 'type'             : self.recipient.type_name(),
                 'display_recipient': get_display_recipient(self.recipient),
                 'instance'         : self.instance,
-                'content'          : self.content }
+                'content'          : self.content,
+                'gravatar_hash'    : hashlib.md5("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" + self.sender.user.username).hexdigest(),
+                }
 
 class UserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile)
