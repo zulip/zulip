@@ -33,6 +33,7 @@ div.zephyr_list {
     bottom: 0;
     width: 640px;
 }
+
 div.zephyr_comp {
     background-color: #EEE;
 
@@ -177,17 +178,16 @@ input.zephyr_recipient_box {
 }
 
 div.narrow {
-  position: fixed;
-  display: none;
-  padding: 2px;
-  /* div.zephyr_list width + padding *2 */
-  width: 664px;
-  margin: 0 auto;
-  background-color: white;
-  font-size: 14px;
-  text-align: center;
-  text-decoration: none;
-  border: 1px solid gray;
-  top: 0px;
+    position: fixed;
+    display: none;
+    padding: 2px;
+    /* div.zephyr_list width + padding *2 */
+    width: 664px;
+    margin: 0 auto;
+    background-color: white;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+    border: 1px solid gray;
+    top: 0px;
 }
-

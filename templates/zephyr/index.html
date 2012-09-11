@@ -28,14 +28,14 @@
 
 {% icanhazjs "zephyr" %}
 {% autoescape off %}
-    <link href="/static/third/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/third/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-    <link href="/static/third/jquery/jquery-ui-1.8.23.custom.css" rel="stylesheet">
-    {# We need to import jQuery before Bootstrap #}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
-    <script src="/static/third/bootstrap/js/bootstrap.min.js"></script>
-    <script src="/static/js/common.js"></script>
+<link href="/static/third/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="/static/third/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+<link href="/static/third/jquery/jquery-ui-1.8.23.custom.css" rel="stylesheet">
+{# We need to import jQuery before Bootstrap #}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
+<script src="/static/third/bootstrap/js/bootstrap.min.js"></script>
+<script src="/static/js/common.js"></script>
 <script type="text/javascript" src="/static/third/jquery/jquery.form.js"></script>
 <script type="text/javascript" src="/static/third/ich/ICanHaz.min.js"></script>
 <script type="text/javascript" src="/static/js/zephyr.js"></script>
@@ -69,13 +69,13 @@ var people_list = {{ people }};
         <div class="span9">
           <div class="zephyr_list" id="main_div">
             <br/><br/>
-	    <table class="zephyr_table" id="table">
-	      <tbody>
-	      </tbody>
-	    </table>
+            <table class="zephyr_table" id="table">
+              <tbody>
+              </tbody>
+            </table>
             <br/><br/>
             <div class="narrow"><span id="narrow_indicator"></span>. <button id="unhide" class="btn" disabled=disabled onclick="unhide()">Show all.</button> </div>
-	  </div>
+          </div>
     <div class="tabbable container zephyr_compose">
         <ul class="nav nav-tabs" id="zephyr-type-tabs">
             <li class="active"><a href="#class-message" data-toggle="tab">Class message</a></li>
@@ -86,10 +86,10 @@ var people_list = {{ people }};
         <div class="tab-content">
             <div class="tab-pane active" id="class-message">
           <div class="zephyr_comp">
-	    <br/>
-	    <table >
-	      <tbody>
-		<tr>
+            <br/>
+            <table>
+              <tbody>
+                <tr>
 <td class="pointer"><p></p></td>
                 <form action="/zephyr/" method="post" class="zephyr">
                     <input type="hidden" name="type" value="class" />
@@ -97,34 +97,34 @@ var people_list = {{ people }};
                         </div>
                     </div>
 
-		  <td class="zephyr_recipient">
-		    <p>
-		      <span class="zephyr_label_clickable zephyr_class">
+                  <td class="zephyr_recipient">
+                    <p>
+                      <span class="zephyr_label_clickable zephyr_class">
                             <input type="text" class="zephyr_recipient_box" name="class" id="class" value="" />
-		      </span>
-		      <br/>
-		      <span class="zephyr_label_clickable zephyr_instance">
+                      </span>
+                      <br/>
+                      <span class="zephyr_label_clickable zephyr_instance">
 
                             <input type="text" class="zephyr_recipient_box" name="instance" id="instance" value="" />
-		      </span>
-		    </p>
-		  </td>
-		  <td class="messagebox compose">
-		    <img class="profile_picture" src="http://www.gravatar.com/avatar/a?d=identicon"/>
-		    <p class="zephyr_text">
+                      </span>
+                    </p>
+                  </td>
+                  <td class="messagebox compose">
+                    <img class="profile_picture" src="http://www.gravatar.com/avatar/a?d=identicon"/>
+                    <p class="zephyr_text">
                             <textarea class="zephyr_message" name="new_zephyr" id="new_zephyr" value="" /></textarea>
                         <input type="submit" value="Zephyr" style="float:right" class="btn" />
-		    </p>
-		  </td>
-		</tr>
+                    </p>
+                  </td>
+                </tr>
                 <tr>
                     <td></td><td></td><td>
                 </form>
                     </td>
                 </tr>
-	      </tbody>
-	    </table>
-	  </div>
+              </tbody>
+            </table>
+          </div>
 
             </div>
             <div class="tab-pane" id="personal-message">

@@ -280,7 +280,7 @@ function process_key_in_input(code) {
     if (code === 27) {
         // User hit Escape key
         $('input, textarea, button').blur();
-	$('.zephyr_compose').slideToggle('fast');
+        $('.zephyr_compose').slideToggle('fast');
         return process_hotkey;
     }
     return false;
@@ -540,10 +540,8 @@ function get_updates_longpoll() {
 
 $(function () {
     update_autocomplete();
-});
-$(document).ready(function(){
-  $(".button-slide").click(function(){
-    $(".zephyr_compose").slideToggle("fast");
-    $(".button-slide").hide();
-  });
+    $('.button-slide').click(function () {
+        $('.zephyr_compose').slideToggle('fast');
+        $('.button-slide').hide();
+    });
 });
