@@ -103,7 +103,9 @@ div.zephyr_compose {
     position: fixed;
     bottom: 0px;
     background: white;
-    width: 52.8%;
+
+    /* = div.zephyr_list width + padding-right */
+    width: 670px;
 }
 
 /* Like .nav-tabs > li > a */
