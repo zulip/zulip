@@ -63,6 +63,11 @@ span.zephyr_sender {
     font-weight: bold;
 }
 
+span.zephyr_label_clickable:hover {
+    cursor: pointer;
+    color:  #4090D0;
+}
+
 span.zephyr_time {
     color: gray;
     float: right;
