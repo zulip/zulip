@@ -80,6 +80,7 @@ span.zephyr_time {
 
 table.zephyr_table {
     table-layout: fixed;
+    margin-left: auto;
 }
 
 p.zephyr_text {
