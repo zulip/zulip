@@ -219,3 +219,8 @@ div#bottom_whitespace {
   display: block;
   height: 60%;
 }
+
+td.selected_message_indicator {
+    background-color: blue;
+    width: 2px;
+}
