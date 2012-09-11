@@ -50,6 +50,7 @@ if __name__ == '__main__':
     import traceback
     import simplejson
     import re
+    import time
 
     browser_login()
 
@@ -71,24 +72,29 @@ if __name__ == '__main__':
     with open('zephyrs', 'a') as log:
         print "Starting receive loop"
         while True:
-            notice = zephyr.receive(block=True)
-            zsig, body = notice.message.split("\x00", 1)
+            try:
+                notice = zephyr.receive(block=True)
+                zsig, body = notice.message.split("\x00", 1)
 
-            if notice.cls not in subs_list:
-                continue
-            zeph = { 'type'      : 'class',
-                     'time'      : str(notice.time),
-                     'sender'    : notice.sender,
-                     'class'     : notice.cls,
-                     'instance'  : notice.instance,
-                     'zsig'      : zsig,  # logged here but not used by app
-                     'new_zephyr': unwrap_lines(body) }
-            for k,v in zeph.items():
-                zeph[k] = cgi.escape(v)
+                if notice.cls not in subs_list:
+                    continue
+                zeph = { 'type'      : 'class',
+                         'time'      : str(notice.time),
+                         'sender'    : notice.sender,
+                         'class'     : notice.cls,
+                         'instance'  : notice.instance,
+                         'zsig'      : zsig,  # logged here but not used by app
+                         'new_zephyr': unwrap_lines(body) }
+                for k,v in zeph.items():
+                    zeph[k] = cgi.escape(v)
 
-            log.write(simplejson.dumps(zeph) + '\n')
-            log.flush()
+                log.write(simplejson.dumps(zeph) + '\n')
+                log.flush()
 
-            print "received a message on %s from %s..." % (zeph['class'], zeph['sender'])
-            send_zephyr(zeph)
-            print "forwarded"
+                print "received a message on %s from %s..." % (zeph['class'], zeph['sender'])
+                send_zephyr(zeph)
+                print "forwarded"
+            except:
+                print >>sys.stderr, 'Error relaying zephyr'
+                traceback.print_exc()
+                time.sleep(2)
