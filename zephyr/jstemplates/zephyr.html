@@ -1,7 +1,6 @@
 {{! Client-side Mustache template for rendering zephyrs.}}
 <td class="pointer"><p></p></td>
 <td class="zephyr_recipient"><p onclick="select_zephyr({{id}})">
-    {{#include_recipient}}
     {{#is_huddle}}
         <span class="hidden zephyr_huddle_recipients_list
                      ">{{#display_recipient}}{{name}},{{/display_recipient}}</span>
@@ -23,7 +22,6 @@
         <span class="zephyr_label_clickable zephyr_instance"
               onclick="select_zephyr({{id}}); narrow_instance();">{{instance}}</span>
     {{/is_class}}
-    {{/include_recipient}}
     <br />
 </td>
 <td class="messagebox" onclick="select_zephyr({{id}})">

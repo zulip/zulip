@@ -465,23 +465,6 @@ function add_message(index, zephyr) {
     }
     zephyr.html_content = newline2br(zephyr.content);
 
-    parent = $('#table tr:last-child');
-    zephyr_class = parent.find("span.zephyr_class").text();
-    zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
-    zephyr_personal = parent.find("span.zephyr_personal_recipient").text();
-    zephyr_instance = parent.find("span.zephyr_instance").text();
-
-    if ((zephyr.is_huddle && zephyr_huddle === zephyr.name) ||
-        (zephyr.is_personal && zephyr_personal === zephyr.display_recipient) ||
-        (zephyr.is_class && zephyr_class === zephyr.display_recipient &&
-            zephyr_instance === zephyr.instance)) {
-        zephyr.include_recipient = false;
-    } else {
-        zephyr.include_recipient = true;
-        // add a space to the table
-        $('#table').append($('<tr />').append($('<td />').html('<br/>')));
-    }
-
     var new_tr = $('<tr />').attr('id', zephyr.id);
     $('#table').append(new_tr);
     new_tr.append(ich.zephyr(zephyr));
