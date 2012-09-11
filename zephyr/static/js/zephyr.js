@@ -540,6 +540,5 @@ $(function () {
     update_autocomplete();
     $('.button-slide').click(function () {
         $('.zephyr_compose').slideToggle('fast');
-        $('.button-slide').hide();
     });
 });
