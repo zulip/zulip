@@ -65,7 +65,13 @@ var people_list = {{ people }};
               </tbody>
             </table>
             <br/><br/>
-            <div class="narrow"><span id="narrow_indicator"></span>. <button id="unhide" class="btn" disabled=disabled onclick="unhide()">Show all.</button> </div>
+            <div class="narrow">
+              <div class="input-prepend input-append">
+                <span class="add-on"><i class="icon-filter"></i></span>
+                <span class="add-on"><span id="narrow_indicator" class="badge"></span></span>
+                <button id="unhide" class="btn" disabled=disabled onclick="unhide()">Show all</button>
+              </div>
+            </div>
           </div>
     <div class="tabbable container zephyr_compose">
         <ul class="nav nav-tabs" id="zephyr-type-tabs">

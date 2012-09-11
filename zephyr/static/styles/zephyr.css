@@ -196,10 +196,11 @@ div.narrow {
     /* div.zephyr_list width + padding *2 */
     width: 664px;
     margin: 0 auto;
-    background-color: white;
-    font-size: 14px;
-    text-align: center;
+    background-color: #EEE;
     text-decoration: none;
-    border: 1px solid gray;
     top: 0px;
+}
+
+button#unhide.btn {
+    font-size: 12px;
 }

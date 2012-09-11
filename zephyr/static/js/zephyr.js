@@ -350,7 +350,7 @@ function do_narrow(description, filter_function) {
 
 function narrow_huddle() {
     var recipients = get_selected_zephyr_row().find("span.zephyr_huddle_recipients_list").text();
-    var message = "Showing group chats with " + recipients;
+    var message = "Group chats with " + recipients;
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_huddle_recipient").length > 0 &&
                 element.find("span.zephyr_huddle_recipients_list").text() === recipients);
@@ -359,7 +359,7 @@ function narrow_huddle() {
 
 function narrow_all_personals() {
     // Narrow to all personals
-    var message = "Showing all personals";
+    var message = "All huddles with you";
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_personal_recipient").length > 0);
     });
@@ -376,7 +376,7 @@ function narrow_personals() {
     } else {
         other_party = target_recipient;
     }
-    var message = "Showing personals with " + other_party;
+    var message = "Huddles with " + other_party;
     do_narrow(message, function (element) {
         var recipient = element.find("span.zephyr_personal_recipient");
         var sender = element.find("span.zephyr_sender");
@@ -390,7 +390,7 @@ function narrow_personals() {
 function narrow_class() {
     var parent = get_selected_zephyr_row();
     var zephyr_class = parent.find("span.zephyr_class").text();
-    var message = "Showing <span class='zephyr_class'>" + zephyr_class + "</span>";
+    var message = "<span class='zephyr_class'>" + zephyr_class + "</span>";
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_class").length > 0 &&
                 element.find("span.zephyr_class").text() === zephyr_class);
@@ -401,8 +401,8 @@ function narrow_instance() {
     var parent = get_selected_zephyr_row();
     var zephyr_class = parent.find("span.zephyr_class").text();
     var zephyr_instance = parent.find("span.zephyr_instance").text();
-    var message = "Showing <span class='zephyr_class'>" + zephyr_class
-        + "</span>: <span class='zephyr_instance'>" + zephyr_instance + "</span>";
+    var message = "<span class='zephyr_class'>" + zephyr_class
+        + "</span> | <span class='zephyr_instance'>" + zephyr_instance + "</span>";
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_class").length > 0 &&
                 element.find("span.zephyr_class").text() === zephyr_class &&
