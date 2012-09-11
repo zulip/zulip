@@ -75,6 +75,10 @@ span.zephyr_time {
     right: -25px;
 }
 
+table.zephyr_table {
+    table-layout: fixed;
+}
+
 p.zephyr_text {
     margin-left: 45px;
 }
