@@ -100,26 +100,6 @@ div.zephyr_compose {
     background: white;
     width: 52.8%;
 }
-a.button-slide {
-  display: block;
-  width: 420px;
-  padding: 2px;
-  margin: 0 auto;
-  background-color: white;
-  font-size: 14px;
-  font-weight: bold;
-  text-align: center;
-  text-decoration: none;
-  border-top-right-radius: 10px;
-  border-top-left-radius: 10px;
-  -webkit-box-shadow: 0 1px 5px rgba(0,0,0,0.75);
-  -moz-box-shadow: 0 1px 5px rgba(0,0,0,0.75);
-  box-shadow: 0 1px 5px rgba(0,0,0,0.75);
-  position: absolute;
-  bottom: 0px;
-  left: 40%;
-}
-
 
 /* Like .nav-tabs > li > a */
 #send-status {

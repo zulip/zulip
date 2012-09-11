@@ -56,7 +56,6 @@ $(function () {
                        .text('Sending')
                        .stop(true).fadeTo(0,1);
             $('.zephyr_compose').slideToggle('fast');
-            $(".button-slide").show();
             buttons.attr('disabled', 'disabled');
             buttons.blur();
 
@@ -207,7 +206,6 @@ function process_hotkey(code) {
 
     case 82: // 'r': respond to zephyr
         $('.zephyr_compose').slideToggle('fast');
-        $(".button-slide").hide();
         parent = get_selected_zephyr_row();
         zephyr_class = parent.find("span.zephyr_class").text();
         zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
@@ -273,7 +271,6 @@ function process_key_in_input(code) {
         // User hit Escape key
         $('input, textarea, button').blur();
 	$('.zephyr_compose').slideToggle('fast');
-	$(".button-slide").show();
         return process_hotkey;
     }
     return false;
