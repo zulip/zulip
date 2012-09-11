@@ -24,10 +24,10 @@
     {{/is_class}}
     <br />
 </td>
-<td class="messagebox">
+<td class="messagebox" onclick="select_zephyr({{id}})">
     <img class="profile_picture" src="http://www.gravatar.com/avatar/{{gravatar_hash}}?d=identicon"/>
     <span class="zephyr_label_clickable zephyr_sender"
           onclick="prepare_personal('{{sender}}')">{{sender}}</span>
-    <p onclick="select_zephyr({{id}})" class="zephyr_text">
+    <p class="zephyr_text">
     {{{html_content}}}
 </p></td>
