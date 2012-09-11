@@ -245,7 +245,17 @@ function process_hotkey(code) {
 function process_goto_hotkey(code) {
     switch (code) {
     case 67: // 'c': narrow by recipient
-        narrow_class();
+        parent = get_selected_zephyr_row();
+        zephyr_class = parent.find("span.zephyr_class").text();
+        zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
+        if (zephyr_class == '' && zephyr_huddle == '') {
+            narrow_personals();
+        } else if (zephyr_class == '') {
+            narrow_huddle();
+        }
+        else {
+            narrow_class();
+        }
         break;
 
     case 73: // 'i': narrow by instance
@@ -327,6 +337,7 @@ function do_narrow(description, filter_function) {
     scroll_to_selected();
 
     $("#unhide").removeAttr("disabled");
+    $("div.narrow").show();
     $("#narrow_indicator").html(description);
 }
 
@@ -372,7 +383,7 @@ function narrow_personals() {
 function narrow_class() {
     var parent = get_selected_zephyr_row();
     var zephyr_class = parent.find("span.zephyr_class").text();
-    var message = "Showing <span class='label zephyr_class'>" + zephyr_class + "</span>";
+    var message = "Showing <span class='zephyr_class'>" + zephyr_class + "</span>";
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_class").length > 0 &&
                 element.find("span.zephyr_class").text() === zephyr_class);
@@ -383,8 +394,8 @@ function narrow_instance() {
     var parent = get_selected_zephyr_row();
     var zephyr_class = parent.find("span.zephyr_class").text();
     var zephyr_instance = parent.find("span.zephyr_instance").text();
-    var message = "Showing <span class='label zephyr_class'>" + zephyr_class
-        + "</span> <span class='label zephyr_instance'>" + zephyr_instance + "</span>";
+    var message = "Showing <span class='zephyr_class'>" + zephyr_class
+        + "</span>: <span class='zephyr_instance'>" + zephyr_instance + "</span>";
     do_narrow(message, function (element) {
         return (element.find("span.zephyr_class").length > 0 &&
                 element.find("span.zephyr_class").text() === zephyr_class &&
@@ -398,6 +409,7 @@ function unhide() {
 
     scroll_to_selected();
 
+    $("div.narrow").hide();
     $("#unhide").attr("disabled", "disabled");
     $("#narrow_indicator").html("");
 }
