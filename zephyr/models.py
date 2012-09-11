@@ -133,7 +133,8 @@ class Zephyr(models.Model):
 
     def to_dict(self):
         return {'id'               : self.id,
-                'sender'           : self.sender.user.email,
+                'sender'           : self.sender.user.username,
+                'sender_email'     : self.sender.user.email,
                 'sender_name'      : self.sender.full_name,
                 'type'             : self.recipient.type_name(),
                 'display_recipient': get_display_recipient(self.recipient),

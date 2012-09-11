@@ -77,6 +77,10 @@ span.zephyr_sender_email {
     font-size: 80%;
 }
 
+span.zephyr_sender_username {
+    visibility: hidden;
+}
+
 span.zephyr_label_clickable:hover {
     cursor: pointer;
     color:  #08C;

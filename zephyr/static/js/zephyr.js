@@ -229,7 +229,10 @@ function process_hotkey(code) {
             $("#new_personal_zephyr").focus();
             $("#new_personal_zephyr").select();
         } else if (zephyr_personal !== '') {
-            var recipient = parent.find("span.zephyr_sender").text();
+            // Until we allow sending zephyrs based on multiple meaningful
+            // representations of a user (name, username, email, etc.), just
+            // deal with usernames.
+            var recipient = parent.find("span.zephyr_sender_username").text();
             if (recipient === username) { // that is, we sent the original message
                 recipient = parent.find("span.zephyr_personal_recipient").text();
             }
