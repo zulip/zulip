@@ -30,7 +30,7 @@ def browser_login():
 
 def send_zephyr(zeph):
     browser.addheaders.append(('X-CSRFToken', csrf_token))
-    zephyr_data = urllib.urlencode(zeph.items())
+    zephyr_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in zeph.items()])
     browser.open("https://app.humbughq.com/forge_zephyr/", zephyr_data)
 
 def unwrap_lines(body):
