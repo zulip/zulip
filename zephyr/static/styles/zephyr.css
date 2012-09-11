@@ -54,10 +54,11 @@ td.zephyr_recipient {
     vertical-align: top;
     text-align:     right;
     overflow-x:     hidden;
-    padding-right:  10px;
-    padding-top:     5px;
+    padding-right:   10px;
+    padding-top:      5px;
     max-width:      100px;
     min-width:      100px;
+    white-space:    nowrap;
 }
 
 span.zephyr_class {
