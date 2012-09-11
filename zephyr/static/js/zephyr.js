@@ -326,12 +326,19 @@ function apply_view(element) {
 }
 
 function do_narrow(description, filter_function) {
+    // Hide the messages temporarily, so the browser doesn't waste time
+    // incrementally recalculating the layout.
+    $("#main_div").hide();
+
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
     var old_top = $("#main_div").offset().top - get_selected_zephyr_row().offset().top;
     current_view_predicate = filter_function;
     get_all_zephyr_rows().each(function () {
         apply_view($(this));
     });
+
+    // Show the new set of messages.
+    $("#main_div").show();
 
     select_zephyr(selected_zephyr_id);
     scroll_to_selected();
