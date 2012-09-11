@@ -11,14 +11,15 @@ import datetime
 import random
 from optparse import make_option
 
-def create_users(username_list, realm):
-    for username in username_list:
+def create_users(name_list, realm):
+    for name, username in name_list:
         if User.objects.filter(username=username):
             # We're trying to create the same user twice!
             raise
-        user = User.objects.create_user(username=username, password=username)
+        user = User.objects.create_user(username=username, password=username,
+                                        email=username+"@humbughq.com")
         user.save()
-        create_user_profile(user, realm)
+        create_user_profile(user, realm, name, username)
 
 def create_classes(class_list, realm):
     for name in class_list:
@@ -88,7 +89,10 @@ class Command(BaseCommand):
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
-            create_users(usernames, realm)
+            names = [("Othello, the Moor of Venice", "othello"), ("Iago", "iago"),
+                     ("Prospero from The Tempest", "prospero"),
+                     ("Cordelia Lear", "cordelia"), ("King Hamlet", "hamlet")]
+            create_users(names, realm)
 
             # Create public classes.
             create_classes(class_list, realm)
@@ -200,8 +204,8 @@ class Command(BaseCommand):
 
         if options["delete"]:
             # Create internal users
-            internal_usernames = []
-            create_users(internal_usernames, realm)
+            internal_users = []
+            create_users(internal_users, realm)
 
             create_classes(subs_list, realm)
 
