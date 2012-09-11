@@ -204,3 +204,8 @@ div.narrow {
 button#unhide.btn {
     font-size: 12px;
 }
+
+div#bottom_whitespace {
+  display: block;
+  height: 60%;
+}

@@ -202,6 +202,11 @@ function process_hotkey(code) {
         if (next_zephyr.length !== 0) {
             select_zephyr(get_id(next_zephyr));
         }
+        if ((next_zephyr.length === 0) && (code === 40)) {
+            // At the last zephyr, scroll to the bottom so we have
+            // lots of nice whitespace for new zephyrs coming in.
+            $("#main_div").scrollTop($("#main_div").prop("scrollHeight"));
+        }
         return process_hotkey;
 
     case 82: // 'r': respond to zephyr
