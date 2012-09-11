@@ -56,7 +56,8 @@ td.zephyr_recipient {
     overflow-x:     hidden;
     padding-right:  10px;
     padding-top:     5px;
-    max-width:      90px;
+    max-width:      100px;
+    min-width:      100px;
 }
 
 span.zephyr_class {
