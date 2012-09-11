@@ -210,13 +210,13 @@ function process_hotkey(code) {
         return process_hotkey;
 
     case 82: // 'r': respond to zephyr
-        $('.zephyr_compose').slideToggle('fast');
         parent = get_selected_zephyr_row();
         zephyr_class = parent.find("span.zephyr_class").text();
         zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
         zephyr_personal = parent.find("span.zephyr_personal_recipient").text();
         zephyr_instance = parent.find("span.zephyr_instance").text();
         if (zephyr_class !== '') {
+            $('.zephyr_compose').slideToggle('fast');
             $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
             $("#class").val(zephyr_class);
             $("#instance").val(zephyr_instance);
@@ -224,10 +224,7 @@ function process_hotkey(code) {
             $("#new_zephyr").select();
         } else if (zephyr_huddle !== '') {
             var recipients = parent.find("span.zephyr_huddle_recipients_list").text();
-            $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
-            $("#recipient").val(recipients);
-            $("#new_personal_zephyr").focus();
-            $("#new_personal_zephyr").select();
+            prepare_huddle(recipients);
         } else if (zephyr_personal !== '') {
             // Until we allow sending zephyrs based on multiple meaningful
             // representations of a user (name, username, email, etc.), just
@@ -236,10 +233,7 @@ function process_hotkey(code) {
             if (recipient === username) { // that is, we sent the original message
                 recipient = parent.find("span.zephyr_personal_recipient").text();
             }
-            $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
-            $("#recipient").val(recipient);
-            $("#new_personal_zephyr").focus();
-            $("#new_personal_zephyr").select();
+            prepare_huddle(recipient);
         }
         return process_key_in_input;
 
@@ -331,6 +325,15 @@ function apply_view(element) {
     } else {
         element.hide();
     }
+}
+
+function prepare_huddle(recipients) {
+    // Used for both personals and huddles.
+    $('.zephyr_compose').slideToggle('fast');
+    $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
+    $("#recipient").val(recipients);
+    $("#new_personal_zephyr").focus();
+    $("#new_personal_zephyr").select();
 }
 
 function do_narrow(description, filter_function) {
