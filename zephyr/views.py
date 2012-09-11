@@ -43,15 +43,19 @@ def register(request):
         if form.is_valid():
             username = request.POST['username']
             password = request.POST['password']
+            full_name = request.POST['full_name']
+            short_name = request.POST['short_name']
+            email = request.POST['email']
             domain = request.POST['domain']
             realm = Realm.objects.filter(domain=domain)
             if not realm:
                 realm = Realm(domain=domain)
+                realm.save()
             else:
                 realm = Realm.objects.get(domain=domain)
-            user = User.objects.create_user(username=username, password=password)
+            user = User.objects.create_user(username=username, password=password, email=email)
             user.save()
-            create_user_profile(user, realm)
+            create_user_profile(user, realm, full_name, short_name)
             login(request, authenticate(username=username, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))
     else:

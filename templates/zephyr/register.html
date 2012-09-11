@@ -11,12 +11,22 @@ autofocus('#id_username');
 <form method="post" action="{% url register %}">
 {% csrf_token %}
 
+{{ form.full_name.label_tag }}
+{{ form.full_name }}
+
+{{ form.short_name.label_tag }}
+{{ form.short_name }}
+
+{{ form.email.label_tag }}
+{{ form.email }}
+
 {{ form.username.label_tag }}
 {{ form.username }}
 
 {{ form.password.label_tag }}
 {{ form.password }}
 
+<br />
 <input type="submit" value="Register" /><br />
 <input type="hidden" name="next" value="{{ next }}" />
 <input type="hidden" name="domain" value="humbughq.com" />

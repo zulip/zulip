@@ -17,7 +17,7 @@ def get_display_recipient(recipient):
     elif recipient.type == Recipient.HUDDLE:
         user_list = [UserProfile.objects.get(user=s.userprofile) for s in
                      Subscription.objects.filter(recipient=recipient)]
-        return [{'name': user.user.username} for user in user_list]
+        return [{'name': user.short_name} for user in user_list]
     else:
         user = User.objects.get(id=recipient.type_id)
         return user.username
@@ -34,6 +34,8 @@ class Realm(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
+    full_name = models.CharField(max_length=100)
+    short_name = models.CharField(max_length=100)
     pointer = models.IntegerField()
     realm = models.ForeignKey(Realm)
 
@@ -66,10 +68,11 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.__repr__()
 
-def create_user_profile(user, realm):
+def create_user_profile(user, realm, full_name, short_name):
     """When creating a new user, make a profile for him or her."""
     if not UserProfile.objects.filter(user=user):
-        profile = UserProfile(user=user, pointer=-1, realm_id=realm.id)
+        profile = UserProfile(user=user, pointer=-1, realm_id=realm.id,
+                              full_name=full_name, short_name=short_name)
         profile.save()
         # Auto-sub to the ability to receive personals.
         recipient = Recipient(type_id=profile.id, type=Recipient.PERSONAL)
@@ -130,7 +133,8 @@ class Zephyr(models.Model):
 
     def to_dict(self):
         return {'id'               : self.id,
-                'sender'           : self.sender.user.username,
+                'sender'           : self.sender.user.email,
+                'sender_name'      : self.sender.full_name,
                 'type'             : self.recipient.type_name(),
                 'display_recipient': get_display_recipient(self.recipient),
                 'instance'         : self.instance,
