@@ -20,7 +20,10 @@ class AuthedTestCase(TestCase):
 
     def register(self, username, password):
         return self.client.post('/accounts/register/',
-                                {'username':username, 'password':password, 'domain':'humbughq.com'})
+                                {'full_name':username, 'short_name':username,
+                                 'email':username + "@humbughq.com",
+                                 'username':username, 'password':password,
+                                 'domain':'humbughq.com'})
 
     def get_userprofile(self, username):
         """
