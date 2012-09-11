@@ -25,6 +25,7 @@ ul.nav-zephyr {
 
 div.zephyr_list {
     overflow-y: scroll;
+    overflow-x: hidden;
     background-color: #EEE;
     padding-right: 30px;
     position: absolute;
