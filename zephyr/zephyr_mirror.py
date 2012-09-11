@@ -33,6 +33,9 @@ def send_zephyr(zeph):
     zephyr_data = urllib.urlencode(zeph.items())
     browser.open("https://app.humbughq.com/forge_zephyr/", zephyr_data)
 
+def unwrap_lines(body):
+    return '\n'.join(p.replace('\n', ' ') for p in re.split(r'\n[ \t\n]', body))
+
 subs_list = """\
 """.split()
 
@@ -46,6 +49,7 @@ if __name__ == '__main__':
     import BeautifulSoup
     import traceback
     import simplejson
+    import re
 
     browser_login()
 
@@ -70,16 +74,6 @@ if __name__ == '__main__':
             notice = zephyr.receive(block=True)
             zsig, body = notice.message.split("\x00", 1)
 
-            lines = body.split('\n')
-            newbody = ""
-            for i in range(0, len(lines)):
-                if (i + 1 == len(lines) or
-                    lines[i].strip() == '' or
-                    lines[i+1].strip() == ''):
-                    newbody += lines[i] + "\n"
-                else:
-                    newbody += lines[i] + " "
-
             if notice.cls not in subs_list:
                 continue
             zeph = { 'type'      : 'class',
@@ -88,7 +82,7 @@ if __name__ == '__main__':
                      'class'     : notice.cls,
                      'instance'  : notice.instance,
                      'zsig'      : zsig,  # logged here but not used by app
-                     'new_zephyr': newbody }
+                     'new_zephyr': unwrap_lines(body) }
             for k,v in zeph.items():
                 zeph[k] = cgi.escape(v)
 
