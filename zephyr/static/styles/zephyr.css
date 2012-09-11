@@ -44,9 +44,11 @@ td.pointer {
 
 td.zephyr_recipient {
     vertical-align: top;
-    text-align: right;
-    padding: 10px;
-    max-width: 10em;
+    text-align:     right;
+    overflow-x:     hidden;
+    padding-right:  10px;
+    padding-top:     5px;
+    max-width:      90px;
 }
 
 span.zephyr_class {
@@ -82,6 +84,7 @@ table.zephyr_table {
 p.zephyr_text {
     margin-left: 45px;
 }
+
 td.messagebox {
     width:     470px;
     max-width: 470px;
