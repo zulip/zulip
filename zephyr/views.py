@@ -162,7 +162,7 @@ def forge_zephyr(request):
         # forge a user for this person
         user = User.objects.create_user(username=username, password="test")
         user.save()
-        create_user_profile(user, user_profile.realm)
+        create_user_profile(user, user_profile.realm, username, username)
     return zephyr_backend(request, user)
 
 @login_required
