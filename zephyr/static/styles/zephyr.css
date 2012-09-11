@@ -1,6 +1,12 @@
 body {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
     overflow: hidden
+    padding-top:    60px;
+    padding-bottom: 40px;
+}
+
+.sidebar-nav {
+    padding: 9px 0;
 }
 
 span.realname {
@@ -169,12 +175,18 @@ textarea.zephyr_message {
     width: 100%;
     height: 100%;
 }
+
 textarea:focus {
     outline: none;
     border: gray;
 }
+
 input.zephyr_recipient_box {
     width: 90px;
+}
+
+input.send_zephyr {
+    float: right;
 }
 
 div.narrow {
