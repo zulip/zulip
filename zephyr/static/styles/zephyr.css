@@ -30,7 +30,7 @@ div.zephyr_list {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 50%;
+    width: 640px;
 }
 div.zephyr_comp {
     background-color: #EEE;
