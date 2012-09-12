@@ -484,7 +484,9 @@ function add_message(index, zephyr) {
     zephyr.html_content = newline2br(zephyr.content);
 
     var time = new Date(zephyr.timestamp * 1000);
-    zephyr.timestr = time.getHours() + ':' + time.getMinutes();
+    var two_digits = function (x) { return ('0' + x).slice(-2); }
+    zephyr.timestr = two_digits(time.getHours())
+                   + ':' + two_digits(time.getMinutes());
 
     var new_tr = $('<tr />').attr('id', zephyr.id).addClass('zephyr_row');
     $('#table').append(new_tr);
