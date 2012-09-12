@@ -211,10 +211,6 @@ div.narrow {
     top: 0px;
 }
 
-button#unhide.btn {
-    font-size: 12px;
-}
-
 div#bottom_whitespace {
   display: block;
   height: 60%;
@@ -223,4 +219,8 @@ div#bottom_whitespace {
 td.selected_message_indicator {
     background-color: blue;
     width: 2px;
+}
+
+form#zephyr_searchbox {
+    margin: 0px;
 }
