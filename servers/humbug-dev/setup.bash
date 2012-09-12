@@ -51,7 +51,7 @@ yes '' | apt-get install sudo emacs vim screen git python-tz sqlite3 apache2 git
 yes '' | apt-get install -t squeeze-backports python-django
 
 # Configure Apache
-a2enmod proxy proxy_http rewrite auth_digest ssl
+a2enmod proxy proxy_http rewrite auth_digest ssl headers
 rm -f /etc/apache2/sites-enabled/*
 cp apache/sites/* /etc/apache2/sites-available/
 ln -s ../sites-available/humbug-default /etc/apache2/sites-enabled/000-default
