@@ -1,5 +1,14 @@
 #!/bin/bash -xe
 
+# Setup that needs to be done before this is run:
+#
+# (1) create the instance using the EC2 management console -- you want
+# to use the squeeze image that doesn't have "beta" in its name
+#
+# (2) Login to the new machine using "ssh -i humbug.pem", change the
+# root password to something random (we'll use SSH keys to get
+# access), and add our normal keys to /root/.ssh/authorized_keys
+
 # Run the script from the directory where it lives, so we can
 # easily access config files etc.
 cd "$(dirname "$(readlink -f $0)")"
@@ -36,10 +45,10 @@ deb http://backports.debian.org/debian-backports squeeze-backports main
 deb-src http://backports.debian.org/debian-backports squeeze-backports main
 EOF
 apt-get update
-apt-get upgrade
-apt-get install sudo emacs vim screen git python-tz sqlite3 apache2 gitit python-tornado \
+yes '' | apt-get upgrade
+yes '' | apt-get install sudo emacs vim screen git python-tz sqlite3 apache2 gitit python-tornado \
     python-pip
-apt-get install -t squeeze-backports python-django
+yes '' | apt-get install -t squeeze-backports python-django
 
 # Configure Apache
 a2enmod proxy proxy_http rewrite auth_digest ssl
