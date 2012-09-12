@@ -172,8 +172,48 @@ function scroll_to_selected() {
     main_div.scrollTop(get_selected_zephyr_row().offset().top - main_div.height()/1.5);
 }
 
+function prepare_huddle(recipients) {
+    // Used for both personals and huddles.
+    $('.zephyr_compose').slideToggle('fast');
+    $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
+    $("#recipient").val(recipients);
+    $("#new_personal_zephyr").focus();
+    $("#new_personal_zephyr").select();
+}
+
+function respond_to_zephyr() {
+    var parent, zephyr_class, zephyr_huddle, zephyr_personal, zephyr_instance, next_zephyr;
+    var recipient, recipients;
+    parent = get_selected_zephyr_row();
+    zephyr_class = parent.find("span.zephyr_class").text();
+    zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
+    zephyr_personal = parent.find("span.zephyr_personal_recipient").text();
+    zephyr_instance = parent.find("span.zephyr_instance").text();
+    if (zephyr_class !== '') {
+        $('.zephyr_compose').slideToggle('fast');
+        $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
+        $("#class").val(zephyr_class);
+        $("#instance").val(zephyr_instance);
+        $("#new_zephyr").focus();
+        $("#new_zephyr").select();
+    } else if (zephyr_huddle !== '') {
+        recipients = parent.find("span.zephyr_huddle_recipients_list").text();
+        prepare_huddle(recipients);
+    } else if (zephyr_personal !== '') {
+        // Until we allow sending zephyrs based on multiple meaningful
+        // representations of a user (name, username, email, etc.), just
+        // deal with usernames.
+        recipient = parent.find("span.zephyr_sender_username").text();
+        if (recipient === username) { // that is, we sent the original message
+            recipient = parent.find("span.zephyr_personal_recipient").text();
+        }
+        prepare_huddle(recipient);
+    }
+}
+
 function select_zephyr(zephyr_id) {
     var next_zephyr = $('#' + zephyr_id);
+    var main_div = $("#main_div");
 
     /* If the zephyr exists but is hidden, try to find the next visible one. */
     if (next_zephyr.length !== 0 && next_zephyr.is(':hidden')) {
@@ -193,7 +233,6 @@ function select_zephyr(zephyr_id) {
     next_zephyr.children("td:first").html('<p id="selected"></p>').addClass('selected_message_indicator');
     $.post("update", { pointer: selected_zephyr_id });
 
-    var main_div = $("#main_div");
     if ((next_zephyr.offset().top < main_div.offset().top) ||
         (next_zephyr.offset().top + next_zephyr.height() >
          main_div.offset().top + main_div.height())) {
@@ -202,7 +241,8 @@ function select_zephyr(zephyr_id) {
 }
 
 function process_hotkey(code) {
-    var parent, zephyr_class, zephyr_huddle, zephyr_personal, zephyr_instance, next_zephyr;
+    var next_zephyr;
+
     switch (code) {
     case 40: // down arrow
     case 38: // up arrow
@@ -226,30 +266,7 @@ function process_hotkey(code) {
         return process_hotkey;
 
     case 82: // 'r': respond to zephyr
-        parent = get_selected_zephyr_row();
-        zephyr_class = parent.find("span.zephyr_class").text();
-        zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
-        zephyr_personal = parent.find("span.zephyr_personal_recipient").text();
-        zephyr_instance = parent.find("span.zephyr_instance").text();
-        if (zephyr_class !== '') {
-            show_compose('class');
-            $("#class").val(zephyr_class);
-            $("#instance").val(zephyr_instance);
-            $("#new_zephyr").focus();
-            $("#new_zephyr").select();
-        } else if (zephyr_huddle !== '') {
-            var recipients = parent.find("span.zephyr_huddle_recipients_list").text();
-            prepare_huddle(recipients);
-        } else if (zephyr_personal !== '') {
-            // Until we allow sending zephyrs based on multiple meaningful
-            // representations of a user (name, username, email, etc.), just
-            // deal with usernames.
-            var recipient = parent.find("span.zephyr_sender_username").text();
-            if (recipient === username) { // that is, we sent the original message
-                recipient = parent.find("span.zephyr_personal_recipient").text();
-            }
-            prepare_huddle(recipient);
-        }
+        respond_to_zephyr();
         return process_key_in_input;
 
     case 71: // 'g': start of "go to" command
