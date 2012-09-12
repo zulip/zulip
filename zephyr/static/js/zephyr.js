@@ -269,7 +269,7 @@ function process_goto_hotkey(code) {
         break;
 
     case 65: // 'a': un-narrow
-        unhide();
+        show_all_messages();
         break;
     }
 
@@ -354,9 +354,9 @@ function do_narrow(description, filter_function) {
     select_zephyr(selected_zephyr_id);
     scroll_to_selected();
 
-    $("#unhide").removeAttr("disabled");
-    $("div.narrow").show();
-    $("#narrow_indicator").html(description);
+    $("#show_all_messages").removeAttr("disabled");
+    $("div.searchbox").show();
+    $("#currently_narrowed_to").html(description);
 }
 
 function narrow_huddle() {
@@ -421,15 +421,15 @@ function narrow_instance() {
     });
 }
 
-function unhide() {
+function show_all_messages() {
     current_view_predicate = home_view;
     get_all_zephyr_rows().show();
 
     scroll_to_selected();
 
-    $("div.narrow").hide();
-    $("#unhide").attr("disabled", "disabled");
-    $("#narrow_indicator").html("");
+    $("div.searchbox").hide();
+    $("#show_all_messages").attr("disabled", "disabled");
+    $("#currently_narrowed_to").html("");
 }
 
 function newline2br(content) {

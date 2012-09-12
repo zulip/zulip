@@ -199,7 +199,7 @@ input.send_zephyr {
     float: right;
 }
 
-div.narrow {
+div.searchbox {
     position: fixed;
     display: none;
     padding: 2px;
