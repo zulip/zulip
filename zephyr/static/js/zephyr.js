@@ -139,7 +139,7 @@ function get_selected_zephyr_row() {
 }
 
 function get_all_zephyr_rows() {
-    return $('tr');
+    return $('tr.zephyr_row');
 }
 
 function get_next_visible(zephyr_row) {
@@ -483,7 +483,7 @@ function add_message(index, zephyr) {
     }
     zephyr.html_content = newline2br(zephyr.content);
 
-    var new_tr = $('<tr />').attr('id', zephyr.id);
+    var new_tr = $('<tr />').attr('id', zephyr.id).addClass('zephyr_row');
     $('#table').append(new_tr);
     new_tr.append(ich.zephyr(zephyr));
     apply_view(new_tr);
