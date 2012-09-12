@@ -18,7 +18,13 @@ EOF
 service ssh restart
 
 # Create users and secure homedirs
-adduser --disabled-login wiki
+yes '' | adduser --disabled-password humbug
+mkdir -p /home/humbug/.ssh/
+cp -a /root/.ssh/authorized_keys /home/humbug/.ssh/
+chown -R humbug:humbug /home/humbug/.ssh/
+chmod -R go-rwx /home/humbug/.ssh/
+
+yes '' | adduser --disabled-login wiki
 chmod 700 /home/{humbug,wiki}
 
 # Resize the filesystem to fill the EBS volume
