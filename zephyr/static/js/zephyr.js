@@ -43,6 +43,18 @@ function sub(zephyr_class) {
     $.post('/subscriptions/add/', {new_subscriptions: zephyr_class});
 }
 
+function hide_compose() {
+    $('input, textarea, button').blur();
+    $('.zephyr_compose').slideUp('fast');
+}
+
+function show_compose(tabname) {
+    $('.zephyr_compose').slideDown('fast');
+    if (tabname) {
+        $('#zephyr-type-tabs a[href="#' + tabname + '-message"]').tab('show');
+    }
+}
+
 $(function () {
     var status_classes = 'alert-error alert-success alert-info';
     var send_status = $('#send-status');
@@ -55,7 +67,7 @@ $(function () {
                        .addClass('alert-info')
                        .text('Sending')
                        .stop(true).fadeTo(0,1);
-            $('.zephyr_compose').slideToggle('fast');
+            hide_compose();
             buttons.attr('disabled', 'disabled');
             buttons.blur();
 
@@ -216,8 +228,7 @@ function process_hotkey(code) {
         zephyr_personal = parent.find("span.zephyr_personal_recipient").text();
         zephyr_instance = parent.find("span.zephyr_instance").text();
         if (zephyr_class !== '') {
-            $('.zephyr_compose').slideToggle('fast');
-            $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
+            show_compose('class');
             $("#class").val(zephyr_class);
             $("#instance").val(zephyr_instance);
             $("#new_zephyr").focus();
@@ -281,8 +292,7 @@ function process_goto_hotkey(code) {
 function process_key_in_input(code) {
     if (code === 27) {
         // User hit Escape key
-        $('input, textarea, button').blur();
-        $('.zephyr_compose').slideToggle('fast');
+        hide_compose();
         return process_hotkey;
     }
     return false;
@@ -329,8 +339,7 @@ function apply_view(element) {
 
 function prepare_huddle(recipients) {
     // Used for both personals and huddles.
-    $('.zephyr_compose').slideToggle('fast');
-    $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
+    show_compose('personal');
     $("#recipient").val(recipients);
     $("#new_personal_zephyr").focus();
     $("#new_personal_zephyr").select();
@@ -546,7 +555,5 @@ function get_updates_longpoll() {
 
 $(function () {
     update_autocomplete();
-    $('.button-slide').click(function () {
-        $('.zephyr_compose').slideToggle('fast');
-    });
+    $('.button-slide').click(show_compose);
 });
