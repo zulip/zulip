@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.db.models.signals import post_save
 import hashlib
+import calendar
 
 def get_display_recipient(recipient):
     """
@@ -140,6 +141,7 @@ class Zephyr(models.Model):
                 'display_recipient': get_display_recipient(self.recipient),
                 'instance'         : self.instance,
                 'content'          : self.content,
+                'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
                 'gravatar_hash'    : hashlib.md5("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" + self.sender.user.username).hexdigest(),
                 }
 
