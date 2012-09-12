@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, sloppy: true,
     plusplus: true, nomen: true, regexp: true */
 /*global $: false, jQuery: false, ich: false,
-    initial_zephyr_json: false, initial_pointer: false, username: false,
+    zephyr_json: false, initial_pointer: false, username: false,
     class_list: false, instance_list: false, people_list: false */
 
 $(function () {
@@ -528,7 +528,7 @@ function add_message(index, zephyr) {
 }
 
 $(function () {
-    $(initial_zephyr_json).each(add_message);
+    $(initial_zephyr_array).each(add_message);
     select_zephyr(initial_pointer);
     get_updates_longpoll();
 });
@@ -549,6 +549,11 @@ function get_updates_longpoll() {
 
             if (data && data.zephyrs) {
                 $.each(data.zephyrs, add_message);
+                for (i in data.zephyrs) {
+                    console.log(data.zephyrs[i]);
+                    console.log(data.zephyrs[i].id);
+                    zephyr_dict[data.zephyrs[i].id] = data.zephyrs[i];
+                }
             }
             setTimeout(get_updates_longpoll, 0);
         },
