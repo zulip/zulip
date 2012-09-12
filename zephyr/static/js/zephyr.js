@@ -221,6 +221,10 @@ function process_hotkey(code) {
         }
         return process_hotkey;
 
+    case 27: // Esc: hide compose pane
+        hide_compose();
+        return process_hotkey;
+
     case 82: // 'r': respond to zephyr
         parent = get_selected_zephyr_row();
         zephyr_class = parent.find("span.zephyr_class").text();
@@ -281,6 +285,10 @@ function process_goto_hotkey(code) {
 
     case 65: // 'a': un-narrow
         show_all_messages();
+        break;
+
+    case 27: // Esc: hide compose pane
+        hide_compose();
         break;
     }
 
