@@ -245,6 +245,20 @@ function select_zephyr(zephyr_id) {
     }
 }
 
+
+/* We use 'visibility' rather than 'display' and jQuery's show() / hide(),
+   because we want to reserve space for the email address.  This avoids
+   things jumping around slightly when the email address is shown. */
+
+function show_email(zephyr_id) {
+    get_zephyr(zephyr_id).find('.zephyr_sender_email').removeClass('invisible');
+}
+
+function hide_email(zephyr_id) {
+    get_zephyr(zephyr_id).find('.zephyr_sender_email').addClass('invisible');
+}
+
+
 function process_hotkey(code) {
     var next_zephyr;
 

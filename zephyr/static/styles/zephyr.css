@@ -77,11 +77,6 @@ span.zephyr_sender_name {
 
 span.zephyr_sender_email {
     font-size: 80%;
-    visibility: hidden;
-}
-
-.selected_zephyr span.zephyr_sender_email {
-    visibility: visible;
 }
 
 span.zephyr_sender_username {
