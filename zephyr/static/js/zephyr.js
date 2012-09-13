@@ -118,6 +118,7 @@ $(function () {
                        .text('Sent message')
                        .stop(true).fadeTo(0,1).delay(1000).fadeOut(1000);
             buttons.removeAttr('disabled');
+            clear_compose_box();
         },
         error: function (xhr) {
             var response = "Error sending message";
@@ -556,6 +557,10 @@ $(function () {
     select_zephyr(initial_pointer);
     get_updates_longpoll();
 });
+
+function clear_compose_box() {
+    $("#zephyr_compose").find('input[type=text], textarea').val('');
+}
 
 var longpoll_failures = 0;
 function get_updates_longpoll() {
