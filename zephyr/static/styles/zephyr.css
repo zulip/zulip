@@ -201,7 +201,7 @@ input.send_zephyr {
     float: right;
 }
 
-div.searchbox {
+div.narrowbox {
     position: fixed;
     display: none;
     padding: 2px;
@@ -221,8 +221,4 @@ div#bottom_whitespace {
 td.selected_message_indicator {
     background-color: blue;
     width: 2px;
-}
-
-form#zephyr_searchbox {
-    margin: 0px;
 }

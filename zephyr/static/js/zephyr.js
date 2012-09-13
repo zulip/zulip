@@ -372,7 +372,7 @@ function do_narrow(description, filter_function) {
     scroll_to_selected();
 
     $("#show_all_messages").removeAttr("disabled");
-    $("div.searchbox").show();
+    $("div.narrowbox").show();
     $("#currently_narrowed_to").html(description);
 }
 
@@ -444,7 +444,7 @@ function show_all_messages() {
 
     scroll_to_selected();
 
-    $("div.searchbox").hide();
+    $("div.narrowbox").hide();
     $("#show_all_messages").attr("disabled", "disabled");
     $("#currently_narrowed_to").html("");
 }
