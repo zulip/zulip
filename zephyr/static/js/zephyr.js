@@ -55,6 +55,10 @@ function show_compose(tabname) {
     }
 }
 
+function compose_class_name() {
+    return $.trim($("#class").val());
+}
+
 $(function () {
     var status_classes = 'alert-error alert-success alert-info';
     var send_status = $('#send-status');
@@ -73,9 +77,22 @@ $(function () {
             if ($("#class-message:visible")[0] === undefined) {// we're not dealing with classes
                 return true;
             }
+
+            var zephyr_class = compose_class_name();
+            if (zephyr_class === "") {
+                // You can't try to send to an empty class.
+                send_status.removeClass(status_classes)
+                           .addClass('alert-error')
+                           .text('Please specify a class')
+                           .stop(true).fadeTo(0,1);
+                buttons.removeAttr('disabled');
+                $('#class-message input:not(:hidden):first').focus().select();
+                return false;
+            }
+
             var okay = true;
             $.ajax({
-                url: "subscriptions/exists/" + $("#class").val(),
+                url: "subscriptions/exists/" + zephyr_class,
                 async: false,
                 success: function (data) {
                     if (data === "False") {
@@ -83,10 +100,10 @@ $(function () {
                         okay = false;
                         send_status.removeClass(status_classes);
                         send_status.toggle();
-                        $('#class-dne-name').text($("#class").val());
+                        $('#class-dne-name').text(zephyr_class);
                         $('#class-dne').show();
                         $('#create-it').focus().click(function () {
-                            sub($("#class").val());
+                            sub(compose_class_name());
                             $("#class-message form").ajaxSubmit();
                             $('#class-dne').stop(true).fadeOut(500);
                         });
@@ -95,15 +112,15 @@ $(function () {
                     }
                 }
             });
-            if (okay && class_list.indexOf($("#class").val()) === -1) {
+            if (okay && class_list.indexOf(zephyr_class) === -1) {
                 // You're not subbed to the class
                 okay = false;
                 send_status.removeClass(status_classes);
                 send_status.toggle();
-                $('#class-nosub-name').text($("#class").val());
+                $('#class-nosub-name').text(zephyr_class);
                 $('#class-nosub').show();
                 $('#sub-it').focus().click(function () {
-                    sub($("#class").val());
+                    sub(compose_class_name());
                     $("#class-message form").ajaxSubmit();
                     $('#class-nosub').stop(true).fadeOut(500);
                 });

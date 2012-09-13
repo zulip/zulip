@@ -181,12 +181,12 @@ def zephyr_backend(request, sender):
 
     zephyr_type_name = request.POST["type"]
     if zephyr_type_name == 'class':
-        if "class" not in request.POST:
+        if "class" not in request.POST or not request.POST["class"]:
             return json_error("Missing class")
         if "instance" not in request.POST:
             return json_error("Missing instance")
 
-        class_name = request.POST['class']
+        class_name = request.POST['class'].strip()
         if ZephyrClass.objects.filter(name=class_name, realm=user_profile.realm):
             my_class = ZephyrClass.objects.get(name=class_name, realm=user_profile.realm)
         else:
