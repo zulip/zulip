@@ -173,33 +173,40 @@ function scroll_to_selected() {
 }
 
 function respond_to_zephyr() {
-    var parent, zephyr_class, zephyr_huddle, zephyr_personal, zephyr_instance, next_zephyr;
+    var parent, zephyr;
     var recipient, recipients;
     parent = get_zephyr(selected_zephyr_id);
-    zephyr_class = parent.find("span.zephyr_class").text();
-    zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
-    zephyr_personal = parent.find("span.zephyr_personal_recipient").text();
-    zephyr_instance = parent.find("span.zephyr_instance").text();
-    if (zephyr_class !== '') {
-        $('.zephyr_compose').slideToggle('fast');
+    zephyr = zephyr_dict[parent.attr('id')];
+
+    $('.zephyr_compose').slideToggle('fast');
+
+    if (zephyr.type === 'class') {
         $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
-        $("#class").val(zephyr_class);
-        $("#instance").val(zephyr_instance);
+        $("#class").val(zephyr.display_recipient);
+        $("#instance").val(zephyr.instance);
         $("#new_zephyr").focus();
         $("#new_zephyr").select();
-    } else if (zephyr_huddle !== '') {
-        recipients = parent.find("span.zephyr_huddle_recipients_list").text();
-        prepare_huddle(recipients);
-    } else if (zephyr_personal !== '') {
+    } else if (zephyr.type === 'huddle') {
+        $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
+        recipient = '';
+        for (i in  zephyr.display_recipient) {
+            recipient += zephyr.display_recipient[i].name + ', ';
+        }
+        $("#recipient").val(recipient);
+        $("#new_personal_zephyr").focus();
+        $("#new_personal_zephyr").select();
+    } else if (zephyr.type === 'personal') {
         // Until we allow sending zephyrs based on multiple meaningful
         // representations of a user (name, username, email, etc.), just
         // deal with usernames.
-        recipient = parent.find("span.zephyr_sender_username").text();
-        if (recipient === username) { // that is, we sent the original message
-            recipient = parent.find("span.zephyr_personal_recipient").text();
+        recipient = zephyr.display_recipient;
+        if ( recipient === username) { // that is, we sent the original message
+            recipient = zephyr.sender;
         }
         prepare_huddle(recipient);
     }
+
+
 }
 
 function update_pointer(zephyr) {
@@ -411,22 +418,22 @@ function narrow_all_personals() {
 function narrow_personals() {
     // Narrow to personals with a specific user
     var target_zephyr = get_zephyr(selected_zephyr_id);
-    var target_recipient = target_zephyr.find("span.zephyr_personal_recipient").text();
-    var target_sender = target_zephyr.find("span.zephyr_sender").text();
+    var zephyr_obj = zephyr_dict[target_zephyr.attr('id')];
     var other_party;
-    if (target_recipient === username) {
-        other_party = target_sender;
+    if (zephyr_obj.display_recipient === username) {
+        other_party = zephyr_obj.sender;
     } else {
-        other_party = target_recipient;
+        other_party = zephyr_obj.display_recipient;
     }
     var message = "Huddles with " + other_party;
     do_narrow(message, function (element) {
+        var other_zephyr_obj = zephyr_dict[target_zephyr.attr('id')];
         var recipient = element.find("span.zephyr_personal_recipient");
         var sender = element.find("span.zephyr_sender");
 
         return (recipient.length > 0) &&
-            (((recipient.text() === target_recipient) && (sender.text() === target_sender)) ||
-             ((recipient.text() === target_sender) && (sender.text() === target_recipient)));
+            (((other_zephyr_obj.display_recipient === zephyr_obj.display_recipient) && (other_zephyr_obj.sender === zephyr_obj.sender)) ||
+             ((other_zephyr_obj.display_recipient === zephyr_obj.sender) && (other_zephyr_obj.sender === zephyr_obj.display_recipient)));
     });
 }
 
