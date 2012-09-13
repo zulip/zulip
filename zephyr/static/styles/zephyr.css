@@ -98,6 +98,7 @@ span.zephyr_time {
     float: right;
     position: relative;
     right: -25px;
+    font-size: 90%;
 }
 
 table.zephyr_table {
