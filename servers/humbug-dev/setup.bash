@@ -36,6 +36,10 @@ chmod -R go-rwx /home/humbug/.ssh/
 yes '' | adduser --disabled-login wiki
 chmod 700 /home/{humbug,wiki}
 
+if ! grep -q humbug /etc/sudoers; then
+    echo 'humbug    ALL=(ALL) NOPASSWD: ALL' >>/etc/sudoers
+fi
+
 # Resize the filesystem to fill the EBS volume
 resize2fs /dev/xvda1
 
