@@ -214,12 +214,13 @@ function respond_to_zephyr() {
     parent = get_zephyr(selected_zephyr_id);
     zephyr = zephyr_dict[parent.attr('id')];
 
-    $('.zephyr_compose').slideToggle('fast');
-
     if (zephyr.type === 'class') {
         $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
         $("#class").val(zephyr.display_recipient);
         $("#instance").val(zephyr.instance);
+        // Running show_compose steals focus, so call before we do .focus() or .select()
+        show_compose('class');
+
         $("#new_zephyr").focus();
         $("#new_zephyr").select();
     } else if (zephyr.type === 'huddle') {
@@ -228,9 +229,7 @@ function respond_to_zephyr() {
         for (i in  zephyr.display_recipient) {
             recipient += zephyr.display_recipient[i].name + ', ';
         }
-        $("#recipient").val(recipient);
-        $("#new_personal_zephyr").focus();
-        $("#new_personal_zephyr").select();
+        prepare_huddle(recipient);
     } else if (zephyr.type === 'personal') {
         // Until we allow sending zephyrs based on multiple meaningful
         // representations of a user (name, username, email, etc.), just
