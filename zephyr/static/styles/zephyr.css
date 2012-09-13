@@ -42,7 +42,6 @@ div.zephyr_list {
 
 div.zephyr_comp {
     background-color: #EEE;
-
 }
 
 td.pointer {
@@ -126,7 +125,6 @@ img.profile_picture {
 div.alert {
     max-width: 20%;
 }
-
 
 div.zephyr_compose {
     display: none;
