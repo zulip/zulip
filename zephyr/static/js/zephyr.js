@@ -205,10 +205,9 @@ function respond_to_zephyr() {
 function update_pointer(zephyr) {
     selected_zephyr_id = get_id(zephyr);
 
-    // Clear the previous arrow.
-    $("#selected").closest("td").empty().removeClass('selected_message_indicator');
+    $('.selected_zephyr').removeClass('selected_zephyr');
+    zephyr.addClass('selected_zephyr');
 
-    zephyr.children("td:first").html('<p id="selected"></p>').addClass('selected_message_indicator');
     $.post("update", { pointer: selected_zephyr_id });
 }
 
