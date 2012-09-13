@@ -166,6 +166,10 @@ function get_id(zephyr_row) {
     return zephyr_row.attr('id');
 }
 
+function get_zephyr(zephyr_id) {
+    return $("#" + zephyr_id);
+}
+
 function scroll_to_selected() {
     var main_div = $('#main_div');
     main_div.scrollTop(0);
@@ -211,6 +215,20 @@ function respond_to_zephyr() {
     }
 }
 
+function update_pointer(zephyr) {
+    selected_zephyr_id = get_id(zephyr);
+
+    // Clear the previous arrow.
+    $("#selected").closest("td").empty().removeClass('selected_message_indicator');
+
+    zephyr.children("td:first").html('<p id="selected"></p>').addClass('selected_message_indicator');
+    $.post("update", { pointer: selected_zephyr_id });
+}
+
+function update_pointer_by_id(zephyr_id) {
+    update_pointer(get_zephyr(zephyr_id));
+}
+
 function select_zephyr(zephyr_id) {
     var next_zephyr = $('#' + zephyr_id);
     var main_div = $("#main_div");
@@ -225,13 +243,7 @@ function select_zephyr(zephyr_id) {
         next_zephyr = $('tr:not(:hidden):first');
     }
 
-    selected_zephyr_id = get_id(next_zephyr);
-
-    // Clear the previous arrow.
-    $("#selected").closest("td").empty().removeClass('selected_message_indicator');
-
-    next_zephyr.children("td:first").html('<p id="selected"></p>').addClass('selected_message_indicator');
-    $.post("update", { pointer: selected_zephyr_id });
+    update_pointer(next_zephyr);
 
     if ((next_zephyr.offset().top < main_div.offset().top) ||
         (next_zephyr.offset().top + next_zephyr.height() >
