@@ -160,7 +160,8 @@ def forge_zephyr(request):
         user = User.objects.get(username=username)
     except User.DoesNotExist:
         # forge a user for this person
-        user = User.objects.create_user(username=username, password="test")
+        user = User.objects.create_user(username=username, password="test",
+                                        email=(username if '@' in username else ''))
         user.save()
         create_user_profile(user, user_profile.realm,
                             request.POST['fullname'], request.POST['shortname'])
