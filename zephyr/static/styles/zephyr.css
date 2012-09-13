@@ -114,6 +114,11 @@ td.zephyr_recipient {
 table.zephyr_table {
     table-layout: fixed;
     margin-left: auto;
+    display: none;
+}
+
+table.focused_table {
+    display: table;
 }
 
 .zephyr_content {
@@ -137,6 +142,15 @@ td.messagebox {
     background-color: white;
     border: 1px solid gray;
 }
+
+td.collapsed_child {
+    padding-top: 0px;
+    border-top: 1px; solid white
+}
+td.collapsed_parent {
+    border-bottom-width: 0px;
+}
+
 
 img.profile_picture {
     display: block;
