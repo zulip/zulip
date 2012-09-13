@@ -56,6 +56,7 @@ yes '' | apt-get install -t squeeze-backports python-django
 
 # Configure Apache
 a2enmod proxy proxy_http rewrite auth_digest ssl headers
+cp apache/ports.conf /etc/apache2/
 rm -f /etc/apache2/sites-enabled/*
 cp apache/sites/* /etc/apache2/sites-available/
 ln -s ../sites-available/humbug-default /etc/apache2/sites-enabled/000-default
