@@ -9,12 +9,12 @@ body {
     padding: 9px 0;
 }
 
-span.realname {
+span.my_fullname {
     font-weight: bold;
     font-size: 150%;
 }
 
-span.email {
+span.my_email {
     color: gray;
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 }
