@@ -118,6 +118,8 @@ img.profile_picture {
     float: left;
     margin: 0 15px 15px 0;
     max-height: 30px;
+    width:  30px;
+    height: 30px;
 }
 
 div.alert {
