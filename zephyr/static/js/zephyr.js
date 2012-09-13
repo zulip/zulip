@@ -302,8 +302,8 @@ function process_goto_hotkey(code) {
     switch (code) {
     case 67: // 'c': narrow by recipient
         parent = get_zephyr(selected_zephyr_id);
-        zephyr_class = parent.find("span.zephyr_class").text();
-        zephyr_huddle = parent.find("span.zephyr_huddle_recipient").text();
+        zephyr_class = parent.find(".zephyr_class").text();
+        zephyr_huddle = parent.find(".zephyr_huddle_recipient").text();
         if (zephyr_class == '' && zephyr_huddle == '') {
             narrow_personals();
         } else if (zephyr_class == '') {
@@ -411,16 +411,16 @@ function do_narrow(description, filter_function) {
     scroll_to_selected();
 
     $("#show_all_messages").removeAttr("disabled");
-    $("div.narrowbox").show();
+    $("#narrowbox").show();
     $("#currently_narrowed_to").html(description);
 }
 
 function narrow_huddle() {
-    var recipients = get_zephyr(selected_zephyr_id).find("span.zephyr_huddle_recipients_list").text();
+    var recipients = get_zephyr(selected_zephyr_id).find(".zephyr_huddle_recipients_list").text();
     var message = "Group chats with " + recipients;
     do_narrow(message, function (element) {
-        return (element.find("span.zephyr_huddle_recipient").length > 0 &&
-                element.find("span.zephyr_huddle_recipients_list").text() === recipients);
+        return (element.find(".zephyr_huddle_recipient").length > 0 &&
+                element.find(".zephyr_huddle_recipients_list").text() === recipients);
     });
 }
 
@@ -428,7 +428,7 @@ function narrow_all_personals() {
     // Narrow to all personals
     var message = "All huddles with you";
     do_narrow(message, function (element) {
-        return (element.find("span.zephyr_personal_recipient").length > 0);
+        return (element.find(".zephyr_personal_recipient").length > 0);
     });
 }
 
@@ -445,8 +445,8 @@ function narrow_personals() {
     var message = "Huddles with " + other_party;
     do_narrow(message, function (element) {
         var other_zephyr_obj = zephyr_dict[target_zephyr.attr('id')];
-        var recipient = element.find("span.zephyr_personal_recipient");
-        var sender = element.find("span.zephyr_sender");
+        var recipient = element.find(".zephyr_personal_recipient");
+        var sender = element.find(".zephyr_sender");
 
         return (recipient.length > 0) &&
             (((other_zephyr_obj.display_recipient === zephyr_obj.display_recipient) && (other_zephyr_obj.sender === zephyr_obj.sender)) ||
@@ -456,24 +456,24 @@ function narrow_personals() {
 
 function narrow_class() {
     var parent = get_zephyr(selected_zephyr_id);
-    var zephyr_class = parent.find("span.zephyr_class").text();
+    var zephyr_class = parent.find(".zephyr_class").text();
     var message = "<span class='zephyr_class'>" + zephyr_class + "</span>";
     do_narrow(message, function (element) {
-        return (element.find("span.zephyr_class").length > 0 &&
-                element.find("span.zephyr_class").text() === zephyr_class);
+        return (element.find(".zephyr_class").length > 0 &&
+                element.find(".zephyr_class").text() === zephyr_class);
     });
 }
 
 function narrow_instance() {
     var parent = get_zephyr(selected_zephyr_id);
-    var zephyr_class = parent.find("span.zephyr_class").text();
-    var zephyr_instance = parent.find("span.zephyr_instance").text();
+    var zephyr_class = parent.find(".zephyr_class").text();
+    var zephyr_instance = parent.find(".zephyr_instance").text();
     var message = "<span class='zephyr_class'>" + zephyr_class
         + "</span> | <span class='zephyr_instance'>" + zephyr_instance + "</span>";
     do_narrow(message, function (element) {
-        return (element.find("span.zephyr_class").length > 0 &&
-                element.find("span.zephyr_class").text() === zephyr_class &&
-                element.find("span.zephyr_instance").text() === zephyr_instance);
+        return (element.find(".zephyr_class").length > 0 &&
+                element.find(".zephyr_class").text() === zephyr_class &&
+                element.find(".zephyr_instance").text() === zephyr_instance);
     });
 }
 
@@ -483,7 +483,7 @@ function show_all_messages() {
 
     scroll_to_selected();
 
-    $("div.narrowbox").hide();
+    $("#narrowbox").hide();
     $("#show_all_messages").attr("disabled", "disabled");
     $("#currently_narrowed_to").html("");
 }

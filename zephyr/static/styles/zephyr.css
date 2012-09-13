@@ -9,17 +9,17 @@ body {
     padding: 9px 0;
 }
 
-span.my_fullname {
+.my_fullname {
     font-weight: bold;
     font-size: 150%;
 }
 
-span.my_email {
+.my_email {
     color: gray;
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 }
 
-div.zephyr_well {
+.zephyr_well {
     background-color: white;
     border: none;
 }
@@ -29,7 +29,7 @@ ul.nav-zephyr {
     padding-right: 30px;
 }
 
-div.zephyr_list {
+.zephyr_list {
     overflow-y: scroll;
     overflow-x: hidden;
     background-color: #EEE;
@@ -40,7 +40,7 @@ div.zephyr_list {
     width: 640px;
 }
 
-div.zephyr_comp {
+.zephyr_comp {
     background-color: #EEE;
 }
 
@@ -60,21 +60,21 @@ td.zephyr_recipient {
     white-space:    nowrap;
 }
 
-span.zephyr_class {
+.zephyr_class {
     font-weight: bold;
     font-size: 120%;
     width: 15px;
 }
 
-span.zephyr_instance {
+.zephyr_instance {
     font-size: 120%;
 }
 
-span.zephyr_sender_name {
+.zephyr_sender_name {
     font-weight: bold;
 }
 
-span.zephyr_sender_email {
+.zephyr_sender_email {
     font-size: 80%;
 
     /* Use padding, not margin, so that there's a continuous
@@ -85,16 +85,16 @@ span.zephyr_sender_email {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 }
 
-span.zephyr_sender_username {
+.zephyr_sender_username {
     display: none;
 }
 
-span.zephyr_label_clickable:hover {
+.zephyr_label_clickable:hover {
     cursor: pointer;
     color:  #08C;
 }
 
-span.zephyr_time {
+.zephyr_time {
     color: gray;
     float: right;
     position: relative;
@@ -129,17 +129,17 @@ img.profile_picture {
     height: 30px;
 }
 
-div.alert {
+.alert {
     max-width: 20%;
 }
 
-div.zephyr_compose {
+.zephyr_compose {
     display: none;
     position: fixed;
     bottom: 0px;
     background: white;
 
-    /* = div.zephyr_list width + padding-right */
+    /* = .zephyr_list width + padding-right */
     width: 670px;
 }
 
@@ -181,7 +181,7 @@ div.zephyr_compose {
     display: none;
 }
 
-span.classname {
+.classname {
     font-weight: bold;
 }
 
@@ -207,11 +207,11 @@ input.send_zephyr {
     float: right;
 }
 
-div.narrowbox {
+#narrowbox {
     position: fixed;
     display: none;
     padding: 2px;
-    /* div.zephyr_list width + padding *2 */
+    /* .zephyr_list width + padding *2 */
     width: 664px;
     margin: 0 auto;
     background-color: #EEE;
@@ -219,7 +219,7 @@ div.narrowbox {
     top: 0px;
 }
 
-div#bottom_whitespace {
+#bottom_whitespace {
   display: block;
   height: 60%;
 }
