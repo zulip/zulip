@@ -176,15 +176,6 @@ function scroll_to_selected() {
     main_div.scrollTop(get_selected_zephyr_row().offset().top - main_div.height()/1.5);
 }
 
-function prepare_huddle(recipients) {
-    // Used for both personals and huddles.
-    $('.zephyr_compose').slideToggle('fast');
-    $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
-    $("#recipient").val(recipients);
-    $("#new_personal_zephyr").focus();
-    $("#new_personal_zephyr").select();
-}
-
 function respond_to_zephyr() {
     var parent, zephyr_class, zephyr_huddle, zephyr_personal, zephyr_instance, next_zephyr;
     var recipient, recipients;
