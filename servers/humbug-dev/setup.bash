@@ -89,3 +89,13 @@ chown -R wiki:wiki /home/wiki/wiki
 # Install Python packages from PyPi
 # FIXME: make this more secure
 pip install django-jstemplate
+
+# Messages
+set +x
+cat << EOF
+
+Done.
+
+Remaining manual setup tasks:
+  - Create users in /etc/apache2/users/wiki
+EOF
