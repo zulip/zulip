@@ -10,6 +10,7 @@ import traceback
 import simplejson
 import re
 import time
+import subprocess
 
 from mit_subs_list import subs_list
 
@@ -42,12 +43,35 @@ def browser_login():
     csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})['value']
 
 def send_zephyr(zeph):
+    zeph['fullname']  = cgi.escape(username_to_fullname(zeph['sender']))
+    zeph['shortname'] = cgi.escape(zeph['sender'].split('@')[0])
+
     browser.addheaders.append(('X-CSRFToken', csrf_token))
     zephyr_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in zeph.items()])
     browser.open("https://app.humbughq.com/forge_zephyr/", zephyr_data)
 
 def unwrap_lines(body):
     return '\n'.join(p.replace('\n', ' ') for p in re.split(r'\n[ \t\n]', body))
+
+def fetch_fullname(username):
+    try:
+        match_user = re.match(r'([a-zA-Z0-9_]+)@ATHENA\.MIT\.EDU', username)
+        if match_user:
+            proc = subprocess.Popen(['hesinfo', match_user.group(1), 'passwd'], stdout=subprocess.PIPE)
+            out, _err_unused = proc.communicate()
+            if proc.returncode == 0:
+                return out.split(':')[4].split(',')[0]
+    except:
+        print >>sys.stderr, 'Error getting fullname for', username
+        traceback.print_exc()
+
+    return username.title().replace('@', ' at ').replace('.', ' dot ')
+
+fullnames = {}
+def username_to_fullname(username):
+    if username not in fullnames:
+        fullnames[username] = fetch_fullname(username)
+    return fullnames[username]
 
 browser_login()
 
