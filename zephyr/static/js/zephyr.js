@@ -210,7 +210,10 @@ function respond_to_zephyr() {
 }
 
 function update_pointer(zephyr) {
-    selected_zephyr_id = get_id(zephyr);
+    var new_selected = get_id(zephyr);
+    if (new_selected == selected_zephyr_id)
+        return;
+    selected_zephyr_id = new_selected;
 
     $('.selected_zephyr').removeClass('selected_zephyr');
     zephyr.addClass('selected_zephyr');
