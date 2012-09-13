@@ -67,7 +67,6 @@ $(function () {
                        .addClass('alert-info')
                        .text('Sending')
                        .stop(true).fadeTo(0,1);
-            hide_compose();
             buttons.attr('disabled', 'disabled');
             buttons.blur();
 
@@ -92,6 +91,7 @@ $(function () {
                             $('#class-dne').stop(true).fadeOut(500);
                         });
                         buttons.removeAttr('disabled');
+                        hide_compose();
                     }
                 }
             });
@@ -108,6 +108,7 @@ $(function () {
                     $('#class-nosub').stop(true).fadeOut(500);
                 });
                 buttons.removeAttr('disabled');
+                hide_compose();
             }
             return okay;
         },
@@ -116,7 +117,7 @@ $(function () {
             send_status.removeClass(status_classes)
                        .addClass('alert-success')
                        .text('Sent message')
-                       .stop(true).fadeTo(0,1).delay(1000).fadeOut(1000);
+                       .stop(true).fadeTo(0,1).delay(1000).fadeOut(1000, hide_compose);
             buttons.removeAttr('disabled');
             clear_compose_box();
         },
