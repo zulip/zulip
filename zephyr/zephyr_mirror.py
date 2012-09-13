@@ -1,4 +1,17 @@
 #!/usr/bin/python
+import mechanize
+import urllib
+import cgi
+import sys
+import logging
+import zephyr
+import BeautifulSoup
+import traceback
+import simplejson
+import re
+import time
+
+from mit_subs_list import subs_list
 
 browser = None
 csrf_token = None
@@ -36,65 +49,49 @@ def send_zephyr(zeph):
 def unwrap_lines(body):
     return '\n'.join(p.replace('\n', ' ') for p in re.split(r'\n[ \t\n]', body))
 
-subs_list = """\
-""".split()
+browser_login()
 
-if __name__ == '__main__':
-    import mechanize
-    import urllib
-    import cgi
-    import sys
-    import logging
-    import zephyr
-    import BeautifulSoup
-    import traceback
-    import simplejson
-    import re
-    import time
+subs = zephyr.Subscriptions()
+for sub in subs_list:
+    subs.add((sub, '*', '*'))
 
-    browser_login()
-
-    subs = zephyr.Subscriptions()
-    for sub in subs_list:
-        subs.add((sub, '*', '*'))
-
-    if sys.argv[1:] == ['--resend-log']:
-        try:
-            with open('zephyrs', 'r') as log:
-                for ln in log:
-                    zeph = simplejson.loads(ln)
-                    print "sending saved message to %s from %s..." % (zeph['class'], zeph['sender'])
-                    send_zephyr(zeph)
-        except:
-            print >>sys.stderr, 'Could not load zephyr log'
-            traceback.print_exc()
-
-    with open('zephyrs', 'a') as log:
-        print "Starting receive loop"
-        while True:
-            try:
-                notice = zephyr.receive(block=True)
-                zsig, body = notice.message.split("\x00", 1)
-
-                if notice.cls not in subs_list:
-                    continue
-                zeph = { 'type'      : 'class',
-                         'time'      : str(notice.time),
-                         'sender'    : notice.sender,
-                         'class'     : notice.cls,
-                         'instance'  : notice.instance,
-                         'zsig'      : zsig,  # logged here but not used by app
-                         'new_zephyr': unwrap_lines(body) }
-                for k,v in zeph.items():
-                    zeph[k] = cgi.escape(v)
-
-                log.write(simplejson.dumps(zeph) + '\n')
-                log.flush()
-
-                print "received a message on %s from %s..." % (zeph['class'], zeph['sender'])
+if sys.argv[1:] == ['--resend-log']:
+    try:
+        with open('zephyrs', 'r') as log:
+            for ln in log:
+                zeph = simplejson.loads(ln)
+                print "sending saved message to %s from %s..." % (zeph['class'], zeph['sender'])
                 send_zephyr(zeph)
-                print "forwarded"
-            except:
-                print >>sys.stderr, 'Error relaying zephyr'
-                traceback.print_exc()
-                time.sleep(2)
+    except:
+        print >>sys.stderr, 'Could not load zephyr log'
+        traceback.print_exc()
+
+with open('zephyrs', 'a') as log:
+    print "Starting receive loop"
+    while True:
+        try:
+            notice = zephyr.receive(block=True)
+            zsig, body = notice.message.split("\x00", 1)
+
+            if notice.cls not in subs_list:
+                continue
+            zeph = { 'type'      : 'class',
+                     'time'      : str(notice.time),
+                     'sender'    : notice.sender,
+                     'class'     : notice.cls,
+                     'instance'  : notice.instance,
+                     'zsig'      : zsig,  # logged here but not used by app
+                     'new_zephyr': unwrap_lines(body) }
+            for k,v in zeph.items():
+                zeph[k] = cgi.escape(v)
+
+            log.write(simplejson.dumps(zeph) + '\n')
+            log.flush()
+
+            print "received a message on %s from %s..." % (zeph['class'], zeph['sender'])
+            send_zephyr(zeph)
+            print "forwarded"
+        except:
+            print >>sys.stderr, 'Error relaying zephyr'
+            traceback.print_exc()
+            time.sleep(2)

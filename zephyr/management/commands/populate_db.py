@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
     Subscription, Huddle, get_huddle, Realm, create_user_profile, UserMessage, \
     create_zephyr_class
-from zephyr.zephyr_mirror import subs_list
+from zephyr.mit_subs_list import subs_list
 
 import datetime
 import random
