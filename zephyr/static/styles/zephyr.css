@@ -76,6 +76,10 @@ span.zephyr_sender_name {
 
 span.zephyr_sender_email {
     font-size: 80%;
+
+    /* Use padding, not margin, so that there's a continuous
+       region of 'hover-ability' between fullname and email. */
+    padding-left: 5px;
 }
 
 span.zephyr_sender_username {
