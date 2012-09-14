@@ -14,6 +14,8 @@ function register_huddle_onclick(zephyr_row, sender) {
     });
 }
 
+var zephyr_dict = {};
+
 $(function () {
     $('#zephyr-type-tabs a[href="#class-message"]').on('shown', function (e) {
         $('#class-message input:not(:hidden):first').focus().select();
@@ -589,6 +591,9 @@ function add_message(index, zephyr) {
     new_tr.append(ich.zephyr(zephyr));
     register_huddle_onclick(new_tr, zephyr.sender);
     apply_view(new_tr);
+
+    // save the zephyr object, with computed values for various is_*
+    zephyr_dict[zephyr.id] = zephyr;
 }
 
 $(function () {
@@ -617,11 +622,6 @@ function get_updates_longpoll() {
 
             if (data && data.zephyrs) {
                 $.each(data.zephyrs, add_message);
-                for (i in data.zephyrs) {
-                    console.log(data.zephyrs[i]);
-                    console.log(data.zephyrs[i].id);
-                    zephyr_dict[data.zephyrs[i].id] = data.zephyrs[i];
-                }
             }
             setTimeout(get_updates_longpoll, 0);
         },

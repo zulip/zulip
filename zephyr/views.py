@@ -82,7 +82,6 @@ def home(request):
         user_profile.save()
 
     zephyr_json = simplejson.dumps([zephyr.to_dict() for zephyr in zephyrs])
-    zephyr_dict_json = simplejson.dumps(dict((zephyr.id, zephyr.to_dict()) for zephyr in zephyrs))
 
     # Populate personals autocomplete list based on everyone in your
     # realm.  Later we might want a 2-layer autocomplete, where we
@@ -102,7 +101,6 @@ def home(request):
 
     return render_to_response('zephyr/index.html',
                               {'zephyr_array' : zephyr_json,
-                               'zephyr_dict'  : zephyr_dict_json,
                                'user_profile': user_profile,
                                'people'      : simplejson.dumps(people),
                                'classes'     : simplejson.dumps(classes),
