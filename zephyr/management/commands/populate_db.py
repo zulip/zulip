@@ -172,14 +172,14 @@ def send_zephyrs(data):
     texts = file("zephyr/management/commands/test_zephyrs.txt", "r").readlines()
     offset = 0
 
-    recipient_classes = [klass.type_id for klass in
+    recipient_classes = [klass.id for klass in
                          Recipient.objects.filter(type=Recipient.CLASS)]
-    recipient_huddles = [h.type_id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
+    recipient_huddles = [h.id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
 
     huddle_members = {}
     for h in recipient_huddles:
         huddle_members[h] = [s.userprofile.id for s in
-                             Subscription.objects.filter(recipient=h)]
+                             Subscription.objects.filter(recipient_id=h)]
 
     realm = Realm.objects.get(domain="humbughq.com")
 
@@ -211,7 +211,7 @@ def send_zephyrs(data):
         elif (randkey <= random_max * options["percent_huddles"] / 100.):
             zephyr_type = Recipient.HUDDLE
             new_zephyr.recipient = Recipient.objects.get(type=Recipient.HUDDLE,
-                                                         type_id=random.choice(recipient_huddles))
+                                                         id=random.choice(recipient_huddles))
         elif (randkey <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.):
             zephyr_type = Recipient.PERSONAL
             personals_pair = random.choice(personals_pairs)
@@ -219,10 +219,10 @@ def send_zephyrs(data):
         elif (randkey <= random_max * 1.0):
             zephyr_type = Recipient.CLASS
             new_zephyr.recipient = Recipient.objects.get(type=Recipient.CLASS,
-                                                         type_id=random.choice(recipient_classes))
+                                                         id=random.choice(recipient_classes))
 
         if zephyr_type == Recipient.HUDDLE:
-            sender_id = random.choice(huddle_members[new_zephyr.recipient.type_id])
+            sender_id = random.choice(huddle_members[new_zephyr.recipient.id])
             new_zephyr.sender = UserProfile.objects.get(id=sender_id)
         elif zephyr_type == Recipient.PERSONAL:
             new_zephyr.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
