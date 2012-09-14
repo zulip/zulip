@@ -22,13 +22,19 @@ DATABASES = {
             'timeout': 20,
         },
     },
-    'mysql': {
+}
+
+try:
+    import MySQLdb
+except ImportError:
+    pass
+else:
+    DATABASES['mysql'] = {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
             'read_default_file': '/etc/mysql/my.cnf',
         },
-    },
-}
+    }
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
