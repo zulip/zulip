@@ -4,7 +4,7 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
     Subscription, Huddle, get_huddle, Realm, create_user_profile, UserMessage, \
-    create_zephyr_class
+    create_zephyr_class, get_user_profile_by_id
 from zephyr.mit_subs_list import subs_list
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
@@ -158,6 +158,12 @@ class Command(BaseCommand):
 
             self.stdout.write("Successfully populated test database.\n")
 
+recipient_hash = {}
+def get_recipient_by_id(rid):
+    if rid in recipient_hash:
+        return recipient_hash[rid]
+    return Recipient.objects.get(id=rid)
+
 # Create some test zephyrs, including:
 # - multiple classes
 # - multiple instances per class
@@ -205,29 +211,27 @@ def send_zephyrs(data):
                 random.shuffle(personals_pair)
             elif zephyr_type == Recipient.CLASS:
                 new_zephyr.instance = saved_data
-                new_zephyr.recipient = Recipient.objects.get(id=recipient_id)
+                new_zephyr.recipient = get_recipient_by_id(recipient_id)
             elif zephyr_type == Recipient.HUDDLE:
-                new_zephyr.recipient = Recipient.objects.get(id=recipient_id)
+                new_zephyr.recipient = get_recipient_by_id(recipient_id)
         elif (randkey <= random_max * options["percent_huddles"] / 100.):
             zephyr_type = Recipient.HUDDLE
-            new_zephyr.recipient = Recipient.objects.get(type=Recipient.HUDDLE,
-                                                         id=random.choice(recipient_huddles))
+            new_zephyr.recipient = get_recipient_by_id(random.choice(recipient_huddles))
         elif (randkey <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.):
             zephyr_type = Recipient.PERSONAL
             personals_pair = random.choice(personals_pairs)
             random.shuffle(personals_pair)
         elif (randkey <= random_max * 1.0):
             zephyr_type = Recipient.CLASS
-            new_zephyr.recipient = Recipient.objects.get(type=Recipient.CLASS,
-                                                         id=random.choice(recipient_classes))
+            new_zephyr.recipient = get_recipient_by_id(random.choice(recipient_classes))
 
         if zephyr_type == Recipient.HUDDLE:
             sender_id = random.choice(huddle_members[new_zephyr.recipient.id])
-            new_zephyr.sender = UserProfile.objects.get(id=sender_id)
+            new_zephyr.sender = get_user_profile_by_id(sender_id)
         elif zephyr_type == Recipient.PERSONAL:
             new_zephyr.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
                                                          type_id=personals_pair[0])
-            new_zephyr.sender = UserProfile.objects.get(id=personals_pair[1])
+            new_zephyr.sender = get_user_profile_by_id(personals_pair[1])
             saved_data = personals_pair
         elif zephyr_type == Recipient.CLASS:
             zephyr_class = ZephyrClass.objects.get(id=new_zephyr.recipient.type_id)

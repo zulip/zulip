@@ -157,16 +157,23 @@ class UserMessage(models.Model):
         display_recipient = get_display_recipient(self.message.recipient)
         return "<UserMessage: %s / %s>" % (display_recipient, self.user_profile.user.username)
 
+user_hash = {}
+def get_user_profile_by_id(uid):
+    if uid in user_hash:
+        return user_hash[uid]
+    return UserProfile.objects.get(id=uid)
+
 def send_zephyr(**kwargs):
     zephyr = kwargs["instance"]
     if zephyr.recipient.type == Recipient.PERSONAL:
-        recipients = UserProfile.objects.filter(Q(user=zephyr.recipient.type_id) | Q(user=zephyr.sender))
+        recipients = list(set([get_user_profile_by_id(zephyr.recipient.type_id),
+                               get_user_profile_by_id(zephyr.sender_id)]))
         # For personals, you send out either 1 or 2 copies of the zephyr, for
         # personals to yourself or to someone else, respectively.
         assert((len(recipients) == 1) or (len(recipients) == 2))
     elif (zephyr.recipient.type == Recipient.CLASS or
           zephyr.recipient.type == Recipient.HUDDLE):
-        recipients = [UserProfile.objects.get(user=s.userprofile) for
+        recipients = [get_user_profile_by_id(s.userprofile_id) for
                       s in Subscription.objects.filter(recipient=zephyr.recipient, active=True)]
     else:
         raise
