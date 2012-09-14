@@ -123,7 +123,7 @@ class Zephyr(models.Model):
     sender = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
     instance = models.CharField(max_length=30)
-    content = models.CharField(max_length=200)
+    content = models.TextField()
     pub_date = models.DateTimeField('date published')
 
     def __repr__(self):
