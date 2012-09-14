@@ -4,6 +4,7 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 import hashlib
 import calendar
+import datetime
 
 def get_display_recipient(recipient):
     """
@@ -26,7 +27,7 @@ def get_display_recipient(recipient):
 callback_table = {}
 
 class Realm(models.Model):
-    domain = models.CharField(max_length=40)
+    domain = models.CharField(max_length=40, db_index=True)
 
     def __repr__(self):
         return "<Realm: %s %s>" % (self.domain, self.id)
@@ -81,8 +82,8 @@ def create_user_profile(user, realm, full_name, short_name):
         Subscription(userprofile=profile, recipient=recipient).save()
 
 class ZephyrClass(models.Model):
-    name = models.CharField(max_length=30)
-    realm = models.ForeignKey(Realm)
+    name = models.CharField(max_length=30, db_index=True)
+    realm = models.ForeignKey(Realm, db_index=True)
 
     def __repr__(self):
         return "<ZephyrClass: %s>" % (self.name,)
@@ -98,8 +99,8 @@ def create_zephyr_class(name, realm):
     return (zephyr_class, recipient)
 
 class Recipient(models.Model):
-    type_id = models.IntegerField()
-    type = models.PositiveSmallIntegerField()
+    type_id = models.IntegerField(db_index=True)
+    type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types are {personal, class, huddle}
     PERSONAL = 1
     CLASS = 2
@@ -195,7 +196,7 @@ class Subscription(models.Model):
 class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
-    huddle_hash = models.CharField(max_length=40)
+    huddle_hash = models.CharField(max_length=40, db_index=True)
 
 def get_huddle(id_list):
     id_list = sorted(set(id_list))
