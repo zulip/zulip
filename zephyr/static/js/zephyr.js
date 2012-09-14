@@ -19,6 +19,13 @@ $(function () {
         $("#class-message form").ajaxSubmit();
         $('#class-dne').stop(true).fadeOut(500);
     });
+
+    // Prepare the click handler for subbing to an existing class.
+    $('#sub-it').click(function () {
+        sub(compose_class_name());
+        $("#class-message form").ajaxSubmit();
+        $('#class-nosub').stop(true).fadeOut(500);
+    });
 });
 
 $.ajaxSetup({
@@ -123,11 +130,7 @@ $(function () {
                 send_status.toggle();
                 $('#class-nosub-name').text(zephyr_class);
                 $('#class-nosub').show();
-                $('#sub-it').focus().click(function () {
-                    sub(compose_class_name());
-                    $("#class-message form").ajaxSubmit();
-                    $('#class-nosub').stop(true).fadeOut(500);
-                });
+                $('#sub-it').focus();
                 buttons.removeAttr('disabled');
                 hide_compose();
             }
