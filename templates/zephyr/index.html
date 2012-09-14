@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
     <title>Humbug, from Humbug Inc.</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +10,6 @@
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-
 {% load jstemplate %}
 
 
@@ -39,7 +40,8 @@ var instance_list = {{ instances }};
 var people_list = {{ people }};
 </script>
 {% endautoescape %}
-
+</head>
+<body>
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="span3">
@@ -170,5 +172,8 @@ var people_list = {{ people }};
         <a id="sub-it" class="btn btn-primary" href="#">Subscribe and send</a>
         <a class="btn" onClick="$('#class-nosub').stop(true).fadeOut(500);">Cancel message</a>
     </div>
+</div>
 
 {% endblock %}
+</body>
+</html>
