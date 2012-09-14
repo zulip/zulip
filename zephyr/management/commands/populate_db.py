@@ -49,6 +49,11 @@ class Command(BaseCommand):
                     type='int',
                     default=6,
                     help='The number of personal pairs to create.'),
+        make_option('--threads',
+                    dest='threads',
+                    type='int',
+                    default=10,
+                    help='The number of threads to use.'),
         make_option('--percent-huddles',
                     dest='percent_huddles',
                     type='float',
@@ -129,7 +134,7 @@ class Command(BaseCommand):
             personals_pairs.append(random.sample(users, 2))
 
 
-        threads = 10
+        threads = options["threads"]
         jobs = []
         for i in range(0, threads):
             count = options["num_zephyrs"] / threads
