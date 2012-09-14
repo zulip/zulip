@@ -41,133 +41,116 @@ var people_list = {{ people }};
 {% endautoescape %}
 
 <div class="container-fluid">
-  <div class="row-fluid">
-    <div class="span3">
-      <div class="zephyr_well well sidebar-nav">
-        <ul class="nav nav-list nav-zephyr">
-          <span class="my_fullname">{{ user_profile.full_name }}</span><br/>
-          <span class="my_email">{{ user_profile.email }}</span>
-          <span class="logout">(<a href="/accounts/logout?next=/">not you?</a>)</span>
-          <li><a href="subscriptions/">Manage subscriptions</a></li>
-          <li><a href="#">View starred messages</a></li>
-          <li><a href="">Search</a></li>
-          <li><a href="#">Invite a friend</a></li>
-          <br>
-          <a href="#" class="btn btn-large btn-block button-slide">New Message</a>
-        </ul>
-      </div><!--/.well -->
-    </div><!--/span-->
+    <div class="row-fluid">
+        <div class="span3">
+            <div class="zephyr_well well sidebar-nav">
+                <ul class="nav nav-list nav-zephyr">
+                    <span class="my_fullname">{{ user_profile.full_name }}</span><br/>
+                    <span class="my_email">{{ user_profile.email }}</span>
+                    <span class="logout">(<a href="/accounts/logout?next=/">not you?</a>)</span>
+                    <li><a href="subscriptions/">Manage subscriptions</a></li>
+                    <li><a href="#">View starred messages</a></li>
+                    <li><a href="">Search</a></li>
+                    <li><a href="#">Invite a friend</a></li>
+                    <br>
+                    <a href="#" class="btn btn-large btn-block button-slide">New Message</a>
+                </ul>
+            </div><!--/.well -->
+        </div><!--/span-->
         <div class="span9">
-          <div class="zephyr_list" id="main_div">
-            <br/><br/>
-            <table class="zephyr_table" id="table">
-              <tbody>
-              </tbody>
-            </table>
-            <br/><br/>
-            <div class="row" id="narrowbox">
-              <div class="input-prepend input-append pull-left">
-                <button id="show_all_messages" class="btn" disabled=disabled onclick="show_all_messages()"><i class="icon-arrow-left"></i></button>
-                <span class="add-on"><span class="badge"><span id="currently_narrowed_to"></span><i class="badge_close_button icon-remove-sign icon-white" onclick="show_all_messages()"></i></span></span>
-              </div>
+            <div class="zephyr_list" id="main_div">
+                <br/><br/>
+                <table class="zephyr_table" id="table">
+                    <tbody>
+                    </tbody>
+                </table>
+                <br/><br/>
+                <div class="row" id="narrowbox">
+                    <div class="input-prepend input-append pull-left">
+                        <button id="show_all_messages" class="btn" disabled=disabled onclick="show_all_messages()"><i class="icon-arrow-left"></i></button>
+                        <span class="add-on"><span class="badge"><span id="currently_narrowed_to"></span><i class="badge_close_button icon-remove-sign icon-white" onclick="show_all_messages()"></i></span></span>
+                    </div>
+                </div>
+                <div id="bottom_whitespace"></div>
             </div>
-            <div id="bottom_whitespace"></div>
-          </div>
-    <div class="tabbable container zephyr_compose" id="zephyr_compose">
-        <ul class="nav nav-tabs" id="zephyr-type-tabs">
-            <li class="active"><a href="#class-message" data-toggle="tab">Stream</a></li>
-            <li><a href="#personal-message" data-toggle="tab">Huddle</a></li>
-            <li class="alert" id="send-status"></li>
-            <li class="pull-right"><button type="button" class="close" onclick="hide_compose()">×</button></li>
-        </ul>
 
-        <div class="tab-content">
-            <div class="tab-pane active" id="class-message">
-          <div class="zephyr_comp">
-            <br/>
-            <table>
-              <tbody>
-                <tr>
-<td class="pointer"><p></p></td>
-                <form action="/zephyr/" method="post" class="zephyr">
-                    <input type="hidden" name="type" value="class" />
-                    {% csrf_token %}
+            <div class="tabbable container zephyr_compose" id="zephyr_compose">
+                <ul class="nav nav-tabs" id="zephyr-type-tabs">
+                    <li class="active"><a href="#class-message" data-toggle="tab">Stream</a></li>
+                    <li><a href="#personal-message" data-toggle="tab">Huddle</a></li>
+                    <li class="alert" id="send-status"></li>
+                    <li class="pull-right"><button type="button" class="close" onclick="hide_compose()">×</button></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="class-message">
+                        <div class="zephyr_comp">
+                            <br/>
+                            <form action="/zephyr/" method="post" class="zephyr">
+                                <input type="hidden" name="type" value="class" />
+                                {% csrf_token %}
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td class="pointer"></td>
+                                            <td class="zephyr_recipient">
+                                                <p>
+                                                <span class="zephyr_label_clickable zephyr_class">
+                                                    <input type="text" class="zephyr_recipient_box" name="class" id="class" value="" placeholder="Stream"/>
+                                                </span>
+                                                <br/>
+                                                <span class="zephyr_label_clickable zephyr_instance">
+                                                    <input type="text" class="zephyr_recipient_box" name="instance" id="instance" value="" placeholder="Topic"/>
+                                                </span>
+                                                </p>
+                                            </td>
+                                            <td class="messagebox compose">
+                                                <img class="profile_picture" src="http://www.gravatar.com/avatar/a?d=identicon"/>
+                                                <p class="zephyr_text">
+                                                <textarea class="zephyr_message" name="new_zephyr" id="new_zephyr" value="" placeholder="Compose your message here..."/></textarea>
+                                                <input type="submit" value="Send" class="btn send_zephyr"/>
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </form>
                         </div>
                     </div>
-
-                  <td class="zephyr_recipient">
-                    <p>
-                      <span class="zephyr_label_clickable zephyr_class">
-                            <input type="text" class="zephyr_recipient_box" name="class" id="class" value="" placeholder="Stream"/>
-                      </span>
-                      <br/>
-                      <span class="zephyr_label_clickable zephyr_instance">
-
-                            <input type="text" class="zephyr_recipient_box" name="instance" id="instance" value="" placeholder="Topic"/>
-                      </span>
-                    </p>
-                  </td>
-                  <td class="messagebox compose">
-                    <img class="profile_picture" src="http://www.gravatar.com/avatar/a?d=identicon"/>
-                    <p class="zephyr_text">
-                            <textarea class="zephyr_message" name="new_zephyr" id="new_zephyr" value="" placeholder="Compose your message here..."/></textarea>
-                        <input type="submit" value="Send" class="btn send_zephyr"/>
-                    </p>
-                  </td>
-                </tr>
-                <tr>
-                    <td></td><td></td><td>
-                </form>
-                    </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-        </div>
-            <div class="tab-pane" id="personal-message">
-          <div class="zephyr_comp">
-            <br/>
-                <form action="/zephyr/" method="post" class="zephyr form-inline">
-                    <input type="hidden" name="type" value="personal" />
-                    {% csrf_token %}
-            <table>
-              <tbody>
-                <tr>
-                    <td class="pointer"></td>
-                    <td><label class="pull-right">Huddle with</label></td>
-                    <td><input class="input-xlarge" type="text" name="recipient" id="recipient" value="" placeholder="one or more of your friends" />
-                </tr>
-                <tr>
-                  <td class="pointer"><p></p></td>
+                    <div class="tab-pane" id="personal-message">
+                        <div class="zephyr_comp">
+                            <br/>
+                            <form action="/zephyr/" method="post" class="zephyr form-inline">
+                                <input type="hidden" name="type" value="personal" />
+                                {% csrf_token %}
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td class="pointer"></td>
+                                            <td><label class="pull-right">Huddle with</label></td>
+                                            <td><input class="input-xlarge" type="text" name="recipient" id="recipient" value="" placeholder="one or more of your friends" /></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="pointer"></td>
+                                            <td class="zephyr_recipient"></td>
+                                            <td class="messagebox compose">
+                                                <img class="profile_picture" src="http://www.gravatar.com/avatar/a?d=identicon"/>
+                                                <p class="zephyr_text">
+                                                <textarea class="zephyr_message" name="new_zephyr" id="new_personal_zephyr" value="" placeholder="Compose your message here..."/></textarea>
+                                                <input type="submit" name="personal_zephyr" value="Send" class="btn send_zephyr"/>
+                                                </p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </form>
                         </div>
                     </div>
-
-                  <td class="zephyr_recipient"></td>
-                  <td class="messagebox compose">
-                    <img class="profile_picture" src="http://www.gravatar.com/avatar/a?d=identicon"/>
-                    <p class="zephyr_text">
-                            <textarea class="zephyr_message" name="new_zephyr" id="new_personal_zephyr" value="" placeholder="Compose your message here..."/></textarea>
-                        <input type="submit" name="personal_zephyr" value="Send" class="btn send_zephyr"/>
-                    </p>
-                  </td>
-                </tr>
-                <tr>
-                    <td></td><td></td><td>
-                </form>
-                    </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
+                </div>
             </div>
-        </div>
-    </div>
 
         </div><!--/span-->
-      </div><!--/row-->
-
+    </div><!--/row-->
 
 
     <div class="row-fluid" id="connection-error">
@@ -187,8 +170,5 @@ var people_list = {{ people }};
         <a id="sub-it" class="btn btn-primary" href="#">Subscribe and send</a>
         <a class="btn" onClick="$('#class-nosub').stop(true).fadeOut(500);">Cancel message</a>
     </div>
-
-
-
 
 {% endblock %}
