@@ -126,6 +126,22 @@ class Command(BaseCommand):
         for i in range(0, options["num_personals"]):
             personals_pairs.append(random.sample(users, 2))
 
+
+
+        self.send_zephyrs(options["num_zephyrs"], personals_pairs, **options)
+
+
+        # Create some test zephyrs, including:
+        # - multiple classes
+        # - multiple instances per class
+        # - multiple huddles
+        # - multiple personals converastions
+        # - multiple zephyrs per instance
+        # - both single and multi-line content
+    def send_zephyrs(self, tot_zephyrs, personals_pairs, **options):
+        texts = file("zephyr/management/commands/test_zephyrs.txt", "r").readlines()
+        offset = 0
+
         recipient_classes = [klass.type_id for klass in
                              Recipient.objects.filter(type=Recipient.CLASS)]
         recipient_huddles = [h.type_id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
@@ -135,18 +151,12 @@ class Command(BaseCommand):
             huddle_members[h] = [s.userprofile.id for s in
                                  Subscription.objects.filter(recipient=h)]
 
-        # Create some test zephyrs, including:
-        # - multiple classes
-        # - multiple instances per class
-        # - multiple zephyrs per instance
-        # - both single and multi-line content
+        realm = Realm.objects.get(domain="humbughq.com")
 
-        texts = file("zephyr/management/commands/test_zephyrs.txt", "r").readlines()
-        offset = 0
         num_zephyrs = 0
         random_max = 1000000
         recipients = {}
-        while num_zephyrs < options["num_zephyrs"]:
+        while num_zephyrs < tot_zephyrs:
             saved_data = ''
             new_zephyr = Zephyr()
             length = random.randint(1, 5)
