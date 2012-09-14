@@ -6,6 +6,8 @@ from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
     Subscription, Huddle, get_huddle, Realm, create_user_profile, UserMessage, \
     create_zephyr_class
 from zephyr.mit_subs_list import subs_list
+from zephyr.lib.parallel import run_parallel
+from django.db import transaction
 
 import datetime
 import random
@@ -35,7 +37,7 @@ class Command(BaseCommand):
         make_option('-n', '--num-zephyrs',
                     dest='num_zephyrs',
                     type='int',
-                    default=120,
+                    default=600,
                     help='The number of zephyrs to create.'),
         make_option('--huddles',
                     dest='num_huddles',
@@ -127,90 +129,15 @@ class Command(BaseCommand):
             personals_pairs.append(random.sample(users, 2))
 
 
-
-        self.send_zephyrs(options["num_zephyrs"], personals_pairs, **options)
-
-
-        # Create some test zephyrs, including:
-        # - multiple classes
-        # - multiple instances per class
-        # - multiple huddles
-        # - multiple personals converastions
-        # - multiple zephyrs per instance
-        # - both single and multi-line content
-    def send_zephyrs(self, tot_zephyrs, personals_pairs, **options):
-        texts = file("zephyr/management/commands/test_zephyrs.txt", "r").readlines()
-        offset = 0
-
-        recipient_classes = [klass.type_id for klass in
-                             Recipient.objects.filter(type=Recipient.CLASS)]
-        recipient_huddles = [h.type_id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
-
-        huddle_members = {}
-        for h in recipient_huddles:
-            huddle_members[h] = [s.userprofile.id for s in
-                                 Subscription.objects.filter(recipient=h)]
-
-        realm = Realm.objects.get(domain="humbughq.com")
-
-        num_zephyrs = 0
-        random_max = 1000000
-        recipients = {}
-        while num_zephyrs < tot_zephyrs:
-            saved_data = ''
-            new_zephyr = Zephyr()
-            length = random.randint(1, 5)
-            new_zephyr.content = "".join(texts[offset: offset + length])
-            offset += length
-            offset = offset % len(texts)
-
-            randkey = random.randint(1, random_max)
-            if (num_zephyrs > 0 and
-                random.randint(1, random_max) * 100. / random_max < options["stickyness"]):
-                # Use an old recipient
-                zephyr_type, recipient, saved_data = recipients[num_zephyrs - 1]
-                if zephyr_type == Recipient.PERSONAL:
-                    personals_pair = saved_data
-                    random.shuffle(personals_pair)
-                elif zephyr_type == Recipient.CLASS:
-                    new_zephyr.instance = saved_data
-                    new_zephyr.recipient = recipient
-                elif zephyr_type == Recipient.HUDDLE:
-                    new_zephyr.recipient = recipient
-            elif (randkey <= random_max * options["percent_huddles"] / 100.):
-                zephyr_type = Recipient.HUDDLE
-                new_zephyr.recipient = Recipient.objects.get(type=Recipient.HUDDLE,
-                                                             type_id=random.choice(recipient_huddles))
-            elif (randkey <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.):
-                zephyr_type = Recipient.PERSONAL
-                personals_pair = random.choice(personals_pairs)
-                random.shuffle(personals_pair)
-            elif (randkey <= random_max * 1.0):
-                zephyr_type = Recipient.CLASS
-                new_zephyr.recipient = Recipient.objects.get(type=Recipient.CLASS,
-                                                             type_id=random.choice(recipient_classes))
-
-            if zephyr_type == Recipient.HUDDLE:
-                sender_id = random.choice(huddle_members[new_zephyr.recipient.type_id])
-                new_zephyr.sender = UserProfile.objects.get(id=sender_id)
-            elif zephyr_type == Recipient.PERSONAL:
-                new_zephyr.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
-                                                             type_id=personals_pair[0])
-                new_zephyr.sender = UserProfile.objects.get(id=personals_pair[1])
-                saved_data = personals_pair
-            elif zephyr_type == Recipient.CLASS:
-                zephyr_class = ZephyrClass.objects.get(id=new_zephyr.recipient.type_id)
-                # Pick a random subscriber to the class
-                new_zephyr.sender = random.choice(Subscription.objects.filter(
-                        recipient=new_zephyr.recipient)).userprofile
-                new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
-                saved_data = new_zephyr.instance
-
-            new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-            new_zephyr.save()
-
-            recipients[num_zephyrs] = [zephyr_type, new_zephyr.recipient, saved_data]
-            num_zephyrs += 1
+        threads = 10
+        jobs = []
+        for i in range(0, threads):
+            count = options["num_zephyrs"] / threads
+            if i < options["num_zephyrs"] % threads:
+                count += 1
+            jobs.append((count, personals_pairs, options, self.stdout.write))
+        for (status, job) in run_parallel(send_zephyrs, jobs, threads=threads):
+            pass
 
         if options["delete"]:
             # Create internal users
@@ -230,3 +157,89 @@ class Command(BaseCommand):
                     new_subscription.save()
 
             self.stdout.write("Successfully populated test database.\n")
+
+# Create some test zephyrs, including:
+# - multiple classes
+# - multiple instances per class
+# - multiple huddles
+# - multiple personals converastions
+# - multiple zephyrs per instance
+# - both single and multi-line content
+def send_zephyrs(data):
+    (tot_zephyrs, personals_pairs, options, output) = data
+    from django.db import connection
+    connection.close()
+    texts = file("zephyr/management/commands/test_zephyrs.txt", "r").readlines()
+    offset = 0
+
+    recipient_classes = [klass.type_id for klass in
+                         Recipient.objects.filter(type=Recipient.CLASS)]
+    recipient_huddles = [h.type_id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
+
+    huddle_members = {}
+    for h in recipient_huddles:
+        huddle_members[h] = [s.userprofile.id for s in
+                             Subscription.objects.filter(recipient=h)]
+
+    realm = Realm.objects.get(domain="humbughq.com")
+
+    num_zephyrs = 0
+    random_max = 1000000
+    recipients = {}
+    while num_zephyrs < tot_zephyrs:
+      with transaction.commit_on_success():
+        saved_data = ''
+        new_zephyr = Zephyr()
+        length = random.randint(1, 5)
+        new_zephyr.content = "".join(texts[offset: offset + length])
+        offset += length
+        offset = offset % len(texts)
+
+        randkey = random.randint(1, random_max)
+        if (num_zephyrs > 0 and
+            random.randint(1, random_max) * 100. / random_max < options["stickyness"]):
+            # Use an old recipient
+            zephyr_type, recipient_id, saved_data = recipients[num_zephyrs - 1]
+            if zephyr_type == Recipient.PERSONAL:
+                personals_pair = saved_data
+                random.shuffle(personals_pair)
+            elif zephyr_type == Recipient.CLASS:
+                new_zephyr.instance = saved_data
+                new_zephyr.recipient = Recipient.objects.get(id=recipient_id)
+            elif zephyr_type == Recipient.HUDDLE:
+                new_zephyr.recipient = Recipient.objects.get(id=recipient_id)
+        elif (randkey <= random_max * options["percent_huddles"] / 100.):
+            zephyr_type = Recipient.HUDDLE
+            new_zephyr.recipient = Recipient.objects.get(type=Recipient.HUDDLE,
+                                                         type_id=random.choice(recipient_huddles))
+        elif (randkey <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.):
+            zephyr_type = Recipient.PERSONAL
+            personals_pair = random.choice(personals_pairs)
+            random.shuffle(personals_pair)
+        elif (randkey <= random_max * 1.0):
+            zephyr_type = Recipient.CLASS
+            new_zephyr.recipient = Recipient.objects.get(type=Recipient.CLASS,
+                                                         type_id=random.choice(recipient_classes))
+
+        if zephyr_type == Recipient.HUDDLE:
+            sender_id = random.choice(huddle_members[new_zephyr.recipient.type_id])
+            new_zephyr.sender = UserProfile.objects.get(id=sender_id)
+        elif zephyr_type == Recipient.PERSONAL:
+            new_zephyr.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
+                                                         type_id=personals_pair[0])
+            new_zephyr.sender = UserProfile.objects.get(id=personals_pair[1])
+            saved_data = personals_pair
+        elif zephyr_type == Recipient.CLASS:
+            zephyr_class = ZephyrClass.objects.get(id=new_zephyr.recipient.type_id)
+            # Pick a random subscriber to the class
+            new_zephyr.sender = random.choice(Subscription.objects.filter(
+                    recipient=new_zephyr.recipient)).userprofile
+            new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
+            saved_data = new_zephyr.instance
+
+        new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
+        new_zephyr.save()
+
+        recipients[num_zephyrs] = [zephyr_type, new_zephyr.recipient.id, saved_data]
+        num_zephyrs += 1
+    return tot_zephyrs
