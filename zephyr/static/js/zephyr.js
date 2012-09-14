@@ -11,6 +11,14 @@ $(function () {
     $('#zephyr-type-tabs a[href="#personal-message"]').on('shown', function (e) {
         $('#personal-message input:not(:hidden):first').focus().select();
     });
+
+    // Prepare the click handler for subbing to a new class to which
+    // you have composed a zephyr.
+    $('#create-it').click(function () {
+        sub(compose_class_name());
+        $("#class-message form").ajaxSubmit();
+        $('#class-dne').stop(true).fadeOut(500);
+    });
 });
 
 $.ajaxSetup({
@@ -102,11 +110,7 @@ $(function () {
                         send_status.toggle();
                         $('#class-dne-name').text(zephyr_class);
                         $('#class-dne').show();
-                        $('#create-it').focus().click(function () {
-                            sub(compose_class_name());
-                            $("#class-message form").ajaxSubmit();
-                            $('#class-dne').stop(true).fadeOut(500);
-                        });
+                        $('#create-it').focus();
                         buttons.removeAttr('disabled');
                         hide_compose();
                     }
