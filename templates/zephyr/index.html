@@ -124,25 +124,43 @@ var people_list = {{ people }};
             </table>
           </div>
 
-            </div>
+        </div>
             <div class="tab-pane" id="personal-message">
-                <form action="/zephyr/" method="post" class="zephyr">
+          <div class="zephyr_comp">
+            <br/>
+                <form action="/zephyr/" method="post" class="zephyr form-inline">
                     <input type="hidden" name="type" value="personal" />
                     {% csrf_token %}
-                    <div class="row-fluid">
-                        <div class="span6">
-                            <label>User</label>
-                            <input type="text" name="recipient" id="recipient" value="" />
+            <table>
+              <tbody>
+                <tr>
+                    <td class="pointer"></td>
+                    <td><label class="pull-right">Huddle with</label></td>
+                    <td><input class="input-xlarge" type="text" name="recipient" id="recipient" value="" placeholder="one or more of your friends" />
+                </tr>
+                <tr>
+                  <td class="pointer"><p></p></td>
                         </div>
                     </div>
-                    <div class="row-fluid">
-                        <div class="span12">
-                            <label>Content</label>
-                            <textarea rows="4" cols="60" name="new_zephyr" id="new_personal_zephyr" value="" /></textarea>
-                            <input type="submit" name="personal_zephyr" value="Send personal" class="btn" />
-                        </div>
-                    </div>
+
+                  <td class="zephyr_recipient"></td>
+                  <td class="messagebox compose">
+                    <img class="profile_picture" src="http://www.gravatar.com/avatar/a?d=identicon"/>
+                    <p class="zephyr_text">
+                            <textarea class="zephyr_message" name="new_zephyr" id="new_personal_zephyr" value="" placeholder="Compose your message here..."/></textarea>
+                        <input type="submit" name="personal_zephyr" value="Send" class="btn send_zephyr"/>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                    <td></td><td></td><td>
                 </form>
+                    </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
             </div>
         </div>
     </div>
