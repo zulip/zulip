@@ -217,6 +217,11 @@ input.send_zephyr {
     top: 0px;
 }
 
+.badge_close_button {
+    margin-left: 0.3em;
+    cursor: pointer;
+}
+
 #bottom_whitespace {
   display: block;
   height: 60%;
