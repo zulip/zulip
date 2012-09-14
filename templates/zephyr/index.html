@@ -75,9 +75,10 @@ var people_list = {{ people }};
           </div>
     <div class="tabbable container zephyr_compose">
         <ul class="nav nav-tabs" id="zephyr-type-tabs">
-            <li class="active"><a href="#class-message" data-toggle="tab">Class message</a></li>
-            <li><a href="#personal-message" data-toggle="tab">Personal message</a></li>
-            <li class="alert pull-right" id="send-status"></li>
+            <li class="active"><a href="#class-message" data-toggle="tab">Stream</a></li>
+            <li><a href="#personal-message" data-toggle="tab">Huddle</a></li>
+            <li class="alert" id="send-status"></li>
+            <li class="pull-right"><button type="button" class="close" onclick="hide_compose()">×</button></li>
         </ul>
 
         <div class="tab-content">
@@ -97,20 +98,20 @@ var people_list = {{ people }};
                   <td class="zephyr_recipient">
                     <p>
                       <span class="zephyr_label_clickable zephyr_class">
-                            <input type="text" class="zephyr_recipient_box" name="class" id="class" value="" />
+                            <input type="text" class="zephyr_recipient_box" name="class" id="class" value="" placeholder="Stream"/>
                       </span>
                       <br/>
                       <span class="zephyr_label_clickable zephyr_instance">
 
-                            <input type="text" class="zephyr_recipient_box" name="instance" id="instance" value="" />
+                            <input type="text" class="zephyr_recipient_box" name="instance" id="instance" value="" placeholder="Topic"/>
                       </span>
                     </p>
                   </td>
                   <td class="messagebox compose">
                     <img class="profile_picture" src="http://www.gravatar.com/avatar/a?d=identicon"/>
                     <p class="zephyr_text">
-                            <textarea class="zephyr_message" name="new_zephyr" id="new_zephyr" value="" /></textarea>
-                        <input type="submit" value="Zephyr" class="btn send_zephyr" />
+                            <textarea class="zephyr_message" name="new_zephyr" id="new_zephyr" value="" placeholder="Compose your message here..."/></textarea>
+                        <input type="submit" value="Send" class="btn send_zephyr"/>
                     </p>
                   </td>
                 </tr>

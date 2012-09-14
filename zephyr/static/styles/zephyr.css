@@ -41,7 +41,8 @@ ul.nav-zephyr {
 }
 
 .zephyr_comp {
-    background-color: #EEE;
+    border: 1px solid #EEE;
+    border-top: 0px;
 }
 
 td.pointer {
@@ -230,4 +231,9 @@ input.send_zephyr {
 .selected_zephyr .pointer {
     background-color: blue;
     width: 2px;
+}
+
+#zephyr-type-tabs {
+    margin-top: 10px;
+    margin-bottom: 0px;
 }
