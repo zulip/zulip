@@ -153,7 +153,7 @@ $(function () {
             send_status.removeClass(status_classes)
                        .addClass('alert-success')
                        .text('Sent message')
-                       .stop(true).fadeTo(0,1).delay(1000).fadeOut(1000, hide_compose);
+                       .stop(true).fadeTo(0,1).delay(250).fadeOut(250, hide_compose);
             buttons.removeAttr('disabled');
             clear_compose_box();
         },
