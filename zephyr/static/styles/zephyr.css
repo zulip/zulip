@@ -32,7 +32,7 @@ ul.nav-zephyr {
 .zephyr_list {
     overflow-y: scroll;
     overflow-x: hidden;
-    background-color: #EEE;
+    background-color: aliceblue;
     padding-right: 30px;
     position: absolute;
     top: 0;
@@ -230,6 +230,10 @@ input.send_zephyr {
     background-color: #EEE;
     text-decoration: none;
     top: 0px;
+}
+
+.narrowed_view {
+    background-color: #EEE;
 }
 
 .badge_close_button {

@@ -459,6 +459,7 @@ function do_narrow(description, filter_function) {
 
     $("#show_all_messages").removeAttr("disabled");
     $("#narrowbox").show();
+    $("#main_div").addClass('narrowed_view');
     $("#currently_narrowed_to").html(description);
 }
 
@@ -534,6 +535,7 @@ function show_all_messages() {
     select_zephyr(persistent_zephyr_id);
 
     $("#narrowbox").hide();
+    $("#main_div").removeClass('narrowed_view');
     $("#show_all_messages").attr("disabled", "disabled");
     $("#currently_narrowed_to").html("");
 }
