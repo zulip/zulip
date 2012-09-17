@@ -124,6 +124,11 @@ blockquote {
     margin-bottom: 6px;
 }
 
+blockquote p {
+    line-height: inherit;
+    font-size:   inherit;
+}
+
 td.messagebox {
     width:     470px;
     max-width: 470px;
