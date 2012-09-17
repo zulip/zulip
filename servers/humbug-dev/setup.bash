@@ -51,7 +51,7 @@ EOF
 apt-get update
 yes '' | apt-get upgrade
 yes '' | apt-get install sudo emacs vim screen git python-tz sqlite3 apache2 gitit python-tornado \
-    python-pip
+    python-pip python-simplejson
 yes '' | apt-get install -t squeeze-backports python-django
 
 # Configure Apache
