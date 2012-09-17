@@ -38,16 +38,23 @@ def json_success():
 def json_error(msg):
     return json_response(res_type="error", msg=msg, status=400)
 
+def sanitize_identifier(x):
+    """Sanitize a username, class name, etc."""
+    # We remove <> in order to avoid </script> within JSON embedded in HTML.
+    #
+    # FIXME: consider a whitelist
+    return x.replace('<','').replace('>','')
+
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            username = request.POST['username']
-            password = request.POST['password']
-            full_name = request.POST['full_name']
-            short_name = request.POST['short_name']
-            email = request.POST['email']
-            domain = request.POST['domain']
+            username   = sanitize_identifier(request.POST['username'])
+            password   = request.POST['password']
+            full_name  = sanitize_identifier(request.POST['full_name'])
+            short_name = sanitize_identifier(request.POST['short_name'])
+            email      = sanitize_identifier(request.POST['email'])
+            domain     = sanitize_identifier(request.POST['domain'])
             realm = Realm.objects.filter(domain=domain)
             if not realm:
                 realm = Realm(domain=domain)
@@ -156,7 +163,7 @@ def zephyr(request):
 @login_required
 @require_post
 def forge_zephyr(request):
-    username = request.POST['sender']
+    username = sanitize_identifier(request.POST['sender'])
     user_profile = UserProfile.objects.get(user=request.user)
     try:
         user = User.objects.get(username=username)
@@ -166,7 +173,8 @@ def forge_zephyr(request):
                                         email=(username if '@' in username else ''))
         user.save()
         create_user_profile(user, user_profile.realm,
-                            request.POST['fullname'], request.POST['shortname'])
+                            sanitize_identifier(request.POST['fullname']),
+                            sanitize_identifier(request.POST['shortname']))
     return zephyr_backend(request, user)
 
 md_engine = markdown.Markdown(
@@ -190,7 +198,7 @@ def zephyr_backend(request, sender):
         if "instance" not in request.POST:
             return json_error("Missing instance")
 
-        class_name = request.POST['class'].strip()
+        class_name = sanitize_identifier(request.POST['class']).strip()
         if ZephyrClass.objects.filter(name=class_name, realm=user_profile.realm):
             my_class = ZephyrClass.objects.get(name=class_name, realm=user_profile.realm)
         else:
@@ -208,7 +216,7 @@ def zephyr_backend(request, sender):
         if "recipient" not in request.POST:
             return json_error("Missing recipient")
 
-        recipient_data = request.POST['recipient']
+        recipient_data = sanitize_identifier(request.POST['recipient'])
         if ',' in recipient_data:
             # This is actually a huddle message, which shares the
             # "personal" zephyr sending form
@@ -243,7 +251,7 @@ def zephyr_backend(request, sender):
     new_zephyr.content = md_engine.convert(request.POST['new_zephyr'])
     new_zephyr.recipient = recipient
     if zephyr_type_name == 'class':
-        new_zephyr.instance = request.POST['instance']
+        new_zephyr.instance = sanitize_identifier(request.POST['instance'])
     new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
     new_zephyr.save()
 
