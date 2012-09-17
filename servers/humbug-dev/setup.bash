@@ -51,7 +51,7 @@ EOF
 apt-get update
 yes '' | apt-get upgrade
 yes '' | apt-get install sudo emacs vim screen git python-tz sqlite3 apache2 gitit python-tornado \
-    python-pip python-simplejson
+    python-pip python-simplejson python-pygments ipython
 yes '' | apt-get install -t squeeze-backports python-django
 
 # Configure Apache
@@ -88,7 +88,7 @@ chown -R wiki:wiki /home/wiki/wiki
 
 # Install Python packages from PyPi
 # FIXME: make this more secure
-pip install django-jstemplate
+pip install django-jstemplate markdown
 
 # Messages
 set +x
