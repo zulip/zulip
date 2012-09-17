@@ -120,6 +120,10 @@ table.zephyr_table {
     margin-left: 45px;
 }
 
+blockquote {
+    margin-bottom: 6px;
+}
+
 td.messagebox {
     width:     470px;
     max-width: 470px;
