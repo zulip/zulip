@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import mechanize
 import urllib
-import cgi
 import sys
 import logging
 import zephyr
@@ -43,15 +42,12 @@ def browser_login():
     csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})['value']
 
 def send_zephyr(zeph):
-    zeph['fullname']  = cgi.escape(username_to_fullname(zeph['sender']))
-    zeph['shortname'] = cgi.escape(zeph['sender'].split('@')[0])
+    zeph['fullname']  = username_to_fullname(zeph['sender'])
+    zeph['shortname'] = zeph['sender'].split('@')[0]
 
     browser.addheaders.append(('X-CSRFToken', csrf_token))
     zephyr_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in zeph.items()])
     browser.open("https://app.humbughq.com/forge_zephyr/", zephyr_data)
-
-def unwrap_lines(body):
-    return '\n'.join(p.replace('\n', ' ') for p in re.split(r'\n[ \t\n]', body))
 
 def fetch_fullname(username):
     try:
@@ -101,13 +97,11 @@ with open('zephyrs', 'a') as log:
                 continue
             zeph = { 'type'      : 'class',
                      'time'      : str(notice.time),
-                     'sender'    : notice.sender,
+                     'sender'    : notice.sender[:30],
                      'class'     : notice.cls,
                      'instance'  : notice.instance,
                      'zsig'      : zsig,  # logged here but not used by app
-                     'new_zephyr': unwrap_lines(body) }
-            for k,v in zeph.items():
-                zeph[k] = cgi.escape(v)
+                     'new_zephyr': body }
 
             log.write(simplejson.dumps(zeph) + '\n')
             log.flush()
