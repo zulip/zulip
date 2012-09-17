@@ -4,6 +4,16 @@
     zephyr_json: false, initial_pointer: false, username: false,
     class_list: false, instance_list: false, people_list: false */
 
+function register_huddle_onclick(zephyr_row, sender) {
+    zephyr_row.find(".zephyr_sender").click(function (e) {
+        prepare_huddle(sender);
+        // The sender span is inside the messagebox, which also has an
+        // onclick handler. We don't want to trigger the messagebox
+        // handler.
+        e.stopPropagation();
+    });
+}
+
 $(function () {
     $('#zephyr-type-tabs a[href="#class-message"]').on('shown', function (e) {
         $('#class-message input:not(:hidden):first').focus().select();
@@ -578,6 +588,7 @@ function add_message(index, zephyr) {
     var new_tr = $('<tr />').attr('id', zephyr.id).addClass('zephyr_row');
     $('#table').append(new_tr);
     new_tr.append(ich.zephyr(zephyr));
+    register_huddle_onclick(new_tr, zephyr.sender);
     apply_view(new_tr);
 }
 
