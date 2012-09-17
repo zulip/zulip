@@ -183,6 +183,9 @@ $(function () {
 
 var selected_zephyr_id = 0;  /* to be filled in on document.ready */
 var last_received = -1;
+var narrowed = false;
+// For tracking where you were before you narrowed.
+var persistent_zephyr_id = 0;
 
 function get_all_zephyr_rows() {
     return $('tr.zephyr_row');
@@ -255,7 +258,11 @@ function update_pointer(zephyr) {
     $('.selected_zephyr').removeClass('selected_zephyr');
     zephyr.addClass('selected_zephyr');
 
-    $.post("update", { pointer: selected_zephyr_id });
+    if (!narrowed) {
+        // Narrowing is a temporary view on top of the home view and
+        // doesn't permanently affect where you are.
+        $.post("update", { pointer: selected_zephyr_id });
+    }
 }
 
 function update_pointer_by_id(zephyr_id) {
@@ -434,6 +441,10 @@ function prepare_huddle(recipients) {
 }
 
 function do_narrow(description, filter_function) {
+    // Your pointer isn't changed when narrowed.
+    narrowed = true;
+    persistent_zephyr_id = selected_zephyr_id;
+
     // Hide the messages temporarily, so the browser doesn't waste time
     // incrementally recalculating the layout.
     $("#main_div").hide();
@@ -519,10 +530,13 @@ function narrow_instance() {
 }
 
 function show_all_messages() {
+    narrowed = false;
+
     current_view_predicate = home_view;
     get_all_zephyr_rows().show();
 
-    scroll_to_selected();
+    // Includes scrolling.
+    select_zephyr(persistent_zephyr_id);
 
     $("#narrowbox").hide();
     $("#show_all_messages").attr("disabled", "disabled");
