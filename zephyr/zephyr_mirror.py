@@ -4,7 +4,6 @@ import urllib
 import sys
 import logging
 import zephyr
-import BeautifulSoup
 import traceback
 import simplejson
 import re
@@ -38,8 +37,9 @@ def browser_login():
     browser["password"] = "iago"
 
     global csrf_token
-    soup = BeautifulSoup.BeautifulSoup(browser.submit().read())
-    csrf_token = soup.find('input', attrs={'name': 'csrfmiddlewaretoken'})['value']
+    csrf_token = browser["csrfmiddlewaretoken"]
+
+    browser.submit()
 
 def send_zephyr(zeph):
     zeph['fullname']  = username_to_fullname(zeph['sender'])
