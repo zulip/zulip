@@ -152,8 +152,8 @@ img.profile_picture {
     bottom: 0px;
     background: white;
 
-    /* = .zephyr_list width + padding-right */
-    width: 670px;
+    /* = #wrapper width + padding-right */
+    width: 650px;
 }
 
 /* Like .nav-tabs > li > a */
@@ -224,8 +224,8 @@ input.send_zephyr {
     position: fixed;
     display: none;
     padding: 2px;
-    /* .zephyr_list width + padding *2 */
-    width: 664px;
+    /* .zephyr_list width */
+    width: 640px;
     margin: 0 auto;
     background-color: #EEE;
     text-decoration: none;
