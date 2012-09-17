@@ -223,9 +223,9 @@ input.send_zephyr {
 #narrowbox {
     position: fixed;
     display: none;
-    padding: 2px;
-    /* .zephyr_list width */
-    width: 640px;
+    padding-left: 2px;
+    /* .zephyr_list width + ??? */
+    width: 648px;
     margin: 0 auto;
     background-color: #EEE;
     text-decoration: none;
