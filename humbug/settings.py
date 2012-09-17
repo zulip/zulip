@@ -1,7 +1,10 @@
 # Django settings for humbug project.
 import os
+import platform
 
-DEBUG = True
+deployed = (platform.node() == 'humbug-dev')
+
+DEBUG = not deployed
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -24,11 +27,7 @@ DATABASES = {
     },
 }
 
-try:
-    import MySQLdb
-except ImportError:
-    pass
-else:
+if deployed:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {

@@ -98,4 +98,6 @@ Done.
 
 Remaining manual setup tasks:
   - Create users in /etc/apache2/users/wiki
+  - Add hostname to /etc/hostname and /etc/hosts
+  - /etc/init.d/hostname.sh start
 EOF
