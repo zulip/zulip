@@ -1,8 +1,6 @@
 body {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
     overflow: hidden;
-    padding-top:    60px;
-    padding-bottom: 40px;
 }
 
 .sidebar-nav {
@@ -25,8 +23,10 @@ body {
 }
 
 ul.nav-zephyr {
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left:   30px;
+    padding-right:  30px;
+    padding-top:    60px;
+    padding-bottom: 40px;
 }
 
 .zephyr_list {
