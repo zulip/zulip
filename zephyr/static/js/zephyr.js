@@ -75,11 +75,11 @@ function hide_compose() {
     $('.zephyr_compose').slideUp('fast');
 }
 
-function show_compose(tabname) {
+function show_compose(tabname, focus_area) {
     $('.zephyr_compose').slideDown('fast');
-    if (tabname) {
-        $('#zephyr-type-tabs a[href="#' + tabname + '-message"]').tab('show');
-    }
+    $('#zephyr-type-tabs a[href="#' + tabname + '-message"]').tab('show');
+    focus_area.focus();
+    focus_area.select();
 }
 
 function compose_class_name() {
@@ -223,11 +223,7 @@ function respond_to_zephyr() {
         $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
         $("#class").val(zephyr.display_recipient);
         $("#instance").val(zephyr.instance);
-        // Running show_compose steals focus, so call before we do .focus() or .select()
-        show_compose('class');
-
-        $("#new_zephyr").focus();
-        $("#new_zephyr").select();
+        show_compose('class', $("#new_zephyr"));
     } else if (zephyr.type === 'huddle') {
         $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
         recipient = '';
@@ -434,10 +430,9 @@ function apply_view(element) {
 
 function prepare_huddle(recipients) {
     // Used for both personals and huddles.
-    show_compose('personal');
+    show_compose('personal', $("#new_personal_zephyr"));
     $("#recipient").val(recipients);
-    $("#new_personal_zephyr").focus();
-    $("#new_personal_zephyr").select();
+
 }
 
 function do_narrow(description, filter_function) {
@@ -666,5 +661,7 @@ function get_updates_longpoll() {
 
 $(function () {
     update_autocomplete();
-    $('.button-slide').click(show_compose);
+    $('.button-slide').click(function () {
+        show_compose('class', $("#class"));
+    });
 });
