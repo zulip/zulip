@@ -228,7 +228,7 @@ function respond_to_zephyr() {
     } else if (zephyr.type === 'huddle') {
         $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
         recipient = '';
-        for (i in  zephyr.display_recipient) {
+        for (var i = 0; i < zephyr.display_recipient.length; i++) {
             recipient += zephyr.display_recipient[i].name + ', ';
         }
         prepare_huddle(recipient);
@@ -237,7 +237,7 @@ function respond_to_zephyr() {
         // representations of a user (name, username, email, etc.), just
         // deal with usernames.
         recipient = zephyr.display_recipient;
-        if ( recipient === username) { // that is, we sent the original message
+        if (recipient === username) { // that is, we sent the original message
             recipient = zephyr.sender;
         }
         prepare_huddle(recipient);
