@@ -46,7 +46,7 @@ var people_list = {{ people }};
     <div class="row-fluid">
         <div class="span3">
             <div class="zephyr_well well sidebar-nav">
-                <ul class="nav nav-pills nav-stacked nav-zephyr">
+                <ul class="nav nav-pills nav-stacked nav-zephyr" id="sidebar">
                     <span class="my_fullname">{{ user_profile.full_name }}</span><br/>
                     <span class="my_email">{{ user_profile.email }}</span>
                     <span class="logout">(<a href="/accounts/logout?next=/">not you?</a>)</span>
@@ -54,9 +54,9 @@ var people_list = {{ people }};
                     <li><a href="subscriptions/">Manage subscriptions</a></li>
                     <li class="disabled"><a href="#">View starred messages</a></li>
                     <li><a href="#search" data-toggle="pill">Search</a></li>
-                    <li><a href="#">Invite a friend</a></li>
+                    <li class="disabled"><a href="#">Invite a friend</a></li>
                     <br>
-                    <a href="#" class="btn btn-large btn-block button-slide">New Message</a>
+                    <a href="#" class="btn btn-large btn-block" id="new_message_button" onclick="compose_button()">New Message</a>
                 </ul>
             </div><!--/.well -->
         </div><!--/span-->

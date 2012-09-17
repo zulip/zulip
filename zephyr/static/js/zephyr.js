@@ -70,6 +70,11 @@ function sub(zephyr_class) {
     $.post('/subscriptions/add/', {new_subscriptions: zephyr_class});
 }
 
+function compose_button() {
+    $('#sidebar a[href="#home"]').tab('show');
+    show_compose();
+}
+
 function hide_compose() {
     $('input, textarea, button').blur();
     $('.zephyr_compose').slideUp('fast');
