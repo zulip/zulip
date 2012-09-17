@@ -72,7 +72,7 @@ function sub(zephyr_class) {
 
 function compose_button() {
     $('#sidebar a[href="#home"]').tab('show');
-    show_compose();
+    show_compose('class', $("#class"));
 }
 
 function hide_compose() {
