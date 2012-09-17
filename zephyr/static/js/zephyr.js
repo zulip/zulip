@@ -264,6 +264,10 @@ function select_zephyr(zephyr_id) {
     if (next_zephyr.length === 0) {
         next_zephyr = $('tr:not(:hidden):first');
     }
+    if (next_zephyr.length === 0) {
+        // There are no zephyrs!
+        return false;
+    }
 
     update_pointer(next_zephyr);
 
