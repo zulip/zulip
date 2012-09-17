@@ -116,11 +116,7 @@ table.zephyr_table {
     margin-left: auto;
 }
 
-.messagebox p {
-    margin-left: 45px;
-}
-
-.messagebox .codehilite {
+.zephyr_content {
     margin-left: 45px;
 }
 
