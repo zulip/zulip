@@ -202,7 +202,7 @@ def send_zephyrs(data):
         saved_data = ''
         new_zephyr = Zephyr()
         length = random.randint(1, 5)
-        new_zephyr.content = "".join(texts[offset: offset + length])
+        new_zephyr.content = '<p>%s</p>' % (''.join(t.strip() + '<br />' for t in texts[offset: offset + length]))
         offset += length
         offset = offset % len(texts)
 

@@ -19,6 +19,7 @@ import datetime
 import simplejson
 import socket
 import re
+import markdown
 
 def require_post(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
@@ -168,6 +169,11 @@ def forge_zephyr(request):
                             request.POST['fullname'], request.POST['shortname'])
     return zephyr_backend(request, user)
 
+md_engine = markdown.Markdown(
+    extensions    = ['fenced_code', 'codehilite'],
+    safe_mode     = True,
+    output_format = 'xhtml' )
+
 @login_required
 @require_post
 def zephyr_backend(request, sender):
@@ -234,7 +240,7 @@ def zephyr_backend(request, sender):
 
     new_zephyr = Zephyr()
     new_zephyr.sender = UserProfile.objects.get(user=sender)
-    new_zephyr.content = request.POST['new_zephyr']
+    new_zephyr.content = md_engine.convert(request.POST['new_zephyr'])
     new_zephyr.recipient = recipient
     if zephyr_type_name == 'class':
         new_zephyr.instance = request.POST['instance']

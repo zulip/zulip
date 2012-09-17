@@ -538,10 +538,6 @@ function show_all_messages() {
     $("#currently_narrowed_to").html("");
 }
 
-function newline2br(content) {
-    return content.replace(/\n/g, '<br />');
-}
-
 function update_autocomplete() {
     class_list.sort();
     instance_list.sort();
@@ -587,7 +583,6 @@ function add_message(index, zephyr) {
             update_autocomplete();
         }
     }
-    zephyr.html_content = newline2br(zephyr.content);
 
     var time = new Date(zephyr.timestamp * 1000);
     var two_digits = function (x) { return ('0' + x).slice(-2); }
