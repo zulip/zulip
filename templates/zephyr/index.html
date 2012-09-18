@@ -46,22 +46,27 @@ var people_list = {{ people }};
     <div class="row-fluid">
         <div class="span3">
             <div class="zephyr_well well sidebar-nav">
-                <ul class="nav nav-list nav-zephyr">
+                <ul class="nav nav-pills nav-stacked nav-zephyr">
                     <span class="my_fullname">{{ user_profile.full_name }}</span><br/>
                     <span class="my_email">{{ user_profile.email }}</span>
                     <span class="logout">(<a href="/accounts/logout?next=/">not you?</a>)</span>
+                    <li class="active"><a href="#home" data-toggle="pill">Home</a></li>
                     <li><a href="subscriptions/">Manage subscriptions</a></li>
-                    <li><a href="#">View starred messages</a></li>
-                    <li><a href="">Search</a></li>
+                    <li class="disabled"><a href="#">View starred messages</a></li>
+                    <li><a href="#search" data-toggle="pill">Search</a></li>
                     <li><a href="#">Invite a friend</a></li>
                     <br>
                     <a href="#" class="btn btn-large btn-block button-slide">New Message</a>
                 </ul>
             </div><!--/.well -->
         </div><!--/span-->
-        <div class="span9">
-          <div id="wrapper">
-            <div class="zephyr_list" id="main_div">
+        <div class="tab-content">
+          <div class="tab-pane" id="search">
+            <h1>Search</h1>
+          </div>
+          <div class="tab-pane active" id="home">
+            <div id="wrapper">
+              <div class="zephyr_list" id="main_div">
                 <br/><br/>
                 <table class="zephyr_table" id="table">
                     <tbody>
@@ -75,6 +80,7 @@ var people_list = {{ people }};
                     </div>
                 </div>
                 <div id="bottom_whitespace"></div>
+              </div>
             </div>
 
             <div class="tabbable container zephyr_compose" id="zephyr_compose">
