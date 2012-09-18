@@ -259,17 +259,26 @@ def zephyr_backend(request, sender):
 
     return json_success()
 
+def gather_subscriptions(userprofile):
+    subscriptions = Subscription.objects.filter(userprofile=userprofile, active=True)
+    # For now, don't display the subscription for your ability to receive personals.
+    return [get_display_recipient(sub.recipient) for sub in subscriptions
+            if sub.recipient.type == Recipient.CLASS]
+
 @login_required
 def subscriptions(request):
     userprofile = UserProfile.objects.get(user=request.user)
-    subscriptions = Subscription.objects.filter(userprofile=userprofile, active=True)
-    # For now, don't display the subscription for your ability to receive personals.
-    sub_names = [get_display_recipient(sub.recipient) for sub in subscriptions
-                 if sub.recipient.type == Recipient.CLASS]
 
     return render_to_response('zephyr/subscriptions.html',
-                              {'subscriptions': sub_names, 'user_profile': userprofile},
+                              {'subscriptions': gather_subscriptions(userprofile),
+                               'user_profile': userprofile},
                               context_instance=RequestContext(request))
+
+@login_required
+def json_subscriptions(request):
+    subs = gather_subscriptions(UserProfile.objects.get(user=request.user))
+    return HttpResponse(content=simplejson.dumps({"subscriptions": subs}),
+                        mimetype='application/json', status=200)
 
 @login_required
 @require_post
@@ -304,6 +313,7 @@ def add_subscriptions(request):
         if not re.match('^[a-zA-z0-9_-]+$', sub_name):
             return json_error("Invalid characters in class names")
 
+    actually_new_subs = []
     for sub_name in new_subs:
         zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)
         if zephyr_class:
@@ -317,14 +327,17 @@ def add_subscriptions(request):
                                                    recipient=recipient)
         if subscription:
             subscription = subscription[0]
-            subscription.active = True
-            subscription.save()
+            if not subscription.active:
+                # Activating old subscription.
+                subscription.active = True
+                subscription.save()
+                actually_new_subs.append(sub_name)
         else:
             new_subscription = Subscription(userprofile=user_profile,
                                             recipient=recipient)
             new_subscription.save()
-
-    return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
+            actually_new_subs.append(sub_name)
+    return json_success({"data": actually_new_subs})
 
 @login_required
 def class_exists(request, zephyr_class):

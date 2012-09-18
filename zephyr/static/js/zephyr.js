@@ -38,6 +38,25 @@ $(function () {
         $("#class-message form").ajaxSubmit();
         $('#class-nosub').stop(true).fadeOut(500);
     });
+
+    $('#sidebar a[href="#subscriptions"]').click(function () {
+        $.ajax({
+            type:     'GET',
+            url:      'json/subscriptions',
+            dataType: 'json',
+            timeout:  10*1000,
+            success: function (data) {
+                $('#current_subscriptions_table tr').remove();
+                if (data) {
+                    $.each(data.subscriptions, function (index, name) {
+                        $('#current_subscriptions_table').append(ich.subscription({subscription: name}));
+                    });
+                }
+                $('#new_subscriptions').focus().select();
+            },
+            // TODO: error handling
+        });
+    });
 });
 
 $.ajaxSetup({
@@ -184,6 +203,21 @@ $(function () {
     send_status.hide();
     $("#class-message form").ajaxForm(options);
     $("#personal-message form").ajaxForm(options);
+});
+
+$(function () {
+    var options = {
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        success: function (resp, statusText, xhr, form) {
+            $("#new_subscriptions").val("");
+            $.each($.parseJSON(xhr.responseText).data, function (index, name) {
+                $('#current_subscriptions_table').append(ich.subscription({subscription: name}));
+                class_list.push(name);
+            });
+        },
+        // TODO: error handling
+    };
+    $("#current_subscriptions form").ajaxForm(options);
 });
 
 var selected_zephyr_id = 0;  /* to be filled in on document.ready */
