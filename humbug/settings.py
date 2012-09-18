@@ -4,7 +4,7 @@ import platform
 
 deployed = (platform.node() == 'humbug-dev')
 
-DEBUG = True
+DEBUG = not deployed
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
