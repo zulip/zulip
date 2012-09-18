@@ -28,15 +28,17 @@ def require_post(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
-def json_response(res_type="success", msg="", status=200):
-    return HttpResponse(content=simplejson.dumps({"result":res_type, "msg":msg}),
+def json_response(res_type="success", msg="", data={}, status=200):
+    content = {"result":res_type, "msg":msg}
+    content.update(data)
+    return HttpResponse(content=simplejson.dumps(content),
                         mimetype='application/json', status=status)
 
-def json_success():
-    return json_response()
+def json_success(data={}):
+    return json_response(data=data)
 
-def json_error(msg):
-    return json_response(res_type="error", msg=msg, status=400)
+def json_error(msg, data={}):
+    return json_response(res_type="error", msg=msg, data=data, status=400)
 
 def sanitize_identifier(x):
     """Sanitize a username, class name, etc."""
