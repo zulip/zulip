@@ -82,7 +82,6 @@ class Command(BaseCommand):
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
 
-        usernames = ["othello", "iago", "prospero", "cordelia", "hamlet"]
         class_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
 
         if options["delete"]:
@@ -191,8 +190,6 @@ def send_zephyrs(data):
     for h in recipient_huddles:
         huddle_members[h] = [s.userprofile.id for s in
                              Subscription.objects.filter(recipient_id=h)]
-
-    realm = Realm.objects.get(domain="humbughq.com")
 
     num_zephyrs = 0
     random_max = 1000000
