@@ -209,6 +209,19 @@ $(function () {
     var options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
+            $.each($.parseJSON(xhr.responseText).data, function (index, name) {
+                $('#current_subscriptions_table').find('input[value=' + name + ']').parents('tr').remove();
+            });
+        },
+        // TODO: error handling
+    };
+    $("#current_subscriptions form").ajaxForm(options);
+});
+
+$(function () {
+    var options = {
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        success: function (resp, statusText, xhr, form) {
             $("#new_subscriptions").val("");
             $.each($.parseJSON(xhr.responseText).data, function (index, name) {
                 $('#current_subscriptions_table').append(ich.subscription({subscription: name}));
@@ -217,7 +230,7 @@ $(function () {
         },
         // TODO: error handling
     };
-    $("#current_subscriptions form").ajaxForm(options);
+    $("#add_new_subscriptions form").ajaxForm(options);
 });
 
 var selected_zephyr_id = 0;  /* to be filled in on document.ready */

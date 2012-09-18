@@ -297,7 +297,7 @@ def manage_subscriptions(request):
         subscription.active = False
         subscription.save()
 
-    return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
+    return json_success({"data": unsubs})
 
 @login_required
 @require_post

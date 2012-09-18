@@ -19,7 +19,7 @@
 
 <h1>Add new subscriptions</h1>
 <div class="row-fluid">
-  <div id="current_subscriptions" class="span12">
+  <div id="add_new_subscriptions" class="span12">
     <form action="/subscriptions/add/" method="post" class="subscriptions">{% csrf_token %}
       <label>Please enter a comma-separated list of classes</label>
       <input type="text" name="new_subscriptions" id="new_subscriptions" value="" /><br />
