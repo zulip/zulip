@@ -201,8 +201,9 @@ def zephyr_backend(request, sender):
             return json_error("Missing instance")
 
         class_name = sanitize_identifier(request.POST['class']).strip()
-        if ZephyrClass.objects.filter(name=class_name, realm=user_profile.realm):
-            my_class = ZephyrClass.objects.get(name=class_name, realm=user_profile.realm)
+        my_classes = ZephyrClass.objects.filter(name=class_name, realm=user_profile.realm)
+        if my_classes:
+            my_class = my_classes[0]
         else:
             my_class = ZephyrClass()
             my_class.name = class_name
