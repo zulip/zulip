@@ -141,6 +141,12 @@ td.messagebox {
     margin-bottom: 20px;
     background-color: white;
     border: 1px solid gray;
+    border-bottom: 0px solid gray;
+}
+
+td.bookend {
+    border-top: 1px solid gray;
+    padding-top: 5px;
 }
 
 td.collapsed_child {

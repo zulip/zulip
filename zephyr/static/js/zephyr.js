@@ -631,7 +631,7 @@ function add_to_tables(zephyr, parent, table) {
     } else {
         zephyr.include_recipient = true;
         // add a space to the table
-        table.append($('<tr />').append($('<td />')).append($('<td />')).append($('<td />').html('<br/>').addClass('bookend')));
+        table.append($('<tr />').append($('<td />')).append($('<td />')).append($('<td />').addClass('bookend')));
     }
 
     if (parent !== undefined && !zephyr.include_recipient && zephyr.sender === parent.sender) {
