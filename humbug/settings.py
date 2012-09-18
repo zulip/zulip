@@ -139,6 +139,24 @@ INSTALLED_APPS = (
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'default': {
+            'format': '%(asctime)s %(levelname)-8s %(message)s'
+        }
+    },
+    'handlers': {
+        'console': {
+            'level':     'DEBUG',
+            'class':     'logging.StreamHandler',
+            'formatter': 'default'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level':    'INFO'
+        }
+    }
 }
 
 ACCOUNT_ACTIVATION_DAYS=7
