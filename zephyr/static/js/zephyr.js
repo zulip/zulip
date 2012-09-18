@@ -592,9 +592,8 @@ function add_message(index, zephyr) {
                    + ':' + two_digits(time.getMinutes());
     zephyr.full_date_str = time.toLocaleString();
 
-    var new_tr = $('<tr />').attr('id', zephyr.id).addClass('zephyr_row');
+    var new_tr = ich.zephyr(zephyr)
     $('#table').append(new_tr);
-    new_tr.append(ich.zephyr(zephyr));
     register_huddle_onclick(new_tr, zephyr.sender);
     apply_view(new_tr);
 
