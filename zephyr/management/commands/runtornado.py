@@ -91,13 +91,16 @@ class Command(BaseCommand):
                 # Application is an instance of Django's standard wsgi handler.
                 application = web.Application([(r"/get_updates_longpoll", AsyncDjangoHandler),
                                                (r".*", FallbackHandler, dict(fallback=django_app)),
-                                               ])
+                                               ], debug=django.conf.settings.DEBUG)
 
                 # start tornado web server in single-threaded mode
                 http_server = httpserver.HTTPServer(application,
                                                     xheaders=xheaders,
                                                     no_keep_alive=no_keep_alive)
                 http_server.listen(int(port), address=addr)
+
+                if django.conf.settings.DEBUG:
+                    ioloop.IOLoop.instance().set_blocking_log_threshold(5)
 
                 ioloop.IOLoop.instance().start()
             except KeyboardInterrupt:
