@@ -3,8 +3,7 @@ from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
-    Subscription, Huddle, get_huddle, Realm, create_user_profile, UserMessage, \
-    create_zephyr_class, get_user_profile_by_id
+    Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id
 from zephyr.mit_subs_list import subs_list
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
@@ -21,14 +20,14 @@ def create_users(name_list, realm):
         user = User.objects.create_user(username=username, password=username,
                                         email=username+"@humbughq.com")
         user.save()
-        create_user_profile(user, realm, name, username)
+        UserProfile.create(user, realm, name, username)
 
 def create_classes(class_list, realm):
     for name in class_list:
         if ZephyrClass.objects.filter(name=name, realm=realm):
             # We're trying to create the same zephyr class twice!
             raise
-        create_zephyr_class(name, realm)
+        ZephyrClass.create(name, realm)
 
 class Command(BaseCommand):
     help = "Populate a test database"

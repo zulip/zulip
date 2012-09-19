@@ -71,16 +71,17 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.__repr__()
 
-def create_user_profile(user, realm, full_name, short_name):
-    """When creating a new user, make a profile for him or her."""
-    if not UserProfile.objects.filter(user=user):
-        profile = UserProfile(user=user, pointer=-1, realm_id=realm.id,
-                              full_name=full_name, short_name=short_name)
-        profile.save()
-        # Auto-sub to the ability to receive personals.
-        recipient = Recipient(type_id=profile.id, type=Recipient.PERSONAL)
-        recipient.save()
-        Subscription(userprofile=profile, recipient=recipient).save()
+    @classmethod
+    def create(cls, user, realm, full_name, short_name):
+        """When creating a new user, make a profile for him or her."""
+        if not cls.objects.filter(user=user):
+            profile = cls(user=user, pointer=-1, realm_id=realm.id,
+                          full_name=full_name, short_name=short_name)
+            profile.save()
+            # Auto-sub to the ability to receive personals.
+            recipient = Recipient(type_id=profile.id, type=Recipient.PERSONAL)
+            recipient.save()
+            Subscription(userprofile=profile, recipient=recipient).save()
 
 class ZephyrClass(models.Model):
     name = models.CharField(max_length=30, db_index=True)
@@ -91,13 +92,14 @@ class ZephyrClass(models.Model):
     def __str__(self):
         return self.__repr__()
 
-def create_zephyr_class(name, realm):
-    zephyr_class = ZephyrClass(name=name, realm=realm)
-    zephyr_class.save()
+    @classmethod
+    def create(cls, name, realm):
+        zephyr_class = cls(name=name, realm=realm)
+        zephyr_class.save()
 
-    recipient = Recipient(type_id=zephyr_class.id, type=Recipient.CLASS)
-    recipient.save()
-    return (zephyr_class, recipient)
+        recipient = Recipient(type_id=zephyr_class.id, type=Recipient.CLASS)
+        recipient.save()
+        return (zephyr_class, recipient)
 
 class Recipient(models.Model):
     type_id = models.IntegerField(db_index=True)

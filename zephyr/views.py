@@ -9,8 +9,7 @@ from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
-    Recipient, get_display_recipient, get_huddle, \
-    create_user_profile, Realm, UserMessage, create_zephyr_class
+    Recipient, get_display_recipient, get_huddle, Realm, UserMessage
 from zephyr.forms import RegistrationForm
 
 from zephyr.decorator import asynchronous
@@ -65,7 +64,7 @@ def register(request):
                 realm = Realm.objects.get(domain=domain)
             user = User.objects.create_user(username=username, password=password, email=email)
             user.save()
-            create_user_profile(user, realm, full_name, short_name)
+            UserProfile.create(user, realm, full_name, short_name)
             login(request, authenticate(username=username, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))
     else:
@@ -174,8 +173,8 @@ def forge_zephyr(request):
         user = User.objects.create_user(username=username, password="test",
                                         email=(username if '@' in username else ''))
         user.save()
-        create_user_profile(user, user_profile.realm,
-                            sanitize_identifier(request.POST['fullname']),
+        UserProfile.create(user, user_profile.realm,
+                           sanitize_identifier(request.POST['fullname']),
                             sanitize_identifier(request.POST['shortname']))
     return zephyr_backend(request, user)
 
@@ -322,7 +321,7 @@ def add_subscriptions(request):
             recipient = Recipient.objects.get(type_id=zephyr_class.id,
                                               type=Recipient.CLASS)
         else:
-            (_, recipient) = create_zephyr_class(sub_name, user_profile.realm)
+            (_, recipient) = ZephyrClass.create(sub_name, user_profile.realm)
 
         subscription = Subscription.objects.filter(userprofile=user_profile,
                                                    recipient=recipient)
