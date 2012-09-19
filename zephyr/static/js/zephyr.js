@@ -276,10 +276,8 @@ function get_huddle_recipient(zephyr) {
 }
 
 function respond_to_zephyr() {
-    var parent, zephyr;
-    var recipient, recipients;
-    parent = get_zephyr(selected_zephyr_id);
-    zephyr = zephyr_dict[parent.attr('zid')];
+    var zephyr, recipient, recipients;
+    zephyr = zephyr_dict[selected_zephyr_id];
 
     if (zephyr.type === 'class') {
         $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
@@ -545,8 +543,7 @@ function narrow_all_personals() {
 
 function narrow_personals() {
     // Narrow to personals with a specific user
-    var target_zephyr = get_zephyr(selected_zephyr_id);
-    var zephyr_obj = zephyr_dict[target_zephyr.attr('zid')];
+    var zephyr_obj = zephyr_dict[selected_zephyr_id];
     var other_party;
     if (zephyr_obj.display_recipient === username) {
         other_party = zephyr_obj.sender;
