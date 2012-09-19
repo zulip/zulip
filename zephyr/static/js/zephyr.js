@@ -634,13 +634,17 @@ function add_to_tables(zephyr, parent, table) {
         zephyr.include_recipient = false;
     } else {
         zephyr.include_recipient = true;
-        // add a space to the table
-        table.append($('<tr />').append($('<td />')).append($('<td />')).append($('<td />').addClass('bookend')));
+        if (parent !== undefined) {
+            // add a space to the table, but not if we have no parent because
+            // we don't want a bookend as the first element.
+            table.append($('<tr />').append($('<td />')).append($('<td />')).append($('<td />').addClass('bookend')));
+        }
     }
 
     if (parent !== undefined && !zephyr.include_recipient && zephyr.sender === parent.sender) {
         zephyr.include_sender = false;
-        table.children('tr:last-child td:last-child').addClass("collapsed_parent");
+
+        table.find('tr:last-child td:last-child').addClass("collapsed_parent");
     } else {
         zephyr.include_sender = true;
     }
