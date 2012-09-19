@@ -42,7 +42,7 @@ $(function () {
     $('#sidebar a[href="#subscriptions"]').click(function () {
         $.ajax({
             type:     'GET',
-            url:      'json/subscriptions',
+            url:      'json/subscriptions/',
             dataType: 'json',
             timeout:  10*1000,
             success: function (data) {
