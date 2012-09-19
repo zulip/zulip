@@ -324,8 +324,11 @@ function update_pointer_by_id(zephyr_id) {
     update_pointer(get_zephyr(zephyr_id));
 }
 
-function select_zephyr(zephyr_id) {
-    var next_zephyr = get_zephyr(zephyr_id);
+function select_zephyr_by_id(zephyr_id) {
+    select_zephyr(get_zephyr(zephyr_id));
+}
+
+function select_zephyr(next_zephyr) {
     var main_div = $("#main_div");
 
     /* If the zephyr exists but is hidden, try to find the next visible one. */
@@ -377,7 +380,7 @@ function process_hotkey(code) {
             next_zephyr = get_prev_visible(get_zephyr(selected_zephyr_id));
         }
         if (next_zephyr.length !== 0) {
-            select_zephyr(get_id(next_zephyr));
+            select_zephyr(next_zephyr);
         }
         if ((next_zephyr.length === 0) && (code === 40)) {
             // At the last zephyr, scroll to the bottom so we have
@@ -518,7 +521,7 @@ function do_narrow(description, original_message, filter_function) {
     $("#currently_narrowed_to").html(description);
     $("#table").removeClass("focused_table");
 
-    select_zephyr(selected_zephyr_id);
+    select_zephyr_by_id(selected_zephyr_id);
     scroll_to_selected();
 }
 
@@ -598,7 +601,7 @@ function show_all_messages() {
     $("#currently_narrowed_to").html("");
 
     // Includes scrolling.
-    select_zephyr(persistent_zephyr_id);
+    select_zephyr_by_id(persistent_zephyr_id);
 
     scroll_to_selected();
 }
@@ -709,7 +712,7 @@ function add_message(index, zephyr) {
 
 $(function () {
     $(initial_zephyr_array).each(add_message);
-    select_zephyr(initial_pointer);
+    select_zephyr_by_id(initial_pointer);
     get_updates_longpoll();
 });
 

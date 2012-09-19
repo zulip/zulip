@@ -1,32 +1,32 @@
 {{! Client-side Mustache template for rendering zephyrs.}}
 <tr zid="{{id}}" class="zephyr_row" onmouseover="update_pointer_by_id({{id}});">
     <td class="pointer"><p></p></td>
-    <td class="zephyr_recipient"><p onclick="select_zephyr({{id}})">
+    <td class="zephyr_recipient"><p onclick="select_zephyr_by_id({{id}})">
     {{#include_recipient}}
         {{#is_huddle}}
             <span class="hidden zephyr_huddle_recipients_list">{{#display_recipient}}{{name}},{{/display_recipient}}</span>
             {{#display_recipient}}
             <span class="zephyr_label_clickable zephyr_huddle_recipient"
-                  onclick="select_zephyr({{id}}); narrow_huddle();">{{name}}</span>
+                  onclick="select_zephyr_by_id({{id}}); narrow_huddle();">{{name}}</span>
             {{/display_recipient}}
             &larr;
         {{/is_huddle}}
         {{#is_personal}}
             <span class="zephyr_label_clickable zephyr_personal_recipient"
-                  onclick="select_zephyr({{id}}); narrow_personals();">{{display_recipient}}</span>
+                  onclick="select_zephyr_by_id({{id}}); narrow_personals();">{{display_recipient}}</span>
             &larr;
         {{/is_personal}}
         {{#is_class}}
             <span class="zephyr_label_clickable zephyr_class"
-                  onclick="select_zephyr({{id}}); narrow_class();">{{display_recipient}}</span>
+                  onclick="select_zephyr_by_id({{id}}); narrow_class();">{{display_recipient}}</span>
             <br/>
             <span class="zephyr_label_clickable zephyr_instance"
-                  onclick="select_zephyr({{id}}); narrow_instance();">{{instance}}</span>
+                  onclick="select_zephyr_by_id({{id}}); narrow_instance();">{{instance}}</span>
         {{/is_class}}
     {{/include_recipient}}
         <br />
     </td>
-    <td class="messagebox{{^include_sender}} collapsed_child{{/include_sender}}" onclick="select_zephyr({{id}}); respond_to_zephyr();">
+    <td class="messagebox{{^include_sender}} collapsed_child{{/include_sender}}" onclick="select_zephyr_by_id({{id}}); respond_to_zephyr();">
     {{#include_sender}}
         <img class="profile_picture" src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30"/>
         <span class="zephyr_label_clickable zephyr_sender" onmouseover="show_email({{id}});" onmouseout="hide_email({{id}});">
