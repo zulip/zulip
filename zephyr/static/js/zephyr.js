@@ -305,32 +305,11 @@ function respond_to_zephyr() {
 
 }
 
-function update_pointer(zephyr) {
-    $('.selected_zephyr').removeClass('selected_zephyr');
-    zephyr.addClass('selected_zephyr');
-
-    var new_selected = get_id(zephyr);
-    if (!narrowed && new_selected !== selected_zephyr_id) {
-        // Narrowing is a temporary view on top of the home view and
-        // doesn't permanently affect where you are.
-        //
-        // We also don't want to post if there's no effecive change.
-        $.post("update", { pointer: new_selected });
-    }
-    selected_zephyr_id = new_selected;
-    selected_zephyr = zephyr;
-
+function select_zephyr_by_id(zephyr_id, scroll_to) {
+    select_zephyr(get_zephyr(zephyr_id), scroll_to);
 }
 
-function update_pointer_by_id(zephyr_id) {
-    update_pointer(get_zephyr(zephyr_id));
-}
-
-function select_zephyr_by_id(zephyr_id) {
-    select_zephyr(get_zephyr(zephyr_id));
-}
-
-function select_zephyr(next_zephyr) {
+function select_zephyr(next_zephyr, scroll_to) {
     var main_div = $("#main_div");
 
     /* If the zephyr exists but is hidden, try to find the next visible one. */
@@ -347,11 +326,24 @@ function select_zephyr(next_zephyr) {
         return false;
     }
 
-    update_pointer(next_zephyr);
+    $('.selected_zephyr').removeClass('selected_zephyr');
+    next_zephyr.addClass('selected_zephyr');
 
-    if ((next_zephyr.offset().top < main_div.offset().top) ||
-            (next_zephyr.offset().top + next_zephyr.height() >
-             main_div.offset().top + main_div.height())) {
+    var new_selected_id = get_id(next_zephyr);
+    if (!narrowed && new_selected_id !== selected_zephyr_id) {
+        // Narrowing is a temporary view on top of the home view and
+        // doesn't permanently affect where you are.
+        //
+        // We also don't want to post if there's no effecive change.
+        $.post("update", { pointer: new_selected_id });
+    }
+    selected_zephyr_id = new_selected_id;
+    selected_zephyr = next_zephyr;
+
+    if (scroll_to &&
+        ((next_zephyr.offset().top < main_div.offset().top) ||
+         (next_zephyr.offset().top + next_zephyr.height() >
+             main_div.offset().top + main_div.height()))) {
         scroll_to_selected();
     }
 }
@@ -382,7 +374,7 @@ function process_hotkey(code) {
             next_zephyr = get_prev_visible(selected_zephyr);
         }
         if (next_zephyr.length !== 0) {
-            select_zephyr(next_zephyr);
+            select_zephyr(next_zephyr, true);
         }
         if ((next_zephyr.length === 0) && (code === 40)) {
             // At the last zephyr, scroll to the bottom so we have
@@ -523,7 +515,7 @@ function do_narrow(description, original_message, filter_function) {
     $("#currently_narrowed_to").html(description);
     $("#table").removeClass("focused_table");
 
-    select_zephyr_by_id(selected_zephyr_id);
+    select_zephyr_by_id(selected_zephyr_id, true);
     scroll_to_selected();
 }
 
@@ -602,7 +594,7 @@ function show_all_messages() {
     $("#currently_narrowed_to").html("");
 
     // Includes scrolling.
-    select_zephyr_by_id(persistent_zephyr_id);
+    select_zephyr_by_id(persistent_zephyr_id, true);
 
     scroll_to_selected();
 }
@@ -713,7 +705,7 @@ function add_message(index, zephyr) {
 
 $(function () {
     $(initial_zephyr_array).each(add_message);
-    select_zephyr_by_id(initial_pointer);
+    select_zephyr_by_id(initial_pointer, true);
     get_updates_longpoll();
 });
 
