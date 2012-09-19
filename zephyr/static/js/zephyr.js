@@ -608,13 +608,13 @@ function update_autocomplete() {
     instance_list.sort();
     people_list.sort();
 
-    $( "#class" ).autocomplete({
+    $( "#class" ).typeahead({
         source: class_list
     });
-    $( "#instance" ).autocomplete({
+    $( "#instance" ).typeahead({
         source: instance_list
     });
-    $( "#recipient" ).autocomplete({
+    $( "#recipient" ).typeahead({
         source: people_list
     });
 }
