@@ -7,6 +7,9 @@ deployed = (platform.node() == 'humbug-dev')
 DEBUG = not deployed
 TEMPLATE_DEBUG = DEBUG
 
+if DEBUG:
+    INTERNAL_IPS = ('127.0.0.1',)
+
 ADMINS = (
     ('Jessica McKellar', 'jessica.mckellar@gmail.com'),
 )
