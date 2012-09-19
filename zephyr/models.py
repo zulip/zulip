@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 import hashlib
 import calendar
 import datetime
+from zephyr.lib.cache import cache_with_key
 
 def get_display_recipient(recipient):
     """
@@ -133,6 +134,7 @@ class Zephyr(models.Model):
     def __str__(self):
         return self.__repr__()
 
+    @cache_with_key(lambda self: 'zephyr_dict:%d' % (self.id,))
     def to_dict(self):
         return {'id'               : self.id,
                 'sender'           : self.sender.user.username,
