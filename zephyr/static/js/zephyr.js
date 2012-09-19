@@ -234,6 +234,7 @@ $(function () {
 });
 
 var selected_zephyr_id = 0;  /* to be filled in on document.ready */
+var selected_zephyr;  // = get_zephyr(selected_zephyr_id)
 var last_received = -1;
 var narrowed = false;
 // For tracking where you were before you narrowed.
@@ -262,7 +263,7 @@ function get_zephyr(zephyr_id) {
 function scroll_to_selected() {
     var main_div = $('#main_div');
     main_div.scrollTop(0);
-    main_div.scrollTop(get_zephyr(selected_zephyr_id).offset().top - main_div.height()/1.5);
+    main_div.scrollTop(selected_zephyr.offset().top - main_div.height()/1.5);
 }
 
 function get_huddle_recipient(zephyr) {
@@ -315,6 +316,7 @@ function update_pointer(zephyr) {
         $.post("update", { pointer: new_selected });
     }
     selected_zephyr_id = new_selected;
+    selected_zephyr = zephyr;
 
 }
 
@@ -358,11 +360,11 @@ function select_zephyr(next_zephyr) {
    things jumping around slightly when the email address is shown. */
 
 function show_email(zephyr_id) {
-    get_zephyr(zephyr_id).find('.zephyr_sender_email').removeClass('invisible');
+    selected_zephyr.find('.zephyr_sender_email').removeClass('invisible');
 }
 
 function hide_email(zephyr_id) {
-    get_zephyr(zephyr_id).find('.zephyr_sender_email').addClass('invisible');
+    selected_zephyr.find('.zephyr_sender_email').addClass('invisible');
 }
 
 
@@ -373,9 +375,9 @@ function process_hotkey(code) {
     case 40: // down arrow
     case 38: // up arrow
         if (code === 40) {
-            next_zephyr = get_next_visible(get_zephyr(selected_zephyr_id));
+            next_zephyr = get_next_visible(selected_zephyr);
         } else {
-            next_zephyr = get_prev_visible(get_zephyr(selected_zephyr_id));
+            next_zephyr = get_prev_visible(selected_zephyr);
         }
         if (next_zephyr.length !== 0) {
             select_zephyr(next_zephyr);
@@ -497,7 +499,7 @@ function do_narrow(description, original_message, filter_function) {
 
 
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
-    var old_top = $("#main_div").offset().top - get_zephyr(selected_zephyr_id).offset().top;
+    var old_top = $("#main_div").offset().top - selected_zephyr.offset().top;
     var parent;
 
     // Empty the filtered table right before we fill it again
