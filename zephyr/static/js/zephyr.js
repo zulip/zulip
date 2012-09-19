@@ -314,7 +314,7 @@ function update_pointer(zephyr) {
         // doesn't permanently affect where you are.
         //
         // We also don't want to post if there's no effecive change.
-        $.post("update", { pointer: selected_zephyr_id });
+        $.post("update", { pointer: new_selected });
     }
     selected_zephyr_id = new_selected;
 
