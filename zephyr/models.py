@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.db.models.signals import post_save
@@ -147,7 +148,7 @@ class Zephyr(models.Model):
                 'instance'         : self.instance,
                 'content'          : self.content,
                 'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
-                'gravatar_hash'    : hashlib.md5("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" + self.sender.user.username).hexdigest(),
+                'gravatar_hash'    : hashlib.md5(settings.MD5_SALT + self.sender.user.email).hexdigest(),
                 }
 
 class UserMessage(models.Model):

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
@@ -19,6 +20,7 @@ import simplejson
 import socket
 import re
 import markdown
+import hashlib
 
 def require_post(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
@@ -111,6 +113,7 @@ def home(request):
     return render_to_response('zephyr/index.html',
                               {'zephyr_array' : zephyr_json,
                                'user_profile': user_profile,
+                               'email_hash'  : hashlib.md5(settings.MD5_SALT + user_profile.user.email).hexdigest(),
                                'people'      : simplejson.dumps(people),
                                'classes'     : simplejson.dumps(classes),
                                'instances'   : simplejson.dumps(instances)},
