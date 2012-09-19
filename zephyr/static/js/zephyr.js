@@ -256,6 +256,8 @@ function get_id(zephyr_row) {
     return zephyr_row.attr('zid');
 }
 
+// NB: this is slow (50 ms or more) due to the custom attribute.
+// We instead could compute an id based on the zid and focused table.
 function get_zephyr(zephyr_id) {
     return $("table.focused_table [zid=" + zephyr_id + "]");
 }
