@@ -131,6 +131,18 @@ INSTALLED_APPS = (
     'zephyr',
 )
 
+# Caching
+CACHES = {
+    'default': {
+        'BACKEND':  'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'humbug-default-local-cache',
+        'TIMEOUT':  3600,
+        'OPTIONS': {
+            'MAX_ENTRIES': 100000
+        }
+    }
+}
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
