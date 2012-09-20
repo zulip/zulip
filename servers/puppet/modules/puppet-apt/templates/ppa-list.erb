@@ -1,0 +1,4 @@
+<% ppa.each do |one_ppa| %>
+deb http://ppa.launchpad.net/<%= name %>/<%= one_ppa %>/ubuntu <%= lsbdistcodename %> main
+deb-src http://ppa.launchpad.net/<%= name %>/<%= one_ppa %>/ubuntu <%= lsbdistcodename %> main
+<% end %>
