@@ -102,7 +102,7 @@ class Command(BaseCommand):
             names = [("Othello, the Moor of Venice", "othello"), ("Iago", "iago"),
                      ("Prospero from The Tempest", "prospero"),
                      ("Cordelia Lear", "cordelia"), ("King Hamlet", "hamlet")]
-            for i in range(options["extra_users"]):
+            for i in xrange(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d' % (i,)))
 
             create_users(names, realm)
@@ -131,23 +131,21 @@ class Command(BaseCommand):
         users = [user.id for user in User.objects.all()]
 
         # Create several initial huddles
-        for i in range(0, options["num_huddles"]):
+        for i in xrange(options["num_huddles"]):
             get_huddle(random.sample(users, random.randint(3, 4)))
 
         # Create several initial pairs for personals
-        personals_pairs = []
-        for i in range(0, options["num_personals"]):
-            personals_pairs.append(random.sample(users, 2))
-
+        personals_pairs = [random.sample(users, 2)
+                           for i in xrange(options["num_personals"])]
 
         threads = options["threads"]
         jobs = []
-        for i in range(0, threads):
+        for i in xrange(threads):
             count = options["num_zephyrs"] / threads
             if i < options["num_zephyrs"] % threads:
                 count += 1
             jobs.append((count, personals_pairs, options, self.stdout.write))
-        for (status, job) in run_parallel(send_zephyrs, jobs, threads=threads):
+        for status, job in run_parallel(send_zephyrs, jobs, threads=threads):
             pass
 
         if options["delete"]:
