@@ -38,6 +38,11 @@ class Command(BaseCommand):
                     type='int',
                     default=600,
                     help='The number of zephyrs to create.'),
+        make_option('--extra-users',
+                    dest='extra_users',
+                    type='int',
+                    default=0,
+                    help='The number of extra users to create'),
         make_option('--huddles',
                     dest='num_huddles',
                     type='int',
@@ -97,6 +102,9 @@ class Command(BaseCommand):
             names = [("Othello, the Moor of Venice", "othello"), ("Iago", "iago"),
                      ("Prospero from The Tempest", "prospero"),
                      ("Cordelia Lear", "cordelia"), ("King Hamlet", "hamlet")]
+            for i in range(options["extra_users"]):
+                names.append(('Extra User %d' % (i,), 'extrauser%d' % (i,)))
+
             create_users(names, realm)
 
             # Create public classes.
