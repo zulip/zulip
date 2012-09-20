@@ -1,4 +1,4 @@
-class apt::backports {
+class apt::backports ($priority = 400) {
 
   $debian_mirror = 'http://backports.debian.org/debian-backports'
   $ubuntu_mirror = 'http://archive.ubuntu.com/ubuntu'
@@ -17,7 +17,7 @@ class apt::backports {
     ensure   => present,
     package  => '*',
     pin      => "release a=${::lsbdistcodename}-backports",
-    priority => 400,
+    priority => $priority,
   }
 
 }
