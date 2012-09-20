@@ -71,6 +71,10 @@ td.zephyr_recipient {
     white-space:    nowrap;
 }
 
+td.zephyr_huddle_list {
+    text-align: left;
+}
+
 .zephyr_class {
     font-weight: bold;
     font-size: 120%;

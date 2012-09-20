@@ -269,9 +269,9 @@ function scroll_to_selected() {
 function get_huddle_recipient(zephyr) {
     var recipient, i;
 
-    recipient = '';
-    for (i = 0; i < zephyr.display_recipient.length; i++) {
-        recipient += zephyr.display_recipient[i].name + ', ';
+    recipient = zephyr.display_recipient[0].name;
+    for (i = 1; i < zephyr.display_recipient.length; i++) {
+        recipient += ', ' + zephyr.display_recipient[i].name;
     }
     return recipient;
 }
@@ -287,8 +287,7 @@ function respond_to_zephyr() {
         show_compose('class', $("#new_zephyr"));
     } else if (zephyr.type === 'huddle') {
         $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
-        recipient = get_huddle_recipient(zephyr);
-        prepare_huddle(recipient);
+        prepare_huddle(zephyr.reply_to);
     } else if (zephyr.type === 'personal') {
         // Until we allow sending zephyrs based on multiple meaningful
         // representations of a user (name, username, email, etc.), just
@@ -400,17 +399,26 @@ function process_hotkey(code) {
     return false;
 }
 
+function narrow_by_recipient(zephyr) {
+    if (zephyr === undefined) {
+        zephyr = zephyr_dict[selected_zephyr_id];
+    }
+
+    // called when the narrow-class keycode is typed
+    if (zephyr.type === 'personal') {
+        narrow_personals();
+    } else if (zephyr.type === 'huddle') {
+        narrow_huddle();
+    } else if (zephyr.type === 'class') {
+        narrow_class();
+    }
+}
+
 function process_goto_hotkey(code) {
     var zephyr = zephyr_dict[selected_zephyr_id];
     switch (code) {
     case 67: // 'c': narrow by recipient
-        if (zephyr.type === 'personal') {
-            narrow_personals();
-        } else if (zephyr.type === 'huddle') {
-            narrow_huddle();
-        } else if (zephyr.type === 'class') {
-            narrow_class();
-        }
+        narrow_by_recipient(zephyr);
         break;
 
     case 73: // 'i': narrow by instance
@@ -524,10 +532,10 @@ function do_narrow(description, original_message, filter_function) {
 function narrow_huddle() {
     var parent = zephyr_dict[selected_zephyr_id];
 
-    var message = "Group chats with " + get_huddle_recipient(parent);
+    var message = "Group chats with " + parent.reply_to;
 
     do_narrow(message, parent, function (other, original) {
-        return get_huddle_recipient(other) === get_huddle_recipient(original);
+        return other.reply_to === original.reply_to;
     });
 }
 
@@ -626,10 +634,10 @@ function add_to_tables(zephyr, parent, table_name) {
 
     if (parent !== undefined &&
             zephyr.type === parent.type && (
-                (zephyr.is_huddle && parent.name === zephyr.name) ||
-                (zephyr.is_personal && parent.display_recipient === zephyr.display_recipient) ||
-                (zephyr.is_class && parent.display_recipient === zephyr.display_recipient &&
-                        parent.instance === zephyr.instance)
+                (zephyr.is_huddle) && (parent.name === zephyr.name) ||
+                (zephyr.is_personal) && (parent.reply_to === zephyr.reply_to) ||
+                ((zephyr.is_class) && (parent.display_recipient === zephyr.display_recipient) &&
+                        (parent.instance === zephyr.instance))
             )) {
         zephyr.include_recipient = false;
     } else {
@@ -672,20 +680,23 @@ function add_message(index, zephyr) {
         }
     } else if (zephyr.type === "huddle") {
         zephyr.is_huddle = true;
+        zephyr.reply_to = get_huddle_recipient(zephyr);
     } else {
         zephyr.is_personal = true;
 
-        if (zephyr.display_recipient !== username &&
-                $.inArray(zephyr.display_recipient, people_list) === -1) {
-            people_list.push(zephyr.display_recipient);
-            update_autocomplete();
+        if (zephyr.display_recipient === username) { // that is, we sent the original message
+            zephyr.reply_to = zephyr.sender;
+        } else {
+            zephyr.reply_to = zephyr.display_recipient;
         }
-        if (zephyr.sender !== username &&
-                $.inArray(zephyr.sender, people_list) === -1) {
-            people_list.push(zephyr.sender);
+
+        if (zephyr.reply_to !== username &&
+                $.inArray(zephyr.reply_to, people_list) === -1) {
+            people_list.push(zephyr.reply_to);
             update_autocomplete();
         }
     }
+
 
     var time = new Date(zephyr.timestamp * 1000);
     var two_digits = function (x) { return ('0' + x).slice(-2); };

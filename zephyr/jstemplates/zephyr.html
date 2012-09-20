@@ -1,22 +1,17 @@
 {{! Client-side Mustache template for rendering zephyrs.}}
+{{#include_recipient}}
+{{^is_class}}
+<tr>
+    <td></td>
+    <td class="zephyr_label_clickable zephyr_recipient" onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">Huddle</td>
+    <td class="zephyr_label_clickable zephyr_recipient zephyr_huddle_list" onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">with {{reply_to}}</td>
+</tr>
+{{/is_class}}
+{{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}" class="zephyr_row" onmouseover="select_zephyr_by_id({{id}});">
     <td class="pointer"><p></p></td>
     <td class="zephyr_recipient"><p onclick="select_zephyr_by_id({{id}})">
     {{#include_recipient}}
-        {{#is_huddle}}
-            <span class="hidden zephyr_huddle_recipients_list">{{#display_recipient}}{{name}},{{/display_recipient}}</span>
-            {{#display_recipient}}
-            {{! We have to select again because the user might have moved the pointer using the keyboard.}}
-            <span class="zephyr_label_clickable zephyr_huddle_recipient"
-                  onclick="select_zephyr_by_id({{id}}); narrow_huddle();">{{name}}</span>
-            {{/display_recipient}}
-            &larr;
-        {{/is_huddle}}
-        {{#is_personal}}
-            <span class="zephyr_label_clickable zephyr_personal_recipient"
-                  onclick="select_zephyr_by_id({{id}}); narrow_personals();">{{display_recipient}}</span>
-            &larr;
-        {{/is_personal}}
         {{#is_class}}
             <span class="zephyr_label_clickable zephyr_class"
                   onclick="select_zephyr_by_id({{id}}); narrow_class();">{{display_recipient}}</span>
