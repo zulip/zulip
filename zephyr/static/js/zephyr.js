@@ -306,6 +306,9 @@ function respond_to_zephyr() {
 }
 
 function select_zephyr_by_id(zephyr_id, scroll_to) {
+    if (zephyr_id === selected_zephyr_id) {
+        return;
+    }
     select_zephyr(get_zephyr(zephyr_id), scroll_to);
 }
 
