@@ -1,0 +1,74 @@
+#!/bin/bash -xe
+
+server=$1
+type=$2
+if [ -z "$type" ]; then
+    echo "USAGE: $0 server type"
+    exit 1
+fi
+
+if ! [ -e ~/humbug/humbug.pem ]; then
+    echo "You need humbug.pem at ~/humbug/humbug.pem; ask tabbott for it"
+    exit 1
+fi
+
+if ! [ -e ~/humbug/servers/puppet/files/id_rsa ]; then
+    echo "You need a server ssh key at ~/humbug/servers/puppet/files/id_rsa"
+    exit 1
+fi
+
+ssh "$server" -t -i ~/humbug/humbug.pem -lroot <<EOF
+resize2fs /dev/xvda1
+
+# First, install a sufficiently new version of puppet on the target
+cat >>/etc/apt/sources.list.d/backports.list <<EOF2
+deb http://backports.debian.org/debian-backports squeeze-backports main
+deb-src http://backports.debian.org/debian-backports squeeze-backports main
+EOF2
+apt-get update
+yes '' | apt-get upgrade
+
+# need to get puppet from squeeze-backports before we can do anything with puppet
+yes '' | apt-get install -t squeeze-backports puppet git
+EOF
+
+# Give new server git access
+# TODO: Don't give servers pull access to our git!
+scp -i ~/humbug/humbug.pem ~/humbug/servers/puppet/files/id_rsa root@"$server":/root/.ssh/id_rsa
+
+ssh "$server" -t -i ~/humbug/humbug.pem -lroot <<EOF
+chmod 600 /root/.ssh/id_rsa
+# Setup initial known_hosts including git server
+cat > /root/.ssh/known_hosts <<EOF2
+|1|YmrT42zuHUt3kvg+MzhtF1IXakM=|Ps1MaxDiy5uTeFTjB2k8oQQyxg8= ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+jhFu8Y9kSe+HyWtCmH2GqTi38lwqZzhAkyaUaASwvcvCRJWGC6AMPGVCKyNxJMcWcIcmP+mB8i5z5AhsgqwEmV5F9TrbPYjbroALCoZEon/bnCBNd3Jh/8eKZI/VLCzWQpL2FTZ5p1RYnCJ4PKSjd8PbKbGd5eAyRlbuETeyavwC+komLlekKkV+wiAv4aGuGRZeGrVJIqSRydVplQrFVaoF/1ifFS/XcNx18jFH0nw8oPOahaTzB/EUTTS/q1Cq0XgrA7x6bsr5kg4Vtw0BcP7JLob6pl/1D9FjLYsDPZCPGIfJV2uF4WcRJWg/U6OtSKOrwTmVw02TcwaavARr
+|1|ccgacGoQ9gPCsFVrAopK3oGvYfU=|YcNvWUziiANLr22lvHD05N2veas= ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+jhFu8Y9kSe+HyWtCmH2GqTi38lwqZzhAkyaUaASwvcvCRJWGC6AMPGVCKyNxJMcWcIcmP+mB8i5z5AhsgqwEmV5F9TrbPYjbroALCoZEon/bnCBNd3Jh/8eKZI/VLCzWQpL2FTZ5p1RYnCJ4PKSjd8PbKbGd5eAyRlbuETeyavwC+komLlekKkV+wiAv4aGuGRZeGrVJIqSRydVplQrFVaoF/1ifFS/XcNx18jFH0nw8oPOahaTzB/EUTTS/q1Cq0XgrA7x6bsr5kg4Vtw0BcP7JLob6pl/1D9FjLYsDPZCPGIfJV2uF4WcRJWg/U6OtSKOrwTmVw02TcwaavARr
+EOF2
+# clone humbug repository
+cd /root
+rm -rf /root/humbug
+git clone humbug@git.humbughq.com:/srv/git/humbug.git
+cd /root/humbug
+git checkout origin/tabbott-puppet
+EOF
+
+# Stupid hack because humbug-self-signed.key isn't in git
+scp -i ~/humbug/humbug.pem ~/humbug/servers/puppet/files/apache/certs/humbug-self-signed.key root@"$server":/root/humbug/servers/puppet/files/apache/certs/
+
+ssh "$server" -t -i ~/humbug/humbug.pem -lroot <<EOF
+cp -a /root/humbug/servers/puppet/puppet.conf /etc/puppet/
+# HACK: run puppet twice to workaround bug in apache module handling
+puppet apply /root/humbug/servers/puppet/manifests/site.pp || true
+puppet apply /root/humbug/servers/puppet/manifests/site.pp
+# The last bit should be moveable into puppet-land, ideally
+service apache2 restart
+EOF
+
+set +x
+cat <<EOF
+
+ Done.
+
+ Remaining manual setup tasks:
+   - Add hostname to /etc/hostname and /etc/hosts
+   - /etc/init.d/hostname.sh start
+EOF
