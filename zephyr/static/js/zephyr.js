@@ -505,7 +505,7 @@ function do_narrow(description, original_message, filter_function) {
     $.each(initial_zephyr_array, function (dummy, zephyr) {
         if (filter_function(zephyr, original_message)) {
             // It matched the filter, push it on to the array.
-            add_to_tables(zephyr, parent, $("#zfilt"));
+            add_to_tables(zephyr, parent, 'zfilt');
             parent = zephyr;
         }
     });
@@ -623,7 +623,9 @@ function update_autocomplete() {
     });
 }
 
-function add_to_tables(zephyr, parent, table) {
+function add_to_tables(zephyr, parent, table_name) {
+    var table = $('#' + table_name);
+
     if (parent !== undefined &&
             zephyr.type === parent.type && (
                 (zephyr.is_huddle && parent.name === zephyr.name) ||
@@ -648,6 +650,8 @@ function add_to_tables(zephyr, parent, table) {
     } else {
         zephyr.include_sender = true;
     }
+
+    zephyr.dom_id = table_name + zephyr.id;
 
     var new_tr = ich.zephyr(zephyr);
     table.append(new_tr);
@@ -693,13 +697,13 @@ function add_message(index, zephyr) {
 
     var parent = zephyr_dict[$('#zhome tr:last-child').attr('zid')];
 
-    add_to_tables(zephyr, parent, $('#zhome'));
+    add_to_tables(zephyr, parent, 'zhome');
 
     // now lets see if the filter applies to the message
     var parent_filtered = zephyr_dict[$('#zfilt tr:last-child').attr('zid')];
 
     if (current_view_predicate(zephyr, current_view_original_message)) {
-        add_to_tables(zephyr, parent_filtered, $('#zfilt'));
+        add_to_tables(zephyr, parent_filtered, 'zfilt');
     }
 
 

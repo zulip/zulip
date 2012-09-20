@@ -1,5 +1,5 @@
 {{! Client-side Mustache template for rendering zephyrs.}}
-<tr zid="{{id}}" class="zephyr_row" onmouseover="select_zephyr_by_id({{id}});">
+<tr zid="{{id}}" id="{{dom_id}}" class="zephyr_row" onmouseover="select_zephyr_by_id({{id}});">
     <td class="pointer"><p></p></td>
     <td class="zephyr_recipient"><p onclick="select_zephyr_by_id({{id}})">
     {{#include_recipient}}
