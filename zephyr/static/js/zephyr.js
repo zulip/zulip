@@ -501,23 +501,23 @@ function do_narrow(description, original_message, filter_function) {
     var parent;
 
     // Empty the filtered table right before we fill it again
-    $("#filtered_table").empty();
+    $("#zfilt").empty();
     $.each(initial_zephyr_array, function (dummy, zephyr) {
         if (filter_function(zephyr, original_message)) {
             // It matched the filter, push it on to the array.
-            add_to_tables(zephyr, parent, $("#filtered_table"));
+            add_to_tables(zephyr, parent, $("#zfilt"));
             parent = zephyr;
         }
     });
 
     // Show the new set of messages.
-    $("#filtered_table").addClass("focused_table");
+    $("#zfilt").addClass("focused_table");
 
     $("#show_all_messages").removeAttr("disabled");
     $("#narrowbox").show();
     $("#main_div").addClass("narrowed_view");
     $("#currently_narrowed_to").html(description);
-    $("#table").removeClass("focused_table");
+    $("#zhome").removeClass("focused_table");
 
     select_zephyr_by_id(selected_zephyr_id, true);
     scroll_to_selected();
@@ -590,8 +590,8 @@ function show_all_messages() {
     current_view_predicate = home_view;
     current_view_original_message = undefined;
 
-    $("#filtered_table").removeClass('focused_table');
-    $("#table").addClass('focused_table');
+    $("#zfilt").removeClass('focused_table');
+    $("#zhome").addClass('focused_table');
     $("#narrowbox").hide();
     $("#main_div").removeClass('narrowed_view');
     $("#show_all_messages").attr("disabled", "disabled");
@@ -691,15 +691,15 @@ function add_message(index, zephyr) {
                    + ':' + two_digits(time.getMinutes());
     zephyr.full_date_str = time.toLocaleString();
 
-    var parent = zephyr_dict[$('#table tr:last-child').attr('zid')];
+    var parent = zephyr_dict[$('#zhome tr:last-child').attr('zid')];
 
-    add_to_tables(zephyr, parent, $('#table'));
+    add_to_tables(zephyr, parent, $('#zhome'));
 
     // now lets see if the filter applies to the message
-    var parent_filtered = zephyr_dict[$('#filtered_table tr:last-child').attr('zid')];
+    var parent_filtered = zephyr_dict[$('#zfilt tr:last-child').attr('zid')];
 
     if (current_view_predicate(zephyr, current_view_original_message)) {
-        add_to_tables(zephyr, parent_filtered, $('#filtered_table'));
+        add_to_tables(zephyr, parent_filtered, $('#zfilt'));
     }
 
 
