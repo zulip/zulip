@@ -12,11 +12,13 @@ import datetime
 import random
 from optparse import make_option
 
-def create_users(name_list, realm):
-    for name, username in name_list:
+def create_users(name_list):
+    for name, email in name_list:
+        (username, domain) = email.split("@")
         if User.objects.filter(username=username):
             # We're trying to create the same user twice!
             raise
+        realm = Realm.objects.get(domain=domain)
         user = User.objects.create_user(username=username, password=username,
                                         email=username+"@humbughq.com")
         user.save()
@@ -94,21 +96,21 @@ class Command(BaseCommand):
                 klass.objects.all().delete()
 
             # Create a test realm
-            realm = Realm(domain="humbughq.com")
-            realm.save()
+            humbug_realm = Realm(domain="humbughq.com")
+            humbug_realm.save()
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
-            names = [("Othello, the Moor of Venice", "othello"), ("Iago", "iago"),
-                     ("Prospero from The Tempest", "prospero"),
-                     ("Cordelia Lear", "cordelia"), ("King Hamlet", "hamlet")]
+            names = [("Othello, the Moor of Venice", "othello@humbughq.com"), ("Iago", "iago@humbughq.com"),
+                     ("Prospero from The Tempest", "prospero@humbughq.com"),
+                     ("Cordelia Lear", "cordelia@humbughq.com"), ("King Hamlet", "hamlet@humbughq.com")]
             for i in xrange(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d' % (i,)))
 
-            create_users(names, realm)
+            create_users(names)
 
             # Create public classes.
-            create_classes(class_list, realm)
+            create_classes(class_list, humbug_realm)
             recipient_classes = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.CLASS)]
 
@@ -123,7 +125,7 @@ class Command(BaseCommand):
                                                     recipient=r)
                     new_subscription.save()
         else:
-            realm = Realm.objects.get(domain="humbughq.com")
+            humbug_realm = Realm.objects.get(domain="humbughq.com")
             recipient_classes = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.CLASS)]
 
@@ -149,16 +151,19 @@ class Command(BaseCommand):
             pass
 
         if options["delete"]:
+            mit_realm = Realm(domain="mit.edu")
+            mit_realm.save()
+
             # Create internal users
             internal_users = []
-            create_users(internal_users, realm)
+            create_users(internal_users)
 
-            create_classes(subs_list, realm)
+            create_classes(subs_list, mit_realm)
 
             # Now subscribe everyone to these classes
-            profiles = UserProfile.objects.all()
+            profiles = UserProfile.objects.filter(realm=mit_realm)
             for cls in subs_list:
-                zephyr_class = ZephyrClass.objects.get(name=cls, realm=realm)
+                zephyr_class = ZephyrClass.objects.get(name=cls, realm=mit_realm)
                 recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=zephyr_class.id)
                 for i, profile in enumerate(profiles):
                     # Subscribe to some classes.
