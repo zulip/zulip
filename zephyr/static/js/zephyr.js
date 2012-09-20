@@ -357,7 +357,7 @@ function hide_email() {
     $('.zephyr_sender_email').addClass('invisible');
 }
 
-function show_email(zephyr_id) {
+function show_email() {
     hide_email();
     selected_zephyr.find('.zephyr_sender_email').removeClass('invisible');
 }
