@@ -353,12 +353,13 @@ function select_zephyr(next_zephyr, scroll_to) {
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
 
-function show_email(zephyr_id) {
-    selected_zephyr.find('.zephyr_sender_email').removeClass('invisible');
+function hide_email() {
+    $('.zephyr_sender_email').addClass('invisible');
 }
 
-function hide_email(zephyr_id) {
-    selected_zephyr.find('.zephyr_sender_email').addClass('invisible');
+function show_email(zephyr_id) {
+    hide_email();
+    selected_zephyr.find('.zephyr_sender_email').removeClass('invisible');
 }
 
 
