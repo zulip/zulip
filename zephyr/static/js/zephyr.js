@@ -1,7 +1,7 @@
 /*jslint browser: true, devel: true, sloppy: true,
     plusplus: true, nomen: true, regexp: true */
 /*global $: false, jQuery: false, ich: false,
-    zephyr_json: false, initial_pointer: false, username: false,
+    zephyr_json: false, initial_pointer: false, email: false,
     class_list: false, instance_list: false, people_list: false */
 
 function register_huddle_onclick(zephyr_row, sender) {
@@ -291,9 +291,9 @@ function respond_to_zephyr() {
     } else if (zephyr.type === 'personal') {
         // Until we allow sending zephyrs based on multiple meaningful
         // representations of a user (name, username, email, etc.), just
-        // deal with usernames.
+        // deal with emails.
         recipient = zephyr.display_recipient;
-        if (recipient === username) { // that is, we sent the original message
+        if (recipient === email) { // that is, we sent the original message
             recipient = zephyr.sender;
         }
         prepare_huddle(recipient);
@@ -551,7 +551,7 @@ function narrow_personals() {
     // Narrow to personals with a specific user
     var zephyr_obj = zephyr_dict[selected_zephyr_id];
     var other_party;
-    if (zephyr_obj.display_recipient === username) {
+    if (zephyr_obj.display_recipient === email) {
         other_party = zephyr_obj.sender;
     } else {
         other_party = zephyr_obj.display_recipient;
@@ -684,13 +684,13 @@ function add_message(index, zephyr) {
     } else {
         zephyr.is_personal = true;
 
-        if (zephyr.display_recipient === username) { // that is, we sent the original message
+        if (zephyr.display_recipient === email) { // that is, we sent the original message
             zephyr.reply_to = zephyr.sender;
         } else {
             zephyr.reply_to = zephyr.display_recipient;
         }
 
-        if (zephyr.reply_to !== username &&
+        if (zephyr.reply_to !== email &&
                 $.inArray(zephyr.reply_to, people_list) === -1) {
             people_list.push(zephyr.reply_to);
             update_autocomplete();

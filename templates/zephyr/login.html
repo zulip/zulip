@@ -3,22 +3,22 @@
 {% block content %}
 
 <script type="text/javascript">
-autofocus('#id_username');
+autofocus('#id_email');
 </script>
 
 <h1>Log in</h1>
 
 {% if form.errors %}
 <div class="alert alert-error">
-    Your username and password didn't match. Please try again.
+    Your email and password didn't match. Please try again.
 </div>
 {% endif %}
 
 <form method="post" action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
 {% csrf_token %}
 
-{{ form.username.label_tag }}
-{{ form.username }}
+{{ form.email.label_tag }}
+{{ form.email }}
 
 {{ form.password.label_tag }}
 {{ form.password }}

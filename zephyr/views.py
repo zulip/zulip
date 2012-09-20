@@ -42,7 +42,7 @@ def json_error(msg, data={}):
     return json_response(res_type="error", msg=msg, data=data, status=400)
 
 def sanitize_identifier(x):
-    """Sanitize a username, class name, etc."""
+    """Sanitize an email, class name, etc."""
     # We remove <> in order to avoid </script> within JSON embedded in HTML.
     #
     # FIXME: consider a whitelist
@@ -52,7 +52,7 @@ def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            username   = sanitize_identifier(request.POST['username'])
+            email      = sanitize_identifier(request.POST['email'])
             password   = request.POST['password']
             full_name  = sanitize_identifier(request.POST['full_name'])
             short_name = sanitize_identifier(request.POST['short_name'])
@@ -64,7 +64,10 @@ def register(request):
                 realm.save()
             else:
                 realm = Realm.objects.get(domain=domain)
-            user = User.objects.create_user(username=username, password=password, email=email)
+            # FIXME: sanitize email addresses
+            username = email.split("@")[0]
+            user = User.objects.create_user(username=username, password=password,
+                                            email=email)
             user.save()
             UserProfile.create(user, realm, full_name, short_name)
             login(request, authenticate(username=username, password=password))
@@ -99,7 +102,7 @@ def home(request):
     # consider specially some sort of "buddy list" who e.g. you've
     # talked to before, but for small organizations, the right list is
     # everyone in your realm.
-    people = [profile.user.username for profile in
+    people = [profile.user.email for profile in
               UserProfile.objects.filter(realm=user_profile.realm) if
               profile != user_profile]
 
@@ -167,18 +170,19 @@ def zephyr(request):
 @login_required
 @require_post
 def forge_zephyr(request):
-    username = sanitize_identifier(request.POST['sender'])
+    email = sanitize_identifier(request.POST['sender'])
     user_profile = UserProfile.objects.get(user=request.user)
     try:
-        user = User.objects.get(username=username)
+        user = User.objects.get(email=email)
     except User.DoesNotExist:
         # forge a user for this person
-        user = User.objects.create_user(username=username, password="test",
-                                        email=(username if '@' in username else ''))
+        username = email.split("@")[0]
+        user = User.objects.create_user(username=username, email=email,
+                                        password="test")
         user.save()
         UserProfile.create(user, user_profile.realm,
                            sanitize_identifier(request.POST['fullname']),
-                            sanitize_identifier(request.POST['shortname']))
+                           sanitize_identifier(request.POST['shortname']))
     return zephyr_backend(request, user)
 
 md_engine = markdown.Markdown(
@@ -232,19 +236,19 @@ def zephyr_backend(request, sender):
             for recipient in recipients:
                 try:
                     recipient_ids.append(
-                        UserProfile.objects.get(user=User.objects.get(username=recipient)).id)
+                        UserProfile.objects.get(user=User.objects.get(email=recipient)).id)
                 except User.DoesNotExist:
-                    return json_error("Invalid username '%s'" % (recipient))
+                    return json_error("Invalid email '%s'" % (recipient))
             # Make sure the sender is included in the huddle
             recipient_ids.append(UserProfile.objects.get(user=request.user).id)
             huddle = get_huddle(recipient_ids)
             recipient = Recipient.objects.get(type_id=huddle.id, type=Recipient.HUDDLE)
         else:
             # This is actually a personal message
-            if not User.objects.filter(username=recipient_data):
-                return json_error("Invalid username")
+            if not User.objects.filter(email=recipient_data):
+                return json_error("Invalid email")
 
-            recipient_user = User.objects.get(username=recipient_data)
+            recipient_user = User.objects.get(email=recipient_data)
             recipient_user_profile = UserProfile.objects.get(user=recipient_user)
             recipient = Recipient.objects.get(type_id=recipient_user_profile.id,
                                               type=Recipient.PERSONAL)

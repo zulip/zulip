@@ -25,13 +25,13 @@ class AuthedTestCase(TestCase):
                                  'username':username, 'password':password,
                                  'domain':'humbughq.com'})
 
-    def get_userprofile(self, username):
+    def get_userprofile(self, email):
         """
-        Given a username, return the UserProfile object for the User that has
-        that name.
+        Given an email address, return the UserProfile object for the
+        User that has that email.
         """
         # Usernames are unique, even across Realms.
-        return UserProfile.objects.get(user=User.objects.get(username=username))
+        return UserProfile.objects.get(user=User.objects.get(email=email))
 
     def send_zephyr(self, sender_name, recipient_name, zephyr_type):
         sender = self.get_userprofile(sender_name)
@@ -109,7 +109,7 @@ class LoginTest(AuthedTestCase):
 
     def test_login(self):
         self.login("hamlet", "hamlet")
-        user = User.objects.get(username='hamlet')
+        user = User.objects.get(email='hamlet@humbughq.com')
         self.assertEqual(self.client.session['_auth_user_id'], user.id)
 
     def test_login_bad_password(self):
@@ -118,7 +118,7 @@ class LoginTest(AuthedTestCase):
 
     def test_register(self):
         self.register("test", "test")
-        user = User.objects.get(username='test')
+        user = User.objects.get(email='test@humbughq.com')
         self.assertEqual(self.client.session['_auth_user_id'], user.id)
 
     def test_logout(self):
@@ -136,9 +136,9 @@ class PersonalZephyrsTest(AuthedTestCase):
         personals.
         """
         self.register("test", "test")
-        user = User.objects.get(username='test')
+        user = User.objects.get(email='test@humbughq.com')
         old_zephyrs = self.zephyr_stream(user)
-        self.send_zephyr("test", "test", Recipient.PERSONAL)
+        self.send_zephyr("test@humbughq.com", "test@humbughq.com", Recipient.PERSONAL)
         new_zephyrs = self.zephyr_stream(user)
         self.assertEqual(len(new_zephyrs) - len(old_zephyrs), 1)
 
@@ -156,7 +156,7 @@ class PersonalZephyrsTest(AuthedTestCase):
         for user in old_users:
             old_zephyrs.append(len(self.zephyr_stream(user)))
 
-        self.send_zephyr("test1", "test1", Recipient.PERSONAL)
+        self.send_zephyr("test1@humbughq.com", "test1@humbughq.com", Recipient.PERSONAL)
 
         new_zephyrs = []
         for user in old_users:
@@ -164,7 +164,7 @@ class PersonalZephyrsTest(AuthedTestCase):
 
         self.assertEqual(old_zephyrs, new_zephyrs)
 
-        user = User.objects.get(username="test1")
+        user = User.objects.get(email="test1@humbughq.com")
         recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
         self.assertEqual(self.zephyr_stream(user)[-1].recipient, recipient)
 
@@ -174,18 +174,18 @@ class PersonalZephyrsTest(AuthedTestCase):
         """
         self.login("hamlet", "hamlet")
 
-        old_sender = User.objects.filter(username="hamlet")
+        old_sender = User.objects.filter(email="hamlet@humbughq.com")
         old_sender_zephyrs = len(self.zephyr_stream(old_sender))
 
-        old_recipient = User.objects.filter(username="othello")
+        old_recipient = User.objects.filter(email="othello@humbughq.com")
         old_recipient_zephyrs = len(self.zephyr_stream(old_recipient))
 
-        other_users = User.objects.filter(~Q(username="hamlet") & ~Q(username="othello"))
+        other_users = User.objects.filter(~Q(email="hamlet@humbughq.com") & ~Q(email="othello@humbughq.com"))
         old_other_zephyrs = []
         for user in other_users:
             old_other_zephyrs.append(len(self.zephyr_stream(user)))
 
-        self.send_zephyr("hamlet", "othello", Recipient.PERSONAL)
+        self.send_zephyr("hamlet@humbughq.com", "othello@humbughq.com", Recipient.PERSONAL)
 
         # Users outside the conversation don't get the zephyr.
         new_other_zephyrs = []
@@ -200,8 +200,8 @@ class PersonalZephyrsTest(AuthedTestCase):
         self.assertEqual(len(self.zephyr_stream(old_recipient)),
                          old_recipient_zephyrs + 1)
 
-        sender = User.objects.get(username="hamlet")
-        receiver = User.objects.get(username="othello")
+        sender = User.objects.get(email="hamlet@humbughq.com")
+        receiver = User.objects.get(email="othello@humbughq.com")
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         self.assertEqual(self.zephyr_stream(sender)[-1].recipient, recipient)
         self.assertEqual(self.zephyr_stream(receiver)[-1].recipient, recipient)
@@ -229,8 +229,9 @@ class ClassZephyrsTest(AuthedTestCase):
             old_non_subscriber_zephyrs.append(len(self.zephyr_stream(non_subscriber)))
 
         a_subscriber = subscribers[0].username
+        a_subscriber_email = subscribers[0].email
         self.login(a_subscriber, a_subscriber)
-        self.send_zephyr(a_subscriber, "Scotland", Recipient.CLASS)
+        self.send_zephyr(a_subscriber_email, "Scotland", Recipient.CLASS)
 
         new_subscriber_zephyrs = []
         for subscriber in subscribers:
@@ -252,10 +253,10 @@ class PointerTest(AuthedTestCase):
         the pointer we store for your UserProfile.
         """
         self.login("hamlet", "hamlet")
-        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/update", {"pointer": 1})
         self.assert_json_success(result)
-        self.assertEquals(self.get_userprofile("hamlet").pointer, 1)
+        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, 1)
 
     def test_missing_pointer(self):
         """
@@ -263,10 +264,10 @@ class PointerTest(AuthedTestCase):
         returns a 400 and error message.
         """
         self.login("hamlet", "hamlet")
-        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/update", {"foo": 1})
         self.assert_json_error(result, "Missing pointer")
-        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
 
     def test_invalid_pointer(self):
         """
@@ -274,10 +275,10 @@ class PointerTest(AuthedTestCase):
         message.
         """
         self.login("hamlet", "hamlet")
-        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/update", {"pointer": "foo"})
         self.assert_json_error(result, "Invalid pointer: must be an integer")
-        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
 
     def test_pointer_out_of_range(self):
         """
@@ -285,10 +286,10 @@ class PointerTest(AuthedTestCase):
         and error message.
         """
         self.login("hamlet", "hamlet")
-        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/update", {"pointer": -2})
         self.assert_json_error(result, "Invalid pointer value")
-        self.assertEquals(self.get_userprofile("hamlet").pointer, -1)
+        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
 
 class ZephyrPOSTTest(AuthedTestCase):
     fixtures = ['zephyrs.json']
@@ -324,18 +325,18 @@ class ZephyrPOSTTest(AuthedTestCase):
         self.login("hamlet", "hamlet")
         result = self.client.post("/zephyr/", {"type": "personal",
                                                "new_zephyr": "Test message",
-                                               "recipient": "othello"})
+                                               "recipient": "othello@humbughq.com"})
         self.assert_json_success(result)
 
     def test_personal_zephyr_to_nonexistent_user(self):
         """
-        Sending a personal zephyr to an invalid username returns error JSON.
+        Sending a personal zephyr to an invalid email returns error JSON.
         """
         self.login("hamlet", "hamlet")
         result = self.client.post("/zephyr/", {"type": "personal",
                                                "new_zephyr": "Test message",
                                                "recipient": "nonexistent"})
-        self.assert_json_error(result, "Invalid username")
+        self.assert_json_error(result, "Invalid email")
 
     def test_invalid_type(self):
         """
@@ -344,7 +345,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         self.login("hamlet", "hamlet")
         result = self.client.post("/zephyr/", {"type": "invalid type",
                                                "new_zephyr": "Test message",
-                                               "recipient": "othello"})
+                                               "recipient": "othello@humbughq.com"})
         self.assert_json_error(result, "Invalid zephyr type")
 
 class DummyHandler(object):
@@ -371,7 +372,7 @@ class GetUpdatesLongpollTest(AuthedTestCase):
         last_received ID.
         """
         self.login("hamlet", "hamlet")
-        user = User.objects.get(username="hamlet")
+        user = User.objects.get(email="hamlet@humbughq.com")
 
         def callback(zephyrs):
             correct_zephyrs = filter_by_subscriptions(Zephyr.objects.all(), user)
@@ -391,7 +392,7 @@ class GetUpdatesLongpollTest(AuthedTestCase):
         don't get any new zephyrs.
         """
         self.login("hamlet", "hamlet")
-        user = User.objects.get(username="hamlet")
+        user = User.objects.get(email="hamlet@humbughq.com")
         last_received = max(zephyr.id for zephyr in Zephyr.objects.all()) + 100
         zephyrs = []
 
@@ -410,7 +411,7 @@ class GetUpdatesLongpollTest(AuthedTestCase):
         returns a 400 and error message.
         """
         self.login("hamlet", "hamlet")
-        user = User.objects.get(username="hamlet")
+        user = User.objects.get(email="hamlet@humbughq.com")
 
         def callback(zephyrs):
             correct_zephyrs = filter_by_subscriptions(Zephyr.objects.all(), user)

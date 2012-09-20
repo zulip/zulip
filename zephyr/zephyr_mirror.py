@@ -33,8 +33,8 @@ def browser_login():
     browser.open("https://app.humbughq.com/")
     browser.follow_link(text_regex="\s*Log in\s*")
     browser.select_form(nr=0)
-    browser["username"] = "iago"
-    browser["password"] = "iago"
+    browser["username"] = "starnine@mit.edu"
+    browser["password"] = "xxxxxxxx"
 
     global csrf_token
     csrf_token = browser["csrfmiddlewaretoken"]

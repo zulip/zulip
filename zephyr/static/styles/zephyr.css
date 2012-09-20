@@ -98,10 +98,6 @@ td.zephyr_huddle_list {
     padding-left: 5px;
 }
 
-.zephyr_sender_username {
-    display: none;
-}
-
 .zephyr_label_clickable:hover {
     cursor: pointer;
     color:  #08C;

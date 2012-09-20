@@ -13,7 +13,7 @@ def get_display_recipient(recipient):
     recipient: an instance of Recipient.
 
     returns: an appropriate string describing the recipient (the class
-    name, for a class, or the username, for a user).
+    name, for a class, or the email, for a user).
     """
     if recipient.type == Recipient.CLASS:
         zephyr_class = ZephyrClass.objects.get(id=recipient.type_id)
@@ -24,7 +24,7 @@ def get_display_recipient(recipient):
         return [{'name': user.short_name} for user in user_list]
     else:
         user = User.objects.get(id=recipient.type_id)
-        return user.username
+        return user.email
 
 callback_table = {}
 
@@ -68,7 +68,7 @@ class UserProfile(models.Model):
         callback_table.setdefault(self.user.id, []).append(cb)
 
     def __repr__(self):
-        return "<UserProfile: %s %s>" % (self.user.username, self.realm)
+        return "<UserProfile: %s %s>" % (self.user.email, self.realm)
     def __str__(self):
         return self.__repr__()
 
@@ -140,7 +140,6 @@ class Zephyr(models.Model):
     @cache_with_key(lambda self: 'zephyr_dict:%d' % (self.id,))
     def to_dict(self):
         return {'id'               : self.id,
-                'sender'           : self.sender.user.username,
                 'sender_email'     : self.sender.user.email,
                 'sender_name'      : self.sender.full_name,
                 'type'             : self.recipient.type_name(),
@@ -161,7 +160,7 @@ class UserMessage(models.Model):
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.message.recipient)
-        return "<UserMessage: %s / %s>" % (display_recipient, self.user_profile.user.username)
+        return "<UserMessage: %s / %s>" % (display_recipient, self.user_profile.user.email)
 
 user_hash = {}
 def get_user_profile_by_id(uid):
