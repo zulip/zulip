@@ -633,7 +633,7 @@ function add_to_tables(zephyr, parent, table) {
         if (parent !== undefined) {
             // add a space to the table, but not if we have no parent because
             // we don't want a bookend as the first element.
-            table.append($('<tr />').append($('<td />')).append($('<td />')).append($('<td />').addClass('bookend')));
+            table.append('<tr><td /><td /><td class="bookend" /></tr>');
         }
     }
 
