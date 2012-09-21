@@ -98,6 +98,7 @@ def create_user(email, password, realm, full_name, short_name):
                                     email=email)
     user.save()
     UserProfile.create(user, realm, full_name, short_name)
+    return user
 
 class ZephyrClass(models.Model):
     name = models.CharField(max_length=30, db_index=True)

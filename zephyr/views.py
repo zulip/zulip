@@ -173,10 +173,9 @@ def forge_zephyr(request):
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         # forge a user for this person
-        create_user(email, "test", user_profile.realm,
-                    sanitize_identifier(request.POST['fullname']),
-                    sanitize_identifier(request.POST['shortname']))
-        user = User.objects.get(email=email)
+        user = create_user(email, "test", user_profile.realm,
+                           sanitize_identifier(request.POST['fullname']),
+                           sanitize_identifier(request.POST['shortname']))
 
     return zephyr_backend(request, user)
 
