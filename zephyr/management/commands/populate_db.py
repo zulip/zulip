@@ -5,10 +5,10 @@ from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
     create_user
-from zephyr.mit_subs_list import subs_list
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
 from django.conf import settings
+from zephyr import mit_subs_list
 
 import datetime
 import random
@@ -159,21 +159,25 @@ class Command(BaseCommand):
             internal_mit_users = []
             create_users(internal_mit_users)
 
-            create_classes(subs_list, mit_realm)
+            create_classes(mit_subs_list.all_subs, mit_realm)
 
             # Now subscribe everyone to these classes
             profiles = UserProfile.objects.filter(realm=mit_realm)
-            for cls in subs_list:
+            for cls in mit_subs_list.all_subs:
                 zephyr_class = ZephyrClass.objects.get(name=cls, realm=mit_realm)
                 recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=zephyr_class.id)
                 for i, profile in enumerate(profiles):
-                    # Subscribe to some classes.
-                    new_subscription = Subscription(userprofile=profile, recipient=recipient)
-                    new_subscription.save()
+                    if profile.user.email in mit_subs_list.subs_lists:
+                        key = profile.user.email
+                    else:
+                        key = "default"
+                    if cls in mit_subs_list.subs_lists[key]:
+                        new_subscription = Subscription(userprofile=profile, recipient=recipient)
+                        new_subscription.save()
 
             internal_humbug_users = []
             create_users(internal_humbug_users)
-            humbug_class_list = ["devel", "all", "humbug", "design"]
+            humbug_class_list = ["devel", "all", "humbug", "design", "support"]
             create_classes(humbug_class_list, humbug_realm)
 
             # Now subscribe everyone to these classes

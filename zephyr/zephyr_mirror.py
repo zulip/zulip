@@ -11,7 +11,7 @@ import time
 import subprocess
 import optparse
 
-from mit_subs_list import subs_list
+import mit_subs_list
 
 parser = optparse.OptionParser()
 parser.add_option('--forward-class-messages',
@@ -89,7 +89,7 @@ browser_login()
 
 subs = zephyr.Subscriptions()
 if options.forward_class_messages:
-    for sub in subs_list:
+    for sub in mit_subs_list.all_subs:
         subs.add((sub, '*', '*'))
 if options.forward_personals:
     subs.add(("message", "personal", "*"))
@@ -136,8 +136,8 @@ with open('zephyrs', 'a') as log:
                 continue
 
             # Drop messages not to the listed subscriptions
-            if (notice.cls not in subs_list) and not (is_personal and
-                                                      options.forward_personals):
+            if (notice.cls not in mit_subs_list.all_subs) and not (is_personal and
+                                                                   options.forward_personals):
                 print "Skipping ...", notice.cls, notice.instance, is_personal
                 continue
 
