@@ -87,7 +87,7 @@ class UserProfile(models.Model):
             Subscription(userprofile=profile, recipient=recipient).save()
 
 def create_user(email, password, realm, full_name, short_name):
-    username = hashlib.md5(settings.MD5_SALT + email).hexdigest()
+    username = hashlib.md5(settings.HASH_SALT + email).hexdigest()
     user = User.objects.create_user(username=username, password=password,
                                     email=email)
     user.save()
@@ -156,7 +156,7 @@ class Zephyr(models.Model):
                 'instance'         : self.instance,
                 'content'          : self.content,
                 'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
-                'gravatar_hash'    : hashlib.md5(settings.MD5_SALT + self.sender.user.email).hexdigest(),
+                'gravatar_hash'    : hashlib.md5(settings.HASH_SALT + self.sender.user.email).hexdigest(),
                 }
 
 class UserMessage(models.Model):
