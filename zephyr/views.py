@@ -279,7 +279,11 @@ def zephyr_backend(request, sender):
     new_zephyr.recipient = recipient
     if zephyr_type_name == 'class':
         new_zephyr.instance = sanitize_identifier(request.POST['instance'])
-    new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
+    if 'time' in request.POST:
+        # Forged zephyrs come with a timestamp
+        new_zephyr.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
+    else:
+        new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
     new_zephyr.save()
 
     return json_success()
