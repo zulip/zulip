@@ -188,8 +188,18 @@ def forge_zephyr(request):
         if huddle_val in huddle_dedup:
             # This is a duplicate huddle message, deduplicate!
             return json_success()
-        else:
-            huddle_dedup[huddle_val] = True
+
+        huddle_dedup[huddle_val] = True
+
+        # Now confirm all the other recipients exist in our system
+        for user_email in request.POST["recipient"].split(","):
+            try:
+                User.objects.get(email=user_email)
+            except User.DoesNotExist:
+                # forge a user for this person
+                create_user(user_email, "test", user_profile.realm,
+                            user_email.split('@')[0],
+                            user_email.split('@')[0])
 
     return zephyr_backend(request, user)
 
