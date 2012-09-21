@@ -113,10 +113,23 @@ with open('zephyrs', 'a') as log:
         try:
             notice = zephyr.receive(block=True)
             zsig, body = notice.message.split("\x00", 1)
+            is_personal = False
+            is_huddle = False
+
+            sender = notice.sender.lower().replace("athena.mit.edu", "mit.edu")
+            recipient = notice.recipient.lower().replace("athena.mit.edu", "mit.edu")
 
             if (notice.cls == "message" and
                 notice.instance == "personal"):
                 is_personal = True
+                if body.startswith("CC:"):
+                    is_huddle = True
+                    # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
+                    huddle_recipients_list = [x + "@mit.edu" for x in
+                                                  body.split("\n")[0][4:].split()]
+                    if sender not in huddle_recipients_list:
+                        huddle_recipients_list.append(sender)
+                    huddle_recipients = ",".join(huddle_recipients_list)
 
             if notice.opcode != "":
                 # skip PING messages
@@ -128,10 +141,14 @@ with open('zephyrs', 'a') as log:
                 print "Skipping ...", notice.cls, notice.instance, is_personal
                 continue
 
-            sender = notice.sender.replace("ATHENA.MIT.EDU", "mit.edu")[:30]
-            recipient = notice.recipient.replace("ATHENA.MIT.EDU", "mit.edu")
-
-            if is_personal:
+            if is_huddle:
+                zeph = { 'type'      : 'personal',
+                         'time'      : str(notice.time),
+                         'sender'    : sender,
+                         'recipient' : huddle_recipients,
+                         'zsig'      : zsig,  # logged here but not used by app
+                         'new_zephyr': body.split("\n", 1)[1] }
+            elif is_personal:
                 zeph = { 'type'      : 'personal',
                          'time'      : str(notice.time),
                          'sender'    : sender,

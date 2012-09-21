@@ -164,6 +164,8 @@ def get_updates_longpoll(request, handler):
 def zephyr(request):
     return zephyr_backend(request, request.user)
 
+huddle_dedup = {}
+
 @login_required
 @require_post
 def forge_zephyr(request):
@@ -177,6 +179,17 @@ def forge_zephyr(request):
                     sanitize_identifier(request.POST['fullname']),
                     sanitize_identifier(request.POST['shortname']))
         user = User.objects.get(email=email)
+
+    if (request.POST['type'] == 'personal' and ',' in request.POST['recipient']):
+        # Huddle message, need to make sure we're not syncing it twice!
+        huddle_val = hashlib.md5(request.POST['sender'] + "|" +
+                                 request.POST['new_zephyr'] + "|" +
+                                 request.POST['time']).hexdigest()
+        if huddle_val in huddle_dedup:
+            # This is a duplicate huddle message, deduplicate!
+            return json_success()
+        else:
+            huddle_dedup[huddle_val] = True
 
     return zephyr_backend(request, user)
 
