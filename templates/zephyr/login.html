@@ -17,7 +17,7 @@ autofocus('#id_email');
 <form method="post" action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
 {% csrf_token %}
 
-{{ form.username.label_tag }}
+Email <br />
 {{ form.username }}
 
 {{ form.password.label_tag }}
