@@ -276,19 +276,19 @@ function get_all_zephyr_rows() {
 }
 
 function get_next_visible(zephyr_row) {
-    return zephyr_row.nextAll('tr.zephyr_row:visible:first');
+    return zephyr_row.nextAll('.zephyr_row:first');
 }
 
 function get_last_visible() {
-    return $('tr.zephyr_row:visible:last');
+    return $('.focused_table .zephyr_row:last');
 }
 
 function get_first_visible() {
-    return $('tr.zephyr_row:visible:first');
+    return $('.focused_table .zephyr_row:first');
 }
 
 function get_prev_visible(zephyr_row) {
-    return zephyr_row.prevAll('tr.zephyr_row:visible:first');
+    return zephyr_row.prevAll('.zephyr_row:first');
 }
 
 function get_id(zephyr_row) {
