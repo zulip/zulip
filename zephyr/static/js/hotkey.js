@@ -1,41 +1,29 @@
+var directional_hotkeys = {
+    40: get_next_visible,  // down arrow
+    38: get_prev_visible,  // up arrow
+    36: get_first_visible, // Home
+    35: get_last_visible   // End
+};
+
 function process_hotkey(code) {
     var next_zephyr;
-
-    switch (code) {
-    case 40: // down arrow
-    case 38: // up arrow
-        if (code === 40) {
-            next_zephyr = get_next_visible(selected_zephyr);
-        } else {
-            next_zephyr = get_prev_visible(selected_zephyr);
-        }
+    if (code in directional_hotkeys) {
+        next_zephyr = directional_hotkeys[code](selected_zephyr);
         if (next_zephyr.length !== 0) {
             select_zephyr(next_zephyr, true);
         }
         if ((next_zephyr.length === 0) && (code === 40)) {
             // At the last zephyr, scroll to the bottom so we have
             // lots of nice whitespace for new zephyrs coming in.
+            //
+            // FIXME: this doesn't work for End because get_last_visible()
+            // always returns a zephyr.
             $("#main_div").scrollTop($("#main_div").prop("scrollHeight"));
         }
         return process_hotkey;
+    }
 
-    case 36: // Home: Go to first message
-    case 38: // End: Go to last message
-        if (code === 38) {
-            next_zephyr = get_last_visible();
-        } else {
-            next_zephyr = get_first_visible();
-        }
-        if (next_zephyr.length !== 0) {
-            select_zephyr(next_zephyr, true);
-        }
-        if ((next_zephyr.length === 0) && (code === 38)) {
-            // At the last zephyr, scroll to the bottom so we have
-            // lots of nice whitespace for new zephyrs coming in.
-            $("#main_div").scrollTop($("#main_div").prop("scrollHeight"));
-        }
-        return process_hotkey;
-
+    switch (code) {
     case 27: // Esc: hide compose pane
         hide_compose();
         return process_hotkey;
