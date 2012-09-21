@@ -264,8 +264,8 @@ def zephyr_backend(request, sender):
 def gather_subscriptions(user_profile):
     subscriptions = Subscription.objects.filter(userprofile=user_profile, active=True)
     # For now, don't display the subscription for your ability to receive personals.
-    return [get_display_recipient(sub.recipient) for sub in subscriptions
-            if sub.recipient.type == Recipient.CLASS]
+    return sorted([get_display_recipient(sub.recipient) for sub in subscriptions
+            if sub.recipient.type == Recipient.CLASS])
 
 @login_required
 def subscriptions(request):

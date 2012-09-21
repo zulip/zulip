@@ -280,3 +280,21 @@ input.send_zephyr {
     margin-top: 10px;
     margin-bottom: 0px;
 }
+
+#subscriptions {
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    overflow: auto;
+    width: 640px;
+    background-color: antiquewhite;
+    padding: 1em;
+}
+
+#subscriptions_table {
+    width: 63%;
+}
+
+.subscription_entry {
+    width: 85%;
+}

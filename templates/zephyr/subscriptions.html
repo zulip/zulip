@@ -2,28 +2,16 @@
 
 {% icanhazjs "subscription" %}
 
-<h1>Current subscriptions</h1>
 <div class="row-fluid">
-  <div id="current_subscriptions" class="span12">
-    <form action="/subscriptions/manage/" method="post" class="subscriptions">{% csrf_token %}
-      <table id="current_subscriptions_table">
-        <tr>
-          <th>Unsubscribe?</th>
-          <th>Class</th>
-        </tr>
-      </table>
-      <input type="submit" name="change_subscriptions" value="Change subscriptions" class="btn" />
-    </form>
-  </div>
-</div>
+  <h1>Subscriptions</h1>
+  <form id="add_new_subscriptions" action="/subscriptions/add/" method="post" class="form-inline">{% csrf_token %}
+    <input type="text" name="new_subscriptions" id="new_subscriptions" placeholder="Stream name" value="" class="input-xlarge" />
+    <input type="submit" name="add_subscriptions" value="Subscribe" class="btn btn-primary" />
+  </form>
+  <form id="current_subscriptions" action="/subscriptions/manage/" method="post" class="subscriptions">{% csrf_token %}
+    <table class="table table-condensed" id="subscriptions_table">
+      <tr></tr>
+    </table>
+  </form>
 
-<h1>Add new subscriptions</h1>
-<div class="row-fluid">
-  <div id="add_new_subscriptions" class="span12">
-    <form action="/subscriptions/add/" method="post" class="subscriptions">{% csrf_token %}
-      <label>Please enter a comma-separated list of classes</label>
-      <input type="text" name="new_subscriptions" id="new_subscriptions" value="" /><br />
-      <input type="submit" name="add_subscriptions" value="Add subscriptions" class="btn" />
-    </form>
-  </div>
 </div>

@@ -46,10 +46,10 @@ $(function () {
             dataType: 'json',
             timeout:  10*1000,
             success: function (data) {
-                $('#current_subscriptions_table tr').remove();
+                $('#subscriptions_table tr').remove();
                 if (data) {
                     $.each(data.subscriptions, function (index, name) {
-                        $('#current_subscriptions_table').append(ich.subscription({subscription: name}));
+                        $('#subscriptions_table').append(ich.subscription({subscription: name}));
                     });
                 }
                 $('#new_subscriptions').focus().select();
@@ -210,12 +210,12 @@ $(function () {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
             $.each($.parseJSON(xhr.responseText).data, function (index, name) {
-                $('#current_subscriptions_table').find('input[value=' + name + ']').parents('tr').remove();
+                $('#subscriptions_table').find('button[value=' + name + ']').parents('tr').remove();
             });
         },
         // TODO: error handling
     };
-    $("#current_subscriptions form").ajaxForm(options);
+    $("#current_subscriptions").ajaxForm(options);
 });
 
 $(function () {
@@ -224,13 +224,13 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             $("#new_subscriptions").val("");
             $.each($.parseJSON(xhr.responseText).data, function (index, name) {
-                $('#current_subscriptions_table').append(ich.subscription({subscription: name}));
+                $('#subscriptions_table').prepend(ich.subscription({subscription: name}));
                 class_list.push(name);
             });
         },
         // TODO: error handling
     };
-    $("#add_new_subscriptions form").ajaxForm(options);
+    $("#add_new_subscriptions").ajaxForm(options);
 });
 
 $(function () {

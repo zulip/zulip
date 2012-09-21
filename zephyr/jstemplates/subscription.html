@@ -1,9 +1,9 @@
 {{! Client-side Mustache template for rendering subscriptions.}}
 <tr>
-  <td class="checkbox">
-    <input type="checkbox" name="subscription" value="{{subscription}}" /></input>
-  </td>
-  <td class="subscription">
+  <td class="subscription_entry">
     {{subscription}}
+  </td>
+  <td>
+    <button class="btn" type="submit" name="subscription" value="{{subscription}}">Unsubscribe</button>
   </td>
 </tr>
