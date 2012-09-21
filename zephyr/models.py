@@ -159,6 +159,7 @@ class Zephyr(models.Model):
                 'sender_name'      : self.sender.full_name,
                 'type'             : self.recipient.type_name(),
                 'display_recipient': get_display_recipient(self.recipient),
+                'recipient_id'     : self.recipient.id,
                 'instance'         : self.instance,
                 'content'          : self.content,
                 'timestamp'        : calendar.timegm(self.pub_date.timetuple()),

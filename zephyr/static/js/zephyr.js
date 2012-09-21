@@ -602,7 +602,7 @@ function narrow_class() {
     var message = "<span class='zephyr_class'>" + parent.display_recipient + "</span>";
     do_narrow(message, parent, function (other, original) {
         return (other.type === 'class' &&
-                original.display_recipient === other.display_recipient);
+                original.recipient_id === other.recipient_id);
     });
 }
 
@@ -613,7 +613,7 @@ function narrow_instance() {
         + "</span>";
     do_narrow(message, parent, function (other, original) {
         return (other.type === 'class' &&
-                original.display_recipient === other.display_recipient &&
+                original.recipient_id === other.recipient_id &&
                 original.instance === other.instance);
     });
 }
@@ -665,9 +665,9 @@ function add_to_tables(zephyr, parent, table_name) {
 
     if (parent !== undefined &&
             zephyr.type === parent.type && (
-                (zephyr.is_huddle) && (get_huddle_recipient(parent) === get_huddle_recipient(zephyr)) ||
+                (zephyr.is_huddle) && (parent.recipient_id === zephyr.recipient_id) ||
                 (zephyr.is_personal) && (parent.reply_to === zephyr.reply_to) ||
-                ((zephyr.is_class) && (parent.display_recipient === zephyr.display_recipient) &&
+                ((zephyr.is_class) && (parent.recipient_id === zephyr.recipient_id) &&
                         (parent.instance === zephyr.instance))
             )) {
         zephyr.include_recipient = false;
