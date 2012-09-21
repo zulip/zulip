@@ -9,8 +9,24 @@ import simplejson
 import re
 import time
 import subprocess
+import optparse
 
 from mit_subs_list import subs_list
+
+parser = optparse.OptionParser()
+parser.add_option('--forward-class-messages',
+                  dest='forward_class_messages',
+                  default=False,
+                  action='store_true')
+parser.add_option('--resend-log',
+                  dest='resend_log',
+                  default=False,
+                  action='store_true')
+parser.add_option('--no-forward-personals',
+                  dest='forward_personals',
+                  default=True,
+                  action='store_false')
+(options, args) = parser.parse_args()
 
 browser = None
 csrf_token = None
@@ -51,7 +67,7 @@ def send_zephyr(zeph):
 
 def fetch_fullname(username):
     try:
-        match_user = re.match(r'([a-zA-Z0-9_]+)@ATHENA\.MIT\.EDU', username)
+        match_user = re.match(r'([a-zA-Z0-9_]+)@mit\.edu', username)
         if match_user:
             proc = subprocess.Popen(['hesinfo', match_user.group(1), 'passwd'], stdout=subprocess.PIPE)
             out, _err_unused = proc.communicate()
@@ -72,15 +88,19 @@ def username_to_fullname(username):
 browser_login()
 
 subs = zephyr.Subscriptions()
-for sub in subs_list:
-    subs.add((sub, '*', '*'))
+if options.forward_class_messages:
+    for sub in subs_list:
+        subs.add((sub, '*', '*'))
+if options.forward_personals:
+    subs.add(("message", "personal", "*"))
 
-if sys.argv[1:] == ['--resend-log']:
+if options.resend_log:
     with open('zephyrs', 'r') as log:
         try:
             for ln in log:
                 zeph = simplejson.loads(ln)
-                print "sending saved message to %s from %s..." % (zeph['class'], zeph['sender'])
+                print "sending saved message to %s from %s..." % \
+                    (zeph.get('class', zeph.get('recipient')), zeph['sender'])
                 send_zephyr(zeph)
         except:
             print >>sys.stderr, 'Could not send saved zephyr'
@@ -94,20 +114,44 @@ with open('zephyrs', 'a') as log:
             notice = zephyr.receive(block=True)
             zsig, body = notice.message.split("\x00", 1)
 
-            if notice.cls not in subs_list:
+            if (notice.cls == "message" and
+                notice.instance == "personal"):
+                is_personal = True
+
+            if notice.opcode != "":
+                # skip PING messages
                 continue
-            zeph = { 'type'      : 'class',
-                     'time'      : str(notice.time),
-                     'sender'    : notice.sender[:30],
-                     'class'     : notice.cls,
-                     'instance'  : notice.instance,
-                     'zsig'      : zsig,  # logged here but not used by app
-                     'new_zephyr': body }
+
+            # Drop messages not to the listed subscriptions
+            if (notice.cls not in subs_list) and not (is_personal and
+                                                      options.forward_personals):
+                print "Skipping ...", notice.cls, notice.instance, is_personal
+                continue
+
+            sender = notice.sender.replace("ATHENA.MIT.EDU", "mit.edu")[:30]
+            recipient = notice.recipient.replace("ATHENA.MIT.EDU", "mit.edu")
+
+            if is_personal:
+                zeph = { 'type'      : 'personal',
+                         'time'      : str(notice.time),
+                         'sender'    : sender,
+                         'recipient' : recipient,
+                         'zsig'      : zsig,  # logged here but not used by app
+                         'new_zephyr': body }
+            else:
+                zeph = { 'type'      : 'class',
+                         'time'      : str(notice.time),
+                         'sender'    : sender,
+                         'class'     : notice.cls,
+                         'instance'  : notice.instance,
+                         'zsig'      : zsig,  # logged here but not used by app
+                         'new_zephyr': body }
 
             log.write(simplejson.dumps(zeph) + '\n')
             log.flush()
 
-            print "received a message on %s from %s..." % (zeph['class'], zeph['sender'])
+            print "received a message on %s/%s from %s..." % \
+                (notice.cls, notice.instance, notice.sender)
             send_zephyr(zeph)
         except:
             print >>sys.stderr, 'Error relaying zephyr'
