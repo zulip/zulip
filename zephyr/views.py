@@ -10,7 +10,8 @@ from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
-    Recipient, get_display_recipient, get_huddle, Realm, UserMessage
+    Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
+    create_user
 from zephyr.forms import RegistrationForm
 
 from zephyr.decorator import asynchronous
@@ -65,11 +66,7 @@ def register(request):
             else:
                 realm = Realm.objects.get(domain=domain)
             # FIXME: sanitize email addresses
-            username = hashlib.md5(settings.MD5_SALT + email).hexdigest()
-            user = User.objects.create_user(username=username, password=password,
-                                            email=email)
-            user.save()
-            UserProfile.create(user, realm, full_name, short_name)
+            create_user(email, password, realm, full_name, short_name)
             login(request, authenticate(username=email, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))
     else:
@@ -176,13 +173,10 @@ def forge_zephyr(request):
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         # forge a user for this person
-        username = hashlib.md5(settings.MD5_SALT + email).hexdigest()
-        user = User.objects.create_user(username=username, email=email,
-                                        password="test")
-        user.save()
-        UserProfile.create(user, user_profile.realm,
-                           sanitize_identifier(request.POST['fullname']),
-                           sanitize_identifier(request.POST['shortname']))
+        create_user(email, "test", user_profile.realm,
+                    sanitize_identifier(request.POST['fullname']),
+                    sanitize_identifier(request.POST['shortname']))
+
     return zephyr_backend(request, user)
 
 md_engine = markdown.Markdown(

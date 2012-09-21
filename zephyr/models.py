@@ -86,6 +86,13 @@ class UserProfile(models.Model):
             recipient.save()
             Subscription(userprofile=profile, recipient=recipient).save()
 
+def create_user(email, password, realm, full_name, short_name):
+    username = hashlib.md5(settings.MD5_SALT + email).hexdigest()
+    user = User.objects.create_user(username=username, password=password,
+                                    email=email)
+    user.save()
+    UserProfile.create(user, realm, full_name, short_name)
+
 class ZephyrClass(models.Model):
     name = models.CharField(max_length=30, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True)

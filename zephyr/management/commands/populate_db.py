@@ -3,7 +3,8 @@ from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
-    Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id
+    Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
+    create_user
 from zephyr.mit_subs_list import subs_list
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
@@ -16,16 +17,13 @@ from optparse import make_option
 
 def create_users(name_list):
     for name, email in name_list:
-        (password, domain) = email.split("@")
+        (short_name, domain) = email.split("@")
+        password = short_name
         if User.objects.filter(email=email):
             # We're trying to create the same user twice!
             raise
         realm = Realm.objects.get(domain=domain)
-        username = hashlib.md5(settings.MD5_SALT + email).hexdigest()
-        user = User.objects.create_user(username=username, password=password,
-                                        email=email)
-        user.save()
-        UserProfile.create(user, realm, name, username)
+        create_user(email, password, realm, name, short_name)
 
 def create_classes(class_list, realm):
     for name in class_list:
