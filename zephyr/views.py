@@ -322,7 +322,7 @@ def add_subscription(request):
         return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
 
     sub_name = request.POST.get('new_subscription').strip()
-    if not re.match('^[a-zA-z0-9_-]+$', sub_name):
+    if not re.match('^[a-z A-z0-9_-]+$', sub_name):
         return json_error("Invalid characters in class names")
 
     zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)

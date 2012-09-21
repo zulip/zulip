@@ -209,7 +209,7 @@ $(function () {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
             var name = $.parseJSON(xhr.responseText).data;
-            $('#subscriptions_table').find('button[value=' + name + ']').parents('tr').remove();
+            $('#subscriptions_table').find('button[value="' + name + '"]').parents('tr').remove();
         },
         // TODO: error handling
     };
