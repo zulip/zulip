@@ -665,7 +665,7 @@ function add_to_tables(zephyr, parent, table_name) {
 
     if (parent !== undefined &&
             zephyr.type === parent.type && (
-                (zephyr.is_huddle) && (parent.name === zephyr.name) ||
+                (zephyr.is_huddle) && (get_huddle_recipient(parent) === get_huddle_recipient(zephyr)) ||
                 (zephyr.is_personal) && (parent.reply_to === zephyr.reply_to) ||
                 ((zephyr.is_class) && (parent.display_recipient === zephyr.display_recipient) &&
                         (parent.instance === zephyr.instance))
