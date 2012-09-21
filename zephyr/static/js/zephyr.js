@@ -341,11 +341,19 @@ function respond_to_zephyr() {
 
 }
 
-function select_zephyr_by_id(zephyr_id, scroll_to) {
+// Called by mouseover etc.
+function select_zephyr_by_id(zephyr_id) {
     if (zephyr_id === selected_zephyr_id) {
         return;
     }
-    select_zephyr(get_zephyr(zephyr_id), scroll_to);
+    select_zephyr(get_zephyr(zephyr_id), false);
+}
+
+// Called on page load and when we [un]narrow.
+// Forces a call to select_zephyr even if the id has not changed,
+// because the visible table might have.
+function select_and_show_by_id(zephyr_id) {
+    select_zephyr(get_zephyr(zephyr_id), true);
 }
 
 function select_zephyr(next_zephyr, scroll_to) {
@@ -580,7 +588,7 @@ function do_narrow(description, original_message, filter_function) {
     $("#currently_narrowed_to").html(description);
     $("#zhome").removeClass("focused_table");
 
-    select_zephyr_by_id(selected_zephyr_id, true);
+    select_and_show_by_id(selected_zephyr_id);
     scroll_to_selected();
 }
 
@@ -659,7 +667,7 @@ function show_all_messages() {
     $("#currently_narrowed_to").html("");
 
     // Includes scrolling.
-    select_zephyr_by_id(persistent_zephyr_id, true);
+    select_and_show_by_id(persistent_zephyr_id);
 
     scroll_to_selected();
 }
@@ -777,7 +785,7 @@ function add_message(index, zephyr) {
 
 $(function () {
     $(initial_zephyr_array).each(add_message);
-    select_zephyr_by_id(initial_pointer, true);
+    select_and_show_by_id(initial_pointer);
     get_updates_longpoll();
 });
 
