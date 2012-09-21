@@ -298,3 +298,8 @@ input.send_zephyr {
 .subscription_entry {
     width: 85%;
 }
+
+#subscriptions-status {
+    float: right;
+    margin: 0;
+}

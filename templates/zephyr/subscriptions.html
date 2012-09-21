@@ -2,6 +2,8 @@
 
 {% icanhazjs "subscription" %}
 
+<div class="alert" id="subscriptions-status"></div>
+
 <div class="row-fluid">
   <h1>Subscriptions</h1>
   <form id="add_new_subscription" action="/json/subscriptions/add" method="post" class="form-inline">{% csrf_token %}

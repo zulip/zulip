@@ -15,6 +15,18 @@ function register_huddle_onclick(zephyr_row, sender) {
 }
 
 var zephyr_dict = {};
+var status_classes = 'alert-error alert-success alert-info';
+
+function report_error(response, xhr, status_box) {
+    if (xhr.status.toString().charAt(0) === "4") {
+        // Only display the error response for 4XX, where we've crafted
+        // a nice response.
+        response += ": " + $.parseJSON(xhr.responseText).msg;
+    }
+
+    status_box.removeClass(status_classes).addClass('alert-error')
+              .text(response).stop(true).fadeTo(0, 1);
+}
 
 $(function () {
     $('#zephyr-type-tabs a[href="#class-message"]').on('shown', function (e) {
@@ -53,8 +65,11 @@ $(function () {
                     });
                 }
                 $('#new_subscriptions').focus().select();
+                $("#subscriptions-status").fadeOut(0);
             },
-            // TODO: error handling
+            error: function (xhr) {
+                report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
+            },
         });
     });
 });
@@ -110,7 +125,6 @@ function compose_class_name() {
 }
 
 $(function () {
-    var status_classes = 'alert-error alert-success alert-info';
     var send_status = $('#send-status');
     var buttons = $('#class-message, #personal-message').find('input[type="submit"]');
 
@@ -210,8 +224,11 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').find('button[value="' + name + '"]').parents('tr').remove();
+            $("#subscriptions-status").fadeOut(0);
         },
-        // TODO: error handling
+        error: function (xhr) {
+            report_error("Error removing subscription", xhr, $("#subscriptions-status"));
+        },
     };
     $("#current_subscriptions").ajaxForm(options);
 });
@@ -224,14 +241,16 @@ $(function () {
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').prepend(ich.subscription({subscription: name}));
             class_list.push(name);
+            $("#subscriptions-status").fadeOut(0);
         },
-        // TODO: error handling
+        error: function (xhr) {
+            report_error("Error adding subscription", xhr, $("#subscriptions-status"));
+        },
     };
     $("#add_new_subscription").ajaxForm(options);
 });
 
 $(function () {
-    var status_classes = 'alert-error alert-success alert-info';
     var settings_status = $('#settings-status');
     settings_status.hide();
     var options = {
