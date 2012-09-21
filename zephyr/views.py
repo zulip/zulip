@@ -304,14 +304,14 @@ def subscriptions(request):
                               context_instance=RequestContext(request))
 
 @login_required
-def json_subscriptions(request):
+def json_list_subscriptions(request):
     subs = gather_subscriptions(UserProfile.objects.get(user=request.user))
     return HttpResponse(content=simplejson.dumps({"subscriptions": subs}),
                         mimetype='application/json', status=200)
 
 @login_required
 @require_post
-def remove_subscription(request):
+def json_remove_subscription(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if 'subscription' not in request.POST:
         return json_error("Missing subscriptions")
@@ -329,7 +329,7 @@ def remove_subscription(request):
 
 @login_required
 @require_post
-def add_subscription(request):
+def json_add_subscription(request):
     user_profile = UserProfile.objects.get(user=request.user)
 
     if "new_subscription" not in request.POST:

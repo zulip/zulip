@@ -42,7 +42,7 @@ $(function () {
     $('#sidebar a[href="#subscriptions"]').click(function () {
         $.ajax({
             type:     'GET',
-            url:      'json/subscriptions/',
+            url:      'json/subscriptions/list',
             dataType: 'json',
             timeout:  10*1000,
             success: function (data) {
@@ -85,7 +85,7 @@ $.ajaxSetup({
 
 function sub(zephyr_class) {
     // TODO: check the return value and handle an error condition
-    $.post('/subscriptions/add', {new_subscription: zephyr_class});
+    $.post('/json/subscriptions/add', {new_subscription: zephyr_class});
 }
 
 function compose_button() {
