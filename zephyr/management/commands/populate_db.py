@@ -7,20 +7,23 @@ from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
 from zephyr.mit_subs_list import subs_list
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
+from django.conf import settings
 
 import datetime
 import random
+import hashlib
 from optparse import make_option
 
 def create_users(name_list):
     for name, email in name_list:
-        (username, domain) = email.split("@")
-        if User.objects.filter(username=username):
+        (password, domain) = email.split("@")
+        if User.objects.filter(email=email):
             # We're trying to create the same user twice!
             raise
         realm = Realm.objects.get(domain=domain)
-        user = User.objects.create_user(username=username, password=username,
-                                        email=username+"@humbughq.com")
+        username = hashlib.md5(settings.MD5_SALT + email).hexdigest()
+        user = User.objects.create_user(username=username, password=password,
+                                        email=email)
         user.save()
         UserProfile.create(user, realm, name, username)
 

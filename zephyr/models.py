@@ -8,6 +8,8 @@ import calendar
 import datetime
 from zephyr.lib.cache import cache_with_key
 
+from django.db.models.signals import class_prepared
+
 def get_display_recipient(recipient):
     """
     recipient: an instance of Recipient.

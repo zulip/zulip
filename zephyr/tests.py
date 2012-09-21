@@ -108,12 +108,12 @@ class LoginTest(AuthedTestCase):
     fixtures = ['zephyrs.json']
 
     def test_login(self):
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         user = User.objects.get(email='hamlet@humbughq.com')
         self.assertEqual(self.client.session['_auth_user_id'], user.id)
 
     def test_login_bad_password(self):
-        self.login("hamlet", "wrongpassword")
+        self.login("hamlet@humbughq.com", "wrongpassword")
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
     def test_register(self):
@@ -122,7 +122,7 @@ class LoginTest(AuthedTestCase):
         self.assertEqual(self.client.session['_auth_user_id'], user.id)
 
     def test_logout(self):
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         self.client.post('/accounts/logout/')
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
@@ -172,7 +172,7 @@ class PersonalZephyrsTest(AuthedTestCase):
         """
         If you send a personal, only you and the recipient see it.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
 
         old_sender = User.objects.filter(email="hamlet@humbughq.com")
         old_sender_zephyrs = len(self.zephyr_stream(old_sender))
@@ -230,7 +230,7 @@ class ClassZephyrsTest(AuthedTestCase):
 
         a_subscriber = subscribers[0].username
         a_subscriber_email = subscribers[0].email
-        self.login(a_subscriber, a_subscriber)
+        self.login(a_subscriber_email, a_subscriber)
         self.send_zephyr(a_subscriber_email, "Scotland", Recipient.CLASS)
 
         new_subscriber_zephyrs = []
@@ -252,7 +252,7 @@ class PointerTest(AuthedTestCase):
         Posting a pointer to /update (in the form {"pointer": pointer}) changes
         the pointer we store for your UserProfile.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/update", {"pointer": 1})
         self.assert_json_success(result)
@@ -263,7 +263,7 @@ class PointerTest(AuthedTestCase):
         Posting json to /update which does not contain a pointer key/value pair
         returns a 400 and error message.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/update", {"foo": 1})
         self.assert_json_error(result, "Missing pointer")
@@ -274,7 +274,7 @@ class PointerTest(AuthedTestCase):
         Posting json to /update with an invalid pointer returns a 400 and error
         message.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/update", {"pointer": "foo"})
         self.assert_json_error(result, "Invalid pointer: must be an integer")
@@ -285,7 +285,7 @@ class PointerTest(AuthedTestCase):
         Posting json to /update with an out of range (< 0) pointer returns a 400
         and error message.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/update", {"pointer": -2})
         self.assert_json_error(result, "Invalid pointer value")
@@ -298,7 +298,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         """
         Zephyring to a class to which you are subscribed is successful.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/zephyr/", {"type": "class",
                                                "class": "Verona",
                                                "new_zephyr": "Test message",
@@ -309,7 +309,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         """
         Zephyring to a nonexistent class creates the class and is successful.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         self.assertFalse(ZephyrClass.objects.filter(name="nonexistent_class"))
         result = self.client.post("/zephyr/", {"type": "class",
                                                "class": "nonexistent_class",
@@ -322,7 +322,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         """
         Sending a personal zephyr to a valid username is successful.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/zephyr/", {"type": "personal",
                                                "new_zephyr": "Test message",
                                                "recipient": "othello@humbughq.com"})
@@ -332,7 +332,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         """
         Sending a personal zephyr to an invalid email returns error JSON.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/zephyr/", {"type": "personal",
                                                "new_zephyr": "Test message",
                                                "recipient": "nonexistent"})
@@ -342,7 +342,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         """
         Sending a zephyr of unknown type returns error JSON.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/zephyr/", {"type": "invalid type",
                                                "new_zephyr": "Test message",
                                                "recipient": "othello@humbughq.com"})
@@ -371,7 +371,7 @@ class GetUpdatesLongpollTest(AuthedTestCase):
         get_updates_longpoll returns zephyrs with IDs greater than the
         last_received ID.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         user = User.objects.get(email="hamlet@humbughq.com")
 
         def callback(zephyrs):
@@ -391,7 +391,7 @@ class GetUpdatesLongpollTest(AuthedTestCase):
         If your last_received zephyr is greater than the greatest Zephyr ID, you
         don't get any new zephyrs.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         user = User.objects.get(email="hamlet@humbughq.com")
         last_received = max(zephyr.id for zephyr in Zephyr.objects.all()) + 100
         zephyrs = []
@@ -410,7 +410,7 @@ class GetUpdatesLongpollTest(AuthedTestCase):
         Calling get_updates_longpoll without a last_received key/value pair
         returns a 400 and error message.
         """
-        self.login("hamlet", "hamlet")
+        self.login("hamlet@humbughq.com", "hamlet")
         user = User.objects.get(email="hamlet@humbughq.com")
 
         def callback(zephyrs):
