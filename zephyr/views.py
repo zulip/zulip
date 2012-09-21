@@ -341,6 +341,64 @@ def add_subscriptions(request):
             actually_new_subs.append(sub_name)
     return json_success({"data": actually_new_subs})
 
+
+@login_required
+def manage_settings(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    return render_to_response('zephyr/settings.html',
+                              {'user_profile': user_profile,
+                               'gravatar_hash': hashlib.md5(settings.MD5_SALT + user_profile.user.email).hexdigest(),
+                               },
+                              context_instance=RequestContext(request))
+
+@login_required
+@require_post
+def change_settings(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    # First validate all the inputs
+    if "full_name" not in request.POST:
+        return json_error("Invalid settings request -- missing full_name.")
+    if "short_name" not in request.POST:
+        return json_error("Invalid settings request -- missing short_name.")
+    if "timezone" not in request.POST:
+        return json_error("Invalid settings request -- missing timezone.")
+    if "new_password" not in request.POST:
+        return json_error("Invalid settings request -- missing new_password.")
+    if "old_password" not in request.POST:
+        return json_error("Invalid settings request -- missing old_password.")
+    if "confirm_password" not in request.POST:
+        return json_error("Invalid settings request -- missing confirm_password.")
+
+    old_password     = request.POST['old_password']
+    new_password     = request.POST['new_password']
+    confirm_password = request.POST['confirm_password']
+    full_name        = sanitize_identifier(request.POST['full_name'])
+    short_name       = sanitize_identifier(request.POST['short_name'])
+    timezone         = sanitize_identifier(request.POST['timezone'])
+
+    if new_password != "":
+        if new_password != confirm_password:
+            return json_error("New password must match confirmation password!")
+        if not authenticate(username=user_profile.user.email, password=old_password):
+            return json_error("Wrong password!")
+        user_profile.user.set_password(new_password)
+
+    result = {}
+    if user_profile.full_name != full_name:
+        user_profile.full_name = full_name
+        result['full_name'] = full_name
+    if user_profile.short_name != short_name:
+        user_profile.short_name = short_name
+        result['short_name'] = short_name
+    # TODO: Change the timezone
+    # user_profile.timezone = timezone
+    user_profile.user.save()
+    user_profile.save()
+
+    return json_success(result)
+
 @login_required
 def class_exists(request, zephyr_class):
     return HttpResponse(bool(ZephyrClass.objects.filter(name=zephyr_class)))

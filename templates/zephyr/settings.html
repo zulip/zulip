@@ -1,1 +1,35 @@
-<h1>Settings!</h1>
+{% load jstemplate %}
+
+<h1>Settings</h1>
+<div class="row-fluid">
+  <div id="current_settings" class="span12">
+    <form action="/settings/change/" method="post" class="settings">{% csrf_token %}
+      <label>Email</label>
+      <b>{{ user_profile.user.email }}</b> <a href="/settings/change-email">(change?)</a><br /><br />
+      <div id="Photo">
+        <label>Photo</label>
+        <img class="profile_picture" src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30"/>
+        <a href="http://gravatar.com">(change at Gravatar.com)</a>
+        <br />
+      </div>
+      <br /><br />
+      <label>Timezone</label>
+      <input type="text" name="timezone" id="timezone" value="UTC" /><br />
+      <br />
+      <label>Full name</label>
+      <input type="text" name="full_name" id="full_name" value="{{ user_profile.full_name }}" /><br />
+      <label>Short name</label>
+      <input type="text" name="short_name" id="short_name" value="{{ user_profile.short_name }}" /><br />
+      <br />
+      <label>Old password</label>
+      <input type="text" name="old_password" id="old_password" value="" /><br />
+      <label>New password</label>
+      <input type="text" name="new_password" id="new_password" value="" /><br />
+      <label>Confirm password</label>
+      <input type="text" name="confirm_password" id="confirm_password" value="" /><br />
+      <input type="submit" name="change_settings" value="Save changes" class="btn" />
+    </form>
+    <div class="alert" id="settings-status"></div>
+  </div>
+</div>
+
