@@ -279,6 +279,14 @@ function get_next_visible(zephyr_row) {
     return zephyr_row.nextAll('tr.zephyr_row:visible:first');
 }
 
+function get_last_visible() {
+    return $('tr.zephyr_row:visible:last');
+}
+
+function get_first_visible() {
+    return $('tr.zephyr_row:visible:first');
+}
+
 function get_prev_visible(zephyr_row) {
     return zephyr_row.prevAll('tr.zephyr_row:visible:first');
 }
@@ -415,6 +423,22 @@ function process_hotkey(code) {
         }
         return process_hotkey;
 
+    case 36: // Home: Go to first message
+    case 38: // End: Go to last message
+        if (code === 38) {
+            next_zephyr = get_last_visible();
+        } else {
+            next_zephyr = get_first_visible();
+        }
+        if (next_zephyr.length !== 0) {
+            select_zephyr(next_zephyr, true);
+        }
+        if ((next_zephyr.length === 0) && (code === 38)) {
+            // At the last zephyr, scroll to the bottom so we have
+            // lots of nice whitespace for new zephyrs coming in.
+            $("#main_div").scrollTop($("#main_div").prop("scrollHeight"));
+        }
+        return process_hotkey;
     case 27: // Esc: hide compose pane
         hide_compose();
         return process_hotkey;
