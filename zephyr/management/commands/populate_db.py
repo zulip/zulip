@@ -156,8 +156,8 @@ class Command(BaseCommand):
             mit_realm.save()
 
             # Create internal users
-            internal_users = []
-            create_users(internal_users)
+            internal_mit_users = []
+            create_users(internal_mit_users)
 
             create_classes(subs_list, mit_realm)
 
@@ -165,6 +165,21 @@ class Command(BaseCommand):
             profiles = UserProfile.objects.filter(realm=mit_realm)
             for cls in subs_list:
                 zephyr_class = ZephyrClass.objects.get(name=cls, realm=mit_realm)
+                recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=zephyr_class.id)
+                for i, profile in enumerate(profiles):
+                    # Subscribe to some classes.
+                    new_subscription = Subscription(userprofile=profile, recipient=recipient)
+                    new_subscription.save()
+
+            internal_humbug_users = []
+            create_users(internal_humbug_users)
+            humbug_class_list = ["devel", "all", "humbug", "design"]
+            create_classes(humbug_class_list, humbug_realm)
+
+            # Now subscribe everyone to these classes
+            profiles = UserProfile.objects.filter(realm=humbug_realm)
+            for cls in humbug_class_list:
+                zephyr_class = ZephyrClass.objects.get(name=cls, realm=humbug_realm)
                 recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=zephyr_class.id)
                 for i, profile in enumerate(profiles):
                     # Subscribe to some classes.
