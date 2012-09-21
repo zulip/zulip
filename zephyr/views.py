@@ -356,6 +356,9 @@ def json_add_subscription(request):
             subscription.active = True
             subscription.save()
             actually_new_sub = sub_name
+        else:
+            # Subscription already exists and is active
+            return json_error("Subscription already exists")
     else:
         new_subscription = Subscription(userprofile=user_profile,
                                             recipient=recipient)
