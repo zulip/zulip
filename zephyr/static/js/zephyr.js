@@ -519,6 +519,9 @@ function narrow_class() {
 
 function narrow_instance() {
     var parent = zephyr_dict[selected_zephyr_id];
+    if (parent.type !== 'class')
+        return;
+
     var message = "<span class='zephyr_class'>" + parent.display_recipient
         + "</span> | <span class='zephyr_instance'>" + parent.instance
         + "</span>";
@@ -529,18 +532,12 @@ function narrow_instance() {
     });
 }
 
-function narrow_by_recipient(zephyr) {
-    if (zephyr === undefined) {
-        zephyr = zephyr_dict[selected_zephyr_id];
-    }
-
-    // called when the narrow-class keycode is typed
-    if (zephyr.type === 'personal') {
-        narrow_personals();
-    } else if (zephyr.type === 'huddle') {
-        narrow_huddle();
-    } else if (zephyr.type === 'class') {
-        narrow_class();
+// Called for the 'narrow by class' hotkey.
+function narrow_by_recipient() {
+    switch (zephyr_dict[selected_zephyr_id].type) {
+        case 'personal': narrow_personals(); break;
+        case 'huddle':   narrow_huddle();    break;
+        case 'class':    narrow_class();     break;
     }
 }
 

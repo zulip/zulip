@@ -52,16 +52,13 @@ function process_hotkey(code) {
 }
 
 function process_goto_hotkey(code) {
-    var zephyr = zephyr_dict[selected_zephyr_id];
     switch (code) {
     case 67: // 'c': narrow by recipient
-        narrow_by_recipient(zephyr);
+        narrow_by_recipient();
         break;
 
     case 73: // 'i': narrow by instance
-        if (zephyr.type === 'class') {
-            narrow_instance();
-        }
+        narrow_instance();
         break;
 
     case 80: // 'p': narrow to personals
