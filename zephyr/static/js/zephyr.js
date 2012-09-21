@@ -294,7 +294,7 @@ function respond_to_zephyr() {
         // deal with emails.
         recipient = zephyr.display_recipient;
         if (recipient === email) { // that is, we sent the original message
-            recipient = zephyr.sender;
+            recipient = zephyr.sender_email;
         }
         prepare_huddle(recipient);
     }
@@ -552,7 +552,7 @@ function narrow_personals() {
     var zephyr_obj = zephyr_dict[selected_zephyr_id];
     var other_party;
     if (zephyr_obj.display_recipient === email) {
-        other_party = zephyr_obj.sender;
+        other_party = zephyr_obj.sender_email;
     } else {
         other_party = zephyr_obj.display_recipient;
     }
@@ -560,8 +560,8 @@ function narrow_personals() {
 
     do_narrow(message, zephyr_dict[selected_zephyr_id], function (other, original) {
         return (other.type === 'personal') &&
-            (((other.display_recipient === original.display_recipient) && (other.sender === original.sender)) ||
-             ((other.display_recipient === original.sender) && (other.sender === original.display_recipient)));
+            (((other.display_recipient === original.display_recipient) && (other.sender_email === original.sender_email)) ||
+             ((other.display_recipient === original.sender_email) && (other.sender_email === original.display_recipient)));
     });
 
 }
@@ -649,7 +649,7 @@ function add_to_tables(zephyr, parent, table_name) {
         }
     }
 
-    if (parent !== undefined && !zephyr.include_recipient && zephyr.sender === parent.sender) {
+    if (parent !== undefined && !zephyr.include_recipient && zephyr.sender_email === parent.sender_email) {
         zephyr.include_sender = false;
 
         table.find('tr:last-child td:last-child').addClass("collapsed_parent");
@@ -661,7 +661,7 @@ function add_to_tables(zephyr, parent, table_name) {
 
     var new_tr = ich.zephyr(zephyr);
     table.append(new_tr);
-    register_huddle_onclick(new_tr, zephyr.sender);
+    register_huddle_onclick(new_tr, zephyr.sender_email);
 }
 
 
@@ -685,7 +685,7 @@ function add_message(index, zephyr) {
         zephyr.is_personal = true;
 
         if (zephyr.display_recipient === email) { // that is, we sent the original message
-            zephyr.reply_to = zephyr.sender;
+            zephyr.reply_to = zephyr.sender_email;
         } else {
             zephyr.reply_to = zephyr.display_recipient;
         }
