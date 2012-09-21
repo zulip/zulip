@@ -95,7 +95,7 @@ class PublicURLTest(TestCase):
         urls = {200: ["/accounts/home/", "/accounts/login/", "/accounts/logout/",
                       "/accounts/register/"],
                 302: ["/", "/zephyr/", "/subscriptions/",
-                      "/subscriptions/manage/", "/subscriptions/add/"]
+                      "/subscriptions/remove", "/subscriptions/add"]
                 }
         for status_code, url_set in urls.iteritems():
             self.fetch(url_set, status_code)

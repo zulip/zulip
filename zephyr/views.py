@@ -284,62 +284,57 @@ def json_subscriptions(request):
 
 @login_required
 @require_post
-def manage_subscriptions(request):
+def remove_subscription(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if 'subscription' not in request.POST:
         return json_error("Missing subscriptions")
 
-    unsubs = request.POST.getlist('subscription')
-    for sub_name in unsubs:
-        zephyr_class = ZephyrClass.objects.get(name=sub_name, realm=user_profile.realm)
-        recipient = Recipient.objects.get(type_id=zephyr_class.id,
-                                          type=Recipient.CLASS)
-        subscription = Subscription.objects.get(
-            userprofile=user_profile, recipient=recipient)
-        subscription.active = False
-        subscription.save()
+    sub_name = request.POST.get('subscription')
+    zephyr_class = ZephyrClass.objects.get(name=sub_name, realm=user_profile.realm)
+    recipient = Recipient.objects.get(type_id=zephyr_class.id,
+                                      type=Recipient.CLASS)
+    subscription = Subscription.objects.get(
+        userprofile=user_profile, recipient=recipient)
+    subscription.active = False
+    subscription.save()
 
-    return json_success({"data": unsubs})
+    return json_success({"data": sub_name})
 
 @login_required
 @require_post
-def add_subscriptions(request):
+def add_subscription(request):
     user_profile = UserProfile.objects.get(user=request.user)
 
-    if "new_subscriptions" not in request.POST:
+    if "new_subscription" not in request.POST:
         return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
 
-    new_subs = [s.strip() for s in
-                request.POST.get('new_subscriptions').split(",")]
-    for sub_name in new_subs:
-        if not re.match('^[a-zA-z0-9_-]+$', sub_name):
-            return json_error("Invalid characters in class names")
+    sub_name = request.POST.get('new_subscription').strip()
+    if not re.match('^[a-zA-z0-9_-]+$', sub_name):
+        return json_error("Invalid characters in class names")
 
-    actually_new_subs = []
-    for sub_name in new_subs:
-        zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)
-        if zephyr_class:
-            zephyr_class = zephyr_class[0]
-            recipient = Recipient.objects.get(type_id=zephyr_class.id,
-                                              type=Recipient.CLASS)
-        else:
-            (_, recipient) = ZephyrClass.create(sub_name, user_profile.realm)
+    zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)
+    if zephyr_class:
+        zephyr_class = zephyr_class[0]
+        recipient = Recipient.objects.get(type_id=zephyr_class.id,
+                                          type=Recipient.CLASS)
+    else:
+        (_, recipient) = ZephyrClass.create(sub_name, user_profile.realm)
 
-        subscription = Subscription.objects.filter(userprofile=user_profile,
-                                                   recipient=recipient)
-        if subscription:
-            subscription = subscription[0]
-            if not subscription.active:
-                # Activating old subscription.
-                subscription.active = True
-                subscription.save()
-                actually_new_subs.append(sub_name)
-        else:
-            new_subscription = Subscription(userprofile=user_profile,
+    subscription = Subscription.objects.filter(userprofile=user_profile,
+                                               recipient=recipient)
+    if subscription:
+        subscription = subscription[0]
+        if not subscription.active:
+            # Activating old subscription.
+            subscription.active = True
+            subscription.save()
+            actually_new_sub = sub_name
+    else:
+        new_subscription = Subscription(userprofile=user_profile,
                                             recipient=recipient)
-            new_subscription.save()
-            actually_new_subs.append(sub_name)
-    return json_success({"data": actually_new_subs})
+        new_subscription.save()
+        actually_new_sub = sub_name
+    return json_success({"data": actually_new_sub})
 
 
 @login_required

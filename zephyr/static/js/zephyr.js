@@ -84,9 +84,8 @@ $.ajaxSetup({
 });
 
 function sub(zephyr_class) {
-    // Supports multiple classes, separate by commas.
     // TODO: check the return value and handle an error condition
-    $.post('/subscriptions/add/', {new_subscriptions: zephyr_class});
+    $.post('/subscriptions/add', {new_subscription: zephyr_class});
 }
 
 function compose_button() {
@@ -209,9 +208,8 @@ $(function () {
     var options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
-            $.each($.parseJSON(xhr.responseText).data, function (index, name) {
-                $('#subscriptions_table').find('button[value=' + name + ']').parents('tr').remove();
-            });
+            var name = $.parseJSON(xhr.responseText).data;
+            $('#subscriptions_table').find('button[value=' + name + ']').parents('tr').remove();
         },
         // TODO: error handling
     };
@@ -222,15 +220,14 @@ $(function () {
     var options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
-            $("#new_subscriptions").val("");
-            $.each($.parseJSON(xhr.responseText).data, function (index, name) {
-                $('#subscriptions_table').prepend(ich.subscription({subscription: name}));
-                class_list.push(name);
-            });
+            $("#new_subscription").val("");
+            var name = $.parseJSON(xhr.responseText).data;
+            $('#subscriptions_table').prepend(ich.subscription({subscription: name}));
+            class_list.push(name);
         },
         // TODO: error handling
     };
-    $("#add_new_subscriptions").ajaxForm(options);
+    $("#add_new_subscription").ajaxForm(options);
 });
 
 $(function () {

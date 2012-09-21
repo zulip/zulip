@@ -4,11 +4,11 @@
 
 <div class="row-fluid">
   <h1>Subscriptions</h1>
-  <form id="add_new_subscriptions" action="/subscriptions/add/" method="post" class="form-inline">{% csrf_token %}
-    <input type="text" name="new_subscriptions" id="new_subscriptions" placeholder="Stream name" value="" class="input-xlarge" />
-    <input type="submit" name="add_subscriptions" value="Subscribe" class="btn btn-primary" />
+  <form id="add_new_subscription" action="/subscriptions/add" method="post" class="form-inline">{% csrf_token %}
+    <input type="text" name="new_subscription" id="new_subscription" placeholder="Stream name" value="" class="input-xlarge" />
+    <input type="submit" name="add_subscription" value="Subscribe" class="btn btn-primary" />
   </form>
-  <form id="current_subscriptions" action="/subscriptions/manage/" method="post" class="subscriptions">{% csrf_token %}
+  <form id="current_subscriptions" action="/subscriptions/remove" method="post" class="subscriptions">{% csrf_token %}
     <table class="table table-condensed" id="subscriptions_table">
       <tr></tr>
     </table>
