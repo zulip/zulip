@@ -261,19 +261,19 @@ def zephyr_backend(request, sender):
 
     return json_success()
 
-def gather_subscriptions(userprofile):
-    subscriptions = Subscription.objects.filter(userprofile=userprofile, active=True)
+def gather_subscriptions(user_profile):
+    subscriptions = Subscription.objects.filter(userprofile=user_profile, active=True)
     # For now, don't display the subscription for your ability to receive personals.
     return [get_display_recipient(sub.recipient) for sub in subscriptions
             if sub.recipient.type == Recipient.CLASS]
 
 @login_required
 def subscriptions(request):
-    userprofile = UserProfile.objects.get(user=request.user)
+    user_profile = UserProfile.objects.get(user=request.user)
 
     return render_to_response('zephyr/subscriptions.html',
-                              {'subscriptions': gather_subscriptions(userprofile),
-                               'user_profile': userprofile},
+                              {'subscriptions': gather_subscriptions(user_profile),
+                               'user_profile': user_profile},
                               context_instance=RequestContext(request))
 
 @login_required
