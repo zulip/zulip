@@ -39,28 +39,17 @@ function process_hotkey(code) {
     return false;
 }
 
+var goto_hotkeys = {
+    67: narrow_by_recipient,  // 'c'
+    73: narrow_instance,      // 'i'
+    80: narrow_all_personals, // 'p'
+    65: show_all_messages,    // 'a'
+    27: hide_compose          // Esc
+};
+
 function process_goto_hotkey(code) {
-    switch (code) {
-    case 67: // 'c': narrow by recipient
-        narrow_by_recipient();
-        break;
-
-    case 73: // 'i': narrow by instance
-        narrow_instance();
-        break;
-
-    case 80: // 'p': narrow to personals
-        narrow_all_personals();
-        break;
-
-    case 65: // 'a': un-narrow
-        show_all_messages();
-        break;
-
-    case 27: // Esc: hide compose pane
-        hide_compose();
-        break;
-    }
+    if (code in goto_hotkeys)
+        goto_hotkeys[code]();
 
     /* Always return to the initial hotkey mode, even
        with an unrecognized "go to" command. */
