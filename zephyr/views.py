@@ -167,15 +167,16 @@ def zephyr(request):
 @login_required
 @require_post
 def forge_zephyr(request):
-    email = sanitize_identifier(request.POST['sender'])
+    email = sanitize_identifier(request.POST['sender']).lower()
     user_profile = UserProfile.objects.get(user=request.user)
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
         # forge a user for this person
-        user = create_user(email, "test", user_profile.realm,
-                           sanitize_identifier(request.POST['fullname']),
-                           sanitize_identifier(request.POST['shortname']))
+        create_user(email, "test", user_profile.realm,
+                    sanitize_identifier(request.POST['fullname']),
+                    sanitize_identifier(request.POST['shortname']))
+        user = User.objects.get(email=email)
 
     return zephyr_backend(request, user)
 
