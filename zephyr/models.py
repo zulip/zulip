@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.db.models.signals import post_save
 import hashlib
+import base64
 import calendar
 import datetime
 from zephyr.lib.cache import cache_with_key
@@ -87,7 +88,12 @@ class UserProfile(models.Model):
             Subscription(userprofile=profile, recipient=recipient).save()
 
 def create_user(email, password, realm, full_name, short_name):
-    username = hashlib.md5(settings.HASH_SALT + email).hexdigest()
+    # NB: the result of Base32 + truncation is not a valid Base32 encoding.
+    # It's just a unique alphanumeric string.
+    # Use base32 instead of base64 so we don't have to worry about mixed case.
+    # Django imposes a limit of 30 characters on usernames.
+    email_hash = hashlib.sha256(settings.HASH_SALT + email).digest()
+    username = base64.b32encode(email_hash)[:30]
     user = User.objects.create_user(username=username, password=password,
                                     email=email)
     user.save()
