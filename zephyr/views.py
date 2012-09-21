@@ -176,6 +176,7 @@ def forge_zephyr(request):
         create_user(email, "test", user_profile.realm,
                     sanitize_identifier(request.POST['fullname']),
                     sanitize_identifier(request.POST['shortname']))
+        user = User.objects.get(email=email)
 
     return zephyr_backend(request, user)
 
