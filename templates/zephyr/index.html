@@ -53,11 +53,12 @@ var people_list = {{ people }};
                     <span class="my_fullname">{{ user_profile.full_name }}</span><br/>
                     <span class="my_email">{{ user_profile.email }}</span>
                     <span class="logout">(<a href="/accounts/logout?next=/">not you?</a>)</span>
-                    <li class="active"><a href="#home" data-toggle="pill">Home</a></li>
-                    <li><a href="#subscriptions" data-toggle="pill">Manage subscriptions</a></li>
-                    <li class="disabled"><a href="#">View starred messages</a></li>
-                    <li><a href="#search" data-toggle="pill">Search</a></li>
-                    <li class="disabled"><a href="#">Invite a friend</a></li>
+                    <li class="active"><a href="#home" data-toggle="pill"><i class="icon-home"></i> Home</a></li>
+                    <li><a href="#subscriptions" data-toggle="pill"><i class="icon-globe"></i> Subscriptions</a></li>
+                    <li class="disabled"><a href="#"><i class="icon-star"></i> Starred</a></li>
+                    <li><a href="#search" data-toggle="pill"><i class="icon-search"></i> Search</a></li>
+                    <li><a href="#settings" data-toggle="pill"><i class="icon-edit"></i> Settings</a></li>
+                    <li class="disabled"><a href="#"><i class="icon-envelope"></i> Invite a friend</a></li>
                     <br>
                     <a href="#" class="btn btn-large btn-block" id="new_message_button" onclick="compose_button()">New Message</a>
                 </ul>
@@ -72,6 +73,9 @@ var people_list = {{ people }};
             </div>
             <div class="tab-pane" id="search">
                 {% include "zephyr/search.html" %}
+            </div>
+            <div class="tab-pane" id="settings">
+                {% include "zephyr/settings.html" %}
             </div>
         </div><!--/tab-content-->
     </div><!--/row-->
