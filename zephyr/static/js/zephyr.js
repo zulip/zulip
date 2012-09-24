@@ -445,7 +445,6 @@ function home_view(element) {
 }
 
 var current_view_predicate = home_view;
-var current_view_original_message;
 
 function prepare_huddle(recipients) {
     // Used for both personals and huddles.
@@ -454,13 +453,12 @@ function prepare_huddle(recipients) {
 
 }
 
-function do_narrow(description, original_message, filter_function) {
+function do_narrow(description, filter_function) {
     // Your pointer isn't changed when narrowed.
     narrowed = true;
     persistent_zephyr_id = selected_zephyr_id;
 
     current_view_predicate = filter_function;
-    current_view_original_message = original_message;
 
 
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
@@ -470,7 +468,7 @@ function do_narrow(description, original_message, filter_function) {
     // Empty the filtered table right before we fill it again
     $("#zfilt").empty();
     $.each(zephyr_array, function (dummy, zephyr) {
-        if (filter_function(zephyr, original_message)) {
+        if (filter_function(zephyr)) {
             // It matched the filter, push it on to the array.
             add_to_tables(zephyr, parent, 'zfilt');
             parent = zephyr;
@@ -491,11 +489,11 @@ function do_narrow(description, original_message, filter_function) {
 }
 
 function narrow_huddle() {
-    var parent = zephyr_dict[selected_zephyr_id];
+    var original = zephyr_dict[selected_zephyr_id];
 
-    var message = "Group chats with " + parent.reply_to;
+    var message = "Group chats with " + original.reply_to;
 
-    do_narrow(message, parent, function (other, original) {
+    do_narrow(message, function (other) {
         return other.reply_to === original.reply_to;
     });
 }
@@ -503,23 +501,23 @@ function narrow_huddle() {
 function narrow_all_personals() {
     // Narrow to all personals
     var message = "All huddles with you";
-    do_narrow(message, undefined, function (other, original) {
+    do_narrow(message, function (other) {
         return other.type === "personal" || other.type === "huddle";
     });
 }
 
 function narrow_personals() {
     // Narrow to personals with a specific user
-    var zephyr_obj = zephyr_dict[selected_zephyr_id];
+    var original = zephyr_dict[selected_zephyr_id];
     var other_party;
-    if (zephyr_obj.display_recipient === email) {
-        other_party = zephyr_obj.sender_email;
+    if (original.display_recipient === email) {
+        other_party = original.sender_email;
     } else {
-        other_party = zephyr_obj.display_recipient;
+        other_party = original.display_recipient;
     }
     var message = "Huddles with " + other_party;
 
-    do_narrow(message, zephyr_dict[selected_zephyr_id], function (other, original) {
+    do_narrow(message, function (other) {
         return (other.type === 'personal') &&
             (((other.display_recipient === original.display_recipient) && (other.sender_email === original.sender_email)) ||
              ((other.display_recipient === original.sender_email) && (other.sender_email === original.display_recipient)));
@@ -528,23 +526,23 @@ function narrow_personals() {
 }
 
 function narrow_class() {
-    var parent = zephyr_dict[selected_zephyr_id];
-    var message = "<span class='zephyr_class'>" + parent.display_recipient + "</span>";
-    do_narrow(message, parent, function (other, original) {
+    var original = zephyr_dict[selected_zephyr_id];
+    var message = "<span class='zephyr_class'>" + original.display_recipient + "</span>";
+    do_narrow(message, function (other) {
         return (other.type === 'class' &&
                 original.recipient_id === other.recipient_id);
     });
 }
 
 function narrow_instance() {
-    var parent = zephyr_dict[selected_zephyr_id];
-    if (parent.type !== 'class')
+    var original = zephyr_dict[selected_zephyr_id];
+    if (original.type !== 'class')
         return;
 
-    var message = "<span class='zephyr_class'>" + parent.display_recipient
-        + "</span> | <span class='zephyr_instance'>" + parent.instance
+    var message = "<span class='zephyr_class'>" + original.display_recipient
+        + "</span> | <span class='zephyr_instance'>" + original.instance
         + "</span>";
-    do_narrow(message, parent, function (other, original) {
+    do_narrow(message, function (other) {
         return (other.type === 'class' &&
                 original.recipient_id === other.recipient_id &&
                 original.instance === other.instance);
@@ -567,7 +565,6 @@ function show_all_messages() {
     narrowed = false;
 
     current_view_predicate = home_view;
-    current_view_original_message = undefined;
 
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
@@ -684,7 +681,7 @@ function add_message(index, zephyr) {
     // now lets see if the filter applies to the message
     var parent_filtered = zephyr_dict[$('#zfilt tr:last-child').attr('zid')];
 
-    if (current_view_predicate(zephyr, current_view_original_message)) {
+    if (current_view_predicate(zephyr)) {
         add_to_tables(zephyr, parent_filtered, 'zfilt');
     }
 
