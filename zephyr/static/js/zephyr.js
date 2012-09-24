@@ -598,16 +598,30 @@ function update_autocomplete() {
     });
 }
 
+function same_recipient(a, b) {
+    if ((a === undefined) || (b === undefined))
+        return false;
+    if (a.type !== b.type)
+        return false;
+
+    switch (a.type) {
+    case 'huddle':
+        return a.recipient_id === b.recipient_id;
+    case 'personal':
+        return a.reply_to === b.reply_to;
+    case 'class':
+        return (a.recipient_id === b.recipient_id) &&
+               (a.instance     === b.instance);
+    }
+
+    // should never get here
+    return false;
+}
+
 function add_to_tables(zephyr, parent, table_name) {
     var table = $('#' + table_name);
 
-    if (parent !== undefined &&
-            zephyr.type === parent.type && (
-                (zephyr.is_huddle) && (parent.recipient_id === zephyr.recipient_id) ||
-                (zephyr.is_personal) && (parent.reply_to === zephyr.reply_to) ||
-                ((zephyr.is_class) && (parent.recipient_id === zephyr.recipient_id) &&
-                        (parent.instance === zephyr.instance))
-            )) {
+    if (same_recipient(parent, zephyr)) {
         zephyr.include_recipient = false;
     } else {
         zephyr.include_recipient = true;
