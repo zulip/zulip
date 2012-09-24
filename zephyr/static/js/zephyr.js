@@ -1,8 +1,15 @@
 /*jslint browser: true, devel: true, sloppy: true,
     plusplus: true, nomen: true, regexp: true */
-/*global $: false, jQuery: false, ich: false,
+/*global $: false, jQuery: false, Handlebars: false,
     zephyr_json: false, initial_pointer: false, email: false,
     class_list: false, instance_list: false, people_list: false */
+
+// Compile Handlebars templates.
+var templates = {};
+$(function () {
+    templates.zephyr       = Handlebars.compile($("#template_zephyr").html());
+    templates.subscription = Handlebars.compile($("#template_subscription").html());
+});
 
 function register_huddle_onclick(zephyr_row, sender) {
     zephyr_row.find(".zephyr_sender").click(function (e) {
@@ -61,7 +68,7 @@ $(function () {
                 $('#subscriptions_table tr').remove();
                 if (data) {
                     $.each(data.subscriptions, function (index, name) {
-                        $('#subscriptions_table').append(ich.subscription({subscription: name}));
+                        $('#subscriptions_table').append(templates.subscription({subscription: name}));
                     });
                 }
                 $('#new_subscriptions').focus().select();
@@ -239,7 +246,7 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             $("#new_subscription").val("");
             var name = $.parseJSON(xhr.responseText).data;
-            $('#subscriptions_table').prepend(ich.subscription({subscription: name}));
+            $('#subscriptions_table').prepend(templates.subscription({subscription: name}));
             class_list.push(name);
             $("#subscriptions-status").fadeOut(0);
         },
@@ -647,7 +654,7 @@ function add_to_tables(zephyr, parent, table_name) {
 
     zephyr.dom_id = table_name + zephyr.id;
 
-    var new_tr = ich.zephyr(zephyr);
+    var new_tr = $(templates.zephyr(zephyr));
     table.append(new_tr);
     register_huddle_onclick(new_tr, zephyr.sender_email);
 }

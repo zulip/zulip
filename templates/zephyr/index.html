@@ -12,13 +12,18 @@
 
 {% block customhead %}
 
-{% icanhazjs "zephyr" %}
-{% icanhazjs "subscription" %}
+<script id="template_zephyr" type="text/x-handlebars-template">
+{% rawjstemplate "zephyr" %}
+</script>
+
+<script id="template_subscription" type="text/x-handlebars-template">
+{% rawjstemplate "subscription" %}
+</script>
 
 {% autoescape off %}
 <link href="/static/styles/pygments.css" rel="stylesheet">
 <script type="text/javascript" src="/static/third/jquery/jquery.form.js"></script>
-<script type="text/javascript" src="/static/third/ich/ICanHaz.min.js"></script>
+<script type="text/javascript" src="/static/third/handlebars/handlebars-1.0.rc.1.js"></script>
 <script type="text/javascript" src="/static/js/zephyr.js"></script>
 <script type="text/javascript" src="/static/js/hotkey.js"></script>
 
