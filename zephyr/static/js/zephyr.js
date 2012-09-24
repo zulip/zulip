@@ -618,6 +618,11 @@ function same_recipient(a, b) {
     return false;
 }
 
+function same_sender(a, b) {
+    return ((a !== undefined) && (b !== undefined) &&
+            (a.sender_email === b.sender_email));
+}
+
 function add_to_tables(zephyr, parent, table_name) {
     var table = $('#' + table_name);
 
@@ -632,7 +637,7 @@ function add_to_tables(zephyr, parent, table_name) {
         }
     }
 
-    if (parent !== undefined && !zephyr.include_recipient && zephyr.sender_email === parent.sender_email) {
+    if (same_sender(parent, zephyr) && !zephyr.include_recipient) {
         zephyr.include_sender = false;
 
         table.find('tr:last-child td:last-child').addClass("collapsed_parent");
