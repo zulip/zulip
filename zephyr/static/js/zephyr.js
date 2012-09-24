@@ -644,7 +644,7 @@ function add_to_table(zephyrs, table_name, filter_function) {
 
         if (same_sender(prev, zephyr) && !zephyr.include_recipient) {
             zephyr.include_sender = false;
-            table.find('tr:last-child td:last-child').addClass("collapsed_parent");
+            table.find('tr:last-child td:last-child').addClass("next_is_same_sender");
         } else {
             zephyr.include_sender = true;
         }

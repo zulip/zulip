@@ -152,11 +152,11 @@ td.bookend {
     padding-top: 5px;
 }
 
-td.collapsed_child {
+td.prev_is_same_sender {
     padding-top: 0px;
     border-top: 1px; solid white
 }
-td.collapsed_parent {
+td.next_is_same_sender {
     border-bottom: 0px;
     padding-bottom: 0px;
 }
