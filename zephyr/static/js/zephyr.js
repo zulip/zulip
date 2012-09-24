@@ -294,7 +294,10 @@ $(function () {
 var selected_zephyr_id = 0;  /* to be filled in on document.ready */
 var selected_zephyr;  // = get_zephyr_row(selected_zephyr_id)
 var last_received = -1;
+
+// Narrowing predicate, or 'false' for the home view.
 var narrowed = false;
+
 // For tracking where you were before you narrowed.
 var persistent_zephyr_id = 0;
 
@@ -453,26 +456,17 @@ $(function () {
     });
 });
 
-function home_view(element) {
-    return true;
-}
-
-var current_view_predicate = home_view;
-
 function prepare_huddle(recipients) {
     // Used for both personals and huddles.
     show_compose('personal', $("#new_personal_zephyr"));
     $("#recipient").val(recipients);
-
 }
 
 function do_narrow(description, filter_function) {
+    narrowed = filter_function;
+
     // Your pointer isn't changed when narrowed.
-    narrowed = true;
     persistent_zephyr_id = selected_zephyr_id;
-
-    current_view_predicate = filter_function;
-
 
     // We want the zephyr on which the narrow happened to stay in the same place if possible.
     var old_top = $("#main_div").offset().top - selected_zephyr.offset().top;
@@ -564,8 +558,6 @@ function show_all_messages() {
         return;
     }
     narrowed = false;
-
-    current_view_predicate = home_view;
 
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
@@ -709,8 +701,12 @@ function add_zephyr_metadata(dummy, zephyr) {
 
 function add_messages(zephyrs) {
     $.each(zephyrs, add_zephyr_metadata);
-    add_to_table(zephyrs, 'zhome', home_view);
-    add_to_table(zephyrs, 'zfilt', current_view_predicate);
+
+    if (narrowed)
+        add_to_table(zephyrs, 'zfilt', narrowed);
+
+    // Even when narrowed, add messages to the home view so they exist when we un-narrow.
+    add_to_table(zephyrs, 'zhome', function () { return true; });
 }
 
 $(function () {
