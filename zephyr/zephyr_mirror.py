@@ -192,7 +192,7 @@ def zephyr_to_humbug(options):
 def get_zephyrs(last_received):
         browser.addheaders.append(('X-CSRFToken', csrf_token))
         submit_hash = {'last_received': last_received,
-                       "mit_sync_bot": True}
+                       "mit_sync_bot": 'yes'}
         submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in submit_hash.items()])
         res = browser.open("https://app.humbughq.com/get_updates_longpoll", submit_data)
         return simplejson.loads(res.read())['zephyrs']

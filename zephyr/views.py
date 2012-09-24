@@ -170,8 +170,6 @@ def zephyr(request):
         return json_error("Invalid field 'time'")
     return zephyr_backend(request, request.user)
 
-huddle_dedup = {}
-
 @login_required
 @require_post
 def forge_zephyr(request):
@@ -192,14 +190,11 @@ def forge_zephyr(request):
 
     if (request.POST['type'] == 'personal' and ',' in request.POST['recipient']):
         # Huddle message, need to make sure we're not syncing it twice!
-        huddle_val = hashlib.md5(request.POST['sender'] + "|" +
-                                 request.POST['new_zephyr'] + "|" +
-                                 request.POST['time']).hexdigest()
-        if huddle_val in huddle_dedup:
+        if Zephyr.objects.filter(sender=request.POST['sender'],
+                                 content=request.POST['new_zephyr'],
+                                 time=request.POST['time']):
             # This is a duplicate huddle message, deduplicate!
             return json_success()
-
-        huddle_dedup[huddle_val] = True
 
         # Now confirm all the other recipients exist in our system
         for user_email in request.POST["recipient"].split(","):
