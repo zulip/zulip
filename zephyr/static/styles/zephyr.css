@@ -307,3 +307,8 @@ input.send_zephyr {
     float: right;
     margin: 0;
 }
+
+#bottom-nav {
+    position: absolute;
+    bottom: 0;
+}

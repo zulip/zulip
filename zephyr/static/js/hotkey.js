@@ -5,6 +5,10 @@ var directional_hotkeys = {
     35: get_last_visible   // End
 };
 
+function simulate_keypress(keycode) {
+    $(document).trigger($.Event('keydown', {keyCode: keycode}));
+}
+
 function above_view(zephyr) {
     return zephyr.offset().top < $("#main_div").offset().top;
 }
