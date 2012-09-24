@@ -284,7 +284,7 @@ $(function () {
 });
 
 var selected_zephyr_id = 0;  /* to be filled in on document.ready */
-var selected_zephyr;  // = get_zephyr(selected_zephyr_id)
+var selected_zephyr;  // = get_zephyr_row(selected_zephyr_id)
 var last_received = -1;
 var narrowed = false;
 // For tracking where you were before you narrowed.
@@ -314,7 +314,7 @@ function get_id(zephyr_row) {
     return zephyr_row.attr('zid');
 }
 
-function get_zephyr(zephyr_id) {
+function get_zephyr_row(zephyr_id) {
     return $('#' + (narrowed ? 'zfilt' : 'zhome') + zephyr_id);
 }
 
@@ -365,14 +365,14 @@ function select_zephyr_by_id(zephyr_id) {
     if (zephyr_id === selected_zephyr_id) {
         return;
     }
-    select_zephyr(get_zephyr(zephyr_id), false);
+    select_zephyr(get_zephyr_row(zephyr_id), false);
 }
 
 // Called on page load and when we [un]narrow.
 // Forces a call to select_zephyr even if the id has not changed,
 // because the visible table might have.
 function select_and_show_by_id(zephyr_id) {
-    select_zephyr(get_zephyr(zephyr_id), true);
+    select_zephyr(get_zephyr_row(zephyr_id), true);
 }
 
 function select_zephyr(next_zephyr, scroll_to) {
