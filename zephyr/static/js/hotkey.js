@@ -5,6 +5,29 @@ var directional_hotkeys = {
     35: get_last_visible   // End
 };
 
+function above_view(zephyr) {
+    return zephyr.offset().top < $("#main_div").offset().top;
+}
+
+function below_view(zephyr) {
+    var main_div = $("#main_div");
+    return zephyr.offset().top + zephyr.height() > main_div.offset().top + main_div.height();
+}
+
+function keep_pointer_in_view() {
+    var next_zephyr = get_zephyr_row(selected_zephyr_id);
+    if (above_view(next_zephyr)) {
+        while (above_view(next_zephyr)) {
+            next_zephyr = get_next_visible(next_zephyr);
+        }
+    } else if (below_view(next_zephyr)) {
+        while (below_view(next_zephyr)) {
+            next_zephyr = get_prev_visible(next_zephyr);
+        }
+    }
+    update_selected_zephyr(next_zephyr);
+}
+
 function process_hotkey(code) {
     var next_zephyr, window_to_scroll;
     if (code in directional_hotkeys) {
@@ -31,9 +54,11 @@ function process_hotkey(code) {
     switch (code) {
     case 33: // Page Up
         window_to_scroll.scrollTop(window_to_scroll.scrollTop() - window_to_scroll.height());
+        keep_pointer_in_view();
         return process_hotkey;
     case 34: // Page Down
         window_to_scroll.scrollTop(window_to_scroll.scrollTop() + window_to_scroll.height());
+        keep_pointer_in_view();
         return process_hotkey;
     case 27: // Esc: hide compose pane
         hide_compose();

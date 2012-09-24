@@ -375,6 +375,23 @@ function select_and_show_by_id(zephyr_id) {
     select_zephyr(get_zephyr_row(zephyr_id), true);
 }
 
+function update_selected_zephyr(zephyr) {
+
+    $('.selected_zephyr').removeClass('selected_zephyr');
+    zephyr.addClass('selected_zephyr');
+
+    var new_selected_id = get_id(zephyr);
+    if (!narrowed && new_selected_id !== selected_zephyr_id) {
+        // Narrowing is a temporary view on top of the home view and
+        // doesn't permanently affect where you are.
+        //
+        // We also don't want to post if there's no effective change.
+        $.post("update", {pointer: new_selected_id});
+    }
+    selected_zephyr_id = new_selected_id;
+    selected_zephyr = zephyr;
+}
+
 function select_zephyr(next_zephyr, scroll_to) {
     var main_div = $("#main_div");
 
@@ -392,19 +409,7 @@ function select_zephyr(next_zephyr, scroll_to) {
         return false;
     }
 
-    $('.selected_zephyr').removeClass('selected_zephyr');
-    next_zephyr.addClass('selected_zephyr');
-
-    var new_selected_id = get_id(next_zephyr);
-    if (!narrowed && new_selected_id !== selected_zephyr_id) {
-        // Narrowing is a temporary view on top of the home view and
-        // doesn't permanently affect where you are.
-        //
-        // We also don't want to post if there's no effecive change.
-        $.post("update", { pointer: new_selected_id });
-    }
-    selected_zephyr_id = new_selected_id;
-    selected_zephyr = next_zephyr;
+    update_selected_zephyr(next_zephyr);
 
     if (scroll_to &&
         ((next_zephyr.offset().top < main_div.offset().top) ||
