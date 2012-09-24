@@ -720,7 +720,6 @@ function get_updates_longpoll() {
             if (data && data.zephyrs) {
                 $.each(data.zephyrs, function (dummy, zephyr) {
                     add_message(dummy, zephyr);
-                    zephyr_dict[zephyr.id] = zephyr;
                     zephyr_array.push(zephyr);
                 });
             }
