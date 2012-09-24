@@ -1,4 +1,6 @@
 {{! Client-side Mustache template for rendering zephyrs.}}
+{{#each zephyrs}}
+{{#with this}}
 {{#include_bookend}}
 <tr><td /><td /><td class="bookend" /></tr>
 {{/include_bookend}}
@@ -37,3 +39,5 @@
         <div class="zephyr_content">{{{content}}}</div>
     </td>
 </tr>
+{{/with}}
+{{/each}}

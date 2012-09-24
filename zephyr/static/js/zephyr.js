@@ -655,10 +655,7 @@ function add_to_table(zephyrs, table_name, filter_function) {
         prev = zephyr;
     });
 
-    $.each(zephyrs_to_render, function (index, zephyr) {
-        var new_tr = $(templates.zephyr(zephyr));
-        table.append(new_tr);
-    });
+    table.append(templates.zephyr({'zephyrs': zephyrs_to_render}));
 
     $.each(zephyrs_to_render, function (index, zephyr) {
         register_huddle_onclick(get_zephyr_row(zephyr.id), zephyr.sender_email);
