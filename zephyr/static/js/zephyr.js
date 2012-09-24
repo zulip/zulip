@@ -480,13 +480,7 @@ function do_narrow(description, filter_function) {
 
     // Empty the filtered table right before we fill it again
     $("#zfilt").empty();
-    $.each(zephyr_array, function (dummy, zephyr) {
-        if (filter_function(zephyr)) {
-            // It matched the filter, push it on to the array.
-            add_to_tables(zephyr, parent, 'zfilt');
-            parent = zephyr;
-        }
-    });
+    add_to_tables(zephyr_array, 'zfilt', filter_function);
 
     // Show the new set of messages.
     $("#zfilt").addClass("focused_table");
@@ -631,37 +625,41 @@ function same_sender(a, b) {
             (a.sender_email === b.sender_email));
 }
 
-function add_to_tables(zephyr, parent, table_name) {
+function add_to_tables(zephyrs, table_name, filter_function) {
     var table = $('#' + table_name);
+    var prev = zephyr_dict[table.find('tr:last-child').attr('zid')];
 
-    if (same_recipient(parent, zephyr)) {
-        zephyr.include_recipient = false;
-    } else {
-        zephyr.include_recipient = true;
-        if (parent !== undefined) {
-            // add a space to the table, but not if we have no parent because
-            // we don't want a bookend as the first element.
-            table.append('<tr><td /><td /><td class="bookend" /></tr>');
+    $.each(zephyrs, function (index, zephyr) {
+        if (! filter_function(zephyr))
+            return;
+
+        if (same_recipient(prev, zephyr)) {
+            zephyr.include_recipient = false;
+        } else {
+            zephyr.include_recipient = true;
+            if (prev !== undefined)
+                // add a space to the table, but not for the first element.
+                table.append('<tr><td /><td /><td class="bookend" /></tr>');
         }
-    }
 
-    if (same_sender(parent, zephyr) && !zephyr.include_recipient) {
-        zephyr.include_sender = false;
+        if (same_sender(prev, zephyr) && !zephyr.include_recipient) {
+            zephyr.include_sender = false;
+            table.find('tr:last-child td:last-child').addClass("collapsed_parent");
+        } else {
+            zephyr.include_sender = true;
+        }
 
-        table.find('tr:last-child td:last-child').addClass("collapsed_parent");
-    } else {
-        zephyr.include_sender = true;
-    }
+        zephyr.dom_id = table_name + zephyr.id;
 
-    zephyr.dom_id = table_name + zephyr.id;
+        var new_tr = $(templates.zephyr(zephyr));
+        table.append(new_tr);
+        register_huddle_onclick(new_tr, zephyr.sender_email);
 
-    var new_tr = $(templates.zephyr(zephyr));
-    table.append(new_tr);
-    register_huddle_onclick(new_tr, zephyr.sender_email);
+        prev = zephyr;
+    });
 }
 
-
-function add_message(index, zephyr) {
+function add_zephyr_metadata(dummy, zephyr) {
     last_received = Math.max(last_received, zephyr.id);
 
     if (zephyr.type === 'class') {
@@ -693,31 +691,23 @@ function add_message(index, zephyr) {
         }
     }
 
-
     var time = new Date(zephyr.timestamp * 1000);
     var two_digits = function (x) { return ('0' + x).slice(-2); };
     zephyr.timestr = two_digits(time.getHours())
                    + ':' + two_digits(time.getMinutes());
     zephyr.full_date_str = time.toLocaleString();
 
-    var parent = zephyr_dict[$('#zhome tr:last-child').attr('zid')];
-
-    add_to_tables(zephyr, parent, 'zhome');
-
-    // now lets see if the filter applies to the message
-    var parent_filtered = zephyr_dict[$('#zfilt tr:last-child').attr('zid')];
-
-    if (current_view_predicate(zephyr)) {
-        add_to_tables(zephyr, parent_filtered, 'zfilt');
-    }
-
-
-    // save the zephyr object, with computed values for various is_*
     zephyr_dict[zephyr.id] = zephyr;
 }
 
+function add_messages(zephyrs) {
+    $.each(zephyrs, add_zephyr_metadata);
+    add_to_tables(zephyrs, 'zhome', home_view);
+    add_to_tables(zephyrs, 'zfilt', current_view_predicate);
+}
+
 $(function () {
-    $(zephyr_array).each(add_message);
+    add_messages(zephyr_array);
     select_and_show_by_id(initial_pointer);
     get_updates_longpoll();
 });
@@ -741,9 +731,9 @@ function get_updates_longpoll() {
             $('#connection-error').hide();
 
             if (data && data.zephyrs) {
-                $.each(data.zephyrs, function (dummy, zephyr) {
-                    add_message(dummy, zephyr);
-                    zephyr_array.push(zephyr);
+                add_messages(data.zephyrs);
+                $.each(data.zephyrs, function () {
+                    zephyr_array.push(this);
                 });
             }
             setTimeout(get_updates_longpoll, 0);
