@@ -4,7 +4,7 @@ from django.utils.timezone import utc
 from django.db.models import Q
 
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscription, \
-    filter_by_subscriptions, Realm
+    filter_by_subscriptions, Realm, do_send_zephyr
 from zephyr.views import get_updates_longpoll
 from zephyr.decorator import TornadoAsyncException
 
@@ -41,7 +41,7 @@ class AuthedTestCase(TestCase):
             recipient = ZephyrClass.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=zephyr_type)
         pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-        Zephyr(sender=sender, recipient=recipient, instance="test", pub_date=pub_date).save()
+        do_send_zephyr(Zephyr(sender=sender, recipient=recipient, instance="test", pub_date=pub_date))
 
     def users_subscribed_to_class(self, class_name, realm_domain):
         realm = Realm.objects.get(domain=realm_domain)

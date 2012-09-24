@@ -11,7 +11,7 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
-    create_user
+    create_user, do_send_zephyr
 from zephyr.forms import RegistrationForm
 
 from zephyr.decorator import asynchronous
@@ -152,6 +152,10 @@ def get_updates_longpoll(request, handler):
         if handler.request.connection.stream.closed():
             return
         try:
+            # Avoid message loop by not sending the MIT sync bot any
+            # messages that we got from it in the first place.
+            if request.POST.get('mit_sync_bot'):
+                zephyrs = [zephyr for zephyr in zephyrs if not zephyr.synced_from_mit]
             handler.finish({'zephyrs': [zephyr.to_dict() for zephyr in zephyrs]})
         except socket.error:
             pass
@@ -162,6 +166,8 @@ def get_updates_longpoll(request, handler):
 @login_required
 @require_post
 def zephyr(request):
+    if 'time' in request.POST:
+        return json_error("Invalid field 'time'")
     return zephyr_backend(request, request.user)
 
 huddle_dedup = {}
@@ -171,6 +177,10 @@ huddle_dedup = {}
 def forge_zephyr(request):
     email = sanitize_identifier(request.POST['sender']).lower()
     user_profile = UserProfile.objects.get(user=request.user)
+
+    if "time" not in request.POST:
+        return json_error("Missing time")
+
     try:
         user = User.objects.get(email=email)
     except User.DoesNotExist:
@@ -284,7 +294,10 @@ def zephyr_backend(request, sender):
         new_zephyr.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
     else:
         new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-    new_zephyr.save()
+
+    # To avoid message loops, we must pass whether the message was
+    # synced from MIT zephyr here.
+    do_send_zephyr(new_zephyr, synced_from_mit = 'time' in request.POST)
 
     return json_success()
 

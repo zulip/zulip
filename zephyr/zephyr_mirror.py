@@ -11,8 +11,6 @@ import time
 import subprocess
 import optparse
 
-import mit_subs_list
-
 parser = optparse.OptionParser()
 parser.add_option('--forward-class-messages',
                   dest='forward_class_messages',
@@ -24,6 +22,10 @@ parser.add_option('--resend-log',
                   action='store_true')
 parser.add_option('--no-forward-personals',
                   dest='forward_personals',
+                  default=True,
+                  action='store_false')
+parser.add_option('--forward-from-humbug',
+                  dest='forward_to_humbug',
                   default=True,
                   action='store_false')
 (options, args) = parser.parse_args()
@@ -85,36 +87,18 @@ def username_to_fullname(username):
         fullnames[username] = fetch_fullname(username)
     return fullnames[username]
 
-browser_login()
 
-subs = zephyr.Subscriptions()
-if options.forward_class_messages:
-    for sub in mit_subs_list.all_subs:
-        subs.add((sub, '*', '*'))
-if options.forward_personals:
-    subs.add(("message", "personal", "*"))
-
-if options.resend_log:
-    with open('zephyrs', 'r') as log:
-        try:
-            for ln in log:
-                zeph = simplejson.loads(ln)
-                print "sending saved message to %s from %s..." % \
-                    (zeph.get('class', zeph.get('recipient')), zeph['sender'])
-                send_zephyr(zeph)
-        except:
-            print >>sys.stderr, 'Could not send saved zephyr'
-            traceback.print_exc()
-            time.sleep(2)
-
-with open('zephyrs', 'a') as log:
-    print "Starting receive loop"
+def process_loop(log):
     while True:
         try:
             notice = zephyr.receive(block=True)
             zsig, body = notice.message.split("\x00", 1)
             is_personal = False
             is_huddle = False
+
+            if zsig.endswith("   "):
+                print "Skipping message from Humbug!"
+                continue
 
             sender = notice.sender.lower().replace("athena.mit.edu", "mit.edu")
             recipient = notice.recipient.lower().replace("athena.mit.edu", "mit.edu")
@@ -126,7 +110,7 @@ with open('zephyrs', 'a') as log:
                     is_huddle = True
                     # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
                     huddle_recipients_list = [x + "@mit.edu" for x in
-                                                  body.split("\n")[0][4:].split()]
+                                              body.split("\n")[0][4:].split()]
                     if sender not in huddle_recipients_list:
                         huddle_recipients_list.append(sender)
                     huddle_recipients = ",".join(huddle_recipients_list)
@@ -174,3 +158,58 @@ with open('zephyrs', 'a') as log:
             print >>sys.stderr, 'Error relaying zephyr'
             traceback.print_exc()
             time.sleep(2)
+
+
+def zephyr_to_humbug(options):
+    browser_login()
+
+    import mit_subs_list
+    subs = zephyr.Subscriptions()
+    if options.forward_class_messages:
+        for sub in mit_subs_list.all_subs:
+            subs.add((sub, '*', '*'))
+    if options.forward_personals:
+        subs.add(("message", "personal", "*"))
+
+    if options.resend_log:
+        with open('zephyrs', 'r') as log:
+            try:
+                for ln in log:
+                    zeph = simplejson.loads(ln)
+                    print "sending saved message to %s from %s..." % \
+                        (zeph.get('class', zeph.get('recipient')), zeph['sender'])
+                    send_zephyr(zeph)
+            except:
+                print >>sys.stderr, 'Could not send saved zephyr'
+                traceback.print_exc()
+                time.sleep(2)
+
+    print "Starting receive loop"
+
+    with open('zephyrs', 'a') as log:
+        process_loop(log)
+
+def get_zephyrs(last_received):
+        browser.addheaders.append(('X-CSRFToken', csrf_token))
+        submit_hash = {'last_received': last_received,
+                       "mit_sync_bot": True}
+        submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in submit_hash.items()])
+        res = browser.open("https://app.humbughq.com/get_updates_longpoll", submit_data)
+        return simplejson.loads(res.read())['zephyrs']
+
+def humbug_to_zephyr(options):
+    # Sync messages from zephyr to humbug
+    browser_login()
+    print "Starting get_updates_longpoll."
+    zephyrs = get_zephyrs('0')
+    while True:
+        last_received = str(max([z["id"] for z in zephyrs]))
+        new_zephyrs = get_zephyrs(last_received)
+        for zephyr in new_zephyrs:
+            print zephyr
+        zephyrs.extend(new_zephyrs)
+
+if options.forward_to_humbug:
+    zephyr_to_humbug(options)
+else:
+    humbug_to_zephyr(options)

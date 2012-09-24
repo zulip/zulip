@@ -184,8 +184,9 @@ def get_user_profile_by_id(uid):
         return user_hash[uid]
     return UserProfile.objects.get(id=uid)
 
-def send_zephyr(**kwargs):
-    zephyr = kwargs["instance"]
+def do_send_zephyr(zephyr, synced_from_mit=False):
+    zephyr.synced_from_mit = synced_from_mit
+    zephyr.save()
     if zephyr.recipient.type == Recipient.PERSONAL:
         recipients = list(set([get_user_profile_by_id(zephyr.recipient.type_id),
                                get_user_profile_by_id(zephyr.sender_id)]))
@@ -200,8 +201,6 @@ def send_zephyr(**kwargs):
         raise
     for recipient in recipients:
         recipient.receive(zephyr)
-
-post_save.connect(send_zephyr, sender=Zephyr)
 
 class Subscription(models.Model):
     userprofile = models.ForeignKey(UserProfile)

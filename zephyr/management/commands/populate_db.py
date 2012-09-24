@@ -4,7 +4,7 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
-    create_user
+    create_user, do_send_zephyr
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
 from django.conf import settings
@@ -275,7 +275,7 @@ def send_zephyrs(data):
             saved_data = new_zephyr.instance
 
         new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-        new_zephyr.save()
+        do_send_zephyr(new_zephyr)
 
         recipients[num_zephyrs] = [zephyr_type, new_zephyr.recipient.id, saved_data]
         num_zephyrs += 1
