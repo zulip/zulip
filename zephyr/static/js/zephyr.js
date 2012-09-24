@@ -469,7 +469,7 @@ function do_narrow(description, original_message, filter_function) {
 
     // Empty the filtered table right before we fill it again
     $("#zfilt").empty();
-    $.each(initial_zephyr_array, function (dummy, zephyr) {
+    $.each(zephyr_array, function (dummy, zephyr) {
         if (filter_function(zephyr, original_message)) {
             // It matched the filter, push it on to the array.
             add_to_tables(zephyr, parent, 'zfilt');
@@ -694,7 +694,7 @@ function add_message(index, zephyr) {
 }
 
 $(function () {
-    $(initial_zephyr_array).each(add_message);
+    $(zephyr_array).each(add_message);
     select_and_show_by_id(initial_pointer);
     get_updates_longpoll();
 });
@@ -721,7 +721,7 @@ function get_updates_longpoll() {
                 $.each(data.zephyrs, function (dummy, zephyr) {
                     add_message(dummy, zephyr);
                     zephyr_dict[zephyr.id] = zephyr;
-                    initial_zephyr_array.push(zephyr);
+                    zephyr_array.push(zephyr);
                 });
             }
             setTimeout(get_updates_longpoll, 0);
