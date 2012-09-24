@@ -6,7 +6,7 @@ var directional_hotkeys = {
 };
 
 function process_hotkey(code) {
-    var next_zephyr;
+    var next_zephyr, window_to_scroll;
     if (code in directional_hotkeys) {
         next_zephyr = directional_hotkeys[code](selected_zephyr);
         if (next_zephyr.length !== 0) {
@@ -23,7 +23,18 @@ function process_hotkey(code) {
         return process_hotkey;
     }
 
+    window_to_scroll = $(".active.scrolling_tab");
+    if (window_to_scroll.length === 0) {
+        window_to_scroll = $(".active").find(".scrolling-tab");
+    }
+
     switch (code) {
+    case 33: // Page Up
+        window_to_scroll.scrollTop(window_to_scroll.scrollTop() - window_to_scroll.height());
+        return process_hotkey;
+    case 34: // Page Down
+        window_to_scroll.scrollTop(window_to_scroll.scrollTop() + window_to_scroll.height());
+        return process_hotkey;
     case 27: // Esc: hide compose pane
         hide_compose();
         return process_hotkey;

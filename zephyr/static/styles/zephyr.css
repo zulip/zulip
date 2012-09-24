@@ -29,6 +29,10 @@ ul.nav-zephyr {
     padding-bottom: 40px;
 }
 
+.scrolling_tab {
+    overflow-y: scroll;
+}
+
 .zephyr_list {
     overflow-y: scroll;
     overflow-x: hidden;
