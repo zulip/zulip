@@ -192,7 +192,7 @@ def forge_zephyr(request):
         # Huddle message, need to make sure we're not syncing it twice!
         if Zephyr.objects.filter(sender__user__email=request.POST['sender'],
                                  content=request.POST['new_zephyr'],
-                                 time=float(request.POST['time'])):
+                                 pub_date=float(request.POST['time'])):
             # This is a duplicate huddle message, deduplicate!
             return json_success()
 
