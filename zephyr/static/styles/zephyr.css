@@ -138,7 +138,7 @@ blockquote p {
     font-size:   inherit;
 }
 
-td.messagebox {
+.messagebox {
     width:     470px;
     max-width: 470px;
     padding: 8px 35px 8px 14px;
@@ -148,19 +148,19 @@ td.messagebox {
     border-bottom: 1px solid gray;
 }
 
-td.bookend {
+.bookend {
     padding-top: 5px;
 }
 
-td.prev_is_same_sender {
+.prev_is_same_sender {
     padding-top: 0px;
-    border-top: 1px; solid white
+    border-top: 1px solid white;
 }
-td.next_is_same_sender {
+
+.next_is_same_sender {
     border-bottom: 0px;
     padding-bottom: 0px;
 }
-
 
 img.profile_picture {
     display: block;
