@@ -480,7 +480,7 @@ function do_narrow(description, filter_function) {
 
     // Empty the filtered table right before we fill it again
     $("#zfilt").empty();
-    add_to_tables(zephyr_array, 'zfilt', filter_function);
+    add_to_table(zephyr_array, 'zfilt', filter_function);
 
     // Show the new set of messages.
     $("#zfilt").addClass("focused_table");
@@ -625,7 +625,7 @@ function same_sender(a, b) {
             (a.sender_email === b.sender_email));
 }
 
-function add_to_tables(zephyrs, table_name, filter_function) {
+function add_to_table(zephyrs, table_name, filter_function) {
     var table = $('#' + table_name);
     var prev = zephyr_dict[table.find('tr:last-child').attr('zid')];
 
@@ -702,8 +702,8 @@ function add_zephyr_metadata(dummy, zephyr) {
 
 function add_messages(zephyrs) {
     $.each(zephyrs, add_zephyr_metadata);
-    add_to_tables(zephyrs, 'zhome', home_view);
-    add_to_tables(zephyrs, 'zfilt', current_view_predicate);
+    add_to_table(zephyrs, 'zhome', home_view);
+    add_to_table(zephyrs, 'zfilt', current_view_predicate);
 }
 
 $(function () {
