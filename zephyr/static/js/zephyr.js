@@ -628,34 +628,44 @@ function same_sender(a, b) {
 function add_to_table(zephyrs, table_name, filter_function) {
     var table = $('#' + table_name);
     var prev = zephyr_dict[table.find('tr:last-child').attr('zid')];
+    var zephyrs_to_render = [];
+    var ids_where_next_is_same_sender = [];
 
     $.each(zephyrs, function (index, zephyr) {
         if (! filter_function(zephyr))
             return;
 
-        if (same_recipient(prev, zephyr)) {
-            zephyr.include_recipient = false;
-        } else {
+        zephyr.include_recipient = false;
+        zephyr.include_bookend   = false;
+        if (! same_recipient(prev, zephyr)) {
+            // Add a space to the table, but not for the first element.
             zephyr.include_recipient = true;
-            if (prev !== undefined)
-                // add a space to the table, but not for the first element.
-                table.append('<tr><td /><td /><td class="bookend" /></tr>');
+            zephyr.include_bookend   = (prev !== undefined);
         }
 
+        zephyr.include_sender = true;
         if (same_sender(prev, zephyr) && !zephyr.include_recipient) {
             zephyr.include_sender = false;
-            table.find('tr:last-child td:last-child').addClass("next_is_same_sender");
-        } else {
-            zephyr.include_sender = true;
+            ids_where_next_is_same_sender.push(prev.id);
         }
 
         zephyr.dom_id = table_name + zephyr.id;
 
+        zephyrs_to_render.push(zephyr);
+        prev = zephyr;
+    });
+
+    $.each(zephyrs_to_render, function (index, zephyr) {
         var new_tr = $(templates.zephyr(zephyr));
         table.append(new_tr);
-        register_huddle_onclick(new_tr, zephyr.sender_email);
+    });
 
-        prev = zephyr;
+    $.each(zephyrs_to_render, function (index, zephyr) {
+        register_huddle_onclick(get_zephyr_row(zephyr.id), zephyr.sender_email);
+    });
+
+    $.each(ids_where_next_is_same_sender, function (index, id) {
+        get_zephyr_row(id).find('.messagebox').addClass("next_is_same_sender");
     });
 }
 
