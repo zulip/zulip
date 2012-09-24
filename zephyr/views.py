@@ -190,9 +190,10 @@ def forge_zephyr(request):
 
     if (request.POST['type'] == 'personal' and ',' in request.POST['recipient']):
         # Huddle message, need to make sure we're not syncing it twice!
-        if Zephyr.objects.filter(sender__user__email=request.POST['sender'],
-                                 content=request.POST['new_zephyr'],
-                                 pub_date=datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)):
+        if Zephyr.objects.filter(sender__user__email=email,
+                                 content=md_engine.convert(request.POST['new_zephyr']),
+                                 pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 1).replace(tzinfo=utc),
+                                 pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 1).replace(tzinfo=utc)):
             # This is a duplicate huddle message, deduplicate!
             return json_success()
 
