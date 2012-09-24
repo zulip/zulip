@@ -1,5 +1,6 @@
 /*jslint browser: true, devel: true, sloppy: true,
-    plusplus: true, nomen: true, regexp: true */
+    plusplus: true, nomen: true, regexp: true,
+    white: true, undef: true */
 /*global $: false, jQuery: false, Handlebars: false,
     zephyr_json: false, initial_pointer: false, email: false,
     class_list: false, instance_list: false, people_list: false */
