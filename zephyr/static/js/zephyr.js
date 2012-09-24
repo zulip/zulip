@@ -490,18 +490,13 @@ function do_narrow(description, filter_function) {
 
 function narrow_huddle() {
     var original = zephyr_dict[selected_zephyr_id];
-
-    var message = "Group chats with " + original.reply_to;
-
-    do_narrow(message, function (other) {
+    do_narrow("Group chats with " + original.reply_to, function (other) {
         return other.reply_to === original.reply_to;
     });
 }
 
 function narrow_all_personals() {
-    // Narrow to all personals
-    var message = "All huddles with you";
-    do_narrow(message, function (other) {
+    do_narrow("All huddles with you", function (other) {
         return other.type === "personal" || other.type === "huddle";
     });
 }
@@ -515,9 +510,8 @@ function narrow_personals() {
     } else {
         other_party = original.display_recipient;
     }
-    var message = "Huddles with " + other_party;
 
-    do_narrow(message, function (other) {
+    do_narrow("Huddles with " + other_party, function (other) {
         return (other.type === 'personal') &&
             (((other.display_recipient === original.display_recipient) && (other.sender_email === original.sender_email)) ||
              ((other.display_recipient === original.sender_email) && (other.sender_email === original.display_recipient)));
