@@ -1,27 +1,49 @@
-{% extends "zephyr/base.html" %}
+{% extends "zephyr/content_base.html" %}
 
-{% block content %}
+{% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
+{% block more_content %}
 
 <script type="text/javascript">
-autofocus('#id_full_name');
+if ($('#id_email').length === 0) {
+    autofocus('#id_full_name');
+} else {
+    autofocus('#id_email');
+}
 </script>
 
-<h1>Register for an account</h1>
+<p>(Welcome! We think you'll like it here.)</p>
 
-<form method="post" action="{% url register %}">
+<div class="pitch">
+    <hr/>
+    <p>You're almost there. We just need you to do one last thing.</p>
+    <h3>Tell us a bit about yourself.</h3>
+</div>
+
+<form method="post" class="form-horizontal" action="{% url register %}">
 {% csrf_token %}
-
-{{ form.full_name.label_tag }}
-{{ form.full_name }}
-
-{{ form.short_name.label_tag }}
-{{ form.short_name }}
-
-{{ form.email.label_tag }}
-{{ form.email }}
-
-{{ form.password.label_tag }}
-{{ form.password }}
+    <div class="control-group">
+        <label for="id_email" class="control-label">Email</label>
+        <div class="controls">
+            {% if company_name %} {# They entered through the main page and already entered their email #}
+                {{ form.email.as_hidden }}
+                <p>{{ form.email.value }}<p>
+            {% else %}
+                {{ form.email }}
+            {% endif %}
+        </div>
+    </div>
+    <div class="control-group">
+        <label for="id_full_name" class="control-label">Your name</label>
+        <div class="controls">
+            {{ form.full_name }}
+        </div>
+    </div>
+    <div class="control-group">
+        <label for="id_password" class="control-label">Password</label>
+        <div class="controls">
+            {{ form.password }}
+        </div>
+    </div>
 
 <br />
 <input type="submit" value="Register" /><br />

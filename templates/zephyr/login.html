@@ -1,12 +1,16 @@
-{% extends "zephyr/base.html" %}
+{% extends "zephyr/content_base.html" %}
 
-{% block content %}
+{% block more_content %}
 
 <script type="text/javascript">
-autofocus('#id_username');
+if ($('#id_email').length === 0) {
+    autofocus('#id_full_name');
+} else {
+    autofocus('#id_email');
+}
 </script>
 
-<h1>Log in</h1>
+    <h3>You look familiar.</h3>
 
 {% if form.errors %}
 <div class="alert alert-error">
@@ -14,17 +18,31 @@ autofocus('#id_username');
 </div>
 {% endif %}
 
-<form method="post" action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
-{% csrf_token %}
-
-<label for="id_username">Email</label>
-{{ form.username }}
-
-{{ form.password.label_tag }}
-{{ form.password }}
-
-<input type="submit" value="Log in" />
 <input type="hidden" name="next" value="{{ next }}" />
+</form>
+
+<form method="post" class="form-horizontal" action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
+    {% csrf_token %}
+    <div class="control-group">
+        <label for="id_username" class="control-label">Email</label>
+        <div class="controls">
+            {{ form.username }}
+        </div>
+    </div>
+    <div class="control-group">
+        <label for="id_password" class="control-label">Password</label>
+        <div class="controls">
+            {{ form.password }}
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" class="btn btn-large btn-primary" value="Log in" />
+        </div>
+    </div>
+
+    <br />
+    <input type="hidden" name="next" value="{{ next }}" />
 </form>
 
 {% endblock %}

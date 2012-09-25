@@ -1,0 +1,28 @@
+{% extends "zephyr/base.html" %}
+
+    {% block customhead %}
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js"></script>
+    <script src="/static/js/signup.js"></script>
+    <link href="/static/styles/signup.css?dummy_time={% now "U" %}" rel="stylesheet">
+    {% endblock %}
+
+{% block content %}
+<div class="navbar">
+    <ul class="nav pull-right">
+      <li><a href="#">Learn More</a></li>
+      <li><a href="#">Pricing</a></li>
+      <li><a href="https://blog.humbughq.com/">Blog</a></li>
+      <li><a href="/accounts/login/?next=/">Log in</a></li>
+    </ul>
+</div>
+<div class="row-fluid">
+    <div class="span2">
+    </div>
+    <div class="span10">
+        <div class="title">Humbug<span class="for_you">{% block for_you %}{% endblock %}</div>
+        {% block more_content %}
+        {% endblock %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,46 @@
+body {
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+}
+
+div.title {
+    font-family: Helvetica;
+    font-size: 100px;
+    font-weight: bold;
+    padding-top: 50px;
+    padding-bottom: 60px;
+}
+
+.lead {
+    font-weight: bold;
+}
+
+div.pitch {
+    width: 500px;
+}
+
+div.signup {
+    width: 650px;
+    padding: 8px 35px 8px 14px;
+    margin-bottom: 20px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    background-color: LightGray;
+    border: 1px solid DarkGray;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+
+span.or {
+    padding-left: 25px;
+    padding-right: 25px;
+
+}
+
+span.for_you {
+    font-size: 30px;
+    font-style: italic;
+}
+
+#company-email {
+    display: none;
+}

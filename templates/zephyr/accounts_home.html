@@ -1,28 +1,30 @@
-{% extends "zephyr/base.html" %}
+{% extends "zephyr/content_base.html" %}
+{% block more_content %}
+<script type="text/javascript">
+autofocus('#email');
+</script>
 
-{% block content %}
-<br/>
-<div class="hero-unit">
-    <div class="row-fluid">
-        <div class="span5">
-            <h1>Humbug</h1>
-            <h2>Zephyr for the masses (?)</h2>
+        <div class="pitch">
+            <p>You’re not using your Zip drive anymore.</p>
+            <p>You’re not calling your parents from the pay phone at school, asking
+            to be picked up because you stayed late to go to the computer club
+            meeting.</p>
+            <p>You haven’t watched Saved by the Bell in a while.</p>
+            <p>So why are you still using IRC?</p>
+            <br/>
+            <p>Discover a better alternative for group communication at work.</p>
         </div>
-        <div class="span7">
-            <p>Here we describe what makes it so great.</p>
-
-            <p>With several features such as:
-            <ul>
-                <li>Sending messages</li>
-                <li>Reading messages</li>
-                <li>Incessant polling</li>
-            </ul></p>
-
-            <p>
-                <a class="btn btn-primary btn-large" href="/accounts/login/?next=/">Log in &raquo;</a>
-                <a class="btn btn-primary btn-large" href="/accounts/register/">Register &raquo;</a>
-            </p>
+        <div class="signup">
+            <p class="lead">Get started now, for free</p>
+            <form class="form-inline" id="email_signup" action="/accounts/register/" method="post">
+                {% csrf_token %}
+                <input type="text" class="email required" placeholder="Enter your work email address" id="email" name="email"/>&nbsp;
+                <input type="submit" class="btn btn-primary btn-large" value="Sign up"/>
+                <span class="or">- or -</span>
+                <button type="submit" class="btn">Connect with Google Apps</button>
+                <p><small>By continuing, you are indicating that you have read and agree to our <a href="/tos">Terms of Use</a>.</small></p>
+            </form>
+            <div id="errors"></div>
+            <div class="alert alert-pitch" id="company-email">Please use your company email address to sign up. Otherwise, we won’t be able to connect you with your coworkers.</div>
         </div>
-    </div>
-</div>
 {% endblock %}

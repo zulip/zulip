@@ -50,9 +50,14 @@ def strip_html(x):
 
 def register(request):
     if request.method == 'POST':
+        try:
+            email = strip_html(request.POST['email'])
+            company_name = email.split('@')[-1]
+        except KeyError:
+            company_name = None
+
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            email      = strip_html(request.POST['email'])
             password   = request.POST['password']
             full_name  = strip_html(request.POST['full_name'])
             short_name = strip_html(request.POST['short_name'])
@@ -70,9 +75,10 @@ def register(request):
             return HttpResponseRedirect(reverse('zephyr.views.home'))
     else:
         form = RegistrationForm()
+        company_name = None
 
     return render(request, 'zephyr/register.html', {
-        'form': form,
+        'form': form, 'company_name': company_name,
     })
 
 def accounts_home(request):
