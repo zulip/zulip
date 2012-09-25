@@ -644,6 +644,13 @@ function add_to_table(zephyrs, table_name, filter_function) {
         if (! filter_function(zephyr))
             return;
 
+        zephyr.content = linkify(zephyr.content, {
+            callback: function (text, href) {
+                    return href ? '<a href="' + href + '" target="_blank" title="' +
+                    href + '" onclick="event.cancelBubble = true;"">' + text + '</a>' : text;
+                }
+            });
+
         zephyr.include_recipient = false;
         zephyr.include_bookend   = false;
         if (! same_recipient(prev, zephyr)) {
