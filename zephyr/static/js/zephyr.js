@@ -300,6 +300,7 @@ var narrowed = false;
 
 // For tracking where you were before you narrowed.
 var persistent_zephyr_id = 0;
+var high_water_mark = 0;
 
 function get_all_zephyr_rows() {
     return $('tr.zephyr_row');
@@ -387,7 +388,6 @@ function select_and_show_by_id(zephyr_id) {
 }
 
 function update_selected_zephyr(zephyr) {
-
     $('.selected_zephyr').removeClass('selected_zephyr');
     zephyr.addClass('selected_zephyr');
 
@@ -401,6 +401,11 @@ function update_selected_zephyr(zephyr) {
     }
     selected_zephyr_id = new_selected_id;
     selected_zephyr = zephyr;
+
+    if (parseInt(selected_zephyr_id, 10) > high_water_mark) {
+        high_water_mark = parseInt(selected_zephyr_id, 10);
+    }
+
 }
 
 function select_zephyr(next_zephyr, scroll_to) {
@@ -430,6 +435,9 @@ function select_zephyr(next_zephyr, scroll_to) {
     }
 }
 
+function go_to_high_water_mark() {
+    select_and_show_by_id(high_water_mark);
+}
 
 /* We use 'visibility' rather than 'display' and jQuery's show() / hide(),
    because we want to reserve space for the email address.  This avoids
