@@ -67,7 +67,9 @@ function process_hotkey(code) {
     case 27: // Esc: hide compose pane
         hide_compose();
         return process_hotkey;
-
+    case 67: // 'c': compose
+        compose_button();
+        return process_compose_hotkey;
     case 82: // 'r': respond to zephyr
         respond_to_zephyr();
         return process_key_in_input;
@@ -103,6 +105,16 @@ function process_key_in_input(code) {
         return process_hotkey;
     }
     return false;
+}
+
+function process_compose_hotkey(code) {
+    if (code === 9) { // Tab: toggle between class and huddle compose tabs.
+        toggle_compose();
+        return process_compose_hotkey;
+    } else {
+        keydown_handler = process_key_in_input;
+        simulate_keypress(code);
+    }
 }
 
 /* The current handler function for keydown events.

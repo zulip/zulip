@@ -128,6 +128,15 @@ function show_compose(tabname, focus_area) {
     focus_area.select();
 }
 
+function toggle_compose() {
+    if ($("#zephyr-type-tabs li.active").find("a[href=#class-message]").length !== 0) {
+        // In class tab, switch to personals.
+        show_compose('personal', $("#recipient"));
+    } else {
+        show_compose('class', $("#class"));
+    }
+}
+
 function compose_class_name() {
     return $.trim($("#class").val());
 }
