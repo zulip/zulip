@@ -85,8 +85,7 @@ def home(request):
         return HttpResponseRedirect('accounts/home/')
     user_profile = UserProfile.objects.get(user=request.user)
 
-    zephyrs = [um.message for um in
-               UserMessage.objects.filter(user_profile=user_profile)]
+    zephyrs = Zephyr.objects.filter(usermessage__user_profile=user_profile)
 
     if user_profile.pointer == -1 and zephyrs:
         user_profile.pointer = min([zephyr.id for zephyr in zephyrs])
