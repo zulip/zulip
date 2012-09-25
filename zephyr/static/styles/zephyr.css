@@ -44,6 +44,10 @@ ul.nav-zephyr {
     width: 640px;
 }
 
+.zephyr_row {
+    cursor: pointer;
+}
+
 /* This is a div on top of main_div that hides main_div's scroll bar. */
 #wrapper {
     overflow: hidden;
