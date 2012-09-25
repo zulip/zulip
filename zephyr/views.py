@@ -106,8 +106,11 @@ def home(request):
     classes = [get_display_recipient(sub.recipient) for sub in subscriptions
                if sub.recipient.type == Recipient.CLASS]
 
-    instances = list(set([zephyr.instance for zephyr in zephyrs
-                          if zephyr.recipient.type == Recipient.CLASS]))
+    class_zephyrs = Zephyr.objects.filter(
+        usermessage__user_profile = user_profile,
+        recipient__type = Recipient.CLASS)
+
+    instances = list(set(zephyr.instance for zephyr in class_zephyrs))
 
     return render_to_response('zephyr/index.html',
                               {'zephyr_array' : zephyr_json,
