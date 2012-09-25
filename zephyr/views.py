@@ -116,7 +116,9 @@ def home(request):
                                'email_hash'  : hashlib.md5(settings.HASH_SALT + user_profile.user.email).hexdigest(),
                                'people'      : simplejson.dumps(people),
                                'classes'     : simplejson.dumps(classes),
-                               'instances'   : simplejson.dumps(instances)},
+                               'instances'   : simplejson.dumps(instances),
+                               'show_debug':
+                                   settings.DEBUG and ('show_debug' in request.GET) },
                               context_instance=RequestContext(request))
 
 @login_required

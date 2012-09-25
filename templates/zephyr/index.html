@@ -56,6 +56,11 @@ var people_list = {{ people }};
                     <li><a href="#search" data-toggle="pill"><i class="icon-search"></i> Search</a></li>
                     <li><a href="#settings" data-toggle="pill"><i class="icon-edit"></i> Settings</a></li>
                     <li class="disabled"><a href="#"><i class="icon-envelope"></i> Invite a friend</a></li>
+
+                    {% if show_debug %}
+                    <li><a href="#debug" data-toggle="pill"><i class="icon-barcode"></i> Debug</a></li>
+                    {% endif %}
+
                     <br>
                     <a href="#" class="btn btn-large btn-block" id="new_message_button" onclick="compose_button();">New Message</a>
                 </ul>
@@ -74,6 +79,13 @@ var people_list = {{ people }};
             <div class="tab-pane scrolling_tab" id="settings">
                 {% include "zephyr/settings.html" %}
             </div>
+
+            {% if show_debug %}
+            <div class="tab-pane scrolling_tab" id="debug">
+                {% include "zephyr/debug.html" %}
+            </div>
+            {% endif %}
+
         </div><!--/tab-content-->
     </div><!--/row-->
 
