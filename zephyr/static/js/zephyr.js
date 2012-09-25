@@ -112,6 +112,7 @@ function sub(zephyr_class) {
 }
 
 function compose_button() {
+    clear_compose_box();
     $('#sidebar a[href="#home"]').tab('show');
     show_compose('class', $("#class"));
 }
@@ -209,7 +210,6 @@ $(function () {
                        .text('Sent message')
                        .stop(true).fadeTo(0,1).delay(250).fadeOut(250, hide_compose);
             buttons.removeAttr('disabled');
-            clear_compose_box();
         },
         error: function (xhr) {
             var response = "Error sending message";
