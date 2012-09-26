@@ -44,3 +44,12 @@ span.for_you {
 #company-email {
     display: none;
 }
+
+a.title {
+    color: black;
+}
+
+a.title:hover {
+    color: gray;
+    text-decoration: none;
+}
