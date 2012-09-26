@@ -58,11 +58,11 @@ def register(request):
 
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            password   = request.POST['password']
-            full_name  = strip_html(request.POST['full_name'])
-            short_name = strip_html(request.POST['short_name'])
-            email      = strip_html(request.POST['email'])
-            domain     = strip_html(request.POST['domain'])
+            password   = strip_html(form.cleaned_data['password'])
+            full_name  = strip_html(form.cleaned_data['full_name'])
+            short_name = strip_html(email.split('@')[0])
+            email      = strip_html(form.cleaned_data['email'])
+            domain     = strip_html(form.cleaned_data['domain'])
             realm = Realm.objects.filter(domain=domain)
             if not realm:
                 realm = Realm(domain=domain)
