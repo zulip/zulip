@@ -59,7 +59,7 @@ def browser_login():
 
     browser.submit()
 
-def send_zephyr(zeph):
+def send_humbug(zeph):
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]
 
@@ -153,7 +153,7 @@ def process_loop(log):
 
             print "received a message on %s/%s from %s..." % \
                 (notice.cls, notice.instance, notice.sender)
-            send_zephyr(zeph)
+            send_humbug(zeph)
         except:
             print >>sys.stderr, 'Error relaying zephyr'
             traceback.print_exc()
@@ -178,7 +178,7 @@ def zephyr_to_humbug(options):
                     zeph = simplejson.loads(ln)
                     print "sending saved message to %s from %s..." % \
                         (zeph.get('class', zeph.get('recipient')), zeph['sender'])
-                    send_zephyr(zeph)
+                    send_humbug(zeph)
             except:
                 print >>sys.stderr, 'Could not send saved zephyr'
                 traceback.print_exc()
