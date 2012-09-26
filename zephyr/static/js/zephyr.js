@@ -348,9 +348,9 @@ function scroll_to_selected() {
 function get_huddle_recipient(zephyr) {
     var recipient, i;
 
-    recipient = zephyr.display_recipient[0].name;
+    recipient = zephyr.display_recipient[0].email;
     for (i = 1; i < zephyr.display_recipient.length; i++) {
-        recipient += ', ' + zephyr.display_recipient[i].name;
+        recipient += ', ' + zephyr.display_recipient[i].email;
     }
     return recipient;
 }

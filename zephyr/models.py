@@ -24,7 +24,7 @@ def get_display_recipient(recipient):
     elif recipient.type == Recipient.HUDDLE:
         user_list = [UserProfile.objects.get(user=s.userprofile) for s in
                      Subscription.objects.filter(recipient=recipient)]
-        return [{'name': user.short_name} for user in user_list]
+        return [{'email': user.email} for user in user_list]
     else:
         user = User.objects.get(id=recipient.type_id)
         return user.email
