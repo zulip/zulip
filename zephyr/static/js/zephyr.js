@@ -24,6 +24,7 @@ function register_huddle_onclick(zephyr_row, sender) {
 
 var zephyr_array = [];
 var zephyr_dict = {};
+var instance_list = [];
 var status_classes = 'alert-error alert-success alert-info';
 
 function report_error(response, xhr, status_box) {

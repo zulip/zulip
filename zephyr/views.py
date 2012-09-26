@@ -109,18 +109,11 @@ def home(request):
     classes = [get_display_recipient(sub.recipient) for sub in subscriptions
                if sub.recipient.type == Recipient.CLASS]
 
-    class_zephyrs = Zephyr.objects.filter(
-        usermessage__user_profile = user_profile,
-        recipient__type = Recipient.CLASS)
-
-    instances = list(set(zephyr.instance for zephyr in class_zephyrs))
-
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
                                'email_hash'  : hashlib.md5(settings.HASH_SALT + user_profile.user.email).hexdigest(),
                                'people'      : simplejson.dumps(people),
                                'classes'     : simplejson.dumps(classes),
-                               'instances'   : simplejson.dumps(instances),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET) },
                               context_instance=RequestContext(request))
