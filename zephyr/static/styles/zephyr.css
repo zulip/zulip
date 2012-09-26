@@ -79,8 +79,27 @@ td.zephyr_recipient {
     white-space:    nowrap;
 }
 
-td.zephyr_huddle_list {
-    text-align: left;
+td.zephyr_newstyle_class {
+    vertical-align: top;
+    text-align:     right;
+    overflow-x:     hidden;
+    padding-right:   10px;
+    max-width:      100px;
+    min-width:      100px;
+    white-space:    nowrap;
+    background-color: lightgrey;
+    border: 1px solid grey;
+    font-weight: bold;
+}
+
+td.zephyr_newstyle_instance {
+    text-align:     left;
+    overflow-x:     hidden;
+    padding-left: 10px;
+    white-space:    nowrap;
+    background-color: lightgrey;
+    border: 1px solid grey;
+    font-weight: bold;
 }
 
 .zephyr_class {
@@ -130,7 +149,7 @@ table.focused_table {
 }
 
 .zephyr_content {
-    margin-left: 45px;
+    margin-left: 5px;
 }
 
 blockquote {
@@ -153,7 +172,7 @@ blockquote p {
 }
 
 .bookend {
-    padding-top: 5px;
+    padding-top: 10px;
 }
 
 .prev_is_same_sender {
@@ -168,8 +187,8 @@ blockquote p {
 
 img.profile_picture {
     display: block;
-    float: left;
-    margin: 0 15px 15px 0;
+    float: right;
+    margin-top: 5px;
     max-height: 30px;
     width:  30px;
     height: 30px;
@@ -281,7 +300,7 @@ input.send_zephyr {
 
 .selected_zephyr .pointer {
     background-color: blue;
-    width: 2px;
+    width: 1px;
 }
 
 #zephyr-type-tabs {

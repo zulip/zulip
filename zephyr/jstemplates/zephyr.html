@@ -8,29 +8,26 @@
 {{#include_recipient}}
 {{^is_class}}
 <tr>
-    <td></td>
-    <td class="zephyr_label_clickable zephyr_recipient" onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">Huddle</td>
-    <td class="zephyr_label_clickable zephyr_recipient zephyr_huddle_list" onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">with {{reply_to}}</td>
+    <td colspan="2" class="zephyr_label_clickable zephyr_recipient zephyr_newstyle_class" onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">Huddle</td>
+    <td class="zephyr_label_clickable zephyr_recipient zephyr_newstyle_instance" onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">{{reply_to}}</td>
+</tr>
+{{/is_class}}
+{{#is_class}}
+<tr>
+    <td colspan="2" class="zephyr_label_clickable zephyr_recipient zephyr_newstyle_class" onclick="select_zephyr_by_id({{id}}); narrow_class();">{{display_recipient}}</td>
+    <td class="zephyr_label_clickable zephyr_recipient zephyr_newstyle_instance" onclick="select_zephyr_by_id({{id}}); narrow_instance();">{{instance}}</td>
 </tr>
 {{/is_class}}
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}" class="zephyr_row" onmouseover="select_zephyr_by_id({{id}});">
-    <td class="pointer"><p></p></td>
     <td class="zephyr_recipient"><p onclick="select_zephyr_by_id({{id}})">
-    {{#include_recipient}}
-        {{#is_class}}
-            <span class="zephyr_label_clickable zephyr_class"
-                  onclick="select_zephyr_by_id({{id}}); narrow_class();">{{display_recipient}}</span>
-            <br/>
-            <span class="zephyr_label_clickable zephyr_instance"
-                  onclick="select_zephyr_by_id({{id}}); narrow_instance();">{{instance}}</span>
-        {{/is_class}}
-    {{/include_recipient}}
-        <br />
-    </td>
-    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}" onclick="select_zephyr_by_id({{id}}); respond_to_zephyr();">
     {{#include_sender}}
         <img class="profile_picture" src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30"/>
+    {{/include_sender}}
+    </td>
+    <td class="pointer"><p></p></td>
+    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}" onclick="select_zephyr_by_id({{id}}); respond_to_zephyr();">
+    {{#include_sender}}
         <span class="zephyr_label_clickable zephyr_sender" onmouseover="select_zephyr_by_id({{id}}); show_email();" onmouseout="hide_email();">
             <span class="zephyr_sender_name">{{sender_name}}</span> <span class="zephyr_sender_email invisible">{{sender_email}}</span>
         </span>
