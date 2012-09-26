@@ -64,7 +64,12 @@ def send_humbug(zeph):
     zeph['shortname'] = zeph['sender'].split('@')[0]
 
     browser.addheaders.append(('X-CSRFToken', csrf_token))
-    zephyr_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in zeph.items()])
+    try:
+        zephyr_data = urllib.urlencode([(k, v.decode('utf-8').encode('utf-8')) for k,v in zeph.items()])
+    except UnicodeDecodeError, e:
+        print "UnicodeDecodeError!"
+        print zeph
+        print e
     browser.open("https://app.humbughq.com/forge_zephyr/", zephyr_data)
 
 def fetch_fullname(username):
@@ -89,6 +94,7 @@ def username_to_fullname(username):
 
 
 def process_loop(log):
+    import mit_subs_list
     while True:
         try:
             notice = zephyr.receive(block=True)
