@@ -307,7 +307,7 @@ $(function () {
     $("#current_settings form").ajaxForm(options);
 });
 
-var selected_zephyr_id = 0;  /* to be filled in on document.ready */
+var selected_zephyr_id = -1;  /* to be filled in on document.ready */
 var selected_zephyr;  // = get_zephyr_row(selected_zephyr_id)
 var last_received = -1;
 
@@ -777,8 +777,12 @@ function add_messages(zephyrs) {
 
     $.each(zephyrs, function () {
         zephyr_array.push(this);
-        if (this.id === initial_pointer)
+
+        // If we received the initially selected message, select it on the client side,
+        // but not if the user has already selected another one during load.
+        if ((this.id === initial_pointer) && (selected_zephyr_id === -1)) {
             select_and_show_by_id(initial_pointer);
+        }
     });
 
     if (autocomplete_needs_update)
