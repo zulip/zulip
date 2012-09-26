@@ -685,7 +685,8 @@ function add_to_table(zephyrs, table_name, filter_function) {
 function add_zephyr_metadata(dummy, zephyr) {
     last_received = Math.max(last_received, zephyr.id);
 
-    if (zephyr.type === 'class') {
+    switch (zephyr.type) {
+    case 'class':
         zephyr.is_class = true;
         if ($.inArray(zephyr.display_recipient, class_list) === -1) {
             class_list.push(zephyr.display_recipient);
@@ -695,10 +696,14 @@ function add_zephyr_metadata(dummy, zephyr) {
             instance_list.push(zephyr.instance);
             update_autocomplete();
         }
-    } else if (zephyr.type === "huddle") {
+        break;
+
+    case 'huddle':
         zephyr.is_huddle = true;
         zephyr.reply_to = get_huddle_recipient(zephyr);
-    } else {
+        break;
+
+    case 'personal':
         zephyr.is_personal = true;
 
         if (zephyr.display_recipient === email) { // that is, we sent the original message
@@ -712,6 +717,7 @@ function add_zephyr_metadata(dummy, zephyr) {
             people_list.push(zephyr.reply_to);
             update_autocomplete();
         }
+        break;
     }
 
     var time = new Date(zephyr.timestamp * 1000);
