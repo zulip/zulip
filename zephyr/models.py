@@ -69,9 +69,10 @@ class UserProfile(models.Model):
     def add_callback(self, cb, last_received):
         global callback_table
 
-        new_zephyrs = Zephyr.objects.filter(
-            usermessage__user_profile = self,
-            id__gt = last_received)
+        new_zephyrs = (Zephyr.objects
+            .filter(usermessage__user_profile = self,
+                    id__gt = last_received)
+            .order_by('id')[:400])
 
         if new_zephyrs:
             return cb(new_zephyrs)
