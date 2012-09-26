@@ -170,7 +170,7 @@ class Zephyr(models.Model):
                 'instance'         : self.instance,
                 'content'          : md_engine.convert(self.content),
                 'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
-                'gravatar_hash'    : hashlib.md5(settings.HASH_SALT + self.sender.user.email).hexdigest(),
+                'gravatar_hash'    : hashlib.md5(self.sender.user.email.lower()).hexdigest(),
                 }
 
 class UserMessage(models.Model):

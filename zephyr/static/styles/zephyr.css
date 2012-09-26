@@ -186,7 +186,7 @@ blockquote p {
 }
 
 img.profile_picture {
-    display: none;
+    display: block;
     float: right;
     margin-top: 5px;
     max-height: 30px;
