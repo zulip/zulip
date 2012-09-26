@@ -3,14 +3,6 @@
 {% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
 {% block more_content %}
 
-<script type="text/javascript">
-if ($('#id_email').length === 0) {
-    autofocus('#id_full_name');
-} else {
-    autofocus('#id_email');
-}
-</script>
-
 <p>(Welcome! We think you'll like it here.)</p>
 
 <div class="pitch">
@@ -24,24 +16,45 @@ if ($('#id_email').length === 0) {
     <div class="control-group">
         <label for="id_email" class="control-label">Email</label>
         <div class="controls">
-            {% if company_name %} {# They entered through the main page and already entered their email #}
+            {% if company_name and not form.email.errors %} {# They entered through the main page and already entered their email #}
                 {{ form.email.as_hidden }}
                 <p>{{ form.email.value }}<p>
             {% else %}
                 {{ form.email }}
+                {% if form.email.errors %}
+                    <br/>
+                    <br/>
+                    {% for error in form.email.errors %}
+                        <div class="alert alert-error">{{ error|escape }}</div>
+                    {% endfor %}
+                {% endif %}
             {% endif %}
         </div>
     </div>
     <div class="control-group">
-        <label for="id_full_name" class="control-label">Your name</label>
+        <label for="id_full_name" class="control-label">your name</label>
         <div class="controls">
             {{ form.full_name }}
+            {% if form.full_name.errors %}
+                <br/>
+                <br/>
+                {% for error in form.full_name.errors %}
+                    <div class="alert alert-error">{{ error|escape }}</div>
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
     <div class="control-group">
-        <label for="id_password" class="control-label">Password</label>
+        <label for="id_password" class="control-label">password</label>
         <div class="controls">
             {{ form.password }}
+            {% if form.password.errors %}
+                <br/>
+                <br/>
+                {% for error in form.password.errors %}
+                    <div class="alert alert-error">{{ error|escape }}</div>
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 
@@ -50,5 +63,15 @@ if ($('#id_email').length === 0) {
 <input type="hidden" name="next" value="{{ next }}" />
 <input type="hidden" name="domain" value="humbughq.com" />
 </form>
+
+<script type="text/javascript">
+if ($('#id_email:visible').length) {
+    console.log(1);
+    autofocus('#id_email');
+} else {
+    console.log(2);
+    autofocus('#id_full_name');
+}
+</script>
 
 {% endblock %}
