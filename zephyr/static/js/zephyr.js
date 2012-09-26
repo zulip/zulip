@@ -91,6 +91,15 @@ $(function () {
             },
         });
     });
+
+    var last_mousewheel = 0;
+    $("#main_div").mousewheel(function () {
+        var time = $.now();
+        if (time - last_mousewheel > 50) {
+            keep_pointer_in_view();
+            last_mousewheel = time;
+        }
+    });
 });
 
 $.ajaxSetup({
@@ -847,3 +856,38 @@ $(function () {
         show_compose('class', $("#class"));
     });
 });
+
+function above_view(zephyr) {
+    return zephyr.offset().top < $("#main_div").offset().top;
+}
+
+function below_view(zephyr) {
+    var main_div = $("#main_div");
+    return zephyr.offset().top + zephyr.height() > main_div.offset().top + main_div.height();
+}
+
+function keep_pointer_in_view() {
+    var main_div = $("#main_div");
+    var next_zephyr = get_zephyr_row(selected_zephyr_id);
+
+    if (above_view(next_zephyr)) {
+        while (above_view(next_zephyr)) {
+            next_zephyr = get_next_visible(next_zephyr);
+        }
+    } else if (below_view(next_zephyr)) {
+        while (below_view(next_zephyr)) {
+            next_zephyr = get_prev_visible(next_zephyr);
+        }
+    }
+
+    if ((main_div.scrollTop() === 0) && (next_zephyr.attr("zid") > get_first_visible().attr("zid"))) {
+        // If we've scrolled to the top, keep inching the selected
+        // zephyr up to the top instead of just the latest one that is
+        // still on the screen.
+        next_zephyr = get_prev_visible(next_zephyr);
+    } else if ((main_div.scrollTop() + main_div.innerHeight() >= main_div[0].scrollHeight) &&
+               (next_zephyr.attr("zid") < get_last_visible().attr("zid"))) {
+        next_zephyr = get_next_visible(next_zephyr);
+    }
+    update_selected_zephyr(next_zephyr);
+}
