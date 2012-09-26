@@ -22,6 +22,7 @@ function register_huddle_onclick(zephyr_row, sender) {
     });
 }
 
+var zephyr_array = [];
 var zephyr_dict = {};
 var status_classes = 'alert-error alert-success alert-info';
 
@@ -759,12 +760,6 @@ function add_messages(zephyrs) {
     add_to_table(zephyrs, 'zhome', function () { return true; });
 }
 
-$(function () {
-    add_messages(zephyr_array);
-    select_and_show_by_id(initial_pointer);
-    get_updates_longpoll();
-});
-
 function clear_compose_box() {
     $("#zephyr_compose").find('input[type=text], textarea').val('');
 }
@@ -787,6 +782,8 @@ function get_updates_longpoll() {
                 add_messages(data.zephyrs);
                 $.each(data.zephyrs, function () {
                     zephyr_array.push(this);
+                    if (this.id === initial_pointer)
+                        select_and_show_by_id(initial_pointer);
                 });
             }
             setTimeout(get_updates_longpoll, 0);
@@ -817,6 +814,7 @@ function get_updates_longpoll() {
 }
 
 $(function () {
+    get_updates_longpoll();
     update_autocomplete();
     $('.button-slide').click(function () {
         show_compose('class', $("#class"));

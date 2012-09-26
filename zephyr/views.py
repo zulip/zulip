@@ -96,8 +96,6 @@ def home(request):
         user_profile.pointer = min([zephyr.id for zephyr in zephyrs])
         user_profile.save()
 
-    zephyr_json = simplejson.dumps([zephyr.to_dict() for zephyr in zephyrs])
-
     # Populate personals autocomplete list based on everyone in your
     # realm.  Later we might want a 2-layer autocomplete, where we
     # consider specially some sort of "buddy list" who e.g. you've
@@ -118,8 +116,7 @@ def home(request):
     instances = list(set(zephyr.instance for zephyr in class_zephyrs))
 
     return render_to_response('zephyr/index.html',
-                              {'zephyr_array' : zephyr_json,
-                               'user_profile': user_profile,
+                              {'user_profile': user_profile,
                                'email_hash'  : hashlib.md5(settings.HASH_SALT + user_profile.user.email).hexdigest(),
                                'people'      : simplejson.dumps(people),
                                'classes'     : simplejson.dumps(classes),
