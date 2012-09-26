@@ -316,10 +316,14 @@ function get_all_zephyr_rows() {
 }
 
 function get_next_visible(zephyr_row) {
+    if (zephyr_row === undefined)
+        return [];
     return zephyr_row.nextAll('.zephyr_row:first');
 }
 
 function get_prev_visible(zephyr_row) {
+    if (zephyr_row === undefined)
+        return [];
     return zephyr_row.prevAll('.zephyr_row:first');
 }
 
