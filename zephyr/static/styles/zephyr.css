@@ -1,6 +1,7 @@
 body {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
     overflow: hidden;
+    background-color: aliceblue;
 }
 
 .sidebar-nav {
@@ -74,8 +75,8 @@ td.zephyr_recipient {
     overflow-x:     hidden;
     padding-right:   10px;
     padding-top:      5px;
-    max-width:      100px;
-    min-width:      100px;
+    max-width:      80px;
+    min-width:      80px;
     white-space:    nowrap;
 }
 
@@ -84,8 +85,8 @@ td.zephyr_newstyle_class {
     text-align:     right;
     overflow-x:     hidden;
     padding-right:   10px;
-    max-width:      100px;
-    min-width:      100px;
+    max-width:      80px;
+    min-width:      80px;
     white-space:    nowrap;
     background-color: lightgrey;
     border: 1px solid grey;
@@ -300,7 +301,7 @@ input.send_zephyr {
 
 .selected_zephyr .pointer {
     background-color: blue;
-    width: 1px;
+    width: 2px;
 }
 
 #zephyr-type-tabs {
