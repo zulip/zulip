@@ -20,7 +20,6 @@ import datetime
 import simplejson
 import socket
 import re
-import markdown
 import hashlib
 
 def require_post(view_func):
@@ -42,23 +41,23 @@ def json_success(data={}):
 def json_error(msg, data={}):
     return json_response(res_type="error", msg=msg, data=data, status=400)
 
-def sanitize_identifier(x):
+def strip_html(x):
     """Sanitize an email, class name, etc."""
     # We remove <> in order to avoid </script> within JSON embedded in HTML.
     #
     # FIXME: consider a whitelist
-    return x.replace('<','').replace('>','')
+    return x.replace('<','&lt;').replace('>','&gt;')
 
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            email      = sanitize_identifier(request.POST['email'])
+            email      = strip_html(request.POST['email'])
             password   = request.POST['password']
-            full_name  = sanitize_identifier(request.POST['full_name'])
-            short_name = sanitize_identifier(request.POST['short_name'])
-            email      = sanitize_identifier(request.POST['email'])
-            domain     = sanitize_identifier(request.POST['domain'])
+            full_name  = strip_html(request.POST['full_name'])
+            short_name = strip_html(request.POST['short_name'])
+            email      = strip_html(request.POST['email'])
+            domain     = strip_html(request.POST['domain'])
             realm = Realm.objects.filter(domain=domain)
             if not realm:
                 realm = Realm(domain=domain)
@@ -177,7 +176,7 @@ def zephyr(request):
 @login_required
 @require_post
 def forge_zephyr(request):
-    email = sanitize_identifier(request.POST['sender']).lower()
+    email = strip_html(request.POST['sender']).lower()
     user_profile = UserProfile.objects.get(user=request.user)
 
     if "time" not in request.POST:
@@ -188,14 +187,14 @@ def forge_zephyr(request):
     except User.DoesNotExist:
         # forge a user for this person
         create_user(email, "test", user_profile.realm,
-                    sanitize_identifier(request.POST['fullname']),
-                    sanitize_identifier(request.POST['shortname']))
+                    strip_html(request.POST['fullname']),
+                    strip_html(request.POST['shortname']))
         user = User.objects.get(email=email)
 
     if (request.POST['type'] == 'personal' and ',' in request.POST['recipient']):
         # Huddle message, need to make sure we're not syncing it twice!
         if Zephyr.objects.filter(sender__user__email=email,
-                                 content=md_engine.convert(request.POST['new_zephyr']),
+                                 content=request.POST['new_zephyr'],
                                  pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 1).replace(tzinfo=utc),
                                  pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 1).replace(tzinfo=utc)):
             # This is a duplicate huddle message, deduplicate!
@@ -213,11 +212,6 @@ def forge_zephyr(request):
 
     return zephyr_backend(request, user)
 
-md_engine = markdown.Markdown(
-    extensions    = ['fenced_code', 'codehilite'],
-    safe_mode     = True,
-    output_format = 'xhtml' )
-
 @login_required
 @require_post
 def zephyr_backend(request, sender):
@@ -234,7 +228,7 @@ def zephyr_backend(request, sender):
         if "instance" not in request.POST:
             return json_error("Missing instance")
 
-        class_name = sanitize_identifier(request.POST['class']).strip()
+        class_name = strip_html(request.POST['class']).strip()
         my_classes = ZephyrClass.objects.filter(name=class_name, realm=user_profile.realm)
         if my_classes:
             my_class = my_classes[0]
@@ -253,7 +247,7 @@ def zephyr_backend(request, sender):
         if "recipient" not in request.POST:
             return json_error("Missing recipient")
 
-        recipient_data = sanitize_identifier(request.POST['recipient'])
+        recipient_data = strip_html(request.POST['recipient'])
         if ',' in recipient_data:
             # This is actually a huddle message, which shares the
             # "personal" zephyr sending form
@@ -285,10 +279,10 @@ def zephyr_backend(request, sender):
 
     new_zephyr = Zephyr()
     new_zephyr.sender = UserProfile.objects.get(user=sender)
-    new_zephyr.content = md_engine.convert(request.POST['new_zephyr'])
+    new_zephyr.content = strip_html(request.POST['new_zephyr'])
     new_zephyr.recipient = recipient
     if zephyr_type_name == 'class':
-        new_zephyr.instance = sanitize_identifier(request.POST['instance'])
+        new_zephyr.instance = strip_html(request.POST['instance'])
     if 'time' in request.POST:
         # Forged zephyrs come with a timestamp
         new_zephyr.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
@@ -412,9 +406,9 @@ def change_settings(request):
     old_password     = request.POST['old_password']
     new_password     = request.POST['new_password']
     confirm_password = request.POST['confirm_password']
-    full_name        = sanitize_identifier(request.POST['full_name'])
-    short_name       = sanitize_identifier(request.POST['short_name'])
-    timezone         = sanitize_identifier(request.POST['timezone'])
+    full_name        = strip_html(request.POST['full_name'])
+    short_name       = strip_html(request.POST['short_name'])
+    timezone         = strip_html(request.POST['timezone'])
 
     if new_password != "":
         if new_password != confirm_password:

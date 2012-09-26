@@ -10,6 +10,11 @@ import datetime
 from zephyr.lib.cache import cache_with_key
 
 from django.db.models.signals import class_prepared
+import markdown
+md_engine = markdown.Markdown(
+    extensions    = ['fenced_code', 'codehilite'],
+    safe_mode     = True,
+    output_format = 'xhtml' )
 
 def get_display_recipient(recipient):
     """
@@ -162,7 +167,7 @@ class Zephyr(models.Model):
                 'display_recipient': get_display_recipient(self.recipient),
                 'recipient_id'     : self.recipient.id,
                 'instance'         : self.instance,
-                'content'          : self.content,
+                'content'          : md_engine.convert(self.content),
                 'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
                 'gravatar_hash'    : hashlib.md5(settings.HASH_SALT + self.sender.user.email).hexdigest(),
                 }
