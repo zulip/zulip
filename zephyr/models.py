@@ -161,6 +161,12 @@ class Zephyr(models.Model):
 
     @cache_with_key(lambda self: 'zephyr_dict:%d' % (self.id,))
     def to_dict(self):
+        try:
+            new_content = self.content.decode("utf-8")
+        except:
+            print "Unicode issues!"
+            print self.content
+            new_content = self.content
         return {'id'               : self.id,
                 'sender_email'     : self.sender.user.email,
                 'sender_name'      : self.sender.full_name,
@@ -168,7 +174,7 @@ class Zephyr(models.Model):
                 'display_recipient': get_display_recipient(self.recipient),
                 'recipient_id'     : self.recipient.id,
                 'instance'         : self.instance,
-                'content'          : md_engine.convert(self.content.decode("utf-8")),
+                'content'          : md_engine.convert(new_content),
                 'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
                 'gravatar_hash'    : hashlib.md5(self.sender.user.email.lower()).hexdigest(),
                 }
