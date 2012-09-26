@@ -336,3 +336,14 @@ input.send_zephyr {
     position: absolute;
     bottom: 0;
 }
+
+#loading_indicator {
+    margin-top:  40px;
+    font-size:   36px;
+    font-weight: bold;
+}
+
+#loading_spinner {
+    width: 40px;
+    padding-right: 40px;
+}

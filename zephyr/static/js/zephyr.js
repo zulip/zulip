@@ -5,9 +5,14 @@
     zephyr_json: false, initial_pointer: false, email: false,
     class_list: false, instance_list: false, people_list: false */
 
-// Compile Handlebars templates.
+var loading_spinner;
 var templates = {};
 $(function () {
+    // Display loading indicator.  This disappears after the first
+    // get_updates_longpoll completes.
+    loading_spinner = new Spinner().spin($('#loading_spinner')[0]);
+
+    // Compile Handlebars templates.
     templates.zephyr       = Handlebars.compile($("#template_zephyr").html());
     templates.subscription = Handlebars.compile($("#template_subscription").html());
 });
@@ -757,6 +762,12 @@ function add_zephyr_metadata(dummy, zephyr) {
 
 function add_messages(zephyrs) {
     $.each(zephyrs, add_zephyr_metadata);
+
+    if (loading_spinner) {
+        loading_spinner.stop();
+        $('#loading_indicator').hide();
+        loading_spinner = undefined;
+    }
 
     if (narrowed)
         add_to_table(zephyrs, 'zfilt', narrowed);
