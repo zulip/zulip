@@ -494,9 +494,9 @@ function hide_email() {
     $('.zephyr_sender_email').addClass('invisible');
 }
 
-function show_email() {
+function show_email(zephyr_id) {
     hide_email();
-    selected_zephyr.find('.zephyr_sender_email').removeClass('invisible');
+    get_zephyr_row(zephyr_id).find('.zephyr_sender_email').removeClass('invisible');
 }
 
 // NB: This just binds to current elements, and won't bind to elements
