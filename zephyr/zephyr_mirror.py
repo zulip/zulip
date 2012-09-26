@@ -62,17 +62,24 @@ def browser_login():
     browser.submit()
 
 def send_humbug(zeph):
+    zeph["sender"] = zeph["sender"].lower().replace("athena.mit.edu", "mit.edu")
+    if "recipient" in zeph:
+        zeph["recipient"] = zeph["recipient"].lower().replace("athena.mit.edu", "mit.edu")
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]
 
     browser.addheaders.append(('X-CSRFToken', csrf_token))
-    try:
-        zephyr_data = urllib.urlencode([(k, v.decode('utf-8').encode('utf-8')) for k,v in zeph.items()])
-    except UnicodeDecodeError, e:
-        print "UnicodeDecodeError!"
-        print zeph
-        print e
-    browser.open("https://app.humbughq.com/forge_zephyr/", zephyr_data)
+
+    humbug_data = []
+    for key in zeph.keys():
+        try: val = zeph[key].decode("utf-8").encode("utf-8")
+        except:
+            try:
+                val = zeph[key].encode("utf-8")
+            except:
+                print "wtf!", zeph[key]
+        humbug_data.append((key, val))
+    browser.open("https://app.humbughq.com/forge_zephyr/", urllib.urlencode(humbug_data))
 
 def fetch_fullname(username):
     try:
@@ -181,16 +188,16 @@ def zephyr_to_humbug(options):
 
     if options.resend_log:
         with open('zephyrs', 'r') as log:
-            try:
-                for ln in log:
+            for ln in log:
+                try:
                     zeph = simplejson.loads(ln)
                     print "sending saved message to %s from %s..." % \
                         (zeph.get('class', zeph.get('recipient')), zeph['sender'])
                     send_humbug(zeph)
-            except:
-                print >>sys.stderr, 'Could not send saved zephyr'
-                traceback.print_exc()
-                time.sleep(2)
+                except:
+                    print >>sys.stderr, 'Could not send saved zephyr'
+                    traceback.print_exc()
+                    time.sleep(2)
 
     print "Starting receive loop"
 
