@@ -34,32 +34,29 @@
                     <div class="tab-content">
                         <div class="tab-pane active" id="class-message">
                             <div class="zephyr_comp">
-                                <br/>
                                 <form action="/zephyr/" method="post" class="zephyr">
                                     <input type="hidden" name="type" value="class" />
                                     {% csrf_token %}
                                     <table>
                                         <tbody>
-                                            <tr>
-                                                <td class="pointer"></td>
-                                                <td class="zephyr_recipient">
-                                                    <p>
-                                                        <span class="zephyr_label_clickable zephyr_class">
-                                                            <input type="text" class="zephyr_recipient_box" name="class" id="class" value="" placeholder="Stream" autocomplete="off"/>
-                                                        </span>
-                                                        <br/>
-                                                        <span class="zephyr_label_clickable zephyr_instance">
-                                                            <input type="text" class="zephyr_recipient_box" name="instance" id="instance" value="" placeholder="Topic" autocomplete="off"/>
-                                                        </span>
-                                                    </p>
-                                                </td>
-                                                <td class="messagebox compose">
-                                                    <div class="zephyr_content">
-                                                        <textarea class="zephyr_message" name="new_zephyr" id="new_zephyr" value="" placeholder="Compose your message here..."/></textarea>
-                                                        <input type="submit" value="Send" class="btn send_zephyr"/>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                          <tr>
+                                            <td colspan="2" class="zephyr_label_clickable zephyr_recipient zephyr_newstyle_class">
+                                              <input type="text" class="zephyr_recipient_box" name="class" id="class" value="" placeholder="Stream" autocomplete="off"/>
+                                            </td>
+                                            <td class="zephyr_label_clickable zephyr_recipient zephyr_newstyle_instance">
+                                              <input type="text" class="zephyr_recipient_box" name="instance" id="instance" value="" placeholder="Topic" autocomplete="off"/>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td class="zephyr_recipient"></td>
+                                            <td class="pointer"></td>
+                                            <td class="messagebox">
+                                              <div class="zephyr_content">
+                                                <textarea class="zephyr_message" name="new_zephyr" id="new_zephyr" value="" placeholder="Compose your message here..."></textarea>
+                                                <input type="submit" value="Send" class="btn send_zephyr"/>
+                                              </div>
+                                            </td>
+                                          </tr>
                                         </tbody>
                                     </table>
                                 </form>
@@ -67,27 +64,29 @@
                         </div>
                         <div class="tab-pane" id="personal-message">
                             <div class="zephyr_comp">
-                                <br/>
-                                <form action="/zephyr/" method="post" class="zephyr form-inline">
+                                <form action="/zephyr/" method="post" class="zephyr">
                                     <input type="hidden" name="type" value="personal" />
                                     {% csrf_token %}
                                     <table>
                                         <tbody>
-                                            <tr>
-                                                <td class="pointer"></td>
-                                                <td><label class="pull-right">Huddle with</label></td>
-                                                <td><input class="input-xlarge" type="text" name="recipient" id="recipient" value="" placeholder="one or more of your friends"  autocomplete="off"/></td>
-                                            </tr>
-                                            <tr>
-                                                <td class="pointer"></td>
-                                                <td class="zephyr_recipient"></td>
-                                                <td class="messagebox compose">
-                                                    <div class="zephyr_content">
-                                                        <textarea class="zephyr_message" name="new_zephyr" id="new_personal_zephyr" value="" placeholder="Compose your message here..."/></textarea>
-                                                        <input type="submit" name="personal_zephyr" value="Send" class="btn send_zephyr"/>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                          <tr>
+                                            <td colspan="2" class="zephyr_label_clickable zephyr_recipient zephyr_newstyle_class">
+                                              Huddle
+                                            </td>
+                                            <td class="zephyr_label_clickable zephyr_recipient zephyr_newstyle_instance">
+                                              <input type="text" class="zephyr_recipient_box" name="recipient" id="recipient" value="" placeholder="with one or more of your friends..." autocomplete="off"/>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td class="zephyr_recipient"></td>
+                                            <td class="pointer"></td>
+                                            <td class="messagebox">
+                                              <div class="zephyr_content">
+                                                <textarea class="zephyr_message" name="new_zephyr" id="new_personal_zephyr" value="" placeholder="Compose your message here..."></textarea>
+                                                <input type="submit" name="personal_zephyr" value="Send" class="btn send_zephyr"/>
+                                              </div>
+                                            </td>
+                                          </tr>
                                         </tbody>
                                     </table>
                                 </form>

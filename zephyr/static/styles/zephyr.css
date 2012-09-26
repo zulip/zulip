@@ -1,7 +1,6 @@
 body {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
     overflow: hidden;
-    background-color: aliceblue;
 }
 
 .sidebar-nav {
@@ -266,7 +265,7 @@ textarea:focus {
 }
 
 input.zephyr_recipient_box {
-    width: 90px;
+    width: 90%;
 }
 
 input.send_zephyr {
