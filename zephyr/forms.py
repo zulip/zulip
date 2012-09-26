@@ -5,7 +5,6 @@ from django.contrib.auth.models import User
 
 def is_unique(value):
     try:
-        print "foo + " + value
         User.objects.get(email=value)
         raise ValidationError(u'%s is already registered' % value)
     except User.DoesNotExist:
