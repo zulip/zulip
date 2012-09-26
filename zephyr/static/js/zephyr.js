@@ -609,6 +609,8 @@ function show_all_messages() {
     scroll_to_selected();
 }
 
+var autocomplete_needs_update = false;
+
 function update_autocomplete() {
     class_list.sort();
     instance_list.sort();
@@ -627,6 +629,8 @@ function update_autocomplete() {
         source: people_list,
         items: 4,
     });
+
+    autocomplete_needs_update = false;
 }
 
 function same_recipient(a, b) {
@@ -710,11 +714,11 @@ function add_zephyr_metadata(dummy, zephyr) {
         zephyr.is_class = true;
         if ($.inArray(zephyr.display_recipient, class_list) === -1) {
             class_list.push(zephyr.display_recipient);
-            update_autocomplete();
+            autocomplete_needs_update = true;
         }
         if ($.inArray(zephyr.instance, instance_list) === -1) {
             instance_list.push(zephyr.instance);
-            update_autocomplete();
+            autocomplete_needs_update = true;
         }
         break;
 
@@ -737,7 +741,7 @@ function add_zephyr_metadata(dummy, zephyr) {
         if (zephyr.reply_to !== email &&
                 $.inArray(zephyr.reply_to, people_list) === -1) {
             people_list.push(zephyr.reply_to);
-            update_autocomplete();
+            autocomplete_needs_update = true;
         }
         break;
     }
@@ -759,6 +763,9 @@ function add_messages(zephyrs) {
 
     // Even when narrowed, add messages to the home view so they exist when we un-narrow.
     add_to_table(zephyrs, 'zhome', function () { return true; });
+
+    if (autocomplete_needs_update)
+        update_autocomplete();
 }
 
 function clear_compose_box() {
@@ -816,7 +823,6 @@ function get_updates_longpoll() {
 
 $(function () {
     get_updates_longpoll();
-    update_autocomplete();
     $('.button-slide').click(function () {
         show_compose('class', $("#class"));
     });
