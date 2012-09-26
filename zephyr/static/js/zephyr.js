@@ -359,15 +359,20 @@ function respond_to_zephyr() {
     var zephyr, recipient, recipients;
     zephyr = zephyr_dict[selected_zephyr_id];
 
-    if (zephyr.type === 'class') {
+    switch (zephyr.type) {
+    case 'class':
         $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
         $("#class").val(zephyr.display_recipient);
         $("#instance").val(zephyr.instance);
         show_compose('class', $("#new_zephyr"));
-    } else if (zephyr.type === 'huddle') {
+        break;
+
+    case 'huddle':
         $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
         prepare_huddle(zephyr.reply_to);
-    } else if (zephyr.type === 'personal') {
+        break;
+
+    case 'personal':
         // Until we allow sending zephyrs based on multiple meaningful
         // representations of a user (name, username, email, etc.), just
         // deal with emails.
@@ -376,9 +381,8 @@ function respond_to_zephyr() {
             recipient = zephyr.sender_email;
         }
         prepare_huddle(recipient);
+        break;
     }
-
-
 }
 
 // Called by mouseover etc.
