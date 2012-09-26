@@ -30,6 +30,7 @@ def get_display_recipient(recipient):
         return user.email
 
 callback_table = {}
+mit_sync_table = {}
 
 class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True)
@@ -185,7 +186,7 @@ def get_user_profile_by_id(uid):
     return UserProfile.objects.get(id=uid)
 
 def do_send_zephyr(zephyr, synced_from_mit=False):
-    zephyr.synced_from_mit = synced_from_mit
+    mit_sync_table[zephyr.id] = synced_from_mit
     zephyr.save()
     if zephyr.recipient.type == Recipient.PERSONAL:
         recipients = list(set([get_user_profile_by_id(zephyr.recipient.type_id),

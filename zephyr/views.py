@@ -11,7 +11,7 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
-    create_user, do_send_zephyr
+    create_user, do_send_zephyr, mit_sync_table
 from zephyr.forms import RegistrationForm
 
 from zephyr.decorator import asynchronous
@@ -159,7 +159,7 @@ def get_updates_longpoll(request, handler):
             # Avoid message loop by not sending the MIT sync bot any
             # messages that we got from it in the first place.
             if request.POST.get('mit_sync_bot'):
-                zephyrs = [zephyr for zephyr in zephyrs if not zephyr.synced_from_mit]
+                zephyrs = [zephyr for zephyr in zephyrs if not mit_sync_table.get(zephyr.id)]
             handler.finish({'zephyrs': [zephyr.to_dict() for zephyr in zephyrs]})
         except socket.error:
             pass
