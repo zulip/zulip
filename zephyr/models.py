@@ -22,9 +22,9 @@ def get_display_recipient(recipient):
         zephyr_class = ZephyrClass.objects.get(id=recipient.type_id)
         return zephyr_class.name
     elif recipient.type == Recipient.HUDDLE:
-        user_list = [UserProfile.objects.get(user=s.userprofile) for s in
-                     Subscription.objects.filter(recipient=recipient)]
-        return [{'email': user.email} for user in user_list]
+        user_profile_list = [UserProfile.objects.get(user=s.userprofile) for s in
+                             Subscription.objects.filter(recipient=recipient)]
+        return [{'email': user_profile.user.email} for user_profile in user_profile_list]
     else:
         user = User.objects.get(id=recipient.type_id)
         return user.email
