@@ -764,6 +764,12 @@ function add_messages(zephyrs) {
     // Even when narrowed, add messages to the home view so they exist when we un-narrow.
     add_to_table(zephyrs, 'zhome', function () { return true; });
 
+    $.each(zephyrs, function () {
+        zephyr_array.push(this);
+        if (this.id === initial_pointer)
+            select_and_show_by_id(initial_pointer);
+    });
+
     if (autocomplete_needs_update)
         update_autocomplete();
 }
@@ -788,11 +794,6 @@ function get_updates_longpoll() {
 
             if (data && data.zephyrs) {
                 add_messages(data.zephyrs);
-                $.each(data.zephyrs, function () {
-                    zephyr_array.push(this);
-                    if (this.id === initial_pointer)
-                        select_and_show_by_id(initial_pointer);
-                });
             }
             setTimeout(get_updates_longpoll, 0);
         },
