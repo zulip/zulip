@@ -21,6 +21,7 @@ $(document).ready(function(){
                 email: true,
             }
         },
+        errorLabelContainer: "#errors",
         errorElement: "div",
         errorClass: "alert",
 
