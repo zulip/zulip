@@ -164,8 +164,6 @@ class Zephyr(models.Model):
         try:
             new_content = self.content.decode("utf-8")
         except:
-            print "Unicode issues!"
-            print self.content
             new_content = self.content
         return {'id'               : self.id,
                 'sender_email'     : self.sender.user.email,
