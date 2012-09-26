@@ -11,11 +11,6 @@ import time
 import subprocess
 import optparse
 import os
-import markdown
-md_engine = markdown.Markdown(
-    extensions    = ['fenced_code', 'codehilite'],
-    safe_mode     = True,
-    output_format = 'xhtml' )
 
 zephyr.init()
 
