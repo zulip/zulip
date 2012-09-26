@@ -34,6 +34,12 @@ function process_hotkey(code) {
         window_to_scroll = $(".active").find(".scrolling-tab");
     }
 
+    if (num_pressed_keys() > 1) {
+        // If you are already holding down another key, none of these
+        // actions apply.
+        return false;
+    }
+
     switch (code) {
     case 33: // Page Up
         window_to_scroll.scrollTop(window_to_scroll.scrollTop() - window_to_scroll.height());
@@ -95,6 +101,24 @@ function process_compose_hotkey(code) {
         simulate_keypress(code);
     }
 }
+
+var pressed_keys = {};
+
+function num_pressed_keys() {
+    var size = 0, key;
+    for (key in pressed_keys) {
+        if (pressed_keys.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
+
+$(document).keydown(function (e) {
+    pressed_keys[e.which] = true;
+});
+
+$(document).keyup(function (e) {
+    pressed_keys = {};
+});
 
 /* The current handler function for keydown events.
    It should return a new handler, or 'false' to

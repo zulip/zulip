@@ -31,6 +31,18 @@ function register_huddle_onclick(zephyr_row, sender) {
     });
 }
 
+function register_onclick(zephyr_row, zephyr_id) {
+    zephyr_row.find(".messagebox").click(function (e) {
+        if (!(clicking && mouse_moved)) {
+            // Was a click (not a click-and-drag).
+            select_zephyr_by_id(zephyr_id);
+            respond_to_zephyr();
+        }
+        mouse_moved = false;
+        clicking = false;
+    });
+}
+
 var zephyr_array = [];
 var zephyr_dict = {};
 var instance_list = [];
@@ -427,6 +439,20 @@ function select_zephyr_by_id(zephyr_id) {
     select_zephyr(get_zephyr_row(zephyr_id), false);
 }
 
+var clicking = false;
+var mouse_moved = false;
+
+function zephyr_mousedown() {
+    mouse_moved = false;
+    clicking = true;
+}
+
+function zephyr_mousemove() {
+    if (clicking) {
+        mouse_moved = true;
+    }
+}
+
 // Called on page load and when we [un]narrow.
 // Forces a call to select_zephyr even if the id has not changed,
 // because the visible table might have.
@@ -715,7 +741,9 @@ function add_to_table(zephyrs, table_name, filter_function) {
     table.append(templates.zephyr({'zephyrs': zephyrs_to_render}));
 
     $.each(zephyrs_to_render, function (index, zephyr) {
-        register_huddle_onclick(get_zephyr_row(zephyr.id), zephyr.sender_email);
+        var row = get_zephyr_row(zephyr.id);
+        register_huddle_onclick(row, zephyr.sender_email);
+        register_onclick(row, zephyr.id);
     });
 
     $.each(ids_where_next_is_same_sender, function (index, id) {
