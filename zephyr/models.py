@@ -168,7 +168,7 @@ class Zephyr(models.Model):
                 'display_recipient': get_display_recipient(self.recipient),
                 'recipient_id'     : self.recipient.id,
                 'instance'         : self.instance,
-                'content'          : md_engine.convert(self.content),
+                'content'          : md_engine.convert(self.content.decode("utf-8")),
                 'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
                 'gravatar_hash'    : hashlib.md5(self.sender.user.email.lower()).hexdigest(),
                 }

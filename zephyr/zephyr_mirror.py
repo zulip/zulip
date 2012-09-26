@@ -11,6 +11,12 @@ import time
 import subprocess
 import optparse
 import os
+import markdown
+md_engine = markdown.Markdown(
+    extensions    = ['fenced_code', 'codehilite'],
+    safe_mode     = True,
+    output_format = 'xhtml' )
+
 zephyr.init()
 
 parser = optparse.OptionParser()
@@ -72,12 +78,10 @@ def send_humbug(zeph):
 
     humbug_data = []
     for key in zeph.keys():
-        try: val = zeph[key].decode("utf-8").encode("utf-8")
-        except:
-            try:
-                val = zeph[key].encode("utf-8")
-            except:
-                print "wtf!", zeph[key]
+        if isinstance(zeph[key], unicode):
+            val = zeph[key].encode("utf-8")
+        elif isinstance(zeph[key], str):
+            val = zeph[key].decode("utf-8")
         humbug_data.append((key, val))
     browser.open("https://app.humbughq.com/forge_zephyr/", urllib.urlencode(humbug_data))
 
