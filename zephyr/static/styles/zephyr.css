@@ -66,6 +66,7 @@ ul.nav-zephyr {
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
+    width: 2px;
 }
 
 td.zephyr_recipient {
