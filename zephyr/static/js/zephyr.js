@@ -355,6 +355,16 @@ function get_huddle_recipient(zephyr) {
     return recipient;
 }
 
+function get_huddle_recipient_names(zephyr) {
+    var recipient, i;
+
+    recipient = zephyr.display_recipient[0].name;
+    for (i = 1; i < zephyr.display_recipient.length; i++) {
+        recipient += ', ' + zephyr.display_recipient[i].name;
+    }
+    return recipient;
+}
+
 function respond_to_zephyr() {
     var zephyr, recipient, recipients;
     zephyr = zephyr_dict[selected_zephyr_id];
@@ -705,6 +715,7 @@ function add_zephyr_metadata(dummy, zephyr) {
     case 'huddle':
         zephyr.is_huddle = true;
         zephyr.reply_to = get_huddle_recipient(zephyr);
+        zephyr.display_reply_to = get_huddle_recipient_names(zephyr);
         break;
 
     case 'personal':
@@ -715,6 +726,7 @@ function add_zephyr_metadata(dummy, zephyr) {
         } else {
             zephyr.reply_to = zephyr.display_recipient;
         }
+        zephyr.display_reply_to = zephyr.reply_to;
 
         if (zephyr.reply_to !== email &&
                 $.inArray(zephyr.reply_to, people_list) === -1) {
