@@ -111,7 +111,7 @@ def home(request):
 
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
-                               'email_hash'  : hashlib.md5(settings.HASH_SALT + user_profile.user.email).hexdigest(),
+                               'email_hash'  : hashlib.md5(user_profile.user.email).hexdigest(),
                                'people'      : simplejson.dumps(people),
                                'classes'     : simplejson.dumps(classes),
                                'show_debug':
@@ -376,7 +376,7 @@ def manage_settings(request):
 
     return render_to_response('zephyr/settings.html',
                               {'user_profile': user_profile,
-                               'gravatar_hash': hashlib.md5(settings.MD5_SALT + user_profile.user.email).hexdigest(),
+                               'email_hash': hashlib.md5(user_profile.user.email).hexdigest(),
                                },
                               context_instance=RequestContext(request))
 
