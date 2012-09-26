@@ -10,6 +10,8 @@ import re
 import time
 import subprocess
 import optparse
+import os
+zephyr.init()
 
 parser = optparse.OptionParser()
 parser.add_option('--forward-class-messages',
@@ -102,7 +104,7 @@ def process_loop(log):
             is_personal = False
             is_huddle = False
 
-            if zsig.endswith("   "):
+            if zsig.endswith("`") and zsig.startswith("`"):
                 print "Skipping message from Humbug!"
                 continue
 
@@ -203,6 +205,31 @@ def get_zephyrs(last_received):
         res = browser.open("https://app.humbughq.com/get_updates_longpoll", submit_data)
         return simplejson.loads(res.read())['zephyrs']
 
+
+def send_zephyr(message):
+    zsig = "`Timothy G. Abbott`"
+    if message['type'] == "class":
+        zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
+                              auth=True, cls="tabbott-test4",
+                              instance=message["display_recipient"] + "/" + message["instance"])
+        body = "%s\0%s" % (zsig, message['content'])
+    elif message['type'] == "personal":
+        zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
+                              auth=True, cls="tabbott-test4",
+                              instance=message["display_recipient"])
+        body = "%s\0%s" % (zsig, message['content'])
+    elif message['type'] == "huddle":
+        # TODO: This needs to send one message to each person, I think
+        zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
+                              auth=True, cls="tabbott-test4",
+                              instance="huddle!")
+        cc_list = ["CC:"]
+        cc_list.extend([user["email"].replace("@mit.edu", "")
+                        for user in message["display_recipient"]])
+        body = "%s\0%s\n%s" % (zsig, " ".join(cc_list), message['content'])
+    zeph.setmessage(body)
+    zeph.send()
+
 def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
     browser_login()
@@ -213,6 +240,8 @@ def humbug_to_zephyr(options):
         new_zephyrs = get_zephyrs(last_received)
         for zephyr in new_zephyrs:
             print zephyr
+            if zephyr["sender_email"] == os.environ["USER"] + "@mit.edu":
+                send_zephyr(zephyr)
         zephyrs.extend(new_zephyrs)
 
 if options.forward_to_humbug:
