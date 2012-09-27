@@ -68,7 +68,8 @@ def send_humbug(zeph):
         zeph["recipient"] = zeph["recipient"].lower().replace("athena.mit.edu", "mit.edu")
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]
-
+    if "instance" in zeph:
+        zeph["instance"] = zeph["instance"][:30]
     browser.addheaders.append(('X-CSRFToken', csrf_token))
 
     humbug_data = []
