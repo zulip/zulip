@@ -1,6 +1,8 @@
 var directional_hotkeys = {
     40: get_next_visible,  // down arrow
+    74: get_next_visible,  // 'j'
     38: get_prev_visible,  // up arrow
+    75: get_prev_visible,  // 'k'
     36: get_first_visible, // Home
     35: get_last_visible   // End
 };
