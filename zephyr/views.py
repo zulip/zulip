@@ -141,13 +141,13 @@ def update(request):
     user_profile.save()
     return json_success()
 
+# Accepts one parametter: last_received
+# If specified, requests all messages since that message
+# If unspecified, requests only new messages (for e.g. bot use)
 @login_required
 @asynchronous
 @require_post
 def get_updates(request, handler):
-    last_received = request.POST.get('last_received')
-    if not last_received:
-        return json_error("Missing last_received argument")
     user_profile = UserProfile.objects.get(user=request.user)
 
     def on_receive(zephyrs):
@@ -163,7 +163,8 @@ def get_updates(request, handler):
             pass
 
     # We need to replace this abstraction with the message list
-    user_profile.add_callback(handler.async_callback(on_receive), last_received)
+    user_profile.add_callback(handler.async_callback(on_receive),
+                              request.POST.get('last_received'))
 
 @login_required
 @require_post
