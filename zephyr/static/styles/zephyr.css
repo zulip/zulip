@@ -69,15 +69,11 @@ td.pointer {
     width: 2px;
 }
 
-td.zephyr_recipient {
+.zephyr_picture {
     vertical-align: top;
-    text-align:     right;
-    overflow-x:     hidden;
-    padding-right:   10px;
-    padding-top:      5px;
-    max-width:      80px;
-    min-width:      80px;
-    white-space:    nowrap;
+    text-align: right;
+    padding-right: 10px;
+    padding-top: 5px;
 }
 
 td.zephyr_newstyle_class {
