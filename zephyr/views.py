@@ -179,21 +179,27 @@ def forge_zephyr(request):
     if "time" not in request.POST:
         return json_error("Missing time")
 
+    # Create a user for the sender of the message
     user = create_user_if_needed(user_profile.realm, email, "test",
                                  strip_html(request.POST['fullname']),
                                  strip_html(request.POST['shortname']))
 
-    if (request.POST['type'] == 'personal' and ',' in request.POST['recipient']):
-        # Huddle message, need to make sure we're not syncing it twice!
-        if Zephyr.objects.filter(sender__user__email=email,
-                                 content=request.POST['new_zephyr'],
-                                 pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 1).replace(tzinfo=utc),
-                                 pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 1).replace(tzinfo=utc)):
-            # This is a duplicate huddle message, deduplicate!
-            return json_success()
+    # Don't send duplicate copies of forwarded messages
+    if Zephyr.objects.filter(sender__user__email=email,
+                             content=request.POST['new_zephyr'],
+                             pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 1).replace(tzinfo=utc),
+                             pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 1).replace(tzinfo=utc)):
+        return json_success()
 
-        # Now confirm all the other recipients exist in our system
-        for user_email in request.POST["recipient"].split(","):
+    if request.POST['type'] == 'personal':
+        if ',' in request.POST['recipient']:
+            # Huddle message
+            for user_email in [e.strip() for e in request.POST["recipient"].split(",")]:
+                create_user_if_needed(user_profile.realm, user_email, "test",
+                                      user_email.split('@')[0],
+                                      user_email.split('@')[0])
+        else:
+            user_email = request.POST["recipient"].strip()
             create_user_if_needed(user_profile.realm, user_email, "test",
                                   user_email.split('@')[0],
                                   user_email.split('@')[0])
