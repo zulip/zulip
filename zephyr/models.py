@@ -13,7 +13,6 @@ from django.db.models.signals import class_prepared
 import markdown
 md_engine = markdown.Markdown(
     extensions    = ['fenced_code', 'codehilite'],
-    safe_mode     = True,
     output_format = 'xhtml' )
 
 def get_display_recipient(recipient):
