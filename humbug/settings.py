@@ -187,3 +187,5 @@ EMAIL_HOST_USER='username'
 EMAIL_HOST_PASSWORD='password'
 
 LOGIN_REDIRECT_URL='/'
+
+ZEPHYR_LOG="all_zephyrs_log"

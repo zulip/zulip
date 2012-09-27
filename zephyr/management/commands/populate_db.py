@@ -4,12 +4,13 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
-    create_user, do_send_zephyr
+    create_user, do_send_zephyr, create_user_if_needed, create_class_if_needed
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
 from django.conf import settings
 from zephyr import mit_subs_list
 
+import simplejson
 import datetime
 import random
 import hashlib
@@ -81,7 +82,11 @@ class Command(BaseCommand):
                     default=True,
                     dest='delete',
                     help='Whether to delete all the existing messages.'),
-
+        make_option('--replay-old-zephyrs',
+                    action="store_true",
+                    default=False,
+                    dest='replay_old_zephyrs',
+                    help='Whether to replace the log of old messages.'),
         )
 
     def handle(self, **options):
@@ -191,12 +196,56 @@ class Command(BaseCommand):
                     new_subscription.save()
 
             self.stdout.write("Successfully populated test database.\n")
+        if options["replay_old_zephyrs"]:
+            restore_saved_zephyrs()
 
 recipient_hash = {}
 def get_recipient_by_id(rid):
     if rid in recipient_hash:
         return recipient_hash[rid]
     return Recipient.objects.get(id=rid)
+
+def restore_saved_zephyrs():
+    old_zephyrs = file("all_zephyrs_log", "r").readlines()
+    for old_zephyr_json in old_zephyrs:
+        old_zephyr = simplejson.loads(old_zephyr_json.strip())
+
+        new_zephyr = Zephyr()
+        sender_email = old_zephyr["sender_email"]
+        realm = Realm.objects.get(domain=sender_email.split('@')[1])
+        create_user_if_needed(realm, sender_email, sender_email.split('@')[0],
+                              old_zephyr["sender_full_name"],
+                              old_zephyr["sender_short_name"])
+        new_zephyr.sender = UserProfile.objects.get(user__email=old_zephyr["sender_email"])
+        type_hash = {"class": Recipient.CLASS, "huddle": Recipient.HUDDLE, "personal": Recipient.PERSONAL}
+        new_zephyr.type = type_hash[old_zephyr["type"]]
+        new_zephyr.content = old_zephyr["content"]
+        new_zephyr.instance = old_zephyr["instance"]
+        new_zephyr.pub_date = datetime.datetime.utcfromtimestamp(float(old_zephyr["timestamp"])).replace(tzinfo=utc)
+
+        if new_zephyr.type == Recipient.PERSONAL:
+            u = old_zephyr["recipient"][0]
+            create_user_if_needed(realm, u["email"], u["email"].split('@')[0],
+                                  u["full_name"], u["short_name"])
+            user_profile = UserProfile.objects.get(user__email=u["email"])
+            new_zephyr.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
+                                                         type_id=user_profile.id)
+        elif new_zephyr.type == Recipient.CLASS:
+            zephyr_class = create_class_if_needed(realm, old_zephyr["recipient"])
+            new_zephyr.recipient = Recipient.objects.get(type=Recipient.CLASS,
+                                                         type_id=zephyr_class.id)
+        elif new_zephyr.type == Recipient.HUDDLE:
+            for u in old_zephyr["recipient"]:
+                create_user_if_needed(realm, u["email"], u["email"].split('@')[0],
+                                      u["full_name"], u["short_name"])
+            target_huddle = get_huddle([UserProfile.objects.get(user__email=u["email"]).id
+                                        for u in old_zephyr["recipient"]])
+            new_zephyr.recipient = Recipient.objects.get(type=Recipient.HUDDLE,
+                                                         type_id=target_huddle.id)
+        else:
+            raise
+        do_send_zephyr(new_zephyr, synced_from_mit=True, no_log=True)
+
 
 # Create some test zephyrs, including:
 # - multiple classes

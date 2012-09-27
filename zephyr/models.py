@@ -8,6 +8,9 @@ import base64
 import calendar
 import datetime
 from zephyr.lib.cache import cache_with_key
+import fcntl
+import os
+import simplejson
 
 from django.db.models.signals import class_prepared
 import markdown
@@ -33,6 +36,23 @@ def get_display_recipient(recipient):
     else:
         user = User.objects.get(id=recipient.type_id)
         return user.email
+
+def get_log_recipient(recipient):
+    """
+    recipient: an instance of Recipient.
+
+    returns: an appropriate string describing the recipient (the class
+    name, for a class, or the email, for a user).
+    """
+    if recipient.type == Recipient.CLASS:
+        zephyr_class = ZephyrClass.objects.get(id=recipient.type_id)
+        return zephyr_class.name
+
+    user_profile_list = [UserProfile.objects.get(user=s.userprofile) for s in
+                         Subscription.objects.filter(recipient=recipient)]
+    return [{'email': user_profile.user.email,
+             'full_name': user_profile.full_name,
+             'short_name': user_profile.short_name} for user_profile in user_profile_list]
 
 callback_table = {}
 mit_sync_table = {}
@@ -200,6 +220,18 @@ class Zephyr(models.Model):
                 'gravatar_hash'    : hashlib.md5(self.sender.user.email.lower()).hexdigest(),
                 }
 
+    def to_log_dict(self):
+        return {'id'               : self.id,
+                'sender_email'     : self.sender.user.email,
+                'sender_full_name' : self.sender.full_name,
+                'sender_short_name': self.sender.full_name,
+                'type'             : self.recipient.type_name(),
+                'recipient'        : get_log_recipient(self.recipient),
+                'instance'         : self.instance,
+                'content'          : self.content,
+                'timestamp'        : self.pub_date.strftime("%s"),
+                }
+
 class UserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     message = models.ForeignKey(Zephyr)
@@ -218,9 +250,24 @@ def get_user_profile_by_id(uid):
         return user_hash[uid]
     return UserProfile.objects.get(id=uid)
 
-def do_send_zephyr(zephyr, synced_from_mit=False):
+def log_zephyr(zephyr):
+    if not os.path.exists(settings.ZEPHYR_LOG + '.lock'):
+        file(settings.ZEPHYR_LOG + '.lock', "w").write("0")
+    lock = open(settings.ZEPHYR_LOG + '.lock', 'r')
+    fcntl.flock(lock, fcntl.LOCK_EX)
+    f = open(settings.ZEPHYR_LOG, "a")
+    f.write(simplejson.dumps(zephyr.to_log_dict()) + "\n")
+    f.flush()
+    f.close()
+    fcntl.flock(lock, fcntl.LOCK_UN)
+
+def do_send_zephyr(zephyr, synced_from_mit=False, no_log=False):
     mit_sync_table[zephyr.id] = synced_from_mit
     zephyr.save()
+    # Log the message to our message log for populate_db to refill
+    if not no_log:
+        log_zephyr(zephyr)
+
     if zephyr.recipient.type == Recipient.PERSONAL:
         recipients = list(set([get_user_profile_by_id(zephyr.recipient.type_id),
                                get_user_profile_by_id(zephyr.sender_id)]))

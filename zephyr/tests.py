@@ -12,6 +12,9 @@ import datetime
 import simplejson
 import subprocess
 subprocess.call("zephyr/tests/generate-fixtures");
+from django.conf import settings
+
+settings.ZEPHYR_LOG = "/tmp/test-zephyr-log"
 
 class AuthedTestCase(TestCase):
     def login(self, username, password):
@@ -41,7 +44,8 @@ class AuthedTestCase(TestCase):
             recipient = ZephyrClass.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=zephyr_type)
         pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-        do_send_zephyr(Zephyr(sender=sender, recipient=recipient, instance="test", pub_date=pub_date))
+        do_send_zephyr(Zephyr(sender=sender, recipient=recipient, instance="test", pub_date=pub_date),
+                       synced_from_mit=True)
 
     def users_subscribed_to_class(self, class_name, realm_domain):
         realm = Realm.objects.get(domain=realm_domain)
