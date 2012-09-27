@@ -276,11 +276,12 @@ input.send_zephyr {
 #narrowbox {
     position: fixed;
     display: none;
-    padding-left: 2px;
+    padding: 5px 10px;
+    border: 1px solid black;
     /* .zephyr_list width + ??? */
-    width: 648px;
+    width: 628px;
     margin: 0 auto;
-    background-color: #EEE;
+    background-color: #DDD;
     text-decoration: none;
     top: 0px;
 }
