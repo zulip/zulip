@@ -216,8 +216,8 @@ def send_zephyr(message):
     zsig = "`Timothy G. Abbott`"
     if message['type'] == "class":
         zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
-                              auth=True, cls="tabbott-test4",
-                              instance=message["display_recipient"] + "/" + message["instance"])
+                              auth=True, cls=message["display_recipient"],
+                              instance=message["instance"])
         body = "%s\0%s" % (zsig, message['content'])
         zeph.setmessage(body)
         zeph.send()
