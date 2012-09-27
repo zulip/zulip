@@ -209,7 +209,7 @@ def get_zephyrs(last_received):
         submit_hash = {'last_received': last_received,
                        "mit_sync_bot": 'yes'}
         submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in submit_hash.items()])
-        res = browser.open("https://app.humbughq.com/get_updates_longpoll", submit_data)
+        res = browser.open("https://app.humbughq.com/get_updates", submit_data)
         return simplejson.loads(res.read())['zephyrs']
 
 
@@ -240,7 +240,7 @@ def send_zephyr(message):
 def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
     browser_login()
-    print "Starting get_updates_longpoll."
+    print "Starting get_updates."
     zephyrs = get_zephyrs('0')
     while True:
         last_received = str(max([z["id"] for z in zephyrs]))

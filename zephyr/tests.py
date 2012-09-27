@@ -5,7 +5,7 @@ from django.db.models import Q
 
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscription, \
     filter_by_subscriptions, Realm, do_send_zephyr
-from zephyr.views import get_updates_longpoll
+from zephyr.views import get_updates
 from zephyr.decorator import TornadoAsyncException
 
 import datetime
@@ -367,12 +367,12 @@ class POSTRequestMock(object):
         self.user = user
         self._tornado_handler = DummyHandler(assert_callback)
 
-class GetUpdatesLongpollTest(AuthedTestCase):
+class GetUpdatesTest(AuthedTestCase):
     fixtures = ['zephyrs.json']
 
     def test_get_updates(self):
         """
-        get_updates_longpoll returns zephyrs with IDs greater than the
+        get_updates returns zephyrs with IDs greater than the
         last_received ID.
         """
         self.login("hamlet@humbughq.com", "hamlet")
@@ -385,10 +385,10 @@ class GetUpdatesLongpollTest(AuthedTestCase):
                 self.assertTrue(zephyr.id > 1)
 
         request = POSTRequestMock({"last_received": 1}, user, callback)
-        # get_updates_longpoll returns None, which raises an exception in the
+        # get_updates returns None, which raises an exception in the
         # @asynchronous decorator, which raises a TornadoAsyncException. So this
         # is expected, but should probably change.
-        self.assertRaises(TornadoAsyncException, get_updates_longpoll, request)
+        self.assertRaises(TornadoAsyncException, get_updates, request)
 
     def test_beyond_last_zephyr(self):
         """
@@ -406,12 +406,12 @@ class GetUpdatesLongpollTest(AuthedTestCase):
             zephyrs = data
 
         request = POSTRequestMock({"last_received": last_received}, user, callback)
-        self.assertRaises(TornadoAsyncException, get_updates_longpoll, request)
+        self.assertRaises(TornadoAsyncException, get_updates, request)
         self.assertEquals(len(zephyrs), 0)
 
     def test_missing_last_received(self):
         """
-        Calling get_updates_longpoll without a last_received key/value pair
+        Calling get_updates without a last_received key/value pair
         returns a 400 and error message.
         """
         self.login("hamlet@humbughq.com", "hamlet")
@@ -424,4 +424,4 @@ class GetUpdatesLongpollTest(AuthedTestCase):
                 self.assertTrue(zephyr.id > 1)
 
         request = POSTRequestMock({}, user, callback)
-        self.assert_json_error(get_updates_longpoll(request), "Missing last_received argument")
+        self.assert_json_error(get_updates(request), "Missing last_received argument")

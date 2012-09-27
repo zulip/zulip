@@ -9,7 +9,7 @@ var loading_spinner;
 var templates = {};
 $(function () {
     // Display loading indicator.  This disappears after the first
-    // get_updates_longpoll completes.
+    // get_updates completes.
     loading_spinner = new Spinner().spin($('#loading_spinner')[0]);
 
     // Compile Handlebars templates.
@@ -793,52 +793,52 @@ function clear_compose_box() {
     $("#zephyr_compose").find('input[type=text], textarea').val('');
 }
 
-var longpoll_failures = 0;
-function get_updates_longpoll() {
+var get_updates_failures = 0;
+function get_updates() {
     console.log(new Date() + ': longpoll started');
     $.ajax({
         type:     'POST',
-        url:      'get_updates_longpoll',
+        url:      'get_updates',
         data:     { last_received: last_received },
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (data) {
             console.log(new Date() + ': longpoll success');
-            longpoll_failures = 0;
+            get_updates_failures = 0;
             $('#connection-error').hide();
 
             if (data && data.zephyrs) {
                 add_messages(data.zephyrs);
             }
-            setTimeout(get_updates_longpoll, 0);
+            setTimeout(get_updates, 0);
         },
         error: function (xhr, error_type, exn) {
             if (error_type === 'timeout') {
                 // Retry indefinitely on timeout.
                 console.log(new Date() + ': longpoll timed out');
-                longpoll_failures = 0;
+                get_updates_failures = 0;
                 $('#connection-error').hide();
             } else {
                 console.log(new Date() + ': longpoll failed with ' + error_type +
-                            ' (' + longpoll_failures + ' failures)');
-                longpoll_failures += 1;
+                            ' (' + get_updates_failures + ' failures)');
+                get_updates_failures += 1;
             }
 
-            if (longpoll_failures >= 5) {
+            if (get_updates_failures >= 5) {
                 $('#connection-error').show();
             } else {
                 $('#connection-error').hide();
             }
 
-            var retry_sec = Math.min(90, Math.exp(longpoll_failures/2));
+            var retry_sec = Math.min(90, Math.exp(get_updates_failures/2));
             console.log(new Date() + ': longpoll retrying in ' + retry_sec + ' seconds');
-            setTimeout(get_updates_longpoll, retry_sec*1000);
+            setTimeout(get_updates, retry_sec*1000);
         }
     });
 }
 
 $(function () {
-    get_updates_longpoll();
+    get_updates();
     $('.button-slide').click(function () {
         show_compose('class', $("#class"));
     });

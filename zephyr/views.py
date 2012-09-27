@@ -142,7 +142,7 @@ def update(request):
 @login_required
 @asynchronous
 @require_post
-def get_updates_longpoll(request, handler):
+def get_updates(request, handler):
     last_received = request.POST.get('last_received')
     if not last_received:
         return json_error("Missing last_received argument")
