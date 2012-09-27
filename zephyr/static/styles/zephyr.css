@@ -81,7 +81,7 @@ td.zephyr_recipient {
 }
 
 td.zephyr_newstyle_class {
-    vertical-align: top;
+    vertical-align: middle;
     text-align:     right;
     overflow-x:     hidden;
     padding-right:   10px;
@@ -94,6 +94,7 @@ td.zephyr_newstyle_class {
 }
 
 td.zephyr_newstyle_instance {
+    vertical-align: middle;
     text-align:     left;
     overflow-x:     hidden;
     padding-left: 10px;
@@ -267,6 +268,8 @@ textarea:focus {
 
 input.zephyr_recipient_box {
     width: 90%;
+    margin-bottom: 0px;
+    margin-top: 0px;
 }
 
 input.send_zephyr {
