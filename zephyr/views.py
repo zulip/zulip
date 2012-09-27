@@ -173,7 +173,7 @@ def get_updates(request, handler):
 def get_updates_api(request, handler):
     user_profile = UserProfile.objects.get(user=request.user)
     return get_updates_backend(request, handler,
-                               apply_markdown=request.POST.get("apply_markdown"),
+                               apply_markdown=(request.POST.get("apply_markdown") is not None),
                                mit_sync_bot=request.POST.get("mit_sync_bot"))
 
 @login_required
