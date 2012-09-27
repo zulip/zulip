@@ -141,30 +141,40 @@ def update(request):
     user_profile.save()
     return json_success()
 
-# Accepts one parametter: last_received
-# If specified, requests all messages since that message
-# If unspecified, requests only new messages (for e.g. bot use)
-@login_required
-@asynchronous
-@require_post
-def get_updates(request, handler):
+def get_updates_backend(request, handler, last_received=None, mit_sync_bot=False,
+                        apply_markdown=False):
     user_profile = UserProfile.objects.get(user=request.user)
-
     def on_receive(zephyrs):
         if handler.request.connection.stream.closed():
             return
         try:
-            # Avoid message loop by not sending the MIT sync bot any
-            # messages that we got from it in the first place.
-            if request.POST.get('mit_sync_bot'):
+            if mit_sync_bot:
                 zephyrs = [zephyr for zephyr in zephyrs if not mit_sync_table.get(zephyr.id)]
-            handler.finish({'zephyrs': [zephyr.to_dict() for zephyr in zephyrs]})
+            # TODO: We should probably split this out to another function.
+            handler.finish({'zephyrs': [zephyr.to_dict(apply_markdown) for zephyr in zephyrs]})
         except socket.error:
             pass
 
-    # We need to replace this abstraction with the message list
-    user_profile.add_callback(handler.async_callback(on_receive),
-                              request.POST.get('last_received'))
+    user_profile.add_callback(handler.async_callback(on_receive), last_received)
+
+@login_required
+@asynchronous
+@require_post
+def get_updates(request, handler):
+    last_received = request.POST.get('last_received')
+    if not last_received:
+        return json_error("Missing last_received")
+    return get_updates_backend(request, handler, last_received=last_received,
+                               apply_markdown=True)
+
+@login_required
+@asynchronous
+@require_post
+def get_updates_api(request, handler):
+    user_profile = UserProfile.objects.get(user=request.user)
+    return get_updates_backend(request, handler,
+                               apply_markdown=request.POST.get("apply_markdown"),
+                               mit_sync_bot=request.POST.get("mit_sync_bot"))
 
 @login_required
 @require_post

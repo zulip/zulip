@@ -11,6 +11,7 @@ import time
 import subprocess
 import optparse
 import os
+import datetime
 
 zephyr.init()
 
@@ -204,14 +205,12 @@ def zephyr_to_humbug(options):
     with open('zephyrs', 'a') as log:
         process_loop(log)
 
-def get_zephyrs(last_received):
+def get_new_zephyrs():
         browser.addheaders.append(('X-CSRFToken', csrf_token))
-        submit_hash = {'last_received': last_received,
-                       "mit_sync_bot": 'yes'}
+        submit_hash = {"mit_sync_bot": 'yes'}
         submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in submit_hash.items()])
-        res = browser.open("https://app.humbughq.com/get_updates", submit_data)
+        res = browser.open("https://app.humbughq.com/api/get_updates", submit_data)
         return simplejson.loads(res.read())['zephyrs']
-
 
 def send_zephyr(message):
     zsig = "`Timothy G. Abbott`"
@@ -220,36 +219,38 @@ def send_zephyr(message):
                               auth=True, cls="tabbott-test4",
                               instance=message["display_recipient"] + "/" + message["instance"])
         body = "%s\0%s" % (zsig, message['content'])
+        zeph.setmessage(body)
+        zeph.send()
     elif message['type'] == "personal":
         zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
-                              auth=True, cls="tabbott-test4",
-                              instance=message["display_recipient"])
+                              auth=True, recipient=message["display_recipient"].replace("mit.edu", "ATHENA.MIT.EDU"),
+                              cls="message", instance="personal")
         body = "%s\0%s" % (zsig, message['content'])
+        zeph.setmessage(body)
+        zeph.send()
     elif message['type'] == "huddle":
-        # TODO: This needs to send one message to each person, I think
-        zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
-                              auth=True, cls="tabbott-test4",
-                              instance="huddle!")
         cc_list = ["CC:"]
         cc_list.extend([user["email"].replace("@mit.edu", "")
                         for user in message["display_recipient"]])
         body = "%s\0%s\n%s" % (zsig, " ".join(cc_list), message['content'])
-    zeph.setmessage(body)
-    zeph.send()
+        for r in message["display_recipient"]:
+            zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
+                                  auth=True, recipient=r["email"].replace("mit.edu", "ATHENA.MIT.EDU"),
+                                  cls="message", instance="personal")
+            zeph.setmessage(body)
+            zeph.send()
 
 def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
     browser_login()
-    print "Starting get_updates."
-    zephyrs = get_zephyrs('0')
+    print "Starting syncing messages."
     while True:
-        last_received = str(max([z["id"] for z in zephyrs]))
-        new_zephyrs = get_zephyrs(last_received)
-        for zephyr in new_zephyrs:
-            print zephyr
+        for zephyr in get_new_zephyrs():
             if zephyr["sender_email"] == os.environ["USER"] + "@mit.edu":
+                if float(zephyr["timestamp"]) < float(datetime.datetime.now().strftime("%s")) - 5:
+                    print "Alert!  Out of order message!", zephyr["timestamp"], datetime.datetime.now().strftime("%s")
+                    continue
                 send_zephyr(zephyr)
-        zephyrs.extend(new_zephyrs)
 
 if options.forward_to_humbug:
     zephyr_to_humbug(options)

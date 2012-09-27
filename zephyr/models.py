@@ -202,12 +202,14 @@ class Zephyr(models.Model):
     def __str__(self):
         return self.__repr__()
 
-    @cache_with_key(lambda self: 'zephyr_dict:%d' % (self.id,))
-    def to_dict(self):
+    @cache_with_key(lambda self, apply_markdown: 'zephyr_dict:%d:%d' % (self.id, apply_markdown))
+    def to_dict(self, apply_markdown):
         try:
-            new_content = self.content.decode("utf-8")
+            content = self.content.decode("utf-8")
         except:
-            new_content = self.content
+            content = self.content
+        if apply_markdown:
+            content = md_engine.convert(content)
         return {'id'               : self.id,
                 'sender_email'     : self.sender.user.email,
                 'sender_name'      : self.sender.full_name,
@@ -215,7 +217,7 @@ class Zephyr(models.Model):
                 'display_recipient': get_display_recipient(self.recipient),
                 'recipient_id'     : self.recipient.id,
                 'instance'         : self.instance,
-                'content'          : md_engine.convert(new_content),
+                'content'          : content,
                 'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
                 'gravatar_hash'    : hashlib.md5(self.sender.user.email.lower()).hexdigest(),
                 }
