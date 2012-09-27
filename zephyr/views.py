@@ -88,7 +88,7 @@ def accounts_home(request):
 
 def home(request):
     if not request.user.is_authenticated():
-        return HttpResponseRedirect('accounts/home/')
+        return HttpResponseRedirect('accounts/login/')
     user_profile = UserProfile.objects.get(user=request.user)
 
     zephyrs = Zephyr.objects.filter(usermessage__user_profile=user_profile)
