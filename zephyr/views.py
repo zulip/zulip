@@ -115,6 +115,8 @@ def home(request):
                                'email_hash'  : hashlib.md5(user_profile.user.email).hexdigest(),
                                'people'      : simplejson.dumps(people),
                                'classes'     : simplejson.dumps(classes),
+                               'have_initial_messages':
+                                   'true' if zephyrs else 'false',
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET) },
                               context_instance=RequestContext(request))

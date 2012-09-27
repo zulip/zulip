@@ -3,14 +3,18 @@
     white: true, undef: true */
 /*global $: false, jQuery: false, Handlebars: false,
     zephyr_json: false, initial_pointer: false, email: false,
-    class_list: false, instance_list: false, people_list: false */
+    class_list: false, instance_list: false, people_list: false,
+    have_initial_messages: false */
 
 var loading_spinner;
 var templates = {};
 $(function () {
     // Display loading indicator.  This disappears after the first
     // get_updates completes.
-    loading_spinner = new Spinner().spin($('#loading_spinner')[0]);
+    if (have_initial_messages)
+        loading_spinner = new Spinner().spin($('#loading_spinner')[0]);
+    else
+        $('#loading_indicator').hide();
 
     // Compile Handlebars templates.
     templates.zephyr       = Handlebars.compile($("#template_zephyr").html());
