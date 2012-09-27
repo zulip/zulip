@@ -106,6 +106,29 @@ def create_user(email, password, realm, full_name, short_name):
     user.save()
     UserProfile.create(user, realm, full_name, short_name)
 
+def create_user_if_needed(realm, email, password, full_name, short_name):
+    try:
+        return User.objects.get(email=email)
+    except User.DoesNotExist:
+        # forge a user for this person
+        create_user(email, password, realm,
+                    full_name, short_name)
+        user = User.objects.get(email=email)
+        return user
+
+def create_class_if_needed(realm, class_name):
+    try:
+        return ZephyrClass.objects.get(name=class_name, realm=realm)
+    except ZephyrClass.DoesNotExist:
+        new_class = ZephyrClass()
+        new_class.name = class_name
+        new_class.realm = realm
+        new_class.save()
+        recipient = Recipient(type_id=new_class.id, type=Recipient.CLASS)
+        recipient.save()
+        return new_class
+
+
 class ZephyrClass(models.Model):
     name = models.CharField(max_length=30, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True)

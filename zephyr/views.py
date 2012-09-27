@@ -11,7 +11,8 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
-    create_user, do_send_zephyr, mit_sync_table
+    create_user, do_send_zephyr, mit_sync_table, create_user_if_needed, \
+    create_class_if_needed
 from zephyr.forms import RegistrationForm
 
 from zephyr.decorator import asynchronous
@@ -178,14 +179,9 @@ def forge_zephyr(request):
     if "time" not in request.POST:
         return json_error("Missing time")
 
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        # forge a user for this person
-        create_user(email, "test", user_profile.realm,
-                    strip_html(request.POST['fullname']),
-                    strip_html(request.POST['shortname']))
-        user = User.objects.get(email=email)
+    user = create_user_if_needed(user_profile.realm, email, "test",
+                                 strip_html(request.POST['fullname']),
+                                 strip_html(request.POST['shortname']))
 
     if (request.POST['type'] == 'personal' and ',' in request.POST['recipient']):
         # Huddle message, need to make sure we're not syncing it twice!
@@ -198,13 +194,9 @@ def forge_zephyr(request):
 
         # Now confirm all the other recipients exist in our system
         for user_email in request.POST["recipient"].split(","):
-            try:
-                User.objects.get(email=user_email)
-            except User.DoesNotExist:
-                # forge a user for this person
-                create_user(user_email, "test", user_profile.realm,
-                            user_email.split('@')[0],
-                            user_email.split('@')[0])
+            create_user_if_needed(user_profile.realm, user_email, "test",
+                                  user_email.split('@')[0],
+                                  user_email.split('@')[0])
 
     return zephyr_backend(request, user)
 
@@ -224,21 +216,9 @@ def zephyr_backend(request, sender):
         if "instance" not in request.POST:
             return json_error("Missing instance")
 
-        class_name = strip_html(request.POST['class']).strip()
-        my_classes = ZephyrClass.objects.filter(name=class_name, realm=user_profile.realm)
-        if my_classes:
-            my_class = my_classes[0]
-        else:
-            my_class = ZephyrClass()
-            my_class.name = class_name
-            my_class.realm = user_profile.realm
-            my_class.save()
-            recipient = Recipient(type_id=my_class.id, type=Recipient.CLASS)
-            recipient.save()
-        try:
-            recipient = Recipient.objects.get(type_id=my_class.id, type=Recipient.CLASS)
-        except Recipient.DoesNotExist:
-            return json_error("Invalid class")
+        zephyr_class = create_class_if_needed(user_profile.realm,
+                                              strip_html(request.POST['class']).strip())
+        recipient = Recipient.objects.get(type_id=zephyr_class.id, type=Recipient.CLASS)
     elif zephyr_type_name == 'personal':
         if "recipient" not in request.POST:
             return json_error("Missing recipient")
