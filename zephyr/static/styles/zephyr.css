@@ -192,7 +192,7 @@ img.profile_picture {
     height: 30px;
 }
 
-.alert {
+.alert_sidebar {
     max-width: 20%;
 }
 
@@ -304,11 +304,6 @@ input.send_zephyr {
     width: 2px;
 }
 
-#zephyr-type-tabs {
-    margin-top: 10px;
-    margin-bottom: 0px;
-}
-
 #subscriptions {
     top: 0;
     bottom: 0;
@@ -346,4 +341,17 @@ input.send_zephyr {
 #loading_spinner {
     width: 40px;
     padding-right: 40px;
+}
+
+#stream_or_huddle {
+    position: absolute;
+    bottom: 21px;
+    left: 5px;
+    padding: 0.35em;
+    border: 1px solid grey;
+}
+
+#zephyr-type-tabs {
+    margin-top: 0px;
+    margin-bottom: 0px;
 }

@@ -25,14 +25,15 @@
             </div>
 
                 <div class="tabbable zephyr_compose" id="zephyr_compose">
-                    <ul class="nav nav-tabs" id="zephyr-type-tabs">
-                        <li class="active"><a href="#class-message" data-toggle="tab">Stream</a></li>
-                        <li><a href="#personal-message" data-toggle="tab">Huddle</a></li>
-                        <li class="alert" id="send-status"></li>
-                        <li class="pull-right"><button type="button" class="close" onclick="hide_compose()">×</button></li>
-                    </ul>
-
                     <div class="tab-content">
+                        <div class="alert" id="send-status"></div>
+                        <div class="pull-right"><button type="button" class="close" onclick="hide_compose()">×</button></div>
+                        <div id="stream_or_huddle">
+                          <ul class="nav nav-pills nav-stacked" id="zephyr-type-tabs">
+                            <li class="active"><a href="#class-message" data-toggle="pill">Stream</a></li>
+                            <li><a href="#personal-message" data-toggle="pill">Huddle</a></li>
+                          </ul>
+                        </div>
                         <div class="tab-pane active" id="class-message">
                             <div class="zephyr_comp">
                                 <form action="/zephyr/" method="post" class="zephyr">

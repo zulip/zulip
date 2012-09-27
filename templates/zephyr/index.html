@@ -93,17 +93,17 @@ var have_initial_messages = {{ have_initial_messages }};
 
     <div class="row-fluid" id="connection-error">
         <div class="span12">
-            <div class="alert alert-error">
+            <div class="alert alert_sidebar alert-error">
                 <strong>Can't receive messages</strong> &mdash; try reloading the page.
             </div>
         </div>
     </div>
-    <div class="alert" id="class-dne">
+    <div class="alert alert_sidebar" id="class-dne">
         <p>The class <span class="classname" id="class-dne-name"></span> does not exist.</p>
         <a id="create-it" class="btn btn-primary" href="#">Create and send</a>
         <a class="btn" onClick="$('#class-dne').stop(true).fadeOut(500);">Cancel message</a>
     </div>
-    <div class="alert" id="class-nosub">
+    <div class="alert alert_sidebar" id="class-nosub">
         <p>You're not subscribed to the class <span class="classname" id="class-nosub-name"></span>.</p>
         <a id="sub-it" class="btn btn-primary" href="#">Subscribe and send</a>
         <a class="btn" onClick="$('#class-nosub').stop(true).fadeOut(500);">Cancel message</a>
