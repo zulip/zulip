@@ -210,7 +210,7 @@ def send_zephyrs(data):
     from django.db import connection
     connection.close()
     texts = file("zephyr/management/commands/test_zephyrs.txt", "r").readlines()
-    offset = 0
+    offset = random.randint(0, len(texts))
 
     recipient_classes = [klass.id for klass in
                          Recipient.objects.filter(type=Recipient.CLASS)]
