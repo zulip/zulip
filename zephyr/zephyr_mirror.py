@@ -217,7 +217,10 @@ def get_new_zephyrs():
         return simplejson.loads(res.read())['zephyrs']
 
 def send_zephyr(message):
-    zsig = "`Timothy G. Abbott`"
+    zsig = "`%s`" % (username_to_fullname(message["sender_email"]))
+    if ' dot ' in zsig:
+        print "ERROR!  Couldn't compute zsig for %s!" % (message["sender_email"])
+        return
     wrapped_content = "\n".join(textwrap.wrap(message["content"]))
     print "Sending message from %s humbug=>zephyr at %s" % (message["sender_email"], datetime.datetime.now())
     if message['type'] == "class":
