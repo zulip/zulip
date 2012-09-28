@@ -273,6 +273,11 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').find('button[value="' + name + '"]').parents('tr').remove();
+            var removal_index = class_list.indexOf(name);
+            if (removal_index !== -1) {
+                class_list.splice(removal_index, 1);
+            }
+            update_autocomplete();
             $("#subscriptions-status").fadeOut(0);
         },
         error: function (xhr) {
