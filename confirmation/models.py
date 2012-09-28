@@ -40,12 +40,11 @@ class ConfirmationManager(models.Manager):
                 confirmation = self.get(confirmation_key=confirmation_key)
             except self.model.DoesNotExist:
                 return False
-            if not confirmation.key_expired():
-                obj = confirmation.content_object
-                status_field = get_status_field(obj._meta.app_label, obj._meta.module_name)
-                setattr(obj, status_field, getattr(settings, 'STATUS_ACTIVE', 1))
-                obj.save()
-                return obj
+            obj = confirmation.content_object
+            status_field = get_status_field(obj._meta.app_label, obj._meta.module_name)
+            setattr(obj, status_field, getattr(settings, 'STATUS_ACTIVE', 1))
+            obj.save()
+            return obj
         return False
 
     def send_confirmation(self, obj, email_address):
@@ -75,11 +74,6 @@ class ConfirmationManager(models.Manager):
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address])
         return self.create(content_object=obj, date_sent=datetime.datetime.now(), confirmation_key=confirmation_key)
 
-    def delete_expired_confirmations(self):
-        for confirmation in self.all():
-            if confirmation.key_expired():
-                confirmation.delete()
-
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType)
@@ -96,8 +90,3 @@ class Confirmation(models.Model):
 
     def __unicode__(self):
         return _('confirmation email for %s') % self.content_object
-
-    def key_expired(self):
-        expiration_date = self.date_sent + datetime.timedelta(days=getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10))
-        return expiration_date <= datetime.datetime.now()
-    key_expired.boolean = True
