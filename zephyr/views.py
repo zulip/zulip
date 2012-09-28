@@ -146,16 +146,28 @@ def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False):
         messages = [m for m in messages if not mit_sync_table.get(m.id)]
     return {'zephyrs': [message.to_dict(apply_markdown) for message in messages]}
 
-def get_updates_backend(request, handler, last_received=None, **kwargs):
-    user_profile = UserProfile.objects.get(user=request.user)
+def return_messages_immediately(request, handler, user_profile, **kwargs):
+    try:
+        first = int(request.POST['first'])
+        last  = int(request.POST['last'])
+    except TypeError:
+        return False
+    except ValueError:
+        return False
 
-    if last_received:
-        new_messages = (Zephyr.objects.filter(usermessage__user_profile = user_profile,
-                                              id__gt = last_received)
-                                      .order_by('id')[:400])
-        if new_messages:
-            handler.finish(format_updates_response(new_messages, **kwargs))
-            return
+    messages = (Zephyr.objects.filter(usermessage__user_profile = user_profile,
+                                      id__gt = last)
+                              .order_by('id')[:400])
+    if messages:
+        handler.finish(format_updates_response(messages, **kwargs))
+        return True
+
+    return False
+
+def get_updates_backend(request, handler, **kwargs):
+    user_profile = UserProfile.objects.get(user=request.user)
+    if return_messages_immediately(request, handler, user_profile, **kwargs):
+        return
 
     def on_receive(zephyrs):
         if handler.request.connection.stream.closed():
@@ -171,11 +183,9 @@ def get_updates_backend(request, handler, last_received=None, **kwargs):
 @asynchronous
 @require_post
 def get_updates(request, handler):
-    last_received = request.POST.get('last')
-    if not last_received:
-        return json_error("Missing last received")
-    return get_updates_backend(request, handler, last_received=last_received,
-                               apply_markdown=True)
+    if not ('last' in request.POST and 'first' in request.POST):
+        return json_error("Missing message range")
+    return get_updates_backend(request, handler, apply_markdown=True)
 
 @login_required
 @asynchronous
