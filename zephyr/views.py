@@ -16,6 +16,7 @@ from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
 from zephyr.forms import RegistrationForm
 
 from zephyr.decorator import asynchronous
+from zephyr.lib.query import last_n
 
 import datetime
 import simplejson
@@ -141,10 +142,11 @@ def update(request):
     user_profile.save()
     return json_success()
 
-def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False):
+def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False, where='bottom'):
     if mit_sync_bot:
         messages = [m for m in messages if not mit_sync_table.get(m.id)]
-    return {'zephyrs': [message.to_dict(apply_markdown) for message in messages]}
+    return {'zephyrs': [message.to_dict(apply_markdown) for message in messages],
+            'where':   where}
 
 def return_messages_immediately(request, handler, user_profile, **kwargs):
     try:
@@ -155,11 +157,24 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
     except ValueError:
         return False
 
-    messages = (Zephyr.objects.filter(usermessage__user_profile = user_profile,
-                                      id__gt = last)
-                              .order_by('id')[:400])
+    where = 'bottom'
+    query = Zephyr.objects.filter(usermessage__user_profile = user_profile).order_by('id')
+
+    if last == -1:
+        # User has no messages yet
+        # Get a range around the pointer
+        ptr = user_profile.pointer
+        messages = (last_n(200, query.filter(id__lt=ptr))
+                  + list(query.filter(id__gte=ptr)[:200]))
+    else:
+        messages = query.filter(id__gt=last)[:400]
+        if not messages:
+            # No more messages in the future; try filling in from the past.
+            messages = last_n(400, query.filter(id__lt=first))
+            where = 'top'
+
     if messages:
-        handler.finish(format_updates_response(messages, **kwargs))
+        handler.finish(format_updates_response(messages, where=where, **kwargs))
         return True
 
     return False

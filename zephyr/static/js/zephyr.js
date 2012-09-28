@@ -849,6 +849,13 @@ function add_messages(data) {
         }
     });
 
+    // If we prepended messages, then we need to scroll back to the pointer.
+    // This will mess with the user's scrollwheel use; possibly we should be
+    // more clever here.  However (for now) we only prepend on page load,
+    // so maybe it's okay.
+    if (data.where === 'top')
+        scroll_to_selected();
+
     if (autocomplete_needs_update)
         update_autocomplete();
 }
