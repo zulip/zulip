@@ -74,6 +74,7 @@ td.pointer {
     text-align: right;
     padding-right: 10px;
     padding-top: 5px;
+    min-width: 80px;
 }
 
 .zephyr_newstyle_class {
@@ -100,16 +101,16 @@ td.pointer {
     font-weight: bold;
 }
 
-.zephyr_newstyle_class.personal-message {
-    background-color: lightgreen;
-    border-color: black;
-    border-width: 2px;
-}
-
-.zephyr_newstyle_instance.personal-message {
-    background-color: lightgreen;
-    border-color: black;
-    border-width: 2px;
+.zephyr_newstyle_pm {
+    vertical-align: middle;
+    text-align:     left;
+    overflow-x:     hidden;
+    padding-left: 10px;
+    white-space:    nowrap;
+    font-weight: bold;
+    background-color: black;
+    color: white;
+    border: 2px solid black;
 }
 
 .messagebox.personal-message {
@@ -275,7 +276,7 @@ textarea:focus {
 }
 
 input.zephyr_recipient_box {
-    width: 90%;
+    width: 80%;
     margin-bottom: 0px;
     margin-top: 0px;
 }

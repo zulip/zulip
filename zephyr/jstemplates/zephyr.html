@@ -16,10 +16,8 @@
 </tr>
 {{else}}
 <tr>
-    <td colspan="2" class="zephyr_label_clickable zephyr_newstyle_class personal-message"
-        onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">Huddle</td>
-    <td class="zephyr_label_clickable zephyr_newstyle_instance personal-message"
-        onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">{{display_reply_to}}</td>
+    <td colspan="3" class="zephyr_label_clickable zephyr_newstyle_pm"
+        onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">Huddle with {{display_reply_to}}</td>
 </tr>
 {{/if}}
 {{/include_recipient}}
