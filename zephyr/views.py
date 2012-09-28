@@ -148,6 +148,15 @@ def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False):
 
 def get_updates_backend(request, handler, last_received=None, **kwargs):
     user_profile = UserProfile.objects.get(user=request.user)
+
+    if last_received:
+        new_messages = (Zephyr.objects.filter(usermessage__user_profile = user_profile,
+                                              id__gt = last_received)
+                                      .order_by('id')[:400])
+        if new_messages:
+            handler.finish(format_updates_response(new_messages, **kwargs))
+            return
+
     def on_receive(zephyrs):
         if handler.request.connection.stream.closed():
             return
@@ -156,7 +165,7 @@ def get_updates_backend(request, handler, last_received=None, **kwargs):
         except socket.error:
             pass
 
-    user_profile.add_callback(handler.async_callback(on_receive), last_received)
+    user_profile.add_callback(handler.async_callback(on_receive))
 
 @login_required
 @asynchronous
