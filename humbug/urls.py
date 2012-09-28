@@ -14,6 +14,9 @@ urlpatterns = patterns('',
     url(r'^zephyr/', 'zephyr.views.zephyr', name='zephyr'),
     url(r'^forge_zephyr/', 'zephyr.views.forge_zephyr', name='forge_zephyr'),
     url(r'^accounts/home/', 'zephyr.views.accounts_home', name='accounts_home'),
+    # We have two entries for accounts/login to allow reverses on the Django
+    # view we're wrapping to continue to function.
+    url(r'^accounts/login/', 'zephyr.views.login_page', {'template_name': 'zephyr/login.html'}),
     url(r'^accounts/login/', 'django.contrib.auth.views.login', {'template_name': 'zephyr/login.html'}),
     url(r'^accounts/logout/', 'django.contrib.auth.views.logout', {'template_name': 'zephyr/index.html'}),
     url(r'^accounts/register/', 'zephyr.views.register', name='register'),

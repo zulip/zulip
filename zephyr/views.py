@@ -7,13 +7,14 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.shortcuts import render
 from django.utils.timezone import utc
-
+from django.core.exceptions import ValidationError
+from django.contrib.auth.views import login as django_login_page
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     create_user, do_send_zephyr, mit_sync_table, create_user_if_needed, \
     create_class_if_needed, PreregistrationUser
-from zephyr.forms import RegistrationForm, HomepageForm
+from zephyr.forms import RegistrationForm, HomepageForm, is_unique
 
 from zephyr.decorator import asynchronous
 from zephyr.lib.query import last_n
@@ -59,6 +60,11 @@ def register(request):
     company_name = email.split('@')[-1]
 
     try:
+        is_unique(email)
+    except ValidationError:
+        return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + strip_html(email))
+
+    try:
         dummy = request.POST['from_confirmation']
         form = RegistrationForm()
     except KeyError:
@@ -83,18 +89,32 @@ def register(request):
         'form': form, 'company_name': company_name, 'email': email, 'key': key,
     })
 
+def login_page(request, **kwargs):
+    template_response = django_login_page(request, **kwargs)
+    try:
+        template_response.context_data['email'] = strip_html(request.GET['email'])
+    except KeyError:
+        pass
+    return template_response
+
 def accounts_home(request):
     if request.method == 'POST':
         form = HomepageForm(request.POST)
         if form.is_valid():
             try:
-                user = PreregistrationUser.objects.get(email=strip_html(form.cleaned_data['email']))
+                email = form.cleaned_data['email']
+                user = PreregistrationUser.objects.get(email=email)
             except PreregistrationUser.DoesNotExist:
                 user = PreregistrationUser()
-                user.email = strip_html(form.cleaned_data['email'])
+                user.email = email
                 user.save()
             Confirmation.objects.send_confirmation(user, user.email)
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email':user.email}))
+        try:
+            email = request.POST['email']
+            is_unique(email)
+        except ValidationError:
+            return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + strip_html(email))
     return render_to_response('zephyr/accounts_home.html',
                               context_instance=RequestContext(request))
 

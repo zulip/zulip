@@ -4,6 +4,9 @@
 
 <script type="text/javascript">
 autofocus('#id_username');
+{% if email %}
+autofocus('#id_password');
+{% endif %}
 </script>
 
     <h3>You look familiar.</h3>
@@ -11,6 +14,12 @@ autofocus('#id_username');
 {% if form.errors %}
 <div class="alert alert-error">
     Your email and password didn't match. Please try again.
+</div>
+{% endif %}
+
+{% if email %}
+<div class="alert">
+    You've already registered with this email address. Please log in below.
 </div>
 {% endif %}
 
@@ -22,7 +31,7 @@ autofocus('#id_username');
     <div class="control-group">
         <label for="id_username" class="control-label">Email</label>
         <div class="controls">
-            {{ form.username }}
+            <input id="id_username" type="text" name="username" value="{{ email }}" maxlength="30" />
         </div>
     </div>
     <div class="control-group">
