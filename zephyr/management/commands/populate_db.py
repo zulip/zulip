@@ -209,10 +209,20 @@ def restore_saved_zephyrs():
     old_zephyrs = file("all_zephyrs_log", "r").readlines()
     for old_zephyr_json in old_zephyrs:
         old_zephyr = simplejson.loads(old_zephyr_json.strip())
-
         new_zephyr = Zephyr()
+
         sender_email = old_zephyr["sender_email"]
-        realm = Realm.objects.get(domain=sender_email.split('@')[1])
+        realm = None
+        try:
+            realm = Realm.objects.get(domain=sender_email.split('@')[1])
+        except IndexError:
+            pass
+        except Realm.DoesNotExist:
+            pass
+
+        if not realm:
+            realm = Realm.objects.get(domain='mit.edu')
+
         create_user_if_needed(realm, sender_email, sender_email.split('@')[0],
                               old_zephyr["sender_full_name"],
                               old_zephyr["sender_short_name"])
