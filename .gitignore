@@ -1,3 +1,5 @@
 *.pyc
-zephyrdb
 *~
+/zephyrdb
+/all_zephyrs_log
+/all_zephyrs_log.lock
