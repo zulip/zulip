@@ -12,6 +12,7 @@ import optparse
 import os
 import datetime
 import textwrap
+from urllib2 import HTTPError
 
 sys.path.append("/mit/tabbott/Public/python-zephyr/")
 sys.path.append("/mit/tabbott/Public/python-zephyr/build/lib.linux-x86_64-2.6/")
@@ -84,7 +85,26 @@ def send_humbug(zeph):
         elif isinstance(zeph[key], str):
             val = zeph[key].decode("utf-8")
         humbug_data.append((key, val))
-    browser.open("https://app.humbughq.com/forge_zephyr/", urllib.urlencode(humbug_data))
+
+    try:
+        browser.open("https://app.humbughq.com/forge_zephyr/", urllib.urlencode(humbug_data))
+    except HTTPError, e:
+        if e.code == 401:
+            # Digest auth failed; server was probably restarted; login in again
+            while True:
+                try:
+                    browser_login()
+                except HTTPError, e:
+                    print "Failed logging in; trying again in 10 seconds."
+                    time.sleep(10)
+                    continue
+                break
+
+            print "Auth failure; trying again after logging in a second time!"
+            browser.open("https://app.humbughq.com/forge_zephyr/", urllib.urlencode(humbug_data))
+        else:
+            raise
+
 
 def fetch_fullname(username):
     try:
@@ -255,7 +275,24 @@ def humbug_to_zephyr(options):
     browser_login()
     print "Starting syncing messages."
     while True:
-        for zephyr in get_new_zephyrs():
+        try:
+            zephyrs = get_new_zephyrs()
+        except HTTPError, e:
+            # 502/503 typically means the server was restarted; sleep
+            # a bit, then try again
+            time.sleep(1)
+            if e.code == 401:
+                # 401 means digest auth failed -- we need to login again
+                while True:
+                    try:
+                        browser_login()
+                    except HTTPError, e:
+                        print "Failed logging in; trying again in 10 seconds."
+                        time.sleep(10)
+                        continue
+                    break
+            continue
+        for zephyr in zephyrs:
             if zephyr["sender_email"] == os.environ["USER"] + "@mit.edu":
                 if float(zephyr["timestamp"]) < float(datetime.datetime.now().strftime("%s")) - 5:
                     print "Alert!  Out of order message!", zephyr["timestamp"], datetime.datetime.now().strftime("%s")
