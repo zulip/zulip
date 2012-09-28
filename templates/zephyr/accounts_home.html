@@ -16,7 +16,7 @@ autofocus('#email');
         </div>
         <div class="signup">
             <p class="lead">Get started now, for free</p>
-            <form class="form-inline" id="email_signup" action="/accounts/register/" method="post">
+            <form class="form-inline" id="email_signup" action="/accounts/home/" method="post">
                 {% csrf_token %}
                 <input type="text" class="email required" placeholder="Enter your work email address" id="email" name="email"/>&nbsp;
                 <input type="submit" class="btn btn-primary btn-large" value="Sign up"/>

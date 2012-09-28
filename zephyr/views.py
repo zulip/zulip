@@ -12,11 +12,13 @@ from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     create_user, do_send_zephyr, mit_sync_table, create_user_if_needed, \
-    create_class_if_needed
-from zephyr.forms import RegistrationForm
+    create_class_if_needed, PreregistrationUser
+from zephyr.forms import RegistrationForm, HomepageForm
 
 from zephyr.decorator import asynchronous
 from zephyr.lib.query import last_n
+
+from confirmation.models import Confirmation
 
 import datetime
 import simplejson
@@ -50,20 +52,21 @@ def strip_html(x):
     # FIXME: consider a whitelist
     return x.replace('<','&lt;').replace('>','&gt;')
 
+@require_post
 def register(request):
-    if request.method == 'POST':
-        try:
-            email = strip_html(request.POST['email'])
-            company_name = email.split('@')[-1]
-        except KeyError:
-            company_name = None
+    key = request.POST['key']
+    email = Confirmation.objects.get(confirmation_key=key).content_object.email
+    company_name = email.split('@')[-1]
 
+    try:
+        dummy = request.POST['from_confirmation']
+        form = RegistrationForm()
+    except KeyError:
         form = RegistrationForm(request.POST)
         if form.is_valid():
             password   = strip_html(form.cleaned_data['password'])
             full_name  = strip_html(form.cleaned_data['full_name'])
             short_name = strip_html(email.split('@')[0])
-            email      = strip_html(form.cleaned_data['email'])
             domain     = strip_html(form.cleaned_data['domain'])
             realm = Realm.objects.filter(domain=domain)
             if not realm:
@@ -75,15 +78,23 @@ def register(request):
             create_user(email, password, realm, full_name, short_name)
             login(request, authenticate(username=email, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))
-    else:
-        form = RegistrationForm()
-        company_name = None
 
     return render(request, 'zephyr/register.html', {
-        'form': form, 'company_name': company_name,
+        'form': form, 'company_name': company_name, 'email': email, 'key': key,
     })
 
 def accounts_home(request):
+    if request.method == 'POST':
+        form = HomepageForm(request.POST)
+        if form.is_valid():
+            try:
+                user = PreregistrationUser.objects.get(email=strip_html(form.cleaned_data['email']))
+            except PreregistrationUser.DoesNotExist:
+                user = PreregistrationUser()
+                user.email = strip_html(form.cleaned_data['email'])
+                user.save()
+            Confirmation.objects.send_confirmation(user, user.email)
+            return HttpResponseRedirect(reverse('send_confirm', kwargs={'email':user.email}))
     return render_to_response('zephyr/accounts_home.html',
                               context_instance=RequestContext(request))
 

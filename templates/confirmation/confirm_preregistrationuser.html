@@ -1,0 +1,22 @@
+{% extends "zephyr/content_base.html" %}
+
+{% block more_content %}
+
+<div class="pitch">
+    <hr/>
+    <p class="lead">Great, we've confirmed your email address.</p>
+    <p>Bear with us for a second as you're redirected to the rest of the signup form.</p>
+</div>
+
+<form id="register" action="/accounts/register/" method="post">
+    {% csrf_token %}
+    <input type="hidden" value="{{ key }}" name="key"/>
+    <input type="hidden" value="1" name="from_confirmation"/>
+</form>
+
+<script type="text/javascript">
+    setTimeout(function () {
+            $("#register").submit();
+    }, (3 * 1000));
+</script>
+{% endblock %}

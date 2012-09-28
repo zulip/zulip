@@ -106,6 +106,11 @@ class UserProfile(models.Model):
             recipient.save()
             Subscription(userprofile=profile, recipient=recipient).save()
 
+class PreregistrationUser(models.Model):
+    email = models.EmailField(unique=True)
+    # 0 is inactive, 1 is active
+    status = models.IntegerField(default=0)
+
 def create_user(email, password, realm, full_name, short_name):
     # NB: the result of Base32 + truncation is not a valid Base32 encoding.
     # It's just a unique alphanumeric string.

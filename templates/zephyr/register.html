@@ -16,19 +16,8 @@
     <div class="control-group">
         <label for="id_email" class="control-label">Email</label>
         <div class="controls">
-            {% if company_name and not form.email.errors %} {# They entered through the main page and already entered their email #}
-                {{ form.email.as_hidden }}
-                <p>{{ form.email.value }}<p>
-            {% else %}
-                {{ form.email }}
-                {% if form.email.errors %}
-                    <br/>
-                    <br/>
-                    {% for error in form.email.errors %}
-                        <div class="alert alert-error">{{ error|escape }}</div>
-                    {% endfor %}
-                {% endif %}
-            {% endif %}
+            <input type='hidden' name='key' value='{{ key }}' />
+            <p>{{ email }}<p>
         </div>
     </div>
     <div class="control-group">

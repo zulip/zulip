@@ -137,6 +137,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    'confirmation',
     'zephyr',
 )
 
@@ -189,3 +190,6 @@ EMAIL_HOST_PASSWORD='password'
 LOGIN_REDIRECT_URL='/'
 
 ZEPHYR_LOG="all_zephyrs_log"
+
+# For testing, you may want to have emails be printed to the console.
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

@@ -15,6 +15,8 @@ class UniqueEmailField(forms.EmailField):
 
 class RegistrationForm(forms.Form):
     full_name = forms.CharField(max_length=100)
-    email = UniqueEmailField()
     password = forms.CharField(widget=forms.PasswordInput, max_length=100)
     domain = forms.CharField(max_length=100)
+
+class HomepageForm(forms.Form):
+    email = UniqueEmailField()
