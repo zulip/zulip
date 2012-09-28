@@ -219,8 +219,7 @@ def get_new_zephyrs():
 def send_zephyr(message):
     zsig = "`Timothy G. Abbott`"
     wrapped_content = "\n".join(textwrap.wrap(message["content"]))
-    print "Sending message from %s humbug=>zephyr:" % message["sender_email"]
-    print "Recipient:", message["display_recipient"]
+    print "Sending message from %s humbug=>zephyr at %s" % (message["sender_email"], datetime.datetime.now())
     if message['type'] == "class":
         zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
                               auth=True, cls=message["display_recipient"],
