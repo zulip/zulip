@@ -3,7 +3,6 @@ import mechanize
 import urllib
 import sys
 import logging
-import zephyr
 import traceback
 import simplejson
 import re
@@ -12,6 +11,10 @@ import subprocess
 import optparse
 import os
 import datetime
+
+sys.path.append("/mit/tabbott/Public/python-zephyr/")
+sys.path.append("/mit/tabbott/Public/python-zephyr/build/lib.linux-x86_64-2.6/")
+import zephyr
 
 zephyr.init()
 
