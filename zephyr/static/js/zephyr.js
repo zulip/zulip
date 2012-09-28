@@ -813,8 +813,11 @@ function add_zephyr_metadata(dummy, zephyr) {
     zephyr_dict[zephyr.id] = zephyr;
 }
 
-function add_messages(zephyrs) {
-    $.each(zephyrs, add_zephyr_metadata);
+function add_messages(data) {
+    if (!data || !data.zephyrs)
+        return;
+
+    $.each(data.zephyrs, add_zephyr_metadata);
 
     if (loading_spinner) {
         loading_spinner.stop();
@@ -823,12 +826,12 @@ function add_messages(zephyrs) {
     }
 
     if (narrowed)
-        add_to_table(zephyrs, 'zfilt', narrowed);
+        add_to_table(data.zephyrs, 'zfilt', narrowed);
 
     // Even when narrowed, add messages to the home view so they exist when we un-narrow.
-    add_to_table(zephyrs, 'zhome', function () { return true; });
+    add_to_table(data.zephyrs, 'zhome', function () { return true; });
 
-    $.each(zephyrs, function () {
+    $.each(data.zephyrs, function () {
         zephyr_array.push(this);
 
         // If we received the initially selected message, select it on the client side,
@@ -860,9 +863,7 @@ function get_updates() {
             get_updates_failures = 0;
             $('#connection-error').hide();
 
-            if (data && data.zephyrs) {
-                add_messages(data.zephyrs);
-            }
+            add_messages(data);
             setTimeout(get_updates, 0);
         },
         error: function (xhr, error_type, exn) {
