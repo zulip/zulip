@@ -29,6 +29,10 @@ parser.add_option('--resend-log',
                   dest='resend_log',
                   default=False,
                   action='store_true')
+parser.add_option('--enable-log',
+                  dest='enable_log',
+                  default=False,
+                  action='store_true')
 parser.add_option('--no-forward-personals',
                   dest='forward_personals',
                   default=True,
@@ -227,7 +231,12 @@ def zephyr_to_humbug(options):
 
     print "Starting receive loop"
 
-    with open('zephyrs', 'a') as log:
+    if options.enable_log:
+        log_file = "zephyrs"
+    else:
+        log_file = "/dev/null"
+
+    with open(log_file, 'a') as log:
         process_loop(log)
 
 def get_new_zephyrs():
