@@ -28,6 +28,7 @@ def confirm(request, confirmation_key):
         'object': obj,
         'confirmed': confirmed,
         'days': getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10),
+        'key': confirmation_key,
     }
     templates = [
         'confirmation/confirm.html',
