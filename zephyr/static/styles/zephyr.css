@@ -107,9 +107,8 @@ td.pointer {
     overflow-x:     hidden;
     padding-left: 10px;
     white-space:    nowrap;
-    font-weight: bold;
-    background-color: black;
     color: white;
+    background-color: #444;
     border: 2px solid black;
 }
 
