@@ -107,13 +107,14 @@ td.pointer {
     overflow-x:     hidden;
     padding-left: 10px;
     white-space:    nowrap;
+    font-weight: bold;
     color: white;
     background-color: #444;
-    border: 2px solid black;
+    border: 2px solid #444;
 }
 
 .messagebox.personal-message {
-    border-color: black;
+    border-color: #444;
     border-width: 0px 2px 2px 2px;
 }
 
