@@ -339,7 +339,10 @@ $(function () {
 
 var selected_zephyr_id = -1;  /* to be filled in on document.ready */
 var selected_zephyr;  // = get_zephyr_row(selected_zephyr_id)
-var last_received = -1;
+var received = {
+    first: -1,
+    last:  -1
+};
 
 // Narrowing predicate, or 'false' for the home view.
 var narrowed = false;
@@ -757,7 +760,12 @@ function add_to_table(zephyrs, table_name, filter_function) {
 }
 
 function add_zephyr_metadata(dummy, zephyr) {
-    last_received = Math.max(last_received, zephyr.id);
+    if (received.first === -1)
+        received.first = zephyr.id;
+    else
+        received.first = Math.min(received.first, zephyr.id);
+
+    received.last = Math.max(received.last, zephyr.id);
 
     switch (zephyr.type) {
     case 'class':
@@ -844,7 +852,7 @@ function get_updates() {
     $.ajax({
         type:     'POST',
         url:      'get_updates',
-        data:     { last_received: last_received },
+        data:     received,
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (data) {

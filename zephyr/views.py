@@ -161,9 +161,9 @@ def get_updates_backend(request, handler, last_received=None, mit_sync_bot=False
 @asynchronous
 @require_post
 def get_updates(request, handler):
-    last_received = request.POST.get('last_received')
+    last_received = request.POST.get('last')
     if not last_received:
-        return json_error("Missing last_received")
+        return json_error("Missing last received")
     return get_updates_backend(request, handler, last_received=last_received,
                                apply_markdown=True)
 
