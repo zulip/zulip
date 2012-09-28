@@ -115,10 +115,11 @@ def process_loop(log):
             zsig, body = notice.message.split("\x00", 1)
             is_personal = False
             is_huddle = False
-
-            if zsig.endswith("`") and zsig.startswith("`"):
-                print "Skipping message from Humbug!"
-                continue
+            if isinstance(zsig, str):
+                # Check for width unicode character u'\u200B'.encode("utf-8")
+                if u'\u200B'.encode("utf-8") in zsig:
+                    print "Skipping message from Humbug!"
+                    continue
 
             sender = notice.sender.lower().replace("athena.mit.edu", "mit.edu")
             recipient = notice.recipient.lower().replace("athena.mit.edu", "mit.edu")
@@ -217,7 +218,7 @@ def get_new_zephyrs():
         return simplejson.loads(res.read())['zephyrs']
 
 def send_zephyr(message):
-    zsig = "`%s`" % (username_to_fullname(message["sender_email"]))
+    zsig = u"%s\u200B" % (username_to_fullname(message["sender_email"]))
     if ' dot ' in zsig:
         print "ERROR!  Couldn't compute zsig for %s!" % (message["sender_email"])
         return
