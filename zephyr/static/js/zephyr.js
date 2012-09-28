@@ -151,11 +151,11 @@ function compose_button() {
 
 function hide_compose() {
     $('input, textarea, button').blur();
-    $('.zephyr_compose').slideUp('fast');
+    $('.zephyr_compose').slideUp(100);
 }
 
 function show_compose(tabname, focus_area) {
-    $('.zephyr_compose').slideDown('fast');
+    $('.zephyr_compose').slideDown(100);
     $('#zephyr-type-tabs a[href="#' + tabname + '-message"]').tab('show');
     focus_area.focus();
     focus_area.select();
