@@ -144,8 +144,8 @@ def process_loop(log):
             sender = notice.sender.lower().replace("athena.mit.edu", "mit.edu")
             recipient = notice.recipient.lower().replace("athena.mit.edu", "mit.edu")
 
-            if (notice.cls == "message" and
-                notice.instance == "personal"):
+            if (notice.cls.lower() == "message" and
+                notice.instance.lower() == "personal"):
                 is_personal = True
                 if body.startswith("CC:"):
                     is_huddle = True
@@ -161,8 +161,8 @@ def process_loop(log):
                 continue
 
             # Drop messages not to the listed subscriptions
-            if (notice.cls not in mit_subs_list.all_subs) and not (is_personal and
-                                                                   options.forward_personals):
+            if (notice.cls.lower() not in mit_subs_list.all_subs) and not \
+                    (is_personal and options.forward_personals):
                 print "Skipping ...", notice.cls, notice.instance, is_personal
                 continue
 
@@ -184,7 +184,7 @@ def process_loop(log):
                 zeph = { 'type'      : 'class',
                          'time'      : str(notice.time),
                          'sender'    : sender,
-                         'class'     : notice.cls,
+                         'class'     : notice.cls.lower(),
                          'instance'  : notice.instance,
                          'zsig'      : zsig,  # logged here but not used by app
                          'new_zephyr': body }
