@@ -563,7 +563,7 @@ function do_narrow(description, filter_function) {
 
     // Empty the filtered table right before we fill it again
     $("#zfilt").empty();
-    add_to_table(zephyr_array, 'zfilt', filter_function);
+    add_to_table(zephyr_array, 'zfilt', filter_function, 'bottom');
 
     // Show the new set of messages.
     $("#zfilt").addClass("focused_table");
@@ -709,11 +709,14 @@ function same_sender(a, b) {
             (a.sender_email === b.sender_email));
 }
 
-function add_to_table(zephyrs, table_name, filter_function) {
+function add_to_table(zephyrs, table_name, filter_function, where) {
     var table = $('#' + table_name);
-    var prev = zephyr_dict[table.find('tr:last-child').attr('zid')];
     var zephyrs_to_render = [];
     var ids_where_next_is_same_sender = [];
+    var prev;
+
+    if (where !== 'top')
+        prev = zephyr_dict[table.find('tr:last-child').attr('zid')];
 
     $.each(zephyrs, function (index, zephyr) {
         if (! filter_function(zephyr))
@@ -746,7 +749,12 @@ function add_to_table(zephyrs, table_name, filter_function) {
         prev = zephyr;
     });
 
-    table.append(templates.zephyr({'zephyrs': zephyrs_to_render}));
+    var rendered = templates.zephyr({zephyrs: zephyrs_to_render});
+
+    if (where === 'top')
+        table.prepend(rendered);
+    else
+        table.append(rendered);
 
     $.each(zephyrs_to_render, function (index, zephyr) {
         var row = get_zephyr_row(zephyr.id);
@@ -826,10 +834,10 @@ function add_messages(data) {
     }
 
     if (narrowed)
-        add_to_table(data.zephyrs, 'zfilt', narrowed);
+        add_to_table(data.zephyrs, 'zfilt', narrowed, data.where);
 
     // Even when narrowed, add messages to the home view so they exist when we un-narrow.
-    add_to_table(data.zephyrs, 'zhome', function () { return true; });
+    add_to_table(data.zephyrs, 'zhome', function () { return true; }, data.where);
 
     $.each(data.zephyrs, function () {
         zephyr_array.push(this);
