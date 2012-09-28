@@ -141,17 +141,18 @@ def update(request):
     user_profile.save()
     return json_success()
 
-def get_updates_backend(request, handler, last_received=None, mit_sync_bot=False,
-                        apply_markdown=False):
+def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False):
+    if mit_sync_bot:
+        messages = [m for m in messages if not mit_sync_table.get(m.id)]
+    return {'zephyrs': [message.to_dict(apply_markdown) for message in messages]}
+
+def get_updates_backend(request, handler, last_received=None, **kwargs):
     user_profile = UserProfile.objects.get(user=request.user)
     def on_receive(zephyrs):
         if handler.request.connection.stream.closed():
             return
         try:
-            if mit_sync_bot:
-                zephyrs = [zephyr for zephyr in zephyrs if not mit_sync_table.get(zephyr.id)]
-            # TODO: We should probably split this out to another function.
-            handler.finish({'zephyrs': [zephyr.to_dict(apply_markdown) for zephyr in zephyrs]})
+            handler.finish(format_updates_response(zephyrs, **kwargs))
         except socket.error:
             pass
 
