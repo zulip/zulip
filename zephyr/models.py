@@ -264,8 +264,11 @@ def log_zephyr(zephyr):
     fcntl.flock(lock, fcntl.LOCK_UN)
 
 def do_send_zephyr(zephyr, synced_from_mit=False, no_log=False):
-    mit_sync_table[zephyr.id] = synced_from_mit
     zephyr.save()
+    # The following mit_sync_table code must be after zephyr.save() or
+    # otherwise the id returned will be None (not having been assigned
+    # by the database yet)
+    mit_sync_table[zephyr.id] = synced_from_mit
     # Log the message to our message log for populate_db to refill
     if not no_log:
         log_zephyr(zephyr)
