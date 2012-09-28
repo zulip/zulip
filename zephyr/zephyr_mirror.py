@@ -11,6 +11,7 @@ import subprocess
 import optparse
 import os
 import datetime
+import textwrap
 
 sys.path.append("/mit/tabbott/Public/python-zephyr/")
 sys.path.append("/mit/tabbott/Public/python-zephyr/build/lib.linux-x86_64-2.6/")
@@ -217,25 +218,28 @@ def get_new_zephyrs():
 
 def send_zephyr(message):
     zsig = "`Timothy G. Abbott`"
+    wrapped_content = "\n".join(textwrap.wrap(message["content"]))
+    print "Sending message from %s humbug=>zephyr:" % message["sender_email"]
+    print "Recipient:", message["display_recipient"]
     if message['type'] == "class":
         zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
                               auth=True, cls=message["display_recipient"],
                               instance=message["instance"])
-        body = "%s\0%s" % (zsig, message['content'])
+        body = "%s\0%s" % (zsig, wrapped_content)
         zeph.setmessage(body)
         zeph.send()
     elif message['type'] == "personal":
         zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
                               auth=True, recipient=message["display_recipient"].replace("mit.edu", "ATHENA.MIT.EDU"),
                               cls="message", instance="personal")
-        body = "%s\0%s" % (zsig, message['content'])
+        body = "%s\0%s" % (zsig, wrapped_content)
         zeph.setmessage(body)
         zeph.send()
     elif message['type'] == "huddle":
         cc_list = ["CC:"]
         cc_list.extend([user["email"].replace("@mit.edu", "")
                         for user in message["display_recipient"]])
-        body = "%s\0%s\n%s" % (zsig, " ".join(cc_list), message['content'])
+        body = "%s\0%s\n%s" % (zsig, " ".join(cc_list), wrapped_content)
         for r in message["display_recipient"]:
             zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
                                   auth=True, recipient=r["email"].replace("mit.edu", "ATHENA.MIT.EDU"),
