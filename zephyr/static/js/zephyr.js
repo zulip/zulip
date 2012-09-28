@@ -28,6 +28,9 @@ function register_huddle_onclick(zephyr_row, sender) {
         // onclick handler. We don't want to trigger the messagebox
         // handler.
         e.stopPropagation();
+
+        // switch to the replybox hotkey handler
+        keydown_handler = process_key_in_input;
     });
 }
 
