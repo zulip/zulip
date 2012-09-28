@@ -2,7 +2,7 @@
 {{#each zephyrs}}
 {{#with this}}
 {{#include_bookend}}
-<tr><td /><td /><td class="bookend" /></tr>
+<tr><td /><td /><td class="bookend{{^is_class}} personal-message{{/is_class}}" /></tr>
 {{/include_bookend}}
 
 {{#include_recipient}}
@@ -16,15 +16,15 @@
 </tr>
 {{else}}
 <tr>
-    <td colspan="2" class="zephyr_label_clickable zephyr_newstyle_class"
+    <td colspan="2" class="zephyr_label_clickable zephyr_newstyle_class personal-message"
         onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">Huddle</td>
-    <td class="zephyr_label_clickable zephyr_newstyle_instance"
+    <td class="zephyr_label_clickable zephyr_newstyle_instance personal-message"
         onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">{{display_reply_to}}</td>
 </tr>
 {{/if}}
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}"
-    class="zephyr_row"
+    class="zephyr_row{{^is_class}} personal-message{{/is_class}}"
     onclick="select_zephyr_by_id({{id}});">
     <td class="zephyr_picture">
     {{#include_sender}}
@@ -33,7 +33,7 @@
     {{/include_sender}}
     </td>
     <td class="pointer"><p></p></td>
-    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}"
+    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_class}} personal-message{{/is_class}}"
         onclick="select_zephyr_by_id({{id}}); respond_to_zephyr();">
         {{#include_sender}}
         <span class="zephyr_label_clickable zephyr_sender"
