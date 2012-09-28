@@ -76,7 +76,7 @@ td.pointer {
     padding-top: 5px;
 }
 
-td.zephyr_newstyle_class {
+.zephyr_newstyle_class {
     vertical-align: middle;
     text-align:     right;
     overflow-x:     hidden;
@@ -89,7 +89,7 @@ td.zephyr_newstyle_class {
     font-weight: bold;
 }
 
-td.zephyr_newstyle_instance {
+.zephyr_newstyle_instance {
     vertical-align: middle;
     text-align:     left;
     overflow-x:     hidden;
@@ -100,13 +100,25 @@ td.zephyr_newstyle_instance {
     font-weight: bold;
 }
 
-.zephyr_class {
-    font-weight: bold;
-    font-size: 120%;
-    width: 15px;
+.zephyr_newstyle_class.personal-message {
+    background-color: lightgreen;
+    border-color: black;
+    border-width: 2px;
 }
 
-.zephyr_instance {
+.zephyr_newstyle_instance.personal-message {
+    background-color: lightgreen;
+    border-color: black;
+    border-width: 2px;
+}
+
+.messagebox.personal-message {
+    border-color: black;
+    border-width: 0px 2px 2px 2px;
+}
+
+.narrowed_name {
+    font-weight: bold;
     font-size: 120%;
 }
 
@@ -166,7 +178,7 @@ blockquote p {
     margin-bottom: 20px;
     background-color: white;
     border: 1px solid gray;
-    border-bottom: 1px solid gray;
+    border-width: 0px 1px 1px 1px;
 }
 
 .bookend {
