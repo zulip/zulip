@@ -285,6 +285,7 @@ def humbug_to_zephyr(options):
     print "Starting syncing messages."
     while True:
         try:
+            # TODO: In theory, this API has a race where it'll miss messages.
             zephyrs = get_new_zephyrs()
         except HTTPError, e:
             # 502/503 typically means the server was restarted; sleep
