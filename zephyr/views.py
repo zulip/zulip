@@ -149,12 +149,9 @@ def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False, 
             'where':   where}
 
 def return_messages_immediately(request, handler, user_profile, **kwargs):
-    try:
-        first = int(request.POST['first'])
-        last  = int(request.POST['last'])
-    except TypeError:
-        return False
-    except ValueError:
+    first = request.POST.get("first")
+    last = request.POST.get("last")
+    if first is None or last is None:
         return False
 
     where = 'bottom'
