@@ -289,7 +289,8 @@ def humbug_to_zephyr(options):
         except HTTPError, e:
             # 502/503 typically means the server was restarted; sleep
             # a bit, then try again
-            time.sleep(1)
+            print "Failed getting zephyrs; trying again in 5 seconds."
+            time.sleep(5)
             if e.code == 401:
                 # 401 means digest auth failed -- we need to login again
                 while True:
