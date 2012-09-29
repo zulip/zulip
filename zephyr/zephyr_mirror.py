@@ -84,6 +84,9 @@ def send_humbug(zeph):
 
     humbug_data = []
     for key in zeph.keys():
+        if key == "zsig":
+            # Don't send zsigs to the Humbug server
+            continue
         if isinstance(zeph[key], unicode):
             val = zeph[key].encode("utf-8")
         elif isinstance(zeph[key], str):
