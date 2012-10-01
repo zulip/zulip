@@ -153,6 +153,8 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
     last = request.POST.get("last")
     if first is None or last is None:
         return False
+    first = int(first)
+    last  = int(last)
 
     where = 'bottom'
     query = Zephyr.objects.filter(usermessage__user_profile = user_profile).order_by('id')
