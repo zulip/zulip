@@ -182,14 +182,18 @@ LOGGING = {
 }
 
 ACCOUNT_ACTIVATION_DAYS=7
-EMAIL_HOST='localhost'
-EMAIL_PORT=9991
-EMAIL_HOST_USER='username'
-EMAIL_HOST_PASSWORD='password'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'humbug@humbughq.com'
+EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
+EMAIL_PORT = 587
+
+DEFAULT_FROM_EMAIL = "Humbug Central Services <humbug@humbughq.com>"
 
 LOGIN_REDIRECT_URL='/'
 
 ZEPHYR_LOG="all_zephyrs_log"
 
 # For testing, you may want to have emails be printed to the console.
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+if not deployed:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
