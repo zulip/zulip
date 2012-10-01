@@ -833,6 +833,12 @@ function add_messages(data) {
         loading_spinner = undefined;
     }
 
+    if (data.where === 'top') {
+        zephyr_array = data.zephyrs.concat(zephyr_array);
+    } else {
+        zephyr_array = zephyr_array.concat(data.zephyrs);
+    }
+
     if (narrowed)
         add_to_table(data.zephyrs, 'zfilt', narrowed, data.where);
 
@@ -840,8 +846,6 @@ function add_messages(data) {
     add_to_table(data.zephyrs, 'zhome', function () { return true; }, data.where);
 
     $.each(data.zephyrs, function () {
-        zephyr_array.push(this);
-
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
         if ((this.id === initial_pointer) && (selected_zephyr_id === -1)) {
