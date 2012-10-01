@@ -15,6 +15,7 @@ from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
     create_user, do_send_zephyr, mit_sync_table, create_user_if_needed, \
     create_class_if_needed, PreregistrationUser
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique
+from django.views.decorators.csrf import csrf_exempt
 
 from zephyr.decorator import asynchronous
 from zephyr.lib.query import last_n
@@ -32,6 +33,22 @@ def require_post(view_func):
         if request.method != "POST":
             return HttpResponseBadRequest('This form can only be submitted by POST.')
         return view_func(request, *args, **kwargs)
+    return _wrapped_view_func
+
+# api_key_required will add the authenticated user's user_profile to
+# the view function's arguments list, since we have to look it up
+# anyway.
+def api_key_required(view_func):
+    def _wrapped_view_func(request, *args, **kwargs):
+        # Arguably @require_post should protect us from having to do
+        # this, but I don't want to count on us always getting the
+        # decorator ordering right.
+        if request.method != "POST":
+            return HttpResponseBadRequest('This form can only be submitted by POST.')
+        user_profile = UserProfile.objects.get(user__email=request.POST.get("email"))
+        if user_profile is None or request.POST.get("api-key") != user_profile.api_key:
+            return json_error('Invalid API user/key pair.')
+        return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
 def json_response(res_type="success", msg="", data={}, status=200):
@@ -216,8 +233,7 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
 
     return False
 
-def get_updates_backend(request, handler, **kwargs):
-    user_profile = UserProfile.objects.get(user=request.user)
+def get_updates_backend(request, user_profile, handler, **kwargs):
     if return_messages_immediately(request, handler, user_profile, **kwargs):
         return
 
@@ -237,23 +253,44 @@ def get_updates_backend(request, handler, **kwargs):
 def get_updates(request, handler):
     if not ('last' in request.POST and 'first' in request.POST):
         return json_error("Missing message range")
-    return get_updates_backend(request, handler, apply_markdown=True)
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    return get_updates_backend(request, user_profile, handler, apply_markdown=True)
 
 @login_required
 @asynchronous
 @require_post
 def get_updates_api(request, handler):
     user_profile = UserProfile.objects.get(user=request.user)
-    return get_updates_backend(request, handler,
+    return get_updates_backend(request, user_profile, handler,
                                apply_markdown=(request.POST.get("apply_markdown") is not None),
                                mit_sync_bot=request.POST.get("mit_sync_bot"))
+
+# Yes, this has a name similar to the previous function.  I think this
+# new name is better and expect the old function to be deleted and
+# replaced by the new one soon, so I'm not going to worry about it.
+@csrf_exempt
+@asynchronous
+@require_post
+@api_key_required
+def api_get_updates(request, user_profile, handler):
+    return get_updates_backend(request, user_profile, handler,
+                               apply_markdown=(request.POST.get("apply_markdown") is not None),
+                               mit_sync_bot=request.POST.get("mit_sync_bot"))
+
+@csrf_exempt
+@require_post
+@api_key_required
+def api_send_message(request, user_profile):
+    return zephyr_backend(request, user_profile, user_profile.user)
 
 @login_required
 @require_post
 def zephyr(request):
+    user_profile = UserProfile.objects.get(user=request.user)
     if 'time' in request.POST:
         return json_error("Invalid field 'time'")
-    return zephyr_backend(request, request.user)
+    return zephyr_backend(request, user_profile, request.user)
 
 @login_required
 @require_post
@@ -289,12 +326,13 @@ def forge_zephyr(request):
                                   user_email.split('@')[0],
                                   user_email.split('@')[0])
 
-    return zephyr_backend(request, user)
+    return zephyr_backend(request, user_profile, user)
 
-@login_required
+# We do not @require_login for zephyr_backend, since it is used both
+# from the API and the web service.  Code calling zephyr_backend
+# should either check the API key or check that the user is logged in.
 @require_post
-def zephyr_backend(request, sender):
-    user_profile = UserProfile.objects.get(user=request.user)
+def zephyr_backend(request, user_profile, sender):
     if "type" not in request.POST:
         return json_error("Missing type")
     if "new_zephyr" not in request.POST:

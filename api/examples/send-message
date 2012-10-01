@@ -1,0 +1,40 @@
+#!/usr/bin/python
+import mechanize
+import urllib
+import sys
+import os
+import optparse
+
+usage = """send-message --user=<email address> [options]
+
+Sends a test message from by the provided user to tabbott@humbhughq.com.
+
+Example: send-message --user=tabbott@humbughq.com --site=http://127.0.0.1:8000
+"""
+parser = optparse.OptionParser(usage=usage)
+parser.add_option('--site',
+                  dest='site',
+                  default="https://app.humbughq.com/",
+                  action='store')
+parser.add_option('--api-key',
+                  dest='api_key',
+                  default="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  action='store')
+parser.add_option('--user',
+                  dest='user',
+                  action='store')
+(options, args) = parser.parse_args()
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+import api.common
+client = api.common.HumbugAPI(email=options.user,
+                              api_key=options.api_key,
+                              verbose=True,
+                              site=options.site)
+
+message_data = {
+    "type": "personal",
+    "new_zephyr": "test",
+    "recipient": "tabbott@humbughq.com",
+}
+print client.send_message(message_data)
