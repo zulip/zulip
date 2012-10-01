@@ -183,8 +183,66 @@ function toggle_compose() {
     }
 }
 
+function composing_class_message() {
+    return $("#class-message").is(":visible");
+}
+
+function composing_huddle_message() {
+    return $("#personal-message").is(":visible");
+}
+
 function compose_class_name() {
     return $.trim($("#class").val());
+}
+
+function compose_instance() {
+    return $.trim($("#instance").val());
+}
+
+function compose_message() {
+    return $.trim($("#new_zephyr").val());
+}
+
+function compose_recipient() {
+    return $.trim($("#recipient").val());
+}
+
+function compose_huddle_message() {
+    return $.trim($("#new_personal_zephyr").val());
+}
+
+function compose_error(error_text, bad_input) {
+    $('#send-status').removeClass(status_classes)
+               .addClass('alert-error')
+               .text(error_text)
+               .stop(true).fadeTo(0, 1);
+    $('#class-message, #personal-message').find('input[type="submit"]').removeAttr('disabled');
+    bad_input.focus().select();
+}
+
+function validate_class_message() {
+    if (compose_class_name() === "") {
+        compose_error("Please specify a class", $("#class"));
+        return false;
+    } else if (compose_instance() === "") {
+        compose_error("Please specify an instance", $("#instance"));
+        return false;
+    } else if (compose_message() === "") {
+        compose_error("You have nothing to send!", $("#new_zephyr"));
+        return false;
+    }
+    return true;
+}
+
+function validate_huddle_message() {
+    if (compose_recipient() === "") {
+        compose_error("Please specify at least one recipient", $("#recipient"));
+        return false;
+    } else if (compose_huddle_message() === "") {
+        compose_error("You have nothing to send!", $("#new_personal_zephyr"));
+        return false;
+    }
+    return true;
 }
 
 $(function () {
@@ -201,22 +259,23 @@ $(function () {
             buttons.attr('disabled', 'disabled');
             buttons.blur();
 
-            if ($("#class-message:visible")[0] === undefined) {// we're not dealing with classes
+            // If validation fails, the validate function will pop up
+            // an error message.
+            if (composing_huddle_message()) {
+                if (!validate_huddle_message()) {
+                    return false;
+                }
+                // We have nothing else to check.
                 return true;
             }
 
-            var zephyr_class = compose_class_name();
-            if (zephyr_class === "") {
-                // You can't try to send to an empty class.
-                send_status.removeClass(status_classes)
-                           .addClass('alert-error')
-                           .text('Please specify a class')
-                           .stop(true).fadeTo(0,1);
-                buttons.removeAttr('disabled');
-                $('#class-message input:not(:hidden):first').focus().select();
-                return false;
+            if (composing_class_message()) {
+                if (!validate_class_message()) {
+                    return false;
+                }
             }
 
+            var zephyr_class = compose_class_name();
             var okay = true;
             $.ajax({
                 url: "subscriptions/exists/" + zephyr_class,
