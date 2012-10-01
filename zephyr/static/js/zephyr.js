@@ -427,6 +427,13 @@ var received = {
 // Narrowing predicate, or 'false' for the home view.
 var narrowed = false;
 
+// The "message groups", i.e. blocks of messages collapsed by recipient.
+// Each message table has a list of lists.
+var message_groups = {
+    zhome: [],
+    zfilt: []
+};
+
 // For tracking where you were before you narrowed.
 var persistent_zephyr_id = 0;
 var high_water_mark = 0;
@@ -638,7 +645,7 @@ function do_narrow(description, filter_function) {
     var parent;
 
     // Empty the filtered table right before we fill it again
-    $("#zfilt").empty();
+    clear_table('zfilt');
     add_to_table(zephyr_array, 'zfilt', filter_function, 'bottom');
 
     // Show the new set of messages.
@@ -785,11 +792,19 @@ function same_sender(a, b) {
             (a.sender_email === b.sender_email));
 }
 
+function clear_table(table_name) {
+    $('#' + table_name).empty();
+    message_groups[table_name] = [];
+}
+
 function add_to_table(zephyrs, table_name, filter_function, where) {
     var table = $('#' + table_name);
     var zephyrs_to_render = [];
     var ids_where_next_is_same_sender = [];
     var prev;
+
+    var current_group = [];
+    var new_message_groups = [];
 
     if (where !== 'top')
         prev = zephyr_dict[table.find('tr:last-child').attr('zid')];
@@ -807,7 +822,13 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
 
         zephyr.include_recipient = false;
         zephyr.include_bookend   = false;
-        if (! same_recipient(prev, zephyr)) {
+        if (same_recipient(prev, zephyr)) {
+            current_group.push(zephyr.id);
+        } else {
+            if (current_group.length > 0)
+                new_message_groups.push(current_group);
+            current_group = [zephyr.id];
+
             // Add a space to the table, but not for the first element.
             zephyr.include_recipient = true;
             zephyr.include_bookend   = (prev !== undefined);
@@ -824,6 +845,15 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
         zephyrs_to_render.push(zephyr);
         prev = zephyr;
     });
+
+    if (current_group.length > 0)
+        new_message_groups.push(current_group);
+
+    if (where === 'top') {
+        message_groups[table_name] = new_message_groups.concat(message_groups[table_name]);
+    } else {
+        message_groups[table_name] = message_groups[table_name].concat(new_message_groups);
+    }
 
     var rendered = templates.zephyr({
         zephyrs: zephyrs_to_render,
