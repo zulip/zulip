@@ -371,10 +371,6 @@ var narrowed = false;
 var persistent_zephyr_id = 0;
 var high_water_mark = 0;
 
-function get_all_zephyr_rows() {
-    return $('tr.zephyr_row');
-}
-
 function get_next_visible(zephyr_row) {
     if (zephyr_row === undefined)
         return [];
