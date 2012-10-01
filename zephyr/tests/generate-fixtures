@@ -1,3 +1,5 @@
 #!/bin/sh
 mkdir -p zephyr/fixtures
-python manage.py dumpdata auth.User zephyr.UserProfile zephyr.ZephyrClass zephyr.Recipient zephyr.Subscription zephyr.Zephyr zephyr.Huddle zephyr.Realm zephyr.UserMessage > zephyr/fixtures/zephyrs.json
+python manage.py syncdb --noinput --settings=humbug.test-settings
+python manage.py populate_db --settings=humbug.test-settings -n20
+python manage.py dumpdata  --settings=humbug.test-settings auth.User zephyr.UserProfile zephyr.ZephyrClass zephyr.Recipient zephyr.Subscription zephyr.Zephyr zephyr.Huddle zephyr.Realm zephyr.UserMessage > zephyr/fixtures/zephyrs.json
