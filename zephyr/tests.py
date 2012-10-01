@@ -360,6 +360,9 @@ class DummyHandler(object):
     def async_callback(self, _):
         return self.callback
 
+    def finish(self, _):
+        return
+
 class POSTRequestMock(object):
     method = "POST"
 
@@ -385,7 +388,7 @@ class GetUpdatesTest(AuthedTestCase):
                 self.assertTrue(zephyr in correct_zephyrs)
                 self.assertTrue(zephyr.id > 1)
 
-        request = POSTRequestMock({"last_received": 1}, user, callback)
+        request = POSTRequestMock({"last": str(1), "first": str(1)}, user, callback)
         # get_updates returns None, which raises an exception in the
         # @asynchronous decorator, which raises a TornadoAsyncException. So this
         # is expected, but should probably change.
@@ -406,7 +409,7 @@ class GetUpdatesTest(AuthedTestCase):
             # and assert in the parent.
             zephyrs = data
 
-        request = POSTRequestMock({"last_received": last_received}, user, callback)
+        request = POSTRequestMock({"last": str(last_received), "first": "1"}, user, callback)
         self.assertRaises(TornadoAsyncException, get_updates, request)
         self.assertEquals(len(zephyrs), 0)
 
@@ -425,4 +428,4 @@ class GetUpdatesTest(AuthedTestCase):
                 self.assertTrue(zephyr.id > 1)
 
         request = POSTRequestMock({}, user, callback)
-        self.assert_json_error(get_updates(request), "Missing last_received argument")
+        self.assert_json_error(get_updates(request), "Missing message range")
