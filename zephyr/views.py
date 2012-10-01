@@ -394,6 +394,9 @@ def json_remove_subscription(request):
 
     return json_success({"data": sub_name})
 
+def valid_class_name(name):
+    return re.match('^[a-z A-z0-9_-]+$', name)
+
 @login_required
 @require_post
 def json_add_subscription(request):
@@ -403,7 +406,7 @@ def json_add_subscription(request):
         return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
 
     sub_name = request.POST.get('new_subscription').strip()
-    if not re.match('^[a-z A-z0-9_-]+$', sub_name):
+    if not valid_class_name(sub_name):
         return json_error("Invalid characters in class names")
 
     zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)
@@ -493,4 +496,6 @@ def change_settings(request):
 
 @login_required
 def class_exists(request, zephyr_class):
+    if not valid_class_name(zephyr_class):
+        return json_error("Invalid characters in class name")
     return HttpResponse(bool(ZephyrClass.objects.filter(name=zephyr_class)))
