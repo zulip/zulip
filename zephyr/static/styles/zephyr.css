@@ -340,6 +340,10 @@ input.send_zephyr {
     margin: 0;
 }
 
+#home-error {
+    display: none;
+}
+
 #bottom-nav {
     position: absolute;
     bottom: 0;

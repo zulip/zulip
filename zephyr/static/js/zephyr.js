@@ -60,6 +60,7 @@ function report_error(response, xhr, status_box) {
 
     status_box.removeClass(status_classes).addClass('alert-error')
               .text(response).stop(true).fadeTo(0, 1);
+    status_box.show();
 }
 
 $(function () {
@@ -73,16 +74,12 @@ $(function () {
     // Prepare the click handler for subbing to a new class to which
     // you have composed a zephyr.
     $('#create-it').click(function () {
-        sub(compose_class_name());
-        $("#class-message form").ajaxSubmit();
-        $('#class-dne').stop(true).fadeOut(500);
+        sub_from_home(compose_class_name(), $('#class-dne'));
     });
 
     // Prepare the click handler for subbing to an existing class.
     $('#sub-it').click(function () {
-        sub(compose_class_name());
-        $("#class-message form").ajaxSubmit();
-        $('#class-nosub').stop(true).fadeOut(500);
+        sub_from_home(compose_class_name(), $('#class-nosub'));
     });
 
     $('#sidebar a[href="#subscriptions"]').click(function () {
@@ -141,9 +138,22 @@ $.ajaxSetup({
     }
 });
 
-function sub(zephyr_class) {
-    // TODO: check the return value and handle an error condition
-    $.post('/json/subscriptions/add', {new_subscription: zephyr_class});
+function sub_from_home(zephyr_class, prompt_button) {
+    $.ajax({
+        type:     'POST',
+        url:      '/json/subscriptions/add',
+        data:      {new_subscription: zephyr_class},
+        dataType: 'json',
+        timeout:  10*60*1000, // 10 minutes in ms
+        success: function (data) {
+            $("#class-message form").ajaxSubmit();
+            prompt_button.stop(true).fadeOut(500);
+            $("#subscriptions-status").fadeOut(0);
+        },
+        error: function (xhr, error_type, exn) {
+            report_error("Unable to subscribe", xhr, $("#home-error"));
+        }
+    });
 }
 
 function compose_button() {
@@ -223,6 +233,13 @@ $(function () {
                         buttons.removeAttr('disabled');
                         hide_compose();
                     }
+                    $("#home-error").hide();
+                },
+                error: function (xhr) {
+                    okay = false;
+                    report_error("Error listing subscriptions", xhr, $("#home-error"));
+                    $("#class").focus();
+                    buttons.removeAttr('disabled');
                 }
             });
             if (okay && class_list.indexOf(zephyr_class) === -1) {
