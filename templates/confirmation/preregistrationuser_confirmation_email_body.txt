@@ -1,8 +1,8 @@
-Hello there!
+Hello there.
 
-You recently signed up for Humbug. Glad we didn't lose you between the signup page and here.
+You recently signed up for Humbug. Awesome!
 
-We're super excited to have you start collaborating with your organisation. To complete signup, visit this link below:
+To complete signup, visit this link below:
     <{{ activate_url }}>
 
 Feel free to give us a shout at <support@humbughq.com> if you have any questions.

@@ -188,7 +188,7 @@ EMAIL_HOST_USER = 'humbug@humbughq.com'
 EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
 EMAIL_PORT = 587
 
-DEFAULT_FROM_EMAIL = "Humbug Central Services <humbug@humbughq.com>"
+DEFAULT_FROM_EMAIL = "Humbug <humbug@humbughq.com>"
 
 LOGIN_REDIRECT_URL='/'
 
