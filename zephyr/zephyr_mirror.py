@@ -245,9 +245,12 @@ def zephyr_to_humbug(options):
     with open(log_file, 'a') as log:
         process_loop(log)
 
-def get_new_zephyrs():
+def get_new_humbugs(max_humbug_id):
         browser.addheaders.append(('X-CSRFToken', csrf_token))
         submit_hash = {"mit_sync_bot": 'yes'}
+        if max_humbug_id is not None:
+            submit_hash["first"] = str(0)
+            submit_hash["last"] = str(max_humbug_id)
         submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in submit_hash.items()])
         res = browser.open("https://app.humbughq.com/api/get_updates", submit_data)
         return simplejson.loads(res.read())['zephyrs']
@@ -289,10 +292,10 @@ def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
     browser_login()
     print "Starting syncing messages."
+    max_humbug_id = None
     while True:
         try:
-            # TODO: In theory, this API has a race where it'll miss messages.
-            zephyrs = get_new_zephyrs()
+            humbugs = get_new_humbugs(max_humbug_id)
         except HTTPError, e:
             # 502/503 typically means the server was restarted; sleep
             # a bit, then try again
@@ -309,12 +312,13 @@ def humbug_to_zephyr(options):
                         continue
                     break
             continue
-        for zephyr in zephyrs:
-            if zephyr["sender_email"] == os.environ["USER"] + "@mit.edu":
-                if float(zephyr["timestamp"]) < float(datetime.datetime.now().strftime("%s")) - 5:
-                    print "Alert!  Out of order message!", zephyr["timestamp"], datetime.datetime.now().strftime("%s")
+        for humbug in humbugs:
+            max_humbug_id = max(max_humbug_id, humbug["id"])
+            if humbug["sender_email"] == os.environ["USER"] + "@mit.edu":
+                if float(humbug["timestamp"]) < float(datetime.datetime.now().strftime("%s")) - 5:
+                    print "Alert!  Out of order message!", humbug["timestamp"], datetime.datetime.now().strftime("%s")
                     continue
-                send_zephyr(zephyr)
+                send_zephyr(humbug)
 
 if options.forward_to_humbug:
     zephyr_to_humbug(options)
