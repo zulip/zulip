@@ -72,10 +72,13 @@ def browser_login():
 
     browser.submit()
 
+def compute_humbug_username(zephyr_username):
+    return zephyr_username.lower().split("@")[0] + "@mit.edu"
+
 def send_humbug(zeph):
-    zeph["sender"] = zeph["sender"].lower().replace("athena.mit.edu", "mit.edu")
+    zeph["sender"] = compute_humbug_username(zeph["sender"])
     if "recipient" in zeph:
-        zeph["recipient"] = zeph["recipient"].lower().replace("athena.mit.edu", "mit.edu")
+        zeph["recipient"] = compute_humbug_username(zeph["recipient"])
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]
     if "instance" in zeph:
