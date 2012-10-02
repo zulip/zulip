@@ -198,14 +198,14 @@ def process_loop(log):
                          'sender'    : sender,
                          'recipient' : huddle_recipients,
                          'zsig'      : zsig,  # logged here but not used by app
-                         'new_zephyr': body.split("\n", 1)[1] }
+                         'content'   : body.split("\n", 1)[1] }
             elif is_personal:
                 zeph = { 'type'      : 'personal',
                          'time'      : str(notice.time),
                          'sender'    : sender,
                          'recipient' : recipient,
                          'zsig'      : zsig,  # logged here but not used by app
-                         'new_zephyr': body }
+                         'content'   : body }
             else:
                 zeph = { 'type'      : 'class',
                          'time'      : str(notice.time),
@@ -213,7 +213,7 @@ def process_loop(log):
                          'class'     : notice.cls.lower(),
                          'instance'  : notice.instance,
                          'zsig'      : zsig,  # logged here but not used by app
-                         'new_zephyr': body }
+                         'content'   :body }
 
             log.write(simplejson.dumps(zeph) + '\n')
             log.flush()
