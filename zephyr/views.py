@@ -304,7 +304,7 @@ def zephyr(request):
 
 @login_required
 @require_post
-def forge_zephyr(request):
+def forge_message(request):
     email = strip_html(request.POST['sender']).lower()
     user_profile = UserProfile.objects.get(user=request.user)
 

@@ -113,7 +113,7 @@ def send_humbug(zeph):
         humbug_data.append((key, val))
 
     try:
-        browser.open("https://app.humbughq.com/forge_zephyr/", urllib.urlencode(humbug_data))
+        browser.open("https://app.humbughq.com/forge_message/", urllib.urlencode(humbug_data))
     except HTTPError, e:
         if e.code == 401:
             # Digest auth failed; server was probably restarted; login in again
@@ -127,7 +127,7 @@ def send_humbug(zeph):
                 break
 
             print "Auth failure; trying again after logging in a second time!"
-            browser.open("https://app.humbughq.com/forge_zephyr/", urllib.urlencode(humbug_data))
+            browser.open("https://app.humbughq.com/forge_message/", urllib.urlencode(humbug_data))
         else:
             raise
 
