@@ -22,22 +22,20 @@ class HumbugAPI():
         res = self.browser.open(self.base_url + "/api/v1/send_message", submit_data)
         return simplejson.loads(res.read())
 
-    def get_messages(self, last_received = None):
-        submit_hash = {}
-        submit_hash["email"] = self.email
-        submit_hash["api-key"] = self.api_key
-        if last_received is not None:
-            submit_hash["first"] = "0"
-            submit_hash["last"] = str(last_received)
-        submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in submit_hash.items()])
+    def get_messages(self, options = {}):
+        options["email"] = self.email
+        options["api-key"] = self.api_key
+        submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in options.items()])
         res = self.browser.open(self.base_url + "/api/v1/get_updates", submit_data)
         return simplejson.loads(res.read())['zephyrs']
 
-    def call_on_each_message(self, callback):
+    def call_on_each_message(self, callback, options = {}):
         max_message_id = None
         while True:
             try:
-                messages = self.get_messages(max_message_id)
+                options["first"] = "0"
+                options["last"] = str(last_received)
+                messages = self.get_messages(options)
             except HTTPError, e:
                 # 502/503 typically means the server was restarted; sleep
                 # a bit, then try again
