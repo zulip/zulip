@@ -800,6 +800,9 @@ function clear_table(table_name) {
 }
 
 function add_to_table(zephyrs, table_name, filter_function, where) {
+    if (zephyrs.length === 0)
+        return;
+
     var table = $('#' + table_name);
     var zephyrs_to_render = [];
     var ids_where_next_is_same_sender = [];
