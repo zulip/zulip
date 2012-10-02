@@ -27,7 +27,7 @@ var directional_hotkeys = {
     35: get_last_visible   // End
 };
 
-function simulate_keypress(keycode) {
+function simulate_keydown(keycode) {
     $(document).trigger($.Event('keydown', {keyCode: keycode}));
 }
 
@@ -103,7 +103,7 @@ function process_compose_hotkey(code) {
         return process_compose_hotkey;
     } else {
         set_keydown_in_input(true);
-        simulate_keypress(code);
+        simulate_keydown(code);
     }
 }
 
