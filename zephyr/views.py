@@ -53,6 +53,13 @@ def strip_html(x):
     # FIXME: consider a whitelist
     return x.replace('&', '&amp;').replace('<','&lt;').replace('>','&gt;')
 
+def get_class(class_name, realm):
+    zephyr_class = ZephyrClass.objects.filter(name__iexact=class_name, realm=realm)
+    if zephyr_class:
+        return zephyr_class[0]
+    else:
+        return None
+
 @require_post
 def register(request):
     key = request.POST['key']
@@ -384,7 +391,10 @@ def json_remove_subscription(request):
         return json_error("Missing subscriptions")
 
     sub_name = request.POST.get('subscription')
-    zephyr_class = ZephyrClass.objects.get(name=sub_name, realm=user_profile.realm)
+    zephyr_class = get_class(sub_name, user_profile.realm)
+    if not zephyr_class:
+        return json_error("Not subscribed, so you can't unsubscribe")
+
     recipient = Recipient.objects.get(type_id=zephyr_class.id,
                                       type=Recipient.CLASS)
     subscription = Subscription.objects.get(
@@ -409,13 +419,9 @@ def json_add_subscription(request):
     if not valid_class_name(sub_name):
         return json_error("Invalid characters in class names")
 
-    zephyr_class = ZephyrClass.objects.filter(name=sub_name, realm=user_profile.realm)
-    if zephyr_class:
-        zephyr_class = zephyr_class[0]
-        recipient = Recipient.objects.get(type_id=zephyr_class.id,
-                                          type=Recipient.CLASS)
-    else:
-        (_, recipient) = ZephyrClass.create(sub_name, user_profile.realm)
+    zephyr_class = create_class_if_needed(user_profile.realm, sub_name)
+    recipient = Recipient.objects.get(type_id=zephyr_class.id,
+                                      type=Recipient.CLASS)
 
     subscription = Subscription.objects.filter(userprofile=user_profile,
                                                recipient=recipient)
@@ -498,4 +504,6 @@ def change_settings(request):
 def class_exists(request, zephyr_class):
     if not valid_class_name(zephyr_class):
         return json_error("Invalid characters in class name")
-    return HttpResponse(bool(ZephyrClass.objects.filter(name=zephyr_class)))
+    return HttpResponse(
+        bool(get_class(zephyr_class,
+                       UserProfile.objects.get(user=request.user).realm)))

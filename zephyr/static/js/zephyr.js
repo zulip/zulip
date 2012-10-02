@@ -301,7 +301,7 @@ $(function () {
                     buttons.removeAttr('disabled');
                 }
             });
-            if (okay && class_list.indexOf(zephyr_class) === -1) {
+            if (okay && class_list.indexOf(zephyr_class.toLowerCase()) === -1) {
                 // You're not subbed to the class
                 okay = false;
                 send_status.removeClass(status_classes);
@@ -352,7 +352,7 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').find('button[value="' + name + '"]').parents('tr').remove();
-            var removal_index = class_list.indexOf(name);
+            var removal_index = class_list.indexOf(name.toLowerCase());
             if (removal_index !== -1) {
                 class_list.splice(removal_index, 1);
             }
@@ -373,7 +373,7 @@ $(function () {
             $("#new_subscription").val("");
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').prepend(templates.subscription({subscription: name}));
-            class_list.push(name);
+            class_list.push(name.toLowerCase());
             $("#subscriptions-status").fadeOut(0);
         },
         error: function (xhr) {
@@ -854,7 +854,7 @@ function add_zephyr_metadata(dummy, zephyr) {
     case 'class':
         zephyr.is_class = true;
         if ($.inArray(zephyr.display_recipient, class_list) === -1) {
-            class_list.push(zephyr.display_recipient);
+            class_list.push(zephyr.display_recipient.toLowerCase());
             autocomplete_needs_update = true;
         }
         if ($.inArray(zephyr.instance, instance_list) === -1) {

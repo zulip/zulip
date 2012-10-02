@@ -135,7 +135,7 @@ def create_user_if_needed(realm, email, password, full_name, short_name):
 
 def create_class_if_needed(realm, class_name):
     try:
-        return ZephyrClass.objects.get(name=class_name, realm=realm)
+        return ZephyrClass.objects.get(name__iexact=class_name, realm=realm)
     except ZephyrClass.DoesNotExist:
         new_class = ZephyrClass()
         new_class.name = class_name
