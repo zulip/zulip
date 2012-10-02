@@ -853,7 +853,7 @@ function add_zephyr_metadata(dummy, zephyr) {
     switch (zephyr.type) {
     case 'class':
         zephyr.is_class = true;
-        if ($.inArray(zephyr.display_recipient, class_list) === -1) {
+        if ($.inArray(zephyr.display_recipient.toLowerCase(), class_list) === -1) {
             class_list.push(zephyr.display_recipient.toLowerCase());
             autocomplete_needs_update = true;
         }
