@@ -13,8 +13,18 @@ import simplejson
 import subprocess
 subprocess.call("zephyr/tests/generate-fixtures");
 from django.conf import settings
+import re
 
 settings.ZEPHYR_LOG = "/tmp/test-zephyr-log"
+settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+
+
+def find_key_by_email(address):
+    from django.core.mail import outbox
+    key_regex = re.compile("accounts/do_confirm/([a-f0-9]{40})>")
+    for message in reversed(outbox):
+        if address in message.to:
+            return key_regex.search(message.body).groups()[0]
 
 class AuthedTestCase(TestCase):
     def login(self, username, password):
@@ -22,9 +32,11 @@ class AuthedTestCase(TestCase):
                                 {'username':username, 'password':password})
 
     def register(self, username, password):
+        self.client.post('/accounts/home/',
+                         {'email': username + '@humbughq.com'})
         return self.client.post('/accounts/register/',
                                 {'full_name':username, 'short_name':username,
-                                 'email':username + "@humbughq.com",
+                                 'key': find_key_by_email(username + '@humbughq.com'),
                                  'username':username, 'password':password,
                                  'domain':'humbughq.com'})
 
@@ -96,8 +108,7 @@ class PublicURLTest(TestCase):
         """
         Pages that should return a 200 when not logged in.
         """
-        urls = {200: ["/accounts/home/", "/accounts/login/", "/accounts/logout/",
-                      "/accounts/register/"],
+        urls = {200: ["/accounts/home/", "/accounts/login/", "/accounts/logout/"],
                 302: ["/", "/zephyr/", "/json/subscriptions/list",
                       "/json/subscriptions/remove", "/json/subscriptions/add"],
                 400: ["/accounts/register/"],
