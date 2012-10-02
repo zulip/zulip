@@ -175,11 +175,14 @@ blockquote p {
 .messagebox {
     width:     470px;
     max-width: 470px;
-    padding: 8px 35px 8px 14px;
-    margin-bottom: 20px;
+    padding: 5px 35px 5px 14px;
     background-color: white;
     border: 1px solid gray;
     border-width: 0px 1px 1px 1px;
+}
+
+.messagebox p {
+    margin-bottom: 5px;
 }
 
 .bookend {
