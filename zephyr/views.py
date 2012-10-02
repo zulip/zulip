@@ -390,7 +390,7 @@ def zephyr_backend(request, user_profile, sender):
             recipient = Recipient.objects.get(type_id=recipient_user_profile.id,
                                               type=Recipient.PERSONAL)
     else:
-        return json_error("Invalid zephyr type")
+        return json_error("Invalid message type")
 
     new_zephyr = Zephyr()
     new_zephyr.sender = UserProfile.objects.get(user=sender)

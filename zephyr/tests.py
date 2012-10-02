@@ -362,7 +362,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         result = self.client.post("/send_message/", {"type": "invalid type",
                                                      "content": "Test message",
                                                      "recipient": "othello@humbughq.com"})
-        self.assert_json_error(result, "Invalid zephyr type")
+        self.assert_json_error(result, "Invalid message type")
 
 class DummyHandler(object):
     def __init__(self, callback):
