@@ -15,7 +15,7 @@ import simplejson
 from django.db.models.signals import class_prepared
 import markdown
 md_engine = markdown.Markdown(
-    extensions    = ['fenced_code', 'codehilite'],
+    extensions    = ['fenced_code', 'codehilite', 'nl2br'],
     output_format = 'xhtml' )
 
 def get_display_recipient(recipient):
