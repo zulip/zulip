@@ -130,11 +130,6 @@ td.pointer {
     border-width: 0px 2px 2px 2px;
 }
 
-.narrowed_name {
-    font-weight: bold;
-    font-size: 120%;
-}
-
 .zephyr_sender_name {
     font-weight: bold;
 }
@@ -319,13 +314,19 @@ input.send_zephyr {
     top: 0px;
 }
 
-.narrowed_view {
-    background-color: #EEE;
+#narrowlabel {
+    width: 95%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.badge_close_button {
-    margin-left: 0.3em;
-    cursor: pointer;
+#currently_narrowed_to {
+    font-weight: bold;
+}
+
+.narrowed_view {
+    background-color: #EEE;
 }
 
 #bottom_whitespace {

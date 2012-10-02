@@ -693,7 +693,7 @@ function narrow_personals() {
 
 function narrow_class() {
     var original = zephyr_dict[selected_zephyr_id];
-    var message = "<span class='narrowed_name'>" + original.display_recipient + "</span>";
+    var message = original.display_recipient;
     do_narrow(message, function (other) {
         return (other.type === 'class' &&
                 original.recipient_id === other.recipient_id);
@@ -705,8 +705,7 @@ function narrow_instance() {
     if (original.type !== 'class')
         return;
 
-    var message = "<span class='narrowed_name'>" + original.display_recipient
-        + " | " + original.instance + "</span>";
+    var message = original.display_recipient + " | " + original.instance;
     do_narrow(message, function (other) {
         return (other.type === 'class' &&
                 original.recipient_id === other.recipient_id &&

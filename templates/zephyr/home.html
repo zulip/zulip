@@ -17,8 +17,10 @@
                     </table>
                     <br/><br/>
                     <div class="row" id="narrowbox">
-                      <span>Showing </span>
-                      <span class="badge"><span id="currently_narrowed_to"></span><i class="badge_close_button icon-remove-sign icon-white" onclick="show_all_messages()"></i></span>
+                      <div class="pull-left" id="narrowlabel">
+                          <span id="currently_narrowed_to"></span>
+                      </div>
+                      <div class="pull-right close" onclick="show_all_messages()">&times;</div>
                     </div>
                     <div id="bottom_whitespace"></div>
                 </div>
