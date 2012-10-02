@@ -1,18 +1,14 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models import Q
-from django.db.models.signals import post_save
 import hashlib
 import base64
 import calendar
-import datetime
 from zephyr.lib.cache import cache_with_key
 import fcntl
 import os
 import simplejson
 
-from django.db.models.signals import class_prepared
 import markdown
 md_engine = markdown.Markdown(
     extensions    = ['fenced_code', 'codehilite', 'nl2br'],
