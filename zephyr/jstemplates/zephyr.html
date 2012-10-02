@@ -1,4 +1,15 @@
 {{! Client-side Mustache template for rendering zephyrs.}}
+
+{{! Because we use table-layout: fixed for the Zephyr table,
+    all the column widths are computed from the first row;
+    these CSS classes specify the widths for that first,
+    collapsed row. (Otherwise, colspan breaks everything).}}
+<tr style="visibility: collapse;">
+  <td class="ztable_col1" />
+  <td class="ztable_col2" />
+  <td class="ztable_col3" />
+</tr>
+
 {{#each zephyrs}}
 {{#with this}}
 {{#include_bookend}}

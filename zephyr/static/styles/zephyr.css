@@ -66,7 +66,10 @@ ul.nav-zephyr {
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
-    width: 2px;
+}
+
+.selected_zephyr .pointer {
+    background-color: blue;
 }
 
 .zephyr_picture {
@@ -74,28 +77,36 @@ td.pointer {
     text-align: right;
     padding-right: 10px;
     padding-top: 5px;
-    min-width: 80px;
+}
+
+.ztable_col1 {    /* classname */
+}
+.ztable_col2 {    /* pointer */
+    width: 2px;
+}
+.ztable_col3 {    /* instancename */
+    width: 85%;
 }
 
 .zephyr_newstyle_class {
     vertical-align: middle;
     text-align:     right;
     overflow-x:     hidden;
-    padding-right:   10px;
-    max-width:      80px;
-    min-width:      80px;
+    text-overflow:  ellipsis;
     white-space:    nowrap;
+    font-weight: bold;
+    padding-right:   10px;
     background-color: lightgrey;
     border: 1px solid grey;
-    font-weight: bold;
 }
 
 .zephyr_newstyle_instance {
     vertical-align: middle;
     text-align:     left;
     overflow-x:     hidden;
-    padding-left: 10px;
+    text-overflow:  ellipsis;
     white-space:    nowrap;
+    padding-left: 10px;
     background-color: lightgrey;
     border: 1px solid grey;
     font-weight: bold;
@@ -153,6 +164,12 @@ table.zephyr_table {
     table-layout: fixed;
     margin-left: auto;
     display: none;
+    width: 100%;
+}
+
+table.zephyr_compose_table {
+    width: 97%;
+    table-layout: fixed;
 }
 
 table.focused_table {
@@ -313,11 +330,6 @@ input.send_zephyr {
 #bottom_whitespace {
   display: block;
   height: 60%;
-}
-
-.selected_zephyr .pointer {
-    background-color: blue;
-    width: 2px;
 }
 
 #subscriptions {
