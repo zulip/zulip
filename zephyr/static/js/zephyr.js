@@ -296,7 +296,7 @@ $(function () {
                 },
                 error: function (xhr) {
                     okay = false;
-                    report_error("Error listing subscriptions", xhr, $("#home-error"));
+                    report_error("Error checking subscription", xhr, $("#home-error"));
                     $("#class").focus();
                     buttons.removeAttr('disabled');
                 }
