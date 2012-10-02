@@ -116,8 +116,9 @@ td.pointer {
     vertical-align: middle;
     text-align:     left;
     overflow-x:     hidden;
-    padding-left: 10px;
+    text-overflow:  ellipsis;
     white-space:    nowrap;
+    padding-left: 10px;
     font-weight: bold;
     color: white;
     background-color: #444;
