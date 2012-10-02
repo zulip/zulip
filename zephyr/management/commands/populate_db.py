@@ -199,6 +199,14 @@ class Command(BaseCommand):
         if options["replay_old_zephyrs"]:
             restore_saved_zephyrs()
 
+            # Set restored pointers to the very latest messages
+            for user_profile in UserProfile.objects.all():
+                ids = [u.message_id for u in UserMessage.objects.filter(user_profile = user_profile)]
+                if ids != []:
+                    user_profile.pointer = max(ids)
+                    user_profile.save()
+
+
 recipient_hash = {}
 def get_recipient_by_id(rid):
     if rid in recipient_hash:
