@@ -26,7 +26,7 @@ class HumbugAPI():
         options["email"] = self.email
         options["api-key"] = self.api_key
         submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in options.items()])
-        res = self.browser.open(self.base_url + "/api/v1/get_updates", submit_data)
+        res = self.browser.open(self.base_url + "/api/v1/get_messages", submit_data)
         return simplejson.loads(res.read())['zephyrs']
 
     def call_on_each_message(self, callback, options = {}):

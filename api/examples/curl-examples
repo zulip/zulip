@@ -1,4 +1,7 @@
 #!/bin/sh
 # Two quick API tests using curl
-curl 127.0.0.1:8000/api/send_message -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" -d "email=tabbott@humbughq.com" -d "type=personal" -d "new_zephyr=test" -d "recipient=tabbott@humbughq.com"
-curl 127.0.0.1:8000/api/get_updates_new -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" -d "email=tabbott@humbughq.com
+curl -k --digest -u tabbott:xxxxxxxxxxxxxxxxx https://app.humbughq.com/api/v1/send_message -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" -d "email=tabbott@humbughq.com" -d "type=personal" -d "new_zephyr=test" -d "recipient=tabbott@humbughq.com"
+curl -k --digest -u "tabbott:xxxxxxxxxxxxxxxxx" https://app.humbughq.com/api/v1/get_messages -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" -d "email=tabbott@humbughq.com"
+
+# Replace '-k --digest -u tabbott:xxxxxxxxxxxxxxxxx https://app.humbughq.com'
+# with "http://127.0.0.1:8000" for local testing

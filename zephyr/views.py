@@ -273,7 +273,7 @@ def get_updates_api(request, handler):
 @asynchronous
 @require_post
 @api_key_required
-def api_get_updates(request, user_profile, handler):
+def api_get_messages(request, user_profile, handler):
     return get_updates_backend(request, user_profile, handler,
                                apply_markdown=(request.POST.get("apply_markdown") is not None),
                                mit_sync_bot=request.POST.get("mit_sync_bot"))
