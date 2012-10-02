@@ -262,7 +262,7 @@ def send_zephyr(message):
         return
     wrapped_content = "\n".join("\n".join(textwrap.wrap(line))
             for line in message["content"].split("\n"))
-    wrapped_content = wrapped_content.replace('&lt;','<').replace('&gt;','>')
+    wrapped_content = wrapped_content.replace('&lt;','<').replace('&gt;','>').replace('&amp;', '&')
     print "Sending message from %s humbug=>zephyr at %s" % (message["sender_email"], datetime.datetime.now())
     if message['type'] == "class":
         zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),

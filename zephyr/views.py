@@ -51,7 +51,7 @@ def strip_html(x):
     # We remove <> in order to avoid </script> within JSON embedded in HTML.
     #
     # FIXME: consider a whitelist
-    return x.replace('<','&lt;').replace('>','&gt;')
+    return x.replace('&', '&amp;').replace('<','&lt;').replace('>','&gt;')
 
 @require_post
 def register(request):
