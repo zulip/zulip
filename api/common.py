@@ -4,6 +4,7 @@ import urllib
 import simplejson
 from urllib2 import HTTPError
 import time
+import traceback
 
 class HumbugAPI():
     def __init__(self, email, api_key, verbose=False, site="https://app.humbughq.com"):
@@ -33,8 +34,9 @@ class HumbugAPI():
         max_message_id = None
         while True:
             try:
-                options["first"] = "0"
-                options["last"] = str(last_received)
+                if max_message_id is not None:
+                    options["first"] = "0"
+                    options["last"] = str(max_message_id)
                 messages = self.get_messages(options)
             except HTTPError, e:
                 # 502/503 typically means the server was restarted; sleep
@@ -42,7 +44,9 @@ class HumbugAPI():
                 if self.verbose:
                     print "HTTP Error getting zephyrs; trying again soon."
                     print e
+                    print traceback.format_exc()
                 time.sleep(1)
+                continue
             except Exception, e:
                 # For other errors, just try again
                 print e

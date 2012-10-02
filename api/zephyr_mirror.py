@@ -16,9 +16,6 @@ from urllib2 import HTTPError
 
 sys.path.append("/mit/tabbott/Public/python-zephyr/")
 sys.path.append("/mit/tabbott/Public/python-zephyr/build/lib.linux-x86_64-2.6/")
-import zephyr
-
-zephyr.init()
 
 parser = optparse.OptionParser()
 parser.add_option('--forward-class-messages',
@@ -41,7 +38,26 @@ parser.add_option('--forward-from-humbug',
                   dest='forward_to_humbug',
                   default=True,
                   action='store_false')
+parser.add_option('--site',
+                  dest='site',
+                  default="https://app.humbughq.com",
+                  action='store')
+parser.add_option('--api-key',
+                  dest='api_key',
+                  default="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  action='store')
 (options, args) = parser.parse_args()
+
+sys.path.append(".")
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import api.common
+humbug_client = api.common.HumbugAPI(email=os.environ["USER"] + "@mit.edu",
+                                     api_key=options.api_key,
+                                     verbose=True,
+                                     site=options.site)
+
+import zephyr
+zephyr.init()
 
 browser = None
 csrf_token = None
@@ -245,17 +261,7 @@ def zephyr_to_humbug(options):
     with open(log_file, 'a') as log:
         process_loop(log)
 
-def get_new_humbugs(max_humbug_id):
-        browser.addheaders.append(('X-CSRFToken', csrf_token))
-        submit_hash = {"mit_sync_bot": 'yes'}
-        if max_humbug_id is not None:
-            submit_hash["first"] = str(0)
-            submit_hash["last"] = str(max_humbug_id)
-        submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in submit_hash.items()])
-        res = browser.open("https://app.humbughq.com/api/get_updates", submit_data)
-        return simplejson.loads(res.read())['zephyrs']
-
-def send_zephyr(message):
+def forward_to_zephyr(message):
     zsig = u"%s\u200B" % (username_to_fullname(message["sender_email"]))
     if ' dot ' in zsig:
         print "ERROR!  Couldn't compute zsig for %s!" % (message["sender_email"])
@@ -293,41 +299,18 @@ def send_zephyr(message):
             zeph.setmessage(body)
             zeph.send()
 
+def maybe_forward_to_zephyr(message):
+    if message["sender_email"] == os.environ["USER"] + "@mit.edu":
+        if float(message["timestamp"]) < float(datetime.datetime.now().strftime("%s")) - 5:
+            print "Alert!  Out of order message!", message["timestamp"], datetime.datetime.now().strftime("%s")
+            return
+        forward_to_zephyr(message)
+
 def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
-    browser_login()
     print "Starting syncing messages."
-    max_humbug_id = None
-    while True:
-        try:
-            humbugs = get_new_humbugs(max_humbug_id)
-        except HTTPError, e:
-            # 502/503 typically means the server was restarted; sleep
-            # a bit, then try again
-            print "Failed getting zephyrs; trying again in 5 seconds."
-            time.sleep(2)
-            if e.code == 401:
-                # 401 means digest auth failed -- we need to login again
-                while True:
-                    try:
-                        browser_login()
-                    except HTTPError, e:
-                        print "Failed logging in; trying again in 10 seconds."
-                        time.sleep(10)
-                        continue
-                    break
-            continue
-        except:
-            # For other errors, just try again
-            time.sleep(2)
-            continue
-        for humbug in humbugs:
-            max_humbug_id = max(max_humbug_id, humbug["id"])
-            if humbug["sender_email"] == os.environ["USER"] + "@mit.edu":
-                if float(humbug["timestamp"]) < float(datetime.datetime.now().strftime("%s")) - 5:
-                    print "Alert!  Out of order message!", humbug["timestamp"], datetime.datetime.now().strftime("%s")
-                    continue
-                send_zephyr(humbug)
+    humbug_client.call_on_each_message(maybe_forward_to_zephyr,
+                                       options={"mit_sync_bot": 'yes'})
 
 if options.forward_to_humbug:
     zephyr_to_humbug(options)
