@@ -991,8 +991,12 @@ function add_messages(data) {
     // This will mess with the user's scrollwheel use; possibly we should be
     // more clever here.  However (for now) we only prepend on page load,
     // so maybe it's okay.
-    if (data.where === 'top')
-        scroll_to_selected();
+    //
+    // We also need to re-select the message by ID, because we might have
+    // removed and re-added the row as part of prepend collapsing.
+    if ((data.where === 'top') && (selected_zephyr_id >= 0)) {
+        select_and_show_by_id(selected_zephyr_id);
+    }
 
     if (autocomplete_needs_update)
         update_autocomplete();
