@@ -420,7 +420,8 @@ var selected_zephyr_id = -1;  /* to be filled in on document.ready */
 var selected_zephyr;  // = get_zephyr_row(selected_zephyr_id)
 var received = {
     first: -1,
-    last:  -1
+    last:  -1,
+    failures: 0,
 };
 
 // Narrowing predicate, or 'false' for the home view.
@@ -947,7 +948,6 @@ function clear_compose_box() {
     $("#zephyr_compose").find('input[type=text], textarea').val('');
 }
 
-var get_updates_failures = 0;
 function get_updates() {
     console.log(new Date() + ': longpoll started');
     $.ajax({
@@ -958,7 +958,7 @@ function get_updates() {
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (data) {
             console.log(new Date() + ': longpoll success');
-            get_updates_failures = 0;
+            received.failures = 0;
             $('#connection-error').hide();
 
             add_messages(data);
@@ -968,21 +968,21 @@ function get_updates() {
             if (error_type === 'timeout') {
                 // Retry indefinitely on timeout.
                 console.log(new Date() + ': longpoll timed out');
-                get_updates_failures = 0;
+                received.failures = 0;
                 $('#connection-error').hide();
             } else {
                 console.log(new Date() + ': longpoll failed with ' + error_type +
-                            ' (' + get_updates_failures + ' failures)');
-                get_updates_failures += 1;
+                            ' (' + received.failures + ' failures)');
+                received.failures += 1;
             }
 
-            if (get_updates_failures >= 5) {
+            if (received.failures >= 5) {
                 $('#connection-error').show();
             } else {
                 $('#connection-error').hide();
             }
 
-            var retry_sec = Math.min(90, Math.exp(get_updates_failures/2));
+            var retry_sec = Math.min(90, Math.exp(received.failures/2));
             console.log(new Date() + ': longpoll retrying in ' + retry_sec + ' seconds');
             setTimeout(get_updates, retry_sec*1000);
         }

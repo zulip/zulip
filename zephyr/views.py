@@ -205,10 +205,15 @@ def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False, 
 def return_messages_immediately(request, handler, user_profile, **kwargs):
     first = request.POST.get("first")
     last = request.POST.get("last")
+    failures = request.POST.get("failures")
     if first is None or last is None:
+        # When an API user is first querying the server to subscribe,
+        # there's no reason to reply immediately.
         return False
     first = int(first)
     last  = int(last)
+    if failures is not None:
+        failures = int(failures)
 
     where = 'bottom'
     query = Zephyr.objects.filter(usermessage__user_profile = user_profile).order_by('id')
@@ -228,6 +233,12 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
 
     if messages:
         handler.finish(format_updates_response(messages, where=where, **kwargs))
+        return True
+
+    if failures >= 4:
+        # No messages, but still return immediately, to clear the
+        # user's failures count
+        handler.finish(format_updates_response([], where="bottom", **kwargs))
         return True
 
     return False
