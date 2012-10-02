@@ -300,7 +300,7 @@ def humbug_to_zephyr(options):
             # 502/503 typically means the server was restarted; sleep
             # a bit, then try again
             print "Failed getting zephyrs; trying again in 5 seconds."
-            time.sleep(5)
+            time.sleep(2)
             if e.code == 401:
                 # 401 means digest auth failed -- we need to login again
                 while True:
@@ -311,6 +311,10 @@ def humbug_to_zephyr(options):
                         time.sleep(10)
                         continue
                     break
+            continue
+        except:
+            # For other errors, just try again
+            time.sleep(2)
             continue
         for humbug in humbugs:
             max_humbug_id = max(max_humbug_id, humbug["id"])
