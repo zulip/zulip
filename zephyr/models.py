@@ -256,7 +256,7 @@ def get_user_profile_by_id(uid):
         return user_hash[uid]
     return UserProfile.objects.get(id=uid)
 
-def log_zephyr(zephyr):
+def log_message(zephyr):
     if not os.path.exists(settings.ZEPHYR_LOG + '.lock'):
         file(settings.ZEPHYR_LOG + '.lock', "w").write("0")
     lock = open(settings.ZEPHYR_LOG + '.lock', 'r')
@@ -275,7 +275,7 @@ def do_send_message(zephyr, synced_from_mit=False, no_log=False):
     mit_sync_table[zephyr.id] = synced_from_mit
     # Log the message to our message log for populate_db to refill
     if not no_log:
-        log_zephyr(zephyr)
+        log_message(zephyr)
 
     if zephyr.recipient.type == Recipient.PERSONAL:
         recipients = list(set([get_user_profile_by_id(zephyr.recipient.type_id),
