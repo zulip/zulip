@@ -296,7 +296,7 @@ def api_send_message(request, user_profile):
 
 @login_required
 @require_post
-def zephyr(request):
+def send_message(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if 'time' in request.POST:
         return json_error("Invalid field 'time'")

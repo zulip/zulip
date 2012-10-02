@@ -109,7 +109,7 @@ class PublicURLTest(TestCase):
         Pages that should return a 200 when not logged in.
         """
         urls = {200: ["/accounts/home/", "/accounts/login/", "/accounts/logout/"],
-                302: ["/", "/zephyr/", "/json/subscriptions/list",
+                302: ["/", "/send_message/", "/json/subscriptions/list",
                       "/json/subscriptions/remove", "/json/subscriptions/add"],
                 400: ["/accounts/register/"],
                 }
@@ -315,10 +315,10 @@ class ZephyrPOSTTest(AuthedTestCase):
         Zephyring to a class to which you are subscribed is successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        result = self.client.post("/zephyr/", {"type": "class",
-                                               "class": "Verona",
-                                               "content": "Test message",
-                                               "instance": "Test instance"})
+        result = self.client.post("/send_message/", {"type": "class",
+                                                     "class": "Verona",
+                                                     "content": "Test message",
+                                                     "instance": "Test instance"})
         self.assert_json_success(result)
 
     def test_zephyr_to_nonexistent_class(self):
@@ -327,10 +327,10 @@ class ZephyrPOSTTest(AuthedTestCase):
         """
         self.login("hamlet@humbughq.com", "hamlet")
         self.assertFalse(ZephyrClass.objects.filter(name="nonexistent_class"))
-        result = self.client.post("/zephyr/", {"type": "class",
-                                               "class": "nonexistent_class",
-                                               "content": "Test message",
-                                               "instance": "Test instance"})
+        result = self.client.post("/send_message/", {"type": "class",
+                                                     "class": "nonexistent_class",
+                                                     "content": "Test message",
+                                                     "instance": "Test instance"})
         self.assert_json_success(result)
         self.assertTrue(ZephyrClass.objects.filter(name="nonexistent_class"))
 
@@ -339,9 +339,9 @@ class ZephyrPOSTTest(AuthedTestCase):
         Sending a personal zephyr to a valid username is successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        result = self.client.post("/zephyr/", {"type": "personal",
-                                               "content": "Test message",
-                                               "recipient": "othello@humbughq.com"})
+        result = self.client.post("/send_message/", {"type": "personal",
+                                                     "content": "Test message",
+                                                     "recipient": "othello@humbughq.com"})
         self.assert_json_success(result)
 
     def test_personal_zephyr_to_nonexistent_user(self):
@@ -349,9 +349,9 @@ class ZephyrPOSTTest(AuthedTestCase):
         Sending a personal zephyr to an invalid email returns error JSON.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        result = self.client.post("/zephyr/", {"type": "personal",
-                                               "content": "Test message",
-                                               "recipient": "nonexistent"})
+        result = self.client.post("/send_message/", {"type": "personal",
+                                                     "content": "Test message",
+                                                     "recipient": "nonexistent"})
         self.assert_json_error(result, "Invalid email")
 
     def test_invalid_type(self):
@@ -359,9 +359,9 @@ class ZephyrPOSTTest(AuthedTestCase):
         Sending a zephyr of unknown type returns error JSON.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        result = self.client.post("/zephyr/", {"type": "invalid type",
-                                               "content": "Test message",
-                                               "recipient": "othello@humbughq.com"})
+        result = self.client.post("/send_message/", {"type": "invalid type",
+                                                     "content": "Test message",
+                                                     "recipient": "othello@humbughq.com"})
         self.assert_json_error(result, "Invalid zephyr type")
 
 class DummyHandler(object):

@@ -13,7 +13,7 @@ urlpatterns = patterns('',
     url(r'^api/get_updates$', 'zephyr.views.get_updates_api', name='get_updates_api'),
     url(r'^api/v1/get_messages$', 'zephyr.views.api_get_messages', name='api_get_messages'),
     url(r'^api/v1/send_message$', 'zephyr.views.api_send_message', name='api_send_message'),
-    url(r'^zephyr/', 'zephyr.views.zephyr', name='zephyr'),
+    url(r'^send_message/', 'zephyr.views.send_message', name='send_message'),
     url(r'^forge_message/', 'zephyr.views.forge_message', name='forge_message'),
     url(r'^accounts/home/', 'zephyr.views.accounts_home', name='accounts_home'),
     # We have two entries for accounts/login to allow reverses on the Django

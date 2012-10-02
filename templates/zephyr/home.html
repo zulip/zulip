@@ -36,7 +36,7 @@
                         </div>
                         <div class="tab-pane active" id="class-message">
                             <div class="zephyr_comp">
-                                <form action="/zephyr/" method="post" class="zephyr">
+                                <form action="/send_message/" method="post" class="zephyr">
                                     <input type="hidden" name="type" value="class" />
                                     {% csrf_token %}
                                     <table class="zephyr_compose_table">
@@ -71,7 +71,7 @@
                         </div>
                         <div class="tab-pane" id="personal-message">
                             <div class="zephyr_comp">
-                                <form action="/zephyr/" method="post" class="zephyr">
+                                <form action="/send_message/" method="post" class="zephyr">
                                     <input type="hidden" name="type" value="personal" />
                                     {% csrf_token %}
                                     <table class="zephyr_compose_table">
