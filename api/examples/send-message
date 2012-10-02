@@ -1,6 +1,4 @@
 #!/usr/bin/python
-import mechanize
-import urllib
 import sys
 import os
 import optparse
