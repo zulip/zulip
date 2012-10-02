@@ -307,7 +307,7 @@ def forge_zephyr(request):
 
     # Don't send duplicate copies of forwarded messages
     if Zephyr.objects.filter(sender__user__email=email,
-                             content=request.POST['new_zephyr'],
+                             content=request.POST['content'],
                              pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 1).replace(tzinfo=utc),
                              pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 1).replace(tzinfo=utc)):
         return json_success()
@@ -334,7 +334,7 @@ def forge_zephyr(request):
 def zephyr_backend(request, user_profile, sender):
     if "type" not in request.POST:
         return json_error("Missing type")
-    if "new_zephyr" not in request.POST:
+    if "content" not in request.POST:
         return json_error("Missing message contents")
 
     zephyr_type_name = request.POST["type"]
@@ -383,7 +383,7 @@ def zephyr_backend(request, user_profile, sender):
 
     new_zephyr = Zephyr()
     new_zephyr.sender = UserProfile.objects.get(user=sender)
-    new_zephyr.content = strip_html(request.POST['new_zephyr'])
+    new_zephyr.content = strip_html(request.POST['content'])
     new_zephyr.recipient = recipient
     if zephyr_type_name == 'class':
         new_zephyr.instance = strip_html(request.POST['instance'])

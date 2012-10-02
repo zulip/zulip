@@ -317,7 +317,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/zephyr/", {"type": "class",
                                                "class": "Verona",
-                                               "new_zephyr": "Test message",
+                                               "content": "Test message",
                                                "instance": "Test instance"})
         self.assert_json_success(result)
 
@@ -329,7 +329,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         self.assertFalse(ZephyrClass.objects.filter(name="nonexistent_class"))
         result = self.client.post("/zephyr/", {"type": "class",
                                                "class": "nonexistent_class",
-                                               "new_zephyr": "Test message",
+                                               "content": "Test message",
                                                "instance": "Test instance"})
         self.assert_json_success(result)
         self.assertTrue(ZephyrClass.objects.filter(name="nonexistent_class"))
@@ -340,7 +340,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         """
         self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/zephyr/", {"type": "personal",
-                                               "new_zephyr": "Test message",
+                                               "content": "Test message",
                                                "recipient": "othello@humbughq.com"})
         self.assert_json_success(result)
 
@@ -350,7 +350,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         """
         self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/zephyr/", {"type": "personal",
-                                               "new_zephyr": "Test message",
+                                               "content": "Test message",
                                                "recipient": "nonexistent"})
         self.assert_json_error(result, "Invalid email")
 
@@ -360,7 +360,7 @@ class ZephyrPOSTTest(AuthedTestCase):
         """
         self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/zephyr/", {"type": "invalid type",
-                                               "new_zephyr": "Test message",
+                                               "content": "Test message",
                                                "recipient": "othello@humbughq.com"})
         self.assert_json_error(result, "Invalid zephyr type")
 

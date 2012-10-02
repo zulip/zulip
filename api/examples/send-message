@@ -32,7 +32,7 @@ client = api.common.HumbugAPI(email=options.user,
 
 message_data = {
     "type": "personal",
-    "new_zephyr": "test",
+    "content": "test",
     "recipient": "tabbott@humbughq.com",
 }
 print client.send_message(message_data)
