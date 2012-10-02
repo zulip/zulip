@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.views import login as django_login_page
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
-    Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
+    Recipient, get_display_recipient, get_huddle, Realm, \
     create_user, do_send_zephyr, mit_sync_table, create_user_if_needed, \
     create_class_if_needed, PreregistrationUser
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique
@@ -88,10 +88,9 @@ def register(request):
     except ValidationError:
         return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + strip_html(email))
 
-    try:
-        dummy = request.POST['from_confirmation']
+    if request.POST.get('from_confirmation'):
         form = RegistrationForm()
-    except KeyError:
+    else:
         form = RegistrationForm(request.POST)
         if form.is_valid():
             password   = strip_html(form.cleaned_data['password'])
@@ -516,7 +515,6 @@ def change_settings(request):
     confirm_password = request.POST['confirm_password']
     full_name        = strip_html(request.POST['full_name'])
     short_name       = strip_html(request.POST['short_name'])
-    timezone         = strip_html(request.POST['timezone'])
 
     if new_password != "":
         if new_password != confirm_password:
@@ -532,8 +530,7 @@ def change_settings(request):
     if user_profile.short_name != short_name:
         user_profile.short_name = short_name
         result['short_name'] = short_name
-    # TODO: Change the timezone
-    # user_profile.timezone = timezone
+
     user_profile.user.save()
     user_profile.save()
 
