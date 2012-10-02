@@ -405,7 +405,8 @@ def json_remove_subscription(request):
     return json_success({"data": sub_name})
 
 def valid_class_name(name):
-    return re.match('^[a-z A-Z0-9_-]+$', name)
+    # Classes must start with a letter or number.
+    return re.match('^[a-zA-Z0-9][a-z A-Z0-9_-]*$', name)
 
 @login_required
 @require_post
