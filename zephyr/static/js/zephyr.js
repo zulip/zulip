@@ -824,12 +824,16 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
         prev = zephyr;
     });
 
-    var rendered = templates.zephyr({zephyrs: zephyrs_to_render});
+    var rendered = templates.zephyr({
+        zephyrs: zephyrs_to_render,
+        include_layout_row: (table.find('tr:first').length == 0)
+    });
 
-    if (where === 'top')
-        table.prepend(rendered);
-    else
+    if (where === 'top') {
+        table.find('.ztable_layout_row').after(rendered);
+    } else {
         table.append(rendered);
+    }
 
     $.each(zephyrs_to_render, function (index, zephyr) {
         var row = get_zephyr_row(zephyr.id);

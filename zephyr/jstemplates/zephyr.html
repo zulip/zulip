@@ -4,11 +4,13 @@
     all the column widths are computed from the first row;
     these CSS classes specify the widths for that first,
     collapsed row. (Otherwise, colspan breaks everything).}}
-<tr style="visibility: collapse;">
+{{#include_layout_row}}
+<tr style="visibility: collapse;" class="ztable_layout_row">
   <td class="ztable_col1" />
   <td class="ztable_col2" />
   <td class="ztable_col3" />
 </tr>
+{{/include_layout_row}}
 
 {{#each zephyrs}}
 {{#with this}}
