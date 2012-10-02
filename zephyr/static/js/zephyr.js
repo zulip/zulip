@@ -981,13 +981,11 @@ function add_messages(data) {
     // Even when narrowed, add messages to the home view so they exist when we un-narrow.
     add_to_table(data.zephyrs, 'zhome', function () { return true; }, data.where);
 
-    $.each(data.zephyrs, function () {
-        // If we received the initially selected message, select it on the client side,
-        // but not if the user has already selected another one during load.
-        if ((this.id === initial_pointer) && (selected_zephyr_id === -1)) {
-            select_and_show_by_id(initial_pointer);
-        }
-    });
+    // If we received the initially selected message, select it on the client side,
+    // but not if the user has already selected another one during load.
+    if ((selected_zephyr_id === -1) && (initial_pointer in zephyr_dict)) {
+        select_and_show_by_id(initial_pointer);
+    }
 
     // If we prepended messages, then we need to scroll back to the pointer.
     // This will mess with the user's scrollwheel use; possibly we should be
