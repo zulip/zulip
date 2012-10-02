@@ -811,8 +811,29 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
     var current_group = [];
     var new_message_groups = [];
 
-    if (where !== 'top')
+    if (where === 'top') {
+        // Assumption: We never get a 'top' update as the first update.
+
+        // Delete the current top message group, and add it back in with these
+        // messages, in order to collapse properly.
+        //
+        // This means we redraw the entire view on each update when narrowed by
+        // instance, which could be a problem down the line.  For now we hope
+        // that instance views will not be very big.
+
+        var top_group = message_groups[table_name][0];
+        var top_messages = [];
+        $.each(top_group, function (index, id) {
+            get_zephyr_row(id, table_name).remove();
+            top_messages.push(zephyr_dict[id]);
+        });
+        zephyrs = zephyrs.concat(top_messages);
+
+        // Delete the leftover recipient label.
+        table.find('.recipient_row:first').remove();
+    } else {
         prev = zephyr_dict[table.find('tr:last-child').attr('zid')];
+    }
 
     $.each(zephyrs, function (index, zephyr) {
         if (! filter_function(zephyr))

@@ -20,7 +20,7 @@
 
 {{#include_recipient}}
 {{#if is_class}}
-<tr>
+<tr class="recipient_row">
     <td colspan="2"
         class="zephyr_label_clickable zephyr_newstyle_class"
         onclick="select_zephyr_by_id({{id}}); narrow_class();">{{display_recipient}}</td>
@@ -28,7 +28,7 @@
         onclick="select_zephyr_by_id({{id}}); narrow_instance();">{{instance}}</td>
 </tr>
 {{else}}
-<tr>
+<tr class="recipient_row">
     <td colspan="3" class="zephyr_label_clickable zephyr_newstyle_pm"
         onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();">Huddle with {{display_reply_to}}</td>
 </tr>
