@@ -12,7 +12,7 @@ from django.contrib.auth.views import login as django_login_page
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, \
-    create_user, do_send_zephyr, mit_sync_table, create_user_if_needed, \
+    create_user, do_send_message, mit_sync_table, create_user_if_needed, \
     create_class_if_needed, PreregistrationUser
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique
 from django.views.decorators.csrf import csrf_exempt
@@ -406,7 +406,7 @@ def zephyr_backend(request, user_profile, sender):
 
     # To avoid message loops, we must pass whether the message was
     # synced from MIT zephyr here.
-    do_send_zephyr(new_zephyr, synced_from_mit = 'time' in request.POST)
+    do_send_message(new_zephyr, synced_from_mit = 'time' in request.POST)
 
     return json_success()
 

@@ -267,7 +267,7 @@ def log_zephyr(zephyr):
     f.close()
     fcntl.flock(lock, fcntl.LOCK_UN)
 
-def do_send_zephyr(zephyr, synced_from_mit=False, no_log=False):
+def do_send_message(zephyr, synced_from_mit=False, no_log=False):
     zephyr.save()
     # The following mit_sync_table code must be after zephyr.save() or
     # otherwise the id returned will be None (not having been assigned

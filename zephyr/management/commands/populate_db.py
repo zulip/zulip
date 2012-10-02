@@ -4,7 +4,7 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
-    create_user, do_send_zephyr, create_user_if_needed, create_class_if_needed
+    create_user, do_send_message, create_user_if_needed, create_class_if_needed
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
 from django.conf import settings
@@ -262,7 +262,7 @@ def restore_saved_zephyrs():
                                                          type_id=target_huddle.id)
         else:
             raise
-        do_send_zephyr(new_zephyr, synced_from_mit=True, no_log=True)
+        do_send_message(new_zephyr, synced_from_mit=True, no_log=True)
 
 
 # Create some test zephyrs, including:
@@ -342,7 +342,7 @@ def send_zephyrs(data):
             saved_data = new_zephyr.instance
 
         new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-        do_send_zephyr(new_zephyr)
+        do_send_message(new_zephyr)
 
         recipients[num_zephyrs] = [zephyr_type, new_zephyr.recipient.id, saved_data]
         num_zephyrs += 1
