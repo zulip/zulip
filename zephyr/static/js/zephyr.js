@@ -24,19 +24,13 @@ $(function () {
 
             // If validation fails, the validate function will pop up
             // an error message.
-            if (composing_huddle_message()) {
-                if (!validate_huddle_message()) {
-                    return false;
-                }
-                // We have nothing else to check.
-                return true;
-            }
 
-            if (composing_class_message()) {
-                if (!validate_class_message()) {
-                    return false;
-                }
-            }
+            // For huddles, all the logic is in validate_huddle_message.
+            if (composing_huddle_message())
+                return validate_huddle_message();
+
+            if (composing_class_message() && !validate_class_message())
+                return false;
 
             var zephyr_class = compose_class_name();
             if (!check_class_for_send(zephyr_class))
