@@ -379,6 +379,7 @@ $(function () {
         },
         error: function (xhr) {
             report_error("Error adding subscription", xhr, $("#subscriptions-status"));
+            $("#new_subscription").focus();
         },
     };
     $("#add_new_subscription").ajaxForm(options);
