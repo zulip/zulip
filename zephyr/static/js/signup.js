@@ -8,7 +8,6 @@ $.validator.addMethod("fromDomain", function (value, element, param) {
     console.log(value);
     var splitted = value.split("@");
     var tld = splitted[splitted.length - 1];
-    return false;
     return $.inArray(tld, tld_list) !== -1;
 },
     "Please use your company email address to sign up. Otherwise, we won’t be able to connect you with your coworkers.");
