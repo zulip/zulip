@@ -2,12 +2,12 @@
     plusplus: true, nomen: true, regexp: true */
 /*global $: false, jQuery: false */
 
-var disallowed_domain_list = ['gmail.com'];
+var disallowed_domains = ['gmail.com'];
 
 function validate_email_domain(value, element, param) {
     var splitted = value.split("@");
     var domain = splitted[splitted.length - 1];
-    return $.inArray(domain, disallowed_domain) !== -1;
+    return $.inArray(domain, disallowed_domains) !== -1;
 }
 
 $.validator.addMethod("fromDomain", validate_email_domain,
