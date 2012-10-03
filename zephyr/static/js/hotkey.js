@@ -111,10 +111,11 @@ var pressed_keys = {};
 function num_pressed_keys() {
     var size = 0, key;
     for (key in pressed_keys) {
-        if (pressed_keys.hasOwnProperty(key)) size++;
+        if (pressed_keys.hasOwnProperty(key))
+            size++;
     }
     return size;
-};
+}
 
 $(document).keydown(function (e) {
     pressed_keys[e.which] = true;

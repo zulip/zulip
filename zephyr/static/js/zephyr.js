@@ -53,7 +53,7 @@ var selected_zephyr;  // = get_zephyr_row(selected_zephyr_id)
 var received = {
     first: -1,
     last:  -1,
-    failures: 0,
+    failures: 0
 };
 
 // The "message groups", i.e. blocks of messages collapsed by recipient.
@@ -306,7 +306,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
 
     var rendered = templates.zephyr({
         zephyrs: zephyrs_to_render,
-        include_layout_row: (table.find('tr:first').length == 0)
+        include_layout_row: (table.find('tr:first').length === 0)
     });
 
     if (where === 'top') {
@@ -327,10 +327,11 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
 }
 
 function add_zephyr_metadata(dummy, zephyr) {
-    if (received.first === -1)
+    if (received.first === -1) {
         received.first = zephyr.id;
-    else
+    } else {
         received.first = Math.min(received.first, zephyr.id);
+    }
 
     received.last = Math.max(received.last, zephyr.id);
 

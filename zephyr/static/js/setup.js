@@ -1,5 +1,6 @@
 /*jslint browser: true, devel: true, sloppy: true,
-    plusplus: true, white: true, undef: true */
+    plusplus: true, white: true, undef: true,
+    regexp: true */
 /*global $: false */
 
 // Miscellaneous early setup.
@@ -10,10 +11,11 @@ var templates = {};
 $(function () {
     // Display loading indicator.  This disappears after the first
     // get_updates completes.
-    if (have_initial_messages)
+    if (have_initial_messages) {
         loading_spinner = new Spinner().spin($('#loading_spinner')[0]);
-    else
+    } else {
         $('#loading_indicator').hide();
+    }
 
     // Compile Handlebars templates.
     templates.zephyr       = Handlebars.compile($("#template_zephyr").html());

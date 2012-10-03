@@ -80,15 +80,15 @@ function update_autocomplete() {
     // limit number of items so the list doesn't fall off the screen
     $( "#class" ).typeahead({
         source: class_list,
-        items: 3,
+        items: 3
     });
     $( "#instance" ).typeahead({
         source: instance_list,
-        items: 2,
+        items: 2
     });
     $( "#recipient" ).typeahead({
         source: people_list,
-        items: 4,
+        items: 4
     });
 
     autocomplete_needs_update = false;
@@ -165,6 +165,6 @@ $(function () {
             settings_status.removeClass(status_classes)
                 .addClass('alert-error')
                 .text(response).stop(true).fadeTo(0,1);
-        },
+        }
     });
 });
