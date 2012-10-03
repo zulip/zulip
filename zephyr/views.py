@@ -302,27 +302,27 @@ def send_message(request):
         return json_error("Invalid field 'time'")
     return zephyr_backend(request, user_profile, request.user)
 
-@login_required
-@require_post
-def forge_message(request):
+# TODO: This should have a real superuser security check
+def is_super_user_api(request):
+    return request.POST.get("api-key") == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+def already_sent_forged_message(request):
     email = strip_html(request.POST['sender']).lower()
-    user_profile = UserProfile.objects.get(user=request.user)
-
-    if "time" not in request.POST:
-        return json_error("Missing time")
-
-    # Create a user for the sender of the message
-    user = create_user_if_needed(user_profile.realm, email, "test",
-                                 strip_html(request.POST['fullname']),
-                                 strip_html(request.POST['shortname']))
-
-    # Don't send duplicate copies of forwarded messages
     if Zephyr.objects.filter(sender__user__email=email,
                              content=request.POST['content'],
                              pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 10).replace(tzinfo=utc),
                              pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 10).replace(tzinfo=utc)):
-        return json_success()
+        return True
+    return False
 
+def create_forged_message_users(request, user_profile):
+    # Create a user for the sender, if needed
+    email = strip_html(request.POST['sender']).lower()
+    user = create_user_if_needed(user_profile.realm, email, "test",
+                                 strip_html(request.POST['fullname']),
+                                 strip_html(request.POST['shortname']))
+
+    # Create users for huddle recipients, if needed.
     if request.POST['type'] == 'personal':
         if ',' in request.POST['recipient']:
             # Huddle message
@@ -335,8 +335,7 @@ def forge_message(request):
             create_user_if_needed(user_profile.realm, user_email, "test",
                                   user_email.split('@')[0],
                                   user_email.split('@')[0])
-
-    return zephyr_backend(request, user_profile, user)
+    return user
 
 # We do not @require_login for zephyr_backend, since it is used both
 # from the API and the web service.  Code calling zephyr_backend
@@ -347,6 +346,14 @@ def zephyr_backend(request, user_profile, sender):
         return json_error("Missing type")
     if "content" not in request.POST:
         return json_error("Missing message contents")
+    if "forged" in request.POST:
+        if not is_super_user_api(request):
+            return json_error("User not authorized for this query")
+        if "time" not in request.POST:
+            return json_error("Missing time")
+        if already_sent_forged_message(request):
+            return json_success()
+        sender = create_forged_message_users(request, user_profile)
 
     zephyr_type_name = request.POST["type"]
     if zephyr_type_name == 'class':

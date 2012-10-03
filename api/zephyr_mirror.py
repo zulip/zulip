@@ -1,5 +1,4 @@
 #!/usr/bin/python
-import mechanize
 import urllib
 import sys
 import logging
@@ -59,76 +58,24 @@ humbug_client = api.common.HumbugAPI(email=os.environ["USER"] + "@mit.edu",
 import zephyr
 zephyr.init()
 
-browser = None
-csrf_token = None
-
-def browser_login():
-    logger = logging.getLogger("mechanize")
-    logger.addHandler(logging.StreamHandler(sys.stdout))
-    logger.setLevel(logging.INFO)
-
-    global browser
-    browser = mechanize.Browser()
-    browser.set_handle_robots(False)
-    ## debugging code to consider
-    # browser.set_debug_http(True)
-    # browser.set_debug_responses(True)
-    # browser.set_debug_redirects(True)
-    # browser.set_handle_refresh(False)
-
-    browser.add_password("https://app.humbughq.com/", "tabbott", "xxxxxxxxxxxxxxxxx", "wiki")
-    browser.open("https://app.humbughq.com/")
-    browser.follow_link(text_regex="\s*Log in\s*")
-    browser.select_form(nr=0)
-    browser["username"] = os.environ["USER"] + "@mit.edu"
-    browser["password"] = os.environ["USER"]
-
-    global csrf_token
-    csrf_token = browser["csrfmiddlewaretoken"]
-
-    browser.submit()
-
 def compute_humbug_username(zephyr_username):
     return zephyr_username.lower().split("@")[0] + "@mit.edu"
 
 def send_humbug(zeph):
+    zeph["forged"] = "yes"
     zeph["sender"] = compute_humbug_username(zeph["sender"])
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]
     if "instance" in zeph:
         zeph["instance"] = zeph["instance"][:30]
-    browser.addheaders.append(('X-CSRFToken', csrf_token))
 
-    humbug_data = []
     for key in zeph.keys():
-        if key == "zsig":
-            # Don't send zsigs to the Humbug server
-            continue
         if isinstance(zeph[key], unicode):
-            val = zeph[key].encode("utf-8")
+            zeph[key] = zeph[key].encode("utf-8")
         elif isinstance(zeph[key], str):
-            val = zeph[key].decode("utf-8")
-        humbug_data.append((key, val))
+            zeph[key] = zeph[key].decode("utf-8")
 
-    try:
-        browser.open("https://app.humbughq.com/forge_message/", urllib.urlencode(humbug_data))
-    except HTTPError, e:
-        if e.code == 401:
-            # Digest auth failed; server was probably restarted; login in again
-            while True:
-                try:
-                    browser_login()
-                except HTTPError, e:
-                    print "Failed logging in; trying again in 10 seconds."
-                    time.sleep(10)
-                    continue
-                break
-
-            print "Auth failure; trying again after logging in a second time!"
-            browser.open("https://app.humbughq.com/forge_message/", urllib.urlencode(humbug_data))
-        else:
-            raise
-
+    humbug_client.send_message(zeph)
 
 def fetch_fullname(username):
     try:
@@ -212,7 +159,7 @@ def process_loop(log):
                          'class'     : notice.cls.lower(),
                          'instance'  : notice.instance,
                          'zsig'      : zsig,  # logged here but not used by app
-                         'content'   :body }
+                         'content'   : body }
 
             log.write(simplejson.dumps(zeph) + '\n')
             log.flush()
@@ -227,8 +174,6 @@ def process_loop(log):
 
 
 def zephyr_to_humbug(options):
-    browser_login()
-
     import mit_subs_list
     subs = zephyr.Subscriptions()
     if options.forward_class_messages:
