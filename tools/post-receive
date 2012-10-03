@@ -46,7 +46,8 @@ def process_push(oldrev, newrev, refname):
         "type": "class",
         "class": "devel",
         "instance": "commits",
-        "content": "The following commits were just pushed to %s:\n\n" % (refname.replace("refs/heads/", ""),) + commits,
+        "content": "The following commits were just pushed to `%s`:\n\n"
+            % (refname.replace("refs/heads/", ""),) + commits,
         "recipient": "tabbott@humbughq.com",
     }
     # Sleep a bit to give time for the server to restart.
