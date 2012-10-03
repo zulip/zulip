@@ -12,48 +12,6 @@ var zephyr_dict = {};
 var instance_list = [];
 var status_classes = 'alert-error alert-success alert-info';
 
-$(function () {
-    $('#sidebar a[href="#subscriptions"]').click(function () {
-        $.ajax({
-            type:     'GET',
-            url:      'json/subscriptions/list',
-            dataType: 'json',
-            timeout:  10*1000,
-            success: function (data) {
-                $('#subscriptions_table tr').remove();
-                if (data) {
-                    $.each(data.subscriptions, function (index, name) {
-                        $('#subscriptions_table').append(templates.subscription({subscription: name}));
-                    });
-                }
-                $('#new_subscription').focus().select();
-                $("#subscriptions-status").fadeOut(0);
-            },
-            error: function (xhr) {
-                report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
-            },
-        });
-    });
-});
-
-function sub_from_home(zephyr_class, prompt_button) {
-    $.ajax({
-        type:     'POST',
-        url:      '/json/subscriptions/add',
-        data:      {new_subscription: zephyr_class},
-        dataType: 'json',
-        timeout:  10*60*1000, // 10 minutes in ms
-        success: function (data) {
-            $("#class-message form").ajaxSubmit();
-            prompt_button.stop(true).fadeOut(500);
-            $("#subscriptions-status").fadeOut(0);
-        },
-        error: function (xhr, error_type, exn) {
-            report_error("Unable to subscribe", xhr, $("#home-error"));
-        }
-    });
-}
-
 function validate_class_message() {
     if (compose_class_name() === "") {
         compose_error("Please specify a class", $("#class"));
@@ -173,51 +131,11 @@ $(function () {
     send_status.hide();
     $("#class-message form").ajaxForm(options);
     $("#personal-message form").ajaxForm(options);
-});
 
-$(function () {
-    var options = {
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: function (resp, statusText, xhr, form) {
-            var name = $.parseJSON(xhr.responseText).data;
-            $('#subscriptions_table').find('button[value="' + name + '"]').parents('tr').remove();
-            var removal_index = class_list.indexOf(name.toLowerCase());
-            if (removal_index !== -1) {
-                class_list.splice(removal_index, 1);
-            }
-            update_autocomplete();
-            $("#subscriptions-status").fadeOut(0);
-        },
-        error: function (xhr) {
-            report_error("Error removing subscription", xhr, $("#subscriptions-status"));
-        },
-    };
-    $("#current_subscriptions").ajaxForm(options);
-});
-
-$(function () {
-    var options = {
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: function (resp, statusText, xhr, form) {
-            $("#new_subscription").val("");
-            var name = $.parseJSON(xhr.responseText).data;
-            $('#subscriptions_table').prepend(templates.subscription({subscription: name}));
-            class_list.push(name.toLowerCase());
-            $("#subscriptions-status").fadeOut(0);
-            $("#new_subscription").focus();
-        },
-        error: function (xhr) {
-            report_error("Error adding subscription", xhr, $("#subscriptions-status"));
-            $("#new_subscription").focus();
-        },
-    };
-    $("#add_new_subscription").ajaxForm(options);
-});
-
-$(function () {
     var settings_status = $('#settings-status');
     settings_status.hide();
-    var options = {
+
+    $("#current_settings form").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
             var message = "Updated settings!";
@@ -243,8 +161,7 @@ $(function () {
                 .addClass('alert-error')
                 .text(response).stop(true).fadeTo(0,1);
         },
-    };
-    $("#current_settings form").ajaxForm(options);
+    });
 });
 
 var selected_zephyr_id = -1;  /* to be filled in on document.ready */

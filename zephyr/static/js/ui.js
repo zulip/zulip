@@ -130,4 +130,6 @@ $(function () {
     $('.button-slide').click(function () {
         show_compose('class', $("#class"));
     });
+
+    $('#sidebar a[href="#subscriptions"]').click(fetch_subs);
 });
