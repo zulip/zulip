@@ -56,7 +56,6 @@ var have_initial_messages = {{ have_initial_messages }};
                     <li class="active"><a href="#home" data-toggle="pill"><i class="icon-home"></i> Home</a></li>
                     <li><a href="#subscriptions" data-toggle="pill"><i class="icon-globe"></i> Subscriptions</a></li>
                     <li class="disabled"><a href="#"><i class="icon-star"></i> Starred</a></li>
-                    <li><a href="#search" data-toggle="pill"><i class="icon-search"></i> Search</a></li>
                     <li><a href="#settings" data-toggle="pill"><i class="icon-edit"></i> Settings</a></li>
                     <li class="disabled"><a href="#"><i class="icon-envelope"></i> Invite a friend</a></li>
 
@@ -75,9 +74,6 @@ var have_initial_messages = {{ have_initial_messages }};
             </div>
             <div class="tab-pane scrolling_tab" id="subscriptions">
                 {% include "zephyr/subscriptions.html" %}
-            </div>
-            <div class="tab-pane scrolling_tab" id="search">
-                {% include "zephyr/search.html" %}
             </div>
             <div class="tab-pane scrolling_tab" id="settings">
                 {% include "zephyr/settings.html" %}
