@@ -48,13 +48,13 @@ class AuthedTestCase(TestCase):
         # Usernames are unique, even across Realms.
         return UserProfile.objects.get(user=User.objects.get(email=email))
 
-    def send_zephyr(self, sender_name, recipient_name, zephyr_type):
+    def send_message(self, sender_name, recipient_name, message_type):
         sender = self.get_userprofile(sender_name)
-        if zephyr_type == Recipient.PERSONAL:
+        if message_type == Recipient.PERSONAL:
             recipient = self.get_userprofile(recipient_name)
         else:
             recipient = ZephyrClass.objects.get(name=recipient_name, realm=sender.realm)
-        recipient = Recipient.objects.get(type_id=recipient.id, type=zephyr_type)
+        recipient = Recipient.objects.get(type_id=recipient.id, type=message_type)
         pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
         do_send_message(Message(sender=sender, recipient=recipient, instance="test", pub_date=pub_date),
                        synced_from_mit=True)
@@ -67,7 +67,7 @@ class AuthedTestCase(TestCase):
 
         return [subscription.userprofile.user for subscription in subscriptions]
 
-    def zephyr_stream(self, user):
+    def message_stream(self, user):
         return filter_by_subscriptions(Message.objects.all(), user)
 
     def assert_json_success(self, result):
@@ -121,7 +121,7 @@ class LoginTest(AuthedTestCase):
     """
     Logging in, registration, and logging out.
     """
-    fixtures = ['zephyrs.json']
+    fixtures = ['messages.json']
 
     def test_login(self):
         self.login("hamlet@humbughq.com", "hamlet")
@@ -143,8 +143,8 @@ class LoginTest(AuthedTestCase):
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
 
-class PersonalZephyrsTest(AuthedTestCase):
-    fixtures = ['zephyrs.json']
+class PersonalMessagesTest(AuthedTestCase):
+    fixtures = ['messages.json']
 
     def test_auto_subbed_to_personals(self):
         """
@@ -153,13 +153,13 @@ class PersonalZephyrsTest(AuthedTestCase):
         """
         self.register("test", "test")
         user = User.objects.get(email='test@humbughq.com')
-        old_zephyrs = self.zephyr_stream(user)
-        self.send_zephyr("test@humbughq.com", "test@humbughq.com", Recipient.PERSONAL)
-        new_zephyrs = self.zephyr_stream(user)
-        self.assertEqual(len(new_zephyrs) - len(old_zephyrs), 1)
+        old_messages = self.message_stream(user)
+        self.send_message("test@humbughq.com", "test@humbughq.com", Recipient.PERSONAL)
+        new_messages = self.message_stream(user)
+        self.assertEqual(len(new_messages) - len(old_messages), 1)
 
         recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
-        self.assertEqual(new_zephyrs[-1].recipient, recipient)
+        self.assertEqual(new_messages[-1].recipient, recipient)
 
     def test_personal_to_self(self):
         """
@@ -168,21 +168,21 @@ class PersonalZephyrsTest(AuthedTestCase):
         old_users = list(User.objects.all())
         self.register("test1", "test1")
 
-        old_zephyrs = []
+        old_messages = []
         for user in old_users:
-            old_zephyrs.append(len(self.zephyr_stream(user)))
+            old_messages.append(len(self.message_stream(user)))
 
-        self.send_zephyr("test1@humbughq.com", "test1@humbughq.com", Recipient.PERSONAL)
+        self.send_message("test1@humbughq.com", "test1@humbughq.com", Recipient.PERSONAL)
 
-        new_zephyrs = []
+        new_messages = []
         for user in old_users:
-            new_zephyrs.append(len(self.zephyr_stream(user)))
+            new_messages.append(len(self.message_stream(user)))
 
-        self.assertEqual(old_zephyrs, new_zephyrs)
+        self.assertEqual(old_messages, new_messages)
 
         user = User.objects.get(email="test1@humbughq.com")
         recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
-        self.assertEqual(self.zephyr_stream(user)[-1].recipient, recipient)
+        self.assertEqual(self.message_stream(user)[-1].recipient, recipient)
 
     def test_personal(self):
         """
@@ -191,77 +191,77 @@ class PersonalZephyrsTest(AuthedTestCase):
         self.login("hamlet@humbughq.com", "hamlet")
 
         old_sender = User.objects.filter(email="hamlet@humbughq.com")
-        old_sender_zephyrs = len(self.zephyr_stream(old_sender))
+        old_sender_messages = len(self.message_stream(old_sender))
 
         old_recipient = User.objects.filter(email="othello@humbughq.com")
-        old_recipient_zephyrs = len(self.zephyr_stream(old_recipient))
+        old_recipient_messages = len(self.message_stream(old_recipient))
 
         other_users = User.objects.filter(~Q(email="hamlet@humbughq.com") & ~Q(email="othello@humbughq.com"))
-        old_other_zephyrs = []
+        old_other_messages = []
         for user in other_users:
-            old_other_zephyrs.append(len(self.zephyr_stream(user)))
+            old_other_messages.append(len(self.message_stream(user)))
 
-        self.send_zephyr("hamlet@humbughq.com", "othello@humbughq.com", Recipient.PERSONAL)
+        self.send_message("hamlet@humbughq.com", "othello@humbughq.com", Recipient.PERSONAL)
 
-        # Users outside the conversation don't get the zephyr.
-        new_other_zephyrs = []
+        # Users outside the conversation don't get the message.
+        new_other_messages = []
         for user in other_users:
-            new_other_zephyrs.append(len(self.zephyr_stream(user)))
+            new_other_messages.append(len(self.message_stream(user)))
 
-        self.assertEqual(old_other_zephyrs, new_other_zephyrs)
+        self.assertEqual(old_other_messages, new_other_messages)
 
-        # The personal zephyr is in the streams of both the sender and receiver.
-        self.assertEqual(len(self.zephyr_stream(old_sender)),
-                         old_sender_zephyrs + 1)
-        self.assertEqual(len(self.zephyr_stream(old_recipient)),
-                         old_recipient_zephyrs + 1)
+        # The personal message is in the streams of both the sender and receiver.
+        self.assertEqual(len(self.message_stream(old_sender)),
+                         old_sender_messages + 1)
+        self.assertEqual(len(self.message_stream(old_recipient)),
+                         old_recipient_messages + 1)
 
         sender = User.objects.get(email="hamlet@humbughq.com")
         receiver = User.objects.get(email="othello@humbughq.com")
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        self.assertEqual(self.zephyr_stream(sender)[-1].recipient, recipient)
-        self.assertEqual(self.zephyr_stream(receiver)[-1].recipient, recipient)
+        self.assertEqual(self.message_stream(sender)[-1].recipient, recipient)
+        self.assertEqual(self.message_stream(receiver)[-1].recipient, recipient)
 
     def test_personal_to_nonexistent_person(self):
         """
         """
 
-class ClassZephyrsTest(AuthedTestCase):
-    fixtures = ['zephyrs.json']
+class ClassMessagesTest(AuthedTestCase):
+    fixtures = ['messages.json']
 
-    def test_zephyr_to_class(self):
+    def test_message_to_class(self):
         """
-        If you send a zephyr to a class, everyone subscribed to the class
-        receives the zephyr.
+        If you send a message to a class, everyone subscribed to the class
+        receives the messages.
         """
         subscribers = self.users_subscribed_to_class("Scotland", "humbughq.com")
-        old_subscriber_zephyrs = []
+        old_subscriber_messages = []
         for subscriber in subscribers:
-            old_subscriber_zephyrs.append(len(self.zephyr_stream(subscriber)))
+            old_subscriber_messages.append(len(self.message_stream(subscriber)))
 
         non_subscribers = [user for user in User.objects.all() if user not in subscribers]
-        old_non_subscriber_zephyrs = []
+        old_non_subscriber_messages = []
         for non_subscriber in non_subscribers:
-            old_non_subscriber_zephyrs.append(len(self.zephyr_stream(non_subscriber)))
+            old_non_subscriber_messages.append(len(self.message_stream(non_subscriber)))
 
         a_subscriber = subscribers[0].username
         a_subscriber_email = subscribers[0].email
         self.login(a_subscriber_email, a_subscriber)
-        self.send_zephyr(a_subscriber_email, "Scotland", Recipient.CLASS)
+        self.send_message(a_subscriber_email, "Scotland", Recipient.CLASS)
 
-        new_subscriber_zephyrs = []
+        new_subscriber_messages = []
         for subscriber in subscribers:
-           new_subscriber_zephyrs.append(len(self.zephyr_stream(subscriber)))
+           new_subscriber_messages.append(len(self.message_stream(subscriber)))
 
-        new_non_subscriber_zephyrs = []
+        new_non_subscriber_messages = []
         for non_subscriber in non_subscribers:
-            new_non_subscriber_zephyrs.append(len(self.zephyr_stream(non_subscriber)))
+            new_non_subscriber_messages.append(len(self.message_stream(non_subscriber)))
 
-        self.assertEqual(old_non_subscriber_zephyrs, new_non_subscriber_zephyrs)
-        self.assertEqual(new_subscriber_zephyrs, [elt + 1 for elt in old_subscriber_zephyrs])
+        self.assertEqual(old_non_subscriber_messages, new_non_subscriber_messages)
+        self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
 
 class PointerTest(AuthedTestCase):
-    fixtures = ['zephyrs.json']
+    fixtures = ['messages.json']
 
     def test_update_pointer(self):
         """
@@ -307,12 +307,13 @@ class PointerTest(AuthedTestCase):
         self.assert_json_error(result, "Invalid pointer value")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
 
-class ZephyrPOSTTest(AuthedTestCase):
-    fixtures = ['zephyrs.json']
+class MessagePOSTTest(AuthedTestCase):
+    fixtures = ['messages.json']
 
-    def test_zephyr_to_class(self):
+    def test_message_to_self(self):
         """
-        Zephyring to a class to which you are subscribed is successful.
+        Sending a message to a class to which you are subscribed is
+        successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/send_message/", {"type": "class",
@@ -321,9 +322,10 @@ class ZephyrPOSTTest(AuthedTestCase):
                                                      "instance": "Test instance"})
         self.assert_json_success(result)
 
-    def test_zephyr_to_nonexistent_class(self):
+    def test_message_to_nonexistent_class(self):
         """
-        Zephyring to a nonexistent class creates the class and is successful.
+        Sending a message to a nonexistent class creates the class and
+        is successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         self.assertFalse(ZephyrClass.objects.filter(name="nonexistent_class"))
@@ -334,9 +336,9 @@ class ZephyrPOSTTest(AuthedTestCase):
         self.assert_json_success(result)
         self.assertTrue(ZephyrClass.objects.filter(name="nonexistent_class"))
 
-    def test_personal_zephyr(self):
+    def test_personal_message(self):
         """
-        Sending a personal zephyr to a valid username is successful.
+        Sending a personal message to a valid username is successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/send_message/", {"type": "personal",
@@ -344,9 +346,9 @@ class ZephyrPOSTTest(AuthedTestCase):
                                                      "recipient": "othello@humbughq.com"})
         self.assert_json_success(result)
 
-    def test_personal_zephyr_to_nonexistent_user(self):
+    def test_personal_message_to_nonexistent_user(self):
         """
-        Sending a personal zephyr to an invalid email returns error JSON.
+        Sending a personal message to an invalid email returns error JSON.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/send_message/", {"type": "personal",
@@ -356,7 +358,7 @@ class ZephyrPOSTTest(AuthedTestCase):
 
     def test_invalid_type(self):
         """
-        Sending a zephyr of unknown type returns error JSON.
+        Sending a message of unknown type returns error JSON.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/send_message/", {"type": "invalid type",
@@ -383,21 +385,21 @@ class POSTRequestMock(object):
         self._tornado_handler = DummyHandler(assert_callback)
 
 class GetUpdatesTest(AuthedTestCase):
-    fixtures = ['zephyrs.json']
+    fixtures = ['messages.json']
 
     def test_get_updates(self):
         """
-        get_updates returns zephyrs with IDs greater than the
+        get_updates returns messages with IDs greater than the
         last_received ID.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         user = User.objects.get(email="hamlet@humbughq.com")
 
-        def callback(zephyrs):
-            correct_zephyrs = filter_by_subscriptions(Message.objects.all(), user)
-            for zephyr in zephyrs:
-                self.assertTrue(zephyr in correct_zephyrs)
-                self.assertTrue(zephyr.id > 1)
+        def callback(messages):
+            correct_messages = filter_by_subscriptions(Message.objects.all(), user)
+            for message in messages:
+                self.assertTrue(message in correct_messages)
+                self.assertTrue(message.id > 1)
 
         request = POSTRequestMock({"last": str(1), "first": str(1)}, user, callback)
         # get_updates returns None, which raises an exception in the
@@ -405,24 +407,24 @@ class GetUpdatesTest(AuthedTestCase):
         # is expected, but should probably change.
         self.assertRaises(TornadoAsyncException, get_updates, request)
 
-    def test_beyond_last_zephyr(self):
+    def test_beyond_last_message(self):
         """
-        If your last_received zephyr is greater than the greatest Message ID, you
-        don't get any new zephyrs.
+        If your last_received message is greater than the greatest Message ID, you
+        don't get any new messages.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         user = User.objects.get(email="hamlet@humbughq.com")
-        last_received = max(zephyr.id for zephyr in Message.objects.all()) + 100
-        zephyrs = []
+        last_received = max(message.id for message in Message.objects.all()) + 100
+        messages = []
 
         def callback(data):
             # We can't make asserts in this nested function, so save the data
             # and assert in the parent.
-            zephyrs = data
+            messages = data
 
         request = POSTRequestMock({"last": str(last_received), "first": "1"}, user, callback)
         self.assertRaises(TornadoAsyncException, get_updates, request)
-        self.assertEquals(len(zephyrs), 0)
+        self.assertEquals(len(messages), 0)
 
     def test_missing_last_received(self):
         """
@@ -432,11 +434,11 @@ class GetUpdatesTest(AuthedTestCase):
         self.login("hamlet@humbughq.com", "hamlet")
         user = User.objects.get(email="hamlet@humbughq.com")
 
-        def callback(zephyrs):
-            correct_zephyrs = filter_by_subscriptions(Message.objects.all(), user)
-            for zephyr in zephyrs:
-                self.assertTrue(zephyr in correct_zephyrs)
-                self.assertTrue(zephyr.id > 1)
+        def callback(messages):
+            correct_messages = filter_by_subscriptions(Message.objects.all(), user)
+            for message in messages:
+                self.assertTrue(message in correct_messages)
+                self.assertTrue(message.id > 1)
 
         request = POSTRequestMock({}, user, callback)
         self.assert_json_error(get_updates(request), "Missing message range")
