@@ -53,3 +53,8 @@ a.title:hover {
     color: gray;
     text-decoration: none;
 }
+
+div.fakecontrol {
+    padding-top: 5px;
+    font-weight: bold;
+}

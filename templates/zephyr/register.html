@@ -15,7 +15,7 @@
 {% csrf_token %}
     <div class="control-group">
         <label for="id_email" class="control-label">Email</label>
-        <div class="controls">
+        <div class="controls fakecontrol">
             <input type='hidden' name='key' value='{{ key }}' />
             <p>{{ email }}<p>
         </div>
@@ -48,9 +48,10 @@
     </div>
 
 <br />
-<input type="submit" value="Register" /><br />
-<input type="hidden" name="next" value="{{ next }}" />
-<input type="hidden" name="domain" value="humbughq.com" />
+    <div class="controls">
+        <input type="submit" class="btn btn-primary" value="Register" /><br />
+        <input type="hidden" name="next" value="{{ next }}" />
+        <input type="hidden" name="domain" value="humbughq.com" />
 </form>
 
 <script type="text/javascript">
