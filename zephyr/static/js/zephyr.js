@@ -12,31 +12,6 @@ var zephyr_dict = {};
 var instance_list = [];
 var status_classes = 'alert-error alert-success alert-info';
 
-function validate_class_message() {
-    if (compose_class_name() === "") {
-        compose_error("Please specify a class", $("#class"));
-        return false;
-    } else if (compose_instance() === "") {
-        compose_error("Please specify an instance", $("#instance"));
-        return false;
-    } else if (compose_message() === "") {
-        compose_error("You have nothing to send!", $("#new_zephyr"));
-        return false;
-    }
-    return true;
-}
-
-function validate_huddle_message() {
-    if (compose_recipient() === "") {
-        compose_error("Please specify at least one recipient", $("#recipient"));
-        return false;
-    } else if (compose_huddle_message() === "") {
-        compose_error("You have nothing to send!", $("#new_personal_zephyr"));
-        return false;
-    }
-    return true;
-}
-
 $(function () {
     var send_status = $('#send-status');
     var buttons = $('#class-message, #personal-message').find('input[type="submit"]');
