@@ -1,3 +1,7 @@
+function clear_compose_box() {
+    $("#zephyr_compose").find('input[type=text], textarea').val('');
+}
+
 function compose_button() {
     clear_compose_box();
     $('#sidebar a[href="#home"]').tab('show');
