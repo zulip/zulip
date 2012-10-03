@@ -34,10 +34,10 @@ ul.nav-zephyr {
 
 .zephyr_list {
     background-color: aliceblue;
-    padding-right: 30px;
     position: absolute;
     top: 0;
     width: 640px;
+    padding-right: 30px;
 }
 
 .zephyr_row {
@@ -172,8 +172,6 @@ blockquote p {
 }
 
 .messagebox {
-    width:     470px;
-    max-width: 470px;
     padding: 5px 35px 5px 14px;
     background-color: white;
     border: 1px solid gray;
@@ -217,8 +215,8 @@ img.profile_picture {
     bottom: 0px;
     background: white;
 
-    /* = #wrapper width + padding-right */
-    width: 650px;
+    /* = zephyr_list.width + padding-right */
+    width: 670px;
 }
 
 /* Like .nav-tabs > li > a */
@@ -292,8 +290,8 @@ input.send_zephyr {
     display: none;
     padding: 5px 10px;
     border: 1px solid black;
-    /* .zephyr_list width + ??? */
-    width: 628px;
+    /* .zephyr_list width + padding_right - my border*2 - my padding*2 */
+    width: 648px;
     margin: 0 auto;
     background-color: #DDD;
     text-decoration: none;
