@@ -375,7 +375,7 @@ def zephyr_backend(request, user_profile, sender):
                 except User.DoesNotExist:
                     return json_error("Invalid email '%s'" % (recipient))
             # Make sure the sender is included in the huddle
-            recipient_ids.append(UserProfile.objects.get(user=request.user).id)
+            recipient_ids.append(UserProfile.objects.get(user=sender).id)
             huddle = get_huddle(recipient_ids)
             recipient = Recipient.objects.get(type_id=huddle.id, type=Recipient.HUDDLE)
         else:
