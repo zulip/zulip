@@ -28,10 +28,6 @@ ul.nav-zephyr {
     padding-bottom: 40px;
 }
 
-.scrolling_tab {
-    overflow-y: scroll;
-}
-
 .zephyr_list {
     background-color: aliceblue;
     width: 640px;
