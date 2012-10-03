@@ -4,7 +4,7 @@
 /*global $: false, jQuery: false, Handlebars: false,
     zephyr_json: false, initial_pointer: false, email: false,
     class_list: false, instance_list: false, people_list: false,
-    have_initial_messages: false */
+    have_initial_messages: false, narrowed: false */
 
 var loading_spinner;
 var templates = {};
@@ -154,70 +154,6 @@ function sub_from_home(zephyr_class, prompt_button) {
             report_error("Unable to subscribe", xhr, $("#home-error"));
         }
     });
-}
-
-function compose_button() {
-    clear_compose_box();
-    $('#sidebar a[href="#home"]').tab('show');
-    show_compose('class', $("#class"));
-}
-
-function hide_compose() {
-    $('input, textarea, button').blur();
-    $('.zephyr_compose').slideUp(100);
-}
-
-function show_compose(tabname, focus_area) {
-    $('.zephyr_compose').slideDown(100);
-    $('#zephyr-type-tabs a[href="#' + tabname + '-message"]').tab('show');
-    focus_area.focus();
-    focus_area.select();
-}
-
-function toggle_compose() {
-    if ($("#zephyr-type-tabs li.active").find("a[href=#class-message]").length !== 0) {
-        // In class tab, switch to personals.
-        show_compose('personal', $("#recipient"));
-    } else {
-        show_compose('class', $("#class"));
-    }
-}
-
-function composing_class_message() {
-    return $("#class-message").is(":visible");
-}
-
-function composing_huddle_message() {
-    return $("#personal-message").is(":visible");
-}
-
-function compose_class_name() {
-    return $.trim($("#class").val());
-}
-
-function compose_instance() {
-    return $.trim($("#instance").val());
-}
-
-function compose_message() {
-    return $.trim($("#new_zephyr").val());
-}
-
-function compose_recipient() {
-    return $.trim($("#recipient").val());
-}
-
-function compose_huddle_message() {
-    return $.trim($("#new_personal_zephyr").val());
-}
-
-function compose_error(error_text, bad_input) {
-    $('#send-status').removeClass(status_classes)
-               .addClass('alert-error')
-               .text(error_text)
-               .stop(true).fadeTo(0, 1);
-    $('#class-message, #personal-message').find('input[type="submit"]').removeAttr('disabled');
-    bad_input.focus().select();
 }
 
 function validate_class_message() {
@@ -421,9 +357,6 @@ var received = {
     failures: 0,
 };
 
-// Narrowing predicate, or 'false' for the home view.
-var narrowed = false;
-
 // The "message groups", i.e. blocks of messages collapsed by recipient.
 // Each message table has a list of lists.
 var message_groups = {
@@ -434,36 +367,6 @@ var message_groups = {
 // For tracking where you were before you narrowed.
 var persistent_zephyr_id = 0;
 var high_water_mark = 0;
-
-function get_next_visible(zephyr_row) {
-    if (zephyr_row === undefined)
-        return [];
-    return zephyr_row.nextAll('.zephyr_row:first');
-}
-
-function get_prev_visible(zephyr_row) {
-    if (zephyr_row === undefined)
-        return [];
-    return zephyr_row.prevAll('.zephyr_row:first');
-}
-
-function get_first_visible() {
-    return $('.focused_table .zephyr_row:first');
-}
-
-function get_last_visible() {
-    return $('.focused_table .zephyr_row:last');
-}
-
-function get_id(zephyr_row) {
-    return zephyr_row.attr('zid');
-}
-
-function get_zephyr_row(zephyr_id, table_name) {
-    if (table_name === undefined)
-        table_name = (narrowed ? 'zfilt' : 'zhome');
-    return $('#' + table_name + zephyr_id);
-}
 
 function scroll_to_selected() {
     var main_div = $('#main_div');
@@ -631,114 +534,6 @@ function prepare_huddle(recipients) {
     // Used for both personals and huddles.
     show_compose('personal', $("#new_personal_zephyr"));
     $("#recipient").val(recipients);
-}
-
-function do_narrow(description, filter_function) {
-    narrowed = filter_function;
-
-    // Your pointer isn't changed when narrowed.
-    persistent_zephyr_id = selected_zephyr_id;
-
-    // We want the zephyr on which the narrow happened to stay in the same place if possible.
-    var old_top = $("#main_div").offset().top - selected_zephyr.offset().top;
-    var parent;
-
-    // Empty the filtered table right before we fill it again
-    clear_table('zfilt');
-    add_to_table(zephyr_array, 'zfilt', filter_function, 'bottom');
-
-    // Show the new set of messages.
-    $("#zfilt").addClass("focused_table");
-
-    $("#show_all_messages").removeAttr("disabled");
-    $("#narrowbox").show();
-    $("#main_div").addClass("narrowed_view");
-    $("#currently_narrowed_to").html(description);
-    $("#zhome").removeClass("focused_table");
-
-    select_and_show_by_id(selected_zephyr_id);
-    scroll_to_selected();
-}
-
-function narrow_huddle() {
-    var original = zephyr_dict[selected_zephyr_id];
-    do_narrow("Group chats with " + original.reply_to, function (other) {
-        return other.reply_to === original.reply_to;
-    });
-}
-
-function narrow_all_personals() {
-    do_narrow("All huddles with you", function (other) {
-        return other.type === "personal" || other.type === "huddle";
-    });
-}
-
-function narrow_personals() {
-    // Narrow to personals with a specific user
-    var original = zephyr_dict[selected_zephyr_id];
-    var other_party;
-    if (original.display_recipient === email) {
-        other_party = original.sender_email;
-    } else {
-        other_party = original.display_recipient;
-    }
-
-    do_narrow("Huddles with " + other_party, function (other) {
-        return (other.type === 'personal') &&
-            (((other.display_recipient === original.display_recipient) && (other.sender_email === original.sender_email)) ||
-             ((other.display_recipient === original.sender_email) && (other.sender_email === original.display_recipient)));
-    });
-
-}
-
-function narrow_class() {
-    var original = zephyr_dict[selected_zephyr_id];
-    var message = original.display_recipient;
-    do_narrow(message, function (other) {
-        return (other.type === 'class' &&
-                original.recipient_id === other.recipient_id);
-    });
-}
-
-function narrow_instance() {
-    var original = zephyr_dict[selected_zephyr_id];
-    if (original.type !== 'class')
-        return;
-
-    var message = original.display_recipient + " | " + original.instance;
-    do_narrow(message, function (other) {
-        return (other.type === 'class' &&
-                original.recipient_id === other.recipient_id &&
-                original.instance === other.instance);
-    });
-}
-
-// Called for the 'narrow by class' hotkey.
-function narrow_by_recipient() {
-    switch (zephyr_dict[selected_zephyr_id].type) {
-        case 'personal': narrow_personals(); break;
-        case 'huddle':   narrow_huddle();    break;
-        case 'class':    narrow_class();     break;
-    }
-}
-
-function show_all_messages() {
-    if (!narrowed) {
-        return;
-    }
-    narrowed = false;
-
-    $("#zfilt").removeClass('focused_table');
-    $("#zhome").addClass('focused_table');
-    $("#narrowbox").hide();
-    $("#main_div").removeClass('narrowed_view');
-    $("#show_all_messages").attr("disabled", "disabled");
-    $("#currently_narrowed_to").html("");
-
-    // Includes scrolling.
-    select_and_show_by_id(persistent_zephyr_id);
-
-    scroll_to_selected();
 }
 
 var autocomplete_needs_update = false;
