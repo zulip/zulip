@@ -2,27 +2,27 @@
     plusplus: true, nomen: true, regexp: true */
 /*global $: false, jQuery: false */
 
-var tld_list = ['gmail.com'];
-$.validator.addMethod("fromDomain", function (value, element, param) {
-    console.log("foo");
-    console.log(value);
+var disallowed_domain_list = ['gmail.com'];
+
+function validate_email_domain(value, element, param) {
     var splitted = value.split("@");
-    var tld = splitted[splitted.length - 1];
-    return $.inArray(tld, tld_list) !== -1;
-},
+    var domain = splitted[splitted.length - 1];
+    return $.inArray(domain, disallowed_domain) !== -1;
+}
+
+$.validator.addMethod("fromDomain", validate_email_domain,
     "Please use your company email address to sign up. Otherwise, we won’t be able to connect you with your coworkers.");
 
-$(document).ready(function(){
+$(function () {
     $("#email_signup").validate({
         rules: {
             email: {
                 required: true,
-                email: true,
+                email: true
             }
         },
         errorLabelContainer: "#errors",
         errorElement: "div",
-        errorClass: "alert",
-
+        errorClass: "alert"
     });
 });
