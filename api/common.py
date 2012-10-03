@@ -42,14 +42,16 @@ class HumbugAPI():
                 # 502/503 typically means the server was restarted; sleep
                 # a bit, then try again
                 if self.verbose:
-                    print "HTTP Error getting zephyrs; trying again soon."
                     print e
-                    print traceback.format_exc()
+                    print "Error getting zephyrs (probably server restart); retrying..."
                 time.sleep(1)
                 continue
             except Exception, e:
                 # For other errors, just try again
-                print e
+                if self.verbose:
+                    print e
+                    print traceback.format_exc()
+                    print "Unexpected error!  You should send Tim the above traceback.  Retrying..."
                 time.sleep(2)
                 continue
             for message in sorted(messages, key=lambda x: x["id"]):
