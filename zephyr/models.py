@@ -206,7 +206,7 @@ class Message(models.Model):
     def __str__(self):
         return self.__repr__()
 
-    @cache_with_key(lambda self, apply_markdown: 'zephyr_dict:%d:%d' % (self.id, apply_markdown))
+    @cache_with_key(lambda self, apply_markdown: 'message_dict:%d:%d' % (self.id, apply_markdown))
     def to_dict(self, apply_markdown):
         if apply_markdown:
             content = md_engine.convert(self.content)
@@ -254,41 +254,41 @@ def get_user_profile_by_id(uid):
         return user_hash[uid]
     return UserProfile.objects.get(id=uid)
 
-def log_message(zephyr):
+def log_message(message):
     if not os.path.exists(settings.MESSAGE_LOG + '.lock'):
         file(settings.MESSAGE_LOG + '.lock', "w").write("0")
     lock = open(settings.MESSAGE_LOG + '.lock', 'r')
     fcntl.flock(lock, fcntl.LOCK_EX)
     f = open(settings.MESSAGE_LOG, "a")
-    f.write(simplejson.dumps(zephyr.to_log_dict()) + "\n")
+    f.write(simplejson.dumps(message.to_log_dict()) + "\n")
     f.flush()
     f.close()
     fcntl.flock(lock, fcntl.LOCK_UN)
 
-def do_send_message(zephyr, synced_from_mit=False, no_log=False):
-    zephyr.save()
-    # The following mit_sync_table code must be after zephyr.save() or
+def do_send_message(message, synced_from_mit=False, no_log=False):
+    message.save()
+    # The following mit_sync_table code must be after message.save() or
     # otherwise the id returned will be None (not having been assigned
     # by the database yet)
-    mit_sync_table[zephyr.id] = synced_from_mit
+    mit_sync_table[message.id] = synced_from_mit
     # Log the message to our message log for populate_db to refill
     if not no_log:
-        log_message(zephyr)
+        log_message(message)
 
-    if zephyr.recipient.type == Recipient.PERSONAL:
-        recipients = list(set([get_user_profile_by_id(zephyr.recipient.type_id),
-                               get_user_profile_by_id(zephyr.sender_id)]))
-        # For personals, you send out either 1 or 2 copies of the zephyr, for
+    if message.recipient.type == Recipient.PERSONAL:
+        recipients = list(set([get_user_profile_by_id(message.recipient.type_id),
+                               get_user_profile_by_id(message.sender_id)]))
+        # For personals, you send out either 1 or 2 copies of the message, for
         # personals to yourself or to someone else, respectively.
         assert((len(recipients) == 1) or (len(recipients) == 2))
-    elif (zephyr.recipient.type == Recipient.CLASS or
-          zephyr.recipient.type == Recipient.HUDDLE):
+    elif (message.recipient.type == Recipient.CLASS or
+          message.recipient.type == Recipient.HUDDLE):
         recipients = [get_user_profile_by_id(s.userprofile_id) for
-                      s in Subscription.objects.filter(recipient=zephyr.recipient, active=True)]
+                      s in Subscription.objects.filter(recipient=message.recipient, active=True)]
     else:
         raise
     for recipient in recipients:
-        recipient.receive(zephyr)
+        recipient.receive(message)
 
 class Subscription(models.Model):
     userprofile = models.ForeignKey(UserProfile)
@@ -328,17 +328,17 @@ def get_huddle(id_list):
 # This is currently dead code since all the places where we used to
 # use it now have faster implementations, but I expect this to be
 # potentially useful for code in the future, so not deleting it yet.
-def filter_by_subscriptions(zephyrs, user):
+def filter_by_subscriptions(messages, user):
     userprofile = UserProfile.objects.get(user=user)
-    subscribed_zephyrs = []
+    user_messages = []
     subscriptions = [sub.recipient for sub in
                      Subscription.objects.filter(userprofile=userprofile, active=True)]
-    for zephyr in zephyrs:
+    for message in messages:
         # If you are subscribed to the personal or class, or if you
-        # sent the personal, you can see the zephyr.
-        if (zephyr.recipient in subscriptions) or \
-                (zephyr.recipient.type == Recipient.PERSONAL and
-                 zephyr.sender == userprofile):
-            subscribed_zephyrs.append(zephyr)
+        # sent the personal, you can see the message.
+        if (message.recipient in subscriptions) or \
+                (message.recipient.type == Recipient.PERSONAL and
+                 message.sender == userprofile):
+            user_messages.append(message)
 
-    return subscribed_zephyrs
+    return user_messages
