@@ -1,3 +1,5 @@
+var status_classes = 'alert-error alert-success alert-info';
+
 function clear_compose_box() {
     $("#zephyr_compose").find('input[type=text], textarea').val('');
 }
@@ -64,6 +66,37 @@ function compose_error(error_text, bad_input) {
                .stop(true).fadeTo(0, 1);
     $('#class-message, #personal-message').find('input[type="submit"]').removeAttr('disabled');
     bad_input.focus().select();
+}
+
+// *Synchronously* check if a class exists.
+// If not, displays an error and returns false.
+function check_class_for_send(class_name) {
+    var okay = true;
+    $.ajax({
+        url: "subscriptions/exists/" + class_name,
+        async: false,
+        success: function (data) {
+            if (data === "False") {
+                // The class doesn't exist
+                okay = false;
+                send_status.removeClass(status_classes);
+                send_status.show();
+                $('#class-dne-name').text(class_name);
+                $('#class-dne').show();
+                $('#create-it').focus();
+                buttons.removeAttr('disabled');
+                hide_compose();
+            }
+            $("#home-error").hide();
+        },
+        error: function (xhr) {
+            okay = false;
+            report_error("Error checking subscription", xhr, $("#home-error"));
+            $("#class").focus();
+            buttons.removeAttr('disabled');
+        }
+    });
+    return okay;
 }
 
 function validate_class_message() {

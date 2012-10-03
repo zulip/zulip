@@ -10,7 +10,6 @@
 var zephyr_array = [];
 var zephyr_dict = {};
 var instance_list = [];
-var status_classes = 'alert-error alert-success alert-info';
 
 $(function () {
     var send_status = $('#send-status');
@@ -40,34 +39,11 @@ $(function () {
             }
 
             var zephyr_class = compose_class_name();
-            var okay = true;
-            $.ajax({
-                url: "subscriptions/exists/" + zephyr_class,
-                async: false,
-                success: function (data) {
-                    if (data === "False") {
-                        // The class doesn't exist
-                        okay = false;
-                        send_status.removeClass(status_classes);
-                        send_status.show();
-                        $('#class-dne-name').text(zephyr_class);
-                        $('#class-dne').show();
-                        $('#create-it').focus();
-                        buttons.removeAttr('disabled');
-                        hide_compose();
-                    }
-                    $("#home-error").hide();
-                },
-                error: function (xhr) {
-                    okay = false;
-                    report_error("Error checking subscription", xhr, $("#home-error"));
-                    $("#class").focus();
-                    buttons.removeAttr('disabled');
-                }
-            });
-            if (okay && class_list.indexOf(zephyr_class.toLowerCase()) === -1) {
+            if (!check_class_for_send(zephyr_class))
+                return false;
+
+            if (class_list.indexOf(zephyr_class.toLowerCase()) === -1) {
                 // You're not subbed to the class
-                okay = false;
                 send_status.removeClass(status_classes);
                 send_status.show();
                 $('#class-nosub-name').text(zephyr_class);
@@ -75,8 +51,10 @@ $(function () {
                 $('#sub-it').focus();
                 buttons.removeAttr('disabled');
                 hide_compose();
+                return false;
             }
-            return okay;
+
+            return true;
         },
         success: function (resp, statusText, xhr, form) {
             form.find('textarea').val('');
