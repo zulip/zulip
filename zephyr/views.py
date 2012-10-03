@@ -147,10 +147,10 @@ def home(request):
         return HttpResponseRedirect('accounts/home/')
     user_profile = UserProfile.objects.get(user=request.user)
 
-    zephyrs = Message.objects.filter(usermessage__user_profile=user_profile)
+    messages = Message.objects.filter(usermessage__user_profile=user_profile)
 
-    if user_profile.pointer == -1 and zephyrs:
-        user_profile.pointer = min([zephyr.id for zephyr in zephyrs])
+    if user_profile.pointer == -1 and messages:
+        user_profile.pointer = min([message.id for message in messages])
         user_profile.save()
 
     # Populate personals autocomplete list based on everyone in your
@@ -172,7 +172,7 @@ def home(request):
                                'people'      : simplejson.dumps(people),
                                'classes'     : simplejson.dumps(classes),
                                'have_initial_messages':
-                                   'true' if zephyrs else 'false',
+                                   'true' if messages else 'false',
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET) },
                               context_instance=RequestContext(request))
@@ -248,11 +248,11 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
     if return_messages_immediately(request, handler, user_profile, **kwargs):
         return
 
-    def on_receive(zephyrs):
+    def on_receive(messages):
         if handler.request.connection.stream.closed():
             return
         try:
-            handler.finish(format_updates_response(zephyrs, **kwargs))
+            handler.finish(format_updates_response(messages, **kwargs))
         except socket.error:
             pass
 
@@ -347,8 +347,8 @@ def zephyr_backend(request, user_profile, sender):
             return json_success()
         sender = create_forged_message_users(request, user_profile)
 
-    zephyr_type_name = request.POST["type"]
-    if zephyr_type_name == 'class':
+    message_type_name = request.POST["type"]
+    if message_type_name == 'class':
         if "class" not in request.POST or not request.POST["class"]:
             return json_error("Missing class")
         if "instance" not in request.POST:
@@ -357,14 +357,14 @@ def zephyr_backend(request, user_profile, sender):
         zephyr_class = create_class_if_needed(user_profile.realm,
                                               strip_html(request.POST['class']).strip())
         recipient = Recipient.objects.get(type_id=zephyr_class.id, type=Recipient.CLASS)
-    elif zephyr_type_name == 'personal':
+    elif message_type_name == 'personal':
         if "recipient" not in request.POST:
             return json_error("Missing recipient")
 
         recipient_data = strip_html(request.POST['recipient'])
         if ',' in recipient_data:
             # This is actually a huddle message, which shares the
-            # "personal" zephyr sending form
+            # "personal" message sending form
             recipients = [r.strip() for r in recipient_data.split(',')]
             # Ignore any blank recipients
             recipients = [r for r in recipients if r]
@@ -395,7 +395,7 @@ def zephyr_backend(request, user_profile, sender):
     message.sender = UserProfile.objects.get(user=sender)
     message.content = strip_html(request.POST['content'])
     message.recipient = recipient
-    if zephyr_type_name == 'class':
+    if message_type_name == 'class':
         message.instance = strip_html(request.POST['instance'])
     if 'time' in request.POST:
         # Forged messages come with a timestamp
@@ -404,7 +404,7 @@ def zephyr_backend(request, user_profile, sender):
         message.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
 
     # To avoid message loops, we must pass whether the message was
-    # synced from MIT zephyr here.
+    # synced from MIT message here.
     do_send_message(message, synced_from_mit = 'time' in request.POST)
 
     return json_success()
