@@ -159,6 +159,11 @@ def process_loop(log):
             zsig, body = notice.message.split("\x00", 1)
             is_personal = False
             is_huddle = False
+
+            if notice.opcode != "":
+                # skip PING messages
+                continue
+
             if isinstance(zsig, str):
                 # Check for width unicode character u'\u200B'.encode("utf-8")
                 if u'\u200B'.encode("utf-8") in zsig:
@@ -179,10 +184,6 @@ def process_loop(log):
                     if sender not in huddle_recipients_list:
                         huddle_recipients_list.append(sender)
                     huddle_recipients = ",".join(huddle_recipients_list)
-
-            if notice.opcode != "":
-                # skip PING messages
-                continue
 
             # Drop messages not to the listed subscriptions
             if (notice.cls.lower() not in mit_subs_list.all_subs) and not \
