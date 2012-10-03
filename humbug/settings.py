@@ -192,7 +192,7 @@ DEFAULT_FROM_EMAIL = "Humbug <humbug@humbughq.com>"
 
 LOGIN_REDIRECT_URL='/'
 
-ZEPHYR_LOG="all_zephyrs_log"
+MESSAGE_LOG="all_messages_log"
 
 # For testing, you may want to have emails be printed to the console.
 if not deployed:

@@ -255,11 +255,11 @@ def get_user_profile_by_id(uid):
     return UserProfile.objects.get(id=uid)
 
 def log_message(zephyr):
-    if not os.path.exists(settings.ZEPHYR_LOG + '.lock'):
-        file(settings.ZEPHYR_LOG + '.lock', "w").write("0")
-    lock = open(settings.ZEPHYR_LOG + '.lock', 'r')
+    if not os.path.exists(settings.MESSAGE_LOG + '.lock'):
+        file(settings.MESSAGE_LOG + '.lock', "w").write("0")
+    lock = open(settings.MESSAGE_LOG + '.lock', 'r')
     fcntl.flock(lock, fcntl.LOCK_EX)
-    f = open(settings.ZEPHYR_LOG, "a")
+    f = open(settings.MESSAGE_LOG, "a")
     f.write(simplejson.dumps(zephyr.to_log_dict()) + "\n")
     f.flush()
     f.close()

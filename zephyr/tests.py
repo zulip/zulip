@@ -15,7 +15,7 @@ subprocess.call("zephyr/tests/generate-fixtures");
 from django.conf import settings
 import re
 
-settings.ZEPHYR_LOG = "/tmp/test-zephyr-log"
+settings.MESSAGE_LOG = "/tmp/test-message-log"
 settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 
