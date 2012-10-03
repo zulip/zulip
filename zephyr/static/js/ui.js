@@ -132,4 +132,35 @@ $(function () {
     });
 
     $('#sidebar a[href="#subscriptions"]').click(fetch_subs);
+
+    var settings_status = $('#settings-status');
+    settings_status.hide();
+
+    $("#current_settings form").ajaxForm({
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        success: function (resp, statusText, xhr, form) {
+            var message = "Updated settings!";
+            var result = $.parseJSON(xhr.responseText);
+            if ((result.full_name !== undefined) || (result.short_name !== undefined)) {
+                message = "Updated settings!  You will need to reload the page for your changes to take effect.";
+            }
+            settings_status.removeClass(status_classes)
+                .addClass('alert-success')
+                .text(message).stop(true).fadeTo(0,1);
+            // TODO: In theory we should auto-reload or something if
+            // you changed the email address or other fields that show
+            // up on all screens
+        },
+        error: function (xhr, error_type, xhn) {
+            var response = "Error changing settings";
+            if (xhr.status.toString().charAt(0) === "4") {
+                // Only display the error response for 4XX, where we've crafted
+                // a nice response.
+                response += ": " + $.parseJSON(xhr.responseText).msg;
+            }
+            settings_status.removeClass(status_classes)
+                .addClass('alert-error')
+                .text(response).stop(true).fadeTo(0,1);
+        },
+    });
 });
