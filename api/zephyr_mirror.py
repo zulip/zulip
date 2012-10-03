@@ -245,7 +245,7 @@ def forward_to_zephyr(message):
 
 def maybe_forward_to_zephyr(message):
     if message["sender_email"] == os.environ["USER"] + "@mit.edu":
-        if float(message["timestamp"]) < float(datetime.datetime.now().strftime("%s")) - 5:
+        if float(message["timestamp"]) < float(datetime.datetime.now().strftime("%s")) - 15:
             print "Alert!  Out of order message!", message["timestamp"], datetime.datetime.now().strftime("%s")
             return
         forward_to_zephyr(message)
