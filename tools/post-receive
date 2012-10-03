@@ -41,7 +41,7 @@ def process_push(oldrev, newrev, refname):
     subprocess.check_call(["ssh", "app.humbughq.com", "--", "env", "-u", "GIT_DIR",
                            "/home/humbug/humbug/tools/update-deployment",
                            oldrev, newrev, refname])
-    commits = subprocess.check_output(["git", "log", "--pretty=- %s", "%s..%s" % (oldrev, newrev)])
+    commits = subprocess.check_output(["git", "log", "--reverse", "--pretty=- %s", "%s..%s" % (oldrev, newrev)])
     message_data = {
         "type": "class",
         "class": "devel",
