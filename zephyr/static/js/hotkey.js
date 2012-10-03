@@ -2,6 +2,17 @@
     plusplus: true, white: true, undef: true */
 /*global $: false */
 
+var pressed_keys = {};
+
+function num_pressed_keys() {
+    var size = 0, key;
+    for (key in pressed_keys) {
+        if (pressed_keys.hasOwnProperty(key))
+            size++;
+    }
+    return size;
+}
+
 var directional_hotkeys = {
     40: get_next_visible,  // down arrow
     74: get_next_visible,  // 'j'
@@ -104,17 +115,6 @@ function process_compose_hotkey(code) {
         keydown_handler = process_key_in_input;
         simulate_keypress(code);
     }
-}
-
-var pressed_keys = {};
-
-function num_pressed_keys() {
-    var size = 0, key;
-    for (key in pressed_keys) {
-        if (pressed_keys.hasOwnProperty(key))
-            size++;
-    }
-    return size;
 }
 
 $(document).keydown(function (e) {

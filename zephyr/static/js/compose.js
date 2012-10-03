@@ -4,6 +4,18 @@
 
 var status_classes = 'alert-error alert-success alert-info';
 
+function show_compose(tabname, focus_area) {
+    $('.zephyr_compose').slideDown(100);
+    $('#zephyr-type-tabs a[href="#' + tabname + '-message"]').tab('show');
+    focus_area.focus();
+    focus_area.select();
+}
+
+function hide_compose() {
+    $('input, textarea, button').blur();
+    $('.zephyr_compose').slideUp(100);
+}
+
 function clear_compose_box() {
     $("#zephyr_compose").find('input[type=text], textarea').val('');
 }
@@ -12,18 +24,6 @@ function compose_button() {
     clear_compose_box();
     $('#sidebar a[href="#home"]').tab('show');
     show_compose('class', $("#class"));
-}
-
-function hide_compose() {
-    $('input, textarea, button').blur();
-    $('.zephyr_compose').slideUp(100);
-}
-
-function show_compose(tabname, focus_area) {
-    $('.zephyr_compose').slideDown(100);
-    $('#zephyr-type-tabs a[href="#' + tabname + '-message"]').tab('show');
-    focus_area.focus();
-    focus_area.select();
 }
 
 function toggle_compose() {
@@ -87,8 +87,7 @@ function check_class_for_send(class_name) {
             if (data === "False") {
                 // The class doesn't exist
                 okay = false;
-                send_status.removeClass(status_classes);
-                send_status.show();
+                $('#send-status').removeClass(status_classes).show();
                 $('#class-dne-name').text(class_name);
                 $('#class-dne').show();
                 $('#create-it').focus();
@@ -124,13 +123,13 @@ function validate_class_message() {
         return false;
     }
 
-    if (!check_class_for_send(zephyr_class))
+    if (!check_class_for_send(class_name))
         return false;
 
-    if (class_list.indexOf(zephyr_class.toLowerCase()) === -1) {
+    if (class_list.indexOf(class_name.toLowerCase()) === -1) {
         // You're not subbed to the class
         $('#send-status').removeClass(status_classes).show();
-        $('#class-nosub-name').text(zephyr_class);
+        $('#class-nosub-name').text(class_name);
         $('#class-nosub').show();
         $('#sub-it').focus();
         submit_buttons().removeAttr('disabled');
