@@ -6,9 +6,14 @@ from urllib2 import HTTPError
 import time
 import traceback
 
+# TODO: Just switch to pycurl
+class NoHistory(object):
+    def add(self, *a, **k): pass
+    def clear(self): pass
+
 class HumbugAPI():
     def __init__(self, email, api_key, verbose=False, site="https://app.humbughq.com"):
-        self.browser = mechanize.Browser()
+        self.browser = mechanize.Browser(history=NoHistory())
         self.browser.set_handle_robots(False)
         self.browser.add_password("https://app.humbughq.com/", "tabbott", "xxxxxxxxxxxxxxxxx", "wiki")
         self.api_key = api_key
