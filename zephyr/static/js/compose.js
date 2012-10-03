@@ -104,16 +104,36 @@ function check_class_for_send(class_name) {
 }
 
 function validate_class_message() {
-    if (compose_class_name() === "") {
+    var class_name = compose_class_name();
+    if (class_name === "") {
         compose_error("Please specify a class", $("#class"));
         return false;
-    } else if (compose_instance() === "") {
+    }
+
+    if (compose_instance() === "") {
         compose_error("Please specify an instance", $("#instance"));
         return false;
-    } else if (compose_message() === "") {
+    }
+
+    if (compose_message() === "") {
         compose_error("You have nothing to send!", $("#new_zephyr"));
         return false;
     }
+
+    if (!check_class_for_send(zephyr_class))
+        return false;
+
+    if (class_list.indexOf(zephyr_class.toLowerCase()) === -1) {
+        // You're not subbed to the class
+        $('#send-status').removeClass(status_classes).show();
+        $('#class-nosub-name').text(zephyr_class);
+        $('#class-nosub').show();
+        $('#sub-it').focus();
+        submit_buttons().removeAttr('disabled');
+        hide_compose();
+        return false;
+    }
+
     return true;
 }
 
@@ -121,9 +141,22 @@ function validate_huddle_message() {
     if (compose_recipient() === "") {
         compose_error("Please specify at least one recipient", $("#recipient"));
         return false;
-    } else if (compose_huddle_message() === "") {
+    }
+
+    if (compose_huddle_message() === "") {
         compose_error("You have nothing to send!", $("#new_personal_zephyr"));
         return false;
     }
+
     return true;
+}
+
+function validate_message() {
+    submit_buttons().attr('disabled', 'disabled').blur();
+
+    if (composing_huddle_message()) {
+        return validate_huddle_message();
+    } else {
+        return validate_class_message();
+    }
 }

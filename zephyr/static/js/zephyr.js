@@ -17,39 +17,7 @@ $(function () {
 
     var options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        beforeSubmit: function (form, _options) {
-            send_status.hide();
-            buttons.attr('disabled', 'disabled');
-            buttons.blur();
-
-            // If validation fails, the validate function will pop up
-            // an error message.
-
-            // For huddles, all the logic is in validate_huddle_message.
-            if (composing_huddle_message())
-                return validate_huddle_message();
-
-            if (composing_class_message() && !validate_class_message())
-                return false;
-
-            var zephyr_class = compose_class_name();
-            if (!check_class_for_send(zephyr_class))
-                return false;
-
-            if (class_list.indexOf(zephyr_class.toLowerCase()) === -1) {
-                // You're not subbed to the class
-                send_status.removeClass(status_classes);
-                send_status.show();
-                $('#class-nosub-name').text(zephyr_class);
-                $('#class-nosub').show();
-                $('#sub-it').focus();
-                buttons.removeAttr('disabled');
-                hide_compose();
-                return false;
-            }
-
-            return true;
-        },
+        beforeSubmit: validate_message,
         success: function (resp, statusText, xhr, form) {
             form.find('textarea').val('');
             send_status.hide();
