@@ -319,8 +319,8 @@ def forge_message(request):
     # Don't send duplicate copies of forwarded messages
     if Zephyr.objects.filter(sender__user__email=email,
                              content=request.POST['content'],
-                             pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 1).replace(tzinfo=utc),
-                             pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 1).replace(tzinfo=utc)):
+                             pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 10).replace(tzinfo=utc),
+                             pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 10).replace(tzinfo=utc)):
         return json_success()
 
     if request.POST['type'] == 'personal':
