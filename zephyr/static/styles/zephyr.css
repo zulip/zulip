@@ -150,7 +150,8 @@ table.zephyr_table {
 }
 
 table.zephyr_compose_table {
-    width: 97%;
+    /* = zephyr_list */
+    width: 640px;
     table-layout: fixed;
 }
 
@@ -236,6 +237,11 @@ img.profile_picture {
     margin-left: 5px;
     position:    relative;
     top:         1px;
+}
+
+.composebox-close {
+  padding-top: 5px;
+  padding-right: 8px;
 }
 
 .send-status-close:hover {
