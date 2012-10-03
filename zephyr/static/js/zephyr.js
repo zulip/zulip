@@ -282,7 +282,7 @@ $(function () {
                         // The class doesn't exist
                         okay = false;
                         send_status.removeClass(status_classes);
-                        send_status.toggle();
+                        send_status.show();
                         $('#class-dne-name').text(zephyr_class);
                         $('#class-dne').show();
                         $('#create-it').focus();
@@ -302,7 +302,7 @@ $(function () {
                 // You're not subbed to the class
                 okay = false;
                 send_status.removeClass(status_classes);
-                send_status.toggle();
+                send_status.show();
                 $('#class-nosub-name').text(zephyr_class);
                 $('#class-nosub').show();
                 $('#sub-it').focus();
