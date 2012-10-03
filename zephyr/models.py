@@ -208,6 +208,19 @@ class Message(models.Model):
 
     @cache_with_key(lambda self, apply_markdown: 'zephyr_dict:%d:%d' % (self.id, apply_markdown))
     def to_dict(self, apply_markdown):
+        if self.id > 11443 or not self.sender.user.email.endswith("@mit.edu"):
+            if apply_markdown:
+                content = md_engine.convert(self.content)
+            else:
+                content = self.content
+        else:
+            # Processing for old mirrored messages with improper unicode encoding
+            try:
+                content = self.content.decode("utf-8")
+            except:
+                content = self.content
+            if apply_markdown:
+                content = md_engine.convert(content)
         if apply_markdown:
             content = md_engine.convert(self.content)
         else:
