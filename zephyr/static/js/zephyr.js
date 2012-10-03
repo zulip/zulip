@@ -252,10 +252,7 @@ $(function () {
     var options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         beforeSubmit: function (form, _options) {
-            send_status.removeClass(status_classes)
-                       .addClass('alert-info')
-                       .text('Sending')
-                       .stop(true).fadeTo(0,1);
+            send_status.hide();
             buttons.attr('disabled', 'disabled');
             buttons.blur();
 
@@ -316,10 +313,8 @@ $(function () {
         },
         success: function (resp, statusText, xhr, form) {
             form.find('textarea').val('');
-            send_status.removeClass(status_classes)
-                       .addClass('alert-success')
-                       .text('Sent message')
-                       .stop(true).fadeTo(0,1).delay(250).fadeOut(250, hide_compose);
+            send_status.hide();
+            hide_compose();
             buttons.removeAttr('disabled');
         },
         error: function (xhr) {
