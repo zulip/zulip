@@ -7,7 +7,7 @@ $.validator.addMethod("fromDomain", function (value, element, param) {
     console.log("foo");
     console.log(value);
     var splitted = value.split("@");
-    var tld = splitted[spitted.length - 1];
+    var tld = splitted[splitted.length - 1];
     return false;
     return $.inArray(tld, tld_list) !== -1;
 },
