@@ -68,6 +68,10 @@ function compose_error(error_text, bad_input) {
     bad_input.focus().select();
 }
 
+function submit_buttons() {
+    return $('#class-message, #personal-message').find('input[type="submit"]');
+}
+
 // *Synchronously* check if a class exists.
 // If not, displays an error and returns false.
 function check_class_for_send(class_name) {
@@ -84,7 +88,7 @@ function check_class_for_send(class_name) {
                 $('#class-dne-name').text(class_name);
                 $('#class-dne').show();
                 $('#create-it').focus();
-                buttons.removeAttr('disabled');
+                submit_buttons().removeAttr('disabled');
                 hide_compose();
             }
             $("#home-error").hide();
@@ -93,7 +97,7 @@ function check_class_for_send(class_name) {
             okay = false;
             report_error("Error checking subscription", xhr, $("#home-error"));
             $("#class").focus();
-            buttons.removeAttr('disabled');
+            submit_buttons().removeAttr('disabled');
         }
     });
     return okay;
