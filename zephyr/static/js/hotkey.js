@@ -41,7 +41,10 @@ function process_hotkey(code) {
         return process_hotkey;
     }
 
-    if (num_pressed_keys() > 1) {
+    if (num_pressed_keys() > 1 &&
+            // "shift"                        "caps lock"
+            !((pressed_keys[16] === true || pressed_keys[20]) &&
+                num_pressed_keys() === 2)) {
         // If you are already holding down another key, none of these
         // actions apply.
         return false;
@@ -63,7 +66,10 @@ function process_hotkey(code) {
     case 114: // 'r': respond to zephyr
         respond_to_zephyr();
         return process_key_in_input;
-
+    case 82: // 'R': respond to author
+        $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
+        prepare_huddle(zephyr_dict[selected_zephyr_id].sender_email);
+        return process_key_in_input;
     case 103: // 'g': start of "go to" command
         return process_goto_hotkey;
     }
