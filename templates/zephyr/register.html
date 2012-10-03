@@ -21,7 +21,7 @@
         </div>
     </div>
     <div class="control-group">
-        <label for="id_full_name" class="control-label">your name</label>
+        <label for="id_full_name" class="control-label">Your name</label>
         <div class="controls">
             {{ form.full_name }}
             {% if form.full_name.errors %}
@@ -34,7 +34,7 @@
         </div>
     </div>
     <div class="control-group">
-        <label for="id_password" class="control-label">password</label>
+        <label for="id_password" class="control-label">Password</label>
         <div class="controls">
             {{ form.password }}
             {% if form.password.errors %}
@@ -45,13 +45,13 @@
                 {% endfor %}
             {% endif %}
         </div>
+        <br />
+        <div class="controls">
+            <input type="submit" class="btn btn-primary" value="Register" /><br />
+            <input type="hidden" name="next" value="{{ next }}" />
+            <input type="hidden" name="domain" value="humbughq.com" />
+        </div>
     </div>
-
-<br />
-    <div class="controls">
-        <input type="submit" class="btn btn-primary" value="Register" /><br />
-        <input type="hidden" name="next" value="{{ next }}" />
-        <input type="hidden" name="domain" value="humbughq.com" />
 </form>
 
 <script type="text/javascript">
