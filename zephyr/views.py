@@ -200,7 +200,7 @@ def update(request):
 def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False, where='bottom'):
     if mit_sync_bot:
         messages = [m for m in messages if not mit_sync_table.get(m.id)]
-    return {'zephyrs': [message.to_dict(apply_markdown) for message in messages],
+    return {'messages': [message.to_dict(apply_markdown) for message in messages],
             'where':   where}
 
 def return_messages_immediately(request, handler, user_profile, **kwargs):

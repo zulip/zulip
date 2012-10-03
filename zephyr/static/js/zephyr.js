@@ -375,10 +375,10 @@ function add_zephyr_metadata(dummy, zephyr) {
 }
 
 function add_messages(data) {
-    if (!data || !data.zephyrs)
+    if (!data || !data.messages)
         return;
 
-    $.each(data.zephyrs, add_zephyr_metadata);
+    $.each(data.messages, add_zephyr_metadata);
 
     if (loading_spinner) {
         loading_spinner.stop();
@@ -387,16 +387,16 @@ function add_messages(data) {
     }
 
     if (data.where === 'top') {
-        zephyr_array = data.zephyrs.concat(zephyr_array);
+        zephyr_array = data.messages.concat(zephyr_array);
     } else {
-        zephyr_array = zephyr_array.concat(data.zephyrs);
+        zephyr_array = zephyr_array.concat(data.messages);
     }
 
     if (narrowed)
-        add_to_table(data.zephyrs, 'zfilt', narrowed, data.where);
+        add_to_table(data.messages, 'zfilt', narrowed, data.where);
 
     // Even when narrowed, add messages to the home view so they exist when we un-narrow.
-    add_to_table(data.zephyrs, 'zhome', function () { return true; }, data.where);
+    add_to_table(data.messages, 'zhome', function () { return true; }, data.where);
 
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.

@@ -33,7 +33,7 @@ class HumbugAPI():
         options["api-key"] = self.api_key
         submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in options.items()])
         res = self.browser.open(self.base_url + "/api/v1/get_messages", submit_data)
-        return simplejson.loads(res.read())['zephyrs']
+        return simplejson.loads(res.read())['messages']
 
     def call_on_each_message(self, callback, options = {}):
         max_message_id = None
@@ -48,7 +48,7 @@ class HumbugAPI():
                 # a bit, then try again
                 if self.verbose:
                     print e
-                    print "Error getting zephyrs (probably server restart); retrying..."
+                    print "Error getting messages (probably server restart); retrying..."
                 time.sleep(1)
                 continue
             except Exception, e:
