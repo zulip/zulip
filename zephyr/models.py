@@ -193,7 +193,7 @@ class Recipient(models.Model):
         display_recipient = get_display_recipient(self)
         return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
 
-class Zephyr(models.Model):
+class Message(models.Model):
     sender = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
     instance = models.CharField(max_length=30)
@@ -202,7 +202,7 @@ class Zephyr(models.Model):
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.recipient)
-        return "<Zephyr: %s / %s / %r>" % (display_recipient, self.instance, self.sender)
+        return "<Message: %s / %s / %r>" % (display_recipient, self.instance, self.sender)
     def __str__(self):
         return self.__repr__()
 
@@ -238,7 +238,7 @@ class Zephyr(models.Model):
 
 class UserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile)
-    message = models.ForeignKey(Zephyr)
+    message = models.ForeignKey(Message)
     # We're not using the archived field for now, but create it anyway
     # since this table will be an unpleasant one to do schema changes
     # on later

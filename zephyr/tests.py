@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.utils.timezone import utc
 from django.db.models import Q
 
-from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, Subscription, \
+from zephyr.models import Message, UserProfile, ZephyrClass, Recipient, Subscription, \
     filter_by_subscriptions, Realm, do_send_message
 from zephyr.views import get_updates
 from zephyr.decorator import TornadoAsyncException
@@ -56,7 +56,7 @@ class AuthedTestCase(TestCase):
             recipient = ZephyrClass.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=zephyr_type)
         pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-        do_send_message(Zephyr(sender=sender, recipient=recipient, instance="test", pub_date=pub_date),
+        do_send_message(Message(sender=sender, recipient=recipient, instance="test", pub_date=pub_date),
                        synced_from_mit=True)
 
     def users_subscribed_to_class(self, class_name, realm_domain):
@@ -68,7 +68,7 @@ class AuthedTestCase(TestCase):
         return [subscription.userprofile.user for subscription in subscriptions]
 
     def zephyr_stream(self, user):
-        return filter_by_subscriptions(Zephyr.objects.all(), user)
+        return filter_by_subscriptions(Message.objects.all(), user)
 
     def assert_json_success(self, result):
         """
@@ -394,7 +394,7 @@ class GetUpdatesTest(AuthedTestCase):
         user = User.objects.get(email="hamlet@humbughq.com")
 
         def callback(zephyrs):
-            correct_zephyrs = filter_by_subscriptions(Zephyr.objects.all(), user)
+            correct_zephyrs = filter_by_subscriptions(Message.objects.all(), user)
             for zephyr in zephyrs:
                 self.assertTrue(zephyr in correct_zephyrs)
                 self.assertTrue(zephyr.id > 1)
@@ -407,12 +407,12 @@ class GetUpdatesTest(AuthedTestCase):
 
     def test_beyond_last_zephyr(self):
         """
-        If your last_received zephyr is greater than the greatest Zephyr ID, you
+        If your last_received zephyr is greater than the greatest Message ID, you
         don't get any new zephyrs.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         user = User.objects.get(email="hamlet@humbughq.com")
-        last_received = max(zephyr.id for zephyr in Zephyr.objects.all()) + 100
+        last_received = max(zephyr.id for zephyr in Message.objects.all()) + 100
         zephyrs = []
 
         def callback(data):
@@ -433,7 +433,7 @@ class GetUpdatesTest(AuthedTestCase):
         user = User.objects.get(email="hamlet@humbughq.com")
 
         def callback(zephyrs):
-            correct_zephyrs = filter_by_subscriptions(Zephyr.objects.all(), user)
+            correct_zephyrs = filter_by_subscriptions(Message.objects.all(), user)
             for zephyr in zephyrs:
                 self.assertTrue(zephyr in correct_zephyrs)
                 self.assertTrue(zephyr.id > 1)

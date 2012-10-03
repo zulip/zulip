@@ -10,7 +10,7 @@ from django.utils.timezone import utc
 from django.core.exceptions import ValidationError
 from django.contrib.auth.views import login as django_login_page
 from django.contrib.auth.models import User
-from zephyr.models import Zephyr, UserProfile, ZephyrClass, Subscription, \
+from zephyr.models import Message, UserProfile, ZephyrClass, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, \
     create_user, do_send_message, mit_sync_table, create_user_if_needed, \
     create_class_if_needed, PreregistrationUser
@@ -146,7 +146,7 @@ def home(request):
         return HttpResponseRedirect('accounts/home/')
     user_profile = UserProfile.objects.get(user=request.user)
 
-    zephyrs = Zephyr.objects.filter(usermessage__user_profile=user_profile)
+    zephyrs = Message.objects.filter(usermessage__user_profile=user_profile)
 
     if user_profile.pointer == -1 and zephyrs:
         user_profile.pointer = min([zephyr.id for zephyr in zephyrs])
@@ -216,7 +216,7 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         failures = int(failures)
 
     where = 'bottom'
-    query = Zephyr.objects.filter(usermessage__user_profile = user_profile).order_by('id')
+    query = Message.objects.filter(usermessage__user_profile = user_profile).order_by('id')
 
     if last == -1:
         # User has no messages yet
@@ -299,10 +299,10 @@ def is_super_user_api(request):
 
 def already_sent_forged_message(request):
     email = strip_html(request.POST['sender']).lower()
-    if Zephyr.objects.filter(sender__user__email=email,
-                             content=request.POST['content'],
-                             pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 10).replace(tzinfo=utc),
-                             pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 10).replace(tzinfo=utc)):
+    if Message.objects.filter(sender__user__email=email,
+                              content=request.POST['content'],
+                              pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 10).replace(tzinfo=utc),
+                              pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 10).replace(tzinfo=utc)):
         return True
     return False
 
@@ -390,21 +390,21 @@ def zephyr_backend(request, user_profile, sender):
     else:
         return json_error("Invalid message type")
 
-    new_zephyr = Zephyr()
-    new_zephyr.sender = UserProfile.objects.get(user=sender)
-    new_zephyr.content = strip_html(request.POST['content'])
-    new_zephyr.recipient = recipient
+    message = Message()
+    message.sender = UserProfile.objects.get(user=sender)
+    message.content = strip_html(request.POST['content'])
+    message.recipient = recipient
     if zephyr_type_name == 'class':
-        new_zephyr.instance = strip_html(request.POST['instance'])
+        message.instance = strip_html(request.POST['instance'])
     if 'time' in request.POST:
-        # Forged zephyrs come with a timestamp
-        new_zephyr.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
+        # Forged messages come with a timestamp
+        message.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
     else:
-        new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
+        message.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
 
     # To avoid message loops, we must pass whether the message was
     # synced from MIT zephyr here.
-    do_send_message(new_zephyr, synced_from_mit = 'time' in request.POST)
+    do_send_message(message, synced_from_mit = 'time' in request.POST)
 
     return json_success()
 

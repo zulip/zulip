@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
-from zephyr.models import Zephyr, UserProfile, ZephyrClass, Recipient, \
+from zephyr.models import Message, UserProfile, ZephyrClass, Recipient, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
     create_user, do_send_message, create_user_if_needed, create_class_if_needed
 from zephyr.lib.parallel import run_parallel
@@ -97,7 +97,7 @@ class Command(BaseCommand):
         class_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
 
         if options["delete"]:
-            for klass in [Zephyr, ZephyrClass, UserProfile, User, Recipient,
+            for klass in [Message, ZephyrClass, UserProfile, User, Recipient,
                           Realm, Subscription, Huddle, UserMessage]:
                 klass.objects.all().delete()
 
@@ -214,12 +214,12 @@ def get_recipient_by_id(rid):
     return Recipient.objects.get(id=rid)
 
 def restore_saved_zephyrs():
-    old_zephyrs = file("all_zephyrs_log", "r").readlines()
-    for old_zephyr_json in old_zephyrs:
-        old_zephyr = simplejson.loads(old_zephyr_json.strip())
-        new_zephyr = Zephyr()
+    old_messages = file("all_zephyrs_log", "r").readlines()
+    for old_message_json in old_messages:
+        old_message = simplejson.loads(old_message_json.strip())
+        message = Message()
 
-        sender_email = old_zephyr["sender_email"]
+        sender_email = old_message["sender_email"]
         realm = None
         try:
             realm = Realm.objects.get(domain=sender_email.split('@')[1])
@@ -232,37 +232,37 @@ def restore_saved_zephyrs():
             realm = Realm.objects.get(domain='mit.edu')
 
         create_user_if_needed(realm, sender_email, sender_email.split('@')[0],
-                              old_zephyr["sender_full_name"],
-                              old_zephyr["sender_short_name"])
-        new_zephyr.sender = UserProfile.objects.get(user__email=old_zephyr["sender_email"])
+                              old_message["sender_full_name"],
+                              old_message["sender_short_name"])
+        message.sender = UserProfile.objects.get(user__email=old_message["sender_email"])
         type_hash = {"class": Recipient.CLASS, "huddle": Recipient.HUDDLE, "personal": Recipient.PERSONAL}
-        new_zephyr.type = type_hash[old_zephyr["type"]]
-        new_zephyr.content = old_zephyr["content"]
-        new_zephyr.instance = old_zephyr["instance"]
-        new_zephyr.pub_date = datetime.datetime.utcfromtimestamp(float(old_zephyr["timestamp"])).replace(tzinfo=utc)
+        message.type = type_hash[old_message["type"]]
+        message.content = old_message["content"]
+        message.instance = old_message["instance"]
+        message.pub_date = datetime.datetime.utcfromtimestamp(float(old_message["timestamp"])).replace(tzinfo=utc)
 
-        if new_zephyr.type == Recipient.PERSONAL:
-            u = old_zephyr["recipient"][0]
+        if message.type == Recipient.PERSONAL:
+            u = old_message["recipient"][0]
             create_user_if_needed(realm, u["email"], u["email"].split('@')[0],
                                   u["full_name"], u["short_name"])
             user_profile = UserProfile.objects.get(user__email=u["email"])
-            new_zephyr.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
+            message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
                                                          type_id=user_profile.id)
-        elif new_zephyr.type == Recipient.CLASS:
-            zephyr_class = create_class_if_needed(realm, old_zephyr["recipient"])
-            new_zephyr.recipient = Recipient.objects.get(type=Recipient.CLASS,
+        elif message.type == Recipient.CLASS:
+            zephyr_class = create_class_if_needed(realm, old_message["recipient"])
+            message.recipient = Recipient.objects.get(type=Recipient.CLASS,
                                                          type_id=zephyr_class.id)
-        elif new_zephyr.type == Recipient.HUDDLE:
-            for u in old_zephyr["recipient"]:
+        elif message.type == Recipient.HUDDLE:
+            for u in old_message["recipient"]:
                 create_user_if_needed(realm, u["email"], u["email"].split('@')[0],
                                       u["full_name"], u["short_name"])
             target_huddle = get_huddle([UserProfile.objects.get(user__email=u["email"]).id
-                                        for u in old_zephyr["recipient"]])
-            new_zephyr.recipient = Recipient.objects.get(type=Recipient.HUDDLE,
+                                        for u in old_message["recipient"]])
+            message.recipient = Recipient.objects.get(type=Recipient.HUDDLE,
                                                          type_id=target_huddle.id)
         else:
             raise
-        do_send_message(new_zephyr, synced_from_mit=True, no_log=True)
+        do_send_message(message, synced_from_mit=True, no_log=True)
 
 
 # Create some test zephyrs, including:
@@ -273,7 +273,7 @@ def restore_saved_zephyrs():
 # - multiple zephyrs per instance
 # - both single and multi-line content
 def send_zephyrs(data):
-    (tot_zephyrs, personals_pairs, options, output) = data
+    (tot_messages, personals_pairs, options, output) = data
     from django.db import connection
     connection.close()
     texts = file("zephyr/management/commands/test_zephyrs.txt", "r").readlines()
@@ -288,62 +288,62 @@ def send_zephyrs(data):
         huddle_members[h] = [s.userprofile.id for s in
                              Subscription.objects.filter(recipient_id=h)]
 
-    num_zephyrs = 0
+    num_messages = 0
     random_max = 1000000
     recipients = {}
-    while num_zephyrs < tot_zephyrs:
+    while num_messages < tot_messages:
       with transaction.commit_on_success():
         saved_data = ''
-        new_zephyr = Zephyr()
+        message = Message()
         length = random.randint(1, 5)
         lines = (t.strip() for t in texts[offset: offset + length])
-        new_zephyr.content = '\n'.join(lines)
+        message.content = '\n'.join(lines)
         offset += length
         offset = offset % len(texts)
 
         randkey = random.randint(1, random_max)
-        if (num_zephyrs > 0 and
+        if (num_messages > 0 and
             random.randint(1, random_max) * 100. / random_max < options["stickyness"]):
             # Use an old recipient
-            zephyr_type, recipient_id, saved_data = recipients[num_zephyrs - 1]
-            if zephyr_type == Recipient.PERSONAL:
+            message_type, recipient_id, saved_data = recipients[num_messages - 1]
+            if message_type == Recipient.PERSONAL:
                 personals_pair = saved_data
                 random.shuffle(personals_pair)
-            elif zephyr_type == Recipient.CLASS:
-                new_zephyr.instance = saved_data
-                new_zephyr.recipient = get_recipient_by_id(recipient_id)
-            elif zephyr_type == Recipient.HUDDLE:
-                new_zephyr.recipient = get_recipient_by_id(recipient_id)
+            elif message_type == Recipient.CLASS:
+                message.instance = saved_data
+                message.recipient = get_recipient_by_id(recipient_id)
+            elif message_type == Recipient.HUDDLE:
+                message.recipient = get_recipient_by_id(recipient_id)
         elif (randkey <= random_max * options["percent_huddles"] / 100.):
-            zephyr_type = Recipient.HUDDLE
-            new_zephyr.recipient = get_recipient_by_id(random.choice(recipient_huddles))
+            message_type = Recipient.HUDDLE
+            message.recipient = get_recipient_by_id(random.choice(recipient_huddles))
         elif (randkey <= random_max * (options["percent_huddles"] + options["percent_personals"]) / 100.):
-            zephyr_type = Recipient.PERSONAL
+            message_type = Recipient.PERSONAL
             personals_pair = random.choice(personals_pairs)
             random.shuffle(personals_pair)
         elif (randkey <= random_max * 1.0):
-            zephyr_type = Recipient.CLASS
-            new_zephyr.recipient = get_recipient_by_id(random.choice(recipient_classes))
+            message_type = Recipient.CLASS
+            message.recipient = get_recipient_by_id(random.choice(recipient_classes))
 
-        if zephyr_type == Recipient.HUDDLE:
-            sender_id = random.choice(huddle_members[new_zephyr.recipient.id])
-            new_zephyr.sender = get_user_profile_by_id(sender_id)
-        elif zephyr_type == Recipient.PERSONAL:
-            new_zephyr.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
+        if message_type == Recipient.HUDDLE:
+            sender_id = random.choice(huddle_members[message.recipient.id])
+            message.sender = get_user_profile_by_id(sender_id)
+        elif message_type == Recipient.PERSONAL:
+            message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
                                                          type_id=personals_pair[0])
-            new_zephyr.sender = get_user_profile_by_id(personals_pair[1])
+            message.sender = get_user_profile_by_id(personals_pair[1])
             saved_data = personals_pair
-        elif zephyr_type == Recipient.CLASS:
-            zephyr_class = ZephyrClass.objects.get(id=new_zephyr.recipient.type_id)
+        elif message_type == Recipient.CLASS:
+            zephyr_class = ZephyrClass.objects.get(id=message.recipient.type_id)
             # Pick a random subscriber to the class
-            new_zephyr.sender = random.choice(Subscription.objects.filter(
-                    recipient=new_zephyr.recipient)).userprofile
-            new_zephyr.instance = zephyr_class.name + str(random.randint(1, 3))
-            saved_data = new_zephyr.instance
+            message.sender = random.choice(Subscription.objects.filter(
+                    recipient=message.recipient)).userprofile
+            message.instance = zephyr_class.name + str(random.randint(1, 3))
+            saved_data = message.instance
 
-        new_zephyr.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-        do_send_message(new_zephyr)
+        message.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
+        do_send_message(message)
 
-        recipients[num_zephyrs] = [zephyr_type, new_zephyr.recipient.id, saved_data]
-        num_zephyrs += 1
-    return tot_zephyrs
+        recipients[num_messages] = [message_type, message.recipient.id, saved_data]
+        num_messages += 1
+    return tot_messages
