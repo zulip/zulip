@@ -20,9 +20,9 @@ function num_pressed_keys() {
 
 var directional_hotkeys = {
     40: get_next_visible,  // down arrow
-    74: get_next_visible,  // 'j'
+    106: get_next_visible,  // 'j'
     38: get_prev_visible,  // up arrow
-    75: get_prev_visible,  // 'k'
+    107: get_prev_visible,  // 'k'
     36: get_first_visible, // Home
     35: get_last_visible   // End
 };
@@ -57,14 +57,14 @@ function process_hotkey(code) {
     case 27: // Esc: hide compose pane
         hide_compose();
         return process_hotkey;
-    case 67: // 'c': compose
+    case 99: // 'c': compose
         compose_button();
         return process_compose_hotkey;
-    case 82: // 'r': respond to zephyr
+    case 114: // 'r': respond to zephyr
         respond_to_zephyr();
         return process_key_in_input;
 
-    case 71: // 'g': start of "go to" command
+    case 103: // 'g': start of "go to" command
         return process_goto_hotkey;
     }
 
@@ -72,10 +72,10 @@ function process_hotkey(code) {
 }
 
 var goto_hotkeys = {
-    67: narrow_by_recipient,  // 'c'
-    73: narrow_instance,      // 'i'
-    80: narrow_all_personals, // 'p'
-    65: show_all_messages,    // 'a'
+    99: narrow_by_recipient,  // 'c'
+    105: narrow_instance,      // 'i'
+    112: narrow_all_personals, // 'p'
+    97: show_all_messages,    // 'a'
     27: hide_compose          // Esc
 };
 
@@ -132,8 +132,31 @@ function set_keydown_in_input(flag) {
     }
 }
 
+/* We register both a keydown and a keypress function because
+   we want to intercept pgup/pgdn, escape, etc, and process them
+   as they happen on the keyboard. However, if we processed
+   letters/numbers in keydown, we wouldn't know what the case of
+   the letters were.
+
+   We want case-sensitive hotkeys (such as in the case of r vs R)
+   so we bail in .keydown if the event is a letter or number and
+   instead just let keypress go for it. */
+
 $(document).keydown(function (event) {
-    var result = keydown_handler(event.keyCode);
+    if (48 > event.which ||90 < event.which) { // outside the alphanumeric range
+        var result = keydown_handler(event.which);
+        if (typeof result === 'function') {
+            keydown_handler = result;
+            event.preventDefault();
+        }
+    }
+});
+
+$(document).keypress(function (event) {
+    // What exactly triggers .keypress may vary by browser.
+    // Welcome to compatability hell.
+
+    var result = keydown_handler(event.which);
     if (typeof result === 'function') {
         keydown_handler = result;
         event.preventDefault();
