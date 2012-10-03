@@ -95,7 +95,7 @@ $(function () {
                         $('#subscriptions_table').append(templates.subscription({subscription: name}));
                     });
                 }
-                $('#new_subscriptions').focus().select();
+                $('#new_subscription').focus().select();
                 $("#subscriptions-status").fadeOut(0);
             },
             error: function (xhr) {
