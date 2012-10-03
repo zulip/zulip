@@ -16,6 +16,13 @@ import os
 import sys
 import subprocess
 
+sys.path.append(os.path.dirname(os.path.dirname(os.readlink(__file__))))
+import api.common
+client = api.common.HumbugAPI(email="humbug+commits@humbughq.com",
+                              api_key=options.api_key,
+                              verbose=False,
+                              site=options.site)
+
 args = sys.stdin.read()
 oldrev, newrev, refname = args.split()
 
@@ -23,3 +30,12 @@ if refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
     subprocess.check_call(["ssh", "app.humbughq.com", "--", "env", "-u", "GIT_DIR",
                            "/home/humbug/humbug/tools/update-deployment",
                            oldrev, newrev, refname])
+    commits = subprocess.check_output(["git", "log", "--pretty=%s", "%s..%s" % (oldrev, newrev)])
+    message_data = {
+        "type": "class",
+        "class": "devel",
+        "instance": "commits",
+        "content": "Commit %s pushed to %s!  Commits include:\n" % (newrev, refname) + commits,
+        "recipient": "tabbott@humbughq.com",
+    }
+    client.send_message(message_data)
