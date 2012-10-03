@@ -15,6 +15,7 @@
 import os
 import sys
 import subprocess
+import time
 
 sys.path.append(os.path.dirname(os.path.dirname(os.readlink(__file__))))
 import api.common
@@ -48,6 +49,9 @@ def process_push(oldrev, newrev, refname):
         "content": "The following commits were just pushed to %s:\n\n" % (refname.replace("refs/heads/", ""),) + commits,
         "recipient": "tabbott@humbughq.com",
     }
+    # Sleep a bit to give time for the server to restart.
+    # TODO: Make this work without the sleep
+    time.sleep(1)
     client.send_message(message_data)
 
 for ln in sys.stdin:
