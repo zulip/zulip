@@ -1,11 +1,8 @@
 /*jslint browser: true, devel: true, sloppy: true,
-    plusplus: true, nomen: true, regexp: true,
-    white: true, undef: true */
-/*global $: false, jQuery: false, Handlebars: false,
-    zephyr_json: false, initial_pointer: false, email: false,
+    plusplus: true, nomen: true, white: true, undef: true */
+/*global $: false, initial_pointer: false, email: false,
     class_list: false, instance_list: false, people_list: false,
-    have_initial_messages: false, narrowed: false,
-    autocomplete_needs_update: true */
+    narrowed: false, autocomplete_needs_update: true */
 
 var zephyr_array = [];
 var zephyr_dict = {};

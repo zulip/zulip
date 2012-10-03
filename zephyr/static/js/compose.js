@@ -1,6 +1,6 @@
 /*jslint browser: true, devel: true, sloppy: true,
-    plusplus: true, white: true, undef: true */
-/*global $: false */
+    plusplus: true, white: true */
+/*global $: false, report_error: false, class_list: false */
 
 var status_classes = 'alert-error alert-success alert-info';
 

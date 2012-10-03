@@ -1,5 +1,5 @@
 /*jslint browser: true, devel: true, sloppy: true,
-    plusplus: true, white: true, undef: true */
+    plusplus: true, white: true, undef: true*/
 /*global $: false */
 
 var pressed_keys = {};
