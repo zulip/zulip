@@ -1,6 +1,5 @@
 body {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
-    overflow: hidden;
 }
 
 .sidebar-nav {
@@ -335,10 +334,6 @@ input.send_zephyr {
 }
 
 #subscriptions {
-    top: 0;
-    bottom: 0;
-    position: absolute;
-    overflow: auto;
     width: 640px;
     background-color: antiquewhite;
     padding: 1em;
