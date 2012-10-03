@@ -32,7 +32,7 @@ function simulate_keypress(keycode) {
 }
 
 function process_hotkey(code) {
-    var next_zephyr, window_to_scroll;
+    var next_zephyr;
     if (directional_hotkeys.hasOwnProperty(code)) {
         next_zephyr = directional_hotkeys[code](selected_zephyr);
         if (next_zephyr.length !== 0) {
@@ -49,11 +49,6 @@ function process_hotkey(code) {
         return process_hotkey;
     }
 
-    window_to_scroll = $(".active.scrolling_tab");
-    if (window_to_scroll.length === 0) {
-        window_to_scroll = $(".active").find(".scrolling-tab");
-    }
-
     if (num_pressed_keys() > 1) {
         // If you are already holding down another key, none of these
         // actions apply.
@@ -62,13 +57,11 @@ function process_hotkey(code) {
 
     switch (code) {
     case 33: // Page Up
-        window_to_scroll.scrollTop(window_to_scroll.scrollTop() - window_to_scroll.height());
         keep_pointer_in_view();
-        return process_hotkey;
+        return false; // We want the browser to actually page up and down
     case 34: // Page Down
-        window_to_scroll.scrollTop(window_to_scroll.scrollTop() + window_to_scroll.height());
         keep_pointer_in_view();
-        return process_hotkey;
+        return false;
     case 27: // Esc: hide compose pane
         hide_compose();
         return process_hotkey;
