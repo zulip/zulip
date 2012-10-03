@@ -93,8 +93,6 @@ def compute_humbug_username(zephyr_username):
 
 def send_humbug(zeph):
     zeph["sender"] = compute_humbug_username(zeph["sender"])
-    if "recipient" in zeph:
-        zeph["recipient"] = compute_humbug_username(zeph["recipient"])
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]
     if "instance" in zeph:
@@ -176,7 +174,7 @@ def process_loop(log):
                 if body.startswith("CC:"):
                     is_huddle = True
                     # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
-                    huddle_recipients_list = [x + "@mit.edu" for x in
+                    huddle_recipients_list = [compute_humbug_username(x.strip()) for x in
                                               body.split("\n")[0][4:].split()]
                     if sender not in huddle_recipients_list:
                         huddle_recipients_list.append(sender)
@@ -203,7 +201,7 @@ def process_loop(log):
                 zeph = { 'type'      : 'personal',
                          'time'      : str(notice.time),
                          'sender'    : sender,
-                         'recipient' : recipient,
+                         'recipient' : compute_humbug_username(recipient),
                          'zsig'      : zsig,  # logged here but not used by app
                          'content'   : body }
             else:
