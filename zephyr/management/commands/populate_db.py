@@ -37,8 +37,8 @@ class Command(BaseCommand):
     help = "Populate a test database"
 
     option_list = BaseCommand.option_list + (
-        make_option('-n', '--num-zephyrs',
-                    dest='num_zephyrs',
+        make_option('-n', '--num-messages',
+                    dest='num_messages',
                     type='int',
                     default=600,
                     help='The number of zephyrs to create.'),
@@ -82,10 +82,10 @@ class Command(BaseCommand):
                     default=True,
                     dest='delete',
                     help='Whether to delete all the existing messages.'),
-        make_option('--replay-old-zephyrs',
+        make_option('--replay-old-messages',
                     action="store_true",
                     default=False,
-                    dest='replay_old_zephyrs',
+                    dest='replay_old_messages',
                     help='Whether to replace the log of old messages.'),
         )
 
@@ -149,11 +149,11 @@ class Command(BaseCommand):
         threads = options["threads"]
         jobs = []
         for i in xrange(threads):
-            count = options["num_zephyrs"] / threads
-            if i < options["num_zephyrs"] % threads:
+            count = options["num_messages"] / threads
+            if i < options["num_messages"] % threads:
                 count += 1
             jobs.append((count, personals_pairs, options, self.stdout.write))
-        for status, job in run_parallel(send_zephyrs, jobs, threads=threads):
+        for status, job in run_parallel(send_messages, jobs, threads=threads):
             pass
 
         if options["delete"]:
@@ -196,8 +196,8 @@ class Command(BaseCommand):
                     new_subscription.save()
 
             self.stdout.write("Successfully populated test database.\n")
-        if options["replay_old_zephyrs"]:
-            restore_saved_zephyrs()
+        if options["replay_old_messages"]:
+            restore_saved_messages()
 
             # Set restored pointers to the very latest messages
             for user_profile in UserProfile.objects.all():
@@ -213,7 +213,7 @@ def get_recipient_by_id(rid):
         return recipient_hash[rid]
     return Recipient.objects.get(id=rid)
 
-def restore_saved_zephyrs():
+def restore_saved_messages():
     old_messages = file("all_zephyrs_log", "r").readlines()
     for old_message_json in old_messages:
         old_message = simplejson.loads(old_message_json.strip())
@@ -265,18 +265,18 @@ def restore_saved_zephyrs():
         do_send_message(message, synced_from_mit=True, no_log=True)
 
 
-# Create some test zephyrs, including:
+# Create some test messages, including:
 # - multiple classes
 # - multiple instances per class
 # - multiple huddles
 # - multiple personals converastions
-# - multiple zephyrs per instance
+# - multiple messages per instance
 # - both single and multi-line content
-def send_zephyrs(data):
+def send_messages(data):
     (tot_messages, personals_pairs, options, output) = data
     from django.db import connection
     connection.close()
-    texts = file("zephyr/management/commands/test_zephyrs.txt", "r").readlines()
+    texts = file("zephyr/management/commands/test_messages.txt", "r").readlines()
     offset = random.randint(0, len(texts))
 
     recipient_classes = [klass.id for klass in
