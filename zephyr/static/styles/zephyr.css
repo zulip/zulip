@@ -34,8 +34,6 @@ ul.nav-zephyr {
 
 .zephyr_list {
     background-color: aliceblue;
-    position: absolute;
-    top: 0;
     width: 640px;
     padding-right: 30px;
 }
