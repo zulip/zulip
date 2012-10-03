@@ -33,28 +33,15 @@ ul.nav-zephyr {
 }
 
 .zephyr_list {
-    overflow-y: scroll;
-    overflow-x: hidden;
     background-color: aliceblue;
     padding-right: 30px;
     position: absolute;
     top: 0;
-    bottom: 0;
     width: 640px;
 }
 
 .zephyr_row {
     cursor: pointer;
-}
-
-/* This is a div on top of main_div that hides main_div's scroll bar. */
-#wrapper {
-    overflow: hidden;
-    padding-right: 30px;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 620px; /* slightly smaller than main_div */
 }
 
 .zephyr_comp {
