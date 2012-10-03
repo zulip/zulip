@@ -1,3 +1,7 @@
+/*jslint browser: true, devel: true, sloppy: true,
+    plusplus: true, white: true, undef: true */
+/*global $: false */
+
 var directional_hotkeys = {
     40: get_next_visible,  // down arrow
     74: get_next_visible,  // 'j'

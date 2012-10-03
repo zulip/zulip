@@ -1,3 +1,7 @@
+/*jslint browser: true, devel: true, sloppy: true,
+    plusplus: true, white: true, undef: true */
+/*global $: false */
+
 // Miscellaneous early setup.
 // This is the first of our Javascript files to be included.
 

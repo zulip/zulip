@@ -1,3 +1,7 @@
+/*jslint browser: true, devel: true, sloppy: true,
+    plusplus: true, white: true, undef: true */
+/*global $: false */
+
 /* WARNING:
 
     This file is only included when Django's DEBUG = True and your

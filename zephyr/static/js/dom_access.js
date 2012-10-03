@@ -1,3 +1,7 @@
+/*jslint browser: true, devel: true, sloppy: true,
+    plusplus: true, white: true, undef: true */
+/*global $: false */
+
 function get_next_visible(zephyr_row) {
     if (zephyr_row === undefined)
         return [];

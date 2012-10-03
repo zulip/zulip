@@ -1,3 +1,7 @@
+/*jslint browser: true, devel: true, sloppy: true,
+    plusplus: true, white: true, undef: true */
+/*global $: false */
+
 var status_classes = 'alert-error alert-success alert-info';
 
 function clear_compose_box() {

@@ -1,3 +1,7 @@
+/*jslint browser: true, devel: true, sloppy: true,
+    plusplus: true, white: true, undef: true */
+/*global $: false */
+
 // Narrowing predicate, or 'false' for the home view.
 var narrowed = false;
 
