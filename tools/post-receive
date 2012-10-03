@@ -34,13 +34,9 @@ def check_output(*popenargs, **kwargs):
             cmd = popenargs[0]
         raise subprocess.CalledProcessError(retcode, cmd, output=output)
     return output
-
 subprocess.check_output = check_output
 
-args = sys.stdin.read()
-oldrev, newrev, refname = args.split()
-
-if refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
+def process_push(oldrev, newrev, refname):
     subprocess.check_call(["ssh", "app.humbughq.com", "--", "env", "-u", "GIT_DIR",
                            "/home/humbug/humbug/tools/update-deployment",
                            oldrev, newrev, refname])
@@ -53,3 +49,8 @@ if refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
         "recipient": "tabbott@humbughq.com",
     }
     client.send_message(message_data)
+
+for ln in sys.stdin:
+    oldrev, newrev, refname = ln.strip().split()
+    if refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
+        process_push(oldrev, newrev, refname)
