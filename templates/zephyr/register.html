@@ -11,7 +11,7 @@
     <h3>Tell us a bit about yourself.</h3>
 </div>
 
-<form method="post" class="form-horizontal" action="{% url register %}">
+<form method="post" class="form-horizontal" id="registration" action="{% url register %}">
 {% csrf_token %}
     <div class="control-group">
         <label for="id_email" class="control-label">Email</label>
@@ -23,7 +23,7 @@
     <div class="control-group">
         <label for="id_full_name" class="control-label">Your name</label>
         <div class="controls">
-            {{ form.full_name }}
+            <input id="id_full_name" class="required" type="text" name="full_name" value="{% if form.full_name.value %}{{ form.full_name.value }}{% endif %}" maxlength="100" />
             {% if form.full_name.errors %}
                 <br/>
                 <br/>
@@ -36,7 +36,7 @@
     <div class="control-group">
         <label for="id_password" class="control-label">Password</label>
         <div class="controls">
-            {{ form.password }}
+            <input id="id_password" class="required" type="password" name="password" value="{% if form.password.value %}{{ form.password.value }}{% endif %}" maxlength="100" />
             {% if form.password.errors %}
                 <br/>
                 <br/>
@@ -46,6 +46,8 @@
             {% endif %}
         </div>
         <br />
+    </div>
+    <div class="control-group">
         <div class="controls">
             <input type="submit" class="btn btn-primary" value="Register" /><br />
             <input type="hidden" name="next" value="{{ next }}" />
@@ -56,10 +58,8 @@
 
 <script type="text/javascript">
 if ($('#id_email:visible').length) {
-    console.log(1);
     autofocus('#id_email');
 } else {
-    console.log(2);
     autofocus('#id_full_name');
 }
 </script>
