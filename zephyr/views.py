@@ -284,7 +284,7 @@ def api_get_messages(request, user_profile, handler):
 @require_post
 @api_key_required
 def api_send_message(request, user_profile):
-    return zephyr_backend(request, user_profile, user_profile.user)
+    return send_message_backend(request, user_profile, user_profile.user)
 
 @login_required
 @require_post
@@ -292,7 +292,7 @@ def send_message(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if 'time' in request.POST:
         return json_error("Invalid field 'time'")
-    return zephyr_backend(request, user_profile, request.user)
+    return send_message_backend(request, user_profile, request.user)
 
 # TODO: This should have a real superuser security check
 def is_super_user_api(request):
@@ -329,11 +329,12 @@ def create_forged_message_users(request, user_profile):
                                   user_email.split('@')[0])
     return user
 
-# We do not @require_login for zephyr_backend, since it is used both
-# from the API and the web service.  Code calling zephyr_backend
-# should either check the API key or check that the user is logged in.
+# We do not @require_login for send_message_backend, since it is used
+# both from the API and the web service.  Code calling
+# send_message_backend should either check the API key or check that
+# the user is logged in.
 @require_post
-def zephyr_backend(request, user_profile, sender):
+def send_message_backend(request, user_profile, sender):
     if "type" not in request.POST:
         return json_error("Missing type")
     if "content" not in request.POST:
