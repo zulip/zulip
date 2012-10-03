@@ -208,12 +208,8 @@ class Zephyr(models.Model):
 
     @cache_with_key(lambda self, apply_markdown: 'zephyr_dict:%d:%d' % (self.id, apply_markdown))
     def to_dict(self, apply_markdown):
-        try:
-            content = self.content.decode("utf-8")
-        except:
-            content = self.content
         if apply_markdown:
-            content = md_engine.convert(content)
+            content = md_engine.convert(self.content)
         return {'id'               : self.id,
                 'sender_email'     : self.sender.user.email,
                 'sender_name'      : self.sender.full_name,

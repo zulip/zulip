@@ -24,7 +24,7 @@ class HumbugAPI():
     def send_message(self, submit_hash):
         submit_hash["email"] = self.email
         submit_hash["api-key"] = self.api_key
-        submit_data = urllib.urlencode([(k, v.encode('utf-8')) for k,v in submit_hash.items()])
+        submit_data = urllib.urlencode([(k, v) for k,v in submit_hash.items()])
         res = self.browser.open(self.base_url + "/api/v1/send_message", submit_data)
         return simplejson.loads(res.read())
 
