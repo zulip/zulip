@@ -321,7 +321,7 @@ input.send_zephyr {
 
 #bottom_whitespace {
   display: block;
-  height: 60%;
+  height: 300px;
 }
 
 #subscriptions {
