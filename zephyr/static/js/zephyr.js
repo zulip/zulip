@@ -375,6 +375,7 @@ $(function () {
             $('#subscriptions_table').prepend(templates.subscription({subscription: name}));
             class_list.push(name.toLowerCase());
             $("#subscriptions-status").fadeOut(0);
+            $("#new_subscription").focus();
         },
         error: function (xhr) {
             report_error("Error adding subscription", xhr, $("#subscriptions-status"));
