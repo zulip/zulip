@@ -90,7 +90,6 @@ class Command(BaseCommand):
             try:
                 # Application is an instance of Django's standard wsgi handler.
                 application = web.Application([(r"/get_updates", AsyncDjangoHandler),
-                                               (r"/api/get_updates", AsyncDjangoHandler),
                                                (r"/api/v1/get_messages", AsyncDjangoHandler),
                                                (r".*", FallbackHandler, dict(fallback=django_app)),
                                                ], debug=django.conf.settings.DEBUG)

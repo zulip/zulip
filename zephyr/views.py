@@ -267,15 +267,6 @@ def get_updates(request, handler):
 
     return get_updates_backend(request, user_profile, handler, apply_markdown=True)
 
-@login_required
-@asynchronous
-@require_post
-def get_updates_api(request, handler):
-    user_profile = UserProfile.objects.get(user=request.user)
-    return get_updates_backend(request, user_profile, handler,
-                               apply_markdown=(request.POST.get("apply_markdown") is not None),
-                               mit_sync_bot=request.POST.get("mit_sync_bot"))
-
 # Yes, this has a name similar to the previous function.  I think this
 # new name is better and expect the old function to be deleted and
 # replaced by the new one soon, so I'm not going to worry about it.
