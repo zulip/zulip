@@ -210,6 +210,8 @@ class Zephyr(models.Model):
     def to_dict(self, apply_markdown):
         if apply_markdown:
             content = md_engine.convert(self.content)
+        else:
+            content = self.content
         return {'id'               : self.id,
                 'sender_email'     : self.sender.user.email,
                 'sender_name'      : self.sender.full_name,
