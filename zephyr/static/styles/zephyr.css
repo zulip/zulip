@@ -341,11 +341,6 @@ input.send_zephyr {
     display: none;
 }
 
-#bottom-nav {
-    position: absolute;
-    bottom: 0;
-}
-
 #loading_indicator {
     margin-top:  40px;
     font-size:   36px;
