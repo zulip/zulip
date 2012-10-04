@@ -107,7 +107,7 @@ def process_loop(log):
             is_personal = False
             is_huddle = False
 
-            if notice.opcode != "":
+            if notice.opcode == "PING":
                 # skip PING messages
                 continue
 
