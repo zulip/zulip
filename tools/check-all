@@ -1,13 +1,15 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(readlink -f "$(dirname "$0")")"
+SCRIPT_DIR="$(dirname "$0")"
 EXITCODE=0
 
 if ! "$SCRIPT_DIR"/jslint/check-all; then
     EXITCODE=1;
 fi
 
-if find "$(readlink -f "$SCRIPT_DIR"/..)" -name confirmation -prune -o -name '*.py' -print0 \
+cd "$SCRIPT_DIR"/..;
+
+if find . -name confirmation -prune -o -name '*.py' -print0 \
     | xargs -0 pyflakes \
     | grep -v 'imported but unused'; then
 
