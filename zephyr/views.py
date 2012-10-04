@@ -46,7 +46,10 @@ def api_key_required(view_func):
         # decorator ordering right.
         if request.method != "POST":
             return HttpResponseBadRequest('This form can only be submitted by POST.')
-        user_profile = UserProfile.objects.get(user__email=request.POST.get("email"))
+        try:
+            user_profile = UserProfile.objects.get(user__email=request.POST.get("email"))
+        except UserProfile.DoesNotExist:
+            return json_error("Invalid user")
         if user_profile is None or request.POST.get("api-key") != user_profile.api_key:
             return json_error('Invalid API user/key pair.')
         return view_func(request, user_profile, *args, **kwargs)
