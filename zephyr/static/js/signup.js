@@ -14,7 +14,6 @@ $(function () {
     $('#registration').validate({
         errorElement: "p",
         errorPlacement: function (error, element) {
-            console.log('hi');
             error.appendTo(element.parent()).addClass('help-inline');
             element.parent().parent().removeClass('success').addClass('error');
         },
