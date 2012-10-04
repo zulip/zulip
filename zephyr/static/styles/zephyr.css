@@ -200,10 +200,6 @@ img.profile_picture {
     height: 30px;
 }
 
-.alert_sidebar {
-    max-width: 20%;
-}
-
 .zephyr_compose {
     display: none;
     position: fixed;
