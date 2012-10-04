@@ -55,9 +55,9 @@ var message_groups = {
 };
 
 function scroll_to_selected() {
-    var main_div = $('#main_div');
-    main_div.scrollTop(0);
-    main_div.scrollTop(selected_zephyr.offset().top - main_div.height()/1.5);
+    var viewport = $(window);
+    viewport.scrollTop(0);
+    viewport.scrollTop(selected_zephyr.offset().top - viewport.height()/1.5);
 }
 
 function get_huddle_recipient(zephyr) {
@@ -142,7 +142,7 @@ function update_selected_zephyr(zephyr) {
 }
 
 function select_zephyr(next_zephyr, scroll_to) {
-    var main_div = $("#main_div");
+    var viewport = $(window);
 
     /* If the zephyr exists but is hidden, try to find the next visible one. */
     if (next_zephyr.length !== 0 && next_zephyr.is(':hidden')) {
@@ -161,9 +161,9 @@ function select_zephyr(next_zephyr, scroll_to) {
     update_selected_zephyr(next_zephyr);
 
     if (scroll_to &&
-        ((next_zephyr.offset().top < main_div.offset().top) ||
-         (next_zephyr.offset().top + next_zephyr.height() >
-             main_div.offset().top + main_div.height()))) {
+        ((next_zephyr.offset().top < viewport.scrollTop()) ||
+         (next_zephyr.offset().top + next_zephyr.outerHeight(true) >
+          viewport.scrollTop() + viewport.height()))) {
         scroll_to_selected();
     }
 }
@@ -446,16 +446,17 @@ function get_updates() {
 $(get_updates);
 
 function above_view(zephyr) {
-    return zephyr.offset().top < $("#main_div").offset().top;
+    var viewport = $(window);
+    return zephyr.offset().top < viewport.scrollTop();
 }
 
 function below_view(zephyr) {
-    var main_div = $("#main_div");
-    return zephyr.offset().top + zephyr.height() > main_div.offset().top + main_div.height();
+    var viewport = $(window);
+    return zephyr.offset().top + zephyr.outerHeight(true) > viewport.scrollTop() + viewport.height();
 }
 
 function keep_pointer_in_view() {
-    var main_div = $("#main_div");
+    var viewport = $(window);
     var next_zephyr = get_zephyr_row(selected_zephyr_id);
 
     if (above_view(next_zephyr)) {
@@ -468,13 +469,15 @@ function keep_pointer_in_view() {
         }
     }
 
-    if ((main_div.scrollTop() === 0) && (next_zephyr.attr("zid") > get_first_visible().attr("zid"))) {
+    if ((viewport.scrollTop() === 0) && (next_zephyr.attr("zid") > get_first_visible().attr("zid"))) {
         // If we've scrolled to the top, keep inching the selected
         // zephyr up to the top instead of just the latest one that is
         // still on the screen.
         next_zephyr = get_prev_visible(next_zephyr);
-    } else if ((main_div.scrollTop() + main_div.innerHeight() >= main_div[0].scrollHeight) &&
+    } else if ((viewport.scrollTop() + viewport.height() >= $("#main_div").outerHeight(true)) &&
                (next_zephyr.attr("zid") < get_last_visible().attr("zid"))) {
+        // If we've scrolled to the bottom already, keep advancing the pointer
+        // until we're at the last message (by analogue to the above)
         next_zephyr = get_next_visible(next_zephyr);
     }
     update_selected_zephyr(next_zephyr);
