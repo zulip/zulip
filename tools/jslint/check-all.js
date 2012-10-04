@@ -46,7 +46,6 @@ var globals =
 
 var jslint_options = {
     browser:  true,  // Assume browser environment
-    devel:    true,  // Allow console.log, etc.
     vars:     true,  // Allow multiple 'var' per function
     sloppy:   true,  // Don't require "use strict"
     white:    true,  // Lenient whitespace rules
