@@ -1,4 +1,4 @@
 #!/bin/sh
 echo "drop database humbug; create database humbug DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;" | mysql
-python manage.py syncdb
+python manage.py syncdb --noinput
 python manage.py populate_db --replay-old-zephyrs -n0
