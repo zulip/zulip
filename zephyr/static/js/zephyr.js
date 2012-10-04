@@ -1,9 +1,3 @@
-/*jslint browser: true, devel: true, sloppy: true,
-    plusplus: true, nomen: true, white: true, undef: true */
-/*global $: false, initial_pointer: false, email: false,
-    class_list: false, instance_list: false, people_list: false,
-    narrowed: false, autocomplete_needs_update: true */
-
 var zephyr_array = [];
 var zephyr_dict = {};
 var instance_list = [];

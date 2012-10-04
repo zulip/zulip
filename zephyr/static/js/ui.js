@@ -1,7 +1,3 @@
-/*jslint browser: true, devel: true, sloppy: true,
-    plusplus: true, white: true, undef: true */
-/*global $: false */
-
 function register_huddle_onclick(zephyr_row, sender) {
     zephyr_row.find(".zephyr_sender").click(function (e) {
         prepare_huddle(sender);

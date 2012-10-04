@@ -1,9 +1,3 @@
-/*jslint browser: true, devel: true, sloppy: true,
-    plusplus: true, white: true, regexp: true */
-/*global $: false, jQuery: true,
-    Spinner: true, Handlebars: true,
-    have_initial_messages: true, */
-
 // Miscellaneous early setup.
 // This is the first of our Javascript files to be included.
 

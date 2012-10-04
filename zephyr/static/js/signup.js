@@ -1,7 +1,3 @@
-/*jslint browser: true, devel: true, sloppy: true,
-    plusplus: true, nomen: true, regexp: true */
-/*global $: false, jQuery: false */
-
 var disallowed_domains = ['gmail.com'];
 
 function validate_email_domain(value, element, param) {

@@ -1,6 +1,11 @@
-/*jslint browser: true, devel: true, sloppy: true,
-    plusplus: true, white: true, undef: true*/
-/*global $: false */
+/*global
+    process_goto_hotkey:    false,
+    process_compose_hotkey: false,
+    process_key_in_input:   false */
+
+// We don't generally treat these as global.
+// Tell JSLint they are, to break the mutual recursion.
+
 
 var pressed_keys = {};
 
