@@ -56,7 +56,6 @@ var message_groups = {
 
 function scroll_to_selected() {
     var viewport = $(window);
-    viewport.scrollTop(0);
     viewport.scrollTop(selected_zephyr.offset().top - viewport.height()/1.5);
 }
 
