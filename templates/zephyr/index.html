@@ -53,9 +53,9 @@ var have_initial_messages = {{ have_initial_messages }};
 {% block content %}
 <div class="container">
     <div class="row">
-        <div class="span3 sidebar-nav affix">
-          <div class="row-fluid">
-            <div class="span12">
+        <div class="span3 sidebar-nav">
+          <div class="row">
+            <div class="span3 affix">
                 <ul class="nav nav-pills nav-stacked nav-zephyr" id="sidebar">
                     <span class="my_fullname">{{ user_profile.full_name }}</span><br/>
                     <span class="my_email">{{ user_profile.user.email }}</span>
@@ -73,26 +73,25 @@ var have_initial_messages = {{ have_initial_messages }};
                     <br>
                     <a href="#" class="btn btn-large btn-block" id="new_message_button" onclick="compose_button();">New Message</a>
                 </ul>
-            </div>
-            <div class="span12">
-              <div class="alert alert_sidebar alert-error" id="connection-error">
-                <strong>Can't receive messages</strong> &mdash; try reloading the page.
-              </div>
-              <div class="alert alert_sidebar" id="home-error"></div>
-              <div class="alert alert_sidebar" id="class-dne">
-                <p>The class <span class="classname" id="class-dne-name"></span> does not exist.</p>
-                <a id="create-it" class="btn btn-primary" href="#">Create and send</a>
-                <a class="btn" onClick="$('#class-dne').stop(true).fadeOut(500);">Cancel message</a>
-              </div>
-              <div class="alert alert_sidebar" id="class-nosub">
-                <p>You're not subscribed to the class <span class="classname" id="class-nosub-name"></span>.</p>
-                <a id="sub-it" class="btn btn-primary" href="#">Subscribe and send</a>
-                <a class="btn" onClick="$('#class-nosub').stop(true).fadeOut(500);">Cancel message</a>
-              </div>
+
+                <div class="alert alert_sidebar alert-error" id="connection-error">
+                  <strong>Can't receive messages</strong> &mdash; try reloading the page.
+                </div>
+                <div class="alert alert_sidebar" id="home-error"></div>
+                <div class="alert alert_sidebar" id="class-dne">
+                  <p>The class <span class="classname" id="class-dne-name"></span> does not exist.</p>
+                  <a id="create-it" class="btn btn-primary" href="#">Create and send</a>
+                  <a class="btn" onClick="$('#class-dne').stop(true).fadeOut(500);">Cancel message</a>
+                </div>
+                <div class="alert alert_sidebar" id="class-nosub">
+                  <p>You're not subscribed to the class <span class="classname" id="class-nosub-name"></span>.</p>
+                  <a id="sub-it" class="btn btn-primary" href="#">Subscribe and send</a>
+                  <a class="btn" onClick="$('#class-nosub').stop(true).fadeOut(500);">Cancel message</a>
+                </div>
             </div>
           </div>
         </div><!--/sidebar-->
-        <div class="span9 offset3 tab-content">
+        <div class="span9 tab-content">
             <div class="tab-pane active" id="home">
                 {% include "zephyr/home.html" %}
             </div>

@@ -1,8 +1,9 @@
 {% load jstemplate %}
 
-<h1>Settings</h1>
-<div class="row-fluid">
-  <div id="current_settings" class="span12">
+<div class="row">
+  <div id="current_settings" class="span9">
+    <h1>Settings</h1>
+
     <form action="/settings/change/" method="post" class="settings">{% csrf_token %}
       <label>Email</label>
       <b>{{ user_profile.user.email }}</b> <a href="/settings/change-email">(change?)</a><br /><br />

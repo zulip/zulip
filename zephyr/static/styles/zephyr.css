@@ -314,14 +314,8 @@ input.send_zephyr {
   height: 300px;
 }
 
-#subscriptions {
-    width: 640px;
-    background-color: antiquewhite;
-    padding: 1em;
-}
-
 #subscriptions_table {
-    width: 63%;
+    width: 75%;
 }
 
 .subscription_entry {
@@ -329,7 +323,6 @@ input.send_zephyr {
 }
 
 #subscriptions-status {
-    float: right;
     margin: 0;
 }
 
