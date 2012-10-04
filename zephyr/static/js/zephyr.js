@@ -54,12 +54,6 @@ var message_groups = {
     zfilt: []
 };
 
-var high_water_mark = 0;
-
-function go_to_high_water_mark() {
-    select_and_show_by_id(high_water_mark);
-}
-
 function scroll_to_selected() {
     var main_div = $('#main_div');
     main_div.scrollTop(0);
@@ -145,11 +139,6 @@ function update_selected_zephyr(zephyr) {
     }
     selected_zephyr_id = new_selected_id;
     selected_zephyr = zephyr;
-
-    if (parseInt(selected_zephyr_id, 10) > high_water_mark) {
-        high_water_mark = parseInt(selected_zephyr_id, 10);
-    }
-
 }
 
 function select_zephyr(next_zephyr, scroll_to) {
