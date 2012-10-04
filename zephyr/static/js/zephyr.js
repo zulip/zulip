@@ -400,7 +400,7 @@ function add_messages(data) {
 
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
-    if ((selected_zephyr_id === -1) && (initial_pointer in zephyr_dict)) {
+    if ((selected_zephyr_id === -1) && (zephyr_dict.hasOwnProperty(initial_pointer))) {
         select_and_show_by_id(initial_pointer);
     }
 

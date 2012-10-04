@@ -33,7 +33,7 @@ function simulate_keypress(keycode) {
 
 function process_hotkey(code) {
     var next_zephyr, window_to_scroll;
-    if (code in directional_hotkeys) {
+    if (directional_hotkeys.hasOwnProperty(code)) {
         next_zephyr = directional_hotkeys[code](selected_zephyr);
         if (next_zephyr.length !== 0) {
             select_zephyr(next_zephyr, true);
@@ -95,7 +95,7 @@ var goto_hotkeys = {
 };
 
 function process_goto_hotkey(code) {
-    if (code in goto_hotkeys)
+    if (goto_hotkeys.hasOwnProperty(code))
         goto_hotkeys[code]();
 
     /* Always return to the initial hotkey mode, even
