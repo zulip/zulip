@@ -9,7 +9,10 @@ fi
 
 cd "$SCRIPT_DIR"/..;
 
-if find . -name confirmation -prune -o -name '*.py' -print0 \
+if find . \
+       -path ./confirmation -prune \
+    -o -path ./humbug/test-settings.py -prune \
+    -o -name '*.py' -print0 \
     | xargs -0 pyflakes \
     | grep -v 'imported but unused'; then
 
