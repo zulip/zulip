@@ -1,5 +1,9 @@
 function register_huddle_onclick(zephyr_row, sender) {
     zephyr_row.find(".zephyr_sender").click(function (e) {
+        select_zephyr_by_id(zephyr_row.attr('zid'));
+        // populate the stream box
+        respond_to_zephyr();
+        // but we really want to be in huddle mode
         prepare_huddle(sender);
         // The sender span is inside the messagebox, which also has an
         // onclick handler. We don't want to trigger the messagebox
