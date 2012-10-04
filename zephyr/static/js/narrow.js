@@ -1,3 +1,6 @@
+// For tracking where you were before you narrowed.
+var persistent_zephyr_id = 0;
+
 // Narrowing predicate, or 'false' for the home view.
 var narrowed = false;
 

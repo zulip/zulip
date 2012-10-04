@@ -54,8 +54,6 @@ var message_groups = {
     zfilt: []
 };
 
-// For tracking where you were before you narrowed.
-var persistent_zephyr_id = 0;
 var high_water_mark = 0;
 
 function scroll_to_selected() {
