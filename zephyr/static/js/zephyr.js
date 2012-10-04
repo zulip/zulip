@@ -420,7 +420,6 @@ function add_messages(data) {
 }
 
 function get_updates() {
-    console.log(new Date() + ': longpoll started');
     $.ajax({
         type:     'POST',
         url:      'get_updates',
@@ -428,7 +427,6 @@ function get_updates() {
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (data) {
-            console.log(new Date() + ': longpoll success');
             received.failures = 0;
             $('#connection-error').hide();
 
@@ -438,12 +436,9 @@ function get_updates() {
         error: function (xhr, error_type, exn) {
             if (error_type === 'timeout') {
                 // Retry indefinitely on timeout.
-                console.log(new Date() + ': longpoll timed out');
                 received.failures = 0;
                 $('#connection-error').hide();
             } else {
-                console.log(new Date() + ': longpoll failed with ' + error_type +
-                            ' (' + received.failures + ' failures)');
                 received.failures += 1;
             }
 
@@ -454,7 +449,6 @@ function get_updates() {
             }
 
             var retry_sec = Math.min(90, Math.exp(received.failures/2));
-            console.log(new Date() + ': longpoll retrying in ' + retry_sec + ' seconds');
             setTimeout(get_updates, retry_sec*1000);
         }
     });
