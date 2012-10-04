@@ -114,14 +114,16 @@ $(function () {
         sub_from_home(compose_class_name(), $('#class-nosub'));
     });
 
-    var last_mousewheel = 0;
-    $("#main_div").mousewheel(function () {
+    var last_mousewheel_or_scroll = 0;
+    function do_mousewheel_or_scroll () {
         var time = $.now();
-        if (time - last_mousewheel > 50) {
+        if (time - last_mousewheel_or_scroll > 50) {
             keep_pointer_in_view();
-            last_mousewheel = time;
+            last_mousewheel_or_scroll = time;
         }
-    });
+    }
+    $(window).mousewheel(do_mousewheel_or_scroll);
+    $(window).scroll(do_mousewheel_or_scroll);
 
     $('.button-slide').click(function () {
         show_compose('class', $("#class"));
