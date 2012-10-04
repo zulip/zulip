@@ -1,3 +1,5 @@
+"use strict";
+
 // Global variables, categorized by place of definition.
 var globals =
     // Third-party libraries
