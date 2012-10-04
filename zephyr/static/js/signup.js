@@ -20,7 +20,7 @@ $(function () {
         },
         success: function (label) {
             label.parent().parent().removeClass('error').addClass('success');
-        },
+        }
     });
 
     $("#email_signup").validate({
@@ -36,10 +36,10 @@ $(function () {
             $('#errors').empty();
             element.parent().parent().removeClass('success').addClass('error');
             error.appendTo("#errors")
-                 .addClass("text-error")
+                 .addClass("text-error");
         },
         success: function (label) {
             label.parent().parent().removeClass('error').addClass('success');
-        },
+        }
     });
 });
