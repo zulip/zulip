@@ -350,13 +350,19 @@ def send_message_backend(request, user_profile, sender):
 
     message_type_name = request.POST["type"]
     if message_type_name == 'class':
-        if "class" not in request.POST or not request.POST["class"]:
+        if "class" not in request.POST:
             return json_error("Missing class")
         if "instance" not in request.POST:
             return json_error("Missing instance")
+        zephyr_class_name = strip_html(request.POST['class']).strip()
+        instance_name = strip_html(request.POST['instance']).strip()
 
-        zephyr_class = create_class_if_needed(user_profile.realm,
-                                              strip_html(request.POST['class']).strip())
+        if not valid_class_name(zephyr_class_name):
+            return json_error("Invalid class name")
+        if not valid_class_name(instance_name):
+            return json_error("Invalid instance name")
+
+        zephyr_class = create_class_if_needed(user_profile.realm, zephyr_class_name)
         recipient = Recipient.objects.get(type_id=zephyr_class.id, type=Recipient.CLASS)
     elif message_type_name == 'personal':
         if "recipient" not in request.POST:
@@ -397,7 +403,7 @@ def send_message_backend(request, user_profile, sender):
     message.content = strip_html(request.POST['content'])
     message.recipient = recipient
     if message_type_name == 'class':
-        message.instance = strip_html(request.POST['instance'])
+        message.instance = instance_name
     if 'time' in request.POST:
         # Forged messages come with a timestamp
         message.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
