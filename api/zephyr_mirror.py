@@ -75,7 +75,7 @@ def send_humbug(zeph):
         elif isinstance(zeph[key], str):
             zeph[key] = zeph[key].decode("utf-8")
 
-    humbug_client.send_message(zeph)
+    return humbug_client.send_message(zeph)
 
 def fetch_fullname(username):
     try:
@@ -166,7 +166,11 @@ def process_loop(log):
 
             print "%s: received a message on %s/%s from %s..." % \
                 (datetime.datetime.now(), notice.cls, notice.instance, notice.sender)
-            send_humbug(zeph)
+            res = send_humbug(zeph)
+            if res.get("result") != "success":
+                print >>sys.stderr, 'Error relaying zephyr'
+                print zeph
+                print res
         except:
             print >>sys.stderr, 'Error relaying zephyr'
             traceback.print_exc()
