@@ -1,5 +1,5 @@
 *.pyc
 *~
 /zephyrdb
-/all_zephyrs_log
-/all_zephyrs_log.lock
+/all_messages_log
+/all_messages_log.lock
