@@ -27,6 +27,7 @@ import simplejson
 import socket
 import re
 import hashlib
+import urllib
 
 def require_post(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
@@ -86,7 +87,7 @@ def register(request):
     try:
         is_unique(email)
     except ValidationError:
-        return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + strip_html(email))
+        return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
 
     if request.POST.get('from_confirmation'):
         form = RegistrationForm()
