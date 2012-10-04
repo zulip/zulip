@@ -76,6 +76,7 @@ var fs     = require('fs');
 var path   = require('path');
 var JSLINT = require(path.join(__dirname, 'jslint')).JSLINT;
 
+var cwd    = process.cwd();
 var js_dir = fs.realpathSync(path.join(__dirname, '../../zephyr/static/js'));
 
 var exit_code = 0;
@@ -84,7 +85,8 @@ fs.readdirSync(js_dir).forEach(function (filename) {
     if (filename.slice('-3') !== '.js')
         return;
 
-    var contents = fs.readFileSync(path.join(js_dir, filename), 'utf8');
+    var filepath = path.join(js_dir, filename);
+    var contents = fs.readFileSync(filepath, 'utf8');
     var messages = [];
 
     if (!JSLINT(contents, jslint_options)) {
@@ -110,7 +112,7 @@ fs.readdirSync(js_dir).forEach(function (filename) {
         if (messages.length > 0) {
             exit_code = 1;
 
-            console.log(filename);
+            console.log(path.relative(cwd, filepath));
 
             // Something very wacky happens if we do
             // .forEach(console.log) directly.
