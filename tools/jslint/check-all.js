@@ -73,9 +73,10 @@ var exceptions = {
 
 
 var fs     = require('fs');
-var JSLINT = require(__dirname + '/jslint').JSLINT;
+var path   = require('path');
+var JSLINT = require(path.join(__dirname, 'jslint')).JSLINT;
 
-var js_dir = __dirname + '/../../zephyr/static/js/';
+var js_dir = fs.realpathSync(path.join(__dirname, '../../zephyr/static/js'));
 
 var exit_code = 0;
 
@@ -83,7 +84,7 @@ fs.readdirSync(js_dir).forEach(function (filename) {
     if (filename.slice('-3') !== '.js')
         return;
 
-    var contents = fs.readFileSync(js_dir + filename, 'utf8');
+    var contents = fs.readFileSync(path.join(js_dir, filename), 'utf8');
     var messages = [];
 
     if (!JSLINT(contents, jslint_options)) {
