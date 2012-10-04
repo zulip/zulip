@@ -62,10 +62,6 @@ function zephyr_mousemove() {
     }
 }
 
-function go_to_high_water_mark() {
-    select_and_show_by_id(high_water_mark);
-}
-
 var autocomplete_needs_update = false;
 
 function update_autocomplete() {

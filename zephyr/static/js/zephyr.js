@@ -56,6 +56,10 @@ var message_groups = {
 
 var high_water_mark = 0;
 
+function go_to_high_water_mark() {
+    select_and_show_by_id(high_water_mark);
+}
+
 function scroll_to_selected() {
     var main_div = $('#main_div');
     main_div.scrollTop(0);
