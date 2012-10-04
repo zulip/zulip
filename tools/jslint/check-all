@@ -1,0 +1,11 @@
+#!/bin/sh -e
+
+if which nodejs >/dev/null; then
+    # Name used by Debian etc.
+    NODE=nodejs
+else
+    # Name used by upstream
+    NODE=node
+fi
+
+$NODE "$0".js
