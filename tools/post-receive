@@ -44,7 +44,7 @@ def process_push(oldrev, newrev, refname):
     commits = subprocess.check_output(["git", "log", "--reverse", "--pretty=- %s", "%s..%s" % (oldrev, newrev)])
     message_data = {
         "type": "class",
-        "class": "devel",
+        "class": "test" if refname == "refs/heads/test-post-receive" else "devel",
         "instance": "commits",
         "content": "The following commits were just pushed to `%s`:\n\n"
             % (refname.replace("refs/heads/", ""),) + commits,
