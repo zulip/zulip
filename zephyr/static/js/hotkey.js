@@ -117,7 +117,7 @@ function process_compose_hotkey(code) {
         toggle_compose();
         return process_compose_hotkey;
     } else {
-        keydown_handler = process_key_in_input;
+        set_keydown_in_input(true);
         simulate_keypress(code);
     }
 }
@@ -134,6 +134,18 @@ $(document).keyup(function (e) {
    It should return a new handler, or 'false' to
    decline to handle the event. */
 var keydown_handler = process_hotkey;
+
+function set_keydown_in_input(flag) {
+    // No argument should behave like 'true'.
+    if (flag === undefined)
+        flag = true;
+
+    if (flag) {
+        keydown_handler = process_key_in_input;
+    } else {
+        keydown_handler = process_hotkey;
+    }
+}
 
 $(document).keydown(function (event) {
     var result = keydown_handler(event.keyCode);

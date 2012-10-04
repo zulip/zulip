@@ -7,7 +7,7 @@ function register_huddle_onclick(zephyr_row, sender) {
         e.stopPropagation();
 
         // switch to the replybox hotkey handler
-        keydown_handler = process_key_in_input;
+        set_keydown_in_input(true);
     });
 }
 
@@ -90,10 +90,10 @@ $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
     $('input, textarea, button').focus(function () {
-        keydown_handler = process_key_in_input;
+        set_keydown_in_input(true);
     });
     $('input, textarea, button').blur(function () {
-        keydown_handler = process_hotkey;
+        set_keydown_in_input(false);
     });
 
     $('#zephyr-type-tabs a[href="#class-message"]').on('shown', function (e) {
