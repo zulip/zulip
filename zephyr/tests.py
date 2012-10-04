@@ -420,7 +420,10 @@ class GetUpdatesTest(AuthedTestCase):
         def callback(data):
             # We can't make asserts in this nested function, so save the data
             # and assert in the parent.
-            messages = data
+            #
+            # TODO: Find out how to make this blocking so assertEquals below
+            # runs after us.
+            messages.extend(data)
 
         request = POSTRequestMock({"last": str(last_received), "first": "1"}, user, callback)
         self.assertRaises(TornadoAsyncException, get_updates, request)
