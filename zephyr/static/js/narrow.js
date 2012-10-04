@@ -10,10 +10,6 @@ function do_narrow(description, filter_function) {
     // Your pointer isn't changed when narrowed.
     persistent_zephyr_id = selected_zephyr_id;
 
-    // We want the zephyr on which the narrow happened to stay in the same place if possible.
-    var old_top = $("#main_div").offset().top - selected_zephyr.offset().top;
-    var parent;
-
     // Empty the filtered table right before we fill it again
     clear_table('zfilt');
     add_to_table(zephyr_array, 'zfilt', filter_function, 'bottom');
