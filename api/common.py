@@ -7,6 +7,9 @@ import traceback
 # TODO: Drop verify=False once we have real certificates
 # Or switch to specifying a testing cert manually
 
+# Check that we have a recent enough version
+assert(requests.__version__ > '0.12')
+
 class HumbugAPI():
     def __init__(self, email, api_key, verbose=False, site="https://app.humbughq.com"):
         self.api_key = api_key
@@ -14,38 +17,38 @@ class HumbugAPI():
         self.verbose = verbose
         self.base_url = site
 
-    def send_message(self, submit_hash):
-        submit_hash["email"] = self.email
-        submit_hash["api-key"] = self.api_key
-        try:
-            res = requests.post(self.base_url + "/api/v1/send_message",
-                                data=submit_hash,
-                                verify=False,
-                                auth=requests.auth.HTTPDigestAuth('tabbott', 'xxxxxxxxxxxxxxxxx'))
-            # TODO: Add some sort of automated retry for certain errors
-        except requests.exceptions.ConnectionError:
-            return {'msg': "Connection error\n%s" % traceback.format_exc(),
-                    "result": "connection-error"}
-        if res.json is not None:
-            return res.json
-        return {'msg': res.text, "result": "unexpected-error",
-                "status_code": res.status_code}
+    def do_api_query(self, request, url):
+        request["email"] = self.email
+        request["api-key"] = self.api_key
+        while True:
+            try:
+                res = requests.post(self.base_url + url,
+                                    data=request,
+                                    verify=False,
+                                    auth=requests.auth.HTTPDigestAuth('tabbott',
+                                                                      'xxxxxxxxxxxxxxxxx'))
+                if res.status_code == requests.codes.service_unavailable:
+                    # On 503 errors, try again after a short sleep
+                    time.sleep(0.5)
+                    continue
+            except requests.exceptions.ConnectionError:
+                return {'msg': "Connection error:\n%s" % traceback.format_exc(),
+                        "result": "connection-error"}
+            except Exception:
+                # we'll split this out into more cases as we encounter new bugs.
+                return {'msg': "Unexpected error:\n%s" % traceback.format_exc(),
+                        "result": "unexpected-error"}
 
-    def get_messages(self, options = {}):
-        options["email"] = self.email
-        options["api-key"] = self.api_key
-        try:
-            res = requests.post(self.base_url + "/api/v1/get_messages",
-                                data=options,
-                                verify=False,
-                                auth=requests.auth.HTTPDigestAuth('tabbott', 'xxxxxxxxxxxxxxxxx'))
-        except requests.exceptions.ConnectionError:
-            return {'msg': "Connection error\n%s" % traceback.format_exc(),
-                    "result": "connection-error"}
-        if res.json is not None:
-            return res.json
-        return {'msg': res.text, "result": "unexpected-error",
-                "status_code": res.status_code}
+            if res.json is not None:
+                return res.json
+            return {'msg': res.text, "result": "http-error",
+                    "status_code": res.status_code}
+
+    def send_message(self, request):
+        return self.do_api_query(request, "/api/v1/send_message")
+
+    def get_messages(self, request = {}):
+        return self.do_api_query(request, "/api/v1/get_messages")
 
     def call_on_each_message(self, callback, options = {}):
         max_message_id = None
@@ -56,10 +59,10 @@ class HumbugAPI():
             res = self.get_messages(options)
             if 'error' in res.get('result'):
                 if self.verbose:
-                    if res["result"] == "unexpected-error":
+                    if res["result"] == "http-error":
                         print "Unexpected error -- probably a server restart"
                     elif res["result"] == "connection-error":
-                        print "Connection error -- probably server is down?"
+                        print "Connection error -- probably server is temporarily down?"
                     else:
                         print "Server returned error:\n%s" % res["msg"]
                 # TODO: Make this back off once it's more reliable
