@@ -1,12 +1,6 @@
-{% extends "zephyr/content_base.html" %}
+{% extends "zephyr/base.html" %}
 
-{% block more_content %}
-
-<div class="pitch">
-    <hr/>
-    <p class="lead">Great, we've confirmed your email address.</p>
-    <p>Bear with us for a second as you're redirected to the rest of the signup form.</p>
-</div>
+{% block content %}
 
 <form id="register" action="/accounts/register/" method="post">
     {% csrf_token %}
