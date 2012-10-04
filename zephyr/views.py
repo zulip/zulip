@@ -364,8 +364,9 @@ def send_message_backend(request, user_profile, sender):
 
         if not valid_class_name(zephyr_class_name):
             return json_error("Invalid class name")
-        if not valid_class_name(instance_name):
-            return json_error("Invalid instance name")
+        ## FIXME: Commented out temporarily while we figure out what we want
+        # if not valid_class_name(instance_name):
+        #     return json_error("Invalid instance name")
 
         zephyr_class = create_class_if_needed(user_profile.realm, zephyr_class_name)
         recipient = Recipient.objects.get(type_id=zephyr_class.id, type=Recipient.CLASS)
