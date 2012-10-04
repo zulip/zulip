@@ -7,6 +7,7 @@ import calendar
 from zephyr.lib.cache import cache_with_key
 import fcntl
 import os
+import re
 import simplejson
 
 import markdown
@@ -206,10 +207,22 @@ class Message(models.Model):
     def __str__(self):
         return self.__repr__()
 
+    # A link starts after whitespace, and cannot contain spaces,
+    # end parentheses, or end brackets (which would confuse Markdown).
+    link_regex = re.compile(r'(\s|\A)(?P<url>https?://[^\s\])]+)')
+
+    def html_content(self):
+        def linkify(match):
+            url = match.group('url')
+            return ' [%s](%s) ' % (url, url)
+
+        with_links = self.link_regex.sub(linkify, self.content)
+        return md_engine.convert(with_links)
+
     @cache_with_key(lambda self, apply_markdown: 'message_dict:%d:%d' % (self.id, apply_markdown))
     def to_dict(self, apply_markdown):
         if apply_markdown:
-            content = md_engine.convert(self.content)
+            content = self.html_content()
         else:
             content = self.content
         return {'id'               : self.id,
