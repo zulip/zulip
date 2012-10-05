@@ -235,6 +235,10 @@ img.profile_picture {
     filter:  alpha(opacity=40);
 }
 
+.zephyr_compose_table #personal-message {
+    display: none;
+}
+
 #connection-error {
     margin-top: 5px;
     display: none;
