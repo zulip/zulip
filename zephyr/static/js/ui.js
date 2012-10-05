@@ -124,18 +124,13 @@ $(function () {
         sub_from_home(compose_class_name(), $('#class-nosub'));
     });
 
-    var last_mousewheel_or_scroll = 0;
-    function do_mousewheel_or_scroll () {
+    var throttled_scrollhandler = $.throttle(50, function() {
         if ($('#home').hasClass('active')) {
-            var time = $.now();
-            if (time - last_mousewheel_or_scroll > 50) {
                 keep_pointer_in_view();
-                last_mousewheel_or_scroll = time;
-            }
         }
-    }
-    $(window).mousewheel(do_mousewheel_or_scroll);
-    $(window).scroll(do_mousewheel_or_scroll);
+    });
+    $(window).mousewheel(throttled_scrollhandler);
+    $(window).scroll(throttled_scrollhandler);
 
     $('#sidebar a[data-toggle="pill"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
