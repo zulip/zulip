@@ -120,10 +120,12 @@ $(function () {
 
     var last_mousewheel_or_scroll = 0;
     function do_mousewheel_or_scroll () {
-        var time = $.now();
-        if (time - last_mousewheel_or_scroll > 50) {
-            keep_pointer_in_view();
-            last_mousewheel_or_scroll = time;
+        if ($('#home').hasClass('active')) {
+            var time = $.now();
+            if (time - last_mousewheel_or_scroll > 50) {
+                keep_pointer_in_view();
+                last_mousewheel_or_scroll = time;
+            }
         }
     }
     $(window).mousewheel(do_mousewheel_or_scroll);
