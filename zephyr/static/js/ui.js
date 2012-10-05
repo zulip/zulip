@@ -27,6 +27,7 @@ function register_onclick(zephyr_row, zephyr_id) {
             // Was a click (not a click-and-drag).
             select_zephyr_by_id(zephyr_id);
             respond_to_zephyr();
+            set_keydown_in_input(true);
         }
         mouse_moved = false;
         clicking = false;
