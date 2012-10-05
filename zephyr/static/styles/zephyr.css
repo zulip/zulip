@@ -165,6 +165,7 @@ blockquote p {
     background-color: white;
     border: 1px solid gray;
     border-width: 0px 1px 1px 1px;
+    word-wrap: break-word;
 }
 
 .messagebox p {
