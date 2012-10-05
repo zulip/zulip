@@ -56,7 +56,7 @@ function compose_recipient() {
 }
 
 function compose_huddle_message() {
-    return $.trim($("#new_personal_zephyr").val());
+    return $.trim($("#new_zephyr").val());
 }
 
 function compose_error(error_text, bad_input) {
@@ -64,12 +64,12 @@ function compose_error(error_text, bad_input) {
                .addClass('alert-error')
                .text(error_text)
                .stop(true).fadeTo(0, 1);
-    $('#class-message, #personal-message').find('input[type="submit"]').removeAttr('disabled');
+    $('#zephyr_compose').find('input[type="submit"]').removeAttr('disabled');
     bad_input.focus().select();
 }
 
 function submit_buttons() {
-    return $('#class-message, #personal-message').find('input[type="submit"]');
+    return $('#zephyr_compose').find('input[type="submit"]');
 }
 
 // *Synchronously* check if a class exists.
@@ -143,7 +143,7 @@ function validate_huddle_message() {
     }
 
     if (compose_huddle_message() === "") {
-        compose_error("You have nothing to send!", $("#new_personal_zephyr"));
+        compose_error("You have nothing to send!", $("#new_zephyr"));
         return false;
     }
 

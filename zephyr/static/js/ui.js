@@ -108,10 +108,14 @@ $(function () {
     });
 
     $('#zephyr-type-tabs a[href="#class-message"]').on('shown', function (e) {
-        $('#class-message input:not(:hidden):first').focus().select();
+        $('#personal-message').hide();
+        $('#class-message').show();
+        $('#new_message_type').val('class');
     });
     $('#zephyr-type-tabs a[href="#personal-message"]').on('shown', function (e) {
-        $('#personal-message input:not(:hidden):first').focus().select();
+        $('#personal-message').show();
+        $('#class-message').hide();
+        $('#new_message_type').val('personal');
     });
 
     // Prepare the click handler for subbing to a new class to which

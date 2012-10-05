@@ -28,7 +28,7 @@ function sub_from_home(zephyr_class, prompt_button) {
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (data) {
-            $("#class-message form").ajaxSubmit();
+            $("#zephyr_compose form").ajaxSubmit();
             prompt_button.stop(true).fadeOut(500);
             $("#subscriptions-status").fadeOut(0);
         },

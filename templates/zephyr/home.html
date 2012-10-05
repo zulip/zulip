@@ -33,10 +33,10 @@
                             <li><a href="#personal-message" data-toggle="pill">Huddle</a></li>
                           </ul>
                         </div>
-                        <div class="tab-pane active" id="class-message">
+                        <div class="tab-pane active">
                             <div class="zephyr_comp">
                                 <form action="/send_message/" method="post" class="zephyr">
-                                    <input type="hidden" name="type" value="class" />
+                                    <input type="hidden" name="type" value="class" id="new_message_type"/>
                                     {% csrf_token %}
                                     <table class="zephyr_compose_table">
                                         <tbody>
@@ -45,12 +45,17 @@
                                             <td class="ztable_col2" />
                                             <td class="ztable_col3" />
                                           </tr>
-                                          <tr>
+                                          <tr id="class-message">
                                             <td colspan="2" class="zephyr_newstyle_class">
                                               <input type="text" class="zephyr_recipient_box" name="class" id="class" value="" placeholder="Stream" autocomplete="off"/>
                                             </td>
                                             <td class="zephyr_newstyle_instance">
                                               <input type="text" class="zephyr_recipient_box" name="instance" id="instance" value="" placeholder="Topic" autocomplete="off"/>
+                                            </td>
+                                          </tr>
+                                          <tr id="personal-message">
+                                            <td colspan="3" class="zephyr_newstyle_pm">
+                                              Huddle with <input type="text" class="zephyr_recipient_box" name="recipient" id="recipient" value="" placeholder="one or more of your friends..." autocomplete="off"/>
                                             </td>
                                           </tr>
                                           <tr>
@@ -60,38 +65,6 @@
                                               <div class="zephyr_content">
                                                 <textarea class="zephyr_message" name="content" id="new_zephyr" value="" placeholder="Compose your message here..."></textarea>
                                                 <input type="submit" value="Send" class="btn send_zephyr"/>
-                                              </div>
-                                            </td>
-                                          </tr>
-                                        </tbody>
-                                    </table>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="tab-pane" id="personal-message">
-                            <div class="zephyr_comp">
-                                <form action="/send_message/" method="post" class="zephyr">
-                                    <input type="hidden" name="type" value="personal" />
-                                    {% csrf_token %}
-                                    <table class="zephyr_compose_table">
-                                        <tbody>
-                                          <tr style="visibility: collapse;">
-                                            <td class="ztable_col1" />
-                                            <td class="ztable_col2" />
-                                            <td class="ztable_col3" />
-                                          </tr>
-                                          <tr>
-                                            <td colspan="3" class="zephyr_newstyle_pm">
-                                              Huddle with <input type="text" class="zephyr_recipient_box" name="recipient" id="recipient" value="" placeholder="one or more of your friends..." autocomplete="off"/>
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <td class="zephyr_picture"></td>
-                                            <td class="pointer"></td>
-                                            <td class="messagebox personal-message">
-                                              <div class="zephyr_content">
-                                                <textarea class="zephyr_message" name="content" id="new_personal_zephyr" value="" placeholder="Compose your message here..."></textarea>
-                                                <input type="submit" name="personal_zephyr" value="Send" class="btn send_zephyr"/>
                                               </div>
                                             </td>
                                           </tr>

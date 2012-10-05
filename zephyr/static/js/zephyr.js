@@ -4,7 +4,7 @@ var instance_list = [];
 
 $(function () {
     var send_status = $('#send-status');
-    var buttons = $('#class-message, #personal-message').find('input[type="submit"]');
+    var buttons = $('#zephyr_compose').find('input[type="submit"]');
 
     var options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
@@ -35,8 +35,7 @@ $(function () {
     };
 
     send_status.hide();
-    $("#class-message form").ajaxForm(options);
-    $("#personal-message form").ajaxForm(options);
+    $("#zephyr_compose form").ajaxForm(options);
 });
 
 var selected_zephyr_id = -1;  /* to be filled in on document.ready */
@@ -195,7 +194,7 @@ function select_zephyr(next_zephyr, scroll_to) {
 
 function prepare_huddle(recipients) {
     // Used for both personals and huddles.
-    show_compose('personal', $("#new_personal_zephyr"));
+    show_compose('personal', $("#new_zephyr"));
     $("#recipient").val(recipients);
 }
 
