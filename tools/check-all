@@ -9,11 +9,9 @@ fi
 
 cd "$SCRIPT_DIR"/..;
 
-if find . \
-       -path ./confirmation -prune \
-    -o -path ./humbug/test-settings.py -prune \
-    -o -name '*.py' -print0 \
-    | xargs -0 pyflakes \
+if git ls-files | grep py$ | grep -v ^confirmation/ \
+    | grep -v humbug/test-settings.py \
+    | xargs pyflakes \
     | grep -v 'imported but unused'; then
 
     EXITCODE=1;
