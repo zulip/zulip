@@ -91,7 +91,24 @@ function update_autocomplete() {
     });
     $( "#recipient" ).typeahead({
         source: people_list,
-        items: 4
+        items: 4,
+        matcher: function (item) {
+            // Assumes we are matching on email addresses, not
+            // e.g. full names which would have spaces.
+            var current_recipient = $(this.query.split(" ")).last()[0];
+            // Case-insensitive (from Bootstrap's default matcher).
+            return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
+        },
+        updater: function (item) {
+            var previous_recipients = this.query.split(" ");
+            previous_recipients.pop();
+            previous_recipients = previous_recipients.join(" ");
+            if (previous_recipients.length !== 0) {
+                previous_recipients += " ";
+            }
+            return previous_recipients + item;
+        }
+
     });
 
     autocomplete_needs_update = false;
