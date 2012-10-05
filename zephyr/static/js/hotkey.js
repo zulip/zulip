@@ -38,6 +38,15 @@ function process_hotkey(code) {
         if (next_zephyr.length !== 0) {
             select_zephyr(next_zephyr, true);
         }
+        if ((next_zephyr.length === 0) && (code === 40 || code === 106)) {
+            // At the last zephyr, scroll to the bottom so we have
+            // lots of nice whitespace for new zephyrs coming in.
+            //
+            // FIXME: this doesn't work for End because get_last_visible()
+            // always returns a zephyr.
+            var viewport = $(window);
+            viewport.scrollTop($("#main_div").outerHeight(true));
+        }
         return process_hotkey;
     }
 
