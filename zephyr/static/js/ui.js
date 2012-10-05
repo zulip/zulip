@@ -1,3 +1,9 @@
+// We want to remember how far we were scrolled on each 'tab'.
+// To do so, we need to save away the old position of the
+// scrollbar when we switch to a new tab (and restore it
+// when we switch back.)
+var scroll_positions = {};
+
 function register_huddle_onclick(zephyr_row, sender) {
     zephyr_row.find(".zephyr_sender").click(function (e) {
         select_zephyr_by_id(zephyr_row.attr('zid'));
@@ -130,6 +136,23 @@ $(function () {
     }
     $(window).mousewheel(do_mousewheel_or_scroll);
     $(window).scroll(do_mousewheel_or_scroll);
+
+    $('#sidebar a[data-toggle="pill"]').on('show', function (e) {
+        // Save the position of our old tab away, before we switch
+        var viewport = $(window);
+        var old_tab = $(e.relatedTarget).attr('href');
+        scroll_positions[old_tab] = viewport.scrollTop();
+    });
+    $('#sidebar a[data-toggle="pill"]').on('shown', function (e) {
+        // Right after we show the new tab, restore its old scroll position
+        var viewport = $(window);
+        var target_tab = $(e.target).attr('href');
+        if (scroll_positions.hasOwnProperty(target_tab)) {
+            viewport.scrollTop(scroll_positions[target_tab]);
+        } else {
+            viewport.scrollTop(0);
+        }
+    });
 
     $('.button-slide').click(function () {
         show_compose('class', $("#class"));
