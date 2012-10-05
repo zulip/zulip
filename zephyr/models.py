@@ -216,7 +216,10 @@ class Message(models.Model):
             url = match.group('url')
             return ' [%s](%s) ' % (url, url)
 
-        with_links = self.link_regex.sub(linkify, self.content)
+        # Escape the # (pound sign) to avoid markdown making them into
+        # (giant) headers.
+        content = self.content.replace("#", "&#35;")
+        with_links = self.link_regex.sub(linkify, content)
         return md_engine.convert(with_links)
 
     @cache_with_key(lambda self, apply_markdown: 'message_dict:%d:%d' % (self.id, apply_markdown))
