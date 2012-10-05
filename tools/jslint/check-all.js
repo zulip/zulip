@@ -42,6 +42,7 @@ var globals =
     + ' select_zephyr select_zephyr_by_id'
     + ' scroll_to_selected select_and_show_by_id'
     + ' selected_zephyr selected_zephyr_id'
+    + ' at_top_of_viewport at_bottom_of_viewport'
 
     ;
 
