@@ -229,6 +229,27 @@ function clear_table(table_name) {
     message_groups[table_name] = [];
 }
 
+function add_display_time(zephyr, prev) {
+    var two_digits = function (x) { return ('0' + x).slice(-2); };
+    var time = new XDate(zephyr.timestamp * 1000);
+    var include_date = zephyr.include_recipient;
+
+    if (prev !== undefined) {
+        var prev_time = new XDate(prev.timestamp * 1000);
+        if (time.toDateString() !== prev_time.toDateString()) {
+            include_date = true;
+        }
+    }
+
+    if (include_date) {
+        zephyr.timestr = time.toString("MMM dd") + "&nbsp;&nbsp;" +
+            time.toString("HH:mm");
+    } else {
+        zephyr.timestr = time.toString("HH:mm");
+    }
+    zephyr.full_date_str = time.toLocaleString();
+}
+
 function add_to_table(zephyrs, table_name, filter_function, where) {
     if (zephyrs.length === 0)
         return;
@@ -290,6 +311,8 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
             zephyr.include_sender = false;
             ids_where_next_is_same_sender.push(prev.id);
         }
+
+        add_display_time(zephyr, prev);
 
         zephyr.dom_id = table_name + zephyr.id;
 
@@ -380,12 +403,6 @@ function add_zephyr_metadata(dummy, zephyr) {
         }
         break;
     }
-
-    var time = new Date(zephyr.timestamp * 1000);
-    var two_digits = function (x) { return ('0' + x).slice(-2); };
-    zephyr.timestr = two_digits(time.getHours())
-                   + ':' + two_digits(time.getMinutes());
-    zephyr.full_date_str = time.toLocaleString();
 
     zephyr_dict[zephyr.id] = zephyr;
 }

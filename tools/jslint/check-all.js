@@ -3,7 +3,7 @@
 // Global variables, categorized by place of definition.
 var globals =
     // Third-party libraries
-      ' $ jQuery Spinner Handlebars'
+      ' $ jQuery Spinner Handlebars XDate'
 
     // index.html
     + ' initial_pointer email class_list people_list have_initial_messages'
