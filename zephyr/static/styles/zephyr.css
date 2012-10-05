@@ -3,7 +3,8 @@ body {
 }
 
 .sidebar-nav {
-    padding: 9px 0;
+    padding-top: 30px;
+    background-color: white;
 }
 
 .my_fullname {
@@ -16,16 +17,9 @@ body {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 }
 
-.zephyr_well {
-    background-color: white;
-    border: none;
-}
 
-ul.nav-zephyr {
-    padding-left:   30px;
-    padding-right:  30px;
-    padding-top:    60px;
-    padding-bottom: 40px;
+#application_area {
+    min-width: 670px;
 }
 
 .zephyr_list {
