@@ -284,7 +284,9 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
         }
 
         zephyr.include_sender = true;
-        if (same_sender(prev, zephyr) && !zephyr.include_recipient) {
+        if (!zephyr.include_recipient &&
+            same_sender(prev, zephyr) &&
+            (Math.abs(zephyr.timestamp - prev.timestamp) < 60*10)) {
             zephyr.include_sender = false;
             ids_where_next_is_same_sender.push(prev.id);
         }
