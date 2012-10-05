@@ -470,29 +470,51 @@ function get_updates() {
 
 $(get_updates);
 
+function at_top_of_viewport() {
+    return ($(window).scrollTop() === 0);
+}
+
+function at_bottom_of_viewport() {
+    var viewport = $(window);
+    return (viewport.scrollTop() + viewport.height() >= $("#main_div").outerHeight(true));
+}
+
 function keep_pointer_in_view() {
+    var candidate;
     var viewport = $(window);
     var next_zephyr = get_zephyr_row(selected_zephyr_id);
 
-    if (above_view_threshold(next_zephyr)) {
+    if (above_view_threshold(next_zephyr) && (!at_top_of_viewport())) {
         while (above_view_threshold(next_zephyr)) {
-            next_zephyr = get_next_visible(next_zephyr);
+            candidate = get_next_visible(next_zephyr);
+            if (candidate.length === 0) {
+                break;
+            } else {
+                next_zephyr = candidate;
+            }
         }
-    } else if (below_view_threshold(next_zephyr)) {
+    } else if (below_view_threshold(next_zephyr) && (!at_bottom_of_viewport())) {
         while (below_view_threshold(next_zephyr)) {
-            next_zephyr = get_prev_visible(next_zephyr);
+            candidate = get_prev_visible(next_zephyr);
+            if (candidate.length === 0) {
+                break;
+            } else {
+                next_zephyr = candidate;
+            }
         }
     }
 
-    if ((viewport.scrollTop() === 0) && (next_zephyr.attr("zid") > get_first_visible().attr("zid"))) {
+    if (at_top_of_viewport() && (parseInt(get_id(next_zephyr), 10) >
+                                 parseInt(get_id(get_first_visible()), 10))) {
         // If we've scrolled to the top, keep inching the selected
         // zephyr up to the top instead of just the latest one that is
         // still on the screen.
         next_zephyr = get_prev_visible(next_zephyr);
-    } else if ((viewport.scrollTop() + viewport.height() >= $("#main_div").outerHeight(true)) &&
-               (next_zephyr.attr("zid") < get_last_visible().attr("zid"))) {
-        // If we've scrolled to the bottom already, keep advancing the pointer
-        // until we're at the last message (by analogue to the above)
+    } else if (at_bottom_of_viewport() && (parseInt(get_id(next_zephyr), 10) <
+                                           parseInt(get_id(get_last_visible()), 10))) {
+        // If we've scrolled to the bottom already, keep advancing the
+        // pointer until we're at the last message (by analogue to the
+        // above)
         next_zephyr = get_next_visible(next_zephyr);
     }
     update_selected_zephyr(next_zephyr);
