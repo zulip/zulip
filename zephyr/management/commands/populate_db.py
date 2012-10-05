@@ -214,7 +214,7 @@ def get_recipient_by_id(rid):
     return Recipient.objects.get(id=rid)
 
 def restore_saved_messages():
-    old_messages = file("all_zephyrs_log", "r").readlines()
+    old_messages = file("all_messages_log", "r").readlines()
     for old_message_json in old_messages:
         old_message = simplejson.loads(old_message_json.strip())
         message = Message()
