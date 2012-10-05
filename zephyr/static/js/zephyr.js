@@ -54,9 +54,38 @@ var message_groups = {
     zfilt: []
 };
 
-function scroll_to_selected() {
+function above_view_threshold(zephyr) {
+    // Barnowl-style thresholds: the pointer is never above the
+    // 1/5-mark.
     var viewport = $(window);
-    viewport.scrollTop(selected_zephyr.offset().top - viewport.height()/1.5);
+    return zephyr.offset().top < viewport.scrollTop() + viewport.height() / 5;
+}
+
+function below_view_threshold(zephyr) {
+    // Barnowl-style thresholds: the pointer is never below the
+    // 4/5-mark.
+    var viewport = $(window);
+    return zephyr.offset().top + zephyr.outerHeight(true) >
+        viewport.scrollTop() + viewport.height() * 4 / 5;
+}
+
+function recenter_view(zephyr) {
+    // Barnowl-style recentering: if the pointer is too high, center
+    // in the middle of the screen. If the pointer is too low, center
+    // on the 1/5-mark.
+
+    // If this logic changes, above_view_threshold andd
+    // below_view_threshold must also change.
+    var viewport = $(window);
+    if (above_view_threshold(zephyr)) {
+        viewport.scrollTop(selected_zephyr.offset().top - viewport.height() / 2);
+    } else if (below_view_threshold(zephyr)) {
+        viewport.scrollTop(selected_zephyr.offset().top - viewport.height() / 5);
+    }
+}
+
+function scroll_to_selected() {
+    recenter_view(selected_zephyr);
 }
 
 function get_huddle_recipient(zephyr) {
@@ -159,11 +188,8 @@ function select_zephyr(next_zephyr, scroll_to) {
 
     update_selected_zephyr(next_zephyr);
 
-    if (scroll_to &&
-        ((next_zephyr.offset().top < viewport.scrollTop()) ||
-         (next_zephyr.offset().top + next_zephyr.outerHeight(true) >
-          viewport.scrollTop() + viewport.height()))) {
-        scroll_to_selected();
+    if (scroll_to) {
+        recenter_view(next_zephyr);
     }
 }
 
@@ -444,26 +470,16 @@ function get_updates() {
 
 $(get_updates);
 
-function above_view(zephyr) {
-    var viewport = $(window);
-    return zephyr.offset().top < viewport.scrollTop();
-}
-
-function below_view(zephyr) {
-    var viewport = $(window);
-    return zephyr.offset().top + zephyr.outerHeight(true) > viewport.scrollTop() + viewport.height();
-}
-
 function keep_pointer_in_view() {
     var viewport = $(window);
     var next_zephyr = get_zephyr_row(selected_zephyr_id);
 
-    if (above_view(next_zephyr)) {
-        while (above_view(next_zephyr)) {
+    if (above_view_threshold(next_zephyr)) {
+        while (above_view_threshold(next_zephyr)) {
             next_zephyr = get_next_visible(next_zephyr);
         }
-    } else if (below_view(next_zephyr)) {
-        while (below_view(next_zephyr)) {
+    } else if (below_view_threshold(next_zephyr)) {
+        while (below_view_threshold(next_zephyr)) {
             next_zephyr = get_prev_visible(next_zephyr);
         }
     }
