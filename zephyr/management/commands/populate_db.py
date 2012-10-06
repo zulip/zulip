@@ -8,7 +8,7 @@ from zephyr.models import Message, UserProfile, ZephyrClass, Recipient, \
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
 from django.conf import settings
-from zephyr import mit_subs_list
+from api import mit_subs_list
 
 import simplejson
 import datetime
