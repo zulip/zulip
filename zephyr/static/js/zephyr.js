@@ -340,7 +340,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
     }
 
     $.each(zephyrs_to_render, function (index, zephyr) {
-        var row = get_zephyr_row(zephyr.id);
+        var row = get_zephyr_row(zephyr.id, table_name);
         register_huddle_onclick(row, zephyr.sender_email);
         register_onclick(row, zephyr.id);
 
@@ -353,7 +353,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
     });
 
     $.each(ids_where_next_is_same_sender, function (index, id) {
-        get_zephyr_row(id).find('.messagebox').addClass("next_is_same_sender");
+        get_zephyr_row(id, table_name).find('.messagebox').addClass("next_is_same_sender");
     });
 }
 
