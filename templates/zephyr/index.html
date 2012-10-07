@@ -81,13 +81,13 @@ var have_initial_messages = {{ have_initial_messages }};
                 <div class="alert alert_sidebar" id="home-error"></div>
                 <div class="alert alert_sidebar" id="class-dne">
                   <p>The class <span class="classname" id="class-dne-name"></span> does not exist.</p>
-                  <a id="create-it" class="btn btn-primary" href="#">Create and send</a>
-                  <a class="btn" onClick="$('#class-dne').stop(true).fadeOut(500);">Cancel message</a>
+                  <button type="button" id="create-it" class="btn btn-primary">Create and send</button>
+                  <button type="button" class="btn" onClick="$('#class-dne').stop(true).fadeOut(500);">Cancel message</button>
                 </div>
                 <div class="alert alert_sidebar" id="class-nosub">
                   <p>You're not subscribed to the class <span class="classname" id="class-nosub-name"></span>.</p>
-                  <a id="sub-it" class="btn btn-primary" href="#">Subscribe and send</a>
-                  <a class="btn" onClick="$('#class-nosub').stop(true).fadeOut(500);">Cancel message</a>
+                  <button type="button" id="sub-it" class="btn btn-primary">Subscribe and send</button>
+                  <button type="button" class="btn" onClick="$('#class-nosub').stop(true).fadeOut(500);">Cancel message</button>
                 </div>
             </div>
           </div>
