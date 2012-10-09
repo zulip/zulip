@@ -89,7 +89,7 @@ function update_autocomplete() {
         source: instance_list,
         items: 2
     });
-    $( "#recipient" ).typeahead({
+    $( "#huddle_recipient" ).typeahead({
         source: people_list,
         items: 4,
         matcher: function (item) {

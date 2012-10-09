@@ -25,7 +25,7 @@ function compose_button() {
 function toggle_compose() {
     if ($("#zephyr-type-tabs li.active").find("a[href=#class-message]").length !== 0) {
         // In class tab, switch to personals.
-        show_compose('personal', $("#recipient"));
+        show_compose('personal', $("#huddle_recipient"));
     } else {
         show_compose('class', $("#class"));
     }
@@ -52,7 +52,7 @@ function compose_message() {
 }
 
 function compose_recipient() {
-    return $.trim($("#recipient").val());
+    return $.trim($("#huddle_recipient").val());
 }
 
 function compose_huddle_message() {
@@ -138,7 +138,7 @@ function validate_class_message() {
 
 function validate_huddle_message() {
     if (compose_recipient() === "") {
-        compose_error("Please specify at least one recipient", $("#recipient"));
+        compose_error("Please specify at least one recipient", $("#huddle_recipient"));
         return false;
     }
 

@@ -195,7 +195,7 @@ function select_zephyr(next_zephyr, scroll_to) {
 function prepare_huddle(recipients) {
     // Used for both personals and huddles.
     show_compose('personal', $("#new_zephyr"));
-    $("#recipient").val(recipients);
+    $("#huddle_recipient").val(recipients);
 }
 
 function same_recipient(a, b) {
