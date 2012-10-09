@@ -1,7 +1,7 @@
 var status_classes = 'alert-error alert-success alert-info';
 
 function show_compose(tabname, focus_area) {
-    $('.zephyr_compose').slideDown(100);
+    $('#zephyr_compose').css({visibility: "visible"});
     $('#zephyr-type-tabs a[href="#' + tabname + '-message"]').tab('show');
     focus_area.focus();
     focus_area.select();
@@ -9,7 +9,7 @@ function show_compose(tabname, focus_area) {
 
 function hide_compose() {
     $('input, textarea, button').blur();
-    $('.zephyr_compose').slideUp(100);
+    $('#zephyr_compose').css({visibility: "hidden"});
 }
 
 function clear_compose_box() {

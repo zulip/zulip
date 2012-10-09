@@ -195,8 +195,8 @@ img.profile_picture {
     height: 30px;
 }
 
-.zephyr_compose {
-    display: none;
+#zephyr_compose {
+    visibility: hidden;
     position: fixed;
     bottom: 0px;
     background: white;
