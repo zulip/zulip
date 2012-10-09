@@ -31,7 +31,7 @@ var globals =
     + ' fetch_subs sub_from_home'
 
     // ui.js
-    + ' register_huddle_onclick register_onclick hide_email show_email'
+    + ' register_onclick hide_email show_email'
     + ' report_error clicking mouse_moved'
     + ' update_autocomplete autocomplete_needs_update'
 

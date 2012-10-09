@@ -328,7 +328,6 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
 
     $.each(zephyrs_to_render, function (index, zephyr) {
         var row = get_zephyr_row(zephyr.id, table_name);
-        register_huddle_onclick(row, zephyr.sender_email);
         register_onclick(row, zephyr.id);
 
         row.find('.zephyr_content a').each(function (index, link) {

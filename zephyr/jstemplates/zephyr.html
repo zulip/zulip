@@ -47,7 +47,7 @@
     <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_class}} personal-message{{/is_class}}"
         onmousedown="zephyr_mousedown();" onmousemove="zephyr_mousemove();">
         {{#include_sender}}
-        <span class="zephyr_label_clickable zephyr_sender"
+        <span class="zephyr_sender"
               onmouseover="show_email({{id}});"
               onmouseout="hide_email();">
             <span class="zephyr_sender_name">{{sender_name}}</span>
