@@ -63,7 +63,7 @@ td.pointer {
     width: 85%;
 }
 
-.zephyr_newstyle_class {
+.message_newstyle_class {
     vertical-align: middle;
     text-align:     right;
     overflow-x:     hidden;
@@ -75,7 +75,7 @@ td.pointer {
     border: 1px solid grey;
 }
 
-.zephyr_newstyle_instance {
+.message_newstyle_instance {
     vertical-align: middle;
     text-align:     left;
     overflow-x:     hidden;
@@ -87,7 +87,7 @@ td.pointer {
     font-weight: bold;
 }
 
-.zephyr_newstyle_pm {
+.message_newstyle_pm {
     vertical-align: middle;
     text-align:     left;
     overflow-x:     hidden;
