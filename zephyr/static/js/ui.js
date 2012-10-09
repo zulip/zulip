@@ -155,6 +155,12 @@ $(function () {
         } else {
             viewport.scrollTop(0);
         }
+
+        // Hide all our error messages when switching tabs
+        $('.alert-error').hide();
+        $('.alert-success').hide();
+        $('.alert-info').hide();
+        $('.alert').hide();
     });
 
     $('.button-slide').click(function () {
@@ -164,8 +170,6 @@ $(function () {
     $('#sidebar a[href="#subscriptions"]').click(fetch_subs);
 
     var settings_status = $('#settings-status');
-    settings_status.hide();
-
     $("#current_settings form").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {

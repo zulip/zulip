@@ -12,7 +12,6 @@ function fetch_subs() {
                 });
             }
             $('#new_subscription').focus().select();
-            $("#subscriptions-status").fadeOut(0);
         },
         error: function (xhr) {
             report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
@@ -30,7 +29,6 @@ function sub_from_home(zephyr_class, prompt_button) {
         success: function (data) {
             $("#zephyr_compose form").ajaxSubmit();
             prompt_button.stop(true).fadeOut(500);
-            $("#subscriptions-status").fadeOut(0);
         },
         error: function (xhr, error_type, exn) {
             report_error("Unable to subscribe", xhr, $("#home-error"));
@@ -50,7 +48,6 @@ $(function () {
                 class_list.splice(removal_index, 1);
             }
             update_autocomplete();
-            $("#subscriptions-status").fadeOut(0);
         },
         error: function (xhr) {
             report_error("Error removing subscription", xhr, $("#subscriptions-status"));
@@ -64,7 +61,6 @@ $(function () {
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').prepend(templates.subscription({subscription: name}));
             class_list.push(name.toLowerCase());
-            $("#subscriptions-status").fadeOut(0);
             $("#new_subscription").focus();
         },
         error: function (xhr) {
