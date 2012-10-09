@@ -20,7 +20,7 @@ function do_narrow(description, filter_function) {
     $("#show_all_messages").removeAttr("disabled");
     $("#narrowbox").show();
     $("#main_div").addClass("narrowed_view");
-    $("#currently_narrowed_to").html(description);
+    $("#currently_narrowed_to").html(description).attr("title", description);
     $("#zhome").removeClass("focused_table");
 
     select_and_show_by_id(selected_zephyr_id);
