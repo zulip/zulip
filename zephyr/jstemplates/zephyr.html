@@ -22,16 +22,16 @@
 {{#if is_class}}
 <tr class="recipient_row">
     <td colspan="2"
-        class="zephyr_label_clickable zephyr_newstyle_class"
+        class="message_label_clickable zephyr_newstyle_class"
         onclick="select_zephyr_by_id({{id}}); narrow_class();"
         title="{{display_recipient}}">{{display_recipient}}</td>
-    <td class="zephyr_label_clickable zephyr_newstyle_instance"
+    <td class="message_label_clickable zephyr_newstyle_instance"
         onclick="select_zephyr_by_id({{id}}); narrow_instance();"
         title="{{instance}}">{{instance}}</td>
 </tr>
 {{else}}
 <tr class="recipient_row">
-    <td colspan="3" class="zephyr_label_clickable zephyr_newstyle_pm"
+    <td colspan="3" class="message_label_clickable zephyr_newstyle_pm"
         onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();"
         title="Huddle with {{display_reply_to}}">Huddle with {{display_reply_to}}</td>
 </tr>

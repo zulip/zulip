@@ -118,7 +118,7 @@ td.pointer {
     padding-left: 5px;
 }
 
-.zephyr_label_clickable:hover {
+.message_label_clickable:hover {
     cursor: pointer;
     color:  #08C;
 }
