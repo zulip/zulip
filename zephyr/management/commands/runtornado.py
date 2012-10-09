@@ -84,14 +84,11 @@ class Command(BaseCommand):
             print "Tornado server is running at http://%s:%s/" % (addr, port)
             print "Quit the server with %s." % quit_command
 
-            from tornado.web import FallbackHandler
-            django_app = wsgi.WSGIContainer(WSGIHandler())
-
             try:
                 # Application is an instance of Django's standard wsgi handler.
                 application = web.Application([(r"/json/get_updates", AsyncDjangoHandler),
                                                (r"/api/v1/get_messages", AsyncDjangoHandler),
-                                               (r".*", FallbackHandler, dict(fallback=django_app)),
+                                               (r"/notify_waiting_clients", AsyncDjangoHandler),
                                                ], debug=django.conf.settings.DEBUG)
 
                 # start tornado web server in single-threaded mode

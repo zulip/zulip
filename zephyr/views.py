@@ -446,6 +446,28 @@ def send_message_backend(request, user_profile, sender):
     return json_success()
 
 
+@asynchronous
+@csrf_exempt
+@require_post
+def notify_waiting_clients(request, handler):
+    # Check the shared secret.
+    # Also check the originating IP, at least for now.
+    if ((request.META['REMOTE_ADDR'] != '127.0.0.1')
+        or (request.POST.get('secret') != settings.SHARED_SECRET)):
+
+        handler.set_status(403)
+        handler.finish('Access denied')
+        return
+
+    # FIXME: better query
+    users   = [UserProfile.objects.get(id=user) for user in request.POST.getlist('user')]
+    message = Message.objects.get(id=request.POST['message'])
+
+    for user in users:
+        user.receive(message)
+
+    handler.finish()
+
 @login_required_api_view
 def api_get_public_streams(request, user_profile):
     streams = sorted([stream.name for stream in

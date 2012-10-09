@@ -40,6 +40,9 @@ urlpatterns = patterns('',
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': os.path.join(settings.SITE_ROOT, '../zephyr/static-access-control')}),
 
+    # Used internally for communication between Django and Tornado processes
+    url(r'^notify_waiting_clients$', 'zephyr.views.notify_waiting_clients', name='notify_waiting_clients'),
+
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 

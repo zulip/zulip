@@ -84,6 +84,13 @@ if deployed:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE    = True
 
+# A shared secret, used to authenticate different parts of the app to each other.
+# FIXME: store this password more securely
+SHARED_SECRET = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+# URL where Django code posts to the Tornado code to notify of new messages
+NOTIFY_WAITING_CLIENTS_URL = 'http://localhost:9993/notify_waiting_clients'
+
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',

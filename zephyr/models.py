@@ -11,6 +11,7 @@ import simplejson
 from django.db import transaction
 from zephyr.lib import bugdown
 from zephyr.lib.avatar import gravatar_hash
+import requests
 
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id))
 def get_display_recipient(recipient):
@@ -81,6 +82,7 @@ class UserProfile(models.Model):
     api_key = models.CharField(max_length=32)
 
     # The user receives this message
+    # Called in the Tornado process
     def receive(self, message):
         global callback_table
 
@@ -292,8 +294,10 @@ def do_send_message(message, synced_from_mit=False, no_log=False):
         for user_profile in recipients:
             UserMessage(user_profile=user_profile, message=message).save()
 
-    for recipient in recipients:
-        recipient.receive(message)
+    requests.post(settings.NOTIFY_WAITING_CLIENTS_URL, data=[
+           ('secret',  settings.SHARED_SECRET),
+           ('message', message.id)]
+        + [('user',    user.id) for user in recipients])
 
 class Subscription(models.Model):
     userprofile = models.ForeignKey(UserProfile)
