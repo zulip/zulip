@@ -129,9 +129,10 @@ function process_compose_hotkey(code) {
         toggle_compose();
         return process_compose_hotkey;
     }
-    // After we hit a non-tab character, tab should be processed normally
+    // Process the first non-tab character and everything after it
+    // like any other keys typed in the input box
     keydown_handler = process_hotkey;
-    return false;
+    return process_hotkey(code);
 }
 
 $(document).keydown(function (e) {
