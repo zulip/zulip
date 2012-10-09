@@ -3,7 +3,7 @@ var status_classes = 'alert-error alert-success alert-info';
 function show_compose(tabname, focus_area) {
     $('#zephyr_compose').css({visibility: "visible"});
     $('.zephyr_comp').slideDown(100);
-    $('#zephyr-type-tabs a[href="#' + tabname + '-message"]').tab('show');
+    $('#message-type-tabs a[href="#' + tabname + '-message"]').tab('show');
     focus_area.focus();
     focus_area.select();
 }
@@ -25,7 +25,7 @@ function compose_button() {
 }
 
 function toggle_compose() {
-    if ($("#zephyr-type-tabs li.active").find("a[href=#class-message]").length !== 0) {
+    if ($("#message-type-tabs li.active").find("a[href=#class-message]").length !== 0) {
         // In class tab, switch to personals.
         show_compose('personal', $("#huddle_recipient"));
     } else {

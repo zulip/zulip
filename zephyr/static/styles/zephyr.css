@@ -348,7 +348,7 @@ input.send_zephyr {
     border: 1px solid grey;
 }
 
-#zephyr-type-tabs {
+#message-type-tabs {
     margin-top: 0px;
     margin-bottom: 0px;
 }

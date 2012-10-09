@@ -116,12 +116,12 @@ $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
 
-    $('#zephyr-type-tabs a[href="#class-message"]').on('shown', function (e) {
+    $('#message-type-tabs a[href="#class-message"]').on('shown', function (e) {
         $('#personal-message').hide();
         $('#class-message').show();
         $('#new_message_type').val('class');
     });
-    $('#zephyr-type-tabs a[href="#personal-message"]').on('shown', function (e) {
+    $('#message-type-tabs a[href="#personal-message"]').on('shown', function (e) {
         $('#personal-message').show();
         $('#class-message').hide();
         $('#new_message_type').val('personal');
