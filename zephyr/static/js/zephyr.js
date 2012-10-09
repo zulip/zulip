@@ -44,8 +44,8 @@ $(function () {
     }
 });
 
-var selected_zephyr_id = -1;  /* to be filled in on document.ready */
-var selected_zephyr;  // = get_zephyr_row(selected_zephyr_id)
+var selected_message_id = -1;  /* to be filled in on document.ready */
+var selected_zephyr;  // = get_zephyr_row(selected_message_id)
 var received = {
     first: -1,
     last:  -1,
@@ -115,7 +115,7 @@ function get_huddle_recipient_names(zephyr) {
 
 function respond_to_zephyr(reply_type) {
     var zephyr, tabname;
-    zephyr = message_dict[selected_zephyr_id];
+    zephyr = message_dict[selected_message_id];
     if (zephyr.type === "class") {
         $("#class").val(zephyr.display_recipient);
         $("#instance").val(zephyr.instance);
@@ -143,7 +143,7 @@ function respond_to_zephyr(reply_type) {
 
 // Called by mouseover etc.
 function select_message_by_id(zephyr_id) {
-    if (zephyr_id === selected_zephyr_id) {
+    if (zephyr_id === selected_message_id) {
         return;
     }
     select_message(get_zephyr_row(zephyr_id), false);
@@ -161,14 +161,14 @@ function update_selected_zephyr(zephyr) {
     zephyr.addClass('selected_zephyr');
 
     var new_selected_id = get_id(zephyr);
-    if (!narrowed && new_selected_id !== selected_zephyr_id) {
+    if (!narrowed && new_selected_id !== selected_message_id) {
         // Narrowing is a temporary view on top of the home view and
         // doesn't permanently affect where you are.
         //
         // We also don't want to post if there's no effective change.
         $.post("update", {pointer: new_selected_id});
     }
-    selected_zephyr_id = new_selected_id;
+    selected_message_id = new_selected_id;
     selected_zephyr = zephyr;
 }
 
@@ -426,7 +426,7 @@ function add_messages(data) {
 
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
-    if ((selected_zephyr_id === -1) && (message_dict.hasOwnProperty(initial_pointer))) {
+    if ((selected_message_id === -1) && (message_dict.hasOwnProperty(initial_pointer))) {
         select_and_show_by_id(initial_pointer);
     }
 
@@ -437,8 +437,8 @@ function add_messages(data) {
     //
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
-    if ((data.where === 'top') && (selected_zephyr_id >= 0)) {
-        select_and_show_by_id(selected_zephyr_id);
+    if ((data.where === 'top') && (selected_message_id >= 0)) {
+        select_and_show_by_id(selected_message_id);
     }
 
     if (autocomplete_needs_update)
@@ -494,7 +494,7 @@ function at_bottom_of_viewport() {
 function keep_pointer_in_view() {
     var candidate;
     var viewport = $(window);
-    var next_message = get_zephyr_row(selected_zephyr_id);
+    var next_message = get_zephyr_row(selected_message_id);
 
     if (above_view_threshold(next_message) && (!at_top_of_viewport())) {
         while (above_view_threshold(next_message)) {

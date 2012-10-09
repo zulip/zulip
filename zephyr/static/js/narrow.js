@@ -8,7 +8,7 @@ function do_narrow(description, filter_function) {
     narrowed = filter_function;
 
     // Your pointer isn't changed when narrowed.
-    persistent_zephyr_id = selected_zephyr_id;
+    persistent_zephyr_id = selected_message_id;
 
     // Empty the filtered table right before we fill it again
     clear_table('zfilt');
@@ -23,12 +23,12 @@ function do_narrow(description, filter_function) {
     $("#currently_narrowed_to").html(description).attr("title", description);
     $("#zhome").removeClass("focused_table");
 
-    select_and_show_by_id(selected_zephyr_id);
+    select_and_show_by_id(selected_message_id);
     scroll_to_selected();
 }
 
 function narrow_huddle() {
-    var original = message_dict[selected_zephyr_id];
+    var original = message_dict[selected_message_id];
     do_narrow("Huddles with " + original.reply_to, function (other) {
         return other.reply_to === original.reply_to;
     });
@@ -42,7 +42,7 @@ function narrow_all_personals() {
 
 function narrow_personals() {
     // Narrow to personals with a specific user
-    var original = message_dict[selected_zephyr_id];
+    var original = message_dict[selected_message_id];
     var other_party;
     if (original.display_recipient === email) {
         other_party = original.sender_email;
@@ -59,7 +59,7 @@ function narrow_personals() {
 }
 
 function narrow_class() {
-    var original = message_dict[selected_zephyr_id];
+    var original = message_dict[selected_message_id];
     var message = original.display_recipient;
     do_narrow(message, function (other) {
         return (other.type === 'class' &&
@@ -68,7 +68,7 @@ function narrow_class() {
 }
 
 function narrow_instance() {
-    var original = message_dict[selected_zephyr_id];
+    var original = message_dict[selected_message_id];
     if (original.type !== 'class')
         return;
 
@@ -82,7 +82,7 @@ function narrow_instance() {
 
 // Called for the 'narrow by class' hotkey.
 function narrow_by_recipient() {
-    switch (message_dict[selected_zephyr_id].type) {
+    switch (message_dict[selected_message_id].type) {
         case 'personal': narrow_personals(); break;
         case 'huddle':   narrow_huddle();    break;
         case 'class':    narrow_class();     break;
