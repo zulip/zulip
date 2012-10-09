@@ -172,27 +172,27 @@ function update_selected_zephyr(zephyr) {
     selected_zephyr = zephyr;
 }
 
-function select_zephyr(next_zephyr, scroll_to) {
+function select_zephyr(next_message, scroll_to) {
     var viewport = $(window);
 
     /* If the zephyr exists but is hidden, try to find the next visible one. */
-    if (next_zephyr.length !== 0 && next_zephyr.is(':hidden')) {
-        next_zephyr = get_next_visible(next_zephyr);
+    if (next_message.length !== 0 && next_message.is(':hidden')) {
+        next_message = get_next_visible(next_message);
     }
 
     /* Fall back to the first visible zephyr. */
-    if (next_zephyr.length === 0) {
-        next_zephyr = $('tr:not(:hidden):first');
+    if (next_message.length === 0) {
+        next_message = $('tr:not(:hidden):first');
     }
-    if (next_zephyr.length === 0) {
+    if (next_message.length === 0) {
         // There are no zephyrs!
         return false;
     }
 
-    update_selected_zephyr(next_zephyr);
+    update_selected_zephyr(next_message);
 
     if (scroll_to) {
-        recenter_view(next_zephyr);
+        recenter_view(next_message);
     }
 }
 
@@ -494,40 +494,40 @@ function at_bottom_of_viewport() {
 function keep_pointer_in_view() {
     var candidate;
     var viewport = $(window);
-    var next_zephyr = get_zephyr_row(selected_zephyr_id);
+    var next_message = get_zephyr_row(selected_zephyr_id);
 
-    if (above_view_threshold(next_zephyr) && (!at_top_of_viewport())) {
-        while (above_view_threshold(next_zephyr)) {
-            candidate = get_next_visible(next_zephyr);
+    if (above_view_threshold(next_message) && (!at_top_of_viewport())) {
+        while (above_view_threshold(next_message)) {
+            candidate = get_next_visible(next_message);
             if (candidate.length === 0) {
                 break;
             } else {
-                next_zephyr = candidate;
+                next_message = candidate;
             }
         }
-    } else if (below_view_threshold(next_zephyr) && (!at_bottom_of_viewport())) {
-        while (below_view_threshold(next_zephyr)) {
-            candidate = get_prev_visible(next_zephyr);
+    } else if (below_view_threshold(next_message) && (!at_bottom_of_viewport())) {
+        while (below_view_threshold(next_message)) {
+            candidate = get_prev_visible(next_message);
             if (candidate.length === 0) {
                 break;
             } else {
-                next_zephyr = candidate;
+                next_message = candidate;
             }
         }
     }
 
-    if (at_top_of_viewport() && (parseInt(get_id(next_zephyr), 10) >
+    if (at_top_of_viewport() && (parseInt(get_id(next_message), 10) >
                                  parseInt(get_id(get_first_visible()), 10))) {
         // If we've scrolled to the top, keep inching the selected
         // zephyr up to the top instead of just the latest one that is
         // still on the screen.
-        next_zephyr = get_prev_visible(next_zephyr);
-    } else if (at_bottom_of_viewport() && (parseInt(get_id(next_zephyr), 10) <
+        next_message = get_prev_visible(next_message);
+    } else if (at_bottom_of_viewport() && (parseInt(get_id(next_message), 10) <
                                            parseInt(get_id(get_last_visible()), 10))) {
         // If we've scrolled to the bottom already, keep advancing the
         // pointer until we're at the last message (by analogue to the
         // above)
-        next_zephyr = get_next_visible(next_zephyr);
+        next_message = get_next_visible(next_message);
     }
-    update_selected_zephyr(next_zephyr);
+    update_selected_zephyr(next_message);
 }

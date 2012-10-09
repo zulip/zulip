@@ -23,7 +23,7 @@ function simulate_keydown(keycode) {
 }
 
 function process_hotkey(code) {
-    var next_zephyr;
+    var next_message;
 
     // Disable hotkeys on settings page etc.
     if (!$('#home').hasClass('active')) {
@@ -36,11 +36,11 @@ function process_hotkey(code) {
     }
 
     if (directional_hotkeys.hasOwnProperty(code)) {
-        next_zephyr = directional_hotkeys[code](selected_zephyr);
-        if (next_zephyr.length !== 0) {
-            select_zephyr(next_zephyr, true);
+        next_message = directional_hotkeys[code](selected_zephyr);
+        if (next_message.length !== 0) {
+            select_zephyr(next_message, true);
         }
-        if ((next_zephyr.length === 0) && (code === 40 || code === 106)) {
+        if ((next_message.length === 0) && (code === 40 || code === 106)) {
             // At the last zephyr, scroll to the bottom so we have
             // lots of nice whitespace for new zephyrs coming in.
             //
