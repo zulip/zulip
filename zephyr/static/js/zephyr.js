@@ -1,5 +1,5 @@
-var zephyr_array = [];
-var zephyr_dict = {};
+var message_array = [];
+var message_dict = {};
 var instance_list = [];
 
 $(function () {
@@ -115,7 +115,7 @@ function get_huddle_recipient_names(zephyr) {
 
 function respond_to_zephyr(reply_type) {
     var zephyr, tabname;
-    zephyr = zephyr_dict[selected_zephyr_id];
+    zephyr = message_dict[selected_zephyr_id];
     if (zephyr.type === "class") {
         $("#class").val(zephyr.display_recipient);
         $("#instance").val(zephyr.instance);
@@ -273,14 +273,14 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
         var top_messages = [];
         $.each(top_group, function (index, id) {
             get_zephyr_row(id, table_name).remove();
-            top_messages.push(zephyr_dict[id]);
+            top_messages.push(message_dict[id]);
         });
         zephyrs = zephyrs.concat(top_messages);
 
         // Delete the leftover recipient label.
         table.find('.recipient_row:first').remove();
     } else {
-        prev = zephyr_dict[table.find('tr:last-child').attr('zid')];
+        prev = message_dict[table.find('tr:last-child').attr('zid')];
     }
 
     $.each(zephyrs, function (index, zephyr) {
@@ -397,7 +397,7 @@ function add_zephyr_metadata(dummy, zephyr) {
         break;
     }
 
-    zephyr_dict[zephyr.id] = zephyr;
+    message_dict[zephyr.id] = zephyr;
 }
 
 function add_messages(data) {
@@ -413,9 +413,9 @@ function add_messages(data) {
     }
 
     if (data.where === 'top') {
-        zephyr_array = data.messages.concat(zephyr_array);
+        message_array = data.messages.concat(message_array);
     } else {
-        zephyr_array = zephyr_array.concat(data.messages);
+        message_array = message_array.concat(data.messages);
     }
 
     if (narrowed)
@@ -426,7 +426,7 @@ function add_messages(data) {
 
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
-    if ((selected_zephyr_id === -1) && (zephyr_dict.hasOwnProperty(initial_pointer))) {
+    if ((selected_zephyr_id === -1) && (message_dict.hasOwnProperty(initial_pointer))) {
         select_and_show_by_id(initial_pointer);
     }
 

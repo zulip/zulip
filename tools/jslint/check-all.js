@@ -37,7 +37,7 @@ var globals =
     + ' update_autocomplete autocomplete_needs_update'
 
     // zephyr.js
-    + ' zephyr_array zephyr_dict'
+    + ' message_array message_dict'
     + ' status_classes clear_table add_to_table instance_list'
     + ' keep_pointer_in_view respond_to_zephyr'
     + ' select_zephyr select_zephyr_by_id'

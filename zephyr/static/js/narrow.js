@@ -12,7 +12,7 @@ function do_narrow(description, filter_function) {
 
     // Empty the filtered table right before we fill it again
     clear_table('zfilt');
-    add_to_table(zephyr_array, 'zfilt', filter_function, 'bottom');
+    add_to_table(message_array, 'zfilt', filter_function, 'bottom');
 
     // Show the new set of messages.
     $("#zfilt").addClass("focused_table");
@@ -28,7 +28,7 @@ function do_narrow(description, filter_function) {
 }
 
 function narrow_huddle() {
-    var original = zephyr_dict[selected_zephyr_id];
+    var original = message_dict[selected_zephyr_id];
     do_narrow("Huddles with " + original.reply_to, function (other) {
         return other.reply_to === original.reply_to;
     });
@@ -42,7 +42,7 @@ function narrow_all_personals() {
 
 function narrow_personals() {
     // Narrow to personals with a specific user
-    var original = zephyr_dict[selected_zephyr_id];
+    var original = message_dict[selected_zephyr_id];
     var other_party;
     if (original.display_recipient === email) {
         other_party = original.sender_email;
@@ -59,7 +59,7 @@ function narrow_personals() {
 }
 
 function narrow_class() {
-    var original = zephyr_dict[selected_zephyr_id];
+    var original = message_dict[selected_zephyr_id];
     var message = original.display_recipient;
     do_narrow(message, function (other) {
         return (other.type === 'class' &&
@@ -68,7 +68,7 @@ function narrow_class() {
 }
 
 function narrow_instance() {
-    var original = zephyr_dict[selected_zephyr_id];
+    var original = message_dict[selected_zephyr_id];
     if (original.type !== 'class')
         return;
 
@@ -82,7 +82,7 @@ function narrow_instance() {
 
 // Called for the 'narrow by class' hotkey.
 function narrow_by_recipient() {
-    switch (zephyr_dict[selected_zephyr_id].type) {
+    switch (message_dict[selected_zephyr_id].type) {
         case 'personal': narrow_personals(); break;
         case 'huddle':   narrow_huddle();    break;
         case 'class':    narrow_class();     break;
