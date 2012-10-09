@@ -1,5 +1,5 @@
 // For tracking where you were before you narrowed.
-var persistent_zephyr_id = 0;
+var persistent_message_id = 0;
 
 // Narrowing predicate, or 'false' for the home view.
 var narrowed = false;
@@ -8,7 +8,7 @@ function do_narrow(description, filter_function) {
     narrowed = filter_function;
 
     // Your pointer isn't changed when narrowed.
-    persistent_zephyr_id = selected_message_id;
+    persistent_message_id = selected_message_id;
 
     // Empty the filtered table right before we fill it again
     clear_table('zfilt');
@@ -103,7 +103,7 @@ function show_all_messages() {
     $("#currently_narrowed_to").html("");
 
     // Includes scrolling.
-    select_and_show_by_id(persistent_zephyr_id);
+    select_and_show_by_id(persistent_message_id);
 
     scroll_to_selected();
 }
