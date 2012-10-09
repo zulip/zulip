@@ -18,6 +18,7 @@ var globals =
     + ' get_id get_zephyr_row'
 
     // hotkey.js
+    + ' process_goto_hotkey process_compose_hotkey process_key_in_input'
 
     // narrow.js
     + ' narrowed show_all_messages'
