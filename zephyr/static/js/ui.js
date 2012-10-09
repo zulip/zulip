@@ -110,14 +110,6 @@ $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
 
-    // Enable our hotkeys when we're not focused on a data entry box
-    $('input, textarea, button').focus(function () {
-        set_keydown_in_input(true);
-    });
-    $('input, textarea, button').blur(function () {
-        set_keydown_in_input(false);
-    });
-
     $('#zephyr-type-tabs a[href="#class-message"]').on('shown', function (e) {
         $('#personal-message').hide();
         $('#class-message').show();

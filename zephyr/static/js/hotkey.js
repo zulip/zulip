@@ -33,6 +33,12 @@ function simulate_keydown(keycode) {
 
 function process_hotkey(code) {
     var next_zephyr;
+
+    // Disable hotkeys when in an input, textarea, or button
+    if ($('input:focus,textarea:focus,button:focus').length > 0) {
+        return process_key_in_input(code);
+    }
+
     if (directional_hotkeys.hasOwnProperty(code)) {
         next_zephyr = directional_hotkeys[code](selected_zephyr);
         if (next_zephyr.length !== 0) {
@@ -80,16 +86,21 @@ function process_hotkey(code) {
         return process_compose_hotkey;
     case 114: // 'r': respond to zephyr
         respond_to_zephyr();
-        return process_key_in_input;
+        return process_hotkey;
     case 82: // 'R': respond to author
         respond_to_zephyr("personal");
-        return process_key_in_input;
+        return process_hotkey;
     case 103: // 'g': start of "go to" command
         return process_goto_hotkey;
     }
 
     return false;
 }
+
+/* The current handler function for keydown events.
+   It should return a new handler, or 'false' to
+   decline to handle the event. */
+var keydown_handler = process_hotkey;
 
 var goto_hotkeys = {
     99: narrow_by_recipient,  // 'c'
@@ -104,27 +115,27 @@ function process_goto_hotkey(code) {
         goto_hotkeys[code]();
 
     /* Always return to the initial hotkey mode, even
-       with an unrecognized "go to" command. */
+       after an unrecognized "go to" command. */
     return process_hotkey;
 }
 
 function process_key_in_input(code) {
     if (code === 27) {
-        // User hit Escape key
+        // If the user hit the escape key, hide the compose window
         hide_compose();
-        return process_hotkey;
     }
+    // Otherwise, let the browser handle the key normally
     return false;
 }
 
 function process_compose_hotkey(code) {
-    if (code === 9) { // Tab: toggle between class and huddle compose tabs.
+    if (code === 9) { // Tab: toggles between class and huddle compose tabs.
         toggle_compose();
         return process_compose_hotkey;
-    } else {
-        set_keydown_in_input(true);
-        simulate_keydown(code);
     }
+    // After we hit a non-tab character, tab should be processed normally
+    keydown_handler = process_hotkey;
+    return false;
 }
 
 $(document).keydown(function (e) {
@@ -134,23 +145,6 @@ $(document).keydown(function (e) {
 $(document).keyup(function (e) {
     pressed_keys = {};
 });
-
-/* The current handler function for keydown events.
-   It should return a new handler, or 'false' to
-   decline to handle the event. */
-var keydown_handler = process_hotkey;
-
-function set_keydown_in_input(flag) {
-    // No argument should behave like 'true'.
-    if (flag === undefined)
-        flag = true;
-
-    if (flag) {
-        keydown_handler = process_key_in_input;
-    } else {
-        keydown_handler = process_hotkey;
-    }
-}
 
 /* We register both a keydown and a keypress function because
    we want to intercept pgup/pgdn, escape, etc, and process them

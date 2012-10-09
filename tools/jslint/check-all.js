@@ -18,7 +18,6 @@ var globals =
     + ' get_id get_zephyr_row'
 
     // hotkey.js
-    + ' set_keydown_in_input'
 
     // narrow.js
     + ' narrowed show_all_messages'
