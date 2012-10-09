@@ -110,8 +110,13 @@ function get_huddle_recipient_names(zephyr) {
 function respond_to_zephyr(reply_type) {
     var zephyr, tabname;
     zephyr = zephyr_dict[selected_zephyr_id];
-    $("#class").val(zephyr.display_recipient);
-    $("#instance").val(zephyr.instance);
+    if (zephyr.type === "class") {
+        $("#class").val(zephyr.display_recipient);
+        $("#instance").val(zephyr.instance);
+    } else {
+        $("#class").val("");
+        $("#instance").val("");
+    }
     $("#huddle_recipient").val(zephyr.reply_to);
     if (reply_type === "personal" && zephyr.type === "huddle") {
         // reply_to for huddle messages is the whole huddle, so for
