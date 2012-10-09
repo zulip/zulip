@@ -117,11 +117,13 @@ function respond_to_zephyr() {
         $("#class").val(zephyr.display_recipient);
         $("#instance").val(zephyr.instance);
         show_compose('class', $("#new_zephyr"));
+        $("#huddle_recipient").val(zephyr.sender);
         break;
 
     case 'huddle':
         $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
-        prepare_huddle(zephyr.reply_to);
+        show_compose('personal', $("#new_zephyr"));
+        $("#huddle_recipient").val(zephyr.reply_to);
         break;
 
     case 'personal':
@@ -132,7 +134,8 @@ function respond_to_zephyr() {
         if (recipient === email) { // that is, we sent the original message
             recipient = zephyr.sender_email;
         }
-        prepare_huddle(recipient);
+        show_compose('personal', $("#new_zephyr"));
+        $("#huddle_recipient").val(recipient);
         break;
     }
 }
