@@ -22,7 +22,7 @@ body {
     min-width: 670px;
 }
 
-.zephyr_list {
+.message_list {
     background-color: aliceblue;
     width: 640px;
     padding-right: 30px;
@@ -139,7 +139,7 @@ table.message_table {
 }
 
 table.compose_table {
-    /* = zephyr_list */
+    /* = message_list */
     width: 640px;
     table-layout: fixed;
 }
@@ -202,7 +202,7 @@ img.profile_picture {
     bottom: 0px;
     background: white;
 
-    /* = zephyr_list.width + padding-right */
+    /* = message_list.width + padding-right */
     width: 670px;
 }
 
@@ -286,7 +286,7 @@ input.send_message {
     display: none;
     padding: 5px 10px;
     border: 1px solid black;
-    /* .zephyr_list width + padding_right - my border*2 - my padding*2 */
+    /* .message_list width + padding_right - my border*2 - my padding*2 */
     width: 648px;
     margin: 0 auto;
     background-color: #DDD;
