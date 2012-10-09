@@ -138,7 +138,7 @@ function respond_to_zephyr(reply_type) {
         // Huddle messages use the personals compose box
         tabname = "personal";
     }
-    show_compose(tabname, $("#new_zephyr"));
+    show_compose(tabname, $("#new_message_content"));
 }
 
 // Called by mouseover etc.

@@ -50,7 +50,7 @@ function compose_instance() {
 }
 
 function compose_message() {
-    return $.trim($("#new_zephyr").val());
+    return $.trim($("#new_message_content").val());
 }
 
 function compose_recipient() {
@@ -58,7 +58,7 @@ function compose_recipient() {
 }
 
 function compose_huddle_message() {
-    return $.trim($("#new_zephyr").val());
+    return $.trim($("#new_message_content").val());
 }
 
 function compose_error(error_text, bad_input) {
@@ -117,7 +117,7 @@ function validate_class_message() {
     }
 
     if (compose_message() === "") {
-        compose_error("You have nothing to send!", $("#new_zephyr"));
+        compose_error("You have nothing to send!", $("#new_message_content"));
         return false;
     }
 
@@ -145,7 +145,7 @@ function validate_huddle_message() {
     }
 
     if (compose_huddle_message() === "") {
-        compose_error("You have nothing to send!", $("#new_zephyr"));
+        compose_error("You have nothing to send!", $("#new_message_content"));
         return false;
     }
 
