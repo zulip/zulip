@@ -107,33 +107,27 @@ function get_huddle_recipient_names(zephyr) {
     return recipient;
 }
 
-function respond_to_zephyr() {
-    var zephyr, recipient, recipients;
+function respond_to_zephyr(reply_type) {
+    var zephyr, tabname;
     zephyr = zephyr_dict[selected_zephyr_id];
-
-    switch (zephyr.type) {
-    case 'class':
-        $('#zephyr-type-tabs a[href="#class-message"]').tab('show');
-        $("#class").val(zephyr.display_recipient);
-        $("#instance").val(zephyr.instance);
-        show_compose('class', $("#new_zephyr"));
-        $("#huddle_recipient").val(zephyr.sender);
-        break;
-
-    case 'huddle':
-        $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
-        show_compose('personal', $("#new_zephyr"));
-        $("#huddle_recipient").val(zephyr.reply_to);
-        break;
-
-    case 'personal':
-        // Until we allow sending zephyrs based on multiple meaningful
-        // representations of a user (name, username, email, etc.), just
-        // deal with emails.
-        show_compose('personal', $("#new_zephyr"));
-        $("#huddle_recipient").val(zephyr.reply_to);
-        break;
+    $("#class").val(zephyr.display_recipient);
+    $("#instance").val(zephyr.instance);
+    $("#huddle_recipient").val(zephyr.reply_to);
+    if (reply_type === "personal" && zephyr.type === "huddle") {
+        // reply_to for huddle messages is the whole huddle, so for
+        // personals replies we need to set the the huddle recipient
+        // to just the sender
+        $("#huddle_recipient").val(zephyr.sender_email);
     }
+    tabname = reply_type;
+    if (tabname === undefined) {
+        tabname = zephyr.type;
+    }
+    if (tabname === "huddle") {
+        // Huddle messages use the personals compose box
+        tabname = "personal";
+    }
+    show_compose(tabname, $("#new_zephyr"));
 }
 
 // Called by mouseover etc.
@@ -189,12 +183,6 @@ function select_zephyr(next_zephyr, scroll_to) {
     if (scroll_to) {
         recenter_view(next_zephyr);
     }
-}
-
-function prepare_huddle(recipients) {
-    // Used for both personals and huddles.
-    show_compose('personal', $("#new_zephyr"));
-    $("#huddle_recipient").val(recipients);
 }
 
 function same_recipient(a, b) {
@@ -376,6 +364,7 @@ function add_zephyr_metadata(dummy, zephyr) {
             instance_list.push(zephyr.instance);
             autocomplete_needs_update = true;
         }
+        zephyr.reply_to = zephyr.sender_email;
         break;
 
     case 'huddle':

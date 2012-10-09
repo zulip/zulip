@@ -82,8 +82,7 @@ function process_hotkey(code) {
         respond_to_zephyr();
         return process_key_in_input;
     case 82: // 'R': respond to author
-        $('#zephyr-type-tabs a[href="#personal-message"]').tab('show');
-        prepare_huddle(zephyr_dict[selected_zephyr_id].sender_email);
+        respond_to_zephyr("personal");
         return process_key_in_input;
     case 103: // 'g': start of "go to" command
         return process_goto_hotkey;

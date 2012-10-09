@@ -8,16 +8,11 @@ function register_huddle_onclick(zephyr_row, sender) {
     zephyr_row.find(".zephyr_sender").click(function (e) {
         select_zephyr_by_id(zephyr_row.attr('zid'));
         // populate the stream box
-        respond_to_zephyr();
-        // but we really want to be in huddle mode
-        prepare_huddle(sender);
+        respond_to_zephyr("personal");
         // The sender span is inside the messagebox, which also has an
         // onclick handler. We don't want to trigger the messagebox
         // handler.
         e.stopPropagation();
-
-        // switch to the replybox hotkey handler
-        set_keydown_in_input(true);
     });
 }
 
@@ -27,7 +22,6 @@ function register_onclick(zephyr_row, zephyr_id) {
             // Was a click (not a click-and-drag).
             select_zephyr_by_id(zephyr_id);
             respond_to_zephyr();
-            set_keydown_in_input(true);
         }
         mouse_moved = false;
         clicking = false;
@@ -117,6 +111,8 @@ function update_autocomplete() {
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
+
+    // Enable our hotkeys when we're not focused on a data entry box
     $('input, textarea, button').focus(function () {
         set_keydown_in_input(true);
     });

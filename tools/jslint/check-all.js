@@ -38,7 +38,7 @@ var globals =
     // zephyr.js
     + ' zephyr_array zephyr_dict'
     + ' status_classes clear_table add_to_table instance_list'
-    + ' keep_pointer_in_view prepare_huddle respond_to_zephyr'
+    + ' keep_pointer_in_view respond_to_zephyr'
     + ' select_zephyr select_zephyr_by_id'
     + ' scroll_to_selected select_and_show_by_id'
     + ' selected_zephyr selected_zephyr_id'
