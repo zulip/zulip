@@ -131,7 +131,7 @@ td.pointer {
     font-size: 90%;
 }
 
-table.zephyr_table {
+table.message_table {
     table-layout: fixed;
     margin-left: auto;
     display: none;
