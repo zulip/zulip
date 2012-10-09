@@ -29,7 +29,7 @@ function do_narrow(description, filter_function) {
 
 function narrow_huddle() {
     var original = zephyr_dict[selected_zephyr_id];
-    do_narrow("Group chats with " + original.reply_to, function (other) {
+    do_narrow("Huddles with " + original.reply_to, function (other) {
         return other.reply_to === original.reply_to;
     });
 }
