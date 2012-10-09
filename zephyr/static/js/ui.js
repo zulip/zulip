@@ -31,12 +31,12 @@ function focus_on(field_id) {
    things jumping around slightly when the email address is shown. */
 
 function hide_email() {
-    $('.zephyr_sender_email').addClass('invisible');
+    $('.sender_email').addClass('invisible');
 }
 
 function show_email(zephyr_id) {
     hide_email();
-    get_zephyr_row(zephyr_id).find('.zephyr_sender_email').removeClass('invisible');
+    get_zephyr_row(zephyr_id).find('.sender_email').removeClass('invisible');
 }
 
 function report_error(response, xhr, status_box) {

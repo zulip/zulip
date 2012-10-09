@@ -105,11 +105,11 @@ td.pointer {
     border-width: 0px 2px 2px 2px;
 }
 
-.zephyr_sender_name {
+.sender_name {
     font-weight: bold;
 }
 
-.zephyr_sender_email {
+.sender_email {
     font-size: 80%;
     color: gray;
 
