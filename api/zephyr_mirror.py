@@ -157,7 +157,7 @@ def process_loop(log):
                          'time'      : str(notice.time),
                          'sender'    : sender,
                          'class'     : notice.cls.lower(),
-                         'instance'  : notice.instance,
+                         'instance'  : notice.instance.lower(),
                          'zsig'      : zsig,  # logged here but not used by app
                          'content'   : body }
 
