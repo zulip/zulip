@@ -147,7 +147,7 @@ def accounts_home(request):
 
 def home(request):
     if not request.user.is_authenticated():
-        return HttpResponseRedirect('accounts/home/')
+        return HttpResponseRedirect(reverse('zephyr.views.accounts_home'))
     user_profile = UserProfile.objects.get(user=request.user)
 
     messages = Message.objects.filter(usermessage__user_profile=user_profile)
