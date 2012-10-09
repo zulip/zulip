@@ -341,7 +341,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
         var row = get_zephyr_row(zephyr.id, table_name);
         register_onclick(row, zephyr.id);
 
-        row.find('.zephyr_content a').each(function (index, link) {
+        row.find('.message_content a').each(function (index, link) {
             link = $(link);
             link.attr('target',  '_blank')
                 .attr('title',   link.attr('href'))
