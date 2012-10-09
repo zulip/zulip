@@ -33,6 +33,7 @@ body {
 }
 
 .zephyr_comp {
+    display: none;
     border: 1px solid #EEE;
     border-top: 0px;
 }
