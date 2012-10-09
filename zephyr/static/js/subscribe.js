@@ -26,7 +26,8 @@ function sub_from_home(zephyr_class, prompt_button) {
         data:      {new_subscription: zephyr_class},
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
-        success: function (data) {
+        success: function (response) {
+            add_to_class_list(response.data);
             $("#zephyr_compose form").ajaxSubmit();
             prompt_button.stop(true).fadeOut(500);
         },
@@ -36,6 +37,39 @@ function sub_from_home(zephyr_class, prompt_button) {
     });
 }
 
+class_list_hash = [];
+
+function subscribed_to(class_name) {
+    return (class_list_hash[class_name.toLowerCase()] === true);
+}
+
+function case_insensitive_subscription_index(class_name) {
+    var i;
+    var name = class_name.toLowerCase();
+
+    for (i = 1; i < class_list.length; i++) {
+        if (name === class_list[i].toLowerCase()) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function add_to_class_list(class_name) {
+    if (!subscribed_to(class_name)) {
+        class_list.push(class_name);
+        class_list_hash[class_name.toLowerCase()] = true;
+    }
+}
+
+function remove_from_class_list(class_name) {
+    delete class_list_hash[class_name.toLowerCase()];
+    var removal_index = case_insensitive_subscription_index(class_name);
+    if (removal_index !== -1) {
+        class_list.splice(removal_index, 1);
+    }
+}
+
 // FIXME: It would be nice to move the UI setup into ui.js.
 $(function () {
     $("#current_subscriptions").ajaxForm({
@@ -43,10 +77,7 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').find('button[value="' + name + '"]').parents('tr').remove();
-            var removal_index = class_list.indexOf(name.toLowerCase());
-            if (removal_index !== -1) {
-                class_list.splice(removal_index, 1);
-            }
+            remove_from_class_list(name);
             update_autocomplete();
             report_success("Successfully removed subscription to " + name,
                            $("#subscriptions-status"));
@@ -62,7 +93,7 @@ $(function () {
             $("#new_subscription").val("");
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').prepend(templates.subscription({subscription: name}));
-            class_list.push(name.toLowerCase());
+            add_to_class_list(name);
             report_success("Successfully added subscription to " + name,
                            $("#subscriptions-status"));
             $("#new_subscription").focus();

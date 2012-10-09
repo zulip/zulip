@@ -28,7 +28,8 @@ var globals =
     + ' loading_spinner templates'
 
     // subscribe.js
-    + ' fetch_subs sub_from_home'
+    + ' fetch_subs sub_from_home subscribed_to class_list_hash'
+    + ' add_to_class_list'
 
     // ui.js
     + ' register_onclick hide_email show_email'

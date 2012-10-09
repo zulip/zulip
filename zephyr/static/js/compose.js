@@ -124,7 +124,7 @@ function validate_class_message() {
     if (!check_class_for_send(class_name))
         return false;
 
-    if (class_list.indexOf(class_name.toLowerCase()) === -1) {
+    if (!subscribed_to(class_name)) {
         // You're not subbed to the class
         $('#send-status').removeClass(status_classes).show();
         $('#class-nosub-name').text(class_name);

@@ -3,6 +3,7 @@ var zephyr_dict = {};
 var instance_list = [];
 
 $(function () {
+    var i;
     var send_status = $('#send-status');
     var buttons = $('#zephyr_compose').find('input[type="submit"]');
 
@@ -36,6 +37,11 @@ $(function () {
 
     send_status.hide();
     $("#zephyr_compose form").ajaxForm(options);
+
+    // Populate class_list_hash with data handed over to client-side template.
+    for (i = 0; i < class_list.length; i++) {
+        class_list_hash[class_list[i].toLowerCase()] = true;
+    }
 });
 
 var selected_zephyr_id = -1;  /* to be filled in on document.ready */
@@ -360,10 +366,6 @@ function add_zephyr_metadata(dummy, zephyr) {
     switch (zephyr.type) {
     case 'class':
         zephyr.is_class = true;
-        if ($.inArray(zephyr.display_recipient.toLowerCase(), class_list) === -1) {
-            class_list.push(zephyr.display_recipient.toLowerCase());
-            autocomplete_needs_update = true;
-        }
         if ($.inArray(zephyr.instance, instance_list) === -1) {
             instance_list.push(zephyr.instance);
             autocomplete_needs_update = true;
