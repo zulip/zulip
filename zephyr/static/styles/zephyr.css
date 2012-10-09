@@ -261,7 +261,7 @@ img.profile_picture {
     margin-bottom: auto;
 }
 
-textarea.zephyr_message {
+textarea.new_message_textarea {
     width: 100%;
     height: 100%;
 }
