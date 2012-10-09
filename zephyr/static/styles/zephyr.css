@@ -271,7 +271,7 @@ textarea:focus {
     border: gray;
 }
 
-input.zephyr_recipient_box {
+input.recipient_box {
     width: 80%;
     margin-bottom: 0px;
     margin-top: 0px;
