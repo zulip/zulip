@@ -16,6 +16,16 @@ function register_onclick(zephyr_row, zephyr_id) {
     });
 }
 
+function focus_on(field_id) {
+    // Call after autocompleting on a field, to advance the focus to
+    // the next input field.
+
+    // Bootstrap's typeahead does not expose a callback for when an
+    // autocomplete selection has been made, so we have to do this
+    // manually.
+    $("#" + field_id).focus();
+}
+
 /* We use 'visibility' rather than 'display' and jQuery's show() / hide(),
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
