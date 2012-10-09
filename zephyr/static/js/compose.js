@@ -86,9 +86,9 @@ function check_class_for_send(class_name) {
                 $('#send-status').removeClass(status_classes).show();
                 $('#class-dne-name').text(class_name);
                 $('#class-dne').show();
-                $('#create-it').focus();
                 submit_buttons().removeAttr('disabled');
                 hide_compose();
+                $('#create-it').focus();
             }
             $("#home-error").hide();
         },
@@ -127,9 +127,9 @@ function validate_class_message() {
         $('#send-status').removeClass(status_classes).show();
         $('#class-nosub-name').text(class_name);
         $('#class-nosub').show();
-        $('#sub-it').focus();
         submit_buttons().removeAttr('disabled');
         hide_compose();
+        $('#sub-it').focus();
         return false;
     }
 
