@@ -28,7 +28,7 @@ function sub_from_home(zephyr_class, prompt_button) {
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (response) {
             add_to_class_list(response.data);
-            $("#zephyr_compose form").ajaxSubmit();
+            $("#compose form").ajaxSubmit();
             prompt_button.stop(true).fadeOut(500);
         },
         error: function (xhr, error_type, exn) {

@@ -1,7 +1,7 @@
 var status_classes = 'alert-error alert-success alert-info';
 
 function show_compose(tabname, focus_area) {
-    $('#zephyr_compose').css({visibility: "visible"});
+    $('#compose').css({visibility: "visible"});
     $('.zephyr_comp').slideDown(100);
     $('#message-type-tabs a[href="#' + tabname + '-message"]').tab('show');
     focus_area.focus();
@@ -11,11 +11,11 @@ function show_compose(tabname, focus_area) {
 function hide_compose() {
     $('input, textarea, button').blur();
     $('.zephyr_comp').slideUp(100,
-                              function() { $('#zephyr_compose').css({visibility: "hidden"});});
+                              function() { $('#compose').css({visibility: "hidden"});});
 }
 
 function clear_compose_box() {
-    $("#zephyr_compose").find('input[type=text], textarea').val('');
+    $("#compose").find('input[type=text], textarea').val('');
 }
 
 function compose_button() {
@@ -66,12 +66,12 @@ function compose_error(error_text, bad_input) {
                .addClass('alert-error')
                .text(error_text)
                .stop(true).fadeTo(0, 1);
-    $('#zephyr_compose').find('input[type="submit"]').removeAttr('disabled');
+    $('#compose').find('input[type="submit"]').removeAttr('disabled');
     bad_input.focus().select();
 }
 
 function submit_buttons() {
-    return $('#zephyr_compose').find('input[type="submit"]');
+    return $('#compose').find('input[type="submit"]');
 }
 
 // *Synchronously* check if a class exists.

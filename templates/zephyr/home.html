@@ -23,14 +23,14 @@
                     <div id="bottom_whitespace"></div>
                 </div>
 
-                <div class="zephyr_compose" id="zephyr_compose">
+                <div class="compose" id="compose">
                         <div class="alert" id="send-status"></div>
                         <div class="close composebox-close" onclick="hide_compose()">&times;</div>
                         <div class="zephyr_comp">
                                 <form action="/send_message/" method="post" class="zephyr">
                                     <input type="hidden" name="type" value="class" id="new_message_type"/>
                                     {% csrf_token %}
-                                    <table class="zephyr_compose_table">
+                                    <table class="compose_table">
                                         <tbody>
                                           <tr style="visibility: collapse;">
                                             <td class="ztable_col1" />

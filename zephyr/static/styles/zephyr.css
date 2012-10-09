@@ -138,7 +138,7 @@ table.message_table {
     width: 100%;
 }
 
-table.zephyr_compose_table {
+table.compose_table {
     /* = zephyr_list */
     width: 640px;
     table-layout: fixed;
@@ -196,7 +196,7 @@ img.profile_picture {
     height: 30px;
 }
 
-#zephyr_compose {
+#compose {
     visibility: hidden;
     position: fixed;
     bottom: 0px;
@@ -236,7 +236,7 @@ img.profile_picture {
     filter:  alpha(opacity=40);
 }
 
-.zephyr_compose_table #personal-message {
+.compose_table #personal-message {
     display: none;
 }
 

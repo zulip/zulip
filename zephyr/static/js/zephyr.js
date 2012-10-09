@@ -5,7 +5,7 @@ var instance_list = [];
 $(function () {
     var i;
     var send_status = $('#send-status');
-    var buttons = $('#zephyr_compose').find('input[type="submit"]');
+    var buttons = $('#compose').find('input[type="submit"]');
 
     var options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
@@ -36,7 +36,7 @@ $(function () {
     };
 
     send_status.hide();
-    $("#zephyr_compose form").ajaxForm(options);
+    $("#compose form").ajaxForm(options);
 
     // Populate class_list_hash with data handed over to client-side template.
     for (i = 0; i < class_list.length; i++) {
