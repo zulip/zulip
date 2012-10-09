@@ -23,23 +23,23 @@
 <tr class="recipient_row">
     <td colspan="2"
         class="message_label_clickable zephyr_newstyle_class"
-        onclick="select_zephyr_by_id({{id}}); narrow_class();"
+        onclick="select_message_by_id({{id}}); narrow_class();"
         title="{{display_recipient}}">{{display_recipient}}</td>
     <td class="message_label_clickable zephyr_newstyle_instance"
-        onclick="select_zephyr_by_id({{id}}); narrow_instance();"
+        onclick="select_message_by_id({{id}}); narrow_instance();"
         title="{{instance}}">{{instance}}</td>
 </tr>
 {{else}}
 <tr class="recipient_row">
     <td colspan="3" class="message_label_clickable zephyr_newstyle_pm"
-        onclick="select_zephyr_by_id({{id}}); narrow_by_recipient();"
+        onclick="select_message_by_id({{id}}); narrow_by_recipient();"
         title="Huddle with {{display_reply_to}}">Huddle with {{display_reply_to}}</td>
 </tr>
 {{/if}}
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}"
     class="zephyr_row{{^is_class}} personal-message{{/is_class}}"
-    onclick="select_zephyr_by_id({{id}});">
+    onclick="select_message_by_id({{id}});">
     <td class="zephyr_picture">
     {{#include_sender}}
         <img class="img-rounded profile_picture"

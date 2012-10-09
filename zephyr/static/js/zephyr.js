@@ -142,18 +142,18 @@ function respond_to_zephyr(reply_type) {
 }
 
 // Called by mouseover etc.
-function select_zephyr_by_id(zephyr_id) {
+function select_message_by_id(zephyr_id) {
     if (zephyr_id === selected_zephyr_id) {
         return;
     }
-    select_zephyr(get_zephyr_row(zephyr_id), false);
+    select_message(get_zephyr_row(zephyr_id), false);
 }
 
 // Called on page load and when we [un]narrow.
-// Forces a call to select_zephyr even if the id has not changed,
+// Forces a call to select_message even if the id has not changed,
 // because the visible table might have.
 function select_and_show_by_id(zephyr_id) {
-    select_zephyr(get_zephyr_row(zephyr_id), true);
+    select_message(get_zephyr_row(zephyr_id), true);
 }
 
 function update_selected_zephyr(zephyr) {
@@ -172,7 +172,7 @@ function update_selected_zephyr(zephyr) {
     selected_zephyr = zephyr;
 }
 
-function select_zephyr(next_message, scroll_to) {
+function select_message(next_message, scroll_to) {
     var viewport = $(window);
 
     /* If the zephyr exists but is hidden, try to find the next visible one. */

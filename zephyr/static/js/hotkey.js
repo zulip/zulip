@@ -38,7 +38,7 @@ function process_hotkey(code) {
     if (directional_hotkeys.hasOwnProperty(code)) {
         next_message = directional_hotkeys[code](selected_zephyr);
         if (next_message.length !== 0) {
-            select_zephyr(next_message, true);
+            select_message(next_message, true);
         }
         if ((next_message.length === 0) && (code === 40 || code === 106)) {
             // At the last zephyr, scroll to the bottom so we have
@@ -65,13 +65,13 @@ function process_hotkey(code) {
     case 33: // Page Up
         keep_pointer_in_view();
         if (at_top_of_viewport()) {
-            select_zephyr(get_first_visible(), false);
+            select_message(get_first_visible(), false);
         }
         return false; // We want the browser to actually page up and down
     case 34: // Page Down
         keep_pointer_in_view();
         if (at_bottom_of_viewport()) {
-            select_zephyr(get_last_visible(), false);
+            select_message(get_last_visible(), false);
         }
         return false;
     case 27: // Esc: hide compose pane

@@ -8,7 +8,7 @@ function register_onclick(zephyr_row, zephyr_id) {
     zephyr_row.find(".messagebox").click(function (e) {
         if (!(clicking && mouse_moved)) {
             // Was a click (not a click-and-drag).
-            select_zephyr_by_id(zephyr_id);
+            select_message_by_id(zephyr_id);
             respond_to_zephyr();
         }
         mouse_moved = false;
