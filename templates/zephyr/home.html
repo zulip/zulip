@@ -23,18 +23,10 @@
                     <div id="bottom_whitespace"></div>
                 </div>
 
-                <div class="tabbable zephyr_compose" id="zephyr_compose">
-                    <div class="tab-content">
+                <div class="zephyr_compose" id="zephyr_compose">
                         <div class="alert" id="send-status"></div>
                         <div class="close composebox-close" onclick="hide_compose()">&times;</div>
-                        <div id="stream_or_huddle">
-                          <ul class="nav nav-pills nav-stacked" id="zephyr-type-tabs">
-                            <li class="active"><a href="#class-message" data-toggle="pill">Stream</a></li>
-                            <li><a href="#personal-message" data-toggle="pill">Huddle</a></li>
-                          </ul>
-                        </div>
-                        <div class="tab-pane active">
-                            <div class="zephyr_comp">
+                        <div class="zephyr_comp">
                                 <form action="/send_message/" method="post" class="zephyr">
                                     <input type="hidden" name="type" value="class" id="new_message_type"/>
                                     {% csrf_token %}
@@ -59,7 +51,14 @@
                                             </td>
                                           </tr>
                                           <tr>
-                                            <td class="zephyr_picture"></td>
+                                            <td class="zephyr_picture">
+                                              <div id="stream_or_huddle">
+                                                <ul class="nav nav-pills nav-stacked" id="zephyr-type-tabs">
+                                                  <li class="active"><a href="#class-message" data-toggle="pill">Stream</a></li>
+                                                  <li><a href="#personal-message" data-toggle="pill">Huddle</a></li>
+                                                </ul>
+                                              </div>
+                                            </td>
                                             <td class="pointer"></td>
                                             <td class="messagebox">
                                               <div class="zephyr_content">
@@ -71,9 +70,7 @@
                                         </tbody>
                                     </table>
                                 </form>
-                            </div>
                         </div>
-                    </div>
                 </div>
     </div>
   </div>

@@ -341,10 +341,9 @@ input.send_zephyr {
 }
 
 #stream_or_huddle {
-    position: absolute;
-    bottom: 21px;
-    left: 5px;
-    padding: 0.35em;
+    margin: 3px;
+    padding: 5px;
+    width: 90%;
     border: 1px solid grey;
 }
 
