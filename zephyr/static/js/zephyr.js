@@ -130,12 +130,8 @@ function respond_to_zephyr() {
         // Until we allow sending zephyrs based on multiple meaningful
         // representations of a user (name, username, email, etc.), just
         // deal with emails.
-        recipient = zephyr.display_recipient;
-        if (recipient === email) { // that is, we sent the original message
-            recipient = zephyr.sender_email;
-        }
         show_compose('personal', $("#new_zephyr"));
-        $("#huddle_recipient").val(recipient);
+        $("#huddle_recipient").val(zephyr.reply_to);
         break;
     }
 }
@@ -391,10 +387,10 @@ function add_zephyr_metadata(dummy, zephyr) {
     case 'personal':
         zephyr.is_personal = true;
 
-        if (zephyr.display_recipient === email) { // that is, we sent the original message
-            zephyr.reply_to = zephyr.sender_email;
-        } else {
+        if (zephyr.sender_email === email) { // that is, we sent the original message
             zephyr.reply_to = zephyr.display_recipient;
+        } else {
+            zephyr.reply_to = zephyr.sender_email;
         }
         zephyr.display_reply_to = zephyr.reply_to;
 
