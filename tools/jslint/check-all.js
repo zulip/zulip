@@ -32,7 +32,7 @@ var globals =
 
     // ui.js
     + ' register_onclick hide_email show_email'
-    + ' report_error clicking mouse_moved'
+    + ' report_error report_success clicking mouse_moved'
     + ' update_autocomplete autocomplete_needs_update'
 
     // zephyr.js

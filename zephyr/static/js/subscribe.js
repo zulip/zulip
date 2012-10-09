@@ -48,6 +48,8 @@ $(function () {
                 class_list.splice(removal_index, 1);
             }
             update_autocomplete();
+            report_success("Successfully removed subscription to " + name,
+                           $("#subscriptions-status"));
         },
         error: function (xhr) {
             report_error("Error removing subscription", xhr, $("#subscriptions-status"));
@@ -61,6 +63,8 @@ $(function () {
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').prepend(templates.subscription({subscription: name}));
             class_list.push(name.toLowerCase());
+            report_success("Successfully added subscription to " + name,
+                           $("#subscriptions-status"));
             $("#new_subscription").focus();
         },
         error: function (xhr) {

@@ -51,6 +51,12 @@ function report_error(response, xhr, status_box) {
     status_box.show();
 }
 
+function report_success(response, status_box) {
+    status_box.removeClass(status_classes).addClass('alert-success')
+              .text(response).stop(true).fadeTo(0, 1);
+    status_box.show();
+}
+
 var clicking = false;
 var mouse_moved = false;
 
