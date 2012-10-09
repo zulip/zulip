@@ -91,6 +91,9 @@ SHARED_SECRET = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # URL where Django code posts to the Tornado code to notify of new messages
 NOTIFY_WAITING_CLIENTS_URL = 'http://localhost:9993/notify_waiting_clients'
 
+# Make redirects work properly behind a reverse proxy
+USE_X_FORWARDED_HOST = True
+
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
