@@ -1,6 +1,6 @@
 #!/bin/sh
 mkdir -p zephyr/fixtures
-rm -f zephyr/fixtures/zephyrdb.test
+rm -f zephyr/tests/zephyrdb.test
 python manage.py syncdb --noinput --settings=humbug.test_settings
 python manage.py populate_db --settings=humbug.test_settings -n20
 python manage.py dumpdata  --settings=humbug.test_settings auth.User zephyr.UserProfile zephyr.Stream zephyr.Recipient zephyr.Subscription zephyr.Message zephyr.Huddle zephyr.Realm zephyr.UserMessage > zephyr/fixtures/messages.json
