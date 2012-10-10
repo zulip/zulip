@@ -79,7 +79,7 @@ td.pointer {
     white-space:    nowrap;
     font-weight: bold;
     padding-right:   10px;
-    background-color: lightgrey;
+    background-color: #bbb;
     border: 1px solid grey;
 }
 
@@ -90,7 +90,7 @@ td.pointer {
     text-overflow:  ellipsis;
     white-space:    nowrap;
     padding-left: 10px;
-    background-color: lightgrey;
+    background-color: #bbb;
     border: 1px solid grey;
     font-weight: bold;
 }
@@ -111,6 +111,7 @@ td.pointer {
 .messagebox.personal-message {
     border-color: #444;
     border-width: 0px 2px 2px 2px;
+    background-color: #feffe0;
 }
 
 .sender_name {
@@ -187,7 +188,6 @@ blockquote p {
 
 .prev_is_same_sender {
     padding-top: 0px;
-    border-top: 1px solid white;
 }
 
 .next_is_same_sender {
@@ -315,7 +315,7 @@ input.send_message {
 }
 
 .narrowed_view {
-    background-color: #EEE;
+    background-color: #DDD;
 }
 
 #bottom_whitespace {
