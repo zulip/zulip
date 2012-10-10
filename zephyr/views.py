@@ -68,14 +68,14 @@ def json_error(msg, data={}):
     return json_response(res_type="error", msg=msg, data=data, status=400)
 
 def strip_html(x):
-    """Sanitize an email, class name, etc."""
+    """Sanitize an email, stream name, etc."""
     # We remove <> in order to avoid </script> within JSON embedded in HTML.
     #
     # FIXME: consider a whitelist
     return x.replace('&', '&amp;').replace('<','&lt;').replace('>','&gt;')
 
-def get_stream(class_name, realm):
-    stream = Stream.objects.filter(name__iexact=class_name, realm=realm)
+def get_stream(stream_name, realm):
+    stream = Stream.objects.filter(name__iexact=stream_name, realm=realm)
     if stream:
         return stream[0]
     else:
@@ -166,14 +166,14 @@ def home(request):
               profile != user_profile]
 
     subscriptions = Subscription.objects.filter(userprofile_id=user_profile, active=True)
-    classes = [get_display_recipient(sub.recipient) for sub in subscriptions
+    streams = [get_display_recipient(sub.recipient) for sub in subscriptions
                if sub.recipient.type == Recipient.STREAM]
 
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
                                'email_hash'  : hashlib.md5(user_profile.user.email).hexdigest(),
                                'people'      : simplejson.dumps(people),
-                               'classes'     : simplejson.dumps(classes),
+                               'classes'     : simplejson.dumps(streams),
                                'have_initial_messages':
                                    'true' if messages else 'false',
                                'show_debug':
@@ -363,7 +363,7 @@ def send_message_backend(request, user_profile, sender):
         instance_name = strip_html(request.POST['instance']).strip()
 
         if not valid_stream_name(stream_name):
-            return json_error("Invalid class name")
+            return json_error("Invalid stream name")
         ## FIXME: Commented out temporarily while we figure out what we want
         # if not valid_stream_name(instance_name):
         #     return json_error("Invalid instance name")
@@ -465,7 +465,7 @@ def json_remove_subscription(request):
     return json_success({"data": sub_name})
 
 def valid_stream_name(name):
-    # Classes must start with a letter or number.
+    # Streams must start with a letter or number.
     return re.match("^[.a-zA-Z0-9][.a-z A-Z0-9_-]*$", name)
 
 @login_required
@@ -478,7 +478,7 @@ def json_add_subscription(request):
 
     sub_name = request.POST.get('new_subscription').strip()
     if not valid_stream_name(sub_name):
-        return json_error("Invalid characters in class names")
+        return json_error("Invalid characters in stream names")
 
     stream = create_stream_if_needed(user_profile.realm, sub_name)
     recipient = Recipient.objects.get(type_id=stream.id,
