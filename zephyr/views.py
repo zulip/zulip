@@ -173,7 +173,7 @@ def home(request):
                               {'user_profile': user_profile,
                                'email_hash'  : hashlib.md5(user_profile.user.email).hexdigest(),
                                'people'      : simplejson.dumps(people),
-                               'classes'     : simplejson.dumps(streams),
+                               'streams'     : simplejson.dumps(streams),
                                'have_initial_messages':
                                    'true' if messages else 'false',
                                'show_debug':
