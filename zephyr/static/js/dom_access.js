@@ -22,7 +22,7 @@ function get_id(zephyr_row) {
     return zephyr_row.attr('zid');
 }
 
-function get_zephyr_row(zephyr_id, table_name) {
+function get_message_row(zephyr_id, table_name) {
     if (table_name === undefined)
         table_name = (narrowed ? 'zfilt' : 'zhome');
     return $('#' + table_name + zephyr_id);

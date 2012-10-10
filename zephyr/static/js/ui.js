@@ -36,7 +36,7 @@ function hide_email() {
 
 function show_email(zephyr_id) {
     hide_email();
-    get_zephyr_row(zephyr_id).find('.sender_email').removeClass('invisible');
+    get_message_row(zephyr_id).find('.sender_email').removeClass('invisible');
 }
 
 function report_error(response, xhr, status_box) {

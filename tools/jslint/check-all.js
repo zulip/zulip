@@ -15,7 +15,7 @@ var globals =
 
     // dom_access.js
     + ' get_first_visible get_last_visible get_next_visible get_prev_visible'
-    + ' get_id get_zephyr_row'
+    + ' get_id get_message_row'
 
     // hotkey.js
     + ' process_goto_hotkey process_compose_hotkey process_key_in_input'

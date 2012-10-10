@@ -45,7 +45,7 @@ $(function () {
 });
 
 var selected_message_id = -1;  /* to be filled in on document.ready */
-var selected_message;  // = get_zephyr_row(selected_message_id)
+var selected_message;  // = get_message_row(selected_message_id)
 var received = {
     first: -1,
     last:  -1,
@@ -146,14 +146,14 @@ function select_message_by_id(zephyr_id) {
     if (zephyr_id === selected_message_id) {
         return;
     }
-    select_message(get_zephyr_row(zephyr_id), false);
+    select_message(get_message_row(zephyr_id), false);
 }
 
 // Called on page load and when we [un]narrow.
 // Forces a call to select_message even if the id has not changed,
 // because the visible table might have.
 function select_and_show_by_id(zephyr_id) {
-    select_message(get_zephyr_row(zephyr_id), true);
+    select_message(get_message_row(zephyr_id), true);
 }
 
 function update_selected_message(zephyr) {
@@ -272,7 +272,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
         var top_group = message_groups[table_name][0];
         var top_messages = [];
         $.each(top_group, function (index, id) {
-            get_zephyr_row(id, table_name).remove();
+            get_message_row(id, table_name).remove();
             top_messages.push(message_dict[id]);
         });
         zephyrs = zephyrs.concat(top_messages);
@@ -338,7 +338,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
     }
 
     $.each(zephyrs_to_render, function (index, zephyr) {
-        var row = get_zephyr_row(zephyr.id, table_name);
+        var row = get_message_row(zephyr.id, table_name);
         register_onclick(row, zephyr.id);
 
         row.find('.message_content a').each(function (index, link) {
@@ -350,7 +350,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
     });
 
     $.each(ids_where_next_is_same_sender, function (index, id) {
-        get_zephyr_row(id, table_name).find('.messagebox').addClass("next_is_same_sender");
+        get_message_row(id, table_name).find('.messagebox').addClass("next_is_same_sender");
     });
 }
 
@@ -494,7 +494,7 @@ function at_bottom_of_viewport() {
 function keep_pointer_in_view() {
     var candidate;
     var viewport = $(window);
-    var next_message = get_zephyr_row(selected_message_id);
+    var next_message = get_message_row(selected_message_id);
 
     if (above_view_threshold(next_message) && (!at_top_of_viewport())) {
         while (above_view_threshold(next_message)) {
