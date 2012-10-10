@@ -22,7 +22,7 @@ function clear_compose_box() {
 function compose_button() {
     clear_compose_box();
     $('#sidebar a[href="#home"]').tab('show');
-    show_compose('stream', $("#class"));
+    show_compose('stream', $("#stream"));
 }
 
 function toggle_compose() {
@@ -30,7 +30,7 @@ function toggle_compose() {
         // In class tab, switch to personals.
         show_compose('personal', $("#huddle_recipient"));
     } else {
-        show_compose('stream', $("#class"));
+        show_compose('stream', $("#stream"));
     }
 }
 
@@ -43,7 +43,7 @@ function composing_huddle_message() {
 }
 
 function compose_stream_name() {
-    return $.trim($("#class").val());
+    return $.trim($("#stream").val());
 }
 
 function compose_instance() {
@@ -87,8 +87,8 @@ function check_class_for_send(stream_name) {
                 // The class doesn't exist
                 okay = false;
                 $('#send-status').removeClass(status_classes).show();
-                $('#class-dne-name').text(stream_name);
-                $('#class-dne').show();
+                $('#stream-dne-name').text(stream_name);
+                $('#stream-dne').show();
                 submit_buttons().removeAttr('disabled');
                 hide_compose();
                 $('#create-it').focus();
@@ -98,7 +98,7 @@ function check_class_for_send(stream_name) {
         error: function (xhr) {
             okay = false;
             report_error("Error checking subscription", xhr, $("#home-error"));
-            $("#class").focus();
+            $("#stream").focus();
             submit_buttons().removeAttr('disabled');
         }
     });
@@ -108,7 +108,7 @@ function check_class_for_send(stream_name) {
 function validate_class_message() {
     var stream_name = compose_stream_name();
     if (stream_name === "") {
-        compose_error("Please specify a class", $("#class"));
+        compose_error("Please specify a class", $("#stream"));
         return false;
     }
 
@@ -128,8 +128,8 @@ function validate_class_message() {
     if (!subscribed_to(stream_name)) {
         // You're not subbed to the class
         $('#send-status').removeClass(status_classes).show();
-        $('#class-nosub-name').text(stream_name);
-        $('#class-nosub').show();
+        $('#stream-nosub-name').text(stream_name);
+        $('#stream-nosub').show();
         submit_buttons().removeAttr('disabled');
         hide_compose();
         $('#sub-it').focus();

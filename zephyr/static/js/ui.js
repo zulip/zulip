@@ -79,7 +79,7 @@ function update_autocomplete() {
     people_list.sort();
 
     // limit number of items so the list doesn't fall off the screen
-    $( "#class" ).typeahead({
+    $( "#stream" ).typeahead({
         source: stream_list,
         items: 3
     });
@@ -134,12 +134,12 @@ $(function () {
     // Prepare the click handler for subbing to a new class to which
     // you have composed a message.
     $('#create-it').click(function () {
-        sub_from_home(compose_stream_name(), $('#class-dne'));
+        sub_from_home(compose_stream_name(), $('#stream-dne'));
     });
 
     // Prepare the click handler for subbing to an existing class.
     $('#sub-it').click(function () {
-        sub_from_home(compose_stream_name(), $('#class-nosub'));
+        sub_from_home(compose_stream_name(), $('#stream-nosub'));
     });
 
     var throttled_scrollhandler = $.throttle(50, function(e) {
@@ -187,7 +187,7 @@ $(function () {
     });
 
     $('.button-slide').click(function () {
-        show_compose('stream', $("#class"));
+        show_compose('stream', $("#stream"));
     });
 
     $('#sidebar a[href="#subscriptions"]').click(fetch_subs);
