@@ -365,7 +365,7 @@ function add_message_metadata(dummy, message) {
 
     switch (message.type) {
     case 'stream':
-        message.is_class = true;
+        message.is_stream = true;
         if ($.inArray(message.instance, instance_list) === -1) {
             instance_list.push(message.instance);
             autocomplete_needs_update = true;
