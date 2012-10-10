@@ -23,8 +23,8 @@ def get_display_recipient(recipient):
     name, for a class, or the email, for a user).
     """
     if recipient.type == Recipient.CLASS:
-        zephyr_class = ZephyrClass.objects.get(id=recipient.type_id)
-        return zephyr_class.name
+        stream = Stream.objects.get(id=recipient.type_id)
+        return stream.name
     elif recipient.type == Recipient.HUDDLE:
         user_profile_list = [UserProfile.objects.get(user=s.userprofile) for s in
                              Subscription.objects.filter(recipient=recipient)]
@@ -42,8 +42,8 @@ def get_log_recipient(recipient):
     name, for a class, or the email, for a user).
     """
     if recipient.type == Recipient.CLASS:
-        zephyr_class = ZephyrClass.objects.get(id=recipient.type_id)
-        return zephyr_class.name
+        stream = Stream.objects.get(id=recipient.type_id)
+        return stream.name
 
     user_profile_list = [UserProfile.objects.get(user=s.userprofile) for s in
                          Subscription.objects.filter(recipient=recipient)]
@@ -143,9 +143,9 @@ def create_user_if_needed(realm, email, password, full_name, short_name):
 
 def create_class_if_needed(realm, class_name):
     try:
-        return ZephyrClass.objects.get(name__iexact=class_name, realm=realm)
-    except ZephyrClass.DoesNotExist:
-        new_class = ZephyrClass()
+        return Stream.objects.get(name__iexact=class_name, realm=realm)
+    except Stream.DoesNotExist:
+        new_class = Stream()
         new_class.name = class_name
         new_class.realm = realm
         new_class.save()
@@ -154,23 +154,23 @@ def create_class_if_needed(realm, class_name):
         return new_class
 
 
-class ZephyrClass(models.Model):
+class Stream(models.Model):
     name = models.CharField(max_length=30, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True)
 
     def __repr__(self):
-        return "<ZephyrClass: %s>" % (self.name,)
+        return "<Stream: %s>" % (self.name,)
     def __str__(self):
         return self.__repr__()
 
     @classmethod
     def create(cls, name, realm):
-        zephyr_class = cls(name=name, realm=realm)
-        zephyr_class.save()
+        stream = cls(name=name, realm=realm)
+        stream.save()
 
-        recipient = Recipient(type_id=zephyr_class.id, type=Recipient.CLASS)
+        recipient = Recipient(type_id=stream.id, type=Recipient.CLASS)
         recipient.save()
-        return (zephyr_class, recipient)
+        return (stream, recipient)
 
 class Recipient(models.Model):
     type_id = models.IntegerField(db_index=True)

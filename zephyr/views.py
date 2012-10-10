@@ -10,7 +10,7 @@ from django.utils.timezone import utc
 from django.core.exceptions import ValidationError
 from django.contrib.auth.views import login as django_login_page
 from django.contrib.auth.models import User
-from zephyr.models import Message, UserProfile, ZephyrClass, Subscription, \
+from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, \
     create_user, do_send_message, mit_sync_table, create_user_if_needed, \
     create_class_if_needed, PreregistrationUser
@@ -75,9 +75,9 @@ def strip_html(x):
     return x.replace('&', '&amp;').replace('<','&lt;').replace('>','&gt;')
 
 def get_class(class_name, realm):
-    zephyr_class = ZephyrClass.objects.filter(name__iexact=class_name, realm=realm)
-    if zephyr_class:
-        return zephyr_class[0]
+    stream = Stream.objects.filter(name__iexact=class_name, realm=realm)
+    if stream:
+        return stream[0]
     else:
         return None
 
@@ -359,17 +359,17 @@ def send_message_backend(request, user_profile, sender):
             return json_error("Missing class")
         if "instance" not in request.POST:
             return json_error("Missing instance")
-        zephyr_class_name = strip_html(request.POST['class']).strip()
+        stream_name = strip_html(request.POST['class']).strip()
         instance_name = strip_html(request.POST['instance']).strip()
 
-        if not valid_class_name(zephyr_class_name):
+        if not valid_class_name(stream_name):
             return json_error("Invalid class name")
         ## FIXME: Commented out temporarily while we figure out what we want
         # if not valid_class_name(instance_name):
         #     return json_error("Invalid instance name")
 
-        zephyr_class = create_class_if_needed(user_profile.realm, zephyr_class_name)
-        recipient = Recipient.objects.get(type_id=zephyr_class.id, type=Recipient.CLASS)
+        stream = create_class_if_needed(user_profile.realm, stream_name)
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.CLASS)
     elif message_type_name == 'personal':
         if "recipient" not in request.POST:
             return json_error("Missing recipient")
@@ -451,11 +451,11 @@ def json_remove_subscription(request):
         return json_error("Missing subscriptions")
 
     sub_name = request.POST.get('subscription')
-    zephyr_class = get_class(sub_name, user_profile.realm)
-    if not zephyr_class:
+    stream = get_class(sub_name, user_profile.realm)
+    if not stream:
         return json_error("Not subscribed, so you can't unsubscribe")
 
-    recipient = Recipient.objects.get(type_id=zephyr_class.id,
+    recipient = Recipient.objects.get(type_id=stream.id,
                                       type=Recipient.CLASS)
     subscription = Subscription.objects.get(
         userprofile=user_profile, recipient=recipient)
@@ -480,8 +480,8 @@ def json_add_subscription(request):
     if not valid_class_name(sub_name):
         return json_error("Invalid characters in class names")
 
-    zephyr_class = create_class_if_needed(user_profile.realm, sub_name)
-    recipient = Recipient.objects.get(type_id=zephyr_class.id,
+    stream = create_class_if_needed(user_profile.realm, sub_name)
+    recipient = Recipient.objects.get(type_id=stream.id,
                                       type=Recipient.CLASS)
 
     subscription = Subscription.objects.filter(userprofile=user_profile,
@@ -560,9 +560,9 @@ def change_settings(request):
     return json_success(result)
 
 @login_required
-def class_exists(request, zephyr_class):
-    if not valid_class_name(zephyr_class):
+def class_exists(request, stream):
+    if not valid_class_name(stream):
         return json_error("Invalid characters in class name")
     return HttpResponse(
-        bool(get_class(zephyr_class,
+        bool(get_class(stream,
                        UserProfile.objects.get(user=request.user).realm)))

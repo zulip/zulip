@@ -19,11 +19,11 @@ function fetch_subs() {
     });
 }
 
-function sub_from_home(zephyr_class, prompt_button) {
+function sub_from_home(stream, prompt_button) {
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/add',
-        data:      {new_subscription: zephyr_class},
+        data:      {new_subscription: stream},
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (response) {

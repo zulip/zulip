@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.utils.timezone import utc
 from django.db.models import Q
 
-from zephyr.models import Message, UserProfile, ZephyrClass, Recipient, Subscription, \
+from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, Realm, do_send_message
 from zephyr.views import get_updates
 from zephyr.decorator import TornadoAsyncException
@@ -53,7 +53,7 @@ class AuthedTestCase(TestCase):
         if message_type == Recipient.PERSONAL:
             recipient = self.get_userprofile(recipient_name)
         else:
-            recipient = ZephyrClass.objects.get(name=recipient_name, realm=sender.realm)
+            recipient = Stream.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=message_type)
         pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
         do_send_message(Message(sender=sender, recipient=recipient, instance="test", pub_date=pub_date),
@@ -61,8 +61,8 @@ class AuthedTestCase(TestCase):
 
     def users_subscribed_to_class(self, class_name, realm_domain):
         realm = Realm.objects.get(domain=realm_domain)
-        zephyr_class = ZephyrClass.objects.get(name=class_name, realm=realm)
-        recipient = Recipient.objects.get(type_id=zephyr_class.id, type=Recipient.CLASS)
+        stream = Stream.objects.get(name=class_name, realm=realm)
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.CLASS)
         subscriptions = Subscription.objects.filter(recipient=recipient)
 
         return [subscription.userprofile.user for subscription in subscriptions]
@@ -328,13 +328,13 @@ class MessagePOSTTest(AuthedTestCase):
         is successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        self.assertFalse(ZephyrClass.objects.filter(name="nonexistent_class"))
+        self.assertFalse(Stream.objects.filter(name="nonexistent_class"))
         result = self.client.post("/send_message/", {"type": "class",
                                                      "class": "nonexistent_class",
                                                      "content": "Test message",
                                                      "instance": "Test instance"})
         self.assert_json_success(result)
-        self.assertTrue(ZephyrClass.objects.filter(name="nonexistent_class"))
+        self.assertTrue(Stream.objects.filter(name="nonexistent_class"))
 
     def test_personal_message(self):
         """

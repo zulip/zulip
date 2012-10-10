@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
-from zephyr.models import Message, UserProfile, ZephyrClass, Recipient, \
+from zephyr.models import Message, UserProfile, Stream, Recipient, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
     create_user, do_send_message, create_user_if_needed, create_class_if_needed
 from zephyr.lib.parallel import run_parallel
@@ -28,10 +28,10 @@ def create_users(name_list):
 
 def create_classes(class_list, realm):
     for name in class_list:
-        if ZephyrClass.objects.filter(name=name, realm=realm):
+        if Stream.objects.filter(name=name, realm=realm):
             # We're trying to create the same zephyr class twice!
             raise
-        ZephyrClass.create(name, realm)
+        Stream.create(name, realm)
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -97,7 +97,7 @@ class Command(BaseCommand):
         class_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
 
         if options["delete"]:
-            for klass in [Message, ZephyrClass, UserProfile, User, Recipient,
+            for klass in [Message, Stream, UserProfile, User, Recipient,
                           Realm, Subscription, Huddle, UserMessage]:
                 klass.objects.all().delete()
 
@@ -169,8 +169,8 @@ class Command(BaseCommand):
             # Now subscribe everyone to these classes
             profiles = UserProfile.objects.filter(realm=mit_realm)
             for cls in mit_subs_list.all_subs:
-                zephyr_class = ZephyrClass.objects.get(name=cls, realm=mit_realm)
-                recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=zephyr_class.id)
+                stream = Stream.objects.get(name=cls, realm=mit_realm)
+                recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=stream.id)
                 for i, profile in enumerate(profiles):
                     if profile.user.email in mit_subs_list.subs_lists:
                         key = profile.user.email
@@ -188,8 +188,8 @@ class Command(BaseCommand):
             # Now subscribe everyone to these classes
             profiles = UserProfile.objects.filter(realm=humbug_realm)
             for cls in humbug_class_list:
-                zephyr_class = ZephyrClass.objects.get(name=cls, realm=humbug_realm)
-                recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=zephyr_class.id)
+                stream = Stream.objects.get(name=cls, realm=humbug_realm)
+                recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=stream.id)
                 for i, profile in enumerate(profiles):
                     # Subscribe to some classes.
                     new_subscription = Subscription(userprofile=profile, recipient=recipient)
@@ -249,9 +249,9 @@ def restore_saved_messages():
             message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
                                                          type_id=user_profile.id)
         elif message.type == Recipient.CLASS:
-            zephyr_class = create_class_if_needed(realm, old_message["recipient"])
+            stream = create_class_if_needed(realm, old_message["recipient"])
             message.recipient = Recipient.objects.get(type=Recipient.CLASS,
-                                                         type_id=zephyr_class.id)
+                                                         type_id=stream.id)
         elif message.type == Recipient.HUDDLE:
             for u in old_message["recipient"]:
                 create_user_if_needed(realm, u["email"], u["email"].split('@')[0],
@@ -334,11 +334,11 @@ def send_messages(data):
             message.sender = get_user_profile_by_id(personals_pair[1])
             saved_data = personals_pair
         elif message_type == Recipient.CLASS:
-            zephyr_class = ZephyrClass.objects.get(id=message.recipient.type_id)
+            stream = Stream.objects.get(id=message.recipient.type_id)
             # Pick a random subscriber to the class
             message.sender = random.choice(Subscription.objects.filter(
                     recipient=message.recipient)).userprofile
-            message.instance = zephyr_class.name + str(random.randint(1, 3))
+            message.instance = stream.name + str(random.randint(1, 3))
             saved_data = message.instance
 
         message.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
