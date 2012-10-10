@@ -354,57 +354,57 @@ function add_to_table(messages, table_name, filter_function, where) {
     });
 }
 
-function add_zephyr_metadata(dummy, zephyr) {
+function add_message_metadata(dummy, message) {
     if (received.first === -1) {
-        received.first = zephyr.id;
+        received.first = message.id;
     } else {
-        received.first = Math.min(received.first, zephyr.id);
+        received.first = Math.min(received.first, message.id);
     }
 
-    received.last = Math.max(received.last, zephyr.id);
+    received.last = Math.max(received.last, message.id);
 
-    switch (zephyr.type) {
+    switch (message.type) {
     case 'class':
-        zephyr.is_class = true;
-        if ($.inArray(zephyr.instance, instance_list) === -1) {
-            instance_list.push(zephyr.instance);
+        message.is_class = true;
+        if ($.inArray(message.instance, instance_list) === -1) {
+            instance_list.push(message.instance);
             autocomplete_needs_update = true;
         }
-        zephyr.reply_to = zephyr.sender_email;
+        message.reply_to = message.sender_email;
         break;
 
     case 'huddle':
-        zephyr.is_huddle = true;
-        zephyr.reply_to = get_huddle_recipient(zephyr);
-        zephyr.display_reply_to = get_huddle_recipient_names(zephyr);
+        message.is_huddle = true;
+        message.reply_to = get_huddle_recipient(message);
+        message.display_reply_to = get_huddle_recipient_names(message);
         break;
 
     case 'personal':
-        zephyr.is_personal = true;
+        message.is_personal = true;
 
-        if (zephyr.sender_email === email) { // that is, we sent the original message
-            zephyr.reply_to = zephyr.display_recipient;
+        if (message.sender_email === email) { // that is, we sent the original message
+            message.reply_to = message.display_recipient;
         } else {
-            zephyr.reply_to = zephyr.sender_email;
+            message.reply_to = message.sender_email;
         }
-        zephyr.display_reply_to = zephyr.reply_to;
+        message.display_reply_to = message.reply_to;
 
-        if (zephyr.reply_to !== email &&
-                $.inArray(zephyr.reply_to, people_list) === -1) {
-            people_list.push(zephyr.reply_to);
+        if (message.reply_to !== email &&
+                $.inArray(message.reply_to, people_list) === -1) {
+            people_list.push(message.reply_to);
             autocomplete_needs_update = true;
         }
         break;
     }
 
-    message_dict[zephyr.id] = zephyr;
+    message_dict[message.id] = message;
 }
 
 function add_messages(data) {
     if (!data || !data.messages)
         return;
 
-    $.each(data.messages, add_zephyr_metadata);
+    $.each(data.messages, add_message_metadata);
 
     if (loading_spinner) {
         loading_spinner.stop();
