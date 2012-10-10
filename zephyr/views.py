@@ -560,7 +560,7 @@ def change_settings(request):
     return json_success(result)
 
 @login_required
-def class_exists(request, stream):
+def stream_exists(request, stream):
     if not valid_stream_name(stream):
         return json_error("Invalid characters in class name")
     return HttpResponse(

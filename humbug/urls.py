@@ -31,7 +31,7 @@ urlpatterns = patterns('',
     url(r'^json/subscriptions/add$', 'zephyr.views.json_add_subscription', name='add_subscription'),
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': os.path.join(settings.SITE_ROOT, '..', 'zephyr', 'static/')}),
-    url(r'^subscriptions/exists/(?P<stream>.*)$', 'zephyr.views.class_exists', name='class_exists'),
+    url(r'^subscriptions/exists/(?P<stream>.*)$', 'zephyr.views.stream_exists', name='stream_exists'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
