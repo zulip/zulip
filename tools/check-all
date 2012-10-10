@@ -10,7 +10,7 @@ fi
 cd "$SCRIPT_DIR"/..;
 
 if git ls-files | grep py$ | grep -v ^confirmation/ \
-    | grep -v humbug/test-settings.py \
+    | grep -v humbug/test_settings.py \
     | xargs pyflakes \
     | grep -v 'imported but unused'; then
 
