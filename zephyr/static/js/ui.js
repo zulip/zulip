@@ -9,7 +9,7 @@ function register_onclick(zephyr_row, zephyr_id) {
         if (!(clicking && mouse_moved)) {
             // Was a click (not a click-and-drag).
             select_message_by_id(zephyr_id);
-            respond_to_zephyr();
+            respond_to_message();
         }
         mouse_moved = false;
         clicking = false;

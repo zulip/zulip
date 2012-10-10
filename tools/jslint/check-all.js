@@ -39,7 +39,7 @@ var globals =
     // zephyr.js
     + ' message_array message_dict'
     + ' status_classes clear_table add_to_table instance_list'
-    + ' keep_pointer_in_view respond_to_zephyr'
+    + ' keep_pointer_in_view respond_to_message'
     + ' select_message select_message_by_id'
     + ' scroll_to_selected select_and_show_by_id'
     + ' selected_message selected_message_id'

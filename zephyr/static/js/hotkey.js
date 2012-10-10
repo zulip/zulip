@@ -81,10 +81,10 @@ function process_hotkey(code) {
         compose_button();
         return process_compose_hotkey;
     case 114: // 'r': respond to zephyr
-        respond_to_zephyr();
+        respond_to_message();
         return process_hotkey;
     case 82: // 'R': respond to author
-        respond_to_zephyr("personal");
+        respond_to_message("personal");
         return process_hotkey;
     case 103: // 'g': start of "go to" command
         return process_goto_hotkey;

@@ -113,7 +113,7 @@ function get_huddle_recipient_names(zephyr) {
     return recipient;
 }
 
-function respond_to_zephyr(reply_type) {
+function respond_to_message(reply_type) {
     var zephyr, tabname;
     zephyr = message_dict[selected_message_id];
     if (zephyr.type === "class") {
