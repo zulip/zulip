@@ -26,10 +26,10 @@ def create_users(name_list):
         realm = Realm.objects.get(domain=domain)
         create_user(email, password, realm, name, short_name)
 
-def create_streams(class_list, realm):
-    for name in class_list:
+def create_streams(stream_list, realm):
+    for name in stream_list:
         if Stream.objects.filter(name=name, realm=realm):
-            # We're trying to create the same zephyr class twice!
+            # We're trying to create the same stream twice!
             raise
         Stream.create(name, realm)
 
@@ -94,7 +94,7 @@ class Command(BaseCommand):
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
 
-        class_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
+        stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
 
         if options["delete"]:
             for model in [Message, Stream, UserProfile, User, Recipient,
@@ -115,16 +115,16 @@ class Command(BaseCommand):
 
             create_users(names)
 
-            # Create public classes.
-            create_streams(class_list, humbug_realm)
-            recipient_classes = [klass.type_id for klass in
+            # Create public streams.
+            create_streams(stream_list, humbug_realm)
+            recipient_streams = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
-            # Create subscriptions to classes
+            # Create subscriptions to streams
             profiles = UserProfile.objects.all()
             for i, profile in enumerate(profiles):
-                # Subscribe to some classes.
-                for recipient in recipient_classes[:int(len(recipient_classes) *
+                # Subscribe to some streams.
+                for recipient in recipient_streams[:int(len(recipient_streams) *
                                                         float(i)/len(profiles)) + 1]:
                     r = Recipient.objects.get(type=Recipient.STREAM, type_id=recipient)
                     new_subscription = Subscription(userprofile=profile,
@@ -132,7 +132,7 @@ class Command(BaseCommand):
                     new_subscription.save()
         else:
             humbug_realm = Realm.objects.get(domain="humbughq.com")
-            recipient_classes = [klass.type_id for klass in
+            recipient_streams = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
@@ -166,7 +166,7 @@ class Command(BaseCommand):
 
             create_streams(mit_subs_list.all_subs, mit_realm)
 
-            # Now subscribe everyone to these classes
+            # Now subscribe everyone to these streams
             profiles = UserProfile.objects.filter(realm=mit_realm)
             for cls in mit_subs_list.all_subs:
                 stream = Stream.objects.get(name=cls, realm=mit_realm)
@@ -182,16 +182,16 @@ class Command(BaseCommand):
 
             internal_humbug_users = []
             create_users(internal_humbug_users)
-            humbug_class_list = ["devel", "all", "humbug", "design", "support"]
-            create_streams(humbug_class_list, humbug_realm)
+            humbug_stream_list = ["devel", "all", "humbug", "design", "support"]
+            create_streams(humbug_stream_list, humbug_realm)
 
-            # Now subscribe everyone to these classes
+            # Now subscribe everyone to these streams
             profiles = UserProfile.objects.filter(realm=humbug_realm)
-            for cls in humbug_class_list:
+            for cls in humbug_stream_list:
                 stream = Stream.objects.get(name=cls, realm=humbug_realm)
                 recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                 for i, profile in enumerate(profiles):
-                    # Subscribe to some classes.
+                    # Subscribe to some streams.
                     new_subscription = Subscription(userprofile=profile, recipient=recipient)
                     new_subscription.save()
 
@@ -266,8 +266,8 @@ def restore_saved_messages():
 
 
 # Create some test messages, including:
-# - multiple classes
-# - multiple instances per class
+# - multiple streams
+# - multiple instances per stream
 # - multiple huddles
 # - multiple personals converastions
 # - multiple messages per instance
@@ -279,7 +279,7 @@ def send_messages(data):
     texts = file("zephyr/management/commands/test_messages.txt", "r").readlines()
     offset = random.randint(0, len(texts))
 
-    recipient_classes = [klass.id for klass in
+    recipient_streams = [klass.id for klass in
                          Recipient.objects.filter(type=Recipient.STREAM)]
     recipient_huddles = [h.id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
 
@@ -323,7 +323,7 @@ def send_messages(data):
             random.shuffle(personals_pair)
         elif (randkey <= random_max * 1.0):
             message_type = Recipient.STREAM
-            message.recipient = get_recipient_by_id(random.choice(recipient_classes))
+            message.recipient = get_recipient_by_id(random.choice(recipient_streams))
 
         if message_type == Recipient.HUDDLE:
             sender_id = random.choice(huddle_members[message.recipient.id])
@@ -335,7 +335,7 @@ def send_messages(data):
             saved_data = personals_pair
         elif message_type == Recipient.STREAM:
             stream = Stream.objects.get(id=message.recipient.type_id)
-            # Pick a random subscriber to the class
+            # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
                     recipient=message.recipient)).userprofile
             message.instance = stream.name + str(random.randint(1, 3))
