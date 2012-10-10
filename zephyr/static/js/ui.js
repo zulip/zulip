@@ -4,11 +4,11 @@
 // when we switch back.)
 var scroll_positions = {};
 
-function register_onclick(zephyr_row, zephyr_id) {
-    zephyr_row.find(".messagebox").click(function (e) {
+function register_onclick(message_row, message_id) {
+    message_row.find(".messagebox").click(function (e) {
         if (!(clicking && mouse_moved)) {
             // Was a click (not a click-and-drag).
-            select_message_by_id(zephyr_id);
+            select_message_by_id(message_id);
             respond_to_message();
         }
         mouse_moved = false;
@@ -34,9 +34,9 @@ function hide_email() {
     $('.sender_email').addClass('invisible');
 }
 
-function show_email(zephyr_id) {
+function show_email(message_id) {
     hide_email();
-    get_message_row(zephyr_id).find('.sender_email').removeClass('invisible');
+    get_message_row(message_id).find('.sender_email').removeClass('invisible');
 }
 
 function report_error(response, xhr, status_box) {
@@ -128,7 +128,7 @@ $(function () {
     });
 
     // Prepare the click handler for subbing to a new class to which
-    // you have composed a zephyr.
+    // you have composed a message.
     $('#create-it').click(function () {
         sub_from_home(compose_class_name(), $('#class-dne'));
     });
