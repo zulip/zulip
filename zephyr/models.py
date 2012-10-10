@@ -197,7 +197,7 @@ class Recipient(models.Model):
 class Message(models.Model):
     sender = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
-    subject = models.CharField(max_length=30)
+    subject = models.CharField(max_length=60)
     content = models.TextField()
     pub_date = models.DateTimeField('date published')
 
