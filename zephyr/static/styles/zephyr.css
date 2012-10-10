@@ -25,7 +25,8 @@ body {
 .message_list {
     background-color: aliceblue;
     width: 640px;
-    padding-right: 30px;
+    padding-left: 10px;
+    padding-right: 20px;
 }
 
 .message_row {
@@ -201,7 +202,8 @@ img.profile_picture {
     position: fixed;
     bottom: 0px;
     background: white;
-
+    /* = message_list.padding-left */
+    padding-left: 10px;
     /* = message_list.width + padding-right */
     width: 670px;
 }
@@ -288,7 +290,7 @@ input.send_message {
     border: 1px solid black;
     /* .message_list width + padding_right - my border*2 - my padding*2 */
     width: 648px;
-    margin: 0 auto;
+    margin-left: -10px; /* -1*.message_list padding */
     background-color: #DDD;
     text-decoration: none;
     top: 0px;
