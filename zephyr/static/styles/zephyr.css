@@ -3,8 +3,15 @@ body {
 }
 
 .sidebar-nav {
-    padding-top: 30px;
     background-color: white;
+    padding: 0.5em;
+    margin-top: 2em;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+}
+
+ul#sidebar {
+    margin-bottom: 0px;
 }
 
 .my_fullname {
