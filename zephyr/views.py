@@ -362,10 +362,10 @@ def send_message_backend(request, user_profile, sender):
         stream_name = strip_html(request.POST['class']).strip()
         instance_name = strip_html(request.POST['instance']).strip()
 
-        if not valid_class_name(stream_name):
+        if not valid_stream_name(stream_name):
             return json_error("Invalid class name")
         ## FIXME: Commented out temporarily while we figure out what we want
-        # if not valid_class_name(instance_name):
+        # if not valid_stream_name(instance_name):
         #     return json_error("Invalid instance name")
 
         stream = create_stream_if_needed(user_profile.realm, stream_name)
@@ -464,7 +464,7 @@ def json_remove_subscription(request):
 
     return json_success({"data": sub_name})
 
-def valid_class_name(name):
+def valid_stream_name(name):
     # Classes must start with a letter or number.
     return re.match("^[.a-zA-Z0-9][.a-z A-Z0-9_-]*$", name)
 
@@ -477,7 +477,7 @@ def json_add_subscription(request):
         return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
 
     sub_name = request.POST.get('new_subscription').strip()
-    if not valid_class_name(sub_name):
+    if not valid_stream_name(sub_name):
         return json_error("Invalid characters in class names")
 
     stream = create_stream_if_needed(user_profile.realm, sub_name)
@@ -561,7 +561,7 @@ def change_settings(request):
 
 @login_required
 def class_exists(request, stream):
-    if not valid_class_name(stream):
+    if not valid_stream_name(stream):
         return json_error("Invalid characters in class name")
     return HttpResponse(
         bool(get_class(stream,
