@@ -13,7 +13,7 @@ $(function () {
     }
 
     // Compile Handlebars templates.
-    templates.zephyr       = Handlebars.compile($("#template_zephyr").html());
+    templates.message       = Handlebars.compile($("#template_message").html());
     templates.subscription = Handlebars.compile($("#template_subscription").html());
 });
 

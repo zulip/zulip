@@ -326,7 +326,7 @@ function add_to_table(messages, table_name, filter_function, where) {
         message_groups[table_name] = message_groups[table_name].concat(new_message_groups);
     }
 
-    var rendered = templates.zephyr({
+    var rendered = templates.message({
         messages: messages_to_render,
         include_layout_row: (table.find('tr:first').length === 0)
     });
