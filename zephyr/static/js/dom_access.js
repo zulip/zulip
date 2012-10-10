@@ -1,21 +1,21 @@
 function get_next_visible(message_row) {
     if (message_row === undefined)
         return [];
-    return message_row.nextAll('.zephyr_row:first');
+    return message_row.nextAll('.message_row:first');
 }
 
 function get_prev_visible(message_row) {
     if (message_row === undefined)
         return [];
-    return message_row.prevAll('.zephyr_row:first');
+    return message_row.prevAll('.message_row:first');
 }
 
 function get_first_visible() {
-    return $('.focused_table .zephyr_row:first');
+    return $('.focused_table .message_row:first');
 }
 
 function get_last_visible() {
-    return $('.focused_table .zephyr_row:last');
+    return $('.focused_table .message_row:last');
 }
 
 function get_id(message_row) {
