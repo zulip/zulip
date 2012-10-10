@@ -38,9 +38,9 @@ $(function () {
     send_status.hide();
     $("#compose form").ajaxForm(options);
 
-    // Populate class_list_hash with data handed over to client-side template.
-    for (i = 0; i < class_list.length; i++) {
-        class_list_hash[class_list[i].toLowerCase()] = true;
+    // Populate stream_list_hash with data handed over to client-side template.
+    for (i = 0; i < stream_list.length; i++) {
+        stream_list_hash[stream_list[i].toLowerCase()] = true;
     }
 });
 

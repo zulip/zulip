@@ -74,13 +74,13 @@ function mousemove() {
 var autocomplete_needs_update = false;
 
 function update_autocomplete() {
-    class_list.sort();
+    stream_list.sort();
     instance_list.sort();
     people_list.sort();
 
     // limit number of items so the list doesn't fall off the screen
     $( "#class" ).typeahead({
-        source: class_list,
+        source: stream_list,
         items: 3
     });
     $( "#instance" ).typeahead({

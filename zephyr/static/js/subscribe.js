@@ -27,7 +27,7 @@ function sub_from_home(stream, prompt_button) {
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (response) {
-            add_to_class_list(response.data);
+            add_to_stream_list(response.data);
             $("#compose form").ajaxSubmit();
             prompt_button.stop(true).fadeOut(500);
         },
@@ -37,36 +37,36 @@ function sub_from_home(stream, prompt_button) {
     });
 }
 
-class_list_hash = [];
+stream_list_hash = [];
 
 function subscribed_to(class_name) {
-    return (class_list_hash[class_name.toLowerCase()] === true);
+    return (stream_list_hash[class_name.toLowerCase()] === true);
 }
 
 function case_insensitive_subscription_index(class_name) {
     var i;
     var name = class_name.toLowerCase();
 
-    for (i = 1; i < class_list.length; i++) {
-        if (name === class_list[i].toLowerCase()) {
+    for (i = 1; i < stream_list.length; i++) {
+        if (name === stream_list[i].toLowerCase()) {
             return i;
         }
     }
     return -1;
 }
 
-function add_to_class_list(class_name) {
+function add_to_stream_list(class_name) {
     if (!subscribed_to(class_name)) {
-        class_list.push(class_name);
-        class_list_hash[class_name.toLowerCase()] = true;
+        stream_list.push(class_name);
+        stream_list_hash[class_name.toLowerCase()] = true;
     }
 }
 
-function remove_from_class_list(class_name) {
-    delete class_list_hash[class_name.toLowerCase()];
+function remove_from_stream_list(class_name) {
+    delete stream_list_hash[class_name.toLowerCase()];
     var removal_index = case_insensitive_subscription_index(class_name);
     if (removal_index !== -1) {
-        class_list.splice(removal_index, 1);
+        stream_list.splice(removal_index, 1);
     }
 }
 
@@ -77,7 +77,7 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').find('button[value="' + name + '"]').parents('tr').remove();
-            remove_from_class_list(name);
+            remove_from_stream_list(name);
             update_autocomplete();
             report_success("Successfully removed subscription to " + name,
                            $("#subscriptions-status"));
@@ -93,7 +93,7 @@ $(function () {
             $("#new_subscription").val("");
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').prepend(templates.subscription({subscription: name}));
-            add_to_class_list(name);
+            add_to_stream_list(name);
             report_success("Successfully added subscription to " + name,
                            $("#subscriptions-status"));
             $("#new_subscription").focus();

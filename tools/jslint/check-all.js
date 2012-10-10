@@ -6,7 +6,7 @@ var globals =
       ' $ jQuery Spinner Handlebars XDate'
 
     // index.html
-    + ' initial_pointer email class_list people_list have_initial_messages'
+    + ' initial_pointer email stream_list people_list have_initial_messages'
 
     // compose.js
     + ' show_compose hide_compose toggle_compose compose_button'
@@ -28,8 +28,8 @@ var globals =
     + ' loading_spinner templates'
 
     // subscribe.js
-    + ' fetch_subs sub_from_home subscribed_to class_list_hash'
-    + ' add_to_class_list'
+    + ' fetch_subs sub_from_home subscribed_to stream_list_hash'
+    + ' add_to_stream_list'
 
     // ui.js
     + ' register_onclick hide_email show_email'
