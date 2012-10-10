@@ -19,8 +19,8 @@ def get_display_recipient(recipient):
     """
     recipient: an instance of Recipient.
 
-    returns: an appropriate string describing the recipient (the class
-    name, for a class, or the email, for a user).
+    returns: an appropriate string describing the recipient (the stream
+    name, for a stream, or the email, for a user).
     """
     if recipient.type == Recipient.STREAM:
         stream = Stream.objects.get(id=recipient.type_id)
@@ -38,8 +38,8 @@ def get_log_recipient(recipient):
     """
     recipient: an instance of Recipient.
 
-    returns: an appropriate string describing the recipient (the class
-    name, for a class, or the email, for a user).
+    returns: an appropriate string describing the recipient (the stream
+    name, for a stream, or the email, for a user).
     """
     if recipient.type == Recipient.STREAM:
         stream = Stream.objects.get(id=recipient.type_id)
@@ -141,17 +141,17 @@ def create_user_if_needed(realm, email, password, full_name, short_name):
         user = User.objects.get(email=email)
         return user
 
-def create_stream_if_needed(realm, class_name):
+def create_stream_if_needed(realm, stream_name):
     try:
-        return Stream.objects.get(name__iexact=class_name, realm=realm)
+        return Stream.objects.get(name__iexact=stream_name, realm=realm)
     except Stream.DoesNotExist:
-        new_class = Stream()
-        new_class.name = class_name
-        new_class.realm = realm
-        new_class.save()
-        recipient = Recipient(type_id=new_class.id, type=Recipient.STREAM)
+        stream = Stream()
+        stream.name = stream_name
+        stream.realm = realm
+        stream.save()
+        recipient = Recipient(type_id=stream.id, type=Recipient.STREAM)
         recipient.save()
-        return new_class
+        return stream
 
 
 class Stream(models.Model):
@@ -175,7 +175,7 @@ class Stream(models.Model):
 class Recipient(models.Model):
     type_id = models.IntegerField(db_index=True)
     type = models.PositiveSmallIntegerField(db_index=True)
-    # Valid types are {personal, class, huddle}
+    # Valid types are {personal, stream, huddle}
     PERSONAL = 1
     STREAM = 2
     HUDDLE = 3
@@ -350,7 +350,7 @@ def filter_by_subscriptions(messages, user):
     subscriptions = [sub.recipient for sub in
                      Subscription.objects.filter(userprofile=userprofile, active=True)]
     for message in messages:
-        # If you are subscribed to the personal or class, or if you
+        # If you are subscribed to the personal or stream, or if you
         # sent the personal, you can see the message.
         if (message.recipient in subscriptions) or \
                 (message.recipient.type == Recipient.PERSONAL and
