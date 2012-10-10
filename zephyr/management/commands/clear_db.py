@@ -9,9 +9,9 @@ class Command(NoArgsCommand):
     help = "Clear only tables we change: messages, accounts + sessions"
 
     def handle_noargs(self, **options):
-        for klass in [Message, Stream, UserProfile, User, Recipient,
+        for model in [Message, Stream, UserProfile, User, Recipient,
                       Realm, Subscription, Huddle, UserMessage]:
-            klass.objects.all().delete()
+            model.objects.all().delete()
         Session.objects.all().delete()
 
         self.stdout.write("Successfully cleared the database.\n")

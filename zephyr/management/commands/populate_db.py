@@ -97,9 +97,9 @@ class Command(BaseCommand):
         class_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
 
         if options["delete"]:
-            for klass in [Message, Stream, UserProfile, User, Recipient,
+            for model in [Message, Stream, UserProfile, User, Recipient,
                           Realm, Subscription, Huddle, UserMessage]:
-                klass.objects.all().delete()
+                model.objects.all().delete()
 
             # Create a test realm
             humbug_realm = Realm(domain="humbughq.com")
