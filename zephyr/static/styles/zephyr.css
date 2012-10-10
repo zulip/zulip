@@ -123,7 +123,7 @@ td.pointer {
     color:  #08C;
 }
 
-.zephyr_time {
+.message_time {
     color: gray;
     float: right;
     position: relative;
