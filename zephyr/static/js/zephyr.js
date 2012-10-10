@@ -445,8 +445,10 @@ function add_messages(data) {
         update_autocomplete();
 }
 
+var get_updates_xhr;
+var get_updates_timeout;
 function get_updates() {
-    $.ajax({
+    get_updates_xhr = $.ajax({
         type:     'POST',
         url:      'get_updates',
         data:     received,
@@ -457,7 +459,7 @@ function get_updates() {
             $('#connection-error').hide();
 
             add_messages(data);
-            setTimeout(get_updates, 0);
+            get_updates_timeout = setTimeout(get_updates, 0);
         },
         error: function (xhr, error_type, exn) {
             if (error_type === 'timeout') {
@@ -475,12 +477,26 @@ function get_updates() {
             }
 
             var retry_sec = Math.min(90, Math.exp(received.failures/2));
-            setTimeout(get_updates, retry_sec*1000);
+            get_updates_timeout = setTimeout(get_updates, retry_sec*1000);
         }
     });
 }
 
 $(get_updates);
+
+var watchdog_time = $.now();
+setInterval(function() {
+    var new_time = $.now();
+    if ((new_time - watchdog_time) > 20000) { // 20 seconds.
+        // Our app's JS wasn't running (the machine was probably
+        // asleep). Now that we're running again, immediately poll for
+        // new updates.
+        get_updates_xhr.abort();
+        clearTimeout(get_updates_timeout);
+        get_updates();
+    }
+    watchdog_time = new_time;
+}, 5000);
 
 function at_top_of_viewport() {
     return ($(window).scrollTop() === 0);
