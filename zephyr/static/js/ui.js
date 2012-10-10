@@ -116,16 +116,16 @@ $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
 
-    $('#message-type-tabs a[href="#class-message"]').on('shown', function (e) {
+    $('#message-type-tabs a[href="#stream-message"]').on('shown', function (e) {
         $('#personal-message').hide();
-        $('#class-message').show();
+        $('#stream-message').show();
         $('#new_message_type').val('stream');
         $("#send-status").removeClass(status_classes).hide();
         focus_on("stream");
     });
     $('#message-type-tabs a[href="#personal-message"]').on('shown', function (e) {
         $('#personal-message').show();
-        $('#class-message').hide();
+        $('#stream-message').hide();
         $('#new_message_type').val('personal');
         $("#send-status").removeClass(status_classes).hide();
         focus_on("huddle_recipient");
@@ -187,7 +187,7 @@ $(function () {
     });
 
     $('.button-slide').click(function () {
-        show_compose('class', $("#class"));
+        show_compose('stream', $("#class"));
     });
 
     $('#sidebar a[href="#subscriptions"]').click(fetch_subs);

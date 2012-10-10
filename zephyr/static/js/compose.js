@@ -22,20 +22,20 @@ function clear_compose_box() {
 function compose_button() {
     clear_compose_box();
     $('#sidebar a[href="#home"]').tab('show');
-    show_compose('class', $("#class"));
+    show_compose('stream', $("#class"));
 }
 
 function toggle_compose() {
-    if ($("#message-type-tabs li.active").find("a[href=#class-message]").length !== 0) {
+    if ($("#message-type-tabs li.active").find("a[href=#stream-message]").length !== 0) {
         // In class tab, switch to personals.
         show_compose('personal', $("#huddle_recipient"));
     } else {
-        show_compose('class', $("#class"));
+        show_compose('stream', $("#class"));
     }
 }
 
 function composing_class_message() {
-    return $("#class-message").is(":visible");
+    return $("#stream-message").is(":visible");
 }
 
 function composing_huddle_message() {
