@@ -515,6 +515,16 @@ function keep_pointer_in_view() {
             }
         }
     }
+    update_selected_message(next_message);
+}
+
+// The idea here is when you've scrolled to the very
+// bottom of the page, e.g., the scroll handler isn't
+// going to fire anymore. But if I continue to use
+// the scrollwheel, the selection should advance until
+// I'm at the very top or the very bottom of the page.
+function move_pointer_at_page_top_and_bottom() {
+    var next_message = get_message_row(selected_message_id);
 
     if (at_top_of_viewport() && (parseInt(get_id(next_message), 10) >
                                  parseInt(get_id(get_first_visible()), 10))) {

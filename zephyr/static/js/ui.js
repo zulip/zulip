@@ -138,9 +138,15 @@ $(function () {
         sub_from_home(compose_class_name(), $('#class-nosub'));
     });
 
-    var throttled_scrollhandler = $.throttle(50, function() {
+    var throttled_scrollhandler = $.throttle(50, function(e) {
         if ($('#home').hasClass('active')) {
-                keep_pointer_in_view();
+            keep_pointer_in_view();
+            if (e.type === 'mousewheel') {
+                // If we mousewheel (or trackpad-scroll) when
+                // we're at the top and bottom of the page, the
+                // pointer may still want to move.
+                move_pointer_at_page_top_and_bottom();
+            }
         }
     });
     $(window).mousewheel(throttled_scrollhandler);
