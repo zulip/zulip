@@ -74,7 +74,7 @@ def strip_html(x):
     # FIXME: consider a whitelist
     return x.replace('&', '&amp;').replace('<','&lt;').replace('>','&gt;')
 
-def get_class(class_name, realm):
+def get_stream(class_name, realm):
     stream = Stream.objects.filter(name__iexact=class_name, realm=realm)
     if stream:
         return stream[0]
@@ -451,7 +451,7 @@ def json_remove_subscription(request):
         return json_error("Missing subscriptions")
 
     sub_name = request.POST.get('subscription')
-    stream = get_class(sub_name, user_profile.realm)
+    stream = get_stream(sub_name, user_profile.realm)
     if not stream:
         return json_error("Not subscribed, so you can't unsubscribe")
 
@@ -562,7 +562,7 @@ def change_settings(request):
 @login_required
 def stream_exists(request, stream):
     if not valid_stream_name(stream):
-        return json_error("Invalid characters in class name")
+        return json_error("Invalid characters in stream name")
     return HttpResponse(
-        bool(get_class(stream,
+        bool(get_stream(stream,
                        UserProfile.objects.get(user=request.user).realm)))
