@@ -59,22 +59,22 @@ var message_groups = {
     zfilt: []
 };
 
-function above_view_threshold(zephyr) {
+function above_view_threshold(message) {
     // Barnowl-style thresholds: the pointer is never above the
     // 1/5-mark.
     var viewport = $(window);
-    return zephyr.offset().top < viewport.scrollTop() + viewport.height() / 5;
+    return message.offset().top < viewport.scrollTop() + viewport.height() / 5;
 }
 
-function below_view_threshold(zephyr) {
+function below_view_threshold(message) {
     // Barnowl-style thresholds: the pointer is never below the
     // 4/5-mark.
     var viewport = $(window);
-    return zephyr.offset().top + zephyr.outerHeight(true) >
+    return message.offset().top + message.outerHeight(true) >
         viewport.scrollTop() + viewport.height() * 4 / 5;
 }
 
-function recenter_view(zephyr) {
+function recenter_view(message) {
     // Barnowl-style recentering: if the pointer is too high, center
     // in the middle of the screen. If the pointer is too low, center
     // on the 1/5-mark.
@@ -82,9 +82,9 @@ function recenter_view(zephyr) {
     // If this logic changes, above_view_threshold andd
     // below_view_threshold must also change.
     var viewport = $(window);
-    if (above_view_threshold(zephyr)) {
+    if (above_view_threshold(message)) {
         viewport.scrollTop(selected_message.offset().top - viewport.height() / 2);
-    } else if (below_view_threshold(zephyr)) {
+    } else if (below_view_threshold(message)) {
         viewport.scrollTop(selected_message.offset().top - viewport.height() / 5);
     }
 }
@@ -93,46 +93,46 @@ function scroll_to_selected() {
     recenter_view(selected_message);
 }
 
-function get_huddle_recipient(zephyr) {
+function get_huddle_recipient(message) {
     var recipient, i;
 
-    recipient = zephyr.display_recipient[0].email;
-    for (i = 1; i < zephyr.display_recipient.length; i++) {
-        recipient += ', ' + zephyr.display_recipient[i].email;
+    recipient = message.display_recipient[0].email;
+    for (i = 1; i < message.display_recipient.length; i++) {
+        recipient += ', ' + message.display_recipient[i].email;
     }
     return recipient;
 }
 
-function get_huddle_recipient_names(zephyr) {
+function get_huddle_recipient_names(message) {
     var recipient, i;
 
-    recipient = zephyr.display_recipient[0].name;
-    for (i = 1; i < zephyr.display_recipient.length; i++) {
-        recipient += ', ' + zephyr.display_recipient[i].name;
+    recipient = message.display_recipient[0].name;
+    for (i = 1; i < message.display_recipient.length; i++) {
+        recipient += ', ' + message.display_recipient[i].name;
     }
     return recipient;
 }
 
 function respond_to_message(reply_type) {
-    var zephyr, tabname;
-    zephyr = message_dict[selected_message_id];
-    if (zephyr.type === "class") {
-        $("#class").val(zephyr.display_recipient);
-        $("#instance").val(zephyr.instance);
+    var message, tabname;
+    message = message_dict[selected_message_id];
+    if (message.type === "class") {
+        $("#class").val(message.display_recipient);
+        $("#instance").val(message.instance);
     } else {
         $("#class").val("");
         $("#instance").val("");
     }
-    $("#huddle_recipient").val(zephyr.reply_to);
-    if (reply_type === "personal" && zephyr.type === "huddle") {
+    $("#huddle_recipient").val(message.reply_to);
+    if (reply_type === "personal" && message.type === "huddle") {
         // reply_to for huddle messages is the whole huddle, so for
         // personals replies we need to set the the huddle recipient
         // to just the sender
-        $("#huddle_recipient").val(zephyr.sender_email);
+        $("#huddle_recipient").val(message.sender_email);
     }
     tabname = reply_type;
     if (tabname === undefined) {
-        tabname = zephyr.type;
+        tabname = message.type;
     }
     if (tabname === "huddle") {
         // Huddle messages use the personals compose box
@@ -142,25 +142,25 @@ function respond_to_message(reply_type) {
 }
 
 // Called by mouseover etc.
-function select_message_by_id(zephyr_id) {
-    if (zephyr_id === selected_message_id) {
+function select_message_by_id(message_id) {
+    if (message_id === selected_message_id) {
         return;
     }
-    select_message(get_message_row(zephyr_id), false);
+    select_message(get_message_row(message_id), false);
 }
 
 // Called on page load and when we [un]narrow.
 // Forces a call to select_message even if the id has not changed,
 // because the visible table might have.
-function select_and_show_by_id(zephyr_id) {
-    select_message(get_message_row(zephyr_id), true);
+function select_and_show_by_id(message_id) {
+    select_message(get_message_row(message_id), true);
 }
 
-function update_selected_message(zephyr) {
+function update_selected_message(message) {
     $('.selected_message').removeClass('selected_message');
-    zephyr.addClass('selected_message');
+    message.addClass('selected_message');
 
-    var new_selected_id = get_id(zephyr);
+    var new_selected_id = get_id(message);
     if (!narrowed && new_selected_id !== selected_message_id) {
         // Narrowing is a temporary view on top of the home view and
         // doesn't permanently affect where you are.
@@ -169,18 +169,18 @@ function update_selected_message(zephyr) {
         $.post("update", {pointer: new_selected_id});
     }
     selected_message_id = new_selected_id;
-    selected_message = zephyr;
+    selected_message = message;
 }
 
 function select_message(next_message, scroll_to) {
     var viewport = $(window);
 
-    /* If the zephyr exists but is hidden, try to find the next visible one. */
+    /* If the message exists but is hidden, try to find the next visible one. */
     if (next_message.length !== 0 && next_message.is(':hidden')) {
         next_message = get_next_visible(next_message);
     }
 
-    /* Fall back to the first visible zephyr. */
+    /* Fall back to the first visible message. */
     if (next_message.length === 0) {
         next_message = $('tr:not(:hidden):first');
     }
@@ -226,10 +226,10 @@ function clear_table(table_name) {
     message_groups[table_name] = [];
 }
 
-function add_display_time(zephyr, prev) {
+function add_display_time(message, prev) {
     var two_digits = function (x) { return ('0' + x).slice(-2); };
-    var time = new XDate(zephyr.timestamp * 1000);
-    var include_date = zephyr.include_recipient;
+    var time = new XDate(message.timestamp * 1000);
+    var include_date = message.include_recipient;
 
     if (prev !== undefined) {
         var prev_time = new XDate(prev.timestamp * 1000);
@@ -239,12 +239,12 @@ function add_display_time(zephyr, prev) {
     }
 
     if (include_date) {
-        zephyr.timestr = time.toString("MMM dd") + "&nbsp;&nbsp;" +
+        message.timestr = time.toString("MMM dd") + "&nbsp;&nbsp;" +
             time.toString("HH:mm");
     } else {
-        zephyr.timestr = time.toString("HH:mm");
+        message.timestr = time.toString("HH:mm");
     }
-    zephyr.full_date_str = time.toLocaleString();
+    message.full_date_str = time.toLocaleString();
 }
 
 function add_to_table(messages, table_name, filter_function, where) {
@@ -283,38 +283,38 @@ function add_to_table(messages, table_name, filter_function, where) {
         prev = message_dict[table.find('tr:last-child').attr('zid')];
     }
 
-    $.each(messages, function (index, zephyr) {
-        if (! filter_function(zephyr))
+    $.each(messages, function (index, message) {
+        if (! filter_function(message))
             return;
 
-        zephyr.include_recipient = false;
-        zephyr.include_bookend   = false;
-        if (same_recipient(prev, zephyr)) {
-            current_group.push(zephyr.id);
+        message.include_recipient = false;
+        message.include_bookend   = false;
+        if (same_recipient(prev, message)) {
+            current_group.push(message.id);
         } else {
             if (current_group.length > 0)
                 new_message_groups.push(current_group);
-            current_group = [zephyr.id];
+            current_group = [message.id];
 
             // Add a space to the table, but not for the first element.
-            zephyr.include_recipient = true;
-            zephyr.include_bookend   = (prev !== undefined);
+            message.include_recipient = true;
+            message.include_bookend   = (prev !== undefined);
         }
 
-        zephyr.include_sender = true;
-        if (!zephyr.include_recipient &&
-            same_sender(prev, zephyr) &&
-            (Math.abs(zephyr.timestamp - prev.timestamp) < 60*10)) {
-            zephyr.include_sender = false;
+        message.include_sender = true;
+        if (!message.include_recipient &&
+            same_sender(prev, message) &&
+            (Math.abs(message.timestamp - prev.timestamp) < 60*10)) {
+            message.include_sender = false;
             ids_where_next_is_same_sender.push(prev.id);
         }
 
-        add_display_time(zephyr, prev);
+        add_display_time(message, prev);
 
-        zephyr.dom_id = table_name + zephyr.id;
+        message.dom_id = table_name + message.id;
 
-        messages_to_render.push(zephyr);
-        prev = zephyr;
+        messages_to_render.push(message);
+        prev = message;
     });
 
     if (current_group.length > 0)
@@ -337,9 +337,9 @@ function add_to_table(messages, table_name, filter_function, where) {
         table.append(rendered);
     }
 
-    $.each(messages_to_render, function (index, zephyr) {
-        var row = get_message_row(zephyr.id, table_name);
-        register_onclick(row, zephyr.id);
+    $.each(messages_to_render, function (index, message) {
+        var row = get_message_row(message.id, table_name);
+        register_onclick(row, message.id);
 
         row.find('.message_content a').each(function (index, link) {
             link = $(link);
@@ -519,7 +519,7 @@ function keep_pointer_in_view() {
     if (at_top_of_viewport() && (parseInt(get_id(next_message), 10) >
                                  parseInt(get_id(get_first_visible()), 10))) {
         // If we've scrolled to the top, keep inching the selected
-        // zephyr up to the top instead of just the latest one that is
+        // message up to the top instead of just the latest one that is
         // still on the screen.
         next_message = get_prev_visible(next_message);
     } else if (at_bottom_of_viewport() && (parseInt(get_id(next_message), 10) <
