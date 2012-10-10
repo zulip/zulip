@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, \
     create_user, do_send_message, mit_sync_table, create_user_if_needed, \
-    create_class_if_needed, PreregistrationUser
+    create_stream_if_needed, PreregistrationUser
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique
 from django.views.decorators.csrf import csrf_exempt
 
@@ -368,7 +368,7 @@ def send_message_backend(request, user_profile, sender):
         # if not valid_class_name(instance_name):
         #     return json_error("Invalid instance name")
 
-        stream = create_class_if_needed(user_profile.realm, stream_name)
+        stream = create_stream_if_needed(user_profile.realm, stream_name)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.CLASS)
     elif message_type_name == 'personal':
         if "recipient" not in request.POST:
@@ -480,7 +480,7 @@ def json_add_subscription(request):
     if not valid_class_name(sub_name):
         return json_error("Invalid characters in class names")
 
-    stream = create_class_if_needed(user_profile.realm, sub_name)
+    stream = create_stream_if_needed(user_profile.realm, sub_name)
     recipient = Recipient.objects.get(type_id=stream.id,
                                       type=Recipient.CLASS)
 

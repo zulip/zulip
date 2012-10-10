@@ -141,7 +141,7 @@ def create_user_if_needed(realm, email, password, full_name, short_name):
         user = User.objects.get(email=email)
         return user
 
-def create_class_if_needed(realm, class_name):
+def create_stream_if_needed(realm, class_name):
     try:
         return Stream.objects.get(name__iexact=class_name, realm=realm)
     except Stream.DoesNotExist:

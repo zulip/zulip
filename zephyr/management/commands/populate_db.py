@@ -4,7 +4,7 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Message, UserProfile, Stream, Recipient, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
-    create_user, do_send_message, create_user_if_needed, create_class_if_needed
+    create_user, do_send_message, create_user_if_needed, create_stream_if_needed
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
 from django.conf import settings
@@ -249,7 +249,7 @@ def restore_saved_messages():
             message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
                                                          type_id=user_profile.id)
         elif message.type == Recipient.CLASS:
-            stream = create_class_if_needed(realm, old_message["recipient"])
+            stream = create_stream_if_needed(realm, old_message["recipient"])
             message.recipient = Recipient.objects.get(type=Recipient.CLASS,
                                                          type_id=stream.id)
         elif message.type == Recipient.HUDDLE:
