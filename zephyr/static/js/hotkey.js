@@ -41,11 +41,11 @@ function process_hotkey(code) {
             select_message(next_message, true);
         }
         if ((next_message.length === 0) && (code === 40 || code === 106)) {
-            // At the last zephyr, scroll to the bottom so we have
-            // lots of nice whitespace for new zephyrs coming in.
+            // At the last message, scroll to the bottom so we have
+            // lots of nice whitespace for new messages coming in.
             //
             // FIXME: this doesn't work for End because get_last_visible()
-            // always returns a zephyr.
+            // always returns a message.
             var viewport = $(window);
             viewport.scrollTop($("#main_div").outerHeight(true));
         }
@@ -80,7 +80,7 @@ function process_hotkey(code) {
     case 99: // 'c': compose
         compose_button();
         return process_compose_hotkey;
-    case 114: // 'r': respond to zephyr
+    case 114: // 'r': respond to message
         respond_to_message();
         return process_hotkey;
     case 82: // 'R': respond to author
