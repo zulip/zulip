@@ -120,11 +120,15 @@ $(function () {
         $('#personal-message').hide();
         $('#class-message').show();
         $('#new_message_type').val('class');
+        $("#send-status").removeClass(status_classes).hide();
+        focus_on("class");
     });
     $('#message-type-tabs a[href="#personal-message"]').on('shown', function (e) {
         $('#personal-message').show();
         $('#class-message').hide();
         $('#new_message_type').val('personal');
+        $("#send-status").removeClass(status_classes).hide();
+        focus_on("huddle_recipient");
     });
 
     // Prepare the click handler for subbing to a new class to which

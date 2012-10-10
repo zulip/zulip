@@ -1,6 +1,7 @@
 var status_classes = 'alert-error alert-success alert-info';
 
 function show_compose(tabname, focus_area) {
+    $("#send-status").removeClass(status_classes).hide();
     $('#compose').css({visibility: "visible"});
     $('.message_comp').slideDown(100);
     $('#message-type-tabs a[href="#' + tabname + '-message"]').tab('show');
