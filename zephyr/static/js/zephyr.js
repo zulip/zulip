@@ -185,7 +185,7 @@ function select_message(next_message, scroll_to) {
         next_message = $('tr:not(:hidden):first');
     }
     if (next_message.length === 0) {
-        // There are no zephyrs!
+        // There are no messages!
         return false;
     }
 
@@ -247,12 +247,12 @@ function add_display_time(zephyr, prev) {
     zephyr.full_date_str = time.toLocaleString();
 }
 
-function add_to_table(zephyrs, table_name, filter_function, where) {
-    if (zephyrs.length === 0)
+function add_to_table(messages, table_name, filter_function, where) {
+    if (messages.length === 0)
         return;
 
     var table = $('#' + table_name);
-    var zephyrs_to_render = [];
+    var messages_to_render = [];
     var ids_where_next_is_same_sender = [];
     var prev;
 
@@ -275,7 +275,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
             get_message_row(id, table_name).remove();
             top_messages.push(message_dict[id]);
         });
-        zephyrs = zephyrs.concat(top_messages);
+        messages = messages.concat(top_messages);
 
         // Delete the leftover recipient label.
         table.find('.recipient_row:first').remove();
@@ -283,7 +283,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
         prev = message_dict[table.find('tr:last-child').attr('zid')];
     }
 
-    $.each(zephyrs, function (index, zephyr) {
+    $.each(messages, function (index, zephyr) {
         if (! filter_function(zephyr))
             return;
 
@@ -313,7 +313,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
 
         zephyr.dom_id = table_name + zephyr.id;
 
-        zephyrs_to_render.push(zephyr);
+        messages_to_render.push(zephyr);
         prev = zephyr;
     });
 
@@ -327,7 +327,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
     }
 
     var rendered = templates.zephyr({
-        zephyrs: zephyrs_to_render,
+        messages: messages_to_render,
         include_layout_row: (table.find('tr:first').length === 0)
     });
 
@@ -337,7 +337,7 @@ function add_to_table(zephyrs, table_name, filter_function, where) {
         table.append(rendered);
     }
 
-    $.each(zephyrs_to_render, function (index, zephyr) {
+    $.each(messages_to_render, function (index, zephyr) {
         var row = get_message_row(zephyr.id, table_name);
         register_onclick(row, zephyr.id);
 

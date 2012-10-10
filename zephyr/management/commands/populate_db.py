@@ -41,7 +41,7 @@ class Command(BaseCommand):
                     dest='num_messages',
                     type='int',
                     default=600,
-                    help='The number of zephyrs to create.'),
+                    help='The number of messages to create.'),
         make_option('--extra-users',
                     dest='extra_users',
                     type='int',

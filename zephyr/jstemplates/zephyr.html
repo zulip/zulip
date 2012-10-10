@@ -1,4 +1,4 @@
-{{! Client-side Mustache template for rendering zephyrs.}}
+{{! Client-side Mustache template for rendering messages.}}
 
 {{! Because we use table-layout: fixed for the Zephyr table,
     all the column widths are computed from the first row;
@@ -12,7 +12,7 @@
 </tr>
 {{/include_layout_row}}
 
-{{#each zephyrs}}
+{{#each messages}}
 {{#with this}}
 {{#include_bookend}}
 <tr><td /><td /><td class="bookend" /></tr>
