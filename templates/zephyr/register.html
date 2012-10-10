@@ -28,7 +28,7 @@
                 <br/>
                 <br/>
                 {% for error in form.full_name.errors %}
-                    <div class="alert alert-error">{{ error|escape }}</div>
+                    <div class="alert alert-error">{{ error }}</div>
                 {% endfor %}
             {% endif %}
         </div>
@@ -41,7 +41,7 @@
                 <br/>
                 <br/>
                 {% for error in form.password.errors %}
-                    <div class="alert alert-error">{{ error|escape }}</div>
+                    <div class="alert alert-error">{{ error }}</div>
                 {% endfor %}
             {% endif %}
         </div>
