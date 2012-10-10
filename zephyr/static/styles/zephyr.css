@@ -54,7 +54,7 @@ td.pointer {
     padding-top: 5px;
 }
 
-.ztable_col1 {    /* classname */
+.ztable_col1 {    /* streamname */
 }
 .ztable_col2 {    /* pointer */
     width: 2px;
@@ -253,7 +253,7 @@ img.profile_picture {
     display: none;
 }
 
-.classname {
+.streamname {
     font-weight: bold;
 }
 
