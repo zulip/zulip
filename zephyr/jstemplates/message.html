@@ -1,6 +1,6 @@
 {{! Client-side Mustache template for rendering messages.}}
 
-{{! Because we use table-layout: fixed for the Zephyr table,
+{{! Because we use table-layout: fixed for the Message table,
     all the column widths are computed from the first row;
     these CSS classes specify the widths for that first,
     collapsed row. (Otherwise, colspan breaks everything).}}
@@ -50,7 +50,7 @@
     <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_class}} personal-message{{/is_class}}"
         onmousedown="mousedown();" onmousemove="mousemove();">
         {{#include_sender}}
-        <span class="zephyr_sender"
+        <span class="message_sender"
               onmouseover="show_email({{id}});"
               onmouseout="hide_email();">
             <span class="sender_name">{{sender_name}}</span>
