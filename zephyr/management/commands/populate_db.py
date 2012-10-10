@@ -6,6 +6,7 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
     create_user, do_send_message, create_user_if_needed, create_stream_if_needed
 from zephyr.lib.parallel import run_parallel
+from zephyr.lib.initial_password import initial_password
 from django.db import transaction
 from django.conf import settings
 from api import mit_subs_list
@@ -13,18 +14,16 @@ from api import mit_subs_list
 import simplejson
 import datetime
 import random
-import hashlib
 from optparse import make_option
 
 def create_users(name_list):
     for name, email in name_list:
         (short_name, domain) = email.split("@")
-        password = short_name
         if User.objects.filter(email=email):
             # We're trying to create the same user twice!
             raise
         realm = Realm.objects.get(domain=domain)
-        create_user(email, password, realm, name, short_name)
+        create_user(email, initial_password(email), realm, name, short_name)
 
 def create_streams(stream_list, realm):
     for name in stream_list:
