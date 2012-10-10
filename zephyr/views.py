@@ -97,7 +97,7 @@ def register(request):
     else:
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            password   = strip_html(form.cleaned_data['password'])
+            password   = form.cleaned_data['password']
             full_name  = strip_html(form.cleaned_data['full_name'])
             short_name = strip_html(email.split('@')[0])
             domain     = strip_html(form.cleaned_data['domain'])
