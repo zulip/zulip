@@ -156,7 +156,7 @@ def process_loop(log):
                 zeph = { 'type'      : 'stream',
                          'time'      : str(notice.time),
                          'sender'    : sender,
-                         'class'     : notice.cls.lower(),
+                         'stream'    : notice.cls.lower(),
                          'instance'  : notice.instance.lower(),
                          'zsig'      : zsig,  # logged here but not used by app
                          'content'   : body }

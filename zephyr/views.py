@@ -355,11 +355,11 @@ def send_message_backend(request, user_profile, sender):
 
     message_type_name = request.POST["type"]
     if message_type_name == 'stream':
-        if "class" not in request.POST:
-            return json_error("Missing class")
+        if "stream" not in request.POST:
+            return json_error("Missing stream")
         if "instance" not in request.POST:
             return json_error("Missing instance")
-        stream_name = strip_html(request.POST['class']).strip()
+        stream_name = strip_html(request.POST['stream']).strip()
         instance_name = strip_html(request.POST['instance']).strip()
 
         if not valid_stream_name(stream_name):

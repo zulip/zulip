@@ -119,9 +119,9 @@ $(function () {
     $('#message-type-tabs a[href="#class-message"]').on('shown', function (e) {
         $('#personal-message').hide();
         $('#class-message').show();
-        $('#new_message_type').val('class');
+        $('#new_message_type').val('stream');
         $("#send-status").removeClass(status_classes).hide();
-        focus_on("class");
+        focus_on("stream");
     });
     $('#message-type-tabs a[href="#personal-message"]').on('shown', function (e) {
         $('#personal-message').show();

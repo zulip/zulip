@@ -317,7 +317,7 @@ class MessagePOSTTest(AuthedTestCase):
         """
         self.login("hamlet@humbughq.com", "hamlet")
         result = self.client.post("/send_message/", {"type": "stream",
-                                                     "class": "Verona",
+                                                     "stream": "Verona",
                                                      "content": "Test message",
                                                      "instance": "Test instance"})
         self.assert_json_success(result)
@@ -330,7 +330,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.login("hamlet@humbughq.com", "hamlet")
         self.assertFalse(Stream.objects.filter(name="nonexistent_class"))
         result = self.client.post("/send_message/", {"type": "stream",
-                                                     "class": "nonexistent_class",
+                                                     "stream": "nonexistent_class",
                                                      "content": "Test message",
                                                      "instance": "Test instance"})
         self.assert_json_success(result)

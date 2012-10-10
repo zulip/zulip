@@ -62,19 +62,19 @@ function narrow_class() {
     var original = message_dict[selected_message_id];
     var message = original.display_recipient;
     do_narrow(message, function (other) {
-        return (other.type === 'class' &&
+        return (other.type === 'stream' &&
                 original.recipient_id === other.recipient_id);
     });
 }
 
 function narrow_instance() {
     var original = message_dict[selected_message_id];
-    if (original.type !== 'class')
+    if (original.type !== 'stream')
         return;
 
     var message = original.display_recipient + " | " + original.instance;
     do_narrow(message, function (other) {
-        return (other.type === 'class' &&
+        return (other.type === 'stream' &&
                 original.recipient_id === other.recipient_id &&
                 original.instance === other.instance);
     });
@@ -85,7 +85,7 @@ function narrow_by_recipient() {
     switch (message_dict[selected_message_id].type) {
         case 'personal': narrow_personals(); break;
         case 'huddle':   narrow_huddle();    break;
-        case 'class':    narrow_class();     break;
+        case 'stream':    narrow_class();     break;
     }
 }
 

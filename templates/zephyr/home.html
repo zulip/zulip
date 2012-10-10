@@ -28,7 +28,7 @@
                         <div class="close composebox-close" onclick="hide_compose()">&times;</div>
                         <div class="message_comp">
                                 <form action="/send_message/" method="post" class="zephyr">
-                                    <input type="hidden" name="type" value="class" id="new_message_type"/>
+                                    <input type="hidden" name="type" value="stream" id="new_message_type"/>
                                     {% csrf_token %}
                                     <table class="compose_table">
                                         <tbody>
@@ -39,7 +39,7 @@
                                           </tr>
                                           <tr id="class-message">
                                             <td colspan="2" class="message_newstyle_class">
-                                              <input type="text" class="recipient_box" name="class" id="class" onchange="focus_on('instance')" value="" placeholder="Stream" autocomplete="off"/>
+                                              <input type="text" class="recipient_box" name="stream" id="class" onchange="focus_on('instance')" value="" placeholder="Stream" autocomplete="off"/>
                                             </td>
                                             <td class="message_newstyle_instance">
                                               <input type="text" class="recipient_box" name="instance" id="instance" onchange="focus_on('new_message_content')" value="" placeholder="Subject" autocomplete="off"/>
