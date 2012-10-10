@@ -20,7 +20,6 @@
 {% rawjstemplate "subscription" %}
 </script>
 
-{% autoescape off %}
 <link href="/static/styles/zephyr.css?dummy_time={% now "U" %}" rel="stylesheet">
 <link href="/static/styles/pygments.css" rel="stylesheet">
 <script type="text/javascript" src="/static/third/jquery/jquery.form.js"></script>
@@ -43,13 +42,14 @@
 {% endif %}
 
 <script type="text/javascript">
+{% autoescape off %}
 var initial_pointer = {{ user_profile.pointer }};
 var email = "{{ user_profile.user.email }}";
 var class_list = {{ classes }};
 var people_list = {{ people }};
 var have_initial_messages = {{ have_initial_messages }};
-</script>
 {% endautoescape %}
+</script>
 {% endblock %}
 {% block content %}
     <div class="row">
