@@ -173,8 +173,8 @@ def home(request):
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
                                'email_hash'  : hashlib.md5(user_profile.user.email).hexdigest(),
-                               'people'      : simplejson.dumps(people),
-                               'streams'     : simplejson.dumps(streams),
+                               'people'      : people,
+                               'streams'     : streams,
                                'have_initial_messages':
                                    'true' if messages else 'false',
                                'show_debug':
