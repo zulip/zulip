@@ -167,6 +167,13 @@ $(function () {
         $('.alert-success').hide();
         $('.alert-info').hide();
         $('.alert').hide();
+
+        // Set the URL bar title to show the sub-page you're currently on.
+        var browser_url = $(e.target).attr('href');
+        if (browser_url === "#home") {
+            browser_url = "#";
+        }
+        window.history.pushState("object or string", "Title", browser_url);
     });
 
     $('.button-slide').click(function () {
