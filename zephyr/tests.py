@@ -59,9 +59,9 @@ class AuthedTestCase(TestCase):
         do_send_message(Message(sender=sender, recipient=recipient, instance="test", pub_date=pub_date),
                        synced_from_mit=True)
 
-    def users_subscribed_to_class(self, class_name, realm_domain):
+    def users_subscribed_to_stream(self, stream_name, realm_domain):
         realm = Realm.objects.get(domain=realm_domain)
-        stream = Stream.objects.get(name=class_name, realm=realm)
+        stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient)
 
@@ -226,15 +226,15 @@ class PersonalMessagesTest(AuthedTestCase):
         """
         """
 
-class ClassMessagesTest(AuthedTestCase):
+class StreamMessagesTest(AuthedTestCase):
     fixtures = ['messages.json']
 
-    def test_message_to_class(self):
+    def test_message_to_stream(self):
         """
-        If you send a message to a class, everyone subscribed to the class
+        If you send a message to a stream, everyone subscribed to the stream
         receives the messages.
         """
-        subscribers = self.users_subscribed_to_class("Scotland", "humbughq.com")
+        subscribers = self.users_subscribed_to_stream("Scotland", "humbughq.com")
         old_subscriber_messages = []
         for subscriber in subscribers:
             old_subscriber_messages.append(len(self.message_stream(subscriber)))
@@ -312,7 +312,7 @@ class MessagePOSTTest(AuthedTestCase):
 
     def test_message_to_self(self):
         """
-        Sending a message to a class to which you are subscribed is
+        Sending a message to a stream to which you are subscribed is
         successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
@@ -322,19 +322,19 @@ class MessagePOSTTest(AuthedTestCase):
                                                      "instance": "Test instance"})
         self.assert_json_success(result)
 
-    def test_message_to_nonexistent_class(self):
+    def test_message_to_nonexistent_stream(self):
         """
-        Sending a message to a nonexistent class creates the class and
+        Sending a message to a nonexistent stream creates the stream and
         is successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        self.assertFalse(Stream.objects.filter(name="nonexistent_class"))
+        self.assertFalse(Stream.objects.filter(name="nonexistent_stream"))
         result = self.client.post("/send_message/", {"type": "stream",
-                                                     "stream": "nonexistent_class",
+                                                     "stream": "nonexistent_stream",
                                                      "content": "Test message",
                                                      "instance": "Test instance"})
         self.assert_json_success(result)
-        self.assertTrue(Stream.objects.filter(name="nonexistent_class"))
+        self.assertTrue(Stream.objects.filter(name="nonexistent_stream"))
 
     def test_personal_message(self):
         """
