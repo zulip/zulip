@@ -27,14 +27,14 @@ function compose_button() {
 
 function toggle_compose() {
     if ($("#message-type-tabs li.active").find("a[href=#stream-message]").length !== 0) {
-        // In class tab, switch to personals.
+        // In stream tab, switch to personals.
         show_compose('personal', $("#huddle_recipient"));
     } else {
         show_compose('stream', $("#stream"));
     }
 }
 
-function composing_class_message() {
+function composing_stream_message() {
     return $("#stream-message").is(":visible");
 }
 
@@ -75,16 +75,16 @@ function submit_buttons() {
     return $('#compose').find('input[type="submit"]');
 }
 
-// *Synchronously* check if a class exists.
+// *Synchronously* check if a stream exists.
 // If not, displays an error and returns false.
-function check_class_for_send(stream_name) {
+function check_stream_for_send(stream_name) {
     var okay = true;
     $.ajax({
         url: "subscriptions/exists/" + stream_name,
         async: false,
         success: function (data) {
             if (data === "False") {
-                // The class doesn't exist
+                // The stream doesn't exist
                 okay = false;
                 $('#send-status').removeClass(status_classes).show();
                 $('#stream-dne-name').text(stream_name);
@@ -105,10 +105,10 @@ function check_class_for_send(stream_name) {
     return okay;
 }
 
-function validate_class_message() {
+function validate_stream_message() {
     var stream_name = compose_stream_name();
     if (stream_name === "") {
-        compose_error("Please specify a class", $("#stream"));
+        compose_error("Please specify a stream", $("#stream"));
         return false;
     }
 
@@ -122,11 +122,11 @@ function validate_class_message() {
         return false;
     }
 
-    if (!check_class_for_send(stream_name))
+    if (!check_stream_for_send(stream_name))
         return false;
 
     if (!subscribed_to(stream_name)) {
-        // You're not subbed to the class
+        // You're not subbed to the stream
         $('#send-status').removeClass(status_classes).show();
         $('#stream-nosub-name').text(stream_name);
         $('#stream-nosub').show();
@@ -159,6 +159,6 @@ function validate_message() {
     if (composing_huddle_message()) {
         return validate_huddle_message();
     } else {
-        return validate_class_message();
+        return validate_stream_message();
     }
 }

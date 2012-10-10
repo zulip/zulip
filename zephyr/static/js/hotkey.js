@@ -125,7 +125,7 @@ function process_key_in_input(code) {
 }
 
 function process_compose_hotkey(code) {
-    if (code === 9) { // Tab: toggles between class and huddle compose tabs.
+    if (code === 9) { // Tab: toggles between stream and huddle compose tabs.
         toggle_compose();
         return process_compose_hotkey;
     }

@@ -131,13 +131,13 @@ $(function () {
         focus_on("huddle_recipient");
     });
 
-    // Prepare the click handler for subbing to a new class to which
+    // Prepare the click handler for subbing to a new stream to which
     // you have composed a message.
     $('#create-it').click(function () {
         sub_from_home(compose_stream_name(), $('#stream-dne'));
     });
 
-    // Prepare the click handler for subbing to an existing class.
+    // Prepare the click handler for subbing to an existing stream.
     $('#sub-it').click(function () {
         sub_from_home(compose_stream_name(), $('#stream-nosub'));
     });
