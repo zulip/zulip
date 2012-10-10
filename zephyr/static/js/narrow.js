@@ -58,7 +58,7 @@ function narrow_personals() {
 
 }
 
-function narrow_class() {
+function narrow_stream() {
     var original = message_dict[selected_message_id];
     var message = original.display_recipient;
     do_narrow(message, function (other) {
@@ -80,12 +80,12 @@ function narrow_instance() {
     });
 }
 
-// Called for the 'narrow by class' hotkey.
+// Called for the 'narrow by stream' hotkey.
 function narrow_by_recipient() {
     switch (message_dict[selected_message_id].type) {
         case 'personal': narrow_personals(); break;
         case 'huddle':   narrow_huddle();    break;
-        case 'stream':    narrow_class();     break;
+        case 'stream':    narrow_stream();     break;
     }
 }
 
