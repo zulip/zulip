@@ -43,7 +43,7 @@ td.pointer {
     padding-top: 10px;
 }
 
-.selected_zephyr .pointer {
+.selected_message .pointer {
     background-color: blue;
 }
 

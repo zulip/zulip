@@ -45,7 +45,7 @@ $(function () {
 });
 
 var selected_message_id = -1;  /* to be filled in on document.ready */
-var selected_zephyr;  // = get_zephyr_row(selected_message_id)
+var selected_message;  // = get_zephyr_row(selected_message_id)
 var received = {
     first: -1,
     last:  -1,
@@ -83,14 +83,14 @@ function recenter_view(zephyr) {
     // below_view_threshold must also change.
     var viewport = $(window);
     if (above_view_threshold(zephyr)) {
-        viewport.scrollTop(selected_zephyr.offset().top - viewport.height() / 2);
+        viewport.scrollTop(selected_message.offset().top - viewport.height() / 2);
     } else if (below_view_threshold(zephyr)) {
-        viewport.scrollTop(selected_zephyr.offset().top - viewport.height() / 5);
+        viewport.scrollTop(selected_message.offset().top - viewport.height() / 5);
     }
 }
 
 function scroll_to_selected() {
-    recenter_view(selected_zephyr);
+    recenter_view(selected_message);
 }
 
 function get_huddle_recipient(zephyr) {
@@ -156,9 +156,9 @@ function select_and_show_by_id(zephyr_id) {
     select_message(get_zephyr_row(zephyr_id), true);
 }
 
-function update_selected_zephyr(zephyr) {
-    $('.selected_zephyr').removeClass('selected_zephyr');
-    zephyr.addClass('selected_zephyr');
+function update_selected_message(zephyr) {
+    $('.selected_message').removeClass('selected_message');
+    zephyr.addClass('selected_message');
 
     var new_selected_id = get_id(zephyr);
     if (!narrowed && new_selected_id !== selected_message_id) {
@@ -169,7 +169,7 @@ function update_selected_zephyr(zephyr) {
         $.post("update", {pointer: new_selected_id});
     }
     selected_message_id = new_selected_id;
-    selected_zephyr = zephyr;
+    selected_message = zephyr;
 }
 
 function select_message(next_message, scroll_to) {
@@ -189,7 +189,7 @@ function select_message(next_message, scroll_to) {
         return false;
     }
 
-    update_selected_zephyr(next_message);
+    update_selected_message(next_message);
 
     if (scroll_to) {
         recenter_view(next_message);
@@ -529,5 +529,5 @@ function keep_pointer_in_view() {
         // above)
         next_message = get_next_visible(next_message);
     }
-    update_selected_zephyr(next_message);
+    update_selected_message(next_message);
 }

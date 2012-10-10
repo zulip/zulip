@@ -36,7 +36,7 @@ function process_hotkey(code) {
     }
 
     if (directional_hotkeys.hasOwnProperty(code)) {
-        next_message = directional_hotkeys[code](selected_zephyr);
+        next_message = directional_hotkeys[code](selected_message);
         if (next_message.length !== 0) {
             select_message(next_message, true);
         }
