@@ -42,7 +42,7 @@ function composing_huddle_message() {
     return $("#personal-message").is(":visible");
 }
 
-function compose_class_name() {
+function compose_stream_name() {
     return $.trim($("#class").val());
 }
 
@@ -77,17 +77,17 @@ function submit_buttons() {
 
 // *Synchronously* check if a class exists.
 // If not, displays an error and returns false.
-function check_class_for_send(class_name) {
+function check_class_for_send(stream_name) {
     var okay = true;
     $.ajax({
-        url: "subscriptions/exists/" + class_name,
+        url: "subscriptions/exists/" + stream_name,
         async: false,
         success: function (data) {
             if (data === "False") {
                 // The class doesn't exist
                 okay = false;
                 $('#send-status').removeClass(status_classes).show();
-                $('#class-dne-name').text(class_name);
+                $('#class-dne-name').text(stream_name);
                 $('#class-dne').show();
                 submit_buttons().removeAttr('disabled');
                 hide_compose();
@@ -106,8 +106,8 @@ function check_class_for_send(class_name) {
 }
 
 function validate_class_message() {
-    var class_name = compose_class_name();
-    if (class_name === "") {
+    var stream_name = compose_stream_name();
+    if (stream_name === "") {
         compose_error("Please specify a class", $("#class"));
         return false;
     }
@@ -122,13 +122,13 @@ function validate_class_message() {
         return false;
     }
 
-    if (!check_class_for_send(class_name))
+    if (!check_class_for_send(stream_name))
         return false;
 
-    if (!subscribed_to(class_name)) {
+    if (!subscribed_to(stream_name)) {
         // You're not subbed to the class
         $('#send-status').removeClass(status_classes).show();
-        $('#class-nosub-name').text(class_name);
+        $('#class-nosub-name').text(stream_name);
         $('#class-nosub').show();
         submit_buttons().removeAttr('disabled');
         hide_compose();

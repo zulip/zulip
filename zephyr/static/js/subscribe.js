@@ -39,13 +39,13 @@ function sub_from_home(stream, prompt_button) {
 
 stream_list_hash = [];
 
-function subscribed_to(class_name) {
-    return (stream_list_hash[class_name.toLowerCase()] === true);
+function subscribed_to(stream_name) {
+    return (stream_list_hash[stream_name.toLowerCase()] === true);
 }
 
-function case_insensitive_subscription_index(class_name) {
+function case_insensitive_subscription_index(stream_name) {
     var i;
-    var name = class_name.toLowerCase();
+    var name = stream_name.toLowerCase();
 
     for (i = 1; i < stream_list.length; i++) {
         if (name === stream_list[i].toLowerCase()) {
@@ -55,16 +55,16 @@ function case_insensitive_subscription_index(class_name) {
     return -1;
 }
 
-function add_to_stream_list(class_name) {
-    if (!subscribed_to(class_name)) {
-        stream_list.push(class_name);
-        stream_list_hash[class_name.toLowerCase()] = true;
+function add_to_stream_list(stream_name) {
+    if (!subscribed_to(stream_name)) {
+        stream_list.push(stream_name);
+        stream_list_hash[stream_name.toLowerCase()] = true;
     }
 }
 
-function remove_from_stream_list(class_name) {
-    delete stream_list_hash[class_name.toLowerCase()];
-    var removal_index = case_insensitive_subscription_index(class_name);
+function remove_from_stream_list(stream_name) {
+    delete stream_list_hash[stream_name.toLowerCase()];
+    var removal_index = case_insensitive_subscription_index(stream_name);
     if (removal_index !== -1) {
         stream_list.splice(removal_index, 1);
     }

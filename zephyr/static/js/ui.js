@@ -134,12 +134,12 @@ $(function () {
     // Prepare the click handler for subbing to a new class to which
     // you have composed a message.
     $('#create-it').click(function () {
-        sub_from_home(compose_class_name(), $('#class-dne'));
+        sub_from_home(compose_stream_name(), $('#class-dne'));
     });
 
     // Prepare the click handler for subbing to an existing class.
     $('#sub-it').click(function () {
-        sub_from_home(compose_class_name(), $('#class-nosub'));
+        sub_from_home(compose_stream_name(), $('#class-nosub'));
     });
 
     var throttled_scrollhandler = $.throttle(50, function(e) {
