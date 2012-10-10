@@ -25,9 +25,9 @@
         class="message_label_clickable message_newstyle_stream"
         onclick="select_message_by_id({{id}}); narrow_stream();"
         title="{{display_recipient}}">{{display_recipient}}</td>
-    <td class="message_label_clickable message_newstyle_instance"
-        onclick="select_message_by_id({{id}}); narrow_instance();"
-        title="{{instance}}">{{instance}}</td>
+    <td class="message_label_clickable message_newstyle_subject"
+        onclick="select_message_by_id({{id}}); narrow_subject();"
+        title="{{subject}}">{{subject}}</td>
 </tr>
 {{else}}
 <tr class="recipient_row">

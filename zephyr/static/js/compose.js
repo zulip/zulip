@@ -46,8 +46,8 @@ function compose_stream_name() {
     return $.trim($("#stream").val());
 }
 
-function compose_instance() {
-    return $.trim($("#instance").val());
+function compose_subject() {
+    return $.trim($("#subject").val());
 }
 
 function compose_message() {
@@ -112,8 +112,8 @@ function validate_stream_message() {
         return false;
     }
 
-    if (compose_instance() === "") {
-        compose_error("Please specify an instance", $("#instance"));
+    if (compose_subject() === "") {
+        compose_error("Please specify an subject", $("#subject"));
         return false;
     }
 

@@ -56,7 +56,7 @@ class AuthedTestCase(TestCase):
             recipient = Stream.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=message_type)
         pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-        do_send_message(Message(sender=sender, recipient=recipient, instance="test", pub_date=pub_date),
+        do_send_message(Message(sender=sender, recipient=recipient, subject="test", pub_date=pub_date),
                        synced_from_mit=True)
 
     def users_subscribed_to_stream(self, stream_name, realm_domain):
@@ -319,7 +319,7 @@ class MessagePOSTTest(AuthedTestCase):
         result = self.client.post("/send_message/", {"type": "stream",
                                                      "stream": "Verona",
                                                      "content": "Test message",
-                                                     "instance": "Test instance"})
+                                                     "subject": "Test subject"})
         self.assert_json_success(result)
 
     def test_message_to_nonexistent_stream(self):
@@ -332,7 +332,7 @@ class MessagePOSTTest(AuthedTestCase):
         result = self.client.post("/send_message/", {"type": "stream",
                                                      "stream": "nonexistent_stream",
                                                      "content": "Test message",
-                                                     "instance": "Test instance"})
+                                                     "subject": "Test subject"})
         self.assert_json_success(result)
         self.assertTrue(Stream.objects.filter(name="nonexistent_stream"))
 

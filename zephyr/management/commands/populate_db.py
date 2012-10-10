@@ -238,7 +238,7 @@ def restore_saved_messages():
         type_hash = {"stream": Recipient.STREAM, "huddle": Recipient.HUDDLE, "personal": Recipient.PERSONAL}
         message.type = type_hash[old_message["type"]]
         message.content = old_message["content"]
-        message.instance = old_message["instance"]
+        message.subject = old_message["subject"]
         message.pub_date = datetime.datetime.utcfromtimestamp(float(old_message["timestamp"])).replace(tzinfo=utc)
 
         if message.type == Recipient.PERSONAL:
@@ -267,10 +267,10 @@ def restore_saved_messages():
 
 # Create some test messages, including:
 # - multiple streams
-# - multiple instances per stream
+# - multiple subjects per stream
 # - multiple huddles
 # - multiple personals converastions
-# - multiple messages per instance
+# - multiple messages per subject
 # - both single and multi-line content
 def send_messages(data):
     (tot_messages, personals_pairs, options, output) = data
@@ -310,7 +310,7 @@ def send_messages(data):
                 personals_pair = saved_data
                 random.shuffle(personals_pair)
             elif message_type == Recipient.STREAM:
-                message.instance = saved_data
+                message.subject = saved_data
                 message.recipient = get_recipient_by_id(recipient_id)
             elif message_type == Recipient.HUDDLE:
                 message.recipient = get_recipient_by_id(recipient_id)
@@ -338,8 +338,8 @@ def send_messages(data):
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
                     recipient=message.recipient)).userprofile
-            message.instance = stream.name + str(random.randint(1, 3))
-            saved_data = message.instance
+            message.subject = stream.name + str(random.randint(1, 3))
+            saved_data = message.subject
 
         message.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
         do_send_message(message)

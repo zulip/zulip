@@ -67,16 +67,16 @@ function narrow_stream() {
     });
 }
 
-function narrow_instance() {
+function narrow_subject() {
     var original = message_dict[selected_message_id];
     if (original.type !== 'stream')
         return;
 
-    var message = original.display_recipient + " | " + original.instance;
+    var message = original.display_recipient + " | " + original.subject;
     do_narrow(message, function (other) {
         return (other.type === 'stream' &&
                 original.recipient_id === other.recipient_id &&
-                original.instance === other.instance);
+                original.subject === other.subject);
     });
 }
 

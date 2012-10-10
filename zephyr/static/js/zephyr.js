@@ -1,6 +1,6 @@
 var message_array = [];
 var message_dict = {};
-var instance_list = [];
+var subject_list = [];
 
 $(function () {
     var i;
@@ -118,10 +118,10 @@ function respond_to_message(reply_type) {
     message = message_dict[selected_message_id];
     if (message.type === "stream") {
         $("#stream").val(message.display_recipient);
-        $("#instance").val(message.instance);
+        $("#subject").val(message.subject);
     } else {
         $("#stream").val("");
-        $("#instance").val("");
+        $("#subject").val("");
     }
     $("#huddle_recipient").val(message.reply_to);
     if (reply_type === "personal" && message.type === "huddle") {
@@ -209,7 +209,7 @@ function same_recipient(a, b) {
         return a.reply_to === b.reply_to;
     case 'stream':
         return (a.recipient_id === b.recipient_id) &&
-               (a.instance     === b.instance);
+               (a.subject     === b.subject);
     }
 
     // should never get here
@@ -266,8 +266,8 @@ function add_to_table(messages, table_name, filter_function, where) {
         // messages, in order to collapse properly.
         //
         // This means we redraw the entire view on each update when narrowed by
-        // instance, which could be a problem down the line.  For now we hope
-        // that instance views will not be very big.
+        // subject, which could be a problem down the line.  For now we hope
+        // that subject views will not be very big.
 
         var top_group = message_groups[table_name][0];
         var top_messages = [];
@@ -366,8 +366,8 @@ function add_message_metadata(dummy, message) {
     switch (message.type) {
     case 'stream':
         message.is_stream = true;
-        if ($.inArray(message.instance, instance_list) === -1) {
-            instance_list.push(message.instance);
+        if ($.inArray(message.subject, subject_list) === -1) {
+            subject_list.push(message.subject);
             autocomplete_needs_update = true;
         }
         message.reply_to = message.sender_email;

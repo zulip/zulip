@@ -66,8 +66,8 @@ def send_humbug(zeph):
     zeph["sender"] = compute_humbug_username(zeph["sender"])
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]
-    if "instance" in zeph:
-        zeph["instance"] = zeph["instance"][:30]
+    if "subject" in zeph:
+        zeph["subject"] = zeph["subject"][:30]
 
     for key in zeph.keys():
         if isinstance(zeph[key], unicode):
@@ -157,7 +157,7 @@ def process_loop(log):
                          'time'      : str(notice.time),
                          'sender'    : sender,
                          'stream'    : notice.cls.lower(),
-                         'instance'  : notice.instance.lower(),
+                         'subject'   : notice.instance.lower(),
                          'zsig'      : zsig,  # logged here but not used by app
                          'content'   : body }
 
@@ -224,7 +224,7 @@ def forward_to_zephyr(message):
     if message['type'] == "stream":
         zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
                               auth=True, cls=message["display_recipient"],
-                              instance=message["instance"])
+                              instance=message["subject"])
         body = "%s\0%s" % (zsig, wrapped_content)
         zeph.setmessage(body)
         zeph.send()

@@ -357,16 +357,16 @@ def send_message_backend(request, user_profile, sender):
     if message_type_name == 'stream':
         if "stream" not in request.POST:
             return json_error("Missing stream")
-        if "instance" not in request.POST:
-            return json_error("Missing instance")
+        if "subject" not in request.POST:
+            return json_error("Missing subject")
         stream_name = strip_html(request.POST['stream']).strip()
-        instance_name = strip_html(request.POST['instance']).strip()
+        subject_name = strip_html(request.POST['subject']).strip()
 
         if not valid_stream_name(stream_name):
             return json_error("Invalid stream name")
         ## FIXME: Commented out temporarily while we figure out what we want
-        # if not valid_stream_name(instance_name):
-        #     return json_error("Invalid instance name")
+        # if not valid_stream_name(subject_name):
+        #     return json_error("Invalid subject name")
 
         stream = create_stream_if_needed(user_profile.realm, stream_name)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
@@ -409,7 +409,7 @@ def send_message_backend(request, user_profile, sender):
     message.content = strip_html(request.POST['content'])
     message.recipient = recipient
     if message_type_name == 'stream':
-        message.instance = instance_name
+        message.subject = subject_name
     if 'time' in request.POST:
         # Forged messages come with a timestamp
         message.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)

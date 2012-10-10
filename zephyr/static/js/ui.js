@@ -75,7 +75,7 @@ var autocomplete_needs_update = false;
 
 function update_autocomplete() {
     stream_list.sort();
-    instance_list.sort();
+    subject_list.sort();
     people_list.sort();
 
     // limit number of items so the list doesn't fall off the screen
@@ -83,8 +83,8 @@ function update_autocomplete() {
         source: stream_list,
         items: 3
     });
-    $( "#instance" ).typeahead({
-        source: instance_list,
+    $( "#subject" ).typeahead({
+        source: subject_list,
         items: 2
     });
     $( "#huddle_recipient" ).typeahead({

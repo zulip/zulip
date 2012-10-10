@@ -22,7 +22,7 @@ var globals =
 
     // narrow.js
     + ' narrowed show_all_messages'
-    + ' narrow_all_personals narrow_by_recipient narrow_instance'
+    + ' narrow_all_personals narrow_by_recipient narrow_subject'
 
     // setup.js
     + ' loading_spinner templates'
@@ -38,7 +38,7 @@ var globals =
 
     // zephyr.js
     + ' message_array message_dict'
-    + ' status_classes clear_table add_to_table instance_list'
+    + ' status_classes clear_table add_to_table subject_list'
     + ' keep_pointer_in_view move_pointer_at_page_top_and_bottom'
     + ' respond_to_message'
     + ' select_message select_message_by_id'

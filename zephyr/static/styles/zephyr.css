@@ -59,7 +59,7 @@ td.pointer {
 .ztable_col2 {    /* pointer */
     width: 2px;
 }
-.ztable_col3 {    /* instancename */
+.ztable_col3 {    /* subjectname */
     width: 85%;
 }
 
@@ -75,7 +75,7 @@ td.pointer {
     border: 1px solid grey;
 }
 
-.message_newstyle_instance {
+.message_newstyle_subject {
     vertical-align: middle;
     text-align:     left;
     overflow-x:     hidden;

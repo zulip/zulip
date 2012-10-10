@@ -17,7 +17,7 @@ md_engine = markdown.Markdown(
 
 def get_display_recipient(recipient):
     """
-    recipient: an instance of Recipient.
+    recipient: an subject of Recipient.
 
     returns: an appropriate string describing the recipient (the stream
     name, for a stream, or the email, for a user).
@@ -36,7 +36,7 @@ def get_display_recipient(recipient):
 
 def get_log_recipient(recipient):
     """
-    recipient: an instance of Recipient.
+    recipient: an subject of Recipient.
 
     returns: an appropriate string describing the recipient (the stream
     name, for a stream, or the email, for a user).
@@ -197,13 +197,13 @@ class Recipient(models.Model):
 class Message(models.Model):
     sender = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
-    instance = models.CharField(max_length=30)
+    subject = models.CharField(max_length=30)
     content = models.TextField()
     pub_date = models.DateTimeField('date published')
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.recipient)
-        return "<Message: %s / %s / %r>" % (display_recipient, self.instance, self.sender)
+        return "<Message: %s / %s / %r>" % (display_recipient, self.subject, self.sender)
     def __str__(self):
         return self.__repr__()
 
@@ -234,7 +234,7 @@ class Message(models.Model):
                 'type'             : self.recipient.type_name(),
                 'display_recipient': get_display_recipient(self.recipient),
                 'recipient_id'     : self.recipient.id,
-                'instance'         : self.instance,
+                'subject'         : self.subject,
                 'content'          : content,
                 'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
                 'gravatar_hash'    : hashlib.md5(self.sender.user.email.lower()).hexdigest(),
@@ -247,7 +247,7 @@ class Message(models.Model):
                 'sender_short_name': self.sender.full_name,
                 'type'             : self.recipient.type_name(),
                 'recipient'        : get_log_recipient(self.recipient),
-                'instance'         : self.instance,
+                'subject'         : self.subject,
                 'content'          : self.content,
                 'timestamp'        : self.pub_date.strftime("%s"),
                 }

@@ -100,7 +100,7 @@ var keydown_handler = process_hotkey;
 
 var goto_hotkeys = {
     99: narrow_by_recipient,  // 'c'
-    105: narrow_instance,      // 'i'
+    105: narrow_subject,      // 'i'
     112: narrow_all_personals, // 'p'
     97: show_all_messages,    // 'a'
     27: hide_compose          // Esc
