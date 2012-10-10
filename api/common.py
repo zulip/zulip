@@ -68,6 +68,6 @@ class HumbugAPI():
                 # TODO: Make this back off once it's more reliable
                 time.sleep(1)
                 continue
-            for message in sorted(res['messages'], key=lambda x: x["id"]):
-                max_message_id = max(max_message_id, message["id"])
+            for message in sorted(res['messages'], key=lambda x: int(x["id"])):
+                max_message_id = max(max_message_id, int(message["id"]))
                 callback(message)
