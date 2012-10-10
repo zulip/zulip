@@ -207,7 +207,7 @@ function same_recipient(a, b) {
         return a.recipient_id === b.recipient_id;
     case 'personal':
         return a.reply_to === b.reply_to;
-    case 'class':
+    case 'stream':
         return (a.recipient_id === b.recipient_id) &&
                (a.instance     === b.instance);
     }
@@ -364,7 +364,7 @@ function add_message_metadata(dummy, message) {
     received.last = Math.max(received.last, message.id);
 
     switch (message.type) {
-    case 'class':
+    case 'stream':
         message.is_class = true;
         if ($.inArray(message.instance, instance_list) === -1) {
             instance_list.push(message.instance);

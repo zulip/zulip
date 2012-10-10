@@ -167,7 +167,7 @@ def home(request):
 
     subscriptions = Subscription.objects.filter(userprofile_id=user_profile, active=True)
     classes = [get_display_recipient(sub.recipient) for sub in subscriptions
-               if sub.recipient.type == Recipient.CLASS]
+               if sub.recipient.type == Recipient.STREAM]
 
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
@@ -354,7 +354,7 @@ def send_message_backend(request, user_profile, sender):
         sender = create_forged_message_users(request, user_profile)
 
     message_type_name = request.POST["type"]
-    if message_type_name == 'class':
+    if message_type_name == 'stream':
         if "class" not in request.POST:
             return json_error("Missing class")
         if "instance" not in request.POST:
@@ -369,7 +369,7 @@ def send_message_backend(request, user_profile, sender):
         #     return json_error("Invalid instance name")
 
         stream = create_stream_if_needed(user_profile.realm, stream_name)
-        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.CLASS)
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     elif message_type_name == 'personal':
         if "recipient" not in request.POST:
             return json_error("Missing recipient")
@@ -408,7 +408,7 @@ def send_message_backend(request, user_profile, sender):
     message.sender = UserProfile.objects.get(user=sender)
     message.content = strip_html(request.POST['content'])
     message.recipient = recipient
-    if message_type_name == 'class':
+    if message_type_name == 'stream':
         message.instance = instance_name
     if 'time' in request.POST:
         # Forged messages come with a timestamp
@@ -426,7 +426,7 @@ def gather_subscriptions(user_profile):
     subscriptions = Subscription.objects.filter(userprofile=user_profile, active=True)
     # For now, don't display the subscription for your ability to receive personals.
     return sorted([get_display_recipient(sub.recipient) for sub in subscriptions
-            if sub.recipient.type == Recipient.CLASS])
+            if sub.recipient.type == Recipient.STREAM])
 
 @login_required
 def subscriptions(request):
@@ -456,7 +456,7 @@ def json_remove_subscription(request):
         return json_error("Not subscribed, so you can't unsubscribe")
 
     recipient = Recipient.objects.get(type_id=stream.id,
-                                      type=Recipient.CLASS)
+                                      type=Recipient.STREAM)
     subscription = Subscription.objects.get(
         userprofile=user_profile, recipient=recipient)
     subscription.active = False
@@ -482,7 +482,7 @@ def json_add_subscription(request):
 
     stream = create_stream_if_needed(user_profile.realm, sub_name)
     recipient = Recipient.objects.get(type_id=stream.id,
-                                      type=Recipient.CLASS)
+                                      type=Recipient.STREAM)
 
     subscription = Subscription.objects.filter(userprofile=user_profile,
                                                recipient=recipient)

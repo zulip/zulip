@@ -22,7 +22,7 @@ def get_display_recipient(recipient):
     returns: an appropriate string describing the recipient (the class
     name, for a class, or the email, for a user).
     """
-    if recipient.type == Recipient.CLASS:
+    if recipient.type == Recipient.STREAM:
         stream = Stream.objects.get(id=recipient.type_id)
         return stream.name
     elif recipient.type == Recipient.HUDDLE:
@@ -41,7 +41,7 @@ def get_log_recipient(recipient):
     returns: an appropriate string describing the recipient (the class
     name, for a class, or the email, for a user).
     """
-    if recipient.type == Recipient.CLASS:
+    if recipient.type == Recipient.STREAM:
         stream = Stream.objects.get(id=recipient.type_id)
         return stream.name
 
@@ -149,7 +149,7 @@ def create_stream_if_needed(realm, class_name):
         new_class.name = class_name
         new_class.realm = realm
         new_class.save()
-        recipient = Recipient(type_id=new_class.id, type=Recipient.CLASS)
+        recipient = Recipient(type_id=new_class.id, type=Recipient.STREAM)
         recipient.save()
         return new_class
 
@@ -168,7 +168,7 @@ class Stream(models.Model):
         stream = cls(name=name, realm=realm)
         stream.save()
 
-        recipient = Recipient(type_id=stream.id, type=Recipient.CLASS)
+        recipient = Recipient(type_id=stream.id, type=Recipient.STREAM)
         recipient.save()
         return (stream, recipient)
 
@@ -177,14 +177,14 @@ class Recipient(models.Model):
     type = models.PositiveSmallIntegerField(db_index=True)
     # Valid types are {personal, class, huddle}
     PERSONAL = 1
-    CLASS = 2
+    STREAM = 2
     HUDDLE = 3
 
     def type_name(self):
         if self.type == self.PERSONAL:
             return "personal"
-        elif self.type == self.CLASS:
-            return "class"
+        elif self.type == self.STREAM:
+            return "stream"
         elif self.type == self.HUDDLE:
             return "huddle"
         else:
@@ -297,7 +297,7 @@ def do_send_message(message, synced_from_mit=False, no_log=False):
         # For personals, you send out either 1 or 2 copies of the message, for
         # personals to yourself or to someone else, respectively.
         assert((len(recipients) == 1) or (len(recipients) == 2))
-    elif (message.recipient.type == Recipient.CLASS or
+    elif (message.recipient.type == Recipient.STREAM or
           message.recipient.type == Recipient.HUDDLE):
         recipients = [get_user_profile_by_id(s.userprofile_id) for
                       s in Subscription.objects.filter(recipient=message.recipient, active=True)]

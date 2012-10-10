@@ -62,7 +62,7 @@ class AuthedTestCase(TestCase):
     def users_subscribed_to_class(self, class_name, realm_domain):
         realm = Realm.objects.get(domain=realm_domain)
         stream = Stream.objects.get(name=class_name, realm=realm)
-        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.CLASS)
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient)
 
         return [subscription.userprofile.user for subscription in subscriptions]
@@ -247,7 +247,7 @@ class ClassMessagesTest(AuthedTestCase):
         a_subscriber = subscribers[0].username
         a_subscriber_email = subscribers[0].email
         self.login(a_subscriber_email, a_subscriber)
-        self.send_message(a_subscriber_email, "Scotland", Recipient.CLASS)
+        self.send_message(a_subscriber_email, "Scotland", Recipient.STREAM)
 
         new_subscriber_messages = []
         for subscriber in subscribers:
@@ -316,7 +316,7 @@ class MessagePOSTTest(AuthedTestCase):
         successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        result = self.client.post("/send_message/", {"type": "class",
+        result = self.client.post("/send_message/", {"type": "stream",
                                                      "class": "Verona",
                                                      "content": "Test message",
                                                      "instance": "Test instance"})
@@ -329,7 +329,7 @@ class MessagePOSTTest(AuthedTestCase):
         """
         self.login("hamlet@humbughq.com", "hamlet")
         self.assertFalse(Stream.objects.filter(name="nonexistent_class"))
-        result = self.client.post("/send_message/", {"type": "class",
+        result = self.client.post("/send_message/", {"type": "stream",
                                                      "class": "nonexistent_class",
                                                      "content": "Test message",
                                                      "instance": "Test instance"})

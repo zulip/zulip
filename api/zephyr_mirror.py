@@ -153,7 +153,7 @@ def process_loop(log):
                          'zsig'      : zsig,  # logged here but not used by app
                          'content'   : body }
             else:
-                zeph = { 'type'      : 'class',
+                zeph = { 'type'      : 'stream',
                          'time'      : str(notice.time),
                          'sender'    : sender,
                          'class'     : notice.cls.lower(),
@@ -221,7 +221,7 @@ def forward_to_zephyr(message):
             for line in cleaned_content.split("\n"))
 
     print "Sending message from %s humbug=>zephyr at %s" % (message["sender_email"], datetime.datetime.now())
-    if message['type'] == "class":
+    if message['type'] == "stream":
         zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
                               auth=True, cls=message["display_recipient"],
                               instance=message["instance"])

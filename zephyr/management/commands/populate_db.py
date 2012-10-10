@@ -118,7 +118,7 @@ class Command(BaseCommand):
             # Create public classes.
             create_streams(class_list, humbug_realm)
             recipient_classes = [klass.type_id for klass in
-                                 Recipient.objects.filter(type=Recipient.CLASS)]
+                                 Recipient.objects.filter(type=Recipient.STREAM)]
 
             # Create subscriptions to classes
             profiles = UserProfile.objects.all()
@@ -126,14 +126,14 @@ class Command(BaseCommand):
                 # Subscribe to some classes.
                 for recipient in recipient_classes[:int(len(recipient_classes) *
                                                         float(i)/len(profiles)) + 1]:
-                    r = Recipient.objects.get(type=Recipient.CLASS, type_id=recipient)
+                    r = Recipient.objects.get(type=Recipient.STREAM, type_id=recipient)
                     new_subscription = Subscription(userprofile=profile,
                                                     recipient=r)
                     new_subscription.save()
         else:
             humbug_realm = Realm.objects.get(domain="humbughq.com")
             recipient_classes = [klass.type_id for klass in
-                                 Recipient.objects.filter(type=Recipient.CLASS)]
+                                 Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
         users = [user.id for user in User.objects.all()]
@@ -170,7 +170,7 @@ class Command(BaseCommand):
             profiles = UserProfile.objects.filter(realm=mit_realm)
             for cls in mit_subs_list.all_subs:
                 stream = Stream.objects.get(name=cls, realm=mit_realm)
-                recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=stream.id)
+                recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                 for i, profile in enumerate(profiles):
                     if profile.user.email in mit_subs_list.subs_lists:
                         key = profile.user.email
@@ -189,7 +189,7 @@ class Command(BaseCommand):
             profiles = UserProfile.objects.filter(realm=humbug_realm)
             for cls in humbug_class_list:
                 stream = Stream.objects.get(name=cls, realm=humbug_realm)
-                recipient = Recipient.objects.get(type=Recipient.CLASS, type_id=stream.id)
+                recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                 for i, profile in enumerate(profiles):
                     # Subscribe to some classes.
                     new_subscription = Subscription(userprofile=profile, recipient=recipient)
@@ -235,7 +235,7 @@ def restore_saved_messages():
                               old_message["sender_full_name"],
                               old_message["sender_short_name"])
         message.sender = UserProfile.objects.get(user__email=old_message["sender_email"])
-        type_hash = {"class": Recipient.CLASS, "huddle": Recipient.HUDDLE, "personal": Recipient.PERSONAL}
+        type_hash = {"stream": Recipient.STREAM, "huddle": Recipient.HUDDLE, "personal": Recipient.PERSONAL}
         message.type = type_hash[old_message["type"]]
         message.content = old_message["content"]
         message.instance = old_message["instance"]
@@ -248,9 +248,9 @@ def restore_saved_messages():
             user_profile = UserProfile.objects.get(user__email=u["email"])
             message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
                                                          type_id=user_profile.id)
-        elif message.type == Recipient.CLASS:
+        elif message.type == Recipient.STREAM:
             stream = create_stream_if_needed(realm, old_message["recipient"])
-            message.recipient = Recipient.objects.get(type=Recipient.CLASS,
+            message.recipient = Recipient.objects.get(type=Recipient.STREAM,
                                                          type_id=stream.id)
         elif message.type == Recipient.HUDDLE:
             for u in old_message["recipient"]:
@@ -280,7 +280,7 @@ def send_messages(data):
     offset = random.randint(0, len(texts))
 
     recipient_classes = [klass.id for klass in
-                         Recipient.objects.filter(type=Recipient.CLASS)]
+                         Recipient.objects.filter(type=Recipient.STREAM)]
     recipient_huddles = [h.id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
 
     huddle_members = {}
@@ -309,7 +309,7 @@ def send_messages(data):
             if message_type == Recipient.PERSONAL:
                 personals_pair = saved_data
                 random.shuffle(personals_pair)
-            elif message_type == Recipient.CLASS:
+            elif message_type == Recipient.STREAM:
                 message.instance = saved_data
                 message.recipient = get_recipient_by_id(recipient_id)
             elif message_type == Recipient.HUDDLE:
@@ -322,7 +322,7 @@ def send_messages(data):
             personals_pair = random.choice(personals_pairs)
             random.shuffle(personals_pair)
         elif (randkey <= random_max * 1.0):
-            message_type = Recipient.CLASS
+            message_type = Recipient.STREAM
             message.recipient = get_recipient_by_id(random.choice(recipient_classes))
 
         if message_type == Recipient.HUDDLE:
@@ -333,7 +333,7 @@ def send_messages(data):
                                                          type_id=personals_pair[0])
             message.sender = get_user_profile_by_id(personals_pair[1])
             saved_data = personals_pair
-        elif message_type == Recipient.CLASS:
+        elif message_type == Recipient.STREAM:
             stream = Stream.objects.get(id=message.recipient.type_id)
             # Pick a random subscriber to the class
             message.sender = random.choice(Subscription.objects.filter(
