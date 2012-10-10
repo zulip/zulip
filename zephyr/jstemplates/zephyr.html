@@ -48,7 +48,7 @@
     </td>
     <td class="pointer"><p></p></td>
     <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_class}} personal-message{{/is_class}}"
-        onmousedown="zephyr_mousedown();" onmousemove="zephyr_mousemove();">
+        onmousedown="mousedown();" onmousemove="mousemove();">
         {{#include_sender}}
         <span class="zephyr_sender"
               onmouseover="show_email({{id}});"

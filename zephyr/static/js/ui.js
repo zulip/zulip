@@ -60,12 +60,12 @@ function report_success(response, status_box) {
 var clicking = false;
 var mouse_moved = false;
 
-function zephyr_mousedown() {
+function mousedown() {
     mouse_moved = false;
     clicking = true;
 }
 
-function zephyr_mousemove() {
+function mousemove() {
     if (clicking) {
         mouse_moved = true;
     }
