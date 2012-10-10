@@ -161,11 +161,11 @@ def process_loop(log):
                          'zsig'      : zsig,  # logged here but not used by app
                          'content'   : body }
 
+            print "%s: received a message on %s/%s from %s..." % \
+                (datetime.datetime.now(), notice.cls, notice.instance, notice.sender)
             log.write(simplejson.dumps(zeph) + '\n')
             log.flush()
 
-            print "%s: received a message on %s/%s from %s..." % \
-                (datetime.datetime.now(), notice.cls, notice.instance, notice.sender)
             res = send_humbug(zeph)
             if res.get("result") != "success":
                 print >>sys.stderr, 'Error relaying zephyr'
