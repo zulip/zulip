@@ -26,7 +26,7 @@ def create_users(name_list):
         realm = Realm.objects.get(domain=domain)
         create_user(email, password, realm, name, short_name)
 
-def create_classes(class_list, realm):
+def create_streams(class_list, realm):
     for name in class_list:
         if Stream.objects.filter(name=name, realm=realm):
             # We're trying to create the same zephyr class twice!
@@ -116,7 +116,7 @@ class Command(BaseCommand):
             create_users(names)
 
             # Create public classes.
-            create_classes(class_list, humbug_realm)
+            create_streams(class_list, humbug_realm)
             recipient_classes = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.CLASS)]
 
@@ -164,7 +164,7 @@ class Command(BaseCommand):
             internal_mit_users = []
             create_users(internal_mit_users)
 
-            create_classes(mit_subs_list.all_subs, mit_realm)
+            create_streams(mit_subs_list.all_subs, mit_realm)
 
             # Now subscribe everyone to these classes
             profiles = UserProfile.objects.filter(realm=mit_realm)
@@ -183,7 +183,7 @@ class Command(BaseCommand):
             internal_humbug_users = []
             create_users(internal_humbug_users)
             humbug_class_list = ["devel", "all", "humbug", "design", "support"]
-            create_classes(humbug_class_list, humbug_realm)
+            create_streams(humbug_class_list, humbug_realm)
 
             # Now subscribe everyone to these classes
             profiles = UserProfile.objects.filter(realm=humbug_realm)
