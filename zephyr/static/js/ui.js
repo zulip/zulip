@@ -253,4 +253,9 @@ $(function () {
                 .text(response).stop(true).fadeTo(0,1);
         }
     });
+
+    // A little hackish, because it doesn't seem to totally get us
+    // the exact right width for the narrowbar and compose box,
+    // but, close enough for now.
+    resizehandler();
 });
