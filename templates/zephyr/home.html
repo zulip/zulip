@@ -9,76 +9,75 @@
   </div>
 </div>
 
-  <div class="row">
-    <div class="span9">
-                <div class="message_list" id="main_div">
-                    <table id="loading_indicator">
-                        <tr><td id="loading_spinner"></td><td>Loading...</td></tr>
-                    </table>
-                    <br/><br/>
-                    <table class="message_table focused_table" id="zhome">
-                        <tbody>
-                        </tbody>
-                    </table>
-                    <table class="message_table" id="zfilt">
-                        <tbody>
-                        </tbody>
-                    </table>
-                    <br/><br/>
-                    <div id="bottom_whitespace"></div>
-                </div>
+<div class="row">
+  <div class="span9">
+    <div class="message_list" id="main_div">
+      <table id="loading_indicator">
+        <tr><td id="loading_spinner"></td><td>Loading...</td></tr>
+      </table>
+      <br/><br/>
+      <table class="message_table focused_table" id="zhome">
+        <tbody>
+        </tbody>
+      </table>
+      <table class="message_table" id="zfilt">
+        <tbody>
+        </tbody>
+      </table>
+      <br/><br/>
+      <div id="bottom_whitespace"></div>
     </div>
   </div>
+</div>
 
-  <div class="row">
-    <div class="span9 compose" id="compose">
-      <div class="close composebox-close" onclick="hide_compose()">&times;</div>
-                        <div class="message_comp">
-                        <div class="alert" id="send-status"></div>
-                                <form action="/send_message/" method="post" class="zephyr">
-                                    <input type="hidden" name="type" value="stream" id="new_message_type"/>
-                                    {% csrf_token %}
-                                    <table class="compose_table">
-                                        <tbody>
-                                          <tr style="visibility: collapse;">
-                                            <td class="ztable_col1" />
-                                            <td class="ztable_col2" />
-                                            <td class="ztable_col3" />
-                                          </tr>
-                                          <tr id="stream-message">
-                                            <td colspan="2" class="message_newstyle_stream">
-                                              <input type="text" class="recipient_box" name="stream" id="stream" onchange="focus_on('subject')" value="" placeholder="Stream" autocomplete="off"/>
-                                            </td>
-                                            <td class="message_newstyle_subject">
-                                              <input type="text" class="recipient_box" name="subject" id="subject" onchange="focus_on('new_message_content')" value="" placeholder="Subject" autocomplete="off"/>
-                                            </td>
-                                          </tr>
-                                          <tr id="personal-message">
-                                            <td colspan="3" class="message_newstyle_pm">
-                                              Huddle with <input type="text" class="recipient_box" name="recipient" id="huddle_recipient" onblur="focus_on('new_message_content')" value="" placeholder="one or more people..." autocomplete="off"/>
-                                            </td>
-                                          </tr>
-                                          <tr>
-                                            <td class="message_picture">
-                                              <div id="stream_or_huddle">
-                                                <ul class="nav nav-pills nav-stacked" id="message-type-tabs">
-                                                  <li class="active"><a href="#stream-message" data-toggle="pill">Stream</a></li>
-                                                  <li><a href="#personal-message" data-toggle="pill">Huddle</a></li>
-                                                </ul>
-                                              </div>
-                                            </td>
-                                            <td class="pointer"></td>
-                                            <td class="messagebox">
-                                              <div class="message_content">
-                                                <textarea class="new_message_textarea" name="content" id="new_message_content" value="" placeholder="Compose your message here..."></textarea>
-                                                <input type="submit" value="Send" class="btn send_message"/>
-                                              </div>
-                                            </td>
-                                          </tr>
-                                        </tbody>
-                                    </table>
-                                </form>
-                        </div>
+<div class="row">
+  <div class="span9 compose" id="compose">
+    <div class="close composebox-close" onclick="hide_compose()">&times;</div>
+    <div class="message_comp">
+      <div class="alert" id="send-status"></div>
+      <form action="/send_message/" method="post" class="zephyr">
+        <input type="hidden" name="type" value="stream" id="new_message_type"/>
+        {% csrf_token %}
+        <table class="compose_table">
+          <tbody>
+            <tr style="visibility: collapse;">
+              <td class="ztable_col1" />
+              <td class="ztable_col2" />
+              <td class="ztable_col3" />
+            </tr>
+            <tr id="stream-message">
+              <td colspan="2" class="message_newstyle_stream">
+                <input type="text" class="recipient_box" name="stream" id="stream" onchange="focus_on('subject')" value="" placeholder="Stream" autocomplete="off"/>
+              </td>
+              <td class="message_newstyle_subject">
+                <input type="text" class="recipient_box" name="subject" id="subject" onchange="focus_on('new_message_content')" value="" placeholder="Subject" autocomplete="off"/>
+              </td>
+            </tr>
+            <tr id="personal-message">
+              <td colspan="3" class="message_newstyle_pm">
+                Huddle with <input type="text" class="recipient_box" name="recipient" id="huddle_recipient" onblur="focus_on('new_message_content')" value="" placeholder="one or more people..." autocomplete="off"/>
+              </td>
+            </tr>
+            <tr>
+              <td class="message_picture">
+                <div id="stream_or_huddle">
+                  <ul class="nav nav-pills nav-stacked" id="message-type-tabs">
+                    <li class="active"><a href="#stream-message" data-toggle="pill">Stream</a></li>
+                    <li><a href="#personal-message" data-toggle="pill">Huddle</a></li>
+                  </ul>
                 </div>
+              </td>
+              <td class="pointer"></td>
+              <td class="messagebox">
+                <div class="message_content">
+                  <textarea class="new_message_textarea" name="content" id="new_message_content" value="" placeholder="Compose your message here..."></textarea>
+                  <input type="submit" value="Send" class="btn send_message"/>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div>
   </div>
-
+</div>
