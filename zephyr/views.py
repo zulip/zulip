@@ -238,6 +238,13 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
             messages = last_n(400, query.filter(id__lt=first))
             where = 'top'
 
+    # Filter for mit_sync_bot before checking whether there are any
+    # messages to pass on.  If we don't do this, when the only message
+    # to forward is one that was sent via mit_sync_bot, the API client
+    # will end up in an endless loop requesting more data from us.
+    if kwargs.get("mit_sync_bot"):
+        messages = [m for m in messages if not mit_sync_table.get(m.id)]
+
     if messages:
         handler.finish(format_updates_response(messages, where=where, **kwargs))
         return True
