@@ -367,8 +367,8 @@ def send_message_backend(request, user_profile, sender):
             return json_error("Missing stream")
         if "subject" not in request.POST:
             return json_error("Missing subject")
-        stream_name = strip_html(request.POST['stream']).strip()
-        subject_name = strip_html(request.POST['subject']).strip()
+        stream_name = request.POST['stream'].strip()
+        subject_name = request.POST['subject'].strip()
 
         if not valid_stream_name(stream_name):
             return json_error("Invalid stream name")
@@ -382,7 +382,7 @@ def send_message_backend(request, user_profile, sender):
         if "recipient" not in request.POST:
             return json_error("Missing recipient")
 
-        recipient_data = strip_html(request.POST['recipient'])
+        recipient_data = request.POST['recipient']
         if ',' in recipient_data:
             # This is actually a huddle message, which shares the
             # "personal" message sending form
