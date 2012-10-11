@@ -37,6 +37,10 @@ parser.add_option('--forward-from-humbug',
                   dest='forward_to_humbug',
                   default=True,
                   action='store_false')
+parser.add_option('--no-auto-subscribe',
+                  dest='auto_subscribe',
+                  default=True,
+                  action='store_false')
 parser.add_option('--site',
                   dest='site',
                   default="https://app.humbughq.com",
@@ -286,7 +290,33 @@ def humbug_to_zephyr(options):
     humbug_client.call_on_each_message(maybe_forward_to_zephyr,
                                        options={"mit_sync_bot": 'yes'})
 
+def add_humbug_subscriptions():
+    print "Adding your ~/.zephyr.subs subscriptions to Humbug!"
+    zephyr_subscriptions = set()
+    subs_file = os.path.join(os.environ["HOME"], ".zephyr.subs")
+    if not os.path.exists(subs_file):
+        print >>sys.stderr, "Couldn't find .zephyr.subs!"
+        print >>sys.stderr, "Do you mean to run with --no-auto-subscribe?"
+        return
+
+    for line in file(subs_file, "r").readlines():
+        line = line.strip()
+        if len(line) == 0:
+            continue
+        try:
+            (cls, instance, recipient) = line.split(",")
+            if instance != "*" or recipient != "*":
+                print "Skipping ~/.zephyr.subs line: [%s] due to non-* values" % (line,)
+                continue
+            zephyr_subscriptions.add(cls)
+        except:
+            print >>sys.stderr, "Couldn't parse ~/.zephyr.subs file line: [%s]" % (line,)
+    if len(zephyr_subscriptions) != 0:
+        humbug_client.subscribe(list(zephyr_subscriptions))
+
 if options.forward_to_humbug:
+    if options.auto_subscribe:
+        add_humbug_subscriptions()
     zephyr_to_humbug(options)
 else:
     humbug_to_zephyr(options)
