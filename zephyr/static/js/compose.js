@@ -42,6 +42,10 @@ function composing_huddle_message() {
     return $("#personal-message").is(":visible");
 }
 
+function composing_message() {
+    return composing_stream_message() || composing_huddle_message();
+}
+
 function compose_stream_name() {
     return $.trim($("#stream").val());
 }

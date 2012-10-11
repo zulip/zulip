@@ -74,8 +74,12 @@ function process_hotkey(code) {
             select_message(get_last_visible(), false);
         }
         return false;
-    case 27: // Esc: hide compose pane
-        hide_compose();
+    case 27: // Esc: hide compose pane or un-narrow
+        if (composing_message()) {
+            hide_compose();
+        } else {
+            show_all_messages();
+        }
         return process_hotkey;
     case 99: // 'c': compose
         compose_button();

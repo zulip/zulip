@@ -10,7 +10,7 @@ var globals =
 
     // compose.js
     + ' show_compose hide_compose toggle_compose compose_button'
-    + ' compose_stream_name validate_message'
+    + ' composing_message compose_stream_name validate_message'
     + ' status_classes'
 
     // dom_access.js
