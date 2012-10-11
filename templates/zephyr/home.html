@@ -1,5 +1,16 @@
-  <div class="row-fluid">
-    <div class="span12">
+<div class="row">
+  <div class="span9" id="narrowbox">
+    <div class="narrowcontent">
+      <div id="narrowlabel">
+        <span id="currently_narrowed_to"></span>
+        <div class="close" onclick="show_all_messages()">&times;</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="row">
+    <div class="span9">
                 <div class="message_list" id="main_div">
                     <table id="loading_indicator">
                         <tr><td id="loading_spinner"></td><td>Loading...</td></tr>
@@ -14,12 +25,6 @@
                         </tbody>
                     </table>
                     <br/><br/>
-                    <div class="row" id="narrowbox">
-                      <div class="pull-left" id="narrowlabel">
-                          <span id="currently_narrowed_to"></span>
-                      </div>
-                      <div class="close" onclick="show_all_messages()">&times;</div>
-                    </div>
                     <div id="bottom_whitespace"></div>
                 </div>
 

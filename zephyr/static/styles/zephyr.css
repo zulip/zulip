@@ -292,18 +292,19 @@ input.send_message {
 #narrowbox {
     position: fixed;
     display: none;
-    padding: 5px 10px;
-    border: 1px solid black;
-    /* .message_list width + padding_right - my border*2 - my padding*2 */
-    width: 648px;
-    margin-left: -10px; /* -1*.message_list padding */
+    /* .message_list max-width + 30px margin */
+    max-width: 670px;
     background-color: #DDD;
     text-decoration: none;
     top: 0px;
 }
 
+.narrowcontent {
+    padding: 5px 10px;
+    border: 1px solid black;
+}
+
 #narrowlabel {
-    width: 95%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
