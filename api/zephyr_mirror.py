@@ -57,6 +57,7 @@ humbug_client = api.common.HumbugAPI(email=os.environ["USER"] + "@mit.edu",
 
 import zephyr
 zephyr.init()
+subs = zephyr.Subscriptions()
 
 def compute_humbug_username(zephyr_username):
     return zephyr_username.lower().split("@")[0] + "@mit.edu"
@@ -97,12 +98,39 @@ def username_to_fullname(username):
         fullnames[username] = fetch_fullname(username)
     return fullnames[username]
 
+current_zephyr_subs = {}
+def ensure_subscribed(sub):
+    if sub in current_zephyr_subs:
+        return
+    subs.add((sub, '*', '*'))
+    current_zephyr_subs[sub] = True
+
+def update_subscriptions_from_humbug():
+    try:
+        res = humbug_client.get_public_streams()
+        streams = res["streams"]
+    except:
+        print "Error getting public streams:"
+        traceback.print_exc()
+        return
+    for stream in streams:
+        ensure_subscribed(stream)
 
 def process_loop(log):
-    import mit_subs_list
+    sleep_count = 0
+    sleep_time = 0.1
     while True:
+        notice = zephyr.receive(block=False)
+        if notice is None and options.forward_class_messages:
+            # Ask the Humbug server about any new classes to subscribe to
+            time.sleep(sleep_time)
+            sleep_count += sleep_time
+            if sleep_count > 15:
+                sleep_count = 0
+                update_subscriptions_from_humbug()
+            continue
+
         try:
-            notice = zephyr.receive(block=True)
             zsig, body = notice.message.split("\x00", 1)
             is_personal = False
             is_huddle = False
@@ -133,7 +161,7 @@ def process_loop(log):
                     huddle_recipients = ",".join(huddle_recipients_list)
 
             # Drop messages not to the listed subscriptions
-            if (notice.cls.lower() not in mit_subs_list.all_subs) and not \
+            if (notice.cls.lower() not in current_zephyr_subs) and not \
                     (is_personal and options.forward_personals):
                 print "Skipping ...", notice.cls, notice.instance, is_personal
                 continue
@@ -179,10 +207,10 @@ def process_loop(log):
 
 def zephyr_to_humbug(options):
     import mit_subs_list
-    subs = zephyr.Subscriptions()
     if options.forward_class_messages:
         for sub in mit_subs_list.all_subs:
-            subs.add((sub, '*', '*'))
+            ensure_subscribed(sub)
+    update_subscriptions_from_humbug()
     if options.forward_personals:
         subs.add(("message", "personal", "*"))
 
