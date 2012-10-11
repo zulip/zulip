@@ -101,12 +101,13 @@ def register(request):
             full_name  = strip_html(form.cleaned_data['full_name'])
             short_name = strip_html(email.split('@')[0])
             domain     = strip_html(form.cleaned_data['domain'])
-            realm = Realm.objects.filter(domain=domain)
-            if not realm:
+
+            try:
+                realm = Realm.objects.get(domain=domain)
+            except Realm.DoesNotExist:
                 realm = Realm(domain=domain)
                 realm.save()
-            else:
-                realm = Realm.objects.get(domain=domain)
+
             # FIXME: sanitize email addresses
             create_user(email, password, realm, full_name, short_name)
             login(request, authenticate(username=email, password=password))
