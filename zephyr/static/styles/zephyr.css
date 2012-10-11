@@ -6,12 +6,23 @@ body {
     background-color: white;
     padding: 0.5em;
     margin-top: 2em;
-    -webkit-border-radius: 10px;
-    -moz-border-radius: 10px;
+}
+
+@media (max-width: 767px) {
+    .sidebar-nav {
+        background-color: white;
+        padding: 0.5em;
+        margin: 0px;
+        border: 1px solid black;
+    }
 }
 
 ul#sidebar {
     margin-bottom: 0px;
+}
+
+#nav_whitespace {
+    visibility: hidden;
 }
 
 .my_fullname {
@@ -294,16 +305,16 @@ input.send_message {
 
 #narrowbox {
     position: fixed;
-    display: none;
     /* .message_list max-width + 30px margin */
     max-width: 670px;
-    background-color: #DDD;
     text-decoration: none;
     top: 0px;
 }
 
 .narrowcontent {
+    display: none;
     padding: 5px 10px;
+    background-color: #DDD;
     border: 1px solid black;
 }
 

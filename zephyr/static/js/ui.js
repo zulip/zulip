@@ -71,6 +71,36 @@ function mousemove() {
     }
 }
 
+function resizehandler(e) {
+    var viewport = $(window);
+    var sidebar = $("#sidebar");
+    var narrowcontent = $(".narrowcontent");
+    var sidebar_nav = $(".sidebar-nav");
+    var composebox = $("#compose");
+    var narrowbox = $("#narrowbox");
+    if (viewport.width() <= 767) {
+        sidebar.removeClass('nav-stacked');
+
+        var space_taken_up_by_navbar = sidebar_nav.outerHeight(true);
+        $("#nav_whitespace").height(space_taken_up_by_navbar); // .visible-phone only, so doesn't need undoing
+        narrowbox.css('top', space_taken_up_by_navbar);
+
+        var message_list_width = $("#main_div").outerWidth();
+        composebox.width(message_list_width);
+        // narrowcontent has padding and a border, so we need to
+        // subtract those out when we set the width
+        var border_and_padding = narrowcontent.outerWidth() - narrowcontent.width();
+        narrowcontent.width(message_list_width - border_and_padding);
+        sidebar_nav.width(message_list_width);
+    } else {
+        sidebar.addClass('nav-stacked');
+        narrowbox.css('top', 0);
+        compose.width('');
+        narrowcontent.width('');
+        siebar_nav.width('');
+    }
+}
+
 var autocomplete_needs_update = false;
 
 function update_autocomplete() {
@@ -155,6 +185,9 @@ $(function () {
     });
     $(window).mousewheel(throttled_scrollhandler);
     $(window).scroll(throttled_scrollhandler);
+
+    var throttled_resizehandler = $.throttle(50, resizehandler);
+    $(window).resize(throttled_resizehandler);
 
     $('#sidebar a[data-toggle="pill"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
