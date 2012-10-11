@@ -243,10 +243,8 @@ def forward_to_zephyr(message):
         print "ERROR!  Couldn't compute zsig for %s!" % (message["sender_email"])
         return
 
-    content = message["content"]
-    cleaned_content = content.replace('&lt;','<').replace('&gt;','>').replace('&amp;', '&')
     wrapped_content = "\n".join("\n".join(textwrap.wrap(line))
-            for line in cleaned_content.split("\n"))
+            for line in message["content"].split("\n"))
 
     print "Sending message from %s humbug=>zephyr at %s" % (message["sender_email"], datetime.datetime.now())
     if message['type'] == "stream":
