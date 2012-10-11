@@ -46,7 +46,7 @@ class AuthedTestCase(TestCase):
         User that has that email.
         """
         # Usernames are unique, even across Realms.
-        return UserProfile.objects.get(user=User.objects.get(email=email))
+        return UserProfile.objects.get(user__email=email)
 
     def send_message(self, sender_name, recipient_name, message_type):
         sender = self.get_userprofile(sender_name)
