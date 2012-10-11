@@ -98,9 +98,9 @@ def register(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             password   = form.cleaned_data['password']
-            full_name  = strip_html(form.cleaned_data['full_name'])
-            short_name = strip_html(email.split('@')[0])
-            domain     = strip_html(form.cleaned_data['domain'])
+            full_name  = form.cleaned_data['full_name']
+            short_name = email.split('@')[0]
+            domain     = form.cleaned_data['domain']
 
             try:
                 realm = Realm.objects.get(domain=domain)
@@ -120,7 +120,7 @@ def register(request):
 def login_page(request, **kwargs):
     template_response = django_login_page(request, **kwargs)
     try:
-        template_response.context_data['email'] = strip_html(request.GET['email'])
+        template_response.context_data['email'] = request.GET['email']
     except KeyError:
         pass
     return template_response
@@ -312,7 +312,7 @@ def is_super_user_api(request):
     return request.POST.get("api-key") == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 def already_sent_forged_message(request):
-    email = strip_html(request.POST['sender']).lower()
+    email = request.POST['sender'].lower()
     if Message.objects.filter(sender__user__email=email,
                               content=request.POST['content'],
                               pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 10).replace(tzinfo=utc),
@@ -322,10 +322,10 @@ def already_sent_forged_message(request):
 
 def create_forged_message_users(request, user_profile):
     # Create a user for the sender, if needed
-    email = strip_html(request.POST['sender']).lower()
+    email = request.POST['sender'].lower()
     user = create_user_if_needed(user_profile.realm, email, "test",
-                                 strip_html(request.POST['fullname']),
-                                 strip_html(request.POST['shortname']))
+                                 request.POST['fullname'],
+                                 request.POST['shortname'])
 
     # Create users for huddle recipients, if needed.
     if request.POST['type'] == 'personal':
@@ -539,8 +539,8 @@ def change_settings(request):
     old_password     = request.POST['old_password']
     new_password     = request.POST['new_password']
     confirm_password = request.POST['confirm_password']
-    full_name        = strip_html(request.POST['full_name'])
-    short_name       = strip_html(request.POST['short_name'])
+    full_name        = request.POST['full_name']
+    short_name       = request.POST['short_name']
 
     if new_password != "":
         if new_password != confirm_password:
