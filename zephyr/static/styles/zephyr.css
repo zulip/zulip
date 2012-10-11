@@ -26,12 +26,11 @@ ul#sidebar {
 
 
 #application_area {
-    min-width: 670px;
 }
 
 .message_list {
+    max-width: 640px;
     background-color: aliceblue;
-    width: 640px;
     padding-left: 10px;
     padding-right: 20px;
 }
