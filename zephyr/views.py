@@ -430,15 +430,6 @@ def gather_subscriptions(user_profile):
             if sub.recipient.type == Recipient.STREAM])
 
 @login_required
-def subscriptions(request):
-    user_profile = UserProfile.objects.get(user=request.user)
-
-    return render_to_response('zephyr/subscriptions.html',
-                              {'subscriptions': gather_subscriptions(user_profile),
-                               'user_profile': user_profile},
-                              context_instance=RequestContext(request))
-
-@login_required
 def json_list_subscriptions(request):
     subs = gather_subscriptions(UserProfile.objects.get(user=request.user))
     return HttpResponse(content=simplejson.dumps({"subscriptions": subs}),
@@ -503,17 +494,6 @@ def json_add_subscription(request):
         new_subscription.save()
         actually_new_sub = sub_name
     return json_success({"data": actually_new_sub})
-
-
-@login_required
-def manage_settings(request):
-    user_profile = UserProfile.objects.get(user=request.user)
-
-    return render_to_response('zephyr/settings.html',
-                              {'user_profile': user_profile,
-                               'email_hash': hashlib.md5(user_profile.user.email).hexdigest(),
-                               },
-                              context_instance=RequestContext(request))
 
 @login_required
 @require_post
