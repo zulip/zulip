@@ -42,7 +42,11 @@ ul#sidebar {
 .message_comp {
     display: none;
     border: 1px solid #EEE;
-    border-top: 0px;
+    max-width: 640px;
+    background-color: white;
+    padding-left: 10px;
+    padding-right: 20px;
+    padding-top: 5px;
 }
 
 td.pointer {
@@ -147,9 +151,9 @@ table.message_table {
 }
 
 table.compose_table {
-    /* = message_list */
-    width: 640px;
     table-layout: fixed;
+    margin-left: auto;
+    width: 100%;
 }
 
 table.focused_table {
@@ -208,14 +212,12 @@ img.profile_picture {
     position: fixed;
     bottom: 0px;
     background: white;
-    /* = message_list.padding-left */
-    padding-left: 10px;
-    /* = message_list.width + padding-right */
-    width: 670px;
+    max-width: 670px;
 }
 
 /* Like .nav-tabs > li > a */
 #send-status {
+    width: 90%;
     padding: 8px 14px 8px 14px;
     line-height: 20px;
 }
@@ -234,8 +236,7 @@ img.profile_picture {
 }
 
 .composebox-close {
-  padding-top: 5px;
-  padding-right: 8px;
+    padding: 5px;
 }
 
 .send-status-close:hover {
