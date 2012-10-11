@@ -5,7 +5,7 @@ import optparse
 
 usage = """get-subscriptions --user=<email address> [options]
 
-Prints out each message received by the indicated user.
+Prints out a list of the user's subscriptions.
 
 Example: get-subscriptions --user=tabbott@humbughq.com --site=http://127.0.0.1:8000
 """

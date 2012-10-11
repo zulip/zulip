@@ -5,7 +5,7 @@ import optparse
 
 usage = """get-public-streams --user=<email address> [options]
 
-Prints out each message received by the indicated user.
+Prints out all the public streams in the realm.
 
 Example: get-public-streams --user=tabbott@humbughq.com --site=http://127.0.0.1:8000
 """
