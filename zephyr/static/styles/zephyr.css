@@ -24,6 +24,9 @@ ul#sidebar {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 }
 
+.new_message_button {
+    padding-top: 1em;
+}
 
 #application_area {
 }
