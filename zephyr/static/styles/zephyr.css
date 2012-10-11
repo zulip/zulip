@@ -38,6 +38,9 @@ ul#sidebar {
 .new_message_button {
     padding-top: 1em;
 }
+.phone_new_message_button {
+    margin-top: 5px;
+}
 
 #application_area {
 }
