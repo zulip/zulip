@@ -475,6 +475,16 @@ def valid_stream_name(name):
     # Streams must start with a letter or number.
     return re.match("^[.a-zA-Z0-9][.a-z A-Z0-9_-]*$", name)
 
+@csrf_exempt
+@require_post
+@api_key_required
+def api_subscribe(request, user_profile):
+    if "streams" not in request.POST:
+        return json_error("Missing streams argument.")
+    streams = simplejson.loads(request.POST.get("streams"))
+    res = add_subscriptions_backend(request, user_profile, streams)
+    return json_success(res)
+
 @login_required
 @require_post
 def json_add_subscription(request):
@@ -482,33 +492,39 @@ def json_add_subscription(request):
 
     if "new_subscription" not in request.POST:
         return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
-
     sub_name = request.POST.get('new_subscription').strip()
     if not valid_stream_name(sub_name):
         return json_error("Invalid characters in stream names")
+    res = add_subscriptions_backend(request,user_profile,
+                                    [request.POST["new_subscription"]])
+    if len(res["already_subscribed"]) != 0:
+        return json_error("Subscription already exists")
+    return json_success({"data": res["subscribed"][0]})
 
-    stream = create_stream_if_needed(user_profile.realm, sub_name)
-    recipient = Recipient.objects.get(type_id=stream.id,
-                                      type=Recipient.STREAM)
+def add_subscriptions_backend(request, user_profile, streams):
+    subscribed = []
+    already_subscribed = []
+    for stream_name in streams:
+        stream = create_stream_if_needed(user_profile.realm, stream_name)
+        recipient = Recipient.objects.get(type_id=stream.id,
+                                          type=Recipient.STREAM)
 
-    subscription = Subscription.objects.filter(userprofile=user_profile,
-                                               recipient=recipient)
-    if subscription:
-        subscription = subscription[0]
-        if not subscription.active:
-            # Activating old subscription.
-            subscription.active = True
-            subscription.save()
-            actually_new_sub = sub_name
-        else:
-            # Subscription already exists and is active
-            return json_error("Subscription already exists")
-    else:
-        new_subscription = Subscription(userprofile=user_profile,
-                                            recipient=recipient)
-        new_subscription.save()
-        actually_new_sub = sub_name
-    return json_success({"data": actually_new_sub})
+        try:
+            subscription = Subscription.objects.get(userprofile=user_profile,
+                                                    recipient=recipient)
+            if subscription.active:
+                # Subscription already exists and is active
+                already_subscribed.append(stream_name)
+                continue
+        except Subscription.DoesNotExist:
+            subscription = Subscription(userprofile=user_profile,
+                                        recipient=recipient)
+        subscription.active = True
+        subscription.save()
+        subscribed.append(stream_name)
+
+    return {"subscribed": subscribed,
+            "already_subscribed": already_subscribed}
 
 @login_required
 @require_post

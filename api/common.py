@@ -56,6 +56,11 @@ class HumbugAPI():
     def get_subscriptions(self, request = {}):
         return self.do_api_query(request, "/api/v1/get_subscriptions")
 
+    def subscribe(self, streams):
+        request = {}
+        request["streams"] = simplejson.dumps(streams)
+        return self.do_api_query(request, "/api/v1/subscribe")
+
     def call_on_each_message(self, callback, options = {}):
         max_message_id = None
         while True:
