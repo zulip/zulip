@@ -212,14 +212,16 @@ class Message(models.Model):
     # end parentheses, or end brackets (which would confuse Markdown).
     link_regex = re.compile(r'(\s|\A)(?P<url>https?://[^\s\])]+)')
 
+    # Pad heading markers to make Markdown ignore them
+    # FIXME: Write a real extension for the markdown library
+    heading_regex = re.compile(r'^([#-=])', flags=re.MULTILINE)
+
     def html_content(self):
         def linkify(match):
             url = match.group('url')
             return ' [%s](%s) ' % (url, url)
 
-        # Escape the # (pound sign) to avoid markdown making them into
-        # (giant) headers.
-        content = self.content.replace("#", "&#35;")
+        content = self.heading_regex.sub(r' \1', self.content)
         with_links = self.link_regex.sub(linkify, content)
         return md_engine.convert(with_links)
 
