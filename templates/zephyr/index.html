@@ -75,13 +75,43 @@ var people_list = [
               <span class="my_email">{{ user_profile.user.email }}</span>
               <span class="logout">(<a href="/accounts/logout?next=/accounts/login">not you?</a>)</span>
               <ul class="nav nav-pills nav-stacked nav-zephyr" id="sidebar">
-                <li class="active"><a href="#home" data-toggle="pill" onclick="show_all_messages()"><i class="icon-home"></i><span class="hidden-phone">  Home</span></a></li>
-                <li><a href="#subscriptions" data-toggle="pill"><i class="icon-globe"></i><span class="hidden-phone">  Subscriptions</span></a></li>
-                <li class="disabled"><a href="#"><i class="icon-star"></i><span class="hidden-phone">  Starred</span></a></li>
-                <li><a href="#settings" data-toggle="pill"><i class="icon-wrench"></i><span class="hidden-phone"> Settings</span></a></li>
-                <li class="disabled"><a href="#"><i class="icon-envelope"></i><span class="hidden-phone"> Invite a friend</span></a></li>
+                <li title="Home" class="active">
+                  <a href="#home" data-toggle="pill" onclick="show_all_messages()">
+                    <i class="icon-home"></i>
+                    <span class="hidden-phone">  Home</span>
+                  </a>
+                </li>
+                <li title="Subscriptions">
+                  <a href="#subscriptions" data-toggle="pill">
+                    <i class="icon-globe"></i>
+                    <span class="hidden-phone">  Subscriptions</span>
+                  </a>
+                </li>
+                <li title="Starred" class="disabled">
+                  <a href="#">
+                    <i class="icon-star"></i>
+                    <span class="hidden-phone">  Starred</span>
+                  </a>
+                </li>
+                <li title="Settings">
+                  <a href="#settings" data-toggle="pill">
+                    <i class="icon-wrench"></i>
+                    <span class="hidden-phone"> Settings</span>
+                  </a>
+                </li>
+                <li title="Invite a friend" class="disabled">
+                  <a href="#">
+                    <i class="icon-envelope"></i>
+                    <span class="hidden-phone"> Invite a friend</span>
+                  </a>
+                </li>
                 {% if show_debug %}
-                <li><a href="#debug" data-toggle="pill"><i class="icon-barcode"></i><span class="hidden-phone">  Debug</span></a></li>
+                <li title="Debug">
+                  <a href="#debug" data-toggle="pill">
+                    <i class="icon-barcode"></i>
+                    <span class="hidden-phone">  Debug</span>
+                  </a>
+                </li>
                 {% endif %}
                 <button type="button" class="visible-phone btn btn-small phone_new_message_button" onclick="compose_button();">New Message</button>
               </ul>
