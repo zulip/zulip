@@ -138,8 +138,6 @@ td.pointer {
 .message_time {
     color: gray;
     float: right;
-    position: relative;
-    right: -25px;
     font-size: 90%;
 }
 
@@ -162,6 +160,7 @@ table.focused_table {
 
 .message_content {
     margin-left: 5px;
+    margin-right: 35px; /* size of the timestamp */
 }
 
 blockquote {
@@ -174,7 +173,7 @@ blockquote p {
 }
 
 .messagebox {
-    padding: 5px 35px 5px 14px;
+    padding: 5px 14px;
     background-color: white;
     border: 1px solid gray;
     border-width: 0px 1px 1px 1px;
