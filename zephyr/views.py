@@ -67,13 +67,6 @@ def json_success(data={}):
 def json_error(msg, data={}):
     return json_response(res_type="error", msg=msg, data=data, status=400)
 
-def strip_html(x):
-    """Sanitize an email, stream name, etc."""
-    # We remove <> in order to avoid </script> within JSON embedded in HTML.
-    #
-    # FIXME: consider a whitelist
-    return x.replace('&', '&amp;').replace('<','&lt;').replace('>','&gt;')
-
 def get_stream(stream_name, realm):
     stream = Stream.objects.filter(name__iexact=stream_name, realm=realm)
     if stream:
