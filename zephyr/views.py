@@ -414,7 +414,7 @@ def send_message_backend(request, user_profile, sender):
 
     message = Message()
     message.sender = UserProfile.objects.get(user=sender)
-    message.content = strip_html(request.POST['content'])
+    message.content = request.POST['content']
     message.recipient = recipient
     if message_type_name == 'stream':
         message.subject = subject_name

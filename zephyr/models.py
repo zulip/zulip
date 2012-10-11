@@ -13,6 +13,7 @@ import simplejson
 import markdown
 md_engine = markdown.Markdown(
     extensions    = ['fenced_code', 'codehilite', 'nl2br'],
+    safe_mode     = 'escape',
     output_format = 'xhtml' )
 
 def get_display_recipient(recipient):
