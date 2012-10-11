@@ -182,7 +182,7 @@ class Command(BaseCommand):
 
             internal_humbug_users = []
             create_users(internal_humbug_users)
-            humbug_stream_list = ["devel", "all", "humbug", "design", "support"]
+            humbug_stream_list = ["devel", "all", "humbug", "design", "support", "social", "test"]
             create_streams(humbug_stream_list, humbug_realm)
 
             # Now subscribe everyone to these streams
