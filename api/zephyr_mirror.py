@@ -67,7 +67,7 @@ def send_humbug(zeph):
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]
     if "subject" in zeph:
-        zeph["subject"] = zeph["subject"][:30]
+        zeph["subject"] = zeph["subject"][:60]
 
     for key in zeph.keys():
         if isinstance(zeph[key], unicode):
