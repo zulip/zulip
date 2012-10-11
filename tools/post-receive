@@ -46,8 +46,8 @@ def process_push(oldrev, newrev, refname):
         "type": "stream",
         "stream": "test" if refname == "refs/heads/test-post-receive" else "devel",
         "subject": "commits",
-        "content": "The following commits were just pushed to `%s`:\n\n"
-            % (refname.replace("refs/heads/", ""),) + commits,
+        "content": "`%s` was deployed to `%s` with:\n\n" % (newrev[:12], refname.replace("refs/heads/", ""))
+                   + commits,
         "recipient": "tabbott@humbughq.com",
     }
     # Sleep a bit to give time for the server to restart.
