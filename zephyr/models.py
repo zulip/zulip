@@ -249,7 +249,7 @@ class Message(models.Model):
                 'recipient'        : get_log_recipient(self.recipient),
                 'subject'         : self.subject,
                 'content'          : self.content,
-                'timestamp'        : self.pub_date.strftime("%s"),
+                'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
                 }
 
 class UserMessage(models.Model):
