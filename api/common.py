@@ -50,6 +50,12 @@ class HumbugAPI():
     def get_messages(self, request = {}):
         return self.do_api_query(request, "/api/v1/get_messages")
 
+    def get_public_streams(self, request = {}):
+        return self.do_api_query(request, "/api/v1/get_public_streams")
+
+    def get_subscriptions(self, request = {}):
+        return self.do_api_query(request, "/api/v1/get_subscriptions")
+
     def call_on_each_message(self, callback, options = {}):
         max_message_id = None
         while True:

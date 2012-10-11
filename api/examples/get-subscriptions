@@ -1,0 +1,33 @@
+#!/usr/bin/python
+import sys
+import os
+import optparse
+
+usage = """get-subscriptions --user=<email address> [options]
+
+Prints out each message received by the indicated user.
+
+Example: get-subscriptions --user=tabbott@humbughq.com --site=http://127.0.0.1:8000
+"""
+parser = optparse.OptionParser(usage=usage)
+parser.add_option('--site',
+                  dest='site',
+                  default="https://app.humbughq.com",
+                  action='store')
+parser.add_option('--api-key',
+                  dest='api_key',
+                  default="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  action='store')
+parser.add_option('--user',
+                  dest='user',
+                  action='store')
+(options, args) = parser.parse_args()
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+import api.common
+client = api.common.HumbugAPI(email=options.user,
+                              api_key=options.api_key,
+                              verbose=True,
+                              site=options.site)
+
+print client.get_subscriptions()
