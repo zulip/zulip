@@ -137,22 +137,22 @@ def process_loop(log):
     sleep_time = 0.1
     while True:
         notice = zephyr.receive(block=False)
-        if notice is None:
-            time.sleep(sleep_time)
-            sleep_count += sleep_time
-            if sleep_count > 15:
-                sleep_count = 0
-                if options.forward_class_messages:
-                    # Ask the Humbug server about any new classes to subscribe to
-                    update_subscriptions_from_humbug()
-            continue
+        if notice is not None:
+            try:
+                process_notice(notice, log)
+            except:
+                print >>sys.stderr, 'Error relaying zephyr'
+                traceback.print_exc()
+                time.sleep(2)
 
-        try:
-            process_notice(notice, log)
-        except:
-            print >>sys.stderr, 'Error relaying zephyr'
-            traceback.print_exc()
-            time.sleep(2)
+        time.sleep(sleep_time)
+        sleep_count += sleep_time
+        if sleep_count > 15:
+            sleep_count = 0
+            if options.forward_class_messages:
+                # Ask the Humbug server about any new classes to subscribe to
+                update_subscriptions_from_humbug()
+        continue
 
 def process_notice(notice, log):
     zsig, body = notice.message.split("\x00", 1)
