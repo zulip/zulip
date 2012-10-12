@@ -16,6 +16,8 @@ import datetime
 import random
 from optparse import make_option
 
+settings.HAVE_TORNADO_SERVER = False
+
 def create_users(name_list):
     for name, email in name_list:
         (short_name, domain) = email.split("@")

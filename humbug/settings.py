@@ -92,6 +92,11 @@ INITIAL_API_KEY_SALT  = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # FIXME: store this password more securely
 SHARED_SECRET = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
+# Are we running in an environment with the Tornado server?
+# This should be True for both deployment and local development.
+# We set it to False when running tests or populate_db.
+HAVE_TORNADO_SERVER = True
+
 # URL where Django code posts to the Tornado code to notify of new messages
 NOTIFY_NEW_MESSAGE_URL = 'http://localhost:9993/notify_new_message'
 
