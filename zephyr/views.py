@@ -482,6 +482,9 @@ def api_subscribe(request, user_profile):
     if "streams" not in request.POST:
         return json_error("Missing streams argument.")
     streams = simplejson.loads(request.POST.get("streams"))
+    for stream_name in streams:
+        if len(stream_name) > 30:
+            return json_error("Stream name %s too long." % (stream_name,))
     res = add_subscriptions_backend(request, user_profile, streams)
     return json_success(res)
 
