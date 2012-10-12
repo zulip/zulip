@@ -63,12 +63,12 @@ import zephyr
 zephyr.init()
 subs = zephyr.Subscriptions()
 
-def compute_humbug_username(zephyr_username):
+def humbug_username(zephyr_username):
     return zephyr_username.lower().split("@")[0] + "@mit.edu"
 
 def send_humbug(zeph):
     zeph["forged"] = "yes"
-    zeph["sender"] = compute_humbug_username(zeph["sender"])
+    zeph["sender"] = humbug_username(zeph["sender"])
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]
     if "subject" in zeph:
@@ -86,7 +86,8 @@ def fetch_fullname(username):
     try:
         match_user = re.match(r'([a-zA-Z0-9_]+)@mit\.edu', username)
         if match_user:
-            proc = subprocess.Popen(['hesinfo', match_user.group(1), 'passwd'], stdout=subprocess.PIPE)
+            proc = subprocess.Popen(['hesinfo', match_user.group(1), 'passwd'],
+                                    stdout=subprocess.PIPE)
             out, _err_unused = proc.communicate()
             if proc.returncode == 0:
                 return out.split(':')[4].split(',')[0]
@@ -170,7 +171,7 @@ def process_loop(log):
                 if body.startswith("CC:"):
                     is_huddle = True
                     # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
-                    huddle_recipients_list = [compute_humbug_username(x.strip()) for x in
+                    huddle_recipients_list = [humbug_username(x.strip()) for x in
                                               body.split("\n")[0][4:].split()]
                     if sender not in huddle_recipients_list:
                         huddle_recipients_list.append(sender)
@@ -193,7 +194,7 @@ def process_loop(log):
                 zeph = { 'type'      : 'personal',
                          'time'      : str(notice.time),
                          'sender'    : sender,
-                         'recipient' : compute_humbug_username(recipient),
+                         'recipient' : humbug_username(recipient),
                          'zsig'      : zsig,  # logged here but not used by app
                          'content'   : body }
             else:
@@ -206,7 +207,8 @@ def process_loop(log):
                          'content'   : body }
 
             print "%s: received a message on %s/%s from %s..." % \
-                (datetime.datetime.now(), notice.cls, notice.instance, notice.sender)
+                (datetime.datetime.now(), notice.cls, notice.instance,
+                 notice.sender)
             log.write(simplejson.dumps(zeph) + '\n')
             log.flush()
 
@@ -256,23 +258,28 @@ def zephyr_to_humbug(options):
 def forward_to_zephyr(message):
     zsig = u"%s\u200B" % (username_to_fullname(message["sender_email"]))
     if ' dot ' in zsig:
-        print "ERROR!  Couldn't compute zsig for %s!" % (message["sender_email"])
+        print "ERROR!  Couldn't compute zsig for %s!" % \
+            (message["sender_email"])
         return
 
     wrapped_content = "\n".join("\n".join(textwrap.wrap(line))
             for line in message["content"].split("\n"))
 
-    print "Sending message from %s humbug=>zephyr at %s" % (message["sender_email"], datetime.datetime.now())
+    sender_email = message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU")
+    print "Sending message from %s humbug=>zephyr at %s" % \
+        (sender_email, datetime.datetime.now())
     if message['type'] == "stream":
-        zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
-                              auth=True, cls=message["display_recipient"],
+        zeph = zephyr.ZNotice(sender=sender_email, auth=True,
+                              cls=message["display_recipient"],
                               instance=message["subject"])
         body = "%s\0%s" % (zsig, wrapped_content)
         zeph.setmessage(body)
         zeph.send()
     elif message['type'] == "personal":
-        zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
-                              auth=True, recipient=message["display_recipient"]["email"].replace("mit.edu", "ATHENA.MIT.EDU"),
+        recipient = message["display_recipient"]["email"]
+        recipient.replace("mit.edu", "ATHENA.MIT.EDU")
+        zeph = zephyr.ZNotice(sender=sender_email,
+                              auth=True, recipient=recipient,
                               cls="message", instance="personal")
         body = "%s\0%s" % (zsig, wrapped_content)
         zeph.setmessage(body)
@@ -283,16 +290,19 @@ def forward_to_zephyr(message):
                         for user in message["display_recipient"]])
         body = "%s\0%s\n%s" % (zsig, " ".join(cc_list), wrapped_content)
         for r in message["display_recipient"]:
-            zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
-                                  auth=True, recipient=r["email"].replace("mit.edu", "ATHENA.MIT.EDU"),
-                                  cls="message", instance="personal")
+            recipient = r["email"].replace("mit.edu", "ATHENA.MIT.EDU")
+            zeph = zephyr.ZNotice(sender=sender_email, auth=True,
+                                  recipient=recipient, cls="message",
+                                  instance="personal")
             zeph.setmessage(body)
             zeph.send()
 
 def maybe_forward_to_zephyr(message):
     if message["sender_email"] == os.environ["USER"] + "@mit.edu":
-        if float(message["timestamp"]) < float(datetime.datetime.now().strftime("%s")) - 15:
-            print "Alert!  Out of order message!", message["timestamp"], datetime.datetime.now().strftime("%s")
+        timestamp_now = datetime.datetime.now().strftime("%s")
+        if float(message["timestamp"]) < float(timestamp_now) - 15:
+            print "Alert!  Out of order message: %s < %s" % \
+                (message["timestamp"], timestamp_now)
             return
         forward_to_zephyr(message)
 
@@ -318,11 +328,11 @@ def add_humbug_subscriptions():
         try:
             (cls, instance, recipient) = line.split(",")
             if instance != "*" or recipient != "*":
-                print "Skipping ~/.zephyr.subs line: [%s] due to non-* values" % (line,)
+                print "Skipping ~/.zephyr.subs line: [%s]: Non-* values" % (line,)
                 continue
             zephyr_subscriptions.add(cls)
         except:
-            print >>sys.stderr, "Couldn't parse ~/.zephyr.subs file line: [%s]" % (line,)
+            print >>sys.stderr, "Couldn't parse ~/.zephyr.subs line: [%s]" % (line,)
     if len(zephyr_subscriptions) != 0:
         humbug_client.subscribe(list(zephyr_subscriptions))
 
