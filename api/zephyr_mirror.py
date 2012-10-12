@@ -125,13 +125,14 @@ def process_loop(log):
     sleep_time = 0.1
     while True:
         notice = zephyr.receive(block=False)
-        if notice is None and options.forward_class_messages:
-            # Ask the Humbug server about any new classes to subscribe to
+        if notice is None:
             time.sleep(sleep_time)
             sleep_count += sleep_time
             if sleep_count > 15:
                 sleep_count = 0
-                update_subscriptions_from_humbug()
+                if options.forward_class_messages:
+                    # Ask the Humbug server about any new classes to subscribe to
+                    update_subscriptions_from_humbug()
             continue
 
         try:
