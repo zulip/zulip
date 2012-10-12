@@ -95,9 +95,9 @@ function resizehandler(e) {
     } else {
         sidebar.addClass('nav-stacked');
         narrowbox.css('top', 0);
-        compose.width('');
+        composebox.width('');
         narrowcontent.width('');
-        siebar_nav.width('');
+        sidebar_nav.width('');
     }
 }
 
