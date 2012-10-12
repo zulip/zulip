@@ -93,7 +93,7 @@ INITIAL_API_KEY_SALT  = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 SHARED_SECRET = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 # URL where Django code posts to the Tornado code to notify of new messages
-NOTIFY_WAITING_CLIENTS_URL = 'http://localhost:9993/notify_waiting_clients'
+NOTIFY_NEW_MESSAGE_URL = 'http://localhost:9993/notify_new_message'
 
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True

@@ -449,7 +449,7 @@ def send_message_backend(request, user_profile, sender):
 @asynchronous
 @csrf_exempt
 @require_post
-def notify_waiting_clients(request, handler):
+def notify_new_message(request, handler):
     # Check the shared secret.
     # Also check the originating IP, at least for now.
     if ((request.META['REMOTE_ADDR'] != '127.0.0.1')
