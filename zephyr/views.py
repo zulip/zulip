@@ -396,7 +396,7 @@ def send_message_backend(request, user_profile, sender):
         else:
             # This is actually a personal message
             if not User.objects.filter(email=recipient_data):
-                return json_error("Invalid email")
+                return json_error("Invalid email '%s'" % (recipient_data))
 
             recipient_user = User.objects.get(email=recipient_data)
             recipient_user_profile = UserProfile.objects.get(user=recipient_user)
