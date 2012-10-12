@@ -384,7 +384,7 @@ function add_message_metadata(dummy, message) {
         }
         message.reply_to = message.sender_email;
 
-        involved_people = [{'full_name': message.sender_name,
+        involved_people = [{'full_name': message.sender_full_name,
                             'email': message.sender_email}];
         break;
 
@@ -408,7 +408,7 @@ function add_message_metadata(dummy, message) {
 
         involved_people = [message.display_recipient,
                            {'email': message.sender_email,
-                            'full_name': message.sender_name}];
+                            'full_name': message.sender_full_name}];
 
         break;
     }
