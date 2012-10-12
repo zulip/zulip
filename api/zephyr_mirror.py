@@ -35,9 +35,9 @@ parser.add_option('--no-forward-personals',
                   default=True,
                   action='store_false')
 parser.add_option('--forward-from-humbug',
-                  dest='forward_to_humbug',
-                  default=True,
-                  action='store_false')
+                  dest='forward_from_humbug',
+                  default=False,
+                  action='store_true')
 parser.add_option('--no-auto-subscribe',
                   dest='auto_subscribe',
                   default=True,
@@ -388,7 +388,7 @@ def parse_zephyr_subs(verbose=False):
         zephyr_subscriptions.add((cls, instance, recipient))
     return zephyr_subscriptions
 
-if options.forward_to_humbug:
-    zephyr_to_humbug(options)
-else:
+if options.forward_from_humbug:
     humbug_to_zephyr(options)
+else:
+    zephyr_to_humbug(options)
