@@ -13,8 +13,9 @@ import datetime
 import textwrap
 from urllib2 import HTTPError
 
-sys.path.append("/mit/tabbott/Public/python-zephyr/")
-sys.path.append("/mit/tabbott/Public/python-zephyr/build/lib.linux-x86_64-2.6/")
+root_path = "/mit/tabbott/for_friends"
+sys.path.append(root_path + "/python-zephyr")
+sys.path.append(root_path + "/python-zephyr/build/lib.linux-x86_64-2.6/")
 
 parser = optparse.OptionParser()
 parser.add_option('--forward-class-messages',
@@ -134,11 +135,11 @@ def update_subscriptions_from_humbug():
         ensure_subscribed(stream)
 
 def maybe_restart_mirroring_script():
-    if os.stat("/mit/tabbott/for_friends/restart_stamp").st_mtime > start_time:
+    if os.stat(root_path + "/restart_stamp").st_mtime > start_time:
         print "zephyr mirroring script has been updated; restarting..."
         while True:
             try:
-                os.execvp("/mit/tabbott/for_friends/zephyr_mirror.py", sys.argv)
+                os.execvp(root_path + "/zephyr_mirror.py", sys.argv)
             except:
                 print "Error restarting, trying again."
                 traceback.print_exc()
