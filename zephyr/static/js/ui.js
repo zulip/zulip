@@ -99,6 +99,13 @@ function resizehandler(e) {
         narrowcontent.width('');
         sidebar_nav.width('');
     }
+
+    // This function might run onReady (if we're in a narrow window),
+    // but before we've loaded in the messages; in that case, don't
+    // try to scroll to one.
+    if (selected_message_id !== -1) {
+        scroll_to_selected();
+    }
 }
 
 var autocomplete_needs_update = false;
