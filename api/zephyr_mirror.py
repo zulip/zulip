@@ -11,6 +11,7 @@ import optparse
 import os
 import datetime
 import textwrap
+import signal
 from urllib2 import HTTPError
 
 root_path = "/mit/tabbott/for_friends"
@@ -61,9 +62,6 @@ humbug_client = api.common.HumbugAPI(email=os.environ["USER"] + "@mit.edu",
                                      site=options.site)
 
 start_time = time.time()
-import zephyr
-zephyr.init()
-subs = zephyr.Subscriptions()
 
 def humbug_username(zephyr_username):
     return zephyr_username.lower().split("@")[0] + "@mit.edu"
@@ -142,6 +140,7 @@ def maybe_restart_mirroring_script():
              os.stat(root_path + "/tabbott_stamp").st_mtime > start_time):
         print "%s: zephyr mirroring script has been updated; restarting..." % \
             (datetime.datetime.now())
+        os.kill(child_pid, signal.SIGKILL)
         while True:
             try:
                 os.execvp(root_path + "/zephyr_mirror.py", sys.argv)
@@ -344,7 +343,6 @@ def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
     print "%s: humbug=>zephyr: Starting syncing messages." % (datetime.datetime.now(),)
     humbug_client.call_on_each_message(maybe_forward_to_zephyr,
-                                       idle_call=maybe_restart_mirroring_script,
                                        options={"mit_sync_bot": 'yes'})
 
 def subscribed_to_mail_messages():
@@ -389,6 +387,18 @@ def parse_zephyr_subs(verbose=False):
     return zephyr_subscriptions
 
 if options.forward_from_humbug:
+    print "This option is obsolete."
+    sys.exit(0)
+
+child_pid = os.fork()
+if child_pid == 0:
+    # Run the humbug => zephyr mirror in the child
+    import zephyr
+    zephyr.init()
     humbug_to_zephyr(options)
-else:
-    zephyr_to_humbug(options)
+    sys.exit(0)
+
+import zephyr
+zephyr.init()
+subs = zephyr.Subscriptions()
+zephyr_to_humbug(options)

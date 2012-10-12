@@ -61,7 +61,7 @@ class HumbugAPI():
         request["streams"] = simplejson.dumps(streams)
         return self.do_api_query(request, "/api/v1/subscribe")
 
-    def call_on_each_message(self, callback, idle_call = None, options = {}):
+    def call_on_each_message(self, callback, options = {}):
         max_message_id = None
         while True:
             if max_message_id is not None:
@@ -82,6 +82,3 @@ class HumbugAPI():
             for message in sorted(res['messages'], key=lambda x: int(x["id"])):
                 max_message_id = max(max_message_id, int(message["id"]))
                 callback(message)
-
-            if idle_call is not None:
-                idle_call()
