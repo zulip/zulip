@@ -59,6 +59,7 @@ humbug_client = api.common.HumbugAPI(email=os.environ["USER"] + "@mit.edu",
                                      verbose=True,
                                      site=options.site)
 
+start_time = time.time()
 import zephyr
 zephyr.init()
 subs = zephyr.Subscriptions()
@@ -132,6 +133,11 @@ def update_subscriptions_from_humbug():
     for stream in streams:
         ensure_subscribed(stream)
 
+def maybe_restart_mirroring_script():
+    if os.stat("/mit/tabbott/for_friends/restart_stamp").st_mtime > start_time:
+        print "zephyr mirroring script has been updated; restarting..."
+        os.execvp("/mit/tabbott/for_friends/zephyr_mirror.py", sys.argv)
+
 def process_loop(log):
     sleep_count = 0
     sleep_time = 0.1
@@ -144,6 +150,8 @@ def process_loop(log):
                 print >>sys.stderr, 'Error relaying zephyr'
                 traceback.print_exc()
                 time.sleep(2)
+
+        maybe_restart_mirroring_script()
 
         time.sleep(sleep_time)
         sleep_count += sleep_time
@@ -320,6 +328,7 @@ def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
     print "Starting syncing messages."
     humbug_client.call_on_each_message(maybe_forward_to_zephyr,
+                                       idle_call=maybe_restart_mirroring_script,
                                        options={"mit_sync_bot": 'yes'})
 
 def subscribed_to_mail_messages():
