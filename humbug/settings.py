@@ -84,8 +84,9 @@ if deployed:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE    = True
 
-# Another salt, used just for generating initial passwords.
+# Used just for generating initial passwords and API keys.
 INITIAL_PASSWORD_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+INITIAL_API_KEY_SALT  = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 # A shared secret, used to authenticate different parts of the app to each other.
 # FIXME: store this password more securely

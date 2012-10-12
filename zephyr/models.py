@@ -5,6 +5,7 @@ import hashlib
 import base64
 import calendar
 from zephyr.lib.cache import cache_with_key
+from zephyr.lib.initial_password import initial_api_key
 import fcntl
 import os
 import simplejson
@@ -64,15 +65,6 @@ class Realm(models.Model):
     def __str__(self):
         return self.__repr__()
 
-def gen_api_key():
-    return 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-### TODO: For now, everyone has the same (fixed) API key to make
-### testing easier.  Uncomment the following to generate them randomly
-### in a reasonable way.  Long-term, we should use a real
-### cryptographic random number generator.
-
-#    return hex(random.getrandbits(4*32))[2:34]
-
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
     full_name = models.CharField(max_length=100)
@@ -106,7 +98,7 @@ class UserProfile(models.Model):
         if not cls.objects.filter(user=user):
             profile = cls(user=user, pointer=-1, realm_id=realm.id,
                           full_name=full_name, short_name=short_name)
-            profile.api_key = gen_api_key()
+            profile.api_key = initial_api_key(user.email)
             profile.save()
             # Auto-sub to the ability to receive personals.
             recipient = Recipient(type_id=profile.id, type=Recipient.PERSONAL)

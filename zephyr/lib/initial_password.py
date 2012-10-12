@@ -10,3 +10,10 @@ def initial_password(email):
 
     digest = hashlib.sha256(settings.INITIAL_PASSWORD_SALT + email).digest()
     return base64.b64encode(digest)[:16]
+
+def initial_api_key(email):
+
+    """Given an email address, returns the initial API key for that account"""
+
+    digest = hashlib.sha256(settings.INITIAL_API_KEY_SALT + email).digest()
+    return base64.b16encode(digest)[:32].lower()
