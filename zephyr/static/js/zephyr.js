@@ -106,9 +106,9 @@ function get_huddle_recipient(message) {
 function get_huddle_recipient_names(message) {
     var recipient, i;
 
-    recipient = message.display_recipient[0].name;
+    recipient = message.display_recipient[0].short_name;
     for (i = 1; i < message.display_recipient.length; i++) {
-        recipient += ', ' + message.display_recipient[i].name;
+        recipient += ', ' + message.display_recipient[i].short_name;
     }
     return recipient;
 }
@@ -383,7 +383,7 @@ function add_message_metadata(dummy, message) {
         message.is_personal = true;
 
         if (message.sender_email === email) { // that is, we sent the original message
-            message.reply_to = message.display_recipient;
+            message.reply_to = message.display_recipient.email;
         } else {
             message.reply_to = message.sender_email;
         }

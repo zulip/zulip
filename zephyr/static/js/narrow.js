@@ -44,16 +44,16 @@ function narrow_personals() {
     // Narrow to personals with a specific user
     var original = message_dict[selected_message_id];
     var other_party;
-    if (original.display_recipient === email) {
+    if (original.display_recipient.email === email) {
         other_party = original.sender_email;
     } else {
-        other_party = original.display_recipient;
+        other_party = original.display_recipient.email;
     }
 
     do_narrow("Huddles with " + other_party, function (other) {
         return (other.type === 'personal') &&
-            (((other.display_recipient === original.display_recipient) && (other.sender_email === original.sender_email)) ||
-             ((other.display_recipient === original.sender_email) && (other.sender_email === original.display_recipient)));
+            (((other.display_recipient.email === original.display_recipient.email) && (other.sender_email === original.sender_email)) ||
+             ((other.display_recipient.email === original.sender_email) && (other.sender_email === original.display_recipient.email)));
     });
 
 }

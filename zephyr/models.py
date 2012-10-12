@@ -30,10 +30,13 @@ def get_display_recipient(recipient):
         user_profile_list = [UserProfile.objects.get(user=s.userprofile) for s in
                              Subscription.objects.filter(recipient=recipient)]
         return [{'email': user_profile.user.email,
-                 'name': user_profile.short_name} for user_profile in user_profile_list]
+                 'full_name': user_profile.full_name,
+                 'short_name': user_profile.short_name} for user_profile in user_profile_list]
     else:
-        user = User.objects.get(id=recipient.type_id)
-        return user.email
+        user_profile = UserProfile.objects.get(user=recipient.type_id)
+        return {'email': user_profile.user.email,
+                'full_name': user_profile.full_name,
+                'short_name': user_profile.short_name}
 
 def get_log_recipient(recipient):
     """

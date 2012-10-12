@@ -261,7 +261,7 @@ def forward_to_zephyr(message):
         zeph.send()
     elif message['type'] == "personal":
         zeph = zephyr.ZNotice(sender=message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU"),
-                              auth=True, recipient=message["display_recipient"].replace("mit.edu", "ATHENA.MIT.EDU"),
+                              auth=True, recipient=message["display_recipient"]["email"].replace("mit.edu", "ATHENA.MIT.EDU"),
                               cls="message", instance="personal")
         body = "%s\0%s" % (zsig, wrapped_content)
         zeph.setmessage(body)
