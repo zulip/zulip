@@ -58,7 +58,8 @@ var stream_list = [
 
 var people_list = [
 {% for person in people %}
-    "{{ person|escapejs }}",
+    { 'email': "{{ person.email|escapejs }}",
+      'full_name': "{{ person.full_name|escapejs }}" },
 {% endfor %}
 ];
 

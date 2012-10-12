@@ -112,52 +112,20 @@ var autocomplete_needs_update = false;
 
 function update_autocomplete() {
     stream_list.sort();
-    people_list.sort();
+    people_list.sort(function (x, y) {
+        if (x.email === y.email) return 0;
+        if (x.email < y.email) return -1;
+        return 1;
+    });
 
     var huddle_typeahead_list = $.map(people_list, function (person) {
         return person.full_name + " <" + person.email + ">";
     });
 
-    // limit number of items so the list doesn't fall off the screen
-    $( "#stream" ).typeahead({
-        source: stream_list,
-        items: 3
-    });
-    $( "#subject" ).typeahead({
-        source: function (query, process) {
-            var stream_name = $("#stream").val();
-            if (subject_dict.hasOwnProperty(stream_name)) {
-                return subject_dict[stream_name];
-            }
-            return [];
-        },
-        items: 2
-    });
-    $( "#huddle_recipient" ).typeahead({
-        source: huddle_typeahead_list,
-        items: 4,
-        matcher: function (item) {
-            // Assumes email addresses don't have commas or semicolons in them
-            var current_recipient = $(this.query.split(/[,;] ?/)).last()[0];
-            // Case-insensitive (from Bootstrap's default matcher).
-            return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
-        },
-        updater: function (item) {
-            var previous_recipients = this.query.split(/[,;] ?/);
-            previous_recipients.pop();
-            previous_recipients = previous_recipients.join(", ");
-            if (previous_recipients.length !== 0) {
-                previous_recipients += ", ";
-            }
-            // Extracting the email portion via regex is icky, but the Bootstrap
-            // typeahead widget doesn't seem to be flexible enough to pass
-            // objects around
-            var email_re = /<[^<]*>$/;
-            var email = email_re.exec(item)[0];
-            return previous_recipients + email.substring(1, email.length - 1);
-        }
-
-    });
+    // We need to muck with the internal state of Typeahead in order to update
+    // its data source
+    $("#stream").data("typeahead").source = stream_list;
+    $("#huddle_recipient").data("typeahead").source = huddle_typeahead_list;
 
     autocomplete_needs_update = false;
 }
@@ -278,6 +246,47 @@ $(function () {
     // the exact right width for the narrowbar and compose box,
     // but, close enough for now.
     resizehandler();
+
+    // limit number of items so the list doesn't fall off the screen
+    $( "#stream" ).typeahead({
+        source: [], // will be set in update_autocomplete()
+        items: 3
+    });
+    $( "#subject" ).typeahead({
+        source: function (query, process) {
+            var stream_name = $("#stream").val();
+            if (subject_dict.hasOwnProperty(stream_name)) {
+                return subject_dict[stream_name];
+            }
+            return [];
+        },
+        items: 2
+    });
+    $( "#huddle_recipient" ).typeahead({
+        source: [], // will be set in update_autocomplete()
+        items: 4,
+        matcher: function (item) {
+            // Assumes email addresses don't have commas or semicolons in them
+            var current_recipient = $(this.query.split(/[,;] ?/)).last()[0];
+            // Case-insensitive (from Bootstrap's default matcher).
+            return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
+        },
+        updater: function (item) {
+            var previous_recipients = this.query.split(/[,;] ?/);
+            previous_recipients.pop();
+            previous_recipients = previous_recipients.join(", ");
+            if (previous_recipients.length !== 0) {
+                previous_recipients += ", ";
+            }
+            // Extracting the email portion via regex is icky, but the Bootstrap
+            // typeahead widget doesn't seem to be flexible enough to pass
+            // objects around
+            var email_re = /<[^<]*>$/;
+            var email = email_re.exec(item)[0];
+            return previous_recipients + email.substring(1, email.length - 1);
+        }
+
+    });
 
     update_autocomplete();
 });
