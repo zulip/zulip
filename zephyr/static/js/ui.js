@@ -267,12 +267,12 @@ $(function () {
         items: 4,
         matcher: function (item) {
             // Assumes email addresses don't have commas or semicolons in them
-            var current_recipient = $(this.query.split(/[,;] ?/)).last()[0];
+            var current_recipient = $(this.query.split(/[,;] */)).last()[0];
             // Case-insensitive (from Bootstrap's default matcher).
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
         updater: function (item) {
-            var previous_recipients = this.query.split(/[,;] ?/);
+            var previous_recipients = this.query.split(/[,;] */);
             previous_recipients.pop();
             previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
@@ -283,9 +283,14 @@ $(function () {
             // objects around
             var email_re = /<[^<]*>$/;
             var email = email_re.exec(item)[0];
-            return previous_recipients + email.substring(1, email.length - 1);
+            return previous_recipients + email.substring(1, email.length - 1) + ", ";
         }
 
+    });
+
+    $( "#huddle_recipient" ).blur(function (event) {
+        var val = $(this).val();
+        $(this).val(val.replace(/[,;] *$/, ''));
     });
 
     update_autocomplete();
