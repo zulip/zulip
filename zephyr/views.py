@@ -484,7 +484,9 @@ def api_subscribe(request, user_profile):
     streams = simplejson.loads(request.POST.get("streams"))
     for stream_name in streams:
         if len(stream_name) > 30:
-            return json_error("Stream name %s too long." % (stream_name,))
+            return json_error("Stream name (%s) too long." % (stream_name,))
+        if not valid_stream_name(stream_name):
+            return json_error("Invalid characters in stream name (%s)." % (stream_name,))
     res = add_subscriptions_backend(request, user_profile, streams)
     return json_success(res)
 
@@ -495,9 +497,11 @@ def json_add_subscription(request):
 
     if "new_subscription" not in request.POST:
         return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
-    sub_name = request.POST.get('new_subscription').strip()
-    if not valid_stream_name(sub_name):
+    stream_name = request.POST.get('new_subscription').strip()
+    if not valid_stream_name(stream_name):
         return json_error("Invalid characters in stream names")
+    if len(stream_name) > 30:
+        return json_error("Stream name %s too long." % (stream_name,))
     res = add_subscriptions_backend(request,user_profile,
                                     [request.POST["new_subscription"]])
     if len(res["already_subscribed"]) != 0:
