@@ -354,7 +354,7 @@ class MessagePOSTTest(AuthedTestCase):
         result = self.client.post("/send_message/", {"type": "personal",
                                                      "content": "Test message",
                                                      "recipient": "nonexistent"})
-        self.assert_json_error(result, "Invalid email")
+        self.assert_json_error(result, "Invalid email 'nonexistent'")
 
     def test_invalid_type(self):
         """
