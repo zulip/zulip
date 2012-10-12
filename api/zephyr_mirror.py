@@ -136,7 +136,13 @@ def update_subscriptions_from_humbug():
 def maybe_restart_mirroring_script():
     if os.stat("/mit/tabbott/for_friends/restart_stamp").st_mtime > start_time:
         print "zephyr mirroring script has been updated; restarting..."
-        os.execvp("/mit/tabbott/for_friends/zephyr_mirror.py", sys.argv)
+        while True:
+            try:
+                os.execvp("/mit/tabbott/for_friends/zephyr_mirror.py", sys.argv)
+            except:
+                print "Error restarting, trying again."
+                traceback.print_exc()
+                time.sleep(10)
 
 def process_loop(log):
     sleep_count = 0
