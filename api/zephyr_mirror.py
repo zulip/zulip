@@ -100,8 +100,8 @@ def fetch_fullname(username):
         return username.split("@")[0] + " (CMU)"
     if username.upper().endswith("@IASTATE.EDU"):
         return username.split("@")[0] + " (IASTATE)"
-    if username.upper().endswith("@LTS.ORG"):
-        return username.split("@")[0] + " (LTS)"
+    if username.upper().endswith("@1TS.ORG"):
+        return username.split("@")[0] + " (1TS)"
     if username.upper().endswith("@DEMENTIA.ORG"):
         return username.split("@")[0] + " (DEMENTIA)"
     if username.upper().endswith("MIT.EDU"):
