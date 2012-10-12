@@ -148,82 +148,85 @@ def process_loop(log):
             continue
 
         try:
-            zsig, body = notice.message.split("\x00", 1)
-            is_personal = False
-            is_huddle = False
-
-            if notice.opcode == "PING":
-                # skip PING messages
-                continue
-
-            if isinstance(zsig, str):
-                # Check for width unicode character u'\u200B'.encode("utf-8")
-                if u'\u200B'.encode("utf-8") in zsig:
-                    print "Skipping message from Humbug!"
-                    continue
-
-            sender = notice.sender.lower().replace("athena.mit.edu", "mit.edu")
-            recipient = notice.recipient.lower().replace("athena.mit.edu", "mit.edu")
-
-            if (notice.cls.lower() == "message" and
-                notice.instance.lower() == "personal"):
-                is_personal = True
-                if body.startswith("CC:"):
-                    is_huddle = True
-                    # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
-                    huddle_recipients_list = [humbug_username(x.strip()) for x in
-                                              body.split("\n")[0][4:].split()]
-                    if sender not in huddle_recipients_list:
-                        huddle_recipients_list.append(sender)
-                    huddle_recipients = ",".join(huddle_recipients_list)
-            if (notice.cls.lower() == "mail" and
-                notice.instance.lower() == "inbox"):
-                is_personal = True
-
-            # Drop messages not to the listed subscriptions
-            if (notice.cls.lower() not in current_zephyr_subs) and not \
-                    (is_personal and options.forward_personals):
-                print "Skipping ...", notice.cls, notice.instance, is_personal
-                continue
-
-            if is_huddle:
-                zeph = { 'type'      : 'personal',
-                         'time'      : str(notice.time),
-                         'sender'    : sender,
-                         'recipient' : huddle_recipients,
-                         'zsig'      : zsig,  # logged here but not used by app
-                         'content'   : body.split("\n", 1)[1] }
-            elif is_personal:
-                zeph = { 'type'      : 'personal',
-                         'time'      : str(notice.time),
-                         'sender'    : sender,
-                         'recipient' : humbug_username(recipient),
-                         'zsig'      : zsig,  # logged here but not used by app
-                         'content'   : body }
-            else:
-                zeph = { 'type'      : 'stream',
-                         'time'      : str(notice.time),
-                         'sender'    : sender,
-                         'stream'    : notice.cls.lower(),
-                         'subject'   : notice.instance.lower(),
-                         'zsig'      : zsig,  # logged here but not used by app
-                         'content'   : body }
-
-            print "%s: received a message on %s/%s from %s..." % \
-                (datetime.datetime.now(), notice.cls, notice.instance,
-                 notice.sender)
-            log.write(simplejson.dumps(zeph) + '\n')
-            log.flush()
-
-            res = send_humbug(zeph)
-            if res.get("result") != "success":
-                print >>sys.stderr, 'Error relaying zephyr'
-                print zeph
-                print res
+            process_notice(notice, log)
         except:
             print >>sys.stderr, 'Error relaying zephyr'
             traceback.print_exc()
             time.sleep(2)
+
+def process_notice(notice, log):
+    zsig, body = notice.message.split("\x00", 1)
+    is_personal = False
+    is_huddle = False
+
+    if notice.opcode == "PING":
+        # skip PING messages
+        return
+
+    if isinstance(zsig, str):
+        # Check for width unicode character u'\u200B'.encode("utf-8")
+        if u'\u200B'.encode("utf-8") in zsig:
+            print "Skipping message from Humbug!"
+            return
+
+    sender = notice.sender.lower().replace("athena.mit.edu", "mit.edu")
+    recipient = notice.recipient.lower().replace("athena.mit.edu", "mit.edu")
+
+    if (notice.cls.lower() == "message" and
+        notice.instance.lower() == "personal"):
+        is_personal = True
+        if body.startswith("CC:"):
+            is_huddle = True
+            # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
+            huddle_recipients_list = [humbug_username(x.strip()) for x in
+                                      body.split("\n")[0][4:].split()]
+            if sender not in huddle_recipients_list:
+                huddle_recipients_list.append(sender)
+            huddle_recipients = ",".join(huddle_recipients_list)
+    if (notice.cls.lower() == "mail" and
+        notice.instance.lower() == "inbox"):
+        is_personal = True
+
+    # Drop messages not to the listed subscriptions
+    if (notice.cls.lower() not in current_zephyr_subs) and not \
+            (is_personal and options.forward_personals):
+        print "Skipping ...", notice.cls, notice.instance, is_personal
+        return
+
+    if is_huddle:
+        zeph = { 'type'      : 'personal',
+                 'time'      : str(notice.time),
+                 'sender'    : sender,
+                 'recipient' : huddle_recipients,
+                 'zsig'      : zsig,  # logged here but not used by app
+                 'content'   : body.split("\n", 1)[1] }
+    elif is_personal:
+        zeph = { 'type'      : 'personal',
+                 'time'      : str(notice.time),
+                 'sender'    : sender,
+                 'recipient' : humbug_username(recipient),
+                 'zsig'      : zsig,  # logged here but not used by app
+                 'content'   : body }
+    else:
+        zeph = { 'type'      : 'stream',
+                 'time'      : str(notice.time),
+                 'sender'    : sender,
+                 'stream'    : notice.cls.lower(),
+                 'subject'   : notice.instance.lower(),
+                 'zsig'      : zsig,  # logged here but not used by app
+                 'content'   : body }
+
+    print "%s: received a message on %s/%s from %s..." % \
+        (datetime.datetime.now(), notice.cls, notice.instance,
+         notice.sender)
+    log.write(simplejson.dumps(zeph) + '\n')
+    log.flush()
+
+    res = send_humbug(zeph)
+    if res.get("result") != "success":
+        print >>sys.stderr, 'Error relaying zephyr'
+        print zeph
+        print res
 
 
 def zephyr_to_humbug(options):
