@@ -3,3 +3,4 @@
 /zephyrdb
 /all_messages_log
 /all_messages_log.lock
+/server.log

@@ -171,11 +171,17 @@ LOGGING = {
             'level':     'DEBUG',
             'class':     'logging.StreamHandler',
             'formatter': 'default'
+        },
+        'file': {
+            'level':     'DEBUG',
+            'class':     'logging.FileHandler',
+            'formatter': 'default',
+            'filename':  'server.log'
         }
     },
     'loggers': {
         '': {
-            'handlers': ['console'],
+            'handlers': ['console', 'file'],
             'level':    'INFO'
         }
     }
