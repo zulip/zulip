@@ -110,10 +110,14 @@ function get_huddle_recipient(message) {
 
 function get_huddle_recipient_names(message) {
     var recipient, i;
+    var other_recipients = $.grep(message.display_recipient,
+                                  function (element, index) {
+                                      return element.email !== email;
+                                  });
 
-    recipient = message.display_recipient[0].full_name;
-    for (i = 1; i < message.display_recipient.length; i++) {
-        recipient += ', ' + message.display_recipient[i].full_name;
+    recipient = other_recipients[0].full_name;
+    for (i = 1; i < other_recipients.length; i++) {
+        recipient += ', ' + other_recipients[i].full_name;
     }
     return recipient;
 }
