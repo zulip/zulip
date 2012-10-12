@@ -39,6 +39,10 @@ parser.add_option('--forward-from-humbug',
                   dest='forward_from_humbug',
                   default=False,
                   action='store_true')
+parser.add_option('--verbose',
+                  dest='verbose',
+                  default=False,
+                  action='store_true')
 parser.add_option('--no-auto-subscribe',
                   dest='auto_subscribe',
                   default=True,
@@ -138,6 +142,7 @@ def maybe_restart_mirroring_script():
     if os.stat(root_path + "/restart_stamp").st_mtime > start_time or \
             (os.environ["USER"] == "tabbott" and
              os.stat(root_path + "/tabbott_stamp").st_mtime > start_time):
+        print
         print "%s: zephyr mirroring script has been updated; restarting..." % \
             (datetime.datetime.now())
         os.kill(child_pid, signal.SIGKILL)
@@ -353,10 +358,11 @@ def subscribed_to_mail_messages():
 
 def add_humbug_subscriptions():
     zephyr_subscriptions = set()
-    for (cls, instance, recipient) in parse_zephyr_subs(verbose=True):
+    for (cls, instance, recipient) in parse_zephyr_subs(verbose=options.verbose):
         if instance != "*" or recipient != "*":
-            print "Skipping ~/.zephyr.subs line: [%s,%s,%s]: Non-* values" % \
-                (cls, instance, recipient)
+            if options.verbose:
+                print "Skipping ~/.zephyr.subs line: [%s,%s,%s]: Non-* values" % \
+                    (cls, instance, recipient)
             continue
         zephyr_subscriptions.add(cls)
     if len(zephyr_subscriptions) != 0:
