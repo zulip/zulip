@@ -363,6 +363,8 @@ function add_message_metadata(dummy, message) {
 
     received.last = Math.max(received.last, message.id);
 
+    var involved_people;
+
     switch (message.type) {
     case 'stream':
         message.is_stream = true;
@@ -371,12 +373,17 @@ function add_message_metadata(dummy, message) {
             autocomplete_needs_update = true;
         }
         message.reply_to = message.sender_email;
+
+        involved_people = [{'full_name': message.sender_name,
+                            'email': message.sender_email}];
         break;
 
     case 'huddle':
         message.is_huddle = true;
         message.reply_to = get_huddle_recipient(message);
         message.display_reply_to = get_huddle_recipient_names(message);
+
+        involved_people = message.display_recipient;
         break;
 
     case 'personal':
@@ -389,12 +396,31 @@ function add_message_metadata(dummy, message) {
         }
         message.display_reply_to = message.reply_to;
 
-        if (message.reply_to !== email &&
-                $.inArray(message.reply_to, people_list) === -1) {
-            people_list.push(message.reply_to);
+        involved_people = [message.display_recipient,
+                           {'email': message.sender_email,
+                            'full_name': message.sender_name}];
+
+        break;
+    }
+
+    // add new people involved in this message to the people list
+    var person_found;
+    var i;
+    var j;
+    for (i = 0; i < involved_people.length; ++i) {
+        person_found = false;
+        for (j = 0; j < people_list.length; ++j) {
+            if (involved_people[i].email === people_list[j].email
+                && involved_people[i].full_name === people_list[j].full_name) {
+                person_found = true;
+                break;
+            }
+        }
+
+        if (! person_found) {
+            people_list.push(involved_people[i]);
             autocomplete_needs_update = true;
         }
-        break;
     }
 
     message_dict[message.id] = message;

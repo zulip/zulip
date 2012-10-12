@@ -115,6 +115,10 @@ function update_autocomplete() {
     subject_list.sort();
     people_list.sort();
 
+    var huddle_typeahead_list = $.map(people_list, function (person) {
+        return person.full_name + " <" + person.email + ">";
+    });
+
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({
         source: stream_list,
@@ -125,23 +129,27 @@ function update_autocomplete() {
         items: 2
     });
     $( "#huddle_recipient" ).typeahead({
-        source: people_list,
+        source: huddle_typeahead_list,
         items: 4,
         matcher: function (item) {
-            // Assumes we are matching on email addresses, not
-            // e.g. full names which would have spaces.
-            var current_recipient = $(this.query.split(" ")).last()[0];
+            // Assumes email addresses don't have commas or semicolons in them
+            var current_recipient = $(this.query.split(/[,;] ?/)).last()[0];
             // Case-insensitive (from Bootstrap's default matcher).
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
         updater: function (item) {
-            var previous_recipients = this.query.split(" ");
+            var previous_recipients = this.query.split(/[,;] ?/);
             previous_recipients.pop();
-            previous_recipients = previous_recipients.join(" ");
+            previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
-                previous_recipients += " ";
+                previous_recipients += ", ";
             }
-            return previous_recipients + item;
+            // Extracting the email portion via regex is icky, but the Bootstrap
+            // typeahead widget doesn't seem to be flexible enough to pass
+            // objects around
+            var email_re = /<[^<]*>$/;
+            var email = email_re.exec(item)[0];
+            return previous_recipients + email.substring(1, email.length - 1);
         }
 
     });
@@ -265,4 +273,6 @@ $(function () {
     // the exact right width for the narrowbar and compose box,
     // but, close enough for now.
     resizehandler();
+
+    update_autocomplete();
 });

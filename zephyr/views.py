@@ -155,7 +155,9 @@ def home(request):
     # consider specially some sort of "buddy list" who e.g. you've
     # talked to before, but for small organizations, the right list is
     # everyone in your realm.
-    people = [profile.user.email for profile in
+    people = [{'email'     : profile.user.email,
+               'full_name' : profile.full_name}
+              for profile in
               UserProfile.objects.filter(realm=user_profile.realm) if
               profile != user_profile]
 
