@@ -7,6 +7,7 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription,
     filter_by_subscriptions, Realm, do_send_message
 from zephyr.views import json_get_updates
 from zephyr.decorator import TornadoAsyncException
+from zephyr.lib.initial_password import initial_password
 
 import datetime
 import simplejson
@@ -27,9 +28,11 @@ def find_key_by_email(address):
             return key_regex.search(message.body).groups()[0]
 
 class AuthedTestCase(TestCase):
-    def login(self, username, password):
+    def login(self, email, password=None):
+        if password is None:
+            password = initial_password(email)
         return self.client.post('/accounts/login/',
-                                {'username':username, 'password':password})
+                                {'username':email, 'password':password})
 
     def register(self, username, password):
         self.client.post('/accounts/home/',
@@ -139,7 +142,7 @@ class LoginTest(AuthedTestCase):
     fixtures = ['messages.json']
 
     def test_login(self):
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         user = User.objects.get(email='hamlet@humbughq.com')
         self.assertEqual(self.client.session['_auth_user_id'], user.id)
 
@@ -153,7 +156,7 @@ class LoginTest(AuthedTestCase):
         self.assertEqual(self.client.session['_auth_user_id'], user.id)
 
     def test_logout(self):
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         self.client.post('/accounts/logout/')
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
@@ -203,7 +206,7 @@ class PersonalMessagesTest(AuthedTestCase):
         """
         If you send a personal, only you and the recipient see it.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
 
         old_sender = User.objects.filter(email="hamlet@humbughq.com")
         old_sender_messages = len(self.message_stream(old_sender))
@@ -259,9 +262,8 @@ class StreamMessagesTest(AuthedTestCase):
         for non_subscriber in non_subscribers:
             old_non_subscriber_messages.append(len(self.message_stream(non_subscriber)))
 
-        a_subscriber = subscribers[0].username
         a_subscriber_email = subscribers[0].email
-        self.login(a_subscriber_email, a_subscriber)
+        self.login(a_subscriber_email)
         self.send_message(a_subscriber_email, "Scotland", Recipient.STREAM)
 
         new_subscriber_messages = []
@@ -283,7 +285,7 @@ class PointerTest(AuthedTestCase):
         Posting a pointer to /update (in the form {"pointer": pointer}) changes
         the pointer we store for your UserProfile.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": 1})
         self.assert_json_success(result)
@@ -294,7 +296,7 @@ class PointerTest(AuthedTestCase):
         Posting json to /json/update_pointer which does not contain a pointer key/value pair
         returns a 400 and error message.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"foo": 1})
         self.assert_json_error(result, "Missing pointer")
@@ -305,7 +307,7 @@ class PointerTest(AuthedTestCase):
         Posting json to /json/update_pointer with an invalid pointer returns a 400 and error
         message.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Invalid pointer: must be an integer")
@@ -316,7 +318,7 @@ class PointerTest(AuthedTestCase):
         Posting json to /json/update_pointer with an out of range (< 0) pointer returns a 400
         and error message.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": -2})
         self.assert_json_error(result, "Invalid pointer value")
@@ -330,7 +332,7 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a message to a stream to which you are subscribed is
         successful.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         result = self.client.post("/json/send_message/", {"type": "stream",
                                                           "stream": "Verona",
                                                           "content": "Test message",
@@ -342,7 +344,7 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a message to a nonexistent stream creates the stream and
         is successful.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         self.assertFalse(Stream.objects.filter(name="nonexistent_stream"))
         result = self.client.post("/json/send_message/", {"type": "stream",
                                                           "stream": "nonexistent_stream",
@@ -355,7 +357,7 @@ class MessagePOSTTest(AuthedTestCase):
         """
         Sending a personal message to a valid username is successful.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         result = self.client.post("/json/send_message/", {"type": "personal",
                                                           "content": "Test message",
                                                           "recipient": "othello@humbughq.com"})
@@ -365,7 +367,7 @@ class MessagePOSTTest(AuthedTestCase):
         """
         Sending a personal message to an invalid email returns error JSON.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         result = self.client.post("/json/send_message/", {"type": "personal",
                                                           "content": "Test message",
                                                           "recipient": "nonexistent"})
@@ -375,7 +377,7 @@ class MessagePOSTTest(AuthedTestCase):
         """
         Sending a message of unknown type returns error JSON.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         result = self.client.post("/json/send_message/", {"type": "invalid type",
                                                           "content": "Test message",
                                                           "recipient": "othello@humbughq.com"})
@@ -407,7 +409,7 @@ class GetUpdatesTest(AuthedTestCase):
         json_get_updates returns messages with IDs greater than the
         last_received ID.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         user = User.objects.get(email="hamlet@humbughq.com")
 
         def callback(messages):
@@ -427,7 +429,7 @@ class GetUpdatesTest(AuthedTestCase):
         If your last_received message is greater than the greatest Message ID, you
         don't get any new messages.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         user = User.objects.get(email="hamlet@humbughq.com")
         last_received = max(message.id for message in Message.objects.all()) + 100
         messages = []
@@ -449,7 +451,7 @@ class GetUpdatesTest(AuthedTestCase):
         Calling json_get_updates without a last_received key/value pair
         returns a 400 and error message.
         """
-        self.login("hamlet@humbughq.com", "hamlet")
+        self.login("hamlet@humbughq.com")
         user = User.objects.get(email="hamlet@humbughq.com")
 
         def callback(messages):
