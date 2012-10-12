@@ -7,7 +7,6 @@ body {
     padding: 0.5em;
     margin-top: 2em;
 }
-
 @media (max-width: 767px) {
     .sidebar-nav {
         background-color: white;
@@ -29,11 +28,18 @@ ul#sidebar {
     font-weight: bold;
     font-size: 150%;
 }
-
 .my_email {
-    color: gray;
-    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    color: grey;
 }
+@media (max-width: 767px) {
+    .my_fullname {
+        font-size: 100%;
+    }
+    .my_email {
+        font-size: 80%;
+    }
+}
+
 
 .new_message_button {
     padding-top: 1em;
