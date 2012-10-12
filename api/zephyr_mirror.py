@@ -89,7 +89,8 @@ def fetch_fullname(username):
         match_user = re.match(r'([a-zA-Z0-9_]+)@mit\.edu', username)
         if match_user:
             proc = subprocess.Popen(['hesinfo', match_user.group(1), 'passwd'],
-                                    stdout=subprocess.PIPE)
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
             out, _err_unused = proc.communicate()
             if proc.returncode == 0:
                 return out.split(':')[4].split(',')[0]
