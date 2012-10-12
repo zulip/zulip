@@ -135,7 +135,9 @@ def update_subscriptions_from_humbug():
         ensure_subscribed(stream)
 
 def maybe_restart_mirroring_script():
-    if os.stat(root_path + "/restart_stamp").st_mtime > start_time:
+    if os.stat(root_path + "/restart_stamp").st_mtime > start_time or \
+            (os.environ["USER"] == "tabbott" and
+             os.stat(root_path + "/tabbott_stamp").st_mtime > start_time):
         print "zephyr mirroring script has been updated; restarting..."
         while True:
             try:
