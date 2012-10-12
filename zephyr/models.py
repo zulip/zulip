@@ -223,7 +223,11 @@ class Message(models.Model):
 
         content = self.heading_regex.sub(r' \1', self.content)
         with_links = self.link_regex.sub(linkify, content)
-        return md_engine.convert(with_links)
+        try:
+            return md_engine.convert(with_links)
+        except:
+            # FIXME: Do something more reasonable here!
+            return '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
 
     @cache_with_key(lambda self, apply_markdown: 'message_dict:%d:%d' % (self.id, apply_markdown))
     def to_dict(self, apply_markdown):
