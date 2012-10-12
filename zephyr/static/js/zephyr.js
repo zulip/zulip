@@ -1,6 +1,6 @@
 var message_array = [];
 var message_dict = {};
-var subject_list = [];
+var subject_dict = {};
 
 $(function () {
     var i;
@@ -368,9 +368,14 @@ function add_message_metadata(dummy, message) {
     switch (message.type) {
     case 'stream':
         message.is_stream = true;
-        if ($.inArray(message.subject, subject_list) === -1) {
-            subject_list.push(message.subject);
-            autocomplete_needs_update = true;
+        if (! subject_dict.hasOwnProperty(message.display_recipient)) {
+            subject_dict[message.display_recipient] = [];
+        }
+        if ($.inArray(message.subject, subject_dict[message.display_recipient]) === -1) {
+            subject_dict[message.display_recipient].push(message.subject);
+            subject_dict[message.display_recipient].sort();
+            // We don't need to update the autocomplete after this because
+            // the subject box's source is a function
         }
         message.reply_to = message.sender_email;
 

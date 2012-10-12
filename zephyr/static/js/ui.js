@@ -112,7 +112,6 @@ var autocomplete_needs_update = false;
 
 function update_autocomplete() {
     stream_list.sort();
-    subject_list.sort();
     people_list.sort();
 
     var huddle_typeahead_list = $.map(people_list, function (person) {
@@ -125,7 +124,13 @@ function update_autocomplete() {
         items: 3
     });
     $( "#subject" ).typeahead({
-        source: subject_list,
+        source: function (query, process) {
+            var stream_name = $("#stream").val();
+            if (subject_dict.hasOwnProperty(stream_name)) {
+                return subject_dict[stream_name];
+            }
+            return [];
+        },
         items: 2
     });
     $( "#huddle_recipient" ).typeahead({
