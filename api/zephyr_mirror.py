@@ -176,6 +176,9 @@ def process_loop(log):
                     if sender not in huddle_recipients_list:
                         huddle_recipients_list.append(sender)
                     huddle_recipients = ",".join(huddle_recipients_list)
+            if (notice.cls.lower() == "mail" and
+                notice.instance.lower() == "inbox"):
+                is_personal = True
 
             # Drop messages not to the listed subscriptions
             if (notice.cls.lower() not in current_zephyr_subs) and not \
@@ -225,12 +228,16 @@ def process_loop(log):
 
 def zephyr_to_humbug(options):
     import mit_subs_list
+    if options.auto_subscribe:
+        add_humbug_subscriptions()
     if options.forward_class_messages:
         for sub in mit_subs_list.all_subs:
             ensure_subscribed(sub)
     update_subscriptions_from_humbug()
     if options.forward_personals:
-        subs.add(("message", "personal", "*"))
+        subs.add(("message", "personal", os.environ["USER"] + "@ATHENA.MIT.EDU"))
+        if subscribed_to_mail_messages():
+            subs.add(("mail", "inbox", os.environ["USER"] + "@ATHENA.MIT.EDU"))
 
     if options.resend_log:
         with open('zephyrs', 'r') as log:
@@ -312,14 +319,33 @@ def humbug_to_zephyr(options):
     humbug_client.call_on_each_message(maybe_forward_to_zephyr,
                                        options={"mit_sync_bot": 'yes'})
 
+def subscribed_to_mail_messages():
+    for (cls, instance, recipient) in parse_zephyr_subs(verbose=False):
+        if (cls.lower() == "mail" and instance.lower() == "inbox"):
+            return True
+    return False
+
 def add_humbug_subscriptions():
-    print "Adding your ~/.zephyr.subs subscriptions to Humbug!"
+    zephyr_subscriptions = set()
+    for (cls, instance, recipient) in parse_zephyr_subs(verbose=True):
+        if instance != "*" or recipient != "*":
+            print "Skipping ~/.zephyr.subs line: [%s,%s,%s]: Non-* values" % \
+                (cls, instance, recipient)
+            continue
+        zephyr_subscriptions.add(cls)
+    if len(zephyr_subscriptions) != 0:
+        humbug_client.subscribe(list(zephyr_subscriptions))
+
+def parse_zephyr_subs(verbose=False):
+    if verbose:
+        print "Adding your ~/.zephyr.subs subscriptions to Humbug!"
     zephyr_subscriptions = set()
     subs_file = os.path.join(os.environ["HOME"], ".zephyr.subs")
     if not os.path.exists(subs_file):
-        print >>sys.stderr, "Couldn't find .zephyr.subs!"
-        print >>sys.stderr, "Do you mean to run with --no-auto-subscribe?"
-        return
+        if verbose:
+            print >>sys.stderr, "Couldn't find .zephyr.subs!"
+            print >>sys.stderr, "Do you mean to run with --no-auto-subscribe?"
+            return
 
     for line in file(subs_file, "r").readlines():
         line = line.strip()
@@ -327,18 +353,14 @@ def add_humbug_subscriptions():
             continue
         try:
             (cls, instance, recipient) = line.split(",")
-            if instance != "*" or recipient != "*":
-                print "Skipping ~/.zephyr.subs line: [%s]: Non-* values" % (line,)
-                continue
-            zephyr_subscriptions.add(cls)
         except:
-            print >>sys.stderr, "Couldn't parse ~/.zephyr.subs line: [%s]" % (line,)
-    if len(zephyr_subscriptions) != 0:
-        humbug_client.subscribe(list(zephyr_subscriptions))
+            if verbose:
+                print >>sys.stderr, "Couldn't parse ~/.zephyr.subs line: [%s]" % (line,)
+            continue
+        zephyr_subscriptions.add((cls, instance, recipient))
+    return zephyr_subscriptions
 
 if options.forward_to_humbug:
-    if options.auto_subscribe:
-        add_humbug_subscriptions()
     zephyr_to_humbug(options)
 else:
     humbug_to_zephyr(options)
