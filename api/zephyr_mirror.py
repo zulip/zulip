@@ -94,18 +94,17 @@ def fetch_fullname(username):
         print >>sys.stderr, 'Error getting fullname for', username
         traceback.print_exc()
 
-    if username.upper().endswith("@CS.CMU.EDU"):
-        return username.split("@")[0] + " (CMU)"
-    if username.upper().endswith("@ANDREW.CMU.EDU"):
-        return username.split("@")[0] + " (CMU)"
-    if username.upper().endswith("@IASTATE.EDU"):
-        return username.split("@")[0] + " (IASTATE)"
-    if username.upper().endswith("@1TS.ORG"):
-        return username.split("@")[0] + " (1TS)"
-    if username.upper().endswith("@DEMENTIA.ORG"):
-        return username.split("@")[0] + " (DEMENTIA)"
-    if username.upper().endswith("MIT.EDU"):
-        return username.split("@")[0]
+    domains = [
+        ("@CS.CMU.EDU", " (CMU)"),
+        ("@ANDREW.CMU.EDU", " (CMU)"),
+        ("@IASTATE.EDU", " (IASTATE)"),
+        ("@1TS.ORG", " (1TS)"),
+        ("@DEMENTIA.ORG", " (DEMENTIA)"),
+        ("@MIT.EDU", ""),
+        ]
+    for (domain, tag) in domains:
+        if username.upper().endswith(domain):
+            return username.split("@")[0] + tag
     return username
 
 fullnames = {}
