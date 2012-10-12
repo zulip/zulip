@@ -404,7 +404,7 @@ function add_message_metadata(dummy, message) {
             message.display_reply_to = message.display_recipient.full_name;
         } else {
             message.reply_to = message.sender_email;
-            message.reply_to = message.sender_full_name;
+            message.display_reply_to = message.sender_full_name;
         }
 
         involved_people = [message.display_recipient,
