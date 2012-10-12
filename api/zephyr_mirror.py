@@ -73,8 +73,6 @@ def send_humbug(zeph):
     zeph['shortname'] = zeph['sender'].split('@')[0]
     if "subject" in zeph:
         zeph["subject"] = zeph["subject"][:60]
-    if "stream" in zeph:
-        zeph["stream"] = zeph["stream"][:30]
 
     for key in zeph.keys():
         if isinstance(zeph[key], unicode):
