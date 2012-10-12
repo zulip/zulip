@@ -1,6 +1,7 @@
 var message_array = [];
 var message_dict = {};
 var subject_dict = {};
+var people_hash = {};
 
 $(function () {
     var i;
@@ -42,6 +43,10 @@ $(function () {
     for (i = 0; i < stream_list.length; i++) {
         stream_list_hash[stream_list[i].toLowerCase()] = true;
     }
+
+    $.each(people_list, function (idx, person) {
+        people_hash[person.email] = 1;
+    });
 });
 
 var selected_message_id = -1;  /* to be filled in on document.ready */
@@ -408,25 +413,16 @@ function add_message_metadata(dummy, message) {
         break;
     }
 
-    // add new people involved in this message to the people list
-    var person_found;
-    var i;
-    var j;
-    for (i = 0; i < involved_people.length; ++i) {
-        person_found = false;
-        for (j = 0; j < people_list.length; ++j) {
-            if (involved_people[i].email === people_list[j].email
-                && involved_people[i].full_name === people_list[j].full_name) {
-                person_found = true;
-                break;
-            }
-        }
-
-        if (! person_found) {
-            people_list.push(involved_people[i]);
+    // Add new people involved in this message to the people list
+    $.each(involved_people, function (idx, person) {
+        // Do the hasOwnProperty() call via the prototype to avoid problems
+        // with keys like "hasOwnProperty"
+        if (! Object.prototype.hasOwnProperty.call(people_hash, person.email)) {
+            people_hash[person.email] = 1;
+            people_list.push(person);
             autocomplete_needs_update = true;
         }
-    }
+    });
 
     message_dict[message.id] = message;
 }
