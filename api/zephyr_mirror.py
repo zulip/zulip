@@ -94,7 +94,19 @@ def fetch_fullname(username):
         print >>sys.stderr, 'Error getting fullname for', username
         traceback.print_exc()
 
-    return username.title().replace('@', ' at ').replace('.', ' dot ')
+    if username.upper().endswith("@CS.CMU.EDU"):
+        return username.split("@")[0] + " (CMU)"
+    if username.upper().endswith("@ANDREW.CMU.EDU"):
+        return username.split("@")[0] + " (CMU)"
+    if username.upper().endswith("@IASTATE.EDU"):
+        return username.split("@")[0] + " (IASTATE)"
+    if username.upper().endswith("@LTS.ORG"):
+        return username.split("@")[0] + " (LTS)"
+    if username.upper().endswith("@DEMENTIA.ORG"):
+        return username.split("@")[0] + " (DEMENTIA)"
+    if username.upper().endswith("MIT.EDU"):
+        return username.split("@")[0]
+    return username
 
 fullnames = {}
 def username_to_fullname(username):
