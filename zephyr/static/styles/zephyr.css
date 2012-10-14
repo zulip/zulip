@@ -331,6 +331,14 @@ input.send_message {
     border: 1px solid black;
 }
 
+#fixed_narrowbox {
+    position: fixed;
+    /* .message_list width + padding_right - my border*2 - my padding*2 */
+    width: 640px;
+    table-layout: fixed;
+    margin-left: auto;
+}
+
 #narrowlabel {
     overflow: hidden;
     white-space: nowrap;

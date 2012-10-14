@@ -3,6 +3,18 @@
 // scrollbar when we switch to a new tab (and restore it
 // when we switch back.)
 var scroll_positions = {};
+var current_label;
+var current_scroll_direction = "down";
+
+function update_scroll_direction(delta) {
+    if (delta !== undefined) {
+        if (delta <= 0) {
+            current_scroll_direction = "down";
+        } else {
+            current_scroll_direction = "up";
+        }
+    }
+}
 
 function register_onclick(message_row, message_id) {
     message_row.find(".messagebox").click(function (e) {
@@ -130,6 +142,74 @@ function update_autocomplete() {
     autocomplete_needs_update = false;
 }
 
+function replace_narrowbar() {
+    if ($(current_label).children(".message_newstyle_stream").length !== 0) {
+        $("#current_label_stream td:first").replaceWith($(current_label).children(".message_newstyle_stream").clone());
+        $("#current_label_stream td:last").replaceWith($(current_label).children(".message_newstyle_subject").clone());
+        $("#current_label_huddle").css('display', 'none');
+        $("#current_label_stream").css('display', 'table-row');
+    } else {
+        $("#current_label_huddle td:first").replaceWith($(current_label).children(".message_newstyle_pm").clone());
+        $("#current_label_stream").css('display', 'none');
+        $("#current_label_huddle").css('display', 'table-row');
+    }
+}
+
+function hide_narrowbar() {
+    $("#current_label_stream").css('display', 'none');
+    $("#current_label_huddle").css('display', 'none');
+}
+
+function update_fixed_narrowbar() {
+    var fixed_narrowbar = $("#current_label_stream");
+    var fixed_narrowbar_top = fixed_narrowbar.offset().top;
+    var fixed_narrowbar_bottom = fixed_narrowbar_top + fixed_narrowbar.height();
+
+    // The recipient row directly above the fixed_narrowbar.
+    var new_label_candidate = $(".focused_table .recipient_row").filter(function () {
+        return ($(this).offset().top < fixed_narrowbar_top);
+    }).last();
+
+    var bookend_cover = new_label_candidate.nextUntil(".bookend_tr").next(".bookend_tr");
+    if (bookend_cover.length === 0) {
+        // We have no bookends.
+        return;
+    }
+    bookend_cover = $(bookend_cover[0]);
+    var my_top = $(bookend_cover).offset().top;
+    var my_bottom = my_top + bookend_cover.height();
+
+    if (current_scroll_direction === "down") {
+        if ((my_top >= fixed_narrowbar_top) &&
+            (my_top < fixed_narrowbar_bottom)) {
+            // The bookend has entered the space occupied by the
+            // fixed_narrowbar, so hide the fixed_narrowbar.
+            hide_narrowbar();
+        } else if ((new_label_candidate.length !== 0) &&
+                   (new_label_candidate[0] !== current_label)) {
+            current_label = new_label_candidate[0];
+            replace_narrowbar();
+        }
+    } else {
+        if ((my_bottom >= fixed_narrowbar_top) &&
+            (my_bottom < fixed_narrowbar_bottom)) {
+            // We are scrolling up and have just reached a bookend, so hide the
+            // old fixed_narrowbar for the stream below us.
+            hide_narrowbar();
+        } else {
+            if ((my_bottom >= fixed_narrowbar_bottom) &&
+                (my_bottom < fixed_narrowbar_top + fixed_narrowbar.height() * 2) &&
+                (new_label_candidate.length !== 0) &&
+                (new_label_candidate[0] !== current_label)) {
+                // We are scrolling up and enough of the above stream is in view
+                // that we should reveal the fixed_narrowbar for that stream.
+                current_label = new_label_candidate[0];
+                replace_narrowbar();
+            }
+        }
+    }
+}
+
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
@@ -160,7 +240,7 @@ $(function () {
         sub_from_home(compose_stream_name(), $('#stream-nosub'));
     });
 
-    var throttled_scrollhandler = $.throttle(50, function(e) {
+    var throttled_scrollhandler = $.throttle(50, function(e, delta) {
         if ($('#home').hasClass('active')) {
             keep_pointer_in_view();
             if (e.type === 'mousewheel') {
@@ -170,6 +250,8 @@ $(function () {
                 move_pointer_at_page_top_and_bottom();
             }
         }
+        update_scroll_direction(delta);
+        print_elapsed_time("update_fixed_narrowbar", update_fixed_narrowbar);
     });
     $(window).mousewheel(throttled_scrollhandler);
     $(window).scroll(throttled_scrollhandler);
