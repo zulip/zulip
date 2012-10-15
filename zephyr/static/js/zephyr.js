@@ -102,10 +102,14 @@ function scroll_to_selected() {
 
 function get_huddle_recipient(message) {
     var recipient, i;
+    var other_recipients = $.grep(message.display_recipient,
+                                  function (element, index) {
+                                      return element.email !== email;
+                                  });
 
-    recipient = message.display_recipient[0].email;
-    for (i = 1; i < message.display_recipient.length; i++) {
-        recipient += ', ' + message.display_recipient[i].email;
+    recipient = other_recipients[0].email;
+    for (i = 1; i < other_recipients.length; i++) {
+        recipient += ', ' + other_recipients[i].email;
     }
     return recipient;
 }
