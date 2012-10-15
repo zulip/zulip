@@ -3,7 +3,6 @@ import simplejson
 import requests
 import time
 import traceback
-from os import path
 
 # Check that we have a recent enough version
 assert(requests.__version__ > '0.12')

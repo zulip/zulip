@@ -7,9 +7,7 @@ import calendar
 from zephyr.lib.cache import cache_with_key
 import fcntl
 import os
-import re
 import simplejson
-import datetime
 from django.db import transaction
 from zephyr.lib import bugdown
 
