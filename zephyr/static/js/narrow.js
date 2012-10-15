@@ -41,7 +41,8 @@ function target_message_for_narrow(id) {
 function narrow_huddle() {
     var original = message_dict[narrow_target_message_id];
     do_narrow("Huddles with " + original.display_reply_to, function (other) {
-        return other.reply_to === original.reply_to;
+        return (other.type === "personal" || other.type === "huddle")
+            && other.reply_to === original.reply_to;
     });
 }
 
