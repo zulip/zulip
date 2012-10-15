@@ -8,8 +8,6 @@ from os import path
 # Check that we have a recent enough version
 assert(requests.__version__ > '0.12')
 
-cert = path.abspath(path.join(path.dirname(__file__), '../certs/humbug-self-signed.crt'))
-
 class HumbugAPI():
     def __init__(self, email, api_key, verbose=False, site="https://app.humbughq.com"):
         self.api_key = api_key
@@ -24,7 +22,7 @@ class HumbugAPI():
             try:
                 res = requests.post(self.base_url + url,
                                     data=request,
-                                    verify=cert,
+                                    verify=True,
                                     auth=requests.auth.HTTPDigestAuth('tabbott',
                                                                       'xxxxxxxxxxxxxxxxx'))
                 if res.status_code == requests.codes.service_unavailable:
