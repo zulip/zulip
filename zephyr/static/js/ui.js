@@ -3,7 +3,6 @@
 // scrollbar when we switch to a new tab (and restore it
 // when we switch back.)
 var scroll_positions = {};
-var current_label;
 var current_scroll_direction = "down";
 
 function update_scroll_direction(delta) {
@@ -138,72 +137,69 @@ function update_autocomplete() {
     autocomplete_needs_update = false;
 }
 
-function replace_narrowbar() {
-    if ($(current_label).children(".message_newstyle_stream").length !== 0) {
-        $("#current_label_stream td:first").replaceWith($(current_label).children(".message_newstyle_stream").clone());
-        $("#current_label_stream td:last").replaceWith($(current_label).children(".message_newstyle_subject").clone());
+function replace_narrowbar(desired_label) {
+    if (desired_label.children(".message_newstyle_stream").length !== 0) {
+        $("#current_label_stream td:first").replaceWith(desired_label.children(".message_newstyle_stream").clone());
+        $("#current_label_stream td:last").replaceWith(desired_label.children(".message_newstyle_subject").clone());
         $("#current_label_huddle").css('display', 'none');
         $("#current_label_stream").css('display', 'table-row');
     } else {
-        $("#current_label_huddle td:first").replaceWith($(current_label).children(".message_newstyle_pm").clone());
+        $("#current_label_huddle td:first").replaceWith(desired_label.children(".message_newstyle_pm").clone());
         $("#current_label_stream").css('display', 'none');
         $("#current_label_huddle").css('display', 'table-row');
     }
+    $(".floating_indicator").css('visibility', 'visible');
 }
 
 function hide_narrowbar() {
-    $("#current_label_stream").css('display', 'none');
-    $("#current_label_huddle").css('display', 'none');
+    $(".floating_indicator").css('visibility', 'hidden');
 }
 
 function update_fixed_narrowbar() {
-    var fixed_narrowbar = $("#current_label_stream");
+    var fixed_narrowbar = $("#narrowbox");
     var fixed_narrowbar_top = fixed_narrowbar.offset().top;
     var fixed_narrowbar_bottom = fixed_narrowbar_top + fixed_narrowbar.height();
 
-    // The recipient row directly above the fixed_narrowbar.
+    // Find the last message where the top of the recipient
+    // row is no longer visible
     var new_label_candidate = $(".focused_table .recipient_row").filter(function () {
-        return ($(this).offset().top < fixed_narrowbar_top);
+        return ($(this).offset().top < fixed_narrowbar_bottom);
     }).last();
-
-    var bookend_cover = new_label_candidate.nextUntil(".bookend_tr").next(".bookend_tr");
-    if (bookend_cover.length === 0) {
-        // We have no bookends.
+    if (new_label_candidate.length === 0) {
+        // We're at the top of the page and no labels are above us.
+        hide_narrowbar();
         return;
     }
-    bookend_cover = $(bookend_cover[0]);
-    var my_top = $(bookend_cover).offset().top;
-    var my_bottom = my_top + bookend_cover.height();
+    var current_label = $(new_label_candidate[0]);
 
-    if (current_scroll_direction === "down") {
-        if ((my_top >= fixed_narrowbar_top) &&
-            (my_top < fixed_narrowbar_bottom)) {
-            // The bookend has entered the space occupied by the
-            // fixed_narrowbar, so hide the fixed_narrowbar.
+    // We now know what the floating stream/subject bar should say.
+    // Do we show it?
+
+    // Hide if the bottom of our floating stream/subject label is not
+    // lower than the bottom of current_label (since that means we're
+    // covering up a label that already exists).
+    if (fixed_narrowbar_bottom <=
+        (current_label.offset().top + current_label.height())) {
+        hide_narrowbar();
+        return;
+    }
+
+    // Hide if our bottom is in our bookend (or one bookend-height
+    // above it). This means we're not showing any useful part of the
+    // message above us, so why bother showing the label?)
+    var current_label_bookend = new_label_candidate.nextUntil(".bookend_tr").next(".bookend_tr");
+    // (The last message currently doesn't have a bookend, which is why this might be 0).
+    if (current_label_bookend.length > 0) {
+        var my_bookend = $(current_label_bookend[0]);
+        if (fixed_narrowbar_bottom >
+            (my_bookend.offset().top - my_bookend.height())) {
             hide_narrowbar();
-        } else if ((new_label_candidate.length !== 0) &&
-                   (new_label_candidate[0] !== current_label)) {
-            current_label = new_label_candidate[0];
-            replace_narrowbar();
-        }
-    } else {
-        if ((my_bottom >= fixed_narrowbar_top) &&
-            (my_bottom < fixed_narrowbar_bottom)) {
-            // We are scrolling up and have just reached a bookend, so hide the
-            // old fixed_narrowbar for the stream below us.
-            hide_narrowbar();
-        } else {
-            if ((my_bottom >= fixed_narrowbar_bottom) &&
-                (my_bottom < fixed_narrowbar_top + fixed_narrowbar.height() * 2) &&
-                (new_label_candidate.length !== 0) &&
-                (new_label_candidate[0] !== current_label)) {
-                // We are scrolling up and enough of the above stream is in view
-                // that we should reveal the fixed_narrowbar for that stream.
-                current_label = new_label_candidate[0];
-                replace_narrowbar();
-            }
+            return;
         }
     }
+
+    // If we've gotten this far, well, show it.
+    replace_narrowbar(current_label);
 }
 
 $(function () {
