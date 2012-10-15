@@ -190,6 +190,19 @@ function update_floating_recipient_bar() {
     // If we've gotten this far, well, show it.
     replace_narrowbar(current_label);
 }
+function hack_for_floating_recipient_bar() {
+    // So, as of this writing, Firefox respects visibility: collapse,
+    // but WebKit does not (at least, my Chrome doesn't.)  Instead it
+    // renders it basically as visibility: hidden, which leaves a
+    // slight gap that our messages peek through as they scroll
+    // by. This hack fixes this by programmatically measuring how big
+    // the gap is, and then moving our table up to compensate.
+    var gap = $("#floating_recipient_layout_row").outerHeight(true);
+    var floating_recipient = $(".floating_recipient");
+    var offset = floating_recipient.offset();
+    offset.top = offset.top - gap;
+    floating_recipient.offset(offset);
+}
 
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
@@ -308,6 +321,7 @@ $(function () {
     // the exact right width for the narrowbar and compose box,
     // but, close enough for now.
     resizehandler();
+    hack_for_floating_recipient_bar();
 
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({
