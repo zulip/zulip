@@ -81,6 +81,10 @@ td.pointer {
     background-color: blue;
 }
 
+.narrowed_selected_message .pointer {
+    background-color: #6699FF;
+}
+
 .message_picture {
     vertical-align: top;
     text-align: right;

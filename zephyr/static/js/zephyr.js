@@ -3,6 +3,8 @@ var message_dict = {};
 var subject_dict = {};
 var people_hash = {};
 
+var selected_message_class = 'selected_message';
+
 $(function () {
     var i;
     var send_status = $('#send-status');
@@ -166,8 +168,8 @@ function select_and_show_by_id(message_id) {
 }
 
 function update_selected_message(message) {
-    $('.selected_message').removeClass('selected_message');
-    message.addClass('selected_message');
+    $('.' + selected_message_class).removeClass(selected_message_class);
+    message.addClass(selected_message_class);
 
     var new_selected_id = get_id(message);
     if (!narrowed && new_selected_id !== selected_message_id) {
