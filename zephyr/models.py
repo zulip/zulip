@@ -309,8 +309,8 @@ def do_send_message(message, synced_from_mit=False, no_log=False):
         assert((len(recipients) == 1) or (len(recipients) == 2))
     elif (message.recipient.type == Recipient.STREAM or
           message.recipient.type == Recipient.HUDDLE):
-        recipients = [get_user_profile_by_id(s.userprofile_id) for
-                      s in Subscription.objects.filter(recipient=message.recipient, active=True)]
+        recipients = [s.userprofile for
+                      s in Subscription.objects.select_related().filter(recipient=message.recipient, active=True)]
     else:
         raise
 
