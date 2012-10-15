@@ -13,10 +13,26 @@ import datetime
 from django.db import transaction
 
 import markdown
-md_engine = markdown.Markdown(
-    extensions    = ['fenced_code', 'codehilite', 'nl2br'],
-    safe_mode     = 'escape',
-    output_format = 'xhtml' )
+
+MD_COUNTER_MAX = 30
+md_counter = MD_COUNTER_MAX
+cur_md_engine = None
+
+def get_markdown_engine():
+    # We need to re-initialize the markdown engine every 100 messages
+    # due to some sort of performance leak in the engine.
+    global cur_md_engine
+    global md_counter
+
+    if md_counter < MD_COUNTER_MAX:
+        md_counter += 1
+        return cur_md_engine
+    md_counter = 0
+    cur_md_engine = markdown.Markdown(
+        extensions    = ['fenced_code', 'codehilite', 'nl2br'],
+        safe_mode     = 'escape',
+        output_format = 'xhtml' )
+    return cur_md_engine
 
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id))
 def get_display_recipient(recipient):
@@ -226,7 +242,7 @@ class Message(models.Model):
         content = self.heading_regex.sub(r' \1', self.content)
         with_links = self.link_regex.sub(linkify, content)
         try:
-            return md_engine.convert(with_links)
+            return get_markdown_engine().convert(with_links)
         except:
             # FIXME: Do something more reasonable here!
             return '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
