@@ -263,7 +263,7 @@ def zephyr_to_humbug(options):
     if options.forward_class_messages:
         for sub in mit_subs_list.all_subs:
             ensure_subscribed(sub)
-    update_subscriptions_from_humbug()
+        update_subscriptions_from_humbug()
     if options.forward_personals:
         subs.add(("message", "personal", os.environ["USER"] + "@ATHENA.MIT.EDU"))
         if subscribed_to_mail_messages():
