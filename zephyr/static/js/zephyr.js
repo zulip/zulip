@@ -525,6 +525,7 @@ setInterval(function() {
         // new updates.
         get_updates_xhr.abort();
         clearTimeout(get_updates_timeout);
+        received.failures = 0;
         get_updates();
     }
     watchdog_time = new_time;
