@@ -9,7 +9,7 @@ var globals =
     + ' initial_pointer email stream_list people_list have_initial_messages'
 
     // compose.js
-    + ' show_compose hide_compose toggle_compose compose_button'
+    + ' show_compose hide_compose toggle_compose clear_compose_box compose_button'
     + ' composing_message compose_stream_name validate_message'
     + ' status_classes'
 

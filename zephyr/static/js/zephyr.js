@@ -127,6 +127,7 @@ function get_huddle_recipient_names(message) {
 function respond_to_message(reply_type) {
     var message, tabname;
     message = message_dict[selected_message_id];
+    clear_compose_box();
     if (message.type === "stream") {
         $("#stream").val(message.display_recipient);
         $("#subject").val(message.subject);
