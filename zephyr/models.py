@@ -9,6 +9,8 @@ import fcntl
 import os
 import re
 import simplejson
+import datetime
+from django.db import transaction
 
 import markdown
 md_engine = markdown.Markdown(
@@ -87,10 +89,6 @@ class UserProfile(models.Model):
     # The user receives this message
     def receive(self, message):
         global callback_table
-
-        # Should also store in permanent database the receipt
-        um = UserMessage(user_profile=self, message=message)
-        um.save()
 
         for cb in callback_table.get(self.user.id, []):
             cb([message])
@@ -315,6 +313,12 @@ def do_send_message(message, synced_from_mit=False, no_log=False):
                       s in Subscription.objects.filter(recipient=message.recipient, active=True)]
     else:
         raise
+
+    # Save the message receipts in the database
+    with transaction.commit_on_success():
+        for user_profile in recipients:
+            UserMessage(user_profile=user_profile, message=message).save()
+
     for recipient in recipients:
         recipient.receive(message)
 
