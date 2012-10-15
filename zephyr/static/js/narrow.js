@@ -21,7 +21,7 @@ function do_narrow(description, filter_function) {
     $("#zfilt").addClass("focused_table");
 
     $("#show_all_messages").removeAttr("disabled");
-    $(".narrowcontent").show();
+    $(".narrowed_to_bar").show();
     $("#main_div").addClass("narrowed_view");
     $("#currently_narrowed_to").html(description).attr("title", description);
     $("#zhome").removeClass("focused_table");
@@ -103,7 +103,7 @@ function show_all_messages() {
 
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
-    $(".narrowcontent").hide();
+    $(".narrowed_to_bar").hide();
     $("#main_div").removeClass('narrowed_view');
     $("#show_all_messages").attr("disabled", "disabled");
     $("#currently_narrowed_to").html("");

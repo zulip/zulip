@@ -76,22 +76,22 @@ function resizehandler(e) {
     var sidebar = $("#sidebar");
     var sidebar_nav = $(".sidebar-nav");
     var composebox = $("#compose");
-    var narrowbox = $("#narrowbox");
+    var top_statusbar = $("#top_statusbar");
     if (viewport.width() <= 767) {
         sidebar.removeClass('nav-stacked');
 
         var space_taken_up_by_navbar = sidebar_nav.outerHeight(true);
         $("#nav_whitespace").height(space_taken_up_by_navbar); // .visible-phone only, so doesn't need undoing
-        narrowbox.css('top', space_taken_up_by_navbar);
+        top_statusbar.css('top', space_taken_up_by_navbar);
 
         var message_list_width = $("#main_div").outerWidth();
         composebox.width(message_list_width);
-        narrowbox.width(message_list_width);
+        top_statusbar.width(message_list_width);
         sidebar_nav.width(message_list_width);
     } else {
         sidebar.addClass('nav-stacked');
-        narrowbox.css('top', 0);
-        narrowbox.width('');
+        top_statusbar.css('top', 0);
+        top_statusbar.width('');
         composebox.width('');
         sidebar_nav.width('');
     }
@@ -137,22 +137,22 @@ function replace_narrowbar(desired_label) {
         $("#current_label_stream").css('display', 'none');
         $("#current_label_huddle").css('display', 'table-row');
     }
-    $(".floating_indicator").css('visibility', 'visible');
+    $(".floating_recipient_bar").css('visibility', 'visible');
 }
 
 function hide_narrowbar() {
-    $(".floating_indicator").css('visibility', 'hidden');
+    $(".floating_recipient_bar").css('visibility', 'hidden');
 }
 
-function update_fixed_narrowbar() {
-    var fixed_narrowbar = $("#narrowbox");
-    var fixed_narrowbar_top = fixed_narrowbar.offset().top;
-    var fixed_narrowbar_bottom = fixed_narrowbar_top + fixed_narrowbar.height();
+function update_floating_recipient_bar() {
+    var top_statusbar = $("#top_statusbar");
+    var top_statusbar_top = top_statusbar.offset().top;
+    var top_statusbar_bottom = top_statusbar_top + top_statusbar.height();
 
     // Find the last message where the top of the recipient
     // row is no longer visible
     var new_label_candidate = $(".focused_table .recipient_row").filter(function () {
-        return ($(this).offset().top < fixed_narrowbar_bottom);
+        return ($(this).offset().top < top_statusbar_bottom);
     }).last();
     if (new_label_candidate.length === 0) {
         // We're at the top of the page and no labels are above us.
@@ -167,7 +167,7 @@ function update_fixed_narrowbar() {
     // Hide if the bottom of our floating stream/subject label is not
     // lower than the bottom of current_label (since that means we're
     // covering up a label that already exists).
-    if (fixed_narrowbar_bottom <=
+    if (top_statusbar_bottom <=
         (current_label.offset().top + current_label.height())) {
         hide_narrowbar();
         return;
@@ -180,7 +180,7 @@ function update_fixed_narrowbar() {
     // (The last message currently doesn't have a bookend, which is why this might be 0).
     if (current_label_bookend.length > 0) {
         var my_bookend = $(current_label_bookend[0]);
-        if (fixed_narrowbar_bottom >
+        if (top_statusbar_bottom >
             (my_bookend.offset().top - my_bookend.height())) {
             hide_narrowbar();
             return;
@@ -230,7 +230,7 @@ $(function () {
                 // pointer may still want to move.
                 move_pointer_at_page_top_and_bottom();
             }
-            print_elapsed_time("update_fixed_narrowbar", update_fixed_narrowbar);
+            print_elapsed_time("update_floating_recipient_bar", update_floating_recipient_bar);
         }
     });
     $(window).mousewheel(throttled_scrollhandler);
