@@ -36,7 +36,7 @@ function target_message_for_narrow(id) {
 
 function narrow_huddle() {
     var original = message_dict[narrow_target_message_id];
-    do_narrow("Huddles with " + original.reply_to, function (other) {
+    do_narrow("Huddles with " + original.display_reply_to, function (other) {
         return other.reply_to === original.reply_to;
     });
 }
@@ -50,14 +50,8 @@ function narrow_all_personals() {
 function narrow_personals() {
     // Narrow to personals with a specific user
     var original = message_dict[narrow_target_message_id];
-    var other_party;
-    if (original.display_recipient.email === email) {
-        other_party = original.sender_email;
-    } else {
-        other_party = original.display_recipient.email;
-    }
 
-    do_narrow("Huddles with " + other_party, function (other) {
+    do_narrow("Huddles with " + original.display_replay_to, function (other) {
         return (other.type === 'personal') &&
             (((other.display_recipient.email === original.display_recipient.email) && (other.sender_email === original.sender_email)) ||
              ((other.display_recipient.email === original.sender_email) && (other.sender_email === original.display_recipient.email)));
