@@ -16,6 +16,7 @@ md_engine = markdown.Markdown(
     safe_mode     = 'escape',
     output_format = 'xhtml' )
 
+@cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id))
 def get_display_recipient(recipient):
     """
     recipient: an subject of Recipient.
