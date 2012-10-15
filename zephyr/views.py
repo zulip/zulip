@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.views import login as django_login_page
 from django.contrib.auth.models import User
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
-    Recipient, get_display_recipient, get_huddle, Realm, \
+    Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     create_user, do_send_message, mit_sync_table, create_user_if_needed, \
     create_stream_if_needed, PreregistrationUser
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique
@@ -144,10 +144,11 @@ def home(request):
         return HttpResponseRedirect(reverse('zephyr.views.accounts_home'))
     user_profile = UserProfile.objects.get(user=request.user)
 
-    messages = Message.objects.filter(usermessage__user_profile=user_profile)
+    num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
 
-    if user_profile.pointer == -1 and messages:
-        user_profile.pointer = min([message.id for message in messages])
+    if user_profile.pointer == -1 and num_messages > 0:
+        min_id = UserMessage.objects.filter(user_profile=user_profile).order_by("message")[0].message_id
+        user_profile.pointer = min_id
         user_profile.save()
 
     # Populate personals autocomplete list based on everyone in your
@@ -171,7 +172,7 @@ def home(request):
                                'people'      : people,
                                'streams'     : streams,
                                'have_initial_messages':
-                                   'true' if messages else 'false',
+                                   'true' if num_messages > 0 else 'false',
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET) },
                               context_instance=RequestContext(request))
