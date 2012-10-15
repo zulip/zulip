@@ -142,7 +142,7 @@ class humbug_web_base {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "/root/humbug/servers/puppet/files/apache/certs/humbug-self-signed.crt",
+    source => "/root/humbug/certs/humbug-self-signed.crt",
   }
 
   file { "/etc/apache2/certs/humbug-self-signed.key":
