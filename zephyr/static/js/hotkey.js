@@ -170,10 +170,15 @@ $(document).keydown(function (event) {
 $(document).keypress(function (event) {
     // What exactly triggers .keypress may vary by browser.
     // Welcome to compatability hell.
-
-    var result = keydown_handler(event.which);
-    if (typeof result === 'function') {
-        keydown_handler = result;
-        event.preventDefault();
+    //
+    // In particular, when you press tab in Firefox, it fires a
+    // keypress event with keycode 0 after processing the original
+    // event.
+    if (event.which !== 0 && event.charCode !== 0) {
+        var result = keydown_handler(event.which);
+        if (typeof result === 'function') {
+            keydown_handler = result;
+            event.preventDefault();
+        }
     }
 });
