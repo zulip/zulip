@@ -331,12 +331,17 @@ input.send_message {
     border: 1px solid black;
 }
 
+.floating_indicator {
+    max-width: 640px;
+    /* from .message_list */
+    padding-left: 10px;
+    padding-right: 20px;
+}
+
 #fixed_narrowbox {
-    position: fixed;
-    /* .message_list width + padding_right - my border*2 - my padding*2 */
-    width: 640px;
     table-layout: fixed;
     margin-left: auto;
+    width: 100%;
 }
 
 #narrowlabel {
