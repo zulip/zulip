@@ -3,6 +3,11 @@
 SCRIPT_DIR="$(dirname "$0")"
 EXITCODE=0
 
+FILTER_IMPORTS="-v imported.but.unused"
+if [ "$1" = "--imports" ]; then
+    FILTER_IMPORTS="."
+fi
+
 if ! "$SCRIPT_DIR"/jslint/check-all; then
     EXITCODE=1;
 fi
@@ -12,7 +17,7 @@ cd "$SCRIPT_DIR"/..;
 if git ls-files | grep py$ | grep -v ^confirmation/ \
     | grep -v humbug/test_settings.py \
     | xargs pyflakes \
-    | grep -v 'imported but unused'; then
+    | grep $FILTER_IMPORTS; then
 
     EXITCODE=1;
 fi
