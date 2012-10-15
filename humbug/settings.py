@@ -200,7 +200,10 @@ LOGIN_REDIRECT_URL='/'
 
 MESSAGE_LOG="all_messages_log"
 
-NOT_LOGGED_IN_REDIRECT = 'zephyr.views.accounts_home'
+if deployed:
+    NOT_LOGGED_IN_REDIRECT = 'django.contrib.auth.views.login'
+else:
+    NOT_LOGGED_IN_REDIRECT = 'zephyr.views.accounts_home'
 
 # For testing, you may want to have emails be printed to the console.
 if not deployed:
