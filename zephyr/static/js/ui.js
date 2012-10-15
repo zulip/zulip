@@ -230,8 +230,8 @@ $(function () {
                 // pointer may still want to move.
                 move_pointer_at_page_top_and_bottom();
             }
+            print_elapsed_time("update_fixed_narrowbar", update_fixed_narrowbar);
         }
-        print_elapsed_time("update_fixed_narrowbar", update_fixed_narrowbar);
     });
     $(window).mousewheel(throttled_scrollhandler);
     $(window).scroll(throttled_scrollhandler);
