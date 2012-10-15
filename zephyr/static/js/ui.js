@@ -86,7 +86,6 @@ function mousemove() {
 function resizehandler(e) {
     var viewport = $(window);
     var sidebar = $("#sidebar");
-    var narrowcontent = $(".narrowcontent");
     var sidebar_nav = $(".sidebar-nav");
     var composebox = $("#compose");
     var narrowbox = $("#narrowbox");
@@ -99,16 +98,13 @@ function resizehandler(e) {
 
         var message_list_width = $("#main_div").outerWidth();
         composebox.width(message_list_width);
-        // narrowcontent has padding and a border, so we need to
-        // subtract those out when we set the width
-        var border_and_padding = narrowcontent.outerWidth() - narrowcontent.width();
-        narrowcontent.width(message_list_width - border_and_padding);
+        narrowbox.width(message_list_width);
         sidebar_nav.width(message_list_width);
     } else {
         sidebar.addClass('nav-stacked');
         narrowbox.css('top', 0);
+        narrowbox.width('');
         composebox.width('');
-        narrowcontent.width('');
         sidebar_nav.width('');
     }
 
