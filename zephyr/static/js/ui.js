@@ -150,16 +150,23 @@ function update_floating_recipient_bar() {
     var top_statusbar_bottom = top_statusbar_top + top_statusbar.height();
 
     // Find the last message where the top of the recipient
-    // row is no longer visible
-    var new_label_candidate = $(".focused_table .recipient_row").filter(function () {
-        return ($(this).offset().top < top_statusbar_bottom);
-    }).last();
-    if (new_label_candidate.length === 0) {
-        // We're at the top of the page and no labels are above us.
-        hide_narrowbar();
-        return;
+    // row is at least partially occluded by our box.
+    // Start with the pointer's current location.
+    var candidate = selected_message;
+    while (true) {
+        candidate = candidate.prev();
+        if (candidate.length === 0) {
+            // We're at the top of the page and no labels are above us.
+            hide_narrowbar();
+            return;
+        }
+        if (candidate.is(".focused_table .recipient_row")) {
+            if (candidate.offset().top < top_statusbar_bottom) {
+                break;
+            }
+        }
     }
-    var current_label = $(new_label_candidate[0]);
+    var current_label = candidate;
 
     // We now know what the floating stream/subject bar should say.
     // Do we show it?
@@ -176,7 +183,8 @@ function update_floating_recipient_bar() {
     // Hide if our bottom is in our bookend (or one bookend-height
     // above it). This means we're not showing any useful part of the
     // message above us, so why bother showing the label?)
-    var current_label_bookend = new_label_candidate.nextUntil(".bookend_tr").next(".bookend_tr");
+    var current_label_bookend = current_label.nextUntil(".bookend_tr")
+                                             .next(".bookend_tr");
     // (The last message currently doesn't have a bookend, which is why this might be 0).
     if (current_label_bookend.length > 0) {
         var my_bookend = $(current_label_bookend[0]);
