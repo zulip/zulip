@@ -358,6 +358,11 @@ input.send_message {
     background-color: #DDD;
 }
 
+#top_whitespace {
+  display: block;
+  height: 35px;
+}
+
 #bottom_whitespace {
   display: block;
   height: 300px;
