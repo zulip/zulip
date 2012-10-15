@@ -218,7 +218,7 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         failures = int(failures)
 
     where = 'bottom'
-    query = Message.objects.filter(usermessage__user_profile = user_profile).order_by('id')
+    query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
 
     if last == -1:
         # User has no messages yet
