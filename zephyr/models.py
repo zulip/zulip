@@ -28,13 +28,13 @@ def get_display_recipient(recipient):
         stream = Stream.objects.get(id=recipient.type_id)
         return stream.name
     elif recipient.type == Recipient.HUDDLE:
-        user_profile_list = [UserProfile.objects.get(user=s.userprofile) for s in
+        user_profile_list = [UserProfile.objects.select_related().get(user=s.userprofile) for s in
                              Subscription.objects.filter(recipient=recipient)]
         return [{'email': user_profile.user.email,
                  'full_name': user_profile.full_name,
                  'short_name': user_profile.short_name} for user_profile in user_profile_list]
     else:
-        user_profile = UserProfile.objects.get(user=recipient.type_id)
+        user_profile = UserProfile.objects.select_related().get(user=recipient.type_id)
         return {'email': user_profile.user.email,
                 'full_name': user_profile.full_name,
                 'short_name': user_profile.short_name}
@@ -50,7 +50,7 @@ def get_log_recipient(recipient):
         stream = Stream.objects.get(id=recipient.type_id)
         return stream.name
 
-    user_profile_list = [UserProfile.objects.get(user=s.userprofile) for s in
+    user_profile_list = [UserProfile.objects.select_related().get(user=s.userprofile) for s in
                          Subscription.objects.filter(recipient=recipient)]
     return [{'email': user_profile.user.email,
              'full_name': user_profile.full_name,
@@ -280,7 +280,7 @@ user_hash = {}
 def get_user_profile_by_id(uid):
     if uid in user_hash:
         return user_hash[uid]
-    return UserProfile.objects.get(id=uid)
+    return UserProfile.objects.select_related().get(id=uid)
 
 def log_message(message):
     if not os.path.exists(settings.MESSAGE_LOG + '.lock'):
