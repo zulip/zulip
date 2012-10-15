@@ -82,12 +82,6 @@ class humbug_base {
     ensure     => running,
     subscribe  => File['/etc/ssh/sshd_config'],
   }
-
-  common::line { '/etc/sudoers':
-    require    => Package['sudo'],
-    file       => '/etc/sudoers',
-    line       => 'humbug    ALL=(ALL) NOPASSWD: ALL',
-  }
 }
 
 class humbug_web_base {
