@@ -3,17 +3,6 @@
 // scrollbar when we switch to a new tab (and restore it
 // when we switch back.)
 var scroll_positions = {};
-var current_scroll_direction = "down";
-
-function update_scroll_direction(delta) {
-    if (delta !== undefined) {
-        if (delta <= 0) {
-            current_scroll_direction = "down";
-        } else {
-            current_scroll_direction = "up";
-        }
-    }
-}
 
 function register_onclick(message_row, message_id) {
     message_row.find(".messagebox").click(function (e) {
@@ -242,7 +231,6 @@ $(function () {
                 move_pointer_at_page_top_and_bottom();
             }
         }
-        update_scroll_direction(delta);
         print_elapsed_time("update_fixed_narrowbar", update_fixed_narrowbar);
     });
     $(window).mousewheel(throttled_scrollhandler);
