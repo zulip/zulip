@@ -1,6 +1,9 @@
 // For tracking where you were before you narrowed.
 var persistent_message_id = 0;
 
+// For narrowing based on a particular message
+var narrow_target_message_id = 0;
+
 // Narrowing predicate, or 'false' for the home view.
 var narrowed = false;
 
@@ -23,12 +26,16 @@ function do_narrow(description, filter_function) {
     $("#currently_narrowed_to").html(description).attr("title", description);
     $("#zhome").removeClass("focused_table");
 
-    select_and_show_by_id(selected_message_id);
+    select_and_show_by_id(narrow_target_message_id);
     scroll_to_selected();
 }
 
+function target_message_for_narrow(id) {
+    narrow_target_message_id = id;
+}
+
 function narrow_huddle() {
-    var original = message_dict[selected_message_id];
+    var original = message_dict[narrow_target_message_id];
     do_narrow("Huddles with " + original.reply_to, function (other) {
         return other.reply_to === original.reply_to;
     });
@@ -42,7 +49,7 @@ function narrow_all_personals() {
 
 function narrow_personals() {
     // Narrow to personals with a specific user
-    var original = message_dict[selected_message_id];
+    var original = message_dict[narrow_target_message_id];
     var other_party;
     if (original.display_recipient.email === email) {
         other_party = original.sender_email;
@@ -59,7 +66,7 @@ function narrow_personals() {
 }
 
 function narrow_stream() {
-    var original = message_dict[selected_message_id];
+    var original = message_dict[narrow_target_message_id];
     var message = original.display_recipient;
     do_narrow(message, function (other) {
         return (other.type === 'stream' &&
@@ -68,7 +75,7 @@ function narrow_stream() {
 }
 
 function narrow_subject() {
-    var original = message_dict[selected_message_id];
+    var original = message_dict[narrow_target_message_id];
     if (original.type !== 'stream')
         return;
 

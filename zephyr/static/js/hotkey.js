@@ -111,6 +111,8 @@ var goto_hotkeys = {
 };
 
 function process_goto_hotkey(code) {
+    narrow_target_message_id = selected_message_id;
+
     if (goto_hotkeys.hasOwnProperty(code))
         goto_hotkeys[code]();
 

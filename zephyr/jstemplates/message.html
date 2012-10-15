@@ -23,16 +23,16 @@
 <tr class="recipient_row">
     <td colspan="2"
         class="message_label_clickable message_newstyle_stream"
-        onclick="select_message_by_id({{id}}); narrow_stream();"
+        onclick="target_message_for_narrow({{id}}); narrow_stream();"
         title="{{display_recipient}}">{{display_recipient}}</td>
     <td class="message_label_clickable message_newstyle_subject"
-        onclick="select_message_by_id({{id}}); narrow_subject();"
+        onclick="target_message_for_narrow({{id}}); narrow_subject();"
         title="{{subject}}">{{subject}}</td>
 </tr>
 {{else}}
 <tr class="recipient_row">
     <td colspan="3" class="message_label_clickable message_newstyle_pm"
-        onclick="select_message_by_id({{id}}); narrow_by_recipient();"
+        onclick="target_message_for_narrow({{id}}); narrow_huddle();"
         title="Huddle with {{display_reply_to}}">Huddle with {{display_reply_to}}</td>
 </tr>
 {{/if}}
