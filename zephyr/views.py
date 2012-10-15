@@ -341,7 +341,6 @@ def create_forged_message_users(request, user_profile):
 # both from the API and the web service.  Code calling
 # send_message_backend should either check the API key or check that
 # the user is logged in.
-@require_post
 def send_message_backend(request, user_profile, sender):
     if "type" not in request.POST:
         return json_error("Missing type")
