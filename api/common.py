@@ -3,12 +3,12 @@ import simplejson
 import requests
 import time
 import traceback
-
-# TODO: Drop verify=False once we have real certificates
-# Or switch to specifying a testing cert manually
+from os import path
 
 # Check that we have a recent enough version
 assert(requests.__version__ > '0.12')
+
+cert = path.abspath(path.join(path.dirname(__file__), '../certs/humbug-self-signed.crt'))
 
 class HumbugAPI():
     def __init__(self, email, api_key, verbose=False, site="https://app.humbughq.com"):
@@ -24,7 +24,7 @@ class HumbugAPI():
             try:
                 res = requests.post(self.base_url + url,
                                     data=request,
-                                    verify=False,
+                                    verify=cert,
                                     auth=requests.auth.HTTPDigestAuth('tabbott',
                                                                       'xxxxxxxxxxxxxxxxx'))
                 if res.status_code == requests.codes.service_unavailable:
