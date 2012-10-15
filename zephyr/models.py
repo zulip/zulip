@@ -11,28 +11,7 @@ import re
 import simplejson
 import datetime
 from django.db import transaction
-
-import markdown
-
-MD_COUNTER_MAX = 30
-md_counter = MD_COUNTER_MAX
-cur_md_engine = None
-
-def get_markdown_engine():
-    # We need to re-initialize the markdown engine every 100 messages
-    # due to some sort of performance leak in the engine.
-    global cur_md_engine
-    global md_counter
-
-    if md_counter < MD_COUNTER_MAX:
-        md_counter += 1
-        return cur_md_engine
-    md_counter = 0
-    cur_md_engine = markdown.Markdown(
-        extensions    = ['fenced_code', 'codehilite', 'nl2br'],
-        safe_mode     = 'escape',
-        output_format = 'xhtml' )
-    return cur_md_engine
+from zephyr.lib import bugdown
 
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id))
 def get_display_recipient(recipient):
@@ -226,31 +205,10 @@ class Message(models.Model):
     def __str__(self):
         return self.__repr__()
 
-    # A link starts after whitespace, and cannot contain spaces,
-    # end parentheses, or end brackets (which would confuse Markdown).
-    link_regex = re.compile(r'(\s|\A)(?P<url>https?://[^\s\])]+)')
-
-    # Pad heading markers to make Markdown ignore them
-    # FIXME: Write a real extension for the markdown library
-    heading_regex = re.compile(r'^([#-=])', flags=re.MULTILINE)
-
-    def html_content(self):
-        def linkify(match):
-            url = match.group('url')
-            return ' [%s](%s) ' % (url, url)
-
-        content = self.heading_regex.sub(r' \1', self.content)
-        with_links = self.link_regex.sub(linkify, content)
-        try:
-            return get_markdown_engine().convert(with_links)
-        except:
-            # FIXME: Do something more reasonable here!
-            return '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
-
     @cache_with_key(lambda self, apply_markdown: 'message_dict:%d:%d' % (self.id, apply_markdown))
     def to_dict(self, apply_markdown):
         if apply_markdown:
-            content = self.html_content()
+            content = bugdown.convert(self.content)
         else:
             content = self.content
         return {'id'               : self.id,
