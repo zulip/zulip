@@ -126,22 +126,33 @@ function update_autocomplete() {
     autocomplete_needs_update = false;
 }
 
+var old_label;
+var is_narrowbar_showing = false;
 function replace_narrowbar(desired_label) {
-    if (desired_label.children(".message_newstyle_stream").length !== 0) {
-        $("#current_label_stream td:first").replaceWith(desired_label.children(".message_newstyle_stream").clone());
-        $("#current_label_stream td:last").replaceWith(desired_label.children(".message_newstyle_subject").clone());
-        $("#current_label_huddle").css('display', 'none');
-        $("#current_label_stream").css('display', 'table-row');
-    } else {
-        $("#current_label_huddle td:first").replaceWith(desired_label.children(".message_newstyle_pm").clone());
-        $("#current_label_stream").css('display', 'none');
-        $("#current_label_huddle").css('display', 'table-row');
+    if (desired_label !== old_label) {
+        if (desired_label.children(".message_newstyle_stream").length !== 0) {
+            $("#current_label_stream td:first").replaceWith(desired_label.children(".message_newstyle_stream").clone());
+            $("#current_label_stream td:last").replaceWith(desired_label.children(".message_newstyle_subject").clone());
+            $("#current_label_huddle").css('display', 'none');
+            $("#current_label_stream").css('display', 'table-row');
+        } else {
+            $("#current_label_huddle td:first").replaceWith(desired_label.children(".message_newstyle_pm").clone());
+            $("#current_label_stream").css('display', 'none');
+            $("#current_label_huddle").css('display', 'table-row');
+        }
+        old_label = desired_label;
     }
-    $(".floating_recipient_bar").css('visibility', 'visible');
+    if (!is_narrowbar_showing) {
+        $(".floating_recipient_bar").css('visibility', 'visible');
+        is_narrowbar_showing = true;
+    }
 }
 
 function hide_narrowbar() {
-    $(".floating_recipient_bar").css('visibility', 'hidden');
+    if (is_narrowbar_showing) {
+        $(".floating_recipient_bar").css('visibility', 'hidden');
+        is_narrowbar_showing = false;
+    }
 }
 
 function update_floating_recipient_bar() {
