@@ -187,6 +187,10 @@ LOGGING = {
     }
 }
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'zephyr.context_processors.add_settings',
+)
+
 ACCOUNT_ACTIVATION_DAYS=7
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
@@ -202,9 +206,11 @@ MESSAGE_LOG="all_messages_log"
 
 if deployed:
     ALLOW_REGISTER = False
+    FULL_NAVBAR    = False
     NOT_LOGGED_IN_REDIRECT = 'django.contrib.auth.views.login'
 else:
     ALLOW_REGISTER = True
+    FULL_NAVBAR    = True
     NOT_LOGGED_IN_REDIRECT = 'zephyr.views.accounts_home'
 
 # For testing, you may want to have emails be printed to the console.

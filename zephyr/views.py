@@ -106,9 +106,9 @@ def register(request):
             login(request, authenticate(username=email, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))
 
-    return render(request, 'zephyr/register.html', {
-        'form': form, 'company_name': company_name, 'email': email, 'key': key,
-    })
+    return render_to_response('zephyr/register.html',
+        { 'form': form, 'company_name': company_name, 'email': email, 'key': key },
+        context_instance=RequestContext(request))
 
 def login_page(request, **kwargs):
     template_response = django_login_page(request, **kwargs)
