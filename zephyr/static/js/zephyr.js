@@ -87,8 +87,8 @@ function above_view_threshold(message, useTop) {
 
 function below_view_threshold(message) {
     // Barnowl-style thresholds: the top of the pointer is never below
-    // the 4/5-mark.
-    return message.offset().top > viewport.scrollTop() + viewport.height() * 4 / 5;
+    // the 2/3-mark.
+    return message.offset().top > viewport.scrollTop() + viewport.height() * 2 / 3;
 }
 
 function recenter_view(message) {
