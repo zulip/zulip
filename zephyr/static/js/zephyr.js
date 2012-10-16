@@ -57,8 +57,11 @@ var selected_message;  // = get_message_row(selected_message_id)
 var received = {
     first: -1,
     last:  -1,
-    failures: 0
+    failures: 0,
+    server_generation: -1 /* to be filled in on document.ready */
 };
+
+$(function () { received.server_generation = server_generation; });
 
 // The "message groups", i.e. blocks of messages collapsed by recipient.
 // Each message table has a list of lists.

@@ -28,6 +28,9 @@ import socket
 import re
 import hashlib
 import urllib
+import time
+
+SERVER_GENERATION = int(time.time())
 
 def require_post(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
@@ -174,7 +177,8 @@ def home(request):
                                'have_initial_messages':
                                    'true' if num_messages > 0 else 'false',
                                'show_debug':
-                                   settings.DEBUG and ('show_debug' in request.GET) },
+                                   settings.DEBUG and ('show_debug' in request.GET),
+                               'server_generation': SERVER_GENERATION},
                               context_instance=RequestContext(request))
 
 @login_required
@@ -203,12 +207,14 @@ def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False, 
     return {'messages': [message.to_dict(apply_markdown) for message in messages],
             "result": "success",
             "msg": "",
-            'where':   where}
+            'where':   where,
+            'server_generation': SERVER_GENERATION}
 
 def return_messages_immediately(request, handler, user_profile, **kwargs):
     first = request.POST.get("first")
     last = request.POST.get("last")
     failures = request.POST.get("failures")
+    client_server_generation = request.POST.get("server_generation")
     if first is None or last is None:
         # When an API user is first querying the server to subscribe,
         # there's no reason to reply immediately.
@@ -248,6 +254,12 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
     if failures >= 4:
         # No messages, but still return immediately, to clear the
         # user's failures count
+        handler.finish(format_updates_response([], where="bottom", **kwargs))
+        return True
+
+    if client_server_generation is not None and int(client_server_generation) != SERVER_GENERATION:
+        # No messages, but still return immediately to inform the
+        # client that they should reload
         handler.finish(format_updates_response([], where="bottom", **kwargs))
         return True
 
