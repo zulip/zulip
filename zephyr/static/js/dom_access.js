@@ -1,13 +1,13 @@
 function get_next_visible(message_row) {
     if (message_row === undefined)
         return [];
-    return message_row.nextAll('.message_row:first');
+    return message_row.nextAll('.message_row').filter(':first');
 }
 
 function get_prev_visible(message_row) {
     if (message_row === undefined)
         return [];
-    return message_row.prevAll('.message_row:first');
+    return message_row.prevAll('.message_row').filter(':first');
 }
 
 function get_first_visible() {
