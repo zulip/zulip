@@ -591,21 +591,18 @@ function keep_pointer_in_view() {
 // going to fire anymore. But if I continue to use
 // the scrollwheel, the selection should advance until
 // I'm at the very top or the very bottom of the page.
-function move_pointer_at_page_top_and_bottom() {
-    var next_message = get_message_row(selected_message_id);
-
-    if (at_top_of_viewport() && (parseInt(get_id(next_message), 10) >
-                                 parseInt(get_id(get_first_visible()), 10))) {
-        // If we've scrolled to the top, keep inching the selected
-        // message up to the top instead of just the latest one that is
-        // still on the screen.
-        next_message = get_prev_visible(next_message);
-    } else if (at_bottom_of_viewport() && (parseInt(get_id(next_message), 10) <
-                                           parseInt(get_id(get_last_visible()), 10))) {
-        // If we've scrolled to the bottom already, keep advancing the
-        // pointer until we're at the last message (by analogue to the
-        // above)
-        next_message = get_next_visible(next_message);
+function move_pointer_at_page_top_and_bottom(delta) {
+    if (delta !== 0 && (at_top_of_viewport() || at_bottom_of_viewport())) {
+        var next_message = get_message_row(selected_message_id);
+        if (delta > 0) {
+            // Scrolling up (want older messages)
+            next_message = get_prev_visible(next_message);
+        } else {
+            // We're scrolling down (we want more recent messages)
+            next_message = get_next_visible(next_message);
+        }
+        if (next_message.length !== 0) {
+            update_selected_message(next_message);
+        }
     }
-    update_selected_message(next_message);
 }
