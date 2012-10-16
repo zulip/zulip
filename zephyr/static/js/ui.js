@@ -194,6 +194,7 @@ function update_floating_recipient_bar() {
     // above it). This means we're not showing any useful part of the
     // message above us, so why bother showing the label?)
     var current_label_bookend = current_label.nextUntil(".bookend_tr")
+                                             .andSelf()
                                              .next(".bookend_tr");
     // (The last message currently doesn't have a bookend, which is why this might be 0).
     if (current_label_bookend.length > 0) {
