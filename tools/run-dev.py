@@ -33,7 +33,7 @@ class Resource(resource.Resource):
     def getChild(self, name, request):
         request.requestHeaders.setRawHeaders('X-Forwarded-Host', [proxy_host])
 
-        if request.uri in ['/get_updates', '/api/v1/get_messages']:
+        if request.uri in ['/json/get_updates', '/api/v1/get_messages']:
             return proxy.ReverseProxyResource('localhost', 9993, '/'+name)
 
         return proxy.ReverseProxyResource('localhost', 9992, '/'+name)
