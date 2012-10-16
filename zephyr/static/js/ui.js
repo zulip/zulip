@@ -127,8 +127,8 @@ function update_autocomplete() {
 }
 
 var old_label;
-var is_narrowbar_showing = false;
-function replace_narrowbar(desired_label) {
+var is_floating_recipient_bar_showing = false;
+function replace_floating_recipient_bar(desired_label) {
     if (desired_label !== old_label) {
         if (desired_label.children(".message_newstyle_stream").length !== 0) {
             $("#current_label_stream td:first").replaceWith(desired_label.children(".message_newstyle_stream").clone());
@@ -142,16 +142,16 @@ function replace_narrowbar(desired_label) {
         }
         old_label = desired_label;
     }
-    if (!is_narrowbar_showing) {
+    if (!is_floating_recipient_bar_showing) {
         $(".floating_recipient_bar").css('visibility', 'visible');
-        is_narrowbar_showing = true;
+        is_floating_recipient_bar_showing = true;
     }
 }
 
-function hide_narrowbar() {
-    if (is_narrowbar_showing) {
+function hide_floating_recipient_bar() {
+    if (is_floating_recipient_bar_showing) {
         $(".floating_recipient_bar").css('visibility', 'hidden');
-        is_narrowbar_showing = false;
+        is_floating_recipient_bar_showing = false;
     }
 }
 
@@ -168,7 +168,7 @@ function update_floating_recipient_bar() {
         candidate = candidate.prev();
         if (candidate.length === 0) {
             // We're at the top of the page and no labels are above us.
-            hide_narrowbar();
+            hide_floating_recipient_bar();
             return;
         }
         if (candidate.is(".focused_table .recipient_row")) {
@@ -187,7 +187,7 @@ function update_floating_recipient_bar() {
     // covering up a label that already exists).
     if (top_statusbar_bottom <=
         (current_label.offset().top + current_label.height())) {
-        hide_narrowbar();
+        hide_floating_recipient_bar();
         return;
     }
 
@@ -201,13 +201,13 @@ function update_floating_recipient_bar() {
         var my_bookend = $(current_label_bookend[0]);
         if (top_statusbar_bottom >
             (my_bookend.offset().top - my_bookend.height())) {
-            hide_narrowbar();
+            hide_floating_recipient_bar();
             return;
         }
     }
 
     // If we've gotten this far, well, show it.
-    replace_narrowbar(current_label);
+    replace_floating_recipient_bar(current_label);
 }
 function hack_for_floating_recipient_bar() {
     // So, as of this writing, Firefox respects visibility: collapse,
@@ -337,7 +337,7 @@ $(function () {
     });
 
     // A little hackish, because it doesn't seem to totally get us
-    // the exact right width for the narrowbar and compose box,
+    // the exact right width for the top_statusbar and compose box,
     // but, close enough for now.
     resizehandler();
     hack_for_floating_recipient_bar();
