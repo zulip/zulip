@@ -1,0 +1,9 @@
+{% extends "zephyr/portico.html" %}
+
+{# Portico page with signup code #}
+
+{% block customhead %}
+    {{ block.super }}
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.min.js"></script>
+    <script src="/static/js/signup.js"></script>
+{% endblock %}
