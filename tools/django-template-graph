@@ -7,8 +7,9 @@ cd "$(dirname "$0")"/../templates
 (
     echo 'digraph {'
     for t in $(find -name '*.html' -printf '%P\n'); do
-        echo "\"$t\";"
-        perl -lne 'print "\"'"$t"'\" -> \"$1\";" if m/{%\s*extends\s*"([^"]+)"/' "$t"
+        echo "\"$t\";" | sed 's|/|\\n|g'
+        perl -lne 'print "\"'"$t"'\" -> \"$1\";" if m/{%\s*extends\s*"([^"]+)"/' "$t" \
+            | sed 's|/|\\n|g'
     done
     echo '}'
 ) > graph.dot
