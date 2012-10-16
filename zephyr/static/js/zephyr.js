@@ -210,7 +210,7 @@ function update_selected_message(message) {
         // doesn't permanently affect where you are.
         //
         // We also don't want to post if there's no effective change.
-        $.post("update", {pointer: new_selected_id});
+        $.post("/json/update_pointer", {pointer: new_selected_id});
     }
     selected_message_id = new_selected_id;
     selected_message = message;
@@ -585,7 +585,7 @@ var get_updates_timeout;
 function get_updates() {
     get_updates_xhr = $.ajax({
         type:     'POST',
-        url:      'get_updates',
+        url:      '/json/get_updates',
         data:     received,
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms

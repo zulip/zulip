@@ -8,27 +8,32 @@ import os.path
 
 urlpatterns = patterns('',
     url(r'^$', 'zephyr.views.home', name='home'),
-    url(r'^update$', 'zephyr.views.update', name='update'),
-    url(r'^get_updates$', 'zephyr.views.get_updates', name='get_updates'),
-    url(r'^api/v1/get_messages$', 'zephyr.views.api_get_messages', name='api_get_messages'),
-    url(r'^api/v1/get_public_streams$', 'zephyr.views.api_get_public_streams', name='api_get_public_streams'),
-    url(r'^api/v1/get_subscriptions$', 'zephyr.views.api_get_subscriptions', name='api_get_subscriptions'),
-    url(r'^api/v1/subscribe$', 'zephyr.views.api_subscribe', name='api_subscribe'),
-    url(r'^api/v1/send_message$', 'zephyr.views.api_send_message', name='api_send_message'),
-    url(r'^send_message/', 'zephyr.views.send_message', name='send_message'),
     # We have two entries for accounts/login to allow reverses on the Django
     # view we're wrapping to continue to function.
     url(r'^accounts/login/', 'zephyr.views.login_page', {'template_name': 'zephyr/login.html'}),
     url(r'^accounts/login/', 'django.contrib.auth.views.login', {'template_name': 'zephyr/login.html'}),
     url(r'^accounts/logout/', 'django.contrib.auth.views.logout', {'template_name': 'zephyr/index.html'}),
-    url(r'^settings/change/$', 'zephyr.views.change_settings', name='change_settings'),
-    url(r'^json/subscriptions/list$', 'zephyr.views.json_list_subscriptions', name='list_subscriptions'),
-    url(r'^json/subscriptions/remove$', 'zephyr.views.json_remove_subscription', name='remove_subscription'),
+
+    # These are json format views used by the web client.  They require a logged in browser.
+    url(r'^json/update_pointer$', 'zephyr.views.json_update_pointer', name='json_update_pointer'),
+    url(r'^json/get_updates$', 'zephyr.views.json_get_updates', name='json_get_updates'),
+    url(r'^json/send_message/', 'zephyr.views.json_send_message', name='json_send_message'),
+    url(r'^json/settings/change/$', 'zephyr.views.json_change_settings', name='json_change_settings'),
+    url(r'^json/subscriptions/list$', 'zephyr.views.json_list_subscriptions', name='json_list_subscriptions'),
+    url(r'^json/subscriptions/remove$', 'zephyr.views.json_remove_subscription', name='json_remove_subscription'),
+    url(r'^json/subscriptions/add$', 'zephyr.views.json_add_subscription', name='json_add_subscription'),
+    url(r'^json/subscriptions/exists/(?P<stream>.*)$', 'zephyr.views.json_stream_exists', name='json_stream_exists'),
+
+    # These are json format views used by the API.  They require an API key.
+    url(r'^api/v1/get_messages$', 'zephyr.views.api_get_messages', name='api_get_messages'),
+    url(r'^api/v1/get_public_streams$', 'zephyr.views.api_get_public_streams', name='api_get_public_streams'),
+    url(r'^api/v1/get_subscriptions$', 'zephyr.views.api_get_subscriptions', name='api_get_subscriptions'),
+    url(r'^api/v1/subscribe$', 'zephyr.views.api_subscribe', name='api_subscribe'),
+    url(r'^api/v1/send_message$', 'zephyr.views.api_send_message', name='api_send_message'),
+
     url(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': '/static/favicon.ico'}),
-    url(r'^json/subscriptions/add$', 'zephyr.views.json_add_subscription', name='add_subscription'),
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': os.path.join(settings.SITE_ROOT, '..', 'zephyr', 'static/')}),
-    url(r'^subscriptions/exists/(?P<stream>.*)$', 'zephyr.views.stream_exists', name='stream_exists'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
@@ -40,7 +45,7 @@ urlpatterns = patterns('',
 if settings.ALLOW_REGISTER:
     urlpatterns += patterns('',
         url(r'^accounts/home/', 'zephyr.views.accounts_home', name='accounts_home'),
-        url(r'^accounts/register/', 'zephyr.views.register', name='register'),
+        url(r'^accounts/register/', 'zephyr.views.accounts_register', name='accounts_register'),
         url(r'^accounts/send_confirm/(?P<email>[\S]+)?', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/accounts_send_confirm.html'}, name='send_confirm'),
         url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm', name='confirm'),
     )

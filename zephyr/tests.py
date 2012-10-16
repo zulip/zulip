@@ -5,7 +5,7 @@ from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, Realm, do_send_message
-from zephyr.views import get_updates
+from zephyr.views import json_get_updates
 from zephyr.decorator import TornadoAsyncException
 
 import datetime
@@ -109,7 +109,7 @@ class PublicURLTest(TestCase):
         Pages that should return a 200 when not logged in.
         """
         urls = {200: ["/accounts/home/", "/accounts/login/", "/accounts/logout/"],
-                302: ["/", "/send_message/", "/json/subscriptions/list",
+                302: ["/", "/json/send_message/", "/json/subscriptions/list",
                       "/json/subscriptions/remove", "/json/subscriptions/add"],
                 400: ["/accounts/register/"],
                 }
@@ -270,40 +270,40 @@ class PointerTest(AuthedTestCase):
         """
         self.login("hamlet@humbughq.com", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
-        result = self.client.post("/update", {"pointer": 1})
+        result = self.client.post("/json/update_pointer", {"pointer": 1})
         self.assert_json_success(result)
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, 1)
 
     def test_missing_pointer(self):
         """
-        Posting json to /update which does not contain a pointer key/value pair
+        Posting json to /json/update_pointer which does not contain a pointer key/value pair
         returns a 400 and error message.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
-        result = self.client.post("/update", {"foo": 1})
+        result = self.client.post("/json/update_pointer", {"foo": 1})
         self.assert_json_error(result, "Missing pointer")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
 
     def test_invalid_pointer(self):
         """
-        Posting json to /update with an invalid pointer returns a 400 and error
+        Posting json to /json/update_pointer with an invalid pointer returns a 400 and error
         message.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
-        result = self.client.post("/update", {"pointer": "foo"})
+        result = self.client.post("/json/update_pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Invalid pointer: must be an integer")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
 
     def test_pointer_out_of_range(self):
         """
-        Posting json to /update with an out of range (< 0) pointer returns a 400
+        Posting json to /json/update_pointer with an out of range (< 0) pointer returns a 400
         and error message.
         """
         self.login("hamlet@humbughq.com", "hamlet")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
-        result = self.client.post("/update", {"pointer": -2})
+        result = self.client.post("/json/update_pointer", {"pointer": -2})
         self.assert_json_error(result, "Invalid pointer value")
         self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
 
@@ -316,10 +316,10 @@ class MessagePOSTTest(AuthedTestCase):
         successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        result = self.client.post("/send_message/", {"type": "stream",
-                                                     "stream": "Verona",
-                                                     "content": "Test message",
-                                                     "subject": "Test subject"})
+        result = self.client.post("/json/send_message/", {"type": "stream",
+                                                          "stream": "Verona",
+                                                          "content": "Test message",
+                                                          "subject": "Test subject"})
         self.assert_json_success(result)
 
     def test_message_to_nonexistent_stream(self):
@@ -329,10 +329,10 @@ class MessagePOSTTest(AuthedTestCase):
         """
         self.login("hamlet@humbughq.com", "hamlet")
         self.assertFalse(Stream.objects.filter(name="nonexistent_stream"))
-        result = self.client.post("/send_message/", {"type": "stream",
-                                                     "stream": "nonexistent_stream",
-                                                     "content": "Test message",
-                                                     "subject": "Test subject"})
+        result = self.client.post("/json/send_message/", {"type": "stream",
+                                                          "stream": "nonexistent_stream",
+                                                          "content": "Test message",
+                                                          "subject": "Test subject"})
         self.assert_json_success(result)
         self.assertTrue(Stream.objects.filter(name="nonexistent_stream"))
 
@@ -341,9 +341,9 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a personal message to a valid username is successful.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        result = self.client.post("/send_message/", {"type": "personal",
-                                                     "content": "Test message",
-                                                     "recipient": "othello@humbughq.com"})
+        result = self.client.post("/json/send_message/", {"type": "personal",
+                                                          "content": "Test message",
+                                                          "recipient": "othello@humbughq.com"})
         self.assert_json_success(result)
 
     def test_personal_message_to_nonexistent_user(self):
@@ -351,9 +351,9 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a personal message to an invalid email returns error JSON.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        result = self.client.post("/send_message/", {"type": "personal",
-                                                     "content": "Test message",
-                                                     "recipient": "nonexistent"})
+        result = self.client.post("/json/send_message/", {"type": "personal",
+                                                          "content": "Test message",
+                                                          "recipient": "nonexistent"})
         self.assert_json_error(result, "Invalid email 'nonexistent'")
 
     def test_invalid_type(self):
@@ -361,9 +361,9 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a message of unknown type returns error JSON.
         """
         self.login("hamlet@humbughq.com", "hamlet")
-        result = self.client.post("/send_message/", {"type": "invalid type",
-                                                     "content": "Test message",
-                                                     "recipient": "othello@humbughq.com"})
+        result = self.client.post("/json/send_message/", {"type": "invalid type",
+                                                          "content": "Test message",
+                                                          "recipient": "othello@humbughq.com"})
         self.assert_json_error(result, "Invalid message type")
 
 class DummyHandler(object):
@@ -387,9 +387,9 @@ class POSTRequestMock(object):
 class GetUpdatesTest(AuthedTestCase):
     fixtures = ['messages.json']
 
-    def test_get_updates(self):
+    def test_json_get_updates(self):
         """
-        get_updates returns messages with IDs greater than the
+        json_get_updates returns messages with IDs greater than the
         last_received ID.
         """
         self.login("hamlet@humbughq.com", "hamlet")
@@ -402,10 +402,10 @@ class GetUpdatesTest(AuthedTestCase):
                 self.assertTrue(message.id > 1)
 
         request = POSTRequestMock({"last": str(1), "first": str(1)}, user, callback)
-        # get_updates returns None, which raises an exception in the
+        # json_get_updates returns None, which raises an exception in the
         # @asynchronous decorator, which raises a TornadoAsyncException. So this
         # is expected, but should probably change.
-        self.assertRaises(TornadoAsyncException, get_updates, request)
+        self.assertRaises(TornadoAsyncException, json_get_updates, request)
 
     def test_beyond_last_message(self):
         """
@@ -426,12 +426,12 @@ class GetUpdatesTest(AuthedTestCase):
             messages.extend(data)
 
         request = POSTRequestMock({"last": str(last_received), "first": "1"}, user, callback)
-        self.assertRaises(TornadoAsyncException, get_updates, request)
+        self.assertRaises(TornadoAsyncException, json_get_updates, request)
         self.assertEquals(len(messages), 0)
 
     def test_missing_last_received(self):
         """
-        Calling get_updates without a last_received key/value pair
+        Calling json_get_updates without a last_received key/value pair
         returns a 400 and error message.
         """
         self.login("hamlet@humbughq.com", "hamlet")
@@ -444,4 +444,4 @@ class GetUpdatesTest(AuthedTestCase):
                 self.assertTrue(message.id > 1)
 
         request = POSTRequestMock({}, user, callback)
-        self.assert_json_error(get_updates(request), "Missing message range")
+        self.assert_json_error(json_get_updates(request), "Missing message range")

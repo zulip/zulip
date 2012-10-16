@@ -78,7 +78,7 @@ def get_stream(stream_name, realm):
         return None
 
 @require_post
-def register(request):
+def accounts_register(request):
     key = request.POST['key']
     email = Confirmation.objects.get(confirmation_key=key).content_object.email
     company_name = email.split('@')[-1]
@@ -183,7 +183,7 @@ def home(request):
 
 @login_required
 @require_post
-def update(request):
+def json_update_pointer(request):
     user_profile = UserProfile.objects.get(user=request.user)
     pointer = request.POST.get('pointer')
     if not pointer:
@@ -282,7 +282,7 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
 @login_required
 @asynchronous
 @require_post
-def get_updates(request, handler):
+def json_get_updates(request, handler):
     if not ('last' in request.POST and 'first' in request.POST):
         return json_error("Missing message range")
     user_profile = UserProfile.objects.get(user=request.user)
@@ -309,7 +309,7 @@ def api_send_message(request, user_profile):
 
 @login_required
 @require_post
-def send_message(request):
+def json_send_message(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if 'time' in request.POST:
         return json_error("Invalid field 'time'")
@@ -549,7 +549,7 @@ def add_subscriptions_backend(request, user_profile, streams):
 
 @login_required
 @require_post
-def change_settings(request):
+def json_change_settings(request):
     user_profile = UserProfile.objects.get(user=request.user)
 
     # First validate all the inputs
@@ -593,7 +593,7 @@ def change_settings(request):
     return json_success(result)
 
 @login_required
-def stream_exists(request, stream):
+def json_stream_exists(request, stream):
     if not valid_stream_name(stream):
         return json_error("Invalid characters in stream name")
     return HttpResponse(

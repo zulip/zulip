@@ -53,7 +53,7 @@
     <div class="close composebox-close" onclick="hide_compose()">&times;</div>
     <div class="message_comp">
       <div class="alert" id="send-status"></div>
-      <form action="/send_message/" method="post" class="zephyr">
+      <form action="/json/send_message/" method="post" class="zephyr">
         <input type="hidden" name="type" value="stream" id="new_message_type"/>
         {% csrf_token %}
         <table class="compose_table">
