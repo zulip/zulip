@@ -1,5 +1,10 @@
 {% extends "zephyr/portico.html" %}
 
+{% comment %}
+Gather other user information, after having confirmed
+their email address.
+{% endcomment %}
+
 {% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
 {% block portico_content %}
 
