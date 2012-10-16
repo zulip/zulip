@@ -1,6 +1,11 @@
 import re
 import markdown
 
+class Bugdown(markdown.Extension):
+    def extendMarkdown(self, md, md_globals):
+        del md.inlinePatterns['image_link']
+        del md.inlinePatterns['image_reference']
+
 # We need to re-initialize the markdown engine every 30 messages
 # due to some sort of performance leak in the markdown library.
 MAX_MD_ENGINE_USES = 30
@@ -27,7 +32,7 @@ def convert(md):
 
     if _md_engine is None:
         _md_engine = markdown.Markdown(
-            extensions    = ['fenced_code', 'codehilite', 'nl2br'],
+            extensions    = ['fenced_code', 'codehilite', 'nl2br', Bugdown()],
             safe_mode     = 'escape',
             output_format = 'xhtml')
 
