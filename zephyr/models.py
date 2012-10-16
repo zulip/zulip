@@ -290,8 +290,8 @@ def do_send_message(message, synced_from_mit=False, no_log=False):
     if settings.HAVE_TORNADO_SERVER:
         requests.post(settings.NOTIFY_NEW_MESSAGE_URL, data=[
                ('secret',  settings.SHARED_SECRET),
-               ('message', message.id)]
-            + [('user',    user.id) for user in recipients])
+               ('message', message.id),
+               ('users',   ','.join(str(user.id) for user in recipients))])
 
 class Subscription(models.Model):
     userprofile = models.ForeignKey(UserProfile)

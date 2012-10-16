@@ -459,7 +459,8 @@ def notify_new_message(request, handler):
         return
 
     # FIXME: better query
-    users   = [UserProfile.objects.get(id=user) for user in request.POST.getlist('user')]
+    users   = [UserProfile.objects.get(id=user)
+               for user in request.POST['users'].split(',')]
     message = Message.objects.get(id=request.POST['message'])
 
     for user in users:
