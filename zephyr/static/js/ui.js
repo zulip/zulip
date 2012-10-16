@@ -157,7 +157,7 @@ function hide_floating_recipient_bar() {
 function update_floating_recipient_bar() {
     var top_statusbar = $("#top_statusbar");
     var top_statusbar_top = top_statusbar.offset().top;
-    var top_statusbar_bottom = top_statusbar_top + top_statusbar.height();
+    var top_statusbar_bottom = top_statusbar_top + top_statusbar.outerHeight();
 
     // Find the last message where the top of the recipient
     // row is at least partially occluded by our box.
@@ -185,7 +185,7 @@ function update_floating_recipient_bar() {
     // lower than the bottom of current_label (since that means we're
     // covering up a label that already exists).
     if (top_statusbar_bottom <=
-        (current_label.offset().top + current_label.height())) {
+        (current_label.offset().top + current_label.outerHeight())) {
         hide_floating_recipient_bar();
         return;
     }
@@ -199,7 +199,7 @@ function update_floating_recipient_bar() {
     if (current_label_bookend.length > 0) {
         var my_bookend = $(current_label_bookend[0]);
         if (top_statusbar_bottom >
-            (my_bookend.offset().top - my_bookend.height())) {
+            (my_bookend.offset().top - my_bookend.outerHeight())) {
             hide_floating_recipient_bar();
             return;
         }
