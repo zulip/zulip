@@ -293,8 +293,8 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
 
     user_profile.add_callback(handler.async_callback(on_receive))
 
-@login_required_json_view
 @asynchronous
+@login_required_json_view
 def json_get_updates(request, handler):
     if not ('last' in request.POST and 'first' in request.POST):
         return json_error("Missing message range")
@@ -305,8 +305,8 @@ def json_get_updates(request, handler):
 # Yes, this has a name similar to the previous function.  I think this
 # new name is better and expect the old function to be deleted and
 # replaced by the new one soon, so I'm not going to worry about it.
-@login_required_api_view
 @asynchronous
+@login_required_api_view
 def api_get_messages(request, user_profile, handler):
     return get_updates_backend(request, user_profile, handler,
                                apply_markdown=(request.POST.get("apply_markdown") is not None),
