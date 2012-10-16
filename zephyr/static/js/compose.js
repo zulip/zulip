@@ -100,6 +100,7 @@ function submit_buttons() {
 function check_stream_for_send(stream_name) {
     var okay = true;
     $.ajax({
+        type: "POST",
         url: "/json/subscriptions/exists/" + stream_name,
         async: false,
         success: function (data) {

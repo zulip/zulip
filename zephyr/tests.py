@@ -109,9 +109,21 @@ class PublicURLTest(TestCase):
         Pages that should return a 200 when not logged in.
         """
         urls = {200: ["/accounts/home/", "/accounts/login/", "/accounts/logout/"],
-                302: ["/", "/json/send_message/", "/json/subscriptions/list",
-                      "/json/subscriptions/remove", "/json/subscriptions/add"],
-                400: ["/accounts/register/"],
+                302: ["/"],
+                400: ["/accounts/register/",
+                      "/api/v1/get_messages",
+                      "/api/v1/get_public_streams",
+                      "/api/v1/get_subscriptions",
+                      "/api/v1/subscribe",
+                      "/api/v1/send_message",
+                      "/json/send_message/",
+                      "/json/update_pointer",
+                      "/json/get_updates",
+                      "/json/settings/change/",
+                      "/json/subscriptions/list",
+                      "/json/subscriptions/remove",
+                      "/json/subscriptions/exists/test",
+                      "/json/subscriptions/add"],
                 }
         for status_code, url_set in urls.iteritems():
             self.fetch(url_set, status_code)

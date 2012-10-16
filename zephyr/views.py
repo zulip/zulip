@@ -58,6 +58,21 @@ def api_key_required(view_func):
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
+# Checks if the request is a POST request and that the user is logged
+# in.  If not, return an error (the @login_required behavior of
+# redirecting to a login page doesn't make sense for json views)
+def login_required_json_view(view_func):
+    def _wrapped_view_func(request, *args, **kwargs):
+        # Arguably @require_post should protect us from having to do
+        # this, but I don't want to count on us always getting the
+        # decorator ordering right.
+        if request.method != "POST":
+            return HttpResponseBadRequest('This form can only be submitted by POST.')
+        if not request.user.is_authenticated():
+            return json_error("Not logged in")
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view_func
+
 def json_response(res_type="success", msg="", data={}, status=200):
     content = {"result":res_type, "msg":msg}
     content.update(data)
@@ -181,8 +196,7 @@ def home(request):
                                'server_generation': SERVER_GENERATION},
                               context_instance=RequestContext(request))
 
-@login_required
-@require_post
+@login_required_json_view
 def json_update_pointer(request):
     user_profile = UserProfile.objects.get(user=request.user)
     pointer = request.POST.get('pointer')
@@ -279,9 +293,8 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
 
     user_profile.add_callback(handler.async_callback(on_receive))
 
-@login_required
+@login_required_json_view
 @asynchronous
-@require_post
 def json_get_updates(request, handler):
     if not ('last' in request.POST and 'first' in request.POST):
         return json_error("Missing message range")
@@ -307,8 +320,7 @@ def api_get_messages(request, user_profile, handler):
 def api_send_message(request, user_profile):
     return send_message_backend(request, user_profile, user_profile.user)
 
-@login_required
-@require_post
+@login_required_json_view
 def json_send_message(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if 'time' in request.POST:
@@ -458,14 +470,13 @@ def gather_subscriptions(user_profile):
 def api_get_subscriptions(request, user_profile):
     return json_success({"streams": gather_subscriptions(user_profile)})
 
-@login_required
+@login_required_json_view
 def json_list_subscriptions(request):
     subs = gather_subscriptions(UserProfile.objects.get(user=request.user))
     return HttpResponse(content=simplejson.dumps({"subscriptions": subs}),
                         mimetype='application/json', status=200)
 
-@login_required
-@require_post
+@login_required_json_view
 def json_remove_subscription(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if 'subscription' not in request.POST:
@@ -504,8 +515,7 @@ def api_subscribe(request, user_profile):
     res = add_subscriptions_backend(request, user_profile, streams)
     return json_success(res)
 
-@login_required
-@require_post
+@login_required_json_view
 def json_add_subscription(request):
     user_profile = UserProfile.objects.get(user=request.user)
 
@@ -547,8 +557,7 @@ def add_subscriptions_backend(request, user_profile, streams):
     return {"subscribed": subscribed,
             "already_subscribed": already_subscribed}
 
-@login_required
-@require_post
+@login_required_json_view
 def json_change_settings(request):
     user_profile = UserProfile.objects.get(user=request.user)
 
@@ -592,7 +601,7 @@ def json_change_settings(request):
 
     return json_success(result)
 
-@login_required
+@login_required_json_view
 def json_stream_exists(request, stream):
     if not valid_stream_name(stream):
         return json_error("Invalid characters in stream name")
