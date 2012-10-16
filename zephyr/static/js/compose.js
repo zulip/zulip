@@ -46,24 +46,40 @@ function composing_message() {
     return composing_stream_message() || composing_huddle_message();
 }
 
-function compose_stream_name() {
-    return $.trim($("#stream").val());
+function compose_stream_name(newval) {
+    var oldval = $.trim($("#stream").val());
+    if (newval !== undefined) {
+        $("#stream").val(newval);
+    }
+    return oldval;
 }
 
-function compose_subject() {
-    return $.trim($("#subject").val());
+function compose_subject(newval) {
+    var oldval =  $.trim($("#subject").val());
+    if (newval !== undefined) {
+        $("#subject").val(newval);
+    }
+    return oldval;
 }
 
-function compose_message() {
-    return $.trim($("#new_message_content").val());
+function compose_message(newval) {
+    var oldval = $.trim($("#new_message_content").val());
+    if (newval !== undefined) {
+        $("#new_message_content").val(newval);
+    }
+    return oldval;
 }
 
-function compose_recipient() {
-    return $.trim($("#huddle_recipient").val());
+function compose_recipient(newval) {
+    var oldval = $.trim($("#huddle_recipient").val());
+    if (newval !== undefined) {
+        $("#huddle_recipient").val(newval);
+    }
+    return oldval;
 }
 
-function compose_huddle_message() {
-    return $.trim($("#new_message_content").val());
+function compose_huddle_message(newval) {
+    return compose_message(newval);
 }
 
 function compose_error(error_text, bad_input) {
