@@ -197,9 +197,10 @@ def process_notice(notice, log):
 
     sender = notice.sender.lower().replace("athena.mit.edu", "mit.edu")
     recipient = notice.recipient.lower().replace("athena.mit.edu", "mit.edu")
+    zephyr_class = notice.cls.lower()
+    instance = notice.instance.lower()
 
-    if (notice.cls.lower() == "message" and
-        notice.instance.lower() == "personal"):
+    if (zephyr_class == "message" and instance == "personal"):
         is_personal = True
         if body.startswith("CC:"):
             is_huddle = True
@@ -209,15 +210,14 @@ def process_notice(notice, log):
             if sender not in huddle_recipients_list:
                 huddle_recipients_list.append(sender)
             huddle_recipients = ",".join(huddle_recipients_list)
-    if (notice.cls.lower() == "mail" and
-        notice.instance.lower() == "inbox"):
+    if (zephyr_class == "mail" and instance == "inbox"):
         is_personal = True
 
     # Drop messages not to the listed subscriptions
-    if (notice.cls.lower() not in current_zephyr_subs) and not \
+    if (zephyr_class not in current_zephyr_subs) and not \
             (is_personal and options.forward_personals):
         print "%s: zephyr=>humbug: Skipping ... %s/%s/%s" % \
-            (datetime.datetime.now(), notice.cls, notice.instance, is_personal)
+            (datetime.datetime.now(), zephyr_class, instance, is_personal)
         return
 
     if is_huddle:
@@ -238,14 +238,13 @@ def process_notice(notice, log):
         zeph = { 'type'      : 'stream',
                  'time'      : str(notice.time),
                  'sender'    : sender,
-                 'stream'    : notice.cls.lower(),
-                 'subject'   : notice.instance.lower(),
+                 'stream'    : zephyr_class,
+                 'subject'   : instance,
                  'zsig'      : zsig,  # logged here but not used by app
                  'content'   : body }
 
     print "%s: zephyr=>humbug: received a message on %s/%s from %s..." % \
-        (datetime.datetime.now(), notice.cls, notice.instance,
-         notice.sender)
+        (datetime.datetime.now(), zephyr_class, instance, notice.sender)
     log.write(simplejson.dumps(zeph) + '\n')
     log.flush()
 
