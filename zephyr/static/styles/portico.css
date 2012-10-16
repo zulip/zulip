@@ -2,7 +2,7 @@ body {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 }
 
-div.title {
+.title {
     font-family: Helvetica;
     font-size: 100px;
     font-weight: bold;
@@ -14,11 +14,11 @@ div.title {
     font-weight: bold;
 }
 
-div.pitch {
+.pitch {
     width: 500px;
 }
 
-div.signup {
+.signup {
     width: 650px;
     padding: 8px 35px 8px 14px;
     margin-bottom: 20px;
@@ -30,13 +30,13 @@ div.signup {
     border-radius: 4px;
 }
 
-span.or {
+.or {
     padding-left: 25px;
     padding-right: 25px;
 
 }
 
-span.for_you {
+.for_you {
     font-size: 30px;
     font-style: italic;
 }
@@ -54,7 +54,7 @@ a.title:hover {
     text-decoration: none;
 }
 
-div.fakecontrol {
+.fakecontrol {
     padding-top: 5px;
     font-weight: bold;
 }
