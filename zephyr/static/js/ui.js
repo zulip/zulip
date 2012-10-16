@@ -253,20 +253,21 @@ $(function () {
         sub_from_home(compose_stream_name(), $('#stream-nosub'));
     });
 
-    var throttled_scrollhandler = $.throttle(50, function(e, delta) {
+    var throttled_scrollhandler = $.throttle(50, function(e) {
         if ($('#home').hasClass('active')) {
             keep_pointer_in_view();
-            if (e.type === 'mousewheel') {
-                // If we mousewheel (or trackpad-scroll) when
-                // we're at the top and bottom of the page, the
-                // pointer may still want to move.
-                move_pointer_at_page_top_and_bottom();
-            }
-            print_elapsed_time("update_floating_recipient_bar", update_floating_recipient_bar);
+            update_floating_recipient_bar();
         }
     });
-    $(window).mousewheel(throttled_scrollhandler);
     $(window).scroll(throttled_scrollhandler);
+
+    var throttled_mousewheelhandler = $.throttle(50, function(e) {
+        // Most of the mouse wheel's work will be handled by the
+        // scroll handler, but when we're at the top or bottom of the
+        // page, the pointer may still need to move.
+        move_pointer_at_page_top_and_bottom();
+    });
+    $(window).mousewheel(throttled_mousewheelhandler);
 
     var throttled_resizehandler = $.throttle(50, resizehandler);
     $(window).resize(throttled_resizehandler);
