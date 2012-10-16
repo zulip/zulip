@@ -5,6 +5,7 @@ var people_hash = {};
 
 var selected_message_class = 'selected_message';
 var viewport = $(window);
+var app_needs_reload = false;
 
 $(function () {
     var i;
@@ -19,8 +20,17 @@ $(function () {
             send_status.hide();
             hide_compose();
             buttons.removeAttr('disabled');
+            if (app_needs_reload) {
+                reload_app();
+                return;
+            }
         },
-        error: function (xhr) {
+        error: function (xhr, error_type) {
+            if (error_type !== 'timeout' && app_needs_reload) {
+                // The error might be due to the server changing
+                reload_app_preserving_compose(true);
+                return;
+            }
             var response = "Error sending message";
             if (xhr.status.toString().charAt(0) === "4") {
                 // Only display the error response for 4XX, where we've crafted
@@ -501,6 +511,75 @@ function add_messages(data) {
         update_autocomplete();
 }
 
+function reload_app() {
+    // If we can, reload the page immediately
+    if (! composing_message()) {
+        window.location.reload(true);
+    }
+
+    // If the user is composing a message, wait until he's done or
+    // until a timeout expires
+    app_needs_reload = true;
+    setTimeout(function () { reload_app_preserving_compose(false); },
+               1000 * 60 * 5); // 5 minutes
+}
+
+function reload_app_preserving_compose(send_after_reload) {
+    var url = "#reload:send_after_reload=" + Number(send_after_reload);
+    if (composing_stream_message()) {
+        url += "+msg_type=stream";
+        url += "+stream=" + encodeURIComponent(compose_stream_name());
+        url += "+subject=" + encodeURIComponent(compose_subject());
+    } else {
+        url += "+msg_type=huddle";
+        url += "+recipient=" + encodeURIComponent(compose_recipient());
+    }
+    url += "+msg="+ encodeURIComponent(compose_message());
+
+    window.location.replace(url);
+    window.location.reload(true);
+}
+
+// Check if we're doing a compose-preserving reload.  This must be
+// done before the first call to get_updates
+$(function () {
+    var location = window.location.toString();
+    window.location = '#';
+    var fragment = location.substring(location.indexOf('#') + 1);
+    if (fragment.search("reload:") !== 0) {
+        return;
+    }
+
+    fragment = fragment.replace(/^reload:/, "");
+    var keyvals = fragment.split("+");
+    var vars = {};
+    $.each(keyvals, function (idx, str) {
+        var pair = str.split("=");
+        vars[pair[0]] = decodeURIComponent(pair[1]);
+    });
+
+    var tab;
+    var send_now = parseInt(vars.send_after_reload, 10);
+    if (vars.msg_type === "stream") {
+        if (! send_now) {
+            show_compose("stream", $("#new_message_content"));
+        }
+        compose_stream_name(vars.stream);
+        compose_subject(vars.subject);
+    } else {
+        if (! send_now) {
+            show_compose("huddle", $("#new_message_content"));
+        }
+        show_compose("huddle", $("#new_message_content"));
+        compose_recipient(vars.recipient);
+    }
+    compose_message(vars.msg);
+
+    if (send_now) {
+        $("#compose form").ajaxSubmit();
+    }
+});
+
 var get_updates_xhr;
 var get_updates_timeout;
 function get_updates() {
@@ -513,6 +592,10 @@ function get_updates() {
         success: function (data) {
             received.failures = 0;
             $('#connection-error').hide();
+
+            if (data.server_generation > server_generation) {
+                reload_app();
+            }
 
             add_messages(data);
             get_updates_timeout = setTimeout(get_updates, 0);

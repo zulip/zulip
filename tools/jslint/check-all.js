@@ -11,8 +11,9 @@ var globals =
 
     // compose.js
     + ' show_compose hide_compose toggle_compose clear_compose_box compose_button'
-    + ' composing_message compose_stream_name validate_message'
-    + ' status_classes'
+    + ' composing_message composing_stream_message compose_stream_name'
+    + ' compose_stream_name compose_subject compose_recipient compose_message'
+    + ' validate_message status_classes'
 
     // dom_access.js
     + ' get_first_visible get_last_visible get_next_visible get_prev_visible'
@@ -45,6 +46,7 @@ var globals =
     + ' select_message select_message_by_id'
     + ' scroll_to_selected select_and_show_by_id'
     + ' selected_message selected_message_id'
+    + ' reload_app reload_app_preserving_compose'
     + ' at_top_of_viewport at_bottom_of_viewport'
     + ' viewport'
     ;
