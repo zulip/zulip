@@ -1,18 +1,24 @@
-// We need to andSelf() because more often than not, the next item
-// *is* a .message_row, so nextUntil returns an empty set (except for
-// when it's in a bookend).
-// (This could probably be further optimized by handling that case
-// explicitly first, since it's also the common case.)
+// We don't need an andSelf() here because we already know
+// that our next element is *not* a message_row, so this
+// isn't going to end up empty unless we're at the bottom or top.
 function get_next_visible(message_row) {
     if (message_row === undefined)
         return [];
-    return message_row.nextUntil('.message_row').andSelf().next('.message_row');
+    var row = message_row.next('.message_row');
+    if (row.length !== 0) {
+        return row;
+    }
+    return message_row.nextUntil('.message_row').next('.message_row');
 }
 
 function get_prev_visible(message_row) {
     if (message_row === undefined)
         return [];
-    return message_row.prevUntil('.message_row').andSelf().prev('.message_row');
+    var row = message_row.prev('.message_row');
+    if (row.length !== 0) {
+        return row;
+    }
+    return message_row.prevUntil('.message_row').prev('.message_row');
 }
 
 function get_first_visible() {
