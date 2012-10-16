@@ -210,7 +210,7 @@ function update_selected_message(message) {
         // doesn't permanently affect where you are.
         //
         // We also don't want to post if there's no effective change.
-        $.post("/json/update_pointer", {pointer: new_selected_id});
+        $.post("json/update_pointer", {pointer: new_selected_id});
     }
     selected_message_id = new_selected_id;
     selected_message = message;
