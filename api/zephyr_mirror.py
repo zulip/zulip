@@ -77,6 +77,14 @@ def send_humbug(zeph):
     zeph['shortname'] = zeph['sender'].split('@')[0]
     if "subject" in zeph:
         zeph["subject"] = zeph["subject"][:60]
+    if zeph['type'] == 'stream':
+        # Forward messages sent to -c foo -i bar to stream bar subject "instance"
+        if zeph["stream"] == "message":
+            zeph['stream'] = zeph['subject']
+            zeph['subject'] = "instance %s" % (zeph['stream'])
+        elif zeph["stream"] == "tabbott-test5":
+            zeph['stream'] = zeph['subject']
+            zeph['subject'] = "test instance %s" % (zeph['stream'])
 
     for key in zeph.keys():
         if isinstance(zeph[key], unicode):
@@ -306,9 +314,20 @@ def forward_to_zephyr(message):
     print "%s: humbug=>zephyr: Forwarding message from %s" % \
         (datetime.datetime.now(), sender_email)
     if message['type'] == "stream":
+        zephyr_class = message["display_recipient"]
+        instance = message["subject"]
+        if (instance == "instance %s" % (zephyr_class,) or
+            instance == "test instance %s" % (zephyr_class,)):
+            # Forward messages to e.g. -c -i white-magic back from the
+            # place we forward them to
+            if instance.startswith("test"):
+                instance = zephyr_class
+                zephyr_class = "tabbott-test5"
+            else:
+                instance = zephyr_class
+                zephyr_class = "message"
         zeph = zephyr.ZNotice(sender=sender_email, auth=True,
-                              cls=message["display_recipient"],
-                              instance=message["subject"])
+                              cls=zephyr_class, instance=instance)
         body = "%s\0%s" % (zsig, wrapped_content)
         zeph.setmessage(body)
         zeph.send()
@@ -358,7 +377,14 @@ def subscribed_to_mail_messages():
 def add_humbug_subscriptions():
     zephyr_subscriptions = set()
     for (cls, instance, recipient) in parse_zephyr_subs(verbose=options.verbose):
-        if instance != "*" or recipient != "*":
+        if cls == "message" and recipient == "*":
+            if instance == "*":
+                continue
+            # If you're on -i white-magic on zephyr, get on stream white-magic on humbug
+            # instead of subscribing to stream message
+            zephyr_subscriptions.add(instance)
+            continue
+        elif instance != "*" or recipient != "*":
             if options.verbose:
                 print "Skipping ~/.zephyr.subs line: [%s,%s,%s]: Non-* values" % \
                     (cls, instance, recipient)
@@ -388,7 +414,7 @@ def parse_zephyr_subs(verbose=False):
             if verbose:
                 print >>sys.stderr, "Couldn't parse ~/.zephyr.subs line: [%s]" % (line,)
             continue
-        zephyr_subscriptions.add((cls, instance, recipient))
+        zephyr_subscriptions.add((cls.strip(), instance.strip(), recipient.strip()))
     return zephyr_subscriptions
 
 if options.forward_from_humbug:
