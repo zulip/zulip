@@ -9,7 +9,7 @@ var reloading_app = false;
 
 var selected_message_id = -1;  /* to be filled in on document.ready */
 var selected_message;  // = get_message_row(selected_message_id)
-var received = {
+var get_updates_params = {
     first: -1,
     last:  -1,
     failures: 0,
@@ -30,13 +30,13 @@ $(function () {
             send_status.hide();
             hide_compose();
             buttons.removeAttr('disabled');
-            if (received.reload_pending) {
+            if (get_updates_params.reload_pending) {
                 reload_app();
                 return;
             }
         },
         error: function (xhr, error_type) {
-            if (error_type !== 'timeout' && received.reload_pending) {
+            if (error_type !== 'timeout' && get_updates_params.reload_pending) {
                 // The error might be due to the server changing
                 reload_app_preserving_compose(true);
                 return;
@@ -72,7 +72,8 @@ $(function () {
     });
 });
 
-$(function () { received.server_generation = server_generation; });
+
+$(function () { get_updates_params.server_generation = server_generation; });
 
 // The "message groups", i.e. blocks of messages collapsed by recipient.
 // Each message table has a list of lists.
@@ -399,13 +400,13 @@ function add_to_table(messages, table_name, filter_function, where) {
 }
 
 function add_message_metadata(dummy, message) {
-    if (received.first === -1) {
-        received.first = message.id;
+    if (get_updates_params.first === -1) {
+        get_updates_params.first = message.id;
     } else {
-        received.first = Math.min(received.first, message.id);
+        get_updates_params.first = Math.min(get_updates_params.first, message.id);
     }
 
-    received.last = Math.max(received.last, message.id);
+    get_updates_params.last = Math.max(get_updates_params.last, message.id);
 
     var involved_people;
 
@@ -593,15 +594,15 @@ function get_updates() {
     get_updates_xhr = $.ajax({
         type:     'POST',
         url:      '/json/get_updates',
-        data:     received,
+        data:     get_updates_params,
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (data) {
-            received.failures = 0;
+            get_updates_params.failures = 0;
             $('#connection-error').hide();
 
-            if (data.server_generation !== received.server_generation) {
-                received.reload_pending = true;
+            if (data.server_generation !== get_updates_params.server_generation) {
+                get_updates_params.reload_pending = true;
                 reload_app();
             }
 
@@ -611,19 +612,19 @@ function get_updates() {
         error: function (xhr, error_type, exn) {
             if (error_type === 'timeout') {
                 // Retry indefinitely on timeout.
-                received.failures = 0;
+                get_updates_params.failures = 0;
                 $('#connection-error').hide();
             } else {
-                received.failures += 1;
+                get_updates_params.failures += 1;
             }
 
-            if (received.failures >= 5) {
+            if (get_updates_params.failures >= 5) {
                 $('#connection-error').show();
             } else {
                 $('#connection-error').hide();
             }
 
-            var retry_sec = Math.min(90, Math.exp(received.failures/2));
+            var retry_sec = Math.min(90, Math.exp(get_updates_params.failures/2));
             get_updates_timeout = setTimeout(get_updates, retry_sec*1000);
         }
     });
@@ -640,7 +641,7 @@ setInterval(function() {
         // new updates.
         get_updates_xhr.abort();
         clearTimeout(get_updates_timeout);
-        received.failures = 0;
+        get_updates_params.failures = 0;
         get_updates();
     }
     watchdog_time = new_time;
