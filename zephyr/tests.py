@@ -108,17 +108,18 @@ class PublicURLTest(TestCase):
         """
         Pages that should return a 200 when not logged in.
         """
+        # FIXME: We should also test the Tornado URLs -- this codepath
+        # can't do so because this Django test mechanism doesn't go
+        # through Tornado.
         urls = {200: ["/accounts/home/", "/accounts/login/", "/accounts/logout/"],
                 302: ["/"],
                 400: ["/accounts/register/",
-                      "/api/v1/get_messages",
                       "/api/v1/get_public_streams",
                       "/api/v1/get_subscriptions",
                       "/api/v1/subscribe",
                       "/api/v1/send_message",
                       "/json/send_message/",
                       "/json/update_pointer",
-                      "/json/get_updates",
                       "/json/settings/change/",
                       "/json/subscriptions/list",
                       "/json/subscriptions/remove",
