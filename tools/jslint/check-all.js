@@ -45,7 +45,7 @@ var globals =
     + ' scroll_to_selected select_and_show_by_id'
     + ' selected_message selected_message_id'
     + ' at_top_of_viewport at_bottom_of_viewport'
-
+    + ' viewport'
     ;
 
 

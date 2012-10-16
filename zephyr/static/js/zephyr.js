@@ -4,6 +4,7 @@ var subject_dict = {};
 var people_hash = {};
 
 var selected_message_class = 'selected_message';
+var viewport = $(window);
 
 $(function () {
     var i;
@@ -69,14 +70,12 @@ var message_groups = {
 function above_view_threshold(message) {
     // Barnowl-style thresholds: the pointer is never above the
     // 1/5-mark.
-    var viewport = $(window);
     return message.offset().top < viewport.scrollTop() + viewport.height() / 5;
 }
 
 function below_view_threshold(message) {
     // Barnowl-style thresholds: the pointer is never below the
     // 4/5-mark.
-    var viewport = $(window);
     return message.offset().top + message.outerHeight(true) >
         viewport.scrollTop() + viewport.height() * 4 / 5;
 }
@@ -88,7 +87,6 @@ function recenter_view(message) {
 
     // If this logic changes, above_view_threshold andd
     // below_view_threshold must also change.
-    var viewport = $(window);
     if (above_view_threshold(message)) {
         viewport.scrollTop(selected_message.offset().top - viewport.height() / 2);
     } else if (below_view_threshold(message)) {
@@ -189,7 +187,6 @@ function update_selected_message(message) {
 }
 
 function select_message(next_message, scroll_to) {
-    var viewport = $(window);
 
     /* If the message exists but is hidden, try to find the next visible one. */
     if (next_message.length !== 0 && next_message.is(':hidden')) {
@@ -539,17 +536,15 @@ setInterval(function() {
 }, 5000);
 
 function at_top_of_viewport() {
-    return ($(window).scrollTop() === 0);
+    return (viewport.scrollTop() === 0);
 }
 
 function at_bottom_of_viewport() {
-    var viewport = $(window);
     return (viewport.scrollTop() + viewport.height() >= $("#main_div").outerHeight(true));
 }
 
 function keep_pointer_in_view() {
     var candidate;
-    var viewport = $(window);
     var next_message = get_message_row(selected_message_id);
 
     if (above_view_threshold(next_message) && (!at_top_of_viewport())) {

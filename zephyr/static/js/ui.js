@@ -72,7 +72,6 @@ function mousemove() {
 }
 
 function resizehandler(e) {
-    var viewport = $(window);
     var sidebar = $("#sidebar");
     var sidebar_nav = $(".sidebar-nav");
     var composebox = $("#compose");
@@ -274,13 +273,11 @@ $(function () {
 
     $('#sidebar a[data-toggle="pill"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
-        var viewport = $(window);
         var old_tab = $(e.relatedTarget).attr('href');
         scroll_positions[old_tab] = viewport.scrollTop();
     });
     $('#sidebar a[data-toggle="pill"]').on('shown', function (e) {
         // Right after we show the new tab, restore its old scroll position
-        var viewport = $(window);
         var target_tab = $(e.target).attr('href');
         if (scroll_positions.hasOwnProperty(target_tab)) {
             viewport.scrollTop(scroll_positions[target_tab]);

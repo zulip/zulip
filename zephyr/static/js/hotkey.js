@@ -46,7 +46,6 @@ function process_hotkey(code) {
             //
             // FIXME: this doesn't work for End because get_last_visible()
             // always returns a message.
-            var viewport = $(window);
             viewport.scrollTop($("#main_div").outerHeight(true));
         }
         return process_hotkey;
