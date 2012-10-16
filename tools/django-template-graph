@@ -1,0 +1,18 @@
+#!/bin/bash -e
+
+# Draws the Django template inheritance graph.
+
+cd "$(dirname "$0")"/../templates
+
+(
+    echo 'digraph {'
+    for t in $(find -name '*.html' -printf '%P\n'); do
+        echo "\"$t\";"
+        perl -lne 'print "\"'"$t"'\" -> \"$1\";" if m/{%\s*extends\s*"([^"]+)"/' "$t"
+    done
+    echo '}'
+) > graph.dot
+
+dot -Tsvg graph.dot > graph.svg
+rm graph.dot
+echo file://"$(pwd)"/graph.svg
