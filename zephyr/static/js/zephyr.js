@@ -67,17 +67,28 @@ var message_groups = {
     zfilt: []
 };
 
-function above_view_threshold(message) {
-    // Barnowl-style thresholds: the pointer is never above the
-    // 1/5-mark.
-    return message.offset().top < viewport.scrollTop() + viewport.height() / 5;
+// Why do we look at the 'bottom' in above_view_threshold and the top
+// in below_view_threshold as opposed to vice versa?  Mostly to handle
+// the case of gigantic messages.  Imagine the case of a selected
+// message that's so big that it takes up an two entire screens. The
+// selector shouldn't move away from it until after the *bottom* of
+// the message has gone too high up on the screen.  (Otherwise we'd
+// move the pointer right after part of the first screenful.)
+function above_view_threshold(message, useTop) {
+    // Barnowl-style thresholds: the bottom of the pointer is never
+    // above the 1/5 mark.
+    // (if useTop = true, we look at the top of the pointer instead)
+    var position = message.offset().top;
+    if (!useTop) {
+        position += message.outerHeight(true);
+    }
+    return position < viewport.scrollTop() + viewport.height() / 5;
 }
 
 function below_view_threshold(message) {
-    // Barnowl-style thresholds: the pointer is never below the
-    // 4/5-mark.
-    return message.offset().top + message.outerHeight(true) >
-        viewport.scrollTop() + viewport.height() * 4 / 5;
+    // Barnowl-style thresholds: the top of the pointer is never below
+    // the 4/5-mark.
+    return message.offset().top > viewport.scrollTop() + viewport.height() * 4 / 5;
 }
 
 function recenter_view(message) {
@@ -87,7 +98,13 @@ function recenter_view(message) {
 
     // If this logic changes, above_view_threshold andd
     // below_view_threshold must also change.
-    if (above_view_threshold(message)) {
+    if (above_view_threshold(message, true)) {
+        // We specifically say useTop=true here, because suppose you're using
+        // the arrow keys to arrow up and you've moved up to a huge message.
+        // The message is so big that the bottom part of makes it not
+        // "above the view threshold". But since we're using the arrow keys
+        // to get here, the reason we selected this message is because
+        // we want to read it; so here we care about the top part.
         viewport.scrollTop(selected_message.offset().top - viewport.height() / 2);
     } else if (below_view_threshold(message)) {
         viewport.scrollTop(selected_message.offset().top - viewport.height() / 5);
