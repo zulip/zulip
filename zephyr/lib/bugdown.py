@@ -5,6 +5,8 @@ class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         del md.inlinePatterns['image_link']
         del md.inlinePatterns['image_reference']
+        del md.parser.blockprocessors['hashheader']
+        del md.parser.blockprocessors['setextheader']
 
 # We need to re-initialize the markdown engine every 30 messages
 # due to some sort of performance leak in the markdown library.
@@ -17,10 +19,6 @@ _use_count = 0
 # end parentheses, or end brackets (which would confuse Markdown).
 # FIXME: Use one of the actual linkification extensions.
 _link_regex = re.compile(r'(\s|\A)(?P<url>https?://[^\s\])]+)')
-
-# Pad heading markers to make Markdown ignore them
-# FIXME: Write a real extension for the markdown library
-_heading_regex = re.compile(r'^([#-=])', flags=re.MULTILINE)
 
 def _linkify(match):
     url = match.group('url')
@@ -36,7 +34,6 @@ def convert(md):
             safe_mode     = 'escape',
             output_format = 'xhtml')
 
-    md = _heading_regex.sub(r' \1', md)
     md = _link_regex.sub(_linkify, md)
 
     try:
