@@ -138,7 +138,7 @@ td.pointer {
     font-weight: bold;
     color: white;
     background-color: #444;
-    border: 2px solid #444;
+    border: 1px solid #444;
 }
 
 .messagebox.personal-message {
