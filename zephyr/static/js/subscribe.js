@@ -1,6 +1,6 @@
 function fetch_subs() {
     $.ajax({
-        type:     'GET',
+        type:     'POST',
         url:      'json/subscriptions/list',
         dataType: 'json',
         timeout:  10*1000,

@@ -465,8 +465,7 @@ def api_get_subscriptions(request, user_profile):
 @login_required_json_view
 def json_list_subscriptions(request):
     subs = gather_subscriptions(UserProfile.objects.get(user=request.user))
-    return HttpResponse(content=simplejson.dumps({"subscriptions": subs}),
-                        mimetype='application/json', status=200)
+    return json_success({"subscriptions": subs})
 
 @login_required_json_view
 def json_remove_subscription(request):
@@ -510,7 +509,7 @@ def json_add_subscription(request):
     user_profile = UserProfile.objects.get(user=request.user)
 
     if "new_subscription" not in request.POST:
-        return HttpResponseRedirect(reverse('zephyr.views.subscriptions'))
+        return json_error("Missing new_subscription argument")
     stream_name = request.POST.get('new_subscription').strip()
     if not valid_stream_name(stream_name):
         return json_error("Invalid characters in stream names")
@@ -595,6 +594,5 @@ def json_change_settings(request):
 def json_stream_exists(request, stream):
     if not valid_stream_name(stream):
         return json_error("Invalid characters in stream name")
-    return HttpResponse(
-        bool(get_stream(stream,
-                       UserProfile.objects.get(user=request.user).realm)))
+    exists = bool(get_stream(stream, UserProfile.objects.get(user=request.user).realm))
+    return json_success({"exists": exists})

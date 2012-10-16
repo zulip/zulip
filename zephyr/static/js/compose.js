@@ -104,7 +104,7 @@ function check_stream_for_send(stream_name) {
         url: "/json/subscriptions/exists/" + stream_name,
         async: false,
         success: function (data) {
-            if (data === "False") {
+            if (data.exists === "False") {
                 // The stream doesn't exist
                 okay = false;
                 $('#send-status').removeClass(status_classes).show();
