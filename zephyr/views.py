@@ -192,8 +192,7 @@ def home(request):
                                'have_initial_messages':
                                    'true' if num_messages > 0 else 'false',
                                'show_debug':
-                                   settings.DEBUG and ('show_debug' in request.GET),
-                               'server_generation': SERVER_GENERATION},
+                                   settings.DEBUG and ('show_debug' in request.GET) },
                               context_instance=RequestContext(request))
 
 @login_required_json_view

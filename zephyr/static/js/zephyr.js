@@ -72,9 +72,6 @@ $(function () {
     });
 });
 
-
-$(function () { get_updates_params.server_generation = server_generation; });
-
 // The "message groups", i.e. blocks of messages collapsed by recipient.
 // Each message table has a list of lists.
 var message_groups = {
@@ -609,7 +606,9 @@ function get_updates() {
             get_updates_params.failures = 0;
             $('#connection-error').hide();
 
-            if (data.server_generation !== get_updates_params.server_generation) {
+            if (get_updates_params.server_generation === -1) {
+                get_updates_params.server_generation = data.server_generation;
+            } else if (data.server_generation !== get_updates_params.server_generation) {
                 get_updates_params.reload_pending = true;
                 reload_app();
             }

@@ -7,7 +7,6 @@ var globals =
 
     // index.html
     + ' initial_pointer email stream_list people_list have_initial_messages'
-    + ' server_generation'
 
     // compose.js
     + ' show_compose hide_compose toggle_compose clear_compose_box compose_button'
