@@ -42,17 +42,34 @@ def update_deployment(oldrev, newrev, refname):
                            "/home/humbug/humbug/tools/update-deployment",
                            oldrev, newrev, refname])
 
+def git_commit_range(oldrev, newrev):
+    log_cmd = ["git", "log", "--reverse",
+               "--pretty=!gravatar(%aE) %s", "%s..%s" % (oldrev, newrev)]
+    return subprocess.check_output(log_cmd)
+
 def send_bot_message(oldrev, newrev, refname):
-    commit_text = ('`%s` was deployed to `%s` with:\n\n'
-        % (newrev[:12], refname.replace("refs/heads/", "")))
-    log_cmd = ["git", "log", "--reverse", "--pretty=!gravatar(%aE) %s", "%s..%s" % (oldrev, newrev)]
-    commit_text += subprocess.check_output(log_cmd)
+    added   = git_commit_range(oldrev, newrev)
+    removed = git_commit_range(newrev, oldrev)
+
+    new_head = newrev[:12]
+    branch   = refname.replace('refs/heads/', '')
+
+    if removed:
+        message = '`%s` was pushed to `%s`, **REMOVING**:\n\n%s' % (new_head, branch, removed)
+        if added:
+            message += '\n**and adding**:\n\n' + added
+        message += '\n**A HISTORY REWRITE HAS OCCURRED!**'
+        message += '\nPlease check your local branches to deal with this.'
+    elif added:
+        message = '`%s` was deployed to `%s` with:\n\n%s' % (new_head, branch, added)
+    else:
+        message = '`%s` was pushed to `%s`... but nothing changed?' % (new_head, branch)
 
     message_data = {
         "type": "stream",
         "stream": "test" if refname == "refs/heads/test-post-receive" else "devel",
         "subject": "commits",
-        "content": commit_text,
+        "content": message,
         "recipient": "tabbott@humbughq.com",
     }
     # Sleep a bit to give time for the server to restart.
