@@ -118,6 +118,8 @@ class PublicURLTest(TestCase):
                       "/api/v1/get_subscriptions",
                       "/api/v1/subscribe",
                       "/api/v1/send_message",
+                      "/api/v1/fetch_api_key",
+                      "/json/fetch_api_key",
                       "/json/send_message/",
                       "/json/update_pointer",
                       "/json/settings/change/",
