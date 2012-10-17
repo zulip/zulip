@@ -607,7 +607,7 @@ def api_fetch_key(request):
         username = request.POST['username']
         password = request.POST['password']
     except KeyError:
-        return HttpResponseBadRequest("You must specify the username and password via GET.")
+        return HttpResponseBadRequest("You must specify the username and password via POST.")
     user = authenticate(username=username, password=password)
     if user is None:
         return HttpResponseForbidden("Your username or password is incorrect.")
