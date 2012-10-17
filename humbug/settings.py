@@ -99,6 +99,8 @@ HAVE_TORNADO_SERVER = True
 
 # URL where Django code posts to the Tornado code to notify of new messages
 NOTIFY_NEW_MESSAGE_URL = 'http://localhost:9993/notify_new_message'
+# URL where Django code posts to the Tornado code to notify of pointer updates
+NOTIFY_POINTER_UPDATE_URL = 'http://localhost:9993/notify_pointer_update'
 
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True

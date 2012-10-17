@@ -42,6 +42,7 @@ urlpatterns = patterns('',
 
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_new_message$', 'zephyr.views.notify_new_message', name='notify_new_message'),
+    url(r'^notify_pointer_update$', 'zephyr.views.notify_pointer_update', name='notify_pointer_update'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

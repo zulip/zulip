@@ -16,6 +16,7 @@ var selected_message;  // = rows.get(selected_message_id)
 var get_updates_params = {
     first: -1,
     last:  -1,
+    pointer: -1,
     failures: 0,
     server_generation: -1, /* to be filled in on document.ready */
     reload_pending: 0,
@@ -644,6 +645,8 @@ var get_updates_xhr;
 var get_updates_timeout;
 function get_updates() {
     get_updates_params.want_old_messages = (message_array.length < max_messages_for_backfill);
+    get_updates_params.pointer = selected_message_id;
+
     get_updates_xhr = $.ajax({
         type:     'POST',
         url:      '/json/get_updates',
@@ -660,7 +663,17 @@ function get_updates() {
                 start_reload_app();
             }
 
-            add_messages(data);
+            if (data.messages.length !== 0) {
+                add_messages(data);
+            }
+
+            if (data.new_pointer !== undefined
+                && data.new_pointer !== selected_message_id)
+            {
+                select_message_by_id(data.new_pointer,
+                                     {then_scroll: true, update_server: false});
+            }
+
             get_updates_timeout = setTimeout(get_updates, 0);
         },
         error: function (xhr, error_type, exn) {
@@ -745,7 +758,7 @@ function keep_pointer_in_view() {
             }
         }
     }
-    update_selected_message(next_message);
+    update_selected_message(next_message, {update_server: false});
 }
 
 // The idea here is when you've scrolled to the very

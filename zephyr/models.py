@@ -122,7 +122,7 @@ class UserProfile(models.Model):
         global callbacks_table
 
         for cb in callbacks_table.get(self.user.id, Callbacks.TYPE_RECEIVE):
-            cb([message])
+            cb(messages=[message])
 
         callbacks_table.clear(self.user.id, Callbacks.TYPE_RECEIVE)
 

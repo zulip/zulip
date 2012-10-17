@@ -30,6 +30,7 @@ import socket
 import re
 import urllib
 import time
+import requests
 
 SERVER_GENERATION = int(time.time())
 
@@ -226,11 +227,17 @@ def update_pointer_backend(request, user_profile):
     user_profile.last_pointer_updater = request.session.session_key
     user_profile.save()
 
-    user_profile.update_pointer(pointer)
+    if settings.HAVE_TORNADO_SERVER:
+        requests.post(settings.NOTIFY_POINTER_UPDATE_URL, data=[
+               ('secret',  settings.SHARED_SECRET),
+               ('user', user_profile.user.id),
+               ('new_pointer', pointer)])
+
     return json_success()
 
-def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False,
-                            reason_empty=None, user_profile=None, where='bottom'):
+def format_updates_response(messages=[], mit_sync_bot=False, apply_markdown=False,
+                            reason_empty=None, user_profile=None,
+                            new_pointer=None, where='bottom'):
     max_message_id = None
     if user_profile is not None:
         try:
@@ -249,12 +256,14 @@ def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False,
     if max_message_id is not None:
         # TODO: Figure out how to accurately return this always
         ret["max_message_id"] = max_message_id
+    if new_pointer is not None:
+        ret['new_pointer'] = new_pointer
     return ret
-
 
 def return_messages_immediately(request, handler, user_profile, **kwargs):
     first = request.POST.get("first")
     last = request.POST.get("last")
+    client_pointer = request.POST.get("pointer")
     failures = request.POST.get("failures")
     want_old_messages = (request.POST.get("want_old_messages") == "true")
     client_server_generation = request.POST.get("server_generation")
@@ -266,18 +275,22 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         return False
     first = int(first)
     last  = int(last)
+    if client_pointer is not None:
+        client_pointer = int(client_pointer)
     if failures is not None:
         failures = int(failures)
     if client_reload_pending is not None:
         client_reload_pending = int(client_reload_pending)
 
+    messages = []
     where = 'bottom'
+    new_pointer = None
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
+    ptr = user_profile.pointer
 
     if last == -1:
         # User has no messages yet
         # Get a range around the pointer
-        ptr = user_profile.pointer
         messages = (last_n(200, query.filter(id__lt=ptr))
                   + list(query.filter(id__gte=ptr)[:200]))
     else:
@@ -295,7 +308,7 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         messages = [m for m in messages if not mit_sync_table.get(m.id)]
 
     if messages:
-        handler.finish(format_updates_response(messages, where=where, **kwargs))
+        handler.finish(format_updates_response(messages=messages, where=where, **kwargs))
         return True
 
     # We might want to return an empty list to the client immediately.
@@ -313,13 +326,19 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         and not client_reload_pending):
         # Inform the client that they should reload.
         reason_empty = 'client_reload'
+    elif (client_pointer is not None
+          and str(user_profile.last_pointer_updater) != str(request.session.session_key)
+          and ptr != client_pointer
+          and str(user_profile.last_pointer_updater) != ''):
+        reason_empty = 'pointer_update'
+        new_pointer = ptr
 
     if reason_empty is not None:
         handler.finish(format_updates_response(
-            [],
             where="bottom",
             user_profile=user_profile,
             reason_empty=reason_empty,
+            new_pointer=new_pointer,
             **kwargs))
         return True
 
@@ -329,15 +348,17 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
     if return_messages_immediately(request, handler, user_profile, **kwargs):
         return
 
-    def on_receive(messages):
+    def cb(**cb_kwargs):
         if handler.request.connection.stream.closed():
             return
         try:
-            handler.finish(format_updates_response(messages, **kwargs))
+            kwargs.update(cb_kwargs)
+            handler.finish(format_updates_response(**kwargs))
         except socket.error:
             pass
 
-    user_profile.add_receive_callback(handler.async_callback(on_receive))
+    user_profile.add_receive_callback(handler.async_callback(cb))
+    user_profile.add_pointer_update_callback(handler.async_callback(cb))
 
 @asynchronous
 @login_required_json_view
@@ -495,10 +516,7 @@ def send_message_backend(request, user_profile, sender):
     return json_success()
 
 
-@asynchronous
-@csrf_exempt
-@require_post
-def notify_new_message(request, handler):
+def validate_notify(request, handler):
     # Check the shared secret.
     # Also check the originating IP, at least for now.
     if ((request.META['REMOTE_ADDR'] not in ('127.0.0.1', '::1'))
@@ -506,6 +524,14 @@ def notify_new_message(request, handler):
 
         handler.set_status(403)
         handler.finish('Access denied')
+        return False
+    return True
+
+@asynchronous
+@csrf_exempt
+@require_post
+def notify_new_message(request, handler):
+    if not validate_notify(request, handler):
         return
 
     # FIXME: better query
@@ -516,6 +542,21 @@ def notify_new_message(request, handler):
 
     for user in users:
         user.receive(message)
+
+    handler.finish()
+
+@asynchronous
+@csrf_exempt
+@require_post
+def notify_pointer_update(request, handler):
+    if not validate_notify(request, handler):
+        return
+
+    # FIXME: better query
+    user_profile = UserProfile.objects.get(id=request.POST['user'])
+    new_pointer = int(request.POST['new_pointer'])
+
+    user_profile.update_pointer(new_pointer)
 
     handler.finish()
 

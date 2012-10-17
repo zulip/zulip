@@ -89,6 +89,8 @@ class Command(BaseCommand):
                 application = web.Application([(r"/json/get_updates", AsyncDjangoHandler),
                                                (r"/api/v1/get_messages", AsyncDjangoHandler),
                                                (r"/notify_new_message", AsyncDjangoHandler),
+                                               (r"/notify_pointer_update", AsyncDjangoHandler),
+
                                                ], debug=django.conf.settings.DEBUG)
 
                 # start tornado web server in single-threaded mode
