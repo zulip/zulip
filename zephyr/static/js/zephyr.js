@@ -5,8 +5,17 @@ var people_hash = {};
 
 var selected_message_class = 'selected_message';
 var viewport = $(window);
-var app_needs_reload = false;
 var reloading_app = false;
+
+var selected_message_id = -1;  /* to be filled in on document.ready */
+var selected_message;  // = get_message_row(selected_message_id)
+var received = {
+    first: -1,
+    last:  -1,
+    failures: 0,
+    server_generation: -1, /* to be filled in on document.ready */
+    reload_pending: false
+};
 
 $(function () {
     var i;
@@ -21,13 +30,13 @@ $(function () {
             send_status.hide();
             hide_compose();
             buttons.removeAttr('disabled');
-            if (app_needs_reload) {
+            if (received.reload_pending) {
                 reload_app();
                 return;
             }
         },
         error: function (xhr, error_type) {
-            if (error_type !== 'timeout' && app_needs_reload) {
+            if (error_type !== 'timeout' && received.reload_pending) {
                 // The error might be due to the server changing
                 reload_app_preserving_compose(true);
                 return;
@@ -62,15 +71,6 @@ $(function () {
         people_hash[person.email] = 1;
     });
 });
-
-var selected_message_id = -1;  /* to be filled in on document.ready */
-var selected_message;  // = get_message_row(selected_message_id)
-var received = {
-    first: -1,
-    last:  -1,
-    failures: 0,
-    server_generation: -1 /* to be filled in on document.ready */
-};
 
 $(function () { received.server_generation = server_generation; });
 
@@ -600,11 +600,8 @@ function get_updates() {
             received.failures = 0;
             $('#connection-error').hide();
 
-            if (data.server_generation > server_generation && !app_needs_reload) {
-                // We need to set server_generation here to avoid
-                // pounding the server with get_updates requests.
-                server_generation = data.server_generation;
-                app_needs_reload = true;
+            if (data.server_generation !== received.server_generation) {
+                received.reload_pending = true;
                 reload_app();
             }
 

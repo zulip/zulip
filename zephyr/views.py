@@ -229,6 +229,7 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
     last = request.POST.get("last")
     failures = request.POST.get("failures")
     client_server_generation = request.POST.get("server_generation")
+    client_reload_pending = request.POST.get("reload_pending")
     if first is None or last is None:
         # When an API user is first querying the server to subscribe,
         # there's no reason to reply immediately.
@@ -271,7 +272,9 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         handler.finish(format_updates_response([], where="bottom", **kwargs))
         return True
 
-    if client_server_generation is not None and int(client_server_generation) != SERVER_GENERATION:
+    if (client_server_generation is not None
+        and int(client_server_generation) != SERVER_GENERATION
+        and not client_reload_pending):
         # No messages, but still return immediately to inform the
         # client that they should reload
         handler.finish(format_updates_response([], where="bottom", **kwargs))
