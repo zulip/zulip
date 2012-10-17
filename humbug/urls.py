@@ -37,8 +37,6 @@ urlpatterns = patterns('',
     url(r'^api/v1/fetch_api_key$', 'zephyr.views.api_fetch_api_key', name='api_fetch_api_key'),
 
     url(r'^robots\.txt$', 'django.views.generic.simple.redirect_to', {'url': '/static/public/robots.txt'}),
-    url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
-        {'document_root': os.path.join(settings.SITE_ROOT, '../zephyr/static-access-control')}),
 
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_new_message$', 'zephyr.views.notify_new_message', name='notify_new_message'),
@@ -57,3 +55,8 @@ if settings.ALLOW_REGISTER:
         url(r'^accounts/send_confirm/(?P<email>[\S]+)?', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/accounts_send_confirm.html'}, name='send_confirm'),
         url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm', name='confirm'),
     )
+
+if settings.DEBUG:
+    urlpatterns += patterns('',
+        url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
+            {'document_root': os.path.join(settings.SITE_ROOT, '../zephyr/static-access-control')}))
