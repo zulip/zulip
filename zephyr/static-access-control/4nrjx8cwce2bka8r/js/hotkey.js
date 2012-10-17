@@ -1,0 +1,1 @@
+../../../static/js/hotkey.js

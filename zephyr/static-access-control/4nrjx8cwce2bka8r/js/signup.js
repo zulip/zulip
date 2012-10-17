@@ -1,0 +1,1 @@
+../../../static/js/signup.js
