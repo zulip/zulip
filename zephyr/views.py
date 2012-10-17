@@ -553,8 +553,6 @@ def json_change_settings(request):
     # First validate all the inputs
     if "full_name" not in request.POST:
         return json_error("Invalid settings request -- missing full_name.")
-    if "short_name" not in request.POST:
-        return json_error("Invalid settings request -- missing short_name.")
     if "timezone" not in request.POST:
         return json_error("Invalid settings request -- missing timezone.")
     if "new_password" not in request.POST:
@@ -568,7 +566,6 @@ def json_change_settings(request):
     new_password     = request.POST['new_password']
     confirm_password = request.POST['confirm_password']
     full_name        = request.POST['full_name']
-    short_name       = request.POST['short_name']
 
     if new_password != "":
         if new_password != confirm_password:
@@ -581,9 +578,6 @@ def json_change_settings(request):
     if user_profile.full_name != full_name:
         user_profile.full_name = full_name
         result['full_name'] = full_name
-    if user_profile.short_name != short_name:
-        user_profile.short_name = short_name
-        result['short_name'] = short_name
 
     user_profile.user.save()
     user_profile.save()
