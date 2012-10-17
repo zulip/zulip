@@ -136,6 +136,10 @@ function get_huddle_recipient(message) {
                                   function (element, index) {
                                       return element.email !== email;
                                   });
+    if (other_recipients.length === 0) {
+        // huddle with oneself
+        return message.display_recipient[0].email;
+    }
 
     recipient = other_recipients[0].email;
     for (i = 1; i < other_recipients.length; i++) {
@@ -150,6 +154,10 @@ function get_huddle_recipient_names(message) {
                                   function (element, index) {
                                       return element.email !== email;
                                   });
+    if (other_recipients.length === 0) {
+        // huddle with oneself
+        return message.display_recipient[0].full_name;
+    }
 
     recipient = other_recipients[0].full_name;
     for (i = 1; i < other_recipients.length; i++) {
