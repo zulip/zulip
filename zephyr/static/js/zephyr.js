@@ -6,6 +6,7 @@ var people_hash = {};
 var selected_message_class = 'selected_message';
 var viewport = $(window);
 var app_needs_reload = false;
+var reloading_app = false;
 
 $(function () {
     var i;
@@ -511,15 +512,21 @@ function add_messages(data) {
         update_autocomplete();
 }
 
+function do_reload_app() {
+    // TODO: We need a better API for showing messages.
+    report_message("The application has been updated; reloading!", $("#reloading-application"));
+    reloading_app = true;
+    window.location.reload(true);
+}
+
 function reload_app() {
     // If we can, reload the page immediately
     if (! composing_message()) {
-        window.location.reload(true);
+        do_reload_app();
     }
 
     // If the user is composing a message, wait until he's done or
     // until a timeout expires
-    app_needs_reload = true;
     setTimeout(function () { reload_app_preserving_compose(false); },
                1000 * 60 * 5); // 5 minutes
 }
@@ -537,7 +544,7 @@ function reload_app_preserving_compose(send_after_reload) {
     url += "+msg="+ encodeURIComponent(compose_message());
 
     window.location.replace(url);
-    window.location.reload(true);
+    do_reload_app();
 }
 
 // Check if we're doing a compose-preserving reload.  This must be
@@ -593,7 +600,11 @@ function get_updates() {
             received.failures = 0;
             $('#connection-error').hide();
 
-            if (data.server_generation > server_generation) {
+            if (data.server_generation > server_generation && !app_needs_reload) {
+                // We need to set server_generation here to avoid
+                // pounding the server with get_updates requests.
+                server_generation = data.server_generation;
+                app_needs_reload = true;
                 reload_app();
             }
 

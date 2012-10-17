@@ -36,7 +36,7 @@ var globals =
 
     // ui.js
     + ' register_onclick hide_email show_email'
-    + ' report_error report_success clicking mouse_moved'
+    + ' report_error report_success report_message clicking mouse_moved'
     + ' update_autocomplete autocomplete_needs_update'
 
     // zephyr.js
@@ -47,7 +47,7 @@ var globals =
     + ' select_message select_message_by_id'
     + ' scroll_to_selected select_and_show_by_id'
     + ' selected_message selected_message_id'
-    + ' reload_app reload_app_preserving_compose'
+    + ' reload_app reloading_app reload_app_preserving_compose'
     + ' at_top_of_viewport at_bottom_of_viewport'
     + ' viewport'
     ;

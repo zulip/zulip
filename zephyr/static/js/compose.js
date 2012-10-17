@@ -1,6 +1,9 @@
 var status_classes = 'alert-error alert-success alert-info';
 
 function show_compose(tabname, focus_area) {
+    if (reloading_app) {
+        return;
+    }
     $("#send-status").removeClass(status_classes).hide();
     $('#compose').css({visibility: "visible"});
     $('.message_comp').slideDown(100);

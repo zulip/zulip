@@ -281,7 +281,7 @@ img.profile_picture {
     display: none;
 }
 
-#connection-error {
+.home-error-bar {
     margin-top: 5px;
     display: none;
 }
@@ -298,7 +298,7 @@ img.profile_picture {
     font-weight: bold;
 }
 
-#connection-error .alert {
+.home-error-bar .alert {
     margin-bottom: auto;
 }
 
