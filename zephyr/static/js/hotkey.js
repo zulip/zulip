@@ -66,6 +66,7 @@ function process_hotkey(code) {
             select_message(get_first_visible(), false);
         }
         return false; // We want the browser to actually page up and down
+    case 32: // Spacebar
     case 34: // Page Down
         if (at_bottom_of_viewport()) {
             select_message(get_last_visible(), false);
