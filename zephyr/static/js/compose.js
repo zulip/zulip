@@ -19,10 +19,10 @@ function clear_compose_box() {
     $("#compose").find('input[type=text], textarea').val('');
 }
 
-function compose_button() {
+function compose_button(tabname) {
     clear_compose_box();
     $('#sidebar a[href="#home"]').tab('show');
-    show_compose('stream', $("#stream"));
+    show_compose(tabname, $("#" + tabname));
 }
 
 function toggle_compose() {

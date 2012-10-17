@@ -80,7 +80,10 @@ function process_hotkey(code) {
         }
         return process_hotkey;
     case 99: // 'c': compose
-        compose_button();
+        compose_button('stream');
+        return process_compose_hotkey;
+    case 67: // 'C': compose huddle
+        compose_button('personal');
         return process_compose_hotkey;
     case 114: // 'r': respond to message
         respond_to_message();
