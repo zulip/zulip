@@ -34,7 +34,7 @@ urlpatterns = patterns('',
 
     # This is an unformatted view used by clients before using the API.
     # It requires username/password GET parameters.
-    url(r'^api/v1/fetch_api_key$', 'zephyr.views.api_fetch_key', name='api_fetch_key'),
+    url(r'^api/v1/fetch_api_key$', 'zephyr.views.api_fetch_api_key', name='api_fetch_api_key'),
 
     url(r'^robots\.txt$', 'django.views.generic.simple.redirect_to', {'url': '/static/public/robots.txt'}),
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve',

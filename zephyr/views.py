@@ -602,7 +602,7 @@ def json_stream_exists(request):
 
 @csrf_exempt
 @require_post
-def api_fetch_key(request):
+def api_fetch_api_key(request):
     try:
         username = request.POST['username']
         password = request.POST['password']
