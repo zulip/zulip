@@ -43,13 +43,16 @@ def update_deployment(oldrev, newrev, refname):
                            oldrev, newrev, refname])
 
 def send_bot_message(oldrev, newrev, refname):
-    commits = subprocess.check_output(["git", "log", "--reverse", "--pretty=- **%aN**: %s", "%s..%s" % (oldrev, newrev)])
+    commit_text = ('`%s` was deployed to `%s` with:\n\n'
+        % (newrev[:12], refname.replace("refs/heads/", "")))
+    log_cmd = ["git", "log", "--reverse", "--pretty=!gravatar(%aE) %s", "%s..%s" % (oldrev, newrev)]
+    commit_text += subprocess.check_output(log_cmd)
+
     message_data = {
         "type": "stream",
         "stream": "test" if refname == "refs/heads/test-post-receive" else "devel",
         "subject": "commits",
-        "content": "`%s` was deployed to `%s` with:\n\n" % (newrev[:12], refname.replace("refs/heads/", ""))
-                   + commits,
+        "content": commit_text,
         "recipient": "tabbott@humbughq.com",
     }
     # Sleep a bit to give time for the server to restart.
