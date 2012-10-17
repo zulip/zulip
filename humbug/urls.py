@@ -31,6 +31,7 @@ urlpatterns = patterns('',
     url(r'^api/v1/subscribe$', 'zephyr.views.api_subscribe', name='api_subscribe'),
     url(r'^api/v1/send_message$', 'zephyr.views.api_send_message', name='api_send_message'),
 
+    url(r'^robots\.txt$', 'django.views.generic.simple.redirect_to', {'url': '/static/robots.txt'}),
     url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': os.path.join(settings.SITE_ROOT, '..', 'zephyr', 'static/')}),
 
