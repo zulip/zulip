@@ -76,6 +76,7 @@ var people_list = [
         <div class="span3">
           <div class="row">
             <div class="span3 sidebar-nav affix">
+              <img class="img-rounded" src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=30" />
               <span class="my_fullname">{{ user_profile.full_name }}</span>
               <span class="my_email">{{ user_profile.user.email }}</span>
               <span class="logout">(<a href="/accounts/logout?next=/accounts/login">not you?</a>)</span>
