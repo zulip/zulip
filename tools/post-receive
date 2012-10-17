@@ -76,7 +76,7 @@ def send_bot_message(oldrev, newrev, refname):
     message_data = {
         "type": "stream",
         "stream": "test" if refname == "refs/heads/test-post-receive" else "devel",
-        "subject": "commits",
+        "subject": "push-" + new_head,
         "content": message,
         "recipient": "tabbott@humbughq.com",
     }
