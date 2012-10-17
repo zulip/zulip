@@ -37,10 +37,12 @@ def check_output(*popenargs, **kwargs):
     return output
 subprocess.check_output = check_output
 
-def process_push(oldrev, newrev, refname):
+def update_deployment(oldrev, newrev, refname):
     subprocess.check_call(["ssh", "app.humbughq.com", "--", "env", "-u", "GIT_DIR",
                            "/home/humbug/humbug/tools/update-deployment",
                            oldrev, newrev, refname])
+
+def send_bot_message(oldrev, newrev, refname):
     commits = subprocess.check_output(["git", "log", "--reverse", "--pretty=- **%aN**: %s", "%s..%s" % (oldrev, newrev)])
     message_data = {
         "type": "stream",
@@ -58,4 +60,5 @@ def process_push(oldrev, newrev, refname):
 for ln in sys.stdin:
     oldrev, newrev, refname = ln.strip().split()
     if refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
-        process_push(oldrev, newrev, refname)
+        update_deployment(oldrev, newrev, refname)
+        send_bot_message(oldrev, newrev, refname)
