@@ -44,8 +44,16 @@ def update_deployment(oldrev, newrev, refname):
 
 def git_commit_range(oldrev, newrev):
     log_cmd = ["git", "log", "--reverse",
-               "--pretty=!gravatar(%aE) %s", "%s..%s" % (oldrev, newrev)]
-    return subprocess.check_output(log_cmd)
+               "--pretty=%aE %s", "%s..%s" % (oldrev, newrev)]
+    commits = ''
+    for ln in subprocess.check_output(log_cmd).splitlines():
+        email, subject = ln.split(None, 1)
+        # This truncation approximately fits the normal message width in the browser.
+        # It would be nicer to move this into the client via CSS and a Markdown extension.
+        if len(subject) > 60:
+            subject = subject[:58].rstrip() + '...'
+        commits += '!gravatar(%s) %s\n' % (email, subject)
+    return commits
 
 def send_bot_message(oldrev, newrev, refname):
     added   = git_commit_range(oldrev, newrev)
