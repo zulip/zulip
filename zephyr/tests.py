@@ -123,7 +123,7 @@ class PublicURLTest(TestCase):
                       "/json/settings/change/",
                       "/json/subscriptions/list",
                       "/json/subscriptions/remove",
-                      "/json/subscriptions/exists/test",
+                      "/json/subscriptions/exists",
                       "/json/subscriptions/add"],
                 }
         for status_code, url_set in urls.iteritems():

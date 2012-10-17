@@ -22,7 +22,7 @@ urlpatterns = patterns('',
     url(r'^json/subscriptions/list$', 'zephyr.views.json_list_subscriptions', name='json_list_subscriptions'),
     url(r'^json/subscriptions/remove$', 'zephyr.views.json_remove_subscription', name='json_remove_subscription'),
     url(r'^json/subscriptions/add$', 'zephyr.views.json_add_subscription', name='json_add_subscription'),
-    url(r'^json/subscriptions/exists/(?P<stream>.*)$', 'zephyr.views.json_stream_exists', name='json_stream_exists'),
+    url(r'^json/subscriptions/exists$', 'zephyr.views.json_stream_exists', name='json_stream_exists'),
 
     # These are json format views used by the API.  They require an API key.
     url(r'^api/v1/get_messages$', 'zephyr.views.api_get_messages', name='api_get_messages'),

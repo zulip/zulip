@@ -591,7 +591,10 @@ def json_change_settings(request):
     return json_success(result)
 
 @login_required_json_view
-def json_stream_exists(request, stream):
+def json_stream_exists(request):
+    if "stream" not in request.POST:
+        return json_error("Missing stream argument.")
+    stream = request.POST.get("stream")
     if not valid_stream_name(stream):
         return json_error("Invalid characters in stream name")
     exists = bool(get_stream(stream, UserProfile.objects.get(user=request.user).realm))

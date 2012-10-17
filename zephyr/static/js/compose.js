@@ -102,7 +102,8 @@ function check_stream_for_send(stream_name) {
     var okay = true;
     $.ajax({
         type: "POST",
-        url: "/json/subscriptions/exists/" + stream_name,
+        url: "/json/subscriptions/exists",
+        data: {'stream': stream_name},
         async: false,
         success: function (data) {
             if (data.exists === "False") {
