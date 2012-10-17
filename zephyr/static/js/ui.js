@@ -229,6 +229,11 @@ function hack_for_floating_recipient_bar() {
     floating_recipient.offset(offset);
 }
 
+function show_api_key_box() {
+    $("#get_api_key_box").show();
+    $("#api_key_button_box").hide();
+}
+
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
@@ -298,6 +303,11 @@ $(function () {
         $('.alert-info').hide();
         $('.alert').hide();
 
+        $("#api_key_value").text("");
+        $("#get_api_key_box").hide();
+        $("#show_api_key_box").hide();
+        $("#api_key_button_box").show();
+
         // Set the URL bar title to show the sub-page you're currently on.
         var browser_url = $(e.target).attr('href');
         if (browser_url === "#home") {
@@ -313,7 +323,7 @@ $(function () {
     $('#sidebar a[href="#subscriptions"]').click(fetch_subs);
 
     var settings_status = $('#settings-status');
-    $("#current_settings form").ajaxForm({
+    $("#settings-change-box form").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
             var message = "Updated settings!";
@@ -338,6 +348,34 @@ $(function () {
             settings_status.removeClass(status_classes)
                 .addClass('alert-error')
                 .text(response).stop(true).fadeTo(0,1);
+        }
+    });
+
+    $("#get_api_key_box").hide();
+    $("#show_api_key_box").hide();
+    $("#get_api_key_box form").ajaxForm({
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        success: function (resp, statusText, xhr, form) {
+            var message = "Updated settings!";
+            var result = $.parseJSON(xhr.responseText);
+            $("#get_api_key_password").val("");
+            $("#api_key_value").text(result.api_key);
+            $("#show_api_key_box").show();
+            $("#get_api_key_box").hide();
+            settings_status.hide();
+        },
+        error: function (xhr, error_type, xhn) {
+            var response = "Error getting API key";
+            if (xhr.status.toString().charAt(0) === "4") {
+                // Only display the error response for 4XX, where we've crafted
+                // a nice response.
+                response += ": " + $.parseJSON(xhr.responseText).msg;
+            }
+            settings_status.removeClass(status_classes)
+                .addClass('alert-error')
+                .text(response).stop(true).fadeTo(0,1);
+            $("#show_api_key_box").hide();
+            $("#get_api_key_box").show();
         }
     });
 
