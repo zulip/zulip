@@ -31,6 +31,9 @@ ul#sidebar {
 .my_email {
     color: grey;
 }
+.logout {
+    white-space: nowrap;
+}
 @media (max-width: 767px) {
     .my_fullname {
         font-size: 100%;
