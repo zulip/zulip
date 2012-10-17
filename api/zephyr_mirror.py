@@ -208,7 +208,7 @@ def process_notice(notice, log):
     zephyr_class = notice.cls.lower()
     instance = notice.instance.lower()
 
-    if (zephyr_class == "message" and instance == "personal"):
+    if (zephyr_class == "message" and recipient != ""):
         is_personal = True
         if body.startswith("CC:"):
             is_huddle = True
@@ -251,6 +251,10 @@ def process_notice(notice, log):
                  'zsig'      : zsig,  # logged here but not used by app
                  'content'   : body }
 
+    # Add instances in for instanced personals
+    if zeph['type'] == "personal" and instance != "personal":
+        zeph["content"] = "[-i %s]" % (instance,) + "\n" + zeph["content"]
+
     print "%s: zephyr=>humbug: received a message on %s/%s from %s..." % \
         (datetime.datetime.now(), zephyr_class, instance, notice.sender)
     log.write(simplejson.dumps(zeph) + '\n')
@@ -272,7 +276,7 @@ def zephyr_to_humbug(options):
             ensure_subscribed(sub)
         update_subscriptions_from_humbug()
     if options.forward_personals:
-        subs.add(("message", "personal", os.environ["USER"] + "@ATHENA.MIT.EDU"))
+        subs.add(("message", "*", os.environ["USER"] + "@ATHENA.MIT.EDU"))
         if subscribed_to_mail_messages():
             subs.add(("mail", "inbox", os.environ["USER"] + "@ATHENA.MIT.EDU"))
 
