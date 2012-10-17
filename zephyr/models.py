@@ -57,7 +57,33 @@ def get_log_recipient(recipient):
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name} for user_profile in user_profile_list]
 
-callback_table = {}
+class Callbacks:
+    TYPE_RECEIVE = 0
+    TYPE_MAX = 1
+
+    def __init__(self):
+        self.table = {}
+
+    def add(self, key, cb_type, callback):
+        if not self.table.has_key(key):
+            self.create_key(key)
+        self.table[key][cb_type].append(callback)
+
+    def get(self, key, cb_type):
+        if not self.table.has_key(key):
+            self.create_key(key)
+        return self.table[key][cb_type]
+
+    def clear(self, key, cb_type):
+        if not self.table.has_key(key):
+            self.create_key(key)
+            return
+        self.table[key][cb_type] = []
+
+    def create_key(self, key):
+        self.table[key] = [[] for i in range(0, Callbacks.TYPE_MAX)]
+
+callbacks_table = Callbacks()
 mit_sync_table = {}
 
 class Realm(models.Model):
@@ -92,16 +118,16 @@ class UserProfile(models.Model):
     # The user receives this message
     # Called in the Tornado process
     def receive(self, message):
-        global callback_table
+        global callbacks_table
 
-        for cb in callback_table.get(self.user.id, []):
+        for cb in callbacks_table.get(self.user.id, Callbacks.TYPE_RECEIVE):
             cb([message])
 
-        callback_table[self.user.id] = []
+        callbacks_table.clear(self.user.id, Callbacks.TYPE_RECEIVE)
 
-    def add_callback(self, cb):
-        global callback_table
-        callback_table.setdefault(self.user.id, []).append(cb)
+    def add_receive_callback(self, cb):
+        global callbacks_table
+        callbacks_table.add(self.user.id, Callbacks.TYPE_RECEIVE, cb)
 
     def __repr__(self):
         return "<UserProfile: %s %s>" % (self.user.email, self.realm)

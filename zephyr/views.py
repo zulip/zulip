@@ -335,7 +335,7 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
         except socket.error:
             pass
 
-    user_profile.add_callback(handler.async_callback(on_receive))
+    user_profile.add_receive_callback(handler.async_callback(on_receive))
 
 @asynchronous
 @login_required_json_view
