@@ -85,6 +85,7 @@ class UserProfile(models.Model):
     full_name = models.CharField(max_length=100)
     short_name = models.CharField(max_length=100)
     pointer = models.IntegerField()
+    last_pointer_updater = models.CharField(max_length=64)
     realm = models.ForeignKey(Realm)
     api_key = models.CharField(max_length=32)
 

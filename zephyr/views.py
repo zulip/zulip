@@ -172,7 +172,7 @@ def home(request):
                                      .order_by('message')
                                      .reverse()[0]).message_id
         user_profile.pointer = max_id
-        user_profile.save()
+        user_profile.last_pointer_updater = request.session.session_key
 
     # Populate personals autocomplete list based on everyone in your
     # realm.  Later we might want a 2-layer autocomplete, where we
@@ -223,6 +223,7 @@ def update_pointer_backend(request, user_profile):
         return json_error("Invalid pointer value")
 
     user_profile.pointer = pointer
+    user_profile.last_pointer_updater = request.session.session_key
     user_profile.save()
     return json_success()
 
