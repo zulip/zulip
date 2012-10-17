@@ -31,21 +31,52 @@
       </div>
       <br /><br />
       <div id="settings-change-box">
-    <form action="/json/settings/change/" method="post" class="settings">{% csrf_token %}
-      <label>Timezone</label>
-      <input type="text" name="timezone" id="timezone" value="UTC" /><br />
-      <br />
-      <label>Full name</label>
-      <input type="text" name="full_name" id="full_name" value="{{ user_profile.full_name }}" /><br />
-      <label>Short name</label>
-      <input type="text" name="short_name" id="short_name" value="{{ user_profile.short_name }}" /><br />
-      <br />
-      <label>Old password</label>
-      <input type="password" autocomplete="off" name="old_password" id="old_password" value="" /><br />
-      <label>New password</label>
-      <input type="password" autocomplete="off" name="new_password" id="new_password" value="" /><br />
-      <label>Confirm password</label>
-      <input type="password" autocomplete="off" name="confirm_password" id="confirm_password" value="" /><br />
+    <form action="/json/settings/change/" method="post"
+    class="settings">{% csrf_token %}
+      <table>
+      <tr><td>
+      <label>Timezone: </label>
+      </td>
+        <td>
+          <input type="text" name="timezone" id="timezone" value="UTC" />
+        </td>
+      </tr>
+      <tr>
+        <td><label>Full name: </label></td>
+        <td>
+          <input type="text" name="full_name" id="full_name"
+                 value="{{ user_profile.full_name }}" />
+        </td>
+      </tr>
+      <tr>
+        <td><label>Short name: </label></td>
+        <td>
+          <input type="text" name="short_name" id="short_name"
+                 value="{{ user_profile.short_name }}" />
+        </td>
+      </tr>
+      <tr>
+        <td><label>Old password: </label></td>
+        <td>
+          <input type="password" autocomplete="off"
+                 name="old_password" id="old_password" value="" />
+        </td>
+      </tr>
+      <tr>
+        <td><label>New password: </label></td>
+        <td>
+          <input type="password" autocomplete="off"
+                 name="new_password" id="new_password" value="" />
+        </td>
+      </tr>
+      <tr>
+        <td><label>Confirm password: </label></td>
+        <td><input type="password" autocomplete="off"
+                   name="confirm_password" id="confirm_password"
+                   value="" />
+        </td>
+      </tr>
+      </table>
       <input type="submit" name="change_settings" value="Save changes" class="btn" />
     </form>
     </div>
