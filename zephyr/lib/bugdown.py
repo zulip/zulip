@@ -1,12 +1,26 @@
 import re
 import markdown
 
+from zephyr.lib.avatar import gravatar_hash
+
+class Gravatar(markdown.inlinepatterns.Pattern):
+    def handleMatch(self, match):
+        # NB: the first match of our regex is match.group(2) due to
+        # markdown internal matches
+        img = markdown.util.etree.Element('img')
+        img.set('class', 'message_body_gravatar img-rounded')
+        img.set('src', 'https://secure.gravatar.com/avatar/%s?d=identicon&s=30'
+            % (gravatar_hash(match.group(2)),))
+        return img
+
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         del md.inlinePatterns['image_link']
         del md.inlinePatterns['image_reference']
         del md.parser.blockprocessors['hashheader']
         del md.parser.blockprocessors['setextheader']
+
+        md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\(([^)]*)\)'), '_begin')
 
 # We need to re-initialize the markdown engine every 30 messages
 # due to some sort of performance leak in the markdown library.

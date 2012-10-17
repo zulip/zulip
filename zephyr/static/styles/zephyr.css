@@ -415,3 +415,7 @@ table.floating_recipient {
     margin-top: 0px;
     margin-bottom: 0px;
 }
+
+.message_body_gravatar {
+    margin-bottom: 2px;
+}
