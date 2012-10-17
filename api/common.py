@@ -19,11 +19,7 @@ class HumbugAPI():
         request["api-key"] = self.api_key
         while True:
             try:
-                res = requests.post(self.base_url + url,
-                                    data=request,
-                                    verify=True,
-                                    auth=requests.auth.HTTPDigestAuth('tabbott',
-                                                                      'xxxxxxxxxxxxxxxxx'))
+                res = requests.post(self.base_url + url, data=request, verify=True)
                 if res.status_code == requests.codes.service_unavailable:
                     # On 503 errors, try again after a short sleep
                     time.sleep(0.5)
