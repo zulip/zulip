@@ -3,19 +3,10 @@
 {# The app itself. #}
 
 {# Includes some other templates as tabs. #}
-
-    <title>Humbug, from Humbug Inc.</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
 {% load jstemplate %}
 
-
 {% block customhead %}
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script id="template_message" type="text/x-handlebars-template">
 {% rawjstemplate "message" %}
 </script>
