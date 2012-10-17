@@ -59,7 +59,8 @@ def get_log_recipient(recipient):
 
 class Callbacks:
     TYPE_RECEIVE = 0
-    TYPE_MAX = 1
+    TYPE_POINTER_UPDATE = 1
+    TYPE_MAX = 2
 
     def __init__(self):
         self.table = {}
@@ -125,9 +126,21 @@ class UserProfile(models.Model):
 
         callbacks_table.clear(self.user.id, Callbacks.TYPE_RECEIVE)
 
+    def update_pointer(self, new_pointer):
+        global callbacks_table
+
+        for cb in callbacks_table.get(self.user.id, Callbacks.TYPE_POINTER_UPDATE):
+            cb(new_pointer=new_pointer)
+
+        callbacks_table.clear(self.user.id, Callbacks.TYPE_POINTER_UPDATE)
+
     def add_receive_callback(self, cb):
         global callbacks_table
         callbacks_table.add(self.user.id, Callbacks.TYPE_RECEIVE, cb)
+
+    def add_pointer_update_callback(self, cb):
+        global callbacks_table
+        callbacks_table.add(self.user.id, Callbacks.TYPE_POINTER_UPDATE, cb)
 
     def __repr__(self):
         return "<UserProfile: %s %s>" % (self.user.email, self.realm)

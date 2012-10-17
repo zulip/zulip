@@ -225,6 +225,8 @@ def update_pointer_backend(request, user_profile):
     user_profile.pointer = pointer
     user_profile.last_pointer_updater = request.session.session_key
     user_profile.save()
+
+    user_profile.update_pointer(pointer)
     return json_success()
 
 def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False,
