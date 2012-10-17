@@ -62,13 +62,11 @@ function process_hotkey(code) {
 
     switch (code) {
     case 33: // Page Up
-        keep_pointer_in_view();
         if (at_top_of_viewport()) {
             select_message(get_first_visible(), false);
         }
         return false; // We want the browser to actually page up and down
     case 34: // Page Down
-        keep_pointer_in_view();
         if (at_bottom_of_viewport()) {
             select_message(get_last_visible(), false);
         }
