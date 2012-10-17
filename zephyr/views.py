@@ -19,6 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from zephyr.decorator import asynchronous
 from zephyr.lib.query import last_n
+from zephyr.lib.avatar import gravatar_hash
 
 from confirmation.models import Confirmation
 
@@ -26,7 +27,6 @@ import datetime
 import simplejson
 import socket
 import re
-import hashlib
 import urllib
 import time
 
@@ -186,7 +186,7 @@ def home(request):
 
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
-                               'email_hash'  : hashlib.md5(user_profile.user.email).hexdigest(),
+                               'email_hash'  : gravatar_hash(user_profile.user.email),
                                'people'      : people,
                                'streams'     : streams,
                                'have_initial_messages':

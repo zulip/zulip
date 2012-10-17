@@ -10,6 +10,7 @@ import os
 import simplejson
 from django.db import transaction
 from zephyr.lib import bugdown
+from zephyr.lib.avatar import gravatar_hash
 
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id))
 def get_display_recipient(recipient):
@@ -219,7 +220,7 @@ class Message(models.Model):
                 'subject'          : self.subject,
                 'content'          : content,
                 'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
-                'gravatar_hash'    : hashlib.md5(self.sender.user.email.lower()).hexdigest(),
+                'gravatar_hash'    : gravatar_hash(self.sender.user.email),
                 }
 
     def to_log_dict(self):
