@@ -142,6 +142,10 @@ function process_compose_hotkey(code) {
     return process_hotkey(code);
 }
 
+function set_compose_hotkey() {
+    keydown_handler = process_compose_hotkey;
+}
+
 $(document).keydown(function (e) {
     pressed_keys[e.which] = true;
 });

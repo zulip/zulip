@@ -23,6 +23,7 @@ function compose_button(tabname) {
     clear_compose_box();
     $('#sidebar a[href="#home"]').tab('show');
     show_compose(tabname, $("#" + tabname));
+    set_compose_hotkey();
 }
 
 function toggle_compose() {

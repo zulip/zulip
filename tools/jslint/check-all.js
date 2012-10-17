@@ -21,6 +21,7 @@ var globals =
 
     // hotkey.js
     + ' process_goto_hotkey process_compose_hotkey process_key_in_input'
+    + ' set_compose_hotkey'
 
     // narrow.js
     + ' narrow_target_message_id narrowed show_all_messages'
