@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.shortcuts import render
@@ -599,3 +599,16 @@ def json_stream_exists(request):
         return json_error("Invalid characters in stream name")
     exists = bool(get_stream(stream, UserProfile.objects.get(user=request.user).realm))
     return json_success({"exists": exists})
+
+def api_fetch_key(request):
+    try:
+        username = request.GET['username']
+        password = request.GET['password']
+    except KeyError:
+        return HttpResponseBadRequest("You must specify the username and password via GET.")
+    user = authenticate(username=username, password=password)
+    if user is None:
+        return HttpResponseForbidden("Your username or password is incorrect.")
+    if not user.is_active:
+        return HttpResponseForbidden("Your account has been disabled.")
+    return HttpResponse(user.userprofile.api_key)
