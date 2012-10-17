@@ -600,10 +600,12 @@ def json_stream_exists(request):
     exists = bool(get_stream(stream, UserProfile.objects.get(user=request.user).realm))
     return json_success({"exists": exists})
 
+@csrf_exempt
+@require_post
 def api_fetch_key(request):
     try:
-        username = request.GET['username']
-        password = request.GET['password']
+        username = request.POST['username']
+        password = request.POST['password']
     except KeyError:
         return HttpResponseBadRequest("You must specify the username and password via GET.")
     user = authenticate(username=username, password=password)
