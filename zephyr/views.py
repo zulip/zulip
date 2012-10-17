@@ -553,8 +553,6 @@ def json_change_settings(request):
     # First validate all the inputs
     if "full_name" not in request.POST:
         return json_error("Invalid settings request -- missing full_name.")
-    if "timezone" not in request.POST:
-        return json_error("Invalid settings request -- missing timezone.")
     if "new_password" not in request.POST:
         return json_error("Invalid settings request -- missing new_password.")
     if "old_password" not in request.POST:
