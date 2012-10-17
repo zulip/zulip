@@ -76,6 +76,14 @@ SECRET_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 # username generation.
 HASH_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
+# Tell the browser to never send our cookies without encryption, e.g.
+# when executing the initial http -> https redirect.
+#
+# Turn it off for local testing because we don't have SSL.
+if deployed:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE    = True
+
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
