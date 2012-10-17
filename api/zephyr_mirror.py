@@ -333,7 +333,7 @@ def forward_to_zephyr(message):
         zeph.send()
     elif message['type'] == "personal":
         recipient = message["display_recipient"]["email"]
-        recipient.replace("mit.edu", "ATHENA.MIT.EDU")
+        recipient = recipient.replace("@mit.edu", "@ATHENA.MIT.EDU")
         zeph = zephyr.ZNotice(sender=sender_email,
                               auth=True, recipient=recipient,
                               cls="message", instance="personal")
