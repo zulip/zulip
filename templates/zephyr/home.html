@@ -16,11 +16,12 @@
           <td class="ztable_col3" />
         </tr>
         <tr style="display: none;" id="current_label_stream" class="recipient_row">
-          <td colspan="2" class="message_label_clickable message_newstyle_stream"></td>
-          <td class="message_label_clickable message_newstyle_subject"></td>
+          <td colspan="2" class="message_label_clickable message_header message_header_stream left_part"></td>
+          <td class="message_label_clickable message_header message_header_stream right_part"></td>
         </tr>
         <tr style="display: none;" id="current_label_huddle" class="recipient_row">
-          <td colspan="3" class="message_label_clickable message_newstyle_pm"></td>
+          <td colspan="2" class="message_label_clickable message_header message_header_huddle left_part"></td>
+          <td class="message_label_clickable message_header message_header_huddle right_part"></td>
         </tr>
       </table>
     </div>
@@ -64,15 +65,15 @@
               <td class="ztable_col3" />
             </tr>
             <tr id="stream-message">
-              <td colspan="2" class="message_newstyle_stream">
-                <input type="text" class="recipient_box" name="stream" id="stream" onchange="focus_on('subject')" value="" placeholder="Stream" autocomplete="off"/>
+              <td colspan="2" class="message_header message_header_stream left_part">
               </td>
-              <td class="message_newstyle_subject">
-                <input type="text" class="recipient_box" name="subject" id="subject" onchange="focus_on('new_message_content')" value="" placeholder="Subject" autocomplete="off"/>
+              <td class="message_header message_header_stream right_part">
+                <input type="text" class="recipient_box" name="stream" id="stream" onchange="focus_on('subject')" value="" placeholder="Stream" autocomplete="off"/> | <input type="text" class="recipient_box" name="subject" id="subject" onchange="focus_on('new_message_content')" value="" placeholder="Subject" autocomplete="off"/>
               </td>
             </tr>
             <tr id="personal-message">
-              <td colspan="3" class="message_newstyle_pm">
+              <td colspan="2" class="message_header message_header_huddle left_part"></td>
+              <td class="message_header message_header_huddle right_part">
                 Huddle with <input type="text" class="recipient_box" name="recipient" id="huddle_recipient" onblur="focus_on('new_message_content')" value="" placeholder="one or more people..." autocomplete="off"/>
               </td>
             </tr>
@@ -80,8 +81,8 @@
               <td class="message_picture">
                 <div id="stream_or_huddle">
                   <ul class="nav nav-pills nav-stacked" id="message-type-tabs">
-                    <li class="active"><a href="#stream-message" data-toggle="pill">Stream</a></li>
-                    <li><a href="#personal-message" data-toggle="pill">Huddle</a></li>
+                    <li class="active"><a href="#stream-message" data-toggle="pill">S</a></li>
+                    <li><a href="#personal-message" data-toggle="pill">H</a></li>
                   </ul>
                 </div>
               </td>

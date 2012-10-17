@@ -91,7 +91,7 @@ td.pointer {
 .message_picture {
     vertical-align: top;
     text-align: right;
-    padding-right: 10px;
+    padding-right: 7px;
     padding-top: 5px;
 }
 
@@ -99,49 +99,40 @@ td.pointer {
     visibility: collapse;
 }
 .ztable_col1 {    /* streamname */
+    width: 46px;
 }
 .ztable_col2 {    /* pointer */
     width: 2px;
 }
 .ztable_col3 {    /* subjectname */
-    width: 85%;
 }
 
-.message_newstyle_stream {
-    vertical-align: middle;
-    text-align:     right;
-    overflow-x:     hidden;
-    text-overflow:  ellipsis;
-    white-space:    nowrap;
-    font-weight: bold;
-    padding-right:   10px;
-    background-color: #bbb;
-    border: 1px solid grey;
-}
-
-.message_newstyle_subject {
+.message_header {
     vertical-align: middle;
     text-align:     left;
     overflow-x:     hidden;
     text-overflow:  ellipsis;
     white-space:    nowrap;
-    padding-left: 10px;
-    background-color: #bbb;
-    border: 1px solid grey;
-    font-weight: bold;
+    font-weight:    bold;
+    padding-left:   14px;
 }
 
-.message_newstyle_pm {
-    vertical-align: middle;
-    text-align:     left;
-    overflow-x:     hidden;
-    text-overflow:  ellipsis;
-    white-space:    nowrap;
-    padding-left: 10px;
-    font-weight: bold;
+.message_header_stream {
+    background-color: #bbb;
+    border: 1px solid grey;
+}
+
+.message_header_huddle {
     color: white;
     background-color: #444;
     border: 1px solid #444;
+}
+
+.message_header.left_part {
+    border-right: 0px;
+}
+.message_header.right_part {
+    border-left: 0px;
 }
 
 .messagebox.personal-message {
@@ -313,10 +304,20 @@ textarea:focus {
 }
 
 input.recipient_box {
-    width: 80%;
     margin-bottom: 0px;
     margin-top: 0px;
 }
+
+#stream.recipient_box {
+    width: 20%;
+}
+#subject.recipient_box {
+    width: 64%;
+}
+#huddle_recipient.recipient_box {
+    width: 75%;
+}
+
 
 input.send_message {
     float: right;

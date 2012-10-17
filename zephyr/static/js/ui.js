@@ -135,13 +135,12 @@ var old_label;
 var is_floating_recipient_bar_showing = false;
 function replace_floating_recipient_bar(desired_label) {
     if (desired_label !== old_label) {
-        if (desired_label.children(".message_newstyle_stream").length !== 0) {
-            $("#current_label_stream td:first").replaceWith(desired_label.children(".message_newstyle_stream").clone());
-            $("#current_label_stream td:last").replaceWith(desired_label.children(".message_newstyle_subject").clone());
+        if (desired_label.children(".message_header_stream").length !== 0) {
+            $("#current_label_stream td:last").replaceWith(desired_label.children(".message_header_stream.right_part").clone());
             $("#current_label_huddle").css('display', 'none');
             $("#current_label_stream").css('display', 'table-row');
         } else {
-            $("#current_label_huddle td:first").replaceWith(desired_label.children(".message_newstyle_pm").clone());
+            $("#current_label_huddle td:last").replaceWith(desired_label.children(".message_header_huddle.right_part").clone());
             $("#current_label_stream").css('display', 'none');
             $("#current_label_huddle").css('display', 'table-row');
         }
