@@ -14,6 +14,8 @@ from api import mit_subs_list
 import simplejson
 import datetime
 import random
+import sys
+import time
 from optparse import make_option
 
 settings.HAVE_TORNADO_SERVER = False
@@ -216,7 +218,14 @@ def get_recipient_by_id(rid):
 
 def restore_saved_messages():
     old_messages = file("all_messages_log", "r").readlines()
-    for old_message_json in old_messages:
+
+    start_time = time.time()
+    for idx, old_message_json in enumerate(old_messages):
+        sys.stderr.write('\rLoaded %7d of %7d messages' % (idx, len(old_messages)))
+        if idx > 0:
+            remaining = (time.time() - start_time) * (len(old_messages) - idx) / idx
+            sys.stderr.write('; time remaining %3d:%02d' % (remaining / 60, remaining % 60))
+
         old_message = simplejson.loads(old_message_json.strip())
         message = Message()
 
@@ -263,6 +272,8 @@ def restore_saved_messages():
             raise
         do_send_message(message, synced_from_mit=True, no_log=True)
 
+    # Clear the remainder of the line, using a terminal control code.
+    sys.stderr.write('\rDone replaying old messages.\x1B[0K\n')
 
 # Create some test messages, including:
 # - multiple streams
