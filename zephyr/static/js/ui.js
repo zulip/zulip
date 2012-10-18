@@ -36,7 +36,7 @@ function hide_email() {
 
 function show_email(message_id) {
     hide_email();
-    get_message_row(message_id).find('.sender_email').removeClass('invisible');
+    rows.get(message_id).find('.sender_email').removeClass('invisible');
 }
 
 function report_error(response, xhr, status_box) {

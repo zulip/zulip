@@ -15,8 +15,7 @@ var globals =
     + ' compose'
 
     // rows.js
-    + ' get_first_visible get_last_visible get_next_visible get_prev_visible'
-    + ' get_id get_message_row'
+    + ' rows'
 
     // hotkey.js
     + ' hotkeys'

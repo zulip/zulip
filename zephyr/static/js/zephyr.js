@@ -8,7 +8,7 @@ var viewport = $(window);
 var reloading_app = false;
 
 var selected_message_id = -1;  /* to be filled in on document.ready */
-var selected_message;  // = get_message_row(selected_message_id)
+var selected_message;  // = rows.get(selected_message_id)
 var get_updates_params = {
     first: -1,
     last:  -1,
@@ -197,21 +197,21 @@ function select_message_by_id(message_id) {
     if (message_id === selected_message_id) {
         return;
     }
-    select_message(get_message_row(message_id), false);
+    select_message(rows.get(message_id), false);
 }
 
 // Called on page load and when we [un]narrow.
 // Forces a call to select_message even if the id has not changed,
 // because the visible table might have.
 function select_and_show_by_id(message_id) {
-    select_message(get_message_row(message_id), true);
+    select_message(rows.get(message_id), true);
 }
 
 function update_selected_message(message) {
     $('.' + selected_message_class).removeClass(selected_message_class);
     message.addClass(selected_message_class);
 
-    var new_selected_id = get_id(message);
+    var new_selected_id = rows.id(message);
     if (!narrow.active() && new_selected_id !== selected_message_id) {
         // Narrowing is a temporary view on top of the home view and
         // doesn't permanently affect where you are.
@@ -227,7 +227,7 @@ function select_message(next_message, scroll_to) {
 
     /* If the message exists but is hidden, try to find the next visible one. */
     if (next_message.length !== 0 && next_message.is(':hidden')) {
-        next_message = get_next_visible(next_message);
+        next_message = rows.next_visible(next_message);
     }
 
     /* Fall back to the first visible message. */
@@ -322,7 +322,7 @@ function add_to_table(messages, table_name, filter_function, where) {
         var top_group = message_groups[table_name][0];
         var top_messages = [];
         $.each(top_group, function (index, id) {
-            get_message_row(id, table_name).remove();
+            rows.get(id, table_name).remove();
             top_messages.push(message_dict[id]);
         });
         messages = messages.concat(top_messages);
@@ -388,7 +388,7 @@ function add_to_table(messages, table_name, filter_function, where) {
     }
 
     $.each(messages_to_render, function (index, message) {
-        var row = get_message_row(message.id, table_name);
+        var row = rows.get(message.id, table_name);
         register_onclick(row, message.id);
 
         row.find('.message_content a').each(function (index, link) {
@@ -400,7 +400,7 @@ function add_to_table(messages, table_name, filter_function, where) {
     });
 
     $.each(ids_where_next_is_same_sender, function (index, id) {
-        get_message_row(id, table_name).find('.messagebox').addClass("next_is_same_sender");
+        rows.get(id, table_name).find('.messagebox').addClass("next_is_same_sender");
     });
 }
 
@@ -664,11 +664,11 @@ function at_bottom_of_viewport() {
 
 function keep_pointer_in_view() {
     var candidate;
-    var next_message = get_message_row(selected_message_id);
+    var next_message = rows.get(selected_message_id);
 
     if (above_view_threshold(next_message) && (!at_top_of_viewport())) {
         while (above_view_threshold(next_message)) {
-            candidate = get_next_visible(next_message);
+            candidate = rows.next_visible(next_message);
             if (candidate.length === 0) {
                 break;
             } else {
@@ -677,7 +677,7 @@ function keep_pointer_in_view() {
         }
     } else if (below_view_threshold(next_message) && (!at_bottom_of_viewport())) {
         while (below_view_threshold(next_message)) {
-            candidate = get_prev_visible(next_message);
+            candidate = rows.prev_visible(next_message);
             if (candidate.length === 0) {
                 break;
             } else {
@@ -695,13 +695,13 @@ function keep_pointer_in_view() {
 // I'm at the very top or the very bottom of the page.
 function move_pointer_at_page_top_and_bottom(delta) {
     if (delta !== 0 && (at_top_of_viewport() || at_bottom_of_viewport())) {
-        var next_message = get_message_row(selected_message_id);
+        var next_message = rows.get(selected_message_id);
         if (delta > 0) {
             // Scrolling up (want older messages)
-            next_message = get_prev_visible(next_message);
+            next_message = rows.prev_visible(next_message);
         } else {
             // We're scrolling down (we want more recent messages)
-            next_message = get_next_visible(next_message);
+            next_message = rows.next_visible(next_message);
         }
         if (next_message.length !== 0) {
             update_selected_message(next_message);

@@ -14,12 +14,12 @@ function num_pressed_keys() {
 }
 
 var directional_hotkeys = {
-    40: get_next_visible,  // down arrow
-    106: get_next_visible,  // 'j'
-    38: get_prev_visible,  // up arrow
-    107: get_prev_visible,  // 'k'
-    36: get_first_visible, // Home
-    35: get_last_visible   // End
+    40:  rows.next_visible,  // down arrow
+    106: rows.next_visible,  // 'j'
+    38:  rows.prev_visible,  // up arrow
+    107: rows.prev_visible,  // 'k'
+    36:  rows.first_visible, // Home
+    35:  rows.last_visible   // End
 };
 
 // These are not exported, but we declare them here to make JSLint happy.
@@ -51,7 +51,7 @@ function process_hotkey(code) {
             // At the last message, scroll to the bottom so we have
             // lots of nice whitespace for new messages coming in.
             //
-            // FIXME: this doesn't work for End because get_last_visible()
+            // FIXME: this doesn't work for End because rows.last_visible()
             // always returns a message.
             viewport.scrollTop($("#main_div").outerHeight(true));
         }
@@ -70,13 +70,13 @@ function process_hotkey(code) {
     switch (code) {
     case 33: // Page Up
         if (at_top_of_viewport()) {
-            select_message(get_first_visible(), false);
+            select_message(rows.first_visible(), false);
         }
         return false; // We want the browser to actually page up and down
     case 32: // Spacebar
     case 34: // Page Down
         if (at_bottom_of_viewport()) {
-            select_message(get_last_visible(), false);
+            select_message(rows.last_visible(), false);
         }
         return false;
     case 27: // Esc: hide compose pane or un-narrow
