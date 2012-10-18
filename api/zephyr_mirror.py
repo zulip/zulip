@@ -75,7 +75,8 @@ def humbug_username(zephyr_username):
     return zephyr_username.lower().split("@")[0] + "@mit.edu"
 
 def send_humbug(zeph):
-    zeph["forged"] = "yes"
+    if options.forward_class_messages:
+        zeph["forged"] = "yes"
     zeph["sender"] = humbug_username(zeph["sender"])
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]

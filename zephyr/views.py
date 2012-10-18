@@ -371,6 +371,10 @@ def send_message_backend(request, user_profile, sender):
             return json_error("User not authorized for this query")
         if "time" not in request.POST:
             return json_error("Missing time")
+    if "time" in request.POST:
+        # Checking for time in request.POST is a hack to detect MIT.
+        # We should clean this up, since we only use the 'time' if
+        # 'forged' is also set.
         if already_sent_forged_message(request):
             return json_success()
         sender = create_forged_message_users(request, user_profile)
@@ -432,7 +436,7 @@ def send_message_backend(request, user_profile, sender):
     message.recipient = recipient
     if message_type_name == 'stream':
         message.subject = subject_name
-    if 'time' in request.POST:
+    if 'forged' in request.POST:
         # Forged messages come with a timestamp
         message.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
     else:
