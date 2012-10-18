@@ -47,7 +47,8 @@
     <td class="message_picture">
     {{#include_sender}}
         <img class="img-rounded profile_picture"
-             src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30"/>
+             src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30"
+             onclick="userinfo_popover(event, this, {{id}});"/>
     {{/include_sender}}
     </td>
     <td class="pointer"><p></p></td>
@@ -57,7 +58,9 @@
         <span class="message_sender"
               onmouseover="show_email({{id}});"
               onmouseout="hide_email();">
-            <span class="sender_name">{{sender_full_name}}</span>
+            <span class="sender_name"
+              onclick="userinfo_popover(event, this, {{id}});">
+              {{sender_full_name}}</span>
             <span class="sender_email invisible">{{sender_email}}</span>
         </span>
     {{/include_sender}}

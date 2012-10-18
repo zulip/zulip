@@ -233,6 +233,30 @@ function show_api_key_box() {
     $("#api_key_button_box").hide();
 }
 
+var userinfo_currently_popped;
+function userinfo_popover(event, element, id) {
+    event.stopPropagation();
+    select_message_by_id(id);
+    var elt = $(element);
+    if (elt.data('popover') === undefined) {
+        // One popover at a time.
+        if (userinfo_currently_popped) {
+            userinfo_currently_popped.popover("destroy");
+        }
+        var message = message_dict[id];
+        elt.popover({placement: "bottom",
+                     title: templates.userinfo_popover_title(message),
+                     content: templates.userinfo_popover_content(message),
+                     trigger: "manual"
+                    });
+        elt.popover("show");
+        userinfo_currently_popped = elt;
+    } else {
+        elt.popover("destroy");
+        userinfo_currently_popped = undefined;
+    }
+}
+
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
@@ -431,4 +455,11 @@ $(function () {
     });
 
     update_autocomplete();
+
+    $("body").bind('click', function() {
+        if (userinfo_currently_popped !== undefined) {
+            userinfo_currently_popped.popover('destroy');
+            userinfo_currently_popped = undefined;
+        }
+    });
 });

@@ -423,3 +423,7 @@ table.floating_recipient {
 .message_body_gravatar {
     margin-bottom: 2px;
 }
+
+.userinfo_popover a {
+    cursor: pointer;
+}

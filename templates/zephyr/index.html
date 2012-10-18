@@ -15,6 +15,13 @@
 {% rawjstemplate "subscription" %}
 </script>
 
+<script id="template_userinfo_popover_title" type="text/x-handlebars-template">
+{% rawjstemplate "userinfo_popover_title" %}
+</script>
+<script id="template_userinfo_popover_content" type="text/x-handlebars-template">
+{% rawjstemplate "userinfo_popover_content" %}
+</script>
+
 <link href="{{ static_hidden }}styles/zephyr.css?dummy_time={% now "U" %}" rel="stylesheet">
 <link href="{{ static_hidden }}styles/pygments.css" rel="stylesheet">
 <script type="text/javascript" src="{{ static_third  }}jquery/jquery.form.js"></script>

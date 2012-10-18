@@ -15,6 +15,8 @@ $(function () {
     // Compile Handlebars templates.
     templates.message       = Handlebars.compile($("#template_message").html());
     templates.subscription = Handlebars.compile($("#template_subscription").html());
+    templates.userinfo_popover_title = Handlebars.compile($("#template_userinfo_popover_title").html());
+    templates.userinfo_popover_content = Handlebars.compile($("#template_userinfo_popover_content").html());
 });
 
 $.ajaxSetup({
