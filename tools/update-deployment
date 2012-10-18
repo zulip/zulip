@@ -35,6 +35,13 @@ subprocess.check_call(["git", "fetch"], stdout=open('/dev/null', 'w'))
 subprocess.check_call(["git", "reset", "--hard", "origin/master"], stdout=open('/dev/null', 'w'))
 #subprocess.check_call(["python", "manage.py", "syncdb"], stdout=open('/dev/null', 'w'))
 
+# Restart the FastCGI process, which is running in a shell loop in screen.
+# TODO: real daemonization
+try:
+    subprocess.check_call(["pkill", "-f", "python manage.py runfcgi"])
+except CalledProcessError:
+    print WARNING + "Could not kill runfcgi; is it running?" + ENDC
+
 print OKGREEN + "Updated deployed version of humbug application!" + ENDC
 
 if newrev == '0000000000000000000000000000000000000000':
