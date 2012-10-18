@@ -52,7 +52,7 @@ exports.fetch = function () {
     });
 };
 
-exports.add = function (stream, prompt_button) {
+exports.add_for_send = function (stream, prompt_button) {
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/add',

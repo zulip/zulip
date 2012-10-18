@@ -255,12 +255,12 @@ $(function () {
     // Prepare the click handler for subbing to a new stream to which
     // you have composed a message.
     $('#create-it').click(function () {
-        subs.add(compose.stream_name(), $('#stream-dne'));
+        subs.add_for_send(compose.stream_name(), $('#stream-dne'));
     });
 
     // Prepare the click handler for subbing to an existing stream.
     $('#sub-it').click(function () {
-        subs.add(compose.stream_name(), $('#stream-nosub'));
+        subs.add_for_send(compose.stream_name(), $('#stream-nosub'));
     });
 
     var throttled_scrollhandler = $.throttle(50, function(e) {
