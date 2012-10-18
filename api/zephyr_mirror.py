@@ -53,9 +53,13 @@ parser.add_option('--site',
                   action='store')
 parser.add_option('--api-key',
                   dest='api_key',
-                  default="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  default=None,
                   action='store')
 (options, args) = parser.parse_args()
+
+if options.api_key is None:
+    api_key_file = os.path.join(os.environ["HOME"], "Private", ".humbug-api-key")
+    options.api_key = file(api_key_file).read().strip()
 
 sys.path.append(".")
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
