@@ -88,5 +88,5 @@ def send_bot_message(oldrev, newrev, refname):
 for ln in sys.stdin:
     oldrev, newrev, refname = ln.strip().split()
     if refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
-        update_deployment(oldrev, newrev, refname)
         send_bot_message(oldrev, newrev, refname)
+        update_deployment(oldrev, newrev, refname)
