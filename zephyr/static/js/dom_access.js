@@ -35,6 +35,6 @@ function get_id(message_row) {
 
 function get_message_row(message_id, table_name) {
     if (table_name === undefined)
-        table_name = (narrowed ? 'zfilt' : 'zhome');
+        table_name = (narrow.active() ? 'zfilt' : 'zhome');
     return $('#' + table_name + message_id);
 }

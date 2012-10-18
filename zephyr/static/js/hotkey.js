@@ -83,7 +83,7 @@ function process_hotkey(code) {
         if (composing_message()) {
             hide_compose();
         } else {
-            show_all_messages();
+            narrow.show_all_messages();
         }
         return process_hotkey;
     case 99: // 'c': compose
@@ -111,15 +111,15 @@ function process_hotkey(code) {
 var keydown_handler = process_hotkey;
 
 var goto_hotkeys = {
-    99: narrow_by_recipient,  // 'c'
-    105: narrow_subject,      // 'i'
-    112: narrow_all_personals, // 'p'
-    97: show_all_messages,    // 'a'
-    27: hide_compose          // Esc
+    99:  narrow.by_recipient,      // 'c'
+    105: narrow.by_subject,        // 'i'
+    112: narrow.all_personals,     // 'p'
+    97:  narrow.show_all_messages, // 'a'
+    27:  hide_compose              // Esc
 };
 
 process_goto_hotkey = function (code) {
-    narrow_target_message_id = selected_message_id;
+    narrow.target(selected_message_id);
 
     if (goto_hotkeys.hasOwnProperty(code))
         goto_hotkeys[code]();

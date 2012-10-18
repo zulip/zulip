@@ -23,20 +23,20 @@
 <tr class="recipient_row">
     <td colspan="2"
         class="message_label_clickable message_header message_header_stream left_part"
-        onclick="target_message_for_narrow({{id}}); narrow_stream();"
+        onclick="narrow.target({{id}}); narrow.by_stream();"
         title="{{display_recipient}}"></td>
     <td class="message_label_clickable message_header message_header_stream right_part"
-        onclick="target_message_for_narrow({{id}}); narrow_subject();"
+        onclick="narrow.target({{id}}); narrow.by_subject();"
         title="{{subject}}">{{display_recipient}} &nbsp; | &nbsp; {{subject}}</td>
 </tr>
 {{else}}
 <tr class="recipient_row">
     <td colspan="2" class="message_label_clickable message_header message_header_huddle left_part"
-        onclick="target_message_for_narrow({{id}}); narrow_huddle();"
+        onclick="narrow.target({{id}}); narrow.by_huddle();"
         title="Huddle with {{display_reply_to}}"></td>
     </td>
     <td class="message_label_clickable message_header message_header_huddle right_part"
-        onclick="target_message_for_narrow({{id}}); narrow_huddle();"
+        onclick="narrow.target({{id}}); narrow.by_huddle();"
         title="Huddle with {{display_reply_to}}">Huddle with {{display_reply_to}}</td>
 </tr>
 {{/if}}

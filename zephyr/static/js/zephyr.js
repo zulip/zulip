@@ -212,7 +212,7 @@ function update_selected_message(message) {
     message.addClass(selected_message_class);
 
     var new_selected_id = get_id(message);
-    if (!narrowed && new_selected_id !== selected_message_id) {
+    if (!narrow.active() && new_selected_id !== selected_message_id) {
         // Narrowing is a temporary view on top of the home view and
         // doesn't permanently affect where you are.
         //
@@ -491,8 +491,8 @@ function add_messages(data) {
         message_array = message_array.concat(data.messages);
     }
 
-    if (narrowed)
-        add_to_table(data.messages, 'zfilt', narrowed, data.where);
+    if (narrow.active())
+        add_to_table(data.messages, 'zfilt', narrow.predicate(), data.where);
 
     // Even when narrowed, add messages to the home view so they exist when we un-narrow.
     add_to_table(data.messages, 'zhome', function () { return true; }, data.where);

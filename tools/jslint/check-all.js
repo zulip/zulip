@@ -22,8 +22,7 @@ var globals =
     + ' hotkeys'
 
     // narrow.js
-    + ' narrow_target_message_id narrowed show_all_messages'
-    + ' narrow_all_personals narrow_by_recipient narrow_subject'
+    + ' narrow'
 
     // setup.js
     + ' loading_spinner templates'

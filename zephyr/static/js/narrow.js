@@ -1,11 +1,28 @@
+var narrow = (function () {
+
+var exports = {};
+
 // For tracking where you were before you narrowed.
 var persistent_message_id = 0;
 
 // For narrowing based on a particular message
-var narrow_target_message_id = 0;
+var target_id = 0;
 
 // Narrowing predicate, or 'false' for the home view.
 var narrowed = false;
+
+exports.active = function () {
+    // Cast to bool
+    return !!narrowed;
+};
+
+exports.predicate = function () {
+    if (narrowed) {
+        return narrowed;
+    } else {
+        return function () { return true; };
+    }
+};
 
 function do_narrow(description, filter_function) {
     narrowed = filter_function;
@@ -30,31 +47,31 @@ function do_narrow(description, filter_function) {
     // is temporarily selected
     select_and_show_by_id(selected_message_id);
     selected_message_class = "narrowed_selected_message";
-    select_and_show_by_id(narrow_target_message_id);
+    select_and_show_by_id(target_id);
     scroll_to_selected();
 }
 
-function target_message_for_narrow(id) {
-    narrow_target_message_id = id;
-}
+exports.target = function (id) {
+    target_id = id;
+};
 
-function narrow_huddle() {
-    var original = message_dict[narrow_target_message_id];
+function by_huddle() {
+    var original = message_dict[target_id];
     do_narrow("Huddles with " + original.display_reply_to, function (other) {
         return (other.type === "personal" || other.type === "huddle")
             && other.reply_to === original.reply_to;
     });
 }
 
-function narrow_all_personals() {
+exports.all_personals = function () {
     do_narrow("All huddles with you", function (other) {
         return other.type === "personal" || other.type === "huddle";
     });
-}
+};
 
-function narrow_personals() {
+function by_personals() {
     // Narrow to personals with a specific user
-    var original = message_dict[narrow_target_message_id];
+    var original = message_dict[target_id];
 
     do_narrow("Huddles with " + original.display_replay_to, function (other) {
         return (other.type === 'personal') &&
@@ -64,8 +81,8 @@ function narrow_personals() {
 
 }
 
-function narrow_stream() {
-    var original = message_dict[narrow_target_message_id];
+function by_stream() {
+    var original = message_dict[target_id];
     var message = original.display_recipient;
     do_narrow(message, function (other) {
         return (other.type === 'stream' &&
@@ -73,8 +90,8 @@ function narrow_stream() {
     });
 }
 
-function narrow_subject() {
-    var original = message_dict[narrow_target_message_id];
+exports.by_subject = function () {
+    var original = message_dict[target_id];
     if (original.type !== 'stream')
         return;
 
@@ -84,18 +101,18 @@ function narrow_subject() {
                 original.recipient_id === other.recipient_id &&
                 original.subject === other.subject);
     });
-}
+};
 
 // Called for the 'narrow by stream' hotkey.
-function narrow_by_recipient() {
+exports.by_recipient = function () {
     switch (message_dict[selected_message_id].type) {
-        case 'personal': narrow_personals(); break;
-        case 'huddle':   narrow_huddle();    break;
-        case 'stream':    narrow_stream();     break;
+        case 'personal': by_personals(); break;
+        case 'huddle':   by_huddle();    break;
+        case 'stream':   by_stream();    break;
     }
-}
+};
 
-function show_all_messages() {
+exports.show_all_messages = function () {
     if (!narrowed) {
         return;
     }
@@ -113,4 +130,8 @@ function show_all_messages() {
     select_and_show_by_id(persistent_message_id);
 
     scroll_to_selected();
-}
+};
+
+return exports;
+
+}());
