@@ -2,6 +2,37 @@ var compose = (function () {
 
 var exports = {};
 
+exports.start = function (msg_type, opts) {
+    opts = $.extend({ 'message_type': msg_type,
+                      'stream': '',
+                      'subject': '',
+                      'huddle_recipient': '',
+                      'message': '' },
+                    opts);
+
+    $("#stream").val(opts.stream);
+    $("#subject").val(opts.subject);
+    $("#huddle_recipient").val(opts.huddle_recipient);
+    $("#new_message_content").val(opts.message);
+
+    $('#sidebar a[href="#home"]').tab('show');
+
+    if (msg_type === 'stream') {
+        exports.show('stream', $("#stream"));
+    } else {
+        exports.show('personal', $("#huddle_recipient"));
+    }
+    hotkeys.set_compose();
+};
+
+exports.cancel = function () {
+    compose.hide();
+};
+
+exports.finish = function () {
+    $("#compose form").ajaxSubmit();
+};
+
 exports.show = function (tabname, focus_area) {
     if (reloading_app) {
         return;
