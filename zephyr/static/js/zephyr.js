@@ -159,32 +159,33 @@ function get_huddle_recipient_names(message) {
 }
 
 function respond_to_message(reply_type) {
-    var message, tabname;
+    var message, msg_type;
     message = message_dict[selected_message_id];
-    compose.clear();
+
+    var stream = '';
+    var subject = '';
     if (message.type === "stream") {
-        $("#stream").val(message.display_recipient);
-        $("#subject").val(message.subject);
-    } else {
-        $("#stream").val("");
-        $("#subject").val("");
+        stream = message.display_recipient;
+        subject = message.subject;
     }
-    $("#huddle_recipient").val(message.reply_to);
+
+    var huddle_recipient = message.reply_to;
     if (reply_type === "personal" && message.type === "huddle") {
         // reply_to for huddle messages is the whole huddle, so for
         // personals replies we need to set the the huddle recipient
         // to just the sender
-        $("#huddle_recipient").val(message.sender_email);
+        huddle_recipient = message.sender_email;
     }
-    tabname = reply_type;
-    if (tabname === undefined) {
-        tabname = message.type;
+    msg_type = reply_type;
+    if (msg_type === undefined) {
+        msg_type = message.type;
     }
-    if (tabname === "huddle") {
+    if (msg_type === "huddle") {
         // Huddle messages use the personals compose box
-        tabname = "personal";
+        msg_type = "personal";
     }
-    compose.show(tabname, $("#new_message_content"));
+    compose.show(msg_type, {'stream': stream, 'subject': subject,
+                            'huddle_recipient': huddle_recipient});
 }
 
 // Called by mouseover etc.
@@ -568,21 +569,12 @@ $(function () {
 
     var tab;
     var send_now = parseInt(vars.send_after_reload, 10);
-    if (vars.msg_type === "stream") {
-        if (! send_now) {
-            compose.show("stream", $("#new_message_content"));
-        }
-        compose.stream_name(vars.stream);
-        compose.subject(vars.subject);
-    } else {
-        if (! send_now) {
-            compose.show("huddle", $("#new_message_content"));
-        }
-        compose.show("huddle", $("#new_message_content"));
-        compose.recipient(vars.recipient);
-    }
-    compose.message(vars.msg);
 
+    // TODO: preserve focus
+   compose.start(vars.msg_type, {stream: vars.stream,
+                                 subject: vars.subject,
+                                 huddle_recipient: vars.recipient,
+                                 message: vars.msg});
     if (send_now) {
         $("#compose form").ajaxSubmit();
     }

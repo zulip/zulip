@@ -55,13 +55,6 @@ exports.clear = function () {
     $("#compose").find('input[type=text], textarea').val('');
 };
 
-exports.button_press = function (tabname) {
-    exports.clear();
-    $('#sidebar a[href="#home"]').tab('show');
-    exports.show(tabname, $("#" + tabname));
-    hotkeys.set_compose();
-};
-
 exports.toggle_mode = function () {
     if ($("#message-type-tabs li.active").find("a[href=#stream-message]").length !== 0) {
         // In stream tab, switch to personals.

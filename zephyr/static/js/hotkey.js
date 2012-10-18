@@ -79,18 +79,18 @@ function process_hotkey(code) {
             select_message(rows.last_visible(), false);
         }
         return false;
-    case 27: // Esc: hide compose pane or un-narrow
+    case 27: // Esc: cancel compose or un-narrow
         if (compose.composing()) {
-            compose.hide();
+            compose.cancel();
         } else {
             narrow.show_all_messages();
         }
         return process_hotkey;
     case 99: // 'c': compose
-        compose.button_press('stream');
+        compose.start('stream');
         return process_compose_hotkey;
     case 67: // 'C': compose huddle
-        compose.button_press('personal');
+        compose.start('personal');
         return process_compose_hotkey;
     case 114: // 'r': respond to message
         respond_to_message();
@@ -115,7 +115,7 @@ var goto_hotkeys = {
     105: narrow.by_subject,        // 'i'
     112: narrow.all_personals,     // 'p'
     97:  narrow.show_all_messages, // 'a'
-    27:  compose.hide              // Esc
+    27:  compose.cancel   // Esc
 };
 
 process_goto_hotkey = function (code) {
@@ -131,8 +131,8 @@ process_goto_hotkey = function (code) {
 
 process_key_in_input = function (code) {
     if (code === 27) {
-        // If the user hit the escape key, hide the compose window
-        compose.hide();
+        // If the user hit the escape key, cancel the current compose
+        compose.cancel();
     }
     // Otherwise, let the browser handle the key normally
     return false;
