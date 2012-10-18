@@ -3,7 +3,7 @@ import sys
 import os
 import optparse
 
-usage = """print-message --user=<email address> [options]
+usage = """print-messages --user=<email address> [options]
 
 Prints out each message received by the indicated user.
 
