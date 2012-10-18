@@ -3,6 +3,7 @@ import simplejson
 import requests
 import time
 import traceback
+import urlparse
 
 # Check that we have a recent enough version
 assert(requests.__version__ > '0.12')
@@ -19,7 +20,7 @@ class HumbugAPI():
         request["api-key"] = self.api_key
         while True:
             try:
-                res = requests.post(self.base_url + url, data=request, verify=True)
+                res = requests.post(urlparse.urljoin(self.base_url, url), data=request, verify=True)
                 if res.status_code == requests.codes.service_unavailable:
                     # On 503 errors, try again after a short sleep
                     time.sleep(0.5)
