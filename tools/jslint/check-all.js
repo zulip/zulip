@@ -14,7 +14,7 @@ var globals =
     // compose.js
     + ' compose'
 
-    // dom_access.js
+    // rows.js
     + ' get_first_visible get_last_visible get_next_visible get_prev_visible'
     + ' get_id get_message_row'
 
