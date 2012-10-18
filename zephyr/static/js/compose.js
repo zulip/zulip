@@ -109,7 +109,7 @@ function check_stream_for_send(stream_name) {
         data: {'stream': stream_name},
         async: false,
         success: function (data) {
-            if (data.exists === "False") {
+            if (!data.exists) {
                 // The stream doesn't exist
                 okay = false;
                 $('#send-status').removeClass(status_classes).show();
