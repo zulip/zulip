@@ -462,6 +462,7 @@ def notify_new_message(request, handler):
     users   = [UserProfile.objects.get(id=user)
                for user in request.POST['users'].split(',')]
     message = Message.objects.get(id=request.POST['message'])
+    mit_sync_table[message.id] = request.POST["synced_from_mit"]
 
     for user in users:
         user.receive(message)

@@ -260,10 +260,7 @@ def log_message(message):
 
 def do_send_message(message, synced_from_mit=False, no_log=False):
     message.save()
-    # The following mit_sync_table code must be after message.save() or
-    # otherwise the id returned will be None (not having been assigned
-    # by the database yet)
-    mit_sync_table[message.id] = synced_from_mit
+
     # Log the message to our message log for populate_db to refill
     if not no_log:
         log_message(message)
@@ -291,6 +288,7 @@ def do_send_message(message, synced_from_mit=False, no_log=False):
         requests.post(settings.NOTIFY_NEW_MESSAGE_URL, data=[
                ('secret',  settings.SHARED_SECRET),
                ('message', message.id),
+               ('synced_from_mit', synced_from_mit),
                ('users',   ','.join(str(user.id) for user in recipients))])
 
 class Subscription(models.Model):
