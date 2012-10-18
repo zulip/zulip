@@ -232,7 +232,7 @@ def restore_saved_messages():
         if not realm:
             realm = Realm.objects.get(domain='mit.edu')
 
-        create_user_if_needed(realm, sender_email, sender_email.split('@')[0],
+        create_user_if_needed(realm, sender_email,
                               old_message["sender_full_name"],
                               old_message["sender_short_name"])
         message.sender = UserProfile.objects.get(user__email=old_message["sender_email"])
@@ -244,8 +244,7 @@ def restore_saved_messages():
 
         if message.type == Recipient.PERSONAL:
             u = old_message["recipient"][0]
-            create_user_if_needed(realm, u["email"], u["email"].split('@')[0],
-                                  u["full_name"], u["short_name"])
+            create_user_if_needed(realm, u["email"], u["full_name"], u["short_name"])
             user_profile = UserProfile.objects.get(user__email=u["email"])
             message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
                                                          type_id=user_profile.id)
@@ -255,8 +254,7 @@ def restore_saved_messages():
                                                          type_id=stream.id)
         elif message.type == Recipient.HUDDLE:
             for u in old_message["recipient"]:
-                create_user_if_needed(realm, u["email"], u["email"].split('@')[0],
-                                      u["full_name"], u["short_name"])
+                create_user_if_needed(realm, u["email"], u["full_name"], u["short_name"])
             target_huddle = get_huddle([UserProfile.objects.get(user__email=u["email"]).id
                                         for u in old_message["recipient"]])
             message.recipient = Recipient.objects.get(type=Recipient.HUDDLE,

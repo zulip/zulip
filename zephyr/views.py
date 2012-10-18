@@ -338,7 +338,7 @@ def already_sent_forged_message(request):
 def create_forged_message_users(request, user_profile):
     # Create a user for the sender, if needed
     email = request.POST['sender'].lower()
-    user = create_user_if_needed(user_profile.realm, email, "test",
+    user = create_user_if_needed(user_profile.realm, email,
                                  request.POST['fullname'],
                                  request.POST['shortname'])
 
@@ -347,12 +347,12 @@ def create_forged_message_users(request, user_profile):
         if ',' in request.POST['recipient']:
             # Huddle message
             for user_email in [e.strip() for e in request.POST["recipient"].split(",")]:
-                create_user_if_needed(user_profile.realm, user_email, "test",
+                create_user_if_needed(user_profile.realm, user_email,
                                       user_email.split('@')[0],
                                       user_email.split('@')[0])
         else:
             user_email = request.POST["recipient"].strip()
-            create_user_if_needed(user_profile.realm, user_email, "test",
+            create_user_if_needed(user_profile.realm, user_email,
                                   user_email.split('@')[0],
                                   user_email.split('@')[0])
     return user
