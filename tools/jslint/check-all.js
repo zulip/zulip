@@ -26,7 +26,7 @@ var globals =
     // setup.js
     + ' loading_spinner templates'
 
-    // subscribe.js
+    // subs.js
     + ' fetch_subs sub_from_home subscribed_to stream_list_hash'
     + ' add_to_stream_list'
 
