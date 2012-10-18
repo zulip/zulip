@@ -255,12 +255,12 @@ $(function () {
     // Prepare the click handler for subbing to a new stream to which
     // you have composed a message.
     $('#create-it').click(function () {
-        sub_from_home(compose.stream_name(), $('#stream-dne'));
+        subs.add(compose.stream_name(), $('#stream-dne'));
     });
 
     // Prepare the click handler for subbing to an existing stream.
     $('#sub-it').click(function () {
-        sub_from_home(compose.stream_name(), $('#stream-nosub'));
+        subs.add(compose.stream_name(), $('#stream-nosub'));
     });
 
     var throttled_scrollhandler = $.throttle(50, function(e) {
@@ -319,7 +319,7 @@ $(function () {
         compose.show('stream', $("#stream"));
     });
 
-    $('#sidebar a[href="#subscriptions"]').click(fetch_subs);
+    $('#sidebar a[href="#subscriptions"]').click(subs.fetch);
 
     var settings_status = $('#settings-status');
     $("#settings-change-box form").ajaxForm({

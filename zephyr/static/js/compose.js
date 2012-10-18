@@ -146,7 +146,7 @@ function validate_stream_message() {
         return false;
     }
 
-    if (!subscribed_to(stream_name)) {
+    if (!subs.have(stream_name)) {
         if (!check_stream_for_send(stream_name)) {
             return false;
         }

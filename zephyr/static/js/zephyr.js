@@ -62,11 +62,6 @@ $(function () {
     send_status.hide();
     $("#compose form").ajaxForm(options);
 
-    // Populate stream_list_hash with data handed over to client-side template.
-    for (i = 0; i < stream_list.length; i++) {
-        stream_list_hash[stream_list[i].toLowerCase()] = true;
-    }
-
     $.each(people_list, function (idx, person) {
         people_hash[person.email] = 1;
     });

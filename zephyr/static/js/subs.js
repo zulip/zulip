@@ -1,4 +1,37 @@
-function fetch_subs() {
+var subs = (function () {
+
+var exports = {};
+
+var stream_list_hash = [];
+
+function case_insensitive_subscription_index(stream_name) {
+    var i;
+    var name = stream_name.toLowerCase();
+
+    for (i = 1; i < stream_list.length; i++) {
+        if (name === stream_list[i].toLowerCase()) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function add_to_stream_list(stream_name) {
+    if (!exports.have(stream_name)) {
+        stream_list.push(stream_name);
+        stream_list_hash[stream_name.toLowerCase()] = true;
+    }
+}
+
+function remove_from_stream_list(stream_name) {
+    delete stream_list_hash[stream_name.toLowerCase()];
+    var removal_index = case_insensitive_subscription_index(stream_name);
+    if (removal_index !== -1) {
+        stream_list.splice(removal_index, 1);
+    }
+}
+
+exports.fetch = function () {
     $.ajax({
         type:     'POST',
         url:      'json/subscriptions/list',
@@ -17,9 +50,9 @@ function fetch_subs() {
             report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
         }
     });
-}
+};
 
-function sub_from_home(stream, prompt_button) {
+exports.add = function (stream, prompt_button) {
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/add',
@@ -35,43 +68,21 @@ function sub_from_home(stream, prompt_button) {
             report_error("Unable to subscribe", xhr, $("#home-error"));
         }
     });
-}
+};
 
-stream_list_hash = [];
-
-function subscribed_to(stream_name) {
+exports.have = function (stream_name) {
     return (stream_list_hash[stream_name.toLowerCase()] === true);
-}
+};
 
-function case_insensitive_subscription_index(stream_name) {
-    var i;
-    var name = stream_name.toLowerCase();
-
-    for (i = 1; i < stream_list.length; i++) {
-        if (name === stream_list[i].toLowerCase()) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-function add_to_stream_list(stream_name) {
-    if (!subscribed_to(stream_name)) {
-        stream_list.push(stream_name);
-        stream_list_hash[stream_name.toLowerCase()] = true;
-    }
-}
-
-function remove_from_stream_list(stream_name) {
-    delete stream_list_hash[stream_name.toLowerCase()];
-    var removal_index = case_insensitive_subscription_index(stream_name);
-    if (removal_index !== -1) {
-        stream_list.splice(removal_index, 1);
-    }
-}
-
-// FIXME: It would be nice to move the UI setup into ui.js.
 $(function () {
+    var i;
+    // Populate stream_list_hash with data handed over to client-side template.
+    for (i = 0; i < stream_list.length; i++) {
+        stream_list_hash[stream_list[i].toLowerCase()] = true;
+    }
+
+    // FIXME: It would be nice to move the UI setup into ui.js.
+
     $("#current_subscriptions").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
@@ -104,3 +115,7 @@ $(function () {
         }
     });
 });
+
+return exports;
+
+}());

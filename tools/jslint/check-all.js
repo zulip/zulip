@@ -27,8 +27,7 @@ var globals =
     + ' loading_spinner templates'
 
     // subs.js
-    + ' fetch_subs sub_from_home subscribed_to stream_list_hash'
-    + ' add_to_stream_list'
+    + ' subs'
 
     // ui.js
     + ' register_onclick hide_email show_email'
