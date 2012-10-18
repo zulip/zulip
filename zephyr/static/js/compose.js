@@ -23,14 +23,17 @@ exports.start = function (msg_type, opts) {
         exports.show('personal', $("#huddle_recipient"));
     }
     hotkeys.set_compose();
+    $(document).trigger($.Event('compose_started.zephyr', opts));
 };
 
 exports.cancel = function () {
     compose.hide();
+    $(document).trigger($.Event('compose_canceled.zephyr'));
 };
 
 exports.finish = function () {
     $("#compose form").ajaxSubmit();
+    $(document).trigger($.Event('compose_finished.zephyr'));
 };
 
 exports.show = function (tabname, focus_area) {
