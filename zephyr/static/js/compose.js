@@ -148,10 +148,10 @@ function validate_stream_message() {
         return false;
     }
 
-    if (!check_stream_for_send(stream_name))
-        return false;
-
     if (!subscribed_to(stream_name)) {
+        if (!check_stream_for_send(stream_name)) {
+            return false;
+        }
         // You're not subbed to the stream
         $('#send-status').removeClass(status_classes).show();
         $('#stream-nosub-name').text(stream_name);
