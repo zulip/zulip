@@ -37,10 +37,11 @@ subprocess.check_call(["git", "reset", "--hard", "origin/master"], stdout=open('
 
 # Restart the FastCGI process, which is running in a shell loop in screen.
 # TODO: real daemonization
-try:
-    subprocess.check_call(["pkill", "-f", "python manage.py runfcgi"])
-except CalledProcessError:
-    print WARNING + "Could not kill runfcgi; is it running?" + ENDC
+for cmd in ('runfcgi', 'runtornado'):
+    try:
+        subprocess.check_call(["pkill", "-f", "python manage.py " + cmd])
+    except CalledProcessError:
+        print "%sCould not kill %s; is it running?%s" % (WARNING, cmd, ENDC)
 
 print OKGREEN + "Updated deployed version of humbug application!" + ENDC
 
