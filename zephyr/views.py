@@ -250,6 +250,8 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
     last  = int(last)
     if failures is not None:
         failures = int(failures)
+    if client_reload_pending is not None:
+        client_reload_pending = int(client_reload_pending)
 
     where = 'bottom'
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')

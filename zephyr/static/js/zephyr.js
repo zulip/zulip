@@ -14,7 +14,7 @@ var get_updates_params = {
     last:  -1,
     failures: 0,
     server_generation: -1, /* to be filled in on document.ready */
-    reload_pending: false
+    reload_pending: 0
 };
 
 $(function () {
@@ -604,7 +604,7 @@ function get_updates() {
             if (get_updates_params.server_generation === -1) {
                 get_updates_params.server_generation = data.server_generation;
             } else if (data.server_generation !== get_updates_params.server_generation) {
-                get_updates_params.reload_pending = true;
+                get_updates_params.reload_pending = 1;
                 reload_app();
             }
 
