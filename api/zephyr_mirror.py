@@ -51,21 +51,23 @@ parser.add_option('--site',
                   dest='site',
                   default="https://app.humbughq.com",
                   action='store')
-parser.add_option('--api-key',
-                  dest='api_key',
-                  default=None,
+parser.add_option('--user',
+                  dest='user',
+                  default=os.environ["USER"],
+                  action='store')
+parser.add_option('--api-key-file',
+                  dest='api_key_file',
+                  default=os.path.join(os.environ["HOME"], "Private", ".humbug-api-key"),
                   action='store')
 (options, args) = parser.parse_args()
 
-if options.api_key is None:
-    api_key_file = os.path.join(os.environ["HOME"], "Private", ".humbug-api-key")
-    options.api_key = file(api_key_file).read().strip()
+api_key = file(options.api_key_file).read().strip()
 
 sys.path.append(".")
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import api.common
-humbug_client = api.common.HumbugAPI(email=os.environ["USER"] + "@mit.edu",
-                                     api_key=options.api_key,
+humbug_client = api.common.HumbugAPI(email=options.user + "@mit.edu",
+                                     api_key=api_key,
                                      verbose=True,
                                      site=options.site)
 
@@ -153,7 +155,7 @@ def update_subscriptions_from_humbug():
 
 def maybe_restart_mirroring_script():
     if os.stat(root_path + "/restart_stamp").st_mtime > start_time or \
-            (os.environ["USER"] == "tabbott" and
+            (options.user == "tabbott" and
              os.stat(root_path + "/tabbott_stamp").st_mtime > start_time):
         print
         print "%s: zephyr mirroring script has been updated; restarting..." % \
@@ -281,9 +283,9 @@ def zephyr_to_humbug(options):
             ensure_subscribed(sub)
         update_subscriptions_from_humbug()
     if options.forward_personals:
-        subs.add(("message", "*", os.environ["USER"] + "@ATHENA.MIT.EDU"))
+        subs.add(("message", "*", options.user + "@ATHENA.MIT.EDU"))
         if subscribed_to_mail_messages():
-            subs.add(("mail", "inbox", os.environ["USER"] + "@ATHENA.MIT.EDU"))
+            subs.add(("mail", "inbox", options.user + "@ATHENA.MIT.EDU"))
 
     if options.resend_log:
         with open('zephyrs', 'r') as log:
@@ -363,7 +365,7 @@ def forward_to_zephyr(message):
             zeph.send()
 
 def maybe_forward_to_zephyr(message):
-    if message["sender_email"] == os.environ["USER"] + "@mit.edu":
+    if message["sender_email"] == options.user + "@mit.edu":
         timestamp_now = datetime.datetime.now().strftime("%s")
         if float(message["timestamp"]) < float(timestamp_now) - 15:
             print "%s humbug=>zephyr: Alert!  Out of order message: %s < %s" % \
@@ -411,7 +413,7 @@ def parse_zephyr_subs(verbose=False):
         if verbose:
             print >>sys.stderr, "Couldn't find .zephyr.subs!"
             print >>sys.stderr, "Do you mean to run with --no-auto-subscribe?"
-            return
+        return []
 
     for line in file(subs_file, "r").readlines():
         line = line.strip()
