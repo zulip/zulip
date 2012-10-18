@@ -1,3 +1,7 @@
+var hotkeys = (function () {
+
+var exports = {};
+
 var pressed_keys = {};
 
 function num_pressed_keys() {
@@ -17,6 +21,9 @@ var directional_hotkeys = {
     36: get_first_visible, // Home
     35: get_last_visible   // End
 };
+
+// These are not exported, but we declare them here to make JSLint happy.
+var process_key_in_input, process_compose_hotkey, process_goto_hotkey;
 
 function simulate_keydown(keycode) {
     $(document).trigger($.Event('keydown', {keyCode: keycode}));
@@ -111,7 +118,7 @@ var goto_hotkeys = {
     27: hide_compose          // Esc
 };
 
-function process_goto_hotkey(code) {
+process_goto_hotkey = function (code) {
     narrow_target_message_id = selected_message_id;
 
     if (goto_hotkeys.hasOwnProperty(code))
@@ -120,18 +127,18 @@ function process_goto_hotkey(code) {
     /* Always return to the initial hotkey mode, even
        after an unrecognized "go to" command. */
     return process_hotkey;
-}
+};
 
-function process_key_in_input(code) {
+process_key_in_input = function (code) {
     if (code === 27) {
         // If the user hit the escape key, hide the compose window
         hide_compose();
     }
     // Otherwise, let the browser handle the key normally
     return false;
-}
+};
 
-function process_compose_hotkey(code) {
+process_compose_hotkey = function (code) {
     if (code === 9) { // Tab: toggles between stream and huddle compose tabs.
         toggle_compose();
         return process_compose_hotkey;
@@ -140,11 +147,11 @@ function process_compose_hotkey(code) {
     // like any other keys typed in the input box
     keydown_handler = process_hotkey;
     return process_hotkey(code);
-}
+};
 
-function set_compose_hotkey() {
+exports.set_compose = function () {
     keydown_handler = process_compose_hotkey;
-}
+};
 
 $(document).keydown(function (e) {
     pressed_keys[e.which] = true;
@@ -189,3 +196,7 @@ $(document).keypress(function (event) {
         }
     }
 });
+
+return exports;
+
+}());

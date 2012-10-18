@@ -19,8 +19,7 @@ var globals =
     + ' get_id get_message_row'
 
     // hotkey.js
-    + ' process_goto_hotkey process_compose_hotkey process_key_in_input'
-    + ' set_compose_hotkey'
+    + ' hotkeys'
 
     // narrow.js
     + ' narrow_target_message_id narrowed show_all_messages'
