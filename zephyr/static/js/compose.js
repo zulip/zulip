@@ -1,6 +1,8 @@
-var status_classes = 'alert-error alert-success alert-info';
+var compose = (function () {
 
-function show_compose(tabname, focus_area) {
+var exports = {};
+
+exports.show = function (tabname, focus_area) {
     if (reloading_app) {
         return;
     }
@@ -10,81 +12,77 @@ function show_compose(tabname, focus_area) {
     $('#message-type-tabs a[href="#' + tabname + '-message"]').tab('show');
     focus_area.focus();
     focus_area.select();
-}
+};
 
-function hide_compose() {
+exports.hide = function () {
     $('input, textarea, button').blur();
     $('.message_comp').slideUp(100,
                               function() { $('#compose').css({visibility: "hidden"});});
-}
+};
 
-function clear_compose_box() {
+exports.clear = function () {
     $("#compose").find('input[type=text], textarea').val('');
-}
+};
 
-function compose_button(tabname) {
-    clear_compose_box();
+exports.button_press = function (tabname) {
+    exports.clear();
     $('#sidebar a[href="#home"]').tab('show');
-    show_compose(tabname, $("#" + tabname));
+    exports.show(tabname, $("#" + tabname));
     hotkeys.set_compose();
-}
+};
 
-function toggle_compose() {
+exports.toggle_mode = function () {
     if ($("#message-type-tabs li.active").find("a[href=#stream-message]").length !== 0) {
         // In stream tab, switch to personals.
-        show_compose('personal', $("#huddle_recipient"));
+        exports.show('personal', $("#huddle_recipient"));
     } else {
-        show_compose('stream', $("#stream"));
+        exports.show('stream', $("#stream"));
     }
-}
+};
 
-function composing_stream_message() {
-    return $("#stream-message").is(":visible");
-}
+exports.composing = function () {
+    if ($("#stream-message").is(":visible")) {
+        return 'stream';
+    }
 
-function composing_huddle_message() {
-    return $("#personal-message").is(":visible");
-}
+    if ($("#personal-message").is(":visible")) {
+        return 'huddle';
+    }
 
-function composing_message() {
-    return composing_stream_message() || composing_huddle_message();
-}
+    return false;
+};
 
-function compose_stream_name(newval) {
+exports.stream_name = function (newval) {
     var oldval = $.trim($("#stream").val());
     if (newval !== undefined) {
         $("#stream").val(newval);
     }
     return oldval;
-}
+};
 
-function compose_subject(newval) {
+exports.subject = function (newval) {
     var oldval =  $.trim($("#subject").val());
     if (newval !== undefined) {
         $("#subject").val(newval);
     }
     return oldval;
-}
+};
 
-function compose_message(newval) {
+exports.message = function (newval) {
     var oldval = $.trim($("#new_message_content").val());
     if (newval !== undefined) {
         $("#new_message_content").val(newval);
     }
     return oldval;
-}
+};
 
-function compose_recipient(newval) {
+exports.recipient = function (newval) {
     var oldval = $.trim($("#huddle_recipient").val());
     if (newval !== undefined) {
         $("#huddle_recipient").val(newval);
     }
     return oldval;
-}
-
-function compose_huddle_message(newval) {
-    return compose_message(newval);
-}
+};
 
 function compose_error(error_text, bad_input) {
     $('#send-status').removeClass(status_classes)
@@ -116,7 +114,7 @@ function check_stream_for_send(stream_name) {
                 $('#stream-dne-name').text(stream_name);
                 $('#stream-dne').show();
                 submit_buttons().removeAttr('disabled');
-                hide_compose();
+                exports.hide();
                 $('#create-it').focus();
             }
             $("#home-error").hide();
@@ -132,18 +130,18 @@ function check_stream_for_send(stream_name) {
 }
 
 function validate_stream_message() {
-    var stream_name = compose_stream_name();
+    var stream_name = exports.stream_name();
     if (stream_name === "") {
         compose_error("Please specify a stream", $("#stream"));
         return false;
     }
 
-    if (compose_subject() === "") {
+    if (exports.subject() === "") {
         compose_error("Please specify an subject", $("#subject"));
         return false;
     }
 
-    if (compose_message() === "") {
+    if (exports.message() === "") {
         compose_error("You have nothing to send!", $("#new_message_content"));
         return false;
     }
@@ -157,7 +155,7 @@ function validate_stream_message() {
         $('#stream-nosub-name').text(stream_name);
         $('#stream-nosub').show();
         submit_buttons().removeAttr('disabled');
-        hide_compose();
+        exports.hide();
         $('#sub-it').focus();
         return false;
     }
@@ -166,12 +164,12 @@ function validate_stream_message() {
 }
 
 function validate_huddle_message() {
-    if (compose_recipient() === "") {
+    if (exports.recipient() === "") {
         compose_error("Please specify at least one recipient", $("#huddle_recipient"));
         return false;
     }
 
-    if (compose_huddle_message() === "") {
+    if (exports.message() === "") {
         compose_error("You have nothing to send!", $("#new_message_content"));
         return false;
     }
@@ -179,12 +177,16 @@ function validate_huddle_message() {
     return true;
 }
 
-function validate_message() {
+exports.validate = function () {
     submit_buttons().attr('disabled', 'disabled').blur();
 
-    if (composing_huddle_message()) {
+    if (exports.composing() === 'huddle') {
         return validate_huddle_message();
     } else {
         return validate_stream_message();
     }
-}
+};
+
+return exports;
+
+}());

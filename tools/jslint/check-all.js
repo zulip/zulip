@@ -8,11 +8,11 @@ var globals =
     // index.html
     + ' initial_pointer email stream_list people_list have_initial_messages'
 
+    // common.js
+    + ' status_classes'
+
     // compose.js
-    + ' show_compose hide_compose toggle_compose clear_compose_box compose_button'
-    + ' composing_message composing_stream_message compose_stream_name'
-    + ' compose_stream_name compose_subject compose_recipient compose_message'
-    + ' validate_message status_classes'
+    + ' compose'
 
     // dom_access.js
     + ' get_first_visible get_last_visible get_next_visible get_prev_visible'
@@ -38,7 +38,7 @@ var globals =
 
     // zephyr.js
     + ' message_array message_dict selected_message_class'
-    + ' status_classes clear_table add_to_table subject_dict'
+    + ' clear_table add_to_table subject_dict'
     + ' keep_pointer_in_view move_pointer_at_page_top_and_bottom'
     + ' respond_to_message'
     + ' select_message select_message_by_id'

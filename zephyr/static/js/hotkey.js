@@ -80,17 +80,17 @@ function process_hotkey(code) {
         }
         return false;
     case 27: // Esc: hide compose pane or un-narrow
-        if (composing_message()) {
-            hide_compose();
+        if (compose.composing()) {
+            compose.hide();
         } else {
             narrow.show_all_messages();
         }
         return process_hotkey;
     case 99: // 'c': compose
-        compose_button('stream');
+        compose.button_press('stream');
         return process_compose_hotkey;
     case 67: // 'C': compose huddle
-        compose_button('personal');
+        compose.button_press('personal');
         return process_compose_hotkey;
     case 114: // 'r': respond to message
         respond_to_message();
@@ -115,7 +115,7 @@ var goto_hotkeys = {
     105: narrow.by_subject,        // 'i'
     112: narrow.all_personals,     // 'p'
     97:  narrow.show_all_messages, // 'a'
-    27:  hide_compose              // Esc
+    27:  compose.hide              // Esc
 };
 
 process_goto_hotkey = function (code) {
@@ -132,7 +132,7 @@ process_goto_hotkey = function (code) {
 process_key_in_input = function (code) {
     if (code === 27) {
         // If the user hit the escape key, hide the compose window
-        hide_compose();
+        compose.hide();
     }
     // Otherwise, let the browser handle the key normally
     return false;
@@ -140,7 +140,7 @@ process_key_in_input = function (code) {
 
 process_compose_hotkey = function (code) {
     if (code === 9) { // Tab: toggles between stream and huddle compose tabs.
-        toggle_compose();
+        compose.toggle_mode();
         return process_compose_hotkey;
     }
     // Process the first non-tab character and everything after it

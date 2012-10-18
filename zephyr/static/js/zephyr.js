@@ -24,11 +24,11 @@ $(function () {
 
     var options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        beforeSubmit: validate_message,
+        beforeSubmit: compose.validate,
         success: function (resp, statusText, xhr, form) {
             form.find('textarea').val('');
             send_status.hide();
-            hide_compose();
+            compose.hide();
             buttons.removeAttr('disabled');
             if (get_updates_params.reload_pending) {
                 reload_app();
@@ -166,7 +166,7 @@ function get_huddle_recipient_names(message) {
 function respond_to_message(reply_type) {
     var message, tabname;
     message = message_dict[selected_message_id];
-    clear_compose_box();
+    compose.clear();
     if (message.type === "stream") {
         $("#stream").val(message.display_recipient);
         $("#subject").val(message.subject);
@@ -189,7 +189,7 @@ function respond_to_message(reply_type) {
         // Huddle messages use the personals compose box
         tabname = "personal";
     }
-    show_compose(tabname, $("#new_message_content"));
+    compose.show(tabname, $("#new_message_content"));
 }
 
 // Called by mouseover etc.
@@ -527,7 +527,7 @@ function do_reload_app() {
 
 function reload_app() {
     // If we can, reload the page immediately
-    if (! composing_message()) {
+    if (! compose.composing()) {
         do_reload_app();
     }
 
@@ -539,15 +539,15 @@ function reload_app() {
 
 function reload_app_preserving_compose(send_after_reload) {
     var url = "#reload:send_after_reload=" + Number(send_after_reload);
-    if (composing_stream_message()) {
+    if (compose.composing() === 'stream') {
         url += "+msg_type=stream";
-        url += "+stream=" + encodeURIComponent(compose_stream_name());
-        url += "+subject=" + encodeURIComponent(compose_subject());
+        url += "+stream=" + encodeURIComponent(compose.stream_name());
+        url += "+subject=" + encodeURIComponent(compose.subject());
     } else {
         url += "+msg_type=huddle";
-        url += "+recipient=" + encodeURIComponent(compose_recipient());
+        url += "+recipient=" + encodeURIComponent(compose.recipient());
     }
-    url += "+msg="+ encodeURIComponent(compose_message());
+    url += "+msg="+ encodeURIComponent(compose.message());
 
     window.location.replace(url);
     do_reload_app();
@@ -575,18 +575,18 @@ $(function () {
     var send_now = parseInt(vars.send_after_reload, 10);
     if (vars.msg_type === "stream") {
         if (! send_now) {
-            show_compose("stream", $("#new_message_content"));
+            compose.show("stream", $("#new_message_content"));
         }
-        compose_stream_name(vars.stream);
-        compose_subject(vars.subject);
+        compose.stream_name(vars.stream);
+        compose.subject(vars.subject);
     } else {
         if (! send_now) {
-            show_compose("huddle", $("#new_message_content"));
+            compose.show("huddle", $("#new_message_content"));
         }
-        show_compose("huddle", $("#new_message_content"));
-        compose_recipient(vars.recipient);
+        compose.show("huddle", $("#new_message_content"));
+        compose.recipient(vars.recipient);
     }
-    compose_message(vars.msg);
+    compose.message(vars.msg);
 
     if (send_now) {
         $("#compose form").ajaxSubmit();

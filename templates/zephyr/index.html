@@ -109,10 +109,10 @@ var people_list = [
                   </a>
                 </li>
                 {% endif %}
-                <button type="button" class="visible-phone btn btn-small phone_new_message_button" onclick="compose_button('stream');">New Message</button>
+                <button type="button" class="visible-phone btn btn-small phone_new_message_button" onclick="compose.button_press('stream');">New Message</button>
               </ul>
               <div class="hidden-phone new_message_button">
-                <button type="button" class="btn btn-large btn-block" id="new_message_button" onclick="compose_button('stream');">New Message</button>
+                <button type="button" class="btn btn-large btn-block" id="new_message_button" onclick="compose.button_press('stream');">New Message</button>
               </div>
 
                 <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
