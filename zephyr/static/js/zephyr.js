@@ -481,6 +481,8 @@ function add_messages(data) {
         loading_spinner.stop();
         $('#loading_indicator').hide();
         loading_spinner = undefined;
+
+        $('#load_more').show();
     }
 
     if (data.where === 'top') {
