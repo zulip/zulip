@@ -85,7 +85,7 @@ exports.by_recipient = function () {
     switch (message.type) {
     case 'personal':
         // Narrow to personals with a specific user
-        do_narrow("Huddles with " + message.display_replay_to, function (other) {
+        do_narrow("Huddles with " + message.display_reply_to, function (other) {
             return (other.type === 'personal') &&
                 (((other.display_recipient.email === message.display_recipient.email)
                     && (other.sender_email === message.sender_email)) ||
