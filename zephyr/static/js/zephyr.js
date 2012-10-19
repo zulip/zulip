@@ -35,7 +35,6 @@ $(function () {
             send_status.hide();
             compose.hide();
             buttons.removeAttr('disabled');
-            start_reload_app();
         },
         error: function (xhr, error_type) {
             if (error_type !== 'timeout' && get_updates_params.reload_pending) {
