@@ -80,13 +80,13 @@ if child_pid == 0:
     zephyr.init()
     zsig = "Timothy Good Abbott"
 
-    zeph = zephyr.ZNotice(sender=mit_user, auth=False, recipient=mit_user,
+    zeph = zephyr.ZNotice(sender=mit_user, auth=True, recipient=mit_user,
                           cls="message", instance="personal")
     zeph.setmessage("%s\0%s" % (zsig, zhkey1))
     zeph.send()
     time.sleep(0.2)
 
-    zeph = zephyr.ZNotice(sender=mit_user, auth=False,
+    zeph = zephyr.ZNotice(sender=mit_user, auth=True,
                           cls="tabbott-nagios-test", instance="test")
     zeph.setmessage("%s\0%s" % (zsig, zhkey2))
     zeph.send()
