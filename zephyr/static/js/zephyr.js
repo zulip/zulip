@@ -30,15 +30,12 @@ $(function () {
             send_status.hide();
             compose.hide();
             buttons.removeAttr('disabled');
-            if (get_updates_params.reload_pending) {
-                reload_app();
-                return;
-            }
+            start_reload_app();
         },
         error: function (xhr, error_type) {
             if (error_type !== 'timeout' && get_updates_params.reload_pending) {
                 // The error might be due to the server changing
-                reload_app_preserving_compose(true);
+                do_reload_app_preserving_compose(true);
                 return;
             }
             var response = "Error sending message";
@@ -521,19 +518,54 @@ function do_reload_app() {
     window.location.reload(true);
 }
 
-function reload_app() {
-    // If we can, reload the page immediately
-    if (! compose.composing()) {
-        do_reload_app();
+function start_reload_app() {
+    if (get_updates_params.reload_pending) {
+        return;
     }
+    get_updates_params.reload_pending = 1;
 
-    // If the user is composing a message, wait until he's done or
-    // until a timeout expires
-    setTimeout(function () { reload_app_preserving_compose(false); },
-               1000 * 60 * 5); // 5 minutes
+    // Always reload after 5 minutes
+    setTimeout(function () { do_reload_app_preserving_compose(false); },
+               1000 * 60 * 5);
+
+    // If the user is composing a message, reload if they become
+    // idle while composing.  If they finish composing, the
+    // submit code will reload the app.  If they cancel the
+    // compose, wait until they're idle again
+
+    // If the user is not composing, reload if the user becomes idle.
+    // If they start composing, postpone reloading
+
+    var idle_control;
+    var composing_timeout = 1000*30;
+    var home_timeout = 1000*10;
+    var compose_canceled_handler, compose_started_handler;
+
+    compose_canceled_handler = function () {
+        idle_control.cancel();
+        idle_control = $(document).idle({'idle': home_timeout,
+                                         'onIdle': do_reload_app});
+        $(document).one('compose_started.zephyr', compose_started_handler);
+    };
+    compose_started_handler = function () {
+        idle_control.cancel();
+        idle_control = $(document).idle({'idle': composing_timeout,
+                                         'onIdle': do_reload_app_preserving_compose});
+        $(document).one('compose_canceled.zephyr', compose_canceled_handler);
+    };
+
+    if (compose.composing()) {
+        idle_control = $(document).idle({'idle': composing_timeout,
+                                         'onIdle': do_reload_app_preserving_compose});
+        $(document).one('compose_canceled.zephyr', compose_canceled_handler);
+    } else {
+        idle_control = $(document).idle({'idle': home_timeout,
+                                         'onIdle': do_reload_app});
+        $(document).one('compose_started.zephyr', compose_started_handler);
+    }
 }
 
-function reload_app_preserving_compose(send_after_reload) {
+function do_reload_app_preserving_compose(send_after_reload) {
     var url = "#reload:send_after_reload=" + Number(send_after_reload);
     if (compose.composing() === 'stream') {
         url += "+msg_type=stream";
@@ -596,8 +628,7 @@ function get_updates() {
             if (get_updates_params.server_generation === -1) {
                 get_updates_params.server_generation = data.server_generation;
             } else if (data.server_generation !== get_updates_params.server_generation) {
-                get_updates_params.reload_pending = 1;
-                reload_app();
+                start_reload_app();
             }
 
             add_messages(data);

@@ -42,7 +42,7 @@ var globals =
     + ' select_message select_message_by_id'
     + ' scroll_to_selected select_and_show_by_id'
     + ' selected_message selected_message_id'
-    + ' reload_app reloading_app reload_app_preserving_compose'
+    + ' start_reload_app reloading_app do_reload_app_preserving_compose'
     + ' at_top_of_viewport at_bottom_of_viewport'
     + ' viewport'
     ;
