@@ -22,18 +22,22 @@
 {{#if is_stream}}
 <tr class="recipient_row">
     <td colspan="2"
-        class="message_label_clickable message_header message_header_stream left_part"
-        onclick="narrow.target({{id}}); narrow.by_stream();"
-        title="{{display_recipient}}"></td>
-    <td class="message_label_clickable message_header message_header_stream right_part"
-        onclick="narrow.target({{id}}); narrow.by_subject();"
-        title="{{subject}}">{{display_recipient}} &nbsp; | &nbsp; {{subject}}</td>
+        class="message_header message_header_stream left_part">
+    </td>
+    <td class="message_header message_header_stream right_part">
+      <span class="message_label_clickable"
+            onclick="narrow.target({{id}}); narrow.by_stream();"
+            title="{{display_recipient}}">{{display_recipient}}</span>
+      &nbsp; | &nbsp;
+      <span class="message_label_clickable"
+            onclick="narrow.target({{id}}); narrow.by_subject();"
+            title="{{subject}}">{{subject}}</span>
+    </td>
 </tr>
 {{else}}
 <tr class="recipient_row">
-    <td colspan="2" class="message_label_clickable message_header message_header_huddle left_part"
-        onclick="narrow.target({{id}}); narrow.by_huddle();"
-        title="Huddle with {{display_reply_to}}"></td>
+    <td colspan="2"
+        class="message_header message_header_huddle left_part">
     </td>
     <td class="message_label_clickable message_header message_header_huddle right_part"
         onclick="narrow.target({{id}}); narrow.by_huddle();"
