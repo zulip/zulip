@@ -663,6 +663,16 @@ function get_updates() {
 
 $(get_updates);
 
+function restart_get_updates() {
+    if (get_updates_xhr !== undefined)
+        get_updates_xhr.abort();
+
+    if (get_updates_timeout !== undefined)
+        clearTimeout(get_updates_timeout);
+
+    get_updates();
+}
+
 var watchdog_time = $.now();
 setInterval(function() {
     var new_time = $.now();
@@ -670,10 +680,8 @@ setInterval(function() {
         // Our app's JS wasn't running (the machine was probably
         // asleep). Now that we're running again, immediately poll for
         // new updates.
-        get_updates_xhr.abort();
-        clearTimeout(get_updates_timeout);
         get_updates_params.failures = 0;
-        get_updates();
+        restart_get_updates();
     }
     watchdog_time = new_time;
 }, 5000);
