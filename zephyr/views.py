@@ -584,7 +584,7 @@ def json_add_subscription(request):
 def add_subscriptions_backend(request, user_profile, streams):
     subscribed = []
     already_subscribed = []
-    for stream_name in streams:
+    for stream_name in list(set(streams)):
         stream = create_stream_if_needed(user_profile.realm, stream_name)
         recipient = Recipient.objects.get(type_id=stream.id,
                                           type=Recipient.STREAM)
