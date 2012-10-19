@@ -71,7 +71,7 @@ exports.by_subject = function () {
     if (original.type !== 'stream')
         return;
 
-    var message = "<i class='icon-bullhorn'></i> " + original.display_recipient + " | " + original.subject;
+    var message = "<i class='icon-bullhorn'></i> " + original.display_recipient + " &nbsp; | &nbsp; " + original.subject;
     do_narrow(message, function (other) {
         return (other.type === 'stream' &&
                 original.recipient_id === other.recipient_id &&

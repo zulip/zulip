@@ -365,6 +365,7 @@ table.floating_recipient {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+    padding-left: 46px;
 }
 
 #currently_narrowed_to {
