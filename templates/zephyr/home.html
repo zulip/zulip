@@ -58,6 +58,7 @@
       <div class="alert" id="send-status"></div>
       <form action="/json/send_message/" method="post" class="zephyr">
         <input type="hidden" name="type" value="stream" id="new_message_type"/>
+        <input type="hidden" name="client" value="website" id="client_name"/>
         {% csrf_token %}
         <table class="compose_table">
           <tbody>

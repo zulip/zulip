@@ -99,6 +99,7 @@ def send_humbug(zeph):
         elif isinstance(zeph[key], str):
             zeph[key] = zeph[key].decode("utf-8")
 
+    zeph['client'] = "zephyr_mirror"
     return humbug_client.send_message(zeph)
 
 def fetch_fullname(username):

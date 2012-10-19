@@ -14,7 +14,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     do_add_subscription, do_remove_subscription, \
     create_user, do_send_message, mit_sync_table, create_user_if_needed, \
-    create_stream_if_needed, PreregistrationUser
+    create_stream_if_needed, PreregistrationUser, get_client
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique
 from django.views.decorators.csrf import csrf_exempt
 
@@ -400,6 +400,8 @@ def send_message_backend(request, user_profile, sender):
         return json_error("Missing type")
     if "content" not in request.POST:
         return json_error("Missing message contents")
+    if "client" not in request.POST:
+        return json_error("Missing client")
     if "forged" in request.POST:
         if not is_super_user_api(request):
             return json_error("User not authorized for this query")
@@ -475,6 +477,7 @@ def send_message_backend(request, user_profile, sender):
         message.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
     else:
         message.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
+    message.sending_client = get_client(request.POST['client'])
 
     # To avoid message loops, we must pass whether the message was
     # synced from MIT message here.

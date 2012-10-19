@@ -2,11 +2,12 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
-from zephyr.models import Message, UserProfile, Stream, Recipient, \
+from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
     bulk_create_realms, bulk_create_streams, bulk_create_users, bulk_create_huddles, \
+    bulk_create_clients, \
     create_user, do_send_message, create_user_if_needed, create_stream_if_needed, \
-    filter_by_subscriptions, get_huddle_hash
+    filter_by_subscriptions, get_huddle_hash, get_client
 from zephyr.lib.parallel import run_parallel
 from zephyr.lib.initial_password import initial_password
 from django.db import transaction
@@ -106,7 +107,7 @@ class Command(BaseCommand):
 
         if options["delete"]:
             for model in [Message, Stream, UserProfile, User, Recipient,
-                          Realm, Subscription, Huddle, UserMessage]:
+                          Realm, Subscription, Huddle, UserMessage, Client]:
                 model.objects.all().delete()
 
             # Create a test realm
@@ -224,6 +225,9 @@ def restore_saved_messages():
     user_set = set()
     email_set = set(u.email for u in User.objects.all())
     realm_set = set()
+    # Initial client_set is nonempty temporarily because we don't have
+    # clients in logs at all right now -- later we can start with nothing.
+    client_set = set(["populate_db", "website", "zephyr_mirror"])
     huddle_user_set = set()
     # First, determine all the objects our messages will need.
     print datetime.datetime.now(), "Creating realms/streams/etc..."
@@ -263,6 +267,9 @@ def restore_saved_messages():
                           old_message["sender_full_name"],
                           old_message["sender_short_name"]))
 
+        if 'sending_client' in old_message:
+            client_set.add(old_message['sending_client'])
+
         if old_message['type'] == 'stream':
             stream_set.add((domain, old_message['recipient']))
         elif old_message['type'] == 'personal':
@@ -289,6 +296,13 @@ def restore_saved_messages():
     realms = {}
     for realm in Realm.objects.all():
         realms[realm.domain] = realm
+
+    print datetime.datetime.now(), "Creating clients..."
+    bulk_create_clients(client_set)
+
+    clients = {}
+    for client in Client.objects.all():
+        clients[client.name] = client
 
     print datetime.datetime.now(), "Creating streams..."
     bulk_create_streams(realms, stream_set)
@@ -350,6 +364,19 @@ def restore_saved_messages():
         type_hash = {"stream": Recipient.STREAM,
                      "huddle": Recipient.HUDDLE,
                      "personal": Recipient.PERSONAL}
+
+        if 'sending_client' in old_message:
+            message.sending_client = clients[old_message['sending_client']]
+        elif sender_email in ["othello@humbughq.com", "iago@humbughq.com", "prospero@humbughq.com",
+                              "cordelia@humbughq.com", "hamlet@humbughq.com"]:
+            message.sending_client = clients['populate_db']
+        elif realm.domain == "humbughq.com":
+            message.sending_client = clients["website"]
+        elif realm.domain == "mit.edu":
+            message.sending_client = clients['zephyr_mirror']
+        else:
+            message.sending_client = clients['populate_db']
+
         message.type = type_hash[old_message["type"]]
         message.content = old_message["content"]
         message.subject = old_message["subject"]
@@ -484,6 +511,7 @@ def send_messages(data):
       with transaction.commit_on_success():
         saved_data = ''
         message = Message()
+        message.sending_client = get_client('populate_db')
         length = random.randint(1, 5)
         lines = (t.strip() for t in texts[offset: offset + length])
         message.content = '\n'.join(lines)

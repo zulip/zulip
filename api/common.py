@@ -18,6 +18,8 @@ class HumbugAPI():
     def do_api_query(self, request, url):
         request["email"] = self.email
         request["api-key"] = self.api_key
+        if "client" not in request:
+            request["client"] = "API"
         while True:
             try:
                 res = requests.post(urlparse.urljoin(self.base_url, url), data=request, verify=True)

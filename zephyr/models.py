@@ -284,12 +284,32 @@ class Recipient(models.Model):
         display_recipient = get_display_recipient(self)
         return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
 
+class Client(models.Model):
+    name = models.CharField(max_length=30)
+
+def get_client(name):
+    (client, _) = Client.objects.get_or_create(name=name)
+    return client
+
+def bulk_create_clients(client_list):
+    existing_clients = set()
+    for client in Client.objects.select_related().all():
+        existing_clients.add(client.name)
+
+    clients_to_create = []
+    for name in client_list:
+        if name not in existing_clients:
+            clients_to_create.append(Client(name=name))
+            existing_clients.add(name)
+    batch_bulk_create(Client, clients_to_create)
+
 class Message(models.Model):
     sender = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
     subject = models.CharField(max_length=60)
     content = models.TextField()
     pub_date = models.DateTimeField('date published')
+    sending_client = models.ForeignKey(Client)
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.recipient)
@@ -321,6 +341,7 @@ class Message(models.Model):
                 'sender_email'     : self.sender.user.email,
                 'sender_full_name' : self.sender.full_name,
                 'sender_short_name': self.sender.short_name,
+                'sending_client'   : self.sending_client.name,
                 'type'             : self.recipient.type_name(),
                 'recipient'        : get_log_recipient(self.recipient),
                 'subject'          : self.subject,
