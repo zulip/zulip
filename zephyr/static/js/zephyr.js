@@ -543,7 +543,7 @@ function reload_app_preserving_compose(send_after_reload) {
         url += "+msg_type=huddle";
         url += "+recipient=" + encodeURIComponent(compose.recipient());
     }
-    url += "+msg="+ encodeURIComponent(compose.message());
+    url += "+msg="+ encodeURIComponent(compose.message_content());
 
     window.location.replace(url);
     do_reload_app();

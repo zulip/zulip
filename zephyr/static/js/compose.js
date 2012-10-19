@@ -94,7 +94,7 @@ exports.subject = function (newval) {
     return oldval;
 };
 
-exports.message = function (newval) {
+exports.message_content = function (newval) {
     var oldval = $.trim($("#new_message_content").val());
     if (newval !== undefined) {
         $("#new_message_content").val(newval);
@@ -167,7 +167,7 @@ function validate_stream_message() {
         return false;
     }
 
-    if (exports.message() === "") {
+    if (exports.message_content() === "") {
         compose_error("You have nothing to send!", $("#new_message_content"));
         return false;
     }
@@ -195,7 +195,7 @@ function validate_huddle_message() {
         return false;
     }
 
-    if (exports.message() === "") {
+    if (exports.message_content() === "") {
         compose_error("You have nothing to send!", $("#new_message_content"));
         return false;
     }
