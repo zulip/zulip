@@ -239,6 +239,7 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
     first = request.POST.get("first")
     last = request.POST.get("last")
     failures = request.POST.get("failures")
+    want_old_messages = (request.POST.get("want_old_messages") == "true")
     client_server_generation = request.POST.get("server_generation")
     client_reload_pending = request.POST.get("reload_pending")
     if first is None or last is None:
@@ -264,7 +265,7 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
                   + list(query.filter(id__gte=ptr)[:200]))
     else:
         messages = query.filter(id__gt=last)[:400]
-        if not messages:
+        if want_old_messages and not messages:
             # No more messages in the future; try filling in from the past.
             messages = last_n(400, query.filter(id__lt=first))
             where = 'top'

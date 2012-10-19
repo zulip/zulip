@@ -3,6 +3,10 @@ var message_dict = {};
 var subject_dict = {};
 var people_hash = {};
 
+// We only tell the server to backfill old messages
+// if we have fewer than this many messages total.
+var max_messages_for_backfill = 1000;
+
 var selected_message_class = 'selected_message';
 var viewport = $(window);
 var reloading_app = false;
@@ -14,7 +18,8 @@ var get_updates_params = {
     last:  -1,
     failures: 0,
     server_generation: -1, /* to be filled in on document.ready */
-    reload_pending: 0
+    reload_pending: 0,
+    want_old_messages: true
 };
 
 $(function () {
@@ -615,6 +620,7 @@ $(function () {
 var get_updates_xhr;
 var get_updates_timeout;
 function get_updates() {
+    get_updates_params.want_old_messages = (message_array.length < max_messages_for_backfill);
     get_updates_xhr = $.ajax({
         type:     'POST',
         url:      '/json/get_updates',
