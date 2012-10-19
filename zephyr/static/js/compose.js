@@ -1,6 +1,7 @@
 var compose = (function () {
 
 var exports = {};
+var is_composing_message = false;
 
 exports.start = function (msg_type, opts) {
     opts = $.extend({ 'message_type': msg_type,
@@ -20,19 +21,25 @@ exports.start = function (msg_type, opts) {
     if (msg_type === 'stream') {
         exports.show('stream', $("#stream"));
     } else {
+        // for making compose.composing() output consistent
+        msg_type = "huddle";
+
         exports.show('personal', $("#huddle_recipient"));
     }
     hotkeys.set_compose();
+    is_composing_message = msg_type;
     $(document).trigger($.Event('compose_started.zephyr', opts));
 };
 
 exports.cancel = function () {
     compose.hide();
+    is_composing_message = false;
     $(document).trigger($.Event('compose_canceled.zephyr'));
 };
 
 exports.finish = function () {
     $("#compose form").ajaxSubmit();
+    is_composing_message = false;
     $(document).trigger($.Event('compose_finished.zephyr'));
 };
 
@@ -68,15 +75,7 @@ exports.toggle_mode = function () {
 };
 
 exports.composing = function () {
-    if ($("#stream-message").is(":visible")) {
-        return 'stream';
-    }
-
-    if ($("#personal-message").is(":visible")) {
-        return 'huddle';
-    }
-
-    return false;
+    return is_composing_message;
 };
 
 exports.stream_name = function (newval) {
