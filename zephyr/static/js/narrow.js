@@ -55,40 +55,11 @@ exports.target = function (id) {
     target_id = id;
 };
 
-exports.by_huddle = function by_huddle() {
-    var original = message_dict[target_id];
-    do_narrow("Huddles with " + original.display_reply_to, function (other) {
-        return (other.type === "personal" || other.type === "huddle")
-            && other.reply_to === original.reply_to;
-    });
-}
-
 exports.all_personals = function () {
     do_narrow("All huddles with you", function (other) {
         return other.type === "personal" || other.type === "huddle";
     });
 };
-
-function by_personals() {
-    // Narrow to personals with a specific user
-    var original = message_dict[target_id];
-
-    do_narrow("Huddles with " + original.display_replay_to, function (other) {
-        return (other.type === 'personal') &&
-            (((other.display_recipient.email === original.display_recipient.email) && (other.sender_email === original.sender_email)) ||
-             ((other.display_recipient.email === original.sender_email) && (other.sender_email === original.display_recipient.email)));
-    });
-
-}
-
-exports.by_stream = function() {
-    var original = message_dict[target_id];
-    var message = original.display_recipient;
-    do_narrow(message, function (other) {
-        return (other.type === 'stream' &&
-                original.recipient_id === other.recipient_id);
-    });
-}
 
 exports.by_subject = function () {
     var original = message_dict[target_id];
@@ -105,10 +76,37 @@ exports.by_subject = function () {
 
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function () {
+    var original, message;
     switch (message_dict[selected_message_id].type) {
-        case 'personal': by_personals(); break;
-        case 'huddle':   by_huddle();    break;
-        case 'stream':   by_stream();    break;
+    case 'personal':
+        // Narrow to personals with a specific user
+        original = message_dict[target_id];
+
+        do_narrow("Huddles with " + original.display_replay_to, function (other) {
+            return (other.type === 'personal') &&
+                (((other.display_recipient.email === original.display_recipient.email)
+                    && (other.sender_email === original.sender_email)) ||
+                 ((other.display_recipient.email === original.sender_email)
+                    && (other.sender_email === original.display_recipient.email)));
+        });
+        break;
+
+    case 'huddle':
+        original = message_dict[target_id];
+        do_narrow("Huddles with " + original.display_reply_to, function (other) {
+            return (other.type === "personal" || other.type === "huddle")
+                && other.reply_to === original.reply_to;
+        });
+        break;
+
+    case 'stream':
+        original = message_dict[target_id];
+        message = original.display_recipient;
+        do_narrow(message, function (other) {
+            return (other.type === 'stream' &&
+                    original.recipient_id === other.recipient_id);
+        });
+        break;
     }
 };
 
