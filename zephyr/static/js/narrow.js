@@ -71,7 +71,7 @@ exports.by_subject = function () {
     if (original.type !== 'stream')
         return;
 
-    var message = original.display_recipient + " | " + original.subject;
+    var message = "<i class='icon-bullhorn'></i> " + original.display_recipient + " | " + original.subject;
     do_narrow(message, function (other) {
         return (other.type === 'stream' &&
                 original.recipient_id === other.recipient_id &&
@@ -85,7 +85,7 @@ exports.by_recipient = function () {
     switch (message.type) {
     case 'personal':
         // Narrow to personals with a specific user
-        do_narrow("Huddles with " + message.display_reply_to, function (other) {
+        do_narrow("<i class='icon-user'></i> " + message.display_reply_to, function (other) {
             return (other.type === 'personal') &&
                 (((other.display_recipient.email === message.display_recipient.email)
                     && (other.sender_email === message.sender_email)) ||
@@ -95,14 +95,14 @@ exports.by_recipient = function () {
         break;
 
     case 'huddle':
-        do_narrow("Huddles with " + message.display_reply_to, function (other) {
+        do_narrow("<i class='icon-user'></i> " + message.display_reply_to, function (other) {
             return (other.type === "personal" || other.type === "huddle")
                 && other.reply_to === message.reply_to;
         });
         break;
 
     case 'stream':
-        do_narrow(message.display_recipient, function (other) {
+        do_narrow("<i class='icon-bullhorn'></i> " + message.display_recipient, function (other) {
             return (other.type === 'stream' &&
                     message.recipient_id === other.recipient_id);
         });
