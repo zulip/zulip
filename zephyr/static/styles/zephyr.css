@@ -2,6 +2,10 @@ body {
     font-family: 'Open Sans', Helvetica, Arial, sans-serif;
 }
 
+code {
+    white-space: nowrap;
+}
+
 .sidebar-nav {
     background-color: white;
     padding: 0.5em;
