@@ -215,7 +215,7 @@ def json_update_pointer(request):
     return json_success()
 
 def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False,
-                            user_profile=None, where='bottom'):
+                            reason_empty=None, user_profile=None, where='bottom'):
     max_message_id = None
     if user_profile is not None:
         try:
@@ -229,6 +229,8 @@ def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False,
            "msg": "",
            'where': where,
            'server_generation': SERVER_GENERATION}
+    if reason_empty is not None:
+        ret['reason_empty'] = reason_empty
     if max_message_id is not None:
         # TODO: Figure out how to accurately return this always
         ret["max_message_id"] = max_message_id
@@ -281,20 +283,26 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         handler.finish(format_updates_response(messages, where=where, **kwargs))
         return True
 
-    if failures >= 4:
-        # No messages, but still return immediately, to clear the
-        # user's failures count
-        handler.finish(format_updates_response([], where="bottom",
-                                               user_profile=user_profile, **kwargs))
-        return True
+    # We might want to return an empty list to the client immediately.
+    # In that case, we tell the client why.
+    reason_empty = None
 
-    if (client_server_generation is not None
+    if failures >= 4:
+        # Tell the client to hide the connection failure message.
+        reason_empty = 'reset_failures'
+    elif (client_server_generation is not None
         and int(client_server_generation) != SERVER_GENERATION
         and not client_reload_pending):
-        # No messages, but still return immediately to inform the
-        # client that they should reload
-        handler.finish(format_updates_response([], where="bottom",
-                                               user_profile=user_profile, **kwargs))
+        # Inform the client that they should reload.
+        reason_empty = 'client_reload'
+
+    if reason_empty is not None:
+        handler.finish(format_updates_response(
+            [],
+            where="bottom",
+            user_profile=user_profile,
+            reason_empty=reason_empty,
+            **kwargs))
         return True
 
     return False
