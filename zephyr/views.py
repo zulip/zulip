@@ -13,7 +13,7 @@ from django.contrib.auth.models import User
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     do_add_subscription, do_remove_subscription, \
-    create_user, do_send_message, mit_sync_table, create_user_if_needed, \
+    create_user, do_send_message, create_user_if_needed, \
     create_stream_if_needed, PreregistrationUser, get_client
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique
 from django.views.decorators.csrf import csrf_exempt
@@ -236,18 +236,17 @@ def update_pointer_backend(request, user_profile):
 
     return json_success()
 
-def format_updates_response(messages=[], mit_sync_bot=False, apply_markdown=False,
-                            reason_empty=None, user_profile=None,
-                            new_pointer=None, where='bottom',
-                            updater_session=''):
+def format_updates_response(messages=[], apply_markdown=False, reason_empty=None,
+                            user_profile=None, new_pointer=None, where='bottom',
+                            mirror=None, updater_session=''):
     max_message_id = None
     if user_profile is not None:
         try:
             max_message_id = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[0].id
         except:
             pass
-    if mit_sync_bot:
-        messages = [m for m in messages if not mit_sync_table.get(m.id)]
+    if mirror is not None:
+        messages = [m for m in messages if m.sending_client.name != mirror]
     ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
            "result": "success",
            "msg": "",
@@ -302,12 +301,14 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
             messages = last_n(400, query.filter(id__lt=first))
             where = 'top'
 
-    # Filter for mit_sync_bot before checking whether there are any
+    # Filter for mirroring before checking whether there are any
     # messages to pass on.  If we don't do this, when the only message
-    # to forward is one that was sent via mit_sync_bot, the API client
-    # will end up in an endless loop requesting more data from us.
-    if kwargs.get("mit_sync_bot"):
-        messages = [m for m in messages if not mit_sync_table.get(m.id)]
+    # to forward is one that was sent via the mirroring, the API
+    # client will end up in an endless loop requesting more data from
+    # us.
+    if "mirror" in kwargs:
+        messages = [m for m in messages if
+                    m.sending_client.name != kwargs["mirror"]]
 
     if messages:
         handler.finish(format_updates_response(messages=messages, where=where, **kwargs))
@@ -380,7 +381,7 @@ def api_get_profile(request, user_profile):
 def api_get_messages(request, user_profile, handler):
     return get_updates_backend(request, user_profile, handler,
                                apply_markdown=(request.POST.get("apply_markdown") is not None),
-                               mit_sync_bot=request.POST.get("mit_sync_bot"))
+                               mirror=request.POST.get("mirror"))
 
 @login_required_api_view
 def api_send_message(request, user_profile):
@@ -564,10 +565,7 @@ def send_message_backend(request, user_profile, sender):
     else:
         message.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
     message.sending_client = get_client(request.POST['client'])
-
-    # To avoid message loops, we must pass whether the message was
-    # synced from MIT message here.
-    do_send_message(message, synced_from_mit = 'time' in request.POST)
+    do_send_message(message)
 
     return json_success()
 
@@ -594,7 +592,6 @@ def notify_new_message(request, handler):
     users   = [UserProfile.objects.get(id=user)
                for user in request.POST['users'].split(',')]
     message = Message.objects.get(id=request.POST['message'])
-    mit_sync_table[message.id] = (request.POST["synced_from_mit"] == "True")
 
     for user in users:
         user.receive(message)

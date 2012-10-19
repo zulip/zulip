@@ -85,7 +85,6 @@ class Callbacks:
         self.table[key] = [[] for i in range(0, Callbacks.TYPE_MAX)]
 
 callbacks_table = Callbacks()
-mit_sync_table = {}
 
 class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True)
@@ -421,7 +420,7 @@ def log_event(event):
 def log_message(message):
     log_event(message.to_log_dict())
 
-def do_send_message(message, synced_from_mit=False, no_log=False):
+def do_send_message(message, no_log=False):
     message.save()
 
     # Log the message to our message log for populate_db to refill
@@ -452,7 +451,6 @@ def do_send_message(message, synced_from_mit=False, no_log=False):
         requests.post(settings.NOTIFY_NEW_MESSAGE_URL, data=[
                ('secret',  settings.SHARED_SECRET),
                ('message', message.id),
-               ('synced_from_mit', synced_from_mit),
                ('users',   ','.join(str(user.id) for user in recipients))])
 
 class Subscription(models.Model):

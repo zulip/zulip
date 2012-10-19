@@ -382,7 +382,7 @@ def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
     print "%s: humbug=>zephyr: Starting syncing messages." % (datetime.datetime.now(),)
     humbug_client.call_on_each_message(maybe_forward_to_zephyr,
-                                       options={"mit_sync_bot": 'yes'})
+                                       options={"mirror": 'zephyr_mirror'})
 
 def subscribed_to_mail_messages():
     for (cls, instance, recipient) in parse_zephyr_subs(verbose=False):

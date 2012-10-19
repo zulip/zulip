@@ -61,9 +61,8 @@ class AuthedTestCase(TestCase):
         recipient = Recipient.objects.get(type_id=recipient.id, type=message_type)
         pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
-        do_send_message(Message(sender=sender, recipient=recipient, subject="test", pub_date=pub_date,
-                                sending_client=sending_client),
-                       synced_from_mit=True)
+        do_send_message(Message(sender=sender, recipient=recipient, subject="test",
+                                pub_date=pub_date, sending_client=sending_client))
 
     def users_subscribed_to_stream(self, stream_name, realm_domain):
         realm = Realm.objects.get(domain=realm_domain)
