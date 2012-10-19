@@ -287,7 +287,10 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
     # In that case, we tell the client why.
     reason_empty = None
 
-    if failures >= 4:
+    if want_old_messages:
+        # Tell the client to hide the "Load more messages" button.
+        reason_empty = 'no_old_messages'
+    elif failures >= 4:
         # Tell the client to hide the connection failure message.
         reason_empty = 'reset_failures'
     elif (client_server_generation is not None

@@ -475,8 +475,6 @@ function add_messages(data) {
     if (!data || !data.messages)
         return;
 
-    $.each(data.messages, add_message_metadata);
-
     if (loading_spinner) {
         loading_spinner.stop();
         $('#loading_indicator').hide();
@@ -484,6 +482,18 @@ function add_messages(data) {
 
         $('#load_more').show();
     }
+
+    if (data.messages.length === 0) {
+        if (data.reason_empty === 'no_old_messages') {
+            $('#load_more').hide();
+
+            // Don't ask for more old messages in the future.
+            max_messages_for_backfill = 0;
+        }
+        return;
+    }
+
+    $.each(data.messages, add_message_metadata);
 
     if (data.where === 'top') {
         message_array = data.messages.concat(message_array);
@@ -673,6 +683,11 @@ function restart_get_updates() {
         clearTimeout(get_updates_timeout);
 
     get_updates();
+}
+
+function load_more_messages() {
+    max_messages_for_backfill += 400;
+    restart_get_updates();
 }
 
 var watchdog_time = $.now();
