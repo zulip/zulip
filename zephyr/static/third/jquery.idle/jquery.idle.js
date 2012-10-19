@@ -1,4 +1,8 @@
 /**
+ *  Modified by Humbug, Inc.
+ */
+
+/**
  *  File: jquery.idle.js
  *  Title:  JQuery Idle.
  *  A dead simple jQuery plugin that executes a callback function if the user is idle.
@@ -19,7 +23,7 @@
 
     var defaults = {
       idle: 60000, //idle time in ms
-      events: 'mousemove keypress mousedown', //events that will trigger the idle resetter
+      events: 'mousemove keydown DOMMouseScroll mousewheel mousedown touchstart touchmove', //events that will trigger the idle resetter
       onIdle: function(){}, //callback function to be executed after idle time
       onActive: function(){}, //callback function to be executed after back from idleness
       keepTracking: false //if you want to keep tracking user even after the first time, set this to true
@@ -28,34 +32,58 @@
     var idle = false;
 
     var settings = $.extend( {}, defaults, options );
+    var timerId;
+    var elem = $(this);
 
-    var resetTimeout = function(id, settings){
-      if(idle){
-        settings.onActive.call();
-        idle = false;
-      }
-      clearTimeout(id);
+    // We need this variable so that if the timer is canceled during
+    // an event handler we're also listening to.  Otherwise, our
+    // handler for that event might run even though we're supposed to
+    // be canceled
+    var canceled = false;
 
-      return timeout(settings);
+    var handler = function(e){
+        if (canceled) {
+            return;
+        }
+        if(idle){
+            settings.onActive.call();
+            idle = false;
+        }
+
+        resetTimeout();
+    };
+
+    var cancel = function() {
+      elem.off(settings.events, handler);
+      clearTimeout(timerId);
+      canceled = true;
     }
 
-    var timeout = function(settings){
-      id = setTimeout(function(){
+    var resetTimeout = function() {
+      idle = false;
+      clearTimeout(timerId);
+      createTimeout();
+    }
+
+    var createTimeout = function() {
+      timerId = setTimeout(function(){
         idle = true;
         settings.onIdle.call();
         if(settings.keepTracking){
-          timeout(settings);
+          timerId = createTimeout(settings);
         }
       }, settings.idle);
-      return id;
+      control.timerId = timerId;
     }
 
-    return this.each(function(){
-      id = timeout(settings);
-      $(this).bind(settings.events, function(e){
-        id = resetTimeout(id, settings);
-      });
-    }); 
+    var control = {
+        'cancel': cancel,
+        'reset': resetTimeout,
+    };
 
+    createTimeout(settings);
+    elem.on(settings.events, handler);
+
+    return control;
   }; 
 })( jQuery );
