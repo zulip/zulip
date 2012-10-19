@@ -1,0 +1,144 @@
+#!/usr/bin/python
+import urllib
+import sys
+import logging
+import traceback
+import simplejson
+import re
+import time
+import subprocess
+import optparse
+import os
+import datetime
+import textwrap
+import signal
+import random
+from urllib2 import HTTPError
+
+root_path = "/mit/tabbott/for_friends"
+sys.path.append(root_path + "/python-zephyr")
+sys.path.append(root_path + "/python-zephyr/build/lib.linux-x86_64-2.6/")
+
+parser = optparse.OptionParser()
+parser.add_option('--verbose',
+                  dest='verbose',
+                  default=False,
+                  action='store_true')
+parser.add_option('--site',
+                  dest='site',
+                  default="https://app.humbughq.com",
+                  action='store')
+(options, args) = parser.parse_args()
+
+mit_user = 'tabbott/extra@ATHENA.MIT.EDU'
+humbug_user = 'tabbott/extra@mit.edu'
+
+zhkey1 = random.getrandbits(32)
+hzkey1 = random.getrandbits(32)
+zhkey2 = random.getrandbits(32)
+hzkey2 = random.getrandbits(32)
+
+sys.path.append(".")
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import api.common
+humbug_client = api.common.HumbugAPI(email=humbug_user,
+                                     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                                     verbose=True,
+                                     site=options.site)
+
+def print_zephyr(notice):
+    print notice.cls, notice.instance, notice.sender, notice.message.split('\0')[1]
+
+child_pid = os.fork()
+if child_pid == 0:
+    # Run the humbug => zephyr mirror in the child
+    time.sleep(3)
+    humbug_client.send_message({
+            "type": "personal",
+            "content": str(hzkey1),
+            "recipient": humbug_user,
+            });
+    time.sleep(0.2)
+    humbug_client.send_message({
+            "type": "stream",
+            "subject": "test",
+            "content": str(hzkey2),
+            "stream": "tabbott-nagios-test",
+            });
+    print "Sent Humbug messages!"
+    time.sleep(0.5)
+
+    import zephyr
+    zephyr.init()
+    zsig = "Timothy Good Abbott"
+
+    zeph = zephyr.ZNotice(sender=mit_user, auth=False, recipient=mit_user,
+                          cls="message", instance="personal")
+    zeph.setmessage("%s\0%s" % (zsig, zhkey1))
+    zeph.send()
+    time.sleep(0.2)
+
+    zeph = zephyr.ZNotice(sender=mit_user, auth=False,
+                          cls="tabbott-nagios-test", instance="test")
+    zeph.setmessage("%s\0%s" % (zsig, zhkey2))
+    zeph.send()
+    print "Sent Zephyr messages!"
+
+
+else:
+    failed = False
+    import zephyr
+    zephyr.init()
+    subs = zephyr.Subscriptions()
+    subs.add(('message', 'personal', 'tabbott/extra@ATHENA.MIT.EDU'))
+    subs.add(('tabbott-nagios-test', '*', '*'))
+
+    res = humbug_client.get_messages({'server_generation': '0',
+                                      'first': '0',
+                                      'last': '1000000000000',})
+    max_message_id = res['max_message_id']
+
+    time.sleep(10)
+    print "Receiving messages!"
+    notices = []
+    while True:
+        notice = zephyr.receive(block=False)
+        if notice is None:
+            break
+        if notice.opcode != "":
+            continue
+        notices.append(notice)
+    if len(notices) != 4:
+        print "humbug=>zephyr: Got wrong number of messages back!"
+        failed = True
+    elif (notices[0].message.split('\0')[1] != str(hzkey1) or
+          notices[1].message.split('\0')[1] != str(hzkey2) or
+          notices[2].message.split('\0')[1] != str(zhkey1) or
+          notices[3].message.split('\0')[1] != str(zhkey2)):
+        print "humbug=>zephyr: Didn't get back right values!"
+        failed = True
+    if failed:
+        for notice in notices:
+            print_zephyr(notice)
+
+    messages = humbug_client.get_messages({'first': '0',
+                                           'last': str(max_message_id),
+                                           'server_generation': '0'})['messages']
+    if len(messages) != 4:
+        print "zephyr=>humbug: Didn't get exactly 4 messages!"
+        print messages
+        failed = True
+    elif (messages[0]['content'] != str(hzkey1) or
+        messages[1]['content'] != str(hzkey2) or
+        messages[2]['content'] != str(zhkey1) or
+        messages[3]['content'] != str(zhkey2)):
+        print "zephyr=>humbug: Didn't get back right values!"
+        print messages
+        failed = True
+
+    if failed:
+        print "original keys:", zhkey1, zhkey2, hzkey1, hzkey2
+        sys.exit(1)
+
+    print "Success!"
+    sys.exit(0)
