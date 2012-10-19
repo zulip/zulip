@@ -81,35 +81,30 @@ exports.by_subject = function () {
 
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function () {
-    var original, message;
-    switch (message_dict[target_id].type) {
+    var message = message_dict[target_id];
+    switch (message.type) {
     case 'personal':
         // Narrow to personals with a specific user
-        original = message_dict[target_id];
-
-        do_narrow("Huddles with " + original.display_replay_to, function (other) {
+        do_narrow("Huddles with " + message.display_replay_to, function (other) {
             return (other.type === 'personal') &&
-                (((other.display_recipient.email === original.display_recipient.email)
-                    && (other.sender_email === original.sender_email)) ||
-                 ((other.display_recipient.email === original.sender_email)
-                    && (other.sender_email === original.display_recipient.email)));
+                (((other.display_recipient.email === message.display_recipient.email)
+                    && (other.sender_email === message.sender_email)) ||
+                 ((other.display_recipient.email === message.sender_email)
+                    && (other.sender_email === message.display_recipient.email)));
         });
         break;
 
     case 'huddle':
-        original = message_dict[target_id];
-        do_narrow("Huddles with " + original.display_reply_to, function (other) {
+        do_narrow("Huddles with " + message.display_reply_to, function (other) {
             return (other.type === "personal" || other.type === "huddle")
-                && other.reply_to === original.reply_to;
+                && other.reply_to === message.reply_to;
         });
         break;
 
     case 'stream':
-        original = message_dict[target_id];
-        message = original.display_recipient;
-        do_narrow(message, function (other) {
+        do_narrow(message.display_recipient, function (other) {
             return (other.type === 'stream' &&
-                    original.recipient_id === other.recipient_id);
+                    message.recipient_id === other.recipient_id);
         });
         break;
     }
