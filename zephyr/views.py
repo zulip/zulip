@@ -112,12 +112,7 @@ def accounts_register(request):
             full_name  = form.cleaned_data['full_name']
             short_name = email.split('@')[0]
             domain     = form.cleaned_data['domain']
-
-            try:
-                realm = Realm.objects.get(domain=domain)
-            except Realm.DoesNotExist:
-                realm = Realm(domain=domain)
-                realm.save()
+            (realm, _) = Realm.objects.get_or_create(domain=domain)
 
             # FIXME: sanitize email addresses
             create_user(email, password, realm, full_name, short_name)
@@ -585,18 +580,18 @@ def add_subscriptions_backend(request, user_profile, streams):
         recipient = Recipient.objects.get(type_id=stream.id,
                                           type=Recipient.STREAM)
 
-        try:
-            subscription = Subscription.objects.get(userprofile=user_profile,
-                                                    recipient=recipient)
+        (subscription, created) = Subscription.objects.get_or_create(
+            userprofile=user_profile, recipient=recipient,
+            defaults={'active': True})
+
+        if not created:
             if subscription.active:
                 # Subscription already exists and is active
                 already_subscribed.append(stream_name)
                 continue
-        except Subscription.DoesNotExist:
-            subscription = Subscription(userprofile=user_profile,
-                                        recipient=recipient)
-        subscription.active = True
-        subscription.save()
+            else:
+                subscription.active = True
+                subscription.save()
         subscribed.append(stream_name)
 
     return {"subscribed": subscribed,

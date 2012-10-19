@@ -101,9 +101,8 @@ class UserProfile(models.Model):
             profile.api_key = initial_api_key(user.email)
             profile.save()
             # Auto-sub to the ability to receive personals.
-            recipient = Recipient(type_id=profile.id, type=Recipient.PERSONAL)
-            recipient.save()
-            Subscription(userprofile=profile, recipient=recipient).save()
+            recipient = Recipient.objects.create(type_id=profile.id, type=Recipient.PERSONAL)
+            Subscription.objects.create(userprofile=profile, recipient=recipient)
 
 class PreregistrationUser(models.Model):
     email = models.EmailField(unique=True)
@@ -122,6 +121,8 @@ def create_user(email, password, realm, full_name, short_name):
     user.save()
     UserProfile.create(user, realm, full_name, short_name)
 
+# TODO: This has a race where a user could be created twice.  Need to
+# add transactions.
 def create_user_if_needed(realm, email, full_name, short_name):
     try:
         return User.objects.get(email=email)
@@ -133,17 +134,12 @@ def create_user_if_needed(realm, email, full_name, short_name):
         return user
 
 def create_stream_if_needed(realm, stream_name):
-    try:
-        return Stream.objects.get(name__iexact=stream_name, realm=realm)
-    except Stream.DoesNotExist:
-        stream = Stream()
-        stream.name = stream_name
-        stream.realm = realm
-        stream.save()
-        recipient = Recipient(type_id=stream.id, type=Recipient.STREAM)
-        recipient.save()
-        return stream
-
+    (stream, created) = Stream.objects.get_or_create(
+        realm=realm, name__iexact=stream_name,
+        defaults={'name': stream_name})
+    if created:
+        Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+    return stream
 
 class Stream(models.Model):
     name = models.CharField(max_length=30, db_index=True)
@@ -159,8 +155,8 @@ class Stream(models.Model):
         stream = cls(name=name, realm=realm)
         stream.save()
 
-        recipient = Recipient(type_id=stream.id, type=Recipient.STREAM)
-        recipient.save()
+        recipient = Recipient.objects.create(type_id=stream.id,
+                                             type=Recipient.STREAM)
         return (stream, recipient)
 
 class Recipient(models.Model):
@@ -279,6 +275,7 @@ def do_send_message(message, synced_from_mit=False, no_log=False):
         raise
 
     # Save the message receipts in the database
+    # TODO: Use bulk_create here
     with transaction.commit_on_success():
         for user_profile in recipients:
             UserMessage(user_profile=user_profile, message=message).save()
@@ -310,21 +307,15 @@ def get_huddle(id_list):
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
     huddle_hash = hashlib.sha1(hash_key).hexdigest()
-    if Huddle.objects.filter(huddle_hash=huddle_hash):
-        return Huddle.objects.get(huddle_hash=huddle_hash)
-    else:
-        # since we don't have one, make a new huddle
-        huddle = Huddle(huddle_hash = huddle_hash)
-        huddle.save()
-        recipient = Recipient(type_id=huddle.id, type=Recipient.HUDDLE)
-        recipient.save()
-
+    (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
+    if created:
+        recipient = Recipient.objects.create(type_id=huddle.id,
+                                             type=Recipient.HUDDLE)
         # Add subscriptions
         for uid in id_list:
-            s = Subscription(recipient = recipient,
-                             userprofile = UserProfile.objects.get(id=uid))
-            s.save()
-        return huddle
+            Subscription.objects.create(recipient = recipient,
+                                        userprofile = UserProfile.objects.get(id=uid))
+    return huddle
 
 # This is currently dead code since all the places where we used to
 # use it now have faster implementations, but I expect this to be

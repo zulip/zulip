@@ -105,8 +105,7 @@ class Command(BaseCommand):
                 model.objects.all().delete()
 
             # Create a test realm
-            humbug_realm = Realm(domain="humbughq.com")
-            humbug_realm.save()
+            humbug_realm = Realm.objects.create(domain="humbughq.com")
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
@@ -130,9 +129,8 @@ class Command(BaseCommand):
                 for recipient in recipient_streams[:int(len(recipient_streams) *
                                                         float(i)/len(profiles)) + 1]:
                     r = Recipient.objects.get(type=Recipient.STREAM, type_id=recipient)
-                    new_subscription = Subscription(userprofile=profile,
-                                                    recipient=r)
-                    new_subscription.save()
+                    Subscription.objects.create(userprofile=profile,
+                                                recipient=r)
         else:
             humbug_realm = Realm.objects.get(domain="humbughq.com")
             recipient_streams = [klass.type_id for klass in
@@ -160,8 +158,7 @@ class Command(BaseCommand):
             pass
 
         if options["delete"]:
-            mit_realm = Realm(domain="mit.edu")
-            mit_realm.save()
+            mit_realm = Realm.objects.create(domain="mit.edu")
 
             # Create internal users
             internal_mit_users = []
@@ -180,8 +177,7 @@ class Command(BaseCommand):
                     else:
                         key = "default"
                     if cls in mit_subs_list.subs_lists[key]:
-                        new_subscription = Subscription(userprofile=profile, recipient=recipient)
-                        new_subscription.save()
+                        Subscription.objects.create(userprofile=profile, recipient=recipient)
 
             internal_humbug_users = []
             create_users(internal_humbug_users)
@@ -195,8 +191,7 @@ class Command(BaseCommand):
                 recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                 for i, profile in enumerate(profiles):
                     # Subscribe to some streams.
-                    new_subscription = Subscription(userprofile=profile, recipient=recipient)
-                    new_subscription.save()
+                    Subscription.objects.create(userprofile=profile, recipient=recipient)
 
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
