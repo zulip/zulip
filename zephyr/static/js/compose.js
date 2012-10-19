@@ -18,14 +18,26 @@ exports.start = function (msg_type, opts) {
 
     $('#sidebar a[href="#home"]').tab('show');
 
-    if (msg_type === 'stream') {
-        exports.show('stream', $("#stream"));
-    } else {
-        // for making compose.composing() output consistent
+    if (msg_type !== 'stream') {
+        // TODO: Just to make sure that compose.composing() output is
+        // consistent.  We really should just standardize our
+        // terminology
         msg_type = "huddle";
-
-        exports.show('personal', $("#huddle_recipient"));
     }
+
+    var focus_area;
+    if (opts.stream && ! opts.subject) {
+        focus_area = 'subject';
+    } else if (opts.stream || opts.huddle_recipient) {
+        focus_area = 'new_message_content';
+    }
+
+    if (msg_type === 'stream') {
+        exports.show('stream', $("#" + focus_area || 'stream'));
+    } else {
+        exports.show('personal', $("#" + focus_area || 'huddle_recipients'));
+    }
+
     hotkeys.set_compose();
     is_composing_message = msg_type;
     $(document).trigger($.Event('compose_started.zephyr', opts));
