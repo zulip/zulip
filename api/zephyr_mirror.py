@@ -195,7 +195,11 @@ def process_loop(log):
         continue
 
 def process_notice(notice, log):
-    zsig, body = notice.message.split("\x00", 1)
+    try:
+        zsig, body = notice.message.split("\x00", 1)
+    except ValueError:
+        body = notice.message
+        zsig = ""
     is_personal = False
     is_huddle = False
 
