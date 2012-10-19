@@ -63,6 +63,7 @@ ul#sidebar {
     background-color: aliceblue;
     padding-left: 10px;
     padding-right: 20px;
+    overflow-x: hidden;
 }
 
 .message_row {
