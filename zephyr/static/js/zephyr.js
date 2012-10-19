@@ -181,8 +181,8 @@ function respond_to_message(reply_type) {
         // Huddle messages use the personals compose box
         msg_type = "personal";
     }
-    compose.show(msg_type, {'stream': stream, 'subject': subject,
-                            'huddle_recipient': huddle_recipient});
+    compose.start(msg_type, {'stream': stream, 'subject': subject,
+                             'huddle_recipient': huddle_recipient});
 }
 
 // Called by mouseover etc.
