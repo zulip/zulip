@@ -55,7 +55,7 @@ exports.target = function (id) {
     target_id = id;
 };
 
-function by_huddle() {
+exports.by_huddle = function by_huddle() {
     var original = message_dict[target_id];
     do_narrow("Huddles with " + original.display_reply_to, function (other) {
         return (other.type === "personal" || other.type === "huddle")
@@ -81,7 +81,7 @@ function by_personals() {
 
 }
 
-function by_stream() {
+exports.by_stream = function() {
     var original = message_dict[target_id];
     var message = original.display_recipient;
     do_narrow(message, function (other) {
