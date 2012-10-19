@@ -80,8 +80,10 @@ exports.clear = function () {
 exports.toggle_mode = function () {
     if ($("#message-type-tabs li.active").find("a[href=#stream-message]").length !== 0) {
         // In stream tab, switch to personals.
+        is_composing_message = "huddle";
         exports.show('personal', $("#huddle_recipient"));
     } else {
+        is_composing_message = "stream";
         exports.show('stream', $("#stream"));
     }
 };
