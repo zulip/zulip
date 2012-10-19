@@ -51,6 +51,11 @@ function do_narrow(description, filter_function) {
     scroll_to_selected();
 }
 
+// This is the message we're about to select, within the narrowed view.
+// But it won't necessarily be selected once the user un-narrows.
+//
+// FIXME: We probably don't need this variable, selected_message_id, *and*
+// persistent_message_id.
 exports.target = function (id) {
     target_id = id;
 };
