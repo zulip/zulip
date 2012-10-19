@@ -77,7 +77,7 @@ exports.by_subject = function () {
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function () {
     var original, message;
-    switch (message_dict[selected_message_id].type) {
+    switch (message_dict[target_id].type) {
     case 'personal':
         // Narrow to personals with a specific user
         original = message_dict[target_id];
