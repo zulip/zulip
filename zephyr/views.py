@@ -214,14 +214,26 @@ def json_update_pointer(request):
     user_profile.save()
     return json_success()
 
-def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False, where='bottom'):
+def format_updates_response(messages, mit_sync_bot=False, apply_markdown=False,
+                            user_profile=None, where='bottom'):
+    max_message_id = None
+    if user_profile is not None:
+        try:
+            max_message_id = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[0].id
+        except:
+            pass
     if mit_sync_bot:
         messages = [m for m in messages if not mit_sync_table.get(m.id)]
-    return {'messages': [message.to_dict(apply_markdown) for message in messages],
-            "result": "success",
-            "msg": "",
-            'where':   where,
-            'server_generation': SERVER_GENERATION}
+    ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
+           "result": "success",
+           "msg": "",
+           'where': where,
+           'server_generation': SERVER_GENERATION}
+    if max_message_id is not None:
+        # TODO: Figure out how to accurately return this always
+        ret["max_message_id"] = max_message_id
+    return ret
+
 
 def return_messages_immediately(request, handler, user_profile, **kwargs):
     first = request.POST.get("first")
@@ -232,6 +244,7 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
     if first is None or last is None:
         # When an API user is first querying the server to subscribe,
         # there's no reason to reply immediately.
+        # TODO: Make this work with server_generation/failures
         return False
     first = int(first)
     last  = int(last)
@@ -268,7 +281,8 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
     if failures >= 4:
         # No messages, but still return immediately, to clear the
         # user's failures count
-        handler.finish(format_updates_response([], where="bottom", **kwargs))
+        handler.finish(format_updates_response([], where="bottom",
+                                               user_profile=user_profile, **kwargs))
         return True
 
     if (client_server_generation is not None
@@ -276,7 +290,8 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         and not client_reload_pending):
         # No messages, but still return immediately to inform the
         # client that they should reload
-        handler.finish(format_updates_response([], where="bottom", **kwargs))
+        handler.finish(format_updates_response([], where="bottom",
+                                               user_profile=user_profile, **kwargs))
         return True
 
     return False
