@@ -49,6 +49,14 @@ humbug_client = api.common.HumbugAPI(email=humbug_user,
 def print_zephyr(notice):
     print notice.cls, notice.instance, notice.sender, notice.message.split('\0')[1]
 
+def print_humbug(message):
+    if message['type'] == "stream":
+        print message["type"], message['display_recipient'], message['subject'], \
+            message['sender_email'], message['content']
+    else:
+        print message["type"], message['sender_email'], \
+            message['display_recipient'], message['content']
+
 child_pid = os.fork()
 if child_pid == 0:
     # Run the humbug => zephyr mirror in the child
@@ -126,14 +134,16 @@ else:
                                            'server_generation': '0'})['messages']
     if len(messages) != 4:
         print "zephyr=>humbug: Didn't get exactly 4 messages!"
-        print messages
+        for message in messages:
+            print_humbug(message)
         failed = True
     elif (messages[0]['content'] != str(hzkey1) or
         messages[1]['content'] != str(hzkey2) or
         messages[2]['content'] != str(zhkey1) or
         messages[3]['content'] != str(zhkey2)):
         print "zephyr=>humbug: Didn't get back right values!"
-        print messages
+        for message in messages:
+            print_humbug(message)
         failed = True
 
     if failed:
