@@ -35,7 +35,7 @@ exports.start = function (msg_type, opts) {
     if (msg_type === 'stream') {
         exports.show('stream', $("#" + (focus_area || 'stream')));
     } else {
-        exports.show('personal', $("#" + (focus_area || 'huddle_recipients')));
+        exports.show('personal', $("#" + (focus_area || 'huddle_recipient')));
     }
 
     hotkeys.set_compose();
