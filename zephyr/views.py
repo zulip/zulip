@@ -160,8 +160,17 @@ def home(request):
     num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
 
     if user_profile.pointer == -1 and num_messages > 0:
-        min_id = UserMessage.objects.filter(user_profile=user_profile).order_by("message")[0].message_id
-        user_profile.pointer = min_id
+        # Put the new user's pointer at the bottom
+        #
+        # This improves performance, because we limit backfilling of messages
+        # before the pointer.  It's also likely that someone joining an
+        # organization is interested in recent messages more than the very
+        # first messages on the system.
+
+        max_id = (UserMessage.objects.filter(user_profile=user_profile)
+                                     .order_by('message')
+                                     .reverse()[0]).message_id
+        user_profile.pointer = max_id
         user_profile.save()
 
     # Populate personals autocomplete list based on everyone in your
