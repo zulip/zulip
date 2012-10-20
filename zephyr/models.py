@@ -405,7 +405,7 @@ class Subscription(models.Model):
     def __str__(self):
         return self.__repr__()
 
-def do_add_subscription(user_profile, stream):
+def do_add_subscription(user_profile, stream, no_log=False):
     recipient = Recipient.objects.get(type_id=stream.id,
                                       type=Recipient.STREAM)
     (subscription, created) = Subscription.objects.get_or_create(
@@ -416,24 +416,30 @@ def do_add_subscription(user_profile, stream):
         did_subscribe = True
         subscription.active = True
         subscription.save()
-    if did_subscribe:
+    if did_subscribe and not no_log:
         log_event({'type': 'subscription_added',
                    'user': user_profile.user.email,
                    'name': stream.name,
                    'domain': stream.realm.domain})
     return did_subscribe
 
-def do_remove_subscription(user_profile, stream):
+def do_remove_subscription(user_profile, stream, no_log=False):
     recipient = Recipient.objects.get(type_id=stream.id,
                                       type=Recipient.STREAM)
-    subscription = Subscription.objects.get(
-        userprofile=user_profile, recipient=recipient)
+    maybe_sub = Subscription.objects.filter(userprofile=user_profile,
+                                    recipient=recipient)
+    if len(maybe_sub) == 0:
+        return False
+    subscription = maybe_sub[0]
+    did_remove = subscription.active
     subscription.active = False
     subscription.save()
-    log_event({'type': 'subscription_removed',
-               'user': user_profile.user.email,
-               'name': stream.name,
-               'domain': stream.realm.domain})
+    if did_remove and not no_log:
+        log_event({'type': 'subscription_removed',
+                   'user': user_profile.user.email,
+                   'name': stream.name,
+                   'domain': stream.realm.domain})
+    return did_remove
 
 class Huddle(models.Model):
     # TODO: We should consider whether using
