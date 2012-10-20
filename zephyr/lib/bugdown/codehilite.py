@@ -40,7 +40,8 @@ class CodeHilite:
 
     * src: Source string or any object with a .readline attribute.
 
-    * linenos: (Boolean) Turn line numbering 'on' or 'off' (off by default).
+    * force_linenos: (Boolean) Force line numbering 'on' (True) or 'off' (False).
+                     If not specified, number lines iff a shebang line is present.
 
     * guess_lang: (Boolean) Turn language auto-detection 'on' or 'off' (on by default).
 
@@ -54,12 +55,12 @@ class CodeHilite:
 
     """
 
-    def __init__(self, src=None, linenos=False, guess_lang=True,
+    def __init__(self, src=None, force_linenos=None, guess_lang=True,
                 css_class="codehilite", lang=None, style='default',
                 noclasses=False, tab_length=4):
         self.src = src
         self.lang = lang
-        self.linenos = linenos
+        self.linenos = force_linenos
         self.guess_lang = guess_lang
         self.css_class = css_class
         self.style = style
@@ -93,7 +94,7 @@ class CodeHilite:
                         lexer = TextLexer()
                 except ValueError:
                     lexer = TextLexer()
-            formatter = HtmlFormatter(linenos=self.linenos,
+            formatter = HtmlFormatter(linenos=bool(self.linenos),
                                       cssclass=self.css_class,
                                       style=self.style,
                                       noclasses=self.noclasses)
@@ -153,7 +154,7 @@ class CodeHilite:
             if m.group('path'):
                 # path exists - restore first line
                 lines.insert(0, fl)
-            if m.group('shebang'):
+            if m.group('shebang') and self.linenos is None:
                 # shebang exists - use line numbers
                 self.linenos = True
         else:
@@ -175,7 +176,7 @@ class HiliteTreeprocessor(markdown.treeprocessors.Treeprocessor):
             children = block.getchildren()
             if len(children) == 1 and children[0].tag == 'code':
                 code = CodeHilite(children[0].text,
-                            linenos=self.config['force_linenos'],
+                            force_linenos=self.config['force_linenos'],
                             guess_lang=self.config['guess_lang'],
                             css_class=self.config['css_class'],
                             style=self.config['pygments_style'],
@@ -197,7 +198,7 @@ class CodeHiliteExtension(markdown.Extension):
     def __init__(self, configs):
         # define default configs
         self.config = {
-            'force_linenos' : [False, "Force line numbers - Default: False"],
+            'force_linenos' : [None, "Force line numbers - Default: detect based on shebang"],
             'guess_lang' : [True, "Automatic language detection - Default: True"],
             'css_class' : ["codehilite",
                            "Set class name for wrapper <div> - Default: codehilite"],
