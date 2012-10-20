@@ -6,6 +6,10 @@ code {
     white-space: nowrap;
 }
 
+pre code {
+    white-space: pre;
+}
+
 .sidebar-nav {
     background-color: white;
     padding: 0.5em;
