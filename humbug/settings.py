@@ -213,3 +213,9 @@ else:
 # For testing, you may want to have emails be printed to the console.
 if not deployed:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+    # Use fast password hashing for creating testing users when not
+    # deployed
+    PASSWORD_HASHERS = (
+                'django.contrib.auth.hashers.SHA1PasswordHasher',
+            )
