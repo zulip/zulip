@@ -4,18 +4,23 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from zephyr.models import Message, UserProfile, Stream, Recipient, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
-    create_user, do_send_message, create_user_if_needed, create_stream_if_needed
+    bulk_create_realms, bulk_create_streams, bulk_create_users, bulk_create_huddles, \
+    create_user, do_send_message, create_user_if_needed, create_stream_if_needed, \
+    filter_by_subscriptions, get_huddle_hash
 from zephyr.lib.parallel import run_parallel
 from zephyr.lib.initial_password import initial_password
 from django.db import transaction
 from django.conf import settings
 from api import mit_subs_list
+from zephyr.lib.bulk_create import batch_bulk_create
 
 import simplejson
 import datetime
 import random
 import sys
 import time
+import hashlib
+import base64
 from optparse import make_option
 
 settings.HAVE_TORNADO_SERVER = False
@@ -212,62 +217,155 @@ def get_recipient_by_id(rid):
     return Recipient.objects.get(id=rid)
 
 def restore_saved_messages():
-    old_messages = file("all_messages_log", "r").readlines()
-    old_messages_json = []
-    for old_message_json in enumerate(old_messages):
-        old_messages_json.append(simplejson.loads(old_message.strip()))
+    old_messages_json = file("all_messages_log", "r").readlines()
+    old_messages = []
 
-    start_time = time.time()
-    for idx, old_message in enumerate(old_messages_json):
-        sys.stderr.write('\rLoaded %7d of %7d messages' % (idx, len(old_messages)))
-        if idx > 0:
-            remaining = (time.time() - start_time) * (len(old_messages) - idx) / idx
-            sys.stderr.write('; time remaining %3d:%02d' % (remaining / 60, remaining % 60))
+    stream_set = set()
+    user_set = set()
+    email_set = set(u.email for u in User.objects.all())
+    realm_set = set()
+    huddle_user_set = set()
+    # First, determine all the objects our messages will need.
+    print datetime.datetime.now(), "Creating realms/streams/etc..."
+    for old_message_json in old_messages_json:
+        old_message = simplejson.loads(old_message_json.strip())
+        old_messages.append(old_message)
 
+        sender_email = old_message["sender_email"]
+        domain = sender_email.split('@')[1]
+        realm_set.add(domain)
+
+        if old_message["sender_email"] not in email_set:
+            user_set.add((old_message["sender_email"],
+                          old_message["sender_full_name"],
+                          old_message["sender_short_name"]))
+
+        if old_message['type'] == 'stream':
+            stream_set.add((domain, old_message['recipient']))
+        elif old_message['type'] == 'personal':
+            u = old_message["recipient"][0]
+            if u["email"] not in email_set:
+                user_set.add((u["email"], u["full_name"], u["short_name"]))
+                email_set.add(u["email"])
+        else:
+            for u in old_message["recipient"]:
+                user_set.add((u["email"], u["full_name"], u["short_name"]))
+                if u["email"] not in email_set:
+                    user_set.add((u["email"], u["full_name"], u["short_name"]))
+                    email_set.add(u["email"])
+            huddle_user_set.add(tuple(sorted(u["email"] for u in old_message["recipient"])))
+
+    stream_recipients = {}
+    user_recipients = {}
+    huddle_recipients = {}
+
+    # Then, create the objects our messages need.
+    print datetime.datetime.now(), "Creating realms..."
+    bulk_create_realms(realm_set)
+
+    realms = {}
+    for realm in Realm.objects.all():
+        realms[realm.domain] = realm
+
+    print datetime.datetime.now(), "Creating streams..."
+    bulk_create_streams(realms, stream_set)
+
+    streams = {}
+    for stream in Stream.objects.all():
+        streams[stream.id] = stream
+    for recipient in Recipient.objects.filter(type=Recipient.STREAM):
+        stream_recipients[(streams[recipient.type_id].realm_id,
+                           streams[recipient.type_id].name)] = recipient
+
+    print datetime.datetime.now(), "Creating users..."
+    bulk_create_users(realms, user_set)
+
+    users = {}
+    users_by_id = {}
+    for user_profile in UserProfile.objects.select_related().all():
+        users[(user_profile.user.email)] = user_profile
+        users_by_id[user_profile.id] = user_profile
+    for recipient in Recipient.objects.filter(type=Recipient.PERSONAL):
+        user_recipients[users_by_id[recipient.type_id].user.email] = recipient
+
+    print datetime.datetime.now(), "Creating huddles..."
+    bulk_create_huddles(users, huddle_user_set)
+
+    huddles_by_id = {}
+    for huddle in Huddle.objects.all():
+        huddles_by_id[huddle.id] = huddle
+    for recipient in Recipient.objects.filter(type=Recipient.HUDDLE):
+        huddle_recipients[huddles_by_id[recipient.type_id].huddle_hash] = recipient
+
+    # TODO: Add a special entry type in the log that is a subscription
+    # change and import those as we go to make subscription changes
+    # take effect!
+    print datetime.datetime.now(), "Importing subscriptions..."
+    subscribers = {}
+    for s in Subscription.objects.select_related().all():
+        if s.active:
+            if s.recipient.id not in subscribers:
+                subscribers[s.recipient.id] = set()
+            subscribers[s.recipient.id].add(s.userprofile.id)
+
+    # Then create all the messages, without talking to the DB!
+    print datetime.datetime.now(), "Importing messages, part 1..."
+    messages_to_create = []
+    for idx, old_message in enumerate(old_messages):
         message = Message()
 
         sender_email = old_message["sender_email"]
-        realm = None
-        try:
-            realm = Realm.objects.get(domain=sender_email.split('@')[1])
-        except IndexError:
-            pass
-        except Realm.DoesNotExist:
-            pass
+        domain = sender_email.split('@')[1]
+        realm = realms[domain]
 
-        if not realm:
-            realm = Realm.objects.get(domain='mit.edu')
-
-        create_user_if_needed(realm, sender_email,
-                              old_message["sender_full_name"],
-                              old_message["sender_short_name"])
-        message.sender = UserProfile.objects.get(user__email=old_message["sender_email"])
-        type_hash = {"stream": Recipient.STREAM, "huddle": Recipient.HUDDLE, "personal": Recipient.PERSONAL}
+        message.sender = users[sender_email]
+        type_hash = {"stream": Recipient.STREAM,
+                     "huddle": Recipient.HUDDLE,
+                     "personal": Recipient.PERSONAL}
         message.type = type_hash[old_message["type"]]
         message.content = old_message["content"]
         message.subject = old_message["subject"]
-        message.pub_date = datetime.datetime.utcfromtimestamp(float(old_message["timestamp"])).replace(tzinfo=utc)
+        ts = float(old_message["timestamp"])
+        message.pub_date = datetime.datetime.utcfromtimestamp(ts).replace(tzinfo=utc)
 
         if message.type == Recipient.PERSONAL:
-            u = old_message["recipient"][0]
-            create_user_if_needed(realm, u["email"], u["full_name"], u["short_name"])
-            user_profile = UserProfile.objects.get(user__email=u["email"])
-            message.recipient = Recipient.objects.get(type=Recipient.PERSONAL,
-                                                         type_id=user_profile.id)
+            message.recipient = user_recipients[u["email"]]
         elif message.type == Recipient.STREAM:
-            stream = create_stream_if_needed(realm, old_message["recipient"])
-            message.recipient = Recipient.objects.get(type=Recipient.STREAM,
-                                                         type_id=stream.id)
+            message.recipient = stream_recipients[(realm.id,
+                                                   old_message["recipient"])]
         elif message.type == Recipient.HUDDLE:
-            for u in old_message["recipient"]:
-                create_user_if_needed(realm, u["email"], u["full_name"], u["short_name"])
-            target_huddle = get_huddle([UserProfile.objects.get(user__email=u["email"]).id
-                                        for u in old_message["recipient"]])
-            message.recipient = Recipient.objects.get(type=Recipient.HUDDLE,
-                                                         type_id=target_huddle.id)
+            huddle_hash = get_huddle_hash([users[u["email"]].id
+                                           for u in old_message["recipient"]])
+            message.recipient = huddle_recipients[huddle_hash]
         else:
             raise
-        do_send_message(message, synced_from_mit=True, no_log=True)
+        messages_to_create.append(message)
+
+
+    print datetime.datetime.now(), "Importing messages, part 2..."
+    batch_bulk_create(Message, messages_to_create)
+
+    # Finally, create all the UserMessage objects
+    print datetime.datetime.now(), "Importing usermessages, part 1..."
+    all_messages = Message.objects.all()
+    user_messages_to_create = []
+
+    for message in all_messages:
+        if message.recipient_id not in subscribers:
+            # Nobody received this message -- probably due to our
+            # subscriptions being out-of-date.
+            continue
+        for user_profile_id in subscribers[message.recipient_id]:
+            um = UserMessage(user_profile=users_by_id[user_profile_id],
+                             message=message)
+            user_messages_to_create.append(um)
+
+    print datetime.datetime.now(), "Importing usermessages, part 2..."
+    tot_user_messages = len(user_messages_to_create)
+    batch_bulk_create(UserMessage, user_messages_to_create)
+
+    print datetime.datetime.now(), "Finished importing %s messages (%s usermessages)" % \
+        (len(all_messages), tot_user_messages)
 
     # Clear the remainder of the line, using a terminal control code.
     sys.stderr.write('\rDone replaying old messages.\x1B[0K\n')
