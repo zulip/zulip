@@ -537,8 +537,10 @@ def json_remove_subscription(request):
     sub_name = request.POST.get('subscription')
     stream = get_stream(sub_name, user_profile.realm)
     if not stream:
+        return json_error("Stream does not exist")
+    did_remove = do_remove_subscription(user_profile, stream)
+    if not did_remove:
         return json_error("Not subscribed, so you can't unsubscribe")
-    do_remove_subscription(user_profile, stream)
 
     return json_success({"data": sub_name})
 
