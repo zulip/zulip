@@ -230,10 +230,10 @@ def create_stream_if_needed(realm, stream_name):
 def bulk_create_streams(realms, stream_list):
     existing_streams = set()
     for stream in Stream.objects.select_related().all():
-        existing_streams.add((stream.realm.domain, stream.name))
+        existing_streams.add((stream.realm.domain, stream.name.lower()))
     streams_to_create = []
     for (domain, name) in stream_list:
-        if (domain, name) not in existing_streams:
+        if (domain, name.lower()) not in existing_streams:
             streams_to_create.append(Stream(realm=realms[domain], name=name))
     batch_bulk_create(Stream, streams_to_create)
 
