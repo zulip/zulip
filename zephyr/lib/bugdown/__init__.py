@@ -48,7 +48,7 @@ def convert(md):
             safe_mode     = 'escape',
             output_format = 'xhtml',
             extensions    = ['fenced_code', 'nl2br',
-                codehilite.makeExtension(),
+                codehilite.makeExtension(configs=[('force_linenos', False)]),
                 Bugdown()])
 
     md = _link_regex.sub(_linkify, md)
