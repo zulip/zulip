@@ -384,7 +384,7 @@ def restore_saved_messages():
         message.pub_date = datetime.datetime.utcfromtimestamp(ts).replace(tzinfo=utc)
 
         if message.type == Recipient.PERSONAL:
-            message.recipient = user_recipients[u["email"]]
+            message.recipient = user_recipients[sender_email]
         elif message.type == Recipient.STREAM:
             message.recipient = stream_recipients[(realm.id,
                                                    old_message["recipient"])]
