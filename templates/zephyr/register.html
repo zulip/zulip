@@ -16,7 +16,7 @@ their email address.
     <h3>Tell us a bit about yourself.</h3>
 </div>
 
-<form method="post" class="form-horizontal" id="registration" action="{% url register %}">
+<form method="post" class="form-horizontal" id="registration" action="{% url zephyr.views.accounts_register %}">
 {% csrf_token %}
     <div class="control-group">
         <label for="id_email" class="control-label">Email</label>
