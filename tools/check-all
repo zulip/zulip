@@ -14,11 +14,23 @@ fi
 
 cd "$SCRIPT_DIR"/..;
 
-if git ls-files | grep py$ | grep -v ^confirmation/ \
-    | grep -v humbug/test_settings.py \
-    | xargs pyflakes \
-    | grep $FILTER_IMPORTS; then
+# Some Python files don't have names ending in .py
+PYTHON_FILES=$(cat <<EOF
+api/examples/subscribe
+api/examples/get-public-streams
+api/examples/send-message
+api/examples/print-messages
+api/examples/print-next-message
+api/examples/get-subscriptions
+api/check-mirroring
+tools/update-deployment
+tools/post-receive
+EOF
+)
 
+PYTHON_FILES="$PYTHON_FILES $(git ls-files | grep '\.py$' | egrep -v '^(confirmation/|humbug/test_settings\.py)')"
+
+if pyflakes $PYTHON_FILES | grep $FILTER_IMPORTS; then
     EXITCODE=1;
 fi
 
