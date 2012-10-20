@@ -192,7 +192,7 @@ def bulk_create_users(realms, users_raw):
         profile = UserProfile(user=users_by_email[email], pointer=-1,
                               realm_id=realms[domain].id,
                               full_name=full_name, short_name=short_name)
-        profile.api_key = initial_api_key(user.email)
+        profile.api_key = initial_api_key(email)
         profiles_to_create.append(profile)
     batch_bulk_create(UserProfile, profiles_to_create, 50)
 
