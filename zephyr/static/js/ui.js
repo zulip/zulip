@@ -262,18 +262,10 @@ $(function () {
     // created after ready() is called.
 
     $('#message-type-tabs a[href="#stream-message"]').on('shown', function (e) {
-        $('#personal-message').hide();
-        $('#stream-message').show();
-        $('#new_message_type').val('stream');
-        $("#send-status").removeClass(status_classes).hide();
-        focus_on("stream");
+        compose.set_message_type('stream');
     });
     $('#message-type-tabs a[href="#personal-message"]').on('shown', function (e) {
-        $('#personal-message').show();
-        $('#stream-message').hide();
-        $('#new_message_type').val('personal');
-        $("#send-status").removeClass(status_classes).hide();
-        focus_on("huddle_recipient");
+        compose.set_message_type('huddle');
     });
 
     // Prepare the click handler for subbing to a new stream to which

@@ -77,13 +77,28 @@ exports.clear = function () {
     $("#compose").find('input[type=text], textarea').val('');
 };
 
+exports.set_message_type = function (tabname) {
+    is_composing_message = tabname;
+    $("#send-status").removeClass(status_classes).hide();
+    if (tabname === "stream") {
+        $('#personal-message').hide();
+        $('#stream-message').show();
+        $('#new_message_type').val('stream');
+        $("#stream").focus();
+    } else {
+        $('#personal-message').show();
+        $('#stream-message').hide();
+        $('#new_message_type').val('personal');
+        $("#huddle_recipient").focus();
+    }
+};
+
+
 exports.toggle_mode = function () {
     if ($("#message-type-tabs li.active").find("a[href=#stream-message]").length !== 0) {
         // In stream tab, switch to personals.
-        is_composing_message = "huddle";
         exports.show('personal', $("#huddle_recipient"));
     } else {
-        is_composing_message = "stream";
         exports.show('stream', $("#stream"));
     }
 };
