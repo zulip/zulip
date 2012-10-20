@@ -294,13 +294,15 @@ def restore_saved_messages():
             if u["email"] not in email_set:
                 user_set.add((u["email"], u["full_name"], u["short_name"]))
                 email_set.add(u["email"])
-        else:
+        elif old_message['type'] == 'huddle':
             for u in old_message["recipient"]:
                 user_set.add((u["email"], u["full_name"], u["short_name"]))
                 if u["email"] not in email_set:
                     user_set.add((u["email"], u["full_name"], u["short_name"]))
                     email_set.add(u["email"])
             huddle_user_set.add(tuple(sorted(u["email"] for u in old_message["recipient"])))
+        else:
+            raise
 
     stream_recipients = {}
     user_recipients = {}
