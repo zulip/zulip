@@ -252,6 +252,7 @@ def restore_saved_messages():
         old_messages.append(old_message)
 
         if old_message["type"].startswith("subscription"):
+            stream_set.add((old_message["domain"], old_message["name"]))
             continue
         sender_email = old_message["sender_email"]
         domain = sender_email.split('@')[1]
@@ -383,6 +384,7 @@ def restore_saved_messages():
     if first_message_id is None:
         first_message_id = min(messages_by_id.keys())
 
+    pending_subs = {}
     current_message_id = first_message_id
     for old_message in old_messages:
         # Update our subscribers hashes as we see subscription events
@@ -390,11 +392,15 @@ def restore_saved_messages():
             stream_key = (realms[old_message["domain"]].id, old_message["name"])
             subscribers.setdefault(stream_recipients[stream_key].id,
                                    set()).add(users[old_message["user"]].id)
+            pending_subs[(stream_recipients[stream_key].id,
+                          users[old_message["user"]].id)] = True
             continue
         elif old_message["type"] == "subscription_removed":
             stream_key = (realms[old_message["domain"]].id, old_message["name"])
             subscribers.setdefault(stream_recipients[stream_key].id,
                                    set()).remove(users[old_message["user"]].id)
+            pending_subs[(stream_recipients[stream_key].id,
+                          users[old_message["user"]].id)] = False
             continue
 
         message = messages_by_id[current_message_id]
@@ -412,6 +418,35 @@ def restore_saved_messages():
     print datetime.datetime.now(), "Importing usermessages, part 2..."
     tot_user_messages = len(user_messages_to_create)
     batch_bulk_create(UserMessage, user_messages_to_create)
+
+    print datetime.datetime.now(), "Finalizing subscriptions..."
+    current_subs = {}
+    current_subs_obj = {}
+    for s in Subscription.objects.select_related().all():
+        current_subs[(s.recipient_id, s.userprofile_id)] = s.active
+        current_subs_obj[(s.recipient_id, s.userprofile_id)] = s
+
+    subscriptions_to_add = []
+    subscriptions_to_change = []
+    for pending_sub in pending_subs.keys():
+        (recipient_id, user_profile_id) = pending_sub
+        current_state = current_subs.get(pending_sub)
+        if pending_subs[pending_sub] == current_state:
+            # Already correct in the database
+            continue
+        elif current_state is not None:
+            subscriptions_to_change.append((pending_sub, pending_subs[pending_sub]))
+            continue
+
+        s = Subscription(recipient_id=recipient_id,
+                         userprofile_id=user_profile_id,
+                         active=pending_subs[pending_sub])
+        subscriptions_to_add.append(s)
+    batch_bulk_create(Subscription, subscriptions_to_add)
+    with transaction.commit_on_success():
+        for (sub, active) in subscriptions_to_change:
+            current_subs_obj[sub].active = active
+            current_subs_obj[sub].save()
 
     print datetime.datetime.now(), "Finished importing %s messages (%s usermessages)" % \
         (len(all_messages), tot_user_messages)
