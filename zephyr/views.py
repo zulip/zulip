@@ -12,6 +12,7 @@ from django.contrib.auth.views import login as django_login_page
 from django.contrib.auth.models import User
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
+    do_add_subscription, do_remove_subscription, \
     create_user, do_send_message, mit_sync_table, create_user_if_needed, \
     create_stream_if_needed, PreregistrationUser
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique
@@ -537,13 +538,7 @@ def json_remove_subscription(request):
     stream = get_stream(sub_name, user_profile.realm)
     if not stream:
         return json_error("Not subscribed, so you can't unsubscribe")
-
-    recipient = Recipient.objects.get(type_id=stream.id,
-                                      type=Recipient.STREAM)
-    subscription = Subscription.objects.get(
-        userprofile=user_profile, recipient=recipient)
-    subscription.active = False
-    subscription.save()
+    do_remove_subscription(user_profile, stream)
 
     return json_success({"data": sub_name})
 
@@ -586,22 +581,11 @@ def add_subscriptions_backend(request, user_profile, streams):
     already_subscribed = []
     for stream_name in list(set(streams)):
         stream = create_stream_if_needed(user_profile.realm, stream_name)
-        recipient = Recipient.objects.get(type_id=stream.id,
-                                          type=Recipient.STREAM)
-
-        (subscription, created) = Subscription.objects.get_or_create(
-            userprofile=user_profile, recipient=recipient,
-            defaults={'active': True})
-
-        if not created:
-            if subscription.active:
-                # Subscription already exists and is active
-                already_subscribed.append(stream_name)
-                continue
-            else:
-                subscription.active = True
-                subscription.save()
-        subscribed.append(stream_name)
+        did_subscribe = do_add_subscription(user_profile, stream)
+        if did_subscribe:
+            subscribed.append(stream_name)
+        else:
+            already_subscribed.append(stream_name)
 
     return {"subscribed": subscribed,
             "already_subscribed": already_subscribed}

@@ -217,8 +217,8 @@ def get_recipient_by_id(rid):
     return Recipient.objects.get(id=rid)
 
 def restore_saved_messages():
-    old_messages_json = file("all_messages_log", "r").readlines()
     old_messages = []
+    duplicate_suppression_hash = {}
 
     stream_set = set()
     user_set = set()
@@ -227,10 +227,32 @@ def restore_saved_messages():
     huddle_user_set = set()
     # First, determine all the objects our messages will need.
     print datetime.datetime.now(), "Creating realms/streams/etc..."
-    for old_message_json in old_messages_json:
-        old_message = simplejson.loads(old_message_json.strip())
+    for line in file("all_messages_log", "r").readlines():
+        old_message_json = line.strip()
+
+        # Due to populate_db's shakespeare mode, we have a lot of
+        # duplicate messages in our log that only differ in their
+        # logged ID numbers (same timestamp, content, etc.).  With
+        # sqlite, bulk creating those messages won't work properly: in
+        # particular, the first 100 messages will actually only result
+        # in 20 rows ending up in the target table, which screws up
+        # the below accounting where for handling changing
+        # subscriptions, we assume that the Nth row populate_db
+        # created goes with the Nth non-subscription row of the input
+        # So suppress the duplicates when using sqlite.
+        if "sqlite" in settings.DATABASES["default"]["ENGINE"]:
+            tmp_message = simplejson.loads(old_message_json)
+            tmp_message['id'] = '1'
+            duplicate_suppression_key = simplejson.dumps(tmp_message)
+            if duplicate_suppression_key in duplicate_suppression_hash:
+                continue
+            duplicate_suppression_hash[duplicate_suppression_key] = True
+
+        old_message = simplejson.loads(old_message_json)
         old_messages.append(old_message)
 
+        if old_message["type"].startswith("subscription"):
+            continue
         sender_email = old_message["sender_email"]
         domain = sender_email.split('@')[1]
         realm_set.add(domain)
@@ -304,14 +326,19 @@ def restore_saved_messages():
     subscribers = {}
     for s in Subscription.objects.select_related().all():
         if s.active:
-            if s.recipient.id not in subscribers:
-                subscribers[s.recipient.id] = set()
-            subscribers[s.recipient.id].add(s.userprofile.id)
+            subscribers.setdefault(s.recipient.id, set()).add(s.userprofile.id)
 
     # Then create all the messages, without talking to the DB!
     print datetime.datetime.now(), "Importing messages, part 1..."
+    first_message_id = None
+    if Message.objects.exists():
+        first_message_id = Message.objects.all().order_by("-id")[0].id + 1
+
     messages_to_create = []
     for idx, old_message in enumerate(old_messages):
+        if old_message["type"].startswith("subscription"):
+            continue
+
         message = Message()
 
         sender_email = old_message["sender_email"]
@@ -341,16 +368,38 @@ def restore_saved_messages():
             raise
         messages_to_create.append(message)
 
-
     print datetime.datetime.now(), "Importing messages, part 2..."
-    batch_bulk_create(Message, messages_to_create)
+    batch_bulk_create(Message, messages_to_create, batch_size=100)
 
     # Finally, create all the UserMessage objects
     print datetime.datetime.now(), "Importing usermessages, part 1..."
     all_messages = Message.objects.all()
     user_messages_to_create = []
 
+    messages_by_id = {}
     for message in all_messages:
+        messages_by_id[message.id] = message
+
+    if first_message_id is None:
+        first_message_id = min(messages_by_id.keys())
+
+    current_message_id = first_message_id
+    for old_message in old_messages:
+        # Update our subscribers hashes as we see subscription events
+        if old_message["type"] == 'subscription_added':
+            stream_key = (realms[old_message["domain"]].id, old_message["name"])
+            subscribers.setdefault(stream_recipients[stream_key].id,
+                                   set()).add(users[old_message["user"]].id)
+            continue
+        elif old_message["type"] == "subscription_removed":
+            stream_key = (realms[old_message["domain"]].id, old_message["name"])
+            subscribers.setdefault(stream_recipients[stream_key].id,
+                                   set()).remove(users[old_message["user"]].id)
+            continue
+
+        message = messages_by_id[current_message_id]
+        current_message_id += 1
+
         if message.recipient_id not in subscribers:
             # Nobody received this message -- probably due to our
             # subscriptions being out-of-date.

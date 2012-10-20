@@ -346,16 +346,20 @@ def get_user_profile_by_id(uid):
         return user_hash[uid]
     return UserProfile.objects.select_related().get(id=uid)
 
-def log_message(message):
+# Store an event in the log for re-importing messages
+def log_event(event):
     if not os.path.exists(settings.MESSAGE_LOG + '.lock'):
         file(settings.MESSAGE_LOG + '.lock', "w").write("0")
     lock = open(settings.MESSAGE_LOG + '.lock', 'r')
     fcntl.flock(lock, fcntl.LOCK_EX)
     f = open(settings.MESSAGE_LOG, "a")
-    f.write(simplejson.dumps(message.to_log_dict()) + "\n")
+    f.write(simplejson.dumps(event) + "\n")
     f.flush()
     f.close()
     fcntl.flock(lock, fcntl.LOCK_UN)
+
+def log_message(message):
+    log_event(message.to_log_dict())
 
 def do_send_message(message, synced_from_mit=False, no_log=False):
     message.save()
@@ -400,6 +404,36 @@ class Subscription(models.Model):
         return "<Subscription: %r -> %r>" % (self.userprofile, self.recipient)
     def __str__(self):
         return self.__repr__()
+
+def do_add_subscription(user_profile, stream):
+    recipient = Recipient.objects.get(type_id=stream.id,
+                                      type=Recipient.STREAM)
+    (subscription, created) = Subscription.objects.get_or_create(
+        userprofile=user_profile, recipient=recipient,
+        defaults={'active': True})
+    did_subscribe = created
+    if not subscription.active:
+        did_subscribe = True
+        subscription.active = True
+        subscription.save()
+    if did_subscribe:
+        log_event({'type': 'subscription_added',
+                   'user': user_profile.user.email,
+                   'name': stream.name,
+                   'domain': stream.realm.domain})
+    return did_subscribe
+
+def do_remove_subscription(user_profile, stream):
+    recipient = Recipient.objects.get(type_id=stream.id,
+                                      type=Recipient.STREAM)
+    subscription = Subscription.objects.get(
+        userprofile=user_profile, recipient=recipient)
+    subscription.active = False
+    subscription.save()
+    log_event({'type': 'subscription_removed',
+               'user': user_profile.user.email,
+               'name': stream.name,
+               'domain': stream.realm.domain})
 
 class Huddle(models.Model):
     # TODO: We should consider whether using
