@@ -1,7 +1,8 @@
 import re
 import markdown
 
-from zephyr.lib.avatar import gravatar_hash
+from zephyr.lib.avatar  import gravatar_hash
+from zephyr.lib.bugdown import codehilite
 
 class Gravatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
@@ -44,9 +45,11 @@ def convert(md):
 
     if _md_engine is None:
         _md_engine = markdown.Markdown(
-            extensions    = ['fenced_code', 'codehilite', 'nl2br', Bugdown()],
             safe_mode     = 'escape',
-            output_format = 'xhtml')
+            output_format = 'xhtml',
+            extensions    = ['fenced_code', 'nl2br',
+                codehilite.makeExtension(),
+                Bugdown()])
 
     md = _link_regex.sub(_linkify, md)
 
