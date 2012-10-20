@@ -488,7 +488,7 @@ def send_message_backend(request, user_profile, sender):
 def notify_new_message(request, handler):
     # Check the shared secret.
     # Also check the originating IP, at least for now.
-    if ((request.META['REMOTE_ADDR'] != '127.0.0.1')
+    if ((request.META['REMOTE_ADDR'] not in ('127.0.0.1', '::1'))
         or (request.POST.get('secret') != settings.SHARED_SECRET)):
 
         handler.set_status(403)
