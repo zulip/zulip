@@ -331,7 +331,7 @@ def restore_saved_messages():
         streams[stream.id] = stream
     for recipient in Recipient.objects.filter(type=Recipient.STREAM):
         stream_recipients[(streams[recipient.type_id].realm_id,
-                           streams[recipient.type_id].name)] = recipient
+                           streams[recipient.type_id].name.lower())] = recipient
 
     print datetime.datetime.now(), "Creating users..."
     bulk_create_users(realms, user_set)
