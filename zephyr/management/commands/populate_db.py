@@ -213,15 +213,17 @@ def get_recipient_by_id(rid):
 
 def restore_saved_messages():
     old_messages = file("all_messages_log", "r").readlines()
+    old_messages_json = []
+    for old_message_json in enumerate(old_messages):
+        old_messages_json.append(simplejson.loads(old_message.strip()))
 
     start_time = time.time()
-    for idx, old_message_json in enumerate(old_messages):
+    for idx, old_message in enumerate(old_messages_json):
         sys.stderr.write('\rLoaded %7d of %7d messages' % (idx, len(old_messages)))
         if idx > 0:
             remaining = (time.time() - start_time) * (len(old_messages) - idx) / idx
             sys.stderr.write('; time remaining %3d:%02d' % (remaining / 60, remaining % 60))
 
-        old_message = simplejson.loads(old_message_json.strip())
         message = Message()
 
         sender_email = old_message["sender_email"]
