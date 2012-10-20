@@ -253,6 +253,23 @@ def restore_saved_messages():
             duplicate_suppression_hash[duplicate_suppression_key] = True
 
         old_message = simplejson.loads(old_message_json)
+
+        # Lower case a bunch of fields that will screw up
+        # deduplication if we don't
+        if old_message["type"].startswith("subscription"):
+            old_message["name"] = old_message["name"].lower()
+            old_message["domain"] = old_message["domain"].lower()
+        else:
+            old_message["sender_email"] = old_message["sender_email"].lower()
+
+        if old_message['type'] == 'stream':
+            old_message["recipient"] = old_message["recipient"].lower()
+        elif old_message['type'] == 'personal':
+            old_message["recipient"][0]["email"] = old_message["recipient"][0]["email"].lower()
+        elif old_message["type"] == "huddle":
+            for i in xrange(len(old_message["recipient"])):
+                old_message["recipient"][i]["email"] = old_message["recipient"][i]["email"].lower()
+
         old_messages.append(old_message)
 
         if old_message["type"].startswith("subscription"):
