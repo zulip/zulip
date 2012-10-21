@@ -200,9 +200,16 @@ def home(request):
                                    settings.DEBUG and ('show_debug' in request.GET) },
                               context_instance=RequestContext(request))
 
+@login_required_api_view
+def api_update_pointer(request, user_profile):
+    return update_pointer_backend(request, user_profile)
+
 @login_required_json_view
 def json_update_pointer(request):
     user_profile = UserProfile.objects.get(user=request.user)
+    return update_pointer_backend(request, user_profile)
+
+def update_pointer_backend(request, user_profile):
     pointer = request.POST.get('pointer')
     if not pointer:
         return json_error("Missing pointer")
