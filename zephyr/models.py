@@ -239,7 +239,7 @@ def bulk_create_streams(realms, stream_list):
 
     recipients_to_create = []
     for stream in Stream.objects.all():
-        if (stream.realm.domain, stream.name) not in existing_streams:
+        if (stream.realm.domain, stream.name.lower()) not in existing_streams:
             recipients_to_create.append(Recipient(type_id=stream.id,
                                                   type=Recipient.STREAM))
     batch_bulk_create(Recipient, recipients_to_create)
