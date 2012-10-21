@@ -1,0 +1,147 @@
+#!/usr/bin/env python
+import sys
+import time
+import datetime
+import optparse
+import urlparse
+import itertools
+import traceback
+from os import path
+
+sys.path.append(path.join(path.dirname(__file__), '..'))
+import api.common
+
+parser = optparse.OptionParser(r"""
+
+%prog \
+    --user foo@humbughq.com \
+    --api-key 0123456789abcdef0123456789abcdef \
+    --calendar http://www.google.com/calendar/feeds/foo%40humbughq.com/private-fedcba9876543210fedcba9876543210/basic
+
+    Send yourself reminders on Humbug of Google Calendar events.
+
+    To get the calendar URL:
+      - Load Google Calendar in a web browser
+      - Find your calendar in the "My calendars" list on the left
+      - Click the down-wedge icon that appears on mouseover, and select "Calendar settings"
+      - Copy the link address for the "XML" button under "Private Address"
+
+    Run this on your personal machine.  Your API key and calendar URL are revealed to local
+    users through the command line.
+
+    Depends on: python-gdata
+""")
+
+parser.add_option('--user',
+    dest='user',
+    action='store',
+    help='Humbug user email address',
+    metavar='EMAIL')
+parser.add_option('--api-key',
+    dest='api_key',
+    action='store',
+    help='API key for that user')
+parser.add_option('--calendar',
+    dest='calendar',
+    action='store',
+    help='Google Calendar XML "Private Address"',
+    metavar='URL')
+parser.add_option('--site',
+    dest='site',
+    default="https://app.humbughq.com",
+    action='store',
+    help='Humbug site [default: https://app.humbughq.com]',
+    metavar='URL')
+parser.add_option('--interval',
+    dest='interval',
+    default=10,
+    type=int,
+    action='store',
+    help='Minutes before event for reminder [default: 10]',
+    metavar='MINUTES')
+
+(options, args) = parser.parse_args()
+
+if not (options.user and options.api_key and options.calendar):
+    parser.error('You must specify --user, --api-key, and --calendar')
+
+try:
+    from gdata.calendar.client import CalendarClient
+except ImportError:
+    parser.error('Install python-gdata')
+
+def get_calendar_url():
+    parts = urlparse.urlparse(options.calendar)
+    pat = path.split(parts.path)
+    if pat[1] != 'basic':
+        parser.error('The --calendar URL should be the XML "Private Address" ' +
+                     'from your calendar settings')
+    return urlparse.urlunparse((parts.scheme, parts.netloc, pat[0] + '/full',
+                                '', 'futureevents=true&orderby=startdate', ''))
+
+calendar_url = get_calendar_url()
+
+humbug = api.common.HumbugAPI(email=options.user,
+                              api_key=options.api_key,
+                              site=options.site,
+                              verbose=True)
+
+def get_events():
+    feed = CalendarClient().GetCalendarEventFeed(uri=calendar_url)
+
+    for event in feed.entry:
+        start = event.when[0].start.split('.')[0]
+        start = datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%S')
+        yield (event.uid.value, start, event.title.text)
+
+# Our cached view of the calendar, updated periodically.
+events = []
+
+# Unique keys for events we've already sent, so we don't remind twice.
+sent = set()
+
+def send_reminders():
+    global sent
+
+    messages = []
+    keys = set()
+    now = datetime.datetime.now()
+
+    for uid, start, title in events:
+        dt = start - now
+        if dt.days == 0 and dt.seconds < 60*options.interval:
+            # The unique key includes the start time, because of
+            # repeating events.
+            key = (uid, start)
+            if key not in sent:
+                line = '%s starts at %s' % (title, start.strftime('%H:%M'))
+                print 'Sending reminder:', line
+                messages.append(line)
+                keys.add(key)
+
+    if not messages:
+        return
+
+    if len(messages) == 1:
+        message = 'Reminder: ' + messages[0]
+    else:
+        message = 'Reminder:\n\n' + '\n'.join('* ' + m for m in messages)
+
+    humbug.send_message(dict(
+        type      = 'personal',
+        recipient = options.user,
+        content   = message))
+
+    sent |= keys
+
+# Loop forever
+for i in itertools.count():
+    try:
+        # We check reminders every minute, but only
+        # download the calendar every 10 minutes.
+        if not i % 10:
+            events = list(get_events())
+        send_reminders()
+    except:
+        traceback.print_exc()
+    time.sleep(60)

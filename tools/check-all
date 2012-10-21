@@ -23,6 +23,7 @@ api/examples/print-messages
 api/examples/print-next-message
 api/examples/get-subscriptions
 api/check-mirroring
+api/gcal-bot
 tools/update-deployment
 tools/post-receive
 EOF
