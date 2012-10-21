@@ -338,6 +338,10 @@ def json_get_updates(request, handler):
 
     return get_updates_backend(request, user_profile, handler, apply_markdown=True)
 
+@login_required_api_view
+def api_get_profile(request, user_profile):
+    return json_success({"pointer": user_profile.pointer})
+
 @asynchronous
 @login_required_api_view
 def api_get_messages(request, user_profile, handler):
