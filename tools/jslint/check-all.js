@@ -40,7 +40,7 @@ var globals =
     + ' keep_pointer_in_view move_pointer_at_page_top_and_bottom'
     + ' respond_to_message'
     + ' select_message select_message_by_id'
-    + ' scroll_to_selected select_and_show_by_id'
+    + ' scroll_to_selected'
     + ' selected_message selected_message_id'
     + ' start_reload_app reloading_app do_reload_app_preserving_compose'
     + ' at_top_of_viewport at_bottom_of_viewport'

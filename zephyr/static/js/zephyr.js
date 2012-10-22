@@ -190,18 +190,12 @@ function respond_to_message(reply_type) {
 }
 
 // Called by mouseover etc.
-function select_message_by_id(message_id) {
-    if (message_id === selected_message_id) {
+function select_message_by_id(message_id, opts) {
+    opts = $.extend({}, {then_scroll: false}, opts);
+    if (message_id === selected_message_id && ! opts.then_scroll) {
         return;
     }
-    select_message(rows.get(message_id), false);
-}
-
-// Called on page load and when we [un]narrow.
-// Forces a call to select_message even if the id has not changed,
-// because the visible table might have.
-function select_and_show_by_id(message_id) {
-    select_message(rows.get(message_id), true);
+    select_message(rows.get(message_id), opts);
 }
 
 var last_message_id_sent = -1;
@@ -234,7 +228,8 @@ function update_selected_message(message) {
     selected_message = message;
 }
 
-function select_message(next_message, scroll_to) {
+function select_message(next_message, opts) {
+    opts = $.extend({}, {then_scroll: false}, opts);
 
     /* If the message exists but is hidden, try to find the next visible one. */
     if (next_message.length !== 0 && next_message.is(':hidden')) {
@@ -252,7 +247,7 @@ function select_message(next_message, scroll_to) {
 
     update_selected_message(next_message);
 
-    if (scroll_to) {
+    if (opts.then_scroll) {
         recenter_view(next_message);
     }
 }
@@ -523,7 +518,7 @@ function add_messages(data) {
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
     if ((selected_message_id === -1) && (message_dict.hasOwnProperty(initial_pointer))) {
-        select_and_show_by_id(initial_pointer);
+        select_message_by_id(initial_pointer, {then_scroll: true});
     }
 
     // If we prepended messages, then we need to scroll back to the pointer.
@@ -534,7 +529,7 @@ function add_messages(data) {
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
     if ((data.where === 'top') && (selected_message_id >= 0)) {
-        select_and_show_by_id(selected_message_id);
+        select_message_by_id(selected_message_id, {then_scroll: true});
     }
 
     if (autocomplete_needs_update)

@@ -45,9 +45,9 @@ function do_narrow(description, filter_function) {
 
     // Indicate both which message is persistently selected and which
     // is temporarily selected
-    select_and_show_by_id(selected_message_id);
+    select_message_by_id(selected_message_id, {then_scroll: false});
     selected_message_class = "narrowed_selected_message";
-    select_and_show_by_id(target_id);
+    select_message_by_id(target_id, {then_scroll: true});
     scroll_to_selected();
 }
 
@@ -125,7 +125,7 @@ exports.show_all_messages = function () {
 
     selected_message_class = "selected_message";
     // Includes scrolling.
-    select_and_show_by_id(persistent_message_id);
+    select_message_by_id(persistent_message_id, {then_scroll: true});
 
     scroll_to_selected();
 };
