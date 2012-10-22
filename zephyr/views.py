@@ -411,7 +411,7 @@ def already_sent_mirrored_message(request):
 def same_realm_email(user_profile, email):
     try:
         domain = email.split("@", 1)[1]
-        return user_profile.realm.email == domain
+        return user_profile.realm.domain == domain
     except:
         return False
 
