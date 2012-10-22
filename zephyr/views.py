@@ -231,13 +231,15 @@ def update_pointer_backend(request, user_profile):
         requests.post(settings.NOTIFY_POINTER_UPDATE_URL, data=[
                ('secret',  settings.SHARED_SECRET),
                ('user', user_profile.user.id),
-               ('new_pointer', pointer)])
+               ('new_pointer', pointer),
+               ('updater_session', request.session.session_key)])
 
     return json_success()
 
 def format_updates_response(messages=[], mit_sync_bot=False, apply_markdown=False,
                             reason_empty=None, user_profile=None,
-                            new_pointer=None, where='bottom'):
+                            new_pointer=None, where='bottom',
+                            updater_session=''):
     max_message_id = None
     if user_profile is not None:
         try:
@@ -256,7 +258,7 @@ def format_updates_response(messages=[], mit_sync_bot=False, apply_markdown=Fals
     if max_message_id is not None:
         # TODO: Figure out how to accurately return this always
         ret["max_message_id"] = max_message_id
-    if new_pointer is not None:
+    if new_pointer is not None and updater_session != user_profile.last_pointer_updater:
         ret['new_pointer'] = new_pointer
     return ret
 
@@ -609,8 +611,9 @@ def notify_pointer_update(request, handler):
     # FIXME: better query
     user_profile = UserProfile.objects.get(id=request.POST['user'])
     new_pointer = int(request.POST['new_pointer'])
+    updater_session = request.POST['updater_session']
 
-    user_profile.update_pointer(new_pointer)
+    user_profile.update_pointer(new_pointer, updater_session)
 
     handler.finish()
 

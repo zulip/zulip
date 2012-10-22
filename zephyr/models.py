@@ -126,11 +126,12 @@ class UserProfile(models.Model):
 
         callbacks_table.clear(self.user.id, Callbacks.TYPE_RECEIVE)
 
-    def update_pointer(self, new_pointer):
+    def update_pointer(self, new_pointer, updater_session):
         global callbacks_table
 
         for cb in callbacks_table.get(self.user.id, Callbacks.TYPE_POINTER_UPDATE):
-            cb(new_pointer=new_pointer)
+            cb(new_pointer=new_pointer, updater_session=updater_session,
+               user_profile=self)
 
         callbacks_table.clear(self.user.id, Callbacks.TYPE_POINTER_UPDATE)
 
