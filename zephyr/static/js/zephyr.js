@@ -204,17 +204,31 @@ function select_and_show_by_id(message_id) {
     select_message(rows.get(message_id), true);
 }
 
+var last_message_id_sent = -1;
+var message_id_to_send = -1;
+// We only send pointer updates every second to avoid hammering the
+// server
+function send_pointer_update() {
+    if (message_id_to_send !== last_message_id_sent) {
+        $.post("json/update_pointer", {pointer: message_id_to_send});
+        last_message_id_sent = message_id_to_send;
+    }
+    setTimeout(send_pointer_update, 1000);
+}
+
+$(setTimeout(send_pointer_update, 1000));
+
 function update_selected_message(message) {
     $('.' + selected_message_class).removeClass(selected_message_class);
     message.addClass(selected_message_class);
 
     var new_selected_id = rows.id(message);
-    if (!narrow.active() && new_selected_id !== selected_message_id) {
+    if (!narrow.active() && new_selected_id !== message_id_to_send) {
         // Narrowing is a temporary view on top of the home view and
         // doesn't permanently affect where you are.
         //
         // We also don't want to post if there's no effective change.
-        $.post("json/update_pointer", {pointer: new_selected_id});
+        message_id_to_send = new_selected_id;
     }
     selected_message_id = new_selected_id;
     selected_message = message;
