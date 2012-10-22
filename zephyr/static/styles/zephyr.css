@@ -173,6 +173,11 @@ td.pointer {
     color:  #08C;
 }
 
+/* Brighten hover because of the dark background */
+.message_header_huddle:hover {
+    color: #3BF;
+}
+
 .message_time {
     color: gray;
     float: right;
