@@ -190,19 +190,17 @@ def create_user_base(email, password):
 def create_user(email, password, realm, full_name, short_name):
     user = create_user_base(email=email, password=password)
     user.save()
-    UserProfile.create(user, realm, full_name, short_name)
+    return UserProfile.create(user, realm, full_name, short_name)
 
 # TODO: This has a race where a user could be created twice.  Need to
 # add transactions.
 def create_user_if_needed(realm, email, full_name, short_name):
     try:
-        return User.objects.get(email=email)
-    except User.DoesNotExist:
+        return UserProfile.objects.get(user__email=email)
+    except UserProfile.DoesNotExist:
         # forge a user for this person
-        create_user(email, initial_password(email), realm,
-                    full_name, short_name)
-        user = User.objects.get(email=email)
-        return user
+        return create_user(email, initial_password(email), realm,
+                           full_name, short_name)
 
 def bulk_create_users(realms, users_raw):
     """
