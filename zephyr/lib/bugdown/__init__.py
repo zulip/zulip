@@ -22,10 +22,11 @@ class AutoLink(markdown.inlinepatterns.Pattern):
 
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
-        del md.inlinePatterns['image_link']
-        del md.inlinePatterns['image_reference']
-        del md.parser.blockprocessors['hashheader']
-        del md.parser.blockprocessors['setextheader']
+        for k in ('image_link', 'image_reference'):
+            del md.inlinePatterns[k]
+
+        for k in ('hashheader', 'setextheader'):
+            del md.parser.blockprocessors[k]
 
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
 
