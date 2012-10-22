@@ -4,18 +4,22 @@ import requests
 import time
 import traceback
 import urlparse
+import sys
 
 # Check that we have a recent enough version
 assert(requests.__version__ > '0.12')
 
 class HumbugAPI():
-    def __init__(self, email, api_key, verbose=False, site="https://app.humbughq.com"):
+    def __init__(self, email, api_key, verbose=False, retry_on_errors=True,
+                 site="https://app.humbughq.com"):
         self.api_key = api_key
         self.email = email
         self.verbose = verbose
         self.base_url = site
+        self.retry_on_errors = retry_on_errors
 
     def do_api_query(self, request, url):
+        had_error_retry = False
         request["email"] = self.email
         request["api-key"] = self.api_key
         if "client" not in request:
@@ -23,18 +27,38 @@ class HumbugAPI():
         while True:
             try:
                 res = requests.post(urlparse.urljoin(self.base_url, url), data=request, verify=True)
-                if res.status_code == requests.codes.service_unavailable:
-                    # On 503 errors, try again after a short sleep
-                    time.sleep(0.5)
+
+                # On 50x errors, try again after a short sleep
+                if str(res.status_code).startswith('5') and self.retry_on_errors:
+                    if self.verbose:
+                        if not had_error_retry:
+                            sys.stdout.write("connection error -- retrying.")
+                            had_error_retry = True
+                        else:
+                            sys.stdout.write(".")
+                        sys.stdout.flush()
+                    time.sleep(1)
                     continue
             except requests.exceptions.ConnectionError:
+                if self.retry_on_errors:
+                    if self.verbose:
+                        if not had_error_retry:
+                            sys.stdout.write("connection error -- retrying.")
+                            had_error_retry = True
+                        else:
+                            sys.stdout.write(".")
+                        sys.stdout.flush()
+                    time.sleep(1)
+                    continue
                 return {'msg': "Connection error:\n%s" % traceback.format_exc(),
                         "result": "connection-error"}
             except Exception:
-                # we'll split this out into more cases as we encounter new bugs.
+                # We'll split this out into more cases as we encounter new bugs.
                 return {'msg': "Unexpected error:\n%s" % traceback.format_exc(),
                         "result": "unexpected-error"}
 
+            if self.verbose and had_error_retry:
+                print "Success!"
             if res.json is not None:
                 return res.json
             return {'msg': res.text, "result": "http-error",
@@ -67,9 +91,9 @@ class HumbugAPI():
             if 'error' in res.get('result'):
                 if self.verbose:
                     if res["result"] == "http-error":
-                        print "Unexpected error -- probably a server restart"
+                        print "HTTP error fetching messages -- probably a server restart"
                     elif res["result"] == "connection-error":
-                        print "Connection error -- probably server is temporarily down?"
+                        print "Connection error fetching messages -- probably server is temporarily down?"
                     else:
                         print "Server returned error:\n%s" % res["msg"]
                 # TODO: Make this back off once it's more reliable
