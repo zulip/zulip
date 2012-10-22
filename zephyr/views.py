@@ -420,7 +420,7 @@ def parse_named_users(request):
     sender = {}
     recipients = set()
     try:
-        if 'sender' in request:
+        if 'sender' in request.POST:
             sender = {'email': request.POST["sender"],
                       'full_name': request.POST["fullname"],
                       'short_name': request.POST["shortname"]}
