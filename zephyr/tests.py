@@ -44,7 +44,7 @@ class AuthedTestCase(TestCase):
                                  'username':username, 'password':password,
                                  'domain':'humbughq.com'})
 
-    def get_userprofile(self, email):
+    def get_user_profile(self, email):
         """
         Given an email address, return the UserProfile object for the
         User that has that email.
@@ -53,9 +53,9 @@ class AuthedTestCase(TestCase):
         return UserProfile.objects.get(user__email=email)
 
     def send_message(self, sender_name, recipient_name, message_type):
-        sender = self.get_userprofile(sender_name)
+        sender = self.get_user_profile(sender_name)
         if message_type == Recipient.PERSONAL:
-            recipient = self.get_userprofile(recipient_name)
+            recipient = self.get_user_profile(recipient_name)
         else:
             recipient = Stream.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=message_type)
@@ -70,7 +70,7 @@ class AuthedTestCase(TestCase):
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient)
 
-        return [subscription.userprofile.user for subscription in subscriptions]
+        return [subscription.user_profile.user for subscription in subscriptions]
 
     def message_stream(self, user):
         return filter_by_subscriptions(Message.objects.all(), user)
@@ -288,10 +288,10 @@ class PointerTest(AuthedTestCase):
         the pointer we store for your UserProfile.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
+        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": 1})
         self.assert_json_success(result)
-        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, 1)
+        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, 1)
 
     def test_missing_pointer(self):
         """
@@ -299,10 +299,10 @@ class PointerTest(AuthedTestCase):
         returns a 400 and error message.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
+        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"foo": 1})
         self.assert_json_error(result, "Missing pointer")
-        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
+        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
 
     def test_invalid_pointer(self):
         """
@@ -310,10 +310,10 @@ class PointerTest(AuthedTestCase):
         message.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
+        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Invalid pointer: must be an integer")
-        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
+        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
 
     def test_pointer_out_of_range(self):
         """
@@ -321,10 +321,10 @@ class PointerTest(AuthedTestCase):
         and error message.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
+        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": -2})
         self.assert_json_error(result, "Invalid pointer value")
-        self.assertEquals(self.get_userprofile("hamlet@humbughq.com").pointer, -1)
+        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
 
 class MessagePOSTTest(AuthedTestCase):
     fixtures = ['messages.json']

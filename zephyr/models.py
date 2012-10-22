@@ -29,7 +29,7 @@ def get_display_recipient(recipient):
         stream = Stream.objects.get(id=recipient.type_id)
         return stream.name
     elif recipient.type == Recipient.HUDDLE:
-        user_profile_list = [UserProfile.objects.select_related().get(user=s.userprofile) for s in
+        user_profile_list = [UserProfile.objects.select_related().get(user=s.user_profile) for s in
                              Subscription.objects.filter(recipient=recipient)]
         return [{'email': user_profile.user.email,
                  'full_name': user_profile.full_name,
@@ -51,7 +51,7 @@ def get_log_recipient(recipient):
         stream = Stream.objects.get(id=recipient.type_id)
         return stream.name
 
-    user_profile_list = [UserProfile.objects.select_related().get(user=s.userprofile) for s in
+    user_profile_list = [UserProfile.objects.select_related().get(user=s.user_profile) for s in
                          Subscription.objects.filter(recipient=recipient)]
     return [{'email': user_profile.user.email,
              'full_name': user_profile.full_name,
@@ -157,7 +157,7 @@ class UserProfile(models.Model):
             profile.save()
             # Auto-sub to the ability to receive personals.
             recipient = Recipient.objects.create(type_id=profile.id, type=Recipient.PERSONAL)
-            Subscription.objects.create(userprofile=profile, recipient=recipient)
+            Subscription.objects.create(user_profile=profile, recipient=recipient)
 
 class PreregistrationUser(models.Model):
     email = models.EmailField(unique=True)
@@ -253,7 +253,7 @@ def bulk_create_users(realms, users_raw):
     subscriptions_to_create = []
     for (email, _, _) in users:
         subscriptions_to_create.append(\
-            Subscription(userprofile_id=profiles_by_email[email].id,
+            Subscription(user_profile_id=profiles_by_email[email].id,
                          recipient=recipients_by_email[email]))
     batch_bulk_create(Subscription, subscriptions_to_create)
 
@@ -435,7 +435,7 @@ def do_send_message(message, no_log=False):
         assert((len(recipients) == 1) or (len(recipients) == 2))
     elif (message.recipient.type == Recipient.STREAM or
           message.recipient.type == Recipient.HUDDLE):
-        recipients = [s.userprofile for
+        recipients = [s.user_profile for
                       s in Subscription.objects.select_related().filter(recipient=message.recipient, active=True)]
     else:
         raise
@@ -454,12 +454,12 @@ def do_send_message(message, no_log=False):
                ('users',   ','.join(str(user.id) for user in recipients))])
 
 class Subscription(models.Model):
-    userprofile = models.ForeignKey(UserProfile)
+    user_profile = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
     active = models.BooleanField(default=True)
 
     def __repr__(self):
-        return "<Subscription: %r -> %r>" % (self.userprofile, self.recipient)
+        return "<Subscription: %r -> %r>" % (self.user_profile, self.recipient)
     def __str__(self):
         return self.__repr__()
 
@@ -467,7 +467,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
     recipient = Recipient.objects.get(type_id=stream.id,
                                       type=Recipient.STREAM)
     (subscription, created) = Subscription.objects.get_or_create(
-        userprofile=user_profile, recipient=recipient,
+        user_profile=user_profile, recipient=recipient,
         defaults={'active': True})
     did_subscribe = created
     if not subscription.active:
@@ -484,7 +484,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
 def do_remove_subscription(user_profile, stream, no_log=False):
     recipient = Recipient.objects.get(type_id=stream.id,
                                       type=Recipient.STREAM)
-    maybe_sub = Subscription.objects.filter(userprofile=user_profile,
+    maybe_sub = Subscription.objects.filter(user_profile=user_profile,
                                     recipient=recipient)
     if len(maybe_sub) == 0:
         return False
@@ -518,7 +518,7 @@ def get_huddle(id_list):
         # Add subscriptions
         for uid in id_list:
             Subscription.objects.create(recipient = recipient,
-                                        userprofile = UserProfile.objects.get(id=uid))
+                                        user_profile = UserProfile.objects.get(id=uid))
     return huddle
 
 def bulk_create_huddles(users, huddle_user_list):
@@ -556,7 +556,7 @@ def bulk_create_huddles(users, huddle_user_list):
     subscriptions_to_create = []
     for (huddle_hash, huddle_user_ids) in huddle_set:
         for user_id in huddle_user_ids:
-            subscriptions_to_create.append(Subscription(active=True, userprofile_id=user_id,
+            subscriptions_to_create.append(Subscription(active=True, user_profile_id=user_id,
                                                         recipient=huddle_recipients[huddle_hash]))
     batch_bulk_create(Subscription, subscriptions_to_create)
 
@@ -564,16 +564,16 @@ def bulk_create_huddles(users, huddle_user_list):
 # use it now have faster implementations, but I expect this to be
 # potentially useful for code in the future, so not deleting it yet.
 def filter_by_subscriptions(messages, user):
-    userprofile = UserProfile.objects.get(user=user)
+    user_profile = UserProfile.objects.get(user=user)
     user_messages = []
     subscriptions = [sub.recipient for sub in
-                     Subscription.objects.filter(userprofile=userprofile, active=True)]
+                     Subscription.objects.filter(user_profile=user_profile, active=True)]
     for message in messages:
         # If you are subscribed to the personal or stream, or if you
         # sent the personal, you can see the message.
         if (message.recipient in subscriptions) or \
                 (message.recipient.type == Recipient.PERSONAL and
-                 message.sender == userprofile):
+                 message.sender == user_profile):
             user_messages.append(message)
 
     return user_messages

@@ -186,7 +186,7 @@ def home(request):
               UserProfile.objects.select_related().filter(realm=user_profile.realm) if
               profile != user_profile]
 
-    subscriptions = Subscription.objects.select_related().filter(userprofile_id=user_profile, active=True)
+    subscriptions = Subscription.objects.select_related().filter(user_profile_id=user_profile, active=True)
     streams = [get_display_recipient(sub.recipient) for sub in subscriptions
                if sub.recipient.type == Recipient.STREAM]
 
@@ -621,7 +621,7 @@ def api_get_public_streams(request, user_profile):
     return json_success({"streams": streams})
 
 def gather_subscriptions(user_profile):
-    subscriptions = Subscription.objects.filter(userprofile=user_profile, active=True)
+    subscriptions = Subscription.objects.filter(user_profile=user_profile, active=True)
     # For now, don't display the subscription for your ability to receive personals.
     return sorted([get_display_recipient(sub.recipient) for sub in subscriptions
             if sub.recipient.type == Recipient.STREAM])
@@ -758,7 +758,7 @@ def api_fetch_api_key(request):
         return HttpResponseForbidden("Your username or password is incorrect.")
     if not user.is_active:
         return HttpResponseForbidden("Your account has been disabled.")
-    return HttpResponse(user.userprofile.api_key)
+    return HttpResponse(user.user_profile.api_key)
 
 @login_required_json_view
 def json_fetch_api_key(request):
@@ -768,4 +768,4 @@ def json_fetch_api_key(request):
         return json_error("You must specify your password to get your API key.")
     if not request.user.check_password(password):
         return json_error("Your username or password is incorrect.")
-    return json_success({"api_key": request.user.userprofile.api_key})
+    return json_success({"api_key": request.user.user_profile.api_key})

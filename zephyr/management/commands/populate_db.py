@@ -136,7 +136,7 @@ class Command(BaseCommand):
                 for recipient in recipient_streams[:int(len(recipient_streams) *
                                                         float(i)/len(profiles)) + 1]:
                     r = Recipient.objects.get(type=Recipient.STREAM, type_id=recipient)
-                    Subscription.objects.create(userprofile=profile,
+                    Subscription.objects.create(user_profile=profile,
                                                 recipient=r)
         else:
             humbug_realm = Realm.objects.get(domain="humbughq.com")
@@ -184,7 +184,7 @@ class Command(BaseCommand):
                     else:
                         key = "default"
                     if cls in mit_subs_list.subs_lists[key]:
-                        Subscription.objects.create(userprofile=profile, recipient=recipient)
+                        Subscription.objects.create(user_profile=profile, recipient=recipient)
 
             internal_humbug_users = []
             create_users(internal_humbug_users)
@@ -198,7 +198,7 @@ class Command(BaseCommand):
                 recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                 for i, profile in enumerate(profiles):
                     # Subscribe to some streams.
-                    Subscription.objects.create(userprofile=profile, recipient=recipient)
+                    Subscription.objects.create(user_profile=profile, recipient=recipient)
 
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
@@ -361,7 +361,7 @@ def restore_saved_messages():
     subscribers = {}
     for s in Subscription.objects.select_related().all():
         if s.active:
-            subscribers.setdefault(s.recipient.id, set()).add(s.userprofile.id)
+            subscribers.setdefault(s.recipient.id, set()).add(s.user_profile.id)
 
     # Then create all the messages, without talking to the DB!
     print datetime.datetime.now(), "Importing messages, part 1..."
@@ -470,8 +470,8 @@ def restore_saved_messages():
     current_subs = {}
     current_subs_obj = {}
     for s in Subscription.objects.select_related().all():
-        current_subs[(s.recipient_id, s.userprofile_id)] = s.active
-        current_subs_obj[(s.recipient_id, s.userprofile_id)] = s
+        current_subs[(s.recipient_id, s.user_profile_id)] = s.active
+        current_subs_obj[(s.recipient_id, s.user_profile_id)] = s
 
     subscriptions_to_add = []
     subscriptions_to_change = []
@@ -486,7 +486,7 @@ def restore_saved_messages():
             continue
 
         s = Subscription(recipient_id=recipient_id,
-                         userprofile_id=user_profile_id,
+                         user_profile_id=user_profile_id,
                          active=pending_subs[pending_sub])
         subscriptions_to_add.append(s)
     batch_bulk_create(Subscription, subscriptions_to_add)
@@ -522,7 +522,7 @@ def send_messages(data):
 
     huddle_members = {}
     for h in recipient_huddles:
-        huddle_members[h] = [s.userprofile.id for s in
+        huddle_members[h] = [s.user_profile.id for s in
                              Subscription.objects.filter(recipient_id=h)]
 
     num_messages = 0
@@ -575,7 +575,7 @@ def send_messages(data):
             stream = Stream.objects.get(id=message.recipient.type_id)
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
-                    recipient=message.recipient)).userprofile
+                    recipient=message.recipient)).user_profile
             message.subject = stream.name + str(random.randint(1, 3))
             saved_data = message.subject
 
