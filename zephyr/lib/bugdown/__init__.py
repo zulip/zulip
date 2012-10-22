@@ -1,5 +1,7 @@
 import re
 import markdown
+import logging
+import traceback
 
 from zephyr.lib.avatar  import gravatar_hash
 from zephyr.lib.bugdown import codehilite
@@ -61,7 +63,14 @@ def convert(md):
         html = _md_engine.convert(md)
     except:
         # FIXME: Do something more reasonable here!
+        #
+        # NB: For security, we must not print the bare Markdown input.
+        # It could contain terminal control codes, which can do
+        # surprisingly nasty things.
+
         html = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
+        logging.getLogger('').error('Exception in Markdown parser: %sInput was: %s'
+            % (traceback.format_exc(), repr(md)))
 
     _use_count += 1
     if _use_count >= MAX_MD_ENGINE_USES:
