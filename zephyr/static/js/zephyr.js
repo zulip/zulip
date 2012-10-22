@@ -495,16 +495,6 @@ function add_messages(data) {
         $('#load_more').show();
     }
 
-    if (data.messages.length === 0) {
-        if (data.reason_empty === 'no_old_messages') {
-            $('#load_more').hide();
-
-            // Don't ask for more old messages in the future.
-            max_messages_for_backfill = 0;
-        }
-        return;
-    }
-
     $.each(data.messages, add_message_metadata);
 
     if (data.where === 'top') {
@@ -663,7 +653,14 @@ function get_updates() {
                 start_reload_app();
             }
 
-            if (data.messages.length !== 0) {
+            if (data.messages.length === 0) {
+                if (data.reason_empty === 'no_old_messages') {
+                    $('#load_more').hide();
+
+                    // Don't ask for more old messages in the future.
+                    max_messages_for_backfill = 0;
+                }
+            } else {
                 add_messages(data);
             }
 
