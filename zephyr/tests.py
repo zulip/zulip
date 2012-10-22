@@ -4,7 +4,7 @@ from django.utils.timezone import utc
 from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
-    filter_by_subscriptions, Realm, do_send_message
+    filter_by_subscriptions, Realm, do_send_message, Client
 from zephyr.views import json_get_updates
 from zephyr.decorator import TornadoAsyncException
 from zephyr.lib.initial_password import initial_password
@@ -60,7 +60,9 @@ class AuthedTestCase(TestCase):
             recipient = Stream.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=message_type)
         pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-        do_send_message(Message(sender=sender, recipient=recipient, subject="test", pub_date=pub_date),
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
+        do_send_message(Message(sender=sender, recipient=recipient, subject="test", pub_date=pub_date,
+                                sending_client=sending_client),
                        synced_from_mit=True)
 
     def users_subscribed_to_stream(self, stream_name, realm_domain):
@@ -336,6 +338,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         result = self.client.post("/json/send_message/", {"type": "stream",
                                                           "stream": "Verona",
+                                                          "client": "test suite",
                                                           "content": "Test message",
                                                           "subject": "Test subject"})
         self.assert_json_success(result)
@@ -349,6 +352,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.assertFalse(Stream.objects.filter(name="nonexistent_stream"))
         result = self.client.post("/json/send_message/", {"type": "stream",
                                                           "stream": "nonexistent_stream",
+                                                          "client": "test suite",
                                                           "content": "Test message",
                                                           "subject": "Test subject"})
         self.assert_json_success(result)
@@ -361,6 +365,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         result = self.client.post("/json/send_message/", {"type": "personal",
                                                           "content": "Test message",
+                                                          "client": "test suite",
                                                           "recipient": "othello@humbughq.com"})
         self.assert_json_success(result)
 
@@ -371,6 +376,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         result = self.client.post("/json/send_message/", {"type": "personal",
                                                           "content": "Test message",
+                                                          "client": "test suite",
                                                           "recipient": "nonexistent"})
         self.assert_json_error(result, "Invalid email 'nonexistent'")
 
@@ -381,6 +387,7 @@ class MessagePOSTTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         result = self.client.post("/json/send_message/", {"type": "invalid type",
                                                           "content": "Test message",
+                                                          "client": "test suite",
                                                           "recipient": "othello@humbughq.com"})
         self.assert_json_error(result, "Invalid message type")
 

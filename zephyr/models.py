@@ -61,7 +61,7 @@ callback_table = {}
 mit_sync_table = {}
 
 class Realm(models.Model):
-    domain = models.CharField(max_length=40, db_index=True)
+    domain = models.CharField(max_length=40, db_index=True, unique=True)
 
     def __repr__(self):
         return "<Realm: %s %s>" % (self.domain, self.id)
@@ -285,7 +285,7 @@ class Recipient(models.Model):
         return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
 
 class Client(models.Model):
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, db_index=True, unique=True)
 
 def get_client(name):
     (client, _) = Client.objects.get_or_create(name=name)
@@ -465,7 +465,7 @@ def do_remove_subscription(user_profile, stream, no_log=False):
 class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
-    huddle_hash = models.CharField(max_length=40, db_index=True)
+    huddle_hash = models.CharField(max_length=40, db_index=True, unique=True)
 
 def get_huddle_hash(id_list):
     id_list = sorted(set(id_list))
