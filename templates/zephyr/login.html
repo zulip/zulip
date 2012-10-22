@@ -25,9 +25,6 @@ autofocus('#id_password');
 </div>
 {% endif %}
 
-<input type="hidden" name="next" value="{{ next }}" />
-</form>
-
 <form method="post" class="form-horizontal" action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
     {% csrf_token %}
     <div class="control-group">
