@@ -553,9 +553,9 @@ function start_reload_app() {
     }
     get_updates_params.reload_pending = 1;
 
-    // Always reload after 5 minutes
+    // Always reload after 30 minutes
     setTimeout(function () { do_reload_app_preserving_compose(false); },
-               1000 * 60 * 5);
+               1000 * 60 * 30);
 
     // If the user is composing a message, reload if they become
     // idle while composing.  If they finish composing, the
@@ -566,8 +566,8 @@ function start_reload_app() {
     // If they start composing, postpone reloading
 
     var idle_control;
-    var composing_timeout = 1000*30;
-    var home_timeout = 1000*10;
+    var composing_timeout = 1000*60*10;
+    var home_timeout = 1000*60;
     var compose_canceled_handler, compose_started_handler;
 
     compose_canceled_handler = function () {
