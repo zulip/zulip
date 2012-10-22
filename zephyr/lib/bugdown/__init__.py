@@ -34,7 +34,7 @@ class Bugdown(markdown.Extension):
 
         # A link starts after whitespace and continues to the next whitespace.
         link_regex = r'\b(?P<url>https?://[^\s[\](){}<>]+)'
-        md.inlinePatterns.add('autolink', AutoLink(link_regex), '_begin')
+        md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
 # We need to re-initialize the markdown engine every 30 messages
 # due to some sort of performance leak in the markdown library.
