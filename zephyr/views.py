@@ -371,7 +371,7 @@ def json_send_message(request):
 def is_super_user_api(request):
     return request.POST.get("api-key") == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
-def already_sent_forged_message(request):
+def already_sent_mirrored_message(request):
     email = request.POST['sender'].lower()
     if Message.objects.filter(sender__user__email=email,
                               content=request.POST['content'],
@@ -380,7 +380,7 @@ def already_sent_forged_message(request):
         return True
     return False
 
-def create_forged_message_users(request, user_profile):
+def create_mirrored_message_users(request, user_profile):
     # Create a user for the sender, if needed
     email = request.POST['sender'].lower()
     user = create_user_if_needed(user_profile.realm, email,
@@ -416,15 +416,10 @@ def send_message_backend(request, user_profile, sender):
     if "forged" in request.POST:
         if not is_super_user_api(request):
             return json_error("User not authorized for this query")
-        if "time" not in request.POST:
-            return json_error("Missing time")
-    if "time" in request.POST:
-        # Checking for time in request.POST is a hack to detect MIT.
-        # We should clean this up, since we only use the 'time' if
-        # 'forged' is also set.
-        if already_sent_forged_message(request):
+    if request.POST["client"] == "zephyr_mirror":
+        if already_sent_mirrored_message(request):
             return json_success()
-        sender = create_forged_message_users(request, user_profile)
+        sender = create_mirrored_message_users(request, user_profile)
 
     message_type_name = request.POST["type"]
     if message_type_name == 'stream':
