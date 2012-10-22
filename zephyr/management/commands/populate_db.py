@@ -19,6 +19,7 @@ import simplejson
 import datetime
 import random
 import sys
+import os
 import time
 import hashlib
 import base64
@@ -509,6 +510,7 @@ def restore_saved_messages():
 # - both single and multi-line content
 def send_messages(data):
     (tot_messages, personals_pairs, options, output) = data
+    random.seed(os.getpid())
     from django.db import connection
     connection.close()
     texts = file("zephyr/management/commands/test_messages.txt", "r").readlines()
