@@ -22,7 +22,7 @@ class AutoLink(markdown.inlinepatterns.Pattern):
 
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
-        for k in ('image_link', 'image_reference'):
+        for k in ('image_link', 'image_reference', 'automail'):
             del md.inlinePatterns[k]
 
         for k in ('hashheader', 'setextheader'):
