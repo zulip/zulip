@@ -559,8 +559,8 @@ def json_remove_subscription(request):
     return json_success({"data": sub_name})
 
 def valid_stream_name(name):
-    # Streams must start with a letter or number.
-    return re.match("^[.a-zA-Z0-9][.a-z A-Z0-9_-]*$", name)
+    # Streams must start with a letter or number or a dot.
+    return re.match(r'^[\w.][\w. -]*$', name, flags=re.UNICODE)
 
 @login_required_api_view
 def api_subscribe(request, user_profile):
