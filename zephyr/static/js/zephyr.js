@@ -191,7 +191,7 @@ function respond_to_message(reply_type) {
 
 // Called by mouseover etc.
 function select_message_by_id(message_id, opts) {
-    opts = $.extend({}, {then_scroll: false}, opts);
+    opts = $.extend({}, {then_scroll: false, update_server: true}, opts);
     if (message_id === selected_message_id && ! opts.then_scroll) {
         return;
     }
@@ -212,12 +212,15 @@ function send_pointer_update() {
 
 $(setTimeout(send_pointer_update, 1000));
 
-function update_selected_message(message) {
+function update_selected_message(message, opts) {
+    opts = $.extend({}, {update_server: true}, opts);
     $('.' + selected_message_class).removeClass(selected_message_class);
     message.addClass(selected_message_class);
 
     var new_selected_id = rows.id(message);
-    if (!narrow.active() && new_selected_id !== message_id_to_send) {
+    if (opts.update_server && !narrow.active()
+        && new_selected_id !== message_id_to_send)
+    {
         // Narrowing is a temporary view on top of the home view and
         // doesn't permanently affect where you are.
         //
@@ -229,7 +232,7 @@ function update_selected_message(message) {
 }
 
 function select_message(next_message, opts) {
-    opts = $.extend({}, {then_scroll: false}, opts);
+    opts = $.extend({}, {then_scroll: false, update_server: true}, opts);
 
     /* If the message exists but is hidden, try to find the next visible one. */
     if (next_message.length !== 0 && next_message.is(':hidden')) {
@@ -245,7 +248,7 @@ function select_message(next_message, opts) {
         return false;
     }
 
-    update_selected_message(next_message);
+    update_selected_message(next_message, opts);
 
     if (opts.then_scroll) {
         recenter_view(next_message);
