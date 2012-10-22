@@ -382,14 +382,14 @@ def api_get_messages(request, user_profile, handler):
 
 @login_required_api_view
 def api_send_message(request, user_profile):
-    return send_message_backend(request, user_profile, user_profile.user)
+    return send_message_backend(request, user_profile, user_profile)
 
 @login_required_json_view
 def json_send_message(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if 'time' in request.POST:
         return json_error("Invalid field 'time'")
-    return send_message_backend(request, user_profile, request.user)
+    return send_message_backend(request, user_profile, user_profile)
 
 # TODO: This should have a real superuser security check
 def is_super_user_api(request):
@@ -404,27 +404,67 @@ def already_sent_mirrored_message(request):
         return True
     return False
 
-def create_mirrored_message_users(request, user_profile):
-    # Create a user for the sender, if needed
-    email = request.POST['sender'].lower()
-    user = create_user_if_needed(user_profile.realm, email,
-                                 request.POST['fullname'],
-                                 request.POST['shortname'])
+# Validte that the passed in object is an email address from the user's realm
+# TODO: Check that it's a real email address here.
+def same_realm_email(user_profile, email):
+    try:
+        domain = email.split("@", 1)[1]
+        return user_profile.realm.email == domain
+    except:
+        return False
 
-    # Create users for huddle recipients, if needed.
-    if request.POST['type'] == 'personal':
-        if ',' in request.POST['recipient']:
-            # Huddle message
-            for user_email in [e.strip() for e in request.POST["recipient"].split(",")]:
-                create_user_if_needed(user_profile.realm, user_email,
-                                      user_email.split('@')[0],
-                                      user_email.split('@')[0])
-        else:
-            user_email = request.POST["recipient"].strip()
-            create_user_if_needed(user_profile.realm, user_email,
-                                  user_email.split('@')[0],
-                                  user_email.split('@')[0])
-    return user
+# Parse out the sender and huddle/personal recipients
+def parse_named_users(request):
+    sender = {}
+    recipients = set()
+    try:
+        if 'sender' in request:
+            sender = {'email': request.POST["sender"],
+                      'full_name': request.POST["fullname"],
+                      'short_name': request.POST["shortname"]}
+
+        if request.POST['type'] == 'personal':
+            if ',' in request.POST['recipient']:
+                # Huddle message
+                for user_email in [e.strip().lower() for e in
+                                   request.POST["recipient"].split(",")]:
+                    recipients.add(user_email)
+            else:
+                user_email = request.POST["recipient"].strip().lower()
+                recipients.add(user_email)
+    except:
+        return (False, None, None)
+
+    return (True, sender, list(recipients))
+
+def create_mirrored_message_users(request, user_profile):
+    (valid_input, sender_data, huddle_recipients) = parse_named_users(request)
+    if not valid_input:
+        return (False, None)
+
+    # First, check that the sender is in our realm:
+    if 'email' in sender_data and not same_realm_email(user_profile,
+                                                       sender_data['email']):
+        return (False, None)
+    # Then, check that all huddle/personal recipients are in our realm:
+    for recipient in huddle_recipients:
+        if not same_realm_email(user_profile, recipient):
+            return (False, None)
+
+    # Create a user for the sender, if needed
+    if 'email' in sender_data:
+        sender = create_user_if_needed(user_profile.realm, sender_data['email'],
+                                       sender_data['full_name'], sender_data['short_name'])
+    else:
+        sender = user_profile
+
+    # Create users for huddle/personal recipients, if needed.
+    for recipient in huddle_recipients:
+        create_user_if_needed(user_profile.realm, recipient,
+                              recipient.split('@')[0],
+                              recipient.split('@')[0])
+
+    return (True, sender)
 
 # We do not @require_login for send_message_backend, since it is used
 # both from the API and the web service.  Code calling
@@ -437,15 +477,36 @@ def send_message_backend(request, user_profile, sender):
         return json_error("Missing message contents")
     if "client" not in request.POST:
         return json_error("Missing client")
-    if "forged" in request.POST:
-        if not is_super_user_api(request):
-            return json_error("User not authorized for this query")
+    message_type_name = request.POST["type"]
+    forged = "forged" in request.POST
+    is_super_user = is_super_user_api(request)
+    if forged and not is_super_user:
+        return json_error("User not authorized for this query")
+
     if request.POST["client"] == "zephyr_mirror":
+        # Here's how security works for non-superuser mirroring:
+        #
+        # The message must be (1) a huddle/personal message (2) that
+        # is both sent and received exclusively by other users in your
+        # realm which (3) must be the MIT realm and (4) you must have
+        # received the message.
+        #
+        # If that's the case, we let it through, but we still have the
+        # security flaw that we're trusting your Hesiod data for users
+        # you report having sent you a message.
+        if "sender" not in request.POST:
+            return json_error("Missing sender")
+        if message_type_name != "personal" and not is_super_user:
+            return json_error("User not authorized for this query")
+        (valid_input, mirror_sender) = create_mirrored_message_users(request, user_profile)
+        if not valid_input:
+            return json_error("Invalid mirrored message")
+        if user_profile.realm.domain != "mit.edu":
+            return json_error("Invalid mirrored realm")
         if already_sent_mirrored_message(request):
             return json_success()
-        sender = create_mirrored_message_users(request, user_profile)
+        sender = mirror_sender
 
-    message_type_name = request.POST["type"]
     if message_type_name == 'stream':
         if "stream" not in request.POST:
             return json_error("Missing stream")
@@ -465,44 +526,37 @@ def send_message_backend(request, user_profile, sender):
     elif message_type_name == 'personal':
         if "recipient" not in request.POST:
             return json_error("Missing recipient")
+        (valid_input, _, huddle_recipients) = parse_named_users(request)
+        if not valid_input:
+            return json_error("Unable to parse recipients")
+        if request.POST["client"] == "zephyr_mirror":
+            if user_profile.user.email not in huddle_recipients and not forged:
+                return json_error("User not authorized for this query")
 
-        recipient_data = request.POST['recipient']
-        if ',' in recipient_data:
-            # This is actually a huddle message, which shares the
-            # "personal" message sending form
-            recipients = [r.strip() for r in recipient_data.split(',')]
-            # Ignore any blank recipients
-            recipients = [r for r in recipients if r]
-            recipient_ids = []
-            for recipient in recipients:
-                try:
-                    recipient_ids.append(
-                        UserProfile.objects.get(user__email=recipient).id)
-                except UserProfile.DoesNotExist:
-                    return json_error("Invalid email '%s'" % (recipient))
+        recipient_profile_ids = set()
+        for recipient in huddle_recipients:
+            try:
+                recipient_profile_ids.add(UserProfile.objects.get(user__email=recipient).id)
+            except UserProfile.DoesNotExist:
+                return json_error("Invalid email '%s'" % (recipient))
+        if len(recipient_profile_ids) > 1:
             # Make sure the sender is included in the huddle
-            recipient_ids.append(UserProfile.objects.get(user=sender).id)
-            huddle = get_huddle(recipient_ids)
+            recipient_profile_ids.add(sender.id)
+            huddle = get_huddle(list(recipient_profile_ids))
             recipient = Recipient.objects.get(type_id=huddle.id, type=Recipient.HUDDLE)
         else:
-            # This is actually a personal message
-            if not User.objects.filter(email=recipient_data):
-                return json_error("Invalid email '%s'" % (recipient_data))
-
-            recipient_user = User.objects.get(email=recipient_data)
-            recipient_user_profile = UserProfile.objects.get(user=recipient_user)
-            recipient = Recipient.objects.get(type_id=recipient_user_profile.id,
+            recipient = Recipient.objects.get(type_id=list(recipient_profile_ids)[0],
                                               type=Recipient.PERSONAL)
     else:
         return json_error("Invalid message type")
 
     message = Message()
-    message.sender = UserProfile.objects.get(user=sender)
+    message.sender = sender
     message.content = request.POST['content']
     message.recipient = recipient
     if message_type_name == 'stream':
         message.subject = subject_name
-    if 'forged' in request.POST:
+    if forged:
         # Forged messages come with a timestamp
         message.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
     else:
