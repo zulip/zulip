@@ -33,7 +33,7 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
 
         # A link starts after whitespace and continues to the next whitespace.
-        link_regex = r'(\s|\A)(?P<url>https?://[^\s]+)'
+        link_regex = r'\b(?P<url>https?://[^\s]+)'
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '_begin')
 
 # We need to re-initialize the markdown engine every 30 messages
