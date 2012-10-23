@@ -48,8 +48,10 @@ function do_narrow(description, filter_function) {
     // is temporarily selected
     select_message_by_id(selected_message_id, {then_scroll: false});
     selected_message_class = "narrowed_selected_message";
-    select_message_by_id(target_id, {then_scroll: true});
-    scroll_to_selected();
+    if (select_message_by_id(target_id, {then_scroll: true})) {
+        // Can only scroll if the message exists
+        scroll_to_selected();
+    }
 }
 
 // This is the message we're about to select, within the narrowed view.

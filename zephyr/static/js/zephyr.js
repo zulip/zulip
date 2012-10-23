@@ -121,7 +121,8 @@ function recenter_view(message) {
 }
 
 function scroll_to_selected() {
-    recenter_view(selected_message);
+    if (selected_message && (selected_message.length !== 0))
+        recenter_view(selected_message);
 }
 
 function get_huddle_recipient(message) {
@@ -749,6 +750,8 @@ function at_bottom_of_viewport() {
 function keep_pointer_in_view() {
     var candidate;
     var next_message = rows.get(selected_message_id);
+    if (next_message.length === 0)
+        return;
 
     if (above_view_threshold(next_message) && (!at_top_of_viewport())) {
         while (above_view_threshold(next_message)) {
