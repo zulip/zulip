@@ -9,7 +9,7 @@ from zephyr.lib.initial_password import initial_password, initial_api_key
 import fcntl
 import os
 import simplejson
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from zephyr.lib import bugdown
 from zephyr.lib.bulk_create import batch_bulk_create
 from zephyr.lib.avatar import gravatar_hash
@@ -328,8 +328,13 @@ class Recipient(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
 
+@transaction.commit_on_success
 def get_client(name):
-    (client, _) = Client.objects.get_or_create(name=name)
+    try:
+        (client, _) = Client.objects.get_or_create(name=name)
+    except IntegrityError:
+        transaction.commit()
+        return Client.objects.get(name=name)
     return client
 
 def bulk_create_clients(client_list):

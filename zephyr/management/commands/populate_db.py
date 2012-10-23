@@ -27,21 +27,18 @@ from optparse import make_option
 
 settings.HAVE_TORNADO_SERVER = False
 
-def create_users(name_list):
-    for name, email in name_list:
+def create_users(realms, name_list):
+    user_set = set()
+    for full_name, email in name_list:
         (short_name, domain) = email.split("@")
-        if User.objects.filter(email=email):
-            # We're trying to create the same user twice!
-            raise
-        realm = Realm.objects.get(domain=domain)
-        create_user(email, initial_password(email), realm, name, short_name)
+        user_set.add((email, full_name, short_name, True))
+    bulk_create_users(realms, user_set)
 
-def create_streams(stream_list, realm):
-    for name in stream_list:
-        if Stream.objects.filter(name=name, realm=realm):
-            # We're trying to create the same stream twice!
-            raise
-        Stream.create(name, realm)
+def create_streams(realms, realm, stream_list):
+    stream_set = set()
+    for stream_name in stream_list:
+        stream_set.add((realm.domain, stream_name))
+    bulk_create_streams(realms, stream_set)
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -104,15 +101,17 @@ class Command(BaseCommand):
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
 
-        stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
-
         if options["delete"]:
             for model in [Message, Stream, UserProfile, User, Recipient,
                           Realm, Subscription, Huddle, UserMessage, Client]:
                 model.objects.all().delete()
 
-            # Create a test realm
+            # Create our two default realms
             humbug_realm = Realm.objects.create(domain="humbughq.com")
+            mit_realm = Realm.objects.create(domain="mit.edu")
+            realms = {}
+            for realm in Realm.objects.all():
+                realms[realm.domain] = realm
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
@@ -121,23 +120,23 @@ class Command(BaseCommand):
                      ("Cordelia Lear", "cordelia@humbughq.com"), ("King Hamlet", "hamlet@humbughq.com")]
             for i in xrange(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d' % (i,)))
-
-            create_users(names)
-
+            create_users(realms, names)
             # Create public streams.
-            create_streams(stream_list, humbug_realm)
-            recipient_streams = [klass.type_id for klass in
+            stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
+            create_streams(realms, humbug_realm, stream_list)
+            recipient_streams = [recipient.type_id for recipient in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
-
             # Create subscriptions to streams
-            profiles = UserProfile.objects.all()
+            subscriptions_to_add = []
+            profiles = UserProfile.objects.select_related().all()
             for i, profile in enumerate(profiles):
                 # Subscribe to some streams.
-                for recipient in recipient_streams[:int(len(recipient_streams) *
-                                                        float(i)/len(profiles)) + 1]:
-                    r = Recipient.objects.get(type=Recipient.STREAM, type_id=recipient)
-                    Subscription.objects.create(user_profile=profile,
-                                                recipient=r)
+                for type_id in recipient_streams[:int(len(recipient_streams) *
+                                                      float(i)/len(profiles)) + 1]:
+                    r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
+                    s = Subscription(recipient=r, user_profile=profile)
+                    subscriptions_to_add.append(s)
+            batch_bulk_create(Subscription, subscriptions_to_add)
         else:
             humbug_realm = Realm.objects.get(domain="humbughq.com")
             recipient_streams = [klass.type_id for klass in
@@ -165,40 +164,44 @@ class Command(BaseCommand):
             pass
 
         if options["delete"]:
-            mit_realm = Realm.objects.create(domain="mit.edu")
-
             # Create internal users
             internal_mit_users = []
-            create_users(internal_mit_users)
-
-            create_streams(mit_subs_list.all_subs, mit_realm)
+            create_users(realms, internal_mit_users)
+            create_streams(realms, mit_realm, mit_subs_list.all_subs)
 
             # Now subscribe everyone to these streams
-            profiles = UserProfile.objects.filter(realm=mit_realm)
+            subscriptions_to_add = []
+            profiles = UserProfile.objects.select_related().filter(realm=mit_realm)
             for cls in mit_subs_list.all_subs:
                 stream = Stream.objects.get(name=cls, realm=mit_realm)
                 recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-                for i, profile in enumerate(profiles):
+                for profile in profiles:
                     if profile.user.email in mit_subs_list.subs_lists:
                         key = profile.user.email
                     else:
                         key = "default"
                     if cls in mit_subs_list.subs_lists[key]:
-                        Subscription.objects.create(user_profile=profile, recipient=recipient)
+                        s = Subscription(recipient=recipient,
+                                         user_profile=profile)
+                        subscriptions_to_add.append(s)
+            batch_bulk_create(Subscription, subscriptions_to_add)
 
             internal_humbug_users = []
-            create_users(internal_humbug_users)
+            create_users(realms, internal_humbug_users)
             humbug_stream_list = ["devel", "all", "humbug", "design", "support", "social", "test"]
-            create_streams(humbug_stream_list, humbug_realm)
+            create_streams(realms, humbug_realm, humbug_stream_list)
 
             # Now subscribe everyone to these streams
-            profiles = UserProfile.objects.filter(realm=humbug_realm)
+            subscriptions_to_add = []
+            profiles = UserProfile.objects.select_related().filter(realm=humbug_realm)
             for cls in humbug_stream_list:
                 stream = Stream.objects.get(name=cls, realm=humbug_realm)
                 recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-                for i, profile in enumerate(profiles):
+                for profile in profiles:
                     # Subscribe to some streams.
-                    Subscription.objects.create(user_profile=profile, recipient=recipient)
+                    s = Subscription(recipient=recipient, user_profile=profile)
+                    subscriptions_to_add.append(s)
+            batch_bulk_create(Subscription, subscriptions_to_add)
 
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
