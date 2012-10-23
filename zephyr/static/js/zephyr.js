@@ -512,7 +512,8 @@ function add_messages(data) {
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
     if ((selected_message_id === -1) && (message_dict.hasOwnProperty(initial_pointer))) {
-        select_message_by_id(initial_pointer, {then_scroll: true});
+        select_message_by_id(initial_pointer,
+                             {then_scroll: true, update_server: false});
     }
 
     // If we prepended messages, then we need to scroll back to the pointer.
@@ -523,7 +524,8 @@ function add_messages(data) {
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
     if ((data.where === 'top') && (selected_message_id >= 0)) {
-        select_message_by_id(selected_message_id, {then_scroll: true});
+        select_message_by_id(selected_message_id,
+                             {then_scroll: true, update_server: false});
     }
 
     if (autocomplete_needs_update)
