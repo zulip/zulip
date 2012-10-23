@@ -216,5 +216,5 @@ class humbug_wiki {
 
 class { "humbug_base": }
 class { "humbug_web_base": }
-class { "humbug_wiki": }
-class { "humbug_app_frontend": }
+#class { "humbug_wiki": }
+#class { "humbug_app_frontend": }
