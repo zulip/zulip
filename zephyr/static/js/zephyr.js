@@ -236,17 +236,17 @@ function select_message(next_message, opts) {
     opts = $.extend({}, {then_scroll: false, update_server: true}, opts);
 
     /* If the message exists but is hidden, try to find the next visible one. */
-    if (next_message.length !== 0 && next_message.is(':hidden')) {
+    if (next_message.is(':hidden')) {
         next_message = rows.next_visible(next_message);
     }
 
     /* Fall back to the first visible message. */
     if (next_message.length === 0) {
         next_message = rows.first_visible();
-    }
-    if (next_message.length === 0) {
-        // There are no messages!
-        return false;
+        if (next_message.length === 0) {
+            // There are no messages!
+            return false;
+        }
     }
 
     update_selected_message(next_message, opts);
