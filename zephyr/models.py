@@ -418,7 +418,8 @@ def log_event(event):
     fcntl.flock(lock, fcntl.LOCK_UN)
 
 def log_message(message):
-    log_event(message.to_log_dict())
+    if not message.sending_client.name.startswith("test:"):
+        log_event(message.to_log_dict())
 
 def do_send_message(message, no_log=False):
     message.save()
