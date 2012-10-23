@@ -421,7 +421,11 @@ def restore_saved_messages():
 
     # Finally, create all the UserMessage objects
     print datetime.datetime.now(), "Importing usermessages, part 1..."
-    all_messages = Message.objects.select_related().all()
+    personal_recipients = {}
+    for r in Recipient.objects.filter(type = Recipient.PERSONAL):
+        personal_recipients[r.id] = True
+
+    all_messages = Message.objects.all()
     user_messages_to_create = []
 
     messages_by_id = {}
@@ -461,7 +465,7 @@ def restore_saved_messages():
             um = UserMessage(user_profile=users_by_id[user_profile_id],
                              message=message)
             user_messages_to_create.append(um)
-        if message.recipient.type == Recipient.PERSONAL:
+        if message.recipient_id in personal_recipients:
             # Include the sender in huddle recipients
             um = UserMessage(user_profile=users_by_id[message.sender_id],
                              message=message)
