@@ -642,7 +642,9 @@ function get_updates() {
         url:      '/json/get_updates',
         data:     get_updates_params,
         dataType: 'json',
-        timeout:  10*60*1000, // 10 minutes in ms
+        timeout:  55*1000, // 55 seconds in ms -- needs to be under a
+                           // minute to deal with crappy home wireless
+                           // routers that kill "inactive" http connections.
         success: function (data) {
             get_updates_params.failures = 0;
             $('#connection-error').hide();
