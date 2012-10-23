@@ -242,7 +242,7 @@ function select_message(next_message, opts) {
 
     /* Fall back to the first visible message. */
     if (next_message.length === 0) {
-        next_message = $('tr:not(:hidden):first');
+        next_message = rows.first_visible();
     }
     if (next_message.length === 0) {
         // There are no messages!
