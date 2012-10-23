@@ -51,12 +51,16 @@ class humbug_base {
     ensure     => file,
     require    => File['/home/humbug/.ssh'],
     mode       => 600,
+    owner      => "humbug",
+    group      => "humbug",
     source     => '/root/humbug/servers/puppet/files/authorized_keys',
   }
 
   file { '/home/humbug/.ssh':
     ensure     => directory,
     require    => User['humbug'],
+    owner      => "humbug",
+    group      => "humbug",
     mode       => 600,
   }
 
