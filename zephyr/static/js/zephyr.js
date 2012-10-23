@@ -195,7 +195,8 @@ function respond_to_message(reply_type) {
 function select_message_by_id(message_id, opts) {
     opts = $.extend({}, {then_scroll: false, update_server: true}, opts);
     if (message_id === selected_message_id && ! opts.then_scroll) {
-        return;
+        // We are already successful without doing anything!
+        return true;
     }
     return select_message(rows.get(message_id), opts);
 }
