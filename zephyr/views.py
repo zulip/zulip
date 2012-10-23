@@ -329,13 +329,12 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         and not client_reload_pending):
         # Inform the client that they should reload.
         reason_empty = 'client_reload'
-    # Pointer update temporarily disabled
-    # elif (client_pointer is not None
-    #       and str(user_profile.last_pointer_updater) != str(request.session.session_key)
-    #       and ptr != client_pointer
-    #       and str(user_profile.last_pointer_updater) != ''):
-    #     reason_empty = 'pointer_update'
-    #     new_pointer = ptr
+    elif (client_pointer is not None
+          and str(user_profile.last_pointer_updater) != str(request.session.session_key)
+          and ptr != client_pointer
+          and str(user_profile.last_pointer_updater) != ''):
+        reason_empty = 'pointer_update'
+        new_pointer = ptr
 
     if reason_empty is not None:
         handler.finish(format_updates_response(
