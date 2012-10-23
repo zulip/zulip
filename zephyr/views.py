@@ -760,7 +760,7 @@ def api_fetch_api_key(request):
         return HttpResponseForbidden("Your username or password is incorrect.")
     if not user.is_active:
         return HttpResponseForbidden("Your account has been disabled.")
-    return HttpResponse(user.user_profile.api_key)
+    return HttpResponse(user.userprofile.api_key)
 
 @login_required_json_view
 def json_fetch_api_key(request):
@@ -770,4 +770,4 @@ def json_fetch_api_key(request):
         return json_error("You must specify your password to get your API key.")
     if not request.user.check_password(password):
         return json_error("Your username or password is incorrect.")
-    return json_success({"api_key": request.user.user_profile.api_key})
+    return json_success({"api_key": request.user.userprofile.api_key})
