@@ -404,7 +404,7 @@ def restore_saved_messages():
         message.pub_date = datetime.datetime.utcfromtimestamp(ts).replace(tzinfo=utc)
 
         if message.type == Recipient.PERSONAL:
-            message.recipient = user_recipients[sender_email]
+            message.recipient = user_recipients[old_message["recipient"][0]["email"]]
         elif message.type == Recipient.STREAM:
             message.recipient = stream_recipients[(realm.id,
                                                    old_message["recipient"])]
@@ -421,7 +421,7 @@ def restore_saved_messages():
 
     # Finally, create all the UserMessage objects
     print datetime.datetime.now(), "Importing usermessages, part 1..."
-    all_messages = Message.objects.all()
+    all_messages = Message.objects.select_related().all()
     user_messages_to_create = []
 
     messages_by_id = {}
@@ -459,6 +459,11 @@ def restore_saved_messages():
             continue
         for user_profile_id in subscribers[message.recipient_id]:
             um = UserMessage(user_profile=users_by_id[user_profile_id],
+                             message=message)
+            user_messages_to_create.append(um)
+        if message.recipient.type == Recipient.PERSONAL:
+            # Include the sender in huddle recipients
+            um = UserMessage(user_profile=users_by_id[message.sender_id],
                              message=message)
             user_messages_to_create.append(um)
 
