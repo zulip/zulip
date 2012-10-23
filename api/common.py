@@ -11,19 +11,19 @@ assert(requests.__version__ > '0.12')
 
 class HumbugAPI():
     def __init__(self, email, api_key, verbose=False, retry_on_errors=True,
-                 site="https://app.humbughq.com"):
+                 site="https://app.humbughq.com", client="API"):
         self.api_key = api_key
         self.email = email
         self.verbose = verbose
         self.base_url = site
         self.retry_on_errors = retry_on_errors
+        self.client_name = client
 
     def do_api_query(self, request, url):
         had_error_retry = False
         request["email"] = self.email
         request["api-key"] = self.api_key
-        if "client" not in request:
-            request["client"] = "API"
+        request["client"] = self.client_name
         while True:
             try:
                 res = requests.post(urlparse.urljoin(self.base_url, url), data=request, verify=True)

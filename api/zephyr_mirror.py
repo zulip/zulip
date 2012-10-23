@@ -69,6 +69,7 @@ import api.common
 humbug_client = api.common.HumbugAPI(email=options.user + "@mit.edu",
                                      api_key=api_key,
                                      verbose=True,
+                                     client="zephyr_mirror",
                                      site=options.site)
 
 start_time = time.time()
@@ -99,7 +100,6 @@ def send_humbug(zeph):
         elif isinstance(zeph[key], str):
             zeph[key] = zeph[key].decode("utf-8")
 
-    zeph['client'] = "zephyr_mirror"
     return humbug_client.send_message(zeph)
 
 def fetch_fullname(username):
