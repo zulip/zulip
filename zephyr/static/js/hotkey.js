@@ -22,8 +22,14 @@ var directional_hotkeys = {
     35:  rows.last_visible   // End
 };
 
+var narrow_hotkeys = {
+    115: narrow.by_recipient,  // 's'
+    83:  narrow.by_subject,    // 'S'
+    112: narrow.all_personals  // 'p'
+};
+
 // These are not exported, but we declare them here to make JSLint happy.
-var process_key_in_input, process_compose_hotkey, process_goto_hotkey;
+var process_key_in_input, process_compose_hotkey;
 
 function simulate_keydown(keycode) {
     $(document).trigger($.Event('keydown', {keyCode: keycode}));
@@ -55,6 +61,12 @@ function process_hotkey(code) {
             // always returns a message.
             viewport.scrollTop($("#main_div").outerHeight(true));
         }
+        return process_hotkey;
+    }
+
+    if (narrow_hotkeys.hasOwnProperty(code)) {
+        narrow.target(selected_message_id);
+        narrow_hotkeys[code]();
         return process_hotkey;
     }
 
@@ -98,8 +110,6 @@ function process_hotkey(code) {
     case 82: // 'R': respond to author
         respond_to_message("personal");
         return process_hotkey;
-    case 103: // 'g': start of "go to" command
-        return process_goto_hotkey;
     }
 
     return false;
@@ -109,25 +119,6 @@ function process_hotkey(code) {
    It should return a new handler, or 'false' to
    decline to handle the event. */
 var keydown_handler = process_hotkey;
-
-var goto_hotkeys = {
-    99:  narrow.by_recipient,      // 'c'
-    105: narrow.by_subject,        // 'i'
-    112: narrow.all_personals,     // 'p'
-    97:  narrow.show_all_messages, // 'a'
-    27:  compose.cancel   // Esc
-};
-
-process_goto_hotkey = function (code) {
-    narrow.target(selected_message_id);
-
-    if (goto_hotkeys.hasOwnProperty(code))
-        goto_hotkeys[code]();
-
-    /* Always return to the initial hotkey mode, even
-       after an unrecognized "go to" command. */
-    return process_hotkey;
-};
 
 process_key_in_input = function (code) {
     if (code === 27) {
