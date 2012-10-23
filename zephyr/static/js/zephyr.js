@@ -755,7 +755,7 @@ function keep_pointer_in_view() {
             }
         }
     }
-    update_selected_message(next_message, {update_server: false});
+    update_selected_message(next_message, {update_server: true});
 }
 
 // The idea here is when you've scrolled to the very
