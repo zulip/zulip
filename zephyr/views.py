@@ -238,7 +238,7 @@ def update_pointer_backend(request, user_profile):
 
 def format_updates_response(messages=[], apply_markdown=False, reason_empty=None,
                             user_profile=None, new_pointer=None, where='bottom',
-                            mirror=None, pointer_updater=''):
+                            mirror=None):
     max_message_id = None
     if user_profile is not None:
         try:
@@ -257,12 +257,31 @@ def format_updates_response(messages=[], apply_markdown=False, reason_empty=None
     if max_message_id is not None:
         # TODO: Figure out how to accurately return this always
         ret["max_message_id"] = max_message_id
-    if new_pointer is not None and pointer_updater != user_profile.last_pointer_updater:
+    if new_pointer is not None:
         ret['new_pointer'] = new_pointer
     return ret
 
-def format_delayed_updates_response(**kwargs):
-    return format_updates_response(**kwargs)
+def format_delayed_updates_response(request=None, user_profile=None,
+                                    new_pointer=None, pointer_updater=None,
+                                    **kwargs):
+    client_pointer = request.POST.get("pointer")
+    client_wants_ptr_updates = False
+    if client_pointer is not None:
+        client_pointer = int(client_pointer)
+        client_wants_ptr_updates = True
+
+    reason_empty = None
+    if (client_wants_ptr_updates
+          and str(user_profile.last_pointer_updater) != str(request.session.session_key)
+          and client_pointer != new_pointer):
+        if not kwargs.get('messages', False):
+            reason_empty = 'pointer_update'
+    else:
+        new_pointer = None
+
+    return format_updates_response(reason_empty=reason_empty,
+                                   new_pointer=new_pointer,
+                                   **kwargs)
 
 def return_messages_immediately(request, handler, user_profile, **kwargs):
     first = request.POST.get("first")
@@ -279,8 +298,10 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         return False
     first = int(first)
     last  = int(last)
+    client_wants_ptr_updates = False
     if client_pointer is not None:
         client_pointer = int(client_pointer)
+        client_wants_ptr_updates = True
     if failures is not None:
         failures = int(failures)
     if client_reload_pending is not None:
@@ -332,10 +353,9 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         and not client_reload_pending):
         # Inform the client that they should reload.
         reason_empty = 'client_reload'
-    elif (client_pointer is not None
+    elif (client_wants_ptr_updates
           and str(user_profile.last_pointer_updater) != str(request.session.session_key)
-          and ptr != client_pointer
-          and str(user_profile.last_pointer_updater) != ''):
+          and ptr != client_pointer):
         reason_empty = 'pointer_update'
         new_pointer = ptr
 
@@ -359,7 +379,10 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
             return
         try:
             kwargs.update(cb_kwargs)
-            handler.finish(format_delayed_updates_response(**kwargs))
+            res = format_delayed_updates_response(request=request,
+                                                  user_profile=user_profile,
+                                                  **kwargs)
+            handler.finish(res)
         except socket.error:
             pass
 
