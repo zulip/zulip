@@ -385,14 +385,16 @@ def api_get_messages(request, user_profile, handler):
 
 @login_required_api_view
 def api_send_message(request, user_profile):
-    return send_message_backend(request, user_profile, user_profile)
+    return send_message_backend(request, user_profile, user_profile,
+                                client_name=request.POST.get("client", "API"))
 
 @login_required_json_view
 def json_send_message(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if 'time' in request.POST:
         return json_error("Invalid field 'time'")
-    return send_message_backend(request, user_profile, user_profile)
+    return send_message_backend(request, user_profile, user_profile,
+                                client_name=request.POST.get("client"))
 
 # TODO: This should have a real superuser security check
 def is_super_user_api(request):
@@ -473,12 +475,12 @@ def create_mirrored_message_users(request, user_profile):
 # both from the API and the web service.  Code calling
 # send_message_backend should either check the API key or check that
 # the user is logged in.
-def send_message_backend(request, user_profile, sender):
+def send_message_backend(request, user_profile, sender, client_name=None):
     if "type" not in request.POST:
         return json_error("Missing type")
     if "content" not in request.POST:
         return json_error("Missing message contents")
-    if "client" not in request.POST:
+    if client_name is None:
         return json_error("Missing client")
     message_type_name = request.POST["type"]
     forged = "forged" in request.POST
@@ -486,7 +488,7 @@ def send_message_backend(request, user_profile, sender):
     if forged and not is_super_user:
         return json_error("User not authorized for this query")
 
-    if request.POST["client"] == "zephyr_mirror":
+    if client_name == "zephyr_mirror":
         # Here's how security works for non-superuser mirroring:
         #
         # The message must be (1) a huddle/personal message (2) that
@@ -532,7 +534,7 @@ def send_message_backend(request, user_profile, sender):
         (valid_input, _, huddle_recipients) = parse_named_users(request)
         if not valid_input:
             return json_error("Unable to parse recipients")
-        if request.POST["client"] == "zephyr_mirror":
+        if client_name == "zephyr_mirror":
             if user_profile.user.email not in huddle_recipients and not forged:
                 return json_error("User not authorized for this query")
 
@@ -564,7 +566,7 @@ def send_message_backend(request, user_profile, sender):
         message.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
     else:
         message.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
-    message.sending_client = get_client(request.POST['client'])
+    message.sending_client = get_client(client_name)
     do_send_message(message)
 
     return json_success()
