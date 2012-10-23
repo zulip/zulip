@@ -77,6 +77,11 @@ start_time = time.time()
 def humbug_username(zephyr_username):
     return zephyr_username.lower().split("@")[0] + "@mit.edu"
 
+def unwrap_lines(body):
+    # Split into paragraphs at two consecutive newlines, or a newline followed
+    # by an indent.
+    return '\n\n'.join(p.replace('\n', ' ') for p in re.split(r'\n[ \t\n]', body))
+
 def send_humbug(zeph):
     if options.forward_class_messages:
         zeph["forged"] = "yes"
@@ -100,6 +105,7 @@ def send_humbug(zeph):
         elif isinstance(zeph[key], str):
             zeph[key] = zeph[key].decode("utf-8")
 
+    zeph['content'] = unwrap_lines(zeph['content'])
     return humbug_client.send_message(zeph)
 
 def fetch_fullname(username):
