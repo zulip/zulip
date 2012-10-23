@@ -261,6 +261,9 @@ def format_updates_response(messages=[], apply_markdown=False, reason_empty=None
         ret['new_pointer'] = new_pointer
     return ret
 
+def format_delayed_updates_response(**kwargs):
+    return format_updates_response(**kwargs)
+
 def return_messages_immediately(request, handler, user_profile, **kwargs):
     first = request.POST.get("first")
     last = request.POST.get("last")
@@ -356,7 +359,7 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
             return
         try:
             kwargs.update(cb_kwargs)
-            handler.finish(format_updates_response(**kwargs))
+            handler.finish(format_delayed_updates_response(**kwargs))
         except socket.error:
             pass
 
