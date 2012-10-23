@@ -145,7 +145,7 @@ class humbug_web_base {
     owner  => "root",
     group  => "root",
     mode => 600,
-    source => "/root/humbug/servers/puppet/files/apache/certs/humbug-self-signed.key",
+    source => "/root/humbug/certs/humbug-self-signed.key",
   }
 
   file { "/etc/apache2/ports.conf":
