@@ -151,7 +151,7 @@ td.pointer {
 
 .messagebox.personal-message {
     border-color: #444;
-    border-width: 0px 2px 2px 2px;
+    border-width: 1px;
     background-color: #feffe0;
 }
 
