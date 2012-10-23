@@ -240,9 +240,9 @@ function select_message(next_message, opts) {
         next_message = rows.next_visible(next_message);
     }
 
-    /* Fall back to the first visible message. */
+    /* Fall back to the last visible message. */
     if (next_message.length === 0) {
-        next_message = rows.first_visible();
+        next_message = rows.last_visible();
         if (next_message.length === 0) {
             // There are no messages!
             return false;
