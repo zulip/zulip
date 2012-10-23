@@ -89,7 +89,7 @@ class humbug_base {
 }
 
 class humbug_web_base {
-  $web_packages = [ "apache2", "gitit", ]
+  $web_packages = [ "apache2", "gitit", "libapache2-mod-wsgi", ]
   package { $web_packages: ensure => "installed" }
 
   apache2mod { [ "headers", "proxy", "proxy_http", "rewrite", "auth_digest", ]:

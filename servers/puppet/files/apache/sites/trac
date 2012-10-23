@@ -12,23 +12,29 @@
 
     Header add Strict-Transport-Security "max-age=15768000"
 
-    RewriteEngine On
-    ProxyPreserveHost On
-    ProxyRequests Off
+    Alias /chrome/common /home/humbug/trac/htdocs/common
+    Alias /chrome/site /home/humbug/trac/htdocs/site
 
-    <Proxy *>
-       Order deny,allow
-       Allow from all
+    <Directory "/home/humbug/trac/htdocs">
+      	Order allow,deny
+        Allow from all
+    </Directory>
 
+    WSGIScriptAlias / /home/humbug/trac/cgi-bin/trac.wsgi
+
+    <Directory /home/humbug/trac>
+    	WSGIApplicationGroup %{GLOBAL}
+    	Order deny,allow
+	Allow from all
+    </Directory>
+
+    <Location "/">
        AuthType Digest
        AuthName "wiki"
        AuthDigestProvider file
        AuthUserFile /etc/apache2/users/wiki
        Require valid-user
-    </Proxy>
-
-    ProxyPassReverse /    http://127.0.0.1:5002
-    RewriteRule ^(.*) http://127.0.0.1:5002$1 [P]
+    </Location>
 
     ErrorLog /var/log/apache2/error.log
     LogLevel warn
