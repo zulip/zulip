@@ -44,6 +44,7 @@ import api.common
 humbug_client = api.common.HumbugAPI(email=humbug_user,
                                      api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                                      verbose=True,
+                                     client="test: Humbug API",
                                      site=options.site)
 
 def print_zephyr(notice):
