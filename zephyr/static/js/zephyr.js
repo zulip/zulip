@@ -196,7 +196,7 @@ function select_message_by_id(message_id, opts) {
     if (message_id === selected_message_id && ! opts.then_scroll) {
         return;
     }
-    select_message(rows.get(message_id), opts);
+    return select_message(rows.get(message_id), opts);
 }
 
 var last_message_id_sent = -1;
@@ -254,6 +254,8 @@ function select_message(next_message, opts) {
     if (opts.then_scroll) {
         recenter_view(next_message);
     }
+
+    return true;
 }
 
 function same_recipient(a, b) {
