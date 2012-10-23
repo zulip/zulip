@@ -646,6 +646,14 @@ function get_updates() {
                            // minute to deal with crappy home wireless
                            // routers that kill "inactive" http connections.
         success: function (data) {
+            if (! data) {
+                // The server occationally returns no data during a
+                // restart.  Ignore those responses so the page keeps
+                // working
+                get_updates_timeout = setTimeout(get_updates, 0);
+                return;
+            }
+
             get_updates_params.failures = 0;
             $('#connection-error').hide();
 
