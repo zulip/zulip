@@ -674,12 +674,13 @@ function get_updates() {
                 add_messages(data);
             }
 
-            if (data.new_pointer !== undefined
-                && data.new_pointer !== selected_message_id)
-            {
-                select_message_by_id(data.new_pointer,
-                                     {then_scroll: true, update_server: false});
-            }
+            // Pointer sync temporarily disabled
+            // if (data.new_pointer !== undefined
+            //     && data.new_pointer !== selected_message_id)
+            // {
+            //     select_message_by_id(data.new_pointer,
+            //                          {then_scroll: true, update_server: false});
+            // }
 
             get_updates_timeout = setTimeout(get_updates, 0);
         },
