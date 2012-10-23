@@ -39,6 +39,7 @@ function do_narrow(description, filter_function) {
 
     $("#show_all_messages").removeAttr("disabled");
     $(".narrowed_to_bar").show();
+    $("#loading_control").hide();
     $("#main_div").addClass("narrowed_view");
     $("#currently_narrowed_to").html(description).attr("title", description);
     $("#zhome").removeClass("focused_table");
@@ -119,6 +120,7 @@ exports.show_all_messages = function () {
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
     $(".narrowed_to_bar").hide();
+    $("#loading_control").show();
     $("#main_div").removeClass('narrowed_view');
     $("#show_all_messages").attr("disabled", "disabled");
     $("#currently_narrowed_to").html("");
