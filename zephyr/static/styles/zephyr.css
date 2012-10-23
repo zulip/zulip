@@ -174,7 +174,7 @@ td.pointer {
 }
 
 /* Brighten hover because of the dark background */
-.message_header_huddle:hover {
+recipient_row .message_header_huddle:hover {
     color: #3BF;
 }
 
