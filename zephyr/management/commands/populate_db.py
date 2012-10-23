@@ -283,7 +283,8 @@ def restore_saved_messages():
         if old_message["sender_email"] not in email_set:
             user_set.add((old_message["sender_email"],
                           old_message["sender_full_name"],
-                          old_message["sender_short_name"]))
+                          old_message["sender_short_name"],
+                          False))
 
         if 'sending_client' in old_message:
             client_set.add(old_message['sending_client'])
@@ -293,13 +294,13 @@ def restore_saved_messages():
         elif old_message['type'] == 'personal':
             u = old_message["recipient"][0]
             if u["email"] not in email_set:
-                user_set.add((u["email"], u["full_name"], u["short_name"]))
+                user_set.add((u["email"], u["full_name"], u["short_name"], False))
                 email_set.add(u["email"])
         elif old_message['type'] == 'huddle':
             for u in old_message["recipient"]:
-                user_set.add((u["email"], u["full_name"], u["short_name"]))
+                user_set.add((u["email"], u["full_name"], u["short_name"], False))
                 if u["email"] not in email_set:
-                    user_set.add((u["email"], u["full_name"], u["short_name"]))
+                    user_set.add((u["email"], u["full_name"], u["short_name"], False))
                     email_set.add(u["email"])
             huddle_user_set.add(tuple(sorted(u["email"] for u in old_message["recipient"])))
         else:
@@ -462,14 +463,16 @@ def restore_saved_messages():
             # subscriptions being out-of-date.
             continue
         for user_profile_id in subscribers[message.recipient_id]:
-            um = UserMessage(user_profile=users_by_id[user_profile_id],
-                             message=message)
-            user_messages_to_create.append(um)
+            if users_by_id[user_profile_id].user.is_active:
+                um = UserMessage(user_profile_id=user_profile_id,
+                                 message=message)
+                user_messages_to_create.append(um)
         if message.recipient_id in personal_recipients:
             # Include the sender in huddle recipients
-            um = UserMessage(user_profile=users_by_id[message.sender_id],
-                             message=message)
-            user_messages_to_create.append(um)
+            if users_by_id[message.sender_id].user.is_active:
+                um = UserMessage(user_profile_id=message.sender_id,
+                                 message=message)
+                user_messages_to_create.append(um)
 
     print datetime.datetime.now(), "Importing usermessages, part 2..."
     tot_user_messages = len(user_messages_to_create)

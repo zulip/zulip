@@ -166,24 +166,27 @@ class PreregistrationUser(models.Model):
 # create_user_hack is the same as Django's User.objects.create_user,
 # except that we don't save to the database so it can used in
 # bulk_creates
-def create_user_hack(username, password, email):
+def create_user_hack(username, password, email, active):
     now = timezone.now()
     email = UserManager.normalize_email(email)
     user = User(username=username, email=email,
-                is_staff=False, is_active=True, is_superuser=False,
+                is_staff=False, is_active=active, is_superuser=False,
                 last_login=now, date_joined=now)
 
-    user.set_password(password)
+    if active:
+        user.set_password(password)
+    else:
+        user.set_unusable_password()
     return user
 
-def create_user_base(email, password):
+def create_user_base(email, password, active=True):
     # NB: the result of Base32 + truncation is not a valid Base32 encoding.
     # It's just a unique alphanumeric string.
     # Use base32 instead of base64 so we don't have to worry about mixed case.
     # Django imposes a limit of 30 characters on usernames.
     email_hash = hashlib.sha256(settings.HASH_SALT + email).digest()
     username = base64.b32encode(email_hash)[:30]
-    return create_user_hack(username, password, email)
+    return create_user_hack(username, password, email, active)
 
 def create_user(email, password, realm, full_name, short_name):
     user = create_user_base(email=email, password=password)
@@ -207,15 +210,16 @@ def bulk_create_users(realms, users_raw):
     """
     users = []
     existing_users = set(u.email for u in User.objects.all())
-    for (email, full_name, short_name) in users_raw:
+    for (email, full_name, short_name, active) in users_raw:
         if email in existing_users:
             continue
-        users.append((email, full_name, short_name))
+        users.append((email, full_name, short_name, active))
         existing_users.add(email)
 
     users_to_create = []
-    for (email, full_name, short_name) in users:
-        users_to_create.append(create_user_base(email, initial_password(email)))
+    for (email, full_name, short_name, active) in users:
+        users_to_create.append(create_user_base(email, initial_password(email),
+                                                active=active))
     batch_bulk_create(User, users_to_create, 30)
 
     users_by_email = {}
@@ -224,7 +228,7 @@ def bulk_create_users(realms, users_raw):
 
     # Now create user_profiles
     profiles_to_create = []
-    for (email, full_name, short_name) in users:
+    for (email, full_name, short_name, active) in users:
         domain = email.split('@')[1]
         profile = UserProfile(user=users_by_email[email], pointer=-1,
                               realm_id=realms[domain].id,
@@ -240,7 +244,7 @@ def bulk_create_users(realms, users_raw):
         profiles_by_id[profile.user.id] = profile
 
     recipients_to_create = []
-    for (email, _, _) in users:
+    for (email, _, _, _) in users:
         recipients_to_create.append(Recipient(type_id=profiles_by_email[email].id,
                                               type=Recipient.PERSONAL))
     batch_bulk_create(Recipient, recipients_to_create)
@@ -250,7 +254,7 @@ def bulk_create_users(realms, users_raw):
         recipients_by_email[profiles_by_id[recipient.type_id].user.email] = recipient
 
     subscriptions_to_create = []
-    for (email, _, _) in users:
+    for (email, _, _, _) in users:
         subscriptions_to_create.append(\
             Subscription(user_profile_id=profiles_by_email[email].id,
                          recipient=recipients_by_email[email]))
@@ -444,7 +448,9 @@ def do_send_message(message, no_log=False):
     # TODO: Use bulk_create here
     with transaction.commit_on_success():
         for user_profile in recipients:
-            UserMessage(user_profile=user_profile, message=message).save()
+            # Only deliver messages to "active" user accounts
+            if user_profile.user.is_active:
+                UserMessage(user_profile=user_profile, message=message).save()
 
     # We can only publish messages to longpolling clients if the Tornado server is running.
     if settings.HAVE_TORNADO_SERVER:
