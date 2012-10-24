@@ -8,6 +8,11 @@
 #
 # [components]
 # humbug_trac = enabled
+#
+# You may then need to restart trac (or restart Apache) for the bot
+# (or changes to the bot) to actually be loaded by trac.
+#
+# Our install is trac.humbughq.com:/home/humbug/trac/
 
 from trac.core import *
 from trac.util.html import html
