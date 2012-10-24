@@ -48,7 +48,7 @@ function do_narrow(icon, description, filter_function) {
     $(".narrowed_to_bar").show();
     $("#loading_control").hide();
     $("#main_div").addClass("narrowed_view");
-    $("#currently_narrowed_to").html(icon + " " + description).attr("title", description);
+    $("#currently_narrowed_to").html(icon + " " + description).attr("title", description.replace(/&nbsp;/g, ""));
     $("#zhome").removeClass("focused_table");
 
     // Indicate both which message is persistently selected and which
