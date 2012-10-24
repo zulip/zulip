@@ -236,6 +236,22 @@ def update_pointer_backend(request, user_profile):
 
     return json_success()
 
+@asynchronous
+@login_required_json_view
+def json_get_updates(request, handler):
+    if not ('last' in request.POST and 'first' in request.POST):
+        return json_error("Missing message range")
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    return get_updates_backend(request, user_profile, handler, apply_markdown=True)
+
+@asynchronous
+@login_required_api_view
+def api_get_messages(request, user_profile, handler):
+    return get_updates_backend(request, user_profile, handler,
+                               apply_markdown=(request.POST.get("apply_markdown") is not None),
+                               mirror=request.POST.get("mirror"))
+
 def format_updates_response(messages=[], apply_markdown=True, reason_empty=None,
                             user_profile=None, new_pointer=None, where='bottom',
                             mirror=None):
@@ -403,25 +419,9 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
     user_profile.add_receive_callback(handler.async_callback(cb))
     user_profile.add_pointer_update_callback(handler.async_callback(cb))
 
-@asynchronous
-@login_required_json_view
-def json_get_updates(request, handler):
-    if not ('last' in request.POST and 'first' in request.POST):
-        return json_error("Missing message range")
-    user_profile = UserProfile.objects.get(user=request.user)
-
-    return get_updates_backend(request, user_profile, handler, apply_markdown=True)
-
 @login_required_api_view
 def api_get_profile(request, user_profile):
     return json_success({"pointer": user_profile.pointer})
-
-@asynchronous
-@login_required_api_view
-def api_get_messages(request, user_profile, handler):
-    return get_updates_backend(request, user_profile, handler,
-                               apply_markdown=(request.POST.get("apply_markdown") is not None),
-                               mirror=request.POST.get("mirror"))
 
 @login_required_api_view
 def api_send_message(request, user_profile):
