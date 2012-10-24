@@ -283,7 +283,7 @@ def format_delayed_updates_response(request=None, user_profile=None,
                                    new_pointer=new_pointer,
                                    **kwargs)
 
-def return_messages_immediately(request, handler, user_profile, **kwargs):
+def return_messages_immediately(request, user_profile, **kwargs):
     first = request.POST.get("first")
     last = request.POST.get("last")
     client_pointer = request.POST.get("pointer")
@@ -295,7 +295,7 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         # When an API user is first querying the server to subscribe,
         # there's no reason to reply immediately.
         # TODO: Make this work with server_generation/failures
-        return False
+        return None
     first = int(first)
     last  = int(last)
     client_wants_ptr_updates = False
@@ -335,8 +335,7 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
                     m.sending_client.name != kwargs["mirror"]]
 
     if messages:
-        handler.finish(format_updates_response(messages=messages, where=where, **kwargs))
-        return True
+        return format_updates_response(messages=messages, where=where, **kwargs)
 
     # We might want to return an empty list to the client immediately.
     # In that case, we tell the client why.
@@ -360,18 +359,19 @@ def return_messages_immediately(request, handler, user_profile, **kwargs):
         new_pointer = ptr
 
     if reason_empty is not None:
-        handler.finish(format_updates_response(
+        return format_updates_response(
             where="bottom",
             user_profile=user_profile,
             reason_empty=reason_empty,
             new_pointer=new_pointer,
-            **kwargs))
-        return True
+            **kwargs)
 
-    return False
+    return None
 
 def get_updates_backend(request, user_profile, handler, **kwargs):
-    if return_messages_immediately(request, handler, user_profile, **kwargs):
+    resp = return_messages_immediately(request, user_profile, **kwargs)
+    if resp is not None:
+        handler.finish(resp)
         return
 
     def cb(**cb_kwargs):
