@@ -25,7 +25,7 @@ var directional_hotkeys = {
 var narrow_hotkeys = {
     115: narrow.by_recipient,  // 's'
     83:  narrow.by_subject,    // 'S'
-    112: narrow.all_personals  // 'p'
+    104: narrow.all_personals  // 'h'
 };
 
 // These are not exported, but we declare them here to make JSLint happy.
