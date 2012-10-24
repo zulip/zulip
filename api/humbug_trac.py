@@ -56,18 +56,22 @@ class HelloWorldPlugin(Component):
 
     def ticket_changed(self, ticket, comment, author, old_values):
         """Called when a ticket is modified.
-        
+
         `old_values` is a dictionary containing the previous values of the
         fields that have changed.
         """
         content = "%s updated %s:\n\n" % (author, markdown_ticket_url(ticket))
         for key in old_values.keys():
-            if key != "description":
-                content += '- Changed %s from "%s" to "%s"\n' % (key, old_values.get(key), 
-                                                                 ticket.values.get(key))
-            else:
-                content += '- Changed %s from %s to %s' % (key, markdown_block(old_values.get(key)), 
+            if key == "description":
+                content += '- Changed %s from %s to %s' % (key, markdown_block(old_values.get(key)),
                                                            markdown_block(ticket.values.get(key)))
+            elif old_values.get(key) == "":
+                content += '- Added %s **%s**\n' % (key, ticket.values.get(key))
+            elif ticket.values.get(key) == "":
+                content += '- Remove %s **%s**\n' % (key, old_values.get(key))
+            else:
+                content += '- Changed %s from **%s** to **%s**\n' % (key, old_values.get(key),
+                                                                     ticket.values.get(key))
 
         if comment:
             content += '- Added a comment: %s' % (markdown_block(comment,))
