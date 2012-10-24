@@ -461,3 +461,12 @@ table.floating_recipient {
     overflow-x: hidden;
     text-overflow: ellipsis;
 }
+
+.hotkeys_table .hotkey {
+    text-align: right;
+    font-weight: bold;
+}
+
+.hotkeys_table .hotkey_heading {
+    padding-top: 1em;
+}

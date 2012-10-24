@@ -101,6 +101,12 @@ var people_list = [
                     <span class="hidden-phone"> Settings</span>
                   </a>
                 </li>
+                <li title="Keyboard shortcuts">
+                  <a href="#keyboard-shortcuts" role="button" data-toggle="modal">
+                    <i class="icon-info-sign"></i>
+                    <span class="hidden-phone"> Keyboard shortcuts</span>
+                  </a>
+                </li>
                 {% if show_debug %}
                 <li title="Debug">
                   <a href="#debug" data-toggle="pill">
@@ -155,5 +161,6 @@ var people_list = [
 
         </div><!--/tab-content-->
     </div><!--/row-->
+    {% include "zephyr/keyboard_shortcuts.html" %}
 
 {% endblock %}
