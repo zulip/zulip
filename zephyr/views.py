@@ -236,7 +236,7 @@ def update_pointer_backend(request, user_profile):
 
     return json_success()
 
-def format_updates_response(messages=[], apply_markdown=False, reason_empty=None,
+def format_updates_response(messages=[], apply_markdown=True, reason_empty=None,
                             user_profile=None, new_pointer=None, where='bottom',
                             mirror=None):
     max_message_id = None
