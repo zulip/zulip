@@ -315,7 +315,7 @@ img.profile_picture {
 
 textarea.new_message_textarea {
     width: 100%;
-    height: 100%;
+    min-height: 48px;
 }
 
 textarea:focus {
