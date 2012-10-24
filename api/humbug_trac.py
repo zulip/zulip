@@ -27,7 +27,7 @@ def markdown_ticket_url(ticket, heading="ticket"):
     return "[%s #%s](https://trac.humbughq.com/ticket/%s)" % (heading, ticket.id, ticket.id)
 
 def markdown_block(desc):
-    return "\n~~~~\n%s\n~~~~\n" % (desc,)
+    return "\n\n>" + "\n> ".join(desc.split("\n")) + "\n"
 
 def trac_subject(ticket):
     return "Trac #%s" % ticket.id
