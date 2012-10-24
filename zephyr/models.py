@@ -379,8 +379,10 @@ class Message(models.Model):
 
         if apply_markdown:
             obj['content'] = bugdown.convert(self.content)
+            obj['content_type'] = 'text/html'
         else:
             obj['content'] = self.content
+            obj['content_type'] = 'text/x-markdown'
 
         return obj
 
