@@ -4,92 +4,139 @@
     <h3 id="keyboard-shortcuts-label">Keyboard shortcuts</h3>
   </div>
   <div class="modal-body">
+    <div class="accordion" id="hotkeys-accordion">
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#hotkeys-accordion" href="#hotkeys-composing">
+            Composing messages
+          </a>
+        </div>
+        <div id="hotkeys-composing" class="accordion-body collapse in">
+          <div class="accordion-inner">
+            <table class="hotkeys_table table table-striped table-bordered table-condensed">
+              <tr>
+                <td class="hotkey">c</td>
+                <td class="definition">Compose new stream message</td>
+              </tr>
+              <tr>
+                <td class="hotkey">C</td>
+                <td class="definition">Compose new huddle message</td>
+              </tr>
+              <tr>
+                <td class="hotkey">r</td>
+                <td class="definition">Respond to message</td>
+              </tr>
+              <tr>
+                <td class="hotkey">R</td>
+                <td class="definition">Respond to author</td>
+              </tr>
+              <tr>
+                <td class="hotkey">&lt;Tab&gt;</td>
+                <td class="definition">Switch between composing stream and huddle</td>
+              </tr>
+              <tr>
+                <td class="hotkey">&lt;Tab&gt; and Enter</td>
+                <td class="definition">Send message</td>
+              </tr>
+              <tr>
+                <td class="hotkey">Esc</td>
+                <td class="definition">Cancel compose</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
 
-    <table class="hotkeys_table table table-striped table-bordered table-condensed">
-      <tr><th class="hotkey_heading" colspan="2">Composing</th></tr>
-      <tr>
-        <td class="hotkey">c</td>
-        <td class="definition">Compose new stream message</td>
-      </tr>
-      <tr>
-        <td class="hotkey">C</td>
-        <td class="definition">Compose new huddle message</td>
-      </tr>
-      <tr>
-        <td class="hotkey">r</td>
-        <td class="definition">Respond to message</td>
-      </tr>
-      <tr>
-        <td class="hotkey">R</td>
-        <td class="definition">Respond to author</td>
-      </tr>
-      <tr>
-        <td class="hotkey">&lt;Tab&gt;</td>
-        <td class="definition">Switch between composing stream and huddle</td>
-      </tr>
-      <tr>
-        <td class="hotkey">&lt;Tab&gt; and Enter</td>
-        <td class="definition">Send message</td>
-      </tr>
-      <tr>
-        <td class="hotkey">Esc</td>
-        <td class="definition">Cancel compose</td>
-      </tr>
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#hotkeys-accordion" href="#hotkeys-narrowing">
+            Narrowing
+          </a>
+        </div>
+        <div id="hotkeys-narrowing" class="accordion-body collapse">
+          <div class="accordion-inner">
+            <table class="hotkeys_table table table-striped table-bordered table-condensed">
+              <tr>
+                <td class="hotkey">s</td>
+                <td class="definition">Narrow by stream</td>
+              </tr>
+              <tr>
+                <td class="hotkey">S</td>
+                <td class="definition">Narrow by subject</td>
+              </tr>
+              <tr>
+                <td class="hotkey">h</td>
+                <td class="definition">Narrow to all huddles</td>
+              </tr>
+              <tr>
+                <td class="hotkey">Esc</td>
+                <td class="definition">Return to home view</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
 
-      <tr><th class="hotkey_heading" colspan="2">Narrowing</th></tr>
-      <tr>
-        <td class="hotkey">s</td>
-        <td class="definition">Narrow by stream</td>
-      </tr>
-      <tr>
-        <td class="hotkey">S</td>
-        <td class="definition">Narrow by subject</td>
-      </tr>
-      <tr>
-        <td class="hotkey">h</td>
-        <td class="definition">Narrow to all huddles</td>
-      </tr>
-      <tr>
-        <td class="hotkey">Esc</td>
-        <td class="definition">Return to home view</td>
-      </tr>
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#hotkeys-accordion" href="#hotkeys-scrolling">
+            Navigation
+          </a>
+        </div>
+        <div id="hotkeys-scrolling" class="accordion-body collapse">
+          <div class="accordion-inner">
+            <table class="hotkeys_table table table-striped table-bordered table-condensed">
+              <tr>
+                <td class="hotkey">Down or j</td>
+                <td class="definition">Next message</td>
+              </tr>
+              <tr>
+                <td class="hotkey">Up or k</td>
+                <td class="definition">Previous message</td>
+              </tr>
+              <tr>
+                <td class="hotkey">Home</td>
+                <td class="definition">First message</td>
+              </tr>
+              <tr>
+                <td class="hotkey">End</td>
+                <td class="definition">Last message</td>
+              </tr>
+              <tr>
+                <td class="hotkey">Page Up</td>
+                <td class="definition">Scroll up several messages</td>
+              </tr>
+              <tr>
+                <td class="hotkey">Page Down</td>
+                <td class="definition">Scroll down several messages</td>
+              </tr>
+              <tr>
+                <td class="hotkey">Spacebar</td>
+                <td class="definition">Scroll down several messages</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
 
-      <tr><th class="hotkey_heading" colspan="2">Scrolling</th></tr>
-      <tr>
-        <td class="hotkey">Down or j</td>
-        <td class="definition">Next message</td>
-      </tr>
-      <tr>
-        <td class="hotkey">Up or k</td>
-        <td class="definition">Previous message</td>
-      </tr>
-      <tr>
-        <td class="hotkey">Home</td>
-        <td class="definition">First message</td>
-      </tr>
-      <tr>
-        <td class="hotkey">End</td>
-        <td class="definition">Last message</td>
-      </tr>
-      <tr>
-        <td class="hotkey">Page Up</td>
-        <td class="definition">Scroll up several messages</td>
-      </tr>
-      <tr>
-        <td class="hotkey">Page Down</td>
-        <td class="definition">Scroll down several messages</td>
-      </tr>
-      <tr>
-        <td class="hotkey">Spacebar</td>
-        <td class="definition">Scroll down several messages</td>
-      </tr>
-
-      <tr><th class="hotkey_heading" colspan="2">Miscellaneous</th></tr>
-      <tr>
-        <td class="hotkey">?</td>
-        <td class="definition">Open keyboard shortcut help</td>
-      </tr>
-    </table>
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#hotkeys-accordion" href="#hotkeys-misc">
+            Miscellaneous
+          </a>
+        </div>
+        <div id="hotkeys-misc" class="accordion-body collapse">
+          <div class="accordion-inner">
+            <table class="hotkeys_table table table-striped table-bordered table-condensed">
+              <tr>
+                <td class="hotkey">?</td>
+                <td class="definition">Open keyboard shortcut help</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
 
   </div>
   <div class="modal-footer">
