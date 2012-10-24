@@ -14,8 +14,11 @@ var reloading_app = false;
 var selected_message_id = -1;  /* to be filled in on document.ready */
 var selected_message;  // = rows.get(selected_message_id)
 var get_updates_params = {
+    // We still need first and last for now because the get_updates
+    // call still requires them
     first: -1,
-    last:  -1,
+    last: 4294967296 - 1,
+
     pointer: -1,
     failures: 0,
     server_generation: -1, /* to be filled in on document.ready */
@@ -419,14 +422,6 @@ function add_to_table(messages, table_name, filter_function, where) {
 }
 
 function add_message_metadata(dummy, message) {
-    if (get_updates_params.first === -1) {
-        get_updates_params.first = message.id;
-    } else {
-        get_updates_params.first = Math.min(get_updates_params.first, message.id);
-    }
-
-    get_updates_params.last = Math.max(get_updates_params.last, message.id);
-
     var involved_people;
 
     switch (message.type) {
@@ -487,8 +482,8 @@ function add_message_metadata(dummy, message) {
     message_dict[message.id] = message;
 }
 
-function add_messages(data) {
-    if (!data || !data.messages)
+function add_messages(messages, where) {
+    if (!messages)
         return;
 
     if (loading_spinner) {
@@ -499,19 +494,22 @@ function add_messages(data) {
         $('#load_more').show();
     }
 
-    $.each(data.messages, add_message_metadata);
+    messages = $.grep(messages, function (elem, idx) {
+        return ! message_dict[elem.id];
+    });
+    $.each(messages, add_message_metadata);
 
-    if (data.where === 'top') {
-        message_array = data.messages.concat(message_array);
+    if (where === 'top') {
+        message_array = messages.concat(message_array);
     } else {
-        message_array = message_array.concat(data.messages);
+        message_array = message_array.concat(messages);
     }
 
     if (narrow.active())
-        add_to_table(data.messages, 'zfilt', narrow.predicate(), data.where);
+        add_to_table(messages, 'zfilt', narrow.predicate(), where);
 
     // Even when narrowed, add messages to the home view so they exist when we un-narrow.
-    add_to_table(data.messages, 'zhome', function () { return true; }, data.where);
+    add_to_table(messages, 'zhome', function () { return true; }, where);
 
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
@@ -527,7 +525,7 @@ function add_messages(data) {
     //
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
-    if ((data.where === 'top') && (selected_message_id >= 0)) {
+    if ((where === 'top') && (selected_message_id >= 0)) {
         select_message_by_id(selected_message_id,
                              {then_scroll: true, update_server: false});
     }
@@ -677,7 +675,7 @@ function get_updates() {
                     max_messages_for_backfill = 0;
                 }
             } else {
-                add_messages(data);
+                add_messages(data.messages);
             }
 
             if (data.new_pointer !== undefined
@@ -712,6 +710,65 @@ function get_updates() {
 
 $(get_updates);
 
+function load_old_messages(start, which, number, cont) {
+    $.ajax({
+        type:     'POST',
+        url:      '/json/get_old_messages',
+        data:     {start: start, which: which, number: number},
+        dataType: 'json',
+        success: function (data) {
+            if (! data) {
+                // The server occationally returns no data during a
+                // restart.  Ignore those responses and try again
+                setTimeout(function () {
+                    load_old_messages(start, which, number, cont);
+                }, 0);
+                return;
+            }
+
+            $('#connection-error').hide();
+
+            if (data.messages.length !== 0) {
+                var where;
+                if (which === "older") {
+                    where = "top";
+                } else {
+                    where = "botton";
+                }
+                add_messages(data.messages, where);
+            }
+
+            if (cont !== undefined) {
+                cont(data.messages);
+            }
+        },
+        error: function (xhr, error_type, exn) {
+            // We might want to be more clever here
+            $('#connection-error').show();
+            setTimeout(function () {
+                load_old_messages(start, which, number, cont);
+            }, 5000);
+        }
+    });
+}
+
+// get the initial message list
+$(function () {
+    function load_to_end(messages) {
+        // catch the user up
+        if (messages.length !== 0) {
+            var latest_id = messages[messages.length-1].id;
+            load_old_messages(latest_id + 1, "newer", 400, load_to_end);
+        }
+    }
+
+    function load_around(messages) {
+        load_old_messages(initial_pointer, "around", 400, load_to_end);
+    }
+
+    load_around();
+});
+
 function restart_get_updates() {
     if (get_updates_xhr !== undefined)
         get_updates_xhr.abort();
@@ -723,8 +780,7 @@ function restart_get_updates() {
 }
 
 function load_more_messages() {
-    max_messages_for_backfill += 400;
-    restart_get_updates();
+    load_old_messages(message_array[0].id, "older", 400);
 }
 
 var watchdog_time = $.now();
