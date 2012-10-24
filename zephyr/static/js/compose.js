@@ -242,6 +242,10 @@ exports.validate = function () {
     }
 };
 
+$(function () {
+    $("#new_message_content").autosize();
+});
+
 return exports;
 
 }());
