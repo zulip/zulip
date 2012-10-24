@@ -317,6 +317,7 @@ textarea.new_message_textarea {
     width: 100%;
     min-height: 48px;
     max-height: 150px;
+    resize: none;
 }
 
 textarea:focus {
