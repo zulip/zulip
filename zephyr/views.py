@@ -236,6 +236,48 @@ def update_pointer_backend(request, user_profile):
 
     return json_success()
 
+@login_required_json_view
+def json_get_old_messages(request):
+    if not ('start' in request.POST):
+        return json_error("Missing 'start' parameter")
+    if not ('which in request.post'):
+        return json_error("Missing 'which' parameter")
+    if not ('number in request.post'):
+        return json_error("Missing 'number' parameter")
+
+    start = int(request.POST.get("start"))
+    which = request.POST.get("which")
+    number = int(request.POST.get("number"))
+
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    return json_success(get_old_messages_backend(start, which, number, user_profile,
+                                                 apply_markdown=True))
+
+def get_old_messages_backend(start, which, number, user_profile,
+                             apply_markdown=True):
+    query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
+
+    if which == "older":
+        messages = last_n(number, query.filter(id__lte=start))
+    elif which == "newer":
+        messages = query.filter(id__gte=start)[:number]
+    elif which == "around":
+        num_older = number / 2
+        num_newer = number / 2
+        if number % 2 != 0:
+            num_older += 1
+        messages = (last_n(num_older, query.filter(id__lte=start))
+                    + list(query.filter(id__gt=start)[:num_newer]))
+    else:
+        return json_error("Bad value for 'which' argument")
+
+    ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
+           "result": "success",
+           "msg": "",
+           'server_generation': SERVER_GENERATION}
+    return ret
+
 @asynchronous
 @login_required_json_view
 def json_get_updates(request, handler):

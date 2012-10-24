@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/update_pointer$', 'zephyr.views.json_update_pointer', name='json_update_pointer'),
     url(r'^json/get_updates$', 'zephyr.views.json_get_updates', name='json_get_updates'),
+    url(r'^json/get_old_messages$', 'zephyr.views.json_get_old_messages', name='json_get_old_messages'),
     url(r'^json/send_message/', 'zephyr.views.json_send_message', name='json_send_message'),
     url(r'^json/settings/change/$', 'zephyr.views.json_change_settings', name='json_change_settings'),
     url(r'^json/subscriptions/list$', 'zephyr.views.json_list_subscriptions', name='json_list_subscriptions'),
