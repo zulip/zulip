@@ -61,6 +61,7 @@ exports.show = function (tabname, focus_area) {
     }
     $("#send-status").removeClass(status_classes).hide();
     $('#compose').css({visibility: "visible"});
+    $("#new_message_content").trigger("autosize");
     $('.message_comp').slideDown(100);
     $('#message-type-tabs a[href="#' + tabname + '-message"]').tab('show');
     focus_area.focus();
