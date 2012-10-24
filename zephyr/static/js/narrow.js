@@ -70,8 +70,8 @@ exports.target = function (id) {
     target_id = id;
 };
 
-exports.all_personals = function () {
-    narrow_type = "all_personals";
+exports.all_huddles = function () {
+    narrow_type = "all_huddles";
     do_narrow("<i class='icon-user'></i>", "You and anyone else", function (other) {
         return other.type === "personal" || other.type === "huddle";
     });
