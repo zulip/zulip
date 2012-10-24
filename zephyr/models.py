@@ -365,35 +365,37 @@ class Message(models.Model):
 
     @cache_with_key(lambda self, apply_markdown: 'message_dict:%d:%d' % (self.id, apply_markdown))
     def to_dict(self, apply_markdown):
+        obj = dict(
+            id                = self.id,
+            sender_email      = self.sender.user.email,
+            sender_full_name  = self.sender.full_name,
+            sender_short_name = self.sender.short_name,
+            type              = self.recipient.type_name(),
+            display_recipient = get_display_recipient(self.recipient),
+            recipient_id      = self.recipient.id,
+            subject           = self.subject,
+            timestamp         = calendar.timegm(self.pub_date.timetuple()),
+            gravatar_hash     = gravatar_hash(self.sender.user.email))
+
         if apply_markdown:
-            content = bugdown.convert(self.content)
+            obj['content'] = bugdown.convert(self.content)
         else:
-            content = self.content
-        return {'id'               : self.id,
-                'sender_email'     : self.sender.user.email,
-                'sender_full_name' : self.sender.full_name,
-                'sender_short_name': self.sender.short_name,
-                'type'             : self.recipient.type_name(),
-                'display_recipient': get_display_recipient(self.recipient),
-                'recipient_id'     : self.recipient.id,
-                'subject'          : self.subject,
-                'content'          : content,
-                'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
-                'gravatar_hash'    : gravatar_hash(self.sender.user.email),
-                }
+            obj['content'] = self.content
+
+        return obj
 
     def to_log_dict(self):
-        return {'id'               : self.id,
-                'sender_email'     : self.sender.user.email,
-                'sender_full_name' : self.sender.full_name,
-                'sender_short_name': self.sender.short_name,
-                'sending_client'   : self.sending_client.name,
-                'type'             : self.recipient.type_name(),
-                'recipient'        : get_log_recipient(self.recipient),
-                'subject'          : self.subject,
-                'content'          : self.content,
-                'timestamp'        : calendar.timegm(self.pub_date.timetuple()),
-                }
+        return dict(
+            id                = self.id,
+            sender_email      = self.sender.user.email,
+            sender_full_name  = self.sender.full_name,
+            sender_short_name = self.sender.short_name,
+            sending_client    = self.sending_client.name,
+            type              = self.recipient.type_name(),
+            recipient         = get_log_recipient(self.recipient),
+            subject           = self.subject,
+            content           = self.content,
+            timestamp         = calendar.timegm(self.pub_date.timetuple()))
 
 class UserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile)
