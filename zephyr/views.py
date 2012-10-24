@@ -566,6 +566,8 @@ def send_message_backend(request, user_profile, sender, client_name=None):
 
         recipient_profile_ids = set()
         for recipient in huddle_recipients:
+            if recipient == "":
+                continue
             try:
                 recipient_profile_ids.add(UserProfile.objects.get(user__email=recipient).id)
             except UserProfile.DoesNotExist:
