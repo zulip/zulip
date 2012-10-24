@@ -54,7 +54,7 @@ def convert(md):
     if _md_engine is None:
         _md_engine = markdown.Markdown(
             safe_mode     = 'escape',
-            output_format = 'xhtml',
+            output_format = 'html',
             extensions    = ['fenced_code', 'nl2br',
                 codehilite.makeExtension(configs=[('force_linenos', False)]),
                 Bugdown()])
