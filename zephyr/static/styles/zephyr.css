@@ -448,3 +448,8 @@ table.floating_recipient {
 .userinfo_popover a {
     cursor: pointer;
 }
+
+.popover-title {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
