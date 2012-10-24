@@ -110,6 +110,10 @@ class humbug_web_base {
     command  => "pip install markdown",
     onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/markdown"
   }
+  exec {"pip3":
+    command  => "pip install requests",
+    onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/requests"
+  }
 
   file { "/etc/apache2/users/":
     ensure   => directory,
