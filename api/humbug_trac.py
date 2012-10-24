@@ -14,8 +14,7 @@
 #
 # Our install is trac.humbughq.com:/home/humbug/trac/
 
-from trac.core import *
-from trac.util.html import html
+from trac.core import Component, implements
 from trac.ticket import ITicketChangeListener
 import sys
 
@@ -41,7 +40,7 @@ def send_update(ticket, content):
             "subject": trac_subject(ticket)
             })
 
-class HelloWorldPlugin(Component):
+class HumbugPlugin(Component):
     implements(ITicketChangeListener)
 
     def ticket_created(self, ticket):
