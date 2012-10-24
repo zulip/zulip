@@ -3,6 +3,10 @@ body {
     overflow-y: scroll;
 }
 
+textarea, input {
+    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+}
+
 code {
     white-space: nowrap;
 }
