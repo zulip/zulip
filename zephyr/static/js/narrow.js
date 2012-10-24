@@ -79,8 +79,12 @@ exports.all_huddles = function () {
 
 exports.by_subject = function () {
     var original = message_dict[target_id];
-    if (original.type !== 'stream')
+    if (original.type !== 'stream') {
+        // Only stream messages have subjects, but the
+        // user wants us to narrow in some way.
+        exports.by_recipient();
         return;
+    }
 
     var icon = "<i class='icon-bullhorn'></i>";
     var message = original.display_recipient + " &nbsp; | &nbsp; " + original.subject;
