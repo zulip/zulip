@@ -368,10 +368,24 @@ def return_messages_immediately(request, user_profile, **kwargs):
 
     return None
 
+def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
+    # Make sure that Markdown rendering really happened, if requested.
+    # This is a security issue because it's where we escape HTML.
+    # c.f. ticket #64
+    #
+    # apply_markdown=True is the fail-safe default.
+    if apply_markdown:
+        for msg in response['messages']:
+            if msg['content_type'] != 'text/html':
+                handler.set_status(500)
+                handler.finish('Internal error: bad message format')
+                return
+    handler.finish(response)
+
 def get_updates_backend(request, user_profile, handler, **kwargs):
     resp = return_messages_immediately(request, user_profile, **kwargs)
     if resp is not None:
-        handler.finish(resp)
+        send_with_safety_check(resp, handler, **kwargs)
         return
 
     def cb(**cb_kwargs):
@@ -382,7 +396,7 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
             res = format_delayed_updates_response(request=request,
                                                   user_profile=user_profile,
                                                   **kwargs)
-            handler.finish(res)
+            send_with_safety_check(res, handler, **kwargs)
         except socket.error:
             pass
 
