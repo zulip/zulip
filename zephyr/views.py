@@ -332,6 +332,15 @@ def format_delayed_updates_response(request=None, user_profile=None,
     return format_updates_response(new_pointer=pointer, **kwargs)
 
 def return_messages_immediately(request, user_profile, **kwargs):
+    last = request.POST.get("last")
+    if last is None:
+        # When an API user is first querying the server to subscribe,
+        # there's no reason to reply immediately.
+        # TODO: Make this work with server_generation/failures
+        return None
+    last = int(last)
+    if last < 0:
+        return {"msg": "Invalid 'last' argument", "result": "error"}
     client_pointer = request.POST.get("pointer")
     failures = request.POST.get("failures")
     client_server_generation = request.POST.get("server_generation")
@@ -348,7 +357,10 @@ def return_messages_immediately(request, user_profile, **kwargs):
 
     messages = []
     new_pointer = None
+    query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
     ptr = user_profile.pointer
+
+    messages = query.filter(id__gt=last)[:400]
 
     # Filter for mirroring before checking whether there are any
     # messages to pass on.  If we don't do this, when the only message
@@ -398,7 +410,7 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
 
 def get_updates_backend(request, user_profile, handler, **kwargs):
     resp = return_messages_immediately(request, user_profile, **kwargs)
-    if resp is not None:
+    if resp is not None and resp['result'] == 'success':
         send_with_safety_check(resp, handler, **kwargs)
         return
 

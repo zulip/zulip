@@ -10,6 +10,7 @@ var reloading_app = false;
 var selected_message_id = -1;  /* to be filled in on document.ready */
 var selected_message;  // = rows.get(selected_message_id)
 var get_updates_params = {
+    last: -1,
     pointer: -1,
     failures: 0,
     server_generation: -1, /* to be filled in on document.ready */
@@ -413,6 +414,8 @@ function add_to_table(messages, table_name, filter_function, where) {
 }
 
 function add_message_metadata(dummy, message) {
+    get_updates_params.last = Math.max(get_updates_params.last, message.id);
+
     var involved_people;
 
     switch (message.type) {
