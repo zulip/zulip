@@ -14,11 +14,9 @@ fi
 
 cd "$SCRIPT_DIR"/..;
 
-PYTHON_FILES=""
-for file in $(git ls-files); do
-    if ([ -f "$file" ] && (head -n1 "$file" | grep -q "^#!.*python" ||
-                echo "$file" | grep -q [.]py$) && \
-        echo "$file" | egrep -vq '^(confirmation/|humbug/test_settings\.py)'); then
+PYTHON_FILES=$(git ls-files | grep [.]py$ | egrep -v '^(confirmation/|humbug/test_settings\.py)')
+for file in $(git ls-files | grep -v [.][^/]*$ | egrep -v '^(confirmation/|humbug/test_settings\.py)'); do
+    if [ -f "$file" ] && head -n1 "$file" | grep -q "^#!.*python"; then
         PYTHON_FILES="$PYTHON_FILES $file"
     fi
 done
