@@ -347,7 +347,6 @@ def return_messages_immediately(request, user_profile, **kwargs):
 
     messages = []
     new_pointer = None
-    query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
     ptr = user_profile.pointer
 
     # Filter for mirroring before checking whether there are any
