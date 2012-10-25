@@ -56,7 +56,8 @@ if settings.ALLOW_REGISTER:
     urlpatterns += patterns('',
         url(r'^accounts/home/', 'zephyr.views.accounts_home', name='accounts_home'),
         url(r'^accounts/register/', 'zephyr.views.accounts_register', name='accounts_register'),
-        url(r'^accounts/send_confirm/(?P<email>[\S]+)?', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/accounts_send_confirm.html'}, name='send_confirm'),
+        url(r'^accounts/send_confirm/(?P<email>[\S]+)?', 'django.views.generic.simple.direct_to_template',
+            {'template': 'zephyr/accounts_send_confirm.html'}, name='send_confirm'),
         url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm', name='confirm'),
 
         # Terms of service

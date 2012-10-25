@@ -1,6 +1,14 @@
 #!/bin/sh
 # Two quick API tests using curl
-curl https://app.humbughq.com/api/v1/send_message -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" -d "email=tabbott@humbughq.com" -d "type=personal" -d "content=test" -d "recipient=tabbott@humbughq.com"
-curl https://app.humbughq.com/api/v1/get_messages -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" -d "email=tabbott@humbughq.com"
+
+curl https://app.humbughq.com/api/v1/send_message \
+    -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+    -d "email=tabbott@humbughq.com" \
+    -d "type=personal" -d "content=test" \
+    -d "recipient=tabbott@humbughq.com"
+
+curl https://app.humbughq.com/api/v1/get_messages \
+    -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+    -d "email=tabbott@humbughq.com"
 
 # Or replace https://app.humbughq.com with your local test instance
