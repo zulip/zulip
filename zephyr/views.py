@@ -373,7 +373,7 @@ def return_messages_immediately(request, user_profile, **kwargs):
           and ptr != client_pointer):
         new_pointer = ptr
 
-    if (failures >= 4
+    if (failures >= 1
         or client_needs_reload
         or new_pointer is not None):
         return format_updates_response(user_profile=user_profile,
