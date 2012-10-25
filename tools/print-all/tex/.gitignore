@@ -1,0 +1,9 @@
+*.aux
+*.log
+*.pdf
+
+/all_code.tex
+/preamble.tex
+/epilogue.tex
+
+/utf*.def

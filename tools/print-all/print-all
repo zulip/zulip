@@ -1,0 +1,163 @@
+#!/usr/bin/env python
+import sh
+import os
+import re
+import sys
+from os import path
+
+# Prepare a PDF of the entire codebase, ready for printing.
+#
+# Depends on:
+#
+#   - Python 'sh' module: http://amoffat.github.com/sh/
+#   - pygmentize (Debian: python-pygments)
+#   - A reasonably complete LaTeX install including pdflatex
+#   - pdfnup (Debian: texlive-extra-utils)
+
+# I'd like to keep these exclude lists small.
+#
+# We print some things that "obviously" aren't security-revelant --
+# but we might be surprised down the line.
+#
+# I only exclude things that are huge, or completely useless to print
+# (binary files, minified third-party JS).
+
+exclude_trees = """
+zephyr/static/third
+servers/puppet/modules
+certs
+""".split()
+
+exclude_files = """
+zephyr/management/commands/test_messages.txt
+tools/usability_testing/humbug_usability_test_data
+servers/puppet/files/wiki/static/img/logo.png
+tools/jslint/jslint.js
+""".split()
+
+extensions = dict(
+    py   = 'python',
+    rb   = 'ruby',
+    js   = 'javascript',
+    css  = 'css',
+    html = 'html',
+    sh   = 'sh',
+    tex  = 'latex')
+
+os.chdir(path.join(path.dirname(__file__), '../..'))
+orig_cwd = os.getcwd()
+
+try:
+    sh.git('diff-files', '--quiet')
+    sh.git('diff-index', '--cached', '--quiet', 'HEAD')
+except sh.ErrorReturnCode:
+    sys.stderr.write('Your Git repository is not clean!\n\n')
+    os.system('git status')  # output to terminal
+    sys.exit(1)
+
+with open('tools/print-all/tex/preamble.tex', 'w') as f:
+    f.write(r'''
+\begin{center}
+
+{\Huge Humbug, Inc. code printout}\\[1cm]
+
+{\Large Generated on \today\\[1cm]
+
+branch \texttt{%s}\\[1cm]
+
+commit \texttt{%s}
+}
+
+\end{center}
+''' % ('/'.join(sh.git('symbolic-ref', 'HEAD').split('/')[2:]),
+       sh.git('rev-parse', 'HEAD')))
+
+notfile  = []
+empty    = []
+excluded = []
+
+doc = file('tools/print-all/tex/all_code.tex', 'w')
+doc.write(r'''
+\input{header}
+\begin{document}
+\input{preamble}
+
+''')
+
+for fil in sh.git('ls-files', _iter=True):
+    fil = fil.strip()
+
+    if (not path.isfile(fil)) or path.islink(fil):
+        notfile.append(fil)
+        continue
+
+    if os.stat(fil).st_size == 0:
+        empty.append(fil)
+        continue
+
+    if (fil in exclude_files) or any(fil.startswith(d+'/') for d in exclude_trees):
+        excluded.append(fil)
+        continue
+
+    filetype = None
+    try:
+        filetype = extensions[path.basename(fil).split('.')[1]]
+    except (KeyError, IndexError):
+        with open(fil, 'rb') as f:
+            header = f.readline()
+            if re.match(r'^#!.*\bpython', header):
+                filetype = 'python'
+            elif re.match(r'^#!/.*\b(ba)?sh', header):
+                filetype = 'sh'
+
+    if filetype == 'html' and fil.startswith('templates/'):
+        filetype = 'html+django'
+
+    print 'Scanning', fil
+    outname = fil.replace('_', '_u_').replace('.', '_d_').replace('/', '_s_')
+    sh.pygmentize(
+        '-l', (filetype if filetype else 'text'),
+        '-f', 'tex',
+        '-o', path.join('tools/print-all/tex/files', outname+'.tex'),
+        fil)
+    doc.write('\\section{%s}\n\\input{files/%s}\n\n' % (fil.replace('_', r'\_'), outname))
+
+doc.write(r'''
+\input{epilogue}
+\end{document}
+''')
+doc.close()
+
+with file('tools/print-all/tex/epilogue.tex', 'w') as f:
+    def print_list(title, xs):
+        f.write('\\section*{%s}\n\n' % (title,))
+        for x in xs:
+            f.write('%s\n\n' % (x.replace('_', r'\_'),))
+
+    print_list('Empty files', empty)
+    print_list('Not regular files', notfile)
+    print_list('Explicitly excluded', excluded)
+
+print
+print 'Rendering PDF...'
+os.chdir('tools/print-all/tex')
+
+if not path.exists('utf-8.def'):
+    # Fix up some TeX installation issue by copying files from where Debian puts them
+    utf8_dir = lambda p: path.join('/usr/share/doc/texlive-doc/generic/t2/etc/utf-8', p)
+    sh.cp(utf8_dir('utf-8.def'), '.')
+    sh.zcat(utf8_dir('utfcyr.def.gz'), _out='utfcyr.def')
+    sh.zcat(utf8_dir('utflat.def.gz'), _out='utflat.def')
+
+try:
+    sh.pdflatex('all_code.tex', _in='/dev/null')
+except sh.ErrorReturnCode as exn:
+    print exn.stdout
+    sys.exit(1)
+
+print 'Converting to 2-up...'
+sh.pdfnup('--nup', '2x1', 'all_code.pdf')
+
+os.chdir(orig_cwd)
+print
+print sh.file('tools/print-all/tex/all_code-nup.pdf')
