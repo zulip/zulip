@@ -24,6 +24,7 @@ class HumbugAPI():
         request["email"] = self.email
         request["api-key"] = self.api_key
         request["client"] = self.client_name
+        request["failures"] = 0
         while True:
             try:
                 res = requests.post(urlparse.urljoin(self.base_url, url), data=request, verify=True)
@@ -34,6 +35,7 @@ class HumbugAPI():
                         if not had_error_retry:
                             sys.stdout.write("connection error -- retrying.")
                             had_error_retry = True
+                            request["failures"] += 1
                         else:
                             sys.stdout.write(".")
                         sys.stdout.flush()
@@ -45,6 +47,7 @@ class HumbugAPI():
                         if not had_error_retry:
                             sys.stdout.write("connection error -- retrying.")
                             had_error_retry = True
+                            request["failures"] += 1
                         else:
                             sys.stdout.write(".")
                         sys.stdout.flush()
