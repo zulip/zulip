@@ -8,6 +8,9 @@ if [ "$1" = "--imports" ]; then
     FILTER_IMPORTS="."
 fi
 
+# Make the output of the tools red
+echo -en '\e[0;31m'
+
 if ! "$SCRIPT_DIR"/jslint/check-all; then
     EXITCODE=1;
 fi
@@ -24,5 +27,8 @@ done
 if pyflakes $PYTHON_FILES | grep $FILTER_IMPORTS; then
     EXITCODE=1;
 fi
+
+# reset the terminal color
+echo -en '\e[0m'
 
 exit $EXITCODE
