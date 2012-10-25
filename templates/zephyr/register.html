@@ -65,7 +65,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 This is distinct from 'checked', which determines whether the checkbox appears
                 at all. (So, it's not symmetric to the code above.)
                 {% endcomment %}
-                <input id="id_terms" class="required" type="checkbox" name="terms" {% if form.terms.value %}checked="checked"{% endif %}" />
+                <input id="id_terms" class="required" type="checkbox" name="terms" {% if form.terms.value %}checked="checked"{% endif %} />
                 I agree to the <a href="/terms">Terms of Service</a>.
             </label>
             {% if form.terms.errors %}
