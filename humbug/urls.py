@@ -60,8 +60,9 @@ if settings.ALLOW_REGISTER:
             {'template': 'zephyr/accounts_send_confirm.html'}, name='send_confirm'),
         url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm', name='confirm'),
 
-        # Terms of service
-        url(r'^terms$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/terms.html'}, name='terms'),
+        # Terms of service and privacy policy
+        url(r'^terms$',   'django.views.generic.simple.direct_to_template', {'template': 'zephyr/terms.html'},   name='terms'),
+        url(r'^privacy$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/privacy.html'}, name='privacy'),
     )
 
 if settings.DEBUG:
