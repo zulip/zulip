@@ -3,6 +3,8 @@
 {% comment %}
 Gather other user information, after having confirmed
 their email address.
+
+Form is validated both client-side using jquery-validate (see signup.js) and server-side.
 {% endcomment %}
 
 {% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
@@ -32,8 +34,6 @@ their email address.
                    value="{% if form.full_name.value %}{{ form.full_name.value }}{% endif %}"
                    maxlength="100" />
             {% if form.full_name.errors %}
-                <br/>
-                <br/>
                 {% for error in form.full_name.errors %}
                     <div class="alert alert-error">{{ error }}</div>
                 {% endfor %}
@@ -47,15 +47,35 @@ their email address.
                    value="{% if form.password.value %}{{ form.password.value }}{% endif %}"
                    maxlength="100" />
             {% if form.password.errors %}
-                <br/>
-                <br/>
                 {% for error in form.password.errors %}
                     <div class="alert alert-error">{{ error }}</div>
                 {% endfor %}
             {% endif %}
         </div>
-        <br />
     </div>
+
+    <div class="control-group">
+        <div class="controls">
+            <label class="checkbox">
+                {% comment %}
+                This is somewhat subtle.
+                Checkboxes have a name and value, and when the checkbox is ticked, the form posts
+                with name=value. If the checkbox is unticked, the field just isn't present at all.
+
+                This is distinct from 'checked', which determines whether the checkbox appears
+                at all. (So, it's not symmetric to the code above.)
+                {% endcomment %}
+                <input id="id_terms" class="required" type="checkbox" name="terms" {% if form.terms.value %}checked="checked"{% endif %}" />
+                I agree to the <a href="/terms">Terms of Service</a>.
+            </label>
+            {% if form.terms.errors %}
+                {% for error in form.terms.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <br />
     <div class="control-group">
         <div class="controls">
             <input type="submit" class="btn btn-primary" value="Register" /><br />
