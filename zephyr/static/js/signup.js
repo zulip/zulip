@@ -1,15 +1,3 @@
-var disallowed_domains = ['gmail.com'];
-
-function validate_email_domain(value, element, param) {
-    var splitted = value.split("@");
-    var domain = splitted[splitted.length - 1];
-    return $.inArray(domain, disallowed_domains) !== -1;
-}
-
-
-$.validator.addMethod("fromDomain", validate_email_domain,
-    "Please use your company email address to sign up. Otherwise, we won’t be able to connect you with your coworkers.");
-
 $(function () {
     $('#registration').validate({
         errorElement: "p",
@@ -23,12 +11,6 @@ $(function () {
     });
 
     $("#email_signup").validate({
-        rules: {
-            email: {
-                required: true,
-                email: true
-            }
-        },
         errorElement: "p",
         errorClass: "validation-failed",
         errorPlacement: function (error, element) {
