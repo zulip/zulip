@@ -61,7 +61,7 @@ if settings.ALLOW_REGISTER:
         url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm', name='confirm'),
 
         # Terms of service
-        url(r'^tos$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/tos.html'}, name='tos'),
+        url(r'^terms$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/terms.html'}, name='terms'),
     )
 
 if settings.DEBUG:
