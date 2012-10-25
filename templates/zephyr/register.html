@@ -28,7 +28,9 @@ their email address.
     <div class="control-group">
         <label for="id_full_name" class="control-label">Your name</label>
         <div class="controls">
-            <input id="id_full_name" class="required" type="text" name="full_name" value="{% if form.full_name.value %}{{ form.full_name.value }}{% endif %}" maxlength="100" />
+            <input id="id_full_name" class="required" type="text" name="full_name"
+                   value="{% if form.full_name.value %}{{ form.full_name.value }}{% endif %}"
+                   maxlength="100" />
             {% if form.full_name.errors %}
                 <br/>
                 <br/>
@@ -41,7 +43,9 @@ their email address.
     <div class="control-group">
         <label for="id_password" class="control-label">Password</label>
         <div class="controls">
-            <input id="id_password" class="required" type="password" name="password" value="{% if form.password.value %}{{ form.password.value }}{% endif %}" maxlength="100" />
+            <input id="id_password" class="required" type="password" name="password"
+                   value="{% if form.password.value %}{{ form.password.value }}{% endif %}"
+                   maxlength="100" />
             {% if form.password.errors %}
                 <br/>
                 <br/>

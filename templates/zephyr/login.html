@@ -25,7 +25,8 @@ autofocus('#id_password');
 </div>
 {% endif %}
 
-<form method="post" class="form-horizontal" action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
+<form method="post" class="form-horizontal"
+      action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
     {% csrf_token %}
     <div class="control-group">
         <label for="id_username" class="control-label">Email</label>

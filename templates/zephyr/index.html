@@ -76,8 +76,10 @@ var people_list = [
           <div class="row">
             <div class="span3 sidebar-nav affix">
               <span>
-                <img class="img-rounded hidden-phone" src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=60" />
-                <img class="img-rounded visible-phone" src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=30" />
+                <img class="img-rounded hidden-phone"
+                     src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=60" />
+                <img class="img-rounded visible-phone"
+                     src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=30" />
               </span>
               <span class="my_fullname">{{ user_profile.full_name }}</span>
               <span class="my_email">{{ user_profile.user.email }}</span>
@@ -116,10 +118,12 @@ var people_list = [
                 </li>
                 {% endif %}
 
-                <button type="button" class="visible-phone btn btn-small phone_new_message_button" onclick="compose.start('stream');">New Message</button>
+                <button type="button" class="visible-phone btn btn-small phone_new_message_button"
+                        onclick="compose.start('stream');">New Message</button>
               </ul>
               <div class="hidden-phone new_message_button">
-                <button type="button" class="btn btn-large btn-block" id="new_message_button" onclick="compose.start('stream');">New Message</button>
+                <button type="button" class="btn btn-large btn-block" id="new_message_button"
+                        onclick="compose.start('stream');">New Message</button>
               </div>
 
                 <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
@@ -131,12 +135,16 @@ var people_list = [
                 <div class="alert alert_sidebar" id="stream-dne">
                   <p>The stream <span class="streamname" id="stream-dne-name"></span> does not exist.</p>
                   <button type="button" id="create-it" class="btn btn-primary">Create and send</button>
-                  <button type="button" class="btn" onClick="$('#stream-dne').stop(true).fadeOut(500);">Cancel message</button>
+                  <button type="button" class="btn" onClick="$('#stream-dne').stop(true).fadeOut(500);">
+                    Cancel message
+                  </button>
                 </div>
                 <div class="alert alert_sidebar" id="stream-nosub">
                   <p>You're not subscribed to the stream <span class="streamname" id="stream-nosub-name"></span>.</p>
                   <button type="button" id="sub-it" class="btn btn-primary">Subscribe and send</button>
-                  <button type="button" class="btn" onClick="$('#stream-nosub').stop(true).fadeOut(500);">Cancel message</button>
+                  <button type="button" class="btn" onClick="$('#stream-nosub').stop(true).fadeOut(500);">
+                    Cancel message
+                  </button>
                 </div>
             </div>
           </div>

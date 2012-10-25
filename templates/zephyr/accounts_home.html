@@ -23,13 +23,20 @@ autofocus('#email');
             <p class="lead">Get started now, for free</p>
             <form class="form-inline" id="email_signup" action="/accounts/home/" method="post">
                 {% csrf_token %}
-                <input type="text" class="email required" placeholder="Enter your work email address" id="email" name="email"/>&nbsp;
+                <input type="text" class="email required" placeholder="Enter your work email address"
+                       id="email" name="email"/>&nbsp;
                 <input type="submit" class="btn btn-primary btn-large" value="Sign up"/>
                 <span class="or">- or -</span>
                 <button type="submit" class="btn">Connect with Google Apps</button>
-                <p><small>By continuing, you are indicating that you have read and agree to our <a href="/tos">Terms of Use</a>.</small></p>
+
+                <p><small>By continuing, you are indicating that you have read
+                and agree to our <a href="/tos">Terms of Use</a>.</small></p>
+
             </form>
             <div id="errors"></div>
-            <div class="alert alert-pitch" id="company-email">Please use your company email address to sign up. Otherwise, we won’t be able to connect you with your coworkers.</div>
+
+            <div class="alert alert-pitch" id="company-email">Please use your
+            company email address to sign up. Otherwise, we won’t be able to
+            connect you with your coworkers.</div>
         </div>
 {% endblock %}

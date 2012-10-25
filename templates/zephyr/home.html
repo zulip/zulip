@@ -73,28 +73,44 @@
               <td colspan="2" class="message_header message_header_stream left_part">
               </td>
               <td class="message_header message_header_stream right_part">
-                <input type="text" class="recipient_box" name="stream" id="stream" onchange="focus_on('subject')" value="" placeholder="Stream" autocomplete="off" tabindex="120"/> | <input type="text" class="recipient_box" name="subject" id="subject" onchange="focus_on('new_message_content')" value="" placeholder="Subject" autocomplete="off" tabindex="130"/>
+                  <input type="text" class="recipient_box" name="stream" id="stream"
+                         onchange="focus_on('subject')"
+                         value="" placeholder="Stream" autocomplete="off" tabindex="120"/>
+                | <input type="text" class="recipient_box" name="subject" id="subject"
+                         onchange="focus_on('new_message_content')"
+                         value="" placeholder="Subject" autocomplete="off" tabindex="130"/>
               </td>
             </tr>
             <tr id="personal-message">
               <td colspan="2" class="message_header message_header_huddle left_part"></td>
               <td class="message_header message_header_huddle right_part">
-                You and <input type="text" class="recipient_box" name="recipient" id="huddle_recipient" onblur="focus_on('new_message_content')" value="" placeholder="one or more people..." autocomplete="off" tabindex="130"/>
+                You and <input type="text" class="recipient_box" name="recipient" id="huddle_recipient"
+                               onblur="focus_on('new_message_content')"
+                               value="" placeholder="one or more people..." autocomplete="off" tabindex="130"/>
               </td>
             </tr>
             <tr>
               <td class="message_picture">
                 <div id="stream_or_huddle">
                   <ul class="nav nav-pills nav-stacked" id="message-type-tabs">
-                    <li class="active"><a href="#stream-message" data-toggle="pill" title="Stream" tabindex="100"><i class="icon-bullhorn"></i></a></li>
-                    <li><a href="#personal-message" data-toggle="pill" title="Huddle" tabindex="110"><i class="icon-user"></i></a></li>
+                    <li class="active">
+                        <a href="#stream-message" data-toggle="pill" title="Stream" tabindex="100">
+                            <i class="icon-bullhorn"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#personal-message" data-toggle="pill" title="Huddle" tabindex="110">
+                            <i class="icon-user"></i>
+                        </a>
+                    </li>
                   </ul>
                 </div>
               </td>
               <td class="pointer"></td>
               <td class="messagebox">
                 <div class="message_content">
-                  <textarea class="new_message_textarea" name="content" id="new_message_content" value="" placeholder="Compose your message here..." tabindex="140"></textarea>
+                  <textarea class="new_message_textarea" name="content" id="new_message_content"
+                            value="" placeholder="Compose your message here..." tabindex="140"></textarea>
                   <input type="submit" value="Send" class="btn send_message" tabindex="150"/>
                 </div>
               </td>
