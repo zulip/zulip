@@ -780,7 +780,12 @@ function restart_get_updates() {
 }
 
 function load_more_messages() {
-    load_old_messages(message_array[0].id, "older", 400);
+    load_old_messages(message_array[0].id - 1, "older", 400,
+                      function (messages) {
+                          if (messages.length === 0) {
+                              $('#load_more').hide();
+                          }
+                      });
 }
 
 var watchdog_time = $.now();
