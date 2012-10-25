@@ -483,11 +483,13 @@ def is_super_user_api(request):
     return request.POST.get("api-key") == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 def already_sent_mirrored_message(request):
+    utc_from_ts = datetime.datetime.utcfromtimestamp
+    req_time = float(request.POST['time'])
     email = request.POST['sender'].lower()
     if Message.objects.filter(sender__user__email=email,
                               content=request.POST['content'],
-                              pub_date__gt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) - 10).replace(tzinfo=utc),
-                              pub_date__lt=datetime.datetime.utcfromtimestamp(float(request.POST['time']) + 10).replace(tzinfo=utc)):
+                              pub_date__gt=utc_from_ts(req_time - 10).replace(tzinfo=utc),
+                              pub_date__lt=utc_from_ts(req_time + 10).replace(tzinfo=utc)):
         return True
     return False
 
