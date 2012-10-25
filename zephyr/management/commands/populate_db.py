@@ -7,7 +7,7 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     bulk_create_realms, bulk_create_streams, bulk_create_users, bulk_create_huddles, \
     bulk_create_clients, \
     create_user, do_send_message, create_user_if_needed, create_stream_if_needed, \
-    filter_by_subscriptions, get_huddle_hash, get_client
+    filter_by_subscriptions, get_huddle_hash, get_client, do_activate_user
 from zephyr.lib.parallel import run_parallel
 from zephyr.lib.initial_password import initial_password
 from django.db import transaction
@@ -264,6 +264,8 @@ def restore_saved_messages():
         if message_type.startswith("subscription"):
             old_message["name"] = old_message["name"].lower()
             old_message["domain"] = old_message["domain"].lower()
+        elif message_type == "user_activated":
+            old_message["user"] = old_message["user"].lower()
         else:
             old_message["sender_email"] = old_message["sender_email"].lower()
 
@@ -279,6 +281,8 @@ def restore_saved_messages():
 
         if message_type.startswith("subscription"):
             stream_set.add((old_message["domain"], old_message["name"]))
+            continue
+        elif message_type == "user_activated":
             continue
         sender_email = old_message["sender_email"]
         domain = sender_email.split('@')[1]
@@ -376,7 +380,8 @@ def restore_saved_messages():
 
     messages_to_create = []
     for idx, old_message in enumerate(old_messages):
-        if old_message["type"].startswith("subscription"):
+        if (old_message["type"].startswith("subscription") or
+            old_message["type"] == "user_activated"):
             continue
 
         message = Message()
@@ -457,6 +462,13 @@ def restore_saved_messages():
                                    set()).remove(users[old_message["user"]].id)
             pending_subs[(stream_recipients[stream_key].id,
                           users[old_message["user"]].id)] = False
+            continue
+        elif old_message["type"] == "user_activated":
+            # Just handle these the slow way
+            user = User.objects.get(email=old_message["user"])
+            do_activate_user(user, log=False)
+            # Update the cache of users to show this user as activated
+            users_by_id[user.userprofile.id] = UserProfile.objects.get(user=user)
             continue
 
         message = messages_by_id[current_message_id]

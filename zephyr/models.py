@@ -514,6 +514,14 @@ def do_remove_subscription(user_profile, stream, no_log=False):
                    'domain': stream.realm.domain})
     return did_remove
 
+def do_activate_user(user, log=True):
+    user.is_active = True
+    user.set_password(initial_password(user.email))
+    user.save()
+    if log:
+        log_event({'type': 'user_activated',
+                   'user': user.email})
+
 class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
