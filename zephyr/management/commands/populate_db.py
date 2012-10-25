@@ -12,7 +12,7 @@ from zephyr.lib.parallel import run_parallel
 from zephyr.lib.initial_password import initial_password
 from django.db import transaction
 from django.conf import settings
-from api import mit_subs_list
+from api.bots import mit_subs_list
 from zephyr.lib.bulk_create import batch_bulk_create
 
 import simplejson
