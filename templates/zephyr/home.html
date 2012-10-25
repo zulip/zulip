@@ -74,9 +74,11 @@
               </td>
               <td class="message_header message_header_stream right_part">
                   <input type="text" class="recipient_box" name="stream" id="stream"
+                         maxlength="30"
                          onchange="focus_on('subject')"
                          value="" placeholder="Stream" autocomplete="off" tabindex="120"/>
                 | <input type="text" class="recipient_box" name="subject" id="subject"
+                         maxlength="60"
                          onchange="focus_on('new_message_content')"
                          value="" placeholder="Subject" autocomplete="off" tabindex="130"/>
               </td>
