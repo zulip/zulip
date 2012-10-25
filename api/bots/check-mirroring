@@ -1,19 +1,9 @@
 #!/usr/bin/python
-import urllib
 import sys
-import logging
-import traceback
-import simplejson
-import re
 import time
-import subprocess
 import optparse
 import os
-import datetime
-import textwrap
-import signal
 import random
-from urllib2 import HTTPError
 
 root_path = "/mit/tabbott/for_friends"
 sys.path.append(root_path + "/python-zephyr")

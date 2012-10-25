@@ -1,7 +1,5 @@
 #!/usr/bin/python
-import urllib
 import sys
-import logging
 import traceback
 import simplejson
 import re
@@ -12,7 +10,6 @@ import os
 import datetime
 import textwrap
 import signal
-from urllib2 import HTTPError
 
 root_path = "/mit/tabbott/for_friends"
 sys.path.append(root_path + "/python-zephyr")

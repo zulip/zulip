@@ -5,11 +5,9 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.shortcuts import render
 from django.utils.timezone import utc
 from django.core.exceptions import ValidationError
 from django.contrib.auth.views import login as django_login_page
-from django.contrib.auth.models import User
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     do_add_subscription, do_remove_subscription, \

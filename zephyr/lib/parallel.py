@@ -1,5 +1,4 @@
 import os
-import signal
 import pty
 import sys
 import errno
@@ -50,7 +49,6 @@ def run_parallel(job, data, threads=6):
 
 if __name__ == "__main__":
     # run some unit tests
-    import random
     import time
     jobs = [10, 19, 18, 6, 14, 12, 8, 2, 1, 13, 3, 17, 9, 11, 5, 16, 7, 15, 4]
     expected_output = [6, 10, 12, 2, 1, 14, 8, 3, 18, 19, 5, 9, 13, 11, 4, 7, 17, 16, 15]

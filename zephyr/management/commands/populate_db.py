@@ -6,10 +6,9 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
     bulk_create_realms, bulk_create_streams, bulk_create_users, bulk_create_huddles, \
     bulk_create_clients, \
-    create_user, do_send_message, create_user_if_needed, create_stream_if_needed, \
-    filter_by_subscriptions, get_huddle_hash, get_client, do_activate_user
+    do_send_message, \
+    get_huddle_hash, get_client, do_activate_user
 from zephyr.lib.parallel import run_parallel
-from zephyr.lib.initial_password import initial_password
 from django.db import transaction
 from django.conf import settings
 from api.bots import mit_subs_list
@@ -20,9 +19,6 @@ import datetime
 import random
 import sys
 import os
-import time
-import hashlib
-import base64
 from optparse import make_option
 
 settings.HAVE_TORNADO_SERVER = False

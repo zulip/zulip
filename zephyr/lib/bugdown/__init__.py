@@ -1,4 +1,3 @@
-import re
 import markdown
 import logging
 import traceback
