@@ -279,8 +279,6 @@ def get_old_messages_backend(start, which, number, user_profile,
 @asynchronous
 @login_required_json_view
 def json_get_updates(request, handler):
-    if not ('last' in request.POST and 'first' in request.POST):
-        return json_error("Missing message range")
     user_profile = UserProfile.objects.get(user=request.user)
 
     return get_updates_backend(request, user_profile, handler, apply_markdown=True)
@@ -292,8 +290,8 @@ def api_get_messages(request, user_profile, handler):
                                apply_markdown=(request.POST.get("apply_markdown") is not None),
                                mirror=request.POST.get("mirror"))
 
-def format_updates_response(messages=[], apply_markdown=True, reason_empty=None,
-                            user_profile=None, new_pointer=None, where='bottom',
+def format_updates_response(messages=[], apply_markdown=True,
+                            user_profile=None, new_pointer=None,
                             mirror=None):
     max_message_id = None
     if user_profile is not None:
@@ -306,10 +304,7 @@ def format_updates_response(messages=[], apply_markdown=True, reason_empty=None,
     ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
            "result": "success",
            "msg": "",
-           'where': where,
            'server_generation': SERVER_GENERATION}
-    if reason_empty is not None:
-        ret['reason_empty'] = reason_empty
     if max_message_id is not None:
         # TODO: Figure out how to accurately return this always
         ret["max_message_id"] = max_message_id
@@ -326,34 +321,21 @@ def format_delayed_updates_response(request=None, user_profile=None,
         client_pointer = int(client_pointer)
         client_wants_ptr_updates = True
 
-    reason_empty = None
+    pointer = None
     if (client_wants_ptr_updates
-          and str(user_profile.last_pointer_updater) != str(request.session.session_key)
+          and (str(user_profile.last_pointer_updater)
+               != str(request.session.session_key))
           and client_pointer != new_pointer):
-        if not kwargs.get('messages', False):
-            reason_empty = 'pointer_update'
-    else:
-        new_pointer = None
+        pointer = new_pointer
 
-    return format_updates_response(reason_empty=reason_empty,
-                                   new_pointer=new_pointer,
-                                   **kwargs)
+    return format_updates_response(new_pointer=pointer, **kwargs)
 
 def return_messages_immediately(request, user_profile, **kwargs):
-    first = request.POST.get("first")
-    last = request.POST.get("last")
     client_pointer = request.POST.get("pointer")
     failures = request.POST.get("failures")
-    want_old_messages = (request.POST.get("want_old_messages") == "true")
     client_server_generation = request.POST.get("server_generation")
     client_reload_pending = request.POST.get("reload_pending")
-    if first is None or last is None:
-        # When an API user is first querying the server to subscribe,
-        # there's no reason to reply immediately.
-        # TODO: Make this work with server_generation/failures
-        return None
-    first = int(first)
-    last  = int(last)
+
     client_wants_ptr_updates = False
     if client_pointer is not None:
         client_pointer = int(client_pointer)
@@ -364,22 +346,9 @@ def return_messages_immediately(request, user_profile, **kwargs):
         client_reload_pending = int(client_reload_pending)
 
     messages = []
-    where = 'bottom'
     new_pointer = None
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
     ptr = user_profile.pointer
-
-    if last == -1:
-        # User has no messages yet
-        # Get a range around the pointer
-        messages = (last_n(200, query.filter(id__lt=ptr))
-                  + list(query.filter(id__gte=ptr)[:200]))
-    else:
-        messages = query.filter(id__gt=last)[:400]
-        if want_old_messages and not messages:
-            # No more messages in the future; try filling in from the past.
-            messages = last_n(400, query.filter(id__lt=first))
-            where = 'top'
 
     # Filter for mirroring before checking whether there are any
     # messages to pass on.  If we don't do this, when the only message
@@ -391,36 +360,25 @@ def return_messages_immediately(request, user_profile, **kwargs):
                     m.sending_client.name != kwargs["mirror"]]
 
     if messages:
-        return format_updates_response(messages=messages, where=where, **kwargs)
+        return format_updates_response(messages=messages, **kwargs)
 
-    # We might want to return an empty list to the client immediately.
-    # In that case, we tell the client why.
-    reason_empty = None
-
-    if want_old_messages:
-        # Tell the client to hide the "Load more messages" button.
-        reason_empty = 'no_old_messages'
-    elif failures >= 4:
-        # Tell the client to hide the connection failure message.
-        reason_empty = 'reset_failures'
-    elif (client_server_generation is not None
+    client_needs_reload = False
+    if (client_server_generation is not None
         and int(client_server_generation) != SERVER_GENERATION
         and not client_reload_pending):
-        # Inform the client that they should reload.
-        reason_empty = 'client_reload'
-    elif (client_wants_ptr_updates
+        client_needs_reload = True
+
+    if (client_wants_ptr_updates
           and str(user_profile.last_pointer_updater) != str(request.session.session_key)
           and ptr != client_pointer):
-        reason_empty = 'pointer_update'
         new_pointer = ptr
 
-    if reason_empty is not None:
-        return format_updates_response(
-            where="bottom",
-            user_profile=user_profile,
-            reason_empty=reason_empty,
-            new_pointer=new_pointer,
-            **kwargs)
+    if (failures >= 4
+        or client_needs_reload
+        or new_pointer is not None):
+        return format_updates_response(user_profile=user_profile,
+                                       new_pointer=new_pointer,
+                                       **kwargs)
 
     return None
 

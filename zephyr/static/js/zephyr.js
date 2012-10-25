@@ -675,7 +675,7 @@ function get_updates() {
                     max_messages_for_backfill = 0;
                 }
             } else {
-                add_messages(data.messages);
+                add_messages(data.messages, "bottom");
             }
 
             if (data.new_pointer !== undefined
