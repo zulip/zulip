@@ -293,7 +293,7 @@ def api_get_messages(request, user_profile, handler):
 
 def format_updates_response(messages=[], apply_markdown=True,
                             user_profile=None, new_pointer=None,
-                            mirror=None):
+                            mirror=None, update_types=[]):
     max_message_id = None
     if user_profile is not None:
         try:
@@ -305,7 +305,8 @@ def format_updates_response(messages=[], apply_markdown=True,
     ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
            "result": "success",
            "msg": "",
-           'server_generation': SERVER_GENERATION}
+           'server_generation': SERVER_GENERATION,
+           'update_types': update_types}
     if max_message_id is not None:
         # TODO: Figure out how to accurately return this always
         ret["max_message_id"] = max_message_id
@@ -315,6 +316,7 @@ def format_updates_response(messages=[], apply_markdown=True,
 
 def format_delayed_updates_response(request=None, user_profile=None,
                                     new_pointer=None, pointer_updater=None,
+                                    update_types=[],
                                     **kwargs):
     client_pointer = request.POST.get("pointer")
     client_wants_ptr_updates = False
@@ -328,8 +330,10 @@ def format_delayed_updates_response(request=None, user_profile=None,
                != str(request.session.session_key))
           and client_pointer != new_pointer):
         pointer = new_pointer
+        update_types.append("pointer_update")
 
-    return format_updates_response(new_pointer=pointer, **kwargs)
+    return format_updates_response(new_pointer=pointer,
+                                   update_types=update_types, **kwargs)
 
 def return_messages_immediately(request, user_profile, **kwargs):
     last = request.POST.get("last")
@@ -371,25 +375,29 @@ def return_messages_immediately(request, user_profile, **kwargs):
         messages = [m for m in messages if
                     m.sending_client.name != kwargs["mirror"]]
 
+    update_types = []
     if messages:
-        return format_updates_response(messages=messages, **kwargs)
+        update_types.append("new_messages")
 
-    client_needs_reload = False
     if (client_server_generation is not None
         and int(client_server_generation) != SERVER_GENERATION
         and not client_reload_pending):
-        client_needs_reload = True
+        update_types.append("client_reload")
 
     if (client_wants_ptr_updates
           and str(user_profile.last_pointer_updater) != str(request.session.session_key)
           and ptr != client_pointer):
         new_pointer = ptr
+        update_types.append("pointer_update")
 
-    if (failures >= 1
-        or client_needs_reload
-        or new_pointer is not None):
-        return format_updates_response(user_profile=user_profile,
+    if failures >= 1:
+        update_types.append("reset_failure_counter")
+
+    if update_types:
+        return format_updates_response(messages=messages,
+                                       user_profile=user_profile,
                                        new_pointer=new_pointer,
+                                       update_types=update_types,
                                        **kwargs)
 
     return None

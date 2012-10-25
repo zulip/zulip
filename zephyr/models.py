@@ -121,7 +121,7 @@ class UserProfile(models.Model):
         global callbacks_table
 
         for cb in callbacks_table.get(self.user.id, Callbacks.TYPE_RECEIVE):
-            cb(messages=[message])
+            cb(messages=[message], update_types=["new_messages"])
 
         callbacks_table.clear(self.user.id, Callbacks.TYPE_RECEIVE)
 
