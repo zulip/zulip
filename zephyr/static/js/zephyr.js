@@ -14,8 +14,7 @@ var get_updates_params = {
     pointer: -1,
     failures: 0,
     server_generation: -1, /* to be filled in on document.ready */
-    reload_pending: 0,
-    want_old_messages: true
+    reload_pending: 0
 };
 
 $(function () {
