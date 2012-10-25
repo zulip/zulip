@@ -694,8 +694,6 @@ function get_updates() {
     });
 }
 
-$(get_updates);
-
 function load_old_messages(start, which, number, cont) {
     $.ajax({
         type:     'POST',
@@ -745,7 +743,10 @@ $(function () {
         if (messages.length !== 0) {
             var latest_id = messages[messages.length-1].id;
             load_old_messages(latest_id + 1, "newer", 400, load_to_end);
+            return;
         }
+        // now start subscribing to updates
+        get_updates();
     }
 
     function load_around(messages) {
