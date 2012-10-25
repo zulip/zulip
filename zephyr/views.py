@@ -10,7 +10,8 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.views import login as django_login_page
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
-    do_add_subscription, do_remove_subscription, \
+    do_add_subscription, do_remove_subscription, do_change_password, \
+    do_change_full_name, \
     create_user, do_send_message, create_user_if_needed, \
     create_stream_if_needed, PreregistrationUser, get_client
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique
@@ -766,15 +767,12 @@ def json_change_settings(request):
             return json_error("New password must match confirmation password!")
         if not authenticate(username=user_profile.user.email, password=old_password):
             return json_error("Wrong password!")
-        user_profile.user.set_password(new_password)
+        do_change_password(user_profile.user, new_password)
 
     result = {}
     if user_profile.full_name != full_name:
-        user_profile.full_name = full_name
+        do_change_full_name(user_profile, full_name)
         result['full_name'] = full_name
-
-    user_profile.user.save()
-    user_profile.save()
 
     return json_success(result)
 

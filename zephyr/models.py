@@ -522,6 +522,22 @@ def do_activate_user(user, log=True):
         log_event({'type': 'user_activated',
                    'user': user.email})
 
+def do_change_password(user, password, log=True):
+    user.set_password(password)
+    user.save()
+    if log:
+        log_event({'type': 'user_change_password',
+                   'user': user.email,
+                   'pwhash': user.password})
+
+def do_change_full_name(user_profile, full_name, log=True):
+    user_profile.full_name = full_name
+    user_profile.save()
+    if log:
+        log_event({'type': 'user_change_full_name',
+                   'user': user_profile.user.email,
+                   'full_name': full_name})
+
 class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.

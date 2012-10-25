@@ -260,7 +260,7 @@ def restore_saved_messages():
         if message_type.startswith("subscription"):
             old_message["name"] = old_message["name"].lower()
             old_message["domain"] = old_message["domain"].lower()
-        elif message_type == "user_activated":
+        elif message_type.startswith("user_"):
             old_message["user"] = old_message["user"].lower()
         else:
             old_message["sender_email"] = old_message["sender_email"].lower()
@@ -278,7 +278,7 @@ def restore_saved_messages():
         if message_type.startswith("subscription"):
             stream_set.add((old_message["domain"], old_message["name"]))
             continue
-        elif message_type == "user_activated":
+        elif message_type.startswith("user_"):
             continue
         sender_email = old_message["sender_email"]
         domain = sender_email.split('@')[1]
@@ -377,7 +377,7 @@ def restore_saved_messages():
     messages_to_create = []
     for idx, old_message in enumerate(old_messages):
         if (old_message["type"].startswith("subscription") or
-            old_message["type"] == "user_activated"):
+            old_message["type"].startswith("user_")):
             continue
 
         message = Message()
@@ -460,11 +460,23 @@ def restore_saved_messages():
                           users[old_message["user"]].id)] = False
             continue
         elif old_message["type"] == "user_activated":
-            # Just handle these the slow way
+            # These are rare, so just handle them the slow way
             user = User.objects.get(email=old_message["user"])
             do_activate_user(user, log=False)
             # Update the cache of users to show this user as activated
             users_by_id[user.userprofile.id] = UserProfile.objects.get(user=user)
+            continue
+        elif old_message["type"] == "user_change_password":
+            # Just handle these the slow way
+            user = User.objects.get(email=old_message["user"])
+            user.password = old_message["pwhash"]
+            user.save()
+            continue
+        elif old_message["type"] == "user_change_full_name":
+            # Just handle these the slow way
+            user_profile = UserProfile.objects.get(user__email=old_message["user"])
+            user_profile.full_name = old_message["full_name"]
+            user_profile.save()
             continue
 
         message = messages_by_id[current_message_id]
