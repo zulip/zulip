@@ -257,26 +257,27 @@ def restore_saved_messages():
             duplicate_suppression_hash[duplicate_suppression_key] = True
 
         old_message = simplejson.loads(old_message_json)
+        message_type = old_message["type"]
 
         # Lower case a bunch of fields that will screw up
         # deduplication if we don't
-        if old_message["type"].startswith("subscription"):
+        if message_type.startswith("subscription"):
             old_message["name"] = old_message["name"].lower()
             old_message["domain"] = old_message["domain"].lower()
         else:
             old_message["sender_email"] = old_message["sender_email"].lower()
 
-        if old_message['type'] == 'stream':
+        if message_type == 'stream':
             old_message["recipient"] = old_message["recipient"].lower()
-        elif old_message['type'] == 'personal':
+        elif message_type == 'personal':
             old_message["recipient"][0]["email"] = old_message["recipient"][0]["email"].lower()
-        elif old_message["type"] == "huddle":
+        elif message_type == "huddle":
             for i in xrange(len(old_message["recipient"])):
                 old_message["recipient"][i]["email"] = old_message["recipient"][i]["email"].lower()
 
         old_messages.append(old_message)
 
-        if old_message["type"].startswith("subscription"):
+        if message_type.startswith("subscription"):
             stream_set.add((old_message["domain"], old_message["name"]))
             continue
         sender_email = old_message["sender_email"]
@@ -292,14 +293,14 @@ def restore_saved_messages():
         if 'sending_client' in old_message:
             client_set.add(old_message['sending_client'])
 
-        if old_message['type'] == 'stream':
+        if message_type == 'stream':
             stream_set.add((domain, old_message['recipient']))
-        elif old_message['type'] == 'personal':
+        elif message_type == 'personal':
             u = old_message["recipient"][0]
             if u["email"] not in email_set:
                 user_set.add((u["email"], u["full_name"], u["short_name"], False))
                 email_set.add(u["email"])
-        elif old_message['type'] == 'huddle':
+        elif message_type == 'huddle':
             for u in old_message["recipient"]:
                 user_set.add((u["email"], u["full_name"], u["short_name"], False))
                 if u["email"] not in email_set:
