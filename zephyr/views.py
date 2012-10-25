@@ -112,7 +112,7 @@ def accounts_register(request):
             password   = form.cleaned_data['password']
             full_name  = form.cleaned_data['full_name']
             short_name = email.split('@')[0]
-            domain     = form.cleaned_data['domain']
+            domain     = email.split('@')[-1]
             (realm, _) = Realm.objects.get_or_create(domain=domain)
 
             # FIXME: sanitize email addresses
