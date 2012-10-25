@@ -440,6 +440,18 @@ if options.forward_from_humbug:
     print "This option is obsolete."
     sys.exit(0)
 
+# First check that there are no other bots running
+cmdline = " ".join(sys.argv)
+proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", cmdline],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+out, _err_unused = proc.communicate()
+for pid in out.split():
+    if int(pid.strip()) != os.getpid():
+        # Another copy of zephyr_mirror.py!  Kill it.
+        print "Killing duplicate zephyr_mirror process %s" % pid
+        os.kill(int(pid), signal.SIGKILL)
+
 child_pid = os.fork()
 if child_pid == 0:
     # Run the humbug => zephyr mirror in the child
