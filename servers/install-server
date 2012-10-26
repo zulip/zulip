@@ -54,6 +54,8 @@ EOF
 # Stupid hack because humbug-self-signed.key isn't in git
 scp -i ~/humbug/humbug.pem ~/humbug/certs/humbug-self-signed.key root@"$server":/root/humbug/certs/humbug-self-signed.key
 
+# TODO: Copy the real certs into place for prod servers
+
 ssh "$server" -t -i ~/humbug/humbug.pem -lroot <<EOF
 cp -a /root/humbug/servers/puppet/puppet.conf /etc/puppet/
 # HACK: run puppet twice to workaround bug in apache module handling
@@ -61,6 +63,7 @@ puppet apply /root/humbug/servers/puppet/manifests/site.pp || true
 puppet apply /root/humbug/servers/puppet/manifests/site.pp
 # The last bit should be moveable into puppet-land, ideally
 service apache2 restart
+apt-get upgrade
 EOF
 
 set +x

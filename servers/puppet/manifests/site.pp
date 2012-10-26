@@ -34,6 +34,20 @@ class humbug_base {
                 "python-django", "openssh-server", "python-pip", "puppet-el", ]
   package { $packages: ensure => "installed" }
 
+  # FIXME: Stop using pip since it is insecure
+  exec {"pip":
+    command  => "pip install django-jstemplate",
+    onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/jstemplate"
+  }
+  exec {"pip2":
+    command  => "pip install markdown",
+    onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/markdown"
+  }
+  exec {"pip3":
+    command  => "pip install requests",
+    onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/requests"
+  }
+
   group { 'humbug':
     ensure     => present,
     gid        => '1000',
@@ -90,8 +104,8 @@ class humbug_base {
   }
 }
 
-class humbug_web_base {
-  $web_packages = [ "apache2", "gitit", "libapache2-mod-wsgi", ]
+class humbug_apache_base {
+  $apache_packages = [ "apache2", "libapache2-mod-wsgi", ]
   package { $web_packages: ensure => "installed" }
 
   apache2mod { [ "headers", "proxy", "proxy_http", "rewrite", "auth_digest", ]:
@@ -101,20 +115,6 @@ class humbug_web_base {
   # Intentionally seperate in the hopes that this fixes dumb dependency problems
   apache2mod { "ssl":
     ensure => present,
-  }
-
-  # FIXME: Stop using pip since it is insecure
-  exec {"pip":
-    command  => "pip install django-jstemplate",
-    onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/jstemplate"
-  }
-  exec {"pip2":
-    command  => "pip install markdown",
-    onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/markdown"
-  }
-  exec {"pip3":
-    command  => "pip install requests",
-    onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/requests"
   }
 
   file { "/etc/apache2/users/":
@@ -185,15 +185,37 @@ class humbug_web_base {
 }
 
 class humbug_app_frontend {
-  apache2site { 'app':
-    require => [File['/etc/apache2/sites-available/'],
-                Apache2mod['headers'], Apache2mod['ssl'],
-                ],
-    ensure => present,
+  $web_packages = [ "nginx", ]
+  package { $web_packages: ensure => "installed" }
+  file { "/etc/nginx/sites-available/humbug":
+    require => Package[nginx],
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "/root/humbug/servers/puppet/files/nginx/sites-available/humbug",
+  }
+}
+
+# TODO: Setup dotdeb repository for this, including apt preferences to
+# only get the database from dotdeb.
+class humbug_database {
+  $db_packages = [ "mysql-server-5.5", ]
+  package { $db_packages: ensure => "installed" }
+  file { "/etc/mysql/my.cnf":
+    require => Package["mysql-server-5.5"],
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "/root/humbug/servers/puppet/files/mysql/my.cnf",
   }
 }
 
 class humbug_wiki {
+  $wiki_packages = [ "gitit", ]
+  package { $wiki_packages: ensure => "installed" }
+
   group { 'wiki':
     ensure     => present,
     gid        => '1100',
@@ -224,13 +246,34 @@ class humbug_wiki {
   }
 }
 
-## TODO: Add a Nagios class -- needs to:
-# (a2ensite nagios, apt-get install nagios3 -t squeeze-backports, put in _our_ nagios config)
+class humbug_trac {
+  $trac_packages = [ "trac", ]
+  package { $wiki_packages: ensure => "installed" }
 
-## TODO: Add a trac class -- needs to:
-# (a2ensite trac, apt-get install trac -t squeeze-backports, put in _our_ trac.ini from git)
+  apache2site { 'trac':
+    require => [File['/etc/apache2/sites-available/'],
+                Apache2mod['headers'], Apache2mod['ssl'],
+                ],
+    ensure => present,
+  }
+  #TODO: Need to install our trac config
+}
+
+class humbug_nagios {
+  $nagios_packages = [ "nagios3", ]
+  package { $nagios_packages: ensure => "installed" }
+
+  apache2site { 'nagios':
+    require => [File['/etc/apache2/sites-available/'],
+                Apache2mod['headers'], Apache2mod['ssl'],
+                ],
+    ensure => present,
+  }
+  #TODO: Need to install our Nagios config
+}
 
 class { "humbug_base": }
-class { "humbug_web_base": }
+#class { "humbug_apache_base": }
 #class { "humbug_wiki": }
-#class { "humbug_app_frontend": }
+class { "humbug_app_frontend": }
+class { "humbug_database": }
