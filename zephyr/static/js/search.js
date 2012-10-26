@@ -79,9 +79,6 @@ function highlight_match(row, search_term) {
 }
 
 function search_button_handler(reverse) {
-    $("#search_start").hide();
-    $("#search").css('width', '82%');
-    $(".search_nav_button").show();
     var query = $('#search').val().toLowerCase();
     var res = search(query, selected_message, reverse);
     if (!res) {
@@ -101,9 +98,6 @@ function clear_search() {
     $('table tr').removeHighlight();
     $('#search').val('').focus();
     clear_search_cache();
-    $("#search_start").show();
-    $(".search_nav_button").hide();
-    $("#search").css('width', '93%');
 }
 
 function something_is_highlighted() {

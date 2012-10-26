@@ -372,8 +372,8 @@ input.send_message {
 #search_arrows {
     width: 95%;
 }
-#search { /* Also adjusted through search.js */
-    width: 93%;
+#search {
+    width: 82%;
 }
 
 .highlight {
@@ -391,11 +391,6 @@ input.send_message {
     border-radius: 0;
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
-}
-
-/* Only needed when a search is in progress */
-#searchbox .search_nav_button {
-    display: none;
 }
 
 .narrowed_to_bar {
