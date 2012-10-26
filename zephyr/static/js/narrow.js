@@ -37,6 +37,9 @@ function do_narrow(icon, description, filter_function) {
     // Your pointer isn't changed when narrowed.
     persistent_message_id = selected_message_id;
 
+    // Before we clear the table, check if anything was highlighted.
+    var highlighted = something_is_highlighted();
+
     // Empty the filtered table right before we fill it again
     clear_table('zfilt');
     add_to_table(message_array, 'zfilt', filter_function, 'bottom');
@@ -47,6 +50,7 @@ function do_narrow(icon, description, filter_function) {
     $("#show_all_messages").removeAttr("disabled");
     $(".narrowed_to_bar").show();
     $("#loading_control").hide();
+    $("#top_narrowed_whitespace").show();
     $("#main_div").addClass("narrowed_view");
     $("#currently_narrowed_to").html(icon + " " + description).attr("title", description.replace(/&nbsp;/g, ""));
     $("#zhome").removeClass("focused_table");
@@ -58,6 +62,11 @@ function do_narrow(icon, description, filter_function) {
     selected_message_class = "narrowed_selected_message";
     select_message_by_id(target_id,
                          {then_scroll: true, update_server: false});
+
+    // If anything was highlighted before, try to rehighlight it.
+    if (highlighted) {
+        update_highlight_on_narrow();
+    }
 }
 
 // This is the message we're about to select, within the narrowed view.
@@ -140,6 +149,7 @@ exports.show_all_messages = function () {
     $("#zhome").addClass('focused_table');
     $(".narrowed_to_bar").hide();
     $("#loading_control").show();
+    $("#top_narrowed_whitespace").hide();
     $("#main_div").removeClass('narrowed_view');
     $("#show_all_messages").attr("disabled", "disabled");
     $("#currently_narrowed_to").html("");
@@ -149,6 +159,8 @@ exports.show_all_messages = function () {
     select_message_by_id(persistent_message_id, {then_scroll: true});
 
     scroll_to_selected();
+
+    update_highlight_on_narrow();
 };
 
 return exports;

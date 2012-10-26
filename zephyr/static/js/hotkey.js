@@ -128,6 +128,11 @@ process_key_in_input = function (code) {
         // If the user hit the escape key, cancel the current compose
         compose.cancel();
     }
+    if ((code === 13) && $("#search").is(":focus")) {
+        $("#search_up").focus();
+        search_button_handler(true);
+        return;
+    }
     // Otherwise, let the browser handle the key normally
     return false;
 };
