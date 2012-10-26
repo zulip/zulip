@@ -224,6 +224,12 @@ class humbug_wiki {
   }
 }
 
+## TODO: Add a Nagios class -- needs to:
+# (a2ensite nagios, apt-get install nagios3 -t squeeze-backports, put in _our_ nagios config)
+
+## TODO: Add a trac class -- needs to:
+# (a2ensite trac, apt-get install trac -t squeeze-backports, put in _our_ trac.ini from git)
+
 class { "humbug_base": }
 class { "humbug_web_base": }
 #class { "humbug_wiki": }
