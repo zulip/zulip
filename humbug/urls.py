@@ -29,6 +29,7 @@ urlpatterns = patterns('',
     # These are json format views used by the API.  They require an API key.
     url(r'^api/v1/get_profile$', 'zephyr.views.api_get_profile', name='api_get_profile'),
     url(r'^api/v1/get_messages$', 'zephyr.views.api_get_messages', name='api_get_messages'),
+    url(r'^api/v1/get_old_messages$', 'zephyr.views.api_get_old_messages', name='api_get_old_messages'),
     url(r'^api/v1/get_public_streams$', 'zephyr.views.api_get_public_streams', name='api_get_public_streams'),
     url(r'^api/v1/get_subscriptions$', 'zephyr.views.api_get_subscriptions', name='api_get_subscriptions'),
     url(r'^api/v1/subscribe$', 'zephyr.views.api_subscribe', name='api_subscribe'),

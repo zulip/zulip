@@ -237,6 +237,17 @@ def update_pointer_backend(request, user_profile):
 
 @login_required_json_view
 def json_get_old_messages(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+    return get_old_messages_backend(request, user_profile=user_profile,
+                                    apply_markdown=True)
+
+@login_required_api_view
+def api_get_old_messages(request, user_profile, handler):
+    return get_old_messages_backend(request, user_profile=user_profile,
+                                    apply_markdown=(request.POST.get("apply_markdown") is not None))
+
+def get_old_messages_backend(request, user_profile=None,
+                             apply_markdown=True):
     if not ('start' in request.POST):
         return json_error("Missing 'start' parameter")
     if not ('which in request.post'):
@@ -248,13 +259,6 @@ def json_get_old_messages(request):
     which = request.POST.get("which")
     number = int(request.POST.get("number"))
 
-    user_profile = UserProfile.objects.get(user=request.user)
-
-    return json_success(get_old_messages_backend(start, which, number, user_profile,
-                                                 apply_markdown=True))
-
-def get_old_messages_backend(start, which, number, user_profile,
-                             apply_markdown=True):
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
 
     if which == "older":
@@ -275,7 +279,7 @@ def get_old_messages_backend(start, which, number, user_profile,
            "result": "success",
            "msg": "",
            'server_generation': SERVER_GENERATION}
-    return ret
+    return json_success(ret)
 
 @asynchronous
 @login_required_json_view
