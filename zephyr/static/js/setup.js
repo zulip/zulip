@@ -13,10 +13,11 @@ $(function () {
     }
 
     // Compile Handlebars templates.
-    templates.message       = Handlebars.compile($("#template_message").html());
-    templates.subscription = Handlebars.compile($("#template_subscription").html());
-    templates.userinfo_popover_title = Handlebars.compile($("#template_userinfo_popover_title").html());
-    templates.userinfo_popover_content = Handlebars.compile($("#template_userinfo_popover_content").html());
+    $.each(['message', 'subscription', 'userinfo_popover_title', 'userinfo_popover_content'],
+        function (index, name) {
+            templates[name] = Handlebars.compile($('#template_'+name).html());
+        }
+    );
 
     // This requires that we used Django's {% csrf_token %} somewhere on the page.
     var csrftoken = $('input[name="csrfmiddlewaretoken"]').attr('value');
