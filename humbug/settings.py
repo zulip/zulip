@@ -84,6 +84,11 @@ if deployed:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE    = True
 
+# Prevent Javascript from reading the CSRF token from cookies.  Our code gets
+# the token from the DOM, which means malicious code could too.  But hiding the
+# cookie will slow down some attackers.
+CSRF_COOKIE_PATH = '/;HttpOnly'
+
 # Used just for generating initial passwords and API keys.
 INITIAL_PASSWORD_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 INITIAL_API_KEY_SALT  = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
