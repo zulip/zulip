@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.utils.timezone import utc
 
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
     bulk_create_realms, bulk_create_streams, bulk_create_users, bulk_create_huddles, \
@@ -201,6 +202,9 @@ class Command(BaseCommand):
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
             restore_saved_messages()
+            site = Site.objects.get_current()
+            site.domain = 'humbughq.com'
+            site.save()
 
             # Set restored pointers to the very latest messages
             for user_profile in UserProfile.objects.all():
