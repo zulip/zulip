@@ -68,6 +68,7 @@
     var createTimeout = function() {
       timerId = setTimeout(function(){
         idle = true;
+        cancel();
         settings.onIdle.call();
         if(settings.keepTracking){
           timerId = createTimeout(settings);
