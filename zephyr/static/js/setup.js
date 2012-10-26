@@ -17,28 +17,16 @@ $(function () {
     templates.subscription = Handlebars.compile($("#template_subscription").html());
     templates.userinfo_popover_title = Handlebars.compile($("#template_userinfo_popover_title").html());
     templates.userinfo_popover_content = Handlebars.compile($("#template_userinfo_popover_content").html());
-});
 
-$.ajaxSetup({
-    beforeSend: function (xhr, settings) {
-        function getCookie(name) {
-            var i, cookies, cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                cookies = document.cookie.split(';');
-                for (i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
+    // This requires that we used Django's {% csrf_token %} somewhere on the page.
+    var csrftoken = $('input[name="csrfmiddlewaretoken"]').attr('value');
+
+    $.ajaxSetup({
+        beforeSend: function (xhr, settings) {
+            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+                // Only send the token to relative URLs i.e. locally.
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
             }
-            return cookieValue;
         }
-        if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-            // Only send the token to relative URLs i.e. locally.
-            xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-        }
-    }
+    });
 });
