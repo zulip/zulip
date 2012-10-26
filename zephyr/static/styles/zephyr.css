@@ -359,27 +359,36 @@ input.send_message {
 }
 
 #searchbox {
+    /* Needed because top_statusbar is visibility: hidden
+       and we don't want to inherit that */
     visibility: visible;
     max-height: 30px;
     padding: 5px 10px;
-    margin-left: 10px;
-    margin-right: 19px;
-    background-color: #DDD;
-    border: 1px solid black;
+    background-color: aliceblue;
 }
 
+#search_arrows {
+    width: 95%;
+}
 #search {
-    width: 81%;
+    width: 82%;
 }
 
 .highlight {
     background-color: #FCEA81;
 }
 
-.search_button {
+#searchbox .search_button {
     margin-bottom: 10px;
     text-align: center;
     padding: 4px 10px 4px 10px;
+}
+/* A cheat, because input-prepend and input-append aren't
+   smart enough to do the right thing with search-query */
+#searchbox .search_button_middle {
+    border-radius: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
 }
 
 .narrowed_to_bar {
