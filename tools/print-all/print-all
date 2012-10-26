@@ -140,7 +140,7 @@ with file('tools/print-all/tex/epilogue.tex', 'w') as f:
     print_list('Explicitly excluded', excluded)
 
 print
-print 'Rendering PDF...'
+print 'Rendering...'
 os.chdir('tools/print-all/tex')
 
 if not path.exists('utf-8.def'):
