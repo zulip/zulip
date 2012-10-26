@@ -24,13 +24,12 @@ client = api.common.HumbugAPI(email="feedback@humbughq.com",
                               site=options.site)
 
 def forward_message(message):
-    if message["sender_email"].endswith("@mit.edu"):
-        forwarded_message = {
-            "type": "stream",
-            "stream": "support",
-            "subject": "feedback from %s" % message["sender_email"],
-            "content": message["content"],
-            }
-        client.send_message(forwarded_message)
+    forwarded_message = {
+        "type": "stream",
+        "stream": "support",
+        "subject": "feedback from %s" % message["sender_email"],
+        "content": message["content"],
+        }
+    client.send_message(forwarded_message)
 
 client.call_on_each_message(forward_message)
