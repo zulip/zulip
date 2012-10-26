@@ -11,8 +11,9 @@ from os import path
 #
 #   - Python 'sh' module: http://amoffat.github.com/sh/
 #   - pygmentize (Debian: python-pygments)
-#   - A reasonably complete LaTeX install including pdflatex
-#   - pdfnup (Debian: texlive-extra-utils)
+#   - A reasonably complete LaTeX install
+#   - psnup (Debian: psutils)
+#   - pstopdf (Debian: context)
 
 # I'd like to keep these exclude lists small.
 #
@@ -150,14 +151,16 @@ if not path.exists('utf-8.def'):
     sh.zcat(utf8_dir('utflat.def.gz'), _out='utflat.def')
 
 try:
-    sh.pdflatex('all_code.tex', _in='/dev/null')
+    sh.latex('all_code.tex', _in='/dev/null')
+    sh.dvips('all_code.dvi')
 except sh.ErrorReturnCode as exn:
     print exn.stdout
     sys.exit(1)
 
 print 'Converting to 2-up...'
-sh.pdfnup('--nup', '2x1', 'all_code.pdf')
+sh.psnup('-n', '2', 'all_code.ps', _out='all_code_2up.ps')
+sh.pstopdf('all_code_2up.ps')
 
 os.chdir(orig_cwd)
 print
-print sh.file('tools/print-all/tex/all_code-nup.pdf')
+print sh.file('tools/print-all/tex/all_code_2up.pdf')

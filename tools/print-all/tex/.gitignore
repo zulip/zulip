@@ -1,6 +1,8 @@
 *.aux
 *.log
 *.pdf
+*.ps
+*.dvi
 
 /all_code.tex
 /preamble.tex
