@@ -735,22 +735,25 @@ function load_old_messages(start, which, number, cont) {
 
 // get the initial message list
 $(function () {
-    function load_to_end(messages) {
+    function load_more(messages) {
         // catch the user up
         if (messages.length !== 0) {
             var latest_id = messages[messages.length-1].id;
-            load_old_messages(latest_id + 1, "newer", 400, load_to_end);
+            load_old_messages(latest_id + 1, "newer", 400, load_more);
             return;
         }
         // now start subscribing to updates
         get_updates();
+
+        // backfill more messages after the user is idle
+        $(document).idle({'idle': 1000*10,
+                          'onIdle': function () {
+                              var first_id = message_array[0].id;
+                              load_old_messages(first_id - 1, "older", 1000);
+                          }});
     }
 
-    function load_around(messages) {
-        load_old_messages(initial_pointer, "around", 400, load_to_end);
-    }
-
-    load_around();
+    load_old_messages(initial_pointer, "around", 400, load_more);
 });
 
 function restart_get_updates() {
