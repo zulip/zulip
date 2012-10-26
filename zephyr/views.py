@@ -30,6 +30,8 @@ import re
 import urllib
 import time
 import requests
+import os
+import base64
 
 SERVER_GENERATION = int(time.time())
 
@@ -202,14 +204,18 @@ def home(request):
 
 @login_required_api_view
 def api_update_pointer(request, user_profile):
-    return update_pointer_backend(request, user_profile)
+    updater = request.POST.get("client_id")
+    if updater is None:
+        return json_error("Missing client_id argument")
+    return update_pointer_backend(request, user_profile, updater)
 
 @login_required_json_view
 def json_update_pointer(request):
     user_profile = UserProfile.objects.get(user=request.user)
-    return update_pointer_backend(request, user_profile)
+    return update_pointer_backend(request, user_profile,
+                                  request.session.session_key)
 
-def update_pointer_backend(request, user_profile):
+def update_pointer_backend(request, user_profile, updater):
     pointer = request.POST.get('pointer')
     if not pointer:
         return json_error("Missing pointer")
@@ -223,7 +229,7 @@ def update_pointer_backend(request, user_profile):
         return json_error("Invalid pointer value")
 
     user_profile.pointer = pointer
-    user_profile.last_pointer_updater = request.session.session_key
+    user_profile.last_pointer_updater = updater
     user_profile.save()
 
     if settings.HAVE_TORNADO_SERVER:
@@ -231,7 +237,7 @@ def update_pointer_backend(request, user_profile):
                ('secret',  settings.SHARED_SECRET),
                ('user', user_profile.user.id),
                ('new_pointer', pointer),
-               ('pointer_updater', request.session.session_key)])
+               ('pointer_updater', updater)])
 
     return json_success()
 
@@ -285,13 +291,15 @@ def get_old_messages_backend(request, user_profile=None,
 @login_required_json_view
 def json_get_updates(request, handler):
     user_profile = UserProfile.objects.get(user=request.user)
-
-    return get_updates_backend(request, user_profile, handler, apply_markdown=True)
+    client_id = request.session.session_key
+    return get_updates_backend(request, user_profile, handler, client_id,
+                               apply_markdown=True)
 
 @asynchronous
 @login_required_api_view
 def api_get_messages(request, user_profile, handler):
-    return get_updates_backend(request, user_profile, handler,
+    client_id = request.POST.get("client_id")
+    return get_updates_backend(request, user_profile, handler, client_id,
                                apply_markdown=(request.POST.get("apply_markdown") is not None),
                                mirror=request.POST.get("mirror"))
 
@@ -320,7 +328,7 @@ def format_updates_response(messages=[], apply_markdown=True,
 
 def format_delayed_updates_response(request=None, user_profile=None,
                                     new_pointer=None, pointer_updater=None,
-                                    update_types=[],
+                                    client_id=None, update_types=[],
                                     **kwargs):
     client_pointer = request.POST.get("pointer")
     client_wants_ptr_updates = False
@@ -330,8 +338,7 @@ def format_delayed_updates_response(request=None, user_profile=None,
 
     pointer = None
     if (client_wants_ptr_updates
-          and (str(user_profile.last_pointer_updater)
-               != str(request.session.session_key))
+          and str(pointer_updater) != str(client_id)
           and client_pointer != new_pointer):
         pointer = new_pointer
         update_types.append("pointer_update")
@@ -339,7 +346,7 @@ def format_delayed_updates_response(request=None, user_profile=None,
     return format_updates_response(new_pointer=pointer,
                                    update_types=update_types, **kwargs)
 
-def return_messages_immediately(request, user_profile, **kwargs):
+def return_messages_immediately(request, user_profile, client_id, **kwargs):
     last = request.POST.get("last")
     if last is None:
         # When an API user is first querying the server to subscribe,
@@ -389,7 +396,7 @@ def return_messages_immediately(request, user_profile, **kwargs):
         update_types.append("client_reload")
 
     if (client_wants_ptr_updates
-          and str(user_profile.last_pointer_updater) != str(request.session.session_key)
+          and str(user_profile.last_pointer_updater) != str(client_id)
           and ptr != client_pointer):
         new_pointer = ptr
         update_types.append("pointer_update")
@@ -420,8 +427,9 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
                 return
     handler.finish(response)
 
-def get_updates_backend(request, user_profile, handler, **kwargs):
-    resp = return_messages_immediately(request, user_profile, **kwargs)
+def get_updates_backend(request, user_profile, handler, client_id, **kwargs):
+    resp = return_messages_immediately(request, user_profile,
+                                       client_id, **kwargs)
     if resp is not None and resp['result'] == 'success':
         send_with_safety_check(resp, handler, **kwargs)
         return
@@ -433,6 +441,7 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
             kwargs.update(cb_kwargs)
             res = format_delayed_updates_response(request=request,
                                                   user_profile=user_profile,
+                                                  client_id=client_id,
                                                   **kwargs)
             send_with_safety_check(res, handler, **kwargs)
         except socket.error:
@@ -441,9 +450,13 @@ def get_updates_backend(request, user_profile, handler, **kwargs):
     user_profile.add_receive_callback(handler.async_callback(cb))
     user_profile.add_pointer_update_callback(handler.async_callback(cb))
 
+def generate_client_id():
+    return base64.b16encode(os.urandom(16)).lower()
+
 @login_required_api_view
 def api_get_profile(request, user_profile):
-    return json_success({"pointer": user_profile.pointer})
+    return json_success({"pointer": user_profile.pointer,
+                         "client_id": generate_client_id()})
 
 @login_required_api_view
 def api_send_message(request, user_profile):
