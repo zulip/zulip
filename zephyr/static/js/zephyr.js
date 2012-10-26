@@ -188,10 +188,6 @@ function respond_to_message(reply_type) {
 // Called by mouseover etc.
 function select_message_by_id(message_id, opts) {
     opts = $.extend({}, {then_scroll: false, update_server: true}, opts);
-    if (message_id === selected_message_id && ! opts.then_scroll) {
-        // We are already successful without doing anything!
-        return true;
-    }
     return select_message(rows.get(message_id), opts);
 }
 
@@ -245,7 +241,9 @@ function select_message(next_message, opts) {
         }
     }
 
-    update_selected_message(next_message, opts);
+    if (next_message.id !== selected_message_id) {
+        update_selected_message(next_message, opts);
+    }
 
     if (opts.then_scroll) {
         recenter_view(next_message);

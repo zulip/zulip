@@ -53,9 +53,11 @@ function do_narrow(icon, description, filter_function) {
 
     // Indicate both which message is persistently selected and which
     // is temporarily selected
-    select_message_by_id(selected_message_id, {then_scroll: false});
+    select_message_by_id(selected_message_id,
+                         {then_scroll: false, update_server: false});
     selected_message_class = "narrowed_selected_message";
-    select_message_by_id(target_id, {then_scroll: true});
+    select_message_by_id(target_id,
+                         {then_scroll: true, update_server: false});
 }
 
 // This is the message we're about to select, within the narrowed view.
