@@ -242,7 +242,7 @@ def json_get_old_messages(request):
                                     apply_markdown=True)
 
 @login_required_api_view
-def api_get_old_messages(request, user_profile, handler):
+def api_get_old_messages(request, user_profile):
     return get_old_messages_backend(request, user_profile=user_profile,
                                     apply_markdown=(request.POST.get("apply_markdown") is not None))
 
