@@ -170,6 +170,9 @@ function update_floating_recipient_bar() {
     // row is at least partially occluded by our box.
     // Start with the pointer's current location.
     var candidate = selected_message;
+    if (candidate === undefined) {
+        return;
+    }
     while (true) {
         candidate = candidate.prev();
         if (candidate.length === 0) {
