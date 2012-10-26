@@ -358,6 +358,30 @@ input.send_message {
     visibility: hidden; /* so that we pass clicks through to underneath us */
 }
 
+#searchbox {
+    visibility: visible;
+    max-height: 30px;
+    padding: 5px 10px;
+    margin-left: 10px;
+    margin-right: 19px;
+    background-color: #DDD;
+    border: 1px solid black;
+}
+
+#search {
+    width: 81%;
+}
+
+.highlight {
+    background-color: #FCEA81;
+}
+
+.search_button {
+    margin-bottom: 10px;
+    text-align: center;
+    padding: 4px 10px 4px 10px;
+}
+
 .narrowed_to_bar {
     /* We use display: to toggle whether or not this actually shows up,
        but we need visibility: visible because its parent,
@@ -400,7 +424,13 @@ table.floating_recipient {
 
 #top_whitespace {
   display: block;
-  height: 35px;
+  height: 40px;
+}
+
+#top_narrowed_whitespace {
+  visibility: hidden;
+  display: none;
+  height: 34px; /* Height of narrowlabel + floating indicator */
 }
 
 #bottom_whitespace {

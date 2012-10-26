@@ -2,6 +2,16 @@
 
 <div class="row">
   <div class="span9" id="top_statusbar">
+    <div class="row" id="searchbox">
+      <form>
+        <div id="search_arrows">
+          <input id="search" type="text" placeholder="Search…">
+          <button class="btn search_button" type="button" id="search_up" onclick="search_button_handler(true);">↑</button>
+          <button class="btn search_button" type="button" id="search_down" onclick="search_button_handler(false);">↓</button>
+          <button class="btn search_button" type="button" id="search_exit" onclick="clear_search();">X</button>
+        </div>
+      </form>
+    </div>
     <div class="narrowed_to_bar">
       <div id="narrowlabel">
         <div class="close" onclick="narrow.show_all_messages()">&times;</div>
@@ -32,6 +42,7 @@
   <div class="span9">
     <div class="message_list" id="main_div">
       <div id="top_whitespace"></div>
+      <div id="top_narrowed_whitespace"></div>
       <div id="loading_control">
         <button type="button" class="btn btn-large btn-block" id="load_more"
                 onclick="load_more_messages();">Load older messages</button>
