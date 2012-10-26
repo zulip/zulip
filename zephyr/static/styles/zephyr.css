@@ -364,6 +364,8 @@ input.send_message {
     visibility: visible;
     max-height: 30px;
     padding: 5px 10px;
+}
+.always_in_view {
     background-color: aliceblue;
 }
 

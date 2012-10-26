@@ -52,9 +52,9 @@ function do_narrow(icon, description, filter_function) {
     $("#loading_control").hide();
     $("#top_narrowed_whitespace").show();
     $("#main_div").addClass("narrowed_view");
+    $("#searchbox").addClass("narrowed_view");
     $("#currently_narrowed_to").html(icon + " " + description).attr("title", description.replace(/&nbsp;/g, ""));
     $("#zhome").removeClass("focused_table");
-
     // Indicate both which message is persistently selected and which
     // is temporarily selected
     select_message_by_id(selected_message_id,
@@ -151,9 +151,9 @@ exports.show_all_messages = function () {
     $("#loading_control").show();
     $("#top_narrowed_whitespace").hide();
     $("#main_div").removeClass('narrowed_view');
+    $("#searchbox").removeClass('narrowed_view');
     $("#show_all_messages").attr("disabled", "disabled");
     $("#currently_narrowed_to").html("");
-
     selected_message_class = "selected_message";
     // Includes scrolling.
     select_message_by_id(persistent_message_id, {then_scroll: true});
