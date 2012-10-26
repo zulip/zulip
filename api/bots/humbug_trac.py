@@ -60,6 +60,8 @@ class HumbugPlugin(Component):
         fields that have changed.
         """
         content = "%s updated %s:\n\n" % (author, markdown_ticket_url(ticket))
+        if "summary" not in old_values:
+            content += "(%s)\n" % (ticket.values.get("summary"),)
         for key in old_values.keys():
             if key == "description":
                 content += '- Changed %s from %s to %s' % (key, markdown_block(old_values.get(key)),
