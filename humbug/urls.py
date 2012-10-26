@@ -14,6 +14,10 @@ urlpatterns = patterns('',
     url(r'^accounts/login/', 'django.contrib.auth.views.login', {'template_name': 'zephyr/login.html'}),
     url(r'^accounts/logout/', 'django.contrib.auth.views.logout', {'template_name': 'zephyr/index.html'}),
 
+    # Terms of service and privacy policy
+    url(r'^terms$',   'django.views.generic.simple.direct_to_template', {'template': 'zephyr/terms.html'},   name='terms'),
+    url(r'^privacy$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/privacy.html'}, name='privacy'),
+
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/update_pointer$', 'zephyr.views.json_update_pointer', name='json_update_pointer'),
     url(r'^json/get_updates$', 'zephyr.views.json_get_updates', name='json_get_updates'),
@@ -60,10 +64,6 @@ if settings.ALLOW_REGISTER:
         url(r'^accounts/send_confirm/(?P<email>[\S]+)?', 'django.views.generic.simple.direct_to_template',
             {'template': 'zephyr/accounts_send_confirm.html'}, name='send_confirm'),
         url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm', name='confirm'),
-
-        # Terms of service and privacy policy
-        url(r'^terms$',   'django.views.generic.simple.direct_to_template', {'template': 'zephyr/terms.html'},   name='terms'),
-        url(r'^privacy$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/privacy.html'}, name='privacy'),
     )
 
 if settings.DEBUG:
