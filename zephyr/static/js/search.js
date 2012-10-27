@@ -10,11 +10,8 @@ function get_zid_as_int(object) {
 function match_on_visible_text(row, search_term) {
     // You can't select on :visible, since that includes hidden elements that
     // take up space.
-    if (row.find(".message_content, .sender_name, .message_header")
-           .text().toLowerCase().indexOf(search_term) !== -1) {
-        return true;
-    }
-    return false;
+    return row.find(".message_content, .sender_name, .message_header")
+              .text().toLowerCase().indexOf(search_term) !== -1;
 }
 
 function search(term, highlighted_message, reverse) {
