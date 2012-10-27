@@ -184,7 +184,9 @@ function send_pointer_update() {
     setTimeout(send_pointer_update, 1000);
 }
 
-$(setTimeout(send_pointer_update, 1000));
+$(function () {
+    setTimeout(send_pointer_update, 1000);
+});
 
 function update_selected_message(message, opts) {
     opts = $.extend({}, {
