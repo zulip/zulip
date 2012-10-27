@@ -37,9 +37,26 @@ var rows = (function () {
         return message_row.attr('zid');
     };
 
+    var valid_table_names = {
+        zhome: true,
+        zfilt: true
+    };
+
     exports.get = function (message_id, table_name) {
+        // Make sure message_id is just an int, because we build
+        // a jQuery selector using it.
+        message_id = parseInt(message_id, 10);
+        if (isNaN(message_id))
+            return undefined;
+
         if (table_name === undefined)
             table_name = (narrow.active() ? 'zfilt' : 'zhome');
+
+        // To avoid attacks and bizarre errors, we have a whitelist
+        // of valid table names.
+        if (! valid_table_names.hasOwnProperty(table_name))
+            return undefined;
+
         return $('#' + table_name + message_id);
     };
 
