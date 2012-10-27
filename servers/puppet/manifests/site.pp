@@ -86,6 +86,14 @@ class humbug_base {
     source     => '/root/humbug/servers/puppet/files/root_authorized_keys',
   }
 
+  # This is just an empty file.  It's used by the app to test if it's running
+  # in production.
+  file { '/etc/humbug-server':
+    ensure     => file,
+    mode       => 644,
+    source     => '/root/humbug/servers/puppet/files/humbug-server',
+  }
+
   file { '/etc/puppet/puppet.conf':
     ensure     => file,
     mode       => 640,

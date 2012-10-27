@@ -2,7 +2,8 @@
 import os
 import platform
 
-deployed = (platform.node() == 'humbug-dev')
+deployed = (('humbughq.com' in platform.node())
+            or os.path.exists('/etc/humbug-server'))
 
 DEBUG = not deployed
 TEMPLATE_DEBUG = DEBUG
