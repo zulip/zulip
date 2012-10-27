@@ -206,14 +206,13 @@ function update_floating_recipient_bar() {
     // Hide if our bottom is in our bookend (or one bookend-height
     // above it). This means we're not showing any useful part of the
     // message above us, so why bother showing the label?)
-    var current_label_bookend = current_label.nextUntil(".bookend_tr")
-                                             .andSelf()
-                                             .next(".bookend_tr");
+    var current_bookend = current_label.nextUntil(".bookend_tr")
+                                       .andSelf()
+                                       .next(".bookend_tr:first");
     // (The last message currently doesn't have a bookend, which is why this might be 0).
-    if (current_label_bookend.length > 0) {
-        var my_bookend = $(current_label_bookend[0]);
+    if (current_bookend.length > 0) {
         if (top_statusbar_bottom >
-            (my_bookend.offset().top - my_bookend.outerHeight())) {
+            (current_bookend.offset().top - current_bookend.outerHeight())) {
             hide_floating_recipient_bar();
             return;
         }
