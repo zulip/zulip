@@ -38,7 +38,7 @@ def check_output(*popenargs, **kwargs):
 subprocess.check_output = check_output
 
 def update_deployment(oldrev, newrev, refname):
-    subprocess.check_call(["ssh", "app.humbughq.com", "--", "env", "-u", "GIT_DIR",
+    subprocess.check_call(["ssh", "humbughq.com", "--", "env", "-u", "GIT_DIR",
                            "/home/humbug/humbug/tools/update-deployment",
                            oldrev, newrev, refname])
 
