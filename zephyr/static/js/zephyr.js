@@ -260,7 +260,7 @@ function same_sender(a, b) {
 }
 
 function clear_table(table_name) {
-    $('#' + table_name).empty();
+    rows.get_table(table_name).empty();
     message_groups[table_name] = [];
 }
 
@@ -289,7 +289,7 @@ function add_to_table(messages, table_name, filter_function, where) {
     if (messages.length === 0)
         return;
 
-    var table = $('#' + table_name);
+    var table = rows.get_table(table_name);
     var messages_to_render = [];
     var ids_where_next_is_same_sender = [];
     var prev;

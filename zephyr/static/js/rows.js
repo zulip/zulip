@@ -60,6 +60,13 @@ var rows = (function () {
         return $('#' + table_name + message_id);
     };
 
+    exports.get_table = function (table_name) {
+        if (! valid_table_names.hasOwnProperty(table_name))
+            return undefined;
+
+        return $('#' + table_name);
+    };
+
     return exports;
 
 }());
