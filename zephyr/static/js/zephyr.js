@@ -3,7 +3,6 @@ var message_dict = {};
 var subject_dict = {};
 var people_hash = {};
 
-var selected_message_class = 'selected_message';
 var viewport = $(window);
 var reloading_app = false;
 
@@ -188,9 +187,14 @@ function send_pointer_update() {
 $(setTimeout(send_pointer_update, 1000));
 
 function update_selected_message(message, opts) {
-    opts = $.extend({}, {update_server: true}, opts);
-    $('.' + selected_message_class).removeClass(selected_message_class);
-    message.addClass(selected_message_class);
+    opts = $.extend({}, {
+        update_server: true,
+        for_narrow: narrow.active()
+    }, opts);
+
+    var cls = opts.for_narrow ? 'narrowed_selected_message' : 'selected_message';
+    $('.' + cls).removeClass(cls);
+    message.addClass(cls);
 
     var new_selected_id = rows.id(message);
     if (opts.update_server && !narrow.active()

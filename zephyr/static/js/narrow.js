@@ -32,6 +32,8 @@ exports.narrowing_type = function () {
 };
 
 function do_narrow(icon, description, filter_function) {
+    var was_narrowed = exports.active();
+
     narrowed = filter_function;
 
     // Your pointer isn't changed when narrowed.
@@ -58,8 +60,8 @@ function do_narrow(icon, description, filter_function) {
     // Indicate both which message is persistently selected and which
     // is temporarily selected
     select_message_by_id(selected_message_id,
-                         {then_scroll: false, update_server: false});
-    selected_message_class = "narrowed_selected_message";
+                         {then_scroll: false, update_server: false,
+                          for_narrow: was_narrowed});
     select_message_by_id(target_id,
                          {then_scroll: true, update_server: false});
 
@@ -154,7 +156,6 @@ exports.show_all_messages = function () {
     $("#searchbox").removeClass('narrowed_view');
     $("#show_all_messages").attr("disabled", "disabled");
     $("#currently_narrowed_to").html("");
-    selected_message_class = "selected_message";
     // Includes scrolling.
     select_message_by_id(persistent_message_id, {then_scroll: true});
 
