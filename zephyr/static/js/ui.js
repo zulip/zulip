@@ -434,7 +434,8 @@ $(function () {
         items: 4,
         matcher: function (item) {
             // Assumes email addresses don't have commas or semicolons in them
-            var current_recipient = $(this.query.split(/[,;] */)).last()[0];
+            var recipients = this.query.split(/[,;] */);
+            var current_recipient = recipients[recipients.length-1];
             // Case-insensitive (from Bootstrap's default matcher).
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
