@@ -119,7 +119,7 @@ function scroll_to_selected() {
         recenter_view(selected_message);
 }
 
-function get_huddle_recipient(message) {
+function get_huddle_recipient(message, attr) {
     var recipient, i;
     var other_recipients = $.grep(message.display_recipient,
                                   function (element, index) {
@@ -127,30 +127,12 @@ function get_huddle_recipient(message) {
                                   });
     if (other_recipients.length === 0) {
         // huddle with oneself
-        return message.display_recipient[0].email;
+        return message.display_recipient[0][attr];
     }
 
-    recipient = other_recipients[0].email;
+    recipient = other_recipients[0][attr];
     for (i = 1; i < other_recipients.length; i++) {
-        recipient += ', ' + other_recipients[i].email;
-    }
-    return recipient;
-}
-
-function get_huddle_recipient_names(message) {
-    var recipient, i;
-    var other_recipients = $.grep(message.display_recipient,
-                                  function (element, index) {
-                                      return element.email !== email;
-                                  });
-    if (other_recipients.length === 0) {
-        // huddle with oneself
-        return message.display_recipient[0].full_name;
-    }
-
-    recipient = other_recipients[0].full_name;
-    for (i = 1; i < other_recipients.length; i++) {
-        recipient += ', ' + other_recipients[i].full_name;
+        recipient += ', ' + other_recipients[i][attr];
     }
     return recipient;
 }
@@ -435,8 +417,8 @@ function add_message_metadata(dummy, message) {
 
     case 'huddle':
         message.is_huddle = true;
-        message.reply_to = get_huddle_recipient(message);
-        message.display_reply_to = get_huddle_recipient_names(message);
+        message.reply_to = get_huddle_recipient(message, 'email');
+        message.display_reply_to = get_huddle_recipient(message, 'full_name');
 
         involved_people = message.display_recipient;
         break;
