@@ -338,7 +338,7 @@ $(function () {
         $("#api_key_button_box").show();
 
         // Set the URL bar title to show the sub-page you're currently on.
-        var browser_url = $(e.target).attr('href');
+        var browser_url = target_tab;
         if (browser_url === "#home") {
             browser_url = "#";
         }
