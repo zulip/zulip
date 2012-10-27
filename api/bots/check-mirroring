@@ -16,7 +16,7 @@ parser.add_option('--verbose',
                   action='store_true')
 parser.add_option('--site',
                   dest='site',
-                  default="https://app.humbughq.com",
+                  default="https://humbughq.com",
                   action='store')
 (options, args) = parser.parse_args()
 

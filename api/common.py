@@ -11,7 +11,7 @@ assert(requests.__version__ > '0.12')
 
 class HumbugAPI():
     def __init__(self, email, api_key, verbose=False, retry_on_errors=True,
-                 site="https://app.humbughq.com", client="API"):
+                 site="https://humbughq.com", client="API"):
         self.api_key = api_key
         self.email = email
         self.verbose = verbose

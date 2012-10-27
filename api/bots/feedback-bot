@@ -12,7 +12,7 @@ Example: feedback-bot --site=http://127.0.0.1:9991
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('--site',
                   dest='site',
-                  default="https://app.humbughq.com",
+                  default="https://humbughq.com",
                   action='store')
 (options, args) = parser.parse_args()
 

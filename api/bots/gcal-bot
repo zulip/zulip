@@ -48,9 +48,9 @@ parser.add_option('--calendar',
     metavar='URL')
 parser.add_option('--site',
     dest='site',
-    default="https://app.humbughq.com",
+    default="https://humbughq.com",
     action='store',
-    help='Humbug site [default: https://app.humbughq.com]',
+    help='Humbug site [default: https://humbughq.com]',
     metavar='URL')
 parser.add_option('--interval',
     dest='interval',

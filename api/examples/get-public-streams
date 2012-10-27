@@ -12,7 +12,7 @@ Example: get-public-streams --user=tabbott@humbughq.com --site=http://127.0.0.1:
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('--site',
                   dest='site',
-                  default="https://app.humbughq.com",
+                  default="https://humbughq.com",
                   action='store')
 parser.add_option('--api-key',
                   dest='api_key',

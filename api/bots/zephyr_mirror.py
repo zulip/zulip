@@ -46,7 +46,7 @@ parser.add_option('--no-auto-subscribe',
                   action='store_false')
 parser.add_option('--site',
                   dest='site',
-                  default="https://app.humbughq.com",
+                  default="https://humbughq.com",
                   action='store')
 parser.add_option('--user',
                   dest='user',
