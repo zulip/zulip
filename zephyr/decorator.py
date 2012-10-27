@@ -18,4 +18,6 @@ def asynchronous(method):
         except _DefGen_Return, e:
             request._tornado_handler.finish(e.value.content)
         return v
+    if getattr(method, 'csrf_exempt', False):
+        wrapper.csrf_exempt = True
     return wrapper
