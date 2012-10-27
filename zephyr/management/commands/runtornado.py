@@ -193,6 +193,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 urlresolvers.set_urlconf(urlconf)
                 resolver = urlresolvers.RegexURLResolver(r'^/', urlconf)
 
+                response = None
+
                 # Apply request middleware
                 for middleware_method in self._request_middleware:
                     response = middleware_method(request)
@@ -209,28 +211,30 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         request.path_info)
 
                 # Apply view middleware
-                for middleware_method in self._view_middleware:
-                    response = middleware_method(request, callback, callback_args, callback_kwargs)
-                    if response:
-                        break
-
-                from ...decorator import TornadoAsyncException
-
-                try:
-                    response = callback(request, *callback_args, **callback_kwargs)
-                except TornadoAsyncException, e:
-                    # TODO: Maybe add debugging output here
-                    return
-                except Exception, e:
-                    # If the view raised an exception, run it through exception
-                    # middleware, and if the exception middleware returns a
-                    # response, use that. Otherwise, reraise the exception.
-                    for middleware_method in self._exception_middleware:
-                        response = middleware_method(request, e)
+                if response is None:
+                    for middleware_method in self._view_middleware:
+                        response = middleware_method(request, callback, callback_args, callback_kwargs)
                         if response:
                             break
-                    if response is None:
-                        raise
+
+                if response is None:
+                    from ...decorator import TornadoAsyncException
+
+                    try:
+                        response = callback(request, *callback_args, **callback_kwargs)
+                    except TornadoAsyncException, e:
+                        # TODO: Maybe add debugging output here
+                        return
+                    except Exception, e:
+                        # If the view raised an exception, run it through exception
+                        # middleware, and if the exception middleware returns a
+                        # response, use that. Otherwise, reraise the exception.
+                        for middleware_method in self._exception_middleware:
+                            response = middleware_method(request, e)
+                            if response:
+                                break
+                        if response is None:
+                            raise
 
                 if response is None:
                     try:
