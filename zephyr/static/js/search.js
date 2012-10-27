@@ -34,7 +34,7 @@ function search(term, highlighted_message, reverse) {
         cached_table = focused_table;
         var selected_zid = get_zid_as_int(highlighted_message);
 
-        $.each(focused_table.find('.message_row, .recipient_row'), function (index, row) {
+        focused_table.find('.message_row, .recipient_row').each(function (index, row) {
             row = $(row);
             if (previous_header_matched || (match_on_visible_text(row, term))) {
                 previous_header_matched = false;
