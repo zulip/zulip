@@ -86,7 +86,10 @@ function resizehandler(e) {
         sidebar.removeClass('nav-stacked');
 
         var space_taken_up_by_navbar = sidebar_nav.outerHeight(true);
-        $("#nav_whitespace").height(space_taken_up_by_navbar); // .visible-phone only, so doesn't need undoing
+
+        // .visible-phone only, so doesn't need undoing
+        $("#nav_whitespace").height(space_taken_up_by_navbar);
+
         top_statusbar.css('top', space_taken_up_by_navbar);
 
         var message_list_width = $("#main_div").outerWidth();
