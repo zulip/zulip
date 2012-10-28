@@ -151,7 +151,7 @@ if not path.exists('utf-8.def'):
     sh.zcat(utf8_dir('utflat.def.gz'), _out='utflat.def')
 
 try:
-    sh.latex('all_code.tex', _in='/dev/null')
+    sh.latex('all_code.tex', _in='')
     sh.dvips('all_code.dvi')
 except sh.ErrorReturnCode as exn:
     print exn.stdout
