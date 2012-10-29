@@ -50,7 +50,7 @@ class ConfirmationManager(models.Manager):
     def send_confirmation(self, obj, email_address):
         confirmation_key = sha1(str(os.urandom(12)) + str(email_address)).hexdigest()
         current_site = Site.objects.get_current()
-        activate_url = u'http://%s%s' % (current_site.domain,
+        activate_url = u'https://%s%s' % (current_site.domain,
             reverse('confirmation.views.confirm', kwargs={'confirmation_key': confirmation_key}))
         context = Context({
             'activate_url': activate_url,
