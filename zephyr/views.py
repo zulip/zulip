@@ -347,7 +347,8 @@ def format_delayed_updates_response(request=None, user_profile=None,
 
 def return_messages_immediately(user_profile, client_id, last,
                                 failures, client_server_generation,
-                                client_reload_pending, dont_block, **kwargs):
+                                client_reload_pending, client_pointer,
+                                dont_block, **kwargs):
     if last is None:
         # When an API user is first querying the server to subscribe,
         # there's no reason to reply immediately.
@@ -361,19 +362,8 @@ def return_messages_immediately(user_profile, client_id, last,
     if last < 0:
         return {"msg": "Invalid 'last' argument", "result": "error"}
 
-    # Pointer sync is disabled for now
-    # client_pointer = request.POST.get("pointer")
-
-    # Pointer sync is disabled for now
-    # client_wants_ptr_updates = False
-    # if client_pointer is not None:
-    #     client_pointer = int(client_pointer)
-    #     client_wants_ptr_updates = True
-
     new_pointer = None
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
-    # Pointer sync is disabled for now
-    # ptr = user_profile.pointer
 
     messages = query.filter(id__gt=last)[:400]
 
@@ -398,12 +388,10 @@ def return_messages_immediately(user_profile, client_id, last,
         and not client_reload_pending):
         update_types.append("client_reload")
 
-    # Pointer sync is disabled for now
-    # if (client_wants_ptr_updates
-    #       and str(user_profile.last_pointer_updater) != str(client_id)
-    #       and ptr != client_pointer):
-    #     new_pointer = ptr
-    #     update_types.append("pointer_update")
+    ptr = user_profile.pointer
+    if (client_pointer is not None and ptr != client_pointer):
+        new_pointer = ptr
+        update_types.append("pointer_update")
 
     if failures >= 1:
         update_types.append("reset_failure_counter")
@@ -439,11 +427,13 @@ def get_updates_backend(request, user_profile, handler, client_id,
                         failures = POST(converter=int, default=None),
                         client_server_generation = POST(whence='server_generation', default=None),
                         client_reload_pending = POST(whence='server_generation', default=None),
+                        client_pointer = POST(whence='pointer', converter=int, default=None),
                         dont_block = POST(converter=simplejson.loads, default=False),
                         **kwargs):
     resp = return_messages_immediately(user_profile, client_id, last, failures,
                                        client_server_generation,
                                        client_reload_pending,
+                                       client_pointer,
                                        dont_block, **kwargs)
     if resp is not None:
         send_with_safety_check(resp, handler, **kwargs)

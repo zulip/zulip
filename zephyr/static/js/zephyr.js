@@ -599,13 +599,12 @@ function get_updates(options) {
                 $('#zephyr-mirror-error').hide();
             }
 
-            // Pointer sync is disabled for now
-            // if (data.new_pointer !== undefined
-            //     && data.new_pointer !== selected_message_id)
-            // {
-            //     select_message_by_id(data.new_pointer,
-            //                          {then_scroll: true, update_server: false});
-            // }
+            if (data.new_pointer !== undefined
+                && data.new_pointer !== selected_message_id)
+            {
+                select_message_by_id(data.new_pointer,
+                                     {then_scroll: true, update_server: false});
+            }
 
             // Pause for 25 milliseconds before restarting the request.
             // This gives the browser (especially, our frontend test browser)
