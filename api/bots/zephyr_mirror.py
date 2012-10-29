@@ -419,22 +419,40 @@ def add_humbug_subscriptions(verbose):
     zephyr_subscriptions = set()
     skipped = set()
     for (cls, instance, recipient) in parse_zephyr_subs(verbose=verbose):
-        if cls == "message" and recipient == "*":
+        if cls == "message":
+            if recipient != "*":
+                # We already have a (message, *, you) subscription, so
+                # these are redundant
+                continue
+            # We don't support subscribing to (message, *)
             if instance == "*":
+                if recipient == "*":
+                    skipped.add((cls, instance, recipient, "subscribing to all of class message is not supported."))
                 continue
             # If you're on -i white-magic on zephyr, get on stream white-magic on humbug
             # instead of subscribing to stream "message" on humbug
             zephyr_subscriptions.add(instance)
             continue
-        elif cls == "mail" and recipient == "inbox":
+        elif cls == "mail" and instance == "inbox":
             continue
-        elif instance != "*" or recipient != "*":
-            skipped.add((cls, instance, recipient))
+        elif instance != "*":
+            skipped.add((cls, instance, recipient, "Unsupported non-* instance"))
+            continue
+        elif recipient != "*":
+            skipped.add((cls, instance, recipient, "Unsupported non-* recipient."))
+            continue
+        if len(cls) > 30:
+            skipped.add((cls, instance, recipient, "Class longer than 30 characters"))
             continue
         zephyr_subscriptions.add(cls)
 
     if len(zephyr_subscriptions) != 0:
         res = humbug_client.subscribe(list(zephyr_subscriptions))
+        if res.get("result") != "success":
+            print "Error subscribing to streams:"
+            print res["msg"]
+            return
+
         already = res.get("already_subscribed")
         new = res.get("subscribed")
         if verbose:
@@ -460,9 +478,12 @@ Humbug subscription to these lines in ~/.zephyr.subs:
 """))
             print
 
-    for (cls, instance, recipient) in skipped:
+    for (cls, instance, recipient, reason) in skipped:
         if verbose:
-            print "  [%s,%s,%s]" % (cls, instance, recipient)
+            if reason != "":
+                print "  [%s,%s,%s] (%s)" % (cls, instance, recipient, reason)
+            else:
+                print "  [%s,%s,%s]" % (cls, instance, recipient, reason)
     if len(skipped) > 0:
         if verbose:
             print
@@ -473,13 +494,15 @@ web interface.
 """))
             print
 
+def valid_stream_name(name):
+    return re.match(r'^[\w.][\w. -]*$', name, flags=re.UNICODE)
+
 def parse_zephyr_subs(verbose=False):
     zephyr_subscriptions = set()
     subs_file = os.path.join(os.environ["HOME"], ".zephyr.subs")
     if not os.path.exists(subs_file):
         if verbose:
-            print >>sys.stderr, "Couldn't find .zephyr.subs!"
-            print >>sys.stderr, "Do you mean to run with --no-auto-subscribe?"
+            print >>sys.stderr, "Couldn't find ~/.zephyr.subs!"
         return []
 
     for line in file(subs_file, "r").readlines():
@@ -488,6 +511,13 @@ def parse_zephyr_subs(verbose=False):
             continue
         try:
             (cls, instance, recipient) = line.split(",")
+            cls = cls.replace("%me%", options.user)
+            instance = instance.replace("%me%", options.user)
+            recipient = recipient.replace("%me%", options.user)
+            if not valid_stream_name(cls):
+                if verbose:
+                    print >>sys.stderr, "Skipping subscription to unsupported class name: [%s]" % (line,)
+                continue
         except:
             if verbose:
                 print >>sys.stderr, "Couldn't parse ~/.zephyr.subs line: [%s]" % (line,)
