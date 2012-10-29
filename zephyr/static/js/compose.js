@@ -57,7 +57,6 @@ $(function () {
 
     send_options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        beforeSubmit: function () { compose.validate(); },
         success: function (resp, statusText, xhr, form) {
             form.find('textarea').val('');
             send_status.hide();
@@ -92,9 +91,13 @@ $(function () {
 });
 
 exports.finish = function () {
+    if (! compose.validate()) {
+        return false;
+    }
     $("#compose form").ajaxSubmit(send_options);
     is_composing_message = false;
     $(document).trigger($.Event('compose_finished.zephyr'));
+    return true;
 };
 
 $(function () {
