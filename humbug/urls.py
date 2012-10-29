@@ -10,6 +10,10 @@ urlpatterns = patterns('',
     url(r'^accounts/login/', 'django.contrib.auth.views.login', {'template_name': 'zephyr/login.html'}),
     url(r'^accounts/logout/', 'django.contrib.auth.views.logout', {'template_name': 'zephyr/index.html'}),
 
+    # Registration views, require a confirmation ID.
+    url(r'^accounts/register/', 'zephyr.views.accounts_register', name='accounts_register'),
+    url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm', name='confirm'),
+
     # Terms of service and privacy policy
     url(r'^terms$',   'django.views.generic.simple.direct_to_template', {'template': 'zephyr/terms.html'},   name='terms'),
     url(r'^privacy$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/privacy.html'}, name='privacy'),
@@ -50,10 +54,8 @@ urlpatterns = patterns('',
 if settings.ALLOW_REGISTER:
     urlpatterns += patterns('',
         url(r'^accounts/home/', 'zephyr.views.accounts_home', name='accounts_home'),
-        url(r'^accounts/register/', 'zephyr.views.accounts_register', name='accounts_register'),
         url(r'^accounts/send_confirm/(?P<email>[\S]+)?', 'django.views.generic.simple.direct_to_template',
             {'template': 'zephyr/accounts_send_confirm.html'}, name='send_confirm'),
-        url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm', name='confirm'),
     )
 
 if settings.DEBUG:
