@@ -19,26 +19,32 @@ parser = optparse.OptionParser()
 parser.add_option('--forward-class-messages',
                   dest='forward_class_messages',
                   default=False,
+                  help=optparse.SUPPRESS_HELP,
                   action='store_true')
 parser.add_option('--resend-log',
                   dest='resend_log',
                   default=False,
+                  help=optparse.SUPPRESS_HELP,
                   action='store_true')
 parser.add_option('--enable-log',
                   dest='enable_log',
                   default=False,
+                  help=optparse.SUPPRESS_HELP,
                   action='store_true')
 parser.add_option('--no-forward-personals',
                   dest='forward_personals',
+                  help=optparse.SUPPRESS_HELP,
                   default=True,
                   action='store_false')
 parser.add_option('--forward-from-humbug',
                   dest='forward_from_humbug',
                   default=False,
+                  help=optparse.SUPPRESS_HELP,
                   action='store_true')
 parser.add_option('--verbose',
                   dest='verbose',
                   default=False,
+                  help=optparse.SUPPRESS_HELP,
                   action='store_true')
 parser.add_option('--sync-subscriptions',
                   dest='sync_subscriptions',
@@ -47,10 +53,12 @@ parser.add_option('--sync-subscriptions',
 parser.add_option('--site',
                   dest='site',
                   default="https://humbughq.com",
+                  help=optparse.SUPPRESS_HELP,
                   action='store')
 parser.add_option('--user',
                   dest='user',
                   default=os.environ["USER"],
+                  help=optparse.SUPPRESS_HELP,
                   action='store')
 parser.add_option('--api-key-file',
                   dest='api_key_file',
