@@ -157,7 +157,7 @@ def accounts_home(request):
 
 def home(request):
     if not request.user.is_authenticated():
-        return HttpResponseRedirect(reverse(settings.NOT_LOGGED_IN_REDIRECT))
+        return HttpResponseRedirect(reverse(settings.HOME_NOT_LOGGED_IN))
     user_profile = UserProfile.objects.get(user=request.user)
 
     num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
