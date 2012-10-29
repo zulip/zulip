@@ -16,6 +16,7 @@ from zephyr.lib.avatar import gravatar_hash
 import requests
 from django.contrib.auth.models import UserManager
 from django.utils import timezone
+from django.contrib.sessions.models import Session
 
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id))
 def get_display_recipient(recipient):
@@ -616,3 +617,9 @@ def filter_by_subscriptions(messages, user):
             user_messages.append(message)
 
     return user_messages
+
+def clear_database():
+    for model in [Message, Stream, UserProfile, User, Recipient,
+                  Realm, Subscription, Huddle, UserMessage, Client]:
+        model.objects.all().delete()
+    Session.objects.all().delete()

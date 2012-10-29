@@ -6,14 +6,13 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
     bulk_create_realms, bulk_create_streams, bulk_create_users, bulk_create_huddles, \
     bulk_create_clients, \
-    do_send_message, \
+    do_send_message, clear_database, \
     get_huddle_hash, get_client, do_activate_user
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
 from django.conf import settings
 from api.bots import mit_subs_list
 from zephyr.lib.bulk_create import batch_bulk_create
-from django.contrib.sessions.models import Session
 
 import simplejson
 import datetime
@@ -99,10 +98,8 @@ class Command(BaseCommand):
             return
 
         if options["delete"]:
-            for model in [Message, Stream, UserProfile, User, Recipient,
-                          Realm, Subscription, Huddle, UserMessage, Client]:
-                model.objects.all().delete()
-            Session.objects.all().delete()
+            # Start by clearing all the data in our database
+            clear_database()
 
             # Create our two default realms
             humbug_realm = Realm.objects.create(domain="humbughq.com")
