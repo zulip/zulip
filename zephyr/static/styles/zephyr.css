@@ -498,6 +498,10 @@ table.floating_recipient {
     cursor: pointer;
 }
 
+.popover {
+    width: auto;
+}
+
 .popover-title {
     overflow-x: hidden;
     text-overflow: ellipsis;
