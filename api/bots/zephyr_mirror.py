@@ -273,13 +273,7 @@ def process_notice(notice, log):
     if zeph['type'] == "personal" and instance != "personal":
         zeph["content"] = "[-i %s]" % (instance,) + "\n" + zeph["content"]
 
-    for field in zeph.keys():
-        if isinstance(zeph[field], str):
-            try:
-                decoded = zeph[field].decode("utf-8")
-            except:
-                decoded = zeph[field].decode("iso-8859-1")
-            zeph[field] = decoded
+    zeph = decode_unicode_byte_strings(zeph)
 
     print "%s: zephyr=>humbug: received a message on %s/%s from %s..." % \
         (datetime.datetime.now(), zephyr_class, instance, notice.sender)
@@ -292,6 +286,15 @@ def process_notice(notice, log):
         print zeph
         print res
 
+def decode_unicode_byte_strings(zeph):
+    for field in zeph.keys():
+        if isinstance(zeph[field], str):
+            try:
+                decoded = zeph[field].decode("utf-8")
+            except:
+                decoded = zeph[field].decode("iso-8859-1")
+            zeph[field] = decoded
+    return zeph
 
 def zephyr_to_humbug(options):
     if options.forward_class_messages:
@@ -311,19 +314,13 @@ def zephyr_to_humbug(options):
                     # unicode), but older messages in the log are
                     # still of type str, so convert them before we
                     # send the message
-                    for field in zeph.keys():
-                        if isinstance(zeph[field], str):
-                            try:
-                                decoded = zeph[field].decode("utf-8")
-                            except:
-                                decoded = zeph[field].decode("iso-8859-1")
-                            zeph[field] = decoded
-                        # Handle importing older zephyrs in the logs
-                        # where it isn't called a "stream" yet
-                        if field == "class":
-                            zeph["stream"] = zeph["class"]
-                        if field == "instance":
-                            zeph["subject"] = zeph["instance"]
+                    zeph = decode_unicode_byte_strings(zeph)
+                    # Handle importing older zephyrs in the logs
+                    # where it isn't called a "stream" yet
+                    if "class" in zeph:
+                        zeph["stream"] = zeph["class"]
+                    if "instance" in zeph:
+                        zeph["subject"] = zeph["instance"]
                     print "%s: zephyr=>humbug: sending saved message to %s from %s..." % \
                         (datetime.datetime.now(), zeph.get('stream', zeph.get('recipient')),
                          zeph['sender'])
