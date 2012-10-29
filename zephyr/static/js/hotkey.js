@@ -129,8 +129,8 @@ process_key_in_input = function (code) {
         compose.cancel();
     }
     if ((code === 13) && $("#search").is(":focus")) {
+        // Pass along the return keypress to the search up button.
         $("#search_up").focus();
-        search_button_handler(true);
         return;
     }
     // Otherwise, let the browser handle the key normally
