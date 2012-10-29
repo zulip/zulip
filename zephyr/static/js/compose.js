@@ -49,11 +49,60 @@ exports.cancel = function () {
     $(document).trigger($.Event('compose_canceled.zephyr'));
 };
 
+var send_options;
+
+$(function () {
+    var send_status = $('#send-status');
+    var buttons = $('#compose').find('input[type="submit"]');
+
+    send_options = {
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        beforeSubmit: function () { compose.validate(); },
+        success: function (resp, statusText, xhr, form) {
+            form.find('textarea').val('');
+            send_status.hide();
+            compose.hide();
+            buttons.removeAttr('disabled');
+        },
+        error: function (xhr, error_type) {
+            if (error_type !== 'timeout' && get_updates_params.reload_pending) {
+                // The error might be due to the server changing
+                do_reload_app_preserving_compose(true);
+                return;
+            }
+            var response = "Error sending message";
+            if (xhr.status.toString().charAt(0) === "4") {
+                // Only display the error response for 4XX, where we've crafted
+                // a nice response.
+                response += ": " + $.parseJSON(xhr.responseText).msg;
+            }
+            send_status.removeClass(status_classes)
+                       .addClass('alert-error')
+                       .text(response)
+                       .append($('<span />')
+                           .addClass('send-status-close').html('&times;')
+                           .click(function () { send_status.stop(true).fadeOut(500); }))
+                       .stop(true).fadeTo(0,1);
+
+            buttons.removeAttr('disabled');
+        }
+    };
+
+    send_status.hide();
+});
+
 exports.finish = function () {
-    $("#compose form").ajaxSubmit();
+    $("#compose form").ajaxSubmit(send_options);
     is_composing_message = false;
     $(document).trigger($.Event('compose_finished.zephyr'));
 };
+
+$(function () {
+    $("#compose form").on("submit", function (e) {
+       e.preventDefault();
+       compose.finish();
+    });
+});
 
 exports.show = function (tabname, focus_area) {
     if (reloading_app) {

@@ -61,7 +61,7 @@ exports.add_for_send = function (stream, prompt_button) {
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (response) {
             add_to_stream_list(response.data);
-            $("#compose form").ajaxSubmit();
+            compose.finish();
             prompt_button.stop(true).fadeOut(500);
         },
         error: function (xhr, error_type, exn) {

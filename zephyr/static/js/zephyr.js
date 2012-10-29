@@ -17,46 +17,6 @@ var get_updates_params = {
 };
 
 $(function () {
-    var i;
-    var send_status = $('#send-status');
-    var buttons = $('#compose').find('input[type="submit"]');
-
-    var options = {
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        beforeSubmit: compose.validate,
-        success: function (resp, statusText, xhr, form) {
-            form.find('textarea').val('');
-            send_status.hide();
-            compose.hide();
-            buttons.removeAttr('disabled');
-        },
-        error: function (xhr, error_type) {
-            if (error_type !== 'timeout' && get_updates_params.reload_pending) {
-                // The error might be due to the server changing
-                do_reload_app_preserving_compose(true);
-                return;
-            }
-            var response = "Error sending message";
-            if (xhr.status.toString().charAt(0) === "4") {
-                // Only display the error response for 4XX, where we've crafted
-                // a nice response.
-                response += ": " + $.parseJSON(xhr.responseText).msg;
-            }
-            send_status.removeClass(status_classes)
-                       .addClass('alert-error')
-                       .text(response)
-                       .append($('<span />')
-                           .addClass('send-status-close').html('&times;')
-                           .click(function () { send_status.stop(true).fadeOut(500); }))
-                       .stop(true).fadeTo(0,1);
-
-            buttons.removeAttr('disabled');
-        }
-    };
-
-    send_status.hide();
-    $("#compose form").ajaxForm(options);
-
     $.each(people_list, function (idx, person) {
         people_hash[person.email] = 1;
     });
@@ -610,7 +570,7 @@ $(function () {
                                  huddle_recipient: vars.recipient,
                                  message: vars.msg});
     if (send_now) {
-        $("#compose form").ajaxSubmit();
+        compose.finish();
     }
 });
 
