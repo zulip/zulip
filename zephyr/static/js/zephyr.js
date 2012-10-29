@@ -125,19 +125,24 @@ function select_message_by_id(message_id, opts) {
     return select_message(rows.get(message_id), opts);
 }
 
-var last_message_id_sent = -1;
-var message_id_to_send = -1;
+var furthest_read = -1;
+var server_furthest_read = -1;
 // We only send pointer updates every second to avoid hammering the
 // server
 function send_pointer_update() {
-    if (message_id_to_send !== last_message_id_sent) {
-        $.post("/json/update_pointer", {pointer: message_id_to_send});
-        last_message_id_sent = message_id_to_send;
+    if (furthest_read > server_furthest_read) {
+        $.post("/json/update_pointer",
+               {pointer: furthest_read},
+               function () {
+                   server_furthest_read = furthest_read;
+               });
     }
     setTimeout(send_pointer_update, 1000);
 }
 
 $(function () {
+    furthest_read = initial_pointer;
+    server_furthest_read = initial_pointer;
     setTimeout(send_pointer_update, 1000);
 });
 
@@ -153,13 +158,11 @@ function update_selected_message(message, opts) {
 
     var new_selected_id = rows.id(message);
     if (opts.update_server && !narrow.active()
-        && new_selected_id !== message_id_to_send)
+        && new_selected_id > furthest_read)
     {
         // Narrowing is a temporary view on top of the home view and
         // doesn't permanently affect where you are.
-        //
-        // We also don't want to post if there's no effective change.
-        message_id_to_send = new_selected_id;
+        furthest_read = new_selected_id;
     }
     selected_message_id = new_selected_id;
     selected_message = message;
@@ -558,7 +561,7 @@ function get_updates(options) {
     var defaults = {dont_block: false};
     options = $.extend({}, defaults, options);
 
-    get_updates_params.pointer = selected_message_id;
+    get_updates_params.pointer = furthest_read;
     get_updates_params.reload_pending = Number(reload.is_pending());
     get_updates_params.dont_block = options.dont_block;
 
@@ -600,8 +603,10 @@ function get_updates(options) {
             }
 
             if (data.new_pointer !== undefined
-                && data.new_pointer !== selected_message_id)
+                && data.new_pointer > furthest_read)
             {
+                furthest_read = data.new_pointer;
+                server_furthest_read = data.new_pointer;
                 select_message_by_id(data.new_pointer,
                                      {then_scroll: true, update_server: false});
             }

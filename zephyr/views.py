@@ -212,6 +212,9 @@ def update_pointer_backend(request, user_profile, updater, pointer=POST(converte
     if pointer < 0:
         return json_error("Invalid pointer value")
 
+    if pointer <= user_profile.pointer:
+        return json_success()
+
     user_profile.pointer = pointer
     user_profile.last_pointer_updater = updater
     user_profile.save()
@@ -389,7 +392,7 @@ def return_messages_immediately(user_profile, client_id, last,
         update_types.append("client_reload")
 
     ptr = user_profile.pointer
-    if (client_pointer is not None and ptr != client_pointer):
+    if (client_pointer is not None and ptr > client_pointer):
         new_pointer = ptr
         update_types.append("pointer_update")
 
