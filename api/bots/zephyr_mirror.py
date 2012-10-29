@@ -12,6 +12,7 @@ import textwrap
 import signal
 
 root_path = "/mit/tabbott/for_friends"
+sys.path.append(root_path)
 sys.path.append(root_path + "/python-zephyr")
 sys.path.append(root_path + "/python-zephyr/build/lib.linux-x86_64-2.6/")
 
@@ -68,8 +69,6 @@ parser.add_option('--api-key-file',
 
 api_key = file(options.api_key_file).read().strip()
 
-sys.path.append(".")
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import api.common
 humbug_client = api.common.HumbugAPI(email=options.user + "@mit.edu",
                                      api_key=api_key,
