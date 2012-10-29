@@ -256,6 +256,7 @@ function userinfo_popover(event, element, id) {
         // One popover at a time.
         if (userinfo_currently_popped) {
             userinfo_currently_popped.popover("destroy");
+            userinfo_currently_popped = undefined;
         }
         var message = message_dict[id];
         elt.popover({placement: "bottom",

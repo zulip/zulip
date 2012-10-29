@@ -91,8 +91,11 @@ function process_hotkey(code) {
             select_message(rows.last_visible(), {then_scroll: false});
         }
         return false;
-    case 27: // Esc: cancel compose or un-narrow
-        if (compose.composing()) {
+    case 27: // Esc: close userinfo popup, cancel compose, or un-narrow
+        if (userinfo_currently_popped !== undefined) {
+            userinfo_currently_popped.popover("destroy");
+            userinfo_currently_popped = undefined;
+        } else if (compose.composing()) {
             compose.cancel();
         } else {
             narrow.show_all_messages();

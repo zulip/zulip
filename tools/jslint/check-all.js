@@ -36,6 +36,7 @@ var globals =
     + ' register_onclick hide_email show_email'
     + ' report_error report_success report_message clicking mouse_moved'
     + ' update_autocomplete autocomplete_needs_update'
+    + ' userinfo_currently_popped'
 
     // zephyr.js
     + ' message_array message_dict get_updates_params'
