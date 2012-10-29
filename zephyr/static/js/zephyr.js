@@ -501,29 +501,34 @@ function start_reload_app() {
     var idle_control;
     var composing_timeout = 1000*60*10;
     var home_timeout = 1000*60;
-    var compose_canceled_handler, compose_started_handler;
+    var compose_done_handler, compose_started_handler;
 
-    compose_canceled_handler = function () {
+    compose_done_handler = function () {
         idle_control.cancel();
         idle_control = $(document).idle({'idle': home_timeout,
                                          'onIdle': do_reload_app});
-        $(document).one('compose_started.zephyr', compose_started_handler);
+        $(document).off('compose_canceled.zephyr compose_finished.zephyr',
+                        compose_done_handler);
+        $(document).on('compose_started.zephyr', compose_started_handler);
     };
     compose_started_handler = function () {
         idle_control.cancel();
         idle_control = $(document).idle({'idle': composing_timeout,
                                          'onIdle': do_reload_app_preserving_compose});
-        $(document).one('compose_canceled.zephyr', compose_canceled_handler);
+        $(document).off('compose_started.zephyr', compose_started_handler);
+        $(document).on('compose_canceled.zephyr compose_finished.zephyr',
+                       compose_done_handler);
     };
 
     if (compose.composing()) {
         idle_control = $(document).idle({'idle': composing_timeout,
                                          'onIdle': do_reload_app_preserving_compose});
-        $(document).one('compose_canceled.zephyr', compose_canceled_handler);
+        $(document).on('compose_canceled.zephyr compose_finished.zephyr',
+                       compose_done_handler);
     } else {
         idle_control = $(document).idle({'idle': home_timeout,
                                          'onIdle': do_reload_app});
-        $(document).one('compose_started.zephyr', compose_started_handler);
+        $(document).on('compose_started.zephyr', compose_started_handler);
     }
 }
 
