@@ -8,7 +8,7 @@ urlpatterns = patterns('',
     # view we're wrapping to continue to function.
     url(r'^accounts/login/', 'zephyr.views.login_page', {'template_name': 'zephyr/login.html'}),
     url(r'^accounts/login/', 'django.contrib.auth.views.login', {'template_name': 'zephyr/login.html'}),
-    url(r'^accounts/logout/', 'django.contrib.auth.views.logout', {'template_name': 'zephyr/index.html'}),
+    url(r'^accounts/logout/', 'django.contrib.auth.views.logout_then_login'),
 
     # Registration views, require a confirmation ID.
     url(r'^accounts/register/', 'zephyr.views.accounts_register', name='accounts_register'),
