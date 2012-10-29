@@ -10,6 +10,13 @@ def is_unique(value):
     except User.DoesNotExist:
         pass
 
+def is_active(value):
+    try:
+        if User.objects.get(email=value).is_active:
+            raise ValidationError(u'%s is already active' % value)
+    except User.DoesNotExist:
+        pass
+
 class UniqueEmailField(forms.EmailField):
     default_validators = [validators.validate_email, is_unique]
 

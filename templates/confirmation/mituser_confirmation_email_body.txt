@@ -1,0 +1,37 @@
+Hello,
+
+Thanks for agreeing to help test out Humbug.
+
+There are a few steps you need to take to ensure Humbug works with your
+MIT Zephyr account.
+
+ 1) Create a password and activate your account:
+        <{{ activate_url }}>
+
+ 2) Get your API key from the "Settings" panel and put it in your
+    Athena home directory at ~/Private/.humbug-api-key.
+
+ 3) Copy over your Zephyr subscriptions by running the command below:
+        /mit/tabbott/humbug/zephyr_mirror.py --sync-subscriptions
+
+ 4) Run the Zephyr mirroring script on a server with long-lived tickets.
+        /mit/tabbott/humbug/zephyr_mirror.py
+
+    The script copies personals you receive on Zephyr to Humbug, and
+    copies messages you send from Humbug to Zephyr. You should keep this
+    script always running in a session with Kerberos tickets.
+
+    You may want to run this with owl-screen or kchen's
+    cont-renew-notify.
+
+
+ 5) Visit the running app at:
+        <https://humbughq.com/>
+
+Feel free to send us a message via the Feedback button from within the
+app if you have any questions or encounter any problems.
+
+
+Cheers,
+
+Jeff, Waseem, Jessica, Tim, Keegan, Luke, and Zev

@@ -161,7 +161,14 @@ class UserProfile(models.Model):
 
 class PreregistrationUser(models.Model):
     email = models.EmailField(unique=True)
-    # 0 is inactive, 1 is active
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
+    status = models.IntegerField(default=0)
+
+class MitUser(models.Model):
+    email = models.EmailField(unique=True)
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
     status = models.IntegerField(default=0)
 
 # create_user_hack is the same as Django's User.objects.create_user,

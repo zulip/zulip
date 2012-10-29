@@ -11,10 +11,12 @@ from django.contrib.auth.views import login as django_login_page
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     do_add_subscription, do_remove_subscription, do_change_password, \
-    do_change_full_name, \
+    do_change_full_name, do_activate_user, \
     create_user, do_send_message, create_user_if_needed, \
-    create_stream_if_needed, PreregistrationUser, get_client
-from zephyr.forms import RegistrationForm, HomepageForm, is_unique
+    create_stream_if_needed, PreregistrationUser, get_client, MitUser, \
+    User
+from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
+    is_active
 from django.views.decorators.csrf import csrf_exempt
 
 from zephyr.decorator import asynchronous
@@ -98,11 +100,19 @@ def get_stream(stream_name, realm):
 @require_post
 def accounts_register(request):
     key = request.POST['key']
-    email = Confirmation.objects.get(confirmation_key=key).content_object.email
+    confirmation = Confirmation.objects.get(confirmation_key=key)
+    email = confirmation.content_object.email
+    mit_beta_user = isinstance(confirmation.content_object, MitUser)
+
     company_name = email.split('@')[-1]
 
     try:
-        is_unique(email)
+        if mit_beta_user:
+            # MIT users already exist, but are supposed to be inactive.
+            is_active(email)
+        else:
+            # Other users should not already exist at all.
+            is_unique(email)
     except ValidationError:
         return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
 
@@ -117,8 +127,15 @@ def accounts_register(request):
             domain     = email.split('@')[-1]
             (realm, _) = Realm.objects.get_or_create(domain=domain)
 
-            # FIXME: sanitize email addresses
-            create_user(email, password, realm, full_name, short_name)
+            if mit_beta_user:
+                user = User.objects.get(email=email)
+                do_activate_user(user)
+                do_change_password(user, password)
+                do_change_full_name(user.userprofile, full_name)
+            else:
+                # FIXME: sanitize email addresses
+                create_user(email, password, realm, full_name, short_name)
+
             login(request, authenticate(username=email, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))
 
