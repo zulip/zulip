@@ -85,7 +85,6 @@ var people_list = [
               </span>
               <span class="my_fullname">{{ user_profile.full_name }}</span>
               <span class="my_email">{{ user_profile.user.email }}</span>
-              <span class="logout">(<a href="/accounts/logout?next=/accounts/login">not you?</a>)</span>
               <ul class="nav nav-pills nav-stacked nav-zephyr" id="sidebar">
                 <li title="Home" class="active">
                   <a href="#home" data-toggle="pill" onclick="narrow.show_all_messages()">
@@ -117,6 +116,13 @@ var people_list = [
                     <span class="hidden-phone"> Feedback</span>
                   </a>
                 </li>
+                <li title="Log out">
+                  <a href="/accounts/logout?next=/accounts/login">
+                    <i class="icon-off"></i>
+                    <span class="hidden-phone"> Log out</span>
+                  </a>
+                </li>
+
                 {% if show_debug %}
                 <li title="Debug">
                   <a href="#debug" data-toggle="pill">
