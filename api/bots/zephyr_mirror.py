@@ -103,12 +103,6 @@ def send_humbug(zeph):
             zeph['stream'] = zeph['subject']
             zeph['subject'] = "test instance %s" % (zeph['stream'])
 
-    for key in zeph.keys():
-        if isinstance(zeph[key], unicode):
-            zeph[key] = zeph[key].encode("utf-8")
-        elif isinstance(zeph[key], str):
-            zeph[key] = zeph[key].decode("utf-8")
-
     zeph['content'] = unwrap_lines(zeph['content'])
     return humbug_client.send_message(zeph)
 
@@ -277,6 +271,14 @@ def process_notice(notice, log):
     if zeph['type'] == "personal" and instance != "personal":
         zeph["content"] = "[-i %s]" % (instance,) + "\n" + zeph["content"]
 
+    for field in zeph.keys():
+        if isinstance(zeph[field], str):
+            try:
+                decoded = zeph[field].decode("utf-8")
+            except:
+                decoded = zeph[field].decode("iso-8859-1")
+            zeph[field] = decoded
+
     print "%s: zephyr=>humbug: received a message on %s/%s from %s..." % \
         (datetime.datetime.now(), zephyr_class, instance, notice.sender)
     log.write(simplejson.dumps(zeph) + '\n')
@@ -302,8 +304,26 @@ def zephyr_to_humbug(options):
             for ln in log:
                 try:
                     zeph = simplejson.loads(ln)
+                    # New messages added to the log shouldn't have any
+                    # elements of type str (they should already all be
+                    # unicode), but older messages in the log are
+                    # still of type str, so convert them before we
+                    # send the message
+                    for field in zeph.keys():
+                        if isinstance(zeph[field], str):
+                            try:
+                                decoded = zeph[field].decode("utf-8")
+                            except:
+                                decoded = zeph[field].decode("iso-8859-1")
+                            zeph[field] = decoded
+                        # Handle importing older zephyrs in the logs
+                        # where it isn't called a "stream" yet
+                        if field == "class":
+                            zeph["stream"] = zeph["class"]
+                        if field == "instance":
+                            zeph["subject"] = zeph["instance"]
                     print "%s: zephyr=>humbug: sending saved message to %s from %s..." % \
-                        (datetime.datetime.now(), zeph.get('class', zeph.get('recipient')),
+                        (datetime.datetime.now(), zeph.get('stream', zeph.get('recipient')),
                          zeph['sender'])
                     send_humbug(zeph)
                 except:
