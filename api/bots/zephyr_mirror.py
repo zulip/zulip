@@ -166,9 +166,9 @@ def update_subscriptions_from_humbug():
         ensure_subscribed(stream)
 
 def maybe_restart_mirroring_script():
-    if os.stat(root_path + "/restart_stamp").st_mtime > start_time or \
+    if os.stat(root_path + "/stamps/restart_stamp").st_mtime > start_time or \
             (options.user == "tabbott" and
-             os.stat(root_path + "/tabbott_stamp").st_mtime > start_time):
+             os.stat(root_path + "/stamps/tabbott_stamp").st_mtime > start_time):
         print
         print "%s: zephyr mirroring script has been updated; restarting..." % \
             (datetime.datetime.now())
