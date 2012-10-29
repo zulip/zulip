@@ -1,10 +1,10 @@
 body {
-    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    font-family: 'Droid Sans', Helvetica, Arial, sans-serif;
     overflow-y: scroll;
 }
 
 textarea, input {
-    font-family: 'Open Sans', Helvetica, Arial, sans-serif;
+    font-family: 'Droid Sans', Helvetica, Arial, sans-serif;
 }
 
 code {
