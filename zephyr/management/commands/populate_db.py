@@ -13,6 +13,7 @@ from django.db import transaction
 from django.conf import settings
 from api.bots import mit_subs_list
 from zephyr.lib.bulk_create import batch_bulk_create
+from django.contrib.sessions.models import Session
 
 import simplejson
 import datetime
@@ -101,6 +102,7 @@ class Command(BaseCommand):
             for model in [Message, Stream, UserProfile, User, Recipient,
                           Realm, Subscription, Huddle, UserMessage, Client]:
                 model.objects.all().delete()
+            Session.objects.all().delete()
 
             # Create our two default realms
             humbug_realm = Realm.objects.create(domain="humbughq.com")

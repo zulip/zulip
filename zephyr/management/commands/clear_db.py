@@ -2,7 +2,7 @@ from django.core.management.base import NoArgsCommand
 
 from django.contrib.auth.models import User
 from zephyr.models import Message, UserProfile, Stream, Recipient, \
-    Subscription, Huddle, Realm, UserMessage
+    Subscription, Huddle, Realm, UserMessage, Client
 from django.contrib.sessions.models import Session
 
 class Command(NoArgsCommand):
@@ -10,7 +10,7 @@ class Command(NoArgsCommand):
 
     def handle_noargs(self, **options):
         for model in [Message, Stream, UserProfile, User, Recipient,
-                      Realm, Subscription, Huddle, UserMessage]:
+                      Realm, Subscription, Huddle, UserMessage, Client]:
             model.objects.all().delete()
         Session.objects.all().delete()
 
