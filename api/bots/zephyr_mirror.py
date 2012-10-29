@@ -40,10 +40,10 @@ parser.add_option('--verbose',
                   dest='verbose',
                   default=False,
                   action='store_true')
-parser.add_option('--no-auto-subscribe',
-                  dest='auto_subscribe',
-                  default=True,
-                  action='store_false')
+parser.add_option('--sync-subscriptions',
+                  dest='sync_subscriptions',
+                  default=False,
+                  action='store_true')
 parser.add_option('--site',
                   dest='site',
                   default="https://humbughq.com",
@@ -284,8 +284,6 @@ def process_notice(notice, log):
 
 def zephyr_to_humbug(options):
     import mit_subs_list
-    if options.auto_subscribe:
-        add_humbug_subscriptions()
     if options.forward_class_messages:
         for sub in mit_subs_list.all_subs:
             ensure_subscribed(sub)
@@ -393,28 +391,65 @@ def subscribed_to_mail_messages():
             return True
     return False
 
-def add_humbug_subscriptions():
+def add_humbug_subscriptions(verbose):
     zephyr_subscriptions = set()
-    for (cls, instance, recipient) in parse_zephyr_subs(verbose=options.verbose):
+    skipped = set()
+    for (cls, instance, recipient) in parse_zephyr_subs(verbose=verbose):
         if cls == "message" and recipient == "*":
             if instance == "*":
                 continue
             # If you're on -i white-magic on zephyr, get on stream white-magic on humbug
-            # instead of subscribing to stream message
+            # instead of subscribing to stream "message" on humbug
             zephyr_subscriptions.add(instance)
             continue
+        elif cls == "mail" and recipient == "inbox":
+            continue
         elif instance != "*" or recipient != "*":
-            if options.verbose:
-                print "Skipping ~/.zephyr.subs line: [%s,%s,%s]: Non-* values" % \
-                    (cls, instance, recipient)
+            skipped.add((cls, instance, recipient))
             continue
         zephyr_subscriptions.add(cls)
+
     if len(zephyr_subscriptions) != 0:
-        humbug_client.subscribe(list(zephyr_subscriptions))
+        res = humbug_client.subscribe(list(zephyr_subscriptions))
+        already = res.get("already_subscribed")
+        new = res.get("subscribed")
+        if verbose:
+            if already is not None and len(already) > 0:
+                print
+                print "Already subscribed to:", ", ".join(already)
+            if new is not None and len(new) > 0:
+                print
+                print "Successfully subscribed to:",  ", ".join(new)
+
+    if len(skipped) > 0:
+        if verbose:
+            print
+            print "\n".join(textwrap.wrap("""\
+You have some lines in ~/.zephyr.subs that could not be
+synced to your Humbug subscriptions because they do not
+use "*" as both the instance and recipient and not one of
+the special cases (e.g. personals and mail zephyrs) that
+Humbug has a mechanism for forwarding.  Humbug does not
+allow subscribing to only some subjects on a Humbug
+stream, so this tool has not created a corresponding
+Humbug subscription to these lines in ~/.zephyr.subs:
+"""))
+            print
+
+    for (cls, instance, recipient) in skipped:
+        if verbose:
+            print "  [%s,%s,%s]" % (cls, instance, recipient)
+    if len(skipped) > 0:
+        if verbose:
+            print
+            print "\n".join(textwrap.wrap("""\
+If you wish to be subscribed to any Humbug streams related
+to these .zephyrs.subs lines, please do so via the Humbug
+web interface.
+"""))
+            print
 
 def parse_zephyr_subs(verbose=False):
-    if verbose:
-        print "Adding your ~/.zephyr.subs subscriptions to Humbug!"
     zephyr_subscriptions = set()
     subs_file = os.path.join(os.environ["HOME"], ".zephyr.subs")
     if not os.path.exists(subs_file):
@@ -435,6 +470,11 @@ def parse_zephyr_subs(verbose=False):
             continue
         zephyr_subscriptions.add((cls.strip(), instance.strip(), recipient.strip()))
     return zephyr_subscriptions
+
+if options.sync_subscriptions:
+    print "Syncing your ~/.zephyr.subs to your Humbug Subscriptions!"
+    add_humbug_subscriptions(True)
+    sys.exit(0)
 
 if options.forward_from_humbug:
     print "This option is obsolete."
