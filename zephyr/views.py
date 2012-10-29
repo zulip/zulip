@@ -356,15 +356,17 @@ def return_messages_immediately(request, user_profile, client_id, **kwargs):
     last = int(last)
     if last < 0:
         return {"msg": "Invalid 'last' argument", "result": "error"}
-    client_pointer = request.POST.get("pointer")
+    # Pointer sync is disabled for now
+    # client_pointer = request.POST.get("pointer")
     failures = request.POST.get("failures")
     client_server_generation = request.POST.get("server_generation")
     client_reload_pending = request.POST.get("reload_pending")
 
-    client_wants_ptr_updates = False
-    if client_pointer is not None:
-        client_pointer = int(client_pointer)
-        client_wants_ptr_updates = True
+    # Pointer sync is disabled for now
+    # client_wants_ptr_updates = False
+    # if client_pointer is not None:
+    #     client_pointer = int(client_pointer)
+    #     client_wants_ptr_updates = True
     if failures is not None:
         failures = int(failures)
     if client_reload_pending is not None:
@@ -373,7 +375,8 @@ def return_messages_immediately(request, user_profile, client_id, **kwargs):
     messages = []
     new_pointer = None
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
-    ptr = user_profile.pointer
+    # Pointer sync is disabled for now
+    # ptr = user_profile.pointer
 
     messages = query.filter(id__gt=last)[:400]
 
@@ -395,11 +398,12 @@ def return_messages_immediately(request, user_profile, client_id, **kwargs):
         and not client_reload_pending):
         update_types.append("client_reload")
 
-    if (client_wants_ptr_updates
-          and str(user_profile.last_pointer_updater) != str(client_id)
-          and ptr != client_pointer):
-        new_pointer = ptr
-        update_types.append("pointer_update")
+    # Pointer sync is disabled for now
+    # if (client_wants_ptr_updates
+    #       and str(user_profile.last_pointer_updater) != str(client_id)
+    #       and ptr != client_pointer):
+    #     new_pointer = ptr
+    #     update_types.append("pointer_update")
 
     if failures >= 1:
         update_types.append("reset_failure_counter")
