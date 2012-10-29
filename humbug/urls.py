@@ -2,10 +2,6 @@ from django.conf import settings
 from django.conf.urls import patterns, url
 import os.path
 
-# Uncomment the next two lines to enable the admin:
-# from django.contrib import admin
-# admin.autodiscover()
-
 urlpatterns = patterns('',
     url(r'^$', 'zephyr.views.home', name='home'),
     # We have two entries for accounts/login to allow reverses on the Django
@@ -49,12 +45,6 @@ urlpatterns = patterns('',
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_new_message$', 'zephyr.views.notify_new_message', name='notify_new_message'),
     url(r'^notify_pointer_update$', 'zephyr.views.notify_pointer_update', name='notify_pointer_update'),
-
-    # Uncomment the admin/doc line below to enable admin documentation:
-    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-
-    # Uncomment the next line to enable the admin:
-    # url(r'^admin/', include(admin.site.urls)),
 )
 
 if settings.ALLOW_REGISTER:
