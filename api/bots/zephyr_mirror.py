@@ -283,10 +283,7 @@ def process_notice(notice, log):
 
 
 def zephyr_to_humbug(options):
-    import mit_subs_list
     if options.forward_class_messages:
-        for sub in mit_subs_list.all_subs:
-            ensure_subscribed(sub)
         update_subscriptions_from_humbug()
     if options.forward_personals:
         subs.add(("message", "*", options.user + "@ATHENA.MIT.EDU"))
