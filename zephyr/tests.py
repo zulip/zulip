@@ -400,6 +400,9 @@ class DummyHandler(object):
     def finish(self, _):
         return
 
+class DummySession(object):
+    session_key = "0"
+
 class POSTRequestMock(object):
     method = "POST"
 
@@ -407,6 +410,7 @@ class POSTRequestMock(object):
         self.POST = post_data
         self.user = user
         self._tornado_handler = DummyHandler(assert_callback)
+        self.session = DummySession()
 
 class GetUpdatesTest(AuthedTestCase):
     fixtures = ['messages.json']
