@@ -116,12 +116,7 @@ class humbug_apache_base {
   $apache_packages = [ "apache2", "libapache2-mod-wsgi", ]
   package { $web_packages: ensure => "installed" }
 
-  apache2mod { [ "headers", "proxy", "proxy_http", "rewrite", "auth_digest", ]:
-    ensure => present,
-  }
-
-  # Intentionally seperate in the hopes that this fixes dumb dependency problems
-  apache2mod { "ssl":
+  apache2mod { [ "headers", "proxy", "proxy_http", "rewrite", "auth_digest", "ssl" ]:
     ensure => present,
   }
 
