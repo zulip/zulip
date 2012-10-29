@@ -618,6 +618,10 @@ def send_message_backend(request, user_profile, sender, client_name=None):
             return json_error("Missing subject")
         stream_name = request.POST['stream'].strip()
         subject_name = request.POST['subject'].strip()
+        if stream_name == "":
+            return json_error("Stream can't be empty")
+        if subject_name == "":
+            return json_error("Subject can't be empty")
         if len(stream_name) > 30:
             return json_error("Stream name too long")
         if len(subject_name) > 60:
