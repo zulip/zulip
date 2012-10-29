@@ -266,6 +266,8 @@ def process_notice(notice, log):
                  'subject'   : instance,
                  'zsig'      : zsig,  # logged here but not used by app
                  'content'   : body }
+        if zeph["subject"] == "":
+            zeph["subject"] = "personal"
 
     # Add instances in for instanced personals
     if zeph['type'] == "personal" and instance != "personal":
