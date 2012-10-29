@@ -196,20 +196,23 @@ def create_user_base(email, password, active=True):
     username = base64.b32encode(email_hash)[:30]
     return create_user_hack(username, password, email, active)
 
-def create_user(email, password, realm, full_name, short_name):
-    user = create_user_base(email=email, password=password)
+def create_user(email, password, realm, full_name, short_name,
+                active=True):
+    user = create_user_base(email=email, password=password,
+                            active=active)
     user.save()
     return UserProfile.create(user, realm, full_name, short_name)
 
 # TODO: This has a race where a user could be created twice.  Need to
 # add transactions.
-def create_user_if_needed(realm, email, full_name, short_name):
+def create_user_if_needed(realm, email, full_name, short_name,
+                          active=True):
     try:
         return UserProfile.objects.get(user__email=email)
     except UserProfile.DoesNotExist:
         # forge a user for this person
         return create_user(email, initial_password(email), realm,
-                           full_name, short_name)
+                           full_name, short_name, active=active)
 
 def bulk_create_users(realms, users_raw):
     """

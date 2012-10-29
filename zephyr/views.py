@@ -556,7 +556,8 @@ def create_mirrored_message_users(request, user_profile):
     # Create a user for the sender, if needed
     if 'email' in sender_data:
         sender = create_user_if_needed(user_profile.realm, sender_data['email'],
-                                       sender_data['full_name'], sender_data['short_name'])
+                                       sender_data['full_name'], sender_data['short_name'],
+                                       active=False)
     else:
         sender = user_profile
 
@@ -564,7 +565,8 @@ def create_mirrored_message_users(request, user_profile):
     for recipient in huddle_recipients:
         create_user_if_needed(user_profile.realm, recipient,
                               recipient.split('@')[0],
-                              recipient.split('@')[0])
+                              recipient.split('@')[0],
+                              active=False)
 
     return (True, sender)
 
