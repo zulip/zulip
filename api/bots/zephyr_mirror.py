@@ -174,7 +174,7 @@ def maybe_restart_mirroring_script():
         os.kill(child_pid, signal.SIGKILL)
         while True:
             try:
-                os.execvp(root_path + "/zephyr_mirror.py", sys.argv)
+                os.execvp(root_path + "/user_root/zephyr_mirror.py", sys.argv)
             except:
                 print "Error restarting, trying again."
                 traceback.print_exc()
