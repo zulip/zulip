@@ -23,6 +23,9 @@ var globals =
     // narrow.js
     + ' narrow'
 
+    // reload.js
+    + ' reload'
+
     // search.js
     + ' search_button_handler something_is_highlighted update_highlight_on_narrow'
 

@@ -67,7 +67,7 @@ $(function () {
         error: function (xhr, error_type) {
             if (error_type !== 'timeout' && get_updates_params.reload_pending) {
                 // The error might be due to the server changing
-                do_reload_app_preserving_compose(true);
+                reload.initiate({immediate: true, send_after_reload: true});
                 return;
             }
             var response = "Error sending message";
@@ -105,7 +105,7 @@ $(function () {
 });
 
 exports.show = function (tabname, focus_area) {
-    if (reloading_app) {
+    if (reload.is_in_progress()) {
         return;
     }
     $("#send-status").removeClass(status_classes).hide();

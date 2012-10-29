@@ -4,7 +4,6 @@ var subject_dict = {};
 var people_hash = {};
 
 var viewport = $(window);
-var reloading_app = false;
 
 var selected_message_id = -1;  /* to be filled in on document.ready */
 var selected_message;  // = rows.get(selected_message_id)
@@ -473,116 +472,11 @@ function add_messages(messages, where) {
         update_autocomplete();
 }
 
-function do_reload_app() {
-    // TODO: We need a better API for showing messages.
-    report_message("The application has been updated; reloading!", $("#reloading-application"));
-    reloading_app = true;
-    window.location.reload(true);
-}
-
-function start_reload_app() {
-    if (get_updates_params.reload_pending) {
-        return;
-    }
-    get_updates_params.reload_pending = 1;
-
-    // Always reload after 30 minutes
-    setTimeout(function () { do_reload_app_preserving_compose(false); },
-               1000 * 60 * 30);
-
-    // If the user is composing a message, reload if they become
-    // idle while composing.  If they finish composing, the
-    // submit code will reload the app.  If they cancel the
-    // compose, wait until they're idle again
-
-    // If the user is not composing, reload if the user becomes idle.
-    // If they start composing, postpone reloading
-
-    var idle_control;
-    var composing_timeout = 1000*60*10;
-    var home_timeout = 1000*60;
-    var compose_done_handler, compose_started_handler;
-
-    compose_done_handler = function () {
-        idle_control.cancel();
-        idle_control = $(document).idle({'idle': home_timeout,
-                                         'onIdle': do_reload_app});
-        $(document).off('compose_canceled.zephyr compose_finished.zephyr',
-                        compose_done_handler);
-        $(document).on('compose_started.zephyr', compose_started_handler);
-    };
-    compose_started_handler = function () {
-        idle_control.cancel();
-        idle_control = $(document).idle({'idle': composing_timeout,
-                                         'onIdle': do_reload_app_preserving_compose});
-        $(document).off('compose_started.zephyr', compose_started_handler);
-        $(document).on('compose_canceled.zephyr compose_finished.zephyr',
-                       compose_done_handler);
-    };
-
-    if (compose.composing()) {
-        idle_control = $(document).idle({'idle': composing_timeout,
-                                         'onIdle': do_reload_app_preserving_compose});
-        $(document).on('compose_canceled.zephyr compose_finished.zephyr',
-                       compose_done_handler);
-    } else {
-        idle_control = $(document).idle({'idle': home_timeout,
-                                         'onIdle': do_reload_app});
-        $(document).on('compose_started.zephyr', compose_started_handler);
-    }
-}
-
-function do_reload_app_preserving_compose(send_after_reload) {
-    var url = "#reload:send_after_reload=" + Number(send_after_reload);
-    if (compose.composing() === 'stream') {
-        url += "+msg_type=stream";
-        url += "+stream=" + encodeURIComponent(compose.stream_name());
-        url += "+subject=" + encodeURIComponent(compose.subject());
-    } else {
-        url += "+msg_type=huddle";
-        url += "+recipient=" + encodeURIComponent(compose.recipient());
-    }
-    url += "+msg="+ encodeURIComponent(compose.message_content());
-
-    window.location.replace(url);
-    do_reload_app();
-}
-
-// Check if we're doing a compose-preserving reload.  This must be
-// done before the first call to get_updates
-$(function () {
-    var location = window.location.toString();
-    window.location = '#';
-    var fragment = location.substring(location.indexOf('#') + 1);
-    if (fragment.search("reload:") !== 0) {
-        return;
-    }
-
-    fragment = fragment.replace(/^reload:/, "");
-    var keyvals = fragment.split("+");
-    var vars = {};
-    $.each(keyvals, function (idx, str) {
-        var pair = str.split("=");
-        vars[pair[0]] = decodeURIComponent(pair[1]);
-    });
-
-    var tab;
-    var send_now = parseInt(vars.send_after_reload, 10);
-
-    // TODO: preserve focus
-   compose.start(vars.msg_type, {stream: vars.stream,
-                                 subject: vars.subject,
-                                 huddle_recipient: vars.recipient,
-                                 message: vars.msg});
-    if (send_now) {
-        compose.finish();
-    }
-});
-
 var get_updates_xhr;
 var get_updates_timeout;
 function get_updates() {
     get_updates_params.pointer = selected_message_id;
+    get_updates_params.reload_pending = Number(reload.is_pending());
 
     get_updates_xhr = $.ajax({
         type:     'POST',
@@ -607,7 +501,7 @@ function get_updates() {
             if (get_updates_params.server_generation === -1) {
                 get_updates_params.server_generation = data.server_generation;
             } else if (data.server_generation !== get_updates_params.server_generation) {
-                start_reload_app();
+                reload.initiate();
             }
 
             if (data.messages.length !== 0) {
