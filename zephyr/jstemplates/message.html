@@ -60,10 +60,10 @@
         onmousedown="mousedown();" onmousemove="mousemove();">
         {{#include_sender}}
         <span class="message_sender"
+              onclick="userinfo_popover(event, this, {{id}});"
               onmouseover="show_email({{id}});"
               onmouseout="hide_email();">
-            <span class="sender_name"
-              onclick="userinfo_popover(event, this, {{id}});">
+            <span class="sender_name">
               {{sender_full_name}}</span>
             <span class="sender_email invisible">{{sender_email}}</span>
         </span>
