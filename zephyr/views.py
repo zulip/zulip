@@ -699,6 +699,12 @@ def notify_new_message(request, handler):
     if not validate_notify(request, handler):
         return
 
+    # If a message for some reason has no recipients (e.g. it is sent
+    # by a bot to a stream that nobody is subscribed to), just skip
+    # the message gracefully
+    if request.POST["users"] == "":
+        return
+
     # FIXME: better query
     users   = [UserProfile.objects.get(id=user)
                for user in request.POST['users'].split(',')]
