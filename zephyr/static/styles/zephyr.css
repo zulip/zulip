@@ -450,14 +450,6 @@ table.floating_recipient {
   height: 300px;
 }
 
-#subscriptions_table {
-    width: 75%;
-}
-
-.subscription_entry {
-    width: 85%;
-}
-
 #subscriptions-status {
     margin: 0;
 }

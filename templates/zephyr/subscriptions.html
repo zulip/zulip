@@ -1,20 +1,20 @@
 {# Subscriptions management tab of the app. #}
 
-<div class="row-fluid">
-  <div class="span9">
+<div class="row">
+  <div class="span6">
     <div class="subscriptions">
       <h1>Subscriptions</h1>
       <form id="add_new_subscription" action="/json/subscriptions/add"
             method="post" class="form-inline">{% csrf_token %}
         <input type="text" name="new_subscription" id="new_subscription"
-               placeholder="Stream name" value="" class="input-xlarge" />
+               placeholder="Stream name" value="" class="span4" />
         <input type="submit" name="add_subscription" value="Subscribe" class="btn btn-primary" />
       </form>
       <div class="alert" id="subscriptions-status"></div>
       <form id="current_subscriptions" action="/json/subscriptions/remove"
             method="post" class="subscriptions">{% csrf_token %}
-        <table class="table table-condensed" id="subscriptions_table">
-          <tr></tr>
+        <table class="table table-condensed table-striped">
+          <tbody id="subscriptions_table"></tbody>
         </table>
       </form>
     </div>
