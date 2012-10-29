@@ -208,11 +208,11 @@ MESSAGE_LOG="all_messages_log"
 if deployed:
     ALLOW_REGISTER = False
     FULL_NAVBAR    = False
-    HOME_NOT_LOGGED_IN = 'django.contrib.auth.views.login'
+    HOME_NOT_LOGGED_IN = '/accounts/login'
 else:
     ALLOW_REGISTER = True
     FULL_NAVBAR    = True
-    HOME_NOT_LOGGED_IN = 'zephyr.views.accounts_home'
+    HOME_NOT_LOGGED_IN = '/accounts/home'
 
 # For testing, you may want to have emails be printed to the console.
 if not deployed:
