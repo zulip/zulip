@@ -291,7 +291,7 @@ def zephyr_to_humbug(options):
             subs.add(("mail", "inbox", options.user + "@ATHENA.MIT.EDU"))
 
     if options.resend_log:
-        with open('zephyrs', 'r') as log:
+        with open('/mit/tabbott/Private/zephyrs', 'r') as log:
             for ln in log:
                 try:
                     zeph = simplejson.loads(ln)
@@ -307,7 +307,7 @@ def zephyr_to_humbug(options):
     print "%s: zephyr=>humbug: Starting receive loop." % (datetime.datetime.now(),)
 
     if options.enable_log:
-        log_file = "zephyrs"
+        log_file = "/mit/tabbott/Private/zephyrs"
     else:
         log_file = "/dev/null"
 
