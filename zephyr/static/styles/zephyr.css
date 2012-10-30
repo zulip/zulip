@@ -359,7 +359,6 @@ input.send_message {
 }
 
 #searchbox {
-    display: none; /** TEMPORARILY disable this feature **/
     /* Needed because top_statusbar is visibility: hidden
        and we don't want to inherit that */
     visibility: visible;
