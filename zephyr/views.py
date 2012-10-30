@@ -40,7 +40,7 @@ SERVER_GENERATION = int(time.time())
 def require_post(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         if request.method != "POST":
-            return HttpResponseBadRequest('This form can only be submitted by POST.')
+            return json_error('This form can only be submitted by POST.')
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
@@ -80,8 +80,8 @@ def json_response(res_type="success", msg="", data={}, status=200):
 def json_success(data={}):
     return json_response(data=data)
 
-def json_error(msg, data={}):
-    return json_response(res_type="error", msg=msg, data=data, status=400)
+def json_error(msg, data={}, status=400):
+    return json_response(res_type="error", msg=msg, data=data, status=status)
 
 def get_stream(stream_name, realm):
     stream = Stream.objects.filter(name__iexact=stream_name, realm=realm)
@@ -862,12 +862,12 @@ def api_fetch_api_key(request):
         username = request.POST['username']
         password = request.POST['password']
     except KeyError:
-        return HttpResponseBadRequest("You must specify the username and password via POST.")
+        return json_error("You must specify the username and password via POST.")
     user = authenticate(username=username, password=password)
     if user is None:
-        return HttpResponseForbidden("Your username or password is incorrect.")
+        return json_error("Your username or password is incorrect.", status=403)
     if not user.is_active:
-        return HttpResponseForbidden("Your account has been disabled.")
+        return json_error("Your account has been disabled.", status=403)
     return HttpResponse(user.userprofile.api_key)
 
 @login_required_json_view
