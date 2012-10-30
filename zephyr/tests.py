@@ -458,8 +458,7 @@ class GetUpdatesTest(AuthedTestCase):
 
     def test_missing_last_received(self):
         """
-        Calling json_get_updates without a last_received key/value pair
-        returns a 400 and error message.
+        Calling json_get_updates without any arguments should work
         """
         self.login("hamlet@humbughq.com")
         user = User.objects.get(email="hamlet@humbughq.com")
@@ -471,4 +470,5 @@ class GetUpdatesTest(AuthedTestCase):
                 self.assertTrue(message.id > 1)
 
         request = POSTRequestMock({}, user, callback)
-        self.assert_json_error(json_get_updates(request), "Missing message range")
+        self.assertRaises(TornadoAsyncException, json_get_updates, request)
+
