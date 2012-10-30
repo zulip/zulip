@@ -354,8 +354,7 @@ class MessagePOSTTest(AuthedTestCase):
                                                           "client": "test suite",
                                                           "content": "Test message",
                                                           "subject": "Test subject"})
-        self.assert_json_success(result)
-        self.assertTrue(Stream.objects.filter(name="nonexistent_stream"))
+        self.assert_json_error(result, "Stream does not exist")
 
     def test_personal_message(self):
         """
