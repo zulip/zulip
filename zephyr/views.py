@@ -272,9 +272,9 @@ def get_old_messages_backend(request, user_profile=None,
                              apply_markdown=True):
     if not ('start' in request.POST):
         return json_error("Missing 'start' parameter")
-    if not ('which in request.post'):
+    if not ('which' in request.post):
         return json_error("Missing 'which' parameter")
-    if not ('number in request.post'):
+    if not ('number' in request.post):
         return json_error("Missing 'number' parameter")
 
     start = int(request.POST.get("start"))
