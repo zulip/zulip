@@ -633,7 +633,10 @@ def send_message_backend(request, user_profile, sender, client_name=None):
         # if not valid_stream_name(subject_name):
         #     return json_error("Invalid subject name")
 
-        stream = create_stream_if_needed(user_profile.realm, stream_name)
+        try:
+            stream = Stream.objects.get(realm=user_profile.realm, name__iexact=stream_name)
+        except Stream.DoesNotExist:
+            return json_error("Stream does not exist")
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     elif message_type_name == 'personal':
         if "recipient" not in request.POST:
