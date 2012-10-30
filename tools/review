@@ -1,0 +1,323 @@
+#!/usr/bin/python
+#
+# Copyright (C) 2010 Ksplice, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Author: Greg Price <price@ksplice.com>
+
+## CC_EMAIL: All review requests will be CC'd here.
+CC_EMAIL = 'code-review@example.com'
+
+## DOMAIN: Reviewers without an '@' will be assumed to be localparts here.
+DOMAIN = 'example.com'
+
+##### END CONFIG #####
+## But you might want to change behavior below.
+
+import sys
+import os
+import optparse
+import posixpath
+import subprocess
+import tempfile
+import git
+import shlex
+import codecs
+from StringIO import StringIO
+from email.message import Message
+from email.header import Header
+
+usage = """
+%%prog -r <reviewer> [-r <another-reviewer>] [-s <summary>] [-m <message>] [options] {<since>|<revision-range>}
+
+Send a patch series for review.  Sends mail to the reviewer,
+CC %s, identifying the commits to be reviewed.
+
+Name a range of commits, or name a single commit (e.g., 'HEAD^' or
+'origin/master') to identify all commits on HEAD since that commit.
+""".strip() % CC_EMAIL
+
+
+# Monkeypatch a bug in git-python.
+import git.commit, git.repo
+
+def git__commit__Commit__find_all(cls, repo, ref, path=None, **kwargs):
+    options = {'pretty': 'raw'}
+    options.update(kwargs)
+
+    lpath = [p for p in (path,) if p is not None]
+    output = repo.git.rev_list(ref, '--', *lpath, **options)
+    return cls.list_from_string(repo, output)
+git.commit.Commit.find_all = classmethod(git__commit__Commit__find_all)
+
+def git__repo__Repo__commit(self, id, path = None):
+    options = {'max_count': 1}
+
+    commits = git.commit.Commit.find_all(self, id, path, **options)
+
+    if not commits:
+        raise ValueError, 'Invalid identifier %s' % id
+    return commits[0]
+git.repo.Repo.commit = git__repo__Repo__commit
+# End monkeypatch.
+
+
+def check_unicode(option, opt, value):
+  try:
+    return unicode(value, 'utf-8', 'strict')
+  except UnicodeDecodeError:
+    raise optparse.OptionValueError('option %s: invalid UTF-8 string' % opt)
+
+class MyOption(optparse.Option):
+  TYPES = optparse.Option.TYPES + ('unicode',)
+  TYPE_CHECKER = dict(optparse.Option.TYPE_CHECKER, unicode=check_unicode)
+
+
+def parse_options(args):
+  parser = optparse.OptionParser(usage, option_class=MyOption)
+  parser.add_option('--first-parent', action='store_true', dest='first_parent',
+                    help='follow first parents only')
+  parser.add_option('-r', '--reviewer', type='unicode', dest='reviewers', action="append",
+                    help='the person you are asking to do the review')
+  parser.add_option('--stdout', action='store_true', dest='stdout',
+                    help='send to standard output rather than send mail')
+  parser.add_option('--format', type='choice', dest='format',
+                    choices=['oneline', 'message', 'patch'],
+                    help="'patch' (default for one commit), 'message' (default for more), or 'oneline'")
+  parser.add_option('-s', '--summary', type='unicode', dest='summary',
+                    help='summary for subject line')
+  parser.add_option('-m', '--message', type='unicode', dest='message',
+                    help='message for body of email')
+  parser.add_option('-t', '--testing', type='unicode', dest='testing',
+                    help='extent and methods of testing employed')
+  parser.add_option('-e', '--edit', action='store_true', dest='edit',
+                    help='spawn $EDITOR and edit review request')
+  options, args = parser.parse_args(args)
+  if not options.reviewers:
+    parser.error('reviewer required')  
+  reviewers_fixed = []
+  for reviewer in options.reviewers:
+    if '@' not in reviewer:
+      reviewers_fixed.append(reviewer + '@' + DOMAIN)
+    else:
+      reviewers_fixed.append(reviewer)
+  options.reviewers = reviewers_fixed
+  if len(args) < 2:
+    parser.error('must specify revision(s) to be reviewed')
+  return options, args
+
+
+def get_default_remote(repo):
+  try:
+    return repo.git.config('--get', 'remotes.default')
+  except git.errors.GitCommandError:
+    try:
+      branch = repo.active_branch
+      return repo.git.config('--get', 'branch.%s.remote' % branch)
+    except git.errors.GitCommandError:
+      return 'origin'
+
+
+def get_reponame(repo):
+  remote = get_default_remote(repo)
+
+  try:
+    url = repo.git.config('--get', 'remote.%s.url' % remote)
+  except git.errors.GitCommandError:
+    url = repo.wd
+
+  name = posixpath.basename(posixpath.normpath(url.split(':', 1)[-1]))
+  if name.endswith('.git'):
+    name = name[:-len('.git')]
+  return name
+
+
+def parse_revs(repo, opts, args):
+  args = repo.git.rev_parse(*args).splitlines()
+  if len(args) == 1:
+      args = ['^' + args[0].lstrip('^'), 'HEAD']
+  if opts.first_parent:
+      args[:0] = ['--first-parent']
+  return [repo.commit(c) for c in repo.git.rev_list('--reverse', *args).split()]
+
+
+def make_header(repo, opts, revs):
+  ident = unicode(repo.git.var('GIT_AUTHOR_IDENT'), 'utf-8', 'replace')
+  me = ident[:ident.rindex('>') + 1]
+  reponame = get_reponame(repo)
+
+  remote = get_default_remote(repo)
+  (sha, name) = repo.git.name_rev(revs[-1].id,
+                                  refs='refs/remotes/%s/*' % (remote,),
+                                  always=True).split()
+  prefix = 'remotes/' + remote + "/"
+  if name.startswith(prefix):
+      name = name[len(prefix):]
+      tip_name = '%s (%s)' % (name, revs[-1].id_abbrev)
+  else:
+      print >>sys.stderr, "WARNING: Can't find this commit in remote -- did you push?"
+      tip_name = revs[-1].id_abbrev
+
+  objective_summary = '%d commit(s) to %s' % (len(revs), tip_name)
+  summary = ('%s (%s)' % (opts.summary, objective_summary) if opts.summary
+             else objective_summary)
+
+  return [('From', Header(me)),
+          ('To', Header(', '.join(opts.reviewers))),
+          ('Cc', Header(CC_EMAIL)),
+          ('Subject', Header('%s review: %s' % (reponame, summary)))]
+
+
+def write_template(target, repo, opts):
+  ident = unicode(repo.git.var('GIT_AUTHOR_IDENT'), 'utf-8', 'replace')
+  me = ident[:ident.rindex('>') + 1]
+
+  print >>target, 'Dear %s,' % ", ".join(opts.reviewers)
+  print >>target
+  print >>target, 'At your convenience, please review the following commits.'
+  print >>target, 'Reply with any comments, or advance master when you are satisfied.'
+  print >>target
+  if opts.message:
+    print >>target, opts.message
+    print >>target
+  print >>target, 'Testing:',
+  if opts.testing:
+    print >>target, opts.testing
+  else:
+    print >>target, '(No formal testing done, or none specified.)'
+  print >>target
+  print >>target, 'Thanks,'
+  print >>target, me
+
+
+def write_commitmsg(target, repo, opts, revs):
+
+  if opts.format == 'oneline':
+    for r in revs:
+      print >>target, unicode(repo.git.log('-n1', '--oneline', r), 'utf-8', 'replace')
+  elif opts.format == 'message' or opts.format is None and len(revs) > 1:
+    for r in revs:
+      if opts.first_parent:
+        print >>target, unicode(repo.git.log('-n1', r), 'utf-8', 'replace')
+        print >>target, unicode(repo.git.diff('--stat', str(r)+'^', r), 'utf-8', 'replace')
+      else:
+        print >>target, unicode(repo.git.log('-n1', '--stat', r), 'utf-8', 'replace')
+      print >>target
+  elif opts.format == 'patch' or opts.format is None and len(revs) == 1:
+    for r in revs:
+      if opts.first_parent:
+        print >>target, unicode(repo.git.log('-n1', r), 'utf-8', 'replace')
+        print >>target, unicode(repo.git.diff('--stat', '-p', str(r)+'^', r), 'utf-8', 'replace')
+      else:
+        print >>target, unicode(repo.git.log('-n1', '--stat', '-p', r), 'utf-8', 'replace')
+      print >>target
+  else:
+    raise Exception("Bad format option.")
+
+
+def edit(repo, opts, revs):
+  headers = make_header(repo, opts, revs)
+
+  template = StringIO()
+  commitmsg = StringIO()
+  
+  write_template(template, repo, opts)
+  write_commitmsg(commitmsg, repo, opts, revs)
+  
+  temp = codecs.getwriter('utf-8')(tempfile.NamedTemporaryFile(prefix="review-"))
+
+  # Prepare editable buffer.
+
+  print >>temp, """# This is an editable review request.  All lines beginning with # will
+# be ignored.  To abort the commit, remove all lines from this buffer."""
+  print >>temp, "#"
+  for (key, value) in headers:
+    print >>temp, u"# %s: %s" % (key, value)
+  print >>temp
+  print >>temp, template.getvalue()
+  for line in commitmsg.getvalue().splitlines():
+    print >>temp, "# " + line
+  temp.flush()
+
+  # Open EDITOR to edit buffer.
+
+  editor = os.getenv('EDITOR','emacs')
+  subprocess.check_call(shlex.split(editor) + [temp.name])
+
+  # Check if buffer is empty, and if so abort.
+  
+  if (os.path.getsize(temp.name) == 0):
+    print >>sys.stderr, "Aborting due to empty buffer."
+    sys.exit(2)
+
+  # Reopen temp file, slurp it in, and reconstruct mail.
+
+  final = codecs.open(temp.name, 'r', 'utf-8')
+  msg = Message()
+  for (key, value) in headers:
+    msg[key] = value
+  msg.set_payload(
+    ("".join(line for line in final if not line.startswith("#")).strip() +
+     "\n\n" + commitmsg.getvalue()).encode('utf-8'),
+    'utf-8')
+
+  # Clean up.
+
+  temp.close()
+  final.close()
+  try:
+    os.unlink(temp.name)
+  except OSError:
+    pass
+  return msg
+
+
+def main(args):
+  opts, args = parse_options(args)
+  repo = git.Repo()
+  revs = parse_revs(repo, opts, args[1:])
+  if not revs:
+    print >>sys.stderr, '%s: no revisions specified' % os.path.basename(args[0])
+    return 2
+
+  if opts.edit:
+    msg = edit(repo, opts, revs)
+
+  else: 
+    # Just build the message.
+    msg = Message()
+    for (key, value) in make_header(repo, opts, revs):
+      msg[key] = value
+
+    template = StringIO()
+    commitmsg = StringIO()
+
+    write_template(template, repo, opts)
+    write_commitmsg(commitmsg, repo, opts, revs)
+    msg.set_payload(
+      (template.getvalue() + "\n" + commitmsg.getvalue()).encode('utf-8'),
+      'utf-8')
+
+  # Send or print the message, as appropriate.
+  if opts.stdout:
+    for (key, value) in msg.items():
+      print >>sys.stdout, u"%s: %s" % (key, value)
+    print >>sys.stdout
+    print >>sys.stdout, msg.get_payload(decode=True),
+  else:
+    subprocess.Popen(['/usr/sbin/sendmail', '-bm', '-t'],
+                     stdin=subprocess.PIPE).communicate(msg.as_string())
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv))
