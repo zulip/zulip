@@ -21,7 +21,7 @@ from django.contrib.sessions.models import Session
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id))
 def get_display_recipient(recipient):
     """
-    recipient: an subject of Recipient.
+    recipient: an instance of Recipient.
 
     returns: an appropriate string describing the recipient (the stream
     name, for a stream, or the email, for a user).
@@ -43,7 +43,7 @@ def get_display_recipient(recipient):
 
 def get_log_recipient(recipient):
     """
-    recipient: an subject of Recipient.
+    recipient: an instance of Recipient.
 
     returns: an appropriate string describing the recipient (the stream
     name, for a stream, or the email, for a user).

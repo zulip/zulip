@@ -245,7 +245,7 @@ function validate_stream_message() {
     }
 
     if (exports.subject() === "") {
-        compose_error("Please specify an subject", $("#subject"));
+        compose_error("Please specify a subject", $("#subject"));
         return false;
     }
 
