@@ -70,8 +70,14 @@
         idle = true;
         cancel();
         settings.onIdle.call();
-        if(settings.keepTracking){
-          timerId = createTimeout(settings);
+        if(settings.keepTracking) {
+            // We want the reset to occur after this event has been
+            // completely handled
+            setTimeout(function () {
+                elem.on(settings.events, handler);
+                canceled = false;
+                createTimeout(settings);
+            }, 0);
         }
       }, settings.idle);
       control.timerId = timerId;
