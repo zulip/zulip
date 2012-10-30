@@ -49,30 +49,6 @@ Name a range of commits, or name a single commit (e.g., 'HEAD^' or
 """.strip() % CC_EMAIL
 
 
-# Monkeypatch a bug in git-python.
-import git.commit, git.repo
-
-def git__commit__Commit__find_all(cls, repo, ref, path=None, **kwargs):
-    options = {'pretty': 'raw'}
-    options.update(kwargs)
-
-    lpath = [p for p in (path,) if p is not None]
-    output = repo.git.rev_list(ref, '--', *lpath, **options)
-    return cls.list_from_string(repo, output)
-git.commit.Commit.find_all = classmethod(git__commit__Commit__find_all)
-
-def git__repo__Repo__commit(self, id, path = None):
-    options = {'max_count': 1}
-
-    commits = git.commit.Commit.find_all(self, id, path, **options)
-
-    if not commits:
-        raise ValueError, 'Invalid identifier %s' % id
-    return commits[0]
-git.repo.Repo.commit = git__repo__Repo__commit
-# End monkeypatch.
-
-
 def check_unicode(option, opt, value):
   try:
     return unicode(value, 'utf-8', 'strict')
@@ -121,11 +97,11 @@ def parse_options(args):
 def get_default_remote(repo):
   try:
     return repo.git.config('--get', 'remotes.default')
-  except git.errors.GitCommandError:
+  except git.exc.GitCommandError:
     try:
       branch = repo.active_branch
       return repo.git.config('--get', 'branch.%s.remote' % branch)
-    except git.errors.GitCommandError:
+    except git.exc.GitCommandError:
       return 'origin'
 
 
@@ -134,7 +110,7 @@ def get_reponame(repo):
 
   try:
     url = repo.git.config('--get', 'remote.%s.url' % remote)
-  except git.errors.GitCommandError:
+  except git.exc.GitCommandError:
     url = repo.wd
 
   name = posixpath.basename(posixpath.normpath(url.split(':', 1)[-1]))
@@ -158,16 +134,16 @@ def make_header(repo, opts, revs):
   reponame = get_reponame(repo)
 
   remote = get_default_remote(repo)
-  (sha, name) = repo.git.name_rev(revs[-1].id,
+  (sha, name) = repo.git.name_rev(revs[-1].hexsha,
                                   refs='refs/remotes/%s/*' % (remote,),
                                   always=True).split()
   prefix = 'remotes/' + remote + "/"
   if name.startswith(prefix):
       name = name[len(prefix):]
-      tip_name = '%s (%s)' % (name, revs[-1].id_abbrev)
+      tip_name = '%s (%s)' % (name, revs[-1].hexsha[:7])
   else:
       print >>sys.stderr, "WARNING: Can't find this commit in remote -- did you push?"
-      tip_name = revs[-1].id_abbrev
+      tip_name = revs[-1].hexsha[:7]
 
   objective_summary = '%d commit(s) to %s' % (len(revs), tip_name)
   summary = ('%s (%s)' % (opts.summary, objective_summary) if opts.summary
