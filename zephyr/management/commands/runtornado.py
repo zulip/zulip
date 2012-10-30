@@ -21,43 +21,20 @@ class Command(BaseCommand):
     help = "Starts a Tornado Web server wrapping Django."
     args = '[optional port number or ipaddr:port]\n  (use multiple ports to start multiple servers)'
 
-    def handle(self, *addrport, **options):
+    def handle(self, addrport, **options):
         # setup unbuffered I/O
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
         sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
 
-        if len(addrport) == 0:
-            self.run_one(**options)
-        elif len(addrport) == 1:
-            self.run_one(addrport[0], **options)
-        else:
-            from multiprocessing import Process
-
-            plist = []
-            for ap in addrport:
-                p = Process(target=self.run_one, args=(ap,), kwargs=options)
-                p.start()
-                plist.append(p)
-
-            while plist:
-                if plist[0].exitcode is None:
-                    plist.pop(0)
-                else:
-                    plist[0].join()
-
-    def run_one(self, addrport, **options):
         import django
         from django.core.handlers.wsgi import WSGIHandler
         from tornado import httpserver, wsgi, ioloop, web
 
-        if not addrport:
-            addr = ''
-            port = '8000'
-        else:
-            try:
-                addr, port = addrport.split(':')
-            except ValueError:
-                addr, port = '', addrport
+        try:
+            addr, port = addrport.split(':')
+        except ValueError:
+            addr, port = '', addrport
+
         if not addr:
             addr = '127.0.0.1'
 
