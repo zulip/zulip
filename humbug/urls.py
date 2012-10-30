@@ -39,9 +39,7 @@ urlpatterns = patterns('',
     url(r'^api/v1/subscribe$', 'zephyr.views.api_subscribe', name='api_subscribe'),
     url(r'^api/v1/send_message$', 'zephyr.views.api_send_message', name='api_send_message'),
     url(r'^api/v1/update_pointer$', 'zephyr.views.api_update_pointer', name='api_update_pointer'),
-
-    # This is an unformatted view used by clients before using the API.
-    # It requires username/password GET parameters.
+    # This json format view used by the API accepts a username password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$', 'zephyr.views.api_fetch_api_key', name='api_fetch_api_key'),
 
     url(r'^robots\.txt$', 'django.views.generic.simple.redirect_to', {'url': '/static/public/robots.txt'}),

@@ -868,7 +868,7 @@ def api_fetch_api_key(request):
         return json_error("Your username or password is incorrect.", status=403)
     if not user.is_active:
         return json_error("Your account has been disabled.", status=403)
-    return HttpResponse(user.userprofile.api_key)
+    return json_success({"api_key": user.userprofile.api_key})
 
 @login_required_json_view
 def json_fetch_api_key(request):
