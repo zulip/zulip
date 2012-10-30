@@ -3,7 +3,7 @@
     This file is only included when Django's DEBUG = True and your
     host is in INTERNAL_IPS.
 
-    Do not commit any code to zephyr.js which uses these functions.
+    Do not commit any code elsewhere which uses these functions.
     They are for debugging use only.
 
     The file may still be accessible under other circumstances, so do
