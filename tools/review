@@ -292,7 +292,7 @@ def main(args):
     print >>sys.stdout
     print >>sys.stdout, msg.get_payload(decode=True),
   else:
-    subprocess.Popen(['/usr/sbin/sendmail', '-bm', '-t'],
+    subprocess.Popen(['msmtp', '-t'],
                      stdin=subprocess.PIPE).communicate(msg.as_string())
 
 if __name__ == '__main__':
