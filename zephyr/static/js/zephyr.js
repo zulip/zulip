@@ -127,8 +127,8 @@ function select_message_by_id(message_id, opts) {
 
 var furthest_read = -1;
 var server_furthest_read = -1;
-// We only send pointer updates every second to avoid hammering the
-// server
+// We only send pointer updates when the user has been idle for a
+// short while to avoid hammering the server
 function send_pointer_update() {
     if (furthest_read > server_furthest_read) {
         $.post("/json/update_pointer",
@@ -137,13 +137,14 @@ function send_pointer_update() {
                    server_furthest_read = furthest_read;
                });
     }
-    setTimeout(send_pointer_update, 1000);
 }
 
 $(function () {
     furthest_read = initial_pointer;
     server_furthest_read = initial_pointer;
-    setTimeout(send_pointer_update, 1000);
+    $(document).idle({idle: 1000,
+                      onIdle: send_pointer_update,
+                      keepTracking: true});
 });
 
 function update_selected_message(message, opts) {
