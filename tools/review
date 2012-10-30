@@ -17,10 +17,10 @@
 # Author: Greg Price <price@ksplice.com>
 
 ## CC_EMAIL: All review requests will be CC'd here.
-CC_EMAIL = 'code-review@example.com'
+CC_EMAIL = 'code-review@humbughq.com'
 
 ## DOMAIN: Reviewers without an '@' will be assumed to be localparts here.
-DOMAIN = 'example.com'
+DOMAIN = 'humbughq.com'
 
 ##### END CONFIG #####
 ## But you might want to change behavior below.
