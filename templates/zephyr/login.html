@@ -5,9 +5,10 @@
 {% block portico_content %}
 
 <script type="text/javascript">
-autofocus('#id_username');
 {% if email %}
 autofocus('#id_password');
+{% else %}
+autofocus('#id_username');
 {% endif %}
 </script>
 
