@@ -378,6 +378,13 @@ $(function () {
             settings_status.removeClass(status_classes)
                 .addClass('alert-error')
                 .text(response).stop(true).fadeTo(0,1);
+        },
+        complete: function (xhr, statusText) {
+            // Whether successful or not, clear the password boxes so that
+            // passwords don't linger in the DOM for an XSS attacker to find.
+            //
+            // TODO: Clear these earlier, while the request is still pending.
+            $('#old_password, #new_password, #confirm_password').val('');
         }
     });
 
