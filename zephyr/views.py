@@ -51,9 +51,6 @@ def login_required_api_view(view_func):
     @csrf_exempt
     @require_post
     def _wrapped_view_func(request, *args, **kwargs):
-        # Arguably @require_post should protect us from having to do
-        # this, but I don't want to count on us always getting the
-        # decorator ordering right.
         try:
             user_profile = UserProfile.objects.get(user__email=request.POST.get("email"))
         except UserProfile.DoesNotExist:
@@ -67,19 +64,15 @@ def login_required_api_view(view_func):
 # in.  If not, return an error (the @login_required behavior of
 # redirecting to a login page doesn't make sense for json views)
 def login_required_json_view(view_func):
+    @require_post
     def _wrapped_view_func(request, *args, **kwargs):
-        # Arguably @require_post should protect us from having to do
-        # this, but I don't want to count on us always getting the
-        # decorator ordering right.
-        if request.method != "POST":
-            return HttpResponseBadRequest('This form can only be submitted by POST.')
         if not request.user.is_authenticated():
             return json_error("Not logged in")
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
 def json_response(res_type="success", msg="", data={}, status=200):
-    content = {"result":res_type, "msg":msg}
+    content = {"result": res_type, "msg": msg}
     content.update(data)
     return HttpResponse(content=simplejson.dumps(content),
                         mimetype='application/json', status=status)
