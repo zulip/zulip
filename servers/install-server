@@ -63,6 +63,7 @@ puppet apply /root/humbug/servers/puppet/manifests/site.pp || true
 puppet apply /root/humbug/servers/puppet/manifests/site.pp
 # The last bit should be moveable into puppet-land, ideally
 service apache2 restart
+service ssh restart
 apt-get upgrade
 EOF
 
