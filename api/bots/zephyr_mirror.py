@@ -197,7 +197,6 @@ def process_loop(log):
             if options.forward_class_messages:
                 # Ask the Humbug server about any new classes to subscribe to
                 update_subscriptions_from_humbug()
-        continue
 
 def process_notice(notice, log):
     try:
