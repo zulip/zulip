@@ -1,7 +1,11 @@
 #!/usr/bin/python
 #
-# Humbug's post-receive hook.  Deploy it by symlinking it to
-# /srv/git/humbug.git/hooks/post-receive
+# Humbug's post-receive hook.  There is a symlink
+#   from /srv/git/humbug.git/hooks/post-receive
+#   to   ~humbug/humbug/tools/post-receive
+# on git.humbughq.com.  So to deploy changes to this script, run
+#
+#   ssh humbug@git.humbughq.com 'cd humbug; git pull'
 #
 # The "post-receive" script is run after receive-pack has accepted a pack
 # and the repository has been updated.  It is passed arguments in through
