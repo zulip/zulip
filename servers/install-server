@@ -58,13 +58,20 @@ scp -i ~/humbug/humbug.pem ~/humbug/certs/humbug-self-signed.key root@"$server":
 
 ssh "$server" -t -i ~/humbug/humbug.pem -lroot <<EOF
 cp -a /root/humbug/servers/puppet/puppet.conf /etc/puppet/
-# HACK: run puppet twice to workaround bug in apache module handling
+# HACK: run puppet twice to workaround bug in puppet's dependency
+# resolution (namely apache module 'ssl' being enabled _after_ the
+# sites that use it )
 puppet apply /root/humbug/servers/puppet/manifests/site.pp || true
 puppet apply /root/humbug/servers/puppet/manifests/site.pp
-# The last bit should be moveable into puppet-land, ideally
-service apache2 restart
-service ssh restart
+# These server restarting bits should be moveable into puppet-land, ideally
 apt-get upgrade
+service ssh restart
+if [ -e "/etc/init.d/nginx" ]; then
+    service nginx restart
+fi
+if [ -e "/etc/init.d/apache2" ]; then
+    service apache2 restart
+fi
 EOF
 
 set +x
