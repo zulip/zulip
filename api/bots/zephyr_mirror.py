@@ -168,6 +168,8 @@ def maybe_restart_mirroring_script():
         os.kill(child_pid, signal.SIGKILL)
         while True:
             try:
+                if bot_name == "extra_mirror.py":
+                    os.execvp(root_path + "/extra_mirror.py", sys.argv)
                 os.execvp(root_path + "/user_root/zephyr_mirror.py", sys.argv)
             except:
                 print "Error restarting, trying again."
@@ -534,7 +536,11 @@ if options.forward_from_humbug:
 
 # First check that there are no other bots running
 cmdline = " ".join(sys.argv)
-proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", cmdline],
+if "extra_mirror" in cmdline:
+    bot_name = "extra_mirror.py"
+else:
+    bot_name = "zephyr_mirror.py"
+proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", bot_name],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE)
 out, _err_unused = proc.communicate()
