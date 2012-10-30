@@ -105,7 +105,7 @@ def parse_options(args):
                     help='spawn $EDITOR and edit review request')
   options, args = parser.parse_args(args)
   if not options.reviewers:
-    parser.error('reviewer required')  
+    parser.error('reviewer required')
   reviewers_fixed = []
   for reviewer in options.reviewers:
     if '@' not in reviewer:
@@ -231,10 +231,10 @@ def edit(repo, opts, revs):
 
   template = StringIO()
   commitmsg = StringIO()
-  
+
   write_template(template, repo, opts)
   write_commitmsg(commitmsg, repo, opts, revs)
-  
+
   temp = codecs.getwriter('utf-8')(tempfile.NamedTemporaryFile(prefix="review-"))
 
   # Prepare editable buffer.
@@ -256,7 +256,7 @@ def edit(repo, opts, revs):
   subprocess.check_call(shlex.split(editor) + [temp.name])
 
   # Check if buffer is empty, and if so abort.
-  
+
   if (os.path.getsize(temp.name) == 0):
     print >>sys.stderr, "Aborting due to empty buffer."
     sys.exit(2)
@@ -294,7 +294,7 @@ def main(args):
   if opts.edit:
     msg = edit(repo, opts, revs)
 
-  else: 
+  else:
     # Just build the message.
     msg = Message()
     for (key, value) in make_header(repo, opts, revs):
