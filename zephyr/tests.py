@@ -116,8 +116,8 @@ class PublicURLTest(TestCase):
         # FIXME: We should also test the Tornado URLs -- this codepath
         # can't do so because this Django test mechanism doesn't go
         # through Tornado.
-        urls = {200: ["/accounts/home/", "/accounts/login/", "/accounts/logout/"],
-                302: ["/"],
+        urls = {200: ["/accounts/home/", "/accounts/login/"],
+                302: ["/", "/accounts/logout/"],
                 400: ["/accounts/register/",
                       "/api/v1/get_public_streams",
                       "/api/v1/get_subscriptions",
