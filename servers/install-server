@@ -74,5 +74,9 @@ cat <<EOF
 
  Remaining manual setup tasks:
    - Add hostname to /etc/hostname and /etc/hosts
+
+     Make sure the hostname contains the string 'humbughq.com';
+     this is how our software knows it's running in production
+
    - /etc/init.d/hostname.sh start
 EOF
