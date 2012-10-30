@@ -140,12 +140,12 @@ def username_to_fullname(username):
         fullnames[username] = fetch_fullname(username)
     return fullnames[username]
 
-current_zephyr_subs = {}
+current_zephyr_subs = set()
 def ensure_subscribed(sub):
     if sub in current_zephyr_subs:
         return
     subs.add((sub, '*', '*'))
-    current_zephyr_subs[sub] = True
+    current_zephyr_subs.add(sub)
 
 def update_subscriptions_from_humbug():
     try:
