@@ -257,7 +257,7 @@ def bulk_create_users(realms, users_raw):
 
     subscriptions_to_create = []
     for (email, _, _, _) in users:
-        subscriptions_to_create.append(\
+        subscriptions_to_create.append(
             Subscription(user_profile_id=profiles_by_email[email].id,
                          recipient=recipients_by_email[email]))
     batch_bulk_create(Subscription, subscriptions_to_create)
