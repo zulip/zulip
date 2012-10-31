@@ -766,21 +766,14 @@ def valid_stream_name(name):
 
 @login_required_api_view
 def api_subscribe(request, user_profile):
-    if "streams" not in request.POST:
-        return json_error("Missing streams argument.")
-    streams = simplejson.loads(request.POST.get("streams"))
-    for stream_name in streams:
-        if len(stream_name) > 30:
-            return json_error("Stream name (%s) too long." % (stream_name,))
-        if not valid_stream_name(stream_name):
-            return json_error("Invalid characters in stream name (%s)." % (stream_name,))
-    res = add_subscriptions_backend(request, user_profile, streams)
-    return json_success(res)
+    return add_subscriptions_backend(request, user_profile)
 
 @login_required_json_view
 def json_add_subscriptions(request):
     user_profile = UserProfile.objects.get(user=request.user)
+    return add_subscriptions_backend(request, user_profile)
 
+def add_subscriptions_backend(request, user_profile):
     if "streams" not in request.POST:
         return json_error("Missing streams argument")
     streams_raw = simplejson.loads(request.POST.get("streams"))
@@ -790,12 +783,9 @@ def json_add_subscriptions(request):
         if len(stream_name) > 30:
             return json_error("Stream name (%s) too long." % (stream_name,))
         if not valid_stream_name(stream_name):
-            return json_error("Invalid characters in stream name (%s)." % (stream_name,))
+            return json_error("Invalid stream name (%s)." % (stream_name,))
         streams.append(stream_name)
-    res = add_subscriptions_backend(request, user_profile, streams)
-    return json_success(res)
 
-def add_subscriptions_backend(request, user_profile, streams):
     subscribed = []
     already_subscribed = []
     for stream_name in list(set(streams)):
@@ -806,8 +796,8 @@ def add_subscriptions_backend(request, user_profile, streams):
         else:
             already_subscribed.append(stream_name)
 
-    return {"subscribed": subscribed,
-            "already_subscribed": already_subscribed}
+    return json_success({"subscribed": subscribed,
+                         "already_subscribed": already_subscribed})
 
 @login_required_json_view
 def json_change_settings(request):
