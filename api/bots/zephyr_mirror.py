@@ -12,9 +12,8 @@ import textwrap
 import signal
 
 root_path = "/mit/tabbott/for_friends"
-sys.path.append(root_path)
-sys.path.append(root_path + "/python-zephyr")
-sys.path.append(root_path + "/python-zephyr/build/lib.linux-x86_64-2.6/")
+sys.path[:0] = [root_path, root_path + "/python-zephyr",
+                root_path + "/python-zephyr/build/lib.linux-x86_64-2.6/"]
 
 parser = optparse.OptionParser()
 parser.add_option('--forward-class-messages',
