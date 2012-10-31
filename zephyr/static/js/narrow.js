@@ -37,7 +37,9 @@ function do_narrow(icon, description, filter_function) {
     narrowed = filter_function;
 
     // Your pointer isn't changed when narrowed.
-    persistent_message_id = selected_message_id;
+    if (! was_narrowed) {
+        persistent_message_id = selected_message_id;
+    }
 
     // Before we clear the table, check if anything was highlighted.
     var highlighted = something_is_highlighted();
@@ -59,9 +61,9 @@ function do_narrow(icon, description, filter_function) {
     $("#zhome").removeClass("focused_table");
     // Indicate both which message is persistently selected and which
     // is temporarily selected
-    select_message_by_id(selected_message_id,
+    select_message_by_id(persistent_message_id,
                          {then_scroll: false, update_server: false,
-                          for_narrow: was_narrowed});
+                          for_narrow: false});
     select_message_by_id(target_id,
                          {then_scroll: true, update_server: false});
 
