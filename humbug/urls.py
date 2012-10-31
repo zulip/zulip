@@ -26,7 +26,7 @@ urlpatterns = patterns('',
     url(r'^json/settings/change/$', 'zephyr.views.json_change_settings', name='json_change_settings'),
     url(r'^json/subscriptions/list$', 'zephyr.views.json_list_subscriptions', name='json_list_subscriptions'),
     url(r'^json/subscriptions/remove$', 'zephyr.views.json_remove_subscription', name='json_remove_subscription'),
-    url(r'^json/subscriptions/add$', 'zephyr.views.json_add_subscription', name='json_add_subscription'),
+    url(r'^json/subscriptions/add$', 'zephyr.views.json_add_subscriptions', name='json_add_subscriptions'),
     url(r'^json/subscriptions/exists$', 'zephyr.views.json_stream_exists', name='json_stream_exists'),
     url(r'^json/fetch_api_key$', 'zephyr.views.json_fetch_api_key', name='json_fetch_api_key'),
 

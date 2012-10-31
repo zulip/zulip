@@ -778,21 +778,22 @@ def api_subscribe(request, user_profile):
     return json_success(res)
 
 @login_required_json_view
-def json_add_subscription(request):
+def json_add_subscriptions(request):
     user_profile = UserProfile.objects.get(user=request.user)
 
     if "streams" not in request.POST:
         return json_error("Missing streams argument")
-    stream_name = request.POST.get('streams').strip()
-    if not valid_stream_name(stream_name):
-        return json_error("Invalid characters in stream names")
-    if len(stream_name) > 30:
-        return json_error("Stream name %s too long." % (stream_name,))
-    res = add_subscriptions_backend(request,user_profile,
-                                    [stream_name])
-    if len(res["already_subscribed"]) != 0:
-        return json_error("Subscription already exists")
-    return json_success({"data": res["subscribed"][0]})
+    streams_raw = simplejson.loads(request.POST.get("streams"))
+    streams = []
+    for stream_name in streams_raw:
+        stream_name = stream_name.strip()
+        if len(stream_name) > 30:
+            return json_error("Stream name (%s) too long." % (stream_name,))
+        if not valid_stream_name(stream_name):
+            return json_error("Invalid characters in stream name (%s)." % (stream_name,))
+        streams.append(stream_name)
+    res = add_subscriptions_backend(request, user_profile, streams)
+    return json_success(res)
 
 def add_subscriptions_backend(request, user_profile, streams):
     subscribed = []

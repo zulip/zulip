@@ -53,31 +53,22 @@ exports.fetch = function () {
     });
 };
 
-function subscribe_for_send_success(stream_name, prompt_button) {
-    add_to_stream_list(stream_name);
-    compose.finish();
-    prompt_button.stop(true).fadeOut(500);
-}
-
 exports.subscribe_for_send = function (stream, prompt_button) {
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/add',
-        data:      {streams: stream},
+        // The next line is a total hack to format our stream as
+        // that simplejson will parse as a 1-element array
+        data: {"streams": '["' + stream + '"]' },
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (response) {
-            subscribe_for_send_success(response.data, prompt_button);
+            add_to_stream_list(stream);
+            compose.finish();
+            prompt_button.stop(true).fadeOut(500);
         },
         error: function (xhr, error_type, exn) {
-            if ($.parseJSON(xhr.responseText).msg === "Subscription already exists") {
-                // If we're already subscribed, the issue here was
-                // actually that the client didn't know we were
-                // already subscribed -- so just send the message.
-                subscribe_for_send_success(stream, prompt_button);
-            } else {
-                report_error("Unable to subscribe", xhr, $("#home-error"));
-            }
+            report_error("Unable to subscribe", xhr, $("#home-error"));
         }
     });
 };
@@ -110,20 +101,34 @@ $(function () {
         }
     });
 
-    $("#add_new_subscription").ajaxForm({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: function (resp, statusText, xhr, form) {
-            $("#streams").val("");
-            var name = $.parseJSON(xhr.responseText).data;
-            add_to_stream_list(name);
-            report_success("Successfully added subscription to " + name,
-                           $("#subscriptions-status"));
-            $("#streams").focus();
-        },
-        error: function (xhr) {
-            report_error("Error adding subscription", xhr, $("#subscriptions-status"));
-            $("#streams").focus();
-        }
+    $("#add_new_subscription").on("submit", function (e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: "/json/subscriptions/add",
+            dataType: 'json', // This seems to be ignored. We still get back an xhr.
+            // The next line is a total hack to format our stream as
+            // that simplejson will parse as a 1-element array
+            data: {"streams": '["' + $("#streams").val() + '"]' },
+            success: function (resp, statusText, xhr, form) {
+                $("#streams").val("");
+                var name, res = $.parseJSON(xhr.responseText);
+                if (res.subscribed.length === 0) {
+                    name = res.already_subscribed[0];
+                    report_success("Already subscribed to " + name, $("#subscriptions-status"));
+                } else {
+                    name = res.subscribed[0];
+                    report_success("Successfully added subscription to " + name,
+                                   $("#subscriptions-status"));
+                }
+                add_to_stream_list(name);
+                $("#streams").focus();
+            },
+            error: function (xhr) {
+                report_error("Error adding subscription", xhr, $("#subscriptions-status"));
+                $("#streams").focus();
+            }
+        });
     });
 });
 
