@@ -31,7 +31,7 @@ exports.narrowing_type = function () {
     return narrow_type;
 };
 
-function do_narrow(icon, description, filter_function) {
+function do_narrow(bar, filter_function) {
     var was_narrowed = exports.active();
 
     narrowed = filter_function;
@@ -57,7 +57,9 @@ function do_narrow(icon, description, filter_function) {
     $("#top_narrowed_whitespace").show();
     $("#main_div").addClass("narrowed_view");
     $("#searchbox").addClass("narrowed_view");
-    $("#currently_narrowed_to").html(icon + " " + description).attr("title", description.replace(/&nbsp;/g, ""));
+    $("#currently_narrowed_to").remove();
+    $("#narrowlabel").append(templates.narrowbar(bar));
+
     $("#zhome").removeClass("focused_table");
     // Indicate both which message is persistently selected and which
     // is temporarily selected
@@ -84,7 +86,7 @@ exports.target = function (id) {
 
 exports.all_huddles = function () {
     narrow_type = "all_huddles";
-    do_narrow("<i class='icon-user'></i>", "You and anyone else", function (other) {
+    do_narrow({icon: 'user', description: 'You and anyone else'}, function (other) {
         return other.type === "personal" || other.type === "huddle";
     });
 };
@@ -98,10 +100,13 @@ exports.by_subject = function () {
         return;
     }
 
-    var icon = "<i class='icon-bullhorn'></i>";
-    var message = original.display_recipient + " &nbsp; | &nbsp; " + original.subject;
     narrow_type = "subject";
-    do_narrow(icon, message, function (other) {
+    var bar = {
+        icon:        'bullhorn',
+        description: original.display_recipient,
+        subject:     original.subject
+    };
+    do_narrow(bar, function (other) {
         return (other.type === 'stream' &&
                 original.recipient_id === other.recipient_id &&
                 original.subject === other.subject);
@@ -111,11 +116,13 @@ exports.by_subject = function () {
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function () {
     var message = message_dict[target_id];
+    var bar;
     switch (message.type) {
     case 'personal':
         // Narrow to personals with a specific user
         narrow_type = "huddle";
-        do_narrow("<i class='icon-user'></i>", "You and " + message.display_reply_to, function (other) {
+        bar = {icon: 'user', description: "You and " + message.display_reply_to};
+        do_narrow(bar, function (other) {
             return (other.type === 'personal') &&
                 (((other.display_recipient.email === message.display_recipient.email)
                     && (other.sender_email === message.sender_email)) ||
@@ -126,7 +133,8 @@ exports.by_recipient = function () {
 
     case 'huddle':
         narrow_type = "huddle";
-        do_narrow("<i class='icon-user'></i>", "You and " + message.display_reply_to, function (other) {
+        bar = {icon: 'user', description: "You and " + message.display_reply_to};
+        do_narrow(bar, function (other) {
             return (other.type === "personal" || other.type === "huddle")
                 && other.reply_to === message.reply_to;
         });
@@ -134,7 +142,8 @@ exports.by_recipient = function () {
 
     case 'stream':
         narrow_type = "stream";
-        do_narrow("<i class='icon-bullhorn'></i>", message.display_recipient, function (other) {
+        bar = {icon: 'bullhorn', description: message.display_recipient};
+        do_narrow(bar, function (other) {
             return (other.type === 'stream' &&
                     message.recipient_id === other.recipient_id);
         });
