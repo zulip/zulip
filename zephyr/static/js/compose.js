@@ -231,11 +231,6 @@ function validate_stream_message() {
         return false;
     }
 
-    if (exports.message_content() === "") {
-        compose_error("You have nothing to send!", $("#new_message_content"));
-        return false;
-    }
-
     if (!subs.have(stream_name)) {
         if (!check_stream_for_send(stream_name)) {
             return false;
@@ -259,16 +254,16 @@ function validate_huddle_message() {
         return false;
     }
 
-    if (exports.message_content() === "") {
-        compose_error("You have nothing to send!", $("#new_message_content"));
-        return false;
-    }
-
     return true;
 }
 
 exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
+
+    if (exports.message_content() === "") {
+        compose_error("You have nothing to send!", $("#new_message_content"));
+        return false;
+    }
 
     if (exports.composing() === 'huddle') {
         return validate_huddle_message();
