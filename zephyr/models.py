@@ -611,9 +611,8 @@ def bulk_create_huddles(users, huddle_user_list):
                                                         recipient=huddle_recipients[huddle_hash]))
     batch_bulk_create(Subscription, subscriptions_to_create)
 
-# This is currently dead code since all the places where we used to
-# use it now have faster implementations, but I expect this to be
-# potentially useful for code in the future, so not deleting it yet.
+# This function is used only by tests.
+# We have faster implementations within the app itself.
 def filter_by_subscriptions(messages, user):
     user_profile = UserProfile.objects.get(user=user)
     user_messages = []
