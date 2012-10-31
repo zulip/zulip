@@ -677,29 +677,25 @@ def send_message_backend(request, user_profile, sender, client_name=None):
     return json_success()
 
 
-def validate_notify(request, handler):
+def validate_notify(request):
     # Check the shared secret.
     # Also check the originating IP, at least for now.
-    if ((request.META['REMOTE_ADDR'] not in ('127.0.0.1', '::1'))
-        or (request.POST.get('secret') != settings.SHARED_SECRET)):
+    return (request.META['REMOTE_ADDR'] in ('127.0.0.1', '::1')
+            and request.POST.get('secret') == settings.SHARED_SECRET)
 
-        handler.set_status(403)
-        handler.finish('Access denied')
-        return False
-    return True
 
 @asynchronous
 @csrf_exempt
 @require_post
 def notify_new_message(request, handler):
-    if not validate_notify(request, handler):
-        return
+    if not validate_notify(request):
+        return json_error("Access denied", status=403)
 
     # If a message for some reason has no recipients (e.g. it is sent
     # by a bot to a stream that nobody is subscribed to), just skip
     # the message gracefully
     if request.POST["users"] == "":
-        return
+        return json_success()
 
     # FIXME: better query
     users   = [UserProfile.objects.get(id=user)
@@ -709,14 +705,14 @@ def notify_new_message(request, handler):
     for user in users:
         user.receive(message)
 
-    handler.finish()
+    return json_success()
 
 @asynchronous
 @csrf_exempt
 @require_post
 def notify_pointer_update(request, handler):
-    if not validate_notify(request, handler):
-        return
+    if not validate_notify(request):
+        return json_error("Access denied", status=403)
 
     # FIXME: better query
     user_profile = UserProfile.objects.get(id=request.POST['user'])
@@ -725,7 +721,7 @@ def notify_pointer_update(request, handler):
 
     user_profile.update_pointer(new_pointer, pointer_updater)
 
-    handler.finish()
+    return json_success()
 
 @login_required_api_view
 def api_get_public_streams(request, user_profile):
