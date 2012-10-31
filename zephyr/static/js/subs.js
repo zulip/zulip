@@ -2,7 +2,7 @@ var subs = (function () {
 
 var exports = {};
 
-var stream_list_hash = {};
+var stream_set = {};
 
 function case_insensitive_subscription_index(stream_name) {
     var i;
@@ -19,13 +19,13 @@ function case_insensitive_subscription_index(stream_name) {
 function add_to_stream_list(stream_name) {
     if (!exports.have(stream_name)) {
         stream_list.push(stream_name);
-        stream_list_hash[stream_name.toLowerCase()] = true;
+        stream_set[stream_name.toLowerCase()] = true;
         $('#subscriptions_table').prepend(templates.subscription({subscription: stream_name}));
     }
 }
 
 function remove_from_stream_list(stream_name) {
-    delete stream_list_hash[stream_name.toLowerCase()];
+    delete stream_set[stream_name.toLowerCase()];
     var removal_index = case_insensitive_subscription_index(stream_name);
     if (removal_index !== -1) {
         stream_list.splice(removal_index, 1);
@@ -74,14 +74,14 @@ exports.subscribe_for_send = function (stream, prompt_button) {
 };
 
 exports.have = function (stream_name) {
-    return (stream_list_hash[stream_name.toLowerCase()] === true);
+    return (stream_set[stream_name.toLowerCase()] === true);
 };
 
 $(function () {
     var i;
-    // Populate stream_list_hash with data handed over to client-side template.
+    // Populate stream_set with data handed over to client-side template.
     for (i = 0; i < stream_list.length; i++) {
-        stream_list_hash[stream_list[i].toLowerCase()] = true;
+        stream_set[stream_list[i].toLowerCase()] = true;
     }
 
     // FIXME: It would be nice to move the UI setup into ui.js.
