@@ -94,9 +94,7 @@ class Realm(models.Model):
         return self.__repr__()
 
 def bulk_create_realms(realm_list):
-    existing_realms = set()
-    for realm in Realm.objects.select_related().all():
-        existing_realms.add(realm.domain)
+    existing_realms = set(r.domain for r in Realm.objects.select_related().all())
 
     realms_to_create = []
     for domain in realm_list:
@@ -273,9 +271,8 @@ def create_stream_if_needed(realm, stream_name):
     return stream
 
 def bulk_create_streams(realms, stream_list):
-    existing_streams = set()
-    for stream in Stream.objects.select_related().all():
-        existing_streams.add((stream.realm.domain, stream.name.lower()))
+    existing_streams = set((stream.realm.domain, stream.name.lower())
+                           for stream in Stream.objects.select_related().all())
     streams_to_create = []
     for (domain, name) in stream_list:
         if (domain, name.lower()) not in existing_streams:
@@ -356,9 +353,7 @@ def get_client(name):
     return client
 
 def bulk_create_clients(client_list):
-    existing_clients = set()
-    for client in Client.objects.select_related().all():
-        existing_clients.add(client.name)
+    existing_clients = set(client.name for client in Client.objects.select_related().all())
 
     clients_to_create = []
     for name in client_list:
