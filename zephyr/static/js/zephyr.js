@@ -1,7 +1,7 @@
 var message_array = [];
 var message_dict = {};
 var subject_dict = {};
-var people_hash = {};
+var people_set = {};
 
 var viewport = $(window);
 
@@ -17,7 +17,7 @@ var get_updates_params = {
 
 $(function () {
     $.each(people_list, function (idx, person) {
-        people_hash[person.email] = 1;
+        people_set[person.email] = true;
     });
 });
 
@@ -415,8 +415,8 @@ function add_message_metadata(dummy, message) {
     $.each(involved_people, function (idx, person) {
         // Do the hasOwnProperty() call via the prototype to avoid problems
         // with keys like "hasOwnProperty"
-        if (! Object.prototype.hasOwnProperty.call(people_hash, person.email)) {
-            people_hash[person.email] = 1;
+        if (! Object.prototype.hasOwnProperty.call(people_set, person.email)) {
+            people_set[person.email] = true;
             people_list.push(person);
             composebox_typeahead.autocomplete_needs_update(true);
         }
