@@ -27,11 +27,11 @@
     <td class="message_header message_header_stream right_part">
       <span class="message_label_clickable"
             onclick="narrow.target({{id}}); narrow.by_recipient();"
-            title="{{display_recipient}}">{{display_recipient}}</span>
+            title="Narrow to stream &quot;{{display_recipient}}&quot;">{{display_recipient}}</span>
       &nbsp; | &nbsp;
       <span class="message_label_clickable"
             onclick="narrow.target({{id}}); narrow.by_subject();"
-            title="{{subject}}">{{subject}}</span>
+            title="Narrow to stream &quot;{{display_recipient}}&quot;, subject &quot;{{subject}}&quot;">{{subject}}</span>
     </td>
 </tr>
 {{else}}
@@ -41,7 +41,7 @@
     </td>
     <td class="message_label_clickable message_header message_header_huddle right_part"
         onclick="narrow.target({{id}}); narrow.by_recipient();"
-        title="Huddle with you and {{display_reply_to}}">You and {{display_reply_to}}</td>
+        title="Narrow to messages sent to you and {{display_reply_to}}">You and {{display_reply_to}}</td>
 </tr>
 {{/if}}
 {{/include_recipient}}
