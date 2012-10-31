@@ -27,7 +27,9 @@ var narrow_hotkeys = {
     104: narrow.all_huddles    // 'h'
 };
 
-// These are not exported, but we declare them here to make JSLint happy.
+// These are not exported, but they need to be used before they are
+// defined, since we have a cycle in function reference.  So we
+// declare them ahead of time to make JSLint happy.
 var process_key_in_input, process_compose_hotkey;
 
 function simulate_keydown(keycode) {
