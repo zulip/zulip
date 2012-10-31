@@ -39,6 +39,15 @@ function show_email(message_id) {
     rows.get(message_id).find('.sender_email').removeClass('invisible');
 }
 
+function report_message(response, status_box, cls) {
+    if (cls === undefined)
+        cls = 'alert';
+
+    status_box.removeClass(status_classes).addClass(cls)
+              .text(response).stop(true).fadeTo(0, 1);
+    status_box.show();
+}
+
 function report_error(response, xhr, status_box) {
     if (xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
@@ -46,21 +55,11 @@ function report_error(response, xhr, status_box) {
         response += ": " + $.parseJSON(xhr.responseText).msg;
     }
 
-    status_box.removeClass(status_classes).addClass('alert-error')
-              .text(response).stop(true).fadeTo(0, 1);
-    status_box.show();
+    report_message(response, status_box, 'alert-error');
 }
 
 function report_success(response, status_box) {
-    status_box.removeClass(status_classes).addClass('alert-success')
-              .text(response).stop(true).fadeTo(0, 1);
-    status_box.show();
-}
-
-function report_message(response, status_box) {
-    status_box.removeClass(status_classes).addClass('alert')
-              .text(response).stop(true).fadeTo(0, 1);
-    status_box.show();
+    report_message(response, status_box, 'alert-success');
 }
 
 var clicking = false;
