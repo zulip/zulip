@@ -59,7 +59,7 @@ def get_log_recipient(recipient):
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name} for user_profile in user_profile_list]
 
-class Callbacks:
+class Callbacks(object):
     TYPE_RECEIVE = 0
     TYPE_POINTER_UPDATE = 1
     TYPE_MAX = 2
