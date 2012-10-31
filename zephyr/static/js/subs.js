@@ -52,6 +52,12 @@ exports.fetch = function () {
     });
 };
 
+function add_for_send_success(stream_name, prompt_button) {
+    add_to_stream_list(stream_name);
+    compose.finish();
+    prompt_button.stop(true).fadeOut(500);
+}
+
 exports.add_for_send = function (stream, prompt_button) {
     $.ajax({
         type:     'POST',
@@ -60,12 +66,17 @@ exports.add_for_send = function (stream, prompt_button) {
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (response) {
-            add_to_stream_list(response.data);
-            compose.finish();
-            prompt_button.stop(true).fadeOut(500);
+            add_for_send_success(response.data, prompt_button);
         },
         error: function (xhr, error_type, exn) {
-            report_error("Unable to subscribe", xhr, $("#home-error"));
+            if ($.parseJSON(xhr.responseText).msg === "Subscription already exists") {
+                // If we're already subscribed, the issue here was
+                // actually that the client didn't know we were
+                // already subscribed -- so just send the message.
+                add_for_send_success(stream, prompt_button);
+            } else {
+                report_error("Unable to subscribe", xhr, $("#home-error"));
+            }
         }
     });
 };
