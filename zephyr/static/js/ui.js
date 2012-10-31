@@ -272,6 +272,29 @@ function userinfo_popover(event, element, id) {
     }
 }
 
+function safari_composebox_hack(forwards) {
+    // OK, so the situation here is basically a lot of work so that
+    // Tab-Enter is a valid hotkey for sending a message in Safari.
+    // By default, Safari uses Tab only to cycle through textboxes,
+    // basically. Even if the tabindex is set on it, a button (like
+    // our submit button) will not get focus.
+
+    // HOWEVER, if you set the tabindex on a div, Safari/WebKit will
+    // respect that, and will focus it.  So we make a div right before
+    // the Send button, which, when selected, focuses the send button.
+    // Then, we make another div right after it, that, when selected,
+    // focuses back the composebox (so as not to break Shift-Tab in
+    // these browsers).
+
+    // This behavior is configurable in Safari, but is not on by
+    // default.  (It is on by default in Chrome.)
+    if (forwards) {
+        $('#compose-send-button').focus();
+    } else {
+        $('#new_message_content').focus();
+    }
+}
+
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.

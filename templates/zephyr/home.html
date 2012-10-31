@@ -124,7 +124,9 @@
                 <div class="message_content">
                   <textarea class="new_message_textarea" name="content" id="new_message_content"
                             value="" placeholder="Compose your message here..." tabindex="140"></textarea>
-                  <input type="submit" value="Send" class="btn send_message" tabindex="150"/>
+                  <div tabindex="148" onfocus="safari_composebox_hack(true);"></div>
+                  <div tabindex="149" onfocus="safari_composebox_hack(false);"></div>
+                  <input type="submit" value="Send" id="compose-send-button" class="btn send_message" tabindex="150"/>
                 </div>
               </td>
             </tr>
