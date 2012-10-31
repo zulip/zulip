@@ -86,8 +86,6 @@ class Callbacks(object):
     def create_key(self, key):
         self.table[key] = [[] for i in range(0, Callbacks.TYPE_MAX)]
 
-callbacks_table = Callbacks()
-
 class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True)
 
@@ -117,31 +115,29 @@ class UserProfile(models.Model):
     realm = models.ForeignKey(Realm)
     api_key = models.CharField(max_length=32)
 
+    # This is class data, not instance data!
+    # There is one callbacks_table for the whole process.
+    callbacks_table = Callbacks()
+
     # The user receives this message
     # Called in the Tornado process
     def receive(self, message):
-        global callbacks_table
-
-        for cb in callbacks_table.get(self.user.id, Callbacks.TYPE_RECEIVE):
+        for cb in self.callbacks_table.get(self.user.id, Callbacks.TYPE_RECEIVE):
             cb(messages=[message], update_types=["new_messages"])
 
-        callbacks_table.clear(self.user.id, Callbacks.TYPE_RECEIVE)
+        self.callbacks_table.clear(self.user.id, Callbacks.TYPE_RECEIVE)
 
     def update_pointer(self, new_pointer, pointer_updater):
-        global callbacks_table
-
-        for cb in callbacks_table.get(self.user.id, Callbacks.TYPE_POINTER_UPDATE):
+        for cb in self.callbacks_table.get(self.user.id, Callbacks.TYPE_POINTER_UPDATE):
             cb(new_pointer=new_pointer, pointer_updater=pointer_updater)
 
-        callbacks_table.clear(self.user.id, Callbacks.TYPE_POINTER_UPDATE)
+        self.callbacks_table.clear(self.user.id, Callbacks.TYPE_POINTER_UPDATE)
 
     def add_receive_callback(self, cb):
-        global callbacks_table
-        callbacks_table.add(self.user.id, Callbacks.TYPE_RECEIVE, cb)
+        self.callbacks_table.add(self.user.id, Callbacks.TYPE_RECEIVE, cb)
 
     def add_pointer_update_callback(self, cb):
-        global callbacks_table
-        callbacks_table.add(self.user.id, Callbacks.TYPE_POINTER_UPDATE, cb)
+        self.callbacks_table.add(self.user.id, Callbacks.TYPE_POINTER_UPDATE, cb)
 
     def __repr__(self):
         return "<UserProfile: %s %s>" % (self.user.email, self.realm)
