@@ -158,6 +158,7 @@ class UserProfile(models.Model):
             # Auto-sub to the ability to receive personals.
             recipient = Recipient.objects.create(type_id=profile.id, type=Recipient.PERSONAL)
             Subscription.objects.create(user_profile=profile, recipient=recipient)
+            return profile
 
 class PreregistrationUser(models.Model):
     email = models.EmailField(unique=True)
