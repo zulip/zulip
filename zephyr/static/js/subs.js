@@ -20,6 +20,7 @@ function add_to_stream_list(stream_name) {
     if (!exports.have(stream_name)) {
         stream_list.push(stream_name);
         stream_list_hash[stream_name.toLowerCase()] = true;
+        $('#subscriptions_table').prepend(templates.subscription({subscription: stream_name}));
     }
 }
 
@@ -114,7 +115,6 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             $("#streams").val("");
             var name = $.parseJSON(xhr.responseText).data;
-            $('#subscriptions_table').prepend(templates.subscription({subscription: name}));
             add_to_stream_list(name);
             report_success("Successfully added subscription to " + name,
                            $("#subscriptions-status"));
