@@ -326,7 +326,7 @@ class Recipient(models.Model):
         elif self.type == self.HUDDLE:
             return "huddle"
         else:
-            raise
+            raise ValueError('Bad recipient type')
 
     def __repr__(self):
         display_recipient = get_display_recipient(self)
@@ -465,7 +465,7 @@ def do_send_message(message, no_log=False):
         recipients = [s.user_profile for
                       s in Subscription.objects.select_related().filter(recipient=message.recipient, active=True)]
     else:
-        raise
+        raise ValueError('Bad recipient type')
 
     # Save the message receipts in the database
     # TODO: Use bulk_create here

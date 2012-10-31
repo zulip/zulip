@@ -318,7 +318,7 @@ def restore_saved_messages():
                     email_set.add(u["email"])
             huddle_user_set.add(tuple(sorted(u["email"] for u in old_message["recipient"])))
         else:
-            raise
+            raise ValueError('Bad message type')
 
     stream_recipients = {}
     user_recipients = {}
@@ -429,7 +429,7 @@ def restore_saved_messages():
                                            for u in old_message["recipient"]])
             message.recipient = huddle_recipients[huddle_hash]
         else:
-            raise
+            raise ValueError('Bad message type')
         messages_to_create.append(message)
 
     print datetime.datetime.now(), "Importing messages, part 2..."
