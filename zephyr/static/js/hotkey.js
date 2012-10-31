@@ -191,14 +191,18 @@ $(document).keyup(function (e) {
    so we bail in .keydown if the event is a letter or number and
    instead just let keypress go for it. */
 
-$(document).keydown(function (event) {
-    if (48 > event.which ||90 < event.which) { // outside the alphanumeric range
-        var result = current_key_handler(event.which);
-        if (result) {
-            current_key_handler = result;
-            event.preventDefault();
-        }
+function down_or_press(event) {
+    var result = current_key_handler(event.which);
+    if (result) {
+        current_key_handler = result;
+        event.preventDefault();
     }
+}
+
+$(document).keydown(function (event) {
+    // Restrict to non-alphanumeric keys
+    if (48 > event.which || 90 < event.which)
+        down_or_press(event);
 });
 
 $(document).keypress(function (event) {
@@ -208,13 +212,8 @@ $(document).keypress(function (event) {
     // In particular, when you press tab in Firefox, it fires a
     // keypress event with keycode 0 after processing the original
     // event.
-    if (event.which !== 0 && event.charCode !== 0) {
-        var result = current_key_handler(event.which);
-        if (result) {
-            current_key_handler = result;
-            event.preventDefault();
-        }
-    }
+    if (event.which !== 0 && event.charCode !== 0)
+        down_or_press(event);
 });
 
 return exports;
