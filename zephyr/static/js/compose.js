@@ -4,12 +4,12 @@ var exports = {};
 var is_composing_message = false;
 
 exports.start = function (msg_type, opts) {
-    opts = $.extend({ 'message_type': msg_type,
-                      'stream': '',
-                      'subject': '',
-                      'huddle_recipient': '',
-                      'message': '' },
-                    opts);
+    opts = $.extend({ message_type:     msg_type,
+                      stream:           '',
+                      subject:          '',
+                      huddle_recipient: '',
+                      message:          ''
+                    }, opts);
 
     $("#stream").val(opts.stream);
     $("#subject").val(opts.subject);
