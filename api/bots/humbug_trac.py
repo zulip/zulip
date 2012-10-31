@@ -29,8 +29,13 @@ def markdown_ticket_url(ticket, heading="ticket"):
 def markdown_block(desc):
     return "\n\n>" + "\n> ".join(desc.split("\n")) + "\n"
 
+def truncate(string, length):
+    if len(string) <= length:
+        return string
+    return string[:length - 3] + "..."
+
 def trac_subject(ticket):
-    return "Trac #%s" % ticket.id
+    return truncate("Trac #%s: %s" % (ticket.id, ticket.values.get("summary")), 60)
 
 def send_update(ticket, content):
     client.send_message({
