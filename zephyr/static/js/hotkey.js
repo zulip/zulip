@@ -128,7 +128,7 @@ function process_hotkey(code) {
 /* The current handler function for keydown events.
    It should return a new handler, or 'false' to
    decline to handle the event. */
-var keydown_handler = process_hotkey;
+var current_key_handler = process_hotkey;
 
 process_key_in_input = function (code) {
     if (code === 27) {
@@ -151,12 +151,12 @@ process_compose_hotkey = function (code) {
     }
     // Process the first non-tab character and everything after it
     // like any other keys typed in the input box
-    keydown_handler = process_hotkey;
+    current_key_handler = process_hotkey;
     return process_hotkey(code);
 };
 
 exports.set_compose = function () {
-    keydown_handler = process_compose_hotkey;
+    current_key_handler = process_compose_hotkey;
 };
 
 $(document).keydown(function (e) {
@@ -193,9 +193,9 @@ $(document).keyup(function (e) {
 
 $(document).keydown(function (event) {
     if (48 > event.which ||90 < event.which) { // outside the alphanumeric range
-        var result = keydown_handler(event.which);
+        var result = current_key_handler(event.which);
         if (result) {
-            keydown_handler = result;
+            current_key_handler = result;
             event.preventDefault();
         }
     }
@@ -209,9 +209,9 @@ $(document).keypress(function (event) {
     // keypress event with keycode 0 after processing the original
     // event.
     if (event.which !== 0 && event.charCode !== 0) {
-        var result = keydown_handler(event.which);
+        var result = current_key_handler(event.which);
         if (result) {
-            keydown_handler = result;
+            current_key_handler = result;
             event.preventDefault();
         }
     }
