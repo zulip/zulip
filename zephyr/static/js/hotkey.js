@@ -139,9 +139,8 @@ process_key_in_input = function (code) {
     if ((code === 13) && $("#search").is(":focus")) {
         // Pass it along to the search up button.
         $("#search_up").focus();
-        return;
     }
-    // Otherwise, let the browser handle the key normally
+    // Let the browser handle the key normally.
     return false;
 };
 
@@ -195,7 +194,7 @@ $(document).keyup(function (e) {
 $(document).keydown(function (event) {
     if (48 > event.which ||90 < event.which) { // outside the alphanumeric range
         var result = keydown_handler(event.which);
-        if (typeof result === 'function') {
+        if (result) {
             keydown_handler = result;
             event.preventDefault();
         }
@@ -211,7 +210,7 @@ $(document).keypress(function (event) {
     // event.
     if (event.which !== 0 && event.charCode !== 0) {
         var result = keydown_handler(event.which);
-        if (typeof result === 'function') {
+        if (result) {
             keydown_handler = result;
             event.preventDefault();
         }
