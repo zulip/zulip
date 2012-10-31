@@ -781,9 +781,9 @@ def api_subscribe(request, user_profile):
 def json_add_subscription(request):
     user_profile = UserProfile.objects.get(user=request.user)
 
-    if "new_subscription" not in request.POST:
-        return json_error("Missing new_subscription argument")
-    stream_name = request.POST.get('new_subscription').strip()
+    if "streams" not in request.POST:
+        return json_error("Missing streams argument")
+    stream_name = request.POST.get('streams').strip()
     if not valid_stream_name(stream_name):
         return json_error("Invalid characters in stream names")
     if len(stream_name) > 30:

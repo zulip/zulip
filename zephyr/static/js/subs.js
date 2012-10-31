@@ -44,7 +44,7 @@ exports.fetch = function () {
                     $('#subscriptions_table').append(templates.subscription({subscription: name}));
                 });
             }
-            $('#new_subscription').focus().select();
+            $('#streams').focus().select();
         },
         error: function (xhr) {
             report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
@@ -62,7 +62,7 @@ exports.add_for_send = function (stream, prompt_button) {
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/add',
-        data:      {new_subscription: stream},
+        data:      {streams: stream},
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (response) {
@@ -112,17 +112,17 @@ $(function () {
     $("#add_new_subscription").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
-            $("#new_subscription").val("");
+            $("#streams").val("");
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').prepend(templates.subscription({subscription: name}));
             add_to_stream_list(name);
             report_success("Successfully added subscription to " + name,
                            $("#subscriptions-status"));
-            $("#new_subscription").focus();
+            $("#streams").focus();
         },
         error: function (xhr) {
             report_error("Error adding subscription", xhr, $("#subscriptions-status"));
-            $("#new_subscription").focus();
+            $("#streams").focus();
         }
     });
 });
