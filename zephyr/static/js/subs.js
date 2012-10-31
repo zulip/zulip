@@ -2,7 +2,7 @@ var subs = (function () {
 
 var exports = {};
 
-var stream_list_hash = [];
+var stream_list_hash = {};
 
 function case_insensitive_subscription_index(stream_name) {
     var i;
