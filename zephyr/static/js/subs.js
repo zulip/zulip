@@ -35,7 +35,7 @@ function remove_from_stream_list(stream_name) {
 exports.fetch = function () {
     $.ajax({
         type:     'POST',
-        url:      'json/subscriptions/list',
+        url:      '/json/subscriptions/list',
         dataType: 'json',
         timeout:  10*1000,
         success: function (data) {
