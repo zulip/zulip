@@ -72,19 +72,18 @@ class Callbacks(object):
             self.create_key(key)
         self.table[key][cb_type].append(callback)
 
-    def get(self, key, cb_type):
+    def call(self, key, cb_type, **kwargs):
         if not self.table.has_key(key):
             self.create_key(key)
-        return self.table[key][cb_type]
 
-    def clear(self, key, cb_type):
-        if not self.table.has_key(key):
-            self.create_key(key)
-            return
+        for cb in self.table[key][cb_type]:
+            cb(**kwargs)
+
         self.table[key][cb_type] = []
 
     def create_key(self, key):
         self.table[key] = [[] for i in range(0, Callbacks.TYPE_MAX)]
+
 
 class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True)
@@ -122,16 +121,12 @@ class UserProfile(models.Model):
     # The user receives this message
     # Called in the Tornado process
     def receive(self, message):
-        for cb in self.callbacks_table.get(self.user.id, Callbacks.TYPE_RECEIVE):
-            cb(messages=[message], update_types=["new_messages"])
-
-        self.callbacks_table.clear(self.user.id, Callbacks.TYPE_RECEIVE)
+        self.callbacks_table.call(self.user.id, Callbacks.TYPE_RECEIVE,
+            messages=[message], update_types=["new_messages"])
 
     def update_pointer(self, new_pointer, pointer_updater):
-        for cb in self.callbacks_table.get(self.user.id, Callbacks.TYPE_POINTER_UPDATE):
-            cb(new_pointer=new_pointer, pointer_updater=pointer_updater)
-
-        self.callbacks_table.clear(self.user.id, Callbacks.TYPE_POINTER_UPDATE)
+        self.callbacks_table.call(self.user.id, Callbacks.TYPE_POINTER_UPDATE,
+            new_pointer=new_pointer, pointer_updater=pointer_updater)
 
     def add_receive_callback(self, cb):
         self.callbacks_table.add(self.user.id, Callbacks.TYPE_RECEIVE, cb)
