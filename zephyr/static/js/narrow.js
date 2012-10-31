@@ -166,7 +166,7 @@ exports.show_all_messages = function () {
     $("#main_div").removeClass('narrowed_view');
     $("#searchbox").removeClass('narrowed_view');
     $("#show_all_messages").attr("disabled", "disabled");
-    $("#currently_narrowed_to").html("");
+    $("#currently_narrowed_to").empty();
     // Includes scrolling.
     select_message_by_id(persistent_message_id, {then_scroll: true});
 
