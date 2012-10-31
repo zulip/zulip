@@ -135,8 +135,9 @@ process_key_in_input = function (code) {
         // If the user hit the escape key, cancel the current compose
         compose.cancel();
     }
+    // Keycode 13 is Return.
     if ((code === 13) && $("#search").is(":focus")) {
-        // Pass along the return keypress to the search up button.
+        // Pass it along to the search up button.
         $("#search_up").focus();
         return;
     }
