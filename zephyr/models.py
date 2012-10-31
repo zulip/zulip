@@ -6,13 +6,13 @@ import base64
 import calendar
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.initial_password import initial_password, initial_api_key
-import fcntl
 import os
 import simplejson
 from django.db import transaction, IntegrityError
 from zephyr.lib import bugdown
 from zephyr.lib.bulk_create import batch_bulk_create
 from zephyr.lib.avatar import gravatar_hash
+from zephyr.lib.context_managers import lockfile
 import requests
 from django.contrib.auth.models import UserManager
 from django.utils import timezone
@@ -473,15 +473,9 @@ def get_user_profile_by_id(uid):
 # Store an event in the log for re-importing messages
 def log_event(event):
     assert("timestamp" in event)
-    if not os.path.exists(settings.MESSAGE_LOG + '.lock'):
-        with open(settings.MESSAGE_LOG + '.lock', 'w') as lock:
-            lock.write('0')
-
-    with open(settings.MESSAGE_LOG + '.lock', 'r') as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+    with lockfile(settings.MESSAGE_LOG + '.lock'):
         with open(settings.MESSAGE_LOG, 'a') as log:
             log.write(simplejson.dumps(event) + '\n')
-        fcntl.flock(lock, fcntl.LOCK_UN)
 
 def log_message(message):
     if not message.sending_client.name.startswith("test:"):
