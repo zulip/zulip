@@ -35,7 +35,7 @@ def truncate(string, length):
     return string[:length - 3] + "..."
 
 def trac_subject(ticket):
-    return truncate("Trac #%s: %s" % (ticket.id, ticket.values.get("summary")), 60)
+    return truncate("#%s: %s" % (ticket.id, ticket.values.get("summary")), 60)
 
 def send_update(ticket, content):
     client.send_message({
