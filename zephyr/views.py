@@ -793,7 +793,7 @@ def json_add_subscription(request):
     if len(stream_name) > 30:
         return json_error("Stream name %s too long." % (stream_name,))
     res = add_subscriptions_backend(request,user_profile,
-                                    [request.POST["new_subscription"]])
+                                    [stream_name])
     if len(res["already_subscribed"]) != 0:
         return json_error("Subscription already exists")
     return json_success({"data": res["subscribed"][0]})
