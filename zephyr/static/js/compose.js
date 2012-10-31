@@ -53,7 +53,6 @@ var send_options;
 
 $(function () {
     var send_status = $('#send-status');
-    var buttons = $('#compose').find('input[type="submit"]');
 
     send_options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
@@ -61,7 +60,7 @@ $(function () {
             form.find('textarea').val('');
             send_status.hide();
             compose.hide();
-            buttons.removeAttr('disabled');
+            $("#compose-send-button").removeAttr('disabled');
         },
         error: function (xhr, error_type) {
             if (error_type !== 'timeout' && get_updates_params.reload_pending) {
@@ -83,7 +82,7 @@ $(function () {
                            .click(function () { send_status.stop(true).fadeOut(500); }))
                        .stop(true).fadeTo(0,1);
 
-            buttons.removeAttr('disabled');
+            $("#compose-send-button").removeAttr('disabled');
         }
     };
 
@@ -197,12 +196,8 @@ function compose_error(error_text, bad_input) {
                .addClass('alert-error')
                .text(error_text)
                .stop(true).fadeTo(0, 1);
-    $('#compose').find('input[type="submit"]').removeAttr('disabled');
+    $("#compose-send-button").removeAttr('disabled');
     bad_input.focus().select();
-}
-
-function submit_buttons() {
-    return $('#compose').find('input[type="submit"]');
 }
 
 // *Synchronously* check if a stream exists.
@@ -221,7 +216,7 @@ function check_stream_for_send(stream_name) {
                 $('#send-status').removeClass(status_classes).show();
                 $('#stream-dne-name').text(stream_name);
                 $('#stream-dne').show();
-                submit_buttons().removeAttr('disabled');
+                $("#compose-send-button").removeAttr('disabled');
                 exports.hide();
                 $('#create-it').focus();
             }
@@ -231,7 +226,7 @@ function check_stream_for_send(stream_name) {
             okay = false;
             report_error("Error checking subscription", xhr, $("#home-error"));
             $("#stream").focus();
-            submit_buttons().removeAttr('disabled');
+            $("#compose-send-button").removeAttr('disabled');
         }
     });
     return okay;
@@ -262,7 +257,7 @@ function validate_stream_message() {
         $('#send-status').removeClass(status_classes).show();
         $('#stream-nosub-name').text(stream_name);
         $('#stream-nosub').show();
-        submit_buttons().removeAttr('disabled');
+        $("#compose-send-button").removeAttr('disabled');
         exports.hide();
         $('#sub-it').focus();
         return false;
@@ -286,7 +281,7 @@ function validate_huddle_message() {
 }
 
 exports.validate = function () {
-    submit_buttons().attr('disabled', 'disabled').blur();
+    $("#compose-send-button").attr('disabled', 'disabled').blur();
 
     if (exports.composing() === 'huddle') {
         return validate_huddle_message();
