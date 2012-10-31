@@ -159,37 +159,24 @@ exports.composing = function () {
     return is_composing_message;
 };
 
-exports.stream_name = function (newval) {
-    var oldval = $.trim($("#stream").val());
-    if (newval !== undefined) {
-        $("#stream").val(newval);
-    }
-    return oldval;
-};
+function get_or_set(fieldname) {
+    // We can't hoist the assignment of 'elem' out of this lambda,
+    // because the DOM element might not exist yet when get_or_set
+    // is called.
+    return function (newval) {
+        var elem = $('#'+fieldname);
+        var oldval = $.trim(elem.val());
+        if (newval !== undefined) {
+            elem.val(newval);
+        }
+        return oldval;
+    };
+}
 
-exports.subject = function (newval) {
-    var oldval =  $.trim($("#subject").val());
-    if (newval !== undefined) {
-        $("#subject").val(newval);
-    }
-    return oldval;
-};
-
-exports.message_content = function (newval) {
-    var oldval = $.trim($("#new_message_content").val());
-    if (newval !== undefined) {
-        $("#new_message_content").val(newval);
-    }
-    return oldval;
-};
-
-exports.recipient = function (newval) {
-    var oldval = $.trim($("#huddle_recipient").val());
-    if (newval !== undefined) {
-        $("#huddle_recipient").val(newval);
-    }
-    return oldval;
-};
+exports.stream_name     = get_or_set('stream');
+exports.subject         = get_or_set('subject');
+exports.message_content = get_or_set('new_message_content');
+exports.recipient       = get_or_set('huddle_recipient');
 
 function compose_error(error_text, bad_input) {
     $('#send-status').removeClass(status_classes)
