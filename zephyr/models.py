@@ -586,9 +586,9 @@ def bulk_create_huddles(users, huddle_user_list):
     huddles = {}
     huddles_by_id = {}
     huddle_set = set()
-    existing_huddles = {}
+    existing_huddles = set()
     for huddle in Huddle.objects.all():
-        existing_huddles[huddle.huddle_hash] = True
+        existing_huddles.add(huddle.huddle_hash)
     for huddle_users in huddle_user_list:
         user_ids = [users[email].id for email in huddle_users]
         huddle_hash = get_huddle_hash(user_ids)
