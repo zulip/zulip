@@ -247,7 +247,9 @@ function add_display_time(message, prev) {
     } else {
         message.timestr = time.toString("HH:mm");
     }
-    message.full_date_str = time.toLocaleString();
+    // Rather than using time.toLocaleString(), which varies by
+    // browser, just do our own hardcoded formatting.
+    message.full_date_str = time.toDateString() + " " + time.toTimeString();
 }
 
 function add_to_table(messages, table_name, filter_function, where) {
