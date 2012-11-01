@@ -33,7 +33,7 @@ yes '' | apt-get install -t squeeze-backports puppet git
 EOF
 
 # Give new server git access
-# TODO: Don't give servers pull access to our git!
+# TODO: Don't give servers push access to our git!
 scp -i ~/humbug/humbug.pem ~/humbug/servers/puppet/files/id_rsa root@"$server":/root/.ssh/id_rsa
 
 ssh "$server" -t -i ~/humbug/humbug.pem -lroot <<EOF
@@ -72,6 +72,12 @@ fi
 if [ -e "/etc/init.d/apache2" ]; then
     service apache2 restart
 fi
+EOF
+
+# TODO: Don't give servers push access to our git!
+scp -i ~/humbug/humbug.pem ~/humbug/servers/puppet/files/id_rsa humbug@"$server":/home/humbug/.ssh/id_rsa
+ssh "$server" -t -i ~/humbug/humbug.pem -lhumbug <<EOF
+chmod 600 /home/humbug/.ssh/id_rsa
 EOF
 
 set +x
