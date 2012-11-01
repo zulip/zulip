@@ -112,28 +112,6 @@ function resizehandler(e) {
     }
 }
 
-var autocomplete_needs_update = false;
-
-function update_autocomplete() {
-    stream_list.sort();
-    people_list.sort(function (x, y) {
-        if (x.email === y.email) return 0;
-        if (x.email < y.email) return -1;
-        return 1;
-    });
-
-    var huddle_typeahead_list = $.map(people_list, function (person) {
-        return person.full_name + " <" + person.email + ">";
-    });
-
-    // We need to muck with the internal state of Typeahead in order to update
-    // its data source
-    $("#stream").data("typeahead").source = stream_list;
-    $("#huddle_recipient").data("typeahead").source = huddle_typeahead_list;
-
-    autocomplete_needs_update = false;
-}
-
 var old_label;
 var is_floating_recipient_bar_showing = false;
 function replace_floating_recipient_bar(desired_label) {
@@ -445,54 +423,7 @@ $(function () {
     resizehandler();
     hack_for_floating_recipient_bar();
 
-    // limit number of items so the list doesn't fall off the screen
-    $( "#stream" ).typeahead({
-        source: [], // will be set in update_autocomplete()
-        items: 3
-    });
-    $( "#subject" ).typeahead({
-        source: function (query, process) {
-            var stream_name = $("#stream").val();
-            if (subject_dict.hasOwnProperty(stream_name)) {
-                return subject_dict[stream_name];
-            }
-            return [];
-        },
-        items: 2
-    });
-    $( "#huddle_recipient" ).typeahead({
-        source: [], // will be set in update_autocomplete()
-        items: 4,
-        matcher: function (item) {
-            // Assumes email addresses don't have commas or semicolons in them
-            var recipients = this.query.split(/[,;] */);
-            var current_recipient = recipients[recipients.length-1];
-            // Case-insensitive (from Bootstrap's default matcher).
-            return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
-        },
-        updater: function (item) {
-            var previous_recipients = this.query.split(/[,;] */);
-            previous_recipients.pop();
-            previous_recipients = previous_recipients.join(", ");
-            if (previous_recipients.length !== 0) {
-                previous_recipients += ", ";
-            }
-            // Extracting the email portion via regex is icky, but the Bootstrap
-            // typeahead widget doesn't seem to be flexible enough to pass
-            // objects around
-            var email_re = /<[^<]*>$/;
-            var email = email_re.exec(item)[0];
-            return previous_recipients + email.substring(1, email.length - 1) + ", ";
-        }
-
-    });
-
-    $( "#huddle_recipient" ).blur(function (event) {
-        var val = $(this).val();
-        $(this).val(val.replace(/[,;] *$/, ''));
-    });
-
-    update_autocomplete();
+    composebox_typeahead.initialize();
 
     $("body").bind('click', function() {
         if (userinfo_currently_popped !== undefined) {

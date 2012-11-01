@@ -92,7 +92,7 @@ $(function () {
             var name = $.parseJSON(xhr.responseText).data;
             $('#subscriptions_table').find('button[value="' + name + '"]').parents('tr').remove();
             remove_from_stream_list(name);
-            update_autocomplete();
+            composebox_typeahead.update_autocomplete();
             report_success("Successfully removed subscription to " + name,
                            $("#subscriptions-status"));
         },

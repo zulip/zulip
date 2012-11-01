@@ -415,7 +415,7 @@ function add_message_metadata(dummy, message) {
         if (! Object.prototype.hasOwnProperty.call(people_hash, person.email)) {
             people_hash[person.email] = 1;
             people_list.push(person);
-            autocomplete_needs_update = true;
+            composebox_typeahead.autocomplete_needs_update(true);
         }
     });
 
@@ -470,8 +470,9 @@ function add_messages(messages, where) {
                              {then_scroll: true, update_server: false});
     }
 
-    if (autocomplete_needs_update)
-        update_autocomplete();
+    if (composebox_typeahead.autocomplete_needs_update()) {
+        composebox_typeahead.update_autocomplete();
+    }
 }
 
 var get_updates_xhr;
