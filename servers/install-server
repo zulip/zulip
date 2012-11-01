@@ -2,8 +2,14 @@
 
 server=$1
 type=$2
-if [ -z "$type" ]; then
-    echo "USAGE: $0 server type"
+hostname=$3
+if [ -z "$hostname" ]; then
+    echo "USAGE: $0 server type hostname"
+    exit 1
+fi
+if ! $(echo "$hostname" | grep -q humbughq.com$); then
+    echo "USAGE: $0 server type hostname"
+    echo "Hostname must end with humbughq.com"
     exit 1
 fi
 
@@ -72,6 +78,10 @@ fi
 if [ -e "/etc/init.d/apache2" ]; then
     service apache2 restart
 fi
+
+echo "$hostname" > /etc/hostname
+sed -i 's/localhost$/localhost $hostname/' /etc/hosts
+/etc/init.d/hostname.sh start
 EOF
 
 # TODO: Don't give servers push access to our git!
@@ -85,11 +95,4 @@ cat <<EOF
 
  Done.
 
- Remaining manual setup tasks:
-   - Add hostname to /etc/hostname and /etc/hosts
-
-     Make sure the hostname contains the string 'humbughq.com';
-     this is how our software knows it's running in production
-
-   - /etc/init.d/hostname.sh start
 EOF
