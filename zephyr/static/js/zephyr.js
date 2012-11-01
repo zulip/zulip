@@ -241,6 +241,7 @@ function add_display_time(message, prev) {
         }
     }
 
+    // NB: timestr is HTML, inserted into the document without escaping.
     if (include_date) {
         message.timestr = time.toString("MMM dd") + "&nbsp;&nbsp;" +
             time.toString("HH:mm");
