@@ -49,6 +49,11 @@ TIME_ZONE = 'America/New_York'
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
 
+# The ID, as an integer, of the current site in the django_site database table.
+# This is used so that application data can hook into specific site(s) and a
+# single database can manage content for multiple sites.
+#
+# We set this site's domain to 'humbughq.com' in populate_db.
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
