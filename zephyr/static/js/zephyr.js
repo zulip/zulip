@@ -212,7 +212,7 @@ function same_recipient(a, b) {
         return a.reply_to === b.reply_to;
     case 'stream':
         return (a.recipient_id === b.recipient_id) &&
-               (a.subject     === b.subject);
+               (a.subject      === b.subject);
     }
 
     // should never get here
