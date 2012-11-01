@@ -80,7 +80,7 @@ exports.initialize = function () {
             }
             return [];
         },
-        items: 2,
+        items: 3,
         highlighter: escaping_highlighter
     });
     $( "#huddle_recipient" ).typeahead({
