@@ -63,6 +63,14 @@ class HumbugPlugin(Component):
         `old_values` is a dictionary containing the previous values of the
         fields that have changed.
         """
+        if not comment and set(old_values.keys()) <= set(["priority", "milestone",
+                                                          "cc", "keywords",
+                                                          "component"]):
+            # This is probably someone going through trac and updating
+            # the priorities; this can result in a lot of messages
+            # nobody wants to read, so don't send them without a comment.
+            return
+
         content = "%s updated %s" % (author, markdown_ticket_url(ticket))
         if comment:
             content += ' with comment: %s\n\n' % (markdown_block(comment,))
