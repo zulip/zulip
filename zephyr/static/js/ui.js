@@ -123,7 +123,7 @@ function update_autocomplete() {
     });
 
     var huddle_typeahead_list = $.map(people_list, function (person) {
-        return Handlebars.Utils.escapeExpression(person.full_name) + " <" + person.email + ">";
+        return person.full_name + " <" + person.email + ">";
     });
 
     // We need to muck with the internal state of Typeahead in order to update

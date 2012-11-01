@@ -370,12 +370,8 @@ function add_message_metadata(dummy, message) {
         if (! subject_dict.hasOwnProperty(message.display_recipient)) {
             subject_dict[message.display_recipient] = [];
         }
-        // Escape HTML in the subject, since the typeahead does not!
-        // This "solution" is problematic because the subject isn't unescaped
-        // on the way out, so you end up with HTML entities in the output.
-        var escaped_subject = Handlebars.Utils.escapeExpression(message.subject);
-        if ($.inArray(escaped_subject, subject_dict[message.display_recipient]) === -1) {
-            subject_dict[message.display_recipient].push(escaped_subject);
+        if ($.inArray(message.subject, subject_dict[message.display_recipient]) === -1) {
+            subject_dict[message.display_recipient].push(message.subject);
             subject_dict[message.display_recipient].sort();
             // We don't need to update the autocomplete after this because
             // the subject box's source is a function
