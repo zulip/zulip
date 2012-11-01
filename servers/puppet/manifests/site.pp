@@ -278,5 +278,5 @@ class humbug_nagios {
 class { "humbug_base": }
 #class { "humbug_apache_base": }
 #class { "humbug_wiki": }
-class { "humbug_app_frontend": }
-class { "humbug_database": }
+#class { "humbug_app_frontend": }
+#class { "humbug_database": }
