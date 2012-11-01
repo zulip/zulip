@@ -432,7 +432,7 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
     # c.f. ticket #64
     #
     # apply_markdown=True is the fail-safe default.
-    if apply_markdown:
+    if response['result'] == 'success' and apply_markdown:
         for msg in response['messages']:
             if msg['content_type'] != 'text/html':
                 handler.set_status(500)
@@ -443,9 +443,11 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
 def get_updates_backend(request, user_profile, handler, client_id, **kwargs):
     resp = return_messages_immediately(request, user_profile,
                                        client_id, **kwargs)
-    if resp is not None and resp['result'] == 'success':
+    if resp is not None:
         send_with_safety_check(resp, handler, **kwargs)
         return
+
+    # Now we're in long-polling mode
 
     def cb(**cb_kwargs):
         if handler.request.connection.stream.closed():
