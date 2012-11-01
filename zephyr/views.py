@@ -789,7 +789,7 @@ def add_subscriptions_backend(request, user_profile):
 
     subscribed = []
     already_subscribed = []
-    for stream_name in list(set(streams)):
+    for stream_name in set(streams):
         stream = create_stream_if_needed(user_profile.realm, stream_name)
         did_subscribe = do_add_subscription(user_profile, stream)
         if did_subscribe:
