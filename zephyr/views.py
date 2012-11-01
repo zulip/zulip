@@ -84,10 +84,9 @@ def json_error(msg, data={}, status=400):
     return json_response(res_type="error", msg=msg, data=data, status=status)
 
 def get_stream(stream_name, realm):
-    stream = Stream.objects.filter(name__iexact=stream_name, realm=realm)
-    if stream:
-        return stream[0]
-    else:
+    try:
+        return Stream.objects.get(name__iexact=stream_name, realm=realm)
+    except Stream.DoesNotExist:
         return None
 
 @require_post
