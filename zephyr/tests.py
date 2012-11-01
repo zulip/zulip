@@ -344,8 +344,7 @@ class MessagePOSTTest(AuthedTestCase):
 
     def test_message_to_nonexistent_stream(self):
         """
-        Sending a message to a nonexistent stream creates the stream and
-        is successful.
+        Sending a message to a nonexistent stream fails.
         """
         self.login("hamlet@humbughq.com")
         self.assertFalse(Stream.objects.filter(name="nonexistent_stream"))
