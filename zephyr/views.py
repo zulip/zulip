@@ -497,12 +497,11 @@ def already_sent_mirrored_message(request):
     utc_from_ts = datetime.datetime.utcfromtimestamp
     req_time = float(request.POST['time'])
     email = request.POST['sender'].lower()
-    if Message.objects.filter(sender__user__email=email,
-                              content=request.POST['content'],
-                              pub_date__gt=utc_from_ts(req_time - 10).replace(tzinfo=utc),
-                              pub_date__lt=utc_from_ts(req_time + 10).replace(tzinfo=utc)):
-        return True
-    return False
+    return Message.objects.filter(
+        sender__user__email=email,
+        content=request.POST['content'],
+        pub_date__gt=utc_from_ts(req_time - 10).replace(tzinfo=utc),
+        pub_date__lt=utc_from_ts(req_time + 10).replace(tzinfo=utc)).exists()
 
 # Validte that the passed in object is an email address from the user's realm
 # TODO: Check that it's a real email address here.
