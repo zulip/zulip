@@ -111,7 +111,7 @@ class PublicURLTest(TestCase):
 
     def test_public_urls(self):
         """
-        Pages that should return a 200 when not logged in.
+        Test which views are accessible when not logged in.
         """
         # FIXME: We should also test the Tornado URLs -- this codepath
         # can't do so because this Django test mechanism doesn't go
