@@ -41,6 +41,7 @@ function above_view_threshold(message, useTop) {
     // (if useTop = true, we look at the top of the pointer instead)
     var position = message.offset().top;
     if (!useTop) {
+        // outerHeight(true): Include margin
         position += message.outerHeight(true);
     }
     return position < viewport.scrollTop() + viewport.height() / 5;
@@ -644,6 +645,7 @@ function at_top_of_viewport() {
 }
 
 function at_bottom_of_viewport() {
+    // outerHeight(true): Include margin
     return (viewport.scrollTop() + viewport.height() >= $("#main_div").outerHeight(true));
 }
 
