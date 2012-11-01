@@ -3,10 +3,6 @@ var cached_matches = [];
 var cached_index;
 var cached_table = $('table.focused_table');
 
-function get_zid_as_int(object) {
-    return parseInt(object.attr("zid"), 10);
-}
-
 function match_on_visible_text(row, search_term) {
     // You can't select on :visible, since that includes hidden elements that
     // take up space.
@@ -42,7 +38,7 @@ function search(term, highlighted_message, reverse) {
         cached_matches = [];
         cached_index = null;
         cached_table = focused_table;
-        var selected_zid = get_zid_as_int(highlighted_message);
+        var selected_zid = rows.id(highlighted_message);
 
         focused_table.find('.message_row, .recipient_row').each(function (index, row) {
             row = $(row);
@@ -53,7 +49,7 @@ function search(term, highlighted_message, reverse) {
                     previous_header_matched = true;
                 } else {
                     cached_matches.push(row);
-                    var zid = get_zid_as_int(row);
+                    var zid = rows.id(row);
                     if ((reverse && (zid <= selected_zid)) ||
                         (!reverse && (zid >= selected_zid) && !cached_index)) {
                         // Keep track of the closest match going up or down.
@@ -102,7 +98,7 @@ function search_button_handler(reverse) {
         return;
     }
 
-    select_message_by_id(res.attr("zid"));
+    select_message_by_id(rows.id(res));
     highlight_match(res, query);
     scroll_to_selected();
 }

@@ -286,7 +286,7 @@ function add_to_table(messages, table_name, filter_function, where) {
         // Delete the leftover recipient label.
         table.find('.recipient_row:first').remove();
     } else {
-        prev = message_dict[table.find('tr:last-child').attr('zid')];
+        prev = message_dict[rows.id(table.find('tr:last-child'))];
     }
 
     $.each(messages, function (index, message) {
