@@ -34,7 +34,7 @@ var rows = (function () {
     };
 
     exports.id = function (message_row) {
-        return message_row.attr('zid');
+        return parseInt(message_row.attr('zid'), 10);
     };
 
     var valid_table_names = {
