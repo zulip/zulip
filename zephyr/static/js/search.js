@@ -92,9 +92,13 @@ function clear_search_cache() {
     cached_term = "";
 }
 
+function initiate_search() {
+    $('#search').val('').focus();
+}
+
 function clear_search() {
     $('table tr').removeHighlight();
-    $('#search').val('').focus();
+    $('#search').val('');
     clear_search_cache();
 }
 

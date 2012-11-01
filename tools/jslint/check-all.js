@@ -28,6 +28,7 @@ var globals =
 
     // search.js
     + ' search_button_handler something_is_highlighted update_highlight_on_narrow'
+    + ' initiate_search'
 
     // setup.js
     + ' loading_spinner templates'
