@@ -25,6 +25,8 @@ from zephyr.lib.avatar import gravatar_hash
 
 from confirmation.models import Confirmation
 
+from functools import wraps
+
 import datetime
 import simplejson
 import socket
@@ -38,6 +40,7 @@ import base64
 SERVER_GENERATION = int(time.time())
 
 def require_post(view_func):
+    @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         if request.method != "POST":
             return json_error('This form can only be submitted by POST.')
@@ -50,6 +53,7 @@ def require_post(view_func):
 def authenticated_api_view(view_func):
     @csrf_exempt
     @require_post
+    @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         try:
             user_profile = UserProfile.objects.get(user__email=request.POST.get("email"))
@@ -65,6 +69,7 @@ def authenticated_api_view(view_func):
 # redirecting to a login page doesn't make sense for json views)
 def authenticated_json_view(view_func):
     @require_post
+    @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         if not request.user.is_authenticated():
             return json_error("Not logged in")

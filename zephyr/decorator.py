@@ -1,3 +1,5 @@
+from functools import wraps
+
 import types
 
 class TornadoAsyncException(Exception): pass
@@ -10,6 +12,7 @@ def returnResponse(value):
     raise _DefGen_Return(value)
 
 def asynchronous(method):
+    @wraps(method)
     def wrapper(request, *args, **kwargs):
         try:
             v = method(request, request._tornado_handler, *args, **kwargs)

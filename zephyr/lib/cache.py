@@ -1,3 +1,5 @@
+from functools import wraps
+
 import django.core.cache
 
 def cache_with_key(keyfunc):
@@ -11,6 +13,7 @@ def cache_with_key(keyfunc):
     def decorator(func):
         djcache = django.core.cache.cache
 
+        @wraps(func)
         def func_with_caching(*args, **kwargs):
             key = keyfunc(*args, **kwargs)
             val = djcache.get(key)
@@ -36,6 +39,7 @@ def cache(func):
 
     func_uniqifier = '%s-%s' % (func.func_code.co_filename, func.func_name)
 
+    @wraps(func)
     def keyfunc(*args, **kwargs):
         # Django complains about spaces because memcached rejects them
         key = func_uniqifier + repr((args, kwargs))
