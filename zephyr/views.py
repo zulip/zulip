@@ -226,8 +226,7 @@ def get_old_messages_backend(request, start = POST(converter=int), which = POST,
 
     ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
            "result": "success",
-           "msg": "",
-           'server_generation': SERVER_GENERATION}
+           "msg": ""}
     return json_success(ret)
 
 @asynchronous
