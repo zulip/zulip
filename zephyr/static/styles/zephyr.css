@@ -364,16 +364,15 @@ input.send_message {
     visibility: visible;
     max-height: 30px;
     padding: 5px 10px;
+    width: 640px;
 }
 .always_in_view {
     background-color: aliceblue;
 }
 
-#search_arrows {
-    width: 95%;
-}
 #search {
-    width: 82%;
+    /* If this changes, also change the width in search.js:clear_search */
+    width: 610px;
 }
 
 .highlight {
@@ -381,6 +380,7 @@ input.send_message {
 }
 
 #searchbox .search_button {
+    display: none;
     margin-bottom: 10px;
     text-align: center;
     padding: 4px 10px 4px 10px;

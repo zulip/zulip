@@ -92,13 +92,23 @@ function clear_search_cache() {
     cached_term = "";
 }
 
+function focus_search() {
+    $("#search").width("504px");
+    $("#search_arrows").addClass("input-append");
+    $('.search_button').show();
+}
+
 function initiate_search() {
     $('#search').val('').focus();
 }
 
 function clear_search() {
     $('table tr').removeHighlight();
-    $('#search').val('');
+    // Reset the width to that in the stylesheet. If you change it there, change
+    // it here.
+    $('#search').val('').width("610px");
+    $("#search_arrows").removeClass("input-append");
+    $('.search_button').hide();
     clear_search_cache();
 }
 
