@@ -14,6 +14,19 @@ function match_on_visible_text(row, search_term) {
               .text().toLowerCase().indexOf(search_term) !== -1;
 }
 
+function disable_search_arrows_if(condition, affected_arrows) {
+    var i, button;
+
+    for (i = 0; i < affected_arrows.length; i++) {
+        button = $("#search_" + affected_arrows[i]);
+        if (condition) {
+            button.attr("disabled", "disabled");
+        } else {
+            button.removeAttr("disabled");
+        }
+    }
+}
+
 function search(term, highlighted_message, reverse) {
     // term: case-insensitive text to search for
     // highlighted_message: the current location of the pointer. Ignored
@@ -50,6 +63,8 @@ function search(term, highlighted_message, reverse) {
             }
         });
 
+        disable_search_arrows_if(cached_matches.length === 0, ["up", "down"]);
+
         return cached_matches[cached_index];
     }
 
@@ -62,6 +77,10 @@ function search(term, highlighted_message, reverse) {
             cached_index++;
         }
     }
+
+    disable_search_arrows_if(cached_matches.length === 0, ["up", "down"]);
+    disable_search_arrows_if(cached_index === 0, ["up"]);
+    disable_search_arrows_if(cached_index === cached_matches.length - 1, ["down"]);
 
     return cached_matches[cached_index];
 }
@@ -96,6 +115,7 @@ function focus_search() {
     $("#search").width("504px");
     $("#search_arrows").addClass("input-append");
     $('.search_button').show();
+    disable_search_arrows_if(false, ["up", "down"]);
 }
 
 function initiate_search() {
@@ -108,6 +128,7 @@ function clear_search() {
     // it here.
     $('#search').val('').width("610px");
     $("#search_arrows").removeClass("input-append");
+    $("#search_up, #search_down").removeAttr("disabled");
     $('.search_button').hide();
     clear_search_cache();
 }
