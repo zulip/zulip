@@ -157,6 +157,20 @@ exports.set_compose = function () {
 
 $(document).keydown(function (e) {
     pressed_keys[e.which] = true;
+    if ((num_pressed_keys() >= 2) &&
+        (48 <= event.which && event.which <= 90) &&
+        (pressed_keys[17] === true ||
+         pressed_keys[91] === true)) {
+        // If the user typed 2 or more characters, one of which was
+        // ctrl(17) or command(91), and ending with an alphanumeric
+        // character (between 48 and 90), this is probably a browser
+        // keyboard shortcut (example: ctrl-f in Chrome).  Browsers
+        // will often not trigger a keyup event after processing those
+        // shortcuts and we don't have any hotkeys using these
+        // characters, so just ignore such key presses for our
+        // accounting.
+        pressed_keys = {};
+    }
 });
 
 $(document).keyup(function (e) {
