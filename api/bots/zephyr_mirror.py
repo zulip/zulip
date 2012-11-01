@@ -272,8 +272,9 @@ def process_notice(notice, log):
 
     print "%s: zephyr=>humbug: received a message on %s/%s from %s..." % \
         (datetime.datetime.now(), zephyr_class, notice.instance, notice.sender)
-    log.write(simplejson.dumps(zeph) + '\n')
-    log.flush()
+    if log is not None:
+        log.write(simplejson.dumps(zeph) + '\n')
+        log.flush()
 
     res = send_humbug(zeph)
     if res.get("result") != "success":
@@ -342,12 +343,10 @@ def zephyr_to_humbug(options):
     print "%s: zephyr=>humbug: Starting receive loop." % (datetime.datetime.now(),)
 
     if options.log_path is not None:
-        log_file = options.log_path
+        with open(options.log_path, 'a') as log:
+            process_loop(log)
     else:
-        log_file = "/dev/null"
-
-    with open(log_file, 'a') as log:
-        process_loop(log)
+        process_loop(None)
 
 def forward_to_zephyr(message):
     zsig = u"%s@(@color(blue))" % (username_to_fullname(message["sender_email"]),)
