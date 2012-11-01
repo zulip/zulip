@@ -525,9 +525,8 @@ def parse_named_users(request):
         if request.POST['type'] == 'personal':
             if ',' in request.POST['recipient']:
                 # Huddle message
-                for user_email in [e.strip().lower() for e in
-                                   request.POST["recipient"].split(",")]:
-                    recipients.add(user_email)
+                for user_email in request.POST["recipient"].split(","):
+                    recipients.add(user_email.strip().lower())
             else:
                 user_email = request.POST["recipient"].strip().lower()
                 recipients.add(user_email)
