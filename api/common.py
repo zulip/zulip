@@ -8,6 +8,7 @@ import urlparse
 import sys
 
 # Check that we have a recent enough version
+# Older versions don't provide the 'json' attribute on responses.
 assert(requests.__version__ > '0.12')
 
 class HumbugAPI():
