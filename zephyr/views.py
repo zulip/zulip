@@ -44,10 +44,10 @@ def require_post(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
-# login_required_api_view will add the authenticated user's user_profile to
+# authenticated_api_view will add the authenticated user's user_profile to
 # the view function's arguments list, since we have to look it up
 # anyway.
-def login_required_api_view(view_func):
+def authenticated_api_view(view_func):
     @csrf_exempt
     @require_post
     def _wrapped_view_func(request, *args, **kwargs):
@@ -63,7 +63,7 @@ def login_required_api_view(view_func):
 # Checks if the request is a POST request and that the user is logged
 # in.  If not, return an error (the @login_required behavior of
 # redirecting to a login page doesn't make sense for json views)
-def login_required_json_view(view_func):
+def authenticated_json_view(view_func):
     @require_post
     def _wrapped_view_func(request, *args, **kwargs):
         if not request.user.is_authenticated():
@@ -211,14 +211,14 @@ def home(request):
                                    settings.DEBUG and ('show_debug' in request.GET) },
                               context_instance=RequestContext(request))
 
-@login_required_api_view
+@authenticated_api_view
 def api_update_pointer(request, user_profile):
     updater = request.POST.get("client_id")
     if updater is None:
         return json_error("Missing client_id argument")
     return update_pointer_backend(request, user_profile, updater)
 
-@login_required_json_view
+@authenticated_json_view
 def json_update_pointer(request):
     user_profile = UserProfile.objects.get(user=request.user)
     return update_pointer_backend(request, user_profile,
@@ -250,13 +250,13 @@ def update_pointer_backend(request, user_profile, updater):
 
     return json_success()
 
-@login_required_json_view
+@authenticated_json_view
 def json_get_old_messages(request):
     user_profile = UserProfile.objects.get(user=request.user)
     return get_old_messages_backend(request, user_profile=user_profile,
                                     apply_markdown=True)
 
-@login_required_api_view
+@authenticated_api_view
 def api_get_old_messages(request, user_profile):
     return get_old_messages_backend(request, user_profile=user_profile,
                                     apply_markdown=(request.POST.get("apply_markdown") is not None))
@@ -297,7 +297,7 @@ def get_old_messages_backend(request, user_profile=None,
     return json_success(ret)
 
 @asynchronous
-@login_required_json_view
+@authenticated_json_view
 def json_get_updates(request, handler):
     user_profile = UserProfile.objects.get(user=request.user)
     client_id = request.session.session_key
@@ -305,7 +305,7 @@ def json_get_updates(request, handler):
                                apply_markdown=True)
 
 @asynchronous
-@login_required_api_view
+@authenticated_api_view
 def api_get_messages(request, user_profile, handler):
     client_id = request.POST.get("client_id")
     return get_updates_backend(request, user_profile, handler, client_id,
@@ -467,7 +467,7 @@ def get_updates_backend(request, user_profile, handler, client_id, **kwargs):
 def generate_client_id():
     return base64.b16encode(os.urandom(16)).lower()
 
-@login_required_api_view
+@authenticated_api_view
 def api_get_profile(request, user_profile):
     result = dict(pointer        = user_profile.pointer,
                   client_id      = generate_client_id(),
@@ -479,12 +479,12 @@ def api_get_profile(request, user_profile):
 
     return json_success(result)
 
-@login_required_api_view
+@authenticated_api_view
 def api_send_message(request, user_profile):
     return send_message_backend(request, user_profile, user_profile,
                                 client_name=request.POST.get("client", "API"))
 
-@login_required_json_view
+@authenticated_json_view
 def json_send_message(request):
     user_profile = UserProfile.objects.get(user=request.user)
     return send_message_backend(request, user_profile, user_profile,
@@ -728,7 +728,7 @@ def notify_pointer_update(request):
 
     return json_success()
 
-@login_required_api_view
+@authenticated_api_view
 def api_get_public_streams(request, user_profile):
     streams = sorted([stream.name for stream in
                       Stream.objects.filter(realm=user_profile.realm)])
@@ -740,16 +740,16 @@ def gather_subscriptions(user_profile):
     return sorted([get_display_recipient(sub.recipient) for sub in subscriptions
             if sub.recipient.type == Recipient.STREAM])
 
-@login_required_api_view
+@authenticated_api_view
 def api_get_subscriptions(request, user_profile):
     return json_success({"streams": gather_subscriptions(user_profile)})
 
-@login_required_json_view
+@authenticated_json_view
 def json_list_subscriptions(request):
     subs = gather_subscriptions(UserProfile.objects.get(user=request.user))
     return json_success({"subscriptions": subs})
 
-@login_required_json_view
+@authenticated_json_view
 def json_remove_subscription(request):
     user_profile = UserProfile.objects.get(user=request.user)
     if 'subscription' not in request.POST:
@@ -768,11 +768,11 @@ def json_remove_subscription(request):
 def valid_stream_name(name):
     return name != ""
 
-@login_required_api_view
+@authenticated_api_view
 def api_subscribe(request, user_profile):
     return add_subscriptions_backend(request, user_profile)
 
-@login_required_json_view
+@authenticated_json_view
 def json_add_subscriptions(request):
     user_profile = UserProfile.objects.get(user=request.user)
     return add_subscriptions_backend(request, user_profile)
@@ -803,7 +803,7 @@ def add_subscriptions_backend(request, user_profile):
     return json_success({"subscribed": subscribed,
                          "already_subscribed": already_subscribed})
 
-@login_required_json_view
+@authenticated_json_view
 def json_change_settings(request):
     user_profile = UserProfile.objects.get(user=request.user)
 
@@ -836,7 +836,7 @@ def json_change_settings(request):
 
     return json_success(result)
 
-@login_required_json_view
+@authenticated_json_view
 def json_stream_exists(request):
     if "stream" not in request.POST:
         return json_error("Missing stream argument.")
@@ -861,7 +861,7 @@ def api_fetch_api_key(request):
         return json_error("Your account has been disabled.", status=403)
     return json_success({"api_key": user.userprofile.api_key})
 
-@login_required_json_view
+@authenticated_json_view
 def json_fetch_api_key(request):
     try:
         password = request.POST['password']
