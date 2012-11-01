@@ -44,7 +44,7 @@ def require_post(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
-# api_key_required will add the authenticated user's user_profile to
+# login_required_api_view will add the authenticated user's user_profile to
 # the view function's arguments list, since we have to look it up
 # anyway.
 def login_required_api_view(view_func):
