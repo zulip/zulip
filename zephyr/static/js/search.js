@@ -98,7 +98,7 @@ function search_button_handler(reverse) {
         return;
     }
 
-    select_message_by_id(rows.id(res));
+    select_message(res);
     highlight_match(res, query);
     scroll_to_selected();
 }
