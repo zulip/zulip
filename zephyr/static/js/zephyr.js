@@ -128,7 +128,6 @@ function respond_to_message(reply_type) {
 
 // Called by mouseover etc.
 function select_message_by_id(message_id, opts) {
-    opts = $.extend({}, {then_scroll: false, update_server: true}, opts);
     return select_message(rows.get(message_id), opts);
 }
 
