@@ -40,6 +40,11 @@ import base64
 
 SERVER_GENERATION = int(time.time())
 
+def to_non_negative_int(x):
+    x = int(x)
+    assert x >= 0
+    return x
+
 def get_stream(stream_name, realm):
     try:
         return Stream.objects.get(name__iexact=stream_name, realm=realm)
@@ -206,23 +211,24 @@ def api_get_old_messages(request, user_profile):
                                     apply_markdown=(request.POST.get("apply_markdown") is not None))
 
 @has_request_variables
-def get_old_messages_backend(request, start = POST(converter=int), which = POST, number = POST(converter=int),
+def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_int),
+                             num_before = POST(converter=to_non_negative_int),
+                             num_after = POST(converter=to_non_negative_int),
                              user_profile=None, apply_markdown=True):
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
 
-    if which == "older":
-        messages = last_n(number, query.filter(id__lte=start))
-    elif which == "newer":
-        messages = query.filter(id__gte=start)[:number]
-    elif which == "around":
-        num_older = number / 2
-        num_newer = number / 2
-        if number % 2 != 0:
-            num_older += 1
-        messages = (last_n(num_older, query.filter(id__lte=start))
-                    + list(query.filter(id__gt=start)[:num_newer]))
+    # We add 1 to the number of messages requested to ensure that the
+    # resulting list always contains the anchor message
+    if num_before != 0 and num_after == 0:
+        num_before += 1
+        messages = last_n(num_before, query.filter(id__lte=anchor))
+    elif num_before == 0 and num_after != 0:
+        num_after += 1
+        messages = query.filter(id__gte=anchor)[:num_after]
     else:
-        return json_error("Bad value for 'which' argument")
+        num_after += 1
+        messages = (last_n(num_before, query.filter(id__lt=anchor))
+                    + list(query.filter(id__gte=anchor)[:num_after]))
 
     ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
            "result": "success",

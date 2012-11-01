@@ -567,18 +567,18 @@ function get_updates() {
     });
 }
 
-function load_old_messages(start, which, number, cont) {
+function load_old_messages(anchor, num_before, num_after, cont) {
     $.ajax({
         type:     'POST',
         url:      '/json/get_old_messages',
-        data:     {start: start, which: which, number: number},
+        data:     {anchor: anchor, num_before: num_before, num_after: num_after},
         dataType: 'json',
         success: function (data) {
             if (! data) {
                 // The server occationally returns no data during a
                 // restart.  Ignore those responses and try again
                 setTimeout(function () {
-                    load_old_messages(start, which, number, cont);
+                    load_old_messages(anchor, num_before, num_after, cont);
                 }, 0);
                 return;
             }
@@ -587,10 +587,10 @@ function load_old_messages(start, which, number, cont) {
 
             if (data.messages.length !== 0) {
                 var where;
-                if (which === "older") {
-                    where = "top";
-                } else {
+                if (num_before === 0 || message_array.length === 0) {
                     where = "bottom";
+                } else {
+                    where = "top";
                 }
                 add_messages(data.messages, where);
             }
@@ -603,7 +603,7 @@ function load_old_messages(start, which, number, cont) {
             // We might want to be more clever here
             $('#connection-error').show();
             setTimeout(function () {
-                load_old_messages(start, which, number, cont);
+                load_old_messages(anchor, num_before, num_after, cont);
             }, 5000);
         }
     });
@@ -613,9 +613,9 @@ function load_old_messages(start, which, number, cont) {
 $(function () {
     function load_more(messages) {
         // catch the user up
-        if (messages.length !== 0) {
+        if (messages.length !== 1) {
             var latest_id = messages[messages.length-1].id;
-            load_old_messages(latest_id + 1, "newer", 400, load_more);
+            load_old_messages(latest_id, 0, 400, load_more);
             return;
         }
         // now start subscribing to updates
@@ -626,13 +626,12 @@ $(function () {
         $(document).idle({'idle': 1000*10,
                           'onIdle': function () {
                               var first_id = message_array[0].id;
-                              load_old_messages(first_id - 1, "older",
-                                                backfill_batch_size);
+                              load_old_messages(first_id, backfill_batch_size, 0);
                           }});
     }
 
     if (have_initial_messages) {
-        load_old_messages(initial_pointer, "around", 400,
+        load_old_messages(initial_pointer, 200, 200,
                           function (messages) {
                               // TODO: We can't tell after the initial load
                               // whether we need the "load more" button or not.
