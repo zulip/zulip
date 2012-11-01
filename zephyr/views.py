@@ -20,7 +20,8 @@ from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
 from django.views.decorators.csrf import csrf_exempt
 
 from zephyr.decorator import asynchronous, require_post, \
-    authenticated_api_view, authenticated_json_view
+    authenticated_api_view, authenticated_json_view, \
+    has_request_variables, POST
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error

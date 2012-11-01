@@ -65,3 +65,86 @@ def authenticated_json_view(view_func):
             return json_error("Not logged in")
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
+
+# Used in conjunction with @has_request_variables, below
+class POST(object):
+    # NotSpecified is a sentinel value for determining whether a
+    # default value was specified for a request variable.  We can't
+    # use None because that could be a valid, user-specified default
+    class _NotSpecified(object):
+        pass
+    NotSpecified = _NotSpecified()
+
+    def __init__(self, whence=None, converter=None, default=NotSpecified):
+        """
+        whence: the name of the request variable that should be used
+        for this parameter.  Defaults to a request variable of the
+        same name as the parameter.
+
+        converter: a function that takes a string and returns a new
+        value.  If specified, this will be called on the request
+        variable value before passing to the function
+
+        default: a value to be used for the argument if the parameter
+        is missing in the request
+        """
+
+        self.post_var_name = whence
+        self.func_var_name = None
+        self.converter = converter
+        self.default = default
+
+# Extracts variables from the request object and passes them as
+# named function arguments.  The request object must be the first
+# argument to the function.
+#
+# To use, assign a function parameter a default value that is an
+# instance of the POST class.  That paramter will then be
+# automatically populated from the HTTP request.  The request object
+# must be the first argument to the decorated function.
+def has_request_variables(view_func):
+    num_params = view_func.func_code.co_argcount
+    if view_func.func_defaults is None:
+        num_default_params = 0
+    else:
+        num_default_params = len(view_func.func_defaults)
+    default_param_names = view_func.func_code.co_varnames[num_params - num_default_params:]
+    default_param_values = view_func.func_defaults
+
+    post_params = []
+
+    for (name, value) in zip(default_param_names, default_param_values):
+        if isinstance(value, POST):
+            value.func_var_name = name
+            if value.post_var_name is None:
+                value.post_var_name = name
+            post_params.append(value)
+        elif value == POST:
+            # If the function definition does not actually
+            # instantiate a POST object but instead uses the POST
+            # class itself as a value, we instantiate it as a
+            # convenience
+            post_var = POST(name)
+            post_var.func_var_name = name
+            post_params.append(post_var)
+
+    @wraps(view_func)
+    def _wrapped_view_func(request, *args, **kwargs):
+        for param in post_params:
+            try:
+                val = request.POST[param.post_var_name]
+            except KeyError:
+                if param.default is POST.NotSpecified:
+                    return json_error("Missing '%s' argument" % (param.post_var_name,))
+                val = param.default
+
+            if param.converter is not None:
+                try:
+                    val = param.converter(val)
+                except:
+                    return json_error("Bad value for '%s'" % (param.post_var_name,))
+            kwargs[param.func_var_name] = val
+
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view_func
