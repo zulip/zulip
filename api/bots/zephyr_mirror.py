@@ -89,10 +89,10 @@ def send_humbug(zeph):
         # Forward messages sent to -c foo -i bar to stream bar subject "instance"
         if zeph["stream"] == "message":
             message['stream'] = zeph['subject'].lower()
-            message['subject'] = "instance %s" % (zeph['subject'])
+            message['subject'] = "instance %s" % (zeph['subject'],)
         elif zeph["stream"] == "tabbott-test5":
             message['stream'] = zeph['subject'].lower()
-            message['subject'] = "test instance %s" % (zeph['subject'])
+            message['subject'] = "test instance %s" % (zeph['subject'],)
         else:
             message["stream"] = zeph["stream"]
     else:
@@ -150,7 +150,7 @@ def update_subscriptions_from_humbug():
         res = humbug_client.get_public_streams()
         streams = res["streams"]
     except:
-        print "%s: Error getting public streams:" % (datetime.datetime.now())
+        print "%s: Error getting public streams:" % (datetime.datetime.now(),)
         traceback.print_exc()
         return
     streams_to_subscribe = []
@@ -166,7 +166,7 @@ def maybe_restart_mirroring_script():
              os.stat(os.path.join(options.root_path, "stamps", "tabbott_stamp")).st_mtime > start_time):
         print
         print "%s: zephyr mirroring script has been updated; restarting..." % \
-            (datetime.datetime.now())
+            (datetime.datetime.now(),)
         os.kill(child_pid, signal.SIGTERM)
         while True:
             try:
@@ -188,7 +188,7 @@ def process_loop(log):
                 process_notice(notice, log)
             except:
                 print >>sys.stderr, '%s: zephyr=>humbug: Error relaying zephyr' % \
-                    (datetime.datetime.now())
+                    (datetime.datetime.now(),)
                 traceback.print_exc()
                 time.sleep(2)
 
@@ -220,7 +220,7 @@ def process_notice(notice, log):
 
     if zsig.endswith("@(@color(blue))"):
         print "%s: zephyr=>humbug: Skipping message we got from Humbug!" % \
-            (datetime.datetime.now())
+            (datetime.datetime.now(),)
         return
 
     zephyr_class = notice.cls.lower()
@@ -350,7 +350,7 @@ def zephyr_to_humbug(options):
         process_loop(log)
 
 def forward_to_zephyr(message):
-    zsig = u"%s@(@color(blue))" % (username_to_fullname(message["sender_email"]))
+    zsig = u"%s@(@color(blue))" % (username_to_fullname(message["sender_email"]),)
     if ' dot ' in zsig:
         print "%s: humbug=>zephyr: ERROR!  Couldn't compute zsig for %s!" % \
             (datetime.datetime.now(), message["sender_email"])
@@ -649,7 +649,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
     for pid in out.split():
         if int(pid.strip()) != os.getpid():
             # Another copy of zephyr_mirror.py!  Kill it.
-            print "Killing duplicate zephyr_mirror process %s" % pid
+            print "Killing duplicate zephyr_mirror process %s" % (pid,)
             os.kill(int(pid), signal.SIGKILL)
 
     child_pid = os.fork()
