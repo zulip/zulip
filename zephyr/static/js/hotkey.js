@@ -113,6 +113,9 @@ function process_hotkey(code) {
     case 82: // 'R': respond to author
         respond_to_message("personal");
         return process_hotkey;
+    case 47: // '/': initiate search
+        clear_search();
+        return process_hotkey;
     case 63: // '?': Show keyboard shortcuts page
         $('#keyboard-shortcuts').modal('show');
         return process_hotkey;
