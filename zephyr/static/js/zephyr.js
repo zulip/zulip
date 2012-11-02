@@ -137,7 +137,7 @@ var message_id_to_send = -1;
 // server
 function send_pointer_update() {
     if (message_id_to_send !== last_message_id_sent) {
-        $.post("json/update_pointer", {pointer: message_id_to_send});
+        $.post("/json/update_pointer", {pointer: message_id_to_send});
         last_message_id_sent = message_id_to_send;
     }
     setTimeout(send_pointer_update, 1000);
