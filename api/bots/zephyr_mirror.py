@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# Copyright (C) 2012 Humbug, Inc.  All rights reserved.
 import sys
 import traceback
 import simplejson
