@@ -314,6 +314,12 @@ $(function () {
     var throttled_resizehandler = $.throttle(50, resizehandler);
     $(window).resize(throttled_resizehandler);
 
+    function clear_password_change() {
+        // Clear the password boxes so that passwords don't linger in the DOM
+        // for an XSS attacker to find.
+        $('#old_password, #new_password, #confirm_password').val('');
+    }
+
     $('#sidebar a[data-toggle="pill"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
         var old_tab = $(e.relatedTarget).attr('href');
@@ -338,6 +344,8 @@ $(function () {
         $("#get_api_key_box").hide();
         $("#show_api_key_box").hide();
         $("#api_key_button_box").show();
+
+        clear_password_change();
 
         // Set the URL bar title to show the sub-page you're currently on.
         var browser_url = target_tab;
@@ -381,11 +389,9 @@ $(function () {
                 .text(response).stop(true).fadeTo(0,1);
         },
         complete: function (xhr, statusText) {
-            // Whether successful or not, clear the password boxes so that
-            // passwords don't linger in the DOM for an XSS attacker to find.
-            //
+            // Whether successful or not, clear the password boxes.
             // TODO: Clear these earlier, while the request is still pending.
-            $('#old_password, #new_password, #confirm_password').val('');
+            clear_password_change();
         }
     });
 
