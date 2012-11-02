@@ -39,10 +39,9 @@ class AuthedTestCase(TestCase):
         self.client.post('/accounts/home/',
                          {'email': username + '@humbughq.com'})
         return self.client.post('/accounts/register/',
-                                {'full_name':username, 'short_name':username,
+                                {'full_name': username, 'password': password,
                                  'key': find_key_by_email(username + '@humbughq.com'),
-                                 'username':username, 'password':password,
-                                 'domain':'humbughq.com'})
+                                 'terms': True})
 
     def get_user_profile(self, email):
         """
