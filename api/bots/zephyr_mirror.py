@@ -90,24 +90,31 @@ def unwrap_lines(body):
     return '\n\n'.join(p.replace('\n', ' ') for p in re.split(r'\n[ \t\n]', body))
 
 def send_humbug(zeph):
+    message = {}
     if options.forward_class_messages:
-        zeph["forged"] = "yes"
-    zeph["sender"] = to_humbug_username(zeph["sender"])
-    zeph['fullname']  = username_to_fullname(zeph['sender'])
-    zeph['shortname'] = zeph['sender'].split('@')[0]
+        message["forged"] = "yes"
+    message['type'] = zeph['type']
+    message['time'] = zeph['time']
+    message['sender'] = to_humbug_username(zeph['sender'])
+    message['fullname']  = username_to_fullname(zeph['sender'])
+    message['shortname'] = zeph['sender'].split('@')[0]
     if "subject" in zeph:
-        zeph["subject"] = zeph["subject"][:60]
+        message["subject"] = zeph["subject"][:60]
     if zeph['type'] == 'stream':
         # Forward messages sent to -c foo -i bar to stream bar subject "instance"
         if zeph["stream"] == "message":
-            zeph['stream'] = zeph['subject']
-            zeph['subject'] = "instance %s" % (zeph['stream'])
+            message['stream'] = zeph['subject']
+            message['subject'] = "instance %s" % (zeph['stream'])
         elif zeph["stream"] == "tabbott-test5":
-            zeph['stream'] = zeph['subject']
-            zeph['subject'] = "test instance %s" % (zeph['stream'])
+            message['stream'] = zeph['subject']
+            message['subject'] = "test instance %s" % (zeph['stream'])
+        else:
+            message["stream"] = zeph["stream"]
+    else:
+        message["recipient"] = zeph["recipient"]
+    message['content'] = unwrap_lines(zeph['content'])
 
-    zeph['content'] = unwrap_lines(zeph['content'])
-    return humbug_client.send_message(zeph)
+    return humbug_client.send_message(message)
 
 def fetch_fullname(username):
     try:
@@ -227,7 +234,6 @@ def process_notice(notice, log):
                 (datetime.datetime.now())
             return
 
-    sender = notice.sender.lower().replace("athena.mit.edu", "mit.edu")
     zephyr_class = notice.cls.lower()
     instance = notice.instance.lower()
 
@@ -238,8 +244,8 @@ def process_notice(notice, log):
             # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
             huddle_recipients_list = [to_humbug_username(x.strip()) for x in
                                       body.split("\n")[0][4:].split()]
-            if sender not in huddle_recipients_list:
-                huddle_recipients_list.append(sender)
+            if notice.sender not in huddle_recipients_list:
+                huddle_recipients_list.append(to_humbug_username(notice.sender))
             huddle_recipients = ",".join(huddle_recipients_list)
     if (zephyr_class == "mail" and instance == "inbox"):
         is_personal = True
@@ -254,21 +260,21 @@ def process_notice(notice, log):
     if is_huddle:
         zeph = { 'type'      : 'personal',
                  'time'      : str(notice.time),
-                 'sender'    : sender,
+                 'sender'    : notice.sender,
                  'recipient' : huddle_recipients,
                  'zsig'      : zsig,  # logged here but not used by app
                  'content'   : body.split("\n", 1)[1] }
     elif is_personal:
         zeph = { 'type'      : 'personal',
                  'time'      : str(notice.time),
-                 'sender'    : sender,
+                 'sender'    : notice.sender,
                  'recipient' : to_humbug_username(notice.recipient),
                  'zsig'      : zsig,  # logged here but not used by app
                  'content'   : body }
     else:
         zeph = { 'type'      : 'stream',
                  'time'      : str(notice.time),
-                 'sender'    : sender,
+                 'sender'    : notice.sender,
                  'stream'    : zephyr_class,
                  'subject'   : instance,
                  'zsig'      : zsig,  # logged here but not used by app
