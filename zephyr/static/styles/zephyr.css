@@ -44,9 +44,6 @@ ul#sidebar {
 .my_email {
     color: grey;
 }
-.logout {
-    white-space: nowrap;
-}
 @media (max-width: 767px) {
     .my_fullname {
         font-size: 100%;
@@ -56,6 +53,9 @@ ul#sidebar {
     }
 }
 
+.logout {
+    white-space: nowrap;
+}
 
 .new_message_button {
     padding-top: 1em;
@@ -344,7 +344,6 @@ input.recipient_box {
     width: 75%;
 }
 
-
 input.send_message {
     float: right;
 }
@@ -366,6 +365,7 @@ input.send_message {
     padding: 5px 10px;
     width: 640px;
 }
+
 .always_in_view {
     background-color: aliceblue;
 }
