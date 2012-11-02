@@ -103,10 +103,10 @@ def send_humbug(zeph):
     if zeph['type'] == 'stream':
         # Forward messages sent to -c foo -i bar to stream bar subject "instance"
         if zeph["stream"] == "message":
-            message['stream'] = zeph['subject']
+            message['stream'] = zeph['subject'].lower()
             message['subject'] = "instance %s" % (zeph['stream'])
         elif zeph["stream"] == "tabbott-test5":
-            message['stream'] = zeph['subject']
+            message['stream'] = zeph['subject'].lower()
             message['subject'] = "test instance %s" % (zeph['stream'])
         else:
             message["stream"] = zeph["stream"]
@@ -271,7 +271,7 @@ def process_notice(notice, log):
         zeph['type'] = 'stream'
         zeph['stream'] = zephyr_class
         if notice.instance != "":
-            zeph['subject'] = notice.instance.lower()
+            zeph['subject'] = notice.instance
         else:
             zeph["subject"] = "personal"
 
