@@ -146,26 +146,26 @@ var people_list = [
                         onclick="compose.start('stream');">New Message</button>
               </div>
 
-                <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
-                  <strong>Can't receive messages</strong> &mdash; try reloading the page.
-                </div>
-                <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application">
-                </div>
-                <div class="alert alert_sidebar" id="home-error"></div>
-                <div class="alert alert_sidebar" id="stream-dne">
-                  <p>The stream <span class="streamname" id="stream-dne-name"></span> does not exist.</p>
-                  <button type="button" id="create-it" class="btn btn-primary">Create and send</button>
-                  <button type="button" class="btn" onClick="$('#stream-dne').stop(true).fadeOut(500);">
-                    Cancel message
-                  </button>
-                </div>
-                <div class="alert alert_sidebar" id="stream-nosub">
-                  <p>You're not subscribed to the stream <span class="streamname" id="stream-nosub-name"></span>.</p>
-                  <button type="button" id="sub-it" class="btn btn-primary">Subscribe and send</button>
-                  <button type="button" class="btn" onClick="$('#stream-nosub').stop(true).fadeOut(500);">
-                    Cancel message
-                  </button>
-                </div>
+              <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
+                <strong>Can't receive messages</strong> &mdash; try reloading the page.
+              </div>
+              <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application">
+              </div>
+              <div class="alert alert_sidebar" id="home-error"></div>
+              <div class="alert alert_sidebar" id="stream-dne">
+                <p>The stream <span class="streamname" id="stream-dne-name"></span> does not exist.</p>
+                <button type="button" id="create-it" class="btn btn-primary">Create and send</button>
+                <button type="button" class="btn" onClick="$('#stream-dne').stop(true).fadeOut(500);">
+                  Cancel message
+                </button>
+              </div>
+              <div class="alert alert_sidebar" id="stream-nosub">
+                <p>You're not subscribed to the stream <span class="streamname" id="stream-nosub-name"></span>.</p>
+                <button type="button" id="sub-it" class="btn btn-primary">Subscribe and send</button>
+                <button type="button" class="btn" onClick="$('#stream-nosub').stop(true).fadeOut(500);">
+                  Cancel message
+                </button>
+              </div>
             </div>
           </div>
         </div><!--/sidebar-->
