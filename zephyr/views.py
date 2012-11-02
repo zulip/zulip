@@ -684,10 +684,9 @@ def validate_notify(request):
             and request.POST.get('secret') == settings.SHARED_SECRET)
 
 
-@asynchronous
 @csrf_exempt
 @require_post
-def notify_new_message(request, handler):
+def notify_new_message(request):
     if not validate_notify(request):
         return json_error("Access denied", status=403)
 
@@ -707,10 +706,9 @@ def notify_new_message(request, handler):
 
     return json_success()
 
-@asynchronous
 @csrf_exempt
 @require_post
-def notify_pointer_update(request, handler):
+def notify_pointer_update(request):
     if not validate_notify(request):
         return json_error("Access denied", status=403)
 
