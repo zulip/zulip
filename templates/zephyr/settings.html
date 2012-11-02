@@ -13,7 +13,7 @@
       </div>
       <div id="get_api_key_box">
         <form action="/json/fetch_api_key" method="post" class="settings">{% csrf_token %}
-          <label>Enter your password to get your API key</label>
+          <label for="password">Enter your password to get your API key</label>
           <input type="password" autocomplete="off" name="password" id="get_api_key_password" value="" /><br />
           <input type="submit" name="view_api_key" value="Get API Key" class="btn" />
         </form>
@@ -35,28 +35,28 @@
     class="settings">{% csrf_token %}
       <table>
       <tr>
-        <td><label>Full name: </label></td>
+        <td><label for="full_name">Full name: </label></td>
         <td>
           <input type="text" name="full_name" id="full_name"
                  value="{{ user_profile.full_name }}" />
         </td>
       </tr>
       <tr>
-        <td><label>Old password: </label></td>
+        <td><label for="old_password">Old password: </label></td>
         <td>
           <input type="password" autocomplete="off"
                  name="old_password" id="old_password" value="" />
         </td>
       </tr>
       <tr>
-        <td><label>New password: </label></td>
+        <td><label for="new_password">New password: </label></td>
         <td>
           <input type="password" autocomplete="off"
                  name="new_password" id="new_password" value="" />
         </td>
       </tr>
       <tr>
-        <td><label>Confirm password: </label></td>
+        <td><label for="confirm_password">Confirm password: </label></td>
         <td><input type="password" autocomplete="off"
                    name="confirm_password" id="confirm_password"
                    value="" />
