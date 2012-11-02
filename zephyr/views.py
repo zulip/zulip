@@ -168,10 +168,8 @@ def home(request):
                               context_instance=RequestContext(request))
 
 @authenticated_api_view
-def api_update_pointer(request, user_profile):
-    updater = request.POST.get("client_id")
-    if updater is None:
-        return json_error("Missing client_id argument")
+@has_request_variables
+def api_update_pointer(request, user_profile, updater=POST('client_id')):
     return update_pointer_backend(request, user_profile, updater)
 
 @authenticated_json_view
@@ -180,16 +178,8 @@ def json_update_pointer(request):
     return update_pointer_backend(request, user_profile,
                                   request.session.session_key)
 
-def update_pointer_backend(request, user_profile, updater):
-    pointer = request.POST.get('pointer')
-    if not pointer:
-        return json_error("Missing pointer")
-
-    try:
-        pointer = int(pointer)
-    except ValueError:
-        return json_error("Invalid pointer: must be an integer")
-
+@has_request_variables
+def update_pointer_backend(request, user_profile, updater, pointer=POST(converter=int)):
     if pointer < 0:
         return json_error("Invalid pointer value")
 
@@ -217,19 +207,9 @@ def api_get_old_messages(request, user_profile):
     return get_old_messages_backend(request, user_profile=user_profile,
                                     apply_markdown=(request.POST.get("apply_markdown") is not None))
 
-def get_old_messages_backend(request, user_profile=None,
-                             apply_markdown=True):
-    if not ('start' in request.POST):
-        return json_error("Missing 'start' parameter")
-    if not ('which' in request.POST):
-        return json_error("Missing 'which' parameter")
-    if not ('number' in request.POST):
-        return json_error("Missing 'number' parameter")
-
-    start = int(request.POST.get("start"))
-    which = request.POST.get("which")
-    number = int(request.POST.get("number"))
-
+@has_request_variables
+def get_old_messages_backend(request, start = POST(converter=int), which = POST, number = POST(converter=int),
+                             user_profile=None, apply_markdown=True):
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
 
     if which == "older":
@@ -262,8 +242,8 @@ def json_get_updates(request, handler):
 
 @asynchronous
 @authenticated_api_view
-def api_get_messages(request, user_profile, handler):
-    client_id = request.POST.get("client_id")
+@has_request_variables
+def api_get_messages(request, user_profile, handler, client_id=POST):
     return get_updates_backend(request, user_profile, handler, client_id,
                                apply_markdown=(request.POST.get("apply_markdown") is not None),
                                mirror=request.POST.get("mirror"))
@@ -302,8 +282,13 @@ def format_delayed_updates_response(request=None, user_profile=None,
     return format_updates_response(new_pointer=pointer,
                                    update_types=update_types, **kwargs)
 
-def return_messages_immediately(request, user_profile, client_id, **kwargs):
-    last = request.POST.get("last")
+@has_request_variables
+def return_messages_immediately(request, user_profile, client_id,
+                                last = POST(converter=int, default=None),
+                                failures = POST(converter=int),
+                                client_server_generation = POST(whence='server_generation', default=None),
+                                client_reload_pending = POST(whence='server_generation', default=None),
+                                **kwargs):
     if last is None:
         # When an API user is first querying the server to subscribe,
         # there's no reason to reply immediately.
@@ -314,25 +299,17 @@ def return_messages_immediately(request, user_profile, client_id, **kwargs):
         # The client has no messages, so we should immediately start long-polling
         return None
 
-    last = int(last)
     if last < 0:
         return {"msg": "Invalid 'last' argument", "result": "error"}
 
     # Pointer sync is disabled for now
     # client_pointer = request.POST.get("pointer")
-    failures = request.POST.get("failures")
-    client_server_generation = request.POST.get("server_generation")
-    client_reload_pending = request.POST.get("reload_pending")
 
     # Pointer sync is disabled for now
     # client_wants_ptr_updates = False
     # if client_pointer is not None:
     #     client_pointer = int(client_pointer)
     #     client_wants_ptr_updates = True
-    if failures is not None:
-        failures = int(failures)
-    if client_reload_pending is not None:
-        client_reload_pending = int(client_reload_pending)
 
     new_pointer = None
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
@@ -527,14 +504,11 @@ def create_mirrored_message_users(request, user_profile):
 # both from the API and the web service.  Code calling
 # send_message_backend should either check the API key or check that
 # the user is logged in.
-def send_message_backend(request, user_profile, sender, client_name=None):
-    if "type" not in request.POST:
-        return json_error("Missing type")
-    if "content" not in request.POST:
-        return json_error("Missing message contents")
+@has_request_variables
+def send_message_backend(request, user_profile, sender, message_type_name = POST('type'),
+                         message_content = POST('content'), client_name=None):
     if client_name is None:
         return json_error("Missing client")
-    message_type_name = request.POST["type"]
     forged = "forged" in request.POST
     is_super_user = is_super_user_api(request)
     if forged and not is_super_user:
@@ -622,7 +596,7 @@ def send_message_backend(request, user_profile, sender, client_name=None):
 
     message = Message()
     message.sender = sender
-    message.content = request.POST['content']
+    message.content = message_content
     message.recipient = recipient
     if message_type_name == 'stream':
         message.subject = subject_name
@@ -731,10 +705,8 @@ def json_add_subscriptions(request):
     user_profile = UserProfile.objects.get(user=request.user)
     return add_subscriptions_backend(request, user_profile)
 
-def add_subscriptions_backend(request, user_profile):
-    if "streams" not in request.POST:
-        return json_error("Missing streams argument")
-    streams_raw = simplejson.loads(request.POST.get("streams"))
+@has_request_variables
+def add_subscriptions_backend(request, user_profile, streams_raw = POST('streams', simplejson.loads)):
     streams = []
     for stream_name in streams_raw:
         stream_name = stream_name.strip()
@@ -758,23 +730,9 @@ def add_subscriptions_backend(request, user_profile):
                          "already_subscribed": already_subscribed})
 
 @authenticated_json_view
-def json_change_settings(request):
+@has_request_variables
+def json_change_settings(request, full_name=POST, old_password=POST, new_password=POST, confirm_password=POST):
     user_profile = UserProfile.objects.get(user=request.user)
-
-    # First validate all the inputs
-    if "full_name" not in request.POST:
-        return json_error("Invalid settings request -- missing full_name.")
-    if "new_password" not in request.POST:
-        return json_error("Invalid settings request -- missing new_password.")
-    if "old_password" not in request.POST:
-        return json_error("Invalid settings request -- missing old_password.")
-    if "confirm_password" not in request.POST:
-        return json_error("Invalid settings request -- missing confirm_password.")
-
-    old_password     = request.POST['old_password']
-    new_password     = request.POST['new_password']
-    confirm_password = request.POST['confirm_password']
-    full_name        = request.POST['full_name']
 
     if new_password != "":
         if new_password != confirm_password:
@@ -791,10 +749,8 @@ def json_change_settings(request):
     return json_success(result)
 
 @authenticated_json_view
-def json_stream_exists(request):
-    if "stream" not in request.POST:
-        return json_error("Missing stream argument.")
-    stream = request.POST.get("stream")
+@has_request_variables
+def json_stream_exists(request, stream=POST):
     if not valid_stream_name(stream):
         return json_error("Invalid characters in stream name")
     exists = bool(get_stream(stream, UserProfile.objects.get(user=request.user).realm))
@@ -802,12 +758,8 @@ def json_stream_exists(request):
 
 @csrf_exempt
 @require_post
-def api_fetch_api_key(request):
-    try:
-        username = request.POST['username']
-        password = request.POST['password']
-    except KeyError:
-        return json_error("You must specify the username and password via POST.")
+@has_request_variables
+def api_fetch_api_key(request, username=POST, password=POST):
     user = authenticate(username=username, password=password)
     if user is None:
         return json_error("Your username or password is incorrect.", status=403)
@@ -816,11 +768,8 @@ def api_fetch_api_key(request):
     return json_success({"api_key": user.userprofile.api_key})
 
 @authenticated_json_view
-def json_fetch_api_key(request):
-    try:
-        password = request.POST['password']
-    except KeyError:
-        return json_error("You must specify your password to get your API key.")
+@has_request_variables
+def json_fetch_api_key(request, password=POST):
     if not request.user.check_password(password):
         return json_error("Your username or password is incorrect.")
     return json_success({"api_key": request.user.userprofile.api_key})
