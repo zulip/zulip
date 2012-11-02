@@ -371,32 +371,19 @@ def forward_to_zephyr(message):
             else:
                 instance = zephyr_class
                 zephyr_class = "message"
-        zeph = zephyr.ZNotice(sender=sender_email, auth=True,
-                              cls=zephyr_class, instance=instance)
-        body = "%s\0%s" % (zsig, wrapped_content)
-        zeph.setmessage(body)
-        zeph.send()
+        zwrite_args = ["zwrite", "-s", zsig, "-c", zephyr_class, "-i", instance]
     elif message['type'] == "personal":
         recipient = message["display_recipient"]["email"]
         recipient = recipient.replace("@mit.edu", "@ATHENA.MIT.EDU")
-        zeph = zephyr.ZNotice(sender=sender_email,
-                              auth=True, recipient=recipient,
-                              cls="message", instance="personal")
-        body = "%s\0%s" % (zsig, wrapped_content)
-        zeph.setmessage(body)
-        zeph.send()
+        zwrite_args = ["zwrite", "-s", zsig, recipient]
     elif message['type'] == "huddle":
-        cc_list = ["CC:"]
-        cc_list.extend([user["email"].replace("@mit.edu", "")
-                        for user in message["display_recipient"]])
-        body = "%s\0%s\n%s" % (zsig, " ".join(cc_list), wrapped_content)
-        for r in message["display_recipient"]:
-            recipient = r["email"].replace("mit.edu", "ATHENA.MIT.EDU")
-            zeph = zephyr.ZNotice(sender=sender_email, auth=True,
-                                  recipient=recipient, cls="message",
-                                  instance="personal")
-            zeph.setmessage(body)
-            zeph.send()
+        zwrite_args = ["zwrite", "-s", zsig, "-C"]
+        zwrite_args.extend([user["email"].replace("@mit.edu", "")
+                            for user in message["display_recipient"]])
+
+    p = subprocess.Popen(zwrite_args, stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE)
+    p.communicate(input=wrapped_content)
 
 def maybe_forward_to_zephyr(message):
     if message["sender_email"] == options.user + "@mit.edu":
@@ -557,8 +544,6 @@ for pid in out.split():
 child_pid = os.fork()
 if child_pid == 0:
     # Run the humbug => zephyr mirror in the child
-    import zephyr
-    zephyr.init()
     humbug_to_zephyr(options)
     sys.exit(0)
 
