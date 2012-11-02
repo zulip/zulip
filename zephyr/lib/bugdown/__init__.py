@@ -22,13 +22,24 @@ class AutoLink(markdown.inlinepatterns.Pattern):
         a.text = url
         return a
 
+class UListProcessor(markdown.blockprocessors.OListProcessor):
+    """ Process unordered list blocks.
+
+        Based on markdown.blockprocessors.UListProcessor, but does not accept
+        '+' as a bullet character."""
+
+    TAG = 'ul'
+    RE = re.compile(r'^[ ]{0,3}[*-][ ]+(.*)')
+
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         for k in ('image_link', 'image_reference', 'automail', 'autolink'):
             del md.inlinePatterns[k]
 
-        for k in ('hashheader', 'setextheader', 'olist'):
+        for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
             del md.parser.blockprocessors[k]
+
+        md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
 
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
 
