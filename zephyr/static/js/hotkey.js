@@ -161,7 +161,7 @@ exports.set_compose = function () {
 $(document).keydown(function (e) {
     pressed_keys[e.which] = true;
     if ((num_pressed_keys() >= 2) &&
-        (48 <= event.which && event.which <= 90) &&
+        (48 <= e.which && e.which <= 90) &&
         (pressed_keys[17] === true ||
          pressed_keys[91] === true)) {
         // If the user typed 2 or more characters, one of which was
