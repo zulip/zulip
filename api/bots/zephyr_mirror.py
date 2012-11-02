@@ -346,7 +346,7 @@ def zephyr_to_humbug(options):
         process_loop(log)
 
 def forward_to_zephyr(message):
-    zsig = u"%s\u200B" % (username_to_fullname(message["sender_email"]))
+    zsig = u"%s@(@color(blue))" % (username_to_fullname(message["sender_email"]))
     if ' dot ' in zsig:
         print "%s: humbug=>zephyr: ERROR!  Couldn't compute zsig for %s!" % \
             (datetime.datetime.now(), message["sender_email"])
