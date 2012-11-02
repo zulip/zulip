@@ -182,7 +182,7 @@ function update_floating_recipient_bar() {
 
     // Hide if our bottom is in our bookend (or one bookend-height
     // above it). This means we're not showing any useful part of the
-    // message above us, so why bother showing the label?)
+    // message above us, so why bother showing the label?
     var current_bookend = current_label.nextUntil(".bookend_tr")
                                        .andSelf()
                                        .next(".bookend_tr:first");
