@@ -214,8 +214,12 @@ def process_notice(notice, log):
         return
 
     if isinstance(zsig, str):
-        # Check for width unicode character u'\u200B'.encode("utf-8")
-        if u'\u200B'.encode("utf-8") in zsig:
+        # Check the loop suppression method of having a zsig ending
+        # with the empty string rendered in blue
+        #
+        # Check for the old loop suppression mechanism of a width
+        # unicode character u'\u200B'.encode("utf-8").
+        if u'\u200B'.encode("utf-8") in zsig or zsig.endswith("@(@color(blue))"):
             print "%s: zephyr=>humbug: Skipping message from Humbug!" % \
                 (datetime.datetime.now())
             return
