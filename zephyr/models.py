@@ -318,15 +318,15 @@ class Recipient(models.Model):
     class Meta:
         unique_together = ("type", "type_id")
 
+    # N.B. If we used Django's choice=... we would get this for free (kinda)
+    _type_names = {
+        PERSONAL: 'personal',
+        STREAM:   'stream',
+        HUDDLE:   'huddle' }
+
     def type_name(self):
-        if self.type == self.PERSONAL:
-            return "personal"
-        elif self.type == self.STREAM:
-            return "stream"
-        elif self.type == self.HUDDLE:
-            return "huddle"
-        else:
-            raise ValueError('Bad recipient type')
+        # Raises KeyError if invalid
+        return self._type_names[self.type]
 
     def __repr__(self):
         display_recipient = get_display_recipient(self)
