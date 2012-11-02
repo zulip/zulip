@@ -228,11 +228,10 @@ def process_notice(notice, log):
             return
 
     sender = notice.sender.lower().replace("athena.mit.edu", "mit.edu")
-    recipient = notice.recipient.lower().replace("athena.mit.edu", "mit.edu")
     zephyr_class = notice.cls.lower()
     instance = notice.instance.lower()
 
-    if (zephyr_class == "message" and recipient != ""):
+    if (zephyr_class == "message" and notice.recipient != ""):
         is_personal = True
         if body.startswith("CC:"):
             is_huddle = True
@@ -263,7 +262,7 @@ def process_notice(notice, log):
         zeph = { 'type'      : 'personal',
                  'time'      : str(notice.time),
                  'sender'    : sender,
-                 'recipient' : to_humbug_username(recipient),
+                 'recipient' : to_humbug_username(notice.recipient),
                  'zsig'      : zsig,  # logged here but not used by app
                  'content'   : body }
     else:
