@@ -44,8 +44,8 @@ function process_hotkey(code) {
         return false;
     }
 
-    // Disable hotkeys when in an input, textarea, or button
-    if ($('input:focus,textarea:focus,button:focus').length > 0) {
+    // Disable hotkeys when in an input, textarea, or send button
+    if ($('input:focus,textarea:focus,#compose-send-button:focus').length > 0) {
         return process_key_in_input(code);
     }
 
