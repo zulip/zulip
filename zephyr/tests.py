@@ -12,7 +12,7 @@ from zephyr.lib.initial_password import initial_password
 import datetime
 import simplejson
 import subprocess
-subprocess.call("zephyr/tests/generate-fixtures");
+subprocess.check_call("zephyr/tests/generate-fixtures");
 from django.conf import settings
 import re
 

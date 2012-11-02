@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 mkdir -p zephyr/fixtures
 rm -f zephyr/tests/zephyrdb.test
 python manage.py syncdb --noinput --settings=humbug.test_settings
