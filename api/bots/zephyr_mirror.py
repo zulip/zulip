@@ -79,10 +79,22 @@ humbug_client = api.common.HumbugAPI(email=options.user + "@mit.edu",
 start_time = time.time()
 
 def to_humbug_username(zephyr_username):
-    return zephyr_username.lower().split("@")[0] + "@mit.edu"
+    if "@" in zephyr_username:
+        (user, realm) = zephyr_username.split("@")
+    else:
+        (user, realm) = (zephyr_username, "mit.edu")
+    if realm.upper() == "ATHENA.MIT.EDU":
+        return user.lower() + "@mit.edu"
+    return user.lower() + "|" + realm + "@mit.edu"
 
 def to_zephyr_username(humbug_username):
-    return humbug_username.lower().split("@")[0] + "@ATHENA.MIT.EDU"
+    (user, realm) = humbug_username.split("@")
+    if "|" not in user:
+        return user.lower() + "@ATHENA.MIT.EDU"
+    match_user = re.match(r'([a-zA-Z0-9_]+)\|(.*)@mit\.edu', user)
+    if not match_user:
+        raise Exception("Could not parse Zephyr realm for cross-realm user %s" % (humbug_username,))
+    return match_user.group(1).lower() + "@" + match_user.group(2).upper()
 
 def unwrap_lines(body):
     # Split into paragraphs at two consecutive newlines, or a newline followed
@@ -131,18 +143,12 @@ def fetch_fullname(username):
             (datetime.datetime.now(), username)
         traceback.print_exc()
 
-    domains = [
-        ("@CS.CMU.EDU", " (CMU)"),
-        ("@ANDREW.CMU.EDU", " (CMU)"),
-        ("@IASTATE.EDU", " (IASTATE)"),
-        ("@1TS.ORG", " (1TS)"),
-        ("@DEMENTIA.ORG", " (DEMENTIA)"),
-        ("@MIT.EDU", ""),
-        ]
-    for (domain, tag) in domains:
-        if username.upper().endswith(domain):
-            return username.split("@")[0] + tag
-    return username
+    if "@" not in username:
+        return username
+    (user, realm) = username.split("@")
+    if realm.upper() == "MIT.EDU":
+        return user
+    return user.lower() + "@" + realm.upper()
 
 fullnames = {}
 def username_to_fullname(username):
