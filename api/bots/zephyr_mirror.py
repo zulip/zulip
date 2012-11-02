@@ -305,9 +305,9 @@ def zephyr_to_humbug(options):
     if options.forward_class_messages:
         update_subscriptions_from_humbug()
     if options.forward_personals:
-        subs.add(("message", "*", options.user + "@ATHENA.MIT.EDU"))
+        subs.add(("message", "*", "%me%"))
         if subscribed_to_mail_messages():
-            subs.add(("mail", "inbox", options.user + "@ATHENA.MIT.EDU"))
+            subs.add(("mail", "inbox", "%me%"))
 
     if options.resend_log:
         with open('/mit/tabbott/Private/zephyrs', 'r') as log:
