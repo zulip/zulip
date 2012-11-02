@@ -132,7 +132,7 @@ exports.initialize = function () {
 
     $( "#huddle_recipient" ).blur(function (event) {
         var val = $(this).val();
-        $(this).val(val.replace(/[,;] *$/, ''));
+        $(this).val(val.replace(/\s*[,;]\s*$/, ''));
     });
 
     composebox_typeahead.update_autocomplete();
