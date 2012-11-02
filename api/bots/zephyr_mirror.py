@@ -426,15 +426,16 @@ def add_humbug_subscriptions(verbose):
             zephyr_subscriptions.add(instance)
             continue
         elif cls == "mail" and instance == "inbox":
+            # We forward mail zephyrs, so no need to print a warning.
+            continue
+        elif len(cls) > 30:
+            skipped.add((cls, instance, recipient, "Class longer than 30 characters"))
             continue
         elif instance != "*":
             skipped.add((cls, instance, recipient, "Unsupported non-* instance"))
             continue
         elif recipient != "*":
             skipped.add((cls, instance, recipient, "Unsupported non-* recipient."))
-            continue
-        if len(cls) > 30:
-            skipped.add((cls, instance, recipient, "Class longer than 30 characters"))
             continue
         zephyr_subscriptions.add(cls)
 
