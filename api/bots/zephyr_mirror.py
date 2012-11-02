@@ -392,7 +392,12 @@ def maybe_forward_to_zephyr(message):
             print "%s humbug=>zephyr: Alert!  Out of order message: %s < %s" % \
                 (datetime.datetime.now(), message["timestamp"], timestamp_now)
             return
-        forward_to_zephyr(message)
+        try:
+            forward_to_zephyr(message)
+        except:
+            # Don't let an exception forwarding one message crash the
+            # whole process
+            traceback.print_exc()
 
 def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
