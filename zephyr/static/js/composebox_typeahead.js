@@ -40,7 +40,7 @@ exports.update_autocomplete = function () {
     autocomplete_needs_update = false;
 };
 
-function get_last_email_in_huddle(query_string) {
+function get_last_recipient_in_huddle(query_string) {
     // Assumes email addresses don't have commas or semicolons in them
     var recipients = query_string.split(/[,;] */);
     return recipients[recipients.length-1];
@@ -53,7 +53,7 @@ function composebox_typeahead_highlighter(item) {
         // There could be multiple recipients in a huddle, we want to
         // decide what to highlight based only on the most recent one
         // we're entering.
-        query = get_last_email_in_huddle(this.query);
+        query = get_last_recipient_in_huddle(this.query);
     }
     query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
     var regex = new RegExp('(' + query + ')', 'ig');
@@ -105,7 +105,7 @@ exports.initialize = function () {
         items: 4,
         highlighter: composebox_typeahead_highlighter,
         matcher: function (item) {
-            var current_recipient = get_last_email_in_huddle(this.query);
+            var current_recipient = get_last_recipient_in_huddle(this.query);
             // If the name is only whitespace (does not contain any non-whitespace),
             // we're between typing names; don't autocomplete anything for us.
             if (! current_recipient.match(/\S/)) {
