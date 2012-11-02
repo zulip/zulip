@@ -106,6 +106,11 @@ exports.initialize = function () {
         highlighter: composebox_typeahead_highlighter,
         matcher: function (item) {
             var current_recipient = get_last_email_in_huddle(this.query);
+            // If the name is only whitespace (does not contain any non-whitespace),
+            // we're between typing names; don't autocomplete anything for us.
+            if (! current_recipient.match(/\S/)) {
+                return false;
+            }
             // Case-insensitive (from Bootstrap's default matcher).
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
