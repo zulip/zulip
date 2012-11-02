@@ -27,7 +27,7 @@ class Bugdown(markdown.Extension):
         for k in ('image_link', 'image_reference', 'automail', 'autolink'):
             del md.inlinePatterns[k]
 
-        for k in ('hashheader', 'setextheader'):
+        for k in ('hashheader', 'setextheader', 'olist'):
             del md.parser.blockprocessors[k]
 
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
