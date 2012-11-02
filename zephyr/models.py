@@ -19,7 +19,7 @@ from django.utils import timezone
 from django.contrib.sessions.models import Session
 import time
 
-@cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id))
+@cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id,))
 def get_display_recipient(recipient):
     """
     recipient: an instance of Recipient.
