@@ -78,7 +78,7 @@ humbug_client = api.common.HumbugAPI(email=options.user + "@mit.edu",
 
 start_time = time.time()
 
-def humbug_username(zephyr_username):
+def to_humbug_username(zephyr_username):
     return zephyr_username.lower().split("@")[0] + "@mit.edu"
 
 def unwrap_lines(body):
@@ -89,7 +89,7 @@ def unwrap_lines(body):
 def send_humbug(zeph):
     if options.forward_class_messages:
         zeph["forged"] = "yes"
-    zeph["sender"] = humbug_username(zeph["sender"])
+    zeph["sender"] = to_humbug_username(zeph["sender"])
     zeph['fullname']  = username_to_fullname(zeph['sender'])
     zeph['shortname'] = zeph['sender'].split('@')[0]
     if "subject" in zeph:
@@ -234,7 +234,7 @@ def process_notice(notice, log):
         if body.startswith("CC:"):
             is_huddle = True
             # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
-            huddle_recipients_list = [humbug_username(x.strip()) for x in
+            huddle_recipients_list = [to_humbug_username(x.strip()) for x in
                                       body.split("\n")[0][4:].split()]
             if sender not in huddle_recipients_list:
                 huddle_recipients_list.append(sender)
@@ -260,7 +260,7 @@ def process_notice(notice, log):
         zeph = { 'type'      : 'personal',
                  'time'      : str(notice.time),
                  'sender'    : sender,
-                 'recipient' : humbug_username(recipient),
+                 'recipient' : to_humbug_username(recipient),
                  'zsig'      : zsig,  # logged here but not used by app
                  'content'   : body }
     else:
