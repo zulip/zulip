@@ -235,7 +235,6 @@ def process_notice(notice, log):
             return
 
     zephyr_class = notice.cls.lower()
-    instance = notice.instance.lower()
 
     if (zephyr_class == "message" and notice.recipient != ""):
         is_personal = True
@@ -247,49 +246,43 @@ def process_notice(notice, log):
             if notice.sender not in huddle_recipients_list:
                 huddle_recipients_list.append(to_humbug_username(notice.sender))
             huddle_recipients = ",".join(huddle_recipients_list)
-    if (zephyr_class == "mail" and instance == "inbox"):
+            body = body.split("\n", 1)[1]
+    if (zephyr_class == "mail" and notice.instance.lower() == "inbox"):
         is_personal = True
 
     # Drop messages not to the listed subscriptions
     if (zephyr_class not in current_zephyr_subs) and not \
             (is_personal and options.forward_personals):
         print "%s: zephyr=>humbug: Skipping ... %s/%s/%s" % \
-            (datetime.datetime.now(), zephyr_class, instance, is_personal)
+            (datetime.datetime.now(), zephyr_class, notice.instance, is_personal)
         return
 
+    zeph = { 'time'      : str(notice.time),
+             'sender'    : notice.sender,
+             'zsig'      : zsig,  # logged here but not used by app
+             'content'   : body }
     if is_huddle:
-        zeph = { 'type'      : 'personal',
-                 'time'      : str(notice.time),
-                 'sender'    : notice.sender,
-                 'recipient' : huddle_recipients,
-                 'zsig'      : zsig,  # logged here but not used by app
-                 'content'   : body.split("\n", 1)[1] }
+        zeph['type'] = 'personal'
+        zeph['recipient'] = huddle_recipients
     elif is_personal:
-        zeph = { 'type'      : 'personal',
-                 'time'      : str(notice.time),
-                 'sender'    : notice.sender,
-                 'recipient' : to_humbug_username(notice.recipient),
-                 'zsig'      : zsig,  # logged here but not used by app
-                 'content'   : body }
+        zeph['type'] = 'personal'
+        zeph['recipient'] = to_humbug_username(notice.recipient)
     else:
-        zeph = { 'type'      : 'stream',
-                 'time'      : str(notice.time),
-                 'sender'    : notice.sender,
-                 'stream'    : zephyr_class,
-                 'subject'   : instance,
-                 'zsig'      : zsig,  # logged here but not used by app
-                 'content'   : body }
-        if zeph["subject"] == "":
+        zeph['type'] = 'stream'
+        zeph['stream'] = zephyr_class
+        if notice.instance != "":
+            zeph['subject'] = notice.instance.lower()
+        else:
             zeph["subject"] = "personal"
 
     # Add instances in for instanced personals
-    if zeph['type'] == "personal" and instance != "personal":
-        zeph["content"] = "[-i %s]" % (instance,) + "\n" + zeph["content"]
+    if zeph['type'] == "personal" and notice.instance != "personal":
+        zeph["content"] = "[-i %s]" % (notice.instance,) + "\n" + zeph["content"]
 
     zeph = decode_unicode_byte_strings(zeph)
 
     print "%s: zephyr=>humbug: received a message on %s/%s from %s..." % \
-        (datetime.datetime.now(), zephyr_class, instance, notice.sender)
+        (datetime.datetime.now(), zephyr_class, notice.instance, notice.sender)
     log.write(simplejson.dumps(zeph) + '\n')
     log.flush()
 
