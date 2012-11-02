@@ -151,7 +151,7 @@ class UserProfile(models.Model):
     def create(cls, user, realm, full_name, short_name):
         """When creating a new user, make a profile for him or her."""
         if not cls.objects.filter(user=user):
-            profile = cls(user=user, pointer=-1, realm_id=realm.id,
+            profile = cls(user=user, pointer=-1, realm=realm,
                           full_name=full_name, short_name=short_name)
             profile.api_key = initial_api_key(user.email)
             profile.save()
@@ -243,7 +243,7 @@ def bulk_create_users(realms, users_raw):
     for (email, full_name, short_name, active) in users:
         domain = email.split('@')[1]
         profile = UserProfile(user=users_by_email[email], pointer=-1,
-                              realm_id=realms[domain].id,
+                              realm=realms[domain],
                               full_name=full_name, short_name=short_name)
         profile.api_key = initial_api_key(email)
         profiles_to_create.append(profile)
