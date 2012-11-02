@@ -12,7 +12,7 @@ if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
 
 ADMINS = (
-    ('Jessica McKellar', 'jessica.mckellar@gmail.com'),
+    ('Devel', 'devel@humbughq.com'),
 )
 
 MANAGERS = ADMINS
