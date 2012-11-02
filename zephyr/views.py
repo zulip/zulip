@@ -481,8 +481,6 @@ def api_send_message(request, user_profile):
 @login_required_json_view
 def json_send_message(request):
     user_profile = UserProfile.objects.get(user=request.user)
-    if 'time' in request.POST:
-        return json_error("Invalid field 'time'")
     return send_message_backend(request, user_profile, user_profile,
                                 client_name=request.POST.get("client"))
 
