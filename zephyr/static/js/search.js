@@ -129,7 +129,7 @@ function clear_search() {
     $('#search').val('').width("610px");
     $("#search_arrows").removeClass("input-append");
     $("#search_up, #search_down").removeAttr("disabled");
-    $('.search_button').hide();
+    $('.search_button').blur().hide();
     clear_search_cache();
 }
 
