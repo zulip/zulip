@@ -81,6 +81,9 @@ start_time = time.time()
 def to_humbug_username(zephyr_username):
     return zephyr_username.lower().split("@")[0] + "@mit.edu"
 
+def to_zephyr_username(humbug_username):
+    return humbug_username.lower().split("@")[0] + "@ATHENA.MIT.EDU"
+
 def unwrap_lines(body):
     # Split into paragraphs at two consecutive newlines, or a newline followed
     # by an indent.
@@ -355,9 +358,8 @@ def forward_to_zephyr(message):
     wrapped_content = "\n".join("\n".join(textwrap.wrap(line))
             for line in message["content"].split("\n"))
 
-    sender_email = message["sender_email"].replace("mit.edu", "ATHENA.MIT.EDU")
     print "%s: humbug=>zephyr: Forwarding message from %s" % \
-        (datetime.datetime.now(), sender_email)
+        (datetime.datetime.now(), message["sender_email"])
     if message['type'] == "stream":
         zephyr_class = message["display_recipient"]
         instance = message["subject"]
@@ -373,12 +375,11 @@ def forward_to_zephyr(message):
                 zephyr_class = "message"
         zwrite_args = ["zwrite", "-s", zsig, "-c", zephyr_class, "-i", instance]
     elif message['type'] == "personal":
-        recipient = message["display_recipient"]["email"]
-        recipient = recipient.replace("@mit.edu", "@ATHENA.MIT.EDU")
+        recipient = to_zephyr_username(message["display_recipient"]["email"])
         zwrite_args = ["zwrite", "-s", zsig, recipient]
     elif message['type'] == "huddle":
         zwrite_args = ["zwrite", "-s", zsig, "-C"]
-        zwrite_args.extend([user["email"].replace("@mit.edu", "")
+        zwrite_args.extend([to_zephyr_username(user["email"]).replace("@ATHENA.MIT.EDU", "")
                             for user in message["display_recipient"]])
 
     p = subprocess.Popen(zwrite_args, stdin=subprocess.PIPE,
