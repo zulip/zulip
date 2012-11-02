@@ -46,6 +46,10 @@ CC %s, identifying the commits to be reviewed.
 
 Name a range of commits, or name a single commit (e.g., 'HEAD^' or
 'origin/master') to identify all commits on HEAD since that commit.
+
+If you set REVIEW_USE_SENDMAIL to be nonempty, /usr/bin/sendmail will
+be used to mail the review request. Otherwise, msmtp will be used by
+default.
 """.strip() % CC_EMAIL
 
 
@@ -292,7 +296,11 @@ def main(args):
     print >>sys.stdout
     print >>sys.stdout, msg.get_payload(decode=True),
   else:
-    subprocess.Popen(['msmtp', '-t'],
+    if os.environ.get('REVIEW_USE_SENDMAIL', ''):
+      command = ['/usr/sbin/sendmail', '-bm', '-t']
+    else:
+      command = ['msmtp', '-t']
+    subprocess.Popen(command,
                      stdin=subprocess.PIPE).communicate(msg.as_string())
 
 if __name__ == '__main__':
