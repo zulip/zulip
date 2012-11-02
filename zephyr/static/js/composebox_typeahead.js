@@ -1,5 +1,16 @@
 var composebox_typeahead = (function () {
 
+//************************************
+// AN IMPORTANT NOTE ABOUT TYPEAHEADS
+//************************************
+// They do not do any HTML escaping, at all.
+// And your input to them is rendered as though it were HTML by
+// the default highlighter.
+//
+// So if you are not using trusted input, you MUST use the a
+// highlighter that escapes, such as composebox_typeahead_highlighter
+// below.
+
 var exports = {};
 
 var autocomplete_needs_update = false;
@@ -29,18 +40,22 @@ exports.update_autocomplete = function () {
     autocomplete_needs_update = false;
 };
 
-//************************************
-// AN IMPORTANT NOTE ABOUT TYPEAHEADS
-//************************************
-// They do not do any HTML escaping, at all.
-// And your input to them is rendered as though it were HTML by
-// the default highlighter.
-//
-// So if you are not using trusted input, you MUST use the
-// escaping_highlighter.
-function escaping_highlighter(item) {
-    // (BASED ON Bootstrap's default highlighter, but with escaping added.)
-    var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+function get_last_email_in_huddle(query_string) {
+    // Assumes email addresses don't have commas or semicolons in them
+    var recipients = query_string.split(/[,;] */);
+    return recipients[recipients.length-1];
+}
+
+// Loosely based on Bootstrap's default highlighter, but with escaping added.
+function composebox_typeahead_highlighter(item) {
+    var query = this.query;
+    if ($(this.$element).attr('id') === 'huddle_recipient') {
+        // There could be multiple recipients in a huddle, we want to
+        // decide what to highlight based only on the most recent one
+        // we're entering.
+        query = get_last_email_in_huddle(this.query);
+    }
+    query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
     var regex = new RegExp('(' + query + ')', 'ig');
     // The result of the split will include the query term, because our regex
     // has parens in it.
@@ -70,7 +85,7 @@ exports.initialize = function () {
             return stream_list;
         },
         items: 3,
-        highlighter: escaping_highlighter
+        highlighter: composebox_typeahead_highlighter
     });
     $( "#subject" ).typeahead({
         source: function (query, process) {
@@ -81,18 +96,16 @@ exports.initialize = function () {
             return [];
         },
         items: 3,
-        highlighter: escaping_highlighter
+        highlighter: composebox_typeahead_highlighter
     });
     $( "#huddle_recipient" ).typeahead({
         source: function (query, process) {
             return huddle_typeahead_list;
         },
         items: 4,
-        highlighter: escaping_highlighter,
+        highlighter: composebox_typeahead_highlighter,
         matcher: function (item) {
-            // Assumes email addresses don't have commas or semicolons in them
-            var recipients = this.query.split(/[,;] */);
-            var current_recipient = recipients[recipients.length-1];
+            var current_recipient = get_last_email_in_huddle(this.query);
             // Case-insensitive (from Bootstrap's default matcher).
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
