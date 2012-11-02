@@ -116,6 +116,12 @@ var people_list = [
                     <span class="hidden-phone"> Keyboard shortcuts</span>
                   </a>
                 </li>
+                <li title="Formatting help">
+                  <a href="#markdown-help" role="button" data-toggle="modal">
+                    <i class="icon-font"></i>
+                    <span class="hidden-phone"> Formatting help</span>
+                  </a>
+                </li>
                 <li title="Feedback">
                   <a href="#feedback" onclick="compose.start('personal', { 'huddle_recipient': 'feedback@humbughq.com' });">
                     <i class="icon-comment"></i>
@@ -190,5 +196,6 @@ var people_list = [
         </div><!--/tab-content-->
     </div><!--/row-->
     {% include "zephyr/keyboard_shortcuts.html" %}
+    {% include "zephyr/markdown_help.html" %}
 
 {% endblock %}
