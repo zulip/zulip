@@ -210,12 +210,15 @@ def process_loop(log):
                 # Ask the Humbug server about any new classes to subscribe to
                 update_subscriptions_from_humbug()
 
-def process_notice(notice, log):
+def parse_zephyr_body(zephyr_data):
     try:
-        zsig, body = notice.message.split("\x00", 1)
+        (zsig, body) = zephyr_data.split("\x00", 1)
     except ValueError:
-        body = notice.message
-        zsig = ""
+        (zsig, body) = ("", zephyr_data)
+    return (zsig, body)
+
+def process_notice(notice, log):
+    (zsig, body) = parse_zephyr_body(notice.message)
     is_personal = False
     is_huddle = False
 
