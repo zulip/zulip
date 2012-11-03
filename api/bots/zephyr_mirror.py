@@ -85,13 +85,13 @@ def to_humbug_username(zephyr_username):
         (user, realm) = (zephyr_username, "mit.edu")
     if realm.upper() == "ATHENA.MIT.EDU":
         return user.lower() + "@mit.edu"
-    return user.lower() + "|" + realm + "@mit.edu"
+    return user.lower() + "|" + realm.upper() + "@mit.edu"
 
 def to_zephyr_username(humbug_username):
     (user, realm) = humbug_username.split("@")
     if "|" not in user:
         return user.lower() + "@ATHENA.MIT.EDU"
-    match_user = re.match(r'([a-zA-Z0-9_]+)\|(.*)@mit\.edu', user)
+    match_user = re.match(r'([a-zA-Z0-9_]+)\|(.+)@mit\.edu', user)
     if not match_user:
         raise Exception("Could not parse Zephyr realm for cross-realm user %s" % (humbug_username,))
     return match_user.group(1).lower() + "@" + match_user.group(2).upper()
@@ -111,6 +111,9 @@ def send_humbug(zeph):
     message['fullname']  = username_to_fullname(zeph['sender'])
     message['shortname'] = zeph['sender'].split('@')[0]
     if "subject" in zeph:
+        # Truncate the subject to the current limit in Humbug.  No
+        # need to do this for stream names, since we're only
+        # subscribed to valid stream names.
         message["subject"] = zeph["subject"][:60]
     if zeph['type'] == 'stream':
         # Forward messages sent to -c foo -i bar to stream bar subject "instance"
