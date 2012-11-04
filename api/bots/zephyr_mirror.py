@@ -388,7 +388,7 @@ def forward_to_zephyr(message):
 
     p = subprocess.Popen(zwrite_args, stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE)
-    p.communicate(input=wrapped_content)
+    p.communicate(input=wrapped_content.encode("utf-8"))
 
 def maybe_forward_to_zephyr(message):
     if (message["sender_email"] == options.user + "@mit.edu"):
