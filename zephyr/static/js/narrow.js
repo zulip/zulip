@@ -175,6 +175,16 @@ exports.show_all_messages = function () {
     update_highlight_on_narrow();
 };
 
+exports.restore_home_state = function() {
+    // If we click on the Home link while already at Home, unnarrow.
+    // If we click on the Home link from another nav pane, just go
+    // back to the state you were in (possibly still narrowed) before
+    // you left the Home pane.
+    if ($('#sidebar li[title="Home"]').hasClass("active")) {
+        exports.show_all_messages();
+    }
+};
+
 return exports;
 
 }());
