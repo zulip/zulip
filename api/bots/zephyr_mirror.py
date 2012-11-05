@@ -98,7 +98,7 @@ def to_zephyr_username(humbug_username):
 
 def early_indent(line, next_line):
     words = next_line.split()
-    return len(line + " " + words[0]) < len(next_line)
+    return len(line + " " + words[0]) < len(next_line) * 0.8
 
 # Linewrapping algorithm based on:
 # http://gcbenison.wordpress.com/2011/07/03/a-program-to-intelligently-remove-carriage-returns-so-you-can-paste-text-without-having-it-look-awful/
