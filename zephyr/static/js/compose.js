@@ -114,7 +114,7 @@ exports.show = function (tabname, focus_area) {
     $('#compose').css({visibility: "visible"});
     $("#new_message_content").trigger("autosize");
     $('.message_comp').slideDown(100);
-    $('#compose-' + tabname).tab('show');
+    $('#message-type-tabs a[href="#' + tabname + '-message"]').tab('show');
     focus_area.focus();
     focus_area.select();
 };
@@ -147,7 +147,7 @@ exports.set_message_type = function (tabname) {
 
 
 exports.toggle_mode = function () {
-    if ($('#compose-stream').parent().hasClass('active')) {
+    if ($("#message-type-tabs li.active").find("a[href=#stream-message]").length !== 0) {
         // In stream tab, switch to personals.
         exports.show('personal', $("#huddle_recipient"));
     } else {

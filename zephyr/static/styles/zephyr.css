@@ -475,7 +475,7 @@ table.floating_recipient {
     border: 1px solid grey;
 }
 
-#stream_or_huddle ul {
+#message-type-tabs {
     margin-top: 0px;
     margin-bottom: 0px;
 }

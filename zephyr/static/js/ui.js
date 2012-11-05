@@ -277,10 +277,11 @@ $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
 
-    $.each(['stream', 'personal'], function (index, tabname) {
-        $('#compose-' + tabname).on('shown', function (e) {
-            compose.set_message_type(tabname);
-        });
+    $('#message-type-tabs a[href="#stream-message"]').on('shown', function (e) {
+        compose.set_message_type('stream');
+    });
+    $('#message-type-tabs a[href="#personal-message"]').on('shown', function (e) {
+        compose.set_message_type('huddle');
     });
 
     // Prepare the click handler for subbing to a new stream to which
