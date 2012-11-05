@@ -44,6 +44,8 @@ autofocus('#id_username');
     <div class="control-group">
         <div class="controls">
             <input type="submit" class="btn btn-large btn-primary" value="Log in" />
+            <span style="padding: 1em" />
+            <a href="{% url django.contrib.auth.views.password_reset %}">Forgot password?</a>
         </div>
     </div>
 </form>

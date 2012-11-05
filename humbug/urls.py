@@ -10,6 +10,19 @@ urlpatterns = patterns('',
     url(r'^accounts/login/', 'django.contrib.auth.views.login', {'template_name': 'zephyr/login.html'}),
     url(r'^accounts/logout/', 'django.contrib.auth.views.logout_then_login'),
 
+    url(r'^accounts/password/reset/$', 'django.contrib.auth.views.password_reset',
+        {'post_reset_redirect' : '/accounts/password/reset/done/',
+            'template_name': 'zephyr/reset.html',
+            'email_template_name': 'registration/password_reset_email.txt',
+            }),
+    url(r'^accounts/password/reset/done/$', 'django.contrib.auth.views.password_reset_done',
+        {'template_name': 'zephyr/reset_emailed.html'}),
+    url(r'^accounts/password/reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 'django.contrib.auth.views.password_reset_confirm',
+        {'post_reset_redirect' : '/accounts/password/done/', 'template_name': 'zephyr/reset_confirm.html'}),
+    url(r'^accounts/password/done/$', 'django.contrib.auth.views.password_reset_complete',
+        {'template_name': 'zephyr/reset_done.html'}),
+
+
     # Registration views, require a confirmation ID.
     url(r'^accounts/register/', 'zephyr.views.accounts_register', name='accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm', name='confirm'),

@@ -1,0 +1,54 @@
+{% extends "zephyr/portico_signup.html" %}
+
+{% block portico_content %}
+
+<div class="pitch">
+    <hr/>
+    <h3>Reset your password.</h3>
+</div>
+
+{% if validlink %}
+    <form method="post" class="form-horizontal" action="">
+    {% csrf_token %}
+        <div class="control-group">
+            <label for="id_new_password1" class="control-label">Password</label>
+            <div class="controls">
+                <input id="id_new_password1" class="required" type="password" name="new_password1"
+                       value="{% if form.new_password1.value %}{{ form.new_password1.value }}{% endif %}"
+                       maxlength="100" />
+                {% if form.new_password1.errors %}
+                    {% for error in form.new_password1.errors %}
+                        <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        <div class="control-group">
+            <label for="id_new_password2" class="control-label">Confirm password</label>
+            <div class="controls">
+                <input id="id_new_password2" class="required" type="password" name="new_password2"
+                       value="{% if form.new_password2.value %}{{ form.new_password2.value }}{% endif %}"
+                       maxlength="100" />
+                {% if form.new_password2.errors %}
+                    {% for error in form.new_password2.errors %}
+                        <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <input type="submit" class="btn btn-primary" value="Submit" /><br />
+            </div>
+        </div>
+    </form>
+
+<script type="text/javascript">
+    autofocus('#id_new_password1');
+</script>
+{% else %}
+    <p>Sorry, the link you provided is invalid or has already been used.</p>
+{% endif %}
+
+{% endblock %}
