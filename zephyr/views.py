@@ -438,6 +438,8 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
                 handler.set_status(500)
                 handler.finish('Internal error: bad message format')
                 return
+    if response['result'] == 'error':
+        handler.set_status(400)
     handler.finish(response)
 
 def get_updates_backend(request, user_profile, handler, client_id, **kwargs):
