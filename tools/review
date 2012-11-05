@@ -132,9 +132,12 @@ def parse_revs(repo, opts, args):
   return [repo.commit(c) for c in repo.git.rev_list('--reverse', *args).split()]
 
 
-def make_header(repo, opts, revs):
+def get_current_user(repo):
   ident = unicode(repo.git.var('GIT_AUTHOR_IDENT'), 'utf-8', 'replace')
-  me = ident[:ident.rindex('>') + 1]
+  return ident[:ident.rindex('>') + 1]
+
+def make_header(repo, opts, revs):
+  me = get_current_user(repo)
   reponame = get_reponame(repo)
 
   remote = get_default_remote(repo)
@@ -160,8 +163,7 @@ def make_header(repo, opts, revs):
 
 
 def write_template(target, repo, opts):
-  ident = unicode(repo.git.var('GIT_AUTHOR_IDENT'), 'utf-8', 'replace')
-  me = ident[:ident.rindex('>') + 1]
+  me = get_current_user(repo)
 
   print >>target, 'Dear %s,' % ", ".join(opts.reviewers)
   print >>target
