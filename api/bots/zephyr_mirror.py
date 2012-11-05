@@ -116,7 +116,7 @@ def unwrap_lines(body):
     result = ""
     previous_line = lines[0]
     for line in lines[1:]:
-        line = line.strip()
+        line = line.rstrip()
         if (line == "" or
             previous_line == "" or
             not re.match(r'^[\w]', line, flags=re.UNICODE) or
