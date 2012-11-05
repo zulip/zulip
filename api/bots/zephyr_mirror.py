@@ -282,7 +282,7 @@ def process_notice(notice, log):
             zeph["subject"] = "personal"
 
     # Add instances in for instanced personals
-    if zeph['type'] == "personal" and notice.instance != "personal":
+    if zeph['type'] == "personal" and notice.instance.lower() != "personal":
         zeph["content"] = "[-i %s]" % (notice.instance,) + "\n" + zeph["content"]
 
     zeph = decode_unicode_byte_strings(zeph)
