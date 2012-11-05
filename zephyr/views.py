@@ -362,9 +362,15 @@ def return_messages_immediately(request, user_profile, client_id, **kwargs):
         # there's no reason to reply immediately.
         # TODO: Make this work with server_generation/failures
         return None
+
+    if UserMessage.objects.filter(user_profile=user_profile).count() == 0:
+        # The client has no messages, so we should immediately start long-polling
+        return None
+
     last = int(last)
     if last < 0:
         return {"msg": "Invalid 'last' argument", "result": "error"}
+
     # Pointer sync is disabled for now
     # client_pointer = request.POST.get("pointer")
     failures = request.POST.get("failures")
