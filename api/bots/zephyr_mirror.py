@@ -140,10 +140,10 @@ def send_humbug(zeph):
         # Forward messages sent to -c foo -i bar to stream bar subject "instance"
         if zeph["stream"] == "message":
             message['stream'] = zeph['subject'].lower()
-            message['subject'] = "instance %s" % (zeph['stream'])
+            message['subject'] = "instance %s" % (zeph['subject'])
         elif zeph["stream"] == "tabbott-test5":
             message['stream'] = zeph['subject'].lower()
-            message['subject'] = "test instance %s" % (zeph['stream'])
+            message['subject'] = "test instance %s" % (zeph['subject'])
         else:
             message["stream"] = zeph["stream"]
     else:
