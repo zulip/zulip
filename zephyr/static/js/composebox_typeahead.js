@@ -42,7 +42,7 @@ exports.update_autocomplete = function () {
 
 function get_last_recipient_in_huddle(query_string) {
     // Assumes email addresses don't have commas or semicolons in them
-    var recipients = query_string.split(/[,;] */);
+    var recipients = query_string.split(/\s*[,;]\s*/);
     return recipients[recipients.length-1];
 }
 
@@ -115,7 +115,7 @@ exports.initialize = function () {
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
         updater: function (item) {
-            var previous_recipients = this.query.split(/[,;] */);
+            var previous_recipients = this.query.split(/\s*[,;]\s*/);
             previous_recipients.pop();
             previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
