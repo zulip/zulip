@@ -461,6 +461,11 @@ function add_messages(messages, where) {
                              {then_scroll: true, update_server: false});
     }
 
+    if ((selected_message_id === -1) && ! have_initial_messages) {
+        select_message_by_id(message_array[0].id,
+                             {then_scroll: false, update_server: true});
+    }
+
     // If we prepended messages, then we need to scroll back to the pointer.
     // This will mess with the user's scrollwheel use; possibly we should be
     // more clever here.  However (for now) we only prepend on page load,
