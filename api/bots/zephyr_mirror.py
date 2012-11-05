@@ -205,7 +205,7 @@ def maybe_restart_mirroring_script():
         print
         print "%s: zephyr mirroring script has been updated; restarting..." % \
             (datetime.datetime.now())
-        os.kill(child_pid, signal.SIGKILL)
+        os.kill(child_pid, signal.SIGTERM)
         while True:
             try:
                 if bot_name == "extra_mirror.py":
