@@ -96,10 +96,31 @@ def to_zephyr_username(humbug_username):
         raise Exception("Could not parse Zephyr realm for cross-realm user %s" % (humbug_username,))
     return match_user.group(1).lower() + "@" + match_user.group(2).upper()
 
+def early_indent(line, next_line):
+    words = next_line.split()
+    return len(line + " " + words[0]) < len(next_line)
+
+# Linewrapping algorithm based on:
+# http://gcbenison.wordpress.com/2011/07/03/a-program-to-intelligently-remove-carriage-returns-so-you-can-paste-text-without-having-it-look-awful/
 def unwrap_lines(body):
-    # Split into paragraphs at two consecutive newlines, or a newline followed
-    # by an indent.
-    return '\n\n'.join(p.replace('\n', ' ') for p in re.split(r'\n[ \t\n]', body))
+    lines = body.split("\n")
+    result = ""
+    previous_line = lines[0]
+    for line in lines[1:]:
+        line = line.strip()
+        if (line == "" or
+            previous_line == "" or
+            not re.match(r'^[\w]', line, flags=re.UNICODE) or
+            early_indent(previous_line, line)):
+            # Use 2 newlines to separate sections so that we
+            # trigger proper Markdown processing on things like
+            # bulleted lists
+            result += previous_line + "\n\n"
+        else:
+            result += previous_line + " "
+        previous_line = line
+    result += previous_line
+    return result
 
 def send_humbug(zeph):
     message = {}
