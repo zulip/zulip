@@ -63,8 +63,7 @@
               onclick="userinfo_popover(event, this, {{id}});"
               onmouseover="show_email({{id}});"
               onmouseout="hide_email();">
-            <span class="sender_name">
-              {{sender_full_name}}</span>
+            <a class="sender_name">{{sender_full_name}}</a>
             <span class="sender_email invisible">{{sender_email}}</span>
         </span>
     {{/include_sender}}

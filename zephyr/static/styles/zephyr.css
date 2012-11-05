@@ -164,6 +164,7 @@ td.pointer {
 }
 
 .sender_name {
+    color: black;
     font-weight: bold;
 }
 
