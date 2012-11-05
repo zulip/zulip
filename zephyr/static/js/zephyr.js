@@ -607,7 +607,11 @@ $(function () {
                           }});
     }
 
-    load_old_messages(initial_pointer, "around", 400, load_more);
+    if (have_initial_messages) {
+        load_old_messages(initial_pointer, "around", 400, load_more);
+    } else {
+        get_updates();
+    }
 });
 
 function restart_get_updates() {
