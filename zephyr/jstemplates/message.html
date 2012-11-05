@@ -46,7 +46,7 @@
 {{/if}}
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}"
-    class="message_row{{^is_stream}} personal-message{{/is_stream}}"
+    class="message_row{{^is_stream}} personal-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}"
     onclick="select_message_by_id({{id}});">
     <td class="message_picture">
     {{#include_sender}}
@@ -57,12 +57,13 @@
     </td>
     <td class="pointer"><p></p></td>
     <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} personal-message{{/is_stream}}"
-        onmousedown="mousedown();" onmousemove="mousemove();">
+        onmousedown="mousedown();"
+        onmousemove="mousemove();"
+        onmouseover="show_email({{id}});"
+        onmouseout="hide_email();">
         {{#include_sender}}
         <span class="message_sender"
-              onclick="userinfo_popover(event, this, {{id}});"
-              onmouseover="show_email({{id}});"
-              onmouseout="hide_email();">
+              onclick="userinfo_popover(event, this, {{id}});">
             <a class="sender_name">{{sender_full_name}}</a>
             <span class="sender_email invisible">{{sender_email}}</span>
         </span>
