@@ -226,7 +226,7 @@ def maybe_restart_mirroring_script():
             except:
                 print "Error restarting, trying again."
                 traceback.print_exc()
-                time.sleep(10)
+                time.sleep(1)
 
 def process_loop(log):
     sleep_count = 0
