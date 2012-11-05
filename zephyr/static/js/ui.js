@@ -384,9 +384,12 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             var message = "Updated settings!";
             var result = $.parseJSON(xhr.responseText);
-            if ((result.full_name !== undefined) || (result.short_name !== undefined)) {
-                message = "Updated settings!  You will need to reload the page for your changes to take effect.";
+
+            if (result.full_name !== undefined) {
+                $(".my_fullname").text(result.full_name);
             }
+            update_gravatars();
+
             settings_status.removeClass(status_classes)
                 .addClass('alert-success')
                 .text(message).stop(true).fadeTo(0,1);
@@ -455,3 +458,40 @@ $(function () {
         }
     });
 });
+
+function update_gravatars() {
+    $.each($(".gravatar-profile"), function(index, profile) {
+        $(this).attr('src', $(this).attr('src') + '?' + $.now());
+    });
+}
+
+function poll_for_gravatar_update(start_time, url) {
+    var updated = false;
+
+    $.ajax({
+        type: "HEAD",
+        url: url,
+        async: false,
+        cache: false,
+        success: function (resp, statusText, xhr) {
+            if (new Date(xhr.getResponseHeader('Last-Modified')) > start_time) {
+                update_gravatars();
+                updated = true;
+            }
+        }
+    });
+
+    // Give users 5 minutes to update their picture on gravatar.com,
+    // during which we try to auto-update their image on our site. If
+    // they take longer than that, we'll update when they press the
+    // save button.
+    if (!updated && (($.now() - start_time) < 1000 * 60 * 5)) {
+        setTimeout(function() {
+            poll_for_gravatar_update(start_time, url);
+        }, 1500);
+    }
+}
+
+function wait_for_gravatar() {
+    poll_for_gravatar_update($.now(), $(".gravatar-profile").attr("src"));
+}
