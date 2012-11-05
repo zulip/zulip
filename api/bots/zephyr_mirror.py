@@ -82,7 +82,7 @@ def to_humbug_username(zephyr_username):
     if "@" in zephyr_username:
         (user, realm) = zephyr_username.split("@")
     else:
-        (user, realm) = (zephyr_username, "mit.edu")
+        (user, realm) = (zephyr_username, "ATHENA.MIT.EDU")
     if realm.upper() == "ATHENA.MIT.EDU":
         return user.lower() + "@mit.edu"
     return user.lower() + "|" + realm.upper() + "@mit.edu"
