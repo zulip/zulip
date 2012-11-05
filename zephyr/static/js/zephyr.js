@@ -565,7 +565,7 @@ function load_old_messages(start, which, number, cont) {
                 if (which === "older") {
                     where = "top";
                 } else {
-                    where = "botton";
+                    where = "bottom";
                 }
                 add_messages(data.messages, where);
             }
