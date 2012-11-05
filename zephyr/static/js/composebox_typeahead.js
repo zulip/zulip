@@ -45,6 +45,16 @@ function get_huddle_recipients(query_string) {
     return query_string.split(/\s*[,;]\s*/);
 }
 
+// Returns an array of huddle recipients, removing empty elements.
+// For example, "a,,b, " => ["a", "b"]
+function get_cleaned_huddle_recipients(query_string) {
+    var recipients = get_huddle_recipients(query_string);
+    recipients = $.grep(recipients, function (elem, idx) {
+        return elem.match(/\S/);
+    });
+    return recipients;
+}
+
 function get_last_recipient_in_huddle(query_string) {
     var recipients = get_huddle_recipients(query_string);
     return recipients[recipients.length-1];
@@ -119,7 +129,7 @@ exports.initialize = function () {
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
         updater: function (item) {
-            var previous_recipients = get_huddle_recipients(this.query);
+            var previous_recipients = get_cleaned_huddle_recipients(this.query);
             previous_recipients.pop();
             previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
@@ -136,7 +146,8 @@ exports.initialize = function () {
 
     $( "#huddle_recipient" ).blur(function (event) {
         var val = $(this).val();
-        $(this).val(val.replace(/\s*[,;]\s*$/, ''));
+        var recipients = get_cleaned_huddle_recipients(val);
+        $(this).val(recipients.join(", "));
     });
 
     composebox_typeahead.update_autocomplete();
