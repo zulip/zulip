@@ -104,10 +104,13 @@ def to_zephyr_username(humbug_username):
 # in the same paragraph, should have been wrapped in a way consistent
 # with how the previous line was wrapped) or (2) shorter than 60
 # characters (our assumed minimum linewrapping threshhold for Zephyr)
+# or (3) the first word of the next line is longer than this entire
+# line.
 def different_paragraph(line, next_line):
     words = next_line.split()
     return (len(line + " " + words[0]) < len(next_line) * 0.8 or
-            len(line + " " + words[0]) < 60)
+            len(line + " " + words[0]) < 60 or
+            len(line) < len(words[0]))
 
 # Linewrapping algorithm based on:
 # http://gcbenison.wordpress.com/2011/07/03/a-program-to-intelligently-remove-carriage-returns-so-you-can-paste-text-without-having-it-look-awful/
