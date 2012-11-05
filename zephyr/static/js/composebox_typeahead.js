@@ -40,9 +40,13 @@ exports.update_autocomplete = function () {
     autocomplete_needs_update = false;
 };
 
-function get_last_recipient_in_huddle(query_string) {
+function get_huddle_recipients(query_string) {
     // Assumes email addresses don't have commas or semicolons in them
-    var recipients = query_string.split(/\s*[,;]\s*/);
+    return query_string.split(/\s*[,;]\s*/);
+}
+
+function get_last_recipient_in_huddle(query_string) {
+    var recipients = get_huddle_recipients(query_string);
     return recipients[recipients.length-1];
 }
 
@@ -115,7 +119,7 @@ exports.initialize = function () {
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
         updater: function (item) {
-            var previous_recipients = this.query.split(/\s*[,;]\s*/);
+            var previous_recipients = get_huddle_recipients(this.query);
             previous_recipients.pop();
             previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
