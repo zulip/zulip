@@ -605,10 +605,12 @@ $(function () {
         get_updates();
 
         // backfill more messages after the user is idle
+        var backfill_batch_size = 1000;
         $(document).idle({'idle': 1000*10,
                           'onIdle': function () {
                               var first_id = message_array[0].id;
-                              load_old_messages(first_id - 1, "older", 1000);
+                              load_old_messages(first_id - 1, "older",
+                                                backfill_batch_size);
                           }});
     }
 
