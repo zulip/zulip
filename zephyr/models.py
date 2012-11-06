@@ -17,6 +17,7 @@ import requests
 from django.contrib.auth.models import UserManager
 from django.utils import timezone
 from django.contrib.sessions.models import Session
+import time
 
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id))
 def get_display_recipient(recipient):
@@ -431,6 +432,7 @@ def get_user_profile_by_id(uid):
 
 # Store an event in the log for re-importing messages
 def log_event(event):
+    assert("timestamp" in event)
     if not os.path.exists(settings.MESSAGE_LOG + '.lock'):
         file(settings.MESSAGE_LOG + '.lock', "w").write("0")
     lock = open(settings.MESSAGE_LOG + '.lock', 'r')
@@ -505,6 +507,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
         log_event({'type': 'subscription_added',
                    'user': user_profile.user.email,
                    'name': stream.name,
+                   'timestamp': time.time(),
                    'domain': stream.realm.domain})
     return did_subscribe
 
@@ -523,6 +526,7 @@ def do_remove_subscription(user_profile, stream, no_log=False):
         log_event({'type': 'subscription_removed',
                    'user': user_profile.user.email,
                    'name': stream.name,
+                   'timestamp': time.time(),
                    'domain': stream.realm.domain})
     return did_remove
 
@@ -532,6 +536,7 @@ def do_activate_user(user, log=True):
     user.save()
     if log:
         log_event({'type': 'user_activated',
+                   'timestamp': time.time(),
                    'user': user.email})
 
 def do_change_password(user, password, log=True):
@@ -539,6 +544,7 @@ def do_change_password(user, password, log=True):
     user.save()
     if log:
         log_event({'type': 'user_change_password',
+                   'timestamp': time.time(),
                    'user': user.email,
                    'pwhash': user.password})
 
@@ -547,6 +553,7 @@ def do_change_full_name(user_profile, full_name, log=True):
     user_profile.save()
     if log:
         log_event({'type': 'user_change_full_name',
+                   'timestamp': time.time(),
                    'user': user_profile.user.email,
                    'full_name': full_name})
 
