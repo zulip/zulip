@@ -19,7 +19,8 @@ function clean_ref {
 
         refs/heads/*)
             if is_merged "$ref"; then
-                echo "Deleting local branch $(echo "$ref" | sed 's!^refs/heads/!!')"
+                echo -n "Deleting local branch $(echo "$ref" | sed 's!^refs/heads/!!')"
+                echo " (was $(git rev-parse --short "$ref"))"
                 git update-ref -d "$ref"
             fi
             ;;
@@ -27,7 +28,8 @@ function clean_ref {
         refs/remotes/origin/$USER-*)
             if is_merged "$ref"; then
                 remote_name="$(echo "$ref" | sed 's!^refs/remotes/origin/!!')"
-                echo "Deleting remote branch $remote_name"
+                echo -n "Deleting remote branch $remote_name"
+                echo " (was $(git rev-parse --short "$ref"))"
                 # NB: this won't handle spaces in ref names
                 push_args="$push_args :$remote_name"
             fi
