@@ -394,9 +394,17 @@ def humbug_to_zephyr(options):
                                        options={"mirror": 'zephyr_mirror'})
 
 def subscribed_to_mail_messages():
+    # In case we have lost our AFS tokens and those won't be able to
+    # parse the Zephyr subs file, first try reading in result of this
+    # query from the environment so we can avoid the filesystem read.
+    stored_result = os.environ.get("HUMBUG_FORWARD_MAIL_ZEPHYRS")
+    if stored_result is not None:
+        return stored_result == "True"
     for (cls, instance, recipient) in parse_zephyr_subs(verbose=False):
         if (cls.lower() == "mail" and instance.lower() == "inbox"):
+            os.environ["HUMBUG_FORWARD_MAIL_ZEPHYRS"] = "True"
             return True
+    os.environ["HUMBUG_FORWARD_MAIL_ZEPHYRS"] = "False"
     return False
 
 def add_humbug_subscriptions(verbose):
@@ -562,7 +570,21 @@ if __name__ == "__main__":
                       action='store')
     (options, args) = parser.parse_args()
 
-    api_key = file(options.api_key_file).read().strip()
+    # In case this is an automated restart of the mirroring script,
+    # and we have lost AFS tokens, first try reading the API key from
+    # the environment so that we can skip doing a filesystem read.
+    if os.environ.get("HUMBUG_API_KEY") is not None:
+        api_key = os.environ.get("HUMBUG_API_KEY")
+    else:
+        if not os.path.exists(options.api_key_file):
+            print textwrap.wrap("Could not find API key file. " +
+                                "You need to either place your api key file at %s, " +
+                                "or specify the --api-key-file option." % (options.api_key_file))
+            sys.exit(1)
+        api_key = file(options.api_key_file).read().strip()
+        # Store the API key in the environment so that our children
+        # don't need to read it in
+        os.environ["HUMBUG_API_KEY"] = api_key
 
     import api.common
     humbug_client = api.common.HumbugAPI(email=options.user + "@mit.edu",
