@@ -8,8 +8,8 @@ server {
     listen 443;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/app.humbughq.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
+    ssl_certificate /etc/ssl/certs/dev.humbughq.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/staging_and_dev.humbughq.com.key;
 
     server_name dev.humbughq.com;
     access_log /var/log/nginx/humbug.access.log;
