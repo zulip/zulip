@@ -433,8 +433,6 @@ function add_messages(messages, where) {
         loading_spinner.stop();
         $('#loading_indicator').hide();
         loading_spinner = undefined;
-
-        $('#load_more').show();
     }
 
     messages = $.grep(messages, function (elem, idx) {
@@ -615,7 +613,13 @@ $(function () {
     }
 
     if (have_initial_messages) {
-        load_old_messages(initial_pointer, "around", 400, load_more);
+        load_old_messages(initial_pointer, "around", 400,
+                          function (messages) {
+                              // TODO: We can't tell after the initial load
+                              // whether we need the "load more" button or not.
+                              $('#load_more').show();
+                              load_more(messages);
+                          });
     } else {
         get_updates();
     }
