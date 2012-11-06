@@ -199,6 +199,13 @@ class Command(BaseCommand):
                     subscriptions_to_add.append(s)
             batch_bulk_create(Subscription, subscriptions_to_add)
 
+            internal_humbug_users_nosubs = [
+                ("Humbug Commit Bot", "humbug+commits@humbughq.com"),
+                ("Humbug Trac Bot", "humbug+trac@humbughq.com"),
+                ("Humbug Feedback Bot", "feedback@humbughq.com"),
+                ]
+            create_users(realms, internal_humbug_users_nosubs)
+
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
             restore_saved_messages()
