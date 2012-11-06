@@ -168,6 +168,11 @@ td.pointer {
     font-weight: bold;
 }
 
+.sender_hovered {
+    color: #0088CC;
+    text-decoration: underline;
+}
+
 .sender_email {
     font-size: 80%;
     color: gray;

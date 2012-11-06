@@ -16,6 +16,20 @@ function register_onclick(message_row, message_id) {
     });
 }
 
+function register_user_info_mouseover(message_row, message_id) {
+    message_row.find(".user_info_hover").mouseover(function (e) {
+        show_email(message_id);
+        message_row.find(".sender_name").addClass("sender_hovered");
+    });
+}
+
+function register_user_info_mouseout(message_row, message_id) {
+    message_row.find(".user_info_hover").mouseout(function (e) {
+        hide_email();
+        message_row.find(".sender_name").removeClass("sender_hovered");
+    });
+}
+
 function focus_on(field_id) {
     // Call after autocompleting on a field, to advance the focus to
     // the next input field.

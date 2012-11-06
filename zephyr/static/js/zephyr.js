@@ -346,6 +346,8 @@ function add_to_table(messages, table_name, filter_function, where) {
     $.each(messages_to_render, function (index, message) {
         var row = rows.get(message.id, table_name);
         register_onclick(row, message.id);
+        register_user_info_mouseover(row, message.id);
+        register_user_info_mouseout(row, message.id);
 
         row.find('.message_content a').each(function (index, link) {
             link = $(link);
