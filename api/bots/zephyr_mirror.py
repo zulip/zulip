@@ -58,9 +58,12 @@ def unwrap_lines(body):
     previous_line = lines[0]
     for line in lines[1:]:
         line = line.rstrip()
-        if (line == "" or
+        if (re.match(r'^\W', line, flags=re.UNICODE)
+            and re.match(r'^\W', previous_line, flags=re.UNICODE)):
+            result += previous_line + "\n"
+        elif (line == "" or
             previous_line == "" or
-            not re.match(r'^[\w]', line, flags=re.UNICODE) or
+            re.match(r'^\W', line, flags=re.UNICODE) or
             different_paragraph(previous_line, line)):
             # Use 2 newlines to separate sections so that we
             # trigger proper Markdown processing on things like
