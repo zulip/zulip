@@ -67,9 +67,7 @@ exports.subscribe_for_send = function (stream, prompt_button) {
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/add',
-        // The next line is a total hack to format our stream as
-        // that simplejson will parse as a 1-element array
-        data: {"streams": '["' + stream + '"]' },
+        data: {"streams": JSON.stringify([stream]) },
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (response) {
@@ -92,9 +90,7 @@ function ajaxSubscribe(streams) {
         type: "POST",
         url: "/json/subscriptions/add",
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        // The next line is a total hack to format our stream as
-        // that simplejson will parse as a 1-element array
-        data: {"streams": '["' + streams + '"]' },
+        data: {"streams": JSON.stringify([streams]) },
         success: function (resp, statusText, xhr, form) {
             if ($("#streams").val() === streams) {
                 $("#streams").val("");
