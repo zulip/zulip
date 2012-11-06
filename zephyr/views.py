@@ -22,6 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 from zephyr.decorator import asynchronous
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
+from zephyr.lib.response import json_success, json_error
 
 from confirmation.models import Confirmation
 
@@ -75,18 +76,6 @@ def authenticated_json_view(view_func):
             return json_error("Not logged in")
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
-
-def json_response(res_type="success", msg="", data={}, status=200):
-    content = {"result": res_type, "msg": msg}
-    content.update(data)
-    return HttpResponse(content=simplejson.dumps(content),
-                        mimetype='application/json', status=status)
-
-def json_success(data={}):
-    return json_response(data=data)
-
-def json_error(msg, data={}, status=400):
-    return json_response(res_type="error", msg=msg, data=data, status=status)
 
 def get_stream(stream_name, realm):
     try:
