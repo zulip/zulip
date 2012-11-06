@@ -41,8 +41,8 @@ def check_output(*popenargs, **kwargs):
     return output
 subprocess.check_output = check_output
 
-def update_deployment(oldrev, newrev, refname):
-    subprocess.check_call(["ssh", "humbughq.com", "--", "env", "-u", "GIT_DIR",
+def update_deployment(server, oldrev, newrev, refname):
+    subprocess.check_call(["ssh", server, "--", "env", "-u", "GIT_DIR",
                            "/home/humbug/humbug/tools/update-deployment",
                            oldrev, newrev, refname])
 
@@ -91,6 +91,9 @@ def send_bot_message(oldrev, newrev, refname):
 
 for ln in sys.stdin:
     oldrev, newrev, refname = ln.strip().split()
-    if refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
+    if refname in ["refs/heads/prod"]:
         send_bot_message(oldrev, newrev, refname)
-        update_deployment(oldrev, newrev, refname)
+        update_deployment("humbughq.com", oldrev, newrev, "origin/prod")
+    elif refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
+        send_bot_message(oldrev, newrev, refname)
+        update_deployment("staging.humbughq.com", oldrev, newrev, "origin/master")

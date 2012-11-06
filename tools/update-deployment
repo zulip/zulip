@@ -32,7 +32,7 @@ if len(sys.argv) > 1:
     refname = sys.argv[3]
 
 subprocess.check_call(["git", "fetch"], stdout=open('/dev/null', 'w'))
-subprocess.check_call(["git", "reset", "--hard", "origin/master"], stdout=open('/dev/null', 'w'))
+subprocess.check_call(["git", "reset", "--hard", refname], stdout=open('/dev/null', 'w'))
 #subprocess.check_call(["python", "manage.py", "syncdb"], stdout=open('/dev/null', 'w'))
 
 # Restart the FastCGI process, which is running in a shell loop in screen.
