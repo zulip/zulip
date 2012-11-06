@@ -21,6 +21,7 @@ import sys
 sys.path.append("/home/humbug/humbug")
 import api.common
 client = api.common.HumbugAPI(email="humbug+trac@humbughq.com",
+                              site="https://staging.humbughq.com",
                               api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 def markdown_ticket_url(ticket, heading="ticket"):

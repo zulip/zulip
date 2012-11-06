@@ -306,6 +306,7 @@ def main(args):
       print >>sys.stderr, "You need to place your Humbug API key at %s" % (api_key_file,)
       sys.exit(1)
     client = api.common.HumbugAPI(email=me[me.index("<") + 1:me.index('>')],
+                                  site="https://staging.humbughq.com",
                                   api_key=file(api_key_file).read().strip(),
                                   verbose=True)
     client.send_message({'type': "personal",

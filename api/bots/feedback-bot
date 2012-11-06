@@ -3,25 +3,16 @@ import sys
 import os
 import optparse
 
-usage = """feedback-bot [options]
-
-Forwards messages from MIT realm users sent to feedback@humbughq.com over to Humbug realm
-
-Example: feedback-bot --site=http://127.0.0.1:9991
-"""
-parser = optparse.OptionParser(usage=usage)
-parser.add_option('--site',
-                  dest='site',
-                  default="https://humbughq.com",
-                  action='store')
-(options, args) = parser.parse_args()
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 import api.common
-client = api.common.HumbugAPI(email="feedback@humbughq.com",
-                              api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                              verbose=True,
-                              site=options.site)
+prod_client = api.common.HumbugAPI(email="feedback@humbughq.com",
+                                   api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                                   verbose=True,
+                                   site="https://humbughq.com")
+staging_client = api.common.HumbugAPI(email="feedback@humbughq.com",
+                                      api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                                      verbose=True,
+                                      site="https://staging.humbughq.com")
 
 def forward_message(message):
     forwarded_message = {
@@ -30,6 +21,6 @@ def forward_message(message):
         "subject": "feedback from %s" % message["sender_email"],
         "content": message["content"],
         }
-    client.send_message(forwarded_message)
+    staging_client.send_message(forwarded_message)
 
-client.call_on_each_message(forward_message)
+prod_client.call_on_each_message(forward_message)
