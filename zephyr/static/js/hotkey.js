@@ -24,7 +24,7 @@ var directional_hotkeys = {
 var narrow_hotkeys = {
     115: narrow.by_recipient,  // 's'
     83:  narrow.by_subject,    // 'S'
-    104: narrow.all_huddles    // 'h'
+    118: narrow.all_huddles    // 'v'
 };
 
 // These are not exported, but they need to be used before they are
