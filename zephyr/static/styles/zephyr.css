@@ -80,10 +80,6 @@ ul#sidebar {
     overflow-x: hidden;
 }
 
-.message_row {
-    cursor: pointer;
-}
-
 .message_comp {
     display: none;
     border: 1px solid #EEE;
@@ -235,6 +231,7 @@ blockquote p {
     border: 1px solid gray;
     border-width: 0px 1px 1px 1px;
     word-wrap: break-word;
+    cursor: pointer;
 }
 
 .messagebox p {
@@ -261,6 +258,7 @@ img.profile_picture {
     max-height: 30px;
     width:  30px;
     height: 30px;
+    cursor: pointer;
 }
 
 #compose {
