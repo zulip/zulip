@@ -50,7 +50,7 @@
     <td class="message_picture">
     {{#include_sender}}
         <img class="img-rounded profile_picture user_info_hover"
-             src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30"
+             src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30?stamp={{stamp}}"
              onclick="userinfo_popover(event, this, {{id}});"/>
     {{/include_sender}}
     </td>

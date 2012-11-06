@@ -3,6 +3,7 @@
 // scrollbar when we switch to a new tab (and restore it
 // when we switch back.)
 var scroll_positions = {};
+var gravatar_stamp = 1;
 
 function register_onclick(message_row, message_id) {
     message_row.find(".messagebox").click(function (e) {
@@ -461,8 +462,9 @@ $(function () {
 
 function update_gravatars() {
     $.each($(".gravatar-profile"), function(index, profile) {
-        $(this).attr('src', $(this).attr('src') + '?' + $.now());
+        $(this).attr('src', $(this).attr('src') + '?stamp=' + gravatar_stamp);
     });
+    gravatar_stamp += 1;
 }
 
 function poll_for_gravatar_update(start_time, url) {

@@ -325,6 +325,10 @@ function add_to_table(messages, table_name, filter_function, where) {
 
         message.dom_id = table_name + message.id;
 
+        if (message.sender_email === email) {
+            message.stamp = gravatar_stamp;
+        }
+
         messages_to_render.push(message);
         prev = message;
     });
