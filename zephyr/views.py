@@ -651,7 +651,7 @@ def send_message_backend(request, user_profile, sender, client_name=None):
             try:
                 recipient_profile_ids.add(UserProfile.objects.get(user__email=recipient).id)
             except UserProfile.DoesNotExist:
-                return json_error("Invalid email '%s'" % (recipient))
+                return json_error("Invalid email '%s'" % (recipient,))
         if len(recipient_profile_ids) > 1:
             # Make sure the sender is included in the huddle
             recipient_profile_ids.add(sender.id)
