@@ -16,68 +16,6 @@ root_path = "/mit/tabbott/for_friends"
 sys.path[:0] = [root_path, root_path + "/python-zephyr",
                 root_path + "/python-zephyr/build/lib.linux-x86_64-2.6/"]
 
-parser = optparse.OptionParser()
-parser.add_option('--forward-class-messages',
-                  dest='forward_class_messages',
-                  default=False,
-                  help=optparse.SUPPRESS_HELP,
-                  action='store_true')
-parser.add_option('--resend-log',
-                  dest='resend_log',
-                  default=False,
-                  help=optparse.SUPPRESS_HELP,
-                  action='store_true')
-parser.add_option('--enable-log',
-                  dest='enable_log',
-                  default=False,
-                  help=optparse.SUPPRESS_HELP,
-                  action='store_true')
-parser.add_option('--no-forward-personals',
-                  dest='forward_personals',
-                  help=optparse.SUPPRESS_HELP,
-                  default=True,
-                  action='store_false')
-parser.add_option('--forward-from-humbug',
-                  dest='forward_from_humbug',
-                  default=False,
-                  help=optparse.SUPPRESS_HELP,
-                  action='store_true')
-parser.add_option('--verbose',
-                  dest='verbose',
-                  default=False,
-                  help=optparse.SUPPRESS_HELP,
-                  action='store_true')
-parser.add_option('--sync-subscriptions',
-                  dest='sync_subscriptions',
-                  default=False,
-                  action='store_true')
-parser.add_option('--site',
-                  dest='site',
-                  default="https://humbughq.com",
-                  help=optparse.SUPPRESS_HELP,
-                  action='store')
-parser.add_option('--user',
-                  dest='user',
-                  default=os.environ["USER"],
-                  help=optparse.SUPPRESS_HELP,
-                  action='store')
-parser.add_option('--api-key-file',
-                  dest='api_key_file',
-                  default=os.path.join(os.environ["HOME"], "Private", ".humbug-api-key"),
-                  action='store')
-(options, args) = parser.parse_args()
-
-api_key = file(options.api_key_file).read().strip()
-
-import api.common
-humbug_client = api.common.HumbugAPI(email=options.user + "@mit.edu",
-                                     api_key=api_key,
-                                     verbose=True,
-                                     client="zephyr_mirror",
-                                     site=options.site)
-
-start_time = time.time()
-
 def to_humbug_username(zephyr_username):
     if "@" in zephyr_username:
         (user, realm) = zephyr_username.split("@")
@@ -569,38 +507,101 @@ def parse_zephyr_subs(verbose=False):
         zephyr_subscriptions.add((cls.strip(), instance.strip(), recipient.strip()))
     return zephyr_subscriptions
 
-if options.sync_subscriptions:
-    print "Syncing your ~/.zephyr.subs to your Humbug Subscriptions!"
-    add_humbug_subscriptions(True)
-    sys.exit(0)
+if __name__ == "__main__":
+    parser = optparse.OptionParser()
+    parser.add_option('--forward-class-messages',
+                      dest='forward_class_messages',
+                      default=False,
+                      help=optparse.SUPPRESS_HELP,
+                      action='store_true')
+    parser.add_option('--resend-log',
+                      dest='resend_log',
+                      default=False,
+                      help=optparse.SUPPRESS_HELP,
+                      action='store_true')
+    parser.add_option('--enable-log',
+                      dest='enable_log',
+                      default=False,
+                      help=optparse.SUPPRESS_HELP,
+                      action='store_true')
+    parser.add_option('--no-forward-personals',
+                      dest='forward_personals',
+                      help=optparse.SUPPRESS_HELP,
+                      default=True,
+                      action='store_false')
+    parser.add_option('--forward-from-humbug',
+                      dest='forward_from_humbug',
+                      default=False,
+                      help=optparse.SUPPRESS_HELP,
+                      action='store_true')
+    parser.add_option('--verbose',
+                      dest='verbose',
+                      default=False,
+                      help=optparse.SUPPRESS_HELP,
+                      action='store_true')
+    parser.add_option('--sync-subscriptions',
+                      dest='sync_subscriptions',
+                      default=False,
+                      action='store_true')
+    parser.add_option('--site',
+                      dest='site',
+                      default="https://humbughq.com",
+                      help=optparse.SUPPRESS_HELP,
+                      action='store')
+    parser.add_option('--user',
+                      dest='user',
+                      default=os.environ["USER"],
+                      help=optparse.SUPPRESS_HELP,
+                      action='store')
+    parser.add_option('--api-key-file',
+                      dest='api_key_file',
+                      default=os.path.join(os.environ["HOME"], "Private", ".humbug-api-key"),
+                      action='store')
+    (options, args) = parser.parse_args()
 
-if options.forward_from_humbug:
-    print "This option is obsolete."
-    sys.exit(0)
+    api_key = file(options.api_key_file).read().strip()
 
-# First check that there are no other bots running
-cmdline = " ".join(sys.argv)
-if "extra_mirror" in cmdline:
-    bot_name = "extra_mirror.py"
-else:
-    bot_name = "zephyr_mirror.py"
-proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", bot_name],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE)
-out, _err_unused = proc.communicate()
-for pid in out.split():
-    if int(pid.strip()) != os.getpid():
-        # Another copy of zephyr_mirror.py!  Kill it.
-        print "Killing duplicate zephyr_mirror process %s" % pid
-        os.kill(int(pid), signal.SIGKILL)
+    import api.common
+    humbug_client = api.common.HumbugAPI(email=options.user + "@mit.edu",
+                                         api_key=api_key,
+                                         verbose=True,
+                                         client="zephyr_mirror",
+                                         site=options.site)
 
-child_pid = os.fork()
-if child_pid == 0:
-    # Run the humbug => zephyr mirror in the child
-    humbug_to_zephyr(options)
-    sys.exit(0)
+    start_time = time.time()
 
-import zephyr
-zephyr.init()
-subs = zephyr.Subscriptions()
-zephyr_to_humbug(options)
+    if options.sync_subscriptions:
+        print "Syncing your ~/.zephyr.subs to your Humbug Subscriptions!"
+        add_humbug_subscriptions(True)
+        sys.exit(0)
+
+    if options.forward_from_humbug:
+        print "This option is obsolete."
+        sys.exit(0)
+
+    # First check that there are no other bots running
+    cmdline = " ".join(sys.argv)
+    if "extra_mirror" in cmdline:
+        bot_name = "extra_mirror.py"
+    else:
+        bot_name = "zephyr_mirror.py"
+    proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", bot_name],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    out, _err_unused = proc.communicate()
+    for pid in out.split():
+        if int(pid.strip()) != os.getpid():
+            # Another copy of zephyr_mirror.py!  Kill it.
+            print "Killing duplicate zephyr_mirror process %s" % pid
+            os.kill(int(pid), signal.SIGKILL)
+
+    child_pid = os.fork()
+    if child_pid == 0:
+        # Run the humbug => zephyr mirror in the child
+        humbug_to_zephyr(options)
+        sys.exit(0)
+
+    import zephyr
+    zephyr.init()
+    subs = zephyr.Subscriptions()
+    zephyr_to_humbug(options)
