@@ -632,9 +632,10 @@ function restart_get_updates() {
 }
 
 function load_more_messages() {
-    load_old_messages(message_array[0].id - 1, "older", 400,
+    var batch_size = 400;
+    load_old_messages(message_array[0].id - 1, "older", batch_size,
                       function (messages) {
-                          if (messages.length === 0) {
+                          if (messages.length !== batch_size) {
                               $('#load_more').hide();
                           }
                       });
