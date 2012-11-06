@@ -205,7 +205,7 @@ DEFAULT_FROM_EMAIL = "Humbug <humbug@humbughq.com>"
 
 LOGIN_REDIRECT_URL='/'
 
-MESSAGE_LOG="all_messages_log"
+MESSAGE_LOG="all_messages_log." + platform.node()
 
 if deployed:
     ALLOW_REGISTER = False

@@ -234,7 +234,7 @@ def restore_saved_messages():
     huddle_user_set = set()
     # First, determine all the objects our messages will need.
     print datetime.datetime.now(), "Creating realms/streams/etc..."
-    for line in file("all_messages_log", "r").readlines():
+    for line in file(settings.MESSAGE_LOG, "r").readlines():
         old_message_json = line.strip()
 
         # Due to populate_db's shakespeare mode, we have a lot of
