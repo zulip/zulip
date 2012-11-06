@@ -43,6 +43,7 @@ var globals =
     + ' register_onclick hide_email show_email'
     + ' report_error report_success report_message clicking mouse_moved'
     + ' userinfo_currently_popped update_gravatars'
+    + ' register_user_info_mouseover register_user_info_mouseout'
 
     // zephyr.js
     + ' message_array message_dict get_updates_params'
