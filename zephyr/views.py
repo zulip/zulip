@@ -765,7 +765,7 @@ def json_remove_subscription(request):
     return json_success({"data": sub_name})
 
 def valid_stream_name(name):
-    return True
+    return name != ""
 
 @login_required_api_view
 def api_subscribe(request, user_profile):
