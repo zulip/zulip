@@ -33,7 +33,7 @@ import os
 # Older versions don't provide the 'json' attribute on responses.
 assert(requests.__version__ > '0.12')
 
-class HumbugAPI():
+class HumbugAPI(object):
     def __init__(self, email, api_key=None, api_key_file=None,
                  verbose=False, retry_on_errors=True,
                  site="https://humbughq.com", client="API"):
