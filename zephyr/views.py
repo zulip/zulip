@@ -450,38 +450,41 @@ def same_realm_email(user_profile, email):
     except:
         return False
 
-# Parse out the sender and huddle/personal recipients
-def parse_named_users(request):
-    sender = {}
-    recipients = set()
+def extract_recipients(request):
+    raw_recipient = request.POST.get("recipient")
+    try:
+        recipients = simplejson.loads(raw_recipient)
+    except simplejson.decoder.JSONDecodeError:
+        recipients = [raw_recipient]
+
+    return list(set(recipients))
+
+def extract_sender(request):
+    sender = None
     try:
         if 'sender' in request.POST:
             sender = {'email': request.POST["sender"],
                       'full_name': request.POST["fullname"],
                       'short_name': request.POST["shortname"]}
-
-        if request.POST['type'] == 'personal':
-            if ',' in request.POST['recipient']:
-                # Huddle message
-                for user_email in request.POST["recipient"].split(","):
-                    recipients.add(user_email.strip().lower())
-            else:
-                user_email = request.POST["recipient"].strip().lower()
-                recipients.add(user_email)
     except:
-        return (False, None, None)
-
-    return (True, sender, list(recipients))
+        return None
+    return sender
 
 def create_mirrored_message_users(request, user_profile):
-    (valid_input, sender_data, huddle_recipients) = parse_named_users(request)
-    if not valid_input:
+    sender_data = extract_sender(request)
+
+    if sender_data is None:
         return (False, None)
 
     # First, check that the sender is in our realm:
     if 'email' in sender_data and not same_realm_email(user_profile,
                                                        sender_data['email']):
         return (False, None)
+
+    if "recipient" not in request.POST:
+        return (False, None)
+    huddle_recipients = extract_recipients(request)
+
     # Then, check that all huddle/personal recipients are in our realm:
     for recipient in huddle_recipients:
         if not same_realm_email(user_profile, recipient):
@@ -571,10 +574,8 @@ def send_message_backend(request, user_profile, sender, message_type_name = POST
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     elif message_type_name == 'personal':
         if "recipient" not in request.POST:
-            return json_error("Missing recipient")
-        (valid_input, _, huddle_recipients) = parse_named_users(request)
-        if not valid_input:
-            return json_error("Unable to parse recipients")
+            return json_error("Missing recipients")
+        huddle_recipients = extract_recipients(request)
         if client_name == "zephyr_mirror":
             if user_profile.user.email not in huddle_recipients and not forged:
                 return json_error("User not authorized for this query")

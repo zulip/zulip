@@ -227,11 +227,10 @@ def process_notice(notice, log):
         if body.startswith("CC:"):
             is_huddle = True
             # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
-            huddle_recipients_list = [to_humbug_username(x.strip()) for x in
-                                      body.split("\n")[0][4:].split()]
-            if notice.sender not in huddle_recipients_list:
-                huddle_recipients_list.append(to_humbug_username(notice.sender))
-            huddle_recipients = ",".join(huddle_recipients_list)
+            huddle_recipients = [to_humbug_username(x.strip()) for x in
+                                 body.split("\n")[0][4:].split()]
+            if notice.sender not in huddle_recipients:
+                huddle_recipients.append(to_humbug_username(notice.sender))
             body = body.split("\n", 1)[1]
     if (zephyr_class == "mail" and notice.instance.lower() == "inbox"):
         is_personal = True

@@ -56,6 +56,17 @@ $(function () {
 
     send_options = {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        beforeSubmit: function (arr, form, options) {
+            $.each(arr, function (idx, elem) {
+                if (elem.name === 'recipient') {
+                    var recipients = elem.value;
+                    // TODO: this should be collapsed with the code in composebox_typeahead.js
+                    recipients = recipients.split(/\s*[,;]\s*/);
+                    elem.value = JSON.stringify(recipients);
+                }
+            });
+            return true;
+        },
         success: function (resp, statusText, xhr, form) {
             form.find('textarea').val('');
             send_status.hide();
