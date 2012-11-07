@@ -134,7 +134,7 @@ def ensure_subscribed(sub):
     if sub in current_zephyr_subs:
         return
     try:
-        subs.add((sub, '*', '*'))
+        zephyr.Subscriptions().add((sub, '*', '*'))
     except IOError:
         # Since we haven't added the subscription to
         # current_zephyr_subs yet, we can just return (so that we'll
@@ -291,7 +291,7 @@ def decode_unicode_byte_strings(zeph):
 def zephyr_subscribe_autoretry(sub):
     while True:
         try:
-            subs.add(sub)
+            zephyr.Subscriptions().add(sub)
             return
         except IOError:
             # Probably a SERVNAK from the zephyr server, but print the
@@ -657,5 +657,4 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
 
     import zephyr
     zephyr.init()
-    subs = zephyr.Subscriptions()
     zephyr_to_humbug(options)
