@@ -12,10 +12,6 @@ import datetime
 import textwrap
 import signal
 
-root_path = "/mit/tabbott/for_friends"
-sys.path[:0] = [root_path, root_path + "/python-zephyr",
-                root_path + "/python-zephyr/build/lib.linux-x86_64-2.6/"]
-
 def to_humbug_username(zephyr_username):
     if "@" in zephyr_username:
         (user, realm) = zephyr_username.split("@")
@@ -162,9 +158,9 @@ def update_subscriptions_from_humbug():
         ensure_subscribed(stream)
 
 def maybe_restart_mirroring_script():
-    if os.stat(root_path + "/stamps/restart_stamp").st_mtime > start_time or \
+    if os.stat(options.root_path + "/stamps/restart_stamp").st_mtime > start_time or \
             ((options.user == "tabbott" or options.user == "tabbott/extra") and
-             os.stat(root_path + "/stamps/tabbott_stamp").st_mtime > start_time):
+             os.stat(options.root_path + "/stamps/tabbott_stamp").st_mtime > start_time):
         print
         print "%s: zephyr mirroring script has been updated; restarting..." % \
             (datetime.datetime.now())
@@ -172,8 +168,8 @@ def maybe_restart_mirroring_script():
         while True:
             try:
                 if bot_name == "extra_mirror.py":
-                    os.execvp(root_path + "/extra_mirror.py", sys.argv)
-                os.execvp(root_path + "/user_root/zephyr_mirror.py", sys.argv)
+                    os.execvp(options.root_path + "/extra_mirror.py", sys.argv)
+                os.execvp(options.root_path + "/user_root/zephyr_mirror.py", sys.argv)
             except:
                 print "Error restarting, trying again."
                 traceback.print_exc()
@@ -588,11 +584,19 @@ if __name__ == "__main__":
                       default=os.environ["USER"],
                       help=optparse.SUPPRESS_HELP,
                       action='store')
+    parser.add_option('--root-path',
+                      dest='root_path',
+                      default="/mit/tabbott/for_friends",
+                      help=optparse.SUPPRESS_HELP,
+                      action='store')
     parser.add_option('--api-key-file',
                       dest='api_key_file',
                       default=os.path.join(os.environ["HOME"], "Private", ".humbug-api-key"),
                       action='store')
     (options, args) = parser.parse_args()
+
+    sys.path[:0] = [options.root_path, options.root_path + "/python-zephyr",
+                    options.root_path + "/python-zephyr/build/lib.linux-x86_64-2.6/"]
 
     # In case this is an automated restart of the mirroring script,
     # and we have lost AFS tokens, first try reading the API key from
