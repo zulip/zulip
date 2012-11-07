@@ -368,6 +368,13 @@ function add_to_table(messages, table_name, filter_function, where) {
     });
 }
 
+function case_insensitive_find(term, array) {
+    var lowered_term = term.toLowerCase();
+    return $.grep(array, function (elt) {
+        return elt.toLowerCase() === lowered_term;
+    }).length !== 0;
+}
+
 function add_message_metadata(dummy, message) {
     get_updates_params.last = Math.max(get_updates_params.last, message.id);
 
@@ -379,7 +386,7 @@ function add_message_metadata(dummy, message) {
         if (! subject_dict.hasOwnProperty(message.display_recipient)) {
             subject_dict[message.display_recipient] = [];
         }
-        if ($.inArray(message.subject, subject_dict[message.display_recipient]) === -1) {
+        if (! case_insensitive_find(message.subject, subject_dict[message.display_recipient])) {
             subject_dict[message.display_recipient].push(message.subject);
             subject_dict[message.display_recipient].sort();
             // We don't need to update the autocomplete after this because
