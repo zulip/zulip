@@ -6,7 +6,6 @@ __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 
 import os
 import re
-import datetime
 from hashlib import sha1
 
 from django.db import models
@@ -18,6 +17,7 @@ from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
+from django.utils.timezone import now
 
 from confirmation.util import get_status_field
 
@@ -72,7 +72,7 @@ class ConfirmationManager(models.Manager):
         template = loader.select_template(templates)
         body = template.render(context)
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address])
-        return self.create(content_object=obj, date_sent=datetime.datetime.now(), confirmation_key=confirmation_key)
+        return self.create(content_object=obj, date_sent=now(), confirmation_key=confirmation_key)
 
 
 class Confirmation(models.Model):
