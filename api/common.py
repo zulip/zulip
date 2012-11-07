@@ -121,29 +121,15 @@ class HumbugAPI(object):
             return {'msg': res.text, "result": "http-error",
                     "status_code": res.status_code}
 
-    def send_message(self, request):
-        return self.do_api_query(request, "/api/v1/send_message")
-
-    def get_messages(self, request = {}):
-        return self.do_api_query(request, "/api/v1/get_messages",
-                                 longpolling=True)
-
-    def get_profile(self, request = {}):
-        return self.do_api_query(request, "/api/v1/get_profile")
-
-    def get_public_streams(self, request = {}):
-        return self.do_api_query(request, "/api/v1/get_public_streams")
-
-    def list_subscriptions(self, request = {}):
-        return self.do_api_query(request, "/api/v1/subscriptions/list")
-
-    def add_subscriptions(self, streams):
-        request = {'subscriptions': streams}
-        return self.do_api_query(request, "/api/v1/subscriptions/add")
-
-    def remove_subscriptions(self, streams):
-        request = {'subscriptions': streams}
-        return self.do_api_query(request, "/api/v1/subscriptions/remove")
+    @classmethod
+    def _register(cls, name, url=None, make_request=(lambda request={}: request), **query_kwargs):
+        if url is None:
+            url = name
+        def call(self, *args, **kwargs):
+            request = make_request(*args, **kwargs)
+            return self.do_api_query(request, '/api/v1/' + url, **query_kwargs)
+        call.func_name = name
+        setattr(cls, name, call)
 
     def call_on_each_message(self, callback, options = {}):
         max_message_id = None
@@ -166,3 +152,14 @@ class HumbugAPI(object):
             for message in sorted(res['messages'], key=lambda x: int(x["id"])):
                 max_message_id = max(max_message_id, int(message["id"]))
                 callback(message)
+
+def _mk_subs(streams):
+    return {'subscriptions': streams}
+
+HumbugAPI._register('send_message', make_request=(lambda request: request))
+HumbugAPI._register('get_messages', longpolling=True)
+HumbugAPI._register('get_profile')
+HumbugAPI._register('get_public_streams')
+HumbugAPI._register('list_subscriptions',   url='subscriptions/list')
+HumbugAPI._register('add_subscriptions',    url='subscriptions/add',    make_request=_mk_subs)
+HumbugAPI._register('remove_subscriptions', url='subscriptions/remove', make_request=_mk_subs)
