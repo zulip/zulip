@@ -469,8 +469,15 @@ def generate_client_id():
 
 @login_required_api_view
 def api_get_profile(request, user_profile):
-    return json_success({"pointer": user_profile.pointer,
-                         "client_id": generate_client_id()})
+    result = dict(pointer        = user_profile.pointer,
+                  client_id      = generate_client_id(),
+                  max_message_id = -1)
+
+    messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
+    if messages:
+        result['max_message_id'] = messages[0].id
+
+    return json_success(result)
 
 @login_required_api_view
 def api_send_message(request, user_profile):
