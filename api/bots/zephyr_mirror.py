@@ -130,11 +130,9 @@ def username_to_fullname(username):
     return fullnames[username]
 
 current_zephyr_subs = set()
-def ensure_subscribed(sub):
-    if sub in current_zephyr_subs:
-        return
+def zephyr_bulk_subscribe(subs):
     try:
-        zephyr.Subscriptions().add((sub, '*', '*'))
+        zephyr._z.subAll(subs)
     except IOError:
         # Since we haven't added the subscription to
         # current_zephyr_subs yet, we can just return (so that we'll
@@ -142,9 +140,10 @@ def ensure_subscribed(sub):
         # retrying the next time the bot checks its subscriptions are
         # up to date.
         traceback.print_exc()
-        print "Error subscribing to stream %s; will retry later." % (sub,)
+        print "Error subscribing to streams; will retry later."
         return
-    current_zephyr_subs.add(sub)
+    for (cls, instance, recipient) in subs:
+        current_zephyr_subs.add(cls)
 
 def update_subscriptions_from_humbug():
     try:
@@ -154,8 +153,12 @@ def update_subscriptions_from_humbug():
         print "%s: Error getting public streams:" % (datetime.datetime.now())
         traceback.print_exc()
         return
+    streams_to_subscribe = []
     for stream in streams:
-        ensure_subscribed(stream)
+        if stream in current_zephyr_subs:
+            continue
+        streams_to_subscribe.append((stream, "*", "*"))
+    zephyr_bulk_subscribe(streams_to_subscribe)
 
 def maybe_restart_mirroring_script():
     if os.stat(os.path.join(options.root_path, "stamps", "restart_stamp")).st_mtime > start_time or \
