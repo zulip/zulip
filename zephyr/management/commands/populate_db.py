@@ -464,8 +464,13 @@ def restore_saved_messages():
             continue
         elif old_message["type"] == "subscription_removed":
             stream_key = (realms[old_message["domain"]].id, old_message["name"])
-            subscribers.setdefault(stream_recipients[stream_key].id,
-                                   set()).remove(users[old_message["user"]].id)
+            user_id = users[old_message["user"]].id
+            subscribers.setdefault(stream_recipients[stream_key].id, set())
+            try:
+                subscribers[stream_recipients[stream_key].id].remove(user_id)
+            except KeyError:
+                print "Error unsubscribing %s from %s: not subscribed" % (
+                    old_message["user"], old_message["name"])
             pending_subs[(stream_recipients[stream_key].id,
                           users[old_message["user"]].id)] = False
             continue
