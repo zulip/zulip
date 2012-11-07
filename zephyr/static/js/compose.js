@@ -51,24 +51,31 @@ exports.cancel = function () {
 
 var send_options;
 
-$(function () {
+function send_message() {
     var send_status = $('#send-status');
 
-    send_options = {
+    // TODO: this should be collapsed with the code in composebox_typeahead.js
+    var recipients = compose.recipient().split(/\s*[,;]\s*/);
+
+    var request = {client: 'website',
+                   type:        compose.composing(),
+                   stream:      compose.stream_name(),
+                   subject:     compose.subject(),
+                   recipient:   JSON.stringify(recipients),
+                   content:     compose.message_content()};
+
+    // TODO: this is just dumb
+    if (request.type === 'huddle') {
+        request.type = 'personal';
+    }
+
+    $.ajax({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        beforeSubmit: function (arr, form, options) {
-            $.each(arr, function (idx, elem) {
-                if (elem.name === 'recipient') {
-                    var recipients = elem.value;
-                    // TODO: this should be collapsed with the code in composebox_typeahead.js
-                    recipients = recipients.split(/\s*[,;]\s*/);
-                    elem.value = JSON.stringify(recipients);
-                }
-            });
-            return true;
-        },
-        success: function (resp, statusText, xhr, form) {
-            form.find('textarea').val('');
+        url: '/json/send_message',
+        type: 'POST',
+        data: request,
+        success: function (resp, statusText, xhr) {
+            compose.clear();
             send_status.hide();
             is_composing_message = false;
             compose.hide();
@@ -96,16 +103,16 @@ $(function () {
 
             $("#compose-send-button").removeAttr('disabled');
         }
-    };
+    });
 
     send_status.hide();
-});
+}
 
 exports.finish = function () {
     if (! compose.validate()) {
         return false;
     }
-    $("#compose form").ajaxSubmit(send_options);
+    send_message();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger($.Event('compose_finished.zephyr'));
@@ -157,7 +164,6 @@ exports.set_message_type = function (tabname) {
         $("#huddle_recipient").focus();
     }
 };
-
 
 exports.toggle_mode = function () {
     if ($("#message-type-tabs li.active").find("a[href=#stream-message]").length !== 0) {
