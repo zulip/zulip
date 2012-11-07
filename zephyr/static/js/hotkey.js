@@ -72,11 +72,13 @@ function process_hotkey(code) {
     }
 
     if (num_pressed_keys() > 1 &&
-            // "shift"                        "caps lock"
-            !((pressed_keys[16] === true || pressed_keys[20]) &&
+            // "shift"             "caps lock"
+            !((pressed_keys[16] || pressed_keys[20]) &&
                 num_pressed_keys() === 2)) {
         // If you are already holding down another key, none of these
-        // actions apply.
+        // actions apply. However, if you are holding down exactly one
+        // other key and that key is shift or caps lock, we still want
+        // to continue processing.
         return false;
     }
 
