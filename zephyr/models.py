@@ -307,6 +307,9 @@ class Stream(models.Model):
     def __str__(self):
         return self.__repr__()
 
+    class Meta:
+        unique_together = ("name", "realm")
+
     @classmethod
     def create(cls, name, realm):
         stream = cls(name=name, realm=realm)
@@ -323,6 +326,9 @@ class Recipient(models.Model):
     PERSONAL = 1
     STREAM = 2
     HUDDLE = 3
+
+    class Meta:
+        unique_together = ("type", "type_id")
 
     def type_name(self):
         if self.type == self.PERSONAL:
@@ -486,6 +492,9 @@ class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
     active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ("user_profile", "recipient")
 
     def __repr__(self):
         return "<Subscription: %r -> %r>" % (self.user_profile, self.recipient)
