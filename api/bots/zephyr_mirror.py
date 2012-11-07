@@ -157,7 +157,7 @@ def update_subscriptions_from_humbug():
     for stream in streams:
         if stream in current_zephyr_subs:
             continue
-        streams_to_subscribe.append((stream, "*", "*"))
+        streams_to_subscribe.append((stream.encode("utf-8"), "*", "*"))
     zephyr_bulk_subscribe(streams_to_subscribe)
 
 def maybe_restart_mirroring_script():
