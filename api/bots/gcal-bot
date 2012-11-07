@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+import os
 import sys
 import time
+import errno
 import datetime
 import optparse
 import urlparse
@@ -40,7 +42,7 @@ parser.add_option('--user',
 parser.add_option('--api-key',
     dest='api_key',
     action='store',
-    help='API key for that user')
+    help='API key for that user [default: read ~/.humbug-api-key]')
 parser.add_option('--calendar',
     dest='calendar',
     action='store',
@@ -61,6 +63,14 @@ parser.add_option('--interval',
     metavar='MINUTES')
 
 (options, args) = parser.parse_args()
+
+if not options.api_key:
+    try:
+        with open(path.join(os.environ['HOME'], '.humbug-api-key'), 'r') as f:
+            options.api_key = f.read().strip()
+    except IOError as e:
+        if e.errno != errno.ENOENT:
+            raise
 
 if not (options.user and options.api_key and options.calendar):
     parser.error('You must specify --user, --api-key, and --calendar')
