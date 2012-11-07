@@ -310,8 +310,8 @@ def zephyr_to_humbug(options):
         if subscribed_to_mail_messages():
             zephyr_subscribe_autoretry(("mail", "inbox", "%me%"))
 
-    if options.resend_log:
-        with open('/mit/tabbott/Private/zephyrs', 'r') as log:
+    if options.resend_log_path is not None:
+        with open(options.resend_log_path, 'r') as log:
             for ln in log:
                 try:
                     zeph = simplejson.loads(ln)
@@ -338,8 +338,8 @@ def zephyr_to_humbug(options):
 
     print "%s: zephyr=>humbug: Starting receive loop." % (datetime.datetime.now(),)
 
-    if options.enable_log:
-        log_file = "/mit/tabbott/Private/zephyrs"
+    if options.log_path is not None:
+        log_file = options.log_path
     else:
         log_file = "/dev/null"
 
@@ -546,15 +546,15 @@ if __name__ == "__main__":
                       help=optparse.SUPPRESS_HELP,
                       action='store_true')
     parser.add_option('--resend-log',
-                      dest='resend_log',
-                      default=False,
+                      dest='resend_log_path',
+                      default=None,
                       help=optparse.SUPPRESS_HELP,
-                      action='store_true')
+                      action='store')
     parser.add_option('--enable-log',
-                      dest='enable_log',
-                      default=False,
+                      dest='log_path',
+                      default=None,
                       help=optparse.SUPPRESS_HELP,
-                      action='store_true')
+                      action='store')
     parser.add_option('--no-forward-personals',
                       dest='forward_personals',
                       help=optparse.SUPPRESS_HELP,
