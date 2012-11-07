@@ -27,6 +27,11 @@ class HumbugAPI():
         request["api-key"] = self.api_key
         request["client"] = self.client_name
         request["failures"] = 0
+
+        for (key, val) in request.iteritems():
+            if not (isinstance(val, str) or isinstance(val, unicode)):
+                request[key] = simplejson.dumps(val)
+
         while True:
             try:
                 res = requests.post(urlparse.urljoin(self.base_url, url), data=request,
@@ -101,8 +106,7 @@ class HumbugAPI():
         return self.do_api_query(request, "/api/v1/get_subscriptions")
 
     def subscribe(self, streams):
-        request = {}
-        request["streams"] = simplejson.dumps(streams)
+        request = {'streams': streams}
         return self.do_api_query(request, "/api/v1/subscribe")
 
     def call_on_each_message(self, callback, options = {}):
