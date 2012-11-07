@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.utils.timezone import utc
+from django.utils.timezone import utc, now
 from django.core.exceptions import ValidationError
 from django.contrib.auth.views import login as django_login_page
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
@@ -676,7 +676,7 @@ def send_message_backend(request, user_profile, sender, client_name=None):
         # Forged messages come with a timestamp
         message.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
     else:
-        message.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
+        message.pub_date = now()
     message.sending_client = get_client(client_name)
     do_send_message(message)
 

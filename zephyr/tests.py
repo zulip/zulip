@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
-from django.utils.timezone import utc
+from django.utils.timezone import now
 from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
@@ -9,7 +9,6 @@ from zephyr.views import json_get_updates
 from zephyr.decorator import TornadoAsyncException
 from zephyr.lib.initial_password import initial_password
 
-import datetime
 import simplejson
 import subprocess
 subprocess.check_call("zephyr/tests/generate-fixtures");
@@ -58,7 +57,7 @@ class AuthedTestCase(TestCase):
         else:
             recipient = Stream.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=message_type)
-        pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
+        pub_date = now()
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
         do_send_message(Message(sender=sender, recipient=recipient, subject="test",
                                 pub_date=pub_date, sending_client=sending_client))

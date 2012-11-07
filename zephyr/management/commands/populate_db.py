@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.utils.timezone import utc
+from django.utils.timezone import utc, now
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -630,7 +630,7 @@ def send_messages(data):
             message.subject = stream.name + str(random.randint(1, 3))
             saved_data = message.subject
 
-        message.pub_date = datetime.datetime.utcnow().replace(tzinfo=utc)
+        message.pub_date = now()
         do_send_message(message)
 
         recipients[num_messages] = [message_type, message.recipient.id, saved_data]
