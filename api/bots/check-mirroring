@@ -92,10 +92,7 @@ else:
     subs.add(('message', 'personal', 'tabbott/extra@ATHENA.MIT.EDU'))
     subs.add(('tabbott-nagios-test', '*', '*'))
 
-    res = humbug_client.get_messages({'server_generation': '0',
-                                      'first': '0',
-                                      'last': '1000000000000',})
-    max_message_id = res['max_message_id']
+    max_message_id = humbug_client.get_profile()['max_message_id']
 
     time.sleep(10)
     print "Receiving messages!"
