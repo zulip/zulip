@@ -59,6 +59,7 @@ $(function () {
         success: function (resp, statusText, xhr, form) {
             form.find('textarea').val('');
             send_status.hide();
+            is_composing_message = false;
             compose.hide();
             $("#compose-send-button").removeAttr('disabled');
         },
@@ -94,7 +95,8 @@ exports.finish = function () {
         return false;
     }
     $("#compose form").ajaxSubmit(send_options);
-    is_composing_message = false;
+    // TODO: Do we want to fire the event even if the send failed due
+    // to a server-side error?
     $(document).trigger($.Event('compose_finished.zephyr'));
     return true;
 };
