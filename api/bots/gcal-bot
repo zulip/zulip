@@ -128,7 +128,7 @@ def send_reminders():
         message = 'Reminder:\n\n' + '\n'.join('* ' + m for m in messages)
 
     humbug.send_message(dict(
-        type      = 'personal',
+        type      = 'private',
         recipient = options.user,
         content   = message))
 

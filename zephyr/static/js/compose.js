@@ -7,35 +7,28 @@ exports.start = function (msg_type, opts) {
     opts = $.extend({ message_type:     msg_type,
                       stream:           '',
                       subject:          '',
-                      huddle_recipient: '',
+                      private_message_recipient: '',
                       message:          ''
                     }, opts);
 
     $("#stream").val(opts.stream);
     $("#subject").val(opts.subject);
-    $("#huddle_recipient").val(opts.huddle_recipient);
+    $("#private_message_recipient").val(opts.private_message_recipient);
     $("#new_message_content").val(opts.message);
 
     $('#sidebar a[href="#home"]').tab('show');
 
-    if (msg_type !== 'stream') {
-        // TODO: Just to make sure that compose.composing() output is
-        // consistent.  We really should just standardize our
-        // terminology
-        msg_type = "huddle";
-    }
-
     var focus_area;
     if (opts.stream && ! opts.subject) {
         focus_area = 'subject';
-    } else if (opts.stream || opts.huddle_recipient) {
+    } else if (opts.stream || opts.private_message_recipient) {
         focus_area = 'new_message_content';
     }
 
     if (msg_type === 'stream') {
         exports.show('stream', $("#" + (focus_area || 'stream')));
     } else {
-        exports.show('personal', $("#" + (focus_area || 'huddle_recipient')));
+        exports.show('private', $("#" + (focus_area || 'private_message_recipient')));
     }
 
     hotkeys.set_compose();
@@ -63,11 +56,6 @@ function send_message() {
                    subject:     compose.subject(),
                    recipient:   JSON.stringify(recipients),
                    content:     compose.message_content()};
-
-    // TODO: this is just dumb
-    if (request.type === 'huddle') {
-        request.type = 'personal';
-    }
 
     $.ajax({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
@@ -153,22 +141,22 @@ exports.set_message_type = function (tabname) {
     is_composing_message = tabname;
     $("#send-status").removeClass(status_classes).hide();
     if (tabname === "stream") {
-        $('#personal-message').hide();
+        $('#private-message').hide();
         $('#stream-message').show();
         $('#new_message_type').val('stream');
         $("#stream").focus();
     } else {
-        $('#personal-message').show();
+        $('#private-message').show();
         $('#stream-message').hide();
-        $('#new_message_type').val('personal');
-        $("#huddle_recipient").focus();
+        $('#new_message_type').val('private');
+        $("#private_message_recipient").focus();
     }
 };
 
 exports.toggle_mode = function () {
     if ($("#message-type-tabs li.active").find("a[href=#stream-message]").length !== 0) {
-        // In stream tab, switch to personals.
-        exports.show('personal', $("#huddle_recipient"));
+        // In stream tab, switch to private
+        exports.show('private', $("#private_message_recipient"));
     } else {
         exports.show('stream', $("#stream"));
     }
@@ -195,7 +183,7 @@ function get_or_set(fieldname) {
 exports.stream_name     = get_or_set('stream');
 exports.subject         = get_or_set('subject');
 exports.message_content = get_or_set('new_message_content');
-exports.recipient       = get_or_set('huddle_recipient');
+exports.recipient       = get_or_set('private_message_recipient');
 
 function compose_error(error_text, bad_input) {
     $('#send-status').removeClass(status_classes)
@@ -267,9 +255,9 @@ function validate_stream_message() {
     return true;
 }
 
-function validate_huddle_message() {
+function validate_private_message() {
     if (exports.recipient() === "") {
-        compose_error("Please specify at least one recipient", $("#huddle_recipient"));
+        compose_error("Please specify at least one recipient", $("#private_message_recipient"));
         return false;
     }
 
@@ -284,8 +272,8 @@ exports.validate = function () {
         return false;
     }
 
-    if (exports.composing() === 'huddle') {
-        return validate_huddle_message();
+    if (exports.composing() === 'private') {
+        return validate_private_message();
     } else {
         return validate_stream_message();
     }

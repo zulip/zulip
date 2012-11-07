@@ -310,8 +310,8 @@ $(function () {
     $('#message-type-tabs a[href="#stream-message"]').on('shown', function (e) {
         compose.set_message_type('stream');
     });
-    $('#message-type-tabs a[href="#personal-message"]').on('shown', function (e) {
-        compose.set_message_type('huddle');
+    $('#message-type-tabs a[href="#private-message"]').on('shown', function (e) {
+        compose.set_message_type('private');
     });
 
     // Prepare the click handler for subbing to a new stream to which

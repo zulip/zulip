@@ -358,7 +358,7 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a personal message to a valid username is successful.
         """
         self.login("hamlet@humbughq.com")
-        result = self.client.post("/json/send_message", {"type": "personal",
+        result = self.client.post("/json/send_message", {"type": "private",
                                                          "content": "Test message",
                                                          "client": "test suite",
                                                          "recipient": "othello@humbughq.com"})
@@ -369,7 +369,7 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a personal message to an invalid email returns error JSON.
         """
         self.login("hamlet@humbughq.com")
-        result = self.client.post("/json/send_message", {"type": "personal",
+        result = self.client.post("/json/send_message", {"type": "private",
                                                          "content": "Test message",
                                                          "client": "test suite",
                                                          "recipient": "nonexistent"})

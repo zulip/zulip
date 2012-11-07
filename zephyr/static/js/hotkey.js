@@ -91,7 +91,7 @@ function process_hotkey(e) {
         compose.start('stream');
         return process_compose_hotkey;
     case 67: // 'C': compose huddle
-        compose.start('personal');
+        compose.start('private');
         return process_compose_hotkey;
     case 114: // 'r': respond to message
         respond_to_message();

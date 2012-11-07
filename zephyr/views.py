@@ -483,10 +483,10 @@ def create_mirrored_message_users(request, user_profile):
 
     if "recipient" not in request.POST:
         return (False, None)
-    huddle_recipients = extract_recipients(request)
+    pm_recipients = extract_recipients(request)
 
-    # Then, check that all huddle/personal recipients are in our realm:
-    for recipient in huddle_recipients:
+    # Then, check that all private message recipients are in our realm:
+    for recipient in pm_recipients:
         if not same_realm_email(user_profile, recipient):
             return (False, None)
 
@@ -498,8 +498,8 @@ def create_mirrored_message_users(request, user_profile):
     else:
         sender = user_profile
 
-    # Create users for huddle/personal recipients, if needed.
-    for recipient in huddle_recipients:
+    # Create users for private message recipients, if needed.
+    for recipient in pm_recipients:
         create_user_if_needed(user_profile.realm, recipient,
                               recipient.split('@')[0],
                               recipient.split('@')[0],
@@ -524,7 +524,7 @@ def send_message_backend(request, user_profile, sender, message_type_name = POST
     if client_name == "zephyr_mirror":
         # Here's how security works for non-superuser mirroring:
         #
-        # The message must be (1) a huddle/personal message (2) that
+        # The message must be (1) a private message (2) that
         # is both sent and received exclusively by other users in your
         # realm which (3) must be the MIT realm and (4) you must have
         # received the message.
@@ -534,7 +534,7 @@ def send_message_backend(request, user_profile, sender, message_type_name = POST
         # you report having sent you a message.
         if "sender" not in request.POST:
             return json_error("Missing sender")
-        if message_type_name != "personal" and not is_super_user:
+        if message_type_name != "private" and not is_super_user:
             return json_error("User not authorized for this query")
         (valid_input, mirror_sender) = create_mirrored_message_users(request, user_profile)
         if not valid_input:
@@ -572,16 +572,16 @@ def send_message_backend(request, user_profile, sender, message_type_name = POST
         except Stream.DoesNotExist:
             return json_error("Stream does not exist")
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-    elif message_type_name == 'personal':
+    elif message_type_name == 'private':
         if "recipient" not in request.POST:
             return json_error("Missing recipients")
-        huddle_recipients = extract_recipients(request)
+        pm_recipients = extract_recipients(request)
         if client_name == "zephyr_mirror":
-            if user_profile.user.email not in huddle_recipients and not forged:
+            if user_profile.user.email not in pm_recipients and not forged:
                 return json_error("User not authorized for this query")
 
         recipient_profile_ids = set()
-        for recipient in huddle_recipients:
+        for recipient in pm_recipients:
             if recipient == "":
                 continue
             try:
@@ -589,7 +589,7 @@ def send_message_backend(request, user_profile, sender, message_type_name = POST
             except UserProfile.DoesNotExist:
                 return json_error("Invalid email '%s'" % (recipient,))
         if len(recipient_profile_ids) > 1:
-            # Make sure the sender is included in the huddle
+            # Make sure the sender is included in huddle messages
             recipient_profile_ids.add(sender.id)
             huddle = get_huddle(list(recipient_profile_ids))
             recipient = Recipient.objects.get(type_id=huddle.id, type=Recipient.HUDDLE)

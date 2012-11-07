@@ -309,7 +309,7 @@ def main(args):
                                   site="https://staging.humbughq.com",
                                   api_key=file(api_key_file).read().strip(),
                                   verbose=True)
-    client.send_message({'type': "personal",
+    client.send_message({'type': "private",
                          'recipient': [opts.reviewers],
                          'content': "I just sent you a review request!  Check your email for details."})
 

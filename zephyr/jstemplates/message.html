@@ -46,7 +46,7 @@
 {{/if}}
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}"
-    class="message_row{{^is_stream}} personal-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}">
+    class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}">
     <td class="message_picture">
     {{#include_sender}}
         <img class="img-rounded profile_picture user_info_hover"
@@ -55,7 +55,7 @@
     {{/include_sender}}
     </td>
     <td class="pointer"><p></p></td>
-    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} personal-message{{/is_stream}}"
+    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}"
         onclick="select_message_by_id({{id}});"
         onmousedown="mousedown();"
         onmousemove="mousemove();"

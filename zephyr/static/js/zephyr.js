@@ -107,23 +107,23 @@ function respond_to_message(reply_type) {
         subject = message.subject;
     }
 
-    var huddle_recipient = message.reply_to;
+    var pm_recipient = message.reply_to;
     if (reply_type === "personal" && message.type === "huddle") {
         // reply_to for huddle messages is the whole huddle, so for
         // personals replies we need to set the the huddle recipient
         // to just the sender
-        huddle_recipient = message.sender_email;
+        pm_recipient = message.sender_email;
     }
-    msg_type = reply_type;
-    if (msg_type === undefined) {
+    if (reply_type === 'personal'
+        || message.type === 'personal'
+        || message.type === 'huddle')
+    {
+        msg_type = 'private';
+    } else {
         msg_type = message.type;
     }
-    if (msg_type === "huddle") {
-        // Huddle messages use the personals compose box
-        msg_type = "personal";
-    }
     compose.start(msg_type, {'stream': stream, 'subject': subject,
-                             'huddle_recipient': huddle_recipient});
+                             'private_message_recipient': pm_recipient});
 }
 
 // Called by mouseover etc.

@@ -154,7 +154,7 @@ td.pointer {
     border-left: 0px;
 }
 
-.messagebox.personal-message {
+.messagebox.private-message {
     border-color: #444;
     border-width: 0px 1px 1px 1px;
     background-color: #feffe0;
@@ -301,7 +301,7 @@ img.profile_picture {
     filter:  alpha(opacity=40);
 }
 
-.compose_table #personal-message {
+.compose_table #private-message {
     display: none;
 }
 
@@ -349,7 +349,7 @@ input.recipient_box {
 #subject.recipient_box {
     width: 64%;
 }
-#huddle_recipient.recipient_box {
+#private_message_recipient.recipient_box {
     width: 75%;
 }
 

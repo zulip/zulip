@@ -23,7 +23,7 @@ function preserve_compose(send_after_reload) {
         url += "+stream=" + encodeURIComponent(compose.stream_name());
         url += "+subject=" + encodeURIComponent(compose.subject());
     } else {
-        url += "+msg_type=huddle";
+        url += "+msg_type=private";
         url += "+recipient=" + encodeURIComponent(compose.recipient());
     }
     url += "+msg="+ encodeURIComponent(compose.message_content());
@@ -55,7 +55,7 @@ $(function () {
     // TODO: preserve focus
     compose.start(vars.msg_type, {stream: vars.stream,
                                  subject: vars.subject,
-                                 huddle_recipient: vars.recipient,
+                                 private_message_recipient: vars.recipient,
                                  message: vars.msg});
     if (send_now) {
         compose.finish();

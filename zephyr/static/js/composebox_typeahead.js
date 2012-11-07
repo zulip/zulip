@@ -23,7 +23,7 @@ exports.autocomplete_needs_update = function (needs_update) {
     }
 };
 
-var huddle_typeahead_list = [];
+var private_message_typeahead_list = [];
 
 exports.update_autocomplete = function () {
     stream_list.sort();
@@ -33,41 +33,41 @@ exports.update_autocomplete = function () {
         return 1;
     });
 
-    huddle_typeahead_list = $.map(people_list, function (person) {
+    private_message_typeahead_list = $.map(people_list, function (person) {
         return person.full_name + " <" + person.email + ">";
     });
 
     autocomplete_needs_update = false;
 };
 
-function get_huddle_recipients(query_string) {
+function get_pm_recipients(query_string) {
     // Assumes email addresses don't have commas or semicolons in them
     return query_string.split(/\s*[,;]\s*/);
 }
 
-// Returns an array of huddle recipients, removing empty elements.
+// Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
-function get_cleaned_huddle_recipients(query_string) {
-    var recipients = get_huddle_recipients(query_string);
+function get_cleaned_pm_recipients(query_string) {
+    var recipients = get_pm_recipients(query_string);
     recipients = $.grep(recipients, function (elem, idx) {
         return elem.match(/\S/);
     });
     return recipients;
 }
 
-function get_last_recipient_in_huddle(query_string) {
-    var recipients = get_huddle_recipients(query_string);
+function get_last_recipient_in_pm(query_string) {
+    var recipients = get_pm_recipients(query_string);
     return recipients[recipients.length-1];
 }
 
 // Loosely based on Bootstrap's default highlighter, but with escaping added.
 function composebox_typeahead_highlighter(item) {
     var query = this.query;
-    if ($(this.$element).attr('id') === 'huddle_recipient') {
-        // There could be multiple recipients in a huddle, we want to
-        // decide what to highlight based only on the most recent one
-        // we're entering.
-        query = get_last_recipient_in_huddle(this.query);
+    if ($(this.$element).attr('id') === 'private_message_recipient') {
+        // There could be multiple recipients in a private message,
+        // we want to decide what to highlight based only on the most
+        // recent one we're entering.
+        query = get_last_recipient_in_pm(this.query);
     }
     query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
     var regex = new RegExp('(' + query + ')', 'ig');
@@ -177,14 +177,14 @@ exports.initialize = function () {
         highlighter: composebox_typeahead_highlighter,
         tabSkips: true
     });
-    $( "#huddle_recipient" ).typeahead({
+    $( "#private_message_recipient" ).typeahead({
         source: function (query, process) {
-            return huddle_typeahead_list;
+            return private_message_typeahead_list;
         },
         items: 4,
         highlighter: composebox_typeahead_highlighter,
         matcher: function (item) {
-            var current_recipient = get_last_recipient_in_huddle(this.query);
+            var current_recipient = get_last_recipient_in_pm(this.query);
             // If the name is only whitespace (does not contain any non-whitespace),
             // we're between typing names; don't autocomplete anything for us.
             if (! current_recipient.match(/\S/)) {
@@ -194,7 +194,7 @@ exports.initialize = function () {
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
         updater: function (item) {
-            var previous_recipients = get_cleaned_huddle_recipients(this.query);
+            var previous_recipients = get_cleaned_pm_recipients(this.query);
             previous_recipients.pop();
             previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
@@ -210,9 +210,9 @@ exports.initialize = function () {
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
 
-    $( "#huddle_recipient" ).blur(function (event) {
+    $( "#private_message_recipient" ).blur(function (event) {
         var val = $(this).val();
-        var recipients = get_cleaned_huddle_recipients(val);
+        var recipients = get_cleaned_pm_recipients(val);
         $(this).val(recipients.join(", "));
     });
 

@@ -154,17 +154,17 @@ wait_and_send('stream', {
     content: 'test message C'
 });
 
-wait_and_send('personal', {
+wait_and_send('private', {
     recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
     content:   'personal A'
 });
 
-wait_and_send('personal', {
+wait_and_send('private', {
     recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
     content:   'personal B'
 });
 
-wait_and_send('personal', {
+wait_and_send('private', {
     recipient: 'cordelia@humbughq.com',
     content:   'personal C'
 });
@@ -193,7 +193,7 @@ wait_for_receive(function () {
     });
 });
 
-wait_and_send('personal', {
+wait_and_send('private', {
     recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
     content:   'personal D'
 });

@@ -57,7 +57,7 @@ if child_pid == 0:
     # Run the humbug => zephyr mirror in the child
     time.sleep(3)
     humbug_client.send_message({
-            "type": "personal",
+            "type": "private",
             "content": str(hzkey1),
             "recipient": humbug_user,
             });

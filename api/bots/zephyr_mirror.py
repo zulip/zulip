@@ -247,10 +247,10 @@ def process_notice(notice, log):
              'zsig'      : zsig,  # logged here but not used by app
              'content'   : body }
     if is_huddle:
-        zeph['type'] = 'personal'
+        zeph['type'] = 'private'
         zeph['recipient'] = huddle_recipients
     elif is_personal:
-        zeph['type'] = 'personal'
+        zeph['type'] = 'private'
         zeph['recipient'] = to_humbug_username(notice.recipient)
     else:
         zeph['type'] = 'stream'
@@ -261,7 +261,7 @@ def process_notice(notice, log):
             zeph["subject"] = '(instance "%s")' % (notice.instance,)
 
     # Add instances in for instanced personals
-    if zeph['type'] == "personal" and notice.instance.lower() != "personal":
+    if zeph['type'] == "private" and notice.instance.lower() != "personal":
         zeph["content"] = "[-i %s]" % (notice.instance,) + "\n" + zeph["content"]
 
     zeph = decode_unicode_byte_strings(zeph)
