@@ -315,12 +315,6 @@ def api_get_messages(request, user_profile, handler):
 def format_updates_response(messages=[], apply_markdown=True,
                             user_profile=None, new_pointer=None,
                             mirror=None, update_types=[]):
-    max_message_id = None
-    if user_profile is not None:
-        try:
-            max_message_id = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[0].id
-        except:
-            pass
     if mirror is not None:
         messages = [m for m in messages if m.sending_client.name != mirror]
     ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
@@ -328,9 +322,6 @@ def format_updates_response(messages=[], apply_markdown=True,
            "msg": "",
            'server_generation': SERVER_GENERATION,
            'update_types': update_types}
-    if max_message_id is not None:
-        # TODO: Figure out how to accurately return this always
-        ret["max_message_id"] = max_message_id
     if new_pointer is not None:
         ret['new_pointer'] = new_pointer
     return ret
