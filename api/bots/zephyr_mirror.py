@@ -137,7 +137,17 @@ current_zephyr_subs = set()
 def ensure_subscribed(sub):
     if sub in current_zephyr_subs:
         return
-    subs.add((sub, '*', '*'))
+    try:
+        subs.add((sub, '*', '*'))
+    except IOError:
+        # Since we haven't added the subscription to
+        # current_zephyr_subs yet, we can just return (so that we'll
+        # continue processing normal messages) and we'll end up
+        # retrying the next time the bot checks its subscriptions are
+        # up to date.
+        traceback.print_exc()
+        print "Error subscribing to stream %s; will retry later." % (sub,)
+        return
     current_zephyr_subs.add(sub)
 
 def update_subscriptions_from_humbug():
@@ -282,13 +292,27 @@ def decode_unicode_byte_strings(zeph):
             zeph[field] = decoded
     return zeph
 
+def zephyr_subscribe_autoretry(sub):
+    while True:
+        try:
+            subs.add(sub)
+            return
+        except IOError:
+            # Probably a SERVNAK from the zephyr server, but print the
+            # traceback just in case it's something else
+            traceback.print_exc()
+            print "Error subscribing to personals; retrying."
+            time.sleep(1)
+
 def zephyr_to_humbug(options):
     if options.forward_class_messages:
         update_subscriptions_from_humbug()
     if options.forward_personals:
-        subs.add(("message", "*", "%me%"))
+        # Subscribe to personals; we really can't operate without
+        # those subscriptions, so just retry until it works.
+        zephyr_subscribe_autoretry(("message", "*", "%me%"))
         if subscribed_to_mail_messages():
-            subs.add(("mail", "inbox", "%me%"))
+            zephyr_subscribe_autoretry(("mail", "inbox", "%me%"))
 
     if options.resend_log:
         with open('/mit/tabbott/Private/zephyrs', 'r') as log:
