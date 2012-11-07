@@ -605,9 +605,10 @@ if __name__ == "__main__":
         api_key = os.environ.get("HUMBUG_API_KEY")
     else:
         if not os.path.exists(options.api_key_file):
-            print textwrap.wrap("Could not find API key file. " +
-                                "You need to either place your api key file at %s, " +
-                                "or specify the --api-key-file option." % (options.api_key_file))
+            print "\n".join(textwrap.wrap("""\
+Could not find API key file.
+You need to either place your api key file at %s,
+or specify the --api-key-file option.""" % (options.api_key_file,)))
             sys.exit(1)
         api_key = file(options.api_key_file).read().strip()
         # Store the API key in the environment so that our children
