@@ -158,9 +158,9 @@ def update_subscriptions_from_humbug():
         ensure_subscribed(stream)
 
 def maybe_restart_mirroring_script():
-    if os.stat(options.root_path + "/stamps/restart_stamp").st_mtime > start_time or \
+    if os.stat(os.path.join(options.root_path, "stamps", "restart_stamp")).st_mtime > start_time or \
             ((options.user == "tabbott" or options.user == "tabbott/extra") and
-             os.stat(options.root_path + "/stamps/tabbott_stamp").st_mtime > start_time):
+             os.stat(os.path.join(options.root_path, "stamps", "tabbott_stamp")).st_mtime > start_time):
         print
         print "%s: zephyr mirroring script has been updated; restarting..." % \
             (datetime.datetime.now())
@@ -168,8 +168,8 @@ def maybe_restart_mirroring_script():
         while True:
             try:
                 if bot_name == "extra_mirror.py":
-                    os.execvp(options.root_path + "/extra_mirror.py", sys.argv)
-                os.execvp(options.root_path + "/user_root/zephyr_mirror.py", sys.argv)
+                    os.execvp(os.path.join(options.root_path, "extra_mirror.py"), sys.argv)
+                os.execvp(os.path.join(options.root_path, "user_root", "zephyr_mirror.py"), sys.argv)
             except:
                 print "Error restarting, trying again."
                 traceback.print_exc()
@@ -595,8 +595,8 @@ if __name__ == "__main__":
                       action='store')
     (options, args) = parser.parse_args()
 
-    sys.path[:0] = [options.root_path, options.root_path + "/python-zephyr",
-                    options.root_path + "/python-zephyr/build/lib.linux-x86_64-2.6/"]
+    sys.path[:0] = [options.root_path, os.path.join(options.root_path, "python-zephyr"),
+                    os.path.join(options.root_path, "python-zephyr/build/lib.linux-x86_64-2.6/")]
 
     # In case this is an automated restart of the mirroring script,
     # and we have lost AFS tokens, first try reading the API key from
