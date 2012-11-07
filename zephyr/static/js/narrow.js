@@ -107,9 +107,8 @@ exports.by_subject = function () {
         subject:     original.subject
     };
     do_narrow(bar, function (other) {
-        return (other.type === 'stream' &&
-                original.recipient_id === other.recipient_id &&
-                original.subject === other.subject);
+        return ((other.type === 'stream') &&
+                same_stream_and_subject(original, other));
     });
 };
 

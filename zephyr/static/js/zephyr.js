@@ -199,6 +199,13 @@ function select_message(next_message, opts) {
     return true;
 }
 
+function same_stream_and_subject(a, b) {
+    // Streams and subjects are case-insensitive. Streams have
+    // already been forced to the canonical case.
+    return ((a.recipient_id === b.recipient_id) &&
+            (a.subject.toLowerCase() === b.subject.toLowerCase()));
+}
+
 function same_recipient(a, b) {
     if ((a === undefined) || (b === undefined))
         return false;
@@ -211,8 +218,7 @@ function same_recipient(a, b) {
     case 'personal':
         return a.reply_to === b.reply_to;
     case 'stream':
-        return (a.recipient_id === b.recipient_id) &&
-               (a.subject      === b.subject);
+        return same_stream_and_subject(a, b);
     }
 
     // should never get here
