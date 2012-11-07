@@ -352,6 +352,14 @@ def get_client(name):
     try:
         (client, _) = Client.objects.get_or_create(name=name)
     except IntegrityError:
+        # If we're racing with other threads trying to create this
+        # client, get_or_create will throw IntegrityError (because our
+        # database is enforcing the no-duplicate-objects constraint);
+        # in this case one should just re-fetch the object.  This race
+        # actually happens with populate_db.
+        #
+        # Much of the rest of our code that writes to the database
+        # doesn't handle this duplicate object on race issue correctly :(
         transaction.commit()
         return Client.objects.get(name=name)
     return client
