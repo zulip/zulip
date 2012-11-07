@@ -512,7 +512,7 @@ web interface.
             print
 
 def valid_stream_name(name):
-    return re.match(r'^[\w.][\w. -]*$', name, flags=re.UNICODE)
+    return True
 
 def parse_zephyr_subs(verbose=False):
     zephyr_subscriptions = set()
