@@ -8,7 +8,7 @@ import itertools
 import traceback
 from os import path
 
-sys.path.append(path.join(path.dirname(__file__), '..'))
+sys.path.append(path.join(path.dirname(__file__), '../..'))
 import api.common
 
 parser = optparse.OptionParser(r"""
