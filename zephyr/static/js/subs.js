@@ -17,10 +17,20 @@ function case_insensitive_subscription_index(stream_name) {
 }
 
 function add_to_stream_list(stream_name) {
+    var stream_sub_row;
+
     if (!exports.have(stream_name)) {
         stream_list.push(stream_name);
         stream_set[stream_name.toLowerCase()] = true;
-        $('#subscriptions_table').prepend(templates.subscription({subscription: stream_name}));
+
+        stream_sub_row = $('#subscriptions_table').find('button[value="' + stream_name + '"]');
+        if (stream_sub_row.length) {
+            stream_sub_row.text("Unsubscribe")
+                .removeClass("btn-link")
+                .unbind('click');
+        } else {
+            $('#subscriptions_table').prepend(templates.subscription({subscription: stream_name}));
+        }
     }
 }
 
@@ -77,6 +87,36 @@ exports.have = function (stream_name) {
     return (stream_set[stream_name.toLowerCase()] === true);
 };
 
+function ajaxSubscribe(streams) {
+    $.ajax({
+        type: "POST",
+        url: "/json/subscriptions/add",
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        // The next line is a total hack to format our stream as
+        // that simplejson will parse as a 1-element array
+        data: {"streams": '["' + streams + '"]' },
+        success: function (resp, statusText, xhr, form) {
+            if ($("#streams").val() === streams) {
+                $("#streams").val("");
+            }
+            var name, res = $.parseJSON(xhr.responseText);
+            if (res.subscribed.length === 0) {
+                name = res.already_subscribed[0];
+                report_success("Already subscribed to " + name, $("#subscriptions-status"));
+            } else {
+                name = res.subscribed[0];
+                report_success("Successfully added subscription to " + name,
+                               $("#subscriptions-status"));
+            }
+            add_to_stream_list(name);
+            $("#streams").focus();
+        },
+        error: function (xhr) {
+            report_error("Error adding subscription", xhr, $("#subscriptions-status"));
+            $("#streams").focus();
+        }
+    });
+}
 $(function () {
     var i;
     // Populate stream_set with data handed over to client-side template.
@@ -90,7 +130,12 @@ $(function () {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
             var name = $.parseJSON(xhr.responseText).data;
-            $('#subscriptions_table').find('button[value="' + name + '"]').parents('tr').remove();
+            $('#subscriptions_table').find('button[value="' + name + '"]').text("Undo")
+                .addClass("btn-link")
+                .click(function (e) {
+                    e.preventDefault();
+                    ajaxSubscribe(name);
+                });
             remove_from_stream_list(name);
             composebox_typeahead.update_autocomplete();
             report_success("Successfully removed subscription to " + name,
@@ -103,32 +148,7 @@ $(function () {
 
     $("#add_new_subscription").on("submit", function (e) {
         e.preventDefault();
-        $.ajax({
-            type: "POST",
-            url: "/json/subscriptions/add",
-            dataType: 'json', // This seems to be ignored. We still get back an xhr.
-            // The next line is a total hack to format our stream as
-            // that simplejson will parse as a 1-element array
-            data: {"streams": '["' + $("#streams").val() + '"]' },
-            success: function (resp, statusText, xhr, form) {
-                $("#streams").val("");
-                var name, res = $.parseJSON(xhr.responseText);
-                if (res.subscribed.length === 0) {
-                    name = res.already_subscribed[0];
-                    report_success("Already subscribed to " + name, $("#subscriptions-status"));
-                } else {
-                    name = res.subscribed[0];
-                    report_success("Successfully added subscription to " + name,
-                                   $("#subscriptions-status"));
-                }
-                add_to_stream_list(name);
-                $("#streams").focus();
-            },
-            error: function (xhr) {
-                report_error("Error adding subscription", xhr, $("#subscriptions-status"));
-                $("#streams").focus();
-            }
-        });
+        ajaxSubscribe($("#streams").val());
     });
 });
 
