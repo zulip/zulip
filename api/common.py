@@ -75,6 +75,9 @@ class HumbugAPI():
     def get_messages(self, request = {}):
         return self.do_api_query(request, "/api/v1/get_messages")
 
+    def get_profile(self, request = {}):
+        return self.do_api_query(request, "/api/v1/get_profile")
+
     def get_public_streams(self, request = {}):
         return self.do_api_query(request, "/api/v1/get_public_streams")
 
