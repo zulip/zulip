@@ -490,9 +490,12 @@ def json_send_message(request):
     return send_message_backend(request, user_profile, user_profile,
                                 client_name=request.POST.get("client"))
 
-# TODO: This should have a real superuser security check
+# Currently tabbott/extra@mit.edu and starnine@mit.edu are our
+# superusers.  Once we migrate zephyr mirroring, we can drop
+# starnine@mit.edu.  TODO: Make this a real superuser security check.
 def is_super_user_api(request):
-    return request.POST.get("api-key") == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    return request.POST.get("api-key") in ["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                                           "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]
 
 def already_sent_mirrored_message(request):
     utc_from_ts = datetime.datetime.utcfromtimestamp
