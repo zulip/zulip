@@ -24,6 +24,7 @@ import time
 sys.path.append(os.path.dirname(os.path.dirname(os.readlink(__file__))))
 import api.common
 client = api.common.HumbugAPI(email="humbug+commits@humbughq.com",
+                              site="https://staging.humbughq.com",
                               api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                               verbose=False)
 
