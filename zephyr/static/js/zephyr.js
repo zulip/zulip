@@ -542,7 +542,10 @@ function get_updates() {
             //                          {then_scroll: true, update_server: false});
             // }
 
-            get_updates_timeout = setTimeout(get_updates, 0);
+            // Pause for 25 milliseconds before restarting the request.
+            // This gives the browser (especially, our frontend test browser)
+            // time to perform other scheduled actions.
+            get_updates_timeout = setTimeout(get_updates, 25);
         },
         error: function (xhr, error_type, exn) {
             if (error_type === 'timeout') {
