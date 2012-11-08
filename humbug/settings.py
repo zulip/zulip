@@ -104,7 +104,8 @@ INITIAL_API_KEY_SALT  = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 SHARED_SECRET = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 # Base URL of the Tornado server
-# We set it to None when running tests or populate_db.
+# We set it to None when running backend tests or populate_db.
+# We override the port number when running frontend tests.
 TORNADO_SERVER = 'http://localhost:9993'
 
 # Make redirects work properly behind a reverse proxy
