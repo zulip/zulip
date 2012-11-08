@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>CasperJS test index</title>
+        <script>
+        setTimeout(function() {
+            document.querySelector('#img1').style.display = 'none';
+        }, 1000);
+        </script>
+    </head>
+    <body>
+        <img src="images/phantom.png" id="img1">
+        <img src="images/phantom.png" id="img2" style="display:none">
+        <img src="images/phantom.png" id="img3" style="visibility:hidden">
+    </body>
+</html>

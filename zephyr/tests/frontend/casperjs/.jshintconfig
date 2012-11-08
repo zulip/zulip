@@ -1,0 +1,24 @@
+{
+    "asi":           true,
+    "browser":       true,
+    "debug":         true,
+    "devel":         true,
+    "eqeqeq":        true,
+    "evil":          true,
+    "maxparams":     5,
+    "maxdepth":      3,
+    "maxstatements": 15,
+    "maxcomplexity": 7,
+    "regexdash":     true,
+    "strict":        true,
+    "sub":           true,
+    "trailing":      true,
+    "undef":         true,
+
+    "predef"     : [
+        "exports",
+        "phantom",
+        "require",
+        "window"
+    ]
+}

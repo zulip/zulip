@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>CasperJS test form</title>
+    </head>
+    <body>
+        <form action="result.html" enctype="multipart/form-data">
+            <input type="text" name="email" placeholder="email">
+            <input type="password" name="password" placeholder="password">
+            <textarea name="content"></textarea>
+            <select name="topic">
+                <option>foo</option>
+                <option value="bar">baz</option>
+            </select>
+            <input type="checkbox" name="check">
+            <input type="radio" name="choice" value="yes">
+            <input type="radio" name="choice" value="no">
+            <input type="file" name="file">
+            <input type="checkbox" name="checklist[]" value="1">
+            <input type="checkbox" name="checklist[]" value="2">
+            <input type="checkbox" name="checklist[]" value="3">
+            <input type="submit" name="submit" value="submit">
+        </form>
+    </body>
+</html>

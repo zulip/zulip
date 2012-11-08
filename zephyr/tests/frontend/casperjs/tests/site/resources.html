@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>CasperJS test resource</title>
+    </head>
+    <body>
+      <script id="loader"></script>
+      <script>
+        setTimeout(function () {
+          document.querySelector("#loader").setAttribute("src", "dummy.js");
+        }, 1000);
+      </script>
+    </body>
+</html>

@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+
+def resolve(path):
+    if os.path.islink(path):
+        path = os.path.join(os.path.dirname(path), os.readlink(path))
+        return resolve(path)
+    return path
+
+PHANTOMJS_NATIVE_ARGS = [
+    'cookies-file',
+    'config',
+    'debug',
+    'disk-cache',
+    'ignore-ssl-errors',
+    'load-images',
+    'load-plugins',
+    'local-storage-path',
+    'local-storage-quota',
+    'local-to-remote-url-access',
+    'max-disk-cache-size',
+    'output-encoding',
+    'proxy',
+    'proxy-auth',
+    'proxy-type',
+    'remote-debugger-port',
+    'remote-debugger-autorun',
+    'script-encoding',
+    'web-security',
+]
+CASPER_ARGS = []
+PHANTOMJS_ARGS = []
+
+for arg in sys.argv[1:]:
+    found = False
+    for native in PHANTOMJS_NATIVE_ARGS:
+        if arg.startswith('--%s' % native):
+            PHANTOMJS_ARGS.append(arg)
+            found = True
+    if not found:
+        CASPER_ARGS.append(arg)
+
+CASPER_PATH = os.path.abspath(os.path.join(os.path.dirname(resolve(__file__)), '..'))
+CASPER_COMMAND = os.environ.get('PHANTOMJS_EXECUTABLE', 'phantomjs').split(' ')
+CASPER_COMMAND.extend(PHANTOMJS_ARGS)
+CASPER_COMMAND.extend([
+    os.path.join(CASPER_PATH, 'bin', 'bootstrap.js'),
+    '--casper-path=%s' % CASPER_PATH,
+    '--cli'
+])
+CASPER_COMMAND.extend(CASPER_ARGS)
+
+try:
+    os.execvp(CASPER_COMMAND[0], CASPER_COMMAND)
+except OSError as err:
+    print(('Fatal: %s; did you install phantomjs?' % err))
+    sys.exit(1)

@@ -1,0 +1,14 @@
+branches:
+  only:
+    - master
+before_script:
+  - "phantomjs --version"
+  - "export PHANTOMJS_EXECUTABLE='phantomjs --local-to-remote-url-access=yes --ignore-ssl-errors=yes'"
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+script:
+  - "DISPLAY=:99.0 ./bin/casperjs selftest"
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.org#casperjs"

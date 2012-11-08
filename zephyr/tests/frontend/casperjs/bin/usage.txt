@@ -1,0 +1,10 @@
+
+Usage: casperjs [options] script.[js|coffee] [script argument [script argument ...]]
+       casperjs [options] test [test path [test path ...]]
+
+Options:
+
+--help      Prints this help
+--version   Prints out CasperJS version
+
+Read the docs http://casperjs.org/
