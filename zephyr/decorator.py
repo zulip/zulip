@@ -63,7 +63,7 @@ def authenticated_json_view(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         if not request.user.is_authenticated():
             return json_error("Not logged in")
-        return view_func(request, *args, **kwargs)
+        return view_func(request, request.user.userprofile, *args, **kwargs)
     return _wrapped_view_func
 
 # Used in conjunction with @has_request_variables, below

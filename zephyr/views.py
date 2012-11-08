@@ -173,8 +173,7 @@ def api_update_pointer(request, user_profile, updater=POST('client_id')):
     return update_pointer_backend(request, user_profile, updater)
 
 @authenticated_json_view
-def json_update_pointer(request):
-    user_profile = UserProfile.objects.get(user=request.user)
+def json_update_pointer(request, user_profile):
     return update_pointer_backend(request, user_profile,
                                   request.session.session_key)
 
@@ -197,8 +196,7 @@ def update_pointer_backend(request, user_profile, updater, pointer=POST(converte
     return json_success()
 
 @authenticated_json_view
-def json_get_old_messages(request):
-    user_profile = UserProfile.objects.get(user=request.user)
+def json_get_old_messages(request, user_profile):
     return get_old_messages_backend(request, user_profile=user_profile,
                                     apply_markdown=True)
 
@@ -234,8 +232,7 @@ def get_old_messages_backend(request, start = POST(converter=int), which = POST,
 
 @asynchronous
 @authenticated_json_view
-def json_get_updates(request, handler):
-    user_profile = UserProfile.objects.get(user=request.user)
+def json_get_updates(request, user_profile, handler):
     client_id = request.session.session_key
     return get_updates_backend(request, user_profile, handler, client_id,
                                apply_markdown=True)
@@ -417,8 +414,7 @@ def api_send_message(request, user_profile):
                                 client_name=request.POST.get("client", "API"))
 
 @authenticated_json_view
-def json_send_message(request):
-    user_profile = UserProfile.objects.get(user=request.user)
+def json_send_message(request, user_profile):
     return send_message_backend(request, user_profile, user_profile,
                                 client_name=request.POST.get("client"))
 
@@ -673,13 +669,11 @@ def api_get_subscriptions(request, user_profile):
     return json_success({"streams": gather_subscriptions(user_profile)})
 
 @authenticated_json_view
-def json_list_subscriptions(request):
-    subs = gather_subscriptions(UserProfile.objects.get(user=request.user))
-    return json_success({"subscriptions": subs})
+def json_list_subscriptions(request, user_profile):
+    return json_success({"subscriptions": gather_subscriptions(user_profile)})
 
 @authenticated_json_view
-def json_remove_subscription(request):
-    user_profile = UserProfile.objects.get(user=request.user)
+def json_remove_subscription(request, user_profile):
     if 'subscription' not in request.POST:
         return json_error("Missing subscriptions")
 
@@ -701,8 +695,7 @@ def api_subscribe(request, user_profile):
     return add_subscriptions_backend(request, user_profile)
 
 @authenticated_json_view
-def json_add_subscriptions(request):
-    user_profile = UserProfile.objects.get(user=request.user)
+def json_add_subscriptions(request, user_profile):
     return add_subscriptions_backend(request, user_profile)
 
 @has_request_variables
@@ -731,9 +724,9 @@ def add_subscriptions_backend(request, user_profile, streams_raw = POST('streams
 
 @authenticated_json_view
 @has_request_variables
-def json_change_settings(request, full_name=POST, old_password=POST, new_password=POST, confirm_password=POST):
-    user_profile = UserProfile.objects.get(user=request.user)
-
+def json_change_settings(request, user_profile, full_name=POST,
+                         old_password=POST, new_password=POST,
+                         confirm_password=POST):
     if new_password != "":
         if new_password != confirm_password:
             return json_error("New password must match confirmation password!")
@@ -750,10 +743,10 @@ def json_change_settings(request, full_name=POST, old_password=POST, new_passwor
 
 @authenticated_json_view
 @has_request_variables
-def json_stream_exists(request, stream=POST):
+def json_stream_exists(request, user_profile, stream=POST):
     if not valid_stream_name(stream):
         return json_error("Invalid characters in stream name")
-    exists = bool(get_stream(stream, UserProfile.objects.get(user=request.user).realm))
+    exists = bool(get_stream(stream, user_profile.realm))
     return json_success({"exists": exists})
 
 @csrf_exempt
@@ -769,7 +762,7 @@ def api_fetch_api_key(request, username=POST, password=POST):
 
 @authenticated_json_view
 @has_request_variables
-def json_fetch_api_key(request, password=POST):
+def json_fetch_api_key(request, user_profile, password=POST):
     if not request.user.check_password(password):
         return json_error("Your username or password is incorrect.")
-    return json_success({"api_key": request.user.userprofile.api_key})
+    return json_success({"api_key": user_profile.api_key})
