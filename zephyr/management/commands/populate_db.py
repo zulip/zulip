@@ -316,7 +316,7 @@ def restore_saved_messages():
                 if u["email"] not in email_set:
                     user_set.add((u["email"], u["full_name"], u["short_name"], False))
                     email_set.add(u["email"])
-            huddle_user_set.add(tuple(sorted(u["email"] for u in old_message["recipient"])))
+            huddle_user_set.add(tuple(sorted(set(u["email"] for u in old_message["recipient"]))))
         else:
             raise ValueError('Bad message type')
 
