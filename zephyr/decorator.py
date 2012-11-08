@@ -102,6 +102,10 @@ class POST(object):
 # instance of the POST class.  That paramter will then be
 # automatically populated from the HTTP request.  The request object
 # must be the first argument to the decorated function.
+#
+# Note that this can't be used in helper functions which are not
+# expected to call json_error or json_success, as it uses json_error
+# internally when it encounters an error
 def has_request_variables(view_func):
     num_params = view_func.func_code.co_argcount
     if view_func.func_defaults is None:
