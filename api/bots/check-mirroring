@@ -107,10 +107,8 @@ else:
     if len(notices) != 4:
         print "humbug=>zephyr: Got wrong number of messages back!"
         failed = True
-    elif (notices[0].message.split('\0')[1] != str(hzkey1) or
-          notices[1].message.split('\0')[1] != str(hzkey2) or
-          notices[2].message.split('\0')[1] != str(zhkey1) or
-          notices[3].message.split('\0')[1] != str(zhkey2)):
+    elif (set(notice.message.split('\0')[1] for notice in notices) !=
+          set([str(hzkey1), str(hzkey2), str(zhkey1), str(zhkey2)])):
         print "humbug=>zephyr: Didn't get back right values!"
         failed = True
     if failed:
@@ -125,10 +123,8 @@ else:
         for message in messages:
             print_humbug(message)
         failed = True
-    elif (messages[0]['content'] != str(hzkey1) or
-        messages[1]['content'] != str(hzkey2) or
-        messages[2]['content'] != str(zhkey1) or
-        messages[3]['content'] != str(zhkey2)):
+    elif (set(message["content"] for message in messages) !=
+          set([str(hzkey1), str(hzkey2), str(zhkey1), str(zhkey2)])):
         print "zephyr=>humbug: Didn't get back right values!"
         for message in messages:
             print_humbug(message)
