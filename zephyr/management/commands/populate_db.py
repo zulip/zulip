@@ -501,15 +501,17 @@ def restore_saved_messages():
             # Nobody received this message -- probably due to our
             # subscriptions being out-of-date.
             continue
+
+        recipient_user_ids = set()
         for user_profile_id in subscribers[message.recipient_id]:
-            if users_by_id[user_profile_id].user.is_active:
-                um = UserMessage(user_profile_id=user_profile_id,
-                                 message=message)
-                user_messages_to_create.append(um)
+            recipient_user_ids.add(user_profile_id)
         if message.recipient_id in personal_recipients:
             # Include the sender in huddle recipients
-            if users_by_id[message.sender_id].user.is_active:
-                um = UserMessage(user_profile_id=message.sender_id,
+            recipient_user_ids.add(message.sender_id)
+
+        for user_profile_id in recipient_user_ids:
+            if users_by_id[user_profile_id].user.is_active:
+                um = UserMessage(user_profile_id=user_profile_id,
                                  message=message)
                 user_messages_to_create.append(um)
 
