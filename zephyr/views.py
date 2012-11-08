@@ -699,8 +699,13 @@ def notify_pointer_update(request):
 
 @authenticated_api_view
 def api_get_public_streams(request, user_profile):
+    # Only get streams someone is currently subscribed to
+    subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
+    stream_ids = Recipient.objects.filter(
+        type=Recipient.STREAM, id__in=subs_filter).values('type_id')
     streams = sorted(stream.name for stream in
-                     Stream.objects.filter(realm=user_profile.realm))
+                     Stream.objects.filter(id__in = stream_ids,
+                                           realm=user_profile.realm))
     return json_success({"streams": streams})
 
 def gather_subscriptions(user_profile):
