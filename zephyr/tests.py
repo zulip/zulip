@@ -17,7 +17,7 @@ import re
 
 settings.MESSAGE_LOG = "/tmp/test-message-log"
 settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-settings.HAVE_TORNADO_SERVER = False
+settings.TORNADO_SERVER = None
 
 
 def find_key_by_email(address):

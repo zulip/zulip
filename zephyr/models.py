@@ -479,8 +479,8 @@ def do_send_message(message, no_log=False):
                 UserMessage(user_profile=user_profile, message=message).save()
 
     # We can only publish messages to longpolling clients if the Tornado server is running.
-    if settings.HAVE_TORNADO_SERVER:
-        requests.post(settings.NOTIFY_NEW_MESSAGE_URL, data=[
+    if settings.TORNADO_SERVER:
+        requests.post(settings.TORNADO_SERVER + '/notify_new_message', data=[
                ('secret',  settings.SHARED_SECRET),
                ('message', message.id),
                ('users',   ','.join(str(user.id) for user in recipients))])

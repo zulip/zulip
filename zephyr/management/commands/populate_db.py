@@ -22,7 +22,7 @@ import sys
 import os
 from optparse import make_option
 
-settings.HAVE_TORNADO_SERVER = False
+settings.TORNADO_SERVER = None
 
 def create_users(realms, name_list):
     user_set = set()
