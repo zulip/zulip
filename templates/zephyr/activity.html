@@ -1,0 +1,37 @@
+{% extends "zephyr/base.html" %}
+
+{# User Activity. #}
+
+{% block content %}
+
+{% for name, has_pointer, rows in data %}
+
+    <h2>{{ name }} usage</h2>
+    <table class="table">
+    <tr>
+    <td>User</td>
+    <td>Last get_updates</td>
+    <td>Last send_message</td>
+    {% if has_pointer %}
+    <td>Last update_pointer</td>
+    <td>Number of pointer updates</td>
+    {% endif %}
+    <td>Number of messages sent</td>
+    </tr>
+    {% for row in rows %}
+        <tr>
+        <td>{{ row.email }}</td>
+        <td>{{ row.get_updates_last }}</td>
+        <td>{{ row.send_message_last }}</td>
+        {% if has_pointer %}
+        <td>{{ row.update_pointer_last }}</td>
+        <td>{{ row.update_pointer_count }}</td>
+        {% endif %}
+        <td>{{ row.send_message_count }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+
+{% endfor %}
+
+{% endblock %}

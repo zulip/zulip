@@ -14,7 +14,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     do_change_full_name, do_activate_user, \
     create_user, do_send_message, create_user_if_needed, \
     create_stream_if_needed, PreregistrationUser, get_client, MitUser, \
-    User
+    User, UserActivity
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
     is_active
 from django.views.decorators.csrf import csrf_exempt
@@ -769,3 +769,38 @@ def json_fetch_api_key(request, user_profile, password=POST):
     if not request.user.check_password(password):
         return json_error("Your username or password is incorrect.")
     return json_success({"api_key": user_profile.api_key})
+
+@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+def get_activity(request):
+    user_profile = request.user.userprofile
+    if user_profile.realm.domain != "humbughq.com":
+        return HttpResponseRedirect(reverse('zephyr.views.login_page'))
+
+    def add_activity(activity, url, query_name, client_name):
+        for row in UserActivity.objects.filter(query=url,
+                                               client__name=client_name):
+            email = row.user_profile.user.email
+            activity.setdefault(email, {})
+            activity[email]['email'] = email
+            activity[email][query_name + '_count'] = row.count
+            activity[email][query_name + '_last'] = row.last_visit
+
+    website_activity = {}
+    add_activity(website_activity, "/json/get_updates", "get_updates", "website")
+    add_activity(website_activity, "/json/send_message/", "send_message", "website")
+    add_activity(website_activity, "/json/update_pointer", "update_pointer", "website")
+
+    mirror_activity = {}
+    add_activity(mirror_activity, "/api/v1/get_messages", "get_updates", "zephyr_mirror")
+    add_activity(mirror_activity, "/api/v1/send_message", "send_message", "zephyr_mirror")
+
+    api_activity = {}
+    add_activity(api_activity, "/api/v1/get_messages", "get_updates", "API")
+    add_activity(api_activity, "/api/v1/send_message", "send_message", "API")
+
+    return render_to_response('zephyr/activity.html',
+        { 'data': [
+            ('Website', True,  website_activity.values()),
+            ('Mirror',  False, mirror_activity.values()),
+            ('API',     False, api_activity.values())
+        ]}, context_instance=RequestContext(request))

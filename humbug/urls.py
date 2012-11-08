@@ -23,6 +23,8 @@ urlpatterns = patterns('',
         {'template_name': 'zephyr/reset_done.html'}),
 
 
+    url(r'^activity$', 'zephyr.views.get_activity'),
+
     # Registration views, require a confirmation ID.
     url(r'^accounts/register/', 'zephyr.views.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
