@@ -420,6 +420,9 @@ class UserMessage(models.Model):
     # on later
     archived = models.BooleanField()
 
+    class Meta:
+        unique_together = ("user_profile", "message")
+
     def __repr__(self):
         display_recipient = get_display_recipient(self.message.recipient)
         return "<UserMessage: %s / %s>" % (display_recipient, self.user_profile.user.email)
