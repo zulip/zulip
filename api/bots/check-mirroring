@@ -5,10 +5,6 @@ import optparse
 import os
 import random
 
-root_path = "/mit/tabbott/for_friends"
-sys.path.append(root_path + "/python-zephyr")
-sys.path.append(root_path + "/python-zephyr/build/lib.linux-x86_64-2.6/")
-
 parser = optparse.OptionParser()
 parser.add_option('--verbose',
                   dest='verbose',
@@ -18,7 +14,15 @@ parser.add_option('--site',
                   dest='site',
                   default="https://humbughq.com",
                   action='store')
+parser.add_option('--root-path',
+                  dest='root_path',
+                  default="/home/humbug",
+                  action='store')
 (options, args) = parser.parse_args()
+
+sys.path[:0] = [os.path.join(options.root_path, "python-zephyr"),
+                os.path.join(options.root_path, "python-zephyr/build/lib.linux-x86_64-2.6/"),
+                options.root_path]
 
 mit_user = 'tabbott/extra@ATHENA.MIT.EDU'
 humbug_user = 'tabbott/extra@mit.edu'
