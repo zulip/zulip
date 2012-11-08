@@ -99,6 +99,10 @@ def send_humbug(zeph):
         message["recipient"] = zeph["recipient"]
     message['content'] = unwrap_lines(zeph['content'])
 
+    if options.test_mode:
+        print message
+        return {'result': "success"}
+
     return humbug_client.send_message(message)
 
 def fetch_fullname(username):
@@ -382,6 +386,11 @@ def forward_to_zephyr(message):
         zwrite_args.extend([to_zephyr_username(user["email"]).replace("@ATHENA.MIT.EDU", "")
                             for user in message["display_recipient"]])
 
+    if options.test_mode:
+        print zwrite_args
+        print wrapped_content.encode("utf-8")
+        return
+
     p = subprocess.Popen(zwrite_args, stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE)
     p.communicate(input=wrapped_content.encode("utf-8"))
@@ -591,6 +600,11 @@ if __name__ == "__main__":
                       default="/mit/tabbott/for_friends",
                       help=optparse.SUPPRESS_HELP,
                       action='store')
+    parser.add_option('--test-mode',
+                      dest='test_mode',
+                      default=False,
+                      help=optparse.SUPPRESS_HELP,
+                      action='store_true')
     parser.add_option('--api-key-file',
                       dest='api_key_file',
                       default=os.path.join(os.environ["HOME"], "Private", ".humbug-api-key"),
@@ -641,15 +655,16 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
         bot_name = "extra_mirror.py"
     else:
         bot_name = "zephyr_mirror.py"
-    proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", bot_name],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
-    out, _err_unused = proc.communicate()
-    for pid in out.split():
-        if int(pid.strip()) != os.getpid():
-            # Another copy of zephyr_mirror.py!  Kill it.
-            print "Killing duplicate zephyr_mirror process %s" % (pid,)
-            os.kill(int(pid), signal.SIGKILL)
+    if not options.test_mode:
+        proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", bot_name],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        out, _err_unused = proc.communicate()
+        for pid in out.split():
+            if int(pid.strip()) != os.getpid():
+                # Another copy of zephyr_mirror.py!  Kill it.
+                print "Killing duplicate zephyr_mirror process %s" % (pid,)
+                os.kill(int(pid), signal.SIGKILL)
 
     child_pid = os.fork()
     if child_pid == 0:
