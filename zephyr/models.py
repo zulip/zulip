@@ -646,3 +646,14 @@ def clear_database():
                   Realm, Subscription, Huddle, UserMessage, Client]:
         model.objects.all().delete()
     Session.objects.all().delete()
+
+class UserActivity(models.Model):
+    user_profile = models.ForeignKey(UserProfile)
+    client = models.ForeignKey(Client)
+    query = models.CharField(max_length=50, db_index=True)
+
+    count = models.IntegerField()
+    last_visit = models.DateTimeField('last visit')
+
+    class Meta:
+        unique_together = ("user_profile", "client", "query")

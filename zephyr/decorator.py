@@ -1,6 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
-from zephyr.models import UserProfile
+from zephyr.models import UserProfile, UserActivity, get_client
 from zephyr.lib.response import json_success, json_error
+from django.utils.timezone import now
 
 from functools import wraps
 
@@ -37,6 +38,23 @@ def require_post(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
+def parse_client(request, default):
+    client_name = default
+    if 'client' in request.POST:
+        client_name = request.POST['client']
+    return get_client(client_name)
+
+def update_user_activity(request, user_profile, client):
+    current_time = now()
+    (activity, created) = UserActivity.objects.get_or_create(
+        user_profile = user_profile,
+        client = client,
+        query = request.META["PATH_INFO"],
+        defaults={'last_visit': current_time, 'count': 0})
+    activity.count += 1
+    activity.last_visit = current_time
+    activity.save()
+
 # authenticated_api_view will add the authenticated user's user_profile to
 # the view function's arguments list, since we have to look it up
 # anyway.
@@ -51,6 +69,8 @@ def authenticated_api_view(view_func):
             return json_error("Invalid user")
         if user_profile is None or request.POST.get("api-key") != user_profile.api_key:
             return json_error('Invalid API user/key pair.')
+        update_user_activity(request, user_profile,
+                             parse_client(request, "API"))
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
@@ -63,6 +83,8 @@ def authenticated_json_view(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         if not request.user.is_authenticated():
             return json_error("Not logged in")
+        update_user_activity(request, request.user.userprofile,
+                             parse_client(request, "website"))
         return view_func(request, request.user.userprofile, *args, **kwargs)
     return _wrapped_view_func
 
