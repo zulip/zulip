@@ -266,7 +266,7 @@ def process_notice(notice, log):
         if notice.instance != "":
             zeph['subject'] = notice.instance
         else:
-            zeph["subject"] = "personal"
+            zeph["subject"] = "(no instance)"
 
     # Add instances in for instanced personals
     if zeph['type'] == "personal" and notice.instance.lower() != "personal":
@@ -367,6 +367,10 @@ def forward_to_zephyr(message):
     if message['type'] == "stream":
         zephyr_class = message["display_recipient"]
         instance = message["subject"]
+        if instance == "(no instance)":
+            # Forward messages sent to "(no instance)" back to the
+            # empty instance for bidirectional mirroring
+            instance = ""
         if (instance == "instance %s" % (zephyr_class,) or
             instance == "test instance %s" % (zephyr_class,)):
             # Forward messages to e.g. -c -i white-magic back from the
