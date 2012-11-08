@@ -68,7 +68,8 @@ if child_pid == 0:
             "content": str(hzkey2),
             "stream": "tabbott-nagios-test",
             });
-    print "Sent Humbug messages!"
+    if options.verbose:
+        print "Sent Humbug messages!"
     time.sleep(0.5)
 
     import zephyr
@@ -85,7 +86,8 @@ if child_pid == 0:
                           cls="tabbott-nagios-test", instance="test")
     zeph.setmessage("%s\0%s" % (zsig, zhkey2))
     zeph.send()
-    print "Sent Zephyr messages!"
+    if options.verbose:
+        print "Sent Zephyr messages!"
 
 
 else:
@@ -99,7 +101,8 @@ else:
     max_message_id = humbug_client.get_profile()['max_message_id']
 
     time.sleep(10)
-    print "Receiving messages!"
+    if options.verbose:
+        print "Receiving messages!"
     notices = []
     while True:
         notice = zephyr.receive(block=False)
