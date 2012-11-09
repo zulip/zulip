@@ -36,7 +36,7 @@ class HumbugAPI():
                 if str(res.status_code).startswith('5') and self.retry_on_errors:
                     if self.verbose:
                         if not had_error_retry:
-                            sys.stdout.write("connection error -- retrying.")
+                            sys.stdout.write("connection error %s -- retrying." % (res.status_code,))
                             had_error_retry = True
                             request["failures"] += 1
                         else:
