@@ -157,14 +157,16 @@ def has_request_variables(view_func):
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         for param in post_params:
+            default_assigned = False
             try:
                 val = request.POST[param.post_var_name]
             except KeyError:
                 if param.default is POST.NotSpecified:
                     return json_error("Missing '%s' argument" % (param.post_var_name,))
                 val = param.default
+                default_assigned = True
 
-            if param.converter is not None:
+            if param.converter is not None and not default_assigned:
                 try:
                     val = param.converter(val)
                 except:
