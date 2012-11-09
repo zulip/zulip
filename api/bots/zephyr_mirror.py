@@ -677,5 +677,13 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
         sys.exit(0)
 
     import zephyr
-    zephyr.init()
+    while True:
+        try:
+            # zephyr.init() tries to clear old subscriptions, and thus
+            # sometimes gets a SERVNAK from the server
+            zephyr.init()
+            break
+        except IOError:
+            traceback.print_exc()
+            time.sleep(1)
     zephyr_to_humbug(options)
