@@ -44,7 +44,13 @@ class HumbugAPI():
                         sys.stdout.flush()
                     time.sleep(1)
                     continue
-            except requests.exceptions.Timeout:
+            except (requests.exceptions.Timeout, requests.exceptions.SSLError) as e:
+                # Timeouts are either a Timeout or an SSLError; we
+                # want the later exception handlers to deal with any
+                # non-timeout other SSLErrors
+                if (isinstance(e, requests.exceptions.SSLError) and
+                    str(e) != "The read operation timed out"):
+                    raise
                 if longpolling:
                     # When longpolling, we expect the timeout to fire,
                     # and the correct response is to just retry
