@@ -11,6 +11,7 @@ import os
 import datetime
 import textwrap
 import signal
+import logging
 
 def to_humbug_username(zephyr_username):
     if "@" in zephyr_username:
@@ -100,7 +101,7 @@ def send_humbug(zeph):
     message['content'] = unwrap_lines(zeph['content'])
 
     if options.test_mode:
-        print message
+        logger.debug("Message is: %s" % (str(message),))
         return {'result': "success"}
 
     return humbug_client.send_message(message)
@@ -116,9 +117,7 @@ def fetch_fullname(username):
             if proc.returncode == 0:
                 return out.split(':')[4].split(',')[0]
     except:
-        print >>sys.stderr, '%s: zephyr=>humbug: Error getting fullname for %s' % \
-            (datetime.datetime.now(), username)
-        traceback.print_exc()
+        logger.exception("Error getting fullname for %s:" % (username,))
 
     if "@" not in username:
         return username
@@ -143,8 +142,7 @@ def zephyr_bulk_subscribe(subs):
         # continue processing normal messages) and we'll end up
         # retrying the next time the bot checks its subscriptions are
         # up to date.
-        traceback.print_exc()
-        print "Error subscribing to streams; will retry later."
+        logger.exception("Error subscribing to streams (will retry automatically):")
         return
     for (cls, instance, recipient) in subs:
         current_zephyr_subs.add(cls)
@@ -154,8 +152,7 @@ def update_subscriptions_from_humbug():
         res = humbug_client.get_public_streams()
         streams = res["streams"]
     except:
-        print "%s: Error getting public streams:" % (datetime.datetime.now(),)
-        traceback.print_exc()
+        logger.exception("Error getting public streams:")
         return
     streams_to_subscribe = []
     for stream in streams:
@@ -168,9 +165,8 @@ def maybe_restart_mirroring_script():
     if os.stat(os.path.join(options.root_path, "stamps", "restart_stamp")).st_mtime > start_time or \
             ((options.user == "tabbott" or options.user == "tabbott/extra") and
              os.stat(os.path.join(options.root_path, "stamps", "tabbott_stamp")).st_mtime > start_time):
-        print
-        print "%s: zephyr mirroring script has been updated; restarting..." % \
-            (datetime.datetime.now(),)
+        logger.warning("")
+        logger.warning("zephyr mirroring script has been updated; restarting...")
         os.kill(child_pid, signal.SIGTERM)
         while True:
             try:
@@ -178,8 +174,7 @@ def maybe_restart_mirroring_script():
                     os.execvp(os.path.join(options.root_path, "extra_mirror.py"), sys.argv)
                 os.execvp(os.path.join(options.root_path, "user_root", "zephyr_mirror.py"), sys.argv)
             except:
-                print "Error restarting, trying again."
-                traceback.print_exc()
+                logger.exception("Error restarting mirroring script; trying again... Traceback:")
                 time.sleep(1)
 
 def process_loop(log):
@@ -191,9 +186,7 @@ def process_loop(log):
             try:
                 process_notice(notice, log)
             except:
-                print >>sys.stderr, '%s: zephyr=>humbug: Error relaying zephyr' % \
-                    (datetime.datetime.now(),)
-                traceback.print_exc()
+                logger.exception("Error relaying zephyr:")
                 time.sleep(2)
 
         maybe_restart_mirroring_script()
@@ -223,8 +216,7 @@ def process_notice(notice, log):
         return
 
     if zsig.endswith("@(@color(blue))"):
-        print "%s: zephyr=>humbug: Skipping message we got from Humbug!" % \
-            (datetime.datetime.now(),)
+        logger.debug("Skipping message we got from Humbug!")
         return
 
     zephyr_class = notice.cls.lower()
@@ -246,8 +238,8 @@ def process_notice(notice, log):
     # Drop messages not to the listed subscriptions
     if (zephyr_class not in current_zephyr_subs) and not \
             (is_personal and options.forward_personals):
-        print "%s: zephyr=>humbug: Skipping ... %s/%s/%s" % \
-            (datetime.datetime.now(), zephyr_class, notice.instance, is_personal)
+        logger.debug("Skipping ... %s/%s/%s" %
+                     (zephyr_class, notice.instance, is_personal))
         return
 
     zeph = { 'time'      : str(notice.time),
@@ -274,17 +266,15 @@ def process_notice(notice, log):
 
     zeph = decode_unicode_byte_strings(zeph)
 
-    print "%s: zephyr=>humbug: received a message on %s/%s from %s..." % \
-        (datetime.datetime.now(), zephyr_class, notice.instance, notice.sender)
+    logger.info("Received a message on %s/%s from %s..." %
+                (zephyr_class, notice.instance, notice.sender))
     if log is not None:
         log.write(simplejson.dumps(zeph) + '\n')
         log.flush()
 
     res = send_humbug(zeph)
     if res.get("result") != "success":
-        print >>sys.stderr, 'Error relaying zephyr'
-        print zeph
-        print res
+        logger.error("Error relaying zephyr:\n%s\n%s" %(zeph, res))
 
 def decode_unicode_byte_strings(zeph):
     for field in zeph.keys():
@@ -304,8 +294,7 @@ def zephyr_subscribe_autoretry(sub):
         except IOError:
             # Probably a SERVNAK from the zephyr server, but print the
             # traceback just in case it's something else
-            traceback.print_exc()
-            print "Error subscribing to personals; retrying."
+            logger.exception("Error subscribing to personals (retrying).  Traceback:")
             time.sleep(1)
 
 def zephyr_to_humbug(options):
@@ -335,16 +324,15 @@ def zephyr_to_humbug(options):
                         zeph["stream"] = zeph["class"]
                     if "instance" in zeph:
                         zeph["subject"] = zeph["instance"]
-                    print "%s: zephyr=>humbug: sending saved message to %s from %s..." % \
-                        (datetime.datetime.now(), zeph.get('stream', zeph.get('recipient')),
-                         zeph['sender'])
+                    logger.info("sending saved message to %s from %s..." %
+                                (zeph.get('stream', zeph.get('recipient')),
+                                 zeph['sender']))
                     send_humbug(zeph)
                 except:
-                    print >>sys.stderr, 'Could not send saved zephyr'
-                    traceback.print_exc()
+                    logger.exception("Could not send saved zephyr:")
                     time.sleep(2)
 
-    print "%s: zephyr=>humbug: Starting receive loop." % (datetime.datetime.now(),)
+    logger.info("Starting receive loop.")
 
     if options.log_path is not None:
         with open(options.log_path, 'a') as log:
@@ -355,15 +343,13 @@ def zephyr_to_humbug(options):
 def forward_to_zephyr(message):
     zsig = u"%s@(@color(blue))" % (username_to_fullname(message["sender_email"]),)
     if ' dot ' in zsig:
-        print "%s: humbug=>zephyr: ERROR!  Couldn't compute zsig for %s!" % \
-            (datetime.datetime.now(), message["sender_email"])
+        logger.error("Error computing zsig for %s!" % (message["sender_email"],))
         return
 
     wrapped_content = "\n".join("\n".join(textwrap.wrap(line))
             for line in message["content"].split("\n"))
 
-    print "%s: humbug=>zephyr: Forwarding message from %s" % \
-        (datetime.datetime.now(), message["sender_email"])
+    logger.info("Forwarding message from %s" %  (message["sender_email"],))
     if message['type'] == "stream":
         zephyr_class = message["display_recipient"]
         instance = message["subject"]
@@ -393,8 +379,8 @@ def forward_to_zephyr(message):
                             for user in message["display_recipient"]])
 
     if options.test_mode:
-        print zwrite_args
-        print wrapped_content.encode("utf-8")
+        logger.debug("Would have forwarded: %s\n%s" %
+                     (zwrite_args, wrapped_content.encode("utf-8")))
         return
 
     p = subprocess.Popen(zwrite_args, stdin=subprocess.PIPE,
@@ -414,19 +400,19 @@ def maybe_forward_to_zephyr(message):
             return
         timestamp_now = datetime.datetime.now().strftime("%s")
         if float(message["timestamp"]) < float(timestamp_now) - 15:
-            print "%s humbug=>zephyr: Alert!  Out of order message: %s < %s" % \
-                (datetime.datetime.now(), message["timestamp"], timestamp_now)
+            logger.warning("Skipping out of order message: %s < %s" %
+                           (message["timestamp"], timestamp_now))
             return
         try:
             forward_to_zephyr(message)
         except:
             # Don't let an exception forwarding one message crash the
             # whole process
-            traceback.print_exc()
+            logger.exception("Error forwarding message:")
 
 def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
-    print "%s: humbug=>zephyr: Starting syncing messages." % (datetime.datetime.now(),)
+    logger.info("Starting syncing messages.")
     humbug_client.call_on_each_message(maybe_forward_to_zephyr,
                                        options={"mirror": 'zephyr_mirror'})
 
@@ -555,6 +541,24 @@ def parse_zephyr_subs(verbose=False):
         zephyr_subscriptions.add((cls.strip(), instance.strip(), recipient.strip()))
     return zephyr_subscriptions
 
+def configure_logger(direction_name):
+    if options.forward_class_messages:
+        if options.test_mode:
+            log_file = "/home/humbug/test-mirror-log"
+        else:
+            log_file = "/home/humbug/mirror-log"
+    else:
+        log_file = "/tmp/humbug-log." + options.user
+    logger = logging.getLogger(__name__)
+    log_format = "%(asctime)s " + direction_name + ": %(message)s"
+    formatter = logging.Formatter(log_format)
+    logging.basicConfig(format=log_format)
+    logger.setLevel(logging.DEBUG)
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    return logger
+
 if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option('--forward-class-messages',
@@ -675,6 +679,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
     child_pid = os.fork()
     if child_pid == 0:
         # Run the humbug => zephyr mirror in the child
+        logger = configure_logger("humbug=>zephyr")
         humbug_to_zephyr(options)
         sys.exit(0)
 
@@ -688,4 +693,5 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
         except IOError:
             traceback.print_exc()
             time.sleep(1)
+    logger = configure_logger("zephyr=>humbug")
     zephyr_to_humbug(options)
