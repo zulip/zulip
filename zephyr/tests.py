@@ -123,9 +123,9 @@ class PublicURLTest(TestCase):
                       "/api/v1/send_message",
                       "/api/v1/fetch_api_key",
                       "/json/fetch_api_key",
-                      "/json/send_message/",
+                      "/json/send_message",
                       "/json/update_pointer",
-                      "/json/settings/change/",
+                      "/json/settings/change",
                       "/json/subscriptions/list",
                       "/json/subscriptions/remove",
                       "/json/subscriptions/exists",
@@ -333,11 +333,11 @@ class MessagePOSTTest(AuthedTestCase):
         successful.
         """
         self.login("hamlet@humbughq.com")
-        result = self.client.post("/json/send_message/", {"type": "stream",
-                                                          "stream": "Verona",
-                                                          "client": "test suite",
-                                                          "content": "Test message",
-                                                          "subject": "Test subject"})
+        result = self.client.post("/json/send_message", {"type": "stream",
+                                                         "stream": "Verona",
+                                                         "client": "test suite",
+                                                         "content": "Test message",
+                                                         "subject": "Test subject"})
         self.assert_json_success(result)
 
     def test_message_to_nonexistent_stream(self):
@@ -346,11 +346,11 @@ class MessagePOSTTest(AuthedTestCase):
         """
         self.login("hamlet@humbughq.com")
         self.assertFalse(Stream.objects.filter(name="nonexistent_stream"))
-        result = self.client.post("/json/send_message/", {"type": "stream",
-                                                          "stream": "nonexistent_stream",
-                                                          "client": "test suite",
-                                                          "content": "Test message",
-                                                          "subject": "Test subject"})
+        result = self.client.post("/json/send_message", {"type": "stream",
+                                                         "stream": "nonexistent_stream",
+                                                         "client": "test suite",
+                                                         "content": "Test message",
+                                                         "subject": "Test subject"})
         self.assert_json_error(result, "Stream does not exist")
 
     def test_personal_message(self):
@@ -358,10 +358,10 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a personal message to a valid username is successful.
         """
         self.login("hamlet@humbughq.com")
-        result = self.client.post("/json/send_message/", {"type": "personal",
-                                                          "content": "Test message",
-                                                          "client": "test suite",
-                                                          "recipient": "othello@humbughq.com"})
+        result = self.client.post("/json/send_message", {"type": "personal",
+                                                         "content": "Test message",
+                                                         "client": "test suite",
+                                                         "recipient": "othello@humbughq.com"})
         self.assert_json_success(result)
 
     def test_personal_message_to_nonexistent_user(self):
@@ -369,10 +369,10 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a personal message to an invalid email returns error JSON.
         """
         self.login("hamlet@humbughq.com")
-        result = self.client.post("/json/send_message/", {"type": "personal",
-                                                          "content": "Test message",
-                                                          "client": "test suite",
-                                                          "recipient": "nonexistent"})
+        result = self.client.post("/json/send_message", {"type": "personal",
+                                                         "content": "Test message",
+                                                         "client": "test suite",
+                                                         "recipient": "nonexistent"})
         self.assert_json_error(result, "Invalid email 'nonexistent'")
 
     def test_invalid_type(self):
@@ -380,10 +380,10 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a message of unknown type returns error JSON.
         """
         self.login("hamlet@humbughq.com")
-        result = self.client.post("/json/send_message/", {"type": "invalid type",
-                                                          "content": "Test message",
-                                                          "client": "test suite",
-                                                          "recipient": "othello@humbughq.com"})
+        result = self.client.post("/json/send_message", {"type": "invalid type",
+                                                         "content": "Test message",
+                                                         "client": "test suite",
+                                                         "recipient": "othello@humbughq.com"})
         self.assert_json_error(result, "Invalid message type")
 
 class DummyHandler(object):

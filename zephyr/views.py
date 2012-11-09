@@ -787,7 +787,7 @@ def get_activity(request):
 
     website_activity = {}
     add_activity(website_activity, "/json/get_updates", "get_updates", "website")
-    add_activity(website_activity, "/json/send_message/", "send_message", "website")
+    add_activity(website_activity, "/json/send_message", "send_message", "website")
     add_activity(website_activity, "/json/update_pointer", "update_pointer", "website")
 
     mirror_activity = {}
