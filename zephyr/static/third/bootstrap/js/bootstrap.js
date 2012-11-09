@@ -1811,6 +1811,8 @@
 
       switch(e.keyCode) {
         case 9: // tab
+          break
+
         case 13: // enter
         case 27: // escape
           e.preventDefault()
@@ -1847,6 +1849,8 @@
           break
 
         case 9: // tab
+          break
+
         case 13: // enter
           if (!this.shown) return
           this.select()
