@@ -8,6 +8,7 @@ from django.template import RequestContext
 from django.utils.timezone import utc, now
 from django.core.exceptions import ValidationError
 from django.contrib.auth.views import login as django_login_page
+from django.db.models import Q
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     do_add_subscription, do_remove_subscription, do_change_password, \
@@ -215,8 +216,23 @@ def api_get_old_messages(request, user_profile, apply_markdown=POST(default=Fals
 def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_int),
                              num_before = POST(converter=to_non_negative_int),
                              num_after = POST(converter=to_non_negative_int),
+                             narrow = POST('narrow', converter=simplejson.loads),
                              user_profile=None, apply_markdown=True):
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
+
+    if 'recipient_id' in narrow:
+        query = query.filter(recipient_id = narrow['recipient_id'])
+
+    if 'one_on_one_email' in narrow:
+        query = query.filter(recipient__type=Recipient.PERSONAL)
+        recipient_user = UserProfile.objects.get(user__email = narrow['one_on_one_email'])
+        recipient = Recipient.objects.get(type=Recipient.PERSONAL, type_id=recipient_user.id)
+        query = query.filter(Q(sender__user__email=narrow['one_on_one_email']) | Q(recipient=recipient))
+    elif 'type' in narrow and (narrow['type'] == "huddle" or narrow['type'] == "all_huddles"):
+        query = query.filter(Q(recipient__type=Recipient.PERSONAL) | Q(recipient__type=Recipient.HUDDLE))
+
+    if 'subject' in narrow:
+        query = query.filter(subject = narrow['subject'])
 
     # We add 1 to the number of messages requested to ensure that the
     # resulting list always contains the anchor message

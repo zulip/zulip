@@ -441,7 +441,10 @@ function add_message_metadata(dummy, message) {
     message_dict[message.id] = message;
 }
 
-function add_messages(messages, where) {
+function add_messages(messages, where, add_to_home) {
+    if (add_to_home === undefined) {
+        add_to_home = true;
+    }
     if (!messages)
         return;
 
@@ -466,7 +469,8 @@ function add_messages(messages, where) {
         add_to_table(messages, 'zfilt', narrow.predicate(), where);
 
     // Even when narrowed, add messages to the home view so they exist when we un-narrow.
-    add_to_table(messages, 'zhome', function () { return true; }, where);
+    if (add_to_home)
+        add_to_table(messages, 'zhome', function () { return true; }, where);
 
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
@@ -567,18 +571,29 @@ function get_updates() {
     });
 }
 
-function load_old_messages(anchor, num_before, num_after, cont) {
+function load_old_messages(anchor, num_before, num_after, cont, because_button) {
+    var narrow_str;
+    if (because_button === undefined) {
+        because_button = false;
+    }
+    if (because_button && narrow.active()) {
+        narrow_str = JSON.stringify(narrow.data());
+    } else {
+        narrow_str = JSON.stringify({});
+    }
+
     $.ajax({
         type:     'POST',
         url:      '/json/get_old_messages',
-        data:     {anchor: anchor, num_before: num_before, num_after: num_after},
+        data:     {anchor: anchor, num_before: num_before, num_after: num_after,
+                   narrow: narrow_str},
         dataType: 'json',
         success: function (data) {
             if (! data) {
                 // The server occationally returns no data during a
                 // restart.  Ignore those responses and try again
                 setTimeout(function () {
-                    load_old_messages(anchor, num_before, num_after, cont);
+                    load_old_messages(anchor, num_before, num_after, cont, because_button);
                 }, 0);
                 return;
             }
@@ -592,7 +607,8 @@ function load_old_messages(anchor, num_before, num_after, cont) {
                 } else {
                     where = "top";
                 }
-                add_messages(data.messages, where);
+                var add_to_home = !narrow.active() || !because_button;
+                add_messages(data.messages, where, add_to_home);
             }
 
             if (cont !== undefined) {
@@ -603,7 +619,7 @@ function load_old_messages(anchor, num_before, num_after, cont) {
             // We might want to be more clever here
             $('#connection-error').show();
             setTimeout(function () {
-                load_old_messages(anchor, num_before, num_after, cont);
+                load_old_messages(anchor, num_before, num_after, cont, because_button);
             }, 5000);
         }
     });
@@ -660,7 +676,7 @@ function load_more_messages() {
                           if (messages.length !== batch_size + 1) {
                               $('#load_more').hide();
                           }
-                      });
+                      }, true);
 }
 
 var watchdog_time = $.now();

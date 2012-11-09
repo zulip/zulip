@@ -8,33 +8,39 @@ var persistent_message_id = 0;
 // For narrowing based on a particular message
 var target_id = 0;
 
-// Narrowing predicate, or 'false' for the home view.
-var narrowed = false;
-
-// What sort of narrowing is currently active
-var narrow_type = '';
+var narrowdata = false;
+var filter_function = false;
 
 exports.active = function () {
     // Cast to bool
-    return !!narrowed;
+    return !!narrowdata;
 };
 
 exports.predicate = function () {
-    if (narrowed) {
-        return narrowed;
+    if (filter_function) {
+        return filter_function;
     } else {
         return function () { return true; };
     }
 };
 
 exports.narrowing_type = function () {
-    return narrow_type;
+    if (narrowdata) {
+        return narrowdata.type;
+    } else {
+        return '';
+    }
 };
 
-function do_narrow(bar, filter_function) {
+exports.data = function () {
+    return narrowdata;
+};
+
+function do_narrow(new_narrow, bar, new_filter) {
     var was_narrowed = exports.active();
 
-    narrowed = filter_function;
+    narrowdata = new_narrow;
+    filter_function = new_filter;
 
     // Your pointer isn't changed when narrowed.
     if (! was_narrowed) {
@@ -53,7 +59,6 @@ function do_narrow(bar, filter_function) {
 
     $("#show_all_messages").removeAttr("disabled");
     $(".narrowed_to_bar").show();
-    $("#loading_control").hide();
     $("#top_narrowed_whitespace").show();
     $("#main_div").addClass("narrowed_view");
     $("#searchbox").addClass("narrowed_view");
@@ -85,8 +90,8 @@ exports.target = function (id) {
 };
 
 exports.all_huddles = function () {
-    narrow_type = "all_huddles";
-    do_narrow({icon: 'user', description: 'You and anyone else'}, function (other) {
+    var new_narrow = {type: "all_huddles"};
+    do_narrow(new_narrow, {icon: 'user', description: 'You and anyone else'}, function (other) {
         return other.type === "personal" || other.type === "huddle";
     });
 };
@@ -100,13 +105,14 @@ exports.by_subject = function () {
         return;
     }
 
-    narrow_type = "subject";
+    var new_narrow = {type: "subject", recipient_id: original.recipient_id,
+                      subject: original.subject};
     var bar = {
         icon:        'bullhorn',
         description: original.display_recipient,
         subject:     original.subject
     };
-    do_narrow(bar, function (other) {
+    do_narrow(new_narrow, bar, function (other) {
         return ((other.type === 'stream') &&
                 same_stream_and_subject(original, other));
     });
@@ -119,9 +125,9 @@ exports.by_recipient = function () {
     switch (message.type) {
     case 'personal':
         // Narrow to personals with a specific user
-        narrow_type = "huddle";
+        var new_narrow = {type: "huddle", one_on_one_email: message.reply_to};
         bar = {icon: 'user', description: "You and " + message.display_reply_to};
-        do_narrow(bar, function (other) {
+        do_narrow(new_narrow, bar, function (other) {
             return (other.type === 'personal') &&
                 (((other.display_recipient.email === message.display_recipient.email)
                     && (other.sender_email === message.sender_email)) ||
@@ -131,18 +137,18 @@ exports.by_recipient = function () {
         break;
 
     case 'huddle':
-        narrow_type = "huddle";
+        new_narrow = {type: "huddle", recipient_id: message.recipient_id};
         bar = {icon: 'user', description: "You and " + message.display_reply_to};
-        do_narrow(bar, function (other) {
+        do_narrow(new_narrow, bar, function (other) {
             return (other.type === "personal" || other.type === "huddle")
                 && other.reply_to === message.reply_to;
         });
         break;
 
     case 'stream':
-        narrow_type = "stream";
+        new_narrow = {type: "stream", recipient_id: message.recipient_id};
         bar = {icon: 'bullhorn', description: message.display_recipient};
-        do_narrow(bar, function (other) {
+        do_narrow(new_narrow, bar, function (other) {
             return (other.type === 'stream' &&
                     message.recipient_id === other.recipient_id);
         });
@@ -151,16 +157,16 @@ exports.by_recipient = function () {
 };
 
 exports.show_all_messages = function () {
-    if (!narrowed) {
+    if (!narrowdata) {
         return;
     }
-    narrowed = false;
-    narrow_type = "";
+    narrowdata = false;
+    filter_function = false;
 
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
     $(".narrowed_to_bar").hide();
-    $("#loading_control").show();
+    $("#load_more").show();
     $("#top_narrowed_whitespace").hide();
     $("#main_div").removeClass('narrowed_view');
     $("#searchbox").removeClass('narrowed_view');
