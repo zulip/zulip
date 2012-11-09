@@ -1811,7 +1811,8 @@
 
       switch(e.keyCode) {
         case 9: // tab
-          break
+          if (!this.options.tabSelects)
+            break
 
         case 13: // enter
         case 27: // escape
@@ -1849,7 +1850,8 @@
           break
 
         case 9: // tab
-          break
+          if (!this.options.tabSelects)
+            break
 
         case 13: // enter
           if (!this.shown) return
@@ -1907,6 +1909,7 @@
   , menu: '<ul class="typeahead dropdown-menu"></ul>'
   , item: '<li><a href="#"></a></li>'
   , minLength: 1
+  , tabSelects: true
   }
 
   $.fn.typeahead.Constructor = Typeahead
