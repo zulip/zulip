@@ -407,6 +407,7 @@ class POSTRequestMock(object):
         self.user = user
         self._tornado_handler = DummyHandler(assert_callback)
         self.session = DummySession()
+        self.META = {'PATH_INFO': 'test'}
 
 class GetUpdatesTest(AuthedTestCase):
     fixtures = ['messages.json']
