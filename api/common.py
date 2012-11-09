@@ -21,7 +21,7 @@ class HumbugAPI():
         self.retry_on_errors = retry_on_errors
         self.client_name = client
 
-    def do_api_query(self, request, url):
+    def do_api_query(self, request, url, longpolling = False):
         had_error_retry = False
         request["email"] = self.email
         request["api-key"] = self.api_key
@@ -29,7 +29,8 @@ class HumbugAPI():
         request["failures"] = 0
         while True:
             try:
-                res = requests.post(urlparse.urljoin(self.base_url, url), data=request, verify=True)
+                res = requests.post(urlparse.urljoin(self.base_url, url), data=request,
+                                    verify=True, timeout=55)
 
                 # On 50x errors, try again after a short sleep
                 if str(res.status_code).startswith('5') and self.retry_on_errors:
@@ -43,6 +44,14 @@ class HumbugAPI():
                         sys.stdout.flush()
                     time.sleep(1)
                     continue
+            except requests.exceptions.Timeout:
+                if longpolling:
+                    # When longpolling, we expect the timeout to fire,
+                    # and the correct response is to just retry
+                    continue
+                else:
+                    return {'msg': "Connection error:\n%s" % traceback.format_exc(),
+                            "result": "connection-error"}
             except requests.exceptions.ConnectionError:
                 if self.retry_on_errors:
                     if self.verbose:
@@ -73,7 +82,8 @@ class HumbugAPI():
         return self.do_api_query(request, "/api/v1/send_message")
 
     def get_messages(self, request = {}):
-        return self.do_api_query(request, "/api/v1/get_messages")
+        return self.do_api_query(request, "/api/v1/get_messages",
+                                 longpolling=True)
 
     def get_profile(self, request = {}):
         return self.do_api_query(request, "/api/v1/get_profile")
