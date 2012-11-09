@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+import subprocess
+import time
+import sys
+import os
+from os import path
+
+os.chdir(path.join(path.dirname(__file__), '../../..'))
+
+subprocess.check_call('zephyr/tests/generate-fixtures')
+
+log = open('zephyr/tests/frontend/server.log', 'w')
+
+# Run this not through the shell, so that we have the actual PID.
+server = subprocess.Popen(('tools/run-dev.py', '--test'),
+                          stdout=log, stderr=log)
+
+# Give the server time to start up.
+time.sleep(2)
+
+ret = subprocess.call(
+    'zephyr/tests/frontend/casperjs/bin/casperjs zephyr/tests/frontend/tests.js',
+    shell=True)
+
+server.terminate()
+
+sys.exit(ret)
