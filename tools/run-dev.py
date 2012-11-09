@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import optparse
 import subprocess
+import signal
 import os
 from os import path
 
@@ -40,10 +41,13 @@ proxy_host = 'localhost:%d' % (proxy_port,)
 
 os.chdir(path.join(path.dirname(__file__), '..'))
 
-procs = []
+# Set up a new process group, so that we can later kill run{server,tornado}
+# and all of the processes they spawn.
+os.setpgrp()
+
 for cmd in ['python manage.py runserver  %s localhost:%d' % (manage_args, django_port),
             'python manage.py runtornado %s localhost:%d' % (manage_args, tornado_port)]:
-    procs.append(subprocess.Popen(cmd, shell=True))
+    subprocess.Popen(cmd, shell=True)
 
 class Resource(resource.Resource):
     def getChild(self, name, request):
@@ -59,5 +63,5 @@ reactor.listenTCP(proxy_port, server.Site(Resource()), interface='127.0.0.1')
 try:
     reactor.run()
 finally:
-    for proc in procs:
-        proc.terminate()
+    # Kill everything in our process group.
+    os.killpg(0, signal.SIGTERM)
