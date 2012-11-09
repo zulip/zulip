@@ -44,7 +44,7 @@ def to_zephyr_username(humbug_username):
 def different_paragraph(line, next_line):
     words = next_line.split()
     return (len(line + " " + words[0]) < len(next_line) * 0.8 or
-            len(line + " " + words[0]) < 60 or
+            len(line + " " + words[0]) < 50 or
             len(line) < len(words[0]))
 
 # Linewrapping algorithm based on:
