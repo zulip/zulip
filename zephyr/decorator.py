@@ -170,7 +170,8 @@ def has_request_variables(view_func):
                 try:
                     val = param.converter(val)
                 except:
-                    return json_error("Bad value for '%s'" % (param.post_var_name,))
+                    return json_error("Bad value for '%s': %s"
+                                      % (param.post_var_name, val))
             kwargs[param.func_var_name] = val
 
         return view_func(request, *args, **kwargs)
