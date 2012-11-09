@@ -110,7 +110,8 @@ exports.initialize = function () {
             return [];
         },
         items: 3,
-        highlighter: composebox_typeahead_highlighter
+        highlighter: composebox_typeahead_highlighter,
+        tabSelects: false
     });
     $( "#huddle_recipient" ).typeahead({
         source: function (query, process) {
