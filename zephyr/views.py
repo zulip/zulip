@@ -240,7 +240,7 @@ def json_get_updates(request, user_profile, handler):
 @asynchronous
 @authenticated_api_view
 @has_request_variables
-def api_get_messages(request, user_profile, handler, client_id=POST):
+def api_get_messages(request, user_profile, handler, client_id=POST(default=None)):
     return get_updates_backend(request, user_profile, handler, client_id,
                                apply_markdown=(request.POST.get("apply_markdown") is not None),
                                mirror=request.POST.get("mirror"))
