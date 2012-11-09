@@ -299,7 +299,7 @@ class PointerTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"foo": 1})
-        self.assert_json_error(result, "Missing pointer")
+        self.assert_json_error(result, "Missing 'pointer' argument")
         self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
 
     def test_invalid_pointer(self):
@@ -310,7 +310,7 @@ class PointerTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": "foo"})
-        self.assert_json_error(result, "Invalid pointer: must be an integer")
+        self.assert_json_error(result, "Bad value for 'pointer': foo")
         self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
 
     def test_pointer_out_of_range(self):
