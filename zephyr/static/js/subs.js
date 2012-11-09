@@ -26,7 +26,7 @@ function add_to_stream_list(stream_name) {
         stream_sub_row = $('#subscriptions_table').find('button[value="' + stream_name + '"]');
         if (stream_sub_row.length) {
             stream_sub_row.text("Unsubscribe")
-                .removeClass("btn-link")
+                .removeClass("btn-primary")
                 .unbind('click');
         } else {
             $('#subscriptions_table').prepend(templates.subscription({subscription: stream_name}));
@@ -130,8 +130,8 @@ $(function () {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr, form) {
             var name = $.parseJSON(xhr.responseText).data;
-            $('#subscriptions_table').find('button[value="' + name + '"]').text("Undo")
-                .addClass("btn-link")
+            $('#subscriptions_table').find('button[value="' + name + '"]').text("Subscribe")
+                .addClass("btn-primary")
                 .click(function (e) {
                     e.preventDefault();
                     ajaxSubscribe(name);

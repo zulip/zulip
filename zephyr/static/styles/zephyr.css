@@ -458,10 +458,6 @@ table.floating_recipient {
   height: 300px;
 }
 
-#subscriptions-status {
-    margin: 0;
-}
-
 #home-error {
     display: none;
 }
