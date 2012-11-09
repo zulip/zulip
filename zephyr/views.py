@@ -279,13 +279,9 @@ def format_delayed_updates_response(request=None, user_profile=None,
     return format_updates_response(new_pointer=pointer,
                                    update_types=update_types, **kwargs)
 
-@has_request_variables
-def return_messages_immediately(request, user_profile, client_id,
-                                last = POST(converter=int, default=None),
-                                failures = POST(converter=int),
-                                client_server_generation = POST(whence='server_generation', default=None),
-                                client_reload_pending = POST(whence='server_generation', default=None),
-                                **kwargs):
+def return_messages_immediately(user_profile, client_id, last,
+                                failures, client_server_generation,
+                                client_reload_pending, **kwargs):
     if last is None:
         # When an API user is first querying the server to subscribe,
         # there's no reason to reply immediately.
@@ -368,9 +364,16 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
         handler.set_status(400)
     handler.finish(response)
 
-def get_updates_backend(request, user_profile, handler, client_id, **kwargs):
-    resp = return_messages_immediately(request, user_profile,
-                                       client_id, **kwargs)
+@has_request_variables
+def get_updates_backend(request, user_profile, handler, client_id,
+                        last = POST(converter=int, default=None),
+                        failures = POST(converter=int),
+                        client_server_generation = POST(whence='server_generation', default=None),
+                        client_reload_pending = POST(whence='server_generation', default=None),
+                        **kwargs):
+    resp = return_messages_immediately(user_profile, client_id, last, failures,
+                                       client_server_generation,
+                                       client_reload_pending, **kwargs)
     if resp is not None:
         send_with_safety_check(resp, handler, **kwargs)
         return
