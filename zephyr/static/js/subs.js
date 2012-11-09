@@ -85,14 +85,14 @@ exports.have = function (stream_name) {
     return (stream_set[stream_name.toLowerCase()] === true);
 };
 
-function ajaxSubscribe(streams) {
+function ajaxSubscribe(stream) {
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/add",
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        data: {"streams": JSON.stringify([streams]) },
+        data: {"streams": JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
-            if ($("#streams").val() === streams) {
+            if ($("#streams").val() === stream) {
                 $("#streams").val("");
             }
             var name, res = $.parseJSON(xhr.responseText);
