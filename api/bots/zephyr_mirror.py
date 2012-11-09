@@ -25,7 +25,7 @@ def to_zephyr_username(humbug_username):
     (user, realm) = humbug_username.split("@")
     if "|" not in user:
         return user.lower() + "@ATHENA.MIT.EDU"
-    match_user = re.match(r'([a-zA-Z0-9_]+)\|(.+)@mit\.edu', user)
+    match_user = re.match(r'([a-zA-Z0-9_]+)\|(.+)', user)
     if not match_user:
         raise Exception("Could not parse Zephyr realm for cross-realm user %s" % (humbug_username,))
     return match_user.group(1).lower() + "@" + match_user.group(2).upper()
