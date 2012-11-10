@@ -92,6 +92,16 @@ function composebox_typeahead_highlighter(item) {
     return result;
 }
 
+function handleEnter(e, nextFocus) {
+    var code = e.keyCode || e.which;
+    if (code === 13) { // Enter key
+        // Prevent the form from submitting
+        e.preventDefault();
+        focus_on(nextFocus);
+        return false;
+    }
+}
+
 exports.initialize = function () {
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({
@@ -101,6 +111,11 @@ exports.initialize = function () {
         items: 3,
         highlighter: composebox_typeahead_highlighter
     });
+
+    $("#stream").keypress(function(e) {handleEnter(e, "subject")});
+    $("#subject").keypress(function(e) {handleEnter(e, "new_message_content")});
+    $("#huddle_recipient").keypress(function(e) {handleEnter(e, "new_message_content")});
+
     $( "#subject" ).typeahead({
         source: function (query, process) {
             var stream_name = $("#stream").val();
