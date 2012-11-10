@@ -100,7 +100,7 @@ function resizehandler(e) {
     var sidebar_nav = $(".sidebar-nav");
     var composebox = $("#compose");
     var top_statusbar = $("#top_statusbar");
-    if (viewport.width() <= 767) {
+    if (window.innerWidth <= 767) {
         sidebar.removeClass('nav-stacked');
 
         var space_taken_up_by_navbar = sidebar_nav.outerHeight(true);
