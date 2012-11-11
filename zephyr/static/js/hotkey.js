@@ -22,10 +22,6 @@ var narrow_hotkeys = {
 // declare them ahead of time to make JSLint happy.
 var process_key_in_input, process_compose_hotkey;
 
-function simulate_keydown(keycode) {
-    $(document).trigger($.Event('keydown', {keyCode: keycode}));
-}
-
 function process_hotkey(e) {
     var code = e.which;
     var next_message;
