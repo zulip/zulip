@@ -2,16 +2,6 @@ var hotkeys = (function () {
 
 var exports = {};
 
-var pressed_keys = {};
-
-function num_pressed_keys() {
-    var size = 0, key;
-    $.each(pressed_keys, function () {
-        size++;
-    });
-    return size;
-}
-
 var directional_hotkeys = {
     40:  rows.next_visible,  // down arrow
     106: rows.next_visible,  // 'j'
@@ -72,14 +62,10 @@ function process_hotkey(e) {
         return process_hotkey;
     }
 
-    if (num_pressed_keys() > 1 &&
-            // "shift"             "caps lock"
-            !((pressed_keys[16] || pressed_keys[20]) &&
-                num_pressed_keys() === 2)) {
-        // If you are already holding down another key, none of these
-        // actions apply. However, if you are holding down exactly one
-        // other key and that key is shift or caps lock, we still want
-        // to continue processing.
+    // We're in the middle of a combo; stop processing because
+    // we want the browser to handle it (to avoid breaking
+    // things like Ctrl-C or Command-C for copy).
+    if (e.metaKey || e.ctrlKey) {
         return false;
     }
 
@@ -163,28 +149,6 @@ process_compose_hotkey = function (e) {
 exports.set_compose = function () {
     current_key_handler = process_compose_hotkey;
 };
-
-$(document).keydown(function (e) {
-    pressed_keys[e.which] = true;
-    if ((num_pressed_keys() >= 2) &&
-        (48 <= e.which && e.which <= 90) &&
-        (pressed_keys[17] === true ||
-         pressed_keys[91] === true)) {
-        // If the user typed 2 or more characters, one of which was
-        // ctrl(17) or command(91), and ending with an alphanumeric
-        // character (between 48 and 90), this is probably a browser
-        // keyboard shortcut (example: ctrl-f in Chrome).  Browsers
-        // will often not trigger a keyup event after processing those
-        // shortcuts and we don't have any hotkeys using these
-        // characters, so just ignore such key presses for our
-        // accounting.
-        pressed_keys = {};
-    }
-});
-
-$(document).keyup(function (e) {
-    pressed_keys = {};
-});
 
 /* We register both a keydown and a keypress function because
    we want to intercept pgup/pgdn, escape, etc, and process them
