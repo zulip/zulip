@@ -112,9 +112,9 @@ exports.initialize = function () {
         highlighter: composebox_typeahead_highlighter
     });
 
-    $("#stream").keypress(function(e) {handleEnter(e, "subject")});
-    $("#subject").keypress(function(e) {handleEnter(e, "new_message_content")});
-    $("#huddle_recipient").keypress(function(e) {handleEnter(e, "new_message_content")});
+    $("#stream").keypress(function(e) {handleEnter(e, "subject");});
+    $("#subject").keypress(function(e) {handleEnter(e, "new_message_content");});
+    $("#huddle_recipient").keypress(function(e) {handleEnter(e, "new_message_content");});
 
     $( "#subject" ).typeahead({
         source: function (query, process) {

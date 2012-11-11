@@ -40,7 +40,7 @@ var globals =
     + ' composebox_typeahead'
 
     // ui.js
-    + ' register_onclick hide_email show_email'
+    + ' register_onclick hide_email show_email focus_on'
     + ' report_error report_success report_message clicking mouse_moved'
     + ' userinfo_currently_popped update_gravatars gravatar_stamp'
     + ' register_user_info_mouseover register_user_info_mouseout'
