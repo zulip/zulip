@@ -36,7 +36,8 @@ function simulate_keydown(keycode) {
     $(document).trigger($.Event('keydown', {keyCode: keycode}));
 }
 
-function process_hotkey(code) {
+function process_hotkey(e) {
+    var code = e.which;
     var next_message;
 
     // Disable hotkeys on settings page etc.
@@ -46,7 +47,7 @@ function process_hotkey(code) {
 
     // Disable hotkeys when in an input, textarea, or send button
     if ($('input:focus,textarea:focus,#compose-send-button:focus').length > 0) {
-        return process_key_in_input(code);
+        return process_key_in_input(e);
     }
 
     if (directional_hotkeys.hasOwnProperty(code)) {
@@ -132,7 +133,8 @@ function process_hotkey(code) {
    decline to handle the event. */
 var current_key_handler = process_hotkey;
 
-process_key_in_input = function (code) {
+process_key_in_input = function (e) {
+    var code = e.which;
     if (code === 27) {
         // If the user hit the escape key, cancel the current compose
         compose.cancel();
@@ -146,7 +148,8 @@ process_key_in_input = function (code) {
     return false;
 };
 
-process_compose_hotkey = function (code) {
+process_compose_hotkey = function (e) {
+    var code = e.which;
     if (code === 9) { // Tab: toggles between stream and huddle compose tabs.
         compose.toggle_mode();
         return process_compose_hotkey;
@@ -154,7 +157,7 @@ process_compose_hotkey = function (code) {
     // Process the first non-tab character and everything after it
     // like any other keys typed in the input box
     current_key_handler = process_hotkey;
-    return process_hotkey(code);
+    return process_hotkey(e);
 };
 
 exports.set_compose = function () {
@@ -194,7 +197,7 @@ $(document).keyup(function (e) {
    instead just let keypress go for it. */
 
 function down_or_press(event) {
-    var result = current_key_handler(event.which);
+    var result = current_key_handler(event);
     if (result) {
         current_key_handler = result;
         event.preventDefault();
