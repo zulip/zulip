@@ -362,8 +362,7 @@ function add_to_table(messages, table_name, filter_function, where) {
         row.find('.message_content a').each(function (index, link) {
             link = $(link);
             link.attr('target',  '_blank')
-                .attr('title',   link.attr('href'))
-                .attr('onclick', 'event.cancelBubble = true;'); // would a closure work here?
+                .attr('title',   link.attr('href'));
         });
     });
 

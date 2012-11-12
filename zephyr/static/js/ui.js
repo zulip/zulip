@@ -7,6 +7,18 @@ var gravatar_stamp = 1;
 
 function register_onclick(message_row, message_id) {
     message_row.find(".messagebox").click(function (e) {
+        if ($(e.target).is("a")) {
+            // If this click came from a hyperlink, don't trigger the
+            // reply action.  The simple way of doing this is simply
+            // to call e.stopPropagation() from within the link's
+            // click handler.
+            //
+            // Unfortunately, on Firefox, this breaks Ctrl-click and
+            // Shift-click, because those are (apparently) implemented
+            // by adding an event listener on link clicks, and
+            // stopPropagation prevents them from being called.
+            return;
+        }
         if (!(clicking && mouse_moved)) {
             // Was a click (not a click-and-drag).
             select_message_by_id(message_id);
