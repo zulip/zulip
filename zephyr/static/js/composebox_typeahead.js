@@ -92,17 +92,70 @@ function composebox_typeahead_highlighter(item) {
     return result;
 }
 
-function handleEnter(e, nextFocus) {
+// nextFocus is set on a keydown event to indicate where we should focus on keyup.
+// We can't focus at the time of keydown because we need to wait for typeahead.
+// And we can't compute where to focus at the time of keyup because only the keydown
+// has reliable information about whether it was a tab or a shift+tab.
+var nextFocus = false;
+
+function handle_keydown(e) {
     var code = e.keyCode || e.which;
-    if (code === 13) { // Enter key
-        // Prevent the form from submitting
-        e.preventDefault();
-        focus_on(nextFocus);
+
+    if (code === 13 || (code === 9 && !e.shiftKey)) { // Enter key or tab key
+        if (e.target.id === "stream" || e.target.id === "subject" || e.target.id === "huddle_recipient") {
+            // For enter, prevent the form from submitting
+            // For tab, prevent the focus from changing again
+            e.preventDefault();
+        }
+
+        if (e.target.id === "stream") {
+            nextFocus = "subject";
+        } else if (e.target.id === "subject") {
+            if (code === 13) e.preventDefault();
+            nextFocus = "new_message_content";
+        } else if (e.target.id === "huddle_recipient") {
+            nextFocus = "new_message_content";
+        } else {
+            nextFocus = false;
+        }
+
         return false;
     }
 }
 
+function handle_keyup(e) {
+    var code = e.keyCode || e.which;
+    if (code === 13 || (code === 9 && !e.shiftKey)) { // Enter key or tab key
+        if (nextFocus) {
+            focus_on(nextFocus);
+            nextFocus = false;
+        }
+    }
+}
+
+// http://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
+function select_on_focus(field_id) {
+    $("#" + field_id).focus(function(e) {
+        $("#" + field_id).select().mouseup(function (e) {
+            e.preventDefault();
+            $(this).unbind("mouseup");
+        });
+    });
+}
+
 exports.initialize = function () {
+    select_on_focus("stream");
+    select_on_focus("subject");
+    select_on_focus("huddle_recipient");
+
+    // These handlers are at the "form" level so that they are called after typeahead
+    $("form").keydown(function(e) {
+        handle_keydown(e);
+    });
+    $("form").keyup(function(e) {
+        handle_keyup(e);
+    });
+
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({
         source: function (query, process) {
@@ -111,10 +164,6 @@ exports.initialize = function () {
         items: 3,
         highlighter: composebox_typeahead_highlighter
     });
-
-    $("#stream").keypress(function(e) {handleEnter(e, "subject");});
-    $("#subject").keypress(function(e) {handleEnter(e, "new_message_content");});
-    $("#huddle_recipient").keypress(function(e) {handleEnter(e, "new_message_content");});
 
     $( "#subject" ).typeahead({
         source: function (query, process) {
@@ -126,7 +175,7 @@ exports.initialize = function () {
         },
         items: 3,
         highlighter: composebox_typeahead_highlighter,
-        tabSelects: false
+        tabSkips: true
     });
     $( "#huddle_recipient" ).typeahead({
         source: function (query, process) {
@@ -157,7 +206,8 @@ exports.initialize = function () {
             var email_re = /<[^<]*>$/;
             var email = email_re.exec(item)[0];
             return previous_recipients + email.substring(1, email.length - 1) + ", ";
-        }
+        },
+        stopAdvance: true // Do not advance to the next field on a tab or enter
     });
 
     $( "#huddle_recipient" ).blur(function (event) {
