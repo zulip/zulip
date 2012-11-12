@@ -1811,9 +1811,6 @@
 
       switch(e.keyCode) {
         case 9: // tab
-          if (!this.options.tabSelects)
-            break
-
         case 13: // enter
         case 27: // escape
           e.preventDefault()
@@ -1830,7 +1827,9 @@
           break
       }
 
-      e.stopPropagation()
+      if (this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13)) {
+          e.stopPropagation()
+      }
     }
 
   , keydown: function (e) {
@@ -1850,8 +1849,7 @@
           break
 
         case 9: // tab
-          if (!this.options.tabSelects)
-            break
+          if (this.options.tabSkips) break
 
         case 13: // enter
           if (!this.shown) return
@@ -1867,7 +1865,10 @@
           this.lookup()
       }
 
-      e.stopPropagation()
+      if (this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13)) {
+          e.stopPropagation()
+      }
+
       e.preventDefault()
   }
 
@@ -1909,7 +1910,8 @@
   , menu: '<ul class="typeahead dropdown-menu"></ul>'
   , item: '<li><a href="#"></a></li>'
   , minLength: 1
-  , tabSelects: true
+  , tabSkips: false
+  , stopAdvance: false
   }
 
   $.fn.typeahead.Constructor = Typeahead
