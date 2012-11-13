@@ -174,8 +174,7 @@ exports.initialize = function () {
             return [];
         },
         items: 3,
-        highlighter: composebox_typeahead_highlighter,
-        tabSkips: true
+        highlighter: composebox_typeahead_highlighter
     });
     $( "#private_message_recipient" ).typeahead({
         source: function (query, process) {
