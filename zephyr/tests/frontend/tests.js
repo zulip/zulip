@@ -41,7 +41,7 @@ function get_rendered_messages(table) {
 
 // Send a Humbug message.
 function send_message(type, params) {
-    casper.click('a[href="#'+type+'-message"]');
+    casper.click('#left_bar_compose_' + type + '_button_big');
     casper.fill('form[action^="/json/send_message"]', params);
     casper.click('#compose-send-button');
 }

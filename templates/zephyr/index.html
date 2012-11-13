@@ -146,12 +146,14 @@ var people_list = [
 
                 <div>
                   <button type="button" class="visible-phone btn btn-small phone_new_message_button"
+                          id="left_bar_compose_stream_button_little"
                           onclick="compose.start('stream');"
                           title="New stream message">
                     <i class="icon-bullhorn"></i>
                   </button>
                   <button type="button" class="visible-phone btn btn-small phone_new_message_button"
-                          onclick="compose.start('personal');"
+                          id="left_bar_compose_private_button_little"
+                          onclick="compose.start('private');"
                           title="New private message">
                     <i class="icon-user"></i>
                   </button>
@@ -159,13 +161,15 @@ var people_list = [
               </ul>
               <div class="hidden-phone new_message_button">
                 <button type="button" class="btn btn-large btn-block"
+                        id="left_bar_compose_stream_button_big"
                         onclick="compose.start('stream');">
                   <i class="icon-bullhorn"></i> New stream message
                 </button>
               </div>
               <div class="hidden-phone new_message_button">
                 <button type="button" class="btn btn-large btn-block"
-                        onclick="compose.start('personal');">
+                        id="left_bar_compose_private_button_big"
+                        onclick="compose.start('private');">
                   <i class="icon-user"></i> New private message
                 </button>
               </div>
