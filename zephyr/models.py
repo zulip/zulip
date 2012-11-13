@@ -493,11 +493,11 @@ def do_send_message(message, no_log=False):
         # TODO: Reduce duplication in what we send.
         rendered = { 'text/html':       message.to_dict(apply_markdown=True),
                      'text/x-markdown': message.to_dict(apply_markdown=False) }
-        requests.post(settings.TORNADO_SERVER + '/notify_new_message', data=[
-               ('secret',   settings.SHARED_SECRET),
-               ('message',  message.id),
-               ('rendered', simplejson.dumps(rendered)),
-               ('users',    ','.join(str(user.id) for user in recipients))])
+        requests.post(settings.TORNADO_SERVER + '/notify_new_message', data=dict(
+            secret   = settings.SHARED_SECRET,
+            message  = message.id,
+            rendered = simplejson.dumps(rendered),
+            users    = ','.join(str(user.id) for user in recipients)))
 
 class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile)
