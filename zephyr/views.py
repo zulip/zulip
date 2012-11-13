@@ -463,7 +463,7 @@ def extract_sender(request):
     sender = None
     try:
         if 'sender' in request.POST:
-            sender = {'email': request.POST["sender"],
+            sender = {'email': request.POST["sender"].strip().lower(),
                       'full_name': request.POST["fullname"],
                       'short_name': request.POST["shortname"]}
     except:
