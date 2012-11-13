@@ -431,15 +431,27 @@ def json_send_message(request, user_profile):
 def is_super_user_api(request):
     return request.POST.get("api-key") in ["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]
 
-def already_sent_mirrored_message(request):
-    utc_from_ts = datetime.datetime.utcfromtimestamp
-    req_time = float(request.POST['time'])
-    email = request.POST['sender'].lower()
+def already_sent_mirrored_message(message):
+    if message.recipient.type == Recipient.HUDDLE:
+        # For huddle messages, we use a 10-second window because the
+        # timestamps aren't guaranteed to actually match between two
+        # copies of the same message.
+        time_window = datetime.timedelta(seconds=10)
+    else:
+        time_window = datetime.timedelta(seconds=0)
+
+    # Since our database doesn't store timestamps with
+    # better-than-second resolution, we should do our comparisons
+    # using objects at second resolution
+    pub_date_lowres = message.pub_date.replace(microsecond=0)
     return Message.objects.filter(
-        sender__user__email=email,
-        content=request.POST['content'],
-        pub_date__gt=utc_from_ts(req_time - 10).replace(tzinfo=utc),
-        pub_date__lt=utc_from_ts(req_time + 10).replace(tzinfo=utc)).exists()
+        sender=message.sender,
+        recipient=message.recipient,
+        content=message.content,
+        subject=message.subject,
+        sending_client=message.sending_client,
+        pub_date__gte=pub_date_lowres - time_window,
+        pub_date__lte=pub_date_lowres + time_window).exists()
 
 # Validte that the passed in object is an email address from the user's realm
 # TODO: Check that it's a real email address here.
@@ -543,8 +555,6 @@ def send_message_backend(request, user_profile, sender, message_type_name = POST
             return json_error("Invalid mirrored message")
         if user_profile.realm.domain != "mit.edu":
             return json_error("Invalid mirrored realm")
-        if already_sent_mirrored_message(request):
-            return json_success()
         sender = mirror_sender
 
     if message_type_name == 'stream':
@@ -620,10 +630,13 @@ def send_message_backend(request, user_profile, sender, message_type_name = POST
     else:
         message.pub_date = now()
     message.sending_client = get_client(client_name)
+
+    if client_name == "zephyr_mirror" and already_sent_mirrored_message(message):
+        return json_success()
+
     do_send_message(message)
 
     return json_success()
-
 
 def validate_notify(request):
     # Check the shared secret.
