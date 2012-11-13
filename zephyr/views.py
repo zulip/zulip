@@ -481,9 +481,11 @@ def create_mirrored_message_users(request, user_profile):
                                                        sender_data['email']):
         return (False, None)
 
-    if "recipient" not in request.POST:
-        return (False, None)
-    pm_recipients = extract_recipients(request)
+    pm_recipients = []
+    if request.POST['type'] == 'private':
+        if "recipient" not in request.POST:
+            return (False, None)
+        pm_recipients = extract_recipients(request)
 
     # Then, check that all private message recipients are in our realm:
     for recipient in pm_recipients:
