@@ -647,6 +647,13 @@ def notify_new_message(request):
                for user in request.POST['users'].split(',')]
     message = Message.objects.get(id=request.POST['message'])
 
+    # Cause message.to_dict() to return the dicts already rendered in the other process.
+    #
+    # We decode this JSON only to eventually re-encode it as JSON.
+    # This isn't trivial to fix, because we do access some fields in the meantime
+    # (see send_with_safety_check).  It's probably not a big deal.
+    message.precomputed_dicts = simplejson.loads(request.POST['rendered'])
+
     for user in users:
         user.receive(message)
 

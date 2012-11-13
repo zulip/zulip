@@ -379,6 +379,14 @@ class Message(models.Model):
 
     @cache_with_key(lambda self, apply_markdown: 'message_dict:%d:%d' % (self.id, apply_markdown))
     def to_dict(self, apply_markdown):
+        # Messages arrive in the Tornado process with the dicts already rendered.
+        # This avoids running the Markdown parser and some database queries in the single-threaded
+        # Tornado server.
+        #
+        # This field is not persisted to the database and will disappear if the object is re-fetched.
+        if hasattr(self, 'precomputed_dicts'):
+            return self.precomputed_dicts['text/html' if apply_markdown else 'text/x-markdown']
+
         obj = dict(
             id                = self.id,
             sender_email      = self.sender.user.email,
@@ -481,10 +489,15 @@ def do_send_message(message, no_log=False):
 
     # We can only publish messages to longpolling clients if the Tornado server is running.
     if settings.TORNADO_SERVER:
+        # Render Markdown etc. here, so that the single-threaded Tornado server doesn't have to.
+        # TODO: Reduce duplication in what we send.
+        rendered = { 'text/html':       message.to_dict(apply_markdown=True),
+                     'text/x-markdown': message.to_dict(apply_markdown=False) }
         requests.post(settings.TORNADO_SERVER + '/notify_new_message', data=[
-               ('secret',  settings.SHARED_SECRET),
-               ('message', message.id),
-               ('users',   ','.join(str(user.id) for user in recipients))])
+               ('secret',   settings.SHARED_SECRET),
+               ('message',  message.id),
+               ('rendered', simplejson.dumps(rendered)),
+               ('users',    ','.join(str(user.id) for user in recipients))])
 
 class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile)
