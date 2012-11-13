@@ -3,11 +3,11 @@ import sys
 import os
 import optparse
 
-usage = """send-message --user=<email address> [options]
+usage = """send-message [options] <recipient>
 
-Sends a test message from by the provided user to tabbott@humbhughq.com.
+Sends a test message to the specified user.
 
-Example: send-message --user=tabbott@humbughq.com --site=http://127.0.0.1:8000
+Example: send-message --site=http://127.0.0.1:8000 iago@humbughq.com
 """
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('--site',
@@ -16,16 +16,23 @@ parser.add_option('--site',
                   action='store')
 parser.add_option('--api-key',
                   dest='api_key',
-                  default="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  default='4e5d97591bec64bf57d2698ffbb563e3',
                   action='store')
-parser.add_option('--user',
-                  dest='user',
+parser.add_option('--sender',
+                  dest='sender',
+                  default='othello@humbughq.com',
+                  action='store')
+parser.add_option('--recipient',
+                  dest='recipient',
                   action='store')
 (options, args) = parser.parse_args()
 
+if len(args) != 1:
+    parser.error("Wrong number of arguments")
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 import api.common
-client = api.common.HumbugAPI(email=options.user,
+client = api.common.HumbugAPI(email=options.sender,
                               api_key=options.api_key,
                               verbose=True,
                               site=options.site)
@@ -33,6 +40,6 @@ client = api.common.HumbugAPI(email=options.user,
 message_data = {
     "type": "private",
     "content": "test",
-    "recipient": "tabbott@humbughq.com",
+    "recipient": args[0]
 }
 print client.send_message(message_data)
