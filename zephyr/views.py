@@ -12,7 +12,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     do_add_subscription, do_remove_subscription, do_change_password, \
     do_change_full_name, do_activate_user, \
-    create_user, do_send_message, create_user_if_needed, \
+    create_user, do_send_message, create_mit_user_if_needed, \
     create_stream_if_needed, PreregistrationUser, get_client, MitUser, \
     User, UserActivity
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
@@ -506,18 +506,13 @@ def create_mirrored_message_users(request, user_profile):
 
     # Create a user for the sender, if needed
     if 'email' in sender_data:
-        sender = create_user_if_needed(user_profile.realm, sender_data['email'],
-                                       sender_data['full_name'], sender_data['short_name'],
-                                       active=False)
+        sender = create_mit_user_if_needed(user_profile.realm, sender_data["email"])
     else:
         sender = user_profile
 
     # Create users for private message recipients, if needed.
-    for recipient in pm_recipients:
-        create_user_if_needed(user_profile.realm, recipient,
-                              recipient.split('@')[0],
-                              recipient.split('@')[0],
-                              active=False)
+    for email in pm_recipients:
+        create_mit_user_if_needed(user_profile.realm, email)
 
     return (True, sender)
 

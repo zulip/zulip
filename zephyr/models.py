@@ -18,6 +18,9 @@ from django.contrib.auth.models import UserManager
 from django.utils import timezone
 from django.contrib.sessions.models import Session
 import time
+import subprocess
+import traceback
+import re
 
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id,))
 def get_display_recipient(recipient):
@@ -195,15 +198,36 @@ def create_user(email, password, realm, full_name, short_name,
     user.save()
     return UserProfile.create(user, realm, full_name, short_name)
 
-def create_user_if_needed(realm, email, full_name, short_name,
-                          active=True):
+def compute_mit_user_fullname(email):
+    try:
+        # Input is either e.g. starnine@mit.edu or user|CROSSREALM.INVALID@mit.edu
+        match_user = re.match(r'^([a-zA-Z0-9_.-]+)(\|.+)?@mit\.edu$', email.lower())
+        if match_user and match_user.group(2) is None:
+            dns_query = "%s.passwd.ns.athena.mit.edu" % (match_user.group(1),)
+            proc = subprocess.Popen(['host', '-t', 'TXT', dns_query],
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE)
+            out, _err_unused = proc.communicate()
+            if proc.returncode == 0:
+                # Parse e.g. 'starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash'
+                # for the 4th passwd entry field, aka the person's name.
+                return out.split(':')[4].split(',')[0]
+        elif match_user:
+            return match_user.group(1).lower() + "@" + match_user.group(2).upper()[1:]
+    except:
+        print ("Error getting fullname for %s:" % (email,))
+        traceback.print_exc()
+    return email.lower()
+
+def create_mit_user_if_needed(realm, email):
     try:
         return UserProfile.objects.get(user__email=email)
     except UserProfile.DoesNotExist:
         try:
             # Forge a user for this person
             return create_user(email, initial_password(email), realm,
-                               full_name, short_name, active=active)
+                               compute_mit_user_fullname(email), email.split("@")[0],
+                               active=False)
         except IntegrityError:
             # Unless we raced with another thread doing the same
             # thing, in which case we should get the user they made
