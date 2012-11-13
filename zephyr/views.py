@@ -457,7 +457,7 @@ def extract_recipients(request):
     except simplejson.decoder.JSONDecodeError:
         recipients = [raw_recipient]
 
-    return list(set(recipients))
+    return [recipient.strip().lower() for recipient in set(recipients)]
 
 def extract_sender(request):
     sender = None
