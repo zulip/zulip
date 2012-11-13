@@ -39,8 +39,24 @@ function get_rendered_messages(table) {
     });
 }
 
+function timestamp() {
+    return new Date().getTime();
+}
+
+// The timestamp of the last message send or get_updates result.
+var last_send_or_update = -1;
+
+// Update that variable whenever get_updates returns.
+casper.on('resource.received', function (resource) {
+    if (/\/json\/get_updates/.test(resource.url)) {
+        last_send_or_update = timestamp();
+    }
+});
+
 // Send a Humbug message.
 function send_message(type, params) {
+    last_send_or_update = timestamp();
+
     casper.click('#left_bar_compose_' + type + '_button_big');
     casper.fill('form[action^="/json/send_message"]', params);
     casper.click('#compose-send-button');
@@ -54,18 +70,12 @@ function wait_and_send(type, params) {
 }
 
 // Wait to receive queued messages.
-// FIXME: Do something more clever, based on the get_updates calls.
 function wait_for_receive(step) {
-    casper.wait(1000, step);
+    // Wait until the last send or get_updates result was more than 100 ms ago.
+    casper.waitFor(function () {
+        return (timestamp() - last_send_or_update) > 100;
+    }, step);
 }
-
-// We could use this to observe when get_updates returns:
-/*
-casper.on('resource.received', function (resource) {
-    if (/\/json\/get_updates/.test(resource.url)) {
-        utils.dump(resource);
-    }
-}); */
 
 // innerText sometimes gives us non-breaking space characters, and occasionally
 // a different number of spaces than we expect.
