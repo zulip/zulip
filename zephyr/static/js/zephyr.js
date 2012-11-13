@@ -655,7 +655,7 @@ function restart_get_updates() {
 
 function load_more_messages() {
     var batch_size = 400;
-    load_old_messages(message_array[0].id - 1, "older", batch_size,
+    load_old_messages(message_array[0].id, batch_size, 0,
                       function (messages) {
                           if (messages.length !== batch_size) {
                               $('#load_more').hide();
