@@ -195,16 +195,20 @@ def create_user(email, password, realm, full_name, short_name,
     user.save()
     return UserProfile.create(user, realm, full_name, short_name)
 
-# TODO: This has a race where a user could be created twice.  Need to
-# add transactions.
 def create_user_if_needed(realm, email, full_name, short_name,
                           active=True):
     try:
         return UserProfile.objects.get(user__email=email)
     except UserProfile.DoesNotExist:
-        # forge a user for this person
-        return create_user(email, initial_password(email), realm,
-                           full_name, short_name, active=active)
+        try:
+            # Forge a user for this person
+            return create_user(email, initial_password(email), realm,
+                               full_name, short_name, active=active)
+        except IntegrityError:
+            # Unless we raced with another thread doing the same
+            # thing, in which case we should get the user they made
+            transaction.commit()
+            return UserProfile.objects.get(user__email=email)
 
 def bulk_create_users(realms, users_raw):
     """
