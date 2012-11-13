@@ -1849,8 +1849,6 @@
           break
 
         case 9: // tab
-          if (this.options.tabSkips) break
-
         case 13: // enter
           if (!this.shown) return
           this.select()
@@ -1910,7 +1908,6 @@
   , menu: '<ul class="typeahead dropdown-menu"></ul>'
   , item: '<li><a href="#"></a></li>'
   , minLength: 1
-  , tabSkips: false
   , stopAdvance: false
   }
 
