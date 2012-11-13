@@ -16,7 +16,6 @@ log = open('zephyr/tests/frontend/server.log', 'w')
 server = subprocess.Popen(('tools/run-dev.py', '--test'),
                           stdout=log, stderr=log)
 
-# Wait for the server to start up.
 def server_is_up():
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
@@ -24,14 +23,18 @@ def server_is_up():
     except:
         return False
 
-while not server_is_up():
-    print 'Waiting for test server'
-    time.sleep(0.1)
+ret = 1
 
-ret = subprocess.call(
-    'zephyr/tests/frontend/casperjs/bin/casperjs zephyr/tests/frontend/tests.js',
-    shell=True)
+try:
+    # Wait for the server to start up.
+    while not server_is_up():
+        print 'Waiting for test server'
+        time.sleep(0.1)
 
-server.terminate()
+    ret = subprocess.call(
+        'zephyr/tests/frontend/casperjs/bin/casperjs zephyr/tests/frontend/tests.js',
+        shell=True)
+finally:
+    server.terminate()
 
 sys.exit(ret)
