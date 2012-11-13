@@ -118,8 +118,17 @@ var current_key_handler = process_hotkey;
 process_key_in_input = function (e) {
     var code = e.which;
     if (code === 27) {
-        // If the user hit the escape key, cancel the current compose
-        compose.cancel();
+        // If one of our typeaheads is open, do nothing so that the Esc
+        // will go to close it
+        if ($("#subject").data().typeahead.shown ||
+            $("#stream").data().typeahead.shown ||
+            $("#private_message_recipient").data().typeahead.shown) {
+            return false;
+        }
+        else {
+            // If the user hit the escape key, cancel the current compose
+            compose.cancel();
+        }
     }
     // Keycode 13 is Return.
     if ((code === 13) && $("#search").is(":focus")) {
