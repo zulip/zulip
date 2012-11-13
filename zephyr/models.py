@@ -31,8 +31,7 @@ def get_display_recipient(recipient):
         stream = Stream.objects.get(id=recipient.type_id)
         return stream.name
     elif recipient.type == Recipient.HUDDLE:
-        user_profile_list = [UserProfile.objects.select_related().get(user=s.user_profile) for s in
-                             Subscription.objects.filter(recipient=recipient)]
+        user_profile_list = UserProfile.objects.filter(subscription__recipient=recipient).select_related()
         return [{'email': user_profile.user.email,
                  'full_name': user_profile.full_name,
                  'short_name': user_profile.short_name} for user_profile in user_profile_list]
@@ -53,8 +52,7 @@ def get_log_recipient(recipient):
         stream = Stream.objects.get(id=recipient.type_id)
         return stream.name
 
-    user_profile_list = [UserProfile.objects.select_related().get(user=s.user_profile) for s in
-                         Subscription.objects.filter(recipient=recipient)]
+    user_profile_list = UserProfile.objects.filter(subscription__recipient=recipient).select_related()
     return [{'email': user_profile.user.email,
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name} for user_profile in user_profile_list]
