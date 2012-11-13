@@ -657,7 +657,7 @@ function load_more_messages() {
     var batch_size = 400;
     load_old_messages(message_array[0].id, batch_size, 0,
                       function (messages) {
-                          if (messages.length !== batch_size) {
+                          if (messages.length !== batch_size + 1) {
                               $('#load_more').hide();
                           }
                       });
