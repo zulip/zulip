@@ -13,6 +13,8 @@ import textwrap
 import signal
 import logging
 
+DEFAULT_SITE = "https://humbughq.com"
+
 def to_humbug_username(zephyr_username):
     if "@" in zephyr_username:
         (user, realm) = zephyr_username.split("@")
@@ -100,7 +102,7 @@ def send_humbug(zeph):
         message["recipient"] = zeph["recipient"]
     message['content'] = unwrap_lines(zeph['content'])
 
-    if options.test_mode:
+    if options.test_mode and options.site == DEFAULT_SITE:
         logger.debug("Message is: %s" % (str(message),))
         return {'result': "success"}
 
@@ -597,7 +599,7 @@ if __name__ == "__main__":
                       action='store_true')
     parser.add_option('--site',
                       dest='site',
-                      default="https://humbughq.com",
+                      default=DEFAULT_SITE,
                       help=optparse.SUPPRESS_HELP,
                       action='store')
     parser.add_option('--user',
