@@ -81,8 +81,6 @@ def send_humbug(zeph):
     message['type'] = zeph['type']
     message['time'] = zeph['time']
     message['sender'] = to_humbug_username(zeph['sender'])
-    message['fullname']  = username_to_fullname(zeph['sender'])
-    message['shortname'] = zeph['sender'].split('@')[0]
     if "subject" in zeph:
         # Truncate the subject to the current limit in Humbug.  No
         # need to do this for stream names, since we're only
@@ -107,32 +105,6 @@ def send_humbug(zeph):
         return {'result': "success"}
 
     return humbug_client.send_message(message)
-
-def fetch_fullname(username):
-    try:
-        match_user = re.match(r'([a-zA-Z0-9_]+)@mit\.edu', username)
-        if match_user:
-            proc = subprocess.Popen(['hesinfo', match_user.group(1), 'passwd'],
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            out, _err_unused = proc.communicate()
-            if proc.returncode == 0:
-                return out.split(':')[4].split(',')[0]
-    except:
-        logger.exception("Error getting fullname for %s:" % (username,))
-
-    if "@" not in username:
-        return username
-    (user, realm) = username.split("@")
-    if realm.upper() == "MIT.EDU":
-        return user
-    return user.lower() + "@" + realm.upper()
-
-fullnames = {}
-def username_to_fullname(username):
-    if username not in fullnames:
-        fullnames[username] = fetch_fullname(username)
-    return fullnames[username]
 
 current_zephyr_subs = set()
 def zephyr_bulk_subscribe(subs):
@@ -343,7 +315,7 @@ def zephyr_to_humbug(options):
         process_loop(None)
 
 def forward_to_zephyr(message):
-    zsig = u"%s@(@color(blue))" % (username_to_fullname(message["sender_email"]),)
+    zsig = u"%s@(@color(blue))" % (zsig_fullname,)
     if ' dot ' in zsig:
         logger.error("Error computing zsig for %s!" % (message["sender_email"],))
         return
@@ -543,6 +515,19 @@ def parse_zephyr_subs(verbose=False):
         zephyr_subscriptions.add((cls.strip(), instance.strip(), recipient.strip()))
     return zephyr_subscriptions
 
+def fetch_fullname(username):
+    try:
+        proc = subprocess.Popen(['hesinfo', username, 'passwd'],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        out, _err_unused = proc.communicate()
+        if proc.returncode == 0:
+            return out.split(':')[4].split(',')[0]
+    except:
+        logger.exception("Error getting fullname for %s:" % (username,))
+
+    return username
+
 def configure_logger(direction_name):
     if options.forward_class_messages:
         if options.test_mode:
@@ -682,6 +667,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
     if child_pid == 0:
         # Run the humbug => zephyr mirror in the child
         logger = configure_logger("humbug=>zephyr")
+        zsig_fullname = fetch_fullname(options.user)
         humbug_to_zephyr(options)
         sys.exit(0)
 
