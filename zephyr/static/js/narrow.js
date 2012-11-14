@@ -42,7 +42,7 @@ function do_narrow(bar, filter_function) {
     }
 
     // Before we clear the table, check if anything was highlighted.
-    var highlighted = something_is_highlighted();
+    var highlighted = search.something_is_highlighted();
 
     // Empty the filtered table right before we fill it again
     clear_table('zfilt');
@@ -71,7 +71,7 @@ function do_narrow(bar, filter_function) {
 
     // If anything was highlighted before, try to rehighlight it.
     if (highlighted) {
-        update_highlight_on_narrow();
+        search.update_highlight_on_narrow();
     }
 }
 
@@ -171,7 +171,7 @@ exports.show_all_messages = function () {
 
     scroll_to_selected();
 
-    update_highlight_on_narrow();
+    search.update_highlight_on_narrow();
 };
 
 exports.restore_home_state = function() {

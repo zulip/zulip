@@ -1,3 +1,7 @@
+var search = (function () {
+
+var exports = {};
+
 var cached_term = "";
 var cached_matches = [];
 var cached_index;
@@ -91,7 +95,7 @@ function highlight_match(row, search_term) {
     }
 }
 
-function search_button_handler(reverse) {
+exports.search_button_handler = function (reverse) {
     var query = $('#search').val().toLowerCase();
     var res = search(query, selected_message, reverse);
     if (!res) {
@@ -101,24 +105,24 @@ function search_button_handler(reverse) {
     select_message(res);
     highlight_match(res, query);
     scroll_to_selected();
-}
+};
 
 function clear_search_cache() {
     cached_term = "";
 }
 
-function focus_search() {
+exports.focus_search = function () {
     $("#search").width("504px");
     $("#search_arrows").addClass("input-append");
     $('.search_button').show();
     disable_search_arrows_if(false, ["up", "down"]);
-}
+};
 
-function initiate_search() {
+exports.initiate_search = function () {
     $('#search').val('').focus();
-}
+};
 
-function clear_search() {
+exports.clear_search = function () {
     $('table tr').removeHighlight();
     // Reset the width to that in the stylesheet. If you change it there, change
     // it here.
@@ -127,13 +131,17 @@ function clear_search() {
     $("#search_up, #search_down").removeAttr("disabled");
     $('.search_button').blur().hide();
     clear_search_cache();
-}
+};
 
-function something_is_highlighted() {
+exports.something_is_highlighted = function () {
     return $(".highlight").length > 0;
-}
+};
 
-function update_highlight_on_narrow() {
+exports.update_highlight_on_narrow = function () {
     highlight_match(selected_message, cached_term);
     clear_search_cache();
-}
+};
+
+return exports;
+
+}());

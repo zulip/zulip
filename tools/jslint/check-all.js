@@ -27,8 +27,7 @@ var globals =
     + ' reload'
 
     // search.js
-    + ' search_button_handler something_is_highlighted update_highlight_on_narrow'
-    + ' initiate_search'
+    + ' search'
 
     // setup.js
     + ' loading_spinner templates csrf_token'
