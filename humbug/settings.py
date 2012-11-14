@@ -118,12 +118,13 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    # Our logging middleware should be the first middleware item.
+    'zephyr.middleware.LogRequests',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'zephyr.middleware.LogRequests',
 )
 
 AUTHENTICATION_BACKENDS = ('humbug.backends.EmailAuthBackend',)
