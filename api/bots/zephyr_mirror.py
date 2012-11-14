@@ -595,7 +595,7 @@ if __name__ == "__main__":
                       action='store')
     parser.add_option('--root-path',
                       dest='root_path',
-                      default="/mit/tabbott/for_friends",
+                      default="/afs/athena.mit.edu/user/t/a/tabbott/for_friends",
                       help=optparse.SUPPRESS_HELP,
                       action='store')
     parser.add_option('--test-mode',
