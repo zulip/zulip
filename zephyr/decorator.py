@@ -61,14 +61,14 @@ def update_user_activity(request, user_profile, client):
 def authenticated_api_view(view_func):
     @csrf_exempt
     @require_post
+    @has_request_variables
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        email = request.POST.get("email")
+    def _wrapped_view_func(request, email=POST, api_key=POST('api-key'),
+                           *args, **kwargs):
         try:
             user_profile = UserProfile.objects.get(user__email=email)
         except UserProfile.DoesNotExist:
             return json_error("Invalid user: %s" % (email,))
-        api_key = request.POST.get("api-key")
         if api_key != user_profile.api_key:
             return json_error("Invalid API key for user '%s'" % (email,))
         update_user_activity(request, user_profile,
