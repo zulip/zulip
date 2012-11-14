@@ -131,7 +131,7 @@ process_key_in_input = function (e) {
         }
     }
     // Keycode 13 is Return.
-    if ((code === 13) && $("#search").is(":focus")) {
+    if ((code === 13) && $("#search_query").is(":focus")) {
         // Pass it along to the search up button.
         $("#search_up").focus();
     }

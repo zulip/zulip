@@ -96,7 +96,7 @@ function highlight_match(row, search_term) {
 }
 
 exports.search_button_handler = function (reverse) {
-    var query = $('#search').val().toLowerCase();
+    var query = $('#search_query').val().toLowerCase();
     var res = search(query, selected_message, reverse);
     if (!res) {
         return;
@@ -112,21 +112,21 @@ function clear_search_cache() {
 }
 
 exports.focus_search = function () {
-    $("#search").width("504px");
+    $("#search_query").width("504px");
     $("#search_arrows").addClass("input-append");
     $('.search_button').show();
     disable_search_arrows_if(false, ["up", "down"]);
 };
 
 exports.initiate_search = function () {
-    $('#search').val('').focus();
+    $('#search_query').val('').focus();
 };
 
 exports.clear_search = function () {
     $('table tr').removeHighlight();
     // Reset the width to that in the stylesheet. If you change it there, change
     // it here.
-    $('#search').val('').width("610px");
+    $('#search_query').val('').width("610px");
     $("#search_arrows").removeClass("input-append");
     $("#search_up, #search_down").removeAttr("disabled");
     $('.search_button').blur().hide();

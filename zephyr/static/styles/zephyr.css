@@ -379,7 +379,7 @@ input.send_message {
     background-color: aliceblue;
 }
 
-#search {
+#search_query {
     /* If this changes, also change the width in search.js:clear_search */
     width: 610px;
 }
