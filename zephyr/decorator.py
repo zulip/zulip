@@ -63,12 +63,14 @@ def authenticated_api_view(view_func):
     @require_post
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
+        email = request.POST.get("email")
         try:
-            user_profile = UserProfile.objects.get(user__email=request.POST.get("email"))
+            user_profile = UserProfile.objects.get(user__email=email)
         except UserProfile.DoesNotExist:
-            return json_error("Invalid user")
-        if user_profile is None or request.POST.get("api-key") != user_profile.api_key:
-            return json_error('Invalid API user/key pair.')
+            return json_error("Invalid user: %s" % (email,))
+        api_key = request.POST.get("api-key")
+        if api_key != user_profile.api_key:
+            return json_error("Invalid API key for user '%s'" % (email,))
         update_user_activity(request, user_profile,
                              parse_client(request, "API"))
         return view_func(request, user_profile, *args, **kwargs)
