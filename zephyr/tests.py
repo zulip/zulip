@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase
+from django.test.simple import DjangoTestSuiteRunner
 from django.utils.timezone import now
 from django.db.models import Q
 
@@ -514,3 +515,6 @@ class GetUpdatesTest(AuthedTestCase):
         request = POSTRequestMock({}, user, callback)
         self.assertRaises(TornadoAsyncException, json_get_updates, request)
 
+class Runner(DjangoTestSuiteRunner):
+    def __init__(self, *args, **kwargs):
+        DjangoTestSuiteRunner.__init__(self, *args, **kwargs)

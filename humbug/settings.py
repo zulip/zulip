@@ -129,6 +129,8 @@ MIDDLEWARE_CLASSES = (
 
 AUTHENTICATION_BACKENDS = ('humbug.backends.EmailAuthBackend',)
 
+TEST_RUNNER = 'zephyr.tests.Runner'
+
 ROOT_URLCONF = 'humbug.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
