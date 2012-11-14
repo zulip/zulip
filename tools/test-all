@@ -1,0 +1,22 @@
+#!/bin/bash -e
+
+cd "$(dirname "$0")"/..
+
+function run {
+    desc="$1"
+    shift
+
+    echo "Running $desc"
+    if ! "$@"; then
+        printf "\n\e[31;1mFAILED\e[0m $desc\n"
+        exit 1
+    else
+        echo
+    fi
+}
+
+run 'lint checkers'    ./tools/check-all
+run 'web client tests' ./zephyr/tests/frontend/run
+run 'server tests'     ./manage.py test zephyr --skip-generate
+
+printf '\n\e[32mAll OK!\e[0m\n'
