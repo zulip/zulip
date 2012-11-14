@@ -58,9 +58,8 @@ class Resource(resource.Resource):
 
         return proxy.ReverseProxyResource('localhost', django_port, '/'+name)
 
-reactor.listenTCP(proxy_port, server.Site(Resource()), interface='127.0.0.1')
-
 try:
+    reactor.listenTCP(proxy_port, server.Site(Resource()), interface='127.0.0.1')
     reactor.run()
 finally:
     # Kill everything in our process group.
