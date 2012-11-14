@@ -169,7 +169,7 @@ def process_loop(log):
         if notice is not None:
             try:
                 process_notice(notice, log)
-            except:
+            except Exception:
                 logger.exception("Error relaying zephyr:")
                 time.sleep(2)
 
@@ -255,9 +255,12 @@ def process_notice(notice, log):
         log.write(simplejson.dumps(zeph) + '\n')
         log.flush()
 
-    res = send_humbug(zeph)
-    if res.get("result") != "success":
-        logger.error("Error relaying zephyr:\n%s\n%s" %(zeph, res))
+    if os.fork() == 0:
+        # Actually send the message in a child process, to avoid blocking.
+        res = send_humbug(zeph)
+        if res.get("result") != "success":
+            logger.error("Error relaying zephyr:\n%s\n%s" % (zeph, res))
+        sys.exit(0)
 
 def decode_unicode_byte_strings(zeph):
     for field in zeph.keys():
@@ -736,4 +739,6 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
             traceback.print_exc()
             time.sleep(1)
     logger = configure_logger("zephyr=>humbug")
+    # Have the kernel reap children for when we fork off processes to send Humbugs
+    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
     zephyr_to_humbug(options)
