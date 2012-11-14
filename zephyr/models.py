@@ -474,14 +474,14 @@ def get_user_profile_by_id(uid):
 def log_event(event):
     assert("timestamp" in event)
     if not os.path.exists(settings.MESSAGE_LOG + '.lock'):
-        file(settings.MESSAGE_LOG + '.lock', "w").write("0")
-    lock = open(settings.MESSAGE_LOG + '.lock', 'r')
-    fcntl.flock(lock, fcntl.LOCK_EX)
-    f = open(settings.MESSAGE_LOG, "a")
-    f.write(simplejson.dumps(event) + "\n")
-    f.close()
-    fcntl.flock(lock, fcntl.LOCK_UN)
-    lock.close()
+        with open(settings.MESSAGE_LOG + '.lock', 'w') as lock:
+            lock.write('0')
+
+    with open(settings.MESSAGE_LOG + '.lock', 'r') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        with open(settings.MESSAGE_LOG, 'a') as log:
+            log.write(simplejson.dumps(event) + '\n')
+        fcntl.flock(lock, fcntl.LOCK_UN)
 
 def log_message(message):
     if not message.sending_client.name.startswith("test:"):
