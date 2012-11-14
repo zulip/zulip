@@ -134,7 +134,8 @@ def update_subscriptions_from_humbug():
         if stream in current_zephyr_subs:
             continue
         streams_to_subscribe.append((stream.encode("utf-8"), "*", "*"))
-    zephyr_bulk_subscribe(streams_to_subscribe)
+    if len(streams_to_subscribe) > 0:
+        zephyr_bulk_subscribe(streams_to_subscribe)
 
 def maybe_restart_mirroring_script():
     if os.stat(os.path.join(options.root_path, "stamps", "restart_stamp")).st_mtime > start_time or \
