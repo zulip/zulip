@@ -479,7 +479,6 @@ def log_event(event):
     fcntl.flock(lock, fcntl.LOCK_EX)
     f = open(settings.MESSAGE_LOG, "a")
     f.write(simplejson.dumps(event) + "\n")
-    f.flush()
     f.close()
     fcntl.flock(lock, fcntl.LOCK_UN)
     lock.close()
