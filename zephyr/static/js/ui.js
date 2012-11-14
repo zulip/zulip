@@ -5,44 +5,6 @@
 var scroll_positions = {};
 var gravatar_stamp = 1;
 
-function register_onclick(message_row, message_id) {
-    message_row.find(".messagebox").click(function (e) {
-        if ($(e.target).is("a")) {
-            // If this click came from a hyperlink, don't trigger the
-            // reply action.  The simple way of doing this is simply
-            // to call e.stopPropagation() from within the link's
-            // click handler.
-            //
-            // Unfortunately, on Firefox, this breaks Ctrl-click and
-            // Shift-click, because those are (apparently) implemented
-            // by adding an event listener on link clicks, and
-            // stopPropagation prevents them from being called.
-            return;
-        }
-        if (!(clicking && mouse_moved)) {
-            // Was a click (not a click-and-drag).
-            select_message_by_id(message_id);
-            respond_to_message();
-        }
-        mouse_moved = false;
-        clicking = false;
-    });
-}
-
-function register_user_info_mouseover(message_row, message_id) {
-    message_row.find(".user_info_hover").mouseover(function (e) {
-        show_email(message_id);
-        message_row.find(".sender_name").addClass("sender_hovered");
-    });
-}
-
-function register_user_info_mouseout(message_row, message_id) {
-    message_row.find(".user_info_hover").mouseout(function (e) {
-        hide_email();
-        message_row.find(".sender_name").removeClass("sender_hovered");
-    });
-}
-
 function focus_on(field_id) {
     // Call after autocompleting on a field, to advance the focus to
     // the next input field.
@@ -61,13 +23,12 @@ function hide_email() {
     $('.sender_email').addClass('invisible');
 }
 
-function show_email(message_id) {
+function show_email(message_row) {
     hide_email();
-    var row_with_email = rows.get(message_id);
-    while (!row_with_email.hasClass('include-sender')) {
-        row_with_email = row_with_email.prev();
+    while (!message_row.hasClass('include-sender')) {
+        message_row = message_row.prev();
     }
-    row_with_email.find('.sender_email').removeClass('invisible');
+    message_row.find('.sender_email').removeClass('invisible');
 }
 
 function report_message(response, status_box, cls) {
@@ -470,6 +431,69 @@ $(function () {
             userinfo_currently_popped.popover('destroy');
             userinfo_currently_popped = undefined;
         }
+    });
+
+    $("#main_div").on("click", ".messagebox", function (e) {
+        if ($(e.target).is("a")) {
+            // If this click came from a hyperlink, don't trigger the
+            // reply action.  The simple way of doing this is simply
+            // to call e.stopPropagation() from within the link's
+            // click handler.
+            //
+            // Unfortunately, on Firefox, this breaks Ctrl-click and
+            // Shift-click, because those are (apparently) implemented
+            // by adding an event listener on link clicks, and
+            // stopPropagation prevents them from being called.
+            return;
+        }
+        if (!(clicking && mouse_moved)) {
+            // Was a click (not a click-and-drag).
+            var row = $(this).closest(".message_row");
+            select_message_by_id(row.attr('zid'));
+            respond_to_message();
+        }
+        mouse_moved = false;
+        clicking = false;
+    });
+
+    $("#main_div").on("mousedown", ".messagebox", mousedown);
+    $("#main_div").on("mousemove", ".messagebox", mousemove);
+    $("#main_div").on("mouseover", ".messagebox", function (e) {
+        var row = $(this).closest(".message_row");
+        show_email(row);
+    });
+
+    $("#main_div").on("mouseout", ".messagebox", function (e) {
+        hide_email();
+    });
+
+    $("#main_div").on("mouseover", ".user_info_hover", function (e) {
+        var row = $(this).closest(".message_row");
+        show_email(row);
+        row.find(".sender_name").addClass("sender_hovered");
+    });
+
+    $("#main_div").on("mouseout", ".user_info_hover", function (e) {
+        var row = $(this).closest(".message_row");
+        hide_email();
+        row.find(".sender_name").removeClass("sender_hovered");
+    });
+
+    $("#main_div").on("click", ".user_info_hover", function (e) {
+        var row = $(this).closest(".message_row");
+        userinfo_popover(e, this, row.attr('zid'));
+    });
+
+    $("#main_div").on("click", ".narrows_by_recipient", function (e) {
+        var row = $(this).closest(".recipient_row");
+        narrow.target(row.attr('zid'));
+        narrow.by_recipient();
+    });
+
+    $("#main_div").on("click", ".narrows_by_subject", function (e) {
+        var row = $(this).closest(".recipient_row");
+        narrow.target(row.attr('zid'));
+        narrow.by_subject();
     });
 });
 
