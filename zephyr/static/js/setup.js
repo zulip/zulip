@@ -3,6 +3,7 @@
 
 var loading_spinner;
 var templates = {};
+var csrf_token;
 $(function () {
     // Display loading indicator.  This disappears after the first
     // get_updates completes.
@@ -21,13 +22,13 @@ $(function () {
     );
 
     // This requires that we used Django's {% csrf_token %} somewhere on the page.
-    var csrftoken = $('input[name="csrfmiddlewaretoken"]').attr('value');
+    csrf_token = $('input[name="csrfmiddlewaretoken"]').attr('value');
 
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
             if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
                 // Only send the token to relative URLs i.e. locally.
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                xhr.setRequestHeader("X-CSRFToken", csrf_token);
             }
         }
     });
