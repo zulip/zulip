@@ -476,30 +476,23 @@ def extract_recipients(request):
 def create_mirrored_message_users(request, user_profile):
     if "sender" not in request.POST:
         return (False, None)
+
     sender_email = request.POST["sender"].strip().lower()
-
-    # First, check that the sender is in our realm:
-    if not same_realm_email(user_profile, sender_email):
-        return (False, None)
-
-    pm_recipients = []
+    referenced_users = set([sender_email])
     if request.POST['type'] == 'private':
-        if "to" not in request.POST:
+        for email in extract_recipients(request):
+            referenced_users.add(email)
+
+    # Check that all referenced users are in our realm:
+    for email in referenced_users:
+        if not same_realm_email(user_profile, email):
             return (False, None)
-        pm_recipients = extract_recipients(request)
 
-    # Then, check that all private message recipients are in our realm:
-    for recipient in pm_recipients:
-        if not same_realm_email(user_profile, recipient):
-            return (False, None)
-
-    # Create a user for the sender, if needed
-    sender = create_mit_user_if_needed(user_profile.realm, sender_email)
-
-    # Create users for private message recipients, if needed.
-    for email in pm_recipients:
+    # Create users for the referenced users, if needed.
+    for email in referenced_users:
         create_mit_user_if_needed(user_profile.realm, email)
 
+    sender = UserProfile.objects.get(user__email=sender_email)
     return (True, sender)
 
 # We do not @require_login for send_message_backend, since it is used
