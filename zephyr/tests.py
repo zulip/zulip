@@ -12,7 +12,7 @@ from zephyr.lib.initial_password import initial_password, initial_api_key
 
 import simplejson
 import subprocess
-subprocess.check_call("zephyr/tests/generate-fixtures");
+import optparse
 from django.conf import settings
 import re
 
@@ -516,5 +516,13 @@ class GetUpdatesTest(AuthedTestCase):
         self.assertRaises(TornadoAsyncException, json_get_updates, request)
 
 class Runner(DjangoTestSuiteRunner):
-    def __init__(self, *args, **kwargs):
+    option_list = (
+        optparse.make_option('--skip-generate',
+            dest='generate', default=True, action='store_false',
+            help='Skip generating test fixtures')
+    ,)
+
+    def __init__(self, generate, *args, **kwargs):
+        if generate:
+            subprocess.check_call("zephyr/tests/generate-fixtures");
         DjangoTestSuiteRunner.__init__(self, *args, **kwargs)
