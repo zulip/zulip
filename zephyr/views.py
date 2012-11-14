@@ -417,14 +417,16 @@ def api_get_profile(request, user_profile):
     return json_success(result)
 
 @authenticated_api_view
-def api_send_message(request, user_profile):
-    return send_message_backend(request, user_profile, user_profile,
-                                client_name=request.POST.get("client", "API"))
+@has_request_variables
+def api_send_message(request, user_profile,
+                     client_name=POST("client", default="API")):
+    return send_message_backend(request, user_profile, user_profile, client_name)
 
 @authenticated_json_view
-def json_send_message(request, user_profile):
-    return send_message_backend(request, user_profile, user_profile,
-                                client_name=request.POST.get("client"))
+@has_request_variables
+def json_send_message(request, user_profile,
+                      client_name=POST("client", default="website")):
+    return send_message_backend(request, user_profile, user_profile, client_name)
 
 # Currently tabbott/extra@mit.edu is our only superuser.  TODO: Make
 # this a real superuser security check.
@@ -505,10 +507,9 @@ def create_mirrored_message_users(request, user_profile):
 # send_message_backend should either check the API key or check that
 # the user is logged in.
 @has_request_variables
-def send_message_backend(request, user_profile, sender, message_type_name = POST('type'),
-                         message_content = POST('content'), client_name=None):
-    if client_name is None:
-        return json_error("Missing client")
+def send_message_backend(request, user_profile, sender, client_name,
+                         message_type_name = POST('type'),
+                         message_content = POST('content')):
     forged = "forged" in request.POST
     is_super_user = is_super_user_api(request)
     if forged and not is_super_user:
