@@ -69,7 +69,7 @@
     <div class="close composebox-close" onclick="compose.cancel()">&times;</div>
     <div class="message_comp">
       <div class="alert" id="send-status"></div>
-      <form action="/json/send_message" method="post">
+      <form id="send_message" action="/json/send_message" method="post">
         <input type="hidden" name="type" value="stream" id="new_message_type"/>
         <input type="hidden" name="client" value="website" id="client_name"/>
         {% csrf_token %}

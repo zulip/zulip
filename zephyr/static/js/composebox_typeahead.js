@@ -149,10 +149,10 @@ exports.initialize = function () {
     select_on_focus("private_message_recipient");
 
     // These handlers are at the "form" level so that they are called after typeahead
-    $("form").keydown(function(e) {
+    $("form#send_message").keydown(function(e) {
         handle_keydown(e);
     });
-    $("form").keyup(function(e) {
+    $("form#send_message").keyup(function(e) {
         handle_keyup(e);
     });
 
