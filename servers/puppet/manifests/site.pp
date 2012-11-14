@@ -30,7 +30,7 @@ define common::append ($file, $line) {
 
 class humbug_base {
   $packages = [ "screen", "strace", "vim", "emacs", "git", "python-tz", "sqlite3", "ntp",
-                "python-tornado",  "python-simplejson", "python-pygments", "ipython",
+                "python-tornado",  "python-simplejson", "python-pygments", "ipython", "host",
                 "python-django", "openssh-server", "python-pip", "puppet-el", "python-flup", ]
   package { $packages: ensure => "installed" }
 
