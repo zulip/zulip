@@ -102,7 +102,7 @@ function handle_keydown(e) {
     var code = e.keyCode || e.which;
 
     if (code === 13 || (code === 9 && !e.shiftKey)) { // Enter key or tab key
-        if (e.target.id === "stream" || e.target.id === "subject" || e.target.id === "huddle_recipient") {
+        if (e.target.id === "stream" || e.target.id === "subject" || e.target.id === "private_message_recipient") {
             // For enter, prevent the form from submitting
             // For tab, prevent the focus from changing again
             e.preventDefault();
@@ -113,7 +113,7 @@ function handle_keydown(e) {
         } else if (e.target.id === "subject") {
             if (code === 13) e.preventDefault();
             nextFocus = "new_message_content";
-        } else if (e.target.id === "huddle_recipient") {
+        } else if (e.target.id === "private_message_recipient") {
             nextFocus = "new_message_content";
         } else {
             nextFocus = false;
@@ -146,7 +146,7 @@ function select_on_focus(field_id) {
 exports.initialize = function () {
     select_on_focus("stream");
     select_on_focus("subject");
-    select_on_focus("huddle_recipient");
+    select_on_focus("private_message_recipient");
 
     // These handlers are at the "form" level so that they are called after typeahead
     $("form").keydown(function(e) {
