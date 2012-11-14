@@ -18,6 +18,7 @@ function preserve_compose(send_after_reload) {
         send_after_reload = 0;
     }
     var url = "#reload:send_after_reload=" + Number(send_after_reload);
+    url += "+csrf_token=" + encodeURIComponent(csrf_token);
     if (compose.composing() === 'stream') {
         url += "+msg_type=stream";
         url += "+stream=" + encodeURIComponent(compose.stream_name());
@@ -48,6 +49,12 @@ $(function () {
         var pair = str.split("=");
         vars[pair[0]] = decodeURIComponent(pair[1]);
     });
+
+    // Prevent random people on the Internet from constructing links
+    // that make you send a message.
+    if (vars.csrf_token !== csrf_token) {
+        return;
+    }
 
     var tab;
     var send_now = parseInt(vars.send_after_reload, 10);
