@@ -56,7 +56,6 @@ $(function () {
         return;
     }
 
-    var tab;
     var send_now = parseInt(vars.send_after_reload, 10);
 
     // TODO: preserve focus
