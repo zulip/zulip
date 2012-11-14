@@ -16,7 +16,13 @@ log = open('zephyr/tests/frontend/server.log', 'w')
 server = subprocess.Popen(('tools/run-dev.py', '--test'),
                           stdout=log, stderr=log)
 
+def assert_server_running():
+    # Get the exit code of the server, or None if it is still running.
+    if server.poll() is not None:
+        raise RuntimeError, 'Server died unexpectedly! Check zephyr/tests/frontend/server.log'
+
 def server_is_up():
+    assert_server_running()
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
         return requests.get('http://localhost:9981/accounts/home').status_code == 200
@@ -35,6 +41,7 @@ try:
         'zephyr/tests/frontend/casperjs/bin/casperjs zephyr/tests/frontend/tests.js',
         shell=True)
 finally:
+    assert_server_running()
     server.terminate()
 
 sys.exit(ret)
