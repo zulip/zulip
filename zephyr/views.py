@@ -471,26 +471,13 @@ def extract_recipients(request):
 
     return [recipient.strip().lower() for recipient in set(recipients)]
 
-def extract_sender(request):
-    sender = None
-    try:
-        if 'sender' in request.POST:
-            sender = {'email': request.POST["sender"].strip().lower(),
-                      'full_name': request.POST["fullname"],
-                      'short_name': request.POST["shortname"]}
-    except:
-        return None
-    return sender
-
 def create_mirrored_message_users(request, user_profile):
-    sender_data = extract_sender(request)
-
-    if sender_data is None:
+    if "sender" not in request.POST:
         return (False, None)
+    sender_email = request.POST["sender"].strip().lower()
 
     # First, check that the sender is in our realm:
-    if 'email' in sender_data and not same_realm_email(user_profile,
-                                                       sender_data['email']):
+    if not same_realm_email(user_profile, sender_email):
         return (False, None)
 
     pm_recipients = []
@@ -505,10 +492,7 @@ def create_mirrored_message_users(request, user_profile):
             return (False, None)
 
     # Create a user for the sender, if needed
-    if 'email' in sender_data:
-        sender = create_mit_user_if_needed(user_profile.realm, sender_data["email"])
-    else:
-        sender = user_profile
+    sender = create_mit_user_if_needed(user_profile.realm, sender_email)
 
     # Create users for private message recipients, if needed.
     for email in pm_recipients:
