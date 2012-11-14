@@ -7,6 +7,33 @@ var cached_matches = [];
 var cached_index;
 var cached_table = $('table.focused_table');
 
+function narrow_or_search_for_term(item) {
+    console.log("Narrowing or searching for", item);
+    return item;
+}
+
+exports.initialize = function () {
+    $( "#search_query" ).typeahead({
+        source: function (query, process) {
+            return stream_list;
+        },
+        items: 3,
+        highlighter: composebox_typeahead.escaping_typeahead_highlighter,
+        updater: narrow_or_search_for_term
+    });
+
+    $("#searchbox_form").keydown(function (e) {
+        var code = e.which;
+        if (code === 13 && $("#search_query").data().typeahead.shown) {
+            // We pressed Enter and the typeahead is open;
+            // don't submit the form so that the typeahead
+            // can instead handle our Enter keypress.
+            e.preventDefault();
+            return false;
+        }
+    });
+};
+
 function match_on_visible_text(row, search_term) {
     // You can't select on :visible, since that includes hidden elements that
     // take up space.

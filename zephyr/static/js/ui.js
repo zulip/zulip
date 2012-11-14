@@ -463,6 +463,7 @@ $(function () {
     hack_for_floating_recipient_bar();
 
     composebox_typeahead.initialize();
+    search.initialize();
 
     $("body").bind('click', function() {
         if (userinfo_currently_popped !== undefined) {
