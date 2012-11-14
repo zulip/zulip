@@ -2,6 +2,7 @@
 import optparse
 import subprocess
 import signal
+import traceback
 import os
 from os import path
 
@@ -61,6 +62,10 @@ class Resource(resource.Resource):
 try:
     reactor.listenTCP(proxy_port, server.Site(Resource()), interface='127.0.0.1')
     reactor.run()
+except:
+    # Print the traceback before we get SIGTERM and die.
+    traceback.print_exc()
+    raise
 finally:
     # Kill everything in our process group.
     os.killpg(0, signal.SIGTERM)
