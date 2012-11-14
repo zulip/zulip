@@ -13,7 +13,7 @@ def banish_busted_users(change=False):
             print u.user.email
             if change:
                 u.realm = banished_realm
-                u.user.email = u.user.email.split("@")[0] + "@" + banished_realm
+                u.user.email = u.user.email.split("@")[0] + "@" + banished_realm.domain
                 u.user.save()
                 u.save()
 
