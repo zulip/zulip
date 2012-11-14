@@ -26,11 +26,12 @@ class HumbugAPI():
         request["email"] = self.email
         request["api-key"] = self.api_key
         request["client"] = self.client_name
-        request["failures"] = 0
 
         for (key, val) in request.iteritems():
             if not (isinstance(val, str) or isinstance(val, unicode)):
                 request[key] = simplejson.dumps(val)
+
+        request["failures"] = 0
 
         while True:
             try:
