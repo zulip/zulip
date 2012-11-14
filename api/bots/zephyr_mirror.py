@@ -133,7 +133,11 @@ def zephyr_bulk_subscribe(subs):
 def update_subscriptions_from_humbug():
     try:
         res = humbug_client.get_public_streams()
-        streams = res["streams"]
+        if res.get("result") == "success":
+            streams = res["streams"]
+        else:
+            logger.error("Error getting public streams:\n%s" % res)
+            return
     except:
         logger.exception("Error getting public streams:")
         return
