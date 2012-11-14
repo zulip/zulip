@@ -482,6 +482,7 @@ def log_event(event):
     f.flush()
     f.close()
     fcntl.flock(lock, fcntl.LOCK_UN)
+    lock.close()
 
 def log_message(message):
     if not message.sending_client.name.startswith("test:"):
