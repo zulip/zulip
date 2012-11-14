@@ -5,7 +5,7 @@ import optparse
 
 usage = """send-message [options] <recipient>
 
-Sends a test message to the specified user.
+Sends a test message to the specified recipients.
 
 Example: send-message --site=http://127.0.0.1:8000 iago@humbughq.com
 """
@@ -22,13 +22,14 @@ parser.add_option('--sender',
                   dest='sender',
                   default='othello@humbughq.com',
                   action='store')
-parser.add_option('--recipient',
-                  dest='recipient',
+parser.add_option('--type',
+                  dest='type',
+                  default='private',
                   action='store')
 (options, args) = parser.parse_args()
 
-if len(args) != 1:
-    parser.error("Wrong number of arguments")
+if len(args) == 0:
+    parser.error("You must specify recipients")
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 import api.common
@@ -38,8 +39,9 @@ client = api.common.HumbugAPI(email=options.sender,
                               site=options.site)
 
 message_data = {
-    "type": "private",
+    "type": options.type,
     "content": "test",
-    "to": args[0],
+    "subject": "test",
+    "to": args,
 }
 print client.send_message(message_data)
