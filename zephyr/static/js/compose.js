@@ -52,10 +52,13 @@ function send_message() {
 
     var request = {client: 'website',
                    type:        compose.composing(),
-                   stream:      compose.stream_name(),
                    subject:     compose.subject(),
-                   recipient:   JSON.stringify(recipients),
                    content:     compose.message_content()};
+    if (request.type === "private") {
+        request.to = JSON.stringify(recipients);
+    } else {
+        request.to = compose.stream_name();
+    }
 
     $.ajax({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.

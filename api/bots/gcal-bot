@@ -139,7 +139,7 @@ def send_reminders():
 
     humbug.send_message(dict(
         type      = 'private',
-        recipient = options.user,
+        to = options.user,
         content   = message))
 
     sent |= keys

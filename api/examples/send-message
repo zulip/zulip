@@ -40,6 +40,6 @@ client = api.common.HumbugAPI(email=options.sender,
 message_data = {
     "type": "private",
     "content": "test",
-    "recipient": args[0]
+    "to": args[0],
 }
 print client.send_message(message_data)

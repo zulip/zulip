@@ -89,15 +89,15 @@ def send_humbug(zeph):
     if zeph['type'] == 'stream':
         # Forward messages sent to -c foo -i bar to stream bar subject "instance"
         if zeph["stream"] == "message":
-            message['stream'] = zeph['subject'].lower()
+            message['to'] = zeph['subject'].lower()
             message['subject'] = "instance %s" % (zeph['subject'],)
         elif zeph["stream"] == "tabbott-test5":
-            message['stream'] = zeph['subject'].lower()
+            message['to'] = zeph['subject'].lower()
             message['subject'] = "test instance %s" % (zeph['subject'],)
         else:
-            message["stream"] = zeph["stream"]
+            message["to"] = zeph["stream"]
     else:
-        message["recipient"] = zeph["recipient"]
+        message["to"] = zeph["recipient"]
     message['content'] = unwrap_lines(zeph['content'])
 
     if options.test_mode and options.site == DEFAULT_SITE:
@@ -109,7 +109,7 @@ def send_humbug(zeph):
 def send_error_humbug(error_msg):
     humbug = {"type": "private",
               "sender": options.user + "@mit.edu",
-              "recipient": options.user + "@mit.edu",
+              "to": options.user + "@mit.edu",
               "content": error_msg,
               }
     humbug_client.send_message(humbug)

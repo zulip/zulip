@@ -19,7 +19,7 @@ def forward_message(message):
         return
     forwarded_message = {
         "type": "stream",
-        "stream": "support",
+        "to": "support",
         "subject": "feedback from %s" % message["sender_email"],
         "content": message["content"],
         }

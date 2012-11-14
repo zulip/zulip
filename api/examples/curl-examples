@@ -5,7 +5,7 @@ curl https://humbughq.com/api/v1/send_message \
     -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
     -d "email=tabbott@humbughq.com" \
     -d "type=private" -d "content=test" \
-    -d "recipient=tabbott@humbughq.com"
+    -d "to=tabbott@humbughq.com"
 
 curl https://humbughq.com/api/v1/get_messages \
     -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \

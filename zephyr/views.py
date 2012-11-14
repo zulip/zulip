@@ -465,7 +465,7 @@ def same_realm_email(user_profile, email):
         return False
 
 def extract_recipients(request):
-    raw_recipient = request.POST.get("recipient")
+    raw_recipient = request.POST.get("to")
     try:
         recipients = simplejson.loads(raw_recipient)
     except simplejson.decoder.JSONDecodeError:
@@ -484,7 +484,7 @@ def create_mirrored_message_users(request, user_profile):
 
     pm_recipients = []
     if request.POST['type'] == 'private':
-        if "recipient" not in request.POST:
+        if "to" not in request.POST:
             return (False, None)
         pm_recipients = extract_recipients(request)
 
@@ -509,6 +509,7 @@ def create_mirrored_message_users(request, user_profile):
 @has_request_variables
 def send_message_backend(request, user_profile, client_name,
                          message_type_name = POST('type'),
+                         message_to = POST('to'),
                          message_content = POST('content')):
     forged = "forged" in request.POST
     is_super_user = is_super_user_api(request)
@@ -540,11 +541,9 @@ def send_message_backend(request, user_profile, client_name,
         sender = user_profile
 
     if message_type_name == 'stream':
-        if "stream" not in request.POST:
-            return json_error("Missing stream")
         if "subject" not in request.POST:
             return json_error("Missing subject")
-        stream_name = request.POST['stream'].strip()
+        stream_name = message_to.strip()
         subject_name = request.POST['subject'].strip()
         if stream_name == "":
             return json_error("Stream can't be empty")
@@ -567,8 +566,6 @@ def send_message_backend(request, user_profile, client_name,
             return json_error("Stream does not exist")
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     elif message_type_name == 'private':
-        if "recipient" not in request.POST:
-            return json_error("Missing recipients")
         pm_recipients = extract_recipients(request)
         if client_name == "zephyr_mirror":
             if user_profile.user.email not in pm_recipients and not forged:

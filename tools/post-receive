@@ -80,10 +80,9 @@ def send_bot_message(oldrev, newrev, refname):
 
     message_data = {
         "type": "stream",
-        "stream": "test" if refname == "refs/heads/test-post-receive" else "devel",
+        "to": "test" if refname == "refs/heads/test-post-receive" else "devel",
         "subject": u"deploy \u21D2 " + branch,
         "content": message,
-        "recipient": "tabbott@humbughq.com",
     }
     # Sleep a bit to give time for the server to restart.
     # TODO: Make this work without the sleep

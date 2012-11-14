@@ -41,7 +41,7 @@ def trac_subject(ticket):
 def send_update(ticket, content):
     client.send_message({
             "type": "stream",
-            "stream": "trac",
+            "to": "trac",
             "content": content,
             "subject": trac_subject(ticket)
             })

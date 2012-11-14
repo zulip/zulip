@@ -59,14 +59,14 @@ if child_pid == 0:
     humbug_client.send_message({
             "type": "private",
             "content": str(hzkey1),
-            "recipient": humbug_user,
+            "to": humbug_user,
             });
     time.sleep(0.2)
     humbug_client.send_message({
             "type": "stream",
             "subject": "test",
             "content": str(hzkey2),
-            "stream": "tabbott-nagios-test",
+            "to": "tabbott-nagios-test",
             });
     if options.verbose:
         print "Sent Humbug messages!"
