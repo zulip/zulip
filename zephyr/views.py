@@ -420,13 +420,13 @@ def api_get_profile(request, user_profile):
 @has_request_variables
 def api_send_message(request, user_profile,
                      client_name=POST("client", default="API")):
-    return send_message_backend(request, user_profile, user_profile, client_name)
+    return send_message_backend(request, user_profile, client_name)
 
 @authenticated_json_view
 @has_request_variables
 def json_send_message(request, user_profile,
                       client_name=POST("client", default="website")):
-    return send_message_backend(request, user_profile, user_profile, client_name)
+    return send_message_backend(request, user_profile, client_name)
 
 # Currently tabbott/extra@mit.edu is our only superuser.  TODO: Make
 # this a real superuser security check.
@@ -507,7 +507,7 @@ def create_mirrored_message_users(request, user_profile):
 # send_message_backend should either check the API key or check that
 # the user is logged in.
 @has_request_variables
-def send_message_backend(request, user_profile, sender, client_name,
+def send_message_backend(request, user_profile, client_name,
                          message_type_name = POST('type'),
                          message_content = POST('content')):
     forged = "forged" in request.POST
@@ -536,6 +536,8 @@ def send_message_backend(request, user_profile, sender, client_name,
         if user_profile.realm.domain != "mit.edu":
             return json_error("Invalid mirrored realm")
         sender = mirror_sender
+    else:
+        sender = user_profile
 
     if message_type_name == 'stream':
         if "stream" not in request.POST:
