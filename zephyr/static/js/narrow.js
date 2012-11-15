@@ -129,6 +129,19 @@ exports.by_stream_name = function (name) {
     });
 };
 
+exports.by_private_message_partner = function (their_name, their_email) {
+    var new_narrow = {type: "huddle", one_on_one_email: their_email};
+    var bar = {icon: 'user', description: "You and " + their_name};
+    var my_email = email;
+    do_narrow(new_narrow, bar, function (other) {
+        return (other.type === 'personal') &&
+            (((other.display_recipient.email === their_email)
+              && (other.sender_email === my_email)) ||
+             ((other.display_recipient.email === my_email)
+              && (other.sender_email === their_email)));
+    });
+};
+
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function () {
     var message = message_dict[target_id];
