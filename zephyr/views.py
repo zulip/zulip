@@ -511,6 +511,9 @@ def send_message_backend(request, user_profile, client_name,
     if forged and not is_super_user:
         return json_error("User not authorized for this query")
 
+    if len(message_to) == 0:
+        return json_error("Message must have recipients.")
+
     if client_name == "zephyr_mirror":
         # Here's how security works for non-superuser mirroring:
         #
@@ -539,7 +542,7 @@ def send_message_backend(request, user_profile, client_name,
     if message_type_name == 'stream':
         if "subject" not in request.POST:
             return json_error("Missing subject")
-        if len(message_to) != 1:
+        if len(message_to) > 1:
             return json_error("Cannot send to multiple streams")
         stream_name = message_to[0].strip()
         subject_name = request.POST['subject'].strip()
