@@ -27,10 +27,10 @@ sys.path[:0] = [os.path.join(options.root_path, "python-zephyr"),
 mit_user = 'tabbott/extra@ATHENA.MIT.EDU'
 humbug_user = 'tabbott/extra@mit.edu'
 
-zhkey1 = random.getrandbits(32)
 hzkey1 = random.getrandbits(32)
-zhkey2 = random.getrandbits(32)
 hzkey2 = random.getrandbits(32)
+zhkey1 = random.getrandbits(32)
+zhkey2 = random.getrandbits(32)
 
 sys.path.append(".")
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -138,7 +138,7 @@ else:
         failed = True
 
     if failed:
-        print "original keys:", zhkey1, zhkey2, hzkey1, hzkey2
+        print "original keys:", hzkey1, hzkey2, zhkey1, zhkey2
         sys.exit(1)
 
     print "Success!"
