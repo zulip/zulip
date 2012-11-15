@@ -776,8 +776,14 @@ def json_change_settings(request, user_profile, full_name=POST,
 def json_stream_exists(request, user_profile, stream=POST):
     if not valid_stream_name(stream):
         return json_error("Invalid characters in stream name")
-    exists = bool(get_stream(stream, user_profile.realm))
-    return json_success({"exists": exists})
+    stream = get_stream(stream, user_profile.realm)
+    result = {"exists": bool(stream)}
+    if stream is not None:
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
+                                                           recipient=recipient,
+                                                           active=True).exists()
+    return json_success(result)
 
 @csrf_exempt
 @require_post

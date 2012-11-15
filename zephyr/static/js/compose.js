@@ -200,7 +200,7 @@ function compose_error(error_text, bad_input) {
 // *Synchronously* check if a stream exists.
 // If not, displays an error and returns false.
 function check_stream_for_send(stream_name) {
-    var okay = true;
+    var result = "error";
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/exists",
@@ -209,24 +209,28 @@ function check_stream_for_send(stream_name) {
         success: function (data) {
             if (!data.exists) {
                 // The stream doesn't exist
-                okay = false;
+                result = "does-not-exist";
                 $('#send-status').removeClass(status_classes).show();
                 $('#stream-dne-name').text(stream_name);
                 $('#stream-dne').show();
                 $("#compose-send-button").removeAttr('disabled');
                 exports.hide();
                 $('#create-it').focus();
+            } else if (data.subscribed) {
+                result = "subscribed";
+            } else {
+                result = "not-subscribed";
             }
             $("#home-error").hide();
         },
         error: function (xhr) {
-            okay = false;
+            result = "error";
             report_error("Error checking subscription", xhr, $("#home-error"));
             $("#stream").focus();
             $("#compose-send-button").removeAttr('disabled');
         }
     });
-    return okay;
+    return result;
 }
 
 function validate_stream_message() {
@@ -242,17 +246,23 @@ function validate_stream_message() {
     }
 
     if (!subs.have(stream_name)) {
-        if (!check_stream_for_send(stream_name)) {
+        switch(check_stream_for_send(stream_name)) {
+        case "does-not-exist":
+        case "error":
+            return false;
+        case "subscribed":
+            // You're actually subscribed to the stream, but this
+            // browser window doesn't know it.
+            return true;
+        case "not-subscribed":
+            $('#send-status').removeClass(status_classes).show();
+            $('#stream-nosub-name').text(stream_name);
+            $('#stream-nosub').show();
+            $("#compose-send-button").removeAttr('disabled');
+            exports.hide();
+            $('#sub-it').focus();
             return false;
         }
-        // You're not subbed to the stream
-        $('#send-status').removeClass(status_classes).show();
-        $('#stream-nosub-name').text(stream_name);
-        $('#stream-nosub').show();
-        $("#compose-send-button").removeAttr('disabled');
-        exports.hide();
-        $('#sub-it').focus();
-        return false;
     }
 
     return true;
