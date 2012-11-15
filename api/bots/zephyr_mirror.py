@@ -534,6 +534,9 @@ to these .zephyrs.subs lines, please do so via the Humbug
 web interface.
 """))
             print
+    if verbose:
+        print
+        print "IMPORTANT: Please reload the Humbug app for these changes to take effect."
 
 def valid_stream_name(name):
     return name != ""
