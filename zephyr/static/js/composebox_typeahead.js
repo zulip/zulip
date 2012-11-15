@@ -143,6 +143,14 @@ function select_on_focus(field_id) {
     });
 }
 
+exports.extract_name_and_email = function(name_and_email) {
+    var email_re = /<[^<]*>$/;
+    var email_with_brackets = email_re.exec(name_and_email)[0];
+    var their_name = name_and_email.substr(0, name_and_email.indexOf(email_with_brackets) - 1); // -1 for the space between the name & email.
+    var their_email = email_with_brackets.substring(1, email_with_brackets.length - 1); // Remove <>s.
+    return {name: their_name, email: their_email};
+};
+
 exports.initialize = function () {
     select_on_focus("stream");
     select_on_focus("subject");
@@ -202,9 +210,8 @@ exports.initialize = function () {
             // Extracting the email portion via regex is icky, but the Bootstrap
             // typeahead widget doesn't seem to be flexible enough to pass
             // objects around
-            var email_re = /<[^<]*>$/;
-            var email = email_re.exec(item)[0];
-            return previous_recipients + email.substring(1, email.length - 1) + ", ";
+            var name_and_email = exports.extract_name_and_email(item);
+            return previous_recipients + name_and_email.email + ", ";
         },
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
