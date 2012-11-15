@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+"""
+Nagios plugin to check that Zephyr mirror forwarding is running.
+
+This script just checks the contents of a file. The forwarding test
+itself lives in api/bots/check-mirroring and should be run out of cron
+at least every 5 minutes, e.g.:
+
+*/5 * * * * /home/humbug/api/bots/check-mirroring &> /var/run/nagios/check-mirroring-results
+"""
+
+import os
+import time
+
+RESULTS_FILE = "/var/run/nagios/check-mirroring-results"
+
+states = {
+    "OK": 0,
+    "WARNING": 1,
+    "CRITICAL": 2,
+    "UNKNOWN": 3
+    }
+
+def report(state, data, last_check):
+    print "%s: Last test run completed at %s\n%s" % (
+        state, time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check)),
+        data)
+    exit(states[state])
+
+data = file(RESULTS_FILE).read().strip()
+if data.split("\n")[-1].strip() == "0":
+    state = "OK"
+else:
+    state = "CRITICAL"
+
+last_check = os.stat(RESULTS_FILE).st_mtime
+time_since_last_check = time.time() - last_check
+if time_since_last_check > 60 * 5:
+    state = "UNKNOWN"
+    data = "Results file is stale"
+
+report(state, data, last_check)
