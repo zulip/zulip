@@ -471,7 +471,7 @@ def extract_recipients(request):
     except simplejson.decoder.JSONDecodeError:
         recipients = [raw_recipient]
 
-    return [recipient.strip().lower() for recipient in set(recipients)]
+    return [recipient.strip() for recipient in set(recipients)]
 
 def create_mirrored_message_users(request, user_profile, recipients):
     if "sender" not in request.POST:
@@ -481,7 +481,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
     referenced_users = set([sender_email])
     if request.POST['type'] == 'private':
         for email in recipients:
-            referenced_users.add(email)
+            referenced_users.add(email.lower())
 
     # Check that all referenced users are in our realm:
     for email in referenced_users:
@@ -573,7 +573,7 @@ def send_message_backend(request, user_profile, client_name,
             if recipient == "":
                 continue
             try:
-                recipient_profile_ids.add(UserProfile.objects.get(user__email=recipient).id)
+                recipient_profile_ids.add(UserProfile.objects.get(user__email__iexact=recipient).id)
             except UserProfile.DoesNotExist:
                 return json_error("Invalid email '%s'" % (recipient,))
 
