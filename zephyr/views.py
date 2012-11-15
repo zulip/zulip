@@ -505,8 +505,8 @@ def create_mirrored_message_users(request, user_profile, recipients):
 def send_message_backend(request, user_profile, client_name,
                          message_type_name = POST('type'),
                          message_to = POST('to', converter=extract_recipients),
+                         forged = POST(default=False),
                          message_content = POST('content')):
-    forged = "forged" in request.POST
     is_super_user = is_super_user_api(request)
     if forged and not is_super_user:
         return json_error("User not authorized for this query")
