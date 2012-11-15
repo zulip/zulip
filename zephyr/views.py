@@ -464,14 +464,15 @@ def same_realm_email(user_profile, email):
     except:
         return False
 
-def extract_recipients(request):
-    raw_recipient = request.POST.get("to")
+def extract_recipients(raw_recipients):
     try:
-        recipients = simplejson.loads(raw_recipient)
+        recipients = simplejson.loads(raw_recipients)
     except simplejson.decoder.JSONDecodeError:
-        recipients = [raw_recipient]
+        recipients = [raw_recipients]
 
-    return [recipient.strip() for recipient in set(recipients)]
+    # Strip recipients, and then remove any duplicates
+    recipients = [recipient.strip() for recipient in recipients]
+    return list(set(recipients))
 
 def create_mirrored_message_users(request, user_profile, recipients):
     if "sender" not in request.POST:
@@ -502,7 +503,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
 @has_request_variables
 def send_message_backend(request, user_profile, client_name,
                          message_type_name = POST('type'),
-                         message_to_raw = POST('to'),
+                         message_to = POST('to', converter=extract_recipients),
                          message_content = POST('content')):
     forged = "forged" in request.POST
     is_super_user = is_super_user_api(request)
@@ -524,8 +525,8 @@ def send_message_backend(request, user_profile, client_name,
             return json_error("Missing sender")
         if message_type_name != "private" and not is_super_user:
             return json_error("User not authorized for this query")
-        (valid_input, mirror_sender) = create_mirrored_message_users(request, user_profile,
-                                                                     extract_recipients(request))
+        (valid_input, mirror_sender) = \
+            create_mirrored_message_users(request, user_profile, message_to)
         if not valid_input:
             return json_error("Invalid mirrored message")
         if user_profile.realm.domain != "mit.edu":
@@ -537,10 +538,6 @@ def send_message_backend(request, user_profile, client_name,
     if message_type_name == 'stream':
         if "subject" not in request.POST:
             return json_error("Missing subject")
-        try:
-            message_to = simplejson.loads(message_to_raw)
-        except simplejson.decoder.JSONDecodeError:
-            message_to = [message_to_raw]
         if len(message_to) != 1:
             return json_error("Cannot send to multiple streams")
         stream_name = message_to[0].strip()
@@ -566,16 +563,14 @@ def send_message_backend(request, user_profile, client_name,
             return json_error("Stream does not exist")
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     elif message_type_name == 'private':
-        pm_recipients = extract_recipients(request)
-
         recipient_profile_ids = set()
-        for recipient in pm_recipients:
-            if recipient == "":
+        for email in message_to:
+            if email == "":
                 continue
             try:
-                recipient_profile_ids.add(UserProfile.objects.get(user__email__iexact=recipient).id)
+                recipient_profile_ids.add(UserProfile.objects.get(user__email__iexact=email).id)
             except UserProfile.DoesNotExist:
-                return json_error("Invalid email '%s'" % (recipient,))
+                return json_error("Invalid email '%s'" % (email,))
 
         if client_name == "zephyr_mirror":
             if user_profile.id not in recipient_profile_ids and not forged:
