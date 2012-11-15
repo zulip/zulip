@@ -19,6 +19,8 @@ pre code {
     background-color: white;
     padding: 0.5em;
     margin-top: 2em;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 @media (max-width: 767px) {
     .sidebar-nav {
@@ -40,6 +42,7 @@ ul#sidebar {
 .my_fullname {
     font-weight: bold;
     font-size: 150%;
+    white-space: nowrap;
 }
 .my_email {
     color: grey;
