@@ -473,14 +473,14 @@ def extract_recipients(request):
 
     return [recipient.strip().lower() for recipient in set(recipients)]
 
-def create_mirrored_message_users(request, user_profile):
+def create_mirrored_message_users(request, user_profile, recipients):
     if "sender" not in request.POST:
         return (False, None)
 
     sender_email = request.POST["sender"].strip().lower()
     referenced_users = set([sender_email])
     if request.POST['type'] == 'private':
-        for email in extract_recipients(request):
+        for email in recipients:
             referenced_users.add(email)
 
     # Check that all referenced users are in our realm:
@@ -524,7 +524,8 @@ def send_message_backend(request, user_profile, client_name,
             return json_error("Missing sender")
         if message_type_name != "private" and not is_super_user:
             return json_error("User not authorized for this query")
-        (valid_input, mirror_sender) = create_mirrored_message_users(request, user_profile)
+        (valid_input, mirror_sender) = create_mirrored_message_users(request, user_profile,
+                                                                     extract_recipients(request))
         if not valid_input:
             return json_error("Invalid mirrored message")
         if user_profile.realm.domain != "mit.edu":
