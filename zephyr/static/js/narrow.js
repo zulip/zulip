@@ -118,6 +118,17 @@ exports.by_subject = function () {
     });
 };
 
+//TODO: There's probably some room to unify this code
+//      with the hotkey-narrowing code below.
+exports.by_stream_name = function (name) {
+    var new_narrow = {type: "stream", stream: name};
+    var bar = {icon: 'bullhorn', description: name};
+    do_narrow(new_narrow, bar, function (other) {
+        return (other.type === 'stream' &&
+                name === other.display_recipient);
+    });
+};
+
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function () {
     var message = message_dict[target_id];
