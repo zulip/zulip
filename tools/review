@@ -310,7 +310,7 @@ def main(args):
                                   api_key=file(api_key_file).read().strip(),
                                   verbose=True)
     client.send_message({'type': "private",
-                         'recipient': opts.reviewers,
+                         'to': opts.reviewers,
                          'content': "I just sent you a review request!  Check your email for details."})
 
     if os.environ.get('REVIEW_USE_SENDMAIL', ''):
