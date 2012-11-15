@@ -567,9 +567,6 @@ def send_message_backend(request, user_profile, client_name,
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     elif message_type_name == 'private':
         pm_recipients = extract_recipients(request)
-        if client_name == "zephyr_mirror":
-            if user_profile.user.email not in pm_recipients and not forged:
-                return json_error("User not authorized for this query")
 
         recipient_profile_ids = set()
         for recipient in pm_recipients:
@@ -579,6 +576,10 @@ def send_message_backend(request, user_profile, client_name,
                 recipient_profile_ids.add(UserProfile.objects.get(user__email=recipient).id)
             except UserProfile.DoesNotExist:
                 return json_error("Invalid email '%s'" % (recipient,))
+
+        if client_name == "zephyr_mirror":
+            if user_profile.id not in recipient_profile_ids and not forged:
+                return json_error("User not authorized for this query")
 
         # If the private message is just between the sender and
         # another person, force it to be a personal internally
