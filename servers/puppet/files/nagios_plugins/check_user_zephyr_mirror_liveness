@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+
+"""
+Nagios plugin to check that our MIT users' Zephyr mirrors are running.
+
+It must be run on a machine that is using the live database for the
+Django ORM.
+"""
+
+import datetime
+import os
+import sys
+import time
+
+os.environ['DJANGO_SETTINGS_MODULE'] = "humbug.settings"
+sys.path.append('/home/humbug/humbug')
+sys.path.append('/home/humbug/humbug/zephyr')
+
+from django.contrib.auth.models import User
+from zephyr.models import UserActivity
+
+USERS_TO_IGNORE = (
+    'rhkeeler@mit.edu',
+    )
+
+states = {
+    "OK": 0,
+    "WARNING": 1,
+    "CRITICAL": 2,
+    "UNKNOWN": 3
+    }
+
+def report(state, short_msg, too_old=None):
+    too_old_data = ""
+    if too_old:
+        too_old_data = "\nLast call to get_message for out of date mirrors:\n" + "\n".join(
+            ["%16s: %s" % (user.user_profile.user.email,
+                           user.last_visit.strftime("%Y-%m-%d %H:%M %Z")
+                           ) for user in too_old]
+            )
+    print "%s: %s%s" % (state, short_msg, too_old_data)
+
+    exit(states[state])
+
+now = datetime.datetime.utcnow()
+
+too_old = []
+for user in UserActivity.objects.filter(query="/api/v1/get_messages",
+                                        client__name="zephyr_mirror"):
+    if user.user_profile.user.email in USERS_TO_IGNORE:
+        continue
+    if user.last_visit.replace(tzinfo=None) < now - datetime.timedelta(minutes=5):
+        too_old.append(user)
+
+if not too_old:
+    report("OK", "All mirrors active")
+else:
+    report("CRITICAL", "Some mirrors inactive", too_old)
