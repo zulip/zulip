@@ -502,7 +502,7 @@ def create_mirrored_message_users(request, user_profile):
 @has_request_variables
 def send_message_backend(request, user_profile, client_name,
                          message_type_name = POST('type'),
-                         message_to = POST('to'),
+                         message_to_raw = POST('to'),
                          message_content = POST('content')):
     forged = "forged" in request.POST
     is_super_user = is_super_user_api(request)
@@ -536,7 +536,13 @@ def send_message_backend(request, user_profile, client_name,
     if message_type_name == 'stream':
         if "subject" not in request.POST:
             return json_error("Missing subject")
-        stream_name = message_to.strip()
+        try:
+            message_to = simplejson.loads(message_to_raw)
+        except simplejson.decoder.JSONDecodeError:
+            message_to = [message_to_raw]
+        if len(message_to) != 1:
+            return json_error("Cannot send to multiple streams")
+        stream_name = message_to[0].strip()
         subject_name = request.POST['subject'].strip()
         if stream_name == "":
             return json_error("Stream can't be empty")
