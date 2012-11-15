@@ -14,8 +14,6 @@ var mapped = {};
 function narrow_or_search_for_term(item) {
     var obj = mapped[item];
     if (obj.action === "search") {
-        // TODO: Should this actually be in a keyup handler? Otherwise we can't tab over and search-down that easily
-        exports.search_button_handler(true); // Effectively, click the button (since enter is no longer going to)
         return obj.query;
     } else if (obj.action === "stream") {
         narrow.by_stream_name(obj.query);
@@ -96,18 +94,34 @@ exports.initialize = function () {
 
     $("#searchbox_form").keydown(function (e) {
         var code = e.which;
-        if (code === 13 && $("#search_query").data().typeahead.shown) {
-            // We pressed Enter and the typeahead is open;
-            // don't submit the form so that the typeahead
-            // can instead handle our Enter keypress.
+        var search_query_box = $("#search_query");
+        if (code === 13 && search_query_box.is(":focus")) {
+            // Don't submit the form so that the typeahead can instead
+            // handle our Enter keypress. Any searching that needs
+            // to be done will be handled in the keyup.
             e.preventDefault();
             return false;
         }
     });
-    // TODO: If we were to add a keyup handler, maybe we would blur
-    // the input after "Enter"?  Otherwise, right now, when we narrow,
-    // our cursor remains in the searchbox, when probably it should be
-    // blurred or move to the button or something.
+    $("#searchbox_form").keyup(function (e) {
+        var code = e.which;
+        var search_query_box = $("#search_query");
+        if (code === 13 && search_query_box.is(":focus")) {
+            // We just pressed enter and the box had focus, so one of
+            // two things is true:
+            // 1) There's a value in the search box and we should
+            // search for it
+            // 2) There's no value in the searchbox, so we just
+            // narrowed, so we should blur the box.
+            if (search_query_box.val()) {
+                $("#search_up").focus();
+                exports.search_button_handler(true);
+            } else {
+                exports.clear_search();
+                search_query_box.blur();
+            }
+        }
+    });
 };
 
 function match_on_visible_text(row, search_term) {
