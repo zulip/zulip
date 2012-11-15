@@ -1,6 +1,6 @@
 Hello,
 
-Thanks for agreeing to help test out Humbug.
+Thanks for giving Humbug a try!
 
 There are a few steps you need to take to ensure Humbug works with your
 MIT Zephyr account.
@@ -11,19 +11,33 @@ MIT Zephyr account.
  2) Get your API key from the "Settings" panel and put it in your
     Athena home directory at ~/Private/.humbug-api-key.
 
- 3) Copy over your Zephyr subscriptions by running the command below:
-        /mit/tabbott/humbug/zephyr_mirror.py --sync-subscriptions
+ 3) Copy over your Zephyr subscriptions
 
- 4) Run the Zephyr mirroring script on a server with long-lived tickets.
-        /mit/tabbott/humbug/zephyr_mirror.py
+    NOTE: Humbug does not currently support filters; everything you subscribe
+    to will be in your default view. If you have too many subscriptions (you
+    know who you are), you may want to manually subscribe to just your main
+    view via the "Subscriptions" tab in Humbug.
+
+    If you would like to copy over all of your subscriptions, please run the
+    command below:
+            /mit/tabbott/humbug/zephyr_mirror.py --sync-subscriptions
+
+    After running the script, please reload Humbug to allow the changes to
+    take effect.
+
+ 4) On an Athena dialup (linerva.mit.edu, scrubbing-bubbles.mit.edu, etc),
+    run the Zephyr mirroring script.
 
     The script copies personals you receive on Zephyr to Humbug, and
     copies messages you send from Humbug to Zephyr. You should keep this
     script always running in a session with Kerberos tickets.
 
-    You may want to run this with owl-screen or kchen's
-    cont-renew-notify.
+    If you already have Barnowl running in screen/tmux somewhere, you can just
+    run the command below inside that session. If not, see "Running Barnowl in
+    Screen" at <http://sipb.mit.edu/doc/zephyr/> for an explanation.
 
+    To set up Zephyr mirroring, run:
+        /mit/tabbott/humbug/zephyr_mirror.py
 
  5) Visit the running app at:
         <https://humbughq.com/>
@@ -35,3 +49,4 @@ app if you have any questions or encounter any problems.
 Cheers,
 
 Jeff, Waseem, Jessica, Tim, Keegan, Luke, and Zev
+
