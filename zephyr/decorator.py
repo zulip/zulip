@@ -20,7 +20,7 @@ def asynchronous(method):
     @wraps(method)
     def wrapper(request, *args, **kwargs):
         try:
-            v = method(request, request._tornado_handler, *args, **kwargs)
+            v = method(request, handler=request._tornado_handler, *args, **kwargs)
             if v == None or type(v) == types.GeneratorType:
                 raise TornadoAsyncException
         except _DefGen_Return, e:
