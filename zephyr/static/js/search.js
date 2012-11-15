@@ -7,18 +7,90 @@ var cached_matches = [];
 var cached_index;
 var cached_table = $('table.focused_table');
 
+// Data storage for the typeahead -- to go from object to string representation and vice versa.
+var labels = [];
+var mapped = {};
+
 function narrow_or_search_for_term(item) {
-    console.log("Narrowing or searching for", item);
+    var obj = mapped[item];
+    if (obj.action === "search") {
+        // TODO: Should this actually be in a keyup handler? Otherwise we can't tab over and search-down that easily
+        exports.search_button_handler(true); // Effectively, click the button (since enter is no longer going to)
+        return obj.query;
+    } else if (obj.action === "stream") {
+        narrow.by_stream_name(obj.query);
+        // It's sort of annoying that this is not in a position to
+        // blur the search box, because it means that Esc won't
+        // unnarrow, it'll leave the searchbox.
+        return ""; // Keep the search box empty
+    } else if (obj.action === "private_message") {
+        narrow.by_private_message_partner(obj.query.full_name, obj.query.email);
+        return "";
+    }
     return item;
+}
+
+function render_object(obj) {
+    if (obj.action === 'search') {
+        return "Search for " + obj.query;
+    } else if (obj.action === 'stream') {
+        return "Narrow to stream " + obj.query;
+    } else if (obj.action === 'private_message') {
+        return "Narrow to person " + obj.query.full_name + " <" + obj.query.email + ">";
+    }
+    return "Error";
+}
+
+// Borrowed from composebox_typeahead_highlighter in composebox_typeahead.js.
+function searchbox_typeahead_highlighter(item) {
+    var query = this.query;
+    var string_item = render_object(mapped[item]);
+    query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+    var regex = new RegExp('(' + query + ')', 'ig');
+    var pieces = string_item.split(regex);
+    var result = "";
+    $.each(pieces, function(idx, piece) {
+        if (piece.match(regex)) {
+            result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
+        } else {
+            result += Handlebars.Utils.escapeExpression(piece);
+        }
+    });
+    return result;
 }
 
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
-            return stream_list;
+            var streams = $.map(stream_list, function(elt,idx) {
+                return {action: 'stream', query: elt};
+            });
+            var people = $.map(people_list, function(elt,idx) {
+                return {action: 'private_message', query: elt};
+            });
+            var options = streams.concat(people);
+            options.unshift({action: 'search', query: query});
+
+            mapped = {};
+            labels = [];
+            $.each(options, function (i, obj) {
+                var label = render_object(obj);
+                mapped[label] = obj;
+                labels.push(label);
+            });
+            return labels;
         },
         items: 3,
-        highlighter: composebox_typeahead.escaping_typeahead_highlighter,
+        highlighter: searchbox_typeahead_highlighter,
+        matcher: function (item) {
+            var obj = mapped[item];
+            var actual_search_term = obj.query;
+            if (obj.action === 'private_message') {
+                actual_search_term = obj.query.full_name + ' <' + obj.query.email + '>';
+            }
+            // Case-insensitive (from Bootstrap's default matcher).
+            return (actual_search_term.toLowerCase().indexOf(this.query.toLowerCase()) !== -1);
+        },
         updater: narrow_or_search_for_term
     });
 
@@ -32,6 +104,10 @@ exports.initialize = function () {
             return false;
         }
     });
+    // TODO: If we were to add a keyup handler, maybe we would blur
+    // the input after "Enter"?  Otherwise, right now, when we narrow,
+    // our cursor remains in the searchbox, when probably it should be
+    // blurred or move to the button or something.
 };
 
 function match_on_visible_text(row, search_term) {
