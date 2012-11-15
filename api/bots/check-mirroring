@@ -41,6 +41,14 @@ humbug_client = api.common.HumbugAPI(email=humbug_user,
                                      client="test: Humbug API",
                                      site=options.site)
 
+def print_status_and_exit(status):
+    # The output of this script is used by Nagios. Various outputs,
+    # e.g. true success and punting due to a SERVNAK, result in a
+    # non-alert case, so to give us something unambiguous to check in
+    # Nagios, print the exit status.
+    print status
+    sys.exit(status)
+
 def print_zephyr(notice):
     print notice.cls, notice.instance, notice.sender, notice.message.split('\0')[1]
 
@@ -56,24 +64,40 @@ child_pid = os.fork()
 if child_pid == 0:
     # Run the humbug => zephyr mirror in the child
     time.sleep(3)
-    humbug_client.send_message({
+    result = humbug_client.send_message({
             "type": "private",
             "content": str(hzkey1),
             "to": humbug_user,
-            });
+            })
+
+    if result["result"] != "success":
+        print "key1 send error:"
+        print result
+
     time.sleep(0.2)
-    humbug_client.send_message({
+    result = humbug_client.send_message({
             "type": "stream",
             "subject": "test",
             "content": str(hzkey2),
             "to": "tabbott-nagios-test",
-            });
+            })
+
+    if result["result"] != "success":
+        print "key2 send error:"
+        print result
+
     if options.verbose:
         print "Sent Humbug messages!"
     time.sleep(0.5)
 
     import zephyr
-    zephyr.init()
+    try:
+        zephyr.init()
+    except IOError, e:
+        if "SERVNAK received" in e:
+            print "SERVNAK received, punting rest of test"
+            print_status_and_exit(0)
+
     zsig = "Timothy Good Abbott"
 
     zeph = zephyr.ZNotice(sender=mit_user, auth=True, recipient=mit_user,
@@ -93,7 +117,13 @@ if child_pid == 0:
 else:
     failed = False
     import zephyr
-    zephyr.init()
+    try:
+        zephyr.init()
+    except IOError, e:
+        if "SERVNAK received" in e:
+            print "SERVNAK received, punting rest of test"
+            print_status_and_exit(0)
+
     subs = zephyr.Subscriptions()
     subs.add(('message', 'personal', 'tabbott/extra@ATHENA.MIT.EDU'))
     subs.add(('tabbott-nagios-test', '*', '*'))
@@ -139,7 +169,7 @@ else:
 
     if failed:
         print "original keys:", hzkey1, hzkey2, zhkey1, zhkey2
-        sys.exit(1)
+        print_status_and_exit(1)
 
     print "Success!"
-    sys.exit(0)
+    print_status_and_exit(0)
