@@ -372,7 +372,7 @@ input.send_message {
     visibility: visible;
     max-height: 30px;
     padding: 5px 10px;
-    width: 640px;
+    max-width: 640px;
 }
 
 .always_in_view {
@@ -380,8 +380,7 @@ input.send_message {
 }
 
 #search_query {
-    /* If this changes, also change the width in search.js:clear_search */
-    width: 610px;
+    width: 95%;
 }
 
 .highlight {

@@ -112,7 +112,11 @@ function clear_search_cache() {
 }
 
 exports.focus_search = function () {
-    $("#search_query").width("504px");
+    // Shrink the searchbox to make room for the buttons.
+    var search_query = $('#search_query');
+    var new_width = search_query.width() -
+        $('.search_button').outerWidth(true)*3;
+    search_query.width(new_width);
     $("#search_arrows").addClass("input-append");
     $('.search_button').show();
     disable_search_arrows_if(false, ["up", "down"]);
@@ -124,9 +128,8 @@ exports.initiate_search = function () {
 
 exports.clear_search = function () {
     $('table tr').removeHighlight();
-    // Reset the width to that in the stylesheet. If you change it there, change
-    // it here.
-    $('#search_query').val('').width("610px");
+    // Clear & reset searchbox to its normal size
+    $('#search_query').val('').width('');
     $("#search_arrows").removeClass("input-append");
     $("#search_up, #search_down").removeAttr("disabled");
     $('.search_button').blur().hide();
