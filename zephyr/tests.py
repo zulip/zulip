@@ -5,9 +5,9 @@ from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, Realm, do_send_message, Client
-from zephyr.views import json_get_updates
+from zephyr.views import json_get_updates, api_get_messages
 from zephyr.decorator import TornadoAsyncException
-from zephyr.lib.initial_password import initial_password
+from zephyr.lib.initial_password import initial_password, initial_api_key
 
 import simplejson
 import subprocess
@@ -41,6 +41,8 @@ class AuthedTestCase(TestCase):
                                 {'full_name': username, 'password': password,
                                  'key': find_key_by_email(username + '@humbughq.com'),
                                  'terms': True})
+    def get_api_key(self, email):
+        return initial_api_key(email)
 
     def get_user_profile(self, email):
         """
@@ -291,6 +293,20 @@ class PointerTest(AuthedTestCase):
         self.assert_json_success(result)
         self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, 1)
 
+    def test_api_update_pointer(self):
+        """
+        Same as above, but for the API view
+        """
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        self.assertEquals(self.get_user_profile(email).pointer, -1)
+        result = self.client.post("/api/v1/update_pointer", {"email": email,
+                                                             "api-key": api_key,
+                                                             "client_id": "blah",
+                                                             "pointer": 1})
+        self.assert_json_success(result)
+        self.assertEquals(self.get_user_profile(email).pointer, 1)
+
     def test_missing_pointer(self):
         """
         Posting json to /json/update_pointer which does not contain a pointer key/value pair
@@ -338,6 +354,21 @@ class MessagePOSTTest(AuthedTestCase):
                                                          "client": "test suite",
                                                          "content": "Test message",
                                                          "subject": "Test subject"})
+        self.assert_json_success(result)
+
+    def test_api_message_to_self(self):
+        """
+        Same as above, but for the API view
+        """
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        result = self.client.post("/api/v1/send_message", {"type": "stream",
+                                                           "stream": "Verona",
+                                                           "client": "test suite",
+                                                           "content": "Test message",
+                                                           "subject": "Test subject",
+                                                           "email": email,
+                                                           "api-key": api_key})
         self.assert_json_success(result)
 
     def test_message_to_nonexistent_stream(self):
@@ -412,12 +443,7 @@ class POSTRequestMock(object):
 class GetUpdatesTest(AuthedTestCase):
     fixtures = ['messages.json']
 
-    def test_json_get_updates(self):
-        """
-        json_get_updates returns messages with IDs greater than the
-        last_received ID.
-        """
-        self.login("hamlet@humbughq.com")
+    def common_test_get_updates(self, view_func, extra_post_data = {}):
         user = User.objects.get(email="hamlet@humbughq.com")
 
         def callback(messages):
@@ -426,11 +452,29 @@ class GetUpdatesTest(AuthedTestCase):
                 self.assertTrue(message in correct_messages)
                 self.assertTrue(message.id > 1)
 
-        request = POSTRequestMock({"last": str(1), "first": str(1)}, user, callback)
+        post_data = {"last": str(1), "first": str(1)}
+        post_data.update(extra_post_data)
+        request = POSTRequestMock(post_data, user, callback)
         # json_get_updates returns None, which raises an exception in the
         # @asynchronous decorator, which raises a TornadoAsyncException. So this
         # is expected, but should probably change.
-        self.assertRaises(TornadoAsyncException, json_get_updates, request)
+        self.assertRaises(TornadoAsyncException, view_func, request)
+
+    def test_json_get_updates(self):
+        """
+        json_get_updates returns messages with IDs greater than the
+        last_received ID.
+        """
+        self.login("hamlet@humbughq.com")
+        self.common_test_get_updates(json_get_updates)
+
+    def test_api_get_messages(self):
+        """
+        Same as above, but for the API view
+        """
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        self.common_test_get_updates(api_get_messages, {'email': email, 'api-key': api_key})
 
     def test_beyond_last_message(self):
         """
