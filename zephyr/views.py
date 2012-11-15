@@ -470,9 +470,10 @@ def extract_recipients(raw_recipients):
     except simplejson.decoder.JSONDecodeError:
         recipients = [raw_recipients]
 
-    # Strip recipients, and then remove any duplicates
+    # Strip recipients, and then remove any duplicates and any that
+    # are the empty string after being stripped.
     recipients = [recipient.strip() for recipient in recipients]
-    return list(set(recipients))
+    return list(set(recipient for recipient in recipients if recipient))
 
 def create_mirrored_message_users(request, user_profile, recipients):
     if "sender" not in request.POST:
@@ -565,8 +566,6 @@ def send_message_backend(request, user_profile, client_name,
     elif message_type_name == 'private':
         recipient_profile_ids = set()
         for email in message_to:
-            if email == "":
-                continue
             try:
                 recipient_profile_ids.add(UserProfile.objects.get(user__email__iexact=email).id)
             except UserProfile.DoesNotExist:
