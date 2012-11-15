@@ -512,3 +512,7 @@ table.floating_recipient {
 .hotkeys_table .hotkey_heading {
     padding-top: 1em;
 }
+
+.cursor_pointer {
+    cursor: pointer;
+}
