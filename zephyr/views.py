@@ -688,11 +688,9 @@ def json_list_subscriptions(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)})
 
 @authenticated_json_view
-def json_remove_subscription(request, user_profile):
-    if 'subscription' not in request.POST:
-        return json_error("Missing subscriptions")
-
-    sub_name = request.POST.get('subscription')
+@has_request_variables
+def json_remove_subscription(request, user_profile,
+                             sub_name=POST("subscription")):
     stream = get_stream(sub_name, user_profile.realm)
     if not stream:
         return json_error("Stream does not exist")
