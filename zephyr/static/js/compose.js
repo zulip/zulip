@@ -225,7 +225,7 @@ function check_stream_for_send(stream_name) {
         },
         error: function (xhr) {
             result = "error";
-            report_error("Error checking subscription", xhr, $("#home-error"));
+            ui.report_error("Error checking subscription", xhr, $("#home-error"));
             $("#stream").focus();
             $("#compose-send-button").removeAttr('disabled');
         }

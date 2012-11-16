@@ -74,7 +74,7 @@ function do_reload_app(send_after_reload) {
         preserve_compose(send_after_reload);
     }
     // TODO: We need a better API for showing messages.
-    report_message("The application has been updated; reloading!", $("#reloading-application"));
+    ui.report_message("The application has been updated; reloading!", $("#reloading-application"));
     reload_in_progress = true;
     window.location.reload(true);
 }

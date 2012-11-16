@@ -96,7 +96,7 @@ function handle_keyup(e) {
     var code = e.keyCode || e.which;
     if (code === 13 || (code === 9 && !e.shiftKey)) { // Enter key or tab key
         if (nextFocus) {
-            focus_on(nextFocus);
+            ui.focus_on(nextFocus);
             nextFocus = false;
         }
     }

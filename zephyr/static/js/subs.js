@@ -60,7 +60,7 @@ exports.fetch = function () {
             $('#streams').focus().select();
         },
         error: function (xhr) {
-            report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
+            ui.report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
         }
     });
 };
@@ -78,7 +78,7 @@ exports.subscribe_for_send = function (stream, prompt_button) {
             prompt_button.stop(true).fadeOut(500);
         },
         error: function (xhr, error_type, exn) {
-            report_error("Unable to subscribe", xhr, $("#home-error"));
+            ui.report_error("Unable to subscribe", xhr, $("#home-error"));
         }
     });
 };
@@ -100,17 +100,17 @@ function ajaxSubscribe(stream) {
             var name, res = $.parseJSON(xhr.responseText);
             if (res.subscribed.length === 0) {
                 name = res.already_subscribed[0];
-                report_success("Already subscribed to " + name, $("#subscriptions-status"));
+                ui.report_success("Already subscribed to " + name, $("#subscriptions-status"));
             } else {
                 name = res.subscribed[0];
-                report_success("Successfully added subscription to " + name,
+                ui.report_success("Successfully added subscription to " + name,
                                $("#subscriptions-status"));
             }
             add_to_stream_list(name);
             $("#streams").focus();
         },
         error: function (xhr) {
-            report_error("Error adding subscription", xhr, $("#subscriptions-status"));
+            ui.report_error("Error adding subscription", xhr, $("#subscriptions-status"));
             $("#streams").focus();
         }
     });
@@ -126,11 +126,11 @@ exports.unsubscribe = function (stream) {
             var name, res = $.parseJSON(xhr.responseText);
             if (res.removed.length === 0) {
                 name = res.not_subscribed[0];
-                report_success("Already not subscribed to " + name,
+                ui.report_success("Already not subscribed to " + name,
                                $("#subscriptions-status"));
             } else {
                 name = res.removed[0];
-                report_success("Successfully removed subscription to " + name,
+                ui.report_success("Successfully removed subscription to " + name,
                                $("#subscriptions-status"));
             }
             $('#subscriptions_table').find('button[value="' + name + '"]').text("Subscribe")
@@ -146,7 +146,7 @@ exports.unsubscribe = function (stream) {
             $("#streams").focus();
         },
         error: function (xhr) {
-            report_error("Error removing subscription", xhr, $("#subscriptions-status"));
+            ui.report_error("Error removing subscription", xhr, $("#subscriptions-status"));
             $("#streams").focus();
         }
     });

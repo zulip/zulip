@@ -42,10 +42,7 @@ var globals =
     + ' typeahead_helper'
 
     // ui.js
-    + ' register_onclick hide_email show_email focus_on'
-    + ' report_error report_success report_message clicking mouse_moved'
-    + ' userinfo_currently_popped hide_userinfo_popover update_gravatars'
-    + ' gravatar_stamp register_user_info_mouseover register_user_info_mouseout'
+    + ' ui'
 
     // zephyr.js
     + ' message_array message_dict get_updates_params'

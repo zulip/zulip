@@ -326,7 +326,7 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         message.dom_id = table_name + message.id;
 
         if (message.sender_email === email) {
-            message.stamp = gravatar_stamp;
+            message.stamp = ui.get_gravatar_stamp();
         }
 
         messages_to_render.push(message);

@@ -1,3 +1,7 @@
+var ui = (function () {
+
+var exports = {};
+
 // We want to remember how far we were scrolled on each 'tab'.
 // To do so, we need to save away the old position of the
 // scrollbar when we switch to a new tab (and restore it
@@ -5,7 +9,7 @@
 var scroll_positions = {};
 var gravatar_stamp = 1;
 
-function focus_on(field_id) {
+exports.focus_on = function (field_id) {
     // Call after autocompleting on a field, to advance the focus to
     // the next input field.
 
@@ -13,7 +17,7 @@ function focus_on(field_id) {
     // autocomplete selection has been made, so we have to do this
     // manually.
     $("#" + field_id).focus();
-}
+};
 
 /* We use 'visibility' rather than 'display' and jQuery's show() / hide(),
    because we want to reserve space for the email address.  This avoids
@@ -31,28 +35,28 @@ function show_email(message_row) {
     message_row.find('.sender_email').removeClass('invisible');
 }
 
-function report_message(response, status_box, cls) {
+exports.report_message = function (response, status_box, cls) {
     if (cls === undefined)
         cls = 'alert';
 
     status_box.removeClass(status_classes).addClass(cls)
               .text(response).stop(true).fadeTo(0, 1);
     status_box.show();
-}
+};
 
-function report_error(response, xhr, status_box) {
+exports.report_error = function (response, xhr, status_box) {
     if (xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
         response += ": " + $.parseJSON(xhr.responseText).msg;
     }
 
-    report_message(response, status_box, 'alert-error');
-}
+    ui.report_message(response, status_box, 'alert-error');
+};
 
-function report_success(response, status_box) {
-    report_message(response, status_box, 'alert-success');
-}
+exports.report_success = function (response, status_box) {
+    ui.report_message(response, status_box, 'alert-success');
+};
 
 var clicking = false;
 var mouse_moved = false;
@@ -211,10 +215,10 @@ function hack_for_floating_recipient_bar() {
     floating_recipient.offset(offset);
 }
 
-function show_api_key_box() {
+exports.show_api_key_box = function () {
     $("#get_api_key_box").show();
     $("#api_key_button_box").hide();
-}
+};
 
 var current_userinfo_popover_elem;
 function show_userinfo_popover(element, id) {
@@ -232,18 +236,18 @@ function show_userinfo_popover(element, id) {
     }
 }
 
-function hide_userinfo_popover() {
-    if (userinfo_currently_popped()) {
+exports.hide_userinfo_popover = function () {
+    if (ui.userinfo_currently_popped()) {
         current_userinfo_popover_elem.popover("destroy");
         current_userinfo_popover_elem = undefined;
     }
-}
+};
 
-function userinfo_currently_popped() {
+exports.userinfo_currently_popped = function () {
     return current_userinfo_popover_elem !== undefined;
-}
+};
 
-function safari_composebox_hack(forwards) {
+exports.safari_composebox_hack = function (forwards) {
     // OK, so the situation here is basically a lot of work so that
     // Tab-Enter is a valid hotkey for sending a message in Safari.
     // By default, Safari uses Tab only to cycle through textboxes,
@@ -264,7 +268,49 @@ function safari_composebox_hack(forwards) {
     } else {
         $('#new_message_content').focus();
     }
+};
+
+function update_gravatars() {
+    $.each($(".gravatar-profile"), function(index, profile) {
+        $(this).attr('src', $(this).attr('src') + '?stamp=' + gravatar_stamp);
+    });
+    gravatar_stamp += 1;
 }
+
+function poll_for_gravatar_update(start_time, url) {
+    var updated = false;
+
+    $.ajax({
+        type: "HEAD",
+        url: url,
+        async: false,
+        cache: false,
+        success: function (resp, statusText, xhr) {
+            if (new Date(xhr.getResponseHeader('Last-Modified')) > start_time) {
+                update_gravatars();
+                updated = true;
+            }
+        }
+    });
+
+    // Give users 5 minutes to update their picture on gravatar.com,
+    // during which we try to auto-update their image on our site. If
+    // they take longer than that, we'll update when they press the
+    // save button.
+    if (!updated && (($.now() - start_time) < 1000 * 60 * 5)) {
+        setTimeout(function() {
+            poll_for_gravatar_update(start_time, url);
+        }, 1500);
+    }
+}
+
+exports.get_gravatar_stamp = function () {
+    return gravatar_stamp;
+};
+
+exports.wait_for_gravatar = function () {
+    poll_for_gravatar_update($.now(), $(".gravatar-profile").attr("src"));
+};
 
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
@@ -429,7 +475,7 @@ $(function () {
     search.initialize();
 
     $("body").bind('click', function() {
-        hide_userinfo_popover();
+        ui.hide_userinfo_popover();
     });
 
     $("#main_div").on("click", ".messagebox", function (e) {
@@ -482,7 +528,7 @@ $(function () {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         var last_popover_elem = current_userinfo_popover_elem;
-        hide_userinfo_popover();
+        ui.hide_userinfo_popover();
         if (last_popover_elem === undefined
             || last_popover_elem.get()[0] !== this) {
             // Only show the popover if either no popover is
@@ -508,40 +554,5 @@ $(function () {
     });
 });
 
-function update_gravatars() {
-    $.each($(".gravatar-profile"), function(index, profile) {
-        $(this).attr('src', $(this).attr('src') + '?stamp=' + gravatar_stamp);
-    });
-    gravatar_stamp += 1;
-}
-
-function poll_for_gravatar_update(start_time, url) {
-    var updated = false;
-
-    $.ajax({
-        type: "HEAD",
-        url: url,
-        async: false,
-        cache: false,
-        success: function (resp, statusText, xhr) {
-            if (new Date(xhr.getResponseHeader('Last-Modified')) > start_time) {
-                update_gravatars();
-                updated = true;
-            }
-        }
-    });
-
-    // Give users 5 minutes to update their picture on gravatar.com,
-    // during which we try to auto-update their image on our site. If
-    // they take longer than that, we'll update when they press the
-    // save button.
-    if (!updated && (($.now() - start_time) < 1000 * 60 * 5)) {
-        setTimeout(function() {
-            poll_for_gravatar_update(start_time, url);
-        }, 1500);
-    }
-}
-
-function wait_for_gravatar() {
-    poll_for_gravatar_update($.now(), $(".gravatar-profile").attr("src"));
-}
+return exports;
+}());
