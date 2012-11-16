@@ -265,8 +265,9 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
 
     var table = rows.get_table(table_name);
     var messages_to_render = [];
-    var ids_where_next_is_same_sender = [];
+    var ids_where_next_is_same_sender = {};
     var prev;
+    var last_message_id;
 
     var current_group = [];
     var new_message_groups = [];
@@ -292,7 +293,8 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         // Delete the leftover recipient label.
         table.find('.recipient_row:first').remove();
     } else {
-        prev = message_dict[rows.id(table.find('tr:last-child'))];
+        last_message_id = rows.id(table.find('tr:last-child'));
+        prev = message_dict[last_message_id];
     }
 
     $.each(messages, function (index, message) {
@@ -318,7 +320,7 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
             same_sender(prev, message) &&
             (Math.abs(message.timestamp - prev.timestamp) < 60*10)) {
             message.include_sender = false;
-            ids_where_next_is_same_sender.push(prev.id);
+            ids_where_next_is_same_sender[prev.id] = true;
         }
 
         add_display_time(message, prev);
@@ -342,29 +344,42 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         message_groups[table_name] = message_groups[table_name].concat(new_message_groups);
     }
 
-    var rendered = templates.message({
+    var rendered_elems = $(templates.message({
         messages: messages_to_render,
         include_layout_row: (table.find('tr:first').length === 0)
-    });
+    }));
 
-    if (where === 'top') {
-        table.find('.ztable_layout_row').after(rendered);
-    } else {
-        table.append(rendered);
-    }
-
-    $.each(messages_to_render, function (index, message) {
-        var row = rows.get(message.id, table_name);
+    $.each(rendered_elems, function (index, elem) {
+        var row = $(elem);
+        if (! row.hasClass('message_row')) {
+            return;
+        }
         row.find('.message_content a').each(function (index, link) {
             link = $(link);
             link.attr('target',  '_blank')
                 .attr('title',   link.attr('href'));
         });
+        var id = row.attr('zid');
+        if (ids_where_next_is_same_sender[id]) {
+            row.find('.messagebox').addClass("next_is_same_sender");
+        }
     });
 
-    $.each(ids_where_next_is_same_sender, function (index, id) {
-        rows.get(id, table_name).find('.messagebox').addClass("next_is_same_sender");
-    });
+    // The message that was last before this batch came in has to be
+    // handled specially because we didn't just render it and
+    // therefore have to lookup its associated element
+    if (last_message_id !== undefined
+        && ids_where_next_is_same_sender[last_message_id])
+    {
+        var row = rows.get(last_message_id, table_name);
+        row.find('.messagebox').addClass("next_is_same_sender");
+    }
+
+    if (where === 'top') {
+        table.find('.ztable_layout_row').after(rendered_elems);
+    } else {
+        table.append(rendered_elems);
+    }
 }
 
 function case_insensitive_find(term, array) {
