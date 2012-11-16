@@ -78,9 +78,8 @@ function process_hotkey(e) {
         }
         return false;
     case 27: // Esc: close userinfo popup, cancel compose, or un-narrow
-        if (userinfo_currently_popped !== undefined) {
-            userinfo_currently_popped.popover("destroy");
-            userinfo_currently_popped = undefined;
+        if (userinfo_currently_popped()) {
+            hide_userinfo_popover();
         } else if (compose.composing()) {
             compose.cancel();
         } else {

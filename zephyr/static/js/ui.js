@@ -216,17 +216,11 @@ function show_api_key_box() {
     $("#api_key_button_box").hide();
 }
 
-var userinfo_currently_popped;
-function userinfo_popover(event, element, id) {
-    event.stopPropagation();
+var current_userinfo_popover_elem;
+function show_userinfo_popover(element, id) {
     select_message_by_id(id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
-        // One popover at a time.
-        if (userinfo_currently_popped) {
-            userinfo_currently_popped.popover("destroy");
-            userinfo_currently_popped = undefined;
-        }
         var message = message_dict[id];
         elt.popover({placement: "bottom",
                      title: templates.userinfo_popover_title(message),
@@ -234,11 +228,19 @@ function userinfo_popover(event, element, id) {
                      trigger: "manual"
                     });
         elt.popover("show");
-        userinfo_currently_popped = elt;
-    } else {
-        elt.popover("destroy");
-        userinfo_currently_popped = undefined;
+        current_userinfo_popover_elem = elt;
     }
+}
+
+function hide_userinfo_popover() {
+    if (userinfo_currently_popped()) {
+        current_userinfo_popover_elem.popover("destroy");
+        current_userinfo_popover_elem = undefined;
+    }
+}
+
+function userinfo_currently_popped() {
+    return current_userinfo_popover_elem !== undefined;
 }
 
 function safari_composebox_hack(forwards) {
@@ -427,10 +429,7 @@ $(function () {
     search.initialize();
 
     $("body").bind('click', function() {
-        if (userinfo_currently_popped !== undefined) {
-            userinfo_currently_popped.popover('destroy');
-            userinfo_currently_popped = undefined;
-        }
+        hide_userinfo_popover();
     });
 
     $("#main_div").on("click", ".messagebox", function (e) {
@@ -481,7 +480,19 @@ $(function () {
 
     $("#main_div").on("click", ".user_info_hover", function (e) {
         var row = $(this).closest(".message_row");
-        userinfo_popover(e, this, row.attr('zid'));
+        e.stopPropagation();
+        var last_popover_elem = current_userinfo_popover_elem;
+        hide_userinfo_popover();
+        if (last_popover_elem === undefined
+            || last_popover_elem.get()[0] !== this) {
+            // Only show the popover if either no popover is
+            // currently up or if the user has clicked on a different
+            // user_info_hover element than the one that deployed the
+            // last popover.  That is, we want it to be the case that
+            // a user can dismiss a popover by clicking on the same
+            // element that caused the popover
+            show_userinfo_popover(this, row.attr('zid'));
+        }
     });
 
     $("#main_div").on("click", ".narrows_by_recipient", function (e) {
