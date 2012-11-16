@@ -103,12 +103,12 @@ class HumbugAPI():
     def get_public_streams(self, request = {}):
         return self.do_api_query(request, "/api/v1/get_public_streams")
 
-    def get_subscriptions(self, request = {}):
-        return self.do_api_query(request, "/api/v1/get_subscriptions")
+    def list_subscriptions(self, request = {}):
+        return self.do_api_query(request, "/api/v1/subscriptions/list")
 
-    def subscribe(self, streams):
+    def add_subscriptions(self, streams):
         request = {'streams': streams}
-        return self.do_api_query(request, "/api/v1/subscribe")
+        return self.do_api_query(request, "/api/v1/subscriptions/add")
 
     def call_on_each_message(self, callback, options = {}):
         max_message_id = None

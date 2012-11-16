@@ -701,7 +701,7 @@ def gather_subscriptions(user_profile):
                   if sub.recipient.type == Recipient.STREAM)
 
 @authenticated_api_view
-def api_get_subscriptions(request, user_profile):
+def api_list_subscriptions(request, user_profile):
     return json_success({"streams": gather_subscriptions(user_profile)})
 
 @authenticated_json_view
@@ -710,8 +710,8 @@ def json_list_subscriptions(request, user_profile):
 
 @authenticated_json_view
 @has_request_variables
-def json_remove_subscription(request, user_profile,
-                             sub_name=POST("subscription")):
+def json_remove_subscriptions(request, user_profile,
+                              sub_name=POST("subscription")):
     stream = get_stream(sub_name, user_profile.realm)
     if not stream:
         return json_error("Stream does not exist")
@@ -725,7 +725,7 @@ def valid_stream_name(name):
     return name != ""
 
 @authenticated_api_view
-def api_subscribe(request, user_profile):
+def api_add_subscriptions(request, user_profile):
     return add_subscriptions_backend(request, user_profile)
 
 @authenticated_json_view

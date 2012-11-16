@@ -38,4 +38,4 @@ if options.streams == "":
     print >>sys.stderr, "Usage:", parser.usage
     sys.exit(1)
 
-print client.subscribe(options.streams.split())
+print client.add_subscriptions(options.streams.split())

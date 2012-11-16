@@ -3,11 +3,11 @@ import sys
 import os
 import optparse
 
-usage = """get-subscriptions --user=<email address> [options]
+usage = """list-subscriptions --user=<email address> [options]
 
 Prints out a list of the user's subscriptions.
 
-Example: get-subscriptions --user=tabbott@humbughq.com --site=http://127.0.0.1:8000
+Example: list-subscriptions --user=tabbott@humbughq.com --site=http://127.0.0.1:8000
 """
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('--site',
@@ -30,4 +30,4 @@ client = api.common.HumbugAPI(email=options.user,
                               verbose=True,
                               site=options.site)
 
-print client.get_subscriptions()
+print client.list_subscriptions()

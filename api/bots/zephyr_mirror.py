@@ -495,7 +495,7 @@ def add_humbug_subscriptions(verbose):
         zephyr_subscriptions.add(cls)
 
     if len(zephyr_subscriptions) != 0:
-        res = humbug_client.subscribe(list(zephyr_subscriptions))
+        res = humbug_client.add_subscriptions(list(zephyr_subscriptions))
         if res.get("result") != "success":
             print "Error subscribing to streams:"
             print res["msg"]
