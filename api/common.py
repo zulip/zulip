@@ -110,6 +110,10 @@ class HumbugAPI():
         request = {'subscriptions': streams}
         return self.do_api_query(request, "/api/v1/subscriptions/add")
 
+    def remove_subscriptions(self, streams):
+        request = {'subscriptions': streams}
+        return self.do_api_query(request, "/api/v1/subscriptions/remove")
+
     def call_on_each_message(self, callback, options = {}):
         max_message_id = None
         while True:

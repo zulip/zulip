@@ -708,6 +708,10 @@ def api_list_subscriptions(request, user_profile):
 def json_list_subscriptions(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)})
 
+@authenticated_api_view
+def api_remove_subscriptions(request, user_profile):
+    return remove_subscriptions_backend(request, user_profile)
+
 @authenticated_json_view
 def json_remove_subscriptions(request, user_profile):
     return remove_subscriptions_backend(request, user_profile)

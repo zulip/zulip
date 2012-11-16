@@ -52,6 +52,7 @@ urlpatterns = patterns('',
     url(r'^api/v1/get_public_streams$',     'zephyr.views.api_get_public_streams'),
     url(r'^api/v1/subscriptions/list$',     'zephyr.views.api_list_subscriptions'),
     url(r'^api/v1/subscriptions/add$',      'zephyr.views.api_add_subscriptions'),
+    url(r'^api/v1/subscriptions/remove$',   'zephyr.views.api_remove_subscriptions'),
     url(r'^api/v1/send_message$',           'zephyr.views.api_send_message'),
     url(r'^api/v1/update_pointer$',         'zephyr.views.api_update_pointer'),
 

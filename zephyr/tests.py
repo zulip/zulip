@@ -123,6 +123,7 @@ class PublicURLTest(TestCase):
                       "/api/v1/get_public_streams",
                       "/api/v1/subscriptions/list",
                       "/api/v1/subscriptions/add",
+                      "/api/v1/subscriptions/remove",
                       "/api/v1/send_message",
                       "/api/v1/fetch_api_key",
                       "/json/fetch_api_key",
