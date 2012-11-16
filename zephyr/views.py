@@ -735,6 +735,9 @@ def json_add_subscriptions(request, user_profile):
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = POST('subscriptions', simplejson.loads)):
+    if not isinstance(streams_raw, list):
+        return json_error("'subscriptions' argument must be a list")
+
     streams = []
     for stream_name in streams_raw:
         stream_name = stream_name.strip()
