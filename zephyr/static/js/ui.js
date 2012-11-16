@@ -23,8 +23,12 @@ exports.focus_on = function (field_id) {
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
 
+var current_email_elem;
 function hide_email() {
-    $('.sender_email').addClass('invisible');
+    if (current_email_elem !== undefined) {
+        current_email_elem.addClass('invisible');
+        current_email_elem = undefined;
+    }
 }
 
 function show_email(message_row) {
@@ -32,7 +36,9 @@ function show_email(message_row) {
     while (!message_row.hasClass('include-sender')) {
         message_row = message_row.prev();
     }
-    message_row.find('.sender_email').removeClass('invisible');
+    var elem = message_row.find('.sender_email');
+    elem.removeClass('invisible');
+    current_email_elem = elem;
 }
 
 exports.report_message = function (response, status_box, cls) {
