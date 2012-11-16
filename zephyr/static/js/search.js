@@ -112,14 +112,16 @@ function clear_search_cache() {
 }
 
 exports.focus_search = function () {
-    // Shrink the searchbox to make room for the buttons.
-    var search_query = $('#search_query');
-    var new_width = search_query.width() -
-        $('.search_button').outerWidth(true)*3;
-    search_query.width(new_width);
-    $("#search_arrows").addClass("input-append");
-    $('.search_button').show();
-    disable_search_arrows_if(false, ["up", "down"]);
+    if (!$('.search_button').is(':visible')) {
+        // Shrink the searchbox to make room for the buttons.
+        var search_query = $('#search_query');
+        var new_width = search_query.width() -
+            $('.search_button').outerWidth(true)*3;
+        search_query.width(new_width);
+        $("#search_arrows").addClass("input-append");
+        $('.search_button').show();
+        disable_search_arrows_if(false, ["up", "down"]);
+    }
 };
 
 exports.initiate_search = function () {
