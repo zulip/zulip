@@ -222,6 +222,10 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
 
     if 'recipient_id' in narrow:
         query = query.filter(recipient_id = narrow['recipient_id'])
+    if 'stream' in narrow:
+        stream = Stream.objects.get(name=narrow['stream'])
+        recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
+        query = query.filter(recipient_id = recipient.id)
 
     if 'one_on_one_email' in narrow:
         query = query.filter(recipient__type=Recipient.PERSONAL)
