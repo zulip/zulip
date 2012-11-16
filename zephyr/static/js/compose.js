@@ -11,10 +11,10 @@ exports.start = function (msg_type, opts) {
                       message:          ''
                     }, opts);
 
-    $("#stream").val(opts.stream);
-    $("#subject").val(opts.subject);
-    $("#private_message_recipient").val(opts.private_message_recipient);
-    $("#new_message_content").val(opts.message);
+    compose.stream_name(opts.stream);
+    compose.subject(opts.subject);
+    compose.recipient(opts.private_message_recipient);
+    compose.message_content(opts.message);
 
     $('#sidebar a[href="#home"]').tab('show');
 
