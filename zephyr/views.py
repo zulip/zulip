@@ -709,17 +709,31 @@ def json_list_subscriptions(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)})
 
 @authenticated_json_view
-@has_request_variables
-def json_remove_subscriptions(request, user_profile,
-                              sub_name=POST("subscription")):
-    stream = get_stream(sub_name, user_profile.realm)
-    if not stream:
-        return json_error("Stream does not exist")
-    did_remove = do_remove_subscription(user_profile, stream)
-    if not did_remove:
-        return json_error("Not subscribed, so you can't unsubscribe")
+def json_remove_subscriptions(request, user_profile):
+    return remove_subscriptions_backend(request, user_profile)
 
-    return json_success({"data": sub_name})
+@has_request_variables
+def remove_subscriptions_backend(request, user_profile,
+                                 streams_raw = POST("subscriptions", simplejson.loads)):
+    if not isinstance(streams_raw, list):
+        return json_error("'subscriptions' argument must be a list")
+
+    streams = []
+    for stream_name in set(stream_name.strip() for stream_name in streams_raw):
+        stream = get_stream(stream_name, user_profile.realm)
+        if stream is None:
+            return json_error("Stream %s does not exist" % stream_name)
+        streams.append(stream)
+
+    result = dict(removed=[], not_subscribed=[])
+    for stream in streams:
+        did_remove = do_remove_subscription(user_profile, stream)
+        if did_remove:
+            result["removed"].append(stream_name)
+        else:
+            result["not_subscribed"].append(stream_name)
+
+    return json_success(result)
 
 def valid_stream_name(name):
     return name != ""

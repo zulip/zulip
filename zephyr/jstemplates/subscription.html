@@ -4,6 +4,8 @@
     {{subscription}}
   </td>
   <td class="span2">
-    <button class="btn btn-block" type="submit" name="subscription" value="{{subscription}}">Unsubscribe</button>
+    <button class="btn btn-block" type="button" name="subscription"
+            onclick="subs.unsubscribe('{{subscription}}');"
+            value="{{subscription}}">Unsubscribe</button>
   </td>
 </tr>

@@ -27,7 +27,9 @@ function add_to_stream_list(stream_name) {
         if (stream_sub_row.length) {
             stream_sub_row.text("Unsubscribe")
                 .removeClass("btn-primary")
-                .unbind('click');
+                .unbind("click")
+                .removeAttr("onclick")
+                .click(function (event) {exports.unsubscribe(stream_name);});
         } else {
             $('#subscriptions_table').prepend(templates.subscription({subscription: stream_name}));
         }
@@ -113,34 +115,49 @@ function ajaxSubscribe(stream) {
         }
     });
 }
-$(function () {
-    var i;
-    // Populate stream_set with data handed over to client-side template.
-    for (i = 0; i < stream_list.length; i++) {
-        stream_set[stream_list[i].toLowerCase()] = true;
-    }
 
-    // FIXME: It would be nice to move the UI setup into ui.js.
-
-    $("#current_subscriptions").ajaxForm({
+exports.unsubscribe = function (stream) {
+    $.ajax({
+        type: "POST",
+        url: "/json/subscriptions/remove",
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        data: {"subscriptions": JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
-            var name = $.parseJSON(xhr.responseText).data;
+            var name, res = $.parseJSON(xhr.responseText);
+            if (res.removed.length === 0) {
+                name = res.not_subscribed[0];
+                report_success("Already not subscribed to " + name,
+                               $("#subscriptions-status"));
+            } else {
+                name = res.removed[0];
+                report_success("Successfully removed subscription to " + name,
+                               $("#subscriptions-status"));
+            }
             $('#subscriptions_table').find('button[value="' + name + '"]').text("Subscribe")
                 .addClass("btn-primary")
+                .unbind("click")
+                .removeAttr("onclick")
                 .click(function (e) {
                     e.preventDefault();
                     ajaxSubscribe(name);
                 });
             remove_from_stream_list(name);
             composebox_typeahead.update_autocomplete();
-            report_success("Successfully removed subscription to " + name,
-                           $("#subscriptions-status"));
+            $("#streams").focus();
         },
         error: function (xhr) {
             report_error("Error removing subscription", xhr, $("#subscriptions-status"));
+            $("#streams").focus();
         }
     });
+};
+
+$(function () {
+    var i;
+    // Populate stream_set with data handed over to client-side template.
+    for (i = 0; i < stream_list.length; i++) {
+        stream_set[stream_list[i].toLowerCase()] = true;
+    }
 
     $("#add_new_subscription").on("submit", function (e) {
         e.preventDefault();
