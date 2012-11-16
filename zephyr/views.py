@@ -738,27 +738,25 @@ def add_subscriptions_backend(request, user_profile,
     if not isinstance(streams_raw, list):
         return json_error("'subscriptions' argument must be a list")
 
-    streams = []
+    stream_names = []
     for stream_name in streams_raw:
         stream_name = stream_name.strip()
         if len(stream_name) > 30:
             return json_error("Stream name (%s) too long." % (stream_name,))
         if not valid_stream_name(stream_name):
             return json_error("Invalid stream name (%s)." % (stream_name,))
-        streams.append(stream_name)
+        stream_names.append(stream_name)
 
-    subscribed = []
-    already_subscribed = []
-    for stream_name in set(streams):
+    result = dict(subscribed=[], already_subscribed=[])
+    for stream_name in set(stream_names):
         stream = create_stream_if_needed(user_profile.realm, stream_name)
         did_subscribe = do_add_subscription(user_profile, stream)
         if did_subscribe:
-            subscribed.append(stream_name)
+            result["subscribed"].append(stream_name)
         else:
-            already_subscribed.append(stream_name)
+            result["already_subscribed"].append(stream_name)
 
-    return json_success({"subscribed": subscribed,
-                         "already_subscribed": already_subscribed})
+    return json_success(result)
 
 @authenticated_json_view
 @has_request_variables
