@@ -702,7 +702,7 @@ def gather_subscriptions(user_profile):
 
 @authenticated_api_view
 def api_list_subscriptions(request, user_profile):
-    return json_success({"streams": gather_subscriptions(user_profile)})
+    return json_success({"subscriptions": gather_subscriptions(user_profile)})
 
 @authenticated_json_view
 def json_list_subscriptions(request, user_profile):
@@ -733,7 +733,8 @@ def json_add_subscriptions(request, user_profile):
     return add_subscriptions_backend(request, user_profile)
 
 @has_request_variables
-def add_subscriptions_backend(request, user_profile, streams_raw = POST('streams', simplejson.loads)):
+def add_subscriptions_backend(request, user_profile,
+                              streams_raw = POST('subscriptions', simplejson.loads)):
     streams = []
     for stream_name in streams_raw:
         stream_name = stream_name.strip()

@@ -107,7 +107,7 @@ class HumbugAPI():
         return self.do_api_query(request, "/api/v1/subscriptions/list")
 
     def add_subscriptions(self, streams):
-        request = {'streams': streams}
+        request = {'subscriptions': streams}
         return self.do_api_query(request, "/api/v1/subscriptions/add")
 
     def call_on_each_message(self, callback, options = {}):

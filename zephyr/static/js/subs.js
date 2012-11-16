@@ -67,7 +67,7 @@ exports.subscribe_for_send = function (stream, prompt_button) {
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/add',
-        data: {"streams": JSON.stringify([stream]) },
+        data: {"subscriptions": JSON.stringify([stream]) },
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (response) {
@@ -90,7 +90,7 @@ function ajaxSubscribe(stream) {
         type: "POST",
         url: "/json/subscriptions/add",
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        data: {"streams": JSON.stringify([stream]) },
+        data: {"subscriptions": JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
             if ($("#streams").val() === stream) {
                 $("#streams").val("");
