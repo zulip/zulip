@@ -337,9 +337,14 @@ def send_zephyr(zwrite_args, content):
     if p.returncode:
         print "zwrite command '%s' failed with return code %d:" % (
             " ".join(zwrite_args), p.returncode,)
-        print stdout
+        if stdout:
+            print stdout
+    elif stderr:
+        print "zwrite command '%s' printed the following warning:" % (
+            " ".join(zwrite_args),)
+    if stderr:
         print stderr
-    return p.returncode
+    return (p.returncode, stderr)
 
 def send_authed_zephyr(zwrite_args, content):
     return send_zephyr(zwrite_args, content)
@@ -390,34 +395,50 @@ def forward_to_zephyr(message):
                      (zwrite_args, wrapped_content.encode("utf-8")))
         return
 
-    if send_authed_zephyr(zwrite_args, wrapped_content) != 0:
-        # If your tickets have expired, Humbug users got your zephyr but MIT
-        # zephyr users didn't. Try to re-send unauthed, and send a Humbug
-        # notifying the user that they should check their tickets/mirror.
-        error_msg = """Hi there! This is an automated message from Humbug.
+    heading = "Hi there! This is an automated message from Humbug."
+    support_closing = """If you have any questions, please be in touch through the \
+Feedback tab or at support@humbughq.com."""
+
+    (code, stderr) = send_authed_zephyr(zwrite_args, wrapped_content)
+    if code == 0 and stderr == "":
+        return
+    elif code == 0:
+        return send_error_humbug("""%s
+
+Your last message was successfully mirrored to zephyr, but zwrite \
+returned the following warning:
 
 %s
 
-If you have any questions, please be in touch through the Feedback tab or at \
-support@humbughq.com."""
-        if send_unauthed_zephyr(zwrite_args, wrapped_content) != 0:
-            error_msg_detail = """\
-Your Humbug-Zephyr mirror bot was unable to forward that last message \
-from Humbug to Zephyr. That means that while Humbug users (like you) \
-received it, Zephyr users did not.
+%s""" % (heading, stderr, support_closing))
+    elif code != 0 and (stderr.startswith("zwrite: Ticket expired while sending notice to ") or
+                        stderr.startswith("zwrite: No credentials cache found while sending notice to ")):
+        # Retry sending the message unauthenticated; if that works,
+        # just notify the user that they need to renew their tickets
+        (code, stderr) = send_unauthed_zephyr(zwrite_args, wrapped_content)
+        if code == 0:
+            return send_error_humbug("""%s
 
-Please check that /mit/tabbott/humbug/zephyr_mirror.py is still \
-running and that you have valid Kerberos tickets, and then you can \
-resend your message if you would still like it to be mirrored.
-"""
-        else:
-            error_msg_detail = """\
 Your last message was forwarded from Humbug to Zephyr unauthenticated, \
 because your Kerberos tickets have expired. It was sent successfully, \
 but please renew your Kerberos tickets in the screen session where you \
 are running the Humbug-Zephyr mirroring bot, so we can send \
-authenticated Zephyr messages for you again."""
-        send_error_humbug(error_msg % (error_msg_detail,))
+authenticated Zephyr messages for you again.
+
+%s""" % (heading, support_closing))
+
+    # zwrite failed and it wasn't because of expired tickets: This is
+    # probably because the recipient isn't subscribed to personals,
+    # but regardless, we should just notify the user.
+    return send_error_humbug("""%s
+
+Your Humbug-Zephyr mirror bot was unable to forward that last message \
+from Humbug to Zephyr. That means that while Humbug users (like you) \
+received it, Zephyr users did not.  The error message from zwrite was:
+
+%s
+
+%s""" % (heading, stderr, support_closing))
 
 def maybe_forward_to_zephyr(message):
     if (message["sender_email"] == options.user + "@mit.edu"):
