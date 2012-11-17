@@ -91,6 +91,24 @@ def accounts_register(request):
                 # FIXME: sanitize email addresses
                 create_user(email, password, realm, full_name, short_name)
 
+
+            message = Message()
+            message.sender = UserProfile.objects.get(user__email="humbug+signups@humbughq.com")
+            message.recipient = Recipient.objects.get(
+                    type_id=Stream.objects.get_or_create(
+                        realm=Realm.objects.get(domain="humbughq.com"), name="signups")[0].id)
+            message.subject = realm.domain
+            message.content = "%s <`%s`> just signed up for Humbug! (total: **%i**)" % (
+                    full_name,
+                    email,
+                    UserProfile.objects.filter(realm=realm).count(),
+                    )
+            message.pub_date = now()
+            message.sending_client = get_client("Internal")
+
+            do_send_message(message)
+
+
             login(request, authenticate(username=email, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))
 

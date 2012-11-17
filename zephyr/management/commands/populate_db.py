@@ -203,6 +203,7 @@ class Command(BaseCommand):
                 ("Humbug Commit Bot", "humbug+commits@humbughq.com"),
                 ("Humbug Trac Bot", "humbug+trac@humbughq.com"),
                 ("Humbug Feedback Bot", "feedback@humbughq.com"),
+                ("Humbug New User Bot", "humbug+signups@humbughq.com"),
                 ]
             create_users(realms, internal_humbug_users_nosubs)
 
