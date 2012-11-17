@@ -71,6 +71,7 @@ puppet apply /root/humbug/servers/puppet/manifests/site.pp || true
 puppet apply /root/humbug/servers/puppet/manifests/site.pp
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get upgrade
+service iptables-persistent start
 service ssh restart
 if [ -e "/etc/init.d/nginx" ]; then
     service nginx restart

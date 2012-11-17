@@ -31,7 +31,8 @@ define common::append ($file, $line) {
 class humbug_base {
   $packages = [ "screen", "strace", "vim", "emacs", "git", "python-tz", "sqlite3", "ntp",
                 "python-tornado",  "python-simplejson", "python-pygments", "ipython", "host",
-                "python-django", "openssh-server", "python-pip", "puppet-el", "python-flup", ]
+                "python-django", "openssh-server", "python-pip", "puppet-el", "python-flup",
+                "iptables-persistent", ]
   package { $packages: ensure => "installed" }
 
   # FIXME: Stop using pip since it is insecure
@@ -98,6 +99,12 @@ class humbug_base {
     ensure     => file,
     mode       => 640,
     source     => '/root/humbug/servers/puppet/puppet.conf',
+  }
+
+  file { '/etc/iptables/rules':
+    ensure     => file,
+    mode       => 600,
+    source     => '/root/humbug/servers/puppet/files/iptables/rules',
   }
 
   common::append { '/etc/ssh/sshd_config':
