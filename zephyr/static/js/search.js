@@ -39,24 +39,6 @@ function render_object(obj) {
     return "Error";
 }
 
-// Borrowed from composebox_typeahead_highlighter in composebox_typeahead.js.
-function searchbox_typeahead_highlighter(item) {
-    var query = this.query;
-    var string_item = render_object(mapped[item]);
-    query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
-    var regex = new RegExp('(' + query + ')', 'ig');
-    var pieces = string_item.split(regex);
-    var result = "";
-    $.each(pieces, function(idx, piece) {
-        if (piece.match(regex)) {
-            result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
-        } else {
-            result += Handlebars.Utils.escapeExpression(piece);
-        }
-    });
-    return result;
-}
-
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
@@ -79,7 +61,11 @@ exports.initialize = function () {
             return labels;
         },
         items: 3,
-        highlighter: searchbox_typeahead_highlighter,
+        highlighter: function (item) {
+            var query = this.query;
+            var string_item = render_object(mapped[item]);
+            return typeahead_helper.highlight_with_escaping(query, string_item);
+        },
         matcher: function (item) {
             var obj = mapped[item];
             var actual_search_term = obj.query;
