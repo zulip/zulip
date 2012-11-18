@@ -32,6 +32,14 @@ exports.narrowing_type = function () {
     }
 };
 
+exports.allow_collapse = function () {
+    if (narrowdata && narrowdata.allow_collapse !== undefined) {
+        return narrowdata.allow_collapse;
+    } else {
+        return true;
+    }
+};
+
 exports.data = function () {
     return narrowdata;
 };
@@ -52,11 +60,12 @@ function do_narrow(new_narrow, bar, new_filter) {
 
     // Empty the filtered table right before we fill it again
     clear_table('zfilt');
-    add_to_table(message_array, 'zfilt', filter_function, 'bottom');
+    add_to_table(message_array, 'zfilt', filter_function, 'bottom', exports.allow_collapse());
 
     // Show the new set of messages.
     $("#zfilt").addClass("focused_table");
 
+    $("#load_more").show();
     $("#show_all_messages").removeAttr("disabled");
     $(".narrowed_to_bar").show();
     $("#top_narrowed_whitespace").show();
@@ -178,6 +187,17 @@ exports.by_recipient = function () {
         });
         break;
     }
+};
+
+exports.by_search_term = function (term) {
+    var new_narrow = {type: "searchterm", searchterm: term, allow_collapse: false};
+    var bar = {icon: 'search', description: 'Messages containing "' + term + '"'};
+    var term_lowercase = term.toLowerCase();
+    do_narrow(new_narrow, bar, function (other) {
+        return other.subject.toLowerCase().indexOf(term_lowercase) !== -1 ||
+               other.content.toLowerCase().indexOf(term_lowercase) !== -1;
+    });
+    load_more_messages();
 };
 
 exports.show_all_messages = function () {

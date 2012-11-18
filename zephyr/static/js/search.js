@@ -13,11 +13,13 @@ var mapped = {};
 
 function render_object(obj) {
     if (obj.action === 'search') {
-        return "Search for " + obj.query;
+        return "Find " + obj.query;
     } else if (obj.action === 'stream') {
         return "Narrow to stream " + obj.query;
     } else if (obj.action === 'private_message') {
         return "Narrow to person " + obj.query.full_name + " <" + obj.query.email + ">";
+    } else if (obj.action === 'search_narrow') {
+        return "Narrow to messages containing " + obj.query;
     }
     return "Error";
 }
@@ -30,7 +32,8 @@ exports.update_typeahead = function() {
         return {action: 'private_message', query: elt};
     });
     var options = streams.concat(people);
-    // The first slot is reserved for our query.
+    // The first two slots are reserved for our query.
+    options.unshift({action: 'search_narrow', query: ''});
     options.unshift({action: 'search', query: ''});
 
     mapped = {};
@@ -55,6 +58,9 @@ function narrow_or_search_for_term(item) {
     } else if (obj.action === "private_message") {
         narrow.by_private_message_partner(obj.query.full_name, obj.query.email);
         return "";
+    } else if (obj.action === "search_narrow") {
+        narrow.by_search_term(obj.query);
+        return "";
     }
     return item;
 }
@@ -62,17 +68,23 @@ function narrow_or_search_for_term(item) {
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
-            // Delete our old search query
-            var old_label = labels.shift();
-            delete mapped[old_label];
-            // Add our new one
-            var obj = {action: 'search', query: query};
+            // Delete our old search queries (one for search-in-page, one for search-history)
+            var old_search_label = labels.shift();
+            delete mapped[old_search_label];
+            var old_search_narrow_label = labels.shift();
+            delete mapped[old_search_narrow_label];
+            // Add our new ones
+            var obj = {action: 'search_narrow', query: query};
             var label = render_object(obj);
+            mapped[label] = obj;
+            labels.unshift(label);
+            obj = {action: 'search', query: query};
+            label = render_object(obj);
             mapped[label] = obj;
             labels.unshift(label);
             return labels;
         },
-        items: 3,
+        items: 4,
         highlighter: function (item) {
             var query = this.query;
             var string_item = render_object(mapped[item]);

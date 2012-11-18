@@ -238,6 +238,10 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
     if 'subject' in narrow:
         query = query.filter(subject = narrow['subject'])
 
+    if 'searchterm' in narrow:
+        query = query.filter(Q(content__icontains=narrow['searchterm']) |
+                             Q(subject__icontains=narrow['searchterm']))
+
     # We add 1 to the number of messages requested to ensure that the
     # resulting list always contains the anchor message
     if num_before != 0 and num_after == 0:

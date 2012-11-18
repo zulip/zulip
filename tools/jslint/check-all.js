@@ -57,6 +57,7 @@ var globals =
     + ' selected_message selected_message_id'
     + ' at_top_of_viewport at_bottom_of_viewport'
     + ' viewport'
+    + ' load_more_messages'
     ;
 
 

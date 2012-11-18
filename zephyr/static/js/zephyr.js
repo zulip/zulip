@@ -259,7 +259,7 @@ function add_display_time(message, prev) {
     message.full_date_str = time.toDateString() + " " + time.toTimeString();
 }
 
-function add_to_table(messages, table_name, filter_function, where) {
+function add_to_table(messages, table_name, filter_function, where, allow_collapse) {
     if (messages.length === 0)
         return;
 
@@ -301,7 +301,7 @@ function add_to_table(messages, table_name, filter_function, where) {
 
         message.include_recipient = false;
         message.include_bookend   = false;
-        if (same_recipient(prev, message)) {
+        if (same_recipient(prev, message) && allow_collapse) {
             current_group.push(message.id);
         } else {
             if (current_group.length > 0)
@@ -466,11 +466,11 @@ function add_messages(messages, where, add_to_home) {
     }
 
     if (narrow.active())
-        add_to_table(messages, 'zfilt', narrow.predicate(), where);
+        add_to_table(messages, 'zfilt', narrow.predicate(), where, narrow.allow_collapse());
 
     // Even when narrowed, add messages to the home view so they exist when we un-narrow.
     if (add_to_home)
-        add_to_table(messages, 'zhome', function () { return true; }, where);
+        add_to_table(messages, 'zhome', function () { return true; }, where, true);
 
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
