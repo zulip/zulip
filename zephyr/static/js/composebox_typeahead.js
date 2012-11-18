@@ -24,6 +24,11 @@ exports.autocomplete_needs_update = function (needs_update) {
 };
 
 var private_message_typeahead_list = [];
+var private_message_mapped = {};
+
+function render_pm_object(person) {
+    return person.full_name + " <" + person.email + ">";
+}
 
 exports.update_autocomplete = function () {
     stream_list.sort();
@@ -33,8 +38,12 @@ exports.update_autocomplete = function () {
         return 1;
     });
 
-    private_message_typeahead_list = $.map(people_list, function (person) {
-        return person.full_name + " <" + person.email + ">";
+    private_message_mapped = {};
+    private_message_typeahead_list = [];
+    $.each(people_list, function (i, obj) {
+        var label = render_pm_object(obj);
+        private_message_mapped[label] = obj;
+        private_message_typeahead_list.push(label);
     });
 
     autocomplete_needs_update = false;
@@ -122,14 +131,6 @@ function select_on_focus(field_id) {
     });
 }
 
-exports.extract_name_and_email = function(name_and_email) {
-    var email_re = /<[^<]*>$/;
-    var email_with_brackets = email_re.exec(name_and_email)[0];
-    var their_name = name_and_email.substr(0, name_and_email.indexOf(email_with_brackets) - 1); // -1 for the space between the name & email.
-    var their_email = email_with_brackets.substring(1, email_with_brackets.length - 1); // Remove <>s.
-    return {name: their_name, email: their_email};
-};
-
 exports.initialize = function () {
     select_on_focus("stream");
     select_on_focus("subject");
@@ -163,6 +164,7 @@ exports.initialize = function () {
         items: 3,
         highlighter: composebox_typeahead_highlighter
     });
+
     $( "#private_message_recipient" ).typeahead({
         source: function (query, process) {
             return private_message_typeahead_list;
@@ -180,17 +182,14 @@ exports.initialize = function () {
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
         updater: function (item) {
+            var obj = private_message_mapped[item];
             var previous_recipients = get_cleaned_pm_recipients(this.query);
             previous_recipients.pop();
             previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
                 previous_recipients += ", ";
             }
-            // Extracting the email portion via regex is icky, but the Bootstrap
-            // typeahead widget doesn't seem to be flexible enough to pass
-            // objects around
-            var name_and_email = exports.extract_name_and_email(item);
-            return previous_recipients + name_and_email.email + ", ";
+            return previous_recipients + obj.email + ", ";
         },
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
