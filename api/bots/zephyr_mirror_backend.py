@@ -171,7 +171,12 @@ def process_loop(log):
     sleep_count = 0
     sleep_time = 0.1
     while True:
-        notice = zephyr.receive(block=False)
+        try:
+            notice = zephyr.receive(block=False)
+        except Exception:
+            logger.exception("Error checking for new zephyrs:")
+            time.sleep(1)
+            continue
         if notice is not None:
             try:
                 process_notice(notice, log)
@@ -179,7 +184,10 @@ def process_loop(log):
                 logger.exception("Error relaying zephyr:")
                 time.sleep(2)
 
-        maybe_restart_mirroring_script()
+        try:
+            maybe_restart_mirroring_script()
+        except Exception:
+            logging.exception("Error checking whether restart is required:")
 
         time.sleep(sleep_time)
         sleep_count += sleep_time
@@ -187,7 +195,10 @@ def process_loop(log):
             sleep_count = 0
             if options.forward_class_messages:
                 # Ask the Humbug server about any new classes to subscribe to
-                update_subscriptions_from_humbug()
+                try:
+                    update_subscriptions_from_humbug()
+                except Exception:
+                    logging.exception("Error updating subscriptions from Humbug:")
 
 def parse_zephyr_body(zephyr_data):
     try:
@@ -468,8 +479,13 @@ def maybe_forward_to_zephyr(message):
 def humbug_to_zephyr(options):
     # Sync messages from zephyr to humbug
     logger.info("Starting syncing messages.")
-    humbug_client.call_on_each_message(maybe_forward_to_zephyr,
-                                       options={"mirror": 'zephyr_mirror'})
+    while True:
+        try:
+            humbug_client.call_on_each_message(maybe_forward_to_zephyr,
+                                               options={"mirror": 'zephyr_mirror'})
+        except Exception:
+            logger.exception("Error syncing messages:")
+            time.sleep(1)
 
 def subscribed_to_mail_messages():
     # In case we have lost our AFS tokens and those won't be able to
