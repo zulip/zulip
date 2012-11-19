@@ -630,15 +630,7 @@ def configure_logger(direction_name):
     logger.addHandler(file_handler)
     return logger
 
-if __name__ == "__main__":
-    # Set the SIGCHLD handler back to SIG_DFL to prevent these errors
-    # when importing the "requests" module after being restarted using
-    # the restart_stamp functionality:
-    #
-    # close failed in file object destructor:
-    # IOError: [Errno 10] No child processes
-    signal.signal(signal.SIGCHLD, signal.SIG_DFL)
-
+def parse_args():
     parser = optparse.OptionParser()
     parser.add_option('--forward-class-messages',
                       dest='forward_class_messages',
@@ -698,7 +690,18 @@ if __name__ == "__main__":
                       dest='api_key_file',
                       default=os.path.join(os.environ["HOME"], "Private", ".humbug-api-key"),
                       action='store')
-    (options, args) = parser.parse_args()
+    return parser.parse_args()
+
+if __name__ == "__main__":
+    # Set the SIGCHLD handler back to SIG_DFL to prevent these errors
+    # when importing the "requests" module after being restarted using
+    # the restart_stamp functionality:
+    #
+    # close failed in file object destructor:
+    # IOError: [Errno 10] No child processes
+    signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+
+    (options, args) = parse_args()
 
     sys.path[:0] = [options.root_path, os.path.join(options.root_path, "python-zephyr"),
                     os.path.join(options.root_path, "python-zephyr/build/lib.linux-x86_64-2.6/")]
