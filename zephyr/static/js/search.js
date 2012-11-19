@@ -11,6 +11,37 @@ var cached_table = $('table.focused_table');
 var labels = [];
 var mapped = {};
 
+function render_object(obj) {
+    if (obj.action === 'search') {
+        return "Search for " + obj.query;
+    } else if (obj.action === 'stream') {
+        return "Narrow to stream " + obj.query;
+    } else if (obj.action === 'private_message') {
+        return "Narrow to person " + obj.query.full_name + " <" + obj.query.email + ">";
+    }
+    return "Error";
+}
+
+exports.update_typeahead = function() {
+    var streams = $.map(stream_list, function(elt,idx) {
+        return {action: 'stream', query: elt};
+    });
+    var people = $.map(people_list, function(elt,idx) {
+        return {action: 'private_message', query: elt};
+    });
+    var options = streams.concat(people);
+    // The first slot is reserved for our query.
+    options.unshift({action: 'search', query: ''});
+
+    mapped = {};
+    labels = [];
+    $.each(options, function (i, obj) {
+        var label = render_object(obj);
+        mapped[label] = obj;
+        labels.push(label);
+    });
+};
+
 function narrow_or_search_for_term(item) {
     var obj = mapped[item];
     if (obj.action === "search") {
@@ -28,36 +59,17 @@ function narrow_or_search_for_term(item) {
     return item;
 }
 
-function render_object(obj) {
-    if (obj.action === 'search') {
-        return "Search for " + obj.query;
-    } else if (obj.action === 'stream') {
-        return "Narrow to stream " + obj.query;
-    } else if (obj.action === 'private_message') {
-        return "Narrow to person " + obj.query.full_name + " <" + obj.query.email + ">";
-    }
-    return "Error";
-}
-
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
-            var streams = $.map(stream_list, function(elt,idx) {
-                return {action: 'stream', query: elt};
-            });
-            var people = $.map(people_list, function(elt,idx) {
-                return {action: 'private_message', query: elt};
-            });
-            var options = streams.concat(people);
-            options.unshift({action: 'search', query: query});
-
-            mapped = {};
-            labels = [];
-            $.each(options, function (i, obj) {
-                var label = render_object(obj);
-                mapped[label] = obj;
-                labels.push(label);
-            });
+            // Delete our old search query
+            var old_label = labels.shift();
+            delete mapped[old_label];
+            // Add our new one
+            var obj = {action: 'search', query: query};
+            var label = render_object(obj);
+            mapped[label] = obj;
+            labels.unshift(label);
             return labels;
         },
         items: 3,

@@ -20,6 +20,7 @@ exports.update_autocomplete = function () {
     });
 
     composebox_typeahead.update_typeahead();
+    search.update_typeahead();
     autocomplete_needs_update = false;
 };
 
