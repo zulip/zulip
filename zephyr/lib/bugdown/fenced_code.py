@@ -77,7 +77,7 @@ Dependencies:
 
 import re
 import markdown
-from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+from zephyr.lib.bugdown.codehilite import CodeHilite, CodeHiliteExtension
 
 # Global vars
 FENCED_BLOCK_RE = re.compile( \
@@ -130,7 +130,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 # is enabled, so we call it to highlite the code
                 if self.codehilite_conf:
                     highliter = CodeHilite(m.group('code'),
-                            linenos=self.codehilite_conf['force_linenos'][0],
+                            force_linenos=self.codehilite_conf['force_linenos'][0],
                             guess_lang=self.codehilite_conf['guess_lang'][0],
                             css_class=self.codehilite_conf['css_class'][0],
                             style=self.codehilite_conf['pygments_style'][0],

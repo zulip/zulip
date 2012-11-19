@@ -4,7 +4,7 @@ import traceback
 import re
 
 from zephyr.lib.avatar  import gravatar_hash
-from zephyr.lib.bugdown import codehilite
+from zephyr.lib.bugdown import codehilite, fenced_code
 
 class Gravatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
@@ -76,10 +76,11 @@ def convert(md):
         _md_engine = markdown.Markdown(
             safe_mode     = 'escape',
             output_format = 'html',
-            extensions    = ['fenced_code', 'nl2br',
+            extensions    = ['nl2br',
                 codehilite.makeExtension(configs=[
                     ('force_linenos', False),
                     ('guess_lang',    False)]),
+                fenced_code.makeExtension(),
                 Bugdown()])
 
     try:
