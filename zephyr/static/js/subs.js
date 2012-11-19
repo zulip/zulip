@@ -16,6 +16,26 @@ function case_insensitive_subscription_index(stream_name) {
     return -1;
 }
 
+// TODO: The way that we find the row is kind of fragile
+// and liable to break with streams with " in their name,
+// just like our unsubscribe button code.
+function draw_colorpicker(stream_name) {
+    var colorpicker = $('#subscriptions_table').find('button[value="' + stream_name + '"]').parent().prev().find('input');
+    colorpicker.spectrum({
+        clickoutFiresChange: true,
+        showPalette: true,
+        palette: [
+            ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
+            ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
+            ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
+            ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
+        ],
+        change: function (color) {
+            console.log("Changing color for", stream_name, "to", color);
+        }
+    });
+}
+
 function add_to_stream_list(stream_name) {
     var stream_sub_row;
 
@@ -31,7 +51,8 @@ function add_to_stream_list(stream_name) {
                 .removeAttr("onclick")
                 .click(function (event) {exports.unsubscribe(stream_name);});
         } else {
-            $('#subscriptions_table').prepend(templates.subscription({subscription: stream_name}));
+            $('#subscriptions_table').prepend(templates.subscription({subscription: stream_name, color: "c2c2c2"}));
+            draw_colorpicker(stream_name);
         }
     }
 }
@@ -54,7 +75,8 @@ exports.fetch = function () {
             $('#subscriptions_table tr').remove();
             if (data) {
                 $.each(data.subscriptions, function (index, name) {
-                    $('#subscriptions_table').append(templates.subscription({subscription: name}));
+                    $('#subscriptions_table').append(templates.subscription({subscription: name, color: "c2c2c2"}));
+                    draw_colorpicker(name);
                 });
             }
             $('#streams').focus().select();

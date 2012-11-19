@@ -557,3 +557,8 @@ table.floating_recipient {
 #fmt_help_table {
     table-layout: fixed;
 }
+
+.subscription_name {
+    vertical-align: middle;
+    padding-left: 0.5em;
+}
