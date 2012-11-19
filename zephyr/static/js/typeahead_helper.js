@@ -13,13 +13,6 @@ exports.autocomplete_needs_update = function (needs_update) {
 
 exports.update_autocomplete = function () {
     stream_list.sort();
-    people_list.sort(function (x, y) {
-        if (x.email === y.email) return 0;
-        if (x.email < y.email) return -1;
-        return 1;
-    });
-
-    composebox_typeahead.update_typeahead();
     search.update_typeahead();
     autocomplete_needs_update = false;
 };

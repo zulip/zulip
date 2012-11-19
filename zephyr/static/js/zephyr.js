@@ -1,7 +1,6 @@
 var message_array = [];
 var message_dict = {};
 var subject_dict = {};
-var people_set = {};
 
 var viewport = $(window);
 
@@ -16,9 +15,7 @@ var get_updates_params = {
 };
 
 $(function () {
-    $.each(people_list, function (idx, person) {
-        people_set[person.email] = true;
-    });
+    composebox_typeahead.update_all_recipients(people_list);
 });
 
 // The "message groups", i.e. blocks of messages collapsed by recipient.
@@ -422,22 +419,30 @@ function add_message_metadata(dummy, message) {
         message.display_reply_to = get_huddle_recipient(message, 'full_name');
 
         involved_people = message.display_recipient;
+
+        if (message.sender_email === email) {
+            composebox_typeahead.update_your_recipients(involved_people);
+        } else {
+            composebox_typeahead.update_all_recipients(involved_people);
+        }
         break;
 
     case 'personal':
         message.is_personal = true;
 
-        if (message.sender_email === email) { // that is, we sent the original message
-            message.reply_to = message.display_recipient.email;
-            message.display_reply_to = message.display_recipient.full_name;
-        } else {
-            message.reply_to = message.sender_email;
-            message.display_reply_to = message.sender_full_name;
-        }
-
         involved_people = [message.display_recipient,
                            {'email': message.sender_email,
                             'full_name': message.sender_full_name}];
+
+        if (message.sender_email === email) { // that is, we sent the original message
+            message.reply_to = message.display_recipient.email;
+            message.display_reply_to = message.display_recipient.full_name;
+            composebox_typeahead.update_your_recipients(involved_people);
+        } else {
+            message.reply_to = message.sender_email;
+            message.display_reply_to = message.sender_full_name;
+            composebox_typeahead.update_all_recipients(involved_people);
+        }
 
         break;
     }
@@ -446,8 +451,7 @@ function add_message_metadata(dummy, message) {
     $.each(involved_people, function (idx, person) {
         // Do the hasOwnProperty() call via the prototype to avoid problems
         // with keys like "hasOwnProperty"
-        if (! Object.prototype.hasOwnProperty.call(people_set, person.email)) {
-            people_set[person.email] = true;
+        if (! composebox_typeahead.known_to_typeahead(person)) {
             people_list.push(person);
             typeahead_helper.autocomplete_needs_update(true);
         }

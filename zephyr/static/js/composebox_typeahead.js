@@ -20,13 +20,33 @@ function render_pm_object(person) {
     return person.full_name + " <" + person.email + ">";
 }
 
-exports.update_typeahead = function() {
-    private_message_mapped = {};
-    private_message_typeahead_list = [];
-    $.each(people_list, function (i, obj) {
-        var label = render_pm_object(obj);
-        private_message_mapped[label] = obj;
-        private_message_typeahead_list.push(label);
+function add_to_known_recipients(recipient_data, count_towards_autocomplete_preference) {
+    var name_string = render_pm_object(recipient_data);
+    if (private_message_mapped[name_string] === undefined) {
+        private_message_mapped[name_string] = recipient_data;
+        private_message_mapped[name_string].count = 0;
+        private_message_typeahead_list.push(name_string);
+    }
+    if (count_towards_autocomplete_preference) {
+        private_message_mapped[name_string].count += 1;
+    }
+}
+
+exports.known_to_typeahead = function (recipient_data) {
+    return private_message_mapped[render_pm_object(recipient_data)] !== undefined;
+};
+
+exports.update_all_recipients = function (recipients) {
+    $.each(recipients, function (idx, recipient_data) {
+        add_to_known_recipients(recipient_data, false);
+    });
+};
+
+exports.update_your_recipients = function (recipients) {
+    $.each(recipients, function (idx, recipient_data) {
+        if (recipient_data.email !== email) {
+            add_to_known_recipients(recipient_data, true);
+        }
     });
 };
 
@@ -147,9 +167,7 @@ exports.initialize = function () {
     });
 
     $( "#private_message_recipient" ).typeahead({
-        source: function (query, process) {
-            return private_message_typeahead_list;
-        },
+        source: private_message_typeahead_list,
         items: 4,
         highlighter: composebox_typeahead_highlighter,
         matcher: function (item) {
@@ -159,18 +177,33 @@ exports.initialize = function () {
             if (! current_recipient.match(/\S/)) {
                 return false;
             }
-            // Case-insensitive (from Bootstrap's default matcher).
+
+            // Case-insensitive.
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
+        sorter: function (matches) {
+            matches.sort(function (x, y) {
+                var x_count = private_message_mapped[x].count;
+                var y_count = private_message_mapped[y].count;
+
+                if (x_count > y_count) {
+                    return -1;
+                } else if (x_count < y_count) {
+                    return 1;
+                }
+                return 0;
+            });
+
+            return matches;
+        },
         updater: function (item) {
-            var obj = private_message_mapped[item];
             var previous_recipients = get_cleaned_pm_recipients(this.query);
             previous_recipients.pop();
             previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
                 previous_recipients += ", ";
             }
-            return previous_recipients + obj.email + ", ";
+            return previous_recipients + private_message_mapped[item].email + ", ";
         },
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
