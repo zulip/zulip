@@ -77,7 +77,9 @@ def convert(md):
             safe_mode     = 'escape',
             output_format = 'html',
             extensions    = ['fenced_code', 'nl2br',
-                codehilite.makeExtension(configs=[('force_linenos', False)]),
+                codehilite.makeExtension(configs=[
+                    ('force_linenos', False),
+                    ('guess_lang',    False)]),
                 Bugdown()])
 
     try:
