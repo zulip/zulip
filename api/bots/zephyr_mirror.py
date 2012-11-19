@@ -155,7 +155,11 @@ def maybe_restart_mirroring_script():
              os.stat(os.path.join(options.root_path, "stamps", "tabbott_stamp")).st_mtime > start_time):
         logger.warning("")
         logger.warning("zephyr mirroring script has been updated; restarting...")
-        os.kill(child_pid, signal.SIGTERM)
+        try:
+            os.kill(child_pid, signal.SIGTERM)
+        except OSError:
+            # We don't care if the child process no longer exists, so just print the error
+            logging.exception("")
         while True:
             try:
                 if bot_name == "extra_mirror.py":
@@ -751,7 +755,11 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
             if int(pid.strip()) != os.getpid():
                 # Another copy of zephyr_mirror.py!  Kill it.
                 print "Killing duplicate zephyr_mirror process %s" % (pid,)
-                os.kill(int(pid), signal.SIGKILL)
+                try:
+                    os.kill(int(pid), signal.SIGKILL)
+                except OSError:
+                    # We don't care if the child process no longer exists, so just print the error
+                    traceback.print_exc()
 
     child_pid = os.fork()
     if child_pid == 0:
