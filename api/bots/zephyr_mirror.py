@@ -629,6 +629,14 @@ def configure_logger(direction_name):
     return logger
 
 if __name__ == "__main__":
+    # Set the SIGCHLD handler back to SIG_DFL to prevent these errors
+    # when importing the "requests" module after being restarted using
+    # the restart_stamp functionality:
+    #
+    # close failed in file object destructor:
+    # IOError: [Errno 10] No child processes
+    signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+
     parser = optparse.OptionParser()
     parser.add_option('--forward-class-messages',
                       dest='forward_class_messages',
