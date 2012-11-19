@@ -162,8 +162,6 @@ def maybe_restart_mirroring_script():
             logging.exception("")
         while True:
             try:
-                if bot_name == "extra_mirror.py":
-                    os.execvp(os.path.join(options.root_path, "extra_mirror.py"), sys.argv)
                 os.execvp(os.path.join(options.root_path, "user_root", "zephyr_mirror.py"), sys.argv)
             except:
                 logger.exception("Error restarting mirroring script; trying again... Traceback:")
@@ -742,10 +740,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
 
     # First check that there are no other bots running
     cmdline = " ".join(sys.argv)
-    if "extra_mirror" in cmdline:
-        bot_name = "extra_mirror.py"
-    else:
-        bot_name = "zephyr_mirror.py"
+    bot_name = "zephyr_mirror.py"
     if not options.test_mode:
         proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", bot_name],
                                 stdout=subprocess.PIPE,
