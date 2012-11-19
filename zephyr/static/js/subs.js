@@ -142,7 +142,7 @@ exports.unsubscribe = function (stream) {
                     ajaxSubscribe(name);
                 });
             remove_from_stream_list(name);
-            composebox_typeahead.update_autocomplete();
+            typeahead_helper.update_autocomplete();
             $("#streams").focus();
         },
         error: function (xhr) {

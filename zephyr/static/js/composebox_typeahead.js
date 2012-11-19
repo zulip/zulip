@@ -13,16 +13,6 @@ var composebox_typeahead = (function () {
 
 var exports = {};
 
-var autocomplete_needs_update = false;
-
-exports.autocomplete_needs_update = function (needs_update) {
-    if (needs_update === undefined) {
-        return autocomplete_needs_update;
-    } else {
-        autocomplete_needs_update = needs_update;
-    }
-};
-
 var private_message_typeahead_list = [];
 var private_message_mapped = {};
 
@@ -30,14 +20,7 @@ function render_pm_object(person) {
     return person.full_name + " <" + person.email + ">";
 }
 
-exports.update_autocomplete = function () {
-    stream_list.sort();
-    people_list.sort(function (x, y) {
-        if (x.email === y.email) return 0;
-        if (x.email < y.email) return -1;
-        return 1;
-    });
-
+exports.update_typeahead = function() {
     private_message_mapped = {};
     private_message_typeahead_list = [];
     $.each(people_list, function (i, obj) {
@@ -45,8 +28,6 @@ exports.update_autocomplete = function () {
         private_message_mapped[label] = obj;
         private_message_typeahead_list.push(label);
     });
-
-    autocomplete_needs_update = false;
 };
 
 function get_pm_recipients(query_string) {
@@ -200,7 +181,7 @@ exports.initialize = function () {
         $(this).val(recipients.join(", "));
     });
 
-    composebox_typeahead.update_autocomplete();
+    typeahead_helper.update_autocomplete();
 };
 
 return exports;

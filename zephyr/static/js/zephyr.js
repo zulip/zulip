@@ -434,7 +434,7 @@ function add_message_metadata(dummy, message) {
         if (! Object.prototype.hasOwnProperty.call(people_set, person.email)) {
             people_set[person.email] = true;
             people_list.push(person);
-            composebox_typeahead.autocomplete_needs_update(true);
+            typeahead_helper.autocomplete_needs_update(true);
         }
     });
 
@@ -496,8 +496,8 @@ function add_messages(messages, where, add_to_home) {
                              {then_scroll: true, update_server: false});
     }
 
-    if (composebox_typeahead.autocomplete_needs_update()) {
-        composebox_typeahead.update_autocomplete();
+    if (typeahead_helper.autocomplete_needs_update()) {
+        typeahead_helper.update_autocomplete();
     }
 }
 
