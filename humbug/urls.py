@@ -58,6 +58,7 @@ urlpatterns = patterns('',
     url(r'^api/v1/subscriptions/remove$',   'zephyr.views.api_remove_subscriptions'),
     url(r'^api/v1/send_message$',           'zephyr.views.api_send_message'),
     url(r'^api/v1/update_pointer$',         'zephyr.views.api_update_pointer'),
+    url(r'^api/v1/external/github$',        'zephyr.views.api_github_landing'),
 
     # This json format view used by the API accepts a username password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'zephyr.views.api_fetch_api_key'),

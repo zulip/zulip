@@ -912,3 +912,44 @@ def get_activity(request):
             ('Mirror',  False, mirror_activity.values()),
             ('API',     False, api_activity.values())
         ]}, context_instance=RequestContext(request))
+
+@authenticated_api_view
+@has_request_variables
+def api_github_landing(request, user_profile, event=POST,
+                       payload=POST(converter=simplejson.loads)):
+    # TODO: this should all be moved to an external bot
+
+    repository = payload['repository']
+
+    if event == 'pull_request':
+        pull_req = payload['pull_request']
+
+        subject = "%s: pull request %d" % (repository['name'],
+                                           pull_req['number'])
+        content = ("New [pull request](%s) from %s:\n\n %s\n\n> %s"
+                   % (pull_req['html_url'],
+                      pull_req['user']['login'],
+                      pull_req['title'],
+                      pull_req['body']))
+    elif event == 'push':
+        short_ref = re.sub(r'^refs/heads/', '', payload['ref'])
+        subject = "%s: push to %s" % (repository['name'], short_ref)
+        content = "Head is now %s\n\n" % (payload['after'],)
+        for commit in payload['commits']:
+            short_id = commit['id'][:12]
+            (short_commit_msg, _, _) = commit['message'].partition("\n")
+            content += "* [`%s`](%s): %s\n" % (short_id, commit['url'],
+                                             short_commit_msg)
+    else:
+        # We don't handle other events even though we get notified
+        # about them
+        return json_success()
+
+    if len(subject) > 60:
+        subject = subject[:57].rstrip() + '...'
+
+    return send_message_backend(request, user_profile, "github_bot",
+                                message_type_name="stream",
+                                message_to=["commits"],
+                                forged=False, subject_name=subject,
+                                message_content=content)
