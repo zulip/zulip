@@ -336,11 +336,6 @@ textarea.new_message_textarea {
     resize: none;
 }
 
-textarea:focus {
-    outline: none;
-    border: gray;
-}
-
 input.recipient_box {
     margin-bottom: 0px;
     margin-top: 0px;
