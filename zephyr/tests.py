@@ -119,7 +119,7 @@ class PublicURLTest(TestCase):
         # through Tornado.
         urls = {200: ["/accounts/home/", "/accounts/login/"],
                 302: ["/", "/accounts/logout/"],
-                400: ["/accounts/register/",
+                405: ["/accounts/register/",
                       "/api/v1/get_public_streams",
                       "/api/v1/subscriptions/list",
                       "/api/v1/subscriptions/add",

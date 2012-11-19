@@ -1,4 +1,5 @@
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from zephyr.models import UserProfile, UserActivity, get_client
 from zephyr.lib.response import json_success, json_error
 from django.utils.timezone import now
@@ -30,13 +31,8 @@ def asynchronous(method):
         wrapper.csrf_exempt = True
     return wrapper
 
-def require_post(view_func):
-    @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        if request.method != "POST":
-            return json_error('This form can only be submitted by POST.')
-        return view_func(request, *args, **kwargs)
-    return _wrapped_view_func
+# I like the all-lowercase name better
+require_post = require_POST
 
 def parse_client(request, default):
     client_name = default
