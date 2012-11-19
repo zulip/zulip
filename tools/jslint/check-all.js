@@ -51,6 +51,7 @@ var globals =
     + ' respond_to_message'
     + ' select_message select_message_by_id'
     + ' scroll_to_selected'
+    + ' load_old_messages'
     + ' selected_message selected_message_id'
     + ' at_top_of_viewport at_bottom_of_viewport'
     + ' viewport'

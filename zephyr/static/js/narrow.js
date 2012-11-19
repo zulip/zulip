@@ -44,7 +44,7 @@ exports.data = function () {
     return narrowdata;
 };
 
-function do_narrow(new_narrow, bar, new_filter) {
+function do_narrow(new_narrow, bar, time_travel, new_filter) {
     var was_narrowed = exports.active();
 
     narrowdata = new_narrow;
@@ -60,7 +60,11 @@ function do_narrow(new_narrow, bar, new_filter) {
 
     // Empty the filtered table right before we fill it again
     clear_table('zfilt');
-    add_to_table(message_array, 'zfilt', filter_function, 'bottom', exports.allow_collapse());
+    if (time_travel) {
+        add_to_table([message_dict[target_id]], 'zfilt', filter_function, 'bottom', exports.allow_collapse());
+    } else {
+        add_to_table(message_array, 'zfilt', filter_function, 'bottom', exports.allow_collapse());
+    }
 
     // Show the new set of messages.
     $("#zfilt").addClass("focused_table");
@@ -73,6 +77,14 @@ function do_narrow(new_narrow, bar, new_filter) {
     $("#searchbox").addClass("narrowed_view");
     $("#currently_narrowed_to").remove();
     $("#narrowlabel").append(templates.narrowbar(bar));
+
+    if (time_travel) {
+        // Select target_id so that we will correctly arrange messages
+        // surrounding the target message.
+        select_message_by_id(target_id,
+                             {then_scroll: false, update_server: false});
+        load_old_messages(target_id, 200, 200, undefined, true);
+    }
 
     $("#zhome").removeClass("focused_table");
     // Indicate both which message is persistently selected and which
@@ -89,6 +101,16 @@ function do_narrow(new_narrow, bar, new_filter) {
     }
 }
 
+exports.time_travel = function () {
+    var bar = {
+        icon:        'time',
+        description: 'Messages around time ' + message_dict[target_id].full_date_str
+    };
+    do_narrow({}, bar, true, function (other) {
+        return true;
+    });
+};
+
 // This is the message we're about to select, within the narrowed view.
 // But it won't necessarily be selected once the user un-narrows.
 //
@@ -100,7 +122,8 @@ exports.target = function (id) {
 
 exports.all_huddles = function () {
     var new_narrow = {type: "all_huddles"};
-    do_narrow(new_narrow, {icon: 'user', description: 'You and anyone else'}, function (other) {
+    var bar = {icon: 'user', description: 'You and anyone else'};
+    do_narrow(new_narrow, bar, false, function (other) {
         return other.type === "personal" || other.type === "huddle";
     });
 };
@@ -121,7 +144,7 @@ exports.by_subject = function () {
         description: original.display_recipient,
         subject:     original.subject
     };
-    do_narrow(new_narrow, bar, function (other) {
+    do_narrow(new_narrow, bar, false, function (other) {
         return ((other.type === 'stream') &&
                 same_stream_and_subject(original, other));
     });
@@ -132,7 +155,7 @@ exports.by_subject = function () {
 exports.by_stream_name = function (name) {
     var new_narrow = {type: "stream", stream: name};
     var bar = {icon: 'bullhorn', description: name};
-    do_narrow(new_narrow, bar, function (other) {
+    do_narrow(new_narrow, bar, false, function (other) {
         return (other.type === 'stream' &&
                 name === other.display_recipient);
     });
@@ -142,7 +165,7 @@ exports.by_private_message_partner = function (their_name, their_email) {
     var new_narrow = {type: "huddle", one_on_one_email: their_email};
     var bar = {icon: 'user', description: "You and " + their_name};
     var my_email = email;
-    do_narrow(new_narrow, bar, function (other) {
+    do_narrow(new_narrow, bar, false, function (other) {
         return (other.type === 'personal') &&
             (((other.display_recipient.email === their_email)
               && (other.sender_email === my_email)) ||
@@ -160,7 +183,7 @@ exports.by_recipient = function () {
         // Narrow to personals with a specific user
         var new_narrow = {type: "huddle", one_on_one_email: message.reply_to};
         bar = {icon: 'user', description: "You and " + message.display_reply_to};
-        do_narrow(new_narrow, bar, function (other) {
+        do_narrow(new_narrow, bar, false, function (other) {
             return (other.type === 'personal') &&
                 (((other.display_recipient.email === message.display_recipient.email)
                     && (other.sender_email === message.sender_email)) ||
@@ -172,7 +195,7 @@ exports.by_recipient = function () {
     case 'huddle':
         new_narrow = {type: "huddle", recipient_id: message.recipient_id};
         bar = {icon: 'user', description: "You and " + message.display_reply_to};
-        do_narrow(new_narrow, bar, function (other) {
+        do_narrow(new_narrow, bar, false, function (other) {
             return (other.type === "personal" || other.type === "huddle")
                 && other.reply_to === message.reply_to;
         });
@@ -181,7 +204,7 @@ exports.by_recipient = function () {
     case 'stream':
         new_narrow = {type: "stream", recipient_id: message.recipient_id};
         bar = {icon: 'bullhorn', description: message.display_recipient};
-        do_narrow(new_narrow, bar, function (other) {
+        do_narrow(new_narrow, bar, false, function (other) {
             return (other.type === 'stream' &&
                     message.recipient_id === other.recipient_id);
         });
@@ -193,7 +216,7 @@ exports.by_search_term = function (term) {
     var new_narrow = {type: "searchterm", searchterm: term, allow_collapse: false};
     var bar = {icon: 'search', description: 'Messages containing "' + term + '"'};
     var term_lowercase = term.toLowerCase();
-    do_narrow(new_narrow, bar, function (other) {
+    do_narrow(new_narrow, bar, false, function (other) {
         return other.subject.toLowerCase().indexOf(term_lowercase) !== -1 ||
                other.content.toLowerCase().indexOf(term_lowercase) !== -1;
     });
