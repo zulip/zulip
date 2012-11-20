@@ -460,10 +460,7 @@ function add_message_metadata(dummy, message) {
     message_dict[message.id] = message;
 }
 
-function add_messages(messages, where, add_to_home) {
-    if (add_to_home === undefined) {
-        add_to_home = true;
-    }
+function add_messages(messages, add_to_home) {
     if (!messages)
         return;
 
@@ -478,17 +475,23 @@ function add_messages(messages, where, add_to_home) {
     });
     $.each(messages, add_message_metadata);
 
+    var top_messages = $.grep(messages, function(elem, idx) {
+        return elem.id < selected_message_id;
+    });
+    var bottom_messages = $.grep(messages, function(elem, idx) {
+        return elem.id > selected_message_id;
+    });
+
     if (add_to_home) {
-        if (where === 'top') {
-            message_array = messages.concat(message_array);
-        } else {
-            message_array = message_array.concat(messages);
-        }
-        add_to_table(messages, 'zhome', function () { return true; }, where, true);
+        message_array = top_messages.concat(message_array).concat(bottom_messages);
+        add_to_table(top_messages, 'zhome', function () { return true; }, "top", true);
+        add_to_table(bottom_messages, 'zhome', function () { return true; }, "bottom", true);
     }
 
-    if (narrow.active())
-        add_to_table(messages, 'zfilt', narrow.predicate(), where, narrow.allow_collapse());
+    if (narrow.active()) {
+        add_to_table(top_messages, 'zfilt', narrow.predicate(), "top", narrow.allow_collapse());
+        add_to_table(bottom_messages, 'zfilt', narrow.predicate(), "bottom", narrow.allow_collapse());
+    }
 
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
@@ -509,7 +512,7 @@ function add_messages(messages, where, add_to_home) {
     //
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
-    if ((where === 'top') && (selected_message_id >= 0)) {
+    if ((top_messages.length() > 0) && (selected_message_id >= 0)) {
         select_message_by_id(selected_message_id,
                              {then_scroll: true, update_server: false});
     }
@@ -552,7 +555,7 @@ function get_updates() {
             }
 
             if (data.messages.length !== 0) {
-                add_messages(data.messages, "bottom");
+                add_messages(data.messages, true);
             }
 
             // Pointer sync is disabled for now
@@ -619,14 +622,8 @@ function load_old_messages(anchor, num_before, num_after, cont, because_button) 
             $('#connection-error').hide();
 
             if (data.messages.length !== 0) {
-                var where;
-                if (num_before === 0 || message_array.length === 0) {
-                    where = "bottom";
-                } else {
-                    where = "top";
-                }
                 var add_to_home = !narrow.active() || !because_button;
-                add_messages(data.messages, where, add_to_home);
+                add_messages(data.messages, add_to_home);
             }
 
             if (cont !== undefined) {
