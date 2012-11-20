@@ -130,7 +130,7 @@ else:
 
     max_message_id = humbug_client.get_profile()['max_message_id']
 
-    time.sleep(10)
+    time.sleep(20)
     if options.verbose:
         print "Receiving messages!"
     notices = []
