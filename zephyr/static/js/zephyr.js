@@ -478,18 +478,17 @@ function add_messages(messages, where, add_to_home) {
     });
     $.each(messages, add_message_metadata);
 
-    if (where === 'top') {
-        message_array = messages.concat(message_array);
-    } else {
-        message_array = message_array.concat(messages);
+    if (add_to_home) {
+        if (where === 'top') {
+            message_array = messages.concat(message_array);
+        } else {
+            message_array = message_array.concat(messages);
+        }
+        add_to_table(messages, 'zhome', function () { return true; }, where, true);
     }
 
     if (narrow.active())
         add_to_table(messages, 'zfilt', narrow.predicate(), where, narrow.allow_collapse());
-
-    // Even when narrowed, add messages to the home view so they exist when we un-narrow.
-    if (add_to_home)
-        add_to_table(messages, 'zhome', function () { return true; }, where, true);
 
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
