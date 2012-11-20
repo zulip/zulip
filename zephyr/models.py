@@ -42,7 +42,7 @@ def get_display_recipient(recipient):
                  'full_name': user_profile.full_name,
                  'short_name': user_profile.short_name} for user_profile in user_profile_list]
     else:
-        user_profile = UserProfile.objects.select_related().get(user=recipient.type_id)
+        user_profile = UserProfile.objects.select_related().get(id=recipient.type_id)
         return {'email': user_profile.user.email,
                 'full_name': user_profile.full_name,
                 'short_name': user_profile.short_name}
