@@ -272,7 +272,7 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
     var current_group = [];
     var new_message_groups = [];
 
-    if (where === 'top') {
+    if (where === 'top' && narrow.allow_collapse()) {
         // Assumption: We never get a 'top' update as the first update.
 
         // Delete the current top message group, and add it back in with these
