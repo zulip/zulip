@@ -43,8 +43,14 @@ class Bugdown(markdown.Extension):
 
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
 
-        # A link starts after whitespace and continues to the next whitespace.
-        link_regex = r'\b(?P<url>https?://[^\s[\](){}<>]+)'
+        # A link starts at a word boundary, and ends at space or end-of-input.
+        # But any trailing punctuation (other than /) is not included.
+        # We accomplish this with a non-greedy match followed by a greedy
+        # lookahead assertion.
+        #
+        # markdown.inlinepatterns.Pattern compiles this with re.UNICODE, which
+        # is important because we're using \w.
+        link_regex = r'\b(?P<url>https?://[^\s]+?)(?=[^\w/]*(\s|\Z))'
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
 # We need to re-initialize the markdown engine every 30 messages
