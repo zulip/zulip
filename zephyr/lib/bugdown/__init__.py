@@ -53,12 +53,15 @@ class Bugdown(markdown.Extension):
         link_regex = r'\b(?P<url>https?://[^\s]+?)(?=[^\w/]*(\s|\Z))'
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
-# We need to re-initialize the markdown engine every 30 messages
-# due to some sort of performance leak in the markdown library.
-MAX_MD_ENGINE_USES = 30
-
-_md_engine = None
-_use_count = 0
+_md_engine = markdown.Markdown(
+    safe_mode     = 'escape',
+    output_format = 'html',
+    extensions    = ['nl2br',
+        codehilite.makeExtension(configs=[
+            ('force_linenos', False),
+            ('guess_lang',    False)]),
+        fenced_code.makeExtension(),
+        Bugdown()])
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
@@ -76,18 +79,9 @@ def _linkify(match):
 
 def convert(md):
     """Convert Markdown to HTML, with Humbug-specific settings and hacks."""
-    global _md_engine, _use_count
 
-    if _md_engine is None:
-        _md_engine = markdown.Markdown(
-            safe_mode     = 'escape',
-            output_format = 'html',
-            extensions    = ['nl2br',
-                codehilite.makeExtension(configs=[
-                    ('force_linenos', False),
-                    ('guess_lang',    False)]),
-                fenced_code.makeExtension(),
-                Bugdown()])
+    # Reset the parser; otherwise it will get slower over time.
+    _md_engine.reset()
 
     try:
         html = _md_engine.convert(md)
@@ -96,10 +90,5 @@ def convert(md):
         html = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
         logging.getLogger('').error('Exception in Markdown parser: %sInput (sanitized) was: %s'
             % (traceback.format_exc(), _sanitize_for_log(md)))
-
-    _use_count += 1
-    if _use_count >= MAX_MD_ENGINE_USES:
-        _md_engine = None
-        _use_count = 0
 
     return html
