@@ -335,7 +335,7 @@ def format_delayed_updates_response(request=None, user_profile=None,
 
 def return_messages_immediately(user_profile, client_id, last,
                                 failures, client_server_generation,
-                                client_reload_pending, **kwargs):
+                                client_reload_pending, dont_block, **kwargs):
     if last is None:
         # When an API user is first querying the server to subscribe,
         # there's no reason to reply immediately.
@@ -377,6 +377,9 @@ def return_messages_immediately(user_profile, client_id, last,
     update_types = []
     if messages:
         update_types.append("new_messages")
+
+    if dont_block:
+        update_types.append("nonblocking_request")
 
     if (client_server_generation is not None
         and int(client_server_generation) != SERVER_GENERATION
@@ -424,10 +427,12 @@ def get_updates_backend(request, user_profile, handler, client_id,
                         failures = POST(converter=int, default=None),
                         client_server_generation = POST(whence='server_generation', default=None),
                         client_reload_pending = POST(whence='server_generation', default=None),
+                        dont_block = POST(converter=simplejson.loads, default=False),
                         **kwargs):
     resp = return_messages_immediately(user_profile, client_id, last, failures,
                                        client_server_generation,
-                                       client_reload_pending, **kwargs)
+                                       client_reload_pending,
+                                       dont_block, **kwargs)
     if resp is not None:
         send_with_safety_check(resp, handler, **kwargs)
         return

@@ -558,9 +558,13 @@ function add_messages(messages, add_to_home) {
 
 var get_updates_xhr;
 var get_updates_timeout;
-function get_updates() {
+function get_updates(options) {
+    var defaults = {dont_block: false};
+    options = $.extend({}, defaults, options);
+
     get_updates_params.pointer = selected_message_id;
     get_updates_params.reload_pending = Number(reload.is_pending());
+    get_updates_params.dont_block = options.dont_block;
 
     get_updates_xhr = $.ajax({
         type:     'POST',
@@ -708,14 +712,14 @@ $(function () {
     }
 });
 
-function restart_get_updates() {
+function restart_get_updates(options) {
     if (get_updates_xhr !== undefined)
         get_updates_xhr.abort();
 
     if (get_updates_timeout !== undefined)
         clearTimeout(get_updates_timeout);
 
-    get_updates();
+    get_updates(options);
 }
 
 function load_more_messages() {
