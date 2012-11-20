@@ -335,6 +335,10 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         prev = message;
     });
 
+    if (messages_to_render.length === 0) {
+        return;
+    }
+
     if (current_group.length > 0)
         new_message_groups.push(current_group);
 
