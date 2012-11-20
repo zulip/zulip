@@ -711,7 +711,7 @@ function load_more_messages() {
 }
 
 var watchdog_time = $.now();
-setInterval(function() {
+setInterval(function () {
     var new_time = $.now();
     if ((new_time - watchdog_time) > 20000) { // 20 seconds.
         // Our app's JS wasn't running (the machine was probably
