@@ -1,5 +1,6 @@
 var message_array = [];
 var message_dict = {};
+var message_in_table = {zhome: {}, zfilt: {}};
 var subject_dict = {};
 
 var viewport = $(window);
@@ -230,6 +231,7 @@ function same_sender(a, b) {
 function clear_table(table_name) {
     rows.get_table(table_name).empty();
     message_groups[table_name] = [];
+    message_in_table[table_name] = {};
 }
 
 function add_display_time(message, prev) {
@@ -297,6 +299,8 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
     $.each(messages, function (index, message) {
         if (! filter_function(message))
             return;
+
+        message_in_table[table_name][message.id] = true;
 
         message.include_recipient = false;
         message.include_bookend   = false;
@@ -390,7 +394,10 @@ function case_insensitive_find(term, array) {
     }).length !== 0;
 }
 
-function add_message_metadata(dummy, message) {
+function add_message_metadata(message, dummy) {
+    if (message_dict[message.id]) {
+        return message_dict[message.id];
+    }
     get_updates_params.last = Math.max(get_updates_params.last, message.id);
 
     var involved_people;
@@ -458,9 +465,11 @@ function add_message_metadata(dummy, message) {
     });
 
     message_dict[message.id] = message;
+    return message;
 }
 
 function add_messages(messages, add_to_home) {
+    var prepended = false;
     if (!messages)
         return;
 
@@ -469,28 +478,35 @@ function add_messages(messages, add_to_home) {
         $('#loading_indicator').hide();
         loading_spinner = undefined;
     }
-
-    messages = $.grep(messages, function (elem, idx) {
-        return ! message_dict[elem.id];
-    });
-    $.each(messages, add_message_metadata);
-
-    var top_messages = $.grep(messages, function(elem, idx) {
-        return elem.id < selected_message_id;
-    });
-    var bottom_messages = $.grep(messages, function(elem, idx) {
-        return elem.id > selected_message_id;
-    });
+    messages = $.map(messages, add_message_metadata);
 
     if (add_to_home) {
-        message_array = top_messages.concat(message_array).concat(bottom_messages);
-        add_to_table(top_messages, 'zhome', function () { return true; }, "top", true);
-        add_to_table(bottom_messages, 'zhome', function () { return true; }, "bottom", true);
+        var top_messages_home = $.grep(messages, function (elem, idx) {
+            return (elem.id < selected_message_id && ! message_in_table.zhome[elem.id]);
+        });
+        var bottom_messages_home = $.grep(messages, function (elem, idx) {
+            return (elem.id > selected_message_id && ! message_in_table.zhome[elem.id]);
+        });
+        message_array = top_messages_home.concat(message_array).concat(bottom_messages_home);
+        add_to_table(top_messages_home,    'zhome', function () { return true; }, "top",    true);
+        add_to_table(bottom_messages_home, 'zhome', function () { return true; }, "bottom", true);
+        if ((top_messages_home.length > 0) && !narrow.active()) {
+            prepended = true;
+        }
     }
 
     if (narrow.active()) {
-        add_to_table(top_messages, 'zfilt', narrow.predicate(), "top", narrow.allow_collapse());
-        add_to_table(bottom_messages, 'zfilt', narrow.predicate(), "bottom", narrow.allow_collapse());
+        var top_messages_narrow = $.grep(messages, function (elem, idx) {
+            return (elem.id < selected_message_id && ! message_in_table.zfilt[elem.id]);
+        });
+        var bottom_messages_narrow = $.grep(messages, function (elem, idx) {
+            return (elem.id > selected_message_id && ! message_in_table.zfilt[elem.id]);
+        });
+        add_to_table(top_messages_narrow,    'zfilt', narrow.predicate(), "top",    narrow.allow_collapse());
+        add_to_table(bottom_messages_narrow, 'zfilt', narrow.predicate(), "bottom", narrow.allow_collapse());
+        if (top_messages_narrow.length > 0) {
+            prepended = true;
+        }
     }
 
     // If we received the initially selected message, select it on the client side,
@@ -512,7 +528,7 @@ function add_messages(messages, add_to_home) {
     //
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
-    if ((top_messages.length() > 0) && (selected_message_id >= 0)) {
+    if (prepended && (selected_message_id >= 0)) {
         select_message_by_id(selected_message_id,
                              {then_scroll: true, update_server: false});
     }
