@@ -596,6 +596,12 @@ function get_updates(options) {
                 add_messages(data.messages, true);
             }
 
+            if (data.zephyr_mirror_active === false) {
+                $('#zephyr-mirror-error').show();
+            } else {
+                $('#zephyr-mirror-error').hide();
+            }
+
             // Pointer sync is disabled for now
             // if (data.new_pointer !== undefined
             //     && data.new_pointer !== selected_message_id)

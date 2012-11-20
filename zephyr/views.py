@@ -311,6 +311,17 @@ def format_updates_response(messages=[], apply_markdown=True,
            'update_types': update_types}
     if new_pointer is not None:
         ret['new_pointer'] = new_pointer
+    if user_profile.realm.domain == "mit.edu":
+        try:
+            activity = UserActivity.objects.get(user_profile = user_profile,
+                                                query="/api/v1/get_messages",
+                                                client__name="zephyr_mirror")
+            ret['zephyr_mirror_active'] = \
+                (activity.last_visit.replace(tzinfo=None) >
+                 datetime.datetime.utcnow() - datetime.timedelta(minutes=5))
+        except UserActivity.DoesNotExist:
+            pass
+
     return ret
 
 def format_delayed_updates_response(request=None, user_profile=None,
@@ -331,6 +342,7 @@ def format_delayed_updates_response(request=None, user_profile=None,
         update_types.append("pointer_update")
 
     return format_updates_response(new_pointer=pointer,
+                                   user_profile=user_profile,
                                    update_types=update_types, **kwargs)
 
 def return_messages_immediately(user_profile, client_id, last,
