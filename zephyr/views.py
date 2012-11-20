@@ -146,6 +146,11 @@ def accounts_home(request):
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def home(request):
+    # We need to modify the session object every two weeks or it will expire.
+    # This line makes reloading the page a sufficient action to keep the
+    # session alive.
+    request.session.modified = True
+
     user_profile = UserProfile.objects.get(user=request.user)
 
     num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
