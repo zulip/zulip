@@ -94,7 +94,8 @@ def accounts_register(request):
 
             message = Message()
             message.sender = UserProfile.objects.get(user__email="humbug+signups@humbughq.com")
-            message.recipient = Recipient.objects.get(type_id=create_stream_if_needed(message.sender.realm, "signups").id, type=Recipient.STREAM)
+            message.recipient = Recipient.objects.get(type_id=create_stream_if_needed(
+                message.sender.realm, "signups").id, type=Recipient.STREAM)
             message.subject = realm.domain
             message.content = "%s <`%s`> just signed up for Humbug! (total: **%i**)" % (
                     full_name,
