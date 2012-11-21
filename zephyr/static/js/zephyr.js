@@ -271,9 +271,7 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
     var current_group = [];
     var new_message_groups = [];
 
-    if (where === 'top' && narrow.allow_collapse()) {
-        // Assumption: We never get a 'top' update as the first update.
-
+    if (where === 'top' && narrow.allow_collapse() && message_groups[table_name].length > 0) {
         // Delete the current top message group, and add it back in with these
         // messages, in order to collapse properly.
         //
@@ -380,7 +378,9 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         row.find('.messagebox').addClass("next_is_same_sender");
     }
 
-    if (where === 'top') {
+    if (where === 'top' && table.find('.ztable_layout_row').length > 0) {
+        // If we have a totally empty narrow, there may not
+        // be a .ztable_layout_row.
         table.find('.ztable_layout_row').after(rendered_elems);
     } else {
         table.append(rendered_elems);
