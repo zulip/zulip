@@ -371,7 +371,8 @@ def forward_to_zephyr(message):
         logger.error("Error computing zsig for %s!" % (message["sender_email"],))
         return
 
-    wrapped_content = "\n".join("\n".join(textwrap.wrap(line))
+    wrapper = textwrap.TextWrapper(break_long_words=False)
+    wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].split("\n"))
 
     logger.info("Forwarding message from %s" %  (message["sender_email"],))
