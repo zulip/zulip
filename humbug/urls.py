@@ -26,6 +26,9 @@ urlpatterns = patterns('',
     url(r'^activity$', 'zephyr.views.get_activity'),
 
     # Registration views, require a confirmation ID.
+    url(r'^accounts/home/', 'zephyr.views.accounts_home'),
+    url(r'^accounts/send_confirm/(?P<email>[\S]+)?', 'django.views.generic.simple.direct_to_template',
+        {'template': 'zephyr/accounts_send_confirm.html'}, name='send_confirm'),
     url(r'^accounts/register/', 'zephyr.views.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
 
@@ -65,13 +68,6 @@ urlpatterns = patterns('',
     url(r'^notify_new_message$',            'zephyr.views.notify_new_message'),
     url(r'^notify_pointer_update$',         'zephyr.views.notify_pointer_update'),
 )
-
-if settings.ALLOW_REGISTER:
-    urlpatterns += patterns('',
-        url(r'^accounts/home/', 'zephyr.views.accounts_home'),
-        url(r'^accounts/send_confirm/(?P<email>[\S]+)?', 'django.views.generic.simple.direct_to_template',
-            {'template': 'zephyr/accounts_send_confirm.html'}, name='send_confirm'),
-    )
 
 if settings.DEBUG:
     urlpatterns += patterns('',

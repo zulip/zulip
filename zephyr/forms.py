@@ -2,6 +2,10 @@ from django import forms
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+from django.utils.safestring import mark_safe
+
+from humbug import settings
+from models import Realm
 
 def is_unique(value):
     try:
@@ -17,6 +21,19 @@ def is_active(value):
     except User.DoesNotExist:
         pass
 
+SIGNUP_STRING = '<a href="http://get.humbughq.com/">Sign up</a> to find out when Humbug is ready for you.'
+
+def has_valid_realm(value):
+    try:
+        Realm.objects.get(domain=value.split("@")[-1])
+    except Realm.DoesNotExist:
+        raise ValidationError(mark_safe(u'Registration is not currently available for your domain. ' + SIGNUP_STRING))
+
+def isnt_mit(value):
+    if "@mit.edu" in value:
+        raise ValidationError(mark_safe(u'Humbug for MIT is by invitation only. ' + SIGNUP_STRING))
+
+
 class UniqueEmailField(forms.EmailField):
     default_validators = [validators.validate_email, is_unique]
 
@@ -26,4 +43,8 @@ class RegistrationForm(forms.Form):
     terms = forms.BooleanField(required=True)
 
 class HomepageForm(forms.Form):
-    email = UniqueEmailField()
+    if settings.ALLOW_REGISTER:
+        email = UniqueEmailField()
+    else:
+        validators = UniqueEmailField.default_validators + [has_valid_realm, isnt_mit]
+        email = UniqueEmailField(validators=validators)

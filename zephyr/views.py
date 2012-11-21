@@ -141,7 +141,9 @@ def accounts_home(request):
             is_unique(email)
         except ValidationError:
             return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
-    return render_to_response('zephyr/accounts_home.html',
+    else:
+        form = HomepageForm()
+    return render_to_response('zephyr/accounts_home.html', {'form': form},
                               context_instance=RequestContext(request))
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
