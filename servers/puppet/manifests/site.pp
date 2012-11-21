@@ -107,6 +107,12 @@ class humbug_base {
     source     => '/root/humbug/servers/puppet/files/iptables/rules',
   }
 
+  file { '/etc/apt/apt.conf.d/02periodic':
+    ensure     => file,
+    mode       => 644,
+    source     => '/root/humbug/servers/puppet/files/apt/apt.conf.d/02periodic',
+  }
+
   common::append { '/etc/ssh/sshd_config':
     require    => Package['openssh-server'],
     file       => '/etc/ssh/sshd_config',
