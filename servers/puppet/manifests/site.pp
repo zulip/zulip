@@ -32,7 +32,7 @@ class humbug_base {
   $packages = [ "screen", "strace", "vim", "emacs", "git", "python-tz", "sqlite3", "ntp",
                 "python-tornado",  "python-simplejson", "python-pygments", "ipython", "host",
                 "python-django", "openssh-server", "python-pip", "puppet-el", "python-flup",
-                "iptables-persistent", ]
+                "iptables-persistent", "nagios-plugins-basic", ]
   package { $packages: ensure => "installed" }
 
   # FIXME: Stop using pip since it is insecure
