@@ -384,6 +384,21 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         table.find('.ztable_layout_row').after(rendered_elems);
     } else {
         table.append(rendered_elems);
+
+        // XXX: This is absolutely awful.  There is a firefox bug
+        // where when table rows as DOM elements are appended (as
+        // opposed to as a string) a border is sometimes added to the
+        // row.  This border goes away if we add a dummy row to the
+        // top of the table (it doesn't go away on any reflow,
+        // though, as resizing the window doesn't make them go away).
+        // So, we add an empty row and then garbage collect them
+        // later when the user is idle.
+        var dummy = $("<tr></tr>");
+        table.find('.ztable_layout_row').after(dummy);
+        $(document).idle({'idle': 1000*10,
+                          'onIdle': function () {
+                              dummy.remove();
+                          }});
     }
 }
 
