@@ -229,7 +229,10 @@ function same_sender(a, b) {
 }
 
 function clear_table(table_name) {
-    rows.get_table(table_name).empty();
+    // We do not want to call .empty() because that also clears
+    // jQuery data.  This does mean, however, that we need to be
+    // mindful of memory leaks.
+    rows.get_table(table_name).children().detach();
     message_groups[table_name] = [];
     message_in_table[table_name] = {};
 }
