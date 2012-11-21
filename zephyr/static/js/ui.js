@@ -116,20 +116,22 @@ function resizehandler(e) {
 var old_label;
 var is_floating_recipient_bar_showing = false;
 function replace_floating_recipient_bar(desired_label) {
+    var new_label, other_label, header;
     if (desired_label !== old_label) {
         if (desired_label.children(".message_header_stream").length !== 0) {
-            $("#current_label_stream td:last").replaceWith(
-                desired_label.children(".message_header_stream.right_part").clone());
-            $("#current_label_huddle").css('display', 'none');
-            $("#current_label_stream").css('display', 'table-row');
-            $("#current_label_stream").attr("zid", desired_label.attr("zid"));
+            new_label = $("#current_label_stream");
+            other_label = $("#current_label_huddle");
+            header = desired_label.children(".message_header_stream.right_part");
         } else {
-            $("#current_label_huddle td:last").replaceWith(
-                desired_label.children(".message_header_huddle.right_part").clone());
-            $("#current_label_stream").css('display', 'none');
-            $("#current_label_huddle").css('display', 'table-row');
-            $("#current_label_huddle").attr("zid", desired_label.attr("zid"));
+            new_label = $("#current_label_huddle");
+            other_label = $("#current_label_stream");
+            header = desired_label.children(".message_header_huddle.right_part");
         }
+        new_label.find("td:last").replaceWith(header.clone());
+        other_label.css('display', 'none');
+        new_label.css('display', 'table-row');
+        new_label.attr("zid", desired_label.attr("zid"));
+
         old_label = desired_label;
     }
     if (!is_floating_recipient_bar_showing) {
