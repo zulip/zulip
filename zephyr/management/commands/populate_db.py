@@ -202,6 +202,7 @@ class Command(BaseCommand):
             internal_humbug_users_nosubs = [
                 ("Humbug Commit Bot", "humbug+commits@humbughq.com"),
                 ("Humbug Trac Bot", "humbug+trac@humbughq.com"),
+                ("Humbug Nagios Bot", "humbug+nagios@humbughq.com"),
                 ("Humbug Feedback Bot", "feedback@humbughq.com"),
                 ("Humbug New User Bot", "humbug+signups@humbughq.com"),
                 ]
