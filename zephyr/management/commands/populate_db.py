@@ -115,7 +115,7 @@ class Command(BaseCommand):
                      ("Prospero from The Tempest", "prospero@humbughq.com"),
                      ("Cordelia Lear", "cordelia@humbughq.com"), ("King Hamlet", "hamlet@humbughq.com")]
             for i in xrange(options["extra_users"]):
-                names.append(('Extra User %d' % (i,), 'extrauser%d' % (i,)))
+                names.append(('Extra User %d' % (i,), 'extrauser%d@humbughq.com' % (i,)))
             create_users(realms, names)
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
