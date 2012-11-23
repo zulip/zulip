@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+import sys
+import optparse
+from os import path
+
+sys.path.append(path.join(path.dirname(__file__), '../..'))
+import api.common
+
+# Nagios passes the notification details as command line options.
+# In Nagios, "output" means "first line of output", and "long
+# output" means "other lines of output".
+parser = optparse.OptionParser()
+parser.add_option('--output',      default='')
+parser.add_option('--long-output', default='')
+for opt in ('type', 'host', 'service', 'state'):
+    parser.add_option('--' + opt)
+(opts, args) = parser.parse_args()
+
+msg = dict(type='stream', to='nagios')
+
+# Set a subject based on the host or service in question.  This enables
+# threaded discussion of multiple concurrent issues, and provides useful
+# context when narrowed.
+#
+# We send PROBLEM and RECOVERY messages to the same subject.
+if opts.service is None:
+    # Host notification
+    thing = 'host'
+    msg['subject'] = 'host %s' % (opts.host,)
+else:
+    # Service notification
+    thing = 'service'
+    msg['subject'] = 'service %s on %s' % (opts.service, opts.host)
+
+# e.g. **PROBLEM**: service is CRITICAL
+msg['content'] = '**%s**: %s is %s' % (opts.type, thing, opts.state)
+
+output = (opts.output + '\n' + opts.long_output).strip()
+if output:
+    # Block-quote any command output.
+    msg['content'] += ('\n\n' + '\n'.join('> ' + ln for ln in output.splitlines()))
+
+client = api.common.HumbugAPI(
+    email   = 'humbug+nagios@humbughq.com',
+    api_key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    site    = 'https://staging.humbughq.com')
+client.send_message(msg)
