@@ -274,6 +274,8 @@ def restore_saved_messages():
             old_message["domain"] = old_message["domain"].lower()
         elif message_type.startswith("user_"):
             old_message["user"] = old_message["user"].lower()
+        elif message_type.startswith("enable_"):
+            old_message["user"] = old_message["user"].lower()
         else:
             old_message["sender_email"] = old_message["sender_email"].lower()
 
@@ -291,6 +293,8 @@ def restore_saved_messages():
             stream_set.add((old_message["domain"], old_message["name"].strip()))
             continue
         elif message_type.startswith("user_"):
+            continue
+        elif message_type.startswith("enable_"):
             continue
         sender_email = old_message["sender_email"]
         domain = sender_email.split('@')[1]
@@ -389,7 +393,8 @@ def restore_saved_messages():
     messages_to_create = []
     for idx, old_message in enumerate(old_messages):
         if (old_message["type"].startswith("subscription") or
-            old_message["type"].startswith("user_")):
+            old_message["type"].startswith("user_") or
+            old_message["type"].startswith("enable_")):
             continue
 
         message = Message()
@@ -493,6 +498,12 @@ def restore_saved_messages():
             # Just handle these the slow way
             user_profile = UserProfile.objects.get(user__email=old_message["user"])
             user_profile.full_name = old_message["full_name"]
+            user_profile.save()
+            continue
+        elif old_message["type"] == "enable_desktop_notifications_changed":
+            # Just handle these the slow way
+            user_profile = UserProfile.objects.get(user__email=old_message["user"])
+            user_profile.enable_desktop_notifications = old_message["enable_desktop_notifications"]
             user_profile.save()
             continue
 

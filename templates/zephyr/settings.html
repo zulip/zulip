@@ -63,6 +63,17 @@
         </td>
       </tr>
       </table>
+      <table>
+      <tr>
+        <td><label for="enable_desktop_notifications">Enable desktop notifications: &nbsp;</label></td>
+        <td><input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
+                   {% if user_profile.enable_desktop_notifications %}
+                   checked="yes"
+                   {% endif %}
+             />
+         </td>
+      </tr>
+      </table>
       <input type="submit" name="change_settings" value="Save changes" class="btn" />
     </form>
     </div>

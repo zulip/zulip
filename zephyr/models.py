@@ -115,6 +115,7 @@ class UserProfile(models.Model):
     last_pointer_updater = models.CharField(max_length=64)
     realm = models.ForeignKey(Realm)
     api_key = models.CharField(max_length=32)
+    enable_desktop_notifications = models.BooleanField(default=True)
 
     # This is class data, not instance data!
     # There is one callbacks_table for the whole process.
@@ -598,6 +599,15 @@ def do_change_full_name(user_profile, full_name, log=True):
                    'timestamp': time.time(),
                    'user': user_profile.user.email,
                    'full_name': full_name})
+
+def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications, log=True):
+    user_profile.enable_desktop_notifications = enable_desktop_notifications
+    user_profile.save()
+    if log:
+        log_event({'type': 'enable_desktop_notifications_changed',
+                   'timestamp': time.time(),
+                   'user': user_profile.user.email,
+                   'enable_desktop_notifications': enable_desktop_notifications})
 
 class Huddle(models.Model):
     # TODO: We should consider whether using

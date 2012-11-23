@@ -12,10 +12,10 @@ from django.db.models import Q
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     do_add_subscription, do_remove_subscription, do_change_password, \
-    do_change_full_name, do_activate_user, \
-    create_user, do_send_message, create_mit_user_if_needed, \
-    create_stream_if_needed, PreregistrationUser, get_client, MitUser, \
-    User, UserActivity
+    do_change_full_name, do_change_enable_desktop_notifications, \
+    do_activate_user, create_user, do_send_message, \
+    create_mit_user_if_needed, create_stream_if_needed, \
+    PreregistrationUser, get_client, MitUser, User, UserActivity
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
     is_active
 from django.views.decorators.csrf import csrf_exempt
@@ -825,7 +825,10 @@ def add_subscriptions_backend(request, user_profile,
 @has_request_variables
 def json_change_settings(request, user_profile, full_name=POST,
                          old_password=POST, new_password=POST,
-                         confirm_password=POST):
+                         confirm_password=POST,
+                         # enable_desktop_notification needs to default to False
+                         # because browsers POST nothing for an unchecked checkbox
+                         enable_desktop_notifications=POST(default=False)):
     if new_password != "":
         if new_password != confirm_password:
             return json_error("New password must match confirmation password!")
@@ -837,6 +840,10 @@ def json_change_settings(request, user_profile, full_name=POST,
     if user_profile.full_name != full_name:
         do_change_full_name(user_profile, full_name)
         result['full_name'] = full_name
+
+    if user_profile.enable_desktop_notifications != enable_desktop_notifications:
+        do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications)
+        result['enable_desktop_notifications'] = enable_desktop_notifications
 
     return json_success(result)
 
