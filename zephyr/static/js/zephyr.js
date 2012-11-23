@@ -594,6 +594,7 @@ function get_updates(options) {
 
             if (data.messages.length !== 0) {
                 add_messages(data.messages, true);
+                notifications.received_messages(data.messages);
             }
 
             if (data.zephyr_mirror_active === false) {

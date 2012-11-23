@@ -7,6 +7,7 @@ var globals =
 
     // index.html
     + ' initial_pointer email stream_list people_list have_initial_messages'
+    + ' desktop_notifications_enabled'
 
     // common.js
     + ' status_classes'
@@ -40,6 +41,9 @@ var globals =
 
     // typeahead_helper.js
     + ' typeahead_helper'
+
+    // notifications.js
+    + ' notifications'
 
     // ui.js
     + ' ui'

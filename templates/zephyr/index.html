@@ -48,6 +48,7 @@
 <script type="text/javascript" src="{{ static_hidden }}js/search.js"></script>
 <script type="text/javascript" src="{{ static_hidden }}js/composebox_typeahead.js"></script>
 <script type="text/javascript" src="{{ static_hidden }}js/hotkey.js"></script>
+<script type="text/javascript" src="{{ static_hidden }}js/notifications.js"></script>
 <script type="text/javascript" src="{{ static_hidden }}js/zephyr.js"></script>
 
 {% if debug %}
@@ -62,6 +63,7 @@ var initial_pointer = {{ user_profile.pointer }};
 
 var email = "{{ user_profile.user.email|escapejs }}";
 var have_initial_messages = {{ have_initial_messages|escapejs }};
+var desktop_notifications_enabled = "{{ user_profile.enable_desktop_notifications|escapejs }}" === "True";
 
 var stream_list = [
 {% for stream in streams %}

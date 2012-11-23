@@ -412,6 +412,10 @@ $(function () {
             }
             update_gravatars();
 
+            if (result.enable_desktop_notifications !== undefined) {
+                desktop_notifications_enabled = result.enable_desktop_notifications;
+            }
+
             settings_status.removeClass(status_classes)
                 .addClass('alert-success')
                 .text(message).stop(true).fadeTo(0,1);
@@ -473,6 +477,7 @@ $(function () {
 
     composebox_typeahead.initialize();
     search.initialize();
+    notifications.initialize();
 
     $("body").bind('click', function() {
         ui.hide_userinfo_popover();
