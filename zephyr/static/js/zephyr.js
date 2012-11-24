@@ -756,25 +756,21 @@ function keep_pointer_in_view() {
     if (next_message.length === 0)
         return;
 
-    if (above_view_threshold(next_message) && (!at_top_of_viewport())) {
-        while (above_view_threshold(next_message)) {
-            candidate = rows.next_visible(next_message);
-            if (candidate.length === 0) {
+    function adjust(past_threshold, at_end, advance) {
+        if (!past_threshold(next_message) || at_end())
+            return false;  // try other side
+        while (past_threshold(next_message)) {
+            candidate = advance(next_message);
+            if (candidate.length === 0)
                 break;
-            } else {
-                next_message = candidate;
-            }
+            next_message = candidate;
         }
-    } else if (below_view_threshold(next_message) && (!at_bottom_of_viewport())) {
-        while (below_view_threshold(next_message)) {
-            candidate = rows.prev_visible(next_message);
-            if (candidate.length === 0) {
-                break;
-            } else {
-                next_message = candidate;
-            }
-        }
+        return true;
     }
+
+    if (! adjust(above_view_threshold, at_top_of_viewport, rows.next_visible))
+        adjust(below_view_threshold, at_bottom_of_viewport, rows.prev_visible);
+
     update_selected_message(next_message, {update_server: true});
 }
 
