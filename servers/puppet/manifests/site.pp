@@ -201,7 +201,7 @@ class humbug_apache_base {
 }
 
 class humbug_app_frontend {
-  $web_packages = [ "nginx", ]
+  $web_packages = [ "nginx", "memcached", "python-pylibmc", ]
   package { $web_packages: ensure => "installed" }
   file { "/etc/nginx/sites-available/humbug":
     require => Package[nginx],
