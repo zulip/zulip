@@ -752,7 +752,7 @@ function at_bottom_of_viewport() {
 
 function keep_pointer_in_view() {
     var candidate;
-    var next_message = rows.get(selected_message_id);
+    var next_message = selected_message;
     if (next_message.length === 0)
         return;
 
@@ -781,7 +781,7 @@ function keep_pointer_in_view() {
 // I'm at the very top or the very bottom of the page.
 function move_pointer_at_page_top_and_bottom(delta) {
     if (delta !== 0 && (at_top_of_viewport() || at_bottom_of_viewport())) {
-        var next_message = rows.get(selected_message_id);
+        var next_message = selected_message;
         if (delta > 0) {
             // Scrolling up (want older messages)
             next_message = rows.prev_visible(next_message);
