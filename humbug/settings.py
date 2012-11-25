@@ -148,16 +148,21 @@ INSTALLED_APPS = (
 )
 
 # Caching
-CACHES = {
-    'default': {
+if deployed:
+    CACHES = { 'default': {
+        'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT':  3600
+    } }
+else:
+    CACHES = { 'default': {
         'BACKEND':  'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'humbug-default-local-cache',
         'TIMEOUT':  3600,
         'OPTIONS': {
             'MAX_ENTRIES': 100000
         }
-    }
-}
+    } }
 
 LOGGING = {
     'version': 1,
