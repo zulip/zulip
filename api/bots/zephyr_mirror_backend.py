@@ -396,6 +396,7 @@ def forward_to_zephyr(message):
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].split("\n"))
 
+    zwrite_args = ["zwrite", "-s", zsig]
     logger.info("Forwarding message from %s" %  (message["sender_email"],))
     if message['type'] == "stream":
         zephyr_class = message["display_recipient"]
@@ -416,12 +417,12 @@ def forward_to_zephyr(message):
             else:
                 instance = zephyr_class
                 zephyr_class = "message"
-        zwrite_args = ["zwrite", "-s", zsig, "-c", zephyr_class, "-i", instance]
+        zwrite_args.extend(["-c", zephyr_class, "-i", instance])
     elif message['type'] == "personal":
         recipient = to_zephyr_username(message["display_recipient"]["email"])
-        zwrite_args = ["zwrite", "-s", zsig, recipient]
+        zwrite_args.extend([recipient])
     elif message['type'] == "huddle":
-        zwrite_args = ["zwrite", "-s", zsig, "-C"]
+        zwrite_args.extend(["-C"])
         zwrite_args.extend([to_zephyr_username(user["email"]).replace("@ATHENA.MIT.EDU", "")
                             for user in message["display_recipient"]])
 
