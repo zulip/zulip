@@ -16,7 +16,7 @@ parser.add_option('--site',
                   action='store')
 parser.add_option('--api-key',
                   dest='api_key',
-                  default="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                  default=None,
                   action='store')
 parser.add_option('--streams',
                   dest='streams',

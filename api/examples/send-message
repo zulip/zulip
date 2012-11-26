@@ -16,7 +16,7 @@ parser.add_option('--site',
                   action='store')
 parser.add_option('--api-key',
                   dest='api_key',
-                  default='4e5d97591bec64bf57d2698ffbb563e3',
+                  default=None,
                   action='store')
 parser.add_option('--sender',
                   dest='sender',

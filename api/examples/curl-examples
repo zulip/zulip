@@ -2,13 +2,13 @@
 # Two quick API tests using curl
 
 curl https://humbughq.com/api/v1/send_message \
-    -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
-    -d "email=tabbott@humbughq.com" \
+    -d "api-key=YOUR_API_KEY" \
+    -d "email=YOUR_EMAIL" \
     -d "type=private" -d "content=test" \
-    -d "to=tabbott@humbughq.com"
+    -d "to=RECIPIENT_EMAIL"
 
 curl https://humbughq.com/api/v1/get_messages \
-    -d "api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
-    -d "email=tabbott@humbughq.com"
+    -d "api-key=YOUR_API_KEY" \
+    -d "email=YOUR_EMAIL"
 
 # Or replace https://humbughq.com with your local test instance
