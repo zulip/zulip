@@ -237,7 +237,7 @@ def process_notice(notice, log):
         # skip PING messages
         return
 
-    if zsig.endswith("@(@color(blue))") or notice.format.endswith("@(@color(blue))"):
+    if notice.format.endswith("@(@color(blue))"):
         logger.debug("Skipping message we got from Humbug!")
         return
 
@@ -387,16 +387,11 @@ def send_unauthed_zephyr(zwrite_args, content):
     return send_zephyr(zwrite_args + ["-d"], content)
 
 def forward_to_zephyr(message):
-    zsig = u"%s@(@color(blue))" % (zsig_fullname,)
-    if ' dot ' in zsig:
-        logger.error("Error computing zsig for %s!" % (message["sender_email"],))
-        return
-
     wrapper = textwrap.TextWrapper(break_long_words=False)
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].split("\n"))
 
-    zwrite_args = ["zwrite", "-s", zsig, "-F", "Class $class, Instance $instance:\n" +
+    zwrite_args = ["zwrite", "-s", zsig_fullname, "-F", "Class $class, Instance $instance:\n" +
                    "To: @bold($recipient) at $time $date\n" +
                    "From: @bold{$1 <$sender>}\n\n$2@(@color(blue))"]
     logger.info("Forwarding message from %s" %  (message["sender_email"],))
