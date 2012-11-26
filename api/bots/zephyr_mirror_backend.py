@@ -237,25 +237,11 @@ def process_notice(notice, log):
         # skip PING messages
         return
 
-    if notice.format.endswith("@(@color(blue))"):
-        logger.debug("Skipping message we got from Humbug!")
-        return
-
     zephyr_class = notice.cls.lower()
 
-    if (zephyr_class == "message" and notice.recipient != ""):
+    if ((zephyr_class == "message" and notice.recipient != "") or
+        (zephyr_class == "mail" and notice.instance.lower() == "inbox")):
         is_personal = True
-        if body.startswith("CC:"):
-            is_huddle = True
-            # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
-            huddle_recipients = [to_humbug_username(x.strip()) for x in
-                                 body.split("\n")[0][4:].split()]
-            if notice.sender not in huddle_recipients:
-                huddle_recipients.append(to_humbug_username(notice.sender))
-            body = body.split("\n", 1)[1]
-    if (zephyr_class == "mail" and notice.instance.lower() == "inbox"):
-        is_personal = True
-
     # Drop messages not to the listed subscriptions
     if is_personal and not options.forward_personals:
         return
@@ -264,6 +250,19 @@ def process_notice(notice, log):
         logger.debug("Skipping ... %s/%s/%s" %
                      (zephyr_class, notice.instance, is_personal))
         return
+    if notice.format.endswith("@(@color(blue))"):
+        logger.debug("Skipping message we got from Humbug!")
+        return
+
+    if is_personal:
+        if body.startswith("CC:"):
+            is_huddle = True
+            # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
+            huddle_recipients = [to_humbug_username(x.strip()) for x in
+                                 body.split("\n")[0][4:].split()]
+            if notice.sender not in huddle_recipients:
+                huddle_recipients.append(to_humbug_username(notice.sender))
+            body = body.split("\n", 1)[1]
 
     zeph = { 'time'      : str(notice.time),
              'sender'    : notice.sender,
