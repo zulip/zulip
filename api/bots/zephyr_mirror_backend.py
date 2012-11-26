@@ -669,63 +669,46 @@ def configure_logger(direction_name):
 def parse_args():
     parser = optparse.OptionParser()
     parser.add_option('--forward-class-messages',
-                      dest='forward_class_messages',
                       default=False,
                       help=optparse.SUPPRESS_HELP,
                       action='store_true')
     parser.add_option('--resend-log',
                       dest='resend_log_path',
-                      default=None,
-                      help=optparse.SUPPRESS_HELP,
-                      action='store')
+                      help=optparse.SUPPRESS_HELP)
     parser.add_option('--enable-log',
                       dest='log_path',
-                      default=None,
-                      help=optparse.SUPPRESS_HELP,
-                      action='store')
+                      help=optparse.SUPPRESS_HELP)
     parser.add_option('--no-forward-personals',
                       dest='forward_personals',
                       help=optparse.SUPPRESS_HELP,
                       default=True,
                       action='store_false')
     parser.add_option('--forward-from-humbug',
-                      dest='forward_from_humbug',
                       default=False,
                       help=optparse.SUPPRESS_HELP,
                       action='store_true')
     parser.add_option('--verbose',
-                      dest='verbose',
                       default=False,
                       help=optparse.SUPPRESS_HELP,
                       action='store_true')
     parser.add_option('--sync-subscriptions',
-                      dest='sync_subscriptions',
                       default=False,
                       action='store_true')
     parser.add_option('--site',
-                      dest='site',
                       default=DEFAULT_SITE,
-                      help=optparse.SUPPRESS_HELP,
-                      action='store')
+                      help=optparse.SUPPRESS_HELP)
     parser.add_option('--user',
-                      dest='user',
                       default=os.environ["USER"],
-                      help=optparse.SUPPRESS_HELP,
-                      action='store')
+                      help=optparse.SUPPRESS_HELP)
     parser.add_option('--root-path',
-                      dest='root_path',
                       default="/afs/athena.mit.edu/user/t/a/tabbott/for_friends",
-                      help=optparse.SUPPRESS_HELP,
-                      action='store')
+                      help=optparse.SUPPRESS_HELP)
     parser.add_option('--test-mode',
-                      dest='test_mode',
                       default=False,
                       help=optparse.SUPPRESS_HELP,
                       action='store_true')
     parser.add_option('--api-key-file',
-                      dest='api_key_file',
-                      default=os.path.join(os.environ["HOME"], "Private", ".humbug-api-key"),
-                      action='store')
+                      default=os.path.join(os.environ["HOME"], "Private", ".humbug-api-key"))
     return parser.parse_args()
 
 if __name__ == "__main__":
