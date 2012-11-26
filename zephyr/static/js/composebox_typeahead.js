@@ -13,43 +13,6 @@ var composebox_typeahead = (function () {
 
 var exports = {};
 
-var private_message_typeahead_list = [];
-var private_message_mapped = {};
-
-function render_pm_object(person) {
-    return person.full_name + " <" + person.email + ">";
-}
-
-function add_to_known_recipients(recipient_data, count_towards_autocomplete_preference) {
-    var name_string = render_pm_object(recipient_data);
-    if (private_message_mapped[name_string] === undefined) {
-        private_message_mapped[name_string] = recipient_data;
-        private_message_mapped[name_string].count = 0;
-        private_message_typeahead_list.push(name_string);
-    }
-    if (count_towards_autocomplete_preference) {
-        private_message_mapped[name_string].count += 1;
-    }
-}
-
-exports.known_to_typeahead = function (recipient_data) {
-    return private_message_mapped[render_pm_object(recipient_data)] !== undefined;
-};
-
-exports.update_all_recipients = function (recipients) {
-    $.each(recipients, function (idx, recipient_data) {
-        add_to_known_recipients(recipient_data, false);
-    });
-};
-
-exports.update_your_recipients = function (recipients) {
-    $.each(recipients, function (idx, recipient_data) {
-        if (recipient_data.email !== email) {
-            add_to_known_recipients(recipient_data, true);
-        }
-    });
-};
-
 function get_pm_recipients(query_string) {
     // Assumes email addresses don't have commas or semicolons in them
     return query_string.split(/\s*[,;]\s*/);
@@ -166,7 +129,7 @@ exports.initialize = function () {
     });
 
     $( "#private_message_recipient" ).typeahead({
-        source: private_message_typeahead_list,
+        source: typeahead_helper.private_message_typeahead_list,
         items: 4,
         highlighter: composebox_typeahead_highlighter,
         matcher: function (item) {
@@ -182,8 +145,8 @@ exports.initialize = function () {
         },
         sorter: function (matches) {
             matches.sort(function (x, y) {
-                var x_count = private_message_mapped[x].count;
-                var y_count = private_message_mapped[y].count;
+                var x_count = typeahead_helper.private_message_mapped[x].count;
+                var y_count = typeahead_helper.private_message_mapped[y].count;
 
                 if (x_count > y_count) {
                     return -1;
@@ -202,7 +165,7 @@ exports.initialize = function () {
             if (previous_recipients.length !== 0) {
                 previous_recipients += ", ";
             }
-            return previous_recipients + private_message_mapped[item].email + ", ";
+            return previous_recipients + typeahead_helper.private_message_mapped[item].email + ", ";
         },
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });

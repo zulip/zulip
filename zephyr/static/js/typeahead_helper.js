@@ -45,6 +45,43 @@ exports.highlight_with_escaping = function (query, item) {
     return result;
 };
 
+exports.private_message_typeahead_list = [];
+exports.private_message_mapped = {};
+
+function render_pm_object(person) {
+    return person.full_name + " <" + person.email + ">";
+}
+
+function add_to_known_recipients(recipient_data, count_towards_autocomplete_preference) {
+    var name_string = render_pm_object(recipient_data);
+    if (typeahead_helper.private_message_mapped[name_string] === undefined) {
+        typeahead_helper.private_message_mapped[name_string] = recipient_data;
+        typeahead_helper.private_message_mapped[name_string].count = 0;
+        typeahead_helper.private_message_typeahead_list.push(name_string);
+    }
+    if (count_towards_autocomplete_preference) {
+        typeahead_helper.private_message_mapped[name_string].count += 1;
+    }
+}
+
+exports.known_to_typeahead = function (recipient_data) {
+    return typeahead_helper.private_message_mapped[render_pm_object(recipient_data)] !== undefined;
+};
+
+exports.update_all_recipients = function (recipients) {
+    $.each(recipients, function (idx, recipient_data) {
+        add_to_known_recipients(recipient_data, false);
+    });
+};
+
+exports.update_your_recipients = function (recipients) {
+    $.each(recipients, function (idx, recipient_data) {
+        if (recipient_data.email !== email) {
+            add_to_known_recipients(recipient_data, true);
+        }
+    });
+};
+
 return exports;
 
 }());
