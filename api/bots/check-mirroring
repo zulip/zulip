@@ -119,14 +119,14 @@ else:
     import zephyr
     try:
         zephyr.init()
+        subs = zephyr.Subscriptions()
+        subs.add(('message', 'personal', 'tabbott/extra@ATHENA.MIT.EDU'))
+        subs.add(('tabbott-nagios-test', '*', '*'))
     except IOError, e:
         if "SERVNAK received" in e:
             print "SERVNAK received, punting rest of test"
             print_status_and_exit(0)
 
-    subs = zephyr.Subscriptions()
-    subs.add(('message', 'personal', 'tabbott/extra@ATHENA.MIT.EDU'))
-    subs.add(('tabbott-nagios-test', '*', '*'))
 
     max_message_id = humbug_client.get_profile()['max_message_id']
 
