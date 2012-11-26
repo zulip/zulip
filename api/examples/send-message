@@ -29,6 +29,7 @@ usage = """send-message [options] <recipient>
 
 Sends a test message to the specified recipients.
 
+Example: send-message --type=stream commits
 Example: send-message --site=https://zephyr.humbughq.com iago@humbughq.com
 """
 parser = optparse.OptionParser(usage=usage)
