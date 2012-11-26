@@ -28,9 +28,10 @@ MIT Zephyr account.
  4) On an Athena dialup (linerva.mit.edu, scrubbing-bubbles.mit.edu, etc),
     run the Zephyr mirroring script.
 
-    The script copies personals you receive on Zephyr to Humbug, and
-    copies messages you send from Humbug to Zephyr. You should keep this
-    script always running in a session with Kerberos tickets.
+    IMPORTANT: You must keep this script always running in a session
+    with unexpired Kerberos tickets.  The script forwards personals
+    you receive on Zephyr to Humbug, and forwards messages you send in
+    Humbug to Zephyr.
 
     If you already have Barnowl running in screen/tmux somewhere, you can just
     run the command below inside that session. If not, see "Running Barnowl in
