@@ -162,6 +162,9 @@ def has_request_variables(view_func):
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         for param in post_params:
+            if param.func_var_name in kwargs:
+                continue
+
             default_assigned = False
             try:
                 val = request.POST[param.post_var_name]
