@@ -3,6 +3,7 @@ from django.views.decorators.http import require_POST
 from zephyr.models import UserProfile, UserActivity, get_client
 from zephyr.lib.response import json_success, json_error
 from django.utils.timezone import now
+from django.db import transaction, IntegrityError
 
 from functools import wraps
 
@@ -42,11 +43,17 @@ def parse_client(request, default):
 
 def update_user_activity(request, user_profile, client):
     current_time = now()
-    (activity, created) = UserActivity.objects.get_or_create(
-        user_profile = user_profile,
-        client = client,
-        query = request.META["PATH_INFO"],
-        defaults={'last_visit': current_time, 'count': 0})
+    try:
+        (activity, created) = UserActivity.objects.get_or_create(
+            user_profile = user_profile,
+            client = client,
+            query = request.META["PATH_INFO"],
+            defaults={'last_visit': current_time, 'count': 0})
+    except IntegrityError:
+        transaction.commit()
+        activity = UserActivity.objects.get(user_profile = user_profile,
+                                            client = client,
+                                            query = request.META["PATH_INFO"])
     activity.count += 1
     activity.last_visit = current_time
     activity.save()
