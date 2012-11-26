@@ -82,14 +82,14 @@ def accounts_register(request):
             domain     = email.split('@')[-1]
             (realm, _) = Realm.objects.get_or_create(domain=domain)
 
-            if mit_beta_user:
-                user = User.objects.get(email=email)
-                do_activate_user(user)
-                do_change_password(user, password)
-                do_change_full_name(user.userprofile, full_name)
-            else:
+            if not mit_beta_user:
                 # FIXME: sanitize email addresses
                 add_default_subs(create_user(email, password, realm, full_name, short_name))
+            user = User.objects.get(email=email)
+            do_activate_user(user)
+            do_change_password(user, password)
+            do_change_full_name(user.userprofile, full_name)
+
 
             message = Message()
             message.sender = UserProfile.objects.get(user__email="humbug+signups@humbughq.com")
