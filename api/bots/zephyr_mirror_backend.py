@@ -239,8 +239,7 @@ def process_notice(notice, log):
 
     zephyr_class = notice.cls.lower()
 
-    if ((zephyr_class == "message" and notice.recipient != "") or
-        (zephyr_class == "mail" and notice.instance.lower() == "inbox")):
+    if notice.recipient != "":
         is_personal = True
     # Drop messages not to the listed subscriptions
     if is_personal and not options.forward_personals:
