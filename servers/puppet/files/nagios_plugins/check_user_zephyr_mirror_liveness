@@ -10,18 +10,12 @@ Django ORM.
 import datetime
 import os
 import sys
-import time
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "humbug.settings"
 sys.path.append('/home/humbug/humbug')
 sys.path.append('/home/humbug/humbug/zephyr')
 
-from django.contrib.auth.models import User
 from zephyr.models import UserActivity
-
-USERS_TO_IGNORE = (
-    'rhkeeler@mit.edu',
-    )
 
 states = {
     "OK": 0,
@@ -44,15 +38,12 @@ def report(state, short_msg, too_old=None):
 
 now = datetime.datetime.utcnow()
 
-too_old = []
-for user in UserActivity.objects.filter(query="/api/v1/get_messages",
-                                        client__name="zephyr_mirror"):
-    if user.user_profile.user.email in USERS_TO_IGNORE:
-        continue
-    if user.last_visit.replace(tzinfo=None) < now - datetime.timedelta(minutes=5):
-        too_old.append(user)
+all_users = UserActivity.objects.filter(query="/api/v1/get_messages",
+                                        client__name="zephyr_mirror")
+inactive_users = [user for user in all_users if user.last_visit.replace(tzinfo=None) < \
+                      now - datetime.timedelta(minutes=5)]
 
-if not too_old:
-    report("OK", "All mirrors active")
+if (len(inactive_users) / float(len(all_users))) < .15:
+    report("OK", "Most mirrors are active")
 else:
-    report("CRITICAL", "Some mirrors inactive", too_old)
+    report("CRITICAL", "Many mirrors are inactive", inactive_users)
