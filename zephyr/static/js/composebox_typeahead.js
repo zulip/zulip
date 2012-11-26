@@ -125,9 +125,8 @@ function handle_keyup(e) {
 // http://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
 function select_on_focus(field_id) {
     $("#" + field_id).focus(function(e) {
-        $("#" + field_id).select().mouseup(function (e) {
+        $("#" + field_id).select().one('mouseup', function (e) {
             e.preventDefault();
-            $(this).unbind("mouseup");
         });
     });
 }
