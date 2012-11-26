@@ -10,13 +10,11 @@ function show(tabname, focus_area) {
     if (tabname === "stream") {
         $('#private-message').hide();
         $('#stream-message').show();
-        $('#new_message_type').val('stream');
         $("#stream_toggle").addClass("active");
         $("#private_message_toggle").removeClass("active");
     } else {
         $('#private-message').show();
         $('#stream-message').hide();
-        $('#new_message_type').val('private');
         $("#stream_toggle").removeClass("active");
         $("#private_message_toggle").addClass("active");
     }
