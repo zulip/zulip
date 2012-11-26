@@ -3,6 +3,31 @@ var compose = (function () {
 var exports = {};
 var is_composing_message = false;
 
+function show(tabname, focus_area) {
+    if (reload.is_in_progress()) {
+        return;
+    }
+    if (tabname === "stream") {
+        $('#private-message').hide();
+        $('#stream-message').show();
+        $('#new_message_type').val('stream');
+        $("#stream_toggle").addClass("active");
+        $("#private_message_toggle").removeClass("active");
+    } else {
+        $('#private-message').show();
+        $('#stream-message').hide();
+        $('#new_message_type').val('private');
+        $("#stream_toggle").removeClass("active");
+        $("#private_message_toggle").addClass("active");
+    }
+    $("#send-status").removeClass(status_classes).hide();
+    $('#compose').css({visibility: "visible"});
+    $("#new_message_content").trigger("autosize");
+    $('.message_comp').slideDown(100);
+    focus_area.focus();
+    focus_area.select();
+}
+
 exports.start = function (msg_type, opts) {
     opts = $.extend({ message_type:     msg_type,
                       stream:           '',
@@ -26,9 +51,9 @@ exports.start = function (msg_type, opts) {
     }
 
     if (msg_type === 'stream') {
-        exports.show('stream', $("#" + (focus_area || 'stream')));
+        show('stream', $("#" + (focus_area || 'stream')));
     } else {
-        exports.show('private', $("#" + (focus_area || 'private_message_recipient')));
+        show('private', $("#" + (focus_area || 'private_message_recipient')));
     }
 
     hotkeys.set_compose();
@@ -117,31 +142,6 @@ $(function () {
     });
 });
 
-exports.show = function (tabname, focus_area) {
-    if (reload.is_in_progress()) {
-        return;
-    }
-    if (tabname === "stream") {
-        $('#private-message').hide();
-        $('#stream-message').show();
-        $('#new_message_type').val('stream');
-        $("#stream_toggle").addClass("active");
-        $("#private_message_toggle").removeClass("active");
-    } else {
-        $('#private-message').show();
-        $('#stream-message').hide();
-        $('#new_message_type').val('private');
-        $("#stream_toggle").removeClass("active");
-        $("#private_message_toggle").addClass("active");
-    }
-    $("#send-status").removeClass(status_classes).hide();
-    $('#compose').css({visibility: "visible"});
-    $("#new_message_content").trigger("autosize");
-    $('.message_comp').slideDown(100);
-    focus_area.focus();
-    focus_area.select();
-};
-
 exports.hide = function () {
     $('input, textarea, button').blur();
     $('.message_comp').slideUp(100,
@@ -155,10 +155,10 @@ exports.clear = function () {
 exports.toggle_mode = function () {
     if (compose.composing() === 'stream') {
         // In stream tab, switch to private
-        exports.show('private', $("#private_message_recipient"));
+        show('private', $("#private_message_recipient"));
         is_composing_message = "private";
     } else {
-        exports.show('stream', $("#stream"));
+        show('stream', $("#stream"));
         is_composing_message = "stream";
     }
 };
