@@ -301,13 +301,8 @@ def main(args):
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
     import api.common
     me = get_current_user(repo)
-    api_key_file = os.path.join(os.environ["HOME"], '.humbug-api-key')
-    if not os.path.exists(api_key_file):
-      print >>sys.stderr, "You need to place your Humbug API key at %s" % (api_key_file,)
-      sys.exit(1)
     client = api.common.HumbugAPI(email=me[me.index("<") + 1:me.index('>')],
                                   site="https://staging.humbughq.com",
-                                  api_key=file(api_key_file).read().strip(),
                                   verbose=True)
     client.send_message({'type': "private",
                          'to': opts.reviewers,

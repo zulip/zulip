@@ -6,14 +6,24 @@ import time
 import traceback
 import urlparse
 import sys
+import os
 
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
 assert(requests.__version__ > '0.12')
 
 class HumbugAPI():
-    def __init__(self, email, api_key, verbose=False, retry_on_errors=True,
+    def __init__(self, email, api_key=None, api_key_file=None,
+                 verbose=False, retry_on_errors=True,
                  site="https://humbughq.com", client="API"):
+        if api_key is None:
+            if api_key_file is None:
+                api_key_file = os.path.join(os.environ["HOME"], ".humbug-api-key")
+            if not os.path.exists(api_key_file):
+                raise RuntimeError("api_key not specified and %s does not exist"
+                                   % (api_key_file,))
+            api_key = file(api_key_file).read().strip()
+
         self.api_key = api_key
         self.email = email
         self.verbose = verbose
