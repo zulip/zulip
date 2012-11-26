@@ -4,9 +4,6 @@ var exports = {};
 var is_composing_message = false;
 
 function show(tabname, focus_area) {
-    if (reload.is_in_progress()) {
-        return;
-    }
     if (tabname === "stream") {
         $('#private-message').hide();
         $('#stream-message').show();
@@ -27,6 +24,10 @@ function show(tabname, focus_area) {
 }
 
 exports.start = function (msg_type, opts) {
+    if (reload.is_in_progress()) {
+        return;
+    }
+
     opts = $.extend({ message_type:     msg_type,
                       stream:           '',
                       subject:          '',
