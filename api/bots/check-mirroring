@@ -60,10 +60,12 @@ def print_humbug(message):
         print message["type"], message['sender_email'], \
             message['display_recipient'], message['content']
 
+max_message_id = humbug_client.get_profile()['max_message_id']
+
 child_pid = os.fork()
 if child_pid == 0:
     # Run the humbug => zephyr mirror in the child
-    time.sleep(3)
+    time.sleep(5)
     result = humbug_client.send_message({
             "type": "private",
             "content": str(hzkey1),
@@ -74,7 +76,6 @@ if child_pid == 0:
         print "key1 send error:"
         print result
 
-    time.sleep(0.2)
     result = humbug_client.send_message({
             "type": "stream",
             "subject": "test",
@@ -88,7 +89,6 @@ if child_pid == 0:
 
     if options.verbose:
         print "Sent Humbug messages!"
-    time.sleep(0.5)
 
     import zephyr
     try:
@@ -104,7 +104,6 @@ if child_pid == 0:
                           cls="message", instance="personal")
     zeph.setmessage("%s\0%s" % (zsig, zhkey1))
     zeph.send()
-    time.sleep(0.2)
 
     zeph = zephyr.ZNotice(sender=mit_user, auth=True,
                           cls="tabbott-nagios-test", instance="test")
@@ -113,22 +112,17 @@ if child_pid == 0:
     if options.verbose:
         print "Sent Zephyr messages!"
 
-
 else:
     failed = False
     import zephyr
     try:
         zephyr.init()
-        subs = zephyr.Subscriptions()
-        subs.add(('message', 'personal', 'tabbott/extra@ATHENA.MIT.EDU'))
-        subs.add(('tabbott-nagios-test', '*', '*'))
+        zephyr._z.subAll([('message', 'personal', 'tabbott/extra@ATHENA.MIT.EDU'),
+                          ('tabbott-nagios-test', '*', '*')])
     except IOError, e:
         if "SERVNAK received" in e:
             print "SERVNAK received, punting rest of test"
             print_status_and_exit(0)
-
-
-    max_message_id = humbug_client.get_profile()['max_message_id']
 
     time.sleep(20)
     if options.verbose:
