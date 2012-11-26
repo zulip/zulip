@@ -571,6 +571,7 @@ def send_message_backend(request, user_profile, client_name,
                          message_type_name = POST('type'),
                          message_to = POST('to', converter=extract_recipients),
                          forged = POST(default=False),
+                         subject_name = POST('subject', lambda x: x.strip(), None),
                          message_content = POST('content')):
     is_super_user = is_super_user_api(request)
     if forged and not is_super_user:
@@ -605,12 +606,11 @@ def send_message_backend(request, user_profile, client_name,
         sender = user_profile
 
     if message_type_name == 'stream':
-        if "subject" not in request.POST:
+        if subject_name is None:
             return json_error("Missing subject")
         if len(message_to) > 1:
             return json_error("Cannot send to multiple streams")
         stream_name = message_to[0].strip()
-        subject_name = request.POST['subject'].strip()
         if stream_name == "":
             return json_error("Stream can't be empty")
         if subject_name == "":
