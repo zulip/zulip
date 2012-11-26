@@ -35,7 +35,10 @@ else:
 # e.g. **PROBLEM**: service is CRITICAL
 msg['content'] = '**%s**: %s is %s' % (opts.type, thing, opts.state)
 
-output = (opts.output + '\n' + opts.long_output).strip()
+# The "long output" can contain newlines represented by "\n" escape sequences.
+# The Nagios mail command uses /usr/bin/printf "%b" to expand these.
+# We will be more conservative and handle just this one escape sequence.
+output = (opts.output + '\n' + opts.long_output.replace(r'\n', '\n')).strip()
 if output:
     # Block-quote any command output.
     msg['content'] += ('\n\n' + '\n'.join('> ' + ln for ln in output.splitlines()))
