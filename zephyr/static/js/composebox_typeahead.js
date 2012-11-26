@@ -113,7 +113,8 @@ exports.initialize = function () {
             return stream_list;
         },
         items: 3,
-        highlighter: composebox_typeahead_highlighter
+        highlighter: composebox_typeahead_highlighter,
+        sorter: typeahead_helper.sort_streams
     });
 
     $( "#subject" ).typeahead({
@@ -125,7 +126,8 @@ exports.initialize = function () {
             return [];
         },
         items: 3,
-        highlighter: composebox_typeahead_highlighter
+        highlighter: composebox_typeahead_highlighter,
+        sorter: typeahead_helper.sort_subjects
     });
 
     $( "#private_message_recipient" ).typeahead({

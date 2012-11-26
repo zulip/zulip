@@ -82,6 +82,44 @@ exports.update_your_recipients = function (recipients) {
     });
 };
 
+exports.sorter = function (query, objs, get_item) {
+    // Based on Bootstrap typeahead's default sorter, but taking into
+    // account case sensitivity on "begins with"
+    var beginswithCaseSensitive = [];
+    var beginswithCaseInsensitive = [];
+    var caseSensitive = [];
+    var caseInsensitive = [];
+
+    var obj = objs.shift();
+    while (obj) {
+        var item = get_item(obj);
+        if (item.indexOf(query) === 0)
+            beginswithCaseSensitive.push(obj);
+        else if (item.toLowerCase().indexOf(query.toLowerCase()) !== -1)
+            beginswithCaseInsensitive.push(obj);
+        else if (item.indexOf(query) !== -1)
+            caseSensitive.push(obj);
+        else
+            caseInsensitive.push(obj);
+        obj = objs.shift();
+    }
+    return beginswithCaseSensitive.concat(beginswithCaseInsensitive,
+                                          caseSensitive,
+                                          caseInsensitive);
+};
+
+function identity(item) {
+    return item;
+}
+
+exports.sort_streams = function (items) {
+    return typeahead_helper.sorter(this.query, items, identity);
+};
+
+exports.sort_subjects = function (items) {
+    return typeahead_helper.sorter(this.query, items, identity);
+};
+
 return exports;
 
 }());
