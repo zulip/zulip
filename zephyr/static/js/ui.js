@@ -398,10 +398,6 @@ $(function () {
         window.history.pushState("object or string", "Title", browser_url);
     });
 
-    $('.button-slide').click(function () {
-        compose.show('stream', $("#stream"));
-    });
-
     $('#sidebar a[href="#subscriptions"]').click(subs.fetch);
 
     var settings_status = $('#settings-status');
