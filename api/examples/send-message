@@ -29,13 +29,13 @@ usage = """send-message [options] <recipient>
 
 Sends a test message to the specified recipients.
 
-Example: send-message --type=stream commits
-Example: send-message --site=https://zephyr.humbughq.com iago@humbughq.com
+Example: send-message --sender=you@example.com --type=stream commits
+Example: send-message --sender=you@example.com --site=https://zephyr.humbughq.com iago@humbughq.com
 """
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('--api-key')
+parser.add_option('--sender')
 parser.add_option('--site',   default='https://humbughq.com')
-parser.add_option('--sender', default='othello@humbughq.com')
 parser.add_option('--type',   default='private')
 (options, args) = parser.parse_args()
 
