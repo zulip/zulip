@@ -32,17 +32,9 @@ Prints out a list of the user's subscriptions.
 Example: list-subscriptions --user=tabbott@humbughq.com --site=https://zephyr.humbughq.com
 """
 parser = optparse.OptionParser(usage=usage)
-parser.add_option('--site',
-                  dest='site',
-                  default="https://humbughq.com",
-                  action='store')
-parser.add_option('--api-key',
-                  dest='api_key',
-                  default=None,
-                  action='store')
-parser.add_option('--user',
-                  dest='user',
-                  action='store')
+parser.add_option('--site', default='https://humbughq.com')
+parser.add_option('--api-key')
+parser.add_option('--user')
 (options, args) = parser.parse_args()
 
 sys.path.append(path.join(path.dirname(__file__), '../..'))
