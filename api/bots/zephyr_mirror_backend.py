@@ -237,7 +237,7 @@ def process_notice(notice, log):
         # skip PING messages
         return
 
-    if zsig.endswith("@(@color(blue))"):
+    if zsig.endswith("@(@color(blue))") or notice.format.endswith("@(@color(blue))"):
         logger.debug("Skipping message we got from Humbug!")
         return
 
@@ -396,7 +396,9 @@ def forward_to_zephyr(message):
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].split("\n"))
 
-    zwrite_args = ["zwrite", "-s", zsig]
+    zwrite_args = ["zwrite", "-s", zsig, "-F", "Class $class, Instance $instance:\n" +
+                   "To: @bold($recipient) at $time $date\n" +
+                   "From: @bold{$1 <$sender>}\n\n$2@(@color(blue))"]
     logger.info("Forwarding message from %s" %  (message["sender_email"],))
     if message['type'] == "stream":
         zephyr_class = message["display_recipient"]
