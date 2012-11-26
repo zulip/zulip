@@ -43,7 +43,8 @@ class HumbugAPI(object):
             if not os.path.exists(api_key_file):
                 raise RuntimeError("api_key not specified and %s does not exist"
                                    % (api_key_file,))
-            api_key = file(api_key_file).read().strip()
+            with file(api_key_file, 'r') as f:
+                api_key = f.read().strip()
 
         self.api_key = api_key
         self.email = email
