@@ -2,18 +2,28 @@ var notifications = (function () {
 
 var exports = {};
 
+var notice_memory = {};
 var window_has_focus = true;
+var new_message_count = 0;
+
+function browser_desktop_notifications_on () {
+    return (window.webkitNotifications &&
+            // 0 is PERMISSION_ALLOWED
+            window.webkitNotifications.checkPermission() === 0);
+}
 
 exports.initialize = function () {
-    if (!window.webkitNotifications) {
-        return;
-    }
-
     $(window).focus(function () {
         window_has_focus = true;
+        new_message_count = 0;
+        document.title = "Humbug - " + domain;
     }).blur(function () {
         window_has_focus = false;
     });
+
+    if (!window.webkitNotifications) {
+        return;
+    }
 
     $(document).click(function () {
         if (!desktop_notifications_enabled) {
@@ -30,9 +40,7 @@ function gravatar_url(message) {
            "?d=identicon&s=30?stamp=" + ui.get_gravatar_stamp();
 }
 
-var notice_memory = {};
-
-function process_message(message) {
+function process_desktop_notification(message) {
     var i, notification_object;
     var key = message.display_reply_to;
     var title = message.sender_full_name;
@@ -93,19 +101,27 @@ function process_message(message) {
 }
 
 exports.received_messages = function (messages) {
-    var i;
-    if (!window.webkitNotifications ||
-        !desktop_notifications_enabled ||
-        window_has_focus) {
+    var i, title_needs_update = false;
+    if (window_has_focus) {
         return;
     }
 
     $.each(messages, function (index, message) {
-        if (message.sender_email !== email &&
-            (message.type === "personal" || message.type === "huddle")) {
-            process_message(message);
+        if (message.sender_email !== email) {
+            new_message_count++;
+            title_needs_update = true;
+
+            if (desktop_notifications_enabled &&
+                browser_desktop_notifications_on() &&
+                (message.type === "personal" || message.type === "huddle")) {
+                process_desktop_notification(message);
+            }
         }
     });
+
+    if (title_needs_update) {
+        document.title = "(" + new_message_count + ") Humbug - " + domain;
+    }
 };
 
 return exports;

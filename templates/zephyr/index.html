@@ -62,6 +62,7 @@
 var initial_pointer = {{ user_profile.pointer }};
 
 var email = "{{ user_profile.user.email|escapejs }}";
+var domain = "{{ user_profile.realm.domain|escapejs }}";
 var have_initial_messages = {{ have_initial_messages|escapejs }};
 var desktop_notifications_enabled = "{{ user_profile.enable_desktop_notifications|escapejs }}" === "True";
 
