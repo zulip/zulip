@@ -475,6 +475,7 @@ $(function () {
     resizehandler();
     hack_for_floating_recipient_bar();
 
+    typeahead_helper.update_all_recipients(people_list);
     composebox_typeahead.initialize();
     search.initialize();
     notifications.initialize();

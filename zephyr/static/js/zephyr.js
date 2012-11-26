@@ -15,10 +15,6 @@ var get_updates_params = {
     reload_pending: 0
 };
 
-$(function () {
-    typeahead_helper.update_all_recipients(people_list);
-});
-
 // The "message groups", i.e. blocks of messages collapsed by recipient.
 // Each message table has a list of lists.
 var message_groups = {
