@@ -22,6 +22,8 @@ import subprocess
 import traceback
 import re
 
+DEFAULT_SUBSCRIPTIONS = ("solano", "commits")
+
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id,))
 def get_display_recipient(recipient):
     """
@@ -182,6 +184,11 @@ def create_user_hack(username, password, email, active):
     else:
         user.set_unusable_password()
     return user
+
+def add_default_subs(user_profile):
+    for stream_name in DEFAULT_SUBSCRIPTIONS:
+        stream = create_stream_if_needed(user_profile.realm, stream_name)
+        do_add_subscription(user_profile, stream)
 
 def create_user_base(email, password, active=True):
     # NB: the result of Base32 + truncation is not a valid Base32 encoding.

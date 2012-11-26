@@ -13,7 +13,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     do_add_subscription, do_remove_subscription, do_change_password, \
     do_change_full_name, do_change_enable_desktop_notifications, \
-    do_activate_user, create_user, do_send_message, \
+    do_activate_user, add_default_subs, create_user, do_send_message, \
     create_mit_user_if_needed, create_stream_if_needed, \
     PreregistrationUser, get_client, MitUser, User, UserActivity
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
@@ -89,8 +89,7 @@ def accounts_register(request):
                 do_change_full_name(user.userprofile, full_name)
             else:
                 # FIXME: sanitize email addresses
-                create_user(email, password, realm, full_name, short_name)
-
+                add_default_subs(create_user(email, password, realm, full_name, short_name))
 
             message = Message()
             message.sender = UserProfile.objects.get(user__email="humbug+signups@humbughq.com")
