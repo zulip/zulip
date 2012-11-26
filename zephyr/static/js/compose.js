@@ -121,11 +121,23 @@ exports.show = function (tabname, focus_area) {
     if (reload.is_in_progress()) {
         return;
     }
+    if (tabname === "stream") {
+        $('#private-message').hide();
+        $('#stream-message').show();
+        $('#new_message_type').val('stream');
+        $("#stream_toggle").addClass("active");
+        $("#private_message_toggle").removeClass("active");
+    } else {
+        $('#private-message').show();
+        $('#stream-message').hide();
+        $('#new_message_type').val('private');
+        $("#stream_toggle").removeClass("active");
+        $("#private_message_toggle").addClass("active");
+    }
     $("#send-status").removeClass(status_classes).hide();
     $('#compose').css({visibility: "visible"});
     $("#new_message_content").trigger("autosize");
     $('.message_comp').slideDown(100);
-    $('#message-type-tabs a[href="#' + tabname + '-message"]').tab('show');
     focus_area.focus();
     focus_area.select();
 };
@@ -140,28 +152,14 @@ exports.clear = function () {
     $("#compose").find('input[type=text], textarea').val('');
 };
 
-exports.set_message_type = function (tabname) {
-    is_composing_message = tabname;
-    $("#send-status").removeClass(status_classes).hide();
-    if (tabname === "stream") {
-        $('#private-message').hide();
-        $('#stream-message').show();
-        $('#new_message_type').val('stream');
-        $("#stream").focus();
-    } else {
-        $('#private-message').show();
-        $('#stream-message').hide();
-        $('#new_message_type').val('private');
-        $("#private_message_recipient").focus();
-    }
-};
-
 exports.toggle_mode = function () {
-    if ($("#message-type-tabs li.active").find("a[href=#stream-message]").length !== 0) {
+    if (compose.composing() === 'stream') {
         // In stream tab, switch to private
         exports.show('private', $("#private_message_recipient"));
+        is_composing_message = "private";
     } else {
         exports.show('stream', $("#stream"));
+        is_composing_message = "stream";
     }
 };
 
