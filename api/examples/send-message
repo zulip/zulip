@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 import sys
-import os
+from os import path
 import optparse
 
 usage = """send-message [options] <recipient>
@@ -54,7 +54,7 @@ parser.add_option('--type',
 if len(args) == 0:
     parser.error("You must specify recipients")
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+sys.path.append(path.join(path.dirname(__file__), '../..'))
 import api.common
 client = api.common.HumbugAPI(email=options.sender,
                               api_key=options.api_key,

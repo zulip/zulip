@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 import sys
-import os
+from os import path
 import optparse
 
 usage = """subscribe --user=<email address> [options] --streams=<streams>
@@ -49,7 +49,7 @@ parser.add_option('--user',
                   action='store')
 (options, args) = parser.parse_args()
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+sys.path.append(path.join(path.dirname(__file__), '../..'))
 import api.common
 client = api.common.HumbugAPI(email=options.user,
                               api_key=options.api_key,
