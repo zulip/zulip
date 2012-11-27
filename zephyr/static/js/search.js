@@ -17,7 +17,8 @@ function render_object(obj) {
     } else if (obj.action === 'stream') {
         return "Narrow to stream " + obj.query;
     } else if (obj.action === 'private_message') {
-        return "Narrow to person " + obj.query.full_name + " <" + obj.query.email + ">";
+        return "Narrow to person " +
+            typeahead_helper.render_pm_object(obj.query);
     } else if (obj.action === 'search_narrow') {
         return "Narrow to messages containing " + obj.query;
     }
