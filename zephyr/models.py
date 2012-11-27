@@ -22,8 +22,6 @@ import subprocess
 import traceback
 import re
 
-DEFAULT_SUBSCRIPTIONS = ("solano", "commits")
-
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id,))
 def get_display_recipient(recipient):
     """
@@ -185,10 +183,15 @@ def create_user_hack(username, password, email, active):
         user.set_unusable_password()
     return user
 
+def set_default_streams(realm, stream_names):
+    DefaultStream.objects.filter(realm=realm).delete()
+    for stream_name in stream_names:
+        stream = create_stream_if_needed(realm, stream_name)
+        DefaultStream.objects.create(stream=stream, realm=realm)
+
 def add_default_subs(user_profile):
-    for stream_name in DEFAULT_SUBSCRIPTIONS:
-        stream = create_stream_if_needed(user_profile.realm, stream_name)
-        do_add_subscription(user_profile, stream)
+    for default in DefaultStream.objects.filter(realm=user_profile.realm):
+        do_add_subscription(user_profile, default.stream)
 
 def create_user_base(email, password, active=True):
     # NB: the result of Base32 + truncation is not a valid Base32 encoding.
@@ -696,7 +699,8 @@ def filter_by_subscriptions(messages, user):
 
 def clear_database():
     for model in [Message, Stream, UserProfile, User, Recipient,
-                  Realm, Subscription, Huddle, UserMessage, Client]:
+                  Realm, Subscription, Huddle, UserMessage, Client,
+                  DefaultStream]:
         model.objects.all().delete()
     Session.objects.all().delete()
 
@@ -710,3 +714,10 @@ class UserActivity(models.Model):
 
     class Meta:
         unique_together = ("user_profile", "client", "query")
+
+class DefaultStream(models.Model):
+    realm = models.ForeignKey(Realm)
+    stream = models.ForeignKey(Stream)
+
+    class Meta:
+        unique_together = ("realm", "stream")

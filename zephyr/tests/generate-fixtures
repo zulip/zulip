@@ -6,4 +6,5 @@ python manage.py populate_db --settings=humbug.test_settings -n20
 python manage.py dumpdata  --settings=humbug.test_settings \
     auth.User zephyr.UserProfile zephyr.Stream zephyr.Recipient \
     zephyr.Subscription zephyr.Message zephyr.Huddle zephyr.Realm \
-    zephyr.UserMessage zephyr.Client > zephyr/fixtures/messages.json
+    zephyr.UserMessage zephyr.Client \
+    zephyr.DefaultStream > zephyr/fixtures/messages.json

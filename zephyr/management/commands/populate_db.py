@@ -6,7 +6,7 @@ from django.contrib.sites.models import Site
 from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
     bulk_create_realms, bulk_create_streams, bulk_create_users, bulk_create_huddles, \
-    bulk_create_clients, \
+    bulk_create_clients, set_default_streams, \
     do_send_message, clear_database, \
     get_huddle_hash, get_client, do_activate_user
 from zephyr.lib.parallel import run_parallel
@@ -276,6 +276,8 @@ def restore_saved_messages():
             old_message["user"] = old_message["user"].lower()
         elif message_type.startswith("enable_"):
             old_message["user"] = old_message["user"].lower()
+        elif message_type == "default_streams":
+            pass
         else:
             old_message["sender_email"] = old_message["sender_email"].lower()
 
@@ -296,7 +298,10 @@ def restore_saved_messages():
             continue
         elif message_type.startswith("enable_"):
             continue
+        elif message_type == "default_streams":
+            continue
         sender_email = old_message["sender_email"]
+
         domain = sender_email.split('@')[1]
         realm_set.add(domain)
 
@@ -394,7 +399,8 @@ def restore_saved_messages():
     for idx, old_message in enumerate(old_messages):
         if (old_message["type"].startswith("subscription") or
             old_message["type"].startswith("user_") or
-            old_message["type"].startswith("enable_")):
+            old_message["type"].startswith("enable_") or
+            old_message["type"] == "default_streams"):
             continue
 
         message = Message()
@@ -505,6 +511,10 @@ def restore_saved_messages():
             user_profile = UserProfile.objects.get(user__email=old_message["user"])
             user_profile.enable_desktop_notifications = old_message["enable_desktop_notifications"]
             user_profile.save()
+            continue
+        elif old_message["type"] == "default_streams":
+            set_default_streams(Realm.objects.get(domain=old_message["domain"]),
+                                old_message["streams"])
             continue
 
         message = messages_by_id[current_message_id]
