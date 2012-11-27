@@ -354,6 +354,13 @@ $(function () {
         if ($('#home').hasClass('active')) {
             keep_pointer_in_view();
             update_floating_recipient_bar();
+            if (viewport.scrollTop() === 0 &&
+                have_scrolled_away_from_top) {
+                have_scrolled_away_from_top = false;
+                load_more_messages();
+            } else if (!have_scrolled_away_from_top) {
+                have_scrolled_away_from_top = true;
+            }
         }
     });
     $(window).scroll(throttled_scrollhandler);

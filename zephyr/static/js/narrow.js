@@ -78,7 +78,7 @@ function do_narrow(new_narrow, bar, time_travel, new_filter) {
     // Show the new set of messages.
     $("#zfilt").addClass("focused_table");
 
-    $("#load_more").show();
+    reset_load_more_status();
     $("#show_all_messages").removeAttr("disabled");
     $(".narrowed_to_bar").show();
     $("#top_narrowed_whitespace").show();
@@ -232,7 +232,7 @@ exports.show_all_messages = function () {
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
     $(".narrowed_to_bar").hide();
-    $("#load_more").show();
+    reset_load_more_status();
     $("#top_narrowed_whitespace").hide();
     $("#main_div").removeClass('narrowed_view');
     $("#searchbox").removeClass('narrowed_view');

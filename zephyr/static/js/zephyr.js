@@ -14,6 +14,12 @@ var get_updates_params = {
 };
 var get_updates_failures = 0;
 
+var load_more_enabled = true;
+// If the browser hasn't scrolled away from the top of the page
+// since the last time that we ran load_more_messages(), we do
+// not load_more_messages().
+var have_scrolled_away_from_top = true;
+
 // The "message groups", i.e. blocks of messages collapsed by recipient.
 // Each message table has a list of lists.
 var message_groups = {
@@ -712,13 +718,7 @@ $(function () {
     }
 
     if (have_initial_messages) {
-        load_old_messages(initial_pointer, 200, 200,
-                          function (messages) {
-                              // TODO: We can't tell after the initial load
-                              // whether we need the "load more" button or not.
-                              $('#load_more').show();
-                              load_more(messages);
-                          });
+        load_old_messages(initial_pointer, 200, 200, load_more);
     } else {
         get_updates();
     }
@@ -734,12 +734,21 @@ function restart_get_updates(options) {
     get_updates(options);
 }
 
+function reset_load_more_status() {
+    load_more_enabled = true;
+    have_scrolled_away_from_top = true;
+}
+
 function load_more_messages() {
     var batch_size = 400;
+    if (!load_more_enabled) {
+        return;
+    }
+    load_more_enabled = false;
     load_old_messages(message_array[0].id, batch_size, 0,
                       function (messages) {
-                          if (messages.length !== batch_size + 1) {
-                              $('#load_more').hide();
+                          if (messages.length === batch_size + 1) {
+                              load_more_enabled = true;
                           }
                       }, true);
 }
