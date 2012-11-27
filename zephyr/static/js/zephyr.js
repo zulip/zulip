@@ -742,7 +742,7 @@ setInterval(function () {
         // asleep). Now that we're running again, immediately poll for
         // new updates.
         get_updates_failures = 0;
-        restart_get_updates();
+        restart_get_updates({dont_block: true});
     }
     watchdog_time = new_time;
 }, 5000);
