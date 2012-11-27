@@ -369,8 +369,8 @@ def return_messages_immediately(user_profile, client_id, last,
     if dont_block:
         update_types.append("nonblocking_request")
 
-    if (client_server_generation is not None
-        and int(client_server_generation) != SERVER_GENERATION):
+    if (client_server_generation is not None and
+        client_server_generation != SERVER_GENERATION):
         update_types.append("client_reload")
 
     ptr = user_profile.pointer
@@ -407,7 +407,8 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
 @has_request_variables
 def get_updates_backend(request, user_profile, handler, client_id,
                         last = POST(converter=int, default=None),
-                        client_server_generation = POST(whence='server_generation', default=None),
+                        client_server_generation = POST(whence='server_generation', default=None,
+                                                        converter=int),
                         client_pointer = POST(whence='pointer', converter=int, default=None),
                         dont_block = POST(converter=simplejson.loads, default=False),
                         **kwargs):
