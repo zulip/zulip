@@ -288,8 +288,16 @@ def process_notice(notice, log):
             zeph["subject"] = '(instance "%s")' % (notice.instance,)
 
     # Add instances in for instanced personals
-    if zeph['type'] == "private" and notice.instance.lower() != "personal":
-        zeph["content"] = "[-i %s]" % (notice.instance,) + "\n" + zeph["content"]
+    if is_personal:
+        if notice.cls.lower() != "message" and notice.instance.lower != "personal":
+            heading = "[-c %s -i %s]\n" % (notice.cls, notice.instance)
+        elif notice.cls.lower() != "message":
+            heading = "[-c %s]\n" % (notice.cls,)
+        elif notice.instance.lower() != "personal":
+            heading = "[-i %s]\n" % (notice.instance,)
+        else:
+            heading = ""
+        zeph["content"] = heading + zeph["content"]
 
     zeph = decode_unicode_byte_strings(zeph)
 
