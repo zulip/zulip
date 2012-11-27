@@ -59,7 +59,7 @@ def send_message(character, text, subject):
     client = characters[character]["client"]
     request = {'type': 'stream',
                'content': message,
-               'stream': 'othello',
+               'to': ['othello'],
                'subject': truncate(subject, 60)}
     response = client.send_message(request)
     if response['result'] != 'success':
