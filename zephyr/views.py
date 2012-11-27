@@ -307,14 +307,16 @@ def api_get_messages(request, user_profile, handler, client_id=POST(default=None
 
 def format_updates_response(messages=[], apply_markdown=True,
                             user_profile=None, new_pointer=None,
-                            client=None, update_types=[]):
+                            client=None, update_types=[],
+                            client_server_generation=None):
     if client is not None and client.name.endswith("_mirror"):
         messages = [m for m in messages if m.sending_client.name != client.name]
     ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
            "result": "success",
            "msg": "",
-           'server_generation': SERVER_GENERATION,
            'update_types': update_types}
+    if client_server_generation is not None:
+        ret['server_generation'] = SERVER_GENERATION
     if new_pointer is not None:
         ret['new_pointer'] = new_pointer
     if user_profile.realm.domain == "mit.edu":
@@ -380,6 +382,7 @@ def return_messages_immediately(user_profile, client_id, last,
         return format_updates_response(messages=messages,
                                        user_profile=user_profile,
                                        new_pointer=new_pointer,
+                                       client_server_generation=client_server_generation,
                                        update_types=update_types,
                                        **kwargs)
 
@@ -433,7 +436,8 @@ def get_updates_backend(request, user_profile, handler, client_id,
             return
         try:
             kwargs.update(cb_kwargs)
-            res = format_updates_response(user_profile=user_profile, **kwargs)
+            res = format_updates_response(user_profile=user_profile,
+                                          **kwargs)
             send_with_safety_check(res, handler, **kwargs)
         except socket.error:
             pass
