@@ -39,6 +39,19 @@ if options.sync_subscriptions:
     subprocess.call(args)
     sys.exit(0)
 
+if options.forward_class_messages:
+    sys.path.append("/home/humbug/humbug")
+    from zephyr.lib.parallel import run_parallel
+    print "Starting parallel zephyr class mirroring bot"
+    jobs = list("0123456789abcdef")
+    def run_job(shard):
+        subprocess.call(args + ["--shard=%s" % (shard,)])
+        return 0
+    for (status, job) in run_parallel(run_job, jobs, threads=16):
+        print "A mirroring shard died!"
+        pass
+    sys.exit(0)
+
 while True:
     print "Starting zephyr mirroring bot"
     try:
