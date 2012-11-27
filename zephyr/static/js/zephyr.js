@@ -10,8 +10,7 @@ var selected_message = $();    /* = rows.get(selected_message_id)   */
 var get_updates_params = {
     last: -1,
     pointer: -1,
-    server_generation: -1, /* to be filled in on document.ready */
-    reload_pending: 0
+    server_generation: -1 /* to be filled in on document.ready */
 };
 var get_updates_failures = 0;
 
@@ -558,8 +557,15 @@ function get_updates(options) {
     options = $.extend({}, defaults, options);
 
     get_updates_params.pointer = furthest_read;
-    get_updates_params.reload_pending = Number(reload.is_pending());
     get_updates_params.dont_block = options.dont_block || get_updates_failures > 0;
+    if (reload.is_pending()) {
+        // We only send a server_generation to the server if we're
+        // interested in an immediate reply to tell us if we need to
+        // reload.  Once we're already reloading, we need to not
+        // submit the parameter, so that the server will process our
+        // future requests in longpolling mode.
+        delete get_updates_params.server_generation;
+    }
 
     get_updates_xhr = $.ajax({
         type:     'POST',

@@ -332,8 +332,7 @@ def format_updates_response(messages=[], apply_markdown=True,
 
 def return_messages_immediately(user_profile, client_id, last,
                                 client_server_generation,
-                                client_reload_pending, client_pointer,
-                                dont_block, **kwargs):
+                                client_pointer, dont_block, **kwargs):
     if last is None:
         # When an API user is first querying the server to subscribe,
         # there's no reason to reply immediately.
@@ -369,8 +368,7 @@ def return_messages_immediately(user_profile, client_id, last,
         update_types.append("nonblocking_request")
 
     if (client_server_generation is not None
-        and int(client_server_generation) != SERVER_GENERATION
-        and not client_reload_pending):
+        and int(client_server_generation) != SERVER_GENERATION):
         update_types.append("client_reload")
 
     ptr = user_profile.pointer
@@ -407,13 +405,11 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
 def get_updates_backend(request, user_profile, handler, client_id,
                         last = POST(converter=int, default=None),
                         client_server_generation = POST(whence='server_generation', default=None),
-                        client_reload_pending = POST(whence='reload_pending', default=None),
                         client_pointer = POST(whence='pointer', converter=int, default=None),
                         dont_block = POST(converter=simplejson.loads, default=False),
                         **kwargs):
     resp = return_messages_immediately(user_profile, client_id, last,
                                        client_server_generation,
-                                       client_reload_pending,
                                        client_pointer,
                                        dont_block, **kwargs)
     if resp is not None:
