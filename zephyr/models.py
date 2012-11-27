@@ -461,6 +461,11 @@ class Message(models.Model):
             content           = self.content,
             timestamp         = calendar.timegm(self.pub_date.timetuple()))
 
+    @classmethod
+    def remove_unreachable(cls):
+        """Remove all Messages that are not referred to by any UserMessage."""
+        cls.objects.exclude(id__in = UserMessage.objects.values('message_id')).delete()
+
 class UserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     message = models.ForeignKey(Message)
