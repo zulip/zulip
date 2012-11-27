@@ -99,7 +99,7 @@ def accounts_register(request):
             message.content = "%s <`%s`> just signed up for Humbug! (total: **%i**)" % (
                     full_name,
                     email,
-                    UserProfile.objects.filter(realm=realm).count(),
+                    UserProfile.objects.filter(realm=realm, user__is_active=True).count(),
                     )
             message.pub_date = now()
             message.sending_client = get_client("Internal")
