@@ -177,7 +177,8 @@ def maybe_restart_mirroring_script():
         logger.warning("")
         logger.warning("zephyr mirroring script has been updated; restarting...")
         try:
-            os.kill(child_pid, signal.SIGTERM)
+            if child_pid is not None:
+                os.kill(child_pid, signal.SIGTERM)
         except OSError:
             # We don't care if the child process no longer exists, so just print the error
             logging.exception("")
@@ -682,10 +683,11 @@ def parse_args():
                       help=optparse.SUPPRESS_HELP,
                       default=True,
                       action='store_false')
-    parser.add_option('--forward-from-humbug',
-                      default=False,
+    parser.add_option('--no-forward-from-humbug',
+                      default=True,
+                      dest='forward_from_humbug',
                       help=optparse.SUPPRESS_HELP,
-                      action='store_true')
+                      action='store_false')
     parser.add_option('--verbose',
                       default=False,
                       help=optparse.SUPPRESS_HELP,
@@ -777,13 +779,16 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
                     # We don't care if the child process no longer exists, so just print the error
                     traceback.print_exc()
 
-    child_pid = os.fork()
-    if child_pid == 0:
-        # Run the humbug => zephyr mirror in the child
-        logger = configure_logger("humbug=>zephyr")
-        zsig_fullname = fetch_fullname(options.user)
-        humbug_to_zephyr(options)
-        sys.exit(0)
+    if options.forward_from_humbug:
+        child_pid = os.fork()
+        if child_pid == 0:
+            # Run the humbug => zephyr mirror in the child
+            logger = configure_logger("humbug=>zephyr")
+            zsig_fullname = fetch_fullname(options.user)
+            humbug_to_zephyr(options)
+            sys.exit(0)
+    else:
+        child_pid = None
 
     import zephyr
     while True:
