@@ -63,8 +63,6 @@ class HumbugAPI(object):
             if not (isinstance(val, str) or isinstance(val, unicode)):
                 request[key] = simplejson.dumps(val)
 
-        request["failures"] = 0
-
         while True:
             try:
                 res = requests.post(urlparse.urljoin(self.base_url, url), data=request,
@@ -76,7 +74,7 @@ class HumbugAPI(object):
                         if not had_error_retry:
                             sys.stdout.write("connection error %s -- retrying." % (res.status_code,))
                             had_error_retry = True
-                            request["failures"] += 1
+                            request["dont_block"] = simplejson.dumps(True)
                         else:
                             sys.stdout.write(".")
                         sys.stdout.flush()
@@ -102,7 +100,7 @@ class HumbugAPI(object):
                         if not had_error_retry:
                             sys.stdout.write("connection error -- retrying.")
                             had_error_retry = True
-                            request["failures"] += 1
+                            request["dont_block"] = simplejson.dumps(True)
                         else:
                             sys.stdout.write(".")
                         sys.stdout.flush()

@@ -10,10 +10,10 @@ var selected_message = $();    /* = rows.get(selected_message_id)   */
 var get_updates_params = {
     last: -1,
     pointer: -1,
-    failures: 0,
     server_generation: -1, /* to be filled in on document.ready */
     reload_pending: 0
 };
+var get_updates_failures = 0;
 
 // The "message groups", i.e. blocks of messages collapsed by recipient.
 // Each message table has a list of lists.
@@ -559,7 +559,7 @@ function get_updates(options) {
 
     get_updates_params.pointer = furthest_read;
     get_updates_params.reload_pending = Number(reload.is_pending());
-    get_updates_params.dont_block = options.dont_block;
+    get_updates_params.dont_block = options.dont_block || get_updates_failures > 0;
 
     get_updates_xhr = $.ajax({
         type:     'POST',
@@ -578,7 +578,7 @@ function get_updates(options) {
                 return;
             }
 
-            get_updates_params.failures = 0;
+            get_updates_failures = 0;
             $('#connection-error').hide();
 
             if (get_updates_params.server_generation === -1) {
@@ -614,19 +614,19 @@ function get_updates(options) {
         error: function (xhr, error_type, exn) {
             if (error_type === 'timeout') {
                 // Retry indefinitely on timeout.
-                get_updates_params.failures = 0;
+                get_updates_failures = 0;
                 $('#connection-error').hide();
             } else {
-                get_updates_params.failures += 1;
+                get_updates_failures += 1;
             }
 
-            if (get_updates_params.failures >= 5) {
+            if (get_updates_failures >= 5) {
                 $('#connection-error').show();
             } else {
                 $('#connection-error').hide();
             }
 
-            var retry_sec = Math.min(90, Math.exp(get_updates_params.failures/2));
+            var retry_sec = Math.min(90, Math.exp(get_updates_failures/2));
             get_updates_timeout = setTimeout(get_updates, retry_sec*1000);
         }
     });
@@ -741,7 +741,7 @@ setInterval(function () {
         // Our app's JS wasn't running (the machine was probably
         // asleep). Now that we're running again, immediately poll for
         // new updates.
-        get_updates_params.failures = 0;
+        get_updates_failures = 0;
         restart_get_updates();
     }
     watchdog_time = new_time;

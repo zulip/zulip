@@ -331,13 +331,13 @@ def format_updates_response(messages=[], apply_markdown=True,
     return ret
 
 def return_messages_immediately(user_profile, client_id, last,
-                                failures, client_server_generation,
+                                client_server_generation,
                                 client_reload_pending, client_pointer,
                                 dont_block, **kwargs):
     if last is None:
         # When an API user is first querying the server to subscribe,
         # there's no reason to reply immediately.
-        # TODO: Make this work with server_generation/failures
+        # TODO: Make this work with server_generation
         return None
 
     if UserMessage.objects.filter(user_profile=user_profile).count() == 0:
@@ -378,9 +378,6 @@ def return_messages_immediately(user_profile, client_id, last,
         new_pointer = ptr
         update_types.append("pointer_update")
 
-    if failures >= 1:
-        update_types.append("reset_failure_counter")
-
     if update_types:
         return format_updates_response(messages=messages,
                                        user_profile=user_profile,
@@ -409,13 +406,12 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
 @has_request_variables
 def get_updates_backend(request, user_profile, handler, client_id,
                         last = POST(converter=int, default=None),
-                        failures = POST(converter=int, default=None),
                         client_server_generation = POST(whence='server_generation', default=None),
                         client_reload_pending = POST(whence='reload_pending', default=None),
                         client_pointer = POST(whence='pointer', converter=int, default=None),
                         dont_block = POST(converter=simplejson.loads, default=False),
                         **kwargs):
-    resp = return_messages_immediately(user_profile, client_id, last, failures,
+    resp = return_messages_immediately(user_profile, client_id, last,
                                        client_server_generation,
                                        client_reload_pending,
                                        client_pointer,
