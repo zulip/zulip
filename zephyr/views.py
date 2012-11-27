@@ -331,12 +331,9 @@ def format_delayed_updates_response(request=None, user_profile=None,
                                     new_pointer=None, pointer_updater=None,
                                     client_id=None, update_types=[],
                                     **kwargs):
-    client_pointer = request.POST.get("pointer")
-    if client_pointer is not None:
-        pointer = new_pointer
-        update_types.append("pointer_update")
+    update_types.append("pointer_update")
 
-    return format_updates_response(new_pointer=pointer,
+    return format_updates_response(new_pointer=new_pointer,
                                    user_profile=user_profile,
                                    update_types=update_types, **kwargs)
 
@@ -460,7 +457,8 @@ def get_updates_backend(request, user_profile, handler, client_id,
             pass
 
     user_profile.add_receive_callback(handler.async_callback(cb))
-    user_profile.add_pointer_update_callback(handler.async_callback(cb))
+    if client_pointer is not None:
+        user_profile.add_pointer_update_callback(handler.async_callback(cb))
 
     # runtornado recognizes this special return value.
     return RespondAsynchronously
