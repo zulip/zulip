@@ -1,0 +1,8 @@
+{{! Client-side Mustache template for the contents of the little "timeinfo" popup that shows up when you click on a time }}
+<ul class="nav nav-list userinfo_popover">
+  <li>
+    <a onclick="ui.hide_userinfo_popover(); narrow.target({{id}}); narrow.time_travel();">
+      <i class="icon-time"></i> Jump to this time and view all messages
+    </a>
+  </li>
+</ul>

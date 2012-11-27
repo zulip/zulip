@@ -59,10 +59,19 @@ function do_narrow(new_narrow, bar, time_travel, new_filter) {
     var highlighted = search.something_is_highlighted();
 
     // Empty the filtered table right before we fill it again
-    clear_table('zfilt');
     if (time_travel) {
-        add_to_table([message_dict[target_id]], 'zfilt', filter_function, 'bottom', exports.allow_collapse());
+        load_old_messages(target_id, 200, 200, function (messages) {
+            // We do this work inside the load_old_messages
+            // continuation, to shorten the window with just 1 visible message
+            clear_table('zfilt');
+            add_to_table([message_dict[target_id]], 'zfilt', filter_function, 'bottom', exports.allow_collapse());
+            // Select target_id so that we will correctly arrange messages
+            // surrounding the target message.
+            select_message_by_id(target_id, {then_scroll: false});
+            add_messages(messages, false);
+        }, true, true);
     } else {
+        clear_table('zfilt');
         add_to_table(message_array, 'zfilt', filter_function, 'bottom', exports.allow_collapse());
     }
 
@@ -77,13 +86,6 @@ function do_narrow(new_narrow, bar, time_travel, new_filter) {
     $("#searchbox").addClass("narrowed_view");
     $("#currently_narrowed_to").remove();
     $("#narrowlabel").append(templates.narrowbar(bar));
-
-    if (time_travel) {
-        // Select target_id so that we will correctly arrange messages
-        // surrounding the target message.
-        select_message_by_id(target_id, {then_scroll: false});
-        load_old_messages(target_id, 200, 200, undefined, true);
-    }
 
     $("#zhome").removeClass("focused_table");
     // Indicate both which message is persistently selected and which

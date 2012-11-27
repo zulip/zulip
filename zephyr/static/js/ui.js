@@ -235,12 +235,24 @@ function show_userinfo_popover(element, id) {
     select_message_by_id(id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
-        var message = message_dict[id];
-        elt.popover({placement: "bottom",
-                     title: templates.userinfo_popover_title(message),
-                     content: templates.userinfo_popover_content(message),
-                     trigger: "manual"
-                    });
+        var content, message = message_dict[id];
+        if (elt.hasClass("message_sender") || elt.hasClass("profile_picture")) {
+            elt.popover({placement: "bottom",
+                         title: templates.userinfo_popover_title(message),
+                         content: templates.userinfo_popover_content(message),
+                         trigger: "manual"
+                        });
+        } else if (elt.hasClass("message_time")) {
+            if (!narrow.active()) {
+                // Only show the time-travel popover when narrowed
+                return;
+            }
+            elt.popover({placement: "bottom",
+                         title: templates.userinfo_popover_title(message),
+                         content: templates.timeinfo_popover_content(message),
+                         trigger: "manual"
+                        });
+        }
         elt.popover("show");
         current_userinfo_popover_elem = elt;
     }

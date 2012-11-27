@@ -638,10 +638,14 @@ function get_updates(options) {
     });
 }
 
-function load_old_messages(anchor, num_before, num_after, cont, because_button) {
+function load_old_messages(anchor, num_before, num_after, cont, because_button,
+                           cont_will_add_messages) {
     var narrow_str;
     if (because_button === undefined) {
         because_button = false;
+    }
+    if (cont_will_add_messages === undefined) {
+        cont_will_add_messages = false;
     }
     if (because_button && narrow.active()) {
         narrow_str = JSON.stringify(narrow.data());
@@ -667,7 +671,7 @@ function load_old_messages(anchor, num_before, num_after, cont, because_button) 
 
             $('#connection-error').hide();
 
-            if (data.messages.length !== 0) {
+            if (data.messages.length !== 0 && !cont_will_add_messages) {
                 var add_to_home = !narrow.active() || !because_button;
                 add_messages(data.messages, add_to_home);
             }
