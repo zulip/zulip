@@ -1,0 +1,66 @@
+import os
+import sys
+import datetime
+import tempfile
+import traceback
+import simplejson
+from os import path
+
+from django.core.management.base import BaseCommand
+from zephyr.retention_policy     import should_expunge_from_log
+
+now = datetime.datetime.now()
+
+def copy_retained_messages(infile, outfile):
+    """Copy messages from infile to outfile which should be retained
+       according to policy."""
+    for ln in infile:
+        msg = simplejson.loads(ln)
+        if not should_expunge_from_log(msg, now):
+            outfile.write(ln)
+
+def expunge(filename):
+    """Expunge entries from the named log file, in place."""
+
+    # We don't use the 'with' statement for tmpfile because we need to
+    # either move it or delete it, depending on success or failure.
+    #
+    # We create it in the same directory as infile for two reasons:
+    #
+    #   - It makes it more likely we will notice leftover temp files
+    #
+    #   - It ensures that they are on the same filesystem, so we can
+    #     use atomic os.rename().
+    #
+    tmpfile = tempfile.NamedTemporaryFile(
+        mode   = 'wb',
+        dir    = path.dirname(filename),
+        delete = False)
+
+    try:
+        try:
+            with open(filename, 'rb') as infile:
+                copy_retained_messages(infile, tmpfile)
+        finally:
+            tmpfile.close()
+
+        os.rename(tmpfile.name, filename)
+    except:
+        os.unlink(tmpfile.name)
+        raise
+
+class Command(BaseCommand):
+    help = ('Expunge old entries from one or more log files, '
+            + 'according to the retention policy.')
+    args = '<log file> <log file> ...'
+
+    def handle(self, *args, **kwargs):
+        if len(args) == 0:
+            print >>sys.stderr, 'WARNING: No log files specified; doing nothing.'
+
+        for infile in args:
+            try:
+                expunge(infile)
+            except:
+                print >>sys.stderr, 'WARNING: Could not expunge from', infile
+                traceback.print_exc()

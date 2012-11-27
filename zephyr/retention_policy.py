@@ -42,7 +42,7 @@ def should_expunge_from_log(msg, now):
         user = msg.get('user')
     if user is None:
         # Avoid printing the entire message, but give enough information to find it later.
-        print >>sys.stderr, "WARNING: Can't get user for message at", msg['timestamp']
+        print >>sys.stderr, "WARNING: Can't get user for entry at", msg['timestamp']
         return False
     domain = user.split('@', 1)[1]
 
