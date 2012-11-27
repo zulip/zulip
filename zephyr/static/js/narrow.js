@@ -81,8 +81,7 @@ function do_narrow(new_narrow, bar, time_travel, new_filter) {
     if (time_travel) {
         // Select target_id so that we will correctly arrange messages
         // surrounding the target message.
-        select_message_by_id(target_id,
-                             {then_scroll: false, update_server: false});
+        select_message_by_id(target_id, {then_scroll: false});
         load_old_messages(target_id, 200, 200, undefined, true);
     }
 
@@ -90,10 +89,8 @@ function do_narrow(new_narrow, bar, time_travel, new_filter) {
     // Indicate both which message is persistently selected and which
     // is temporarily selected
     select_message_by_id(persistent_message_id,
-                         {then_scroll: false, update_server: false,
-                          for_narrow: false});
-    select_message_by_id(target_id,
-                         {then_scroll: true, update_server: false});
+                         {then_scroll: false, for_narrow: false});
+    select_message_by_id(target_id, {then_scroll: true});
 
     // If anything was highlighted before, try to rehighlight it.
     if (highlighted) {

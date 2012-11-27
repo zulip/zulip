@@ -148,7 +148,6 @@ $(function () {
 
 function update_selected_message(message, opts) {
     opts = $.extend({}, {
-        update_server: true,
         for_narrow: narrow.active()
     }, opts);
 
@@ -157,8 +156,7 @@ function update_selected_message(message, opts) {
     message.addClass(cls);
 
     var new_selected_id = rows.id(message);
-    if (opts.update_server && !narrow.active()
-        && new_selected_id > furthest_read)
+    if (! narrow.active() && new_selected_id > furthest_read)
     {
         // Narrowing is a temporary view on top of the home view and
         // doesn't permanently affect where you are.
@@ -169,7 +167,7 @@ function update_selected_message(message, opts) {
 }
 
 function select_message(next_message, opts) {
-    opts = $.extend({}, {then_scroll: false, update_server: true}, opts);
+    opts = $.extend({}, {then_scroll: false}, opts);
 
     /* If the message exists but is hidden, try to find the next visible one. */
     if (next_message.is(':hidden')) {
@@ -529,13 +527,11 @@ function add_messages(messages, add_to_home) {
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
     if ((selected_message_id === -1) && (message_dict.hasOwnProperty(initial_pointer))) {
-        select_message_by_id(initial_pointer,
-                             {then_scroll: true, update_server: false});
+        select_message_by_id(initial_pointer, {then_scroll: true});
     }
 
     if ((selected_message_id === -1) && ! have_initial_messages) {
-        select_message_by_id(message_array[0].id,
-                             {then_scroll: false, update_server: true});
+        select_message_by_id(message_array[0].id, {then_scroll: false});
     }
 
     // If we prepended messages, then we need to scroll back to the pointer.
@@ -546,8 +542,7 @@ function add_messages(messages, add_to_home) {
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
     if (prepended && (selected_message_id >= 0)) {
-        select_message_by_id(selected_message_id,
-                             {then_scroll: true, update_server: false});
+        select_message_by_id(selected_message_id, {then_scroll: true});
     }
 
     if (typeahead_helper.autocomplete_needs_update()) {
@@ -607,8 +602,7 @@ function get_updates(options) {
             {
                 furthest_read = data.new_pointer;
                 server_furthest_read = data.new_pointer;
-                select_message_by_id(data.new_pointer,
-                                     {then_scroll: true, update_server: false});
+                select_message_by_id(data.new_pointer, {then_scroll: true});
             }
 
             // Pause for 25 milliseconds before restarting the request.
@@ -782,7 +776,7 @@ function keep_pointer_in_view() {
     if (! adjust(above_view_threshold, at_top_of_viewport, rows.next_visible))
         adjust(below_view_threshold, at_bottom_of_viewport, rows.prev_visible);
 
-    update_selected_message(next_message, {update_server: true});
+    update_selected_message(next_message);
 }
 
 // The idea here is when you've scrolled to the very
