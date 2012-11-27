@@ -129,7 +129,8 @@ class UserProfile(models.Model):
 
     def update_pointer(self, new_pointer, pointer_updater):
         self.callbacks_table.call(self.user.id, Callbacks.TYPE_POINTER_UPDATE,
-            new_pointer=new_pointer, pointer_updater=pointer_updater)
+                                  new_pointer=new_pointer,
+                                  update_types=["pointer_update"])
 
     def add_receive_callback(self, cb):
         self.callbacks_table.add(self.user.id, Callbacks.TYPE_RECEIVE, cb)

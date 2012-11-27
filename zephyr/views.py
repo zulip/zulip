@@ -327,16 +327,6 @@ def format_updates_response(messages=[], apply_markdown=True,
 
     return ret
 
-def format_delayed_updates_response(request=None, user_profile=None,
-                                    new_pointer=None, pointer_updater=None,
-                                    client_id=None, update_types=[],
-                                    **kwargs):
-    update_types.append("pointer_update")
-
-    return format_updates_response(new_pointer=new_pointer,
-                                   user_profile=user_profile,
-                                   update_types=update_types, **kwargs)
-
 def return_messages_immediately(user_profile, client_id, last,
                                 failures, client_server_generation,
                                 client_reload_pending, client_pointer,
@@ -448,10 +438,7 @@ def get_updates_backend(request, user_profile, handler, client_id,
             return
         try:
             kwargs.update(cb_kwargs)
-            res = format_delayed_updates_response(request=request,
-                                                  user_profile=user_profile,
-                                                  client_id=client_id,
-                                                  **kwargs)
+            res = format_updates_response(user_profile=user_profile, **kwargs)
             send_with_safety_check(res, handler, **kwargs)
         except socket.error:
             pass
