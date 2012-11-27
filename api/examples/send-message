@@ -25,16 +25,18 @@ import sys
 from os import path
 import optparse
 
-usage = """send-message [options] <recipient>
+usage = """send-message [options] <recipients>
 
 Sends a test message to the specified recipients.
 
-Example: send-message --sender=you@example.com --type=stream commits
+Example: send-message --sender=you@example.com --type=stream commits --subject="my subject" --message="test message"
 Example: send-message --sender=you@example.com --site=https://zephyr.humbughq.com user1@example.com user2@example.com
 """
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('--api-key')
 parser.add_option('--sender')
+parser.add_option('--subject', default="test")
+parser.add_option('--message', default="test message")
 parser.add_option('--site',   default='https://humbughq.com')
 parser.add_option('--type',   default='private')
 (options, args) = parser.parse_args()
@@ -51,8 +53,8 @@ client = api.common.HumbugAPI(email=options.sender,
 
 message_data = {
     "type": options.type,
-    "content": "test",
-    "subject": "test",
+    "content": options.message,
+    "subject": options.subject,
     "to": args,
 }
 print client.send_message(message_data)
