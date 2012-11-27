@@ -540,8 +540,7 @@ def humbug_to_zephyr(options):
     logger.info("Starting syncing messages.")
     while True:
         try:
-            humbug_client.call_on_each_message(maybe_forward_to_zephyr,
-                                               options={"mirror": 'zephyr_mirror'})
+            humbug_client.call_on_each_message(maybe_forward_to_zephyr)
         except Exception:
             logger.exception("Error syncing messages:")
             time.sleep(1)

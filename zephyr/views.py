@@ -294,7 +294,7 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
 def json_get_updates(request, user_profile, handler):
     client_id = request.session.session_key
     return get_updates_backend(request, user_profile, handler, client_id,
-                               apply_markdown=True)
+                               client=request._client, apply_markdown=True)
 
 @asynchronous
 @authenticated_api_view
@@ -303,13 +303,13 @@ def api_get_messages(request, user_profile, handler, client_id=POST(default=None
                      apply_markdown=POST(default=False, converter=simplejson.loads)):
     return get_updates_backend(request, user_profile, handler, client_id,
                                apply_markdown=apply_markdown,
-                               mirror=request.POST.get("mirror"))
+                               client=request._client)
 
 def format_updates_response(messages=[], apply_markdown=True,
                             user_profile=None, new_pointer=None,
-                            mirror=None, update_types=[]):
-    if mirror is not None:
-        messages = [m for m in messages if m.sending_client.name != mirror]
+                            client=None, update_types=[]):
+    if client is not None and client.name.endswith("_mirror"):
+        messages = [m for m in messages if m.sending_client.name != client.name]
     ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
            "result": "success",
            "msg": "",
@@ -357,9 +357,9 @@ def return_messages_immediately(user_profile, client_id, last,
     # to forward is one that was sent via the mirroring, the API
     # client will end up in an endless loop requesting more data from
     # us.
-    if "mirror" in kwargs:
+    if "client" in kwargs and kwargs["client"].name.endswith("_mirror"):
         messages = [m for m in messages if
-                    m.sending_client.name != kwargs["mirror"]]
+                    m.sending_client.name != kwargs["client"].name]
 
     update_types = []
     if messages:
