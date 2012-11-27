@@ -411,7 +411,7 @@ def get_updates_backend(request, user_profile, handler, client_id,
                         last = POST(converter=int, default=None),
                         failures = POST(converter=int, default=None),
                         client_server_generation = POST(whence='server_generation', default=None),
-                        client_reload_pending = POST(whence='server_generation', default=None),
+                        client_reload_pending = POST(whence='reload_pending', default=None),
                         client_pointer = POST(whence='pointer', converter=int, default=None),
                         dont_block = POST(converter=simplejson.loads, default=False),
                         **kwargs):
