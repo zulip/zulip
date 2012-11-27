@@ -332,15 +332,7 @@ def format_delayed_updates_response(request=None, user_profile=None,
                                     client_id=None, update_types=[],
                                     **kwargs):
     client_pointer = request.POST.get("pointer")
-    client_wants_ptr_updates = False
     if client_pointer is not None:
-        client_pointer = int(client_pointer)
-        client_wants_ptr_updates = True
-
-    pointer = None
-    if (client_wants_ptr_updates
-          and str(pointer_updater) != str(client_id)
-          and client_pointer != new_pointer):
         pointer = new_pointer
         update_types.append("pointer_update")
 
