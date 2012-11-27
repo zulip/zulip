@@ -17,6 +17,10 @@ exports.initialize = function () {
         window_has_focus = true;
         new_message_count = 0;
         document.title = "Humbug - " + domain;
+
+        $.each(notice_memory, function (index, notice_mem_entry) {
+           notice_mem_entry.obj.cancel();
+        });
     }).blur(function () {
         window_has_focus = false;
     });
