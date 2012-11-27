@@ -11,18 +11,30 @@ var cached_table = $('table.focused_table');
 var labels = [];
 var mapped = {};
 
-function render_object(obj) {
+function render_object_in_parts(obj) {
+    // N.B. action_string is *not* escaped by the caller
+    var action_string = "Error";
+    var search_string = "Error";
     if (obj.action === 'search') {
-        return "Find " + obj.query;
+        action_string = "Find";
+        search_string = obj.query;
     } else if (obj.action === 'stream') {
-        return "Narrow to stream " + obj.query;
+        action_string = "Narrow to stream";
+        search_string = obj.query;
     } else if (obj.action === 'private_message') {
-        return "Narrow to person " +
-            typeahead_helper.render_pm_object(obj.query);
+        action_string = "Narrow to person";
+        search_string = typeahead_helper.render_pm_object(obj.query);
     } else if (obj.action === 'search_narrow') {
-        return "Narrow to messages containing " + obj.query;
+        action_string = "Narrow to messages containing";
+        search_string = obj.query;
     }
-    return "Error";
+    return {action_string: action_string,
+            search_string: search_string};
+}
+
+function render_object(obj) {
+    var parts = render_object_in_parts(obj);
+    return parts.action_string + " " + parts.search_string;
 }
 
 exports.update_typeahead = function() {
@@ -131,8 +143,11 @@ exports.initialize = function () {
         items: 4,
         highlighter: function (item) {
             var query = this.query;
-            var string_item = render_object(mapped[item]);
-            return typeahead_helper.highlight_with_escaping(query, string_item);
+            var parts = render_object_in_parts(mapped[item]);
+            // We provide action_string, not the user, so this should
+            // be fine from a not-needing-escaping perspective.
+            return parts.action_string + " " +
+                typeahead_helper.highlight_with_escaping(query, parts.search_string);
         },
         matcher: function (item) {
             var obj = mapped[item];
