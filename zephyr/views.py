@@ -235,7 +235,9 @@ def json_get_old_messages(request, user_profile):
 
 @authenticated_api_view
 @has_request_variables
-def api_get_old_messages(request, user_profile, apply_markdown=POST(default=False)):
+def api_get_old_messages(request, user_profile,
+                         apply_markdown=POST(default=False,
+                                             converter=simplejson.loads)):
     return get_old_messages_backend(request, user_profile=user_profile,
                                     apply_markdown=apply_markdown)
 
@@ -297,9 +299,10 @@ def json_get_updates(request, user_profile, handler):
 @asynchronous
 @authenticated_api_view
 @has_request_variables
-def api_get_messages(request, user_profile, handler, client_id=POST(default=None)):
+def api_get_messages(request, user_profile, handler, client_id=POST(default=None),
+                     apply_markdown=POST(default=False, converter=simplejson.loads)):
     return get_updates_backend(request, user_profile, handler, client_id,
-                               apply_markdown=(request.POST.get("apply_markdown") is not None),
+                               apply_markdown=apply_markdown,
                                mirror=request.POST.get("mirror"))
 
 def format_updates_response(messages=[], apply_markdown=True,
