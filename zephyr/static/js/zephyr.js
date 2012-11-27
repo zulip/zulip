@@ -290,7 +290,7 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         // Delete the leftover recipient label.
         table.find('.recipient_row:first').remove();
     } else {
-        last_message_id = rows.id(table.find('tr:last-child'));
+        last_message_id = rows.id(table.find('tr[zid]:last'));
         prev = message_dict[last_message_id];
     }
 
