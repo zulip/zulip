@@ -15,6 +15,18 @@ pre code {
     white-space: pre;
 }
 
+/* Style inline code inside a link
+   to look more like a normal link */
+a code {
+    color:        #08C;
+    border-color: #08C;
+}
+
+a:hover code {
+    color:        #005580;
+    border-color: #005580;
+}
+
 .sidebar-nav {
     background-color: white;
     padding: 0.5em;
