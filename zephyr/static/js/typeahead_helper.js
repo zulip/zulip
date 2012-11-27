@@ -54,18 +54,18 @@ exports.render_pm_object = function (person) {
 
 function add_to_known_recipients(recipient_data, count_towards_autocomplete_preference) {
     var name_string = exports.render_pm_object(recipient_data);
-    if (typeahead_helper.private_message_mapped[name_string] === undefined) {
-        typeahead_helper.private_message_mapped[name_string] = recipient_data;
-        typeahead_helper.private_message_mapped[name_string].count = 0;
-        typeahead_helper.private_message_typeahead_list.push(name_string);
+    if (exports.private_message_mapped[name_string] === undefined) {
+        exports.private_message_mapped[name_string] = recipient_data;
+        exports.private_message_mapped[name_string].count = 0;
+        exports.private_message_typeahead_list.push(name_string);
     }
     if (count_towards_autocomplete_preference) {
-        typeahead_helper.private_message_mapped[name_string].count += 1;
+        exports.private_message_mapped[name_string].count += 1;
     }
 }
 
 exports.known_to_typeahead = function (recipient_data) {
-    return typeahead_helper.private_message_mapped[exports.render_pm_object(recipient_data)] !== undefined;
+    return exports.private_message_mapped[exports.render_pm_object(recipient_data)] !== undefined;
 };
 
 exports.update_all_recipients = function (recipients) {
@@ -113,11 +113,11 @@ function identity(item) {
 }
 
 exports.sort_streams = function (items) {
-    return typeahead_helper.sorter(this.query, items, identity);
+    return exports.sorter(this.query, items, identity);
 };
 
 exports.sort_subjects = function (items) {
-    return typeahead_helper.sorter(this.query, items, identity);
+    return exports.sorter(this.query, items, identity);
 };
 
 return exports;
