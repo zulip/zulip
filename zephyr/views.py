@@ -469,16 +469,12 @@ def api_get_profile(request, user_profile):
     return json_success(result)
 
 @authenticated_api_view
-@has_request_variables
-def api_send_message(request, user_profile,
-                     client_name=POST("client", default="API")):
-    return send_message_backend(request, user_profile, client_name)
+def api_send_message(request, user_profile):
+    return send_message_backend(request, user_profile, request._client)
 
 @authenticated_json_view
-@has_request_variables
-def json_send_message(request, user_profile,
-                      client_name=POST("client", default="website")):
-    return send_message_backend(request, user_profile, client_name)
+def json_send_message(request, user_profile):
+    return send_message_backend(request, user_profile, request._client)
 
 # Currently tabbott/extra@mit.edu is our only superuser.  TODO: Make
 # this a real superuser security check.
@@ -554,7 +550,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
 # send_message_backend should either check the API key or check that
 # the user is logged in.
 @has_request_variables
-def send_message_backend(request, user_profile, client_name,
+def send_message_backend(request, user_profile, client,
                          message_type_name = POST('type'),
                          message_to = POST('to', converter=extract_recipients),
                          forged = POST(default=False),
@@ -567,7 +563,7 @@ def send_message_backend(request, user_profile, client_name,
     if len(message_to) == 0:
         return json_error("Message must have recipients.")
 
-    if client_name == "zephyr_mirror":
+    if client.name == "zephyr_mirror":
         # Here's how security works for non-superuser mirroring:
         #
         # The message must be (1) a private message (2) that
@@ -626,7 +622,7 @@ def send_message_backend(request, user_profile, client_name,
             except UserProfile.DoesNotExist:
                 return json_error("Invalid email '%s'" % (email,))
 
-        if client_name == "zephyr_mirror":
+        if client.name == "zephyr_mirror":
             if user_profile.id not in recipient_profile_ids and not forged:
                 return json_error("User not authorized for this query")
 
@@ -658,9 +654,9 @@ def send_message_backend(request, user_profile, client_name,
         message.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
     else:
         message.pub_date = now()
-    message.sending_client = get_client(client_name)
+    message.sending_client = client
 
-    if client_name == "zephyr_mirror" and already_sent_mirrored_message(message):
+    if client.name == "zephyr_mirror" and already_sent_mirrored_message(message):
         return json_success()
 
     do_send_message(message)
@@ -921,7 +917,7 @@ def api_github_landing(request, user_profile, event=POST,
     if len(subject) > 60:
         subject = subject[:57].rstrip() + '...'
 
-    return send_message_backend(request, user_profile, "github_bot",
+    return send_message_backend(request, user_profile, get_client("github_bot"),
                                 message_type_name="stream",
                                 message_to=["commits"],
                                 forged=False, subject_name=subject,

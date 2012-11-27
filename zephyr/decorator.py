@@ -66,8 +66,8 @@ def authenticated_api_view(view_func):
             return json_error("Invalid user: %s" % (email,))
         if api_key != user_profile.api_key:
             return json_error("Invalid API key for user '%s'" % (email,))
-        update_user_activity(request, user_profile,
-                             parse_client(request, "API"))
+        request._client = parse_client(request, "API")
+        update_user_activity(request, user_profile, request._client)
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
@@ -80,9 +80,10 @@ def authenticated_json_view(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         if not request.user.is_authenticated():
             return json_error("Not logged in", status=401)
-        update_user_activity(request, request.user.userprofile,
-                             parse_client(request, "website"))
-        return view_func(request, request.user.userprofile, *args, **kwargs)
+        request._client = parse_client(request, "website")
+        user_profile = request.user.userprofile
+        update_user_activity(request, user_profile, request._client)
+        return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
 # These views are used by the main Django server to notify the Tornado server
