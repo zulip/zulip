@@ -244,8 +244,7 @@ def process_notice(notice, log):
     # Drop messages not to the listed subscriptions
     if is_personal and not options.forward_personals:
         return
-    if (zephyr_class not in current_zephyr_subs) and not \
-            (is_personal and options.forward_personals):
+    if (zephyr_class not in current_zephyr_subs) and not is_personal:
         logger.debug("Skipping ... %s/%s/%s" %
                      (zephyr_class, notice.instance, is_personal))
         return
