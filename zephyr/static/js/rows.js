@@ -7,7 +7,7 @@ var rows = (function () {
     // isn't going to end up empty unless we're at the bottom or top.
     exports.next_visible = function (message_row) {
         if (message_row === undefined)
-            return [];
+            return $();
         var row = message_row.next('.message_row');
         if (row.length !== 0) {
             return row;
@@ -17,7 +17,7 @@ var rows = (function () {
 
     exports.prev_visible = function (message_row) {
         if (message_row === undefined)
-            return [];
+            return $();
         var row = message_row.prev('.message_row');
         if (row.length !== 0) {
             return row;
@@ -47,7 +47,7 @@ var rows = (function () {
         // a jQuery selector using it.
         message_id = parseInt(message_id, 10);
         if (isNaN(message_id))
-            return undefined;
+            return $();
 
         if (table_name === undefined)
             table_name = (narrow.active() ? 'zfilt' : 'zhome');
@@ -55,14 +55,14 @@ var rows = (function () {
         // To avoid attacks and bizarre errors, we have a whitelist
         // of valid table names.
         if (! valid_table_names.hasOwnProperty(table_name))
-            return undefined;
+            return $();
 
         return $('#' + table_name + message_id);
     };
 
     exports.get_table = function (table_name) {
         if (! valid_table_names.hasOwnProperty(table_name))
-            return undefined;
+            return $();
 
         return $('#' + table_name);
     };
