@@ -27,12 +27,6 @@ def asynchronous(method):
 # I like the all-lowercase name better
 require_post = require_POST
 
-def parse_client(request, default):
-    client_name = default
-    if 'client' in request.POST:
-        client_name = request.POST['client']
-    return get_client(client_name)
-
 def update_user_activity(request, user_profile, client):
     current_time = now()
     try:
@@ -59,6 +53,7 @@ def authenticated_api_view(view_func):
     @has_request_variables
     @wraps(view_func)
     def _wrapped_view_func(request, email=POST, api_key=POST('api-key'),
+                           client=POST(default=get_client("API"), converter=get_client),
                            *args, **kwargs):
         try:
             user_profile = UserProfile.objects.get(user__email=email)
@@ -66,8 +61,8 @@ def authenticated_api_view(view_func):
             return json_error("Invalid user: %s" % (email,))
         if api_key != user_profile.api_key:
             return json_error("Invalid API key for user '%s'" % (email,))
-        request._client = parse_client(request, "API")
-        update_user_activity(request, user_profile, request._client)
+        request._client = client
+        update_user_activity(request, user_profile, client)
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
@@ -76,13 +71,16 @@ def authenticated_api_view(view_func):
 # redirecting to a login page doesn't make sense for json views)
 def authenticated_json_view(view_func):
     @require_post
+    @has_request_variables
     @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
+    def _wrapped_view_func(request,
+                           client=POST(default=get_client("website"), converter=get_client),
+                           *args, **kwargs):
         if not request.user.is_authenticated():
             return json_error("Not logged in", status=401)
-        request._client = parse_client(request, "website")
+        request._client = client
         user_profile = request.user.userprofile
-        update_user_activity(request, user_profile, request._client)
+        update_user_activity(request, user_profile, client)
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
