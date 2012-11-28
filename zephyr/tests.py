@@ -420,14 +420,20 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_error(result, "Invalid message type")
 
 class DummyHandler(object):
-    def __init__(self, callback):
-        self.callback = callback
+    def __init__(self, assert_callback):
+        self.assert_callback = assert_callback
 
-    def async_callback(self, _):
-        return self.callback
+    # Mocks RequestHandler.async_callback, which wraps a callback to
+    # handle exceptions.  We return the callback as-is.
+    def async_callback(self, cb):
+        return cb
 
-    def finish(self, _):
-        return
+    def write(self, response):
+        raise NotImplemented
+
+    def finish(self, response):
+        if self.assert_callback:
+            self.assert_callback(response)
 
 class DummySession(object):
     session_key = "0"
@@ -435,7 +441,7 @@ class DummySession(object):
 class POSTRequestMock(object):
     method = "POST"
 
-    def __init__(self, post_data, user, assert_callback):
+    def __init__(self, post_data, user, assert_callback=None):
         self.POST = post_data
         self.user = user
         self._tornado_handler = DummyHandler(assert_callback)
@@ -448,11 +454,12 @@ class GetUpdatesTest(AuthedTestCase):
     def common_test_get_updates(self, view_func, extra_post_data = {}):
         user = User.objects.get(email="hamlet@humbughq.com")
 
-        def callback(messages):
-            correct_messages = filter_by_subscriptions(Message.objects.all(), user)
-            for message in messages:
-                self.assertTrue(message in correct_messages)
-                self.assertTrue(message.id > 1)
+        def callback(response):
+            correct_message_ids = [m.id for m in
+                filter_by_subscriptions(Message.objects.all(), user)]
+            for message in response['messages']:
+                self.assertGreater(message['id'], 1)
+                self.assertIn(message['id'], correct_message_ids)
 
         post_data = {"last": str(1), "first": str(1)}
         post_data.update(extra_post_data)
@@ -475,28 +482,6 @@ class GetUpdatesTest(AuthedTestCase):
         api_key = self.get_api_key(email)
         self.common_test_get_updates(api_get_messages, {'email': email, 'api-key': api_key})
 
-    def test_beyond_last_message(self):
-        """
-        If your last_received message is greater than the greatest Message ID, you
-        don't get any new messages.
-        """
-        self.login("hamlet@humbughq.com")
-        user = User.objects.get(email="hamlet@humbughq.com")
-        last_received = max(message.id for message in Message.objects.all()) + 100
-        messages = []
-
-        def callback(data):
-            # We can't make asserts in this nested function, so save the data
-            # and assert in the parent.
-            #
-            # TODO: Find out how to make this blocking so assertEquals below
-            # runs after us.
-            messages.extend(data)
-
-        request = POSTRequestMock({"last": str(last_received), "first": "1"}, user, callback)
-        self.assertEquals(json_get_updates(request), RespondAsynchronously)
-        self.assertEquals(len(messages), 0)
-
     def test_missing_last_received(self):
         """
         Calling json_get_updates without any arguments should work
@@ -504,13 +489,7 @@ class GetUpdatesTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         user = User.objects.get(email="hamlet@humbughq.com")
 
-        def callback(messages):
-            correct_messages = filter_by_subscriptions(Message.objects.all(), user)
-            for message in messages:
-                self.assertTrue(message in correct_messages)
-                self.assertTrue(message.id > 1)
-
-        request = POSTRequestMock({}, user, callback)
+        request = POSTRequestMock({}, user)
         self.assertEquals(json_get_updates(request), RespondAsynchronously)
 
 class Runner(DjangoTestSuiteRunner):
