@@ -108,6 +108,11 @@ def internal_notify_view(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         if not authenticate_notify(request):
             return json_error('Access denied', status=403)
+        if not hasattr(request, '_tornado_handler'):
+            # We got called through the non-Tornado server somehow.
+            # This is not a security check; it's an internal assertion
+            # to help us find bugs.
+            raise RuntimeError, 'notify view called with no Tornado handler'
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
