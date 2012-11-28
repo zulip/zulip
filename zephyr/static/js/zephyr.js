@@ -6,7 +6,7 @@ var subject_dict = {};
 var viewport = $(window);
 
 var selected_message_id = -1;  /* to be filled in on document.ready */
-var selected_message;  // = rows.get(selected_message_id)
+var selected_message = $();    /* = rows.get(selected_message_id)   */
 var get_updates_params = {
     last: -1,
     pointer: -1,
