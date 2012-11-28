@@ -525,3 +525,10 @@ table.floating_recipient {
 .cursor_pointer {
     cursor: pointer;
 }
+
+#load_more_messages_indicator {
+    display: none;
+    margin: 0 auto;
+    height: 50px;
+    padding-top: 30px;
+}
