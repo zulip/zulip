@@ -244,10 +244,6 @@ class PersonalMessagesTest(AuthedTestCase):
         self.assertEqual(self.message_stream(sender)[-1].recipient, recipient)
         self.assertEqual(self.message_stream(receiver)[-1].recipient, recipient)
 
-    def test_personal_to_nonexistent_person(self):
-        """
-        """
-
 class StreamMessagesTest(AuthedTestCase):
     fixtures = ['messages.json']
 
