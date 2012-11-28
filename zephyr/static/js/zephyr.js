@@ -744,9 +744,11 @@ function load_more_messages() {
     if (!load_more_enabled) {
         return;
     }
+    ui.show_load_more_messages_spinner();
     load_more_enabled = false;
     load_old_messages(message_array[0].id, batch_size, 0,
                       function (messages) {
+                          ui.hide_load_more_messages_spinner();
                           if (messages.length === batch_size + 1) {
                               load_more_enabled = true;
                           }
