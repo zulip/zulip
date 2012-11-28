@@ -644,16 +644,16 @@ function get_updates(options) {
     });
 }
 
-function load_old_messages(anchor, num_before, num_after, cont, because_button,
+function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
                            cont_will_add_messages) {
     var narrow_str;
-    if (because_button === undefined) {
-        because_button = false;
+    if (for_narrow === undefined) {
+        for_narrow = false;
     }
     if (cont_will_add_messages === undefined) {
         cont_will_add_messages = false;
     }
-    if (because_button && narrow.active()) {
+    if (for_narrow) {
         narrow_str = JSON.stringify(narrow.data());
     } else {
         narrow_str = JSON.stringify({});
@@ -670,7 +670,7 @@ function load_old_messages(anchor, num_before, num_after, cont, because_button,
                 // The server occationally returns no data during a
                 // restart.  Ignore those responses and try again
                 setTimeout(function () {
-                    load_old_messages(anchor, num_before, num_after, cont, because_button);
+                    load_old_messages(anchor, num_before, num_after, cont, for_narrow);
                 }, 0);
                 return;
             }
@@ -678,8 +678,7 @@ function load_old_messages(anchor, num_before, num_after, cont, because_button,
             $('#connection-error').hide();
 
             if (data.messages.length !== 0 && !cont_will_add_messages) {
-                var add_to_home = !narrow.active() || !because_button;
-                add_messages(data.messages, add_to_home);
+                add_messages(data.messages, !for_narrow);
             }
 
             if (cont !== undefined) {
@@ -690,7 +689,7 @@ function load_old_messages(anchor, num_before, num_after, cont, because_button,
             // We might want to be more clever here
             $('#connection-error').show();
             setTimeout(function () {
-                load_old_messages(anchor, num_before, num_after, cont, because_button);
+                load_old_messages(anchor, num_before, num_after, cont, for_narrow);
             }, 5000);
         }
     });
@@ -752,7 +751,7 @@ function load_more_messages() {
                           if (messages.length === batch_size + 1) {
                               load_more_enabled = true;
                           }
-                      }, true);
+                      }, narrow.active());
 }
 
 var watchdog_time = $.now();
