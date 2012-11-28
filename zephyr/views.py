@@ -926,9 +926,10 @@ def api_github_landing(request, user_profile, event=POST,
 
         subject = "%s: pull request %d" % (repository['name'],
                                            pull_req['number'])
-        content = ("New [pull request](%s) from %s:\n\n %s\n\n> %s"
-                   % (pull_req['html_url'],
-                      pull_req['user']['login'],
+        content = ("Pull request from %s [%s](%s):\n\n %s\n\n> %s"
+                   % (pull_req['user']['login'],
+                      payload['action'],
+                      pull_req['html_url'],
                       pull_req['title'],
                       pull_req['body']))
     elif event == 'push':
