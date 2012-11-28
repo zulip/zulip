@@ -449,7 +449,12 @@ def get_updates_backend(request, user_profile, handler, client_id,
         send_with_safety_check(resp, handler, **kwargs)
         return
 
-    # Now we're in long-polling mode
+    # Enter long-polling mode.
+    #
+    # Instead of responding to the client right away, leave our connection open
+    # and return to the Tornado main loop.  One of the notify_* views will
+    # eventually invoke one of these callbacks, which will send the delayed
+    # response.
 
     def cb(**cb_kwargs):
         if handler.request.connection.stream.closed():
