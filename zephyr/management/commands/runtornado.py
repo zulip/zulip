@@ -190,13 +190,12 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                             break
 
                 if response is None:
-                    from ...decorator import TornadoAsyncException
+                    from ...decorator import RespondAsynchronously
 
                     try:
                         response = callback(request, *callback_args, **callback_kwargs)
-                    except TornadoAsyncException, e:
-                        # TODO: Maybe add debugging output here
-                        return
+                        if response is RespondAsynchronously:
+                            return
                     except Exception, e:
                         # If the view raised an exception, run it through exception
                         # middleware, and if the exception middleware returns a

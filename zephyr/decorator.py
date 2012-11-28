@@ -8,17 +8,18 @@ from django.conf import settings
 
 from functools import wraps
 
-import types
+class _RespondAsynchronously(object):
+    pass
 
-class TornadoAsyncException(Exception): pass
+# Return RespondAsynchronously from an @asynchronous view if the
+# response will be provided later by calling handler.finish(), or has
+# already been provided this way. We use this for longpolling mode.
+RespondAsynchronously = _RespondAsynchronously()
 
 def asynchronous(method):
     @wraps(method)
     def wrapper(request, *args, **kwargs):
-        v = method(request, handler=request._tornado_handler, *args, **kwargs)
-        if v == None or type(v) == types.GeneratorType:
-            raise TornadoAsyncException
-        return v
+        return method(request, handler=request._tornado_handler, *args, **kwargs)
     if getattr(method, 'csrf_exempt', False):
         wrapper.csrf_exempt = True
     return wrapper

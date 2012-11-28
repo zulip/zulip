@@ -22,7 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from zephyr.decorator import asynchronous, require_post, \
     authenticated_api_view, authenticated_json_view, \
-    internal_notify_view, \
+    internal_notify_view, RespondAsynchronously, \
     has_request_variables, POST
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
@@ -447,7 +447,12 @@ def get_updates_backend(request, user_profile, handler, client_id,
                                        dont_block, **kwargs)
     if resp is not None:
         send_with_safety_check(resp, handler, **kwargs)
-        return
+
+        # We have already invoked handler.finish(), so we bypass the usual view
+        # response path.  We are "responding asynchronously" except that it
+        # already happened.  This is slightly weird, but lets us share
+        # send_with_safety_check with the code below.
+        return RespondAsynchronously
 
     # Enter long-polling mode.
     #
@@ -471,6 +476,9 @@ def get_updates_backend(request, user_profile, handler, client_id,
 
     user_profile.add_receive_callback(handler.async_callback(cb))
     user_profile.add_pointer_update_callback(handler.async_callback(cb))
+
+    # runtornado recognizes this special return value.
+    return RespondAsynchronously
 
 def generate_client_id():
     return base64.b16encode(os.urandom(16)).lower()

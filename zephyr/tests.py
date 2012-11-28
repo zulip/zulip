@@ -7,7 +7,7 @@ from django.db.models import Q
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, Realm, do_send_message, Client
 from zephyr.views import json_get_updates, api_get_messages
-from zephyr.decorator import TornadoAsyncException
+from zephyr.decorator import RespondAsynchronously
 from zephyr.lib.initial_password import initial_password, initial_api_key
 
 import simplejson
@@ -457,10 +457,7 @@ class GetUpdatesTest(AuthedTestCase):
         post_data = {"last": str(1), "first": str(1)}
         post_data.update(extra_post_data)
         request = POSTRequestMock(post_data, user, callback)
-        # json_get_updates returns None, which raises an exception in the
-        # @asynchronous decorator, which raises a TornadoAsyncException. So this
-        # is expected, but should probably change.
-        self.assertRaises(TornadoAsyncException, view_func, request)
+        self.assertEquals(view_func(request), RespondAsynchronously)
 
     def test_json_get_updates(self):
         """
@@ -497,7 +494,7 @@ class GetUpdatesTest(AuthedTestCase):
             messages.extend(data)
 
         request = POSTRequestMock({"last": str(last_received), "first": "1"}, user, callback)
-        self.assertRaises(TornadoAsyncException, json_get_updates, request)
+        self.assertEquals(json_get_updates(request), RespondAsynchronously)
         self.assertEquals(len(messages), 0)
 
     def test_missing_last_received(self):
@@ -514,7 +511,7 @@ class GetUpdatesTest(AuthedTestCase):
                 self.assertTrue(message.id > 1)
 
         request = POSTRequestMock({}, user, callback)
-        self.assertRaises(TornadoAsyncException, json_get_updates, request)
+        self.assertEquals(json_get_updates(request), RespondAsynchronously)
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (
