@@ -208,6 +208,12 @@ class Command(BaseCommand):
                 ]
             create_users(realms, internal_humbug_users_nosubs)
 
+            # Create the "website" and "API" clients; if we don't, the
+            # default values in zephyr/decorators.py will not work
+            # with the Django test suite.
+            get_client("website")
+            get_client("API")
+
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
             restore_saved_messages()
