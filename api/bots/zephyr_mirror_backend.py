@@ -185,6 +185,7 @@ def update_subscriptions_from_humbug():
         return
     streams_to_subscribe = []
     for stream in streams:
+        encoded_stream = stream.encode("utf-8")
         if stream in current_zephyr_subs:
             continue
         if stream in ['security', 'login', 'network']:
@@ -192,11 +193,11 @@ def update_subscriptions_from_humbug():
             # to MIT's Zephyr access control settings
             continue
         if (options.shard is not None and
-            not hashlib.sha1(stream).hexdigest().startswith(options.shard)):
+            not hashlib.sha1(encoded_stream).hexdigest().startswith(options.shard)):
             # This stream is being handled by a different zephyr_mirror job.
             continue
 
-        streams_to_subscribe.append((stream.encode("utf-8"), "*", "*"))
+        streams_to_subscribe.append((encoded_stream, "*", "*"))
     if len(streams_to_subscribe) > 0:
         zephyr_bulk_subscribe(streams_to_subscribe)
 
