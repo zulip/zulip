@@ -4,6 +4,7 @@ from zephyr.models import UserProfile, UserActivity, get_client
 from zephyr.lib.response import json_success, json_error
 from django.utils.timezone import now
 from django.db import transaction, IntegrityError
+from django.conf import settings
 
 from functools import wraps
 
@@ -91,6 +92,23 @@ def authenticated_json_view(view_func):
         update_user_activity(request, request.user.userprofile,
                              parse_client(request, "website"))
         return view_func(request, request.user.userprofile, *args, **kwargs)
+    return _wrapped_view_func
+
+# These views are used by the main Django server to notify the Tornado server
+# of events.  We protect them from the outside world by checking a shared
+# secret, and also the originating IP (for now).
+def authenticate_notify(request):
+    return (request.META['REMOTE_ADDR'] in ('127.0.0.1', '::1')
+            and request.POST.get('secret') == settings.SHARED_SECRET)
+
+def internal_notify_view(view_func):
+    @csrf_exempt
+    @require_post
+    @wraps(view_func)
+    def _wrapped_view_func(request, *args, **kwargs):
+        if not authenticate_notify(request):
+            return json_error('Access denied', status=403)
+        return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
 # Used in conjunction with @has_request_variables, below

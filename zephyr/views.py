@@ -22,6 +22,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from zephyr.decorator import asynchronous, require_post, \
     authenticated_api_view, authenticated_json_view, \
+    internal_notify_view, \
     has_request_variables, POST
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
@@ -680,19 +681,8 @@ def send_message_backend(request, user_profile, client_name,
 
     return json_success()
 
-def validate_notify(request):
-    # Check the shared secret.
-    # Also check the originating IP, at least for now.
-    return (request.META['REMOTE_ADDR'] in ('127.0.0.1', '::1')
-            and request.POST.get('secret') == settings.SHARED_SECRET)
-
-
-@csrf_exempt
-@require_post
+@internal_notify_view
 def notify_new_message(request):
-    if not validate_notify(request):
-        return json_error("Access denied", status=403)
-
     # If a message for some reason has no recipients (e.g. it is sent
     # by a bot to a stream that nobody is subscribed to), just skip
     # the message gracefully
@@ -716,12 +706,8 @@ def notify_new_message(request):
 
     return json_success()
 
-@csrf_exempt
-@require_post
+@internal_notify_view
 def notify_pointer_update(request):
-    if not validate_notify(request):
-        return json_error("Access denied", status=403)
-
     # FIXME: better query
     user_profile = UserProfile.objects.get(id=request.POST['user'])
     new_pointer = int(request.POST['new_pointer'])
