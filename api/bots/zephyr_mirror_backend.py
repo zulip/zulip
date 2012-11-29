@@ -722,6 +722,10 @@ def parse_args():
                       action='store_true')
     parser.add_option('--shard',
                       help=optparse.SUPPRESS_HELP)
+    parser.add_option('--noshard',
+                      default=False,
+                      help=optparse.SUPPRESS_HELP,
+                      action='store_true')
     parser.add_option('--resend-log',
                       dest='resend_log_path',
                       help=optparse.SUPPRESS_HELP)

@@ -39,7 +39,7 @@ if options.sync_subscriptions:
     subprocess.call(args)
     sys.exit(0)
 
-if options.forward_class_messages:
+if options.forward_class_messages and not options.noshard:
     sys.path.append("/home/humbug/humbug")
     from zephyr.lib.parallel import run_parallel
     print "Starting parallel zephyr class mirroring bot"
