@@ -153,7 +153,6 @@ class HumbugAPI(object):
         max_message_id = None
         while True:
             if max_message_id is not None:
-                options["first"] = "0"
                 options["last"] = str(max_message_id)
             res = self.get_messages(options)
             if 'error' in res.get('result'):
