@@ -186,7 +186,7 @@ def update_subscriptions_from_humbug():
         else:
             logger.error("Error getting public streams:\n%s" % res)
             return
-    except:
+    except Exception:
         logger.exception("Error getting public streams:")
         return
     streams_to_subscribe = []
@@ -222,7 +222,7 @@ def maybe_restart_mirroring_script():
         while True:
             try:
                 os.execvp(os.path.join(options.root_path, "user_root", "zephyr_mirror_backend.py"), sys.argv)
-            except:
+            except Exception:
                 logger.exception("Error restarting mirroring script; trying again... Traceback:")
                 time.sleep(1)
 
@@ -350,7 +350,7 @@ def decode_unicode_byte_strings(zeph):
         if isinstance(zeph[field], str):
             try:
                 decoded = zeph[field].decode("utf-8")
-            except:
+            except Exception:
                 decoded = zeph[field].decode("iso-8859-1")
             zeph[field] = decoded
     return zeph
@@ -397,7 +397,7 @@ def zephyr_to_humbug(options):
                                 (zeph.get('stream', zeph.get('recipient')),
                                  zeph['sender']))
                     send_humbug(zeph)
-                except:
+                except Exception:
                     logger.exception("Could not send saved zephyr:")
                     time.sleep(2)
 
@@ -536,7 +536,7 @@ def maybe_forward_to_zephyr(message):
             return
         try:
             forward_to_zephyr(message)
-        except:
+        except Exception:
             # Don't let an exception forwarding one message crash the
             # whole process
             logger.exception("Error forwarding message:")
@@ -672,7 +672,7 @@ def parse_zephyr_subs(verbose=False):
                 if verbose:
                     print >>sys.stderr, "Skipping subscription to unsupported class name: [%s]" % (line,)
                 continue
-        except:
+        except Exception:
             if verbose:
                 print >>sys.stderr, "Couldn't parse ~/.zephyr.subs line: [%s]" % (line,)
             continue
@@ -687,7 +687,7 @@ def fetch_fullname(username):
         out, _err_unused = proc.communicate()
         if proc.returncode == 0:
             return out.split(':')[4].split(',')[0]
-    except:
+    except Exception:
         logger.exception("Error getting fullname for %s:" % (username,))
 
     return username
