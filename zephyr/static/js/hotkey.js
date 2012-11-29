@@ -20,7 +20,7 @@ var narrow_hotkeys = {
 // These are not exported, but they need to be used before they are
 // defined, since we have a cycle in function reference.  So we
 // declare them ahead of time to make JSLint happy.
-var process_key_in_input, process_compose_hotkey;
+var process_key_in_input;
 
 function process_hotkey(e) {
     var code = e.which;
@@ -88,10 +88,10 @@ function process_hotkey(e) {
         return process_hotkey;
     case 99: // 'c': compose
         compose.start('stream');
-        return process_compose_hotkey;
+        return process_hotkey;
     case 67: // 'C': compose huddle
         compose.start('private');
-        return process_compose_hotkey;
+        return process_hotkey;
     case 114: // 'r': respond to message
         respond_to_message();
         return process_hotkey;
@@ -138,20 +138,8 @@ process_key_in_input = function (e) {
     return false;
 };
 
-process_compose_hotkey = function (e) {
-    var code = e.which;
-    if (code === 9) { // Tab: toggles between stream and huddle compose tabs.
-        compose.toggle_mode();
-        return process_compose_hotkey;
-    }
-    // Process the first non-tab character and everything after it
-    // like any other keys typed in the input box
-    current_key_handler = process_hotkey;
-    return process_hotkey(e);
-};
-
 exports.set_compose = function () {
-    current_key_handler = process_compose_hotkey;
+    current_key_handler = process_hotkey;
 };
 
 /* We register both a keydown and a keypress function because
