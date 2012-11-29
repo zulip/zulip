@@ -54,14 +54,17 @@ class HumbugAPI(object):
         self.retry_on_errors = retry_on_errors
         self.client_name = client
 
-    def do_api_query(self, request, url, longpolling = False):
+    def do_api_query(self, orig_request, url, longpolling = False):
+        request = {}
         request["email"] = self.email
         request["api-key"] = self.api_key
         request["client"] = self.client_name
 
-        for (key, val) in request.iteritems():
+        for (key, val) in orig_request.iteritems():
             if not (isinstance(val, str) or isinstance(val, unicode)):
                 request[key] = simplejson.dumps(val)
+            else:
+                request[key] = val
 
         query_state = {
             'had_error_retry': False,
