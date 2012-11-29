@@ -546,3 +546,8 @@ table.floating_recipient {
     background-color: #444;
     color: white;
 }
+
+
+#fmt_help_table {
+    table-layout: fixed;
+}
