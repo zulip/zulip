@@ -159,12 +159,7 @@ def zephyr_bulk_subscribe(subs):
         # (within 15 seconds).
         return
     for (cls, instance, recipient) in subs:
-        # Zephyr class names are canonicalized by first applying NFKC
-        # normalization and then lower-casing server-side -- so we
-        # need to compare against those to see if we've successfully
-        # subscribed.
-        canonical_cls = unicodedata.normalize("NFKC", cls.decode("utf-8").lower()).encode("utf-8")
-        if canonical_cls not in actual_zephyr_subs:
+        if cls not in actual_zephyr_subs:
             logging.error("Zephyr failed to subscribe us to %s; will retry" % (cls,))
             try:
                 # We'll retry automatically when we next check for
@@ -189,23 +184,25 @@ def update_subscriptions_from_humbug():
     except Exception:
         logger.exception("Error getting public streams:")
         return
-    streams_to_subscribe = []
+    classes_to_subscribe = set()
     for stream in streams:
-        encoded_stream = stream.encode("utf-8")
-        if stream in current_zephyr_subs:
+        # Zephyr class names are canonicalized by first applying NFKC
+        # normalization and then lower-casing server-side
+        canonical_cls = unicodedata.normalize("NFKC", stream).lower().encode("utf-8")
+        if canonical_cls in current_zephyr_subs:
             continue
-        if stream.lower() in ['security', 'login', 'network', 'ops', 'user_locate']:
+        if canonical_cls in ['security', 'login', 'network', 'ops', 'user_locate']:
             # These zephyr classes cannot be subscribed to by us, due
             # to MIT's Zephyr access control settings
             continue
         if (options.shard is not None and
-            not hashlib.sha1(encoded_stream).hexdigest().startswith(options.shard)):
+            not hashlib.sha1(canonical_cls).hexdigest().startswith(options.shard)):
             # This stream is being handled by a different zephyr_mirror job.
             continue
 
-        streams_to_subscribe.append((encoded_stream, "*", "*"))
-    if len(streams_to_subscribe) > 0:
-        zephyr_bulk_subscribe(streams_to_subscribe)
+        classes_to_subscribe.add((canonical_cls, "*", "*"))
+    if len(classes_to_subscribe) > 0:
+        zephyr_bulk_subscribe(list(classes_to_subscribe))
 
 def maybe_restart_mirroring_script():
     if os.stat(os.path.join(options.root_path, "stamps", "restart_stamp")).st_mtime > start_time or \
