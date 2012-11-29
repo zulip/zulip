@@ -29,6 +29,11 @@ function process_hotkey(e) {
         return false;
     }
 
+    // Disable hotkeys when a modal pop-up is visible.
+    if ($('.modal:visible').length > 0) {
+        return false;
+    }
+
     // Process hotkeys specially when in an input, textarea, or send button
     if ($('input:focus,textarea:focus,#compose-send-button:focus').length > 0) {
         if (code === 27) {
