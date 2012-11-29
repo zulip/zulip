@@ -670,7 +670,8 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
                 // The server occationally returns no data during a
                 // restart.  Ignore those responses and try again
                 setTimeout(function () {
-                    load_old_messages(anchor, num_before, num_after, cont, for_narrow);
+                    load_old_messages(anchor, num_before, num_after, cont, for_narrow,
+                                      cont_will_add_messages);
                 }, 0);
                 return;
             }
@@ -689,7 +690,8 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
             // We might want to be more clever here
             $('#connection-error').show();
             setTimeout(function () {
-                load_old_messages(anchor, num_before, num_after, cont, for_narrow);
+                load_old_messages(anchor, num_before, num_after, cont, for_narrow,
+                                  cont_will_add_messages);
             }, 5000);
         }
     });
