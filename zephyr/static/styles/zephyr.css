@@ -363,7 +363,7 @@ input.recipient_box {
     width: 75%;
 }
 
-input.send_message {
+#send_controls {
     float: right;
 }
 
