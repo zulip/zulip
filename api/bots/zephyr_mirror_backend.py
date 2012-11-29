@@ -340,10 +340,14 @@ def process_notice(notice, log):
 
     if os.fork() == 0:
         # Actually send the message in a child process, to avoid blocking.
-        res = send_humbug(zeph)
-        if res.get("result") != "success":
-            logger.error("Error relaying zephyr:\n%s\n%s" % (zeph, res))
-        sys.exit(0)
+        try:
+            res = send_humbug(zeph)
+            if res.get("result") != "success":
+                logger.error("Error relaying zephyr:\n%s\n%s" % (zeph, res))
+        except Exception:
+            logging.exception("Error relaying zephyr:")
+        finally:
+            os._exit(0)
 
 def decode_unicode_byte_strings(zeph):
     for field in zeph.keys():
