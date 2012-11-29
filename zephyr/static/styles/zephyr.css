@@ -27,6 +27,10 @@ a:hover code {
     border-color: #005580;
 }
 
+.preserve_spaces {
+    white-space: pre-wrap;
+}
+
 .sidebar-nav {
     background-color: white;
     padding: 0.5em;
