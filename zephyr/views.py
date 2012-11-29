@@ -438,6 +438,7 @@ def get_updates_backend(request, user_profile, handler, client_id,
         try:
             kwargs.update(cb_kwargs)
             res = format_updates_response(user_profile=user_profile,
+                                          client_server_generation=client_server_generation,
                                           **kwargs)
             send_with_safety_check(res, handler, **kwargs)
         except socket.error:
