@@ -367,6 +367,11 @@ input.recipient_box {
     float: right;
 }
 
+#fmt_help_link {
+    margin-right: 20px;
+    font-size: 90%;
+}
+
 #top_statusbar {
     position: fixed;
     /* .message_list max-width + 30px margin */
