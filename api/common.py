@@ -32,6 +32,7 @@ import os
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
 assert(requests.__version__ > '0.12')
+API_VERSTRING = "/api/v1/"
 
 class HumbugAPI(object):
     def __init__(self, email, api_key=None, api_key_file=None,
@@ -54,34 +55,54 @@ class HumbugAPI(object):
         self.client_name = client
 
     def do_api_query(self, request, url, longpolling = False):
-        had_error_retry = False
         request["email"] = self.email
         request["api-key"] = self.api_key
         request["client"] = self.client_name
-        failures = 0
 
         for (key, val) in request.iteritems():
             if not (isinstance(val, str) or isinstance(val, unicode)):
                 request[key] = simplejson.dumps(val)
 
+        query_state = {
+            'had_error_retry': False,
+            'request': request,
+            'failures': 0,
+        }
+
+        def error_retry(error_string):
+            if not self.retry_on_errors or query_state["failures"] >= 10:
+                return False
+            if self.verbose:
+                if not query_state["had_error_retry"]:
+                    sys.stdout.write("humbug API(%s): connection error%s -- retrying." % \
+                            (url.split(API_VERSTRING, 2)[1], error_string,))
+                    query_state["had_error_retry"] = True
+                else:
+                    sys.stdout.write(".")
+                sys.stdout.flush()
+            query_state["request"]["dont_block"] = simplejson.dumps(True)
+            time.sleep(1)
+            query_state["failures"] += 1
+            return True
+
+        def end_error_retry(succeeded):
+            if query_state["had_error_retry"] and self.verbose:
+                if succeeded:
+                    print "Success!"
+                else:
+                    print "Failed!"
+
         while True:
             try:
-                res = requests.post(urlparse.urljoin(self.base_url, url), data=request,
+                res = requests.post(urlparse.urljoin(self.base_url, url),
+                                    data=query_state["request"],
                                     verify=True, timeout=55)
 
                 # On 50x errors, try again after a short sleep
-                if str(res.status_code).startswith('5') and self.retry_on_errors and failures < 10:
-                    if self.verbose:
-                        if not had_error_retry:
-                            sys.stdout.write("connection error %s -- retrying." % (res.status_code,))
-                            had_error_retry = True
-                            request["dont_block"] = simplejson.dumps(True)
-                        else:
-                            sys.stdout.write(".")
-                        sys.stdout.flush()
-                    time.sleep(1)
-                    failures += 1
-                    continue
+                if str(res.status_code).startswith('5'):
+                    if error_retry(" (server %s)" % (res.status_code,)):
+                        continue
+                    # Otherwise fall through and process the python-requests error normally
             except (requests.exceptions.Timeout, requests.exceptions.SSLError) as e:
                 # Timeouts are either a Timeout or an SSLError; we
                 # want the later exception handlers to deal with any
@@ -94,21 +115,13 @@ class HumbugAPI(object):
                     # and the correct response is to just retry
                     continue
                 else:
+                    end_error_retry(False)
                     return {'msg': "Connection error:\n%s" % traceback.format_exc(),
                             "result": "connection-error"}
             except requests.exceptions.ConnectionError:
-                if self.retry_on_errors and failures < 10:
-                    if self.verbose:
-                        if not had_error_retry:
-                            sys.stdout.write("connection error -- retrying.")
-                            had_error_retry = True
-                            request["dont_block"] = simplejson.dumps(True)
-                        else:
-                            sys.stdout.write(".")
-                        sys.stdout.flush()
-                    time.sleep(1)
-                    failures += 1
+                if error_retry(""):
                     continue
+                end_error_retry(False)
                 return {'msg': "Connection error:\n%s" % traceback.format_exc(),
                         "result": "connection-error"}
             except Exception:
@@ -116,10 +129,10 @@ class HumbugAPI(object):
                 return {'msg': "Unexpected error:\n%s" % traceback.format_exc(),
                         "result": "unexpected-error"}
 
-            if self.verbose and had_error_retry:
-                print "Success!"
             if res.json is not None:
+                end_error_retry(True)
                 return res.json
+            end_error_retry(False)
             return {'msg': res.text, "result": "http-error",
                     "status_code": res.status_code}
 
@@ -129,7 +142,7 @@ class HumbugAPI(object):
             url = name
         def call(self, *args, **kwargs):
             request = make_request(*args, **kwargs)
-            return self.do_api_query(request, '/api/v1/' + url, **query_kwargs)
+            return self.do_api_query(request, API_VERSTRING + url, **query_kwargs)
         call.func_name = name
         setattr(cls, name, call)
 
