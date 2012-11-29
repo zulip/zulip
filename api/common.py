@@ -58,6 +58,7 @@ class HumbugAPI(object):
         request["email"] = self.email
         request["api-key"] = self.api_key
         request["client"] = self.client_name
+        failures = 0
 
         for (key, val) in request.iteritems():
             if not (isinstance(val, str) or isinstance(val, unicode)):
@@ -69,7 +70,7 @@ class HumbugAPI(object):
                                     verify=True, timeout=55)
 
                 # On 50x errors, try again after a short sleep
-                if str(res.status_code).startswith('5') and self.retry_on_errors:
+                if str(res.status_code).startswith('5') and self.retry_on_errors and failures < 10:
                     if self.verbose:
                         if not had_error_retry:
                             sys.stdout.write("connection error %s -- retrying." % (res.status_code,))
@@ -79,6 +80,7 @@ class HumbugAPI(object):
                             sys.stdout.write(".")
                         sys.stdout.flush()
                     time.sleep(1)
+                    failures += 1
                     continue
             except (requests.exceptions.Timeout, requests.exceptions.SSLError) as e:
                 # Timeouts are either a Timeout or an SSLError; we
@@ -95,7 +97,7 @@ class HumbugAPI(object):
                     return {'msg': "Connection error:\n%s" % traceback.format_exc(),
                             "result": "connection-error"}
             except requests.exceptions.ConnectionError:
-                if self.retry_on_errors:
+                if self.retry_on_errors and failures < 10:
                     if self.verbose:
                         if not had_error_retry:
                             sys.stdout.write("connection error -- retrying.")
@@ -105,6 +107,7 @@ class HumbugAPI(object):
                             sys.stdout.write(".")
                         sys.stdout.flush()
                     time.sleep(1)
+                    failures += 1
                     continue
                 return {'msg': "Connection error:\n%s" % traceback.format_exc(),
                         "result": "connection-error"}
