@@ -188,7 +188,7 @@ def update_subscriptions_from_humbug():
         encoded_stream = stream.encode("utf-8")
         if stream in current_zephyr_subs:
             continue
-        if stream in ['security', 'login', 'network']:
+        if stream.lower() in ['security', 'login', 'network', 'ops', 'user_locate']:
             # These zephyr classes cannot be subscribed to by us, due
             # to MIT's Zephyr access control settings
             continue
