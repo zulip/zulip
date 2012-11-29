@@ -153,6 +153,9 @@ exports.clear = function () {
 // Set the mode of a compose already in progress.
 // Does not clear the input fields.
 exports.set_mode = function (mode) {
+    if (!is_composing_message)
+        return;
+
     if (mode === 'private') {
         show('private', $("#private_message_recipient"));
         is_composing_message = "private";
