@@ -34,6 +34,7 @@ import textwrap
 import signal
 import logging
 import hashlib
+import unicodedata
 
 DEFAULT_SITE = "https://humbughq.com"
 
@@ -158,7 +159,12 @@ def zephyr_bulk_subscribe(subs):
         # (within 15 seconds).
         return
     for (cls, instance, recipient) in subs:
-        if cls not in actual_zephyr_subs:
+        # Zephyr class names are canonicalized by first applying NFKC
+        # normalization and then lower-casing server-side -- so we
+        # need to compare against those to see if we've successfully
+        # subscribed.
+        canonical_cls = unicodedata.normalize("NFKC", cls.decode("utf-8").lower()).encode("utf-8")
+        if canonical_cls not in actual_zephyr_subs:
             logging.error("Zephyr failed to subscribe us to %s; will retry" % (cls,))
             try:
                 # We'll retry automatically when we next check for
