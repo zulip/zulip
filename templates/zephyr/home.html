@@ -101,12 +101,12 @@
                 <div id="stream_or_huddle">
                   <ul class="nav nav-pills nav-stacked" id="message-type-tabs">
                     <li class="active" id="stream_toggle">
-                        <a href="#stream-message" data-toggle="pill" title="Send a stream message" tabindex="100" onclick="compose.toggle_mode();">
+                        <a href="#stream-message" data-toggle="pill" title="Send a stream message" tabindex="100" onclick="compose.set_mode('stream');">
                             <i class="icon-bullhorn"></i>
                         </a>
                     </li>
                     <li id="private_message_toggle">
-                        <a href="#private-message" data-toggle="pill" title="Send a private message" tabindex="110" onclick="compose.toggle_mode();">
+                        <a href="#private-message" data-toggle="pill" title="Send a private message" tabindex="110" onclick="compose.set_mode('private');">
                             <i class="icon-user"></i>
                         </a>
                     </li>

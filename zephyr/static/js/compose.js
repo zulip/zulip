@@ -150,9 +150,10 @@ exports.clear = function () {
     $("#compose").find('input[type=text], textarea').val('');
 };
 
-exports.toggle_mode = function () {
-    if (compose.composing() === 'stream') {
-        // In stream tab, switch to private
+// Set the mode of a compose already in progress.
+// Does not clear the input fields.
+exports.set_mode = function (mode) {
+    if (mode === 'private') {
         show('private', $("#private_message_recipient"));
         is_composing_message = "private";
     } else {
