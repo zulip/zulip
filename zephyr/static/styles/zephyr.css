@@ -369,6 +369,12 @@ input.recipient_box {
 
 #send_controls {
     float: right;
+
+    /* jQuery's slideDown() animation seems to compute the target height by
+       drawing these elements in an (offscreen) context where they would reflow
+       onto multiple lines.  We need to prevent that in order to avoid an
+       animation glitch.  See: http://is.gd/EVJFZ8 */
+    white-space: nowrap;
 }
 
 #fmt_help_link {
