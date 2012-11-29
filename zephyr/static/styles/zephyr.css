@@ -537,3 +537,8 @@ table.floating_recipient {
     height: 50px;
     padding-top: 30px;
 }
+
+.table-striped thead th {
+    background-color: #444;
+    color: white;
+}
