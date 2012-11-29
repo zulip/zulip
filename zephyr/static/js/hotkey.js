@@ -17,11 +17,9 @@ var narrow_hotkeys = {
     118: narrow.all_huddles    // 'v'
 };
 
-// These are not exported, but they need to be used before they are
-// defined, since we have a cycle in function reference.  So we
-// declare them ahead of time to make JSLint happy.
-var process_key_in_input;
-
+// Process a keydown or keypress event.
+//
+// Returns true if we handled it, false if the browser should.
 function process_hotkey(e) {
     var code = e.which;
     var next_message;
@@ -31,9 +29,27 @@ function process_hotkey(e) {
         return false;
     }
 
-    // Disable hotkeys when in an input, textarea, or send button
+    // Process hotkeys specially when in an input, textarea, or send button
     if ($('input:focus,textarea:focus,#compose-send-button:focus').length > 0) {
-        return process_key_in_input(e);
+        if (code === 27) {
+            // If one of our typeaheads is open, do nothing so that the Esc
+            // will go to close it
+            if ($("#subject").data().typeahead.shown ||
+                $("#stream").data().typeahead.shown ||
+                $("#private_message_recipient").data().typeahead.shown) {
+                return false;
+            } else {
+                // If the user hit the escape key, cancel the current compose
+                compose.cancel();
+            }
+        }
+        // Keycode 13 is Return.
+        if ((code === 13) && $("#search_query").is(":focus")) {
+            // Pass it along to the search up button.
+            $("#search_up").focus();
+        }
+        // Let the browser handle the key normally.
+        return false;
     }
 
     if (directional_hotkeys.hasOwnProperty(code)) {
@@ -49,13 +65,13 @@ function process_hotkey(e) {
             // always returns a message.
             viewport.scrollTop($("#main_div").outerHeight(true));
         }
-        return process_hotkey;
+        return true;
     }
 
     if (narrow_hotkeys.hasOwnProperty(code)) {
         narrow.target(selected_message_id);
         narrow_hotkeys[code]();
-        return process_hotkey;
+        return true;
     }
 
     // We're in the middle of a combo; stop processing because
@@ -85,62 +101,29 @@ function process_hotkey(e) {
         } else {
             narrow.show_all_messages();
         }
-        return process_hotkey;
+        return true;
     case 99: // 'c': compose
         compose.start('stream');
-        return process_hotkey;
+        return true;
     case 67: // 'C': compose huddle
         compose.start('private');
-        return process_hotkey;
+        return true;
     case 114: // 'r': respond to message
         respond_to_message();
-        return process_hotkey;
+        return true;
     case 82: // 'R': respond to author
         respond_to_message("personal");
-        return process_hotkey;
+        return true;
     case 47: // '/': initiate search
         search.initiate_search();
-        return process_hotkey;
+        return true;
     case 63: // '?': Show keyboard shortcuts page
         $('#keyboard-shortcuts').modal('show');
-        return process_hotkey;
+        return true;
     }
 
     return false;
 }
-
-/* The current handler function for keydown events.
-   It should return a new handler, or 'false' to
-   decline to handle the event. */
-var current_key_handler = process_hotkey;
-
-process_key_in_input = function (e) {
-    var code = e.which;
-    if (code === 27) {
-        // If one of our typeaheads is open, do nothing so that the Esc
-        // will go to close it
-        if ($("#subject").data().typeahead.shown ||
-            $("#stream").data().typeahead.shown ||
-            $("#private_message_recipient").data().typeahead.shown) {
-            return false;
-        }
-        else {
-            // If the user hit the escape key, cancel the current compose
-            compose.cancel();
-        }
-    }
-    // Keycode 13 is Return.
-    if ((code === 13) && $("#search_query").is(":focus")) {
-        // Pass it along to the search up button.
-        $("#search_up").focus();
-    }
-    // Let the browser handle the key normally.
-    return false;
-};
-
-exports.set_compose = function () {
-    current_key_handler = process_hotkey;
-};
 
 /* We register both a keydown and a keypress function because
    we want to intercept pgup/pgdn, escape, etc, and process them
@@ -152,18 +135,12 @@ exports.set_compose = function () {
    so we bail in .keydown if the event is a letter or number and
    instead just let keypress go for it. */
 
-function down_or_press(e) {
-    var result = current_key_handler(e);
-    if (result) {
-        current_key_handler = result;
-        e.preventDefault();
-    }
-}
-
 $(document).keydown(function (e) {
     // Restrict to non-alphanumeric keys
-    if (48 > e.which || 90 < e.which)
-        down_or_press(e);
+    if (48 > e.which || 90 < e.which) {
+        if (process_hotkey(e))
+            e.preventDefault();
+    }
 });
 
 $(document).keypress(function (e) {
@@ -173,8 +150,10 @@ $(document).keypress(function (e) {
     // In particular, when you press tab in Firefox, it fires a
     // keypress event with keycode 0 after processing the original
     // event.
-    if (e.which !== 0 && e.charCode !== 0)
-        down_or_press(e);
+    if (e.which !== 0 && e.charCode !== 0) {
+        if (process_hotkey(e))
+            e.preventDefault();
+    }
 });
 
 return exports;

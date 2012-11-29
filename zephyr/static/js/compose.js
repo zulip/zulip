@@ -55,7 +55,6 @@ exports.start = function (msg_type, opts) {
         show('private', $("#" + (focus_area || 'private_message_recipient')));
     }
 
-    hotkeys.set_compose();
     is_composing_message = msg_type;
     $(document).trigger($.Event('compose_started.zephyr', opts));
 };
