@@ -27,6 +27,8 @@ var message_groups = {
     zfilt: []
 };
 
+var disable_pointer_movement = false;
+
 // Why do we look at the 'bottom' in above_view_threshold and the top
 // in below_view_threshold as opposed to vice versa?  Mostly to handle
 // the case of gigantic messages.  Imagine the case of a selected
@@ -781,6 +783,11 @@ function at_bottom_of_viewport() {
 function keep_pointer_in_view() {
     var candidate;
     var next_message = selected_message;
+
+    if (disable_pointer_movement) {
+        return;
+    }
+
     if (next_message.length === 0)
         return;
 

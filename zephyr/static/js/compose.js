@@ -18,7 +18,30 @@ function show(tabname, focus_area) {
     $("#send-status").removeClass(status_classes).hide();
     $('#compose').css({visibility: "visible"});
     $("#new_message_content").trigger("autosize");
-    $('.message_comp').slideDown(100);
+    $('.message_comp').slideDown(100, function () {
+        // If the compose box is obscuring the currently selected message,
+        // scroll up until the message is no longer occluded.
+        var cover = selected_message.offset().top + selected_message.height()
+            - $("#compose").offset().top;
+        if (cover > 0) {
+            disable_pointer_movement = true;
+            // We use $('html, body') because you can't animate window.scrollTop
+            // on Chrome (http://bugs.jquery.com/ticket/10419).
+            $('html, body').animate({
+                scrollTop: viewport.scrollTop() + cover + 5
+            }, {
+                complete: function () {
+                    // The complete callback is actually called before the
+                    // scrolling has completed, so we try to let scrolling
+                    // finish before allowing pointer movements again or the
+                    // pointer may still move.
+                    setTimeout(function () {
+                        disable_pointer_movement = false;
+                    }, 50);
+                }
+            });
+        }
+    });
     focus_area.focus();
     focus_area.select();
 }

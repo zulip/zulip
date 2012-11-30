@@ -55,7 +55,7 @@ var globals =
     + ' keep_pointer_in_view move_pointer_at_page_top_and_bottom'
     + ' respond_to_message'
     + ' select_message select_message_by_id'
-    + ' scroll_to_selected'
+    + ' scroll_to_selected disable_pointer_movement'
     + ' load_old_messages'
     + ' selected_message selected_message_id'
     + ' at_top_of_viewport at_bottom_of_viewport'
