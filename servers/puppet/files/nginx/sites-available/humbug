@@ -1,3 +1,13 @@
+# Redirect http://app.humbughq.com and other unsupported
+# hostnames to https://humbughq.com
+#
+# We don't have a redirect for HTTPS, however.
+server {
+    listen 80 default_server;
+    server_name app.humbughq.com;
+    return 301 https://humbughq.com;
+}
+
 server {
     listen 80;
     server_name humbughq.com zephyr.humbughq.com;
