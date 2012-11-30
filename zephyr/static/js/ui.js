@@ -379,7 +379,7 @@ $(function () {
         subs.subscribe_for_send(compose.stream_name(), $('#stream-nosub'));
     });
 
-    var throttled_scrollhandler = $.throttle(50, function(e) {
+    $(window).scroll($.throttle(50, function (e) {
         if ($('#home').hasClass('active')) {
             keep_pointer_in_view();
             update_floating_recipient_bar();
@@ -391,8 +391,7 @@ $(function () {
                 have_scrolled_away_from_top = true;
             }
         }
-    });
-    $(window).scroll(throttled_scrollhandler);
+    }));
 
     var throttled_mousewheelhandler = $.throttle(50, function(e, delta) {
         // Most of the mouse wheel's work will be handled by the
@@ -417,8 +416,7 @@ $(function () {
         }
     });
 
-    var throttled_resizehandler = $.throttle(50, resizehandler);
-    $(window).resize(throttled_resizehandler);
+    $(window).resize($.throttle(50, resizehandler));
 
     // Scrolling in modals and input boxes should not scroll the main view.
     // Stop propagation in all cases.  Also, ignore the event if the element
