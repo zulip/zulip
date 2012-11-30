@@ -61,6 +61,8 @@ exports.update_typeahead = function() {
 function narrow_or_search_for_term(item) {
     var obj = mapped[item];
     if (obj.action === "search") {
+        $("#search_up").focus();
+        exports.search_button_handler(true);
         return obj.query;
     } else if (obj.action === "stream") {
         narrow.by_stream_name(obj.query);
@@ -183,6 +185,11 @@ exports.initialize = function () {
             // search for it
             // 2) There's no value in the searchbox, so we just
             // narrowed, so we should blur the box.
+            //
+            // Note that if the typeahead completion box was up, it
+            // has already handled the keypress and defocused the
+            // box.  So we only get here when enter was pressed while
+            // the completion box was not displayed.
             if (search_query_box.val()) {
                 $("#search_up").focus();
                 exports.search_button_handler(true);
