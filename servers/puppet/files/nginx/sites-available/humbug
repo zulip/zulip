@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name humbughq.com;
+    server_name humbughq.com zephyr.humbughq.com;
     return 301 https://$server_name$request_uri;
 }
 
@@ -11,7 +11,7 @@ server {
     ssl_certificate /etc/ssl/certs/app.humbughq.com.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
-    server_name humbughq.com;
+    server_name humbughq.com zephyr.humbughq.com;
     access_log /var/log/nginx/humbug.access.log;
     error_log /var/log/nginx/humbug.error.log;
 
