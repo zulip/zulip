@@ -48,6 +48,9 @@ var globals =
     // ui.js
     + ' ui'
 
+    // util.js
+    + ' util'
+
     // zephyr.js
     + ' message_array message_dict get_updates_params'
     + ' clear_table add_to_table add_messages'
