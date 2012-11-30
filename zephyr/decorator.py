@@ -27,6 +27,7 @@ def asynchronous(method):
 # I like the all-lowercase name better
 require_post = require_POST
 
+@transaction.commit_on_success
 def update_user_activity(request, user_profile, client):
     current_time = now()
     try:
