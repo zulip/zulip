@@ -8,7 +8,10 @@ server {
     listen 443;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/app.humbughq.com.combined-chain.crt;
+
+    # The zephyr.humbughq.com cert uses the app.humbughq.com key.
+    # It's good for https://humbughq.com too.
+    ssl_certificate /etc/ssl/certs/zephyr.humbughq.com.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
     server_name humbughq.com zephyr.humbughq.com;
