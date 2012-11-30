@@ -97,9 +97,9 @@ exports.initiate = function (options) {
     // while composing.  If they finish or cancel the compose, wait
     // until they're idle again
     var idle_control;
-    var unconditional_timeout = 1000*60*30;
-    var composing_timeout = 1000*60*5;
-    var home_timeout = 1000*60;
+    var unconditional_timeout = 1000*60*30 + util.random_int(0, 1000*60*5);
+    var composing_timeout     = 1000*60*5  + util.random_int(0, 1000*60);
+    var home_timeout          = 1000*60    + util.random_int(0, 1000*60);
     var compose_done_handler, compose_started_handler;
 
     // Make sure we always do a reload eventually
