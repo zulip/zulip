@@ -412,6 +412,9 @@ $(function () {
         if (exports.home_tab_active()) {
             throttled_mousewheelhandler(e, delta);
         } else {
+            // We need to call preventDefault() on the events that would be
+            // ignored by throttling.  That's why this code can't be moved
+            // into throttled_mousewheelhandler.
             e.preventDefault();
         }
     });
