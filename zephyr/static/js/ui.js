@@ -299,7 +299,7 @@ exports.safari_composebox_workaround = function () {
 };
 
 function update_gravatars() {
-    $.each($(".gravatar-profile"), function(index, profile) {
+    $.each($(".gravatar-profile"), function (index, profile) {
         $(this).attr('src', $(this).attr('src') + '?stamp=' + gravatar_stamp);
     });
     gravatar_stamp += 1;
@@ -326,7 +326,7 @@ function poll_for_gravatar_update(start_time, url) {
     // they take longer than that, we'll update when they press the
     // save button.
     if (!updated && (($.now() - start_time) < 1000 * 60 * 5)) {
-        setTimeout(function() {
+        setTimeout(function () {
             poll_for_gravatar_update(start_time, url);
         }, 1500);
     }
@@ -356,7 +356,7 @@ exports.show_load_more_messages_spinner = function () {
     }
 };
 
-exports.hide_load_more_messages_spinner = function() {
+exports.hide_load_more_messages_spinner = function () {
     if (load_more_messages_spinner) {
         load_more_messages_spinner.stop();
         $("#load_more_messages_indicator").hide();
@@ -393,7 +393,7 @@ $(function () {
         }
     }));
 
-    var throttled_mousewheelhandler = $.throttle(50, function(e, delta) {
+    var throttled_mousewheelhandler = $.throttle(50, function (e, delta) {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
@@ -561,7 +561,7 @@ $(function () {
     search.initialize();
     notifications.initialize();
 
-    $("body").bind('click', function() {
+    $("body").bind('click', function () {
         ui.hide_userinfo_popover();
     });
 
