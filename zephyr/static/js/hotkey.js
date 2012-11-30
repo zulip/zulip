@@ -24,15 +24,10 @@ function process_hotkey(e) {
     var code = e.which;
     var next_message;
 
-    // Disable hotkeys on settings page etc.
-    if (!$('#home').hasClass('active')) {
+    // Disable hotkeys on settings page etc., and when a modal pop-up
+    // is visible.
+    if (!ui.home_tab_active())
         return false;
-    }
-
-    // Disable hotkeys when a modal pop-up is visible.
-    if ($('.modal:visible').length > 0) {
-        return false;
-    }
 
     // Process hotkeys specially when in an input, textarea, or send button
     if ($('input:focus,textarea:focus,#compose-send-button:focus').length > 0) {

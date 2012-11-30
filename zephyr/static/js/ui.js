@@ -2,6 +2,11 @@ var ui = (function () {
 
 var exports = {};
 
+// Is the home tab visible, and not covered by a modal?
+exports.home_tab_active = function () {
+    return $('#home').hasClass('active') && ($('.modal:visible').length === 0);
+};
+
 // We want to remember how far we were scrolled on each 'tab'.
 // To do so, we need to save away the old position of the
 // scrollbar when we switch to a new tab (and restore it
@@ -395,10 +400,45 @@ $(function () {
         // page, the pointer may still need to move.
         move_pointer_at_page_top_and_bottom(delta);
     });
-    $(window).mousewheel(throttled_mousewheelhandler);
+
+    $(window).mousewheel(function (e, delta) {
+        // Ignore mousewheel events if a modal is visible.  It's weird if the
+        // user can scroll the main view by wheeling over the greyed-out area.
+        // Similarly, ignore events on settings page etc.
+        //
+        // The modal itself has a handler invoked before this one (see below).
+        //
+        // We don't handle the compose box here, because it *should* work to
+        // select the compose box and then wheel over the message stream.
+        if (exports.home_tab_active()) {
+            throttled_mousewheelhandler(e, delta);
+        } else {
+            e.preventDefault();
+        }
+    });
 
     var throttled_resizehandler = $.throttle(50, resizehandler);
     $(window).resize(throttled_resizehandler);
+
+    // Scrolling in modals and input boxes should not scroll the main view.
+    // Stop propagation in all cases.  Also, ignore the event if the element
+    // is already at the top or bottom.  Otherwise we get a new scroll event
+    // on the parent (?).
+    $('.modal-body, input, textarea').mousewheel(function (e, delta) {
+        var self = $(this);
+        var scroll = self.scrollTop();
+        e.stopPropagation();
+        if (   ((delta > 0) && (scroll <= 0))
+            || ((delta < 0) && (scroll >= (this.scrollHeight - self.innerHeight())))) {
+            e.preventDefault();
+        }
+    });
+
+    // Ignore wheel events in the compose area which weren't already handled above.
+    $('#compose').mousewheel(function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+    });
 
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
