@@ -93,16 +93,17 @@ exports.initiate = function (options) {
     }
     reload_pending = true;
 
-    // Always reload after 30 minutes
-    setTimeout(function () { do_reload_app(false); }, 1000 * 60 * 30);
-
     // If the user is composing a message, reload if they become idle
     // while composing.  If they finish or cancel the compose, wait
     // until they're idle again
     var idle_control;
+    var unconditional_timeout = 1000*60*30;
     var composing_timeout = 1000*60*5;
     var home_timeout = 1000*60;
     var compose_done_handler, compose_started_handler;
+
+    // Make sure we always do a reload eventually
+    setTimeout(function () { do_reload_app(false); }, unconditional_timeout);
 
     compose_done_handler = function () {
         idle_control.cancel();
