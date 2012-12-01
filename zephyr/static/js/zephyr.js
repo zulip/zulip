@@ -338,6 +338,11 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
             message.stamp = ui.get_gravatar_stamp();
         }
 
+        var background_color = subs.get_color(message.display_recipient);
+        if (background_color !== undefined) {
+            message.background_color = background_color;
+        }
+
         messages_to_render.push(message);
         prev = message;
     });
@@ -719,6 +724,8 @@ $(function () {
                               load_old_messages(first_id, backfill_batch_size, 0);
                           }});
     }
+
+    subs.fetch_colors();
 
     if (have_initial_messages) {
         load_old_messages(initial_pointer, 200, 200, load_more);

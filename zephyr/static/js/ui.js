@@ -127,6 +127,11 @@ function replace_floating_recipient_bar(desired_label) {
             new_label = $("#current_label_stream");
             other_label = $("#current_label_huddle");
             header = desired_label.children(".message_header_stream.right_part");
+
+            $("#current_label_stream td:first").css(
+                "background-color",
+                desired_label.children(".message_header_stream.right_part")
+                             .css("background-color"));
         } else {
             new_label = $("#current_label_huddle");
             other_label = $("#current_label_stream");

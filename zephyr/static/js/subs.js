@@ -3,6 +3,11 @@ var subs = (function () {
 var exports = {};
 
 var stream_set = {};
+var stream_colors = {};
+// We fetch the stream colors asynchronous while the message feed is
+// getting constructed, so we may need to go back and color streams
+// that have already been rendered.
+var initial_color_fetch = true;
 
 function case_insensitive_subscription_index(stream_name) {
     var i;
@@ -16,11 +21,29 @@ function case_insensitive_subscription_index(stream_name) {
     return -1;
 }
 
+function update_table_stream_color(table, stream_name, color) {
+    $.each(table.find(".stream_label"), function () {
+        if ($(this).text() === stream_name) {
+            var parent_label = $(this).parent("td");
+            parent_label.css("background-color", color);
+            parent_label.prev("td").css("background-color", color);
+        }
+    });
+}
+
+function update_historical_message_color(stream_name, color) {
+    update_table_stream_color($(".focused_table"), stream_name, color);
+    if ($(".focused_table").attr("id") !== "#zhome") {
+        update_table_stream_color($("#zhome"), stream_name, color);
+    }
+}
+
 // TODO: The way that we find the row is kind of fragile
 // and liable to break with streams with " in their name,
 // just like our unsubscribe button code.
 function draw_colorpicker(stream_name) {
-    var colorpicker = $('#subscriptions_table').find('button[value="' + stream_name + '"]').parent().prev().find('input');
+    var colorpicker = $('#subscriptions_table').find('button[value="' + stream_name + '"]')
+                                               .parent().prev().find('input');
     colorpicker.spectrum({
         clickoutFiresChange: true,
         showPalette: true,
@@ -31,7 +54,20 @@ function draw_colorpicker(stream_name) {
             ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
         ],
         change: function (color) {
-            console.log("Changing color for", stream_name, "to", color);
+            var hex_color = color.toHexString();
+            stream_colors[stream_name] = hex_color;
+            update_historical_message_color(stream_name, hex_color);
+
+            $.ajax({
+                type:     'POST',
+                url:      '/json/subscriptions/colorize',
+                dataType: 'json',
+                data: {
+                    "stream_name": stream_name,
+                    "color": hex_color
+                },
+                timeout:  10*1000
+            });
         }
     });
 }
@@ -51,7 +87,8 @@ function add_to_stream_list(stream_name) {
                 .removeAttr("onclick")
                 .click(function (event) {exports.unsubscribe(stream_name);});
         } else {
-            $('#subscriptions_table').prepend(templates.subscription({subscription: stream_name, color: "c2c2c2"}));
+            $('#subscriptions_table').prepend(templates.subscription({
+                subscription: stream_name,color: "c2c2c2"}));
             draw_colorpicker(stream_name);
         }
     }
@@ -65,6 +102,32 @@ function remove_from_stream_list(stream_name) {
     }
 }
 
+exports.get_color = function (stream_name) {
+    return stream_colors[stream_name];
+};
+
+exports.fetch_colors = function () {
+    $.ajax({
+        type:     'POST',
+        url:      '/json/subscriptions/colors',
+        dataType: 'json',
+        timeout:  10*1000,
+        success: function (data) {
+            if (data) {
+                $.each(data.stream_colors, function (index, data) {
+                    var stream_name = data[0];
+                    var color = data[1];
+                    stream_colors[stream_name] = color;
+                    if (initial_color_fetch) {
+                        update_historical_message_color(stream_name, color);
+                    }
+                });
+                initial_color_fetch = false;
+            }
+        }
+    });
+};
+
 exports.fetch = function () {
     $.ajax({
         type:     'POST',
@@ -74,9 +137,13 @@ exports.fetch = function () {
         success: function (data) {
             $('#subscriptions_table tr').remove();
             if (data) {
-                $.each(data.subscriptions, function (index, name) {
-                    $('#subscriptions_table').append(templates.subscription({subscription: name, color: "c2c2c2"}));
-                    draw_colorpicker(name);
+                $.each(data.subscriptions, function (index, data) {
+                    var stream_name = data[0];
+                    var color = data[1];
+                    stream_colors[stream_name] = color;
+                    $('#subscriptions_table').append(templates.subscription({
+                        subscription: stream_name, color: color}));
+                    draw_colorpicker(stream_name);
                 });
             }
             $('#streams').focus().select();
