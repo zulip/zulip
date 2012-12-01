@@ -727,3 +727,7 @@ class DefaultStream(models.Model):
 
     class Meta:
         unique_together = ("realm", "stream")
+
+class StreamColor(models.Model):
+    subscription = models.ForeignKey(Subscription)
+    color = models.CharField(max_length=10)
