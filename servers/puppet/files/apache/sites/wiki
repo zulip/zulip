@@ -11,6 +11,7 @@
     SSLCertificateKeyFile /etc/apache2/certs/humbug-self-signed.key
 
     Header add Strict-Transport-Security "max-age=15768000"
+    Header add X-Frame-Options DENY
 
     RewriteEngine On
     ProxyPreserveHost On
