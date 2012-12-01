@@ -22,7 +22,7 @@
     # Where the HTML pages live
     Alias /nagios3 /usr/share/nagios3/htdocs
 
-    RedirectMatch ^/?$ https://nagios.humbughq.com/nagios3/
+    RedirectMatch ^/?$ https://nagios.humbughq.com/cgi-bin/nagios3/status.cgi?host=all
 
     <Location "/">
         AuthType Digest
