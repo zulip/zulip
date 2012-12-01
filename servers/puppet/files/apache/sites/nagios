@@ -1,38 +1,51 @@
-# apache configuration for nagios 3.x
+<VirtualHost *:80>
+    ServerName nagios.humbughq.com
+    Redirect permanent / https://nagios.humbughq.com/
+</VirtualHost>
 
-ScriptAlias /cgi-bin/nagios3 /usr/lib/cgi-bin/nagios3
-ScriptAlias /nagios3/cgi-bin /usr/lib/cgi-bin/nagios3
+<VirtualHost *:443>
+    ServerName nagios.humbughq.com
 
-# Where the stylesheets (config files) reside
-Alias /nagios3/stylesheets /etc/nagios3/stylesheets
+    SSLEngine on
+    SSLCertificateFile /etc/apache2/certs/humbug-self-signed.crt
+    SSLCertificateKeyFile /etc/apache2/certs/humbug-self-signed.key
 
-# Where the HTML pages live
-Alias /nagios3 /usr/share/nagios3/htdocs
+    Header add Strict-Transport-Security "max-age=15768000"
 
-RedirectMatch ^/?$ https://nagios.humbughq.com/nagios3/
+    ScriptAlias /cgi-bin/nagios3 /usr/lib/cgi-bin/nagios3
+    ScriptAlias /nagios3/cgi-bin /usr/lib/cgi-bin/nagios3
 
-<DirectoryMatch (/usr/share/nagios3/htdocs|/usr/lib/cgi-bin/nagios3|/etc/nagios3/stylesheets)>
-    Options FollowSymLinks
+    # Where the stylesheets (config files) reside
+    Alias /nagios3/stylesheets /etc/nagios3/stylesheets
 
-    DirectoryIndex index.php index.html
+    # Where the HTML pages live
+    Alias /nagios3 /usr/share/nagios3/htdocs
 
-    AllowOverride AuthConfig
-    Order Allow,Deny
-    Allow From All
+    RedirectMatch ^/?$ https://nagios.humbughq.com/nagios3/
 
-    AuthType Digest
-    AuthName "wiki"
-    AuthDigestProvider file
-    AuthUserFile /etc/apache2/users/wiki
-    Require valid-user
-</DirectoryMatch>
+    <DirectoryMatch (/usr/share/nagios3/htdocs|/usr/lib/cgi-bin/nagios3|/etc/nagios3/stylesheets)>
+        Options FollowSymLinks
 
-<Directory /usr/share/nagios3/htdocs>
-    Options +ExecCGI
-</Directory>
+        DirectoryIndex index.php index.html
 
-# Enable this ScriptAlias if you want to enable the grouplist patch.
-# See http://apan.sourceforge.net/download.html for more info
-# It allows you to see a clickable list of all hostgroups in the
-# left pane of the Nagios web interface
-ScriptAlias /nagios3/side.html /usr/lib/cgi-bin/nagios3/grouplist.cgi
+        AllowOverride AuthConfig
+        Order Allow,Deny
+        Allow From All
+
+        AuthType Digest
+        AuthName "wiki"
+        AuthDigestProvider file
+        AuthUserFile /etc/apache2/users/wiki
+        Require valid-user
+    </DirectoryMatch>
+
+    <Directory /usr/share/nagios3/htdocs>
+        Options +ExecCGI
+    </Directory>
+
+    # Enable this ScriptAlias if you want to enable the grouplist patch.
+    # See http://apan.sourceforge.net/download.html for more info
+    # It allows you to see a clickable list of all hostgroups in the
+    # left pane of the Nagios web interface
+    ScriptAlias /nagios3/side.html /usr/lib/cgi-bin/nagios3/grouplist.cgi
+</VirtualHost>
