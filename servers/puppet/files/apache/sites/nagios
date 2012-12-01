@@ -37,7 +37,6 @@
 
         DirectoryIndex index.php index.html
 
-        AllowOverride AuthConfig
         Order Allow,Deny
         Allow From All
     </DirectoryMatch>
