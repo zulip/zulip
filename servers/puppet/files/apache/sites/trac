@@ -16,16 +16,16 @@
     Alias /chrome/site /home/humbug/trac/htdocs/site
 
     <Directory "/home/humbug/trac/htdocs">
-      	Order allow,deny
+        Order allow,deny
         Allow from all
     </Directory>
 
     WSGIScriptAlias / /home/humbug/trac/cgi-bin/trac.wsgi
 
     <Directory /home/humbug/trac>
-    	WSGIApplicationGroup %{GLOBAL}
-    	Order deny,allow
-	Allow from all
+        WSGIApplicationGroup %{GLOBAL}
+        Order deny,allow
+        Allow from all
     </Directory>
 
     <Location "/">

@@ -12,23 +12,23 @@ Alias /nagios3 /usr/share/nagios3/htdocs
 RedirectMatch ^/?$ https://nagios.humbughq.com/nagios3/
 
 <DirectoryMatch (/usr/share/nagios3/htdocs|/usr/lib/cgi-bin/nagios3|/etc/nagios3/stylesheets)>
-	Options FollowSymLinks
+    Options FollowSymLinks
 
-	DirectoryIndex index.php index.html
+    DirectoryIndex index.php index.html
 
-	AllowOverride AuthConfig
-	Order Allow,Deny
-	Allow From All
+    AllowOverride AuthConfig
+    Order Allow,Deny
+    Allow From All
 
-	AuthType Digest
-        AuthName "wiki"
-        AuthDigestProvider file
-        AuthUserFile /etc/apache2/users/wiki
-        Require valid-user
+    AuthType Digest
+    AuthName "wiki"
+    AuthDigestProvider file
+    AuthUserFile /etc/apache2/users/wiki
+    Require valid-user
 </DirectoryMatch>
 
 <Directory /usr/share/nagios3/htdocs>
-	Options	+ExecCGI	
+    Options +ExecCGI
 </Directory>
 
 # Enable this ScriptAlias if you want to enable the grouplist patch.
@@ -36,4 +36,3 @@ RedirectMatch ^/?$ https://nagios.humbughq.com/nagios3/
 # It allows you to see a clickable list of all hostgroups in the
 # left pane of the Nagios web interface
 ScriptAlias /nagios3/side.html /usr/lib/cgi-bin/nagios3/grouplist.cgi
-
