@@ -14,7 +14,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     do_add_subscription, do_remove_subscription, do_change_password, \
     do_change_full_name, do_change_enable_desktop_notifications, \
     do_activate_user, add_default_subs, create_user, do_send_message, \
-    create_mit_user_if_needed, create_stream_if_needed, \
+    create_mit_user_if_needed, create_stream_if_needed, StreamColor, \
     PreregistrationUser, get_client, MitUser, User, UserActivity
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
     is_active
@@ -708,10 +708,16 @@ def api_get_public_streams(request, user_profile):
                                            realm=user_profile.realm))
     return json_success({"streams": streams})
 
+def get_stream_color(sub):
+    try:
+        return StreamColor.objects.get(subscription=sub).color
+    except StreamColor.DoesNotExist:
+        return "#c2c2c2"
+
 def gather_subscriptions(user_profile):
     subscriptions = Subscription.objects.filter(user_profile=user_profile, active=True)
     # For now, don't display the subscription for your ability to receive personals.
-    return sorted(get_display_recipient(sub.recipient)
+    return sorted((get_display_recipient(sub.recipient), get_stream_color(sub))
                   for sub in subscriptions
                   if sub.recipient.type == Recipient.STREAM)
 
@@ -830,6 +836,32 @@ def json_stream_exists(request, user_profile, stream=POST):
                                                            recipient=recipient,
                                                            active=True).exists()
     return json_success(result)
+
+@authenticated_json_view
+def json_stream_colors(request, user_profile):
+    subscriptions = Subscription.objects.filter(user_profile=user_profile, active=True)
+    stream_subs = [sub for sub in subscriptions if sub.recipient.type == Recipient.STREAM]
+    stream_colors = [(Stream.objects.get(id=sub.recipient.type_id).name,
+                      get_stream_color(sub)) for sub in stream_subs]
+
+    return json_success({"stream_colors": stream_colors})
+
+@authenticated_json_view
+@has_request_variables
+def json_stream_colorize(request, user_profile, stream_name=POST, color=POST):
+    stream = get_stream(stream_name, user_profile.realm)
+    recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+    subscription = Subscription.objects.filter(user_profile=user_profile,
+                                               recipient=recipient, active=True)
+    if not subscription.exists():
+        return json_error("Not subscribed to stream %s" % (stream_name,))
+
+    stream_color, _ = StreamColor.objects.get_or_create(subscription=subscription[0])
+    # TODO: sanitize color.
+    stream_color.color = color
+    stream_color.save()
+
+    return json_success()
 
 @csrf_exempt
 @require_post

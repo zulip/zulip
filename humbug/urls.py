@@ -46,6 +46,8 @@ urlpatterns = patterns('',
     url(r'^json/subscriptions/remove$',     'zephyr.views.json_remove_subscriptions'),
     url(r'^json/subscriptions/add$',        'zephyr.views.json_add_subscriptions'),
     url(r'^json/subscriptions/exists$',     'zephyr.views.json_stream_exists'),
+    url(r'^json/subscriptions/colors$',     'zephyr.views.json_stream_colors'),
+    url(r'^json/subscriptions/colorize$',   'zephyr.views.json_stream_colorize'),
     url(r'^json/fetch_api_key$',            'zephyr.views.json_fetch_api_key'),
 
     # These are json format views used by the API.  They require an API key.
