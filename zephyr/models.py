@@ -589,6 +589,12 @@ def do_remove_subscription(user_profile, stream, no_log=False):
                    'domain': stream.realm.domain})
     return did_remove
 
+def log_subscription_property_change(user_email, property, property_dict):
+    event = {'type': 'subscription_property', 'timestamp': time.time(),
+             'property': property, 'user': user_email}
+    event.update(property_dict)
+    log_event(event)
+
 def do_activate_user(user, log=True):
     user.is_active = True
     user.set_password(initial_password(user.email))

@@ -15,7 +15,8 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     do_change_full_name, do_change_enable_desktop_notifications, \
     do_activate_user, add_default_subs, create_user, do_send_message, \
     create_mit_user_if_needed, create_stream_if_needed, StreamColor, \
-    PreregistrationUser, get_client, MitUser, User, UserActivity
+    PreregistrationUser, get_client, MitUser, User, UserActivity, \
+    log_subscription_property_change
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
     is_active
 from django.views.decorators.csrf import csrf_exempt
@@ -837,6 +838,19 @@ def json_stream_exists(request, user_profile, stream=POST):
                                                            active=True).exists()
     return json_success(result)
 
+def set_stream_color(user_profile, stream_name, color):
+    stream = get_stream(stream_name, user_profile.realm)
+    recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+    subscription = Subscription.objects.filter(user_profile=user_profile,
+                                               recipient=recipient, active=True)
+    if not subscription.exists():
+        return json_error("Not subscribed to stream %s" % (stream_name,))
+
+    stream_color, _ = StreamColor.objects.get_or_create(subscription=subscription[0])
+    # TODO: sanitize color.
+    stream_color.color = color
+    stream_color.save()
+
 class SubscriptionProperties(object):
     """
     A class for managing GET and POST requests for subscription properties. The
@@ -867,18 +881,11 @@ class SubscriptionProperties(object):
 
     def post_stream_colors(self, request, user_profile):
         stream_name = self.request_property(request.POST, "stream_name")
-        stream = get_stream(stream_name, user_profile.realm)
-        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-        subscription = Subscription.objects.filter(user_profile=user_profile,
-                                                   recipient=recipient, active=True)
-        if not subscription.exists():
-            return json_error("Not subscribed to stream %s" % (stream_name,))
+        color = self.request_property(request.POST, "color")
 
-        stream_color, _ = StreamColor.objects.get_or_create(subscription=subscription[0])
-        # TODO: sanitize color.
-        stream_color.color = self.request_property(request.POST, "color")
-        stream_color.save()
-
+        set_stream_color(user_profile, stream_name, color)
+        log_subscription_property_change(user_profile.user.email, "stream_color",
+                                         {"stream_name": stream_name, "color": color})
         return json_success()
 
 subscription_properties = SubscriptionProperties()

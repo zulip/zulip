@@ -9,6 +9,7 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     bulk_create_clients, set_default_streams, \
     do_send_message, clear_database, \
     get_huddle_hash, get_client, do_activate_user
+from zephyr.views import set_stream_color
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction
 from django.conf import settings
@@ -36,6 +37,17 @@ def create_streams(realms, realm, stream_list):
     for stream_name in stream_list:
         stream_set.add((realm.domain, stream_name))
     bulk_create_streams(realms, stream_set)
+
+class UnknownSubscriptionProperty(Exception):
+    pass
+
+def handle_subscription_property(message):
+    property = message.get("property")
+    if property == "stream_color":
+        user_profile = UserProfile.objects.get(user__email=message["user"])
+        set_stream_color(user_profile, message["stream_name"], message["color"])
+    else:
+        raise UnknownSubscriptionProperty(property)
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -273,9 +285,11 @@ def restore_saved_messages():
         old_message = simplejson.loads(old_message_json)
         message_type = old_message["type"]
 
+        if message_type == "subscription_property":
+            pass
         # Lower case a bunch of fields that will screw up
         # deduplication if we don't
-        if message_type.startswith("subscription"):
+        elif message_type.startswith("subscription"):
             old_message["name"] = old_message["name"].lower()
             old_message["domain"] = old_message["domain"].lower()
         elif message_type.startswith("user_"):
@@ -297,7 +311,9 @@ def restore_saved_messages():
 
         old_messages.append(old_message)
 
-        if message_type.startswith("subscription"):
+        if message_type == "subscription_property":
+            continue
+        elif message_type.startswith("subscription"):
             stream_set.add((old_message["domain"], old_message["name"].strip()))
             continue
         elif message_type.startswith("user_"):
@@ -521,6 +537,9 @@ def restore_saved_messages():
         elif old_message["type"] == "default_streams":
             set_default_streams(Realm.objects.get(domain=old_message["domain"]),
                                 old_message["streams"])
+            continue
+        elif old_message["type"] == "subscription_property":
+            handle_subscription_property(old_message)
             continue
 
         message = messages_by_id[current_message_id]
