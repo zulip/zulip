@@ -23,7 +23,7 @@ from django.views.decorators.csrf import csrf_exempt
 from zephyr.decorator import asynchronous, require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     internal_notify_view, RespondAsynchronously, \
-    has_request_variables, POST
+    has_request_variables, POST, authenticated_json_view
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error
@@ -837,31 +837,79 @@ def json_stream_exists(request, user_profile, stream=POST):
                                                            active=True).exists()
     return json_success(result)
 
-@authenticated_json_post_view
-def json_stream_colors(request, user_profile):
-    subscriptions = Subscription.objects.filter(user_profile=user_profile, active=True)
-    stream_subs = [sub for sub in subscriptions if sub.recipient.type == Recipient.STREAM]
-    stream_colors = [(Stream.objects.get(id=sub.recipient.type_id).name,
-                      get_stream_color(sub)) for sub in stream_subs]
+class SubscriptionProperties(object):
+    """
+    A class for managing GET and POST requests for subscription properties. The
+    name for a request handler is <request type>_<property name>.
 
-    return json_success({"stream_colors": stream_colors})
+    Requests must have already been authenticated before being processed here.
 
-@authenticated_json_post_view
-@has_request_variables
-def json_stream_colorize(request, user_profile, stream_name=POST, color=POST):
-    stream = get_stream(stream_name, user_profile.realm)
-    recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-    subscription = Subscription.objects.filter(user_profile=user_profile,
-                                               recipient=recipient, active=True)
-    if not subscription.exists():
-        return json_error("Not subscribed to stream %s" % (stream_name,))
+    Requests that set or change subscription properties should typically log the
+    change through log_event.
+    """
+    def __call__(self, request, user_profile, property):
+        property_method = getattr(self, "%s_%s" % (request.method.lower(), property), None)
+        if not property_method:
+            return json_error("Unknown property or invalid verb for %s" % (property,))
 
-    stream_color, _ = StreamColor.objects.get_or_create(subscription=subscription[0])
-    # TODO: sanitize color.
-    stream_color.color = color
-    stream_color.save()
+        return property_method(request, user_profile)
 
-    return json_success()
+    def request_property(self, request_dict, property):
+        return request_dict.get(property, "").strip()
+
+    def get_stream_colors(self, request, user_profile):
+        subscriptions = Subscription.objects.filter(user_profile=user_profile, active=True)
+        stream_subs = [sub for sub in subscriptions if sub.recipient.type == Recipient.STREAM]
+        stream_colors = [(Stream.objects.get(id=sub.recipient.type_id).name,
+                          get_stream_color(sub)) for sub in stream_subs]
+
+        return json_success({"stream_colors": stream_colors})
+
+    def post_stream_colors(self, request, user_profile):
+        stream_name = self.request_property(request.POST, "stream_name")
+        stream = get_stream(stream_name, user_profile.realm)
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        subscription = Subscription.objects.filter(user_profile=user_profile,
+                                                   recipient=recipient, active=True)
+        if not subscription.exists():
+            return json_error("Not subscribed to stream %s" % (stream_name,))
+
+        stream_color, _ = StreamColor.objects.get_or_create(subscription=subscription[0])
+        # TODO: sanitize color.
+        stream_color.color = self.request_property(request.POST, "color")
+        stream_color.save()
+
+        return json_success()
+
+subscription_properties = SubscriptionProperties()
+
+def make_property_call(request, query_dict, user_profile):
+    property = query_dict.get("property").strip()
+    if not property:
+        return json_error("Missing property")
+
+    return subscription_properties(request, user_profile, property.lower())
+
+def make_get_property_call(request, user_profile):
+    return make_property_call(request, request.GET, user_profile)
+
+def make_post_property_call(request, user_profile):
+    return make_property_call(request, request.POST, user_profile)
+
+@authenticated_json_view
+def json_subscription_property(request, user_profile):
+    """
+    This is the entry point to accessing or changing subscription
+    properties. Authentication happens here.
+
+    Add a handler for a new subscription property in SubscriptionProperties.
+    """
+    if request.method == "GET":
+        return make_get_property_call(request, user_profile)
+    elif request.method == "POST":
+        return make_post_property_call(request, user_profile)
+    else:
+        return json_error("Invalid verb")
 
 @csrf_exempt
 @require_post

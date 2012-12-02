@@ -60,9 +60,10 @@ function draw_colorpicker(stream_name) {
 
             $.ajax({
                 type:     'POST',
-                url:      '/json/subscriptions/colorize',
+                url:      '/json/subscriptions/property',
                 dataType: 'json',
                 data: {
+                    "property": "stream_colors",
                     "stream_name": stream_name,
                     "color": hex_color
                 },
@@ -108,9 +109,10 @@ exports.get_color = function (stream_name) {
 
 exports.fetch_colors = function () {
     $.ajax({
-        type:     'POST',
-        url:      '/json/subscriptions/colors',
+        type:     'GET',
+        url:      '/json/subscriptions/property',
         dataType: 'json',
+        data: {"property": "stream_colors"},
         timeout:  10*1000,
         success: function (data) {
             if (data) {
