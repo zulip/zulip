@@ -21,7 +21,7 @@ from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
 from django.views.decorators.csrf import csrf_exempt
 
 from zephyr.decorator import asynchronous, require_post, \
-    authenticated_api_view, authenticated_json_view, \
+    authenticated_api_view, authenticated_json_post_view, \
     internal_notify_view, RespondAsynchronously, \
     has_request_variables, POST
 from zephyr.lib.query import last_n
@@ -202,7 +202,7 @@ def home(request):
 def api_update_pointer(request, user_profile, updater=POST('client_id')):
     return update_pointer_backend(request, user_profile, updater)
 
-@authenticated_json_view
+@authenticated_json_post_view
 def json_update_pointer(request, user_profile):
     return update_pointer_backend(request, user_profile,
                                   request.session.session_key)
@@ -228,7 +228,7 @@ def update_pointer_backend(request, user_profile, updater, pointer=POST(converte
 
     return json_success()
 
-@authenticated_json_view
+@authenticated_json_post_view
 def json_get_old_messages(request, user_profile):
     return get_old_messages_backend(request, user_profile=user_profile,
                                     apply_markdown=True)
@@ -290,7 +290,7 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
     return json_success(ret)
 
 @asynchronous
-@authenticated_json_view
+@authenticated_json_post_view
 def json_get_updates(request, user_profile, handler):
     client_id = request.session.session_key
     return get_updates_backend(request, user_profile, handler, client_id,
@@ -470,7 +470,7 @@ def api_get_profile(request, user_profile):
 def api_send_message(request, user_profile):
     return send_message_backend(request, user_profile, request._client)
 
-@authenticated_json_view
+@authenticated_json_post_view
 def json_send_message(request, user_profile):
     return send_message_backend(request, user_profile, request._client)
 
@@ -725,7 +725,7 @@ def gather_subscriptions(user_profile):
 def api_list_subscriptions(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)})
 
-@authenticated_json_view
+@authenticated_json_post_view
 def json_list_subscriptions(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)})
 
@@ -733,7 +733,7 @@ def json_list_subscriptions(request, user_profile):
 def api_remove_subscriptions(request, user_profile):
     return remove_subscriptions_backend(request, user_profile)
 
-@authenticated_json_view
+@authenticated_json_post_view
 def json_remove_subscriptions(request, user_profile):
     return remove_subscriptions_backend(request, user_profile)
 
@@ -767,7 +767,7 @@ def valid_stream_name(name):
 def api_add_subscriptions(request, user_profile):
     return add_subscriptions_backend(request, user_profile)
 
-@authenticated_json_view
+@authenticated_json_post_view
 def json_add_subscriptions(request, user_profile):
     return add_subscriptions_backend(request, user_profile)
 
@@ -797,7 +797,7 @@ def add_subscriptions_backend(request, user_profile,
 
     return json_success(result)
 
-@authenticated_json_view
+@authenticated_json_post_view
 @has_request_variables
 def json_change_settings(request, user_profile, full_name=POST,
                          old_password=POST, new_password=POST,
@@ -823,7 +823,7 @@ def json_change_settings(request, user_profile, full_name=POST,
 
     return json_success(result)
 
-@authenticated_json_view
+@authenticated_json_post_view
 @has_request_variables
 def json_stream_exists(request, user_profile, stream=POST):
     if not valid_stream_name(stream):
@@ -837,7 +837,7 @@ def json_stream_exists(request, user_profile, stream=POST):
                                                            active=True).exists()
     return json_success(result)
 
-@authenticated_json_view
+@authenticated_json_post_view
 def json_stream_colors(request, user_profile):
     subscriptions = Subscription.objects.filter(user_profile=user_profile, active=True)
     stream_subs = [sub for sub in subscriptions if sub.recipient.type == Recipient.STREAM]
@@ -846,7 +846,7 @@ def json_stream_colors(request, user_profile):
 
     return json_success({"stream_colors": stream_colors})
 
-@authenticated_json_view
+@authenticated_json_post_view
 @has_request_variables
 def json_stream_colorize(request, user_profile, stream_name=POST, color=POST):
     stream = get_stream(stream_name, user_profile.realm)
@@ -874,7 +874,7 @@ def api_fetch_api_key(request, username=POST, password=POST):
         return json_error("Your account has been disabled.", status=403)
     return json_success({"api_key": user.userprofile.api_key})
 
-@authenticated_json_view
+@authenticated_json_post_view
 @has_request_variables
 def json_fetch_api_key(request, user_profile, password=POST):
     if not request.user.check_password(password):

@@ -67,22 +67,33 @@ def authenticated_api_view(view_func):
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
+def authenticate_log_and_execute_json(request, client, view_func, *args, **kwargs):
+    if not request.user.is_authenticated():
+        return json_error("Not logged in", status=401)
+    request._client = client
+    user_profile = request.user.userprofile
+    update_user_activity(request, user_profile, client)
+    return view_func(request, user_profile, *args, **kwargs)
+
 # Checks if the request is a POST request and that the user is logged
 # in.  If not, return an error (the @login_required behavior of
 # redirecting to a login page doesn't make sense for json views)
-def authenticated_json_view(view_func):
+def authenticated_json_post_view(view_func):
     @require_post
     @has_request_variables
     @wraps(view_func)
     def _wrapped_view_func(request,
                            client=POST(default=get_client("website"), converter=get_client),
                            *args, **kwargs):
-        if not request.user.is_authenticated():
-            return json_error("Not logged in", status=401)
-        request._client = client
-        user_profile = request.user.userprofile
-        update_user_activity(request, user_profile, client)
-        return view_func(request, user_profile, *args, **kwargs)
+        return authenticate_log_and_execute_json(request, client, view_func, *args, **kwargs)
+    return _wrapped_view_func
+
+def authenticated_json_view(view_func):
+    @wraps(view_func)
+    def _wrapped_view_func(request,
+                           client=get_client("website"),
+                           *args, **kwargs):
+        return authenticate_log_and_execute_json(request, client, view_func, *args, **kwargs)
     return _wrapped_view_func
 
 # These views are used by the main Django server to notify the Tornado server
