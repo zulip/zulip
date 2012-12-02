@@ -261,7 +261,13 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
         query = query.filter(recipient__type=Recipient.PERSONAL)
         recipient_user = UserProfile.objects.get(user__email = narrow['one_on_one_email'])
         recipient = Recipient.objects.get(type=Recipient.PERSONAL, type_id=recipient_user.id)
-        query = query.filter(Q(sender__user__email=narrow['one_on_one_email']) | Q(recipient=recipient))
+        # If we are narrowed to personals with ourself, we want to search for personals where the user
+        # with address "one_on_one_email" is the sender *and* the recipient, not personals where the user
+        # with address "one_on_one_email is the sender *or* the recipient.
+        if narrow['one_on_one_email'] == user_profile.user.email:
+            query = query.filter(Q(sender__user__email=narrow['one_on_one_email']) & Q(recipient=recipient))
+        else:
+            query = query.filter(Q(sender__user__email=narrow['one_on_one_email']) | Q(recipient=recipient))
     elif 'type' in narrow and (narrow['type'] == "huddle" or narrow['type'] == "all_huddles"):
         query = query.filter(Q(recipient__type=Recipient.PERSONAL) | Q(recipient__type=Recipient.HUDDLE))
 
