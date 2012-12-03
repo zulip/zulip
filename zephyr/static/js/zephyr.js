@@ -751,12 +751,15 @@ function reset_load_more_status() {
 
 function load_more_messages() {
     var batch_size = 400;
+    var table, oldest_message_id;
     if (!load_more_enabled) {
         return;
     }
     ui.show_load_more_messages_spinner();
     load_more_enabled = false;
-    load_old_messages(message_array[0].id, batch_size, 0,
+    table = narrow.active() ? "zfilt" : "zhome";
+    oldest_message_id = rows.id(rows.get_table(table).find("tr[zid]:first"));
+    load_old_messages(oldest_message_id, batch_size, 0,
                       function (messages) {
                           ui.hide_load_more_messages_spinner();
                           if (messages.length === batch_size + 1) {
