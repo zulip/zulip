@@ -203,6 +203,14 @@ class humbug_apache_base {
 class humbug_app_frontend {
   $web_packages = [ "nginx", "memcached", "python-pylibmc", ]
   package { $web_packages: ensure => "installed" }
+  file { "/etc/nginx/nginx.conf":
+    require => Package[nginx],
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "/root/humbug/servers/puppet/files/nginx/nginx.conf",
+  }
   file { "/etc/nginx/sites-available/humbug":
     require => Package[nginx],
     ensure => file,
