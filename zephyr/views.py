@@ -335,7 +335,7 @@ def format_updates_response(messages=[], apply_markdown=True,
                 (activity.last_visit.replace(tzinfo=None) >
                  datetime.datetime.utcnow() - datetime.timedelta(minutes=5))
         except UserActivity.DoesNotExist:
-            pass
+            ret['zephyr_mirror_active'] = False
 
     return ret
 
