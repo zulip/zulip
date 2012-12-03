@@ -774,8 +774,10 @@ if __name__ == "__main__":
 
     (options, args) = parse_args()
 
-    sys.path[:0] = [options.root_path,
-                    os.path.join(options.root_path, 'api'),
+    # The 'api' directory needs to go first, so that 'import humbug' won't pick
+    # up some other directory named 'humbug'.
+    sys.path[:0] = [os.path.join(options.root_path, 'api'),
+                    options.root_path,
                     os.path.join(options.root_path, "python-zephyr"),
                     os.path.join(options.root_path, "python-zephyr/build/lib.linux-x86_64-2.6/")]
 

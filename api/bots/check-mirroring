@@ -26,7 +26,10 @@ parser.add_option('--root-path',
                   action='store')
 (options, args) = parser.parse_args()
 
-sys.path[:0] = [os.path.join(options.root_path, "python-zephyr"),
+# The 'api' directory needs to go first, so that 'import humbug' won't pick up
+# some other directory named 'humbug'.
+sys.path[:0] = [os.path.join(options.root_path, "api/"),
+                os.path.join(options.root_path, "python-zephyr"),
                 os.path.join(options.root_path, "python-zephyr/build/lib.linux-x86_64-2.6/"),
                 options.root_path]
 
@@ -34,7 +37,6 @@ mit_user = 'tabbott/extra@ATHENA.MIT.EDU'
 humbug_user = 'tabbott/extra@mit.edu'
 
 sys.path.append(".")
-sys.path.append(path.join(path.dirname(__file__), '..'))
 import humbug
 humbug_client = humbug.Client(
     email=humbug_user,
