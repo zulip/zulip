@@ -11,7 +11,7 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     get_huddle_hash, get_client, do_activate_user
 from zephyr.views import set_stream_color
 from zephyr.lib.parallel import run_parallel
-from django.db import transaction
+from django.db import transaction, connection
 from django.conf import settings
 from api.bots import mit_subs_list
 from zephyr.lib.bulk_create import batch_bulk_create
@@ -170,6 +170,9 @@ class Command(BaseCommand):
             jobs.append((count, personals_pairs, options, self.stdout.write))
         for status, job in run_parallel(send_messages, jobs, threads=threads):
             pass
+        # Get a new database connection, after our parallel jobs
+        # closed the original one
+        connection.close()
 
         if options["delete"]:
             # Create internal users
@@ -618,7 +621,8 @@ def restore_saved_messages():
 def send_messages(data):
     (tot_messages, personals_pairs, options, output) = data
     random.seed(os.getpid())
-    from django.db import connection
+    # Close the database connection, so that we get a new one that
+    # isn't shared with the other threads
     connection.close()
     texts = file("zephyr/management/commands/test_messages.txt", "r").readlines()
     offset = random.randint(0, len(texts))
