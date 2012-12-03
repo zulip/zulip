@@ -34,7 +34,7 @@ import os
 assert(requests.__version__ > '0.12')
 API_VERSTRING = "/api/v1/"
 
-class HumbugAPI(object):
+class Client(object):
     def __init__(self, email, api_key=None, api_key_file=None,
                  verbose=False, retry_on_errors=True,
                  site="https://humbughq.com", client="API"):
@@ -173,10 +173,10 @@ class HumbugAPI(object):
 def _mk_subs(streams):
     return {'subscriptions': streams}
 
-HumbugAPI._register('send_message', make_request=(lambda request: request))
-HumbugAPI._register('get_messages', longpolling=True)
-HumbugAPI._register('get_profile')
-HumbugAPI._register('get_public_streams')
-HumbugAPI._register('list_subscriptions',   url='subscriptions/list')
-HumbugAPI._register('add_subscriptions',    url='subscriptions/add',    make_request=_mk_subs)
-HumbugAPI._register('remove_subscriptions', url='subscriptions/remove', make_request=_mk_subs)
+Client._register('send_message', make_request=(lambda request: request))
+Client._register('get_messages', longpolling=True)
+Client._register('get_profile')
+Client._register('get_public_streams')
+Client._register('list_subscriptions',   url='subscriptions/list')
+Client._register('add_subscriptions',    url='subscriptions/add',    make_request=_mk_subs)
+Client._register('remove_subscriptions', url='subscriptions/remove', make_request=_mk_subs)

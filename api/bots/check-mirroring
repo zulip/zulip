@@ -36,7 +36,7 @@ humbug_user = 'tabbott/extra@mit.edu'
 sys.path.append(".")
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import humbug
-humbug_client = humbug.HumbugAPI(
+humbug_client = humbug.Client(
     email=humbug_user,
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,

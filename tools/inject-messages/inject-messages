@@ -35,7 +35,7 @@ next_user = gen_next_user()
 
 def connect_all(users):
     for user in users:
-        users[user]['client'] = humbug.HumbugAPI(
+        users[user]['client'] = humbug.Client(
             email=user + '@humbughq.com',
             api_key=users[user]['api-key'],
             site=options.site,

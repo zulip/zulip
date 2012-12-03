@@ -797,7 +797,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
         os.environ["HUMBUG_API_KEY"] = api_key
 
     import humbug
-    humbug_client = humbug.HumbugAPI(
+    humbug_client = humbug.Client(
         email=options.user + "@mit.edu",
         api_key=api_key,
         verbose=True,

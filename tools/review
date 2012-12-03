@@ -301,7 +301,7 @@ def main(args):
     sys.path.append(os.path.join(os.path.dirname(__file__), '../api'))
     import humbug
     me = get_current_user(repo)
-    client = humbug.HumbugAPI(
+    client = humbug.Client(
         email=me[me.index("<") + 1:me.index('>')],
         site="https://staging.humbughq.com",
         verbose=True)

@@ -24,7 +24,7 @@ from os import path
 
 sys.path.append(path.join(path.dirname(os.readlink(__file__)), '../api'))
 import humbug
-client = humbug.HumbugAPI(
+client = humbug.Client(
     email="humbug+commits@humbughq.com",
     site="https://staging.humbughq.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",

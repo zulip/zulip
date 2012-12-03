@@ -20,7 +20,7 @@ import sys
 
 sys.path.append("/home/humbug/humbug/api")
 import humbug
-client = humbug.HumbugAPI(
+client = humbug.Client(
     email="humbug+trac@humbughq.com",
     site="https://staging.humbughq.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")

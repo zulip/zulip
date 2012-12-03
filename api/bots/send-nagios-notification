@@ -43,7 +43,7 @@ if output:
     # Block-quote any command output.
     msg['content'] += ('\n\n' + '\n'.join('> ' + ln for ln in output.splitlines()))
 
-client = humbug.HumbugAPI(
+client = humbug.Client(
     email   = 'humbug+nagios@humbughq.com',
     api_key = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
     site    = 'https://staging.humbughq.com')

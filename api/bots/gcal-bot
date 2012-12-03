@@ -91,7 +91,7 @@ def get_calendar_url():
 
 calendar_url = get_calendar_url()
 
-humbug = humbug.HumbugAPI(
+humbug = humbug.Client(
     email=options.user,
     api_key=options.api_key,
     site=options.site,

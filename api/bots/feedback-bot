@@ -6,12 +6,12 @@ from os import path
 
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import humbug
-prod_client = humbug.HumbugAPI(
+prod_client = humbug.Client(
     email="feedback@humbughq.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
     site="https://humbughq.com")
-staging_client = humbug.HumbugAPI(
+staging_client = humbug.Client(
     email="feedback@humbughq.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
