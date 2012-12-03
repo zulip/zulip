@@ -251,7 +251,7 @@ def restore_saved_messages():
     old_messages = []
     duplicate_suppression_hash = {}
 
-    stream_set = set()
+    stream_dict = {}
     user_set = set()
     email_set = set(u.email for u in User.objects.all())
     realm_set = set()
@@ -285,12 +285,11 @@ def restore_saved_messages():
         old_message = simplejson.loads(old_message_json)
         message_type = old_message["type"]
 
+        # Lower case emails and domains; it will screw up
+        # deduplication if we don't
         if message_type == "subscription_property":
             pass
-        # Lower case a bunch of fields that will screw up
-        # deduplication if we don't
         elif message_type.startswith("subscription"):
-            old_message["name"] = old_message["name"].lower()
             old_message["domain"] = old_message["domain"].lower()
         elif message_type.startswith("user_"):
             old_message["user"] = old_message["user"].lower()
@@ -302,7 +301,7 @@ def restore_saved_messages():
             old_message["sender_email"] = old_message["sender_email"].lower()
 
         if message_type == 'stream':
-            old_message["recipient"] = old_message["recipient"].lower()
+            pass
         elif message_type == 'personal':
             old_message["recipient"][0]["email"] = old_message["recipient"][0]["email"].lower()
         elif message_type == "huddle":
@@ -314,7 +313,11 @@ def restore_saved_messages():
         if message_type == "subscription_property":
             continue
         elif message_type.startswith("subscription"):
-            stream_set.add((old_message["domain"], old_message["name"].strip()))
+            stream_name = old_message["name"].strip()
+            canon_stream_name = stream_name.lower()
+            if canon_stream_name not in stream_dict:
+                stream_dict[(old_message["domain"], canon_stream_name)] = \
+                    (old_message["domain"], stream_name)
             continue
         elif message_type.startswith("user_"):
             continue
@@ -337,7 +340,10 @@ def restore_saved_messages():
             client_set.add(old_message['sending_client'])
 
         if message_type == 'stream':
-            stream_set.add((domain, old_message['recipient'].strip()))
+            stream_name = old_message["recipient"].strip()
+            canon_stream_name = stream_name.lower()
+            if canon_stream_name not in stream_dict:
+                stream_dict[(domain, canon_stream_name)] = (domain, stream_name)
         elif message_type == 'personal':
             u = old_message["recipient"][0]
             if u["email"] not in email_set:
@@ -373,7 +379,7 @@ def restore_saved_messages():
         clients[client.name] = client
 
     print datetime.datetime.now(), "Creating streams..."
-    bulk_create_streams(realms, stream_set)
+    bulk_create_streams(realms, stream_dict.values())
 
     streams = {}
     for stream in Stream.objects.all():
@@ -458,7 +464,7 @@ def restore_saved_messages():
             message.recipient = user_recipients[old_message["recipient"][0]["email"]]
         elif message.type == Recipient.STREAM:
             message.recipient = stream_recipients[(realm.id,
-                                                   old_message["recipient"])]
+                                                   old_message["recipient"].lower())]
         elif message.type == Recipient.HUDDLE:
             huddle_hash = get_huddle_hash([users[u["email"]].id
                                            for u in old_message["recipient"]])
@@ -491,14 +497,14 @@ def restore_saved_messages():
     for old_message in old_messages:
         # Update our subscribers hashes as we see subscription events
         if old_message["type"] == 'subscription_added':
-            stream_key = (realms[old_message["domain"]].id, old_message["name"].strip())
+            stream_key = (realms[old_message["domain"]].id, old_message["name"].strip().lower())
             subscribers.setdefault(stream_recipients[stream_key].id,
                                    set()).add(users[old_message["user"]].id)
             pending_subs[(stream_recipients[stream_key].id,
                           users[old_message["user"]].id)] = True
             continue
         elif old_message["type"] == "subscription_removed":
-            stream_key = (realms[old_message["domain"]].id, old_message["name"].strip())
+            stream_key = (realms[old_message["domain"]].id, old_message["name"].strip().lower())
             user_id = users[old_message["user"]].id
             subscribers.setdefault(stream_recipients[stream_key].id, set())
             try:
