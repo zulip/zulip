@@ -414,18 +414,21 @@ $(function () {
         // user can scroll the main view by wheeling over the greyed-out area.
         // Similarly, ignore events on settings page etc.
         //
-        // The modal itself has a handler invoked before this one (see below).
-        //
         // We don't handle the compose box here, because it *should* work to
         // select the compose box and then wheel over the message stream.
-        if (!exports.home_tab_obscured()) {
+        var obscured = exports.home_tab_obscured();
+        if (!obscured) {
             throttled_mousewheelhandler(e, delta);
-        } else {
-            // We need to call preventDefault() on the events that would be
-            // ignored by throttling.  That's why this code can't be moved
-            // into throttled_mousewheelhandler.
+        } else if (obscured === 'modal') {
+            // The modal itself has a handler invoked before this one (see below).
+            // preventDefault here so that the tab behind the modal doesn't scroll.
+            //
+            // This needs to include the events that would be ignored by throttling.
+            // That's why this code can't be moved into throttled_mousewheelhandler.
             e.preventDefault();
         }
+        // If on another tab, we neither handle the event nor preventDefault, allowing
+        // the tab to scroll normally.
     });
 
     $(window).resize($.throttle(50, resizehandler));
