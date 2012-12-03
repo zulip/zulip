@@ -130,12 +130,12 @@ def send_humbug(zeph):
     return humbug_client.send_message(message)
 
 def send_error_humbug(error_msg):
-    humbug = {"type": "private",
-              "sender": options.user + "@mit.edu",
-              "to": options.user + "@mit.edu",
-              "content": error_msg,
-              }
-    humbug_client.send_message(humbug)
+    message = {"type": "private",
+               "sender": options.user + "@mit.edu",
+               "to": options.user + "@mit.edu",
+               "content": error_msg,
+               }
+    humbug_client.send_message(message)
 
 current_zephyr_subs = set()
 def zephyr_bulk_subscribe(subs):
