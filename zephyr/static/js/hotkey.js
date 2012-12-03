@@ -26,7 +26,7 @@ function process_hotkey(e) {
 
     // Disable hotkeys on settings page etc., and when a modal pop-up
     // is visible.
-    if (!ui.home_tab_active())
+    if (ui.home_tab_obscured())
         return false;
 
     // Process hotkeys specially when in an input, textarea, or send button

@@ -2,9 +2,13 @@ var ui = (function () {
 
 var exports = {};
 
-// Is the home tab visible, and not covered by a modal?
-exports.home_tab_active = function () {
-    return $('#home').hasClass('active') && ($('.modal:visible').length === 0);
+// What, if anything, obscures the home tab?
+exports.home_tab_obscured = function () {
+    if ($('.modal:visible').length > 0)
+        return 'modal';
+    if (! $('#home').hasClass('active'))
+        return 'other_tab';
+    return false;
 };
 
 // We want to remember how far we were scrolled on each 'tab'.
@@ -414,7 +418,7 @@ $(function () {
         //
         // We don't handle the compose box here, because it *should* work to
         // select the compose box and then wheel over the message stream.
-        if (exports.home_tab_active()) {
+        if (!exports.home_tab_obscured()) {
             throttled_mousewheelhandler(e, delta);
         } else {
             // We need to call preventDefault() on the events that would be
