@@ -535,7 +535,7 @@ def do_send_message(message, no_log=False):
             secret   = settings.SHARED_SECRET,
             message  = message.id,
             rendered = simplejson.dumps(rendered),
-            users    = ','.join(str(user.id) for user in recipients)))
+            users    = simplejson.dumps([str(user.id) for user in recipients])))
 
 class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile)

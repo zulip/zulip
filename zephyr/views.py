@@ -678,7 +678,7 @@ def notify_new_message(request):
 
     # FIXME: better query
     users   = [UserProfile.objects.get(id=user)
-               for user in request.POST['users'].split(',')]
+               for user in simplejson.loads(request.POST['users'])]
     message = Message.objects.get(id=request.POST['message'])
 
     # Cause message.to_dict() to return the dicts already rendered in the other process.
