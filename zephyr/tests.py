@@ -6,7 +6,7 @@ from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, Realm, do_send_message, Client
-from zephyr.views import json_get_updates, api_get_messages
+from zephyr.views import json_get_updates, api_get_messages, gather_subscriptions
 from zephyr.decorator import RespondAsynchronously
 from zephyr.lib.initial_password import initial_password, initial_api_key
 
@@ -414,6 +414,92 @@ class MessagePOSTTest(AuthedTestCase):
                                                          "client": "test suite",
                                                          "to": "othello@humbughq.com"})
         self.assert_json_error(result, "Invalid message type")
+
+class SubscriptionPropertiesTest(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def test_get_stream_colors(self):
+        """
+        A GET request to
+        /json/subscriptions/property?property=stream_colors returns a
+        list of (stream, color) pairs, both of which are strings.
+        """
+        test_email = "hamlet@humbughq.com"
+        self.login(test_email)
+        result = self.client.get("/json/subscriptions/property",
+                                  {"property": "stream_colors"})
+
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        self.assertIn("stream_colors", json)
+
+        subs = gather_subscriptions(self.get_user_profile(test_email))
+        for stream, color in json["stream_colors"]:
+            self.assertTrue(isinstance(color, str))
+            self.assertTrue(isinstance(stream, str))
+            self.assertIn((stream, color), subs)
+            subs.remove((stream, color))
+        self.assertFalse(subs)
+
+    def test_set_stream_color(self):
+        """
+        A POST request to /json/subscriptions/property with stream_name and
+        color data sets the stream color, and for that stream only.
+        """
+        test_email = "hamlet@humbughq.com"
+        self.login(test_email)
+
+        old_subs = gather_subscriptions(self.get_user_profile(test_email))
+        stream_name, old_color = old_subs[0]
+        new_color = "#ffffff" # TODO: ensure that this is different from old_color
+        result = self.client.post("/json/subscriptions/property",
+                                  {"property": "stream_colors",
+                                   "stream_name": stream_name,
+                                   "color": "#ffffff"})
+
+        self.assert_json_success(result)
+
+        new_subs = gather_subscriptions(self.get_user_profile(test_email))
+        self.assertIn((stream_name, new_color), new_subs)
+
+        old_subs.remove((stream_name, old_color))
+        new_subs.remove((stream_name, new_color))
+        self.assertEqual(old_subs, new_subs)
+
+    def test_set_color_missing_stream_name(self):
+        """
+        Updating the stream_colors property requires a stream_name.
+        """
+        test_email = "hamlet@humbughq.com"
+        self.login(test_email)
+        result = self.client.post("/json/subscriptions/property",
+                                  {"property": "stream_colors",
+                                   "color": "#ffffff"})
+
+        self.assert_json_error(result, "Missing stream_name")
+
+    def test_set_color_missing_color(self):
+        """
+        Updating the stream_colors property requires a color.
+        """
+        test_email = "hamlet@humbughq.com"
+        self.login(test_email)
+        result = self.client.post("/json/subscriptions/property",
+                                  {"property": "stream_colors",
+                                   "stream_name": "test"})
+
+        self.assert_json_error(result, "Missing color")
+
+    def test_set_invalid_property(self):
+        """
+        Trying to set an invalid property returns a JSON error.
+        """
+        self.login("hamlet@humbughq.com")
+        result = self.client.post("/json/subscriptions/property",
+                                  {"property": "bad"})
+
+        self.assert_json_error(result,
+                               "Unknown property or invalid verb for bad")
 
 class DummyHandler(object):
     def __init__(self, assert_callback):
