@@ -499,8 +499,6 @@ def log_message(message):
         log_event(message.to_log_dict())
 
 def do_send_message(message, no_log=False):
-    message.save()
-
     # Log the message to our message log for populate_db to refill
     if not no_log:
         log_message(message)
@@ -521,6 +519,7 @@ def do_send_message(message, no_log=False):
     # Save the message receipts in the database
     # TODO: Use bulk_create here
     with transaction.commit_on_success():
+        message.save()
         for user_profile in recipients:
             # Only deliver messages to "active" user accounts
             if user_profile.user.is_active:
