@@ -29,9 +29,9 @@
           <td colspan="2" class="message_label_clickable message_header message_header_stream left_part"></td>
           <td class="message_label_clickable message_header message_header_stream right_part"></td>
         </tr>
-        <tr style="display: none;" id="current_label_huddle" class="recipient_row">
-          <td colspan="2" class="message_label_clickable message_header message_header_huddle left_part"></td>
-          <td class="message_label_clickable message_header message_header_huddle right_part"></td>
+        <tr style="display: none;" id="current_label_private_message" class="recipient_row">
+          <td colspan="2" class="message_label_clickable message_header message_header_private_message left_part"></td>
+          <td class="message_label_clickable message_header message_header_private_message right_part"></td>
         </tr>
       </table>
     </div>
@@ -90,15 +90,15 @@
               </td>
             </tr>
             <tr id="private-message">
-              <td colspan="2" class="message_header message_header_huddle left_part"></td>
-              <td class="message_header message_header_huddle right_part">
+              <td colspan="2" class="message_header message_header_private_message left_part"></td>
+              <td class="message_header message_header_private_message right_part">
                 You and <input type="text" class="recipient_box" name="recipient" id="private_message_recipient"
                                value="" placeholder="one or more people..." autocomplete="off" tabindex="130"/>
               </td>
             </tr>
             <tr>
               <td class="message_picture">
-                <div id="stream_or_huddle">
+                <div id="stream_or_private_message">
                   <ul class="nav nav-pills nav-stacked" id="message-type-tabs">
                     <li class="active" id="stream_toggle">
                         <a href="#stream-message" data-toggle="pill" title="Send a stream message" tabindex="100" onclick="compose.set_mode('stream');">

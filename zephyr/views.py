@@ -268,7 +268,7 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
             query = query.filter(Q(sender__user__email=narrow['one_on_one_email']) & Q(recipient=recipient))
         else:
             query = query.filter(Q(sender__user__email=narrow['one_on_one_email']) | Q(recipient=recipient))
-    elif 'type' in narrow and (narrow['type'] == "huddle" or narrow['type'] == "all_huddles"):
+    elif 'type' in narrow and (narrow['type'] == "private" or narrow['type'] == "all_private_messages"):
         query = query.filter(Q(recipient__type=Recipient.PERSONAL) | Q(recipient__type=Recipient.HUDDLE))
 
     if 'subject' in narrow:

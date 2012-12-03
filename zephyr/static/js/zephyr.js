@@ -79,14 +79,14 @@ function scroll_to_selected() {
         recenter_view(selected_message);
 }
 
-function get_huddle_recipient(message, attr) {
+function get_private_message_recipient(message, attr) {
     var recipient, i;
     var other_recipients = $.grep(message.display_recipient,
                                   function (element, index) {
                                       return element.email !== email;
                                   });
     if (other_recipients.length === 0) {
-        // huddle with oneself
+        // private message with oneself
         return message.display_recipient[0][attr];
     }
 
@@ -109,16 +109,13 @@ function respond_to_message(reply_type) {
     }
 
     var pm_recipient = message.reply_to;
-    if (reply_type === "personal" && message.type === "huddle") {
-        // reply_to for huddle messages is the whole huddle, so for
-        // personals replies we need to set the the huddle recipient
-        // to just the sender
+    if (reply_type === "personal" && message.type === "private") {
+        // reply_to for private messages is everyone involved, so for
+        // personals replies we need to set the the private message
+        // recipient to just the sender
         pm_recipient = message.sender_email;
     }
-    if (reply_type === 'personal'
-        || message.type === 'personal'
-        || message.type === 'huddle')
-    {
+    if (reply_type === 'personal' || message.type === 'private') {
         msg_type = 'private';
     } else {
         msg_type = message.type;
@@ -216,9 +213,7 @@ function same_recipient(a, b) {
         return false;
 
     switch (a.type) {
-    case 'huddle':
-        return a.recipient_id === b.recipient_id;
-    case 'personal':
+    case 'private':
         return a.reply_to === b.reply_to;
     case 'stream':
         return same_stream_and_subject(a, b);
@@ -448,10 +443,10 @@ function add_message_metadata(message, dummy) {
                             'email': message.sender_email}];
         break;
 
-    case 'huddle':
-        message.is_huddle = true;
-        message.reply_to = get_huddle_recipient(message, 'email');
-        message.display_reply_to = get_huddle_recipient(message, 'full_name');
+    case 'private':
+        message.is_private = true;
+        message.reply_to = get_private_message_recipient(message, 'email');
+        message.display_reply_to = get_private_message_recipient(message, 'full_name');
 
         involved_people = message.display_recipient;
 
@@ -460,25 +455,6 @@ function add_message_metadata(message, dummy) {
         } else {
             typeahead_helper.update_all_recipients(involved_people);
         }
-        break;
-
-    case 'personal':
-        message.is_personal = true;
-
-        involved_people = [message.display_recipient,
-                           {'email': message.sender_email,
-                            'full_name': message.sender_full_name}];
-
-        if (message.sender_email === email) { // that is, we sent the original message
-            message.reply_to = message.display_recipient.email;
-            message.display_reply_to = message.display_recipient.full_name;
-            typeahead_helper.update_your_recipients(involved_people);
-        } else {
-            message.reply_to = message.sender_email;
-            message.display_reply_to = message.sender_full_name;
-            typeahead_helper.update_all_recipients(involved_people);
-        }
-
         break;
     }
 

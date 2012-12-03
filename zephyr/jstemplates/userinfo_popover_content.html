@@ -5,7 +5,7 @@
       <i class="icon-share-alt"></i> Reply to this {{#if is_stream}}stream{{else}}private message{{/if}}
     </a>
   </li>
-  {{#unless is_personal}}
+  {{#unless is_private}}
   <li>
     <a onclick="respond_to_message('personal');">
       <i class="icon-user"></i> Reply to {{sender_full_name}} only

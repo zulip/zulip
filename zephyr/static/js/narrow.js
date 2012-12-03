@@ -119,11 +119,11 @@ exports.target = function (id) {
     target_id = id;
 };
 
-exports.all_huddles = function () {
-    var new_narrow = {type: "all_huddles"};
+exports.all_private_messages = function () {
+    var new_narrow = {type: "all_private_messages"};
     var bar = {icon: 'user', description: 'You and anyone else'};
     do_narrow(new_narrow, bar, false, function (other) {
-        return other.type === "personal" || other.type === "huddle";
+        return other.type === "private";
     });
 };
 
@@ -161,15 +161,12 @@ exports.by_stream_name = function (name) {
 };
 
 exports.by_private_message_partner = function (their_name, their_email) {
-    var new_narrow = {type: "huddle", one_on_one_email: their_email};
+    var new_narrow = {type: "private", one_on_one_email: their_email};
     var bar = {icon: 'user', description: "You and " + their_name};
     var my_email = email;
     do_narrow(new_narrow, bar, false, function (other) {
-        return (other.type === 'personal') &&
-            (((other.display_recipient.email === their_email)
-              && (other.sender_email === my_email)) ||
-             ((other.display_recipient.email === my_email)
-              && (other.sender_email === their_email)));
+        return (other.type === 'private' &&
+                get_private_message_recipient(other, 'email') === their_email);
     });
 };
 
@@ -177,26 +174,14 @@ exports.by_private_message_partner = function (their_name, their_email) {
 exports.by_recipient = function () {
     var message = message_dict[target_id];
     var bar;
+    var new_narrow;
     switch (message.type) {
-    case 'personal':
-        // Narrow to personals with a specific user
-        var new_narrow = {type: "huddle", one_on_one_email: message.reply_to};
+    case 'private':
+        new_narrow = {type: "private", recipient_id: message.recipient_id};
         bar = {icon: 'user', description: "You and " + message.display_reply_to};
         do_narrow(new_narrow, bar, false, function (other) {
-            return (other.type === 'personal') &&
-                (((other.display_recipient.email === message.display_recipient.email)
-                    && (other.sender_email === message.sender_email)) ||
-                 ((other.display_recipient.email === message.sender_email)
-                    && (other.sender_email === message.display_recipient.email)));
-        });
-        break;
-
-    case 'huddle':
-        new_narrow = {type: "huddle", recipient_id: message.recipient_id};
-        bar = {icon: 'user', description: "You and " + message.display_reply_to};
-        do_narrow(new_narrow, bar, false, function (other) {
-            return (other.type === "personal" || other.type === "huddle")
-                && other.reply_to === message.reply_to;
+            return (other.type === "private" &&
+                    other.reply_to === message.reply_to);
         });
         break;
 

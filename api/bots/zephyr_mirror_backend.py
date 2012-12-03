@@ -461,13 +461,14 @@ def forward_to_zephyr(message):
                 instance = zephyr_class
                 zephyr_class = "message"
         zwrite_args.extend(["-c", zephyr_class, "-i", instance])
-    elif message['type'] == "personal":
-        recipient = to_zephyr_username(message["display_recipient"]["email"])
-        zwrite_args.extend([recipient])
-    elif message['type'] == "huddle":
-        zwrite_args.extend(["-C"])
-        zwrite_args.extend([to_zephyr_username(user["email"]).replace("@ATHENA.MIT.EDU", "")
-                            for user in message["display_recipient"]])
+    elif message['type'] == "private":
+        if len(message['display_recipient']) == 1:
+            recipient = to_zephyr_username(message["display_recipient"][0]["email"])
+            zwrite_args.extend([recipient])
+        else:
+            zwrite_args.extend(["-C"])
+            zwrite_args.extend([to_zephyr_username(user["email"]).replace("@ATHENA.MIT.EDU", "")
+                                for user in message["display_recipient"]])
 
     if options.test_mode:
         logger.debug("Would have forwarded: %s\n%s" %
@@ -522,12 +523,10 @@ received it, Zephyr users did not.  The error message from zwrite was:
 def maybe_forward_to_zephyr(message):
     if (message["sender_email"] == options.user + "@mit.edu"):
         if not ((message["type"] == "stream") or
-                (message["type"] == "personal" and
-                 message["display_recipient"]["email"].lower().endswith("mit.edu")) or
-                (message["type"] == "huddle" and
+                (message["type"] == "private" and
                  False not in [u["email"].lower().endswith("mit.edu") for u in
                                message["display_recipient"]])):
-            # Don't try forward personals/huddles with non-MIT users
+            # Don't try forward private messages with non-MIT users
             # to MIT Zephyr.
             return
         timestamp_now = datetime.datetime.now().strftime("%s")

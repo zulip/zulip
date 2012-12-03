@@ -77,7 +77,7 @@ function process_desktop_notification(message) {
         notification_object.cancel();
     }
 
-    if (message.type === "huddle") {
+    if (message.type === "private" && message.display_recipient.length > 2) {
         // If the message has too many recipients to list them all...
         if (content.length + title.length + other_recipients.length > 230) {
             // Then count how many people are in the conversation and summarize
@@ -117,7 +117,7 @@ exports.received_messages = function (messages) {
 
             if (desktop_notifications_enabled &&
                 browser_desktop_notifications_on() &&
-                (message.type === "personal" || message.type === "huddle")) {
+                message.type === "private") {
                 process_desktop_notification(message);
             }
         }

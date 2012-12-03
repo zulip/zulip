@@ -12,9 +12,9 @@ var directional_hotkeys = {
 };
 
 var narrow_hotkeys = {
-    115: narrow.by_recipient,  // 's'
-    83:  narrow.by_subject,    // 'S'
-    118: narrow.all_huddles    // 'v'
+    115: narrow.by_recipient,           // 's'
+    83:  narrow.by_subject,             // 'S'
+    118: narrow.all_private_messages    // 'v'
 };
 
 // Process a keydown or keypress event.
@@ -105,7 +105,7 @@ function process_hotkey(e) {
     case 99: // 'c': compose
         compose.start('stream');
         return true;
-    case 67: // 'C': compose huddle
+    case 67: // 'C': compose private message
         compose.start('private');
         return true;
     case  13: // Enter or

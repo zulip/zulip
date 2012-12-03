@@ -27,38 +27,18 @@ def get_display_recipient(recipient):
     """
     recipient: an instance of Recipient.
 
-    returns: an appropriate string describing the recipient (the stream
-    name, for a stream, or the email, for a user).
-    """
-    if recipient.type == Recipient.STREAM:
-        stream = Stream.objects.get(id=recipient.type_id)
-        return stream.name
-    elif recipient.type == Recipient.HUDDLE:
-        # We don't really care what the ordering is, just that it's deterministic.
-        user_profile_list = (UserProfile.objects.filter(subscription__recipient=recipient)
-                                                .select_related()
-                                                .order_by('user__email'))
-        return [{'email': user_profile.user.email,
-                 'full_name': user_profile.full_name,
-                 'short_name': user_profile.short_name} for user_profile in user_profile_list]
-    else:
-        user_profile = UserProfile.objects.select_related().get(id=recipient.type_id)
-        return {'email': user_profile.user.email,
-                'full_name': user_profile.full_name,
-                'short_name': user_profile.short_name}
-
-def get_log_recipient(recipient):
-    """
-    recipient: an instance of Recipient.
-
-    returns: an appropriate string describing the recipient (the stream
-    name, for a stream, or the email, for a user).
+    returns: an appropriate object describing the recipient.  For a
+    stream this will be the stream name as a string.  For a huddle or
+    personal, it will be an array of dicts about each recipient.
     """
     if recipient.type == Recipient.STREAM:
         stream = Stream.objects.get(id=recipient.type_id)
         return stream.name
 
-    user_profile_list = UserProfile.objects.filter(subscription__recipient=recipient).select_related()
+    # We don't really care what the ordering is, just that it's deterministic.
+    user_profile_list = (UserProfile.objects.filter(subscription__recipient=recipient)
+                                            .select_related()
+                                            .order_by('user__email'))
     return [{'email': user_profile.user.email,
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name} for user_profile in user_profile_list]
@@ -427,13 +407,31 @@ class Message(models.Model):
         if hasattr(self, 'precomputed_dicts'):
             return self.precomputed_dicts['text/html' if apply_markdown else 'text/x-markdown']
 
+        display_recipient = get_display_recipient(self.recipient)
+        if self.recipient.type == Recipient.STREAM:
+            display_type = "stream"
+        elif self.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
+            display_type = "private"
+            if len(display_recipient) == 1:
+                # add the sender in if this isn't a message between
+                # someone and his self, preserving ordering
+                recip = {'email': self.sender.user.email,
+                         'full_name': self.sender.full_name,
+                         'short_name': self.sender.short_name};
+                if recip['email'] < display_recipient[0]['email']:
+                    display_recipient = [recip, display_recipient[0]]
+                elif recip['email'] > display_recipient[0]['email']:
+                    display_recipient = [display_recipient[0], recip]
+        else:
+            display_type = self.recipient.type_name()
+
         obj = dict(
             id                = self.id,
             sender_email      = self.sender.user.email,
             sender_full_name  = self.sender.full_name,
             sender_short_name = self.sender.short_name,
-            type              = self.recipient.type_name(),
-            display_recipient = get_display_recipient(self.recipient),
+            type              = display_type,
+            display_recipient = display_recipient,
             recipient_id      = self.recipient.id,
             subject           = self.subject,
             timestamp         = calendar.timegm(self.pub_date.timetuple()),
@@ -456,7 +454,7 @@ class Message(models.Model):
             sender_short_name = self.sender.short_name,
             sending_client    = self.sending_client.name,
             type              = self.recipient.type_name(),
-            recipient         = get_log_recipient(self.recipient),
+            recipient         = get_display_recipient(self.recipient),
             subject           = self.subject,
             content           = self.content,
             timestamp         = calendar.timegm(self.pub_date.timetuple()))

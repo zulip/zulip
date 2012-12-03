@@ -160,7 +160,7 @@ td.pointer {
     border: 1px solid grey;
 }
 
-.message_header_huddle {
+.message_header_private_message {
     color: white;
     background-color: #444;
     border: 1px solid #444;
@@ -204,7 +204,7 @@ td.pointer {
 }
 
 /* Brighten hover because of the dark background */
-.recipient_row .message_header_huddle:hover {
+.recipient_row .message_header_private_message:hover {
     color: #3BF;
 }
 
@@ -497,7 +497,7 @@ table.floating_recipient {
     padding-right: 40px;
 }
 
-#stream_or_huddle {
+#stream_or_private_message {
     margin: 3px;
     padding: 5px;
     width: 90%;

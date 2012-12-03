@@ -139,7 +139,7 @@ function replace_floating_recipient_bar(desired_label) {
     if (desired_label !== old_label) {
         if (desired_label.children(".message_header_stream").length !== 0) {
             new_label = $("#current_label_stream");
-            other_label = $("#current_label_huddle");
+            other_label = $("#current_label_private_message");
             header = desired_label.children(".message_header_stream.right_part");
 
             $("#current_label_stream td:first").css(
@@ -147,9 +147,9 @@ function replace_floating_recipient_bar(desired_label) {
                 desired_label.children(".message_header_stream.right_part")
                              .css("background-color"));
         } else {
-            new_label = $("#current_label_huddle");
+            new_label = $("#current_label_private_message");
             other_label = $("#current_label_stream");
-            header = desired_label.children(".message_header_huddle.right_part");
+            header = desired_label.children(".message_header_private_message.right_part");
         }
         new_label.find("td:last").replaceWith(header.clone());
         other_label.css('display', 'none');
@@ -228,7 +228,7 @@ function update_floating_recipient_bar() {
     // If we're narrowed to a huddle or a subject, the floating
     // recipient bar would be identical to the narrowing header, so
     // don't display it.
-    if (narrow.narrowing_type() === "huddle" || narrow.narrowing_type() === "subject") {
+    if (narrow.narrowing_type() === "private" || narrow.narrowing_type() === "subject") {
         hide_floating_recipient_bar();
         return;
     }
