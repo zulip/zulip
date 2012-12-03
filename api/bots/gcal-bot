@@ -10,8 +10,8 @@ import itertools
 import traceback
 from os import path
 
-sys.path.append(path.join(path.dirname(__file__), '../..'))
-import api.common
+sys.path.append(path.join(path.dirname(__file__), '..'))
+import humbug
 
 parser = optparse.OptionParser(r"""
 
@@ -91,10 +91,11 @@ def get_calendar_url():
 
 calendar_url = get_calendar_url()
 
-humbug = api.common.HumbugAPI(email=options.user,
-                              api_key=options.api_key,
-                              site=options.site,
-                              verbose=True)
+humbug = humbug.HumbugAPI(
+    email=options.user,
+    api_key=options.api_key,
+    site=options.site,
+    verbose=True)
 
 def get_events():
     feed = CalendarClient().GetCalendarEventFeed(uri=calendar_url)

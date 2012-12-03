@@ -774,7 +774,9 @@ if __name__ == "__main__":
 
     (options, args) = parse_args()
 
-    sys.path[:0] = [options.root_path, os.path.join(options.root_path, "python-zephyr"),
+    sys.path[:0] = [options.root_path,
+                    os.path.join(options.root_path, 'api'),
+                    os.path.join(options.root_path, "python-zephyr"),
                     os.path.join(options.root_path, "python-zephyr/build/lib.linux-x86_64-2.6/")]
 
     # In case this is an automated restart of the mirroring script,
@@ -794,12 +796,13 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
         # don't need to read it in
         os.environ["HUMBUG_API_KEY"] = api_key
 
-    import api.common
-    humbug_client = api.common.HumbugAPI(email=options.user + "@mit.edu",
-                                         api_key=api_key,
-                                         verbose=True,
-                                         client="zephyr_mirror",
-                                         site=options.site)
+    import humbug
+    humbug_client = humbug.HumbugAPI(
+        email=options.user + "@mit.edu",
+        api_key=api_key,
+        verbose=True,
+        client="zephyr_mirror",
+        site=options.site)
 
     start_time = time.time()
 

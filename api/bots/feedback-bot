@@ -2,17 +2,20 @@
 import sys
 import os
 import optparse
+from os import path
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-import api.common
-prod_client = api.common.HumbugAPI(email="feedback@humbughq.com",
-                                   api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                                   verbose=True,
-                                   site="https://humbughq.com")
-staging_client = api.common.HumbugAPI(email="feedback@humbughq.com",
-                                      api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                                      verbose=True,
-                                      site="https://staging.humbughq.com")
+sys.path.append(path.join(path.dirname(__file__), '..'))
+import humbug
+prod_client = humbug.HumbugAPI(
+    email="feedback@humbughq.com",
+    api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    verbose=True,
+    site="https://humbughq.com")
+staging_client = humbug.HumbugAPI(
+    email="feedback@humbughq.com",
+    api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    verbose=True,
+    site="https://staging.humbughq.com")
 
 def forward_message(message):
     if message["type"] != "personal":

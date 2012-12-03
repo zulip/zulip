@@ -298,12 +298,13 @@ def main(args):
     print >>sys.stdout
     print >>sys.stdout, msg.get_payload(decode=True),
   else:
-    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-    import api.common
+    sys.path.append(os.path.join(os.path.dirname(__file__), '../api'))
+    import humbug
     me = get_current_user(repo)
-    client = api.common.HumbugAPI(email=me[me.index("<") + 1:me.index('>')],
-                                  site="https://staging.humbughq.com",
-                                  verbose=True)
+    client = humbug.HumbugAPI(
+        email=me[me.index("<") + 1:me.index('>')],
+        site="https://staging.humbughq.com",
+        verbose=True)
     client.send_message({'type': "private",
                          'to': opts.reviewers,
                          'content': "I just sent you a review request!  Check your email for details."})

@@ -38,12 +38,13 @@ parser.add_option('--site',    default='https://humbughq.com')
 parser.add_option('--streams', default='')
 (options, args) = parser.parse_args()
 
-sys.path.append(path.join(path.dirname(__file__), '../..'))
-import api.common
-client = api.common.HumbugAPI(email=options.user,
-                              api_key=options.api_key,
-                              verbose=True,
-                              site=options.site)
+sys.path.append(path.join(path.dirname(__file__), '..'))
+import humbug
+client = humbug.HumbugAPI(
+    email=options.user,
+    api_key=options.api_key,
+    verbose=True,
+    site=options.site)
 
 if options.streams == "":
     print >>sys.stderr, "Usage:", parser.usage

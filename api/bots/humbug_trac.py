@@ -18,11 +18,12 @@ from trac.core import Component, implements
 from trac.ticket import ITicketChangeListener
 import sys
 
-sys.path.append("/home/humbug/humbug")
-import api.common
-client = api.common.HumbugAPI(email="humbug+trac@humbughq.com",
-                              site="https://staging.humbughq.com",
-                              api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+sys.path.append("/home/humbug/humbug/api")
+import humbug
+client = humbug.HumbugAPI(
+    email="humbug+trac@humbughq.com",
+    site="https://staging.humbughq.com",
+    api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
 
 def markdown_ticket_url(ticket, heading="ticket"):
     return "[%s #%s](https://trac.humbughq.com/ticket/%s)" % (heading, ticket.id, ticket.id)

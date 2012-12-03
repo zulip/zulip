@@ -3,6 +3,7 @@ import sys
 import os
 import optparse
 import re
+from os import path
 
 usage = """inject-messages [options]
 
@@ -15,8 +16,8 @@ parser.add_option("--site",
                   action="store")
 (options, args) = parser.parse_args()
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-import api.common
+sys.path.append(path.join(path.dirname(__file__), '../../api'))
+import humbug
 
 characters = {'othello': {'api-key': '4e5d97591bec64bf57d2698ffbb563e3', 'intro': ''},
               'iago':    {'api-key': 'd43b53c27a8106195b46781abc67901a', 'intro': ''}}
@@ -34,10 +35,11 @@ next_user = gen_next_user()
 
 def connect_all(users):
     for user in users:
-        users[user]['client'] = api.common.HumbugAPI(email=user + '@humbughq.com',
-                                                     api_key=users[user]['api-key'],
-                                                     site=options.site,
-                                                     verbose=True)
+        users[user]['client'] = humbug.HumbugAPI(
+            email=user + '@humbughq.com',
+            api_key=users[user]['api-key'],
+            site=options.site,
+            verbose=True)
 
 connect_all(characters)
 connect_all(users)

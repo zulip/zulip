@@ -6,6 +6,7 @@ import os
 import random
 import logging
 import subprocess
+from os import path
 
 parser = optparse.OptionParser()
 parser.add_option('--verbose',
@@ -33,13 +34,14 @@ mit_user = 'tabbott/extra@ATHENA.MIT.EDU'
 humbug_user = 'tabbott/extra@mit.edu'
 
 sys.path.append(".")
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-import api.common
-humbug_client = api.common.HumbugAPI(email=humbug_user,
-                                     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-                                     verbose=True,
-                                     client="test: Humbug API",
-                                     site=options.site)
+sys.path.append(path.join(path.dirname(__file__), '..'))
+import humbug
+humbug_client = humbug.HumbugAPI(
+    email=humbug_user,
+    api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    verbose=True,
+    client="test: Humbug API",
+    site=options.site)
 
 # Configure logging
 log_file     = "/home/humbug/check-mirroring-log"

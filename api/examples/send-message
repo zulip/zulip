@@ -44,12 +44,13 @@ parser.add_option('--type',   default='private')
 if len(args) == 0:
     parser.error("You must specify recipients")
 
-sys.path.append(path.join(path.dirname(__file__), '../..'))
-import api.common
-client = api.common.HumbugAPI(email=options.sender,
-                              api_key=options.api_key,
-                              verbose=True,
-                              site=options.site)
+sys.path.append(path.join(path.dirname(__file__), '..'))
+import humbug
+client = humbug.HumbugAPI(
+    email=options.sender,
+    api_key=options.api_key,
+    verbose=True,
+    site=options.site)
 
 message_data = {
     "type": options.type,
