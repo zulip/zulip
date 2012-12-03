@@ -24,8 +24,8 @@ A typical simple bot sending API messages will look as follows:
 At the top of the file:
 
     # Make sure the Humbug API distribution's root directory is in sys.path, then:
-    import api.common
-    humbug_client = api.common.HumbugAPI(email="your_email@example.com")
+    import humbug
+    humbug_client = humbug.Client(email="your_email@example.com")
 
 When you want to send a message:
 
