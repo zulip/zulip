@@ -840,6 +840,8 @@ def json_stream_exists(request, user_profile, stream=POST):
 
 def set_stream_color(user_profile, stream_name, color):
     stream = get_stream(stream_name, user_profile.realm)
+    if not stream:
+        return json_error("Invalid stream %s" % (stream.name,))
     recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     subscription = Subscription.objects.filter(user_profile=user_profile,
                                                recipient=recipient, active=True)
@@ -881,7 +883,11 @@ class SubscriptionProperties(object):
 
     def post_stream_colors(self, request, user_profile):
         stream_name = self.request_property(request.POST, "stream_name")
+        if not stream_name:
+            return json_error("Missing stream_name")
         color = self.request_property(request.POST, "color")
+        if not color:
+            return json_error("Missing color")
 
         set_stream_color(user_profile, stream_name, color)
         log_subscription_property_change(user_profile.user.email, "stream_color",
