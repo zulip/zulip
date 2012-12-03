@@ -22,5 +22,5 @@ SHELL=/bin/bash
 # For more information see the manual pages of crontab(5) and cron(8)
 #
 # m h  dom mon dow   command
-35 * * * * kinit -k -t /home/humbug/tabbott.extra.keytab tabbott/extra@ATHENA.MIT.EDU
-*/2 * * * * /home/humbug/api/bots/check-mirroring &> /var/run/nagios/check-mirroring-results
+35 * * * * env KRB5CCNAME=/tmp/krb5cc_1000.tmp kinit -k -t /home/humbug/tabbott.extra.keytab tabbott/extra@ATHENA.MIT.EDU; mv /tmp/krb5cc_1000.tmp /tmp/krb5cc_1000
+*/2 * * * * /home/humbug/api/bots/check-mirroring &> /var/run/nagios/check-mirroring-results-tmp; mv /var/run/nagios/check-mirroring-results-tmp /var/run/nagios/check-mirroring-results
