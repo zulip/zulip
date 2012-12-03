@@ -570,7 +570,7 @@ def add_humbug_subscriptions(verbose):
     zephyr_subscriptions = set()
     skipped = set()
     for (cls, instance, recipient) in parse_zephyr_subs(verbose=verbose):
-        if cls == "message":
+        if cls.lower() == "message":
             if recipient != "*":
                 # We already have a (message, *, you) subscription, so
                 # these are redundant
@@ -584,7 +584,7 @@ def add_humbug_subscriptions(verbose):
             # instead of subscribing to stream "message" on humbug
             zephyr_subscriptions.add(instance)
             continue
-        elif cls == "mail" and instance == "inbox":
+        elif cls.lower() == "mail" and instance.lower() == "inbox":
             # We forward mail zephyrs, so no need to print a warning.
             continue
         elif len(cls) > 30:
