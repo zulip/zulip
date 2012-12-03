@@ -17,7 +17,6 @@ parser = optparse.OptionParser(r"""
 
 %prog \
     --user foo@humbughq.com \
-    --api-key 0123456789abcdef0123456789abcdef \
     --calendar http://www.google.com/calendar/feeds/foo%40humbughq.com/private-fedcba9876543210fedcba9876543210/basic
 
     Send yourself reminders on Humbug of Google Calendar events.
@@ -64,16 +63,8 @@ parser.add_option('--interval',
 
 (options, args) = parser.parse_args()
 
-if not options.api_key:
-    try:
-        with open(path.join(os.environ['HOME'], '.humbug-api-key'), 'r') as f:
-            options.api_key = f.read().strip()
-    except IOError as e:
-        if e.errno != errno.ENOENT:
-            raise
-
-if not (options.user and options.api_key and options.calendar):
-    parser.error('You must specify --user, --api-key, and --calendar')
+if not (options.user and options.calendar):
+    parser.error('You must specify --user and --calendar')
 
 try:
     from gdata.calendar.client import CalendarClient
