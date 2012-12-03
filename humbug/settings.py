@@ -63,6 +63,14 @@ elif DEPLOYED:
             'read_default_file': '/etc/mysql/my.cnf',
         },
     }
+elif False:
+    DATABASES["default"] = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'humbug',
+        'USER': 'humbug',
+        'PASSWORD': 'yuHavmefbek5',
+        'HOST': ''
+        }
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
