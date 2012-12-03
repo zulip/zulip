@@ -1,0 +1,37 @@
+*filter
+
+# Set up logging for dropped packets
+-N LOGDROP
+-A LOGDROP -m limit --limit 15/min -j LOG --log-prefix "iptables dropped: " --log-level 7
+-A LOGDROP -j DROP
+
+# Allow all outbound traffic
+-A OUTPUT -j ACCEPT
+
+# Accept all loopback traffic
+-A INPUT -i lo -j ACCEPT
+
+# Drop all traffic to loopback IPs on other interfaces
+-A INPUT ! -i lo -d 127.0.0.0/8 -j LOGDROP
+
+# Accept incoming traffic related to established connections
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# Accept incoming traffic on TCP port 22 (SSH)
+-A INPUT -p tcp --dport 22 -j ACCEPT
+
+# Accept incoming traffic on UDP port 2104 (zhm)
+-A INPUT -p udp --dport 2104 -j ACCEPT
+
+# It's hard to know what ephemeral ports the zephyr clients are listening on.
+# Apparently they do not send outgoing traffic sufficient for the
+# ESTABLISHED,RELATED rule above.  So for now we allow all UDP traffic.
+#
+# FIXME: do something better here.
+-A INPUT -p udp -j ACCEPT
+
+# Drop everything else
+-A INPUT   -j LOGDROP
+-A FORWARD -j LOGDROP
+
+COMMIT
