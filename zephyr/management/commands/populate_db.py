@@ -232,17 +232,6 @@ class Command(BaseCommand):
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
             restore_saved_messages()
-            site = Site.objects.get_current()
-            site.domain = 'humbughq.com'
-            site.save()
-
-            # Set restored pointers to the very latest messages
-            for user_profile in UserProfile.objects.all():
-                ids = [u.message_id for u in UserMessage.objects.filter(user_profile = user_profile)]
-                if ids != []:
-                    user_profile.pointer = max(ids)
-                    user_profile.save()
-
 
 recipient_hash = {}
 def get_recipient_by_id(rid):
@@ -626,8 +615,23 @@ def restore_saved_messages():
     print datetime.datetime.now(), "Finished importing %s messages (%s usermessages)" % \
         (len(all_messages), tot_user_messages)
 
-    # Clear the remainder of the line, using a terminal control code.
-    sys.stderr.write('\rDone replaying old messages.\x1B[0K\n')
+    site = Site.objects.get_current()
+    site.domain = 'humbughq.com'
+    site.save()
+
+    print datetime.datetime.now(), "Filling in user pointers..."
+
+    # Set restored pointers to the very latest messages
+    with transaction.commit_on_success():
+        for up in UserProfile.objects.all():
+            try:
+                top = UserMessage.objects.filter(user_profile_id=up.id).order_by("-message")[0]
+                user_profile.pointer = top.message_id
+            except IndexError:
+                user_profile.pointer = -1
+            user_profile.save()
+
+    print datetime.datetime.now(), "Done replaying old messages"
 
 # Create some test messages, including:
 # - multiple streams
