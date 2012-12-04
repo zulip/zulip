@@ -65,6 +65,12 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
             # Bad url - so bad it couldn't be parsed.
             return ''
 
+        # Humbug modification: If scheme is not specified, assume http://
+        # It's unlikely that users want relative links within humbughq.com.
+        # We re-enter sanitize_url because netloc etc. need to be re-parsed.
+        if not scheme:
+            return self.sanitize_url('http://' + url)
+
         locless_schemes = ['', 'mailto', 'news']
         if netloc == '' and scheme not in locless_schemes:
             # This fails regardless of anything else.
