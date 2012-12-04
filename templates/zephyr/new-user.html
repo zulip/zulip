@@ -1,0 +1,49 @@
+{% extends "zephyr/portico.html" %}
+
+{# New user tutorial standin. #}
+
+{% block portico_content %}
+<div class="row-fluid">
+  <div class="span8" style="font-size: 110%">
+    <h2>Hello, and welcome!</h2>
+
+    <p>Humbug is a little different than some systems you may have already
+      used.<br />
+      Here's what you need to know:</p>
+
+    <ul>
+      <li>Every message has a <b>stream</b> and a <b>subject</b></li>
+      <li>A stream is kind of like a mailing list -- it represents a group of people -- and anyone can <i>subscribe</i> to a stream and start getting traffic there</li>
+      <li>A subject, on the other hand, is what the message is <i>actually about</i></li>
+      <li>(You can, of course, send private messages.)</li>
+      <li>All of these are displayed simultaneously, in an interleaved way, chronologically</li>
+      <li>Time flows down, and the page does not automatically scroll</li>
+    </ul>
+
+    <p>This means we can have a conversation about git, jQuery,
+      fundraising, where to go to lunch, and a message from your commit bot
+      all simultaneously--without it getting unmanageable.</p>
+
+    <p>Let's take a look:
+    <img src="/static/public/images/streams-example.png">
+    </p>
+
+    <p>Here, we have three conversations occurring simultaneously:</p>
+    <ul>
+      <li>One on stream "humbug" with subject "Lunch", about where to go to lunch</li>
+      <li>One on stream "humbug" with subject "Humbug testers", about early beta testers</li>
+      <li>One automated notification on stream "commits", about a commit made to the repository</li>
+    </ul>
+
+    <h3>Some things to know</h3>
+    <ul>
+      <li>"Enter" will start a reply to the message with the blue line by it (in the example above, the one with subject "Humbug testers")</li>
+      <li>When you send the reply, it will appear at the very bottom of the stream (not directly below the message you reply to)</li>
+      <li>After you're done typing a reply, you can send it with Tab followed by Enter (just pressing Enter will add a new line to the message)</li>
+    </ul>
+
+    <h3>That's it!</h3>
+    <a class="btn btn-primary btn-large" href="{% url zephyr.views.accounts_home %}">Create your account now</a>
+    <br /><br /><br /><br />
+  </div>
+{% endblock %}

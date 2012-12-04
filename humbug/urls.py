@@ -36,6 +36,9 @@ urlpatterns = patterns('',
     url(r'^terms$',   'django.views.generic.simple.direct_to_template', {'template': 'zephyr/terms.html'}),
     url(r'^privacy$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/privacy.html'}),
 
+    # New user "tutorial"
+    url(r'^new-user$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/new-user.html'}),
+
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/update_pointer$',           'zephyr.views.json_update_pointer'),
     url(r'^json/get_updates$',              'zephyr.views.json_get_updates'),
