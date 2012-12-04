@@ -15,12 +15,18 @@ class Gravatar(markdown.inlinepatterns.Pattern):
             % (gravatar_hash(match.group('email')),))
         return img
 
+def fixup_link(link):
+    """Set certain attributes we want on every link."""
+    link.set('target', '_blank')
+    link.set('title',  link.get('href'))
+
 class AutoLink(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
         url = match.group('url')
         a = markdown.util.etree.Element('a')
         a.set('href', url)
         a.text = url
+        fixup_link(a)
         return a
 
 class UListProcessor(markdown.blockprocessors.OListProcessor):
@@ -47,6 +53,7 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         else:
             el.set("href", "")
 
+        fixup_link(el)
         return el
 
     def sanitize_url(self, url):

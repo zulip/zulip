@@ -365,11 +365,6 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         if (! row.hasClass('message_row')) {
             return;
         }
-        row.find('.message_content a').each(function (index, link) {
-            link = $(link);
-            link.attr('target',  '_blank')
-                .attr('title',   link.attr('href'));
-        });
         var id = row.attr('zid');
         if (ids_where_next_is_same_sender[id]) {
             row.find('.messagebox').addClass("next_is_same_sender");
