@@ -190,6 +190,15 @@ def create_user(email, password, realm, full_name, short_name,
     user.save()
     return UserProfile.create(user, realm, full_name, short_name)
 
+def do_create_user(email, password, realm, full_name, short_name,
+                   active=True):
+    log_event({'type': 'user_created',
+               'timestamp': time.time(),
+               'full_name': full_name,
+               'short_name': short_name,
+               'user': email})
+    return create_user(email, password, realm, full_name, short_name, active)
+
 def compute_mit_user_fullname(email):
     try:
         # Input is either e.g. starnine@mit.edu or user|CROSSREALM.INVALID@mit.edu

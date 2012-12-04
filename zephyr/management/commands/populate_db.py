@@ -327,6 +327,9 @@ def restore_saved_messages():
                 stream_dict[(old_message["domain"], canon_stream_name)] = \
                     (old_message["domain"], stream_name)
             continue
+        elif message_type == "user_created":
+            user_set.add((old_message["user"], old_message["full_name"], old_message["short_name"], False))
+            continue
         elif message_type.startswith("user_"):
             continue
         elif message_type.startswith("enable_"):
@@ -523,7 +526,7 @@ def restore_saved_messages():
             pending_subs[(stream_recipients[stream_key].id,
                           users[old_message["user"]].id)] = False
             continue
-        elif old_message["type"] == "user_activated":
+        elif old_message["type"] == "user_activated" or old_message["type"] == "user_created":
             # These are rare, so just handle them the slow way
             user = User.objects.get(email=old_message["user"])
             do_activate_user(user, log=False)

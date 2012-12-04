@@ -13,7 +13,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     do_add_subscription, do_remove_subscription, do_change_password, \
     do_change_full_name, do_change_enable_desktop_notifications, \
-    do_activate_user, add_default_subs, create_user, do_send_message, \
+    do_activate_user, add_default_subs, do_create_user, do_send_message, \
     create_mit_user_if_needed, create_stream_if_needed, StreamColor, \
     PreregistrationUser, get_client, MitUser, User, UserActivity, \
     log_subscription_property_change
@@ -84,14 +84,15 @@ def accounts_register(request):
             domain     = email.split('@')[-1]
             (realm, _) = Realm.objects.get_or_create(domain=domain)
 
-            if not mit_beta_user:
+            if mit_beta_user:
+                user = User.objects.get(email=email)
+                do_activate_user(user)
+                do_change_password(user, password)
+                do_change_full_name(user.userprofile, full_name)
+            else:
                 # FIXME: sanitize email addresses
-                add_default_subs(create_user(email, password, realm, full_name, short_name))
-            user = User.objects.get(email=email)
-            do_activate_user(user)
-            do_change_password(user, password)
-            do_change_full_name(user.userprofile, full_name)
-
+                user = do_create_user(email, password, realm, full_name, short_name)
+                add_default_subs(user)
 
             message = Message()
             message.sender = UserProfile.objects.get(user__email="humbug+signups@humbughq.com")
