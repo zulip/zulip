@@ -302,6 +302,8 @@ def restore_saved_messages():
             old_message["user"] = fix_email(old_message["user"])
         elif message_type.startswith("enable_"):
             old_message["user"] = fix_email(old_message["user"])
+        elif message_type.startswith("realm_"):
+            pass
         elif message_type == "default_streams":
             pass
         else:
@@ -333,6 +335,9 @@ def restore_saved_messages():
         elif message_type.startswith("user_"):
             continue
         elif message_type.startswith("enable_"):
+            continue
+        elif message_type == "realm_created":
+            realm_set.add(old_message["domain"])
             continue
         elif message_type == "default_streams":
             continue
@@ -439,6 +444,7 @@ def restore_saved_messages():
         if (old_message["type"].startswith("subscription") or
             old_message["type"].startswith("user_") or
             old_message["type"].startswith("enable_") or
+            old_message["type"].startswith("realm_") or
             old_message["type"] == "default_streams"):
             continue
 
@@ -559,6 +565,8 @@ def restore_saved_messages():
             continue
         elif old_message["type"] == "subscription_property":
             handle_subscription_property(old_message)
+            continue
+        elif old_message["type"] == "realm_created":
             continue
 
         message = messages_by_id[current_message_id]

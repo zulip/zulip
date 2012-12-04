@@ -629,6 +629,27 @@ def do_change_full_name(user_profile, full_name, log=True):
                    'user': user_profile.user.email,
                    'full_name': full_name})
 
+def do_create_realm(domain, replay=False):
+    realm, created = Realm.objects.get_or_create(domain=domain)
+    if created and not replay:
+        # Log the event
+        log_event({"type": "realm_created",
+                   "timestamp": time.time(),
+                   "domain": domain})
+
+        # Sent a notification message
+        message = Message()
+        message.sender = UserProfile.objects.get(user__email="humbug+signups@humbughq.com")
+        message.recipient = Recipient.objects.get(type_id=create_stream_if_needed(
+                message.sender.realm, "signups").id, type=Recipient.STREAM)
+        message.subject = domain
+        message.content = "Signups enabled."
+        message.pub_date = timezone.now()
+        message.sending_client = get_client("Internal")
+
+        do_send_message(message)
+    return (realm, created)
+
 def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications, log=True):
     user_profile.enable_desktop_notifications = enable_desktop_notifications
     user_profile.save()
