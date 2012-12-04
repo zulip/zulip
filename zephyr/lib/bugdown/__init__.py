@@ -38,7 +38,6 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m):
         el = markdown.util.etree.Element("a")
         el.text = m.group(2)
-        title = m.group(13)
         href = m.group(9)
 
         if href:
@@ -48,9 +47,6 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         else:
             el.set("href", "")
 
-        if title:
-            title = markdown.inlinepatterns.dequote(self.unescape(title))
-            el.set("title", title)
         return el
 
     def sanitize_url(self, url):
