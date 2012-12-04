@@ -982,6 +982,15 @@ class ActivityTable(object):
                 row[query_name + '_count'] = record.count
                 row[query_name + '_last' ] = record.last_visit
 
+        for row in self.rows.values():
+            # kind of a hack
+            last_action = max(v for v in row.values() if isinstance(v, datetime.datetime))
+            age = now() - last_action
+            if age < datetime.timedelta(minutes=10):
+                row['class'] = 'recently_active'
+            elif age >= datetime.timedelta(days=1):
+                row['class'] = 'long_inactive'
+
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def get_activity(request):
     user_profile = request.user.userprofile

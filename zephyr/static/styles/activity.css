@@ -6,3 +6,19 @@
     padding-top:    2px;
     padding-bottom: 2px;
 }
+
+.table-striped tr.recently_active td {
+    background-color: #afa;
+}
+
+.table-striped tr.recently_active:nth-child(odd) td {
+    background-color: #9e9;
+}
+
+.table-striped tr.long_inactive td {
+    background-color: #faa;
+}
+
+.table-striped tr.long_inactive:nth-child(odd) td {
+    background-color: #e99;
+}
