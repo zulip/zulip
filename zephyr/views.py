@@ -443,6 +443,26 @@ def get_updates_backend(request, user_profile, handler, client_id,
         if handler.request.connection.stream.closed():
             return
         try:
+            # It would be nice to be able to do this check in
+            # UserProfile.receive, but it doesn't know what the value
+            # of "last" was for each callback.
+            if last is not None and "messages" in cb_kwargs:
+                # We need to check whether there are any new messages
+                # between the client's get_updates call and the
+                # message we're about to return to the client and
+                # return them as well or the client will miss them.
+                # See #174.
+                messages = cb_kwargs["messages"]
+                extra_messages = (Message.objects.select_related()
+                                  .filter(usermessage__user_profile = user_profile,
+                                          id__gt = last,
+                                          id__lt = messages[0].id)
+                                  .order_by('id'))
+                if extra_messages:
+                    new_messages = list(extra_messages)
+                    new_messages.append(messages[0])
+                    cb_kwargs["messages"] = new_messages
+
             kwargs.update(cb_kwargs)
             res = format_updates_response(user_profile=user_profile,
                                           client_server_generation=client_server_generation,
