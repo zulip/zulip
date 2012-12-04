@@ -524,6 +524,7 @@ def restore_saved_messages():
             do_activate_user(user, log=False)
             # Update the cache of users to show this user as activated
             users_by_id[user.userprofile.id] = UserProfile.objects.get(user=user)
+            users[user.email] = user.userprofile
             continue
         elif old_message["type"] == "user_change_password":
             # Just handle these the slow way
