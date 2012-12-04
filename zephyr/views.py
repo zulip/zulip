@@ -968,40 +968,43 @@ def json_fetch_api_key(request, user_profile, password=POST):
         return json_error("Your username or password is incorrect.")
     return json_success({"api_key": user_profile.api_key})
 
+class ActivityTable(object):
+    def __init__(self, client_name, queries):
+        self.has_pointer = False
+        self.rows = {}
+        for url, query_name in queries:
+            if 'pointer' in query_name:
+                self.has_pointer = True
+            for record in UserActivity.objects.filter(
+                    query=url,
+                    client__name=client_name):
+                row = self.rows.setdefault(record.user_profile.user.email, {})
+                row[query_name + '_count'] = record.count
+                row[query_name + '_last' ] = record.last_visit
+
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def get_activity(request):
     user_profile = request.user.userprofile
     if user_profile.realm.domain != "humbughq.com":
         return HttpResponseRedirect(reverse('zephyr.views.login_page'))
 
-    def add_activity(activity, url, query_name, client_name):
-        for row in UserActivity.objects.filter(query=url,
-                                               client__name=client_name):
-            email = row.user_profile.user.email
-            activity.setdefault(email, {})
-            activity[email]['email'] = email
-            activity[email][query_name + '_count'] = row.count
-            activity[email][query_name + '_last'] = row.last_visit
+    web_queries = (
+        ("/json/get_updates",    "get_updates"),
+        ("/json/send_message",   "send_message"),
+        ("/json/update_pointer", "update_pointer"),
+    )
 
-    website_activity = {}
-    add_activity(website_activity, "/json/get_updates", "get_updates", "website")
-    add_activity(website_activity, "/json/send_message", "send_message", "website")
-    add_activity(website_activity, "/json/update_pointer", "update_pointer", "website")
-
-    mirror_activity = {}
-    add_activity(mirror_activity, "/api/v1/get_messages", "get_updates", "zephyr_mirror")
-    add_activity(mirror_activity, "/api/v1/send_message", "send_message", "zephyr_mirror")
-
-    api_activity = {}
-    add_activity(api_activity, "/api/v1/get_messages", "get_updates", "API")
-    add_activity(api_activity, "/api/v1/send_message", "send_message", "API")
+    api_queries = (
+        ("/api/v1/get_messages",  "get_updates"),
+        ("/api/v1/send_message",  "send_message"),
+    )
 
     return render_to_response('zephyr/activity.html',
-        { 'data': [
-            ('Website', True,  website_activity.values()),
-            ('Mirror',  False, mirror_activity.values()),
-            ('API',     False, api_activity.values())
-        ]}, context_instance=RequestContext(request))
+        { 'data': {
+            'Website': ActivityTable('website',       web_queries),
+            'Mirror':  ActivityTable('zephyr_mirror', api_queries),
+            'API':     ActivityTable('API',           api_queries)
+        }}, context_instance=RequestContext(request))
 
 @authenticated_api_view
 @has_request_variables

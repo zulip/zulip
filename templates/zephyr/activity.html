@@ -4,7 +4,7 @@
 
 {% block content %}
 
-{% for name, has_pointer, rows in data %}
+{% for name, activity in data.iteritems %}
 
     <h2>{{ name }} usage</h2>
     <table class="table sortable table-striped table-bordered">
@@ -13,7 +13,7 @@
     <th>User</th>
     <th>Last get_updates</th>
     <th>Last send_message</th>
-    {% if has_pointer %}
+    {% if activity.has_pointer %}
     <th>Last update_pointer</th>
     <th>Number of pointer updates</th>
     {% endif %}
@@ -21,12 +21,12 @@
     </tr>
     </thead>
     <tbody>
-    {% for row in rows %}
+    {% for email, row in activity.rows.iteritems %}
         <tr>
-        <td><strong>{{ row.email }}</strong></td>
+        <td><strong>{{ email }}</strong></td>
         <td sorttable_customkey="{{ row.get_updates_last|date:'YmdHi' }}">{{ row.get_updates_last }}</td>
         <td sorttable_customkey="{{ row.send_message_last|date:'YmdHi' }}">{{ row.send_message_last }}</td>
-        {% if has_pointer %}
+        {% if activity.has_pointer %}
         <td sorttable_customkey="{{ row.update_pointer_last|date:'YmdHi' }}">{{ row.update_pointer_last }}</td>
         <td>{{ row.update_pointer_count }}</td>
         {% endif %}
