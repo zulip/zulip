@@ -21,7 +21,7 @@
     </tr>
     </thead>
     <tbody>
-    {% for email, row in activity.rows.iteritems %}
+    {% for email, row in activity.sorted_rows %}
         <tr class="{{ row.class }}">
         <td><strong>{{ email }}</strong></td>
         <td sorttable_customkey="{{ row.get_updates_last|date:'YmdHi' }}">{{ row.get_updates_last }}</td>

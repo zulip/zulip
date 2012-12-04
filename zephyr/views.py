@@ -990,6 +990,10 @@ class ActivityTable(object):
                 row['class'] = 'recently_active'
             elif age >= datetime.timedelta(days=1):
                 row['class'] = 'long_inactive'
+            row['age'] = age
+
+    def sorted_rows(self):
+        return sorted(self.rows.iteritems(), key=lambda (k,r): r['age'])
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def get_activity(request):
