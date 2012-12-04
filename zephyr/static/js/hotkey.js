@@ -108,6 +108,7 @@ function process_hotkey(e) {
     case 67: // 'C': compose huddle
         compose.start('private');
         return true;
+    case  13: // Enter or
     case 114: // 'r': respond to message
         respond_to_message();
         return true;
