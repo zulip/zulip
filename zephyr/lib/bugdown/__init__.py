@@ -59,9 +59,6 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
         """
         url = url.replace(' ', '%20')
-        if not self.markdown.safeMode:
-            # Return immediately bipassing parsing.
-            return url
 
         try:
             scheme, netloc, path, params, query, fragment = url = urlparse.urlparse(url)
