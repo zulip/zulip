@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+# Copyright (C) 2012 Humbug, Inc.
+#
+# Permission is hereby granted, free of charge, to any person
+# obtaining a copy of this software and associated documentation files
+# (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge,
+# publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+# BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+# ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+import sys
+from os import path, environ
+
+
+# Configure this script as a Tddium post-build task and it will send
+# messages to Humbug when a build finishes.
+#
+# Expects Tddium environment variables plus:
+#
+#   HUMBUG_USER    e.g. builds@solanolabs.com
+#   HUMBUG_API_KEY e.g. 00000000000000000000000000000000
+#   HUMBUG_STREAM  e.g. builds
+#
+# If HUMBUG_API_KEY is not specified, it will be read from
+# ~/.humbug-api-key.
+
+
+# Path to the directory where humbug.py lives.
+# Here we assume it's in the parent of the directory
+# where this script lives.
+
+humbug_directory = path.join(path.dirname(__file__), '..')
+
+
+sys.path.append(humbug_directory)
+import humbug
+
+client = humbug.Client(
+    email   = environ['HUMBUG_USER'],
+    api_key = environ.get('HUMBUG_API_KEY'))
+
+tddium_server = environ.get('TDDIUM_API_SERVER', 'api.tddium.com')
+report_url    = 'https://%s/1/reports/%s' % (tddium_server, environ['TDDIUM_SESSION_ID'])
+repo_name     = path.basename(environ['TDDIUM_REPO_ROOT'])
+
+result = client.send_message(dict(
+    type    = 'stream',
+    to      = environ['HUMBUG_STREAM'],
+    subject = 'build for ' + repo_name,
+    content = '%s [%s](%s)' %
+        (repo_name, environ['TDDIUM_BUILD_STATUS'], report_url)))
+
+if result['result'] != 'success':
+    sys.stderr.write('Error sending to Humbug:\n%s\n' % (result['msg'],))
+    sys.exit(1)
