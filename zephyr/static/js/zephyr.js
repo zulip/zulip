@@ -759,6 +759,9 @@ function load_more_messages() {
     load_more_enabled = false;
     table = narrow.active() ? "zfilt" : "zhome";
     oldest_message_id = rows.id(rows.get_table(table).find("tr[zid]:first"));
+    if (isNaN(oldest_message_id)) {
+        oldest_message_id = selected_message_id;
+    }
     load_old_messages(oldest_message_id, batch_size, 0,
                       function (messages) {
                           ui.hide_load_more_messages_spinner();
