@@ -90,7 +90,10 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
 
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
-        for k in ('image_link', 'image_reference', 'automail', 'autolink', 'link'):
+        del md.preprocessors['reference']
+
+        for k in ('image_link', 'image_reference', 'automail',
+                  'autolink', 'link', 'reference', 'short_reference'):
             del md.inlinePatterns[k]
 
         for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
@@ -99,7 +102,7 @@ class Bugdown(markdown.Extension):
         md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
 
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
-        md.inlinePatterns.add('link', LinkPattern(markdown.inlinepatterns.LINK_RE, md), '>reference')
+        md.inlinePatterns.add('link', LinkPattern(markdown.inlinepatterns.LINK_RE, md), '>escape')
 
         # A link starts at a word boundary, and ends at space or end-of-input.
         # But any trailing punctuation (other than /) is not included.
