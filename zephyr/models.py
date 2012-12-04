@@ -601,13 +601,14 @@ def log_subscription_property_change(user_email, property, property_dict):
     event.update(property_dict)
     log_event(event)
 
-def do_activate_user(user, log=True):
+def do_activate_user(user, log=True, timestamp=time.time()):
     user.is_active = True
     user.set_password(initial_password(user.email))
+    user.date_joined = timestamp
     user.save()
     if log:
         log_event({'type': 'user_activated',
-                   'timestamp': time.time(),
+                   'timestamp': timestamp,
                    'user': user.email})
 
 def do_change_password(user, password, log=True):

@@ -529,7 +529,8 @@ def restore_saved_messages():
         elif old_message["type"] == "user_activated" or old_message["type"] == "user_created":
             # These are rare, so just handle them the slow way
             user = User.objects.get(email=old_message["user"])
-            do_activate_user(user, log=False)
+            timestamp=datetime.datetime.utcfromtimestamp(float(old_message['timestamp'])).replace(tzinfo=utc)
+            do_activate_user(user, log=False, timestamp=timestamp)
             # Update the cache of users to show this user as activated
             users_by_id[user.userprofile.id] = UserProfile.objects.get(user=user)
             users[user.email] = user.userprofile
