@@ -1,5 +1,10 @@
 body {
     font-family: 'Droid Sans', Helvetica, Arial, sans-serif;
+    line-height: 150%;
+}
+
+li {
+    line-height: 150%;
 }
 
 .title {
@@ -56,4 +61,9 @@ a.title:hover {
 .fakecontrol {
     padding-top: 5px;
     font-weight: bold;
+}
+
+img.screenshot{
+    /* This makes it so screenshots are still shown if they are larger than their span.*/
+    max-width: 150%;
 }
