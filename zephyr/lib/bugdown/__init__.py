@@ -1,6 +1,7 @@
 import markdown
 import logging
 import traceback
+import urlparse
 import re
 
 from zephyr.lib.avatar  import gravatar_hash
@@ -31,9 +32,60 @@ class UListProcessor(markdown.blockprocessors.OListProcessor):
     TAG = 'ul'
     RE = re.compile(r'^[ ]{0,3}[*-][ ]+(.*)')
 
+# Based on markdown.inlinepatterns.LinkPattern
+class LinkPattern(markdown.inlinepatterns.Pattern):
+    """ Return a link element from the given match. """
+    def handleMatch(self, m):
+        el = markdown.util.etree.Element("a")
+        el.text = m.group(2)
+        title = m.group(13)
+        href = m.group(9)
+
+        if href:
+            if href[0] == "<":
+                href = href[1:-1]
+            el.set("href", self.sanitize_url(self.unescape(href.strip())))
+        else:
+            el.set("href", "")
+
+        if title:
+            title = markdown.inlinepatterns.dequote(self.unescape(title))
+            el.set("title", title)
+        return el
+
+    def sanitize_url(self, url):
+        """
+        Sanitize a url against xss attacks.
+        See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
+        """
+        url = url.replace(' ', '%20')
+        if not self.markdown.safeMode:
+            # Return immediately bipassing parsing.
+            return url
+
+        try:
+            scheme, netloc, path, params, query, fragment = url = urlparse.urlparse(url)
+        except ValueError:
+            # Bad url - so bad it couldn't be parsed.
+            return ''
+
+        locless_schemes = ['', 'mailto', 'news']
+        if netloc == '' and scheme not in locless_schemes:
+            # This fails regardless of anything else.
+            # Return immediately to save additional proccessing
+            return ''
+
+        for part in url[2:]:
+            if ":" in part:
+                # Not a safe url
+                return ''
+
+        # Url passes all tests. Return url as-is.
+        return urlparse.urlunparse(url)
+
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
-        for k in ('image_link', 'image_reference', 'automail', 'autolink'):
+        for k in ('image_link', 'image_reference', 'automail', 'autolink', 'link'):
             del md.inlinePatterns[k]
 
         for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
@@ -42,6 +94,7 @@ class Bugdown(markdown.Extension):
         md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
 
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
+        md.inlinePatterns.add('link', LinkPattern(markdown.inlinepatterns.LINK_RE, md), '>reference')
 
         # A link starts at a word boundary, and ends at space or end-of-input.
         # But any trailing punctuation (other than /) is not included.
