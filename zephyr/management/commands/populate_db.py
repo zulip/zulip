@@ -290,26 +290,31 @@ def restore_saved_messages():
 
         # Lower case emails and domains; it will screw up
         # deduplication if we don't
+        def fix_email(email):
+            return email.strip().lower()
+
         if message_type == "subscription_property":
             pass
         elif message_type.startswith("subscription"):
             old_message["domain"] = old_message["domain"].lower()
+            old_message["user"] = fix_email(old_message["user"])
         elif message_type.startswith("user_"):
-            old_message["user"] = old_message["user"].lower()
+            old_message["user"] = fix_email(old_message["user"])
         elif message_type.startswith("enable_"):
-            old_message["user"] = old_message["user"].lower()
+            old_message["user"] = fix_email(old_message["user"])
         elif message_type == "default_streams":
             pass
         else:
-            old_message["sender_email"] = old_message["sender_email"].lower()
+            old_message["sender_email"] = fix_email(old_message["sender_email"])
+
 
         if message_type == 'stream':
             pass
         elif message_type == 'personal':
-            old_message["recipient"][0]["email"] = old_message["recipient"][0]["email"].lower()
+            old_message["recipient"][0]["email"] = fix_email(old_message["recipient"][0]["email"])
         elif message_type == "huddle":
             for i in xrange(len(old_message["recipient"])):
-                old_message["recipient"][i]["email"] = old_message["recipient"][i]["email"].lower()
+                old_message["recipient"][i]["email"] = fix_email(old_message["recipient"][i]["email"])
 
         old_messages.append(old_message)
 
