@@ -9,7 +9,7 @@ from models import Realm
 
 def is_unique(value):
     try:
-        User.objects.get(email=value)
+        User.objects.get(email__iexact=value)
         raise ValidationError(u'%s is already registered' % value)
     except User.DoesNotExist:
         pass
