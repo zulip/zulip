@@ -87,12 +87,22 @@ function mousemove() {
     }
 }
 
+function need_skinny_mode() {
+    if (window.matchMedia !== undefined) {
+        return window.matchMedia("(max-width: 767px)").matches;
+    } else {
+        // IE<10 doesn't support window.matchMedia, so do this
+        // as best we can without it.
+        return window.innerWidth <= 767;
+    }
+}
+
 function resizehandler(e) {
     var sidebar = $("#sidebar");
     var sidebar_nav = $(".sidebar-nav");
     var composebox = $("#compose");
     var top_statusbar = $("#top_statusbar");
-    if (window.innerWidth <= 767) {
+    if (need_skinny_mode()) {
         sidebar.removeClass('nav-stacked');
 
         var space_taken_up_by_navbar = sidebar_nav.outerHeight(true);
