@@ -58,10 +58,9 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         Sanitize a url against xss attacks.
         See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
         """
-        url = url.replace(' ', '%20')
-
         try:
-            scheme, netloc, path, params, query, fragment = url = urlparse.urlparse(url)
+            parts = urlparse.urlparse(url.replace(' ', '%20'))
+            scheme, netloc, path, params, query, fragment = parts
         except ValueError:
             # Bad url - so bad it couldn't be parsed.
             return ''
@@ -72,13 +71,13 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
             # Return immediately to save additional proccessing
             return ''
 
-        for part in url[2:]:
+        for part in parts[2:]:
             if ":" in part:
                 # Not a safe url
                 return ''
 
         # Url passes all tests. Return url as-is.
-        return urlparse.urlunparse(url)
+        return urlparse.urlunparse(parts)
 
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
