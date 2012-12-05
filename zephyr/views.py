@@ -846,7 +846,8 @@ def json_change_settings(request, user_profile, full_name=POST,
                          confirm_password=POST,
                          # enable_desktop_notification needs to default to False
                          # because browsers POST nothing for an unchecked checkbox
-                         enable_desktop_notifications=POST(default=False)):
+                         enable_desktop_notifications=POST(converter=lambda x: x == "on",
+                                                           default=False)):
     if new_password != "":
         if new_password != confirm_password:
             return json_error("New password must match confirmation password!")

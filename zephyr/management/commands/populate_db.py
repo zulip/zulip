@@ -525,7 +525,7 @@ def restore_saved_messages():
         elif old_message["type"] == "enable_desktop_notifications_changed":
             # Just handle these the slow way
             user_profile = UserProfile.objects.get(user__email=old_message["user"])
-            user_profile.enable_desktop_notifications = old_message["enable_desktop_notifications"]
+            user_profile.enable_desktop_notifications = (old_message["enable_desktop_notifications"] != "false")
             user_profile.save()
             continue
         elif old_message["type"] == "default_streams":
