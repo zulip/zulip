@@ -85,13 +85,13 @@ def accounts_register(request):
             domain     = email.split('@')[-1]
             (realm, _) = Realm.objects.get_or_create(domain=domain)
 
+            # FIXME: sanitize email addresses and fullname
             if mit_beta_user:
                 user = User.objects.get(email=email)
                 do_activate_user(user)
                 do_change_password(user, password)
                 do_change_full_name(user.userprofile, full_name)
             else:
-                # FIXME: sanitize email addresses
                 user = do_create_user(email, password, realm, full_name, short_name)
                 add_default_subs(user)
 
@@ -855,8 +855,8 @@ def json_change_settings(request, user_profile, full_name=POST,
         do_change_password(user_profile.user, new_password)
 
     result = {}
-    if user_profile.full_name != full_name:
-        do_change_full_name(user_profile, full_name)
+    if user_profile.full_name != full_name and full_name.strip() != "":
+        do_change_full_name(user_profile, full_name.strip())
         result['full_name'] = full_name
 
     if user_profile.enable_desktop_notifications != enable_desktop_notifications:

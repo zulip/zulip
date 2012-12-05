@@ -212,7 +212,10 @@ def compute_mit_user_fullname(email):
             if proc.returncode == 0:
                 # Parse e.g. 'starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash'
                 # for the 4th passwd entry field, aka the person's name.
-                return out.split(':')[4].split(',')[0]
+                hesiod_name = out.split(':')[4].split(',')[0].strip()
+                if hesiod_name == "":
+                    return email
+                return hesiod_name
         elif match_user:
             return match_user.group(1).lower() + "@" + match_user.group(2).upper()[1:]
     except:
