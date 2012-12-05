@@ -30,7 +30,7 @@ define common::append ($file, $line) {
 
 class humbug_base {
   $packages = [ "screen", "strace", "vim", "emacs23-nox", "git", "python-tz",
-                "sqlite3", "ntp", "python-simplejson", "ipython", "host",
+                "sqlite3", "ntp", "python-simplejson", "host",
                 "openssh-server", "python-pip", "puppet-el",
                 "iptables-persistent", "nagios-plugins-basic", ]
   package { $packages: ensure => "installed" }
@@ -202,7 +202,7 @@ class humbug_apache_base {
 
 class humbug_app_frontend {
   $web_packages = [ "nginx", "memcached", "python-pylibmc", "python-tornado", "python-django",
-                    "python-pygments", "python-flup", ]
+                    "python-pygments", "python-flup", "ipython", ]
   package { $web_packages: ensure => "installed" }
   file { "/etc/nginx/nginx.conf":
     require => Package[nginx],
