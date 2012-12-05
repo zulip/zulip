@@ -29,9 +29,10 @@ define common::append ($file, $line) {
 }
 
 class humbug_base {
-  $packages = [ "screen", "strace", "vim", "emacs", "git", "python-tz", "sqlite3", "ntp",
-                "python-simplejson", "ipython", "host", "openssh-server", "python-pip",
-                "puppet-el", "iptables-persistent", "nagios-plugins-basic", ]
+  $packages = [ "screen", "strace", "vim", "emacs23-nox", "git", "python-tz",
+                "sqlite3", "ntp", "python-simplejson", "ipython", "host",
+                "openssh-server", "python-pip", "puppet-el",
+                "iptables-persistent", "nagios-plugins-basic", ]
   package { $packages: ensure => "installed" }
 
   # FIXME: Stop using pip since it is insecure
