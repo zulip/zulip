@@ -28,6 +28,7 @@ from zephyr.decorator import asynchronous, require_post, \
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error
+from zephyr.lib.time import timestamp_to_datetime
 
 from confirmation.models import Confirmation
 
@@ -690,7 +691,7 @@ def send_message_backend(request, user_profile, client,
         message.subject = subject_name
     if forged:
         # Forged messages come with a timestamp
-        message.pub_date = datetime.datetime.utcfromtimestamp(float(request.POST['time'])).replace(tzinfo=utc)
+        message.pub_date = timestamp_to_datetime(request.POST['time'])
     else:
         message.pub_date = now()
     message.sending_client = client

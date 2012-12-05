@@ -15,6 +15,7 @@ from django.db import transaction, connection
 from django.conf import settings
 from api.bots import mit_subs_list
 from zephyr.lib.bulk_create import batch_bulk_create
+from zephyr.lib.time import timestamp_to_datetime
 
 import simplejson
 import datetime
@@ -463,8 +464,7 @@ def restore_saved_messages():
         message.type = type_hash[old_message["type"]]
         message.content = old_message["content"]
         message.subject = old_message["subject"]
-        ts = float(old_message["timestamp"])
-        message.pub_date = datetime.datetime.utcfromtimestamp(ts).replace(tzinfo=utc)
+        message.pub_date = timestamp_to_datetime(old_message["timestamp"])
 
         if message.type == Recipient.PERSONAL:
             message.recipient = user_recipients[old_message["recipient"][0]["email"]]
@@ -524,8 +524,8 @@ def restore_saved_messages():
         elif old_message["type"] == "user_activated" or old_message["type"] == "user_created":
             # These are rare, so just handle them the slow way
             user = User.objects.get(email=old_message["user"])
-            timestamp=datetime.datetime.utcfromtimestamp(float(old_message['timestamp'])).replace(tzinfo=utc)
-            do_activate_user(user, log=False, timestamp=timestamp)
+            join_date = timestamp_to_datetime(old_message['timestamp'])
+            do_activate_user(user, log=False, join_date=join_date)
             # Update the cache of users to show this user as activated
             users_by_id[user.userprofile.id] = UserProfile.objects.get(user=user)
             users[user.email] = user.userprofile
