@@ -750,18 +750,36 @@ def api_get_public_streams(request, user_profile):
                                            realm=user_profile.realm))
     return json_success({"streams": streams})
 
+default_stream_color = "#c2c2c2"
+
 def get_stream_color(sub):
     try:
         return StreamColor.objects.get(subscription=sub).color
     except StreamColor.DoesNotExist:
-        return "#c2c2c2"
+        return default_stream_color
 
 def gather_subscriptions(user_profile):
-    subscriptions = Subscription.objects.filter(user_profile=user_profile, active=True)
+    # This is a little awkward because the StreamColor table has foreign keys
+    # to Subscription, but not vice versa, and not all Subscriptions have a
+    # StreamColor.
+    #
+    # We could do this with a single OUTER JOIN query but Django's ORM does
+    # not provide a simple way to specify one.
+
     # For now, don't display the subscription for your ability to receive personals.
-    return sorted((get_display_recipient(sub.recipient), get_stream_color(sub))
-                  for sub in subscriptions
-                  if sub.recipient.type == Recipient.STREAM)
+    subs = Subscription.objects.filter(
+        user_profile    = user_profile,
+        active          = True,
+        recipient__type = Recipient.STREAM)
+    with_color = StreamColor.objects.filter(subscription__in = subs).select_related()
+    no_color   = subs.exclude(id__in = with_color.values('subscription_id')).select_related()
+
+    result = [(get_display_recipient(sc.subscription.recipient), sc.color)
+        for sc in with_color]
+    result.extend((get_display_recipient(sub.recipient), default_stream_color)
+        for sub in no_color)
+
+    return sorted(result)
 
 @authenticated_api_view
 def api_list_subscriptions(request, user_profile):
