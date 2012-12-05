@@ -399,7 +399,7 @@ def restore_saved_messages():
     users = {}
     users_by_id = {}
     for user_profile in UserProfile.objects.select_related().all():
-        users[(user_profile.user.email)] = user_profile
+        users[user_profile.user.email] = user_profile
         users_by_id[user_profile.id] = user_profile
     for recipient in Recipient.objects.filter(type=Recipient.PERSONAL):
         user_recipients[users_by_id[recipient.type_id].user.email] = recipient
