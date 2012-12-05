@@ -54,14 +54,17 @@ exports.start = function (msg_type, opts) {
     opts = $.extend({ message_type:     msg_type,
                       stream:           '',
                       subject:          '',
-                      private_message_recipient: '',
-                      message:          ''
+                      private_message_recipient: ''
                     }, opts);
 
     compose.stream_name(opts.stream);
     compose.subject(opts.subject);
     compose.recipient(opts.private_message_recipient);
-    compose.message_content(opts.message);
+    // If the user opens the compose box, types some text, and then clicks on a
+    // different stream/subject, we want to keep the text in the compose box
+    if (opts.message !== undefined) {
+        compose.message_content(opts.message);
+    }
 
     $('#sidebar a[href="#home"]').tab('show');
 
@@ -167,6 +170,7 @@ exports.hide = function () {
     $('input, textarea, button').blur();
     $('.message_comp').slideUp(100,
                               function() { $('#compose').css({visibility: "hidden"});});
+    compose.clear();
 };
 
 exports.clear = function () {
