@@ -606,3 +606,20 @@ table.floating_recipient {
     width: 140px;
     float: right;
 }
+
+#invite_user_form {
+    margin-bottom: 0px;
+}
+
+#invitee_emails {
+    min-height: 40px;
+    max-height: 300px;
+}
+
+#invite_status {
+    display: none;
+}
+
+hr.sidebar {
+    margin: 0px;
+}

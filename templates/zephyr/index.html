@@ -15,6 +15,10 @@
 {% rawjstemplate "subscription" %}
 </script>
 
+<script id="template_invite_subscription" type="text/x-handlebars-template">
+{% rawjstemplate "invite_subscription" %}
+</script>
+
 <script id="template_userinfo_popover_title" type="text/x-handlebars-template">
 {% rawjstemplate "userinfo_popover_title" %}
 </script>
@@ -52,6 +56,7 @@
 <script type="text/javascript" src="{{ static_hidden }}js/hotkey.js"></script>
 <script type="text/javascript" src="{{ static_hidden }}js/notifications.js"></script>
 <script type="text/javascript" src="{{ static_hidden }}js/hashchange.js"></script>
+<script type="text/javascript" src="{{ static_hidden }}js/invite.js"></script>
 <script type="text/javascript" src="{{ static_hidden }}js/zephyr.js"></script>
 
 {% if debug %}
@@ -130,6 +135,12 @@ var people_list = [
                   <a href="#feedback" onclick="compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com' });">
                     <i class="icon-comment"></i>
                     <span class="hidden-phone"> Feedback</span>
+                  </a>
+                </li>
+                <li title="Invite users to Humbug">
+                  <a href="#invite-user" role="button" data-toggle="modal">
+                    <i class="icon-gift"></i>
+                    <span class="hidden-phone"> Invite users to Humbug</span>
                   </a>
                 </li>
                 <li title="Log out">
@@ -238,5 +249,6 @@ var people_list = [
     </div><!--/row-->
     {% include "zephyr/keyboard_shortcuts.html" %}
     {% include "zephyr/markdown_help.html" %}
+    {% include "zephyr/invite_user.html" %}
 
 {% endblock %}

@@ -48,6 +48,9 @@ var globals =
     // hashchange.js
     + ' hashchange'
 
+    // invite.js
+    + ' invite'
+
     // ui.js
     + ' ui'
 

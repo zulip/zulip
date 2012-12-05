@@ -591,6 +591,7 @@ $(function () {
     search.initialize();
     notifications.initialize();
     hashchange.initialize();
+    invite.initialize();
 
     $("body").bind('click', function () {
         ui.hide_userinfo_popover();

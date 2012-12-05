@@ -16,7 +16,7 @@ $(function () {
     // Compile Handlebars templates.
     $.each(['message', 'subscription',
             'userinfo_popover_title', 'userinfo_popover_content',
-            'timeinfo_popover_content'],
+            'timeinfo_popover_content', 'invite_subscription'],
         function (index, name) {
             templates[name] = Handlebars.compile($('#template_'+name).html());
         }

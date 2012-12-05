@@ -1,0 +1,11 @@
+{{! Client-side Mustache template for rendering subscriptions in the "invite user" form.}}
+<a href="#" onclick="invite.set_all_streams(event, true);">Check all</a> |
+<a href="#" onclick="invite.set_all_streams(event, false);">Uncheck all</a>
+<div id="stream-checkboxes">
+  {{#each subscriptions}}
+  <label class="checkbox">
+    <input type="checkbox" name="stream" value="{{this}}" checked="true"> {{this}}
+  </label>
+  {{/each}}
+</div>
+

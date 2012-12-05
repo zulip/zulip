@@ -1,0 +1,30 @@
+<div class="modal hide" id="invite-user" tabindex="-1" role="dialog"
+     aria-labelledby="invite-user-label" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="invite-user-label">Invite users to Humbug</h3>
+  </div>
+  <form id="invite_user_form" class="form-horizontal"
+        action="/json/invite_users" method="POST">{% csrf_token %}
+    <div class="modal-body">
+      <div class="control-group">
+        <div id="invite-result"></div>
+        <label class="control-label" for="invitee_emails">Emails (one on each line or comma-separated)</label>
+        <div class="controls">
+          <textarea rows="2" id="invitee_emails"
+                    name="invitee_emails"
+                    placeholder="One or more email addresses..."></textarea>
+        </div>
+      </div>
+        <div class="alert" id="invite_status"></div>
+      <div class="control-group">
+        <label class="control-label" for="streams_to_add">Streams they should join</label>
+        <div class="controls" id="streams_to_add"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+      <button class="btn btn-primary" type="submit">Invite</button>
+    </div>
+  </form>
+</div>
