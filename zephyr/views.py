@@ -934,12 +934,7 @@ class SubscriptionProperties(object):
         return request_dict.get(property, "").strip()
 
     def get_stream_colors(self, request, user_profile):
-        subscriptions = Subscription.objects.filter(user_profile=user_profile, active=True)
-        stream_subs = [sub for sub in subscriptions if sub.recipient.type == Recipient.STREAM]
-        stream_colors = [(Stream.objects.get(id=sub.recipient.type_id).name,
-                          get_stream_color(sub)) for sub in stream_subs]
-
-        return json_success({"stream_colors": stream_colors})
+        return json_success({"stream_colors": gather_subscriptions(user_profile)})
 
     def post_stream_colors(self, request, user_profile):
         stream_name = self.request_property(request.POST, "stream_name")
