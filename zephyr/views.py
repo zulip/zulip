@@ -1058,13 +1058,25 @@ def api_github_landing(request, user_profile, event=POST,
                       pull_req['body']))
     elif event == 'push':
         short_ref = re.sub(r'^refs/heads/', '', payload['ref'])
-        subject = "%s: push to %s" % (repository['name'], short_ref)
-        content = "Head is now %s\n\n" % (payload['after'],)
-        for commit in payload['commits']:
-            short_id = commit['id'][:12]
-            (short_commit_msg, _, _) = commit['message'].partition("\n")
-            content += "* [`%s`](%s): %s\n" % (short_id, commit['url'],
-                                             short_commit_msg)
+        subject = repository['name']
+        if re.match(r'^0+$', payload['after']):
+            content = "%s deleted branch %s" % (payload['pusher']['name'],
+                                                short_ref)
+        elif len(payload['commits']) == 0:
+            content = ("%s [force pushed](%s) to branch %s.  Head is now %s"
+                       % (payload['pusher']['name'],
+                          payload['compare'],
+                          payload['after'][:7]))
+        else:
+            content = ("%s [pushed](%s) to branch %s\n\n"
+                       % (payload['pusher']['name'],
+                          payload['compare'],
+                          short_ref))
+            for commit in payload['commits']:
+                short_id = commit['id'][:7]
+                (short_commit_msg, _, _) = commit['message'].partition("\n")
+                content += "* [%s](%s): %s\n" % (short_id, commit['url'],
+                                                   short_commit_msg)
     else:
         # We don't handle other events even though we get notified
         # about them
