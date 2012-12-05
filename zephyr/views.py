@@ -654,8 +654,8 @@ def send_message_backend(request, user_profile, client,
         # If the private message is just between the sender and
         # another person, force it to be a personal internally
         if (len(recipient_profile_ids) == 2
-            and user_profile.id in recipient_profile_ids):
-            recipient_profile_ids.remove(user_profile.id)
+            and sender.id in recipient_profile_ids):
+            recipient_profile_ids.remove(sender.id)
 
         if len(recipient_profile_ids) > 1:
             # Make sure the sender is included in huddle messages
