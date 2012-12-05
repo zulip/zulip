@@ -5,6 +5,7 @@
 .table td {
     padding-top:    2px;
     padding-bottom: 2px;
+    white-space: nowrap;
 }
 
 .table-striped tr.recently_active td {
