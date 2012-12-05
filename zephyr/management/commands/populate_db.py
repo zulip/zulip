@@ -415,7 +415,8 @@ def restore_saved_messages():
 
     messages_to_create = []
     for idx, old_message in enumerate(old_messages):
-        if old_message["type"] not in ["stream", "huddle", "personal"]:
+        message_type = old_message["type"]
+        if message_type not in ["stream", "huddle", "personal"]:
             continue
 
         message = Message()
@@ -441,7 +442,7 @@ def restore_saved_messages():
         else:
             message.sending_client = clients['populate_db']
 
-        message.type = type_hash[old_message["type"]]
+        message.type = type_hash[message_type]
         message.content = old_message["content"]
         message.subject = old_message["subject"]
         message.pub_date = timestamp_to_datetime(old_message["timestamp"])
@@ -481,15 +482,15 @@ def restore_saved_messages():
     pending_subs = {}
     current_message_id = first_message_id
     for old_message in old_messages:
-        # Update our subscribers hashes as we see subscription events
-        if old_message["type"] == 'subscription_added':
+        message_type = old_message["type"]
+        if message_type == 'subscription_added':
             stream_key = (realms[old_message["domain"]].id, old_message["name"].strip().lower())
             subscribers.setdefault(stream_recipients[stream_key].id,
                                    set()).add(users[old_message["user"]].id)
             pending_subs[(stream_recipients[stream_key].id,
                           users[old_message["user"]].id)] = True
             continue
-        elif old_message["type"] == "subscription_removed":
+        elif message_type == "subscription_removed":
             stream_key = (realms[old_message["domain"]].id, old_message["name"].strip().lower())
             user_id = users[old_message["user"]].id
             subscribers.setdefault(stream_recipients[stream_key].id, set())
@@ -501,7 +502,7 @@ def restore_saved_messages():
             pending_subs[(stream_recipients[stream_key].id,
                           users[old_message["user"]].id)] = False
             continue
-        elif old_message["type"] == "user_activated" or old_message["type"] == "user_created":
+        elif message_type == "user_activated" or message_type == "user_created":
             # These are rare, so just handle them the slow way
             user = User.objects.get(email=old_message["user"])
             join_date = timestamp_to_datetime(old_message['timestamp'])
@@ -510,32 +511,32 @@ def restore_saved_messages():
             users_by_id[user.userprofile.id] = UserProfile.objects.get(user=user)
             users[user.email] = user.userprofile
             continue
-        elif old_message["type"] == "user_change_password":
+        elif message_type == "user_change_password":
             # Just handle these the slow way
             user = User.objects.get(email=old_message["user"])
             user.password = old_message["pwhash"]
             user.save()
             continue
-        elif old_message["type"] == "user_change_full_name":
+        elif message_type == "user_change_full_name":
             # Just handle these the slow way
             user_profile = UserProfile.objects.get(user__email=old_message["user"])
             user_profile.full_name = old_message["full_name"]
             user_profile.save()
             continue
-        elif old_message["type"] == "enable_desktop_notifications_changed":
+        elif message_type == "enable_desktop_notifications_changed":
             # Just handle these the slow way
             user_profile = UserProfile.objects.get(user__email=old_message["user"])
             user_profile.enable_desktop_notifications = (old_message["enable_desktop_notifications"] != "false")
             user_profile.save()
             continue
-        elif old_message["type"] == "default_streams":
+        elif message_type == "default_streams":
             set_default_streams(Realm.objects.get(domain=old_message["domain"]),
                                 old_message["streams"])
             continue
-        elif old_message["type"] == "subscription_property":
+        elif message_type == "subscription_property":
             handle_subscription_property(old_message)
             continue
-        elif old_message["type"] == "realm_created":
+        elif message_type == "realm_created":
             continue
         if message_type not in ["stream", "huddle", "personal"]:
             raise RuntimeError("Unexpected message type %s" % (message_type,))
