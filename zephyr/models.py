@@ -496,7 +496,8 @@ def get_user_profile_by_id(uid):
 
 # Store an event in the log for re-importing messages
 def log_event(event):
-    assert("timestamp" in event)
+    if "timestamp" not in event:
+        event["timestamp"] = time.time()
     with lockfile(settings.MESSAGE_LOG + '.lock'):
         with open(settings.MESSAGE_LOG, 'a') as log:
             log.write(simplejson.dumps(event) + '\n')
@@ -572,7 +573,6 @@ def do_add_subscription(user_profile, stream, no_log=False):
         log_event({'type': 'subscription_added',
                    'user': user_profile.user.email,
                    'name': stream.name,
-                   'timestamp': time.time(),
                    'domain': stream.realm.domain})
     return did_subscribe
 
@@ -591,13 +591,13 @@ def do_remove_subscription(user_profile, stream, no_log=False):
         log_event({'type': 'subscription_removed',
                    'user': user_profile.user.email,
                    'name': stream.name,
-                   'timestamp': time.time(),
                    'domain': stream.realm.domain})
     return did_remove
 
 def log_subscription_property_change(user_email, property, property_dict):
-    event = {'type': 'subscription_property', 'timestamp': time.time(),
-             'property': property, 'user': user_email}
+    event = {'type': 'subscription_property',
+             'property': property,
+             'user': user_email}
     event.update(property_dict)
     log_event(event)
 
@@ -608,7 +608,6 @@ def do_activate_user(user, log=True, timestamp=time.time()):
     user.save()
     if log:
         log_event({'type': 'user_activated',
-                   'timestamp': timestamp,
                    'user': user.email})
 
 def do_change_password(user, password, log=True):
@@ -616,7 +615,6 @@ def do_change_password(user, password, log=True):
     user.save()
     if log:
         log_event({'type': 'user_change_password',
-                   'timestamp': time.time(),
                    'user': user.email,
                    'pwhash': user.password})
 
@@ -625,7 +623,6 @@ def do_change_full_name(user_profile, full_name, log=True):
     user_profile.save()
     if log:
         log_event({'type': 'user_change_full_name',
-                   'timestamp': time.time(),
                    'user': user_profile.user.email,
                    'full_name': full_name})
 
@@ -634,7 +631,6 @@ def do_create_realm(domain, replay=False):
     if created and not replay:
         # Log the event
         log_event({"type": "realm_created",
-                   "timestamp": time.time(),
                    "domain": domain})
 
         # Sent a notification message
@@ -655,7 +651,6 @@ def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifica
     user_profile.save()
     if log:
         log_event({'type': 'enable_desktop_notifications_changed',
-                   'timestamp': time.time(),
                    'user': user_profile.user.email,
                    'enable_desktop_notifications': enable_desktop_notifications})
 

@@ -42,5 +42,6 @@ set of streams (which can be empty, with `--streams=`)."
         realm = Realm.objects.get(domain=options["domain"])
         set_default_streams(realm, stream_names)
 
-        log_event({'type': 'default_streams', 'timestamp': time.time(),
-                   'domain': realm.domain, 'streams': stream_names})
+        log_event({'type': 'default_streams',
+                   'domain': realm.domain,
+                   'streams': stream_names})
