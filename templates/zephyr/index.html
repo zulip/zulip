@@ -148,6 +148,15 @@ var people_list = [
                 </li>
                 {% endif %}
 
+                {% if show_activity %}
+                <li title="Activity">
+                  <a href="/activity" target="_blank">
+                    <i class="icon-eye-open"></i>
+                    <span class="hidden-phone">  Activity</span>
+                  </a>
+                </li>
+                {% endif %}
+
                 <div>
                   <button type="button" class="visible-phone btn btn-small phone_new_message_button"
                           id="left_bar_compose_stream_button_little"

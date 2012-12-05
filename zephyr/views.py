@@ -195,7 +195,8 @@ def home(request):
                                'have_initial_messages':
                                    'true' if num_messages > 0 else 'false',
                                'show_debug':
-                                   settings.DEBUG and ('show_debug' in request.GET) },
+                                   settings.DEBUG and ('show_debug' in request.GET),
+                               'show_activity': can_view_activity(request) },
                               context_instance=RequestContext(request))
 
 @authenticated_api_view
@@ -1008,10 +1009,12 @@ class ActivityTable(object):
     def sorted_rows(self):
         return sorted(self.rows.iteritems(), key=lambda (k,r): r['age'])
 
+def can_view_activity(request):
+    return request.user.userprofile.realm.domain == 'humbughq.com'
+
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def get_activity(request):
-    user_profile = request.user.userprofile
-    if user_profile.realm.domain != "humbughq.com":
+    if not can_view_activity(request):
         return HttpResponseRedirect(reverse('zephyr.views.login_page'))
 
     web_queries = (
