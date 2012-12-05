@@ -112,10 +112,15 @@ function resizehandler(e) {
 
         top_statusbar.css('top', space_taken_up_by_navbar);
 
-        var message_list_width = $("#main_div").outerWidth();
-        composebox.width(message_list_width);
-        top_statusbar.width(message_list_width);
-        sidebar_nav.width(message_list_width);
+        var desired_width;
+        if (exports.home_tab_obscured() === 'other_tab') {
+            desired_width = $("div.tab-pane.active").outerWidth();
+        } else {
+            desired_width = $("#main_div").outerWidth();
+            composebox.width(desired_width);
+        }
+        top_statusbar.width(desired_width);
+        sidebar_nav.width(desired_width);
     } else {
         sidebar.addClass('nav-stacked');
         top_statusbar.css('top', 0);
