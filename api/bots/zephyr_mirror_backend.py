@@ -437,7 +437,7 @@ def forward_to_zephyr(message):
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].split("\n"))
 
-    zwrite_args = ["zwrite", "-s", zsig_fullname, "-F", "Class $class, Instance $instance:\n" +
+    zwrite_args = ["zwrite", "-n", "-s", zsig_fullname, "-F", "Class $class, Instance $instance:\n" +
                    "To: @bold($recipient) at $time $date\n" +
                    "From: @bold{$1 <$sender>}\n\n$2@(@color(blue))"]
     logger.info("Forwarding message from %s" %  (message["sender_email"],))
