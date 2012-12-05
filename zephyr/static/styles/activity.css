@@ -23,3 +23,7 @@
 .table-striped tr.long_inactive:nth-child(odd) td {
     background-color: #e99;
 }
+
+td.number {
+    text-align: right;
+}

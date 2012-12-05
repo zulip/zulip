@@ -28,9 +28,9 @@
         <td sorttable_customkey="{{ row.send_message_last|date:'YmdHi' }}">{{ row.send_message_last }}</td>
         {% if activity.has_pointer %}
         <td sorttable_customkey="{{ row.update_pointer_last|date:'YmdHi' }}">{{ row.update_pointer_last }}</td>
-        <td>{{ row.update_pointer_count }}</td>
+        <td class="number">{{ row.update_pointer_count }}</td>
         {% endif %}
-        <td>{{ row.send_message_count }}</td>
+        <td class="number">{{ row.send_message_count }}</td>
         </tr>
     {% endfor %}
     </tbody>
