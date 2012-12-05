@@ -222,6 +222,7 @@ PIPELINE_JS = {
             'js/notifications.js',
             'js/hashchange.js',
             'js/invite.js',
+            'js/message_list.js',
             'js/zephyr.js',
             'js/activity.js',
             'js/colorspace.js',
