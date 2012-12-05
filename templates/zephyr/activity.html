@@ -2,6 +2,12 @@
 
 {# User Activity. #}
 
+{% block customhead %}
+{{ block.super }}
+<script type="text/javascript" src="/static/third/sorttable/sorttable.js"></script>
+<link href='{{ static_hidden }}styles/activity.css?dummy_time={% now "U" %}' rel='stylesheet'>
+{% endblock %}
+
 {% block content %}
 
 <ul class="nav nav-tabs">
@@ -51,8 +57,5 @@
 {% endfor %}
 
 </div>
-
-<script type="text/javascript" src="/static/third/sorttable/sorttable.js"></script>
-<link href='{{ static_hidden }}styles/activity.css?dummy_time={% now "U" %}' rel='stylesheet'>
 
 {% endblock %}
