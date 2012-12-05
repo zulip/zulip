@@ -4,8 +4,19 @@
 
 {% block content %}
 
+<ul class="nav nav-tabs">
+{% for name, activity in data.iteritems %}
+    <li {% if activity.default_tab %} class="active" {% endif %}>
+        <a href="#{{ name }}" data-toggle="tab">{{ name }}</a>
+    </li>
+{% endfor %}
+</ul>
+
+<div class="tab-content">
+
 {% for name, activity in data.iteritems %}
 
+    <div class="tab-pane {% if activity.default_tab %} active {% endif %}" id="{{ name }}">
     <h2>{{ name }} usage</h2>
     <table class="table sortable table-striped table-bordered">
     <thead class="activity_head">
@@ -35,8 +46,11 @@
     {% endfor %}
     </tbody>
     </table>
+    </div>
 
 {% endfor %}
+
+</div>
 
 <script type="text/javascript" src="/static/third/sorttable/sorttable.js"></script>
 <link href='{{ static_hidden }}styles/activity.css?dummy_time={% now "U" %}' rel='stylesheet'>

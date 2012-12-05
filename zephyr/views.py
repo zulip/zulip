@@ -969,7 +969,8 @@ def json_fetch_api_key(request, user_profile, password=POST):
     return json_success({"api_key": user_profile.api_key})
 
 class ActivityTable(object):
-    def __init__(self, client_name, queries):
+    def __init__(self, client_name, queries, default_tab=False):
+        self.default_tab = default_tab
         self.has_pointer = False
         self.rows = {}
         for url, query_name in queries:
@@ -1014,7 +1015,7 @@ def get_activity(request):
 
     return render_to_response('zephyr/activity.html',
         { 'data': {
-            'Website': ActivityTable('website',       web_queries),
+            'Website': ActivityTable('website',       web_queries, default_tab=True),
             'Mirror':  ActivityTable('zephyr_mirror', api_queries),
             'API':     ActivityTable('API',           api_queries)
         }}, context_instance=RequestContext(request))
