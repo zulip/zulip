@@ -462,7 +462,7 @@ def forward_to_zephyr(message):
                 zephyr_class = "message"
         zwrite_args.extend(["-c", zephyr_class, "-i", instance])
     elif message['type'] == "private":
-        if len(message['display_recipient']) == 1:
+        if len(message['display_recipient']) <= 2:
             recipient = to_zephyr_username(message["display_recipient"][0]["email"])
             zwrite_args.extend([recipient])
         else:
