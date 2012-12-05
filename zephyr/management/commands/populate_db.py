@@ -283,26 +283,17 @@ def restore_saved_messages():
         def fix_email(email):
             return email.strip().lower()
 
-        if message_type == "subscription_property":
-            pass
-        elif message_type.startswith("subscription"):
+        if message_type in ["stream", "huddle", "personal"]:
+            old_message["sender_email"] = fix_email(old_message["sender_email"])
+        if message_type in ["subscription_added", "subscription_removed"]:
             old_message["domain"] = old_message["domain"].lower()
             old_message["user"] = fix_email(old_message["user"])
         elif message_type.startswith("user_"):
             old_message["user"] = fix_email(old_message["user"])
         elif message_type.startswith("enable_"):
             old_message["user"] = fix_email(old_message["user"])
-        elif message_type.startswith("realm_"):
-            pass
-        elif message_type == "default_streams":
-            pass
-        else:
-            old_message["sender_email"] = fix_email(old_message["sender_email"])
 
-
-        if message_type == 'stream':
-            pass
-        elif message_type == 'personal':
+        if message_type == 'personal':
             old_message["recipient"][0]["email"] = fix_email(old_message["recipient"][0]["email"])
         elif message_type == "huddle":
             for i in xrange(len(old_message["recipient"])):
@@ -310,27 +301,20 @@ def restore_saved_messages():
 
         old_messages.append(old_message)
 
-        if message_type == "subscription_property":
-            continue
-        elif message_type.startswith("subscription"):
+        if message_type in ["subscription_added", "subscription_removed"]:
             stream_name = old_message["name"].strip()
             canon_stream_name = stream_name.lower()
             if canon_stream_name not in stream_dict:
                 stream_dict[(old_message["domain"], canon_stream_name)] = \
                     (old_message["domain"], stream_name)
-            continue
         elif message_type == "user_created":
             user_set.add((old_message["user"], old_message["full_name"], old_message["short_name"], False))
-            continue
-        elif message_type.startswith("user_"):
-            continue
-        elif message_type.startswith("enable_"):
-            continue
         elif message_type == "realm_created":
             realm_set.add(old_message["domain"])
+
+        if message_type not in ["stream", "huddle", "personal"]:
             continue
-        elif message_type == "default_streams":
-            continue
+
         sender_email = old_message["sender_email"]
 
         domain = sender_email.split('@')[1]
@@ -431,11 +415,7 @@ def restore_saved_messages():
 
     messages_to_create = []
     for idx, old_message in enumerate(old_messages):
-        if (old_message["type"].startswith("subscription") or
-            old_message["type"].startswith("user_") or
-            old_message["type"].startswith("enable_") or
-            old_message["type"].startswith("realm_") or
-            old_message["type"] == "default_streams"):
+        if old_message["type"] not in ["stream", "huddle", "personal"]:
             continue
 
         message = Message()
@@ -557,6 +537,8 @@ def restore_saved_messages():
             continue
         elif old_message["type"] == "realm_created":
             continue
+        if message_type not in ["stream", "huddle", "personal"]:
+            raise RuntimeError("Unexpected message type %s" % (message_type,))
 
         message = messages_by_id[current_message_id]
         current_message_id += 1
