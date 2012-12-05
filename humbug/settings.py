@@ -154,6 +154,7 @@ if deployed:
         'LOCATION': '127.0.0.1:11211',
         'TIMEOUT':  3600
     } }
+    error_filters = ['ratelimit']
 else:
     CACHES = { 'default': {
         'BACKEND':  'django.core.cache.backends.locmem.LocMemCache',
@@ -163,6 +164,9 @@ else:
             'MAX_ENTRIES': 100000
         }
     } }
+    error_filters = []
+
+ERROR_RATE_LIMIT=600
 
 LOGGING = {
     'version': 1,
@@ -170,6 +174,11 @@ LOGGING = {
     'formatters': {
         'default': {
             'format': '%(asctime)s %(levelname)-8s %(message)s'
+        }
+    },
+    'filters': {
+        'ratelimit': {
+            '()': 'humbug.ratelimit.RateLimitFilter',
         }
     },
     'handlers': {
@@ -183,11 +192,16 @@ LOGGING = {
             'class':     'logging.FileHandler',
             'formatter': 'default',
             'filename':  'server.log'
-        }
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'filters': error_filters,
+        },
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console', 'file', 'mail_admins'],
             'level':    'INFO'
         }
     }
