@@ -21,14 +21,8 @@ class AdminHumbugHandler(logging.Handler):
     def emit(self, record):
         # We have to defer imports to avoid circular imports in settings.py.
         from zephyr.models import Message, UserProfile, Recipient, \
-                create_stream_if_needed, get_client, do_send_message
+                create_stream_if_needed, get_client, internal_send_message
         from django.conf import settings
-        message = Message()
-        message.sender = UserProfile.objects.get(user__email="humbug+errors@humbughq.com")
-        message.recipient = Recipient.objects.get(type_id=create_stream_if_needed(
-            message.sender.realm, "devel").id, type=Recipient.STREAM)
-        message.pub_date = now()
-        message.sending_client = get_client("Internal")
 
         try:
             request = record.request
@@ -47,15 +41,16 @@ class AdminHumbugHandler(logging.Handler):
             )
             request = None
             request_repr = "Request repr() unavailable."
-        message.subject = self.format_subject(subject)
+        subject = self.format_subject(subject)
 
         if record.exc_info:
             stack_trace = '\n'.join(traceback.format_exception(*record.exc_info))
         else:
             stack_trace = 'No stack trace available'
 
-        message.content = "~~~~ pytb\n%s\n\n%s\n~~~~" % (stack_trace, request_repr)
-        do_send_message(message)
+        internal_send_message("humbug+errors@humbughq.com",
+                Recipient.STREAM, "devel", subject,
+                "~~~~ pytb\n%s\n\n%s\n~~~~" % (stack_trace, request_repr))
 
     def format_subject(self, subject):
         """

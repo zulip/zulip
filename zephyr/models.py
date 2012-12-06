@@ -548,6 +548,19 @@ def do_send_message(message, no_log=False):
             rendered = simplejson.dumps(rendered),
             users    = simplejson.dumps([str(user.id) for user in recipients])))
 
+def internal_send_message(sender_email, recipient_type, recipient_name,
+        subject, content):
+    message = Message()
+    message.sender = UserProfile.objects.get(user__email=sender_email)
+    message.recipient = Recipient.objects.get(type_id=create_stream_if_needed(
+        message.sender.realm, recipient_name).id, type=recipient_type)
+    message.subject = subject
+    message.content = content
+    message.pub_date = timezone.now()
+    message.sending_client = get_client("Internal")
+
+    do_send_message(message)
+
 class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)

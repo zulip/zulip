@@ -16,7 +16,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     do_activate_user, add_default_subs, do_create_user, do_send_message, \
     create_mit_user_if_needed, create_stream_if_needed, StreamColor, \
     PreregistrationUser, get_client, MitUser, User, UserActivity, \
-    log_subscription_property_change
+    log_subscription_property_change, internal_send_message
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
     is_active
 from django.views.decorators.csrf import csrf_exempt
@@ -96,21 +96,14 @@ def accounts_register(request):
                 user = do_create_user(email, password, realm, full_name, short_name)
                 add_default_subs(user)
 
-            message = Message()
-            message.sender = UserProfile.objects.get(user__email="humbug+signups@humbughq.com")
-            message.recipient = Recipient.objects.get(type_id=create_stream_if_needed(
-                message.sender.realm, "signups").id, type=Recipient.STREAM)
-            message.subject = realm.domain
-            message.content = "%s <`%s`> just signed up for Humbug! (total: **%i**)" % (
-                    full_name,
-                    email,
-                    UserProfile.objects.filter(realm=realm, user__is_active=True).count(),
+            internal_send_message("humbug+signups@humbughq.com",
+                    Recipient.STREAM, "signups", realm.domain,
+                    "%s <`%s`> just signed up for Humbug! (total: **%i**)" % (
+                        full_name,
+                        email,
+                        UserProfile.objects.filter(realm=realm, user__is_active=True).count(),
+                        )
                     )
-            message.pub_date = now()
-            message.sending_client = get_client("Internal")
-
-            do_send_message(message)
-
 
             login(request, authenticate(username=email, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))
