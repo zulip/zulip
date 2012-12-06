@@ -796,9 +796,9 @@ def remove_subscriptions_backend(request, user_profile,
     for stream in streams:
         did_remove = do_remove_subscription(user_profile, stream)
         if did_remove:
-            result["removed"].append(stream_name)
+            result["removed"].append(stream.name)
         else:
-            result["not_subscribed"].append(stream_name)
+            result["not_subscribed"].append(stream.name)
 
     return json_success(result)
 
