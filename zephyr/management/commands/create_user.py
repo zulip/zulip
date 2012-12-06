@@ -7,7 +7,7 @@ from django.utils.timezone import now
 from django.core import validators
 
 from zephyr.models import Realm, do_create_user
-from zephyr.views import do_send_message
+from zephyr.views import do_send_message, notify_new_user
 from zephyr.lib.initial_password import initial_password
 
 class Command(BaseCommand):
@@ -42,7 +42,8 @@ class Command(BaseCommand):
             raise CommandError("Realm does not exist.")
 
         try:
-            do_create_user(email, initial_password(email), realm, full_name,
-                    email.split('@')[0])
+            notify_new_user(do_create_user(email, initial_password(email),
+                realm, full_name, email.split('@')[0]),
+                internal=True)
         except IntegrityError:
             raise CommandError("User already exists.")
