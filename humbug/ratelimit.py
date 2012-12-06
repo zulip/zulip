@@ -4,8 +4,7 @@ from datetime import datetime, timedelta
 
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
 
-class RateLimitFilter(object):
-
+class _RateLimitFilter(object):
     last_error = 0
 
     def filter(self, record):
@@ -14,7 +13,8 @@ class RateLimitFilter(object):
 
         # Track duplicate errors
         duplicate = False
-        rate = getattr(settings, 'ERROR_RATE_LIMIT', 600)  # seconds
+        rate = getattr(settings, '%s_LIMIT' %  self.__class__.__name__.upper(),
+               600)  # seconds
         if rate > 0:
             # Test if the cache works
             try:
@@ -24,8 +24,9 @@ class RateLimitFilter(object):
                 use_cache = False
 
             if use_cache:
-                duplicate = cache.get('ERROR_RATE') == 1
-                cache.set('ERROR_RATE', 1, rate)
+                key = self.__class__.__name__.upper()
+                duplicate = cache.get(key) == 1
+                cache.set(key, 1, rate)
             else:
                 min_date = datetime.now() - timedelta(seconds=rate)
                 duplicate = (self.last_error >= min_date)
@@ -33,3 +34,9 @@ class RateLimitFilter(object):
                     self.last_error = datetime.now()
 
         return not duplicate
+
+class HumbugLimiter(_RateLimitFilter):
+    pass
+
+class EmailLimiter(_RateLimitFilter):
+    pass

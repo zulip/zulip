@@ -154,7 +154,6 @@ if deployed:
         'LOCATION': '127.0.0.1:11211',
         'TIMEOUT':  3600
     } }
-    error_filters = ['ratelimit']
 else:
     CACHES = { 'default': {
         'BACKEND':  'django.core.cache.backends.locmem.LocMemCache',
@@ -164,9 +163,6 @@ else:
             'MAX_ENTRIES': 100000
         }
     } }
-    error_filters = []
-
-ERROR_RATE_LIMIT=600
 
 LOGGING = {
     'version': 1,
@@ -177,11 +173,23 @@ LOGGING = {
         }
     },
     'filters': {
-        'ratelimit': {
-            '()': 'humbug.ratelimit.RateLimitFilter',
+        'HumbugLimiter': {
+            '()': 'humbug.ratelimit.HumbugLimiter',
+        },
+        'EmailLimiter': {
+            '()': 'humbug.ratelimit.EmailLimiter',
+        },
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
         }
     },
     'handlers': {
+        'inapp': {
+            'level':     'ERROR',
+            'class':     'zephyr.handlers.AdminHumbugHandler',
+            'filters':   ['HumbugLimiter', 'require_debug_false'],
+            'formatter': 'default'
+        },
         'console': {
             'level':     'DEBUG',
             'class':     'logging.StreamHandler',
@@ -196,12 +204,12 @@ LOGGING = {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
-            'filters': error_filters,
+            'filters': ['EmailLimiter', 'require_debug_false'],
         },
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'file', 'mail_admins'],
+            'handlers': ['inapp', 'console', 'file', 'mail_admins'],
             'level':    'INFO'
         }
     }
