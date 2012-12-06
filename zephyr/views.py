@@ -1080,6 +1080,7 @@ def api_github_landing(request, user_profile, event=POST,
             content = ("%s [force pushed](%s) to branch %s.  Head is now %s"
                        % (payload['pusher']['name'],
                           payload['compare'],
+                          short_ref,
                           payload['after'][:7]))
         else:
             content = ("%s [pushed](%s) to branch %s\n\n"
@@ -1090,7 +1091,7 @@ def api_github_landing(request, user_profile, event=POST,
                 short_id = commit['id'][:7]
                 (short_commit_msg, _, _) = commit['message'].partition("\n")
                 content += "* [%s](%s): %s\n" % (short_id, commit['url'],
-                                                   short_commit_msg)
+                                                 short_commit_msg)
     else:
         # We don't handle other events even though we get notified
         # about them
