@@ -377,7 +377,7 @@ input.recipient_box {
     white-space: nowrap;
 }
 
-#fmt_help_link {
+.compose_help_text {
     margin-right: 20px;
     font-size: 90%;
 }
