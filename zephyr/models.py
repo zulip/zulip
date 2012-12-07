@@ -405,9 +405,9 @@ def linebreak(string):
 class Message(models.Model):
     sender = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
-    subject = models.CharField(max_length=MAX_SUBJECT_LENGTH)
+    subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True)
     content = models.TextField()
-    pub_date = models.DateTimeField('date published')
+    pub_date = models.DateTimeField('date published', db_index=True)
     sending_client = models.ForeignKey(Client)
 
     def __repr__(self):
