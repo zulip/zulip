@@ -44,6 +44,40 @@ exports.data = function () {
     return narrowdata;
 };
 
+exports.hashchanged = function (hash) {
+    var full_names, decoded, emails;
+
+    if (hash[1] === "all_private_messages") {
+        exports.all_private_messages();
+    }
+    else if (hash[1] === "stream" && hash[3] === "subject") {
+        exports.by_stream_and_subject_names(decodeURIComponent(hash[2]),
+                                            decodeURIComponent(hash[4]));
+    }
+    else if (hash[1] === "stream") {
+        exports.by_stream_name(decodeURIComponent(hash[2]));
+    }
+    else if (hash[1] === "private_messages") {
+        decoded = decodeURIComponent(hash[2]);
+        emails = decoded.split(", ");
+
+        $.each(emails, function (index, email) {
+            $.each(people_list, function (index, person) {
+                if (person.email === email) {
+                    if (full_names === undefined) {
+                        full_names = person.full_name;
+                    }
+                    else {
+                        full_names += ", " + person.full_name;
+                    }
+                    return false;
+                }
+            });
+        });
+        exports.by_private_message_group(full_names, decoded);
+    }
+};
+
 function do_narrow(new_narrow, bar, time_travel, new_filter) {
     var was_narrowed = exports.active();
 
@@ -120,6 +154,8 @@ exports.target = function (id) {
 };
 
 exports.all_private_messages = function () {
+    hashchange.changehash("#narrow/all_private_messages");
+
     var new_narrow = {type: "all_private_messages"};
     var bar = {icon: 'user', description: 'You and anyone else'};
     do_narrow(new_narrow, bar, false, function (other) {
@@ -135,23 +171,33 @@ exports.by_subject = function () {
         exports.by_recipient();
         return;
     }
+    exports.by_stream_and_subject_names(original.display_recipient,
+                                        original.subject);
+};
 
-    var new_narrow = {type: "subject", recipient_id: original.recipient_id,
-                      subject: original.subject};
+exports.by_stream_and_subject_names = function (stream, subject) {
+    hashchange.changehash("#narrow/stream/" +
+                          encodeURIComponent(stream) +
+                          "/subject/" +
+                          encodeURIComponent(subject));
+
+    var new_narrow = {type: "subject", stream: stream, subject: subject};
     var bar = {
-        icon:        'bullhorn',
-        description: original.display_recipient,
-        subject:     original.subject
+        icon:           'bullhorn',
+        description:    stream,
+        subject:        subject
     };
     do_narrow(new_narrow, bar, false, function (other) {
         return ((other.type === 'stream') &&
-                same_stream_and_subject(original, other));
+                (other.display_recipient === stream &&
+                 other.subject.toLowerCase() === subject.toLowerCase()));
     });
 };
 
-//TODO: There's probably some room to unify this code
-//      with the hotkey-narrowing code below.
 exports.by_stream_name = function (name) {
+    hashchange.changehash("#narrow/stream/" +
+                          encodeURIComponent(name));
+
     var new_narrow = {type: "stream", stream: name};
     var bar = {icon: 'bullhorn', description: name};
     do_narrow(new_narrow, bar, false, function (other) {
@@ -160,43 +206,38 @@ exports.by_stream_name = function (name) {
     });
 };
 
-exports.by_private_message_partner = function (their_name, their_email) {
-    var new_narrow = {type: "private", one_on_one_email: their_email};
-    var bar = {icon: 'user', description: "You and " + their_name};
+exports.by_private_message_group = function (names, emails) {
+    hashchange.changehash("#narrow/private_messages/" +
+                          encodeURIComponent(emails));
+
+    var new_narrow = {type: "private", emails: emails.split(", ")};
+    var bar = {icon: 'user', description: "You and " + names};
     var my_email = email;
     do_narrow(new_narrow, bar, false, function (other) {
         return (other.type === 'private' &&
-                get_private_message_recipient(other, 'email') === their_email);
+                other.reply_to === emails);
     });
 };
 
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function () {
     var message = message_dict[target_id];
-    var bar;
-    var new_narrow;
+    var bar, new_narrow, emails;
     switch (message.type) {
     case 'private':
-        new_narrow = {type: "private", recipient_id: message.recipient_id};
-        bar = {icon: 'user', description: "You and " + message.display_reply_to};
-        do_narrow(new_narrow, bar, false, function (other) {
-            return (other.type === "private" &&
-                    other.reply_to === message.reply_to);
-        });
+        exports.by_private_message_group(message.display_reply_to,
+                                         message.reply_to);
         break;
 
     case 'stream':
-        new_narrow = {type: "stream", recipient_id: message.recipient_id};
-        bar = {icon: 'bullhorn', description: message.display_recipient};
-        do_narrow(new_narrow, bar, false, function (other) {
-            return (other.type === 'stream' &&
-                    message.recipient_id === other.recipient_id);
-        });
+        exports.by_stream_name(message.display_recipient);
         break;
     }
 };
 
 exports.by_search_term = function (term) {
+    hashchange.changehash("#narrow/searchterm/" + encodeURIComponent(term));
+
     var new_narrow = {type: "searchterm", searchterm: term, allow_collapse: false};
     var bar = {icon: 'search', description: 'Messages containing "' + term + '"'};
     var term_lowercase = term.toLowerCase();
@@ -208,6 +249,8 @@ exports.by_search_term = function (term) {
 };
 
 exports.show_all_messages = function () {
+    hashchange.changehash("");
+
     if (!narrowdata) {
         return;
     }

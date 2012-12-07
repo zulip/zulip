@@ -176,7 +176,7 @@ function hide_floating_recipient_bar() {
     }
 }
 
-function update_floating_recipient_bar() {
+exports.update_floating_recipient_bar = function () {
     var top_statusbar = $("#top_statusbar");
     var top_statusbar_top = top_statusbar.offset().top;
     var top_statusbar_bottom = top_statusbar_top + top_statusbar.outerHeight();
@@ -239,7 +239,8 @@ function update_floating_recipient_bar() {
     }
 
     replace_floating_recipient_bar(current_label);
-}
+};
+
 function hack_for_floating_recipient_bar() {
     // So, as of this writing, Firefox respects visibility: collapse,
     // but WebKit does not (at least, my Chrome doesn't.)  Instead it
@@ -406,7 +407,7 @@ $(function () {
     $(window).scroll($.throttle(50, function (e) {
         if ($('#home').hasClass('active')) {
             keep_pointer_in_view();
-            update_floating_recipient_bar();
+            exports.update_floating_recipient_bar();
             if (viewport.scrollTop() === 0 &&
                 have_scrolled_away_from_top) {
                 have_scrolled_away_from_top = false;
@@ -590,6 +591,7 @@ $(function () {
     composebox_typeahead.initialize();
     search.initialize();
     notifications.initialize();
+    hashchange.initialize();
 
     $("body").bind('click', function () {
         ui.hide_userinfo_popover();

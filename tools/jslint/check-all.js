@@ -45,6 +45,9 @@ var globals =
     // notifications.js
     + ' notifications'
 
+    // hashchange.js
+    + ' hashchange'
+
     // ui.js
     + ' ui'
 

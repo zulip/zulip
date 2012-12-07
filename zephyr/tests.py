@@ -643,12 +643,12 @@ class GetOldMessagesTest(AuthedTestCase):
 
     def test_bad_narrow_one_on_one_email_content(self):
         """
-        If an invalid one_on_one_email is requested in get_old_messages, an
+        If an invalid 'emails' is requested in get_old_messages, an
         error is returned.
         """
         self.login("hamlet@humbughq.com")
-        bad_stream_content = ("non-existent email", 0, [])
-        self.exercise_bad_narrow_content("one_on_one_email", bad_stream_content)
+        bad_stream_content = (["non-existent email"], "non-existent email", 0, [])
+        self.exercise_bad_narrow_content("emails", bad_stream_content)
 
 class DummyHandler(object):
     def __init__(self, assert_callback):

@@ -71,7 +71,7 @@ function narrow_or_search_for_term(item) {
         // unnarrow, it'll leave the searchbox.
         return ""; // Keep the search box empty
     } else if (obj.action === "private_message") {
-        narrow.by_private_message_partner(obj.query.full_name, obj.query.email);
+        narrow.by_private_message_group(obj.query.full_name, obj.query.email);
         return "";
     } else if (obj.action === "search_narrow") {
         narrow.by_search_term(obj.query);

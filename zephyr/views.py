@@ -283,20 +283,28 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
         query = query.filter(recipient_id = recipient.id)
 
-    if 'one_on_one_email' in narrow:
+    if 'emails' in narrow and (type(narrow['emails']) != type([]) or len(narrow['emails']) == 0):
+        return json_error("Invalid emails %s" % (narrow['emails'],))
+    elif 'emails' in narrow and len(narrow['emails']) == 1:
         query = query.filter(recipient__type=Recipient.PERSONAL)
         try:
-            recipient_user = UserProfile.objects.get(user__email = narrow['one_on_one_email'])
+            recipient_user = UserProfile.objects.get(user__email = narrow['emails'][0])
         except UserProfile.DoesNotExist:
-            return json_error("Invalid one_on_one_email %s" % (narrow['one_on_one_email'],))
+            return json_error("Invalid emails ['" + narrow['emails'][0] + "']")
         recipient = Recipient.objects.get(type=Recipient.PERSONAL, type_id=recipient_user.id)
         # If we are narrowed to personals with ourself, we want to search for personals where the user
-        # with address "one_on_one_email" is the sender *and* the recipient, not personals where the user
-        # with address "one_on_one_email is the sender *or* the recipient.
-        if narrow['one_on_one_email'] == user_profile.user.email:
-            query = query.filter(Q(sender__user__email=narrow['one_on_one_email']) & Q(recipient=recipient))
+        # with the desired e-mail address is the sender *and* the recipient, not personals where the
+        # user with the desired e-mail address is the sender *or* the recipient.
+        if narrow['emails'][0] == user_profile.user.email:
+            query = query.filter(Q(sender__user__email=narrow['emails'][0]) & Q(recipient=recipient))
         else:
-            query = query.filter(Q(sender__user__email=narrow['one_on_one_email']) | Q(recipient=recipient))
+            query = query.filter(Q(sender__user__email=narrow['emails'][0]) | Q(recipient=recipient))
+    elif 'emails' in narrow:
+        try:
+            recipient = recipient_for_emails(narrow['emails'], False, user_profile, user_profile)
+        except ValidationError, e:
+            return json_error(e.messages[0])
+        query = query.filter(recipient=recipient)
     elif 'type' in narrow and (narrow['type'] == "private" or narrow['type'] == "all_private_messages"):
         query = query.filter(Q(recipient__type=Recipient.PERSONAL) | Q(recipient__type=Recipient.HUDDLE))
 
@@ -611,6 +619,32 @@ def create_mirrored_message_users(request, user_profile, recipients):
     sender = UserProfile.objects.get(user__email=sender_email)
     return (True, sender)
 
+def recipient_for_emails(emails, not_forged_zephyr_mirror, user_profile, sender):
+    recipient_profile_ids = set()
+    for email in emails:
+        try:
+            recipient_profile_ids.add(UserProfile.objects.get(user__email__iexact=email).id)
+        except UserProfile.DoesNotExist:
+            raise ValidationError("Invalid email '%s'" % (email,))
+
+        if not_forged_zephyr_mirror and user_profile.id not in recipient_profile_ids:
+            raise ValidationError("User not authorized for this query")
+
+    # If the private message is just between the sender and
+    # another person, force it to be a personal internally
+    if (len(recipient_profile_ids) == 2
+        and sender.id in recipient_profile_ids):
+        recipient_profile_ids.remove(sender.id)
+
+    if len(recipient_profile_ids) > 1:
+        # Make sure the sender is included in huddle messages
+        recipient_profile_ids.add(sender.id)
+        huddle = get_huddle(list(recipient_profile_ids))
+        return Recipient.objects.get(type_id=huddle.id, type=Recipient.HUDDLE)
+    else:
+        return Recipient.objects.get(type_id=list(recipient_profile_ids)[0],
+                                     type=Recipient.PERSONAL)
+
 # We do not @require_login for send_message_backend, since it is used
 # both from the API and the web service.  Code calling
 # send_message_backend should either check the API key or check that
@@ -683,31 +717,11 @@ def send_message_backend(request, user_profile, client,
             return json_error("Stream does not exist")
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     elif message_type_name == 'private':
-        recipient_profile_ids = set()
-        for email in message_to:
-            try:
-                recipient_profile_ids.add(UserProfile.objects.get(user__email__iexact=email).id)
-            except UserProfile.DoesNotExist:
-                return json_error("Invalid email '%s'" % (email,))
-
-        if client.name == "zephyr_mirror":
-            if user_profile.id not in recipient_profile_ids and not forged:
-                return json_error("User not authorized for this query")
-
-        # If the private message is just between the sender and
-        # another person, force it to be a personal internally
-        if (len(recipient_profile_ids) == 2
-            and sender.id in recipient_profile_ids):
-            recipient_profile_ids.remove(sender.id)
-
-        if len(recipient_profile_ids) > 1:
-            # Make sure the sender is included in huddle messages
-            recipient_profile_ids.add(sender.id)
-            huddle = get_huddle(list(recipient_profile_ids))
-            recipient = Recipient.objects.get(type_id=huddle.id, type=Recipient.HUDDLE)
-        else:
-            recipient = Recipient.objects.get(type_id=list(recipient_profile_ids)[0],
-                                              type=Recipient.PERSONAL)
+        not_forged_zephyr_mirror = client and client.name == "zephyr_mirror" and not forged
+        try:
+            recipient = recipient_for_emails(message_to, not_forged_zephyr_mirror, user_profile, sender)
+        except ValidationError, e:
+            return json_error(e.messages[0])
     else:
         return json_error("Invalid message type")
 
