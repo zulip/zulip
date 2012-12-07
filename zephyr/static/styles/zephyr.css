@@ -254,6 +254,10 @@ blockquote p {
     cursor: pointer;
 }
 
+#send_message_form .messagebox {
+    cursor: default;
+}
+
 .messagebox p {
     margin-bottom: 5px;
 }
