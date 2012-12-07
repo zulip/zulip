@@ -10,13 +10,6 @@
 // For example, utils.dump() prints an Object with nice formatting.
 var utils = require('utils');
 
-// The main CasperJS object.
-var casper = require('casper').create({
-    // TODO: Expose these at the command line.
-    //verbose:  true,
-    //logLevel: 'debug',
-});
-
 // Uncomment this to get page-context console.log in the CasperJS output
 // (plus some CasperJS-specific messages)
 /*
@@ -347,5 +340,5 @@ casper.then(function() {
 
 // Run the above queued actions.
 casper.run(function () {
-    casper.exit((casper.test.getFailures().length > 0) ? 1 : 0);
+    casper.test.done();
 });
