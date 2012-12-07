@@ -46,7 +46,8 @@ SERVER_GENERATION = int(time.time())
 
 def to_non_negative_int(x):
     x = int(x)
-    assert x >= 0
+    if x < 0:
+        raise ValueError("argument is negative")
     return x
 
 def get_stream(stream_name, realm):
