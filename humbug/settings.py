@@ -250,3 +250,7 @@ if not deployed:
     PASSWORD_HASHERS = (
                 'django.contrib.auth.hashers.SHA1PasswordHasher',
             )
+
+if deployed:
+    # Filter out user data
+    DEFAULT_EXCEPTION_REPORTER_FILTER = 'zephyr.filters.HumbugExceptionReporterFilter'
