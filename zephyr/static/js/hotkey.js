@@ -93,11 +93,13 @@ function process_hotkey(e) {
             select_message(rows.last_visible(), {then_scroll: false});
         }
         return false;
-    case 27: // Esc: close userinfo popup, cancel compose, or un-narrow
+    case 27: // Esc: close userinfo popup, cancel compose, clear a find, or un-narrow
         if (ui.userinfo_currently_popped()) {
             ui.hide_userinfo_popover();
         } else if (compose.composing()) {
             compose.cancel();
+        } else if (search.keyboard_currently_finding()) {
+            search.clear_search();
         } else {
             narrow.show_all_messages();
         }
