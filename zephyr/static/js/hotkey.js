@@ -108,7 +108,14 @@ function process_hotkey(e) {
     case 67: // 'C': compose private message
         compose.start('private');
         return true;
-    case  13: // Enter or
+    case  13: // Enter: respond to message (unless we need to do something else)
+        if (search.keyboard_currently_finding()) {
+            // Pass through to our searchbox (to advance to next result)
+            return false;
+        } else {
+            respond_to_message();
+            return true;
+        }
     case 114: // 'r': respond to message
         respond_to_message();
         return true;

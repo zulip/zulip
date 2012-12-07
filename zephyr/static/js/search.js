@@ -341,6 +341,16 @@ exports.update_highlight_on_narrow = function () {
     clear_search_cache();
 };
 
+exports.keyboard_currently_finding = function () {
+    // This is somewhat subtle because it doesn't actually mean
+    // "is a find in progress" -- it means "is the keyboard
+    // currently driving a find"
+    // (If you have a Find going and you just click the button,
+    // the focus goes away and this starts being False,
+    // even though a find is still active.)
+    return $('.search_button').is(':focus');
+};
+
 return exports;
 
 }());
