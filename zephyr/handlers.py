@@ -54,8 +54,9 @@ class AdminHumbugHandler(logging.Handler):
 
     def format_subject(self, subject):
         """
-        Escape CR and LF characters, and limit length to 60 characters.
+        Escape CR and LF characters, and limit length to MAX_SUBJECT_LENGTH.
         """
+        from zephyr.models import MAX_SUBJECT_LENGTH
         formatted_subject = subject.replace('\n', '\\n').replace('\r', '\\r')
-        return formatted_subject[:60]
+        return formatted_subject[:MAX_SUBJECT_LENGTH]
 

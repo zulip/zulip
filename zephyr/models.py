@@ -22,6 +22,8 @@ import subprocess
 import traceback
 import re
 
+MAX_SUBJECT_LENGTH = 60
+
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id,))
 def get_display_recipient(recipient):
     """
@@ -398,7 +400,7 @@ def bulk_create_clients(client_list):
 class Message(models.Model):
     sender = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
-    subject = models.CharField(max_length=60)
+    subject = models.CharField(max_length=MAX_SUBJECT_LENGTH)
     content = models.TextField()
     pub_date = models.DateTimeField('date published')
     sending_client = models.ForeignKey(Client)
