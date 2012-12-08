@@ -267,13 +267,19 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
     if 'recipient_id' in narrow:
         query = query.filter(recipient_id = narrow['recipient_id'])
     if 'stream' in narrow:
-        stream = Stream.objects.get(realm=user_profile.realm, name__iexact=narrow['stream'])
+        try:
+            stream = Stream.objects.get(realm=user_profile.realm, name__iexact=narrow['stream'])
+        except Stream.DoesNotExist:
+            return json_error("Invalid stream %s" % (narrow['stream'],))
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
         query = query.filter(recipient_id = recipient.id)
 
     if 'one_on_one_email' in narrow:
         query = query.filter(recipient__type=Recipient.PERSONAL)
-        recipient_user = UserProfile.objects.get(user__email = narrow['one_on_one_email'])
+        try:
+            recipient_user = UserProfile.objects.get(user__email = narrow['one_on_one_email'])
+        except UserProfile.DoesNotExist:
+            return json_error("Invalid one_on_one_email %s" % (narrow['one_on_one_email'],))
         recipient = Recipient.objects.get(type=Recipient.PERSONAL, type_id=recipient_user.id)
         # If we are narrowed to personals with ourself, we want to search for personals where the user
         # with address "one_on_one_email" is the sender *and* the recipient, not personals where the user
