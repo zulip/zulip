@@ -51,6 +51,12 @@ def to_non_negative_int(x):
         raise ValueError("argument is negative")
     return x
 
+def from_json_to_dict(json):
+    data = simplejson.loads(json)
+    if not isinstance(data, dict):
+        raise ValueError("argument is not a dictionary")
+    return data
+
 def get_stream(stream_name, realm):
     try:
         return Stream.objects.get(name__iexact=stream_name, realm=realm)
@@ -254,7 +260,7 @@ def api_get_old_messages(request, user_profile,
 def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_int),
                              num_before = POST(converter=to_non_negative_int),
                              num_after = POST(converter=to_non_negative_int),
-                             narrow = POST('narrow', converter=simplejson.loads),
+                             narrow = POST('narrow', converter=from_json_to_dict),
                              user_profile=None, apply_markdown=True):
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
 
