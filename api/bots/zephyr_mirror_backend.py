@@ -462,8 +462,15 @@ def forward_to_zephyr(message):
                 zephyr_class = "message"
         zwrite_args.extend(["-c", zephyr_class, "-i", instance])
     elif message['type'] == "private":
-        if len(message['display_recipient']) <= 2:
+        if len(message['display_recipient']) == 1:
             recipient = to_zephyr_username(message["display_recipient"][0]["email"])
+            zwrite_args.extend([recipient])
+        elif len(message['display_recipient']) == 2:
+            recipient = ""
+            for r in message["display_recipient"]:
+                if r["email"].lower() != humbug_account_email.lower():
+                    recipient = to_zephyr_username(r["email"])
+                    break
             zwrite_args.extend([recipient])
         else:
             zwrite_args.extend(["-C"])
