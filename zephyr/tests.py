@@ -5,7 +5,7 @@ from django.utils.timezone import now
 from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
-    filter_by_subscriptions, Realm, do_send_message, Client
+    filter_by_subscriptions, get_display_recipient, Realm, do_send_message, Client
 from zephyr.views import json_get_updates, api_get_messages, gather_subscriptions
 from zephyr.decorator import RespondAsynchronously
 from zephyr.lib.initial_password import initial_password, initial_api_key
@@ -500,6 +500,155 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
         self.assert_json_error(result,
                                "Unknown property or invalid verb for bad")
+
+class GetOldMessagesTest(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def post_with_params(self, modified_params):
+        post_params = {"anchor": 1, "num_before": 1, "num_after": 1,
+                  "narrow": simplejson.dumps({})}
+        post_params.update(modified_params)
+        return self.client.post("/json/get_old_messages", dict(post_params))
+
+    def check_well_formed_messages_response(self, result):
+        self.assertIn("messages", result)
+        self.assertTrue(isinstance(result["messages"], list))
+        for message in result["messages"]:
+            for field in ("content", "content_type", "display_recipient",
+                          "gravatar_hash", "recipient_id", "sender_full_name",
+                          "sender_short_name", "timestamp"):
+                self.assertIn(field, message)
+
+    def successful_get_old_messages(self):
+        """
+        A call to /json/get_old_messages with valid parameters returns a list of
+        messages.
+        """
+        self.login("hamlet@humbughq.com")
+        self.check_well_formed_messages_response(self.post_with_params({}))
+
+    def get_old_messages_with_narrow_recipient_id(self):
+        """
+        A request for old messages with a narrow recipient_id only returns
+        messages for that id.
+        """
+        self.login("hamlet@humbughq.com")
+        messages = self.message_stream(User.objects.get(email="hamlet@humbughq.com"))
+        recipient_id = messages[0].recipient.id
+
+        json_result = self.post_with_params({"narrow": simplejson.dumps(
+                    {"recipient_id": recipient_id})})
+        self.assert_json_success(json_result)
+
+        result = simplejson.loads(json_result.content)
+        self.check_well_formed_messages_response(result)
+
+        for message in result["messages"]:
+            self.assertEquals(message["recipient_id"], recipient_id)
+
+    def get_old_messages_with_narrow_stream(self):
+        """
+        A request for old messages with a narrow stream only returns messages
+        for that stream.
+        """
+        self.login("hamlet@humbughq.com")
+        messages = self.message_stream(User.objects.get(email="hamlet@humbughq.com"))
+        stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
+                                 messages)
+        stream_name = get_display_recipient(stream_messages[0].recipient)
+        stream_id = stream_messages[0].recipient.id
+
+        json_result = self.post_with_params({"narrow": simplejson.dumps(
+                    {"stream": stream_name})})
+        self.assert_json_success(json_result)
+
+        result = simplejson.loads(json_result.content)
+        self.check_well_formed_messages_response(result)
+
+        for message in result["messages"]:
+            self.assertEquals(message["type"], "stream")
+            self.assertEquals(message["recipient_id"], stream_id)
+
+    def test_missing_params(self):
+        """
+        anchor, num_before, num_after, and narrow are all required
+        POST parameters for get_old_messages.
+        """
+        self.login("hamlet@humbughq.com")
+
+        required_args = (("anchor", 1), ("num_before", 1), ("num_after", 1),
+                         ("narrow", {}))
+
+        for i in range(len(required_args)):
+            post_params = dict(required_args[:i])
+            result = self.client.post("/json/get_old_messages", post_params)
+            self.assert_json_error(result,
+                                   "Missing '%s' argument" % (required_args[i][0],))
+
+    def test_bad_int_params(self):
+        """
+        anchor, num_before, num_after, and narrow must all be non-negative
+        integers or strings that can be converted to non-negative integers.
+        """
+        self.login("hamlet@humbughq.com")
+
+        other_params = [("narrow", {})]
+        int_params = ["anchor", "num_before", "num_after"]
+
+        bad_types = (False, "", "-1", -1)
+        for idx, param in enumerate(int_params):
+            for type in bad_types:
+                # Rotate through every bad type for every integer
+                # parameter, one at a time.
+                post_params = dict(other_params + [(param, type)] + \
+                                       [(other_param, 0) for other_param in \
+                                            int_params[:idx] + int_params[idx + 1:]]
+                                   )
+                result = self.client.post("/json/get_old_messages", post_params)
+                self.assert_json_error(result,
+                                       "Bad value for '%s': %s" % (param, type))
+
+    def test_bad_narrow_type(self):
+        """
+        narrow must be a dictionary.
+        """
+        self.login("hamlet@humbughq.com")
+
+        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
+
+        bad_types = (False, 0, "", "{malformed json,")
+        for type in bad_types:
+            post_params = dict(other_params + [("narrow", type)])
+            result = self.client.post("/json/get_old_messages", post_params)
+            self.assert_json_error(result,
+                                   "Bad value for 'narrow': %s" % (type,))
+
+    def exercise_bad_narrow_content(self, narrow_key, bad_content):
+        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
+        for content in bad_content:
+            post_params = dict(other_params + [("narrow",
+                                                simplejson.dumps({narrow_key: content}))])
+            result = self.client.post("/json/get_old_messages", post_params)
+            self.assert_json_error(result,
+                                   "Invalid %s %s" % (narrow_key, content,))
+
+    def test_bad_narrow_stream_content(self):
+        """
+        If an invalid stream name is requested in get_old_messages, an error is
+        returned.
+        """
+        self.login("hamlet@humbughq.com")
+        bad_stream_content = ("non-existent stream", 0, [])
+        self.exercise_bad_narrow_content("stream", bad_stream_content)
+
+    def test_bad_narrow_one_on_one_email_content(self):
+        """
+        If an invalid one_on_one_email is requested in get_old_messages, an
+        error is returned.
+        """
+        self.login("hamlet@humbughq.com")
+        bad_stream_content = ("non-existent email", 0, [])
+        self.exercise_bad_narrow_content("one_on_one_email", bad_stream_content)
 
 class DummyHandler(object):
     def __init__(self, assert_callback):
