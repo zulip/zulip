@@ -131,8 +131,8 @@ def send_humbug(zeph):
 
 def send_error_humbug(error_msg):
     message = {"type": "private",
-               "sender": options.user + "@mit.edu",
-               "to": options.user + "@mit.edu",
+               "sender": humbug_account_email,
+               "to": humbug_account_email,
                "content": error_msg,
                }
     humbug_client.send_message(message)
@@ -521,7 +521,7 @@ received it, Zephyr users did not.  The error message from zwrite was:
 %s""" % (heading, stderr, support_closing))
 
 def maybe_forward_to_zephyr(message):
-    if (message["sender_email"] == options.user + "@mit.edu"):
+    if (message["sender_email"] == humbug_account_email):
         if not ((message["type"] == "stream") or
                 (message["type"] == "private" and
                  False not in [u["email"].lower().endswith("mit.edu") for u in
@@ -797,9 +797,10 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
         # don't need to read it in
         os.environ["HUMBUG_API_KEY"] = api_key
 
+    humbug_account_email = options.user + "@mit.edu"
     import humbug
     humbug_client = humbug.Client(
-        email=options.user + "@mit.edu",
+        email=humbug_account_email,
         api_key=api_key,
         verbose=True,
         client="zephyr_mirror",
