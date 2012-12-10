@@ -474,6 +474,8 @@ def forward_to_zephyr(message):
             recipients = [recipient]
         else:
             zwrite_args.extend(["-C"])
+            # We drop the @ATHENA.MIT.EDU here because otherwise the
+            # "CC: user1 user2 ..." output will be unnecessarily verbose.
             recipients = [to_zephyr_username(user["email"]).replace("@ATHENA.MIT.EDU", "")
                           for user in message["display_recipient"]]
         logger.info("Forwarding message to %s" % (recipients,))
