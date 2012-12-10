@@ -398,6 +398,9 @@ def bulk_create_clients(client_list):
             existing_clients.add(name)
     batch_bulk_create(Client, clients_to_create)
 
+def linebreak(string):
+    return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
+
 class Message(models.Model):
     sender = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
@@ -454,7 +457,7 @@ class Message(models.Model):
 
         if apply_markdown:
 #            obj['content'] = bugdown.convert(self.content)
-            obj['content'] = escape(self.content)
+            obj['content'] = linebreak(escape(self.content))
             obj['content_type'] = 'text/html'
         else:
             obj['content'] = self.content
