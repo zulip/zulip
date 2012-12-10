@@ -28,24 +28,55 @@ import traceback
 import urlparse
 import sys
 import os
+import optparse
+
+from ConfigParser import SafeConfigParser
 
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
 assert(requests.__version__ > '0.12')
 API_VERSTRING = "/api/v1/"
 
+def generate_option_group(parser):
+    group = optparse.OptionGroup(parser, 'API configuration')
+    group.add_option('--site',
+                      default='https://humbughq.com',
+                      help=optparse.SUPPRESS_HELP)
+    group.add_option('--api-key',
+                     action='store')
+    group.add_option('--user',
+                     dest='email',
+                     help='Email address of the calling user.')
+    group.add_option('--config-file',
+                     action='store',
+                     help='Location of an ini file containing the above information.')
+    group.add_option('-v', '--verbose',
+                     action='store_true',
+                     help='Provide detailed output.')
+
+    return group
+
+def init_from_options(options):
+    return Client(email=options.email, api_key=options.api_key, config_file=options.config_file,
+                  verbose=options.verbose)
+
 class Client(object):
-    def __init__(self, email, api_key=None, api_key_file=None,
+    def __init__(self, email=None, api_key=None, config_file=None,
                  verbose=False, retry_on_errors=True,
                  site="https://humbughq.com", client="API"):
-        if api_key is None:
-            if api_key_file is None:
-                api_key_file = os.path.join(os.environ["HOME"], ".humbug-api-key")
-            if not os.path.exists(api_key_file):
-                raise RuntimeError("api_key not specified and %s does not exist"
-                                   % (api_key_file,))
-            with file(api_key_file, 'r') as f:
-                api_key = f.read().strip()
+        if None in (api_key, email):
+            if config_file is None:
+                config_file = os.path.join(os.environ["HOME"], ".humbugrc")
+            if not os.path.exists(config_file):
+                raise RuntimeError("api_key or email not specified and %s does not exist"
+                                   % (config_file,))
+            config = SafeConfigParser()
+            with file(config_file, 'r') as f:
+                config.readfp(f, config_file)
+            if api_key is None:
+                api_key = config.get("api", "key")
+            if email is None:
+                email = config.get("api", "email")
 
         self.api_key = api_key
         self.email = email
