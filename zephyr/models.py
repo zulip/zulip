@@ -21,6 +21,7 @@ import time
 import subprocess
 import traceback
 import re
+from django.utils.html import escape
 
 MAX_SUBJECT_LENGTH = 60
 
@@ -452,7 +453,8 @@ class Message(models.Model):
             gravatar_hash     = gravatar_hash(self.sender.user.email))
 
         if apply_markdown:
-            obj['content'] = bugdown.convert(self.content)
+#            obj['content'] = bugdown.convert(self.content)
+            obj['content'] = escape(self.content)
             obj['content_type'] = 'text/html'
         else:
             obj['content'] = self.content
