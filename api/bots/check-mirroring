@@ -174,9 +174,9 @@ logger.info("Starting sending messages!")
 zsig = "Timothy Good Abbott"
 for key, (stream, test) in zhkeys.items():
     if stream == "message":
-        zwrite_args = ["zwrite", "-s", zsig, mit_user]
+        zwrite_args = ["zwrite", "-n", "-s", zsig, mit_user]
     else:
-        zwrite_args = ["zwrite", "-s", zsig, "-c", stream, "-i", "test"]
+        zwrite_args = ["zwrite", "-n", "-s", zsig, "-c", stream, "-i", "test"]
     send_zephyr(zwrite_args, str(key))
 logger.info("Sent Zephyr messages!")
 
