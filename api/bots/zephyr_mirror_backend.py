@@ -440,7 +440,6 @@ def forward_to_zephyr(message):
     zwrite_args = ["zwrite", "-n", "-s", zsig_fullname, "-F", "Class $class, Instance $instance:\n" +
                    "To: @bold($recipient) at $time $date\n" +
                    "From: @bold{$1 <$sender>}\n\n$2@(@color(blue))"]
-    logger.info("Forwarding message from %s" %  (message["sender_email"],))
     if message['type'] == "stream":
         zephyr_class = message["display_recipient"]
         instance = message["subject"]
@@ -461,21 +460,24 @@ def forward_to_zephyr(message):
                 instance = zephyr_class
                 zephyr_class = "message"
         zwrite_args.extend(["-c", zephyr_class, "-i", instance])
+        logger.info("Forwarding message to class %s, instance %s" % (zephyr_class, instance))
     elif message['type'] == "private":
         if len(message['display_recipient']) == 1:
             recipient = to_zephyr_username(message["display_recipient"][0]["email"])
-            zwrite_args.extend([recipient])
+            recipients = [recipient]
         elif len(message['display_recipient']) == 2:
             recipient = ""
             for r in message["display_recipient"]:
                 if r["email"].lower() != humbug_account_email.lower():
                     recipient = to_zephyr_username(r["email"])
                     break
-            zwrite_args.extend([recipient])
+            recipients = [recipient]
         else:
             zwrite_args.extend(["-C"])
-            zwrite_args.extend([to_zephyr_username(user["email"]).replace("@ATHENA.MIT.EDU", "")
-                                for user in message["display_recipient"]])
+            recipients = [to_zephyr_username(user["email"]).replace("@ATHENA.MIT.EDU", "")
+                          for user in message["display_recipient"]]
+        logger.info("Forwarding message to %s" % (recipients,))
+        zwrite_args.extend(recipients)
 
     if options.test_mode:
         logger.debug("Would have forwarded: %s\n%s" %
