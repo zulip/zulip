@@ -106,11 +106,16 @@ def send_humbug(message):
         logger.error(result)
         print_status_and_exit(1)
 
-def send_zephyr(zwrite_args, content):
+def send_zephyr(zwrite_args, content, retry=False):
     p = subprocess.Popen(zwrite_args, stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate(input=content.encode("utf-8"))
     if p.returncode != 0:
+        if not retry and "Detected server failure while receiving acknowledgement for" in stderr:
+            logger.warning("Got server failure error sending zephyr; retrying")
+            logger.warning(stderr)
+            # Retry sending the message rather than bailing.
+            return send_zephyr(zwrite_args, content, True)
         logger.error("Error sending zephyr:")
         logger.info(stdout)
         logger.error(stderr)
