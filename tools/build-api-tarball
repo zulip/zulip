@@ -5,4 +5,4 @@ if [ -z "$ref" ]; then
     exit 1
 fi
 cd api
-git archive --prefix=humbug-api/ -o /tmp/humbug-api.tar.gz "$ref" examples/ humbug.py __init__.py README
+git archive --prefix=humbug-api/ -o /tmp/humbug-api.tar.gz "$ref" examples/ humbug.py __init__.py README bin/
