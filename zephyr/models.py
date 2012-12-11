@@ -74,7 +74,11 @@ class UserProfile(models.Model):
             return profile
 
 class PreregistrationUser(models.Model):
-    email = models.EmailField(unique=True)
+    email = models.EmailField()
+    referred_by = models.ForeignKey(UserProfile, null=True)
+    streams = models.ManyToManyField('Stream', null=True)
+    invited_at = models.DateTimeField(auto_now=True)
+
     # status: whether an object has been confirmed.
     #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
     status = models.IntegerField(default=0)

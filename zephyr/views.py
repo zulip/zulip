@@ -7,6 +7,7 @@ from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
 from django.utils.timezone import utc, now
 from django.core.exceptions import ValidationError
+from django.core import validators
 from django.contrib.auth.views import login as django_login_page
 from django.db.models import Q
 from django.core.mail import send_mail
@@ -74,7 +75,8 @@ def notify_new_user(user_profile, internal=False):
 def accounts_register(request):
     key = request.POST['key']
     confirmation = Confirmation.objects.get(confirmation_key=key)
-    email = confirmation.content_object.email
+    prereg_user = confirmation.content_object
+    email = prereg_user.email
     mit_beta_user = isinstance(confirmation.content_object, MitUser)
 
     company_name = email.split('@')[-1]
@@ -109,7 +111,23 @@ def accounts_register(request):
                 do_change_full_name(user_profile, full_name)
             else:
                 user_profile = do_create_user(email, password, realm, full_name, short_name)
-                add_default_subs(user_profile)
+                # We want to add the default subs list iff there were no subs
+                # specified when the user was invited.
+                streams = prereg_user.streams.all()
+                if len(streams) == 0:
+                    add_default_subs(user_profile)
+                else:
+                    for stream in streams:
+                        do_add_subscription(user_profile, stream)
+                if prereg_user.referred_by is not None:
+                    # This is a cross-realm private message.
+                    internal_send_message("humbug+signups@humbughq.com",
+                            Recipient.PERSONAL, prereg_user.referred_by.user.email, user_profile.realm.domain,
+                            "%s <`%s`> accepted your invitation to join Humbug!" % (
+                                user_profile.full_name,
+                                user_profile.user.email,
+                                )
+                            )
 
             notify_new_user(user_profile)
 
@@ -144,6 +162,70 @@ def accounts_accept_terms(request):
     return render_to_response('zephyr/accounts_accept_terms.html',
         { 'form': form, 'company_name': company_name, 'email': email },
         context_instance=RequestContext(request))
+
+@authenticated_json_post_view
+@has_request_variables
+def json_invite_users(request, user_profile, invitee_emails=POST):
+    # Validation
+    if not invitee_emails:
+        return json_error("You must specify at least one email address.")
+
+    invitee_emails = re.split(r'[, \n]', invitee_emails)
+
+    stream_names = request.POST.getlist('stream')
+    if not stream_names:
+        return json_error("You must specify at least one stream for invitees to join.")
+
+    streams = []
+    for stream_name in stream_names:
+        try:
+            streams.append(Stream.objects.get(realm=user_profile.realm, name__iexact=stream_name))
+        except Stream.DoesNotExist:
+            return json_error("Stream does not exist: %s. No invites were sent." % stream_name)
+
+    new_prereg_users = []
+    errors = []
+    skipped = []
+    for email in invitee_emails:
+        if email == '':
+            continue
+        try:
+            validators.validate_email(email)
+        except ValidationError:
+            errors.append((email, "Invalid address."))
+            continue
+
+        if email.split('@')[-1] != user_profile.realm.domain:
+            errors.append((email, "Outside your domain."))
+            continue
+
+        try:
+            is_unique(email)
+        except ValidationError:
+            skipped.append((email, "Already has an account."))
+            continue
+
+        # The logged in user is the referrer.
+        user = PreregistrationUser(email=email, referred_by=user_profile)
+
+        # We save twice because you cannot associate a ManyToMany field
+        # on an unsaved object.
+        user.save()
+        user.streams = streams
+        user.save()
+
+        new_prereg_users.append(user)
+
+    if errors:
+        return json_error(data={'errors': errors},
+                          msg="Some emails did not validate. No invites have been sent.")
+
+    # If we encounter an exception at any point before now, there are no unwanted side-effects,
+    # since it is totally fine to have duplicate PreregistrationUsers
+    for user in new_prereg_users:
+        Confirmation.objects.send_confirmation(user, user.email)
+
+    return json_success()
 
 def login_page(request, **kwargs):
     template_response = django_login_page(request, **kwargs)
