@@ -30,8 +30,14 @@ class AdminHumbugHandler(logging.Handler):
                 request.META["SERVER_NAME"],
                 record.getMessage()
             )
-            filter = get_exception_reporter_filter(request)
-            request_repr = filter.get_request_repr(request)
+            request_repr = "Request info:\n\n"
+            request_repr += "- path: %s\n" % (request.path,)
+            if request.method == "GET":
+                request_repr += "- GET: %s\n" % (request.GET,)
+            elif request.method == "POST":
+                request_repr += "- POST: %s\n" % (request.POST,)
+            for field in ["REMOTE_ADDR", "QUERY_STRING"]:
+                request_repr += "- %s: %s\n" % (field, request.META.get(field, "(None)"))
         except Exception:
             subject = '%s: %s' % (
                 request.META["SERVER_NAME"],
@@ -48,7 +54,7 @@ class AdminHumbugHandler(logging.Handler):
 
         internal_send_message("humbug+errors@humbughq.com",
                 Recipient.STREAM, "devel", subject,
-                "~~~~ pytb\n%s\n\n%s\n~~~~" % (stack_trace, request_repr))
+                "~~~~ pytb\n%s\n\n~~~~\n%s" % (stack_trace, request_repr))
 
     def format_subject(self, subject):
         """
