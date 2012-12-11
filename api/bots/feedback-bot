@@ -18,7 +18,7 @@ staging_client = humbug.Client(
     site="https://staging.humbughq.com")
 
 def forward_message(message):
-    if message["type"] != "private" or len(message["recipient"]) != 2:
+    if message["type"] != "private" or len(message["display_recipient"]) != 2:
         return
     forwarded_message = {
         "type": "stream",
