@@ -44,7 +44,7 @@ class AdminHumbugHandler(logging.Handler):
         subject = self.format_subject(subject)
 
         if record.exc_info:
-            stack_trace = '\n'.join(traceback.format_exception(*record.exc_info))
+            stack_trace = ''.join(traceback.format_exception(*record.exc_info))
         else:
             stack_trace = 'No stack trace available'
 
