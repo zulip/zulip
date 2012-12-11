@@ -174,6 +174,24 @@ def gen_keys(key_dict):
 gen_keys(zhkeys)
 gen_keys(hzkeys)
 
+notices = []
+
+# We check for new zephyrs multiple times, to avoid filling the zephyr
+# receive queue with 30+ messages, which might result in messages
+# being dropped.
+def receive_zephyrs():
+    while True:
+        try:
+            notice = zephyr.receive(block=False)
+        except Exception:
+            logging.exception("Exception receiving zephyrs:")
+            notice = None
+        if notice is None:
+            break
+        if notice.opcode != "":
+            continue
+        notices.append(notice)
+
 logger.info("Starting sending messages!")
 # Send zephyrs
 zsig = "Timothy Good Abbott"
@@ -183,6 +201,8 @@ for key, (stream, test) in zhkeys.items():
     else:
         zwrite_args = ["zwrite", "-n", "-s", zsig, "-c", stream, "-i", "test"]
     send_zephyr(zwrite_args, str(key))
+
+receive_zephyrs()
 logger.info("Sent Zephyr messages!")
 
 # Send Humbugs
@@ -200,10 +220,9 @@ for key, (stream, test) in hzkeys.items():
                 "content": str(key),
                 "to": stream,
                 })
+    receive_zephyrs()
 
 logger.info("Sent Humbug messages!")
-
-failed = False
 
 # Normally messages manage to forward through in under 3 seconds, but
 # sleep 10 to give a safe margin since the messages do need to do 2
@@ -211,26 +230,16 @@ failed = False
 # we want it to reliably alert only when messages aren't being
 # delivered at all.
 time.sleep(10)
+receive_zephyrs()
+
 logger.info("Starting receiving messages!")
 
 # receive humbugs
 messages = humbug_client.get_messages({'last': str(max_message_id)})['messages']
-logger.info("Received Humbug messages!")
+logger.info("Finished receiving Humbug messages!")
 
-# receive zephyrs
-notices = []
-while True:
-    try:
-        notice = zephyr.receive(block=False)
-    except Exception:
-        logging.exception("Exception receiving zephyrs:")
-        notice = None
-    if notice is None:
-        break
-    if notice.opcode != "":
-        continue
-    notices.append(notice)
-logger.info("Received Zephyr messages!")
+receive_zephyrs()
+logger.info("Finished receiving Zephyr messages!")
 
 all_keys = set(zhkeys.keys() + hzkeys.keys())
 def process_keys(content_list):
