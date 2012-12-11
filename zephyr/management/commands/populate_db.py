@@ -610,9 +610,10 @@ def restore_saved_messages():
 
     # Set restored pointers to the very latest messages
     with transaction.commit_on_success():
-        for up in UserProfile.objects.all():
+        for user_profile in UserProfile.objects.all():
             try:
-                top = UserMessage.objects.filter(user_profile_id=up.id).order_by("-message")[0]
+                top = UserMessage.objects.filter(
+                    user_profile_id=user_profile.id).order_by("-message")[0]
                 user_profile.pointer = top.message_id
             except IndexError:
                 user_profile.pointer = -1
