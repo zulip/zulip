@@ -26,17 +26,15 @@ class AdminHumbugHandler(logging.Handler):
 
         try:
             request = record.request
-            subject = '%s (%s IP): %s' % (
-                record.levelname,
-                (request.META.get('REMOTE_ADDR') in settings.INTERNAL_IPS
-                 and 'internal' or 'EXTERNAL'),
+            subject = '%s: %s' % (
+                request.META["SERVER_NAME"],
                 record.getMessage()
             )
             filter = get_exception_reporter_filter(request)
             request_repr = filter.get_request_repr(request)
         except Exception:
             subject = '%s: %s' % (
-                record.levelname,
+                request.META["SERVER_NAME"],
                 record.getMessage()
             )
             request = None
