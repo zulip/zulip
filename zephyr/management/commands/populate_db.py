@@ -16,6 +16,7 @@ from django.conf import settings
 from api.bots import mit_subs_list
 from zephyr.lib.bulk_create import batch_bulk_create
 from zephyr.lib.time import timestamp_to_datetime
+from zephyr.models import MAX_MESSAGE_LENGTH
 
 import simplejson
 import datetime
@@ -285,6 +286,9 @@ def restore_saved_messages():
 
         if message_type in ["stream", "huddle", "personal"]:
             old_message["sender_email"] = fix_email(old_message["sender_email"])
+            # Fix the length on too-long messages before we start processing them
+            if len(old_message["content"]) > MAX_MESSAGE_LENGTH:
+                old_message["content"] = "[ This message was deleted because it was too long ]"
         if message_type in ["subscription_added", "subscription_removed"]:
             old_message["domain"] = old_message["domain"].lower()
             old_message["user"] = fix_email(old_message["user"])
