@@ -594,10 +594,7 @@ function get_updates(options) {
                 select_message_by_id(data.new_pointer, {then_scroll: true});
             }
 
-            // Pause for 25 milliseconds before restarting the request.
-            // This gives the browser (especially, our frontend test browser)
-            // time to perform other scheduled actions.
-            get_updates_timeout = setTimeout(get_updates, 25);
+            get_updates_timeout = setTimeout(get_updates, 0);
         },
         error: function (xhr, error_type, exn) {
             if (error_type === 'timeout') {
