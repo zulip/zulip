@@ -3,7 +3,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 import hashlib
 import base64
-import calendar
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.initial_password import initial_password, initial_api_key
 import os
@@ -22,6 +21,7 @@ import subprocess
 import traceback
 import re
 from django.utils.html import escape
+from zephyr.lib.time import datetime_to_timestamp
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
@@ -453,7 +453,7 @@ class Message(models.Model):
             display_recipient = display_recipient,
             recipient_id      = self.recipient.id,
             subject           = self.subject,
-            timestamp         = calendar.timegm(self.pub_date.timetuple()),
+            timestamp         = datetime_to_timestamp(self.pub_date),
             gravatar_hash     = gravatar_hash(self.sender.user.email))
 
         if apply_markdown:
@@ -480,7 +480,7 @@ class Message(models.Model):
             recipient         = get_display_recipient(self.recipient),
             subject           = self.subject,
             content           = self.content,
-            timestamp         = calendar.timegm(self.pub_date.timetuple()))
+            timestamp         = datetime_to_timestamp(self.pub_date))
 
     @classmethod
     def remove_unreachable(cls):
