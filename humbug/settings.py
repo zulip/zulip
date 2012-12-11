@@ -2,10 +2,10 @@
 import os
 import platform
 
-deployed = (('humbughq.com' in platform.node())
+DEPLOYED = (('humbughq.com' in platform.node())
             or os.path.exists('/etc/humbug-server'))
 
-DEBUG = not deployed
+DEBUG = not DEPLOYED
 TEMPLATE_DEBUG = DEBUG
 
 if DEBUG:
@@ -31,7 +31,7 @@ DATABASES = {
     },
 }
 
-if deployed:
+if DEPLOYED:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
@@ -86,7 +86,7 @@ HASH_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 # when executing the initial http -> https redirect.
 #
 # Turn it off for local testing because we don't have SSL.
-if deployed:
+if DEPLOYED:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE    = True
 
@@ -148,7 +148,7 @@ INSTALLED_APPS = (
 )
 
 # Caching
-if deployed:
+if DEPLOYED:
     CACHES = { 'default': {
         'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
         'LOCATION': '127.0.0.1:11211',
@@ -232,7 +232,7 @@ LOGIN_REDIRECT_URL='/'
 
 MESSAGE_LOG="all_messages_log." + platform.node()
 
-if deployed:
+if DEPLOYED:
     ALLOW_REGISTER = False
     FULL_NAVBAR    = False
     HOME_NOT_LOGGED_IN = '/accounts/login'
@@ -242,15 +242,15 @@ else:
     HOME_NOT_LOGGED_IN = '/accounts/home'
 
 # For testing, you may want to have emails be printed to the console.
-if not deployed:
+if not DEPLOYED:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
     # Use fast password hashing for creating testing users when not
-    # deployed
+    # DEPLOYED
     PASSWORD_HASHERS = (
                 'django.contrib.auth.hashers.SHA1PasswordHasher',
             )
 
-if deployed:
+if DEPLOYED:
     # Filter out user data
     DEFAULT_EXCEPTION_REPORTER_FILTER = 'zephyr.filters.HumbugExceptionReporterFilter'

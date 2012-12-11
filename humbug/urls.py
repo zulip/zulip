@@ -74,7 +74,7 @@ urlpatterns = patterns('',
     url(r'^notify_pointer_update$',         'zephyr.views.notify_pointer_update'),
 )
 
-if settings.DEBUG:
+if not settings.DEPLOYED:
     urlpatterns += patterns('',
         url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
             {'document_root': os.path.join(settings.SITE_ROOT, '../zephyr/static-access-control')}))
