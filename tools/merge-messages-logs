@@ -1,0 +1,21 @@
+#!/usr/bin/python
+import simplejson
+
+items_by_timestamp = {}
+
+def read_log_file(filename):
+    with open(filename, 'r') as log:
+        for ln in log:
+            m = simplejson.loads(ln)
+            m["timestamp"] = float(m["timestamp"])
+            items_by_timestamp.setdefault(m["timestamp"], [])
+            items_by_timestamp[m["timestamp"]].append(m)
+
+read_log_file("all_messages_log.merged.2012-12-05")
+read_log_file("all_messages_log.staging.humbughq.com")
+read_log_file("all_messages_log.app.humbughq.com")
+
+with open("all_messages_log.monastery", "w") as log:
+    for stamp in sorted(items_by_timestamp.keys()):
+        for item in items_by_timestamp[stamp]:
+            log.write(simplejson.dumps(item) + "\n")
