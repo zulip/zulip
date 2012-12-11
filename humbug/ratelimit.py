@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
 
 class _RateLimitFilter(object):
-    last_error = 0
+    last_error = datetime.min
 
     def filter(self, record):
         from django.conf import settings
