@@ -17,7 +17,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     create_mit_user_if_needed, create_stream_if_needed, StreamColor, \
     PreregistrationUser, get_client, MitUser, User, UserActivity, \
     log_subscription_property_change, internal_send_message, \
-    MAX_SUBJECT_LENGTH
+    MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH
 from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
     is_active
 from django.views.decorators.csrf import csrf_exempt
@@ -607,6 +607,8 @@ def send_message_backend(request, user_profile, client,
 
     if len(message_to) == 0:
         return json_error("Message must have recipients.")
+    if len(message_content) > MAX_MESSAGE_LENGTH:
+        return json_error("Message too long.")
 
     if client.name == "zephyr_mirror":
         # Here's how security works for non-superuser mirroring:

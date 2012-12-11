@@ -24,6 +24,7 @@ import re
 from django.utils.html import escape
 
 MAX_SUBJECT_LENGTH = 60
+MAX_MESSAGE_LENGTH = 10000
 
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id,))
 def get_display_recipient(recipient):
@@ -556,7 +557,9 @@ def do_send_message(message, no_log=False):
             users    = simplejson.dumps([str(user.id) for user in recipients])))
 
 def internal_send_message(sender_email, recipient_type, recipient_name,
-        subject, content):
+                          subject, content):
+    if len(content) > MAX_MESSAGE_LENGTH:
+        content = content[0:3900] + "\n\n[message was too long and has been truncated]"
     message = Message()
     message.sender = UserProfile.objects.get(user__email=sender_email)
     message.recipient = Recipient.objects.get(type_id=create_stream_if_needed(
