@@ -457,8 +457,10 @@ class Message(models.Model):
             gravatar_hash     = gravatar_hash(self.sender.user.email))
 
         if apply_markdown:
-#            obj['content'] = bugdown.convert(self.content)
-            obj['content'] = linebreak(escape(self.content))
+            if self.sending_client.name in ('API', 'github_bot'):
+                obj['content'] = bugdown.convert(self.content)
+            else:
+                obj['content'] = linebreak(escape(self.content))
             obj['content_type'] = 'text/html'
         else:
             obj['content'] = self.content
