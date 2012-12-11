@@ -556,9 +556,7 @@ function get_updates(options) {
         url:      '/json/get_updates',
         data:     get_updates_params,
         dataType: 'json',
-        timeout:  55*1000, // 55 seconds in ms -- needs to be under a
-                           // minute to deal with crappy home wireless
-                           // routers that kill "inactive" http connections.
+        timeout:  poll_timeout,
         success: function (data) {
             if (! data) {
                 // The server occationally returns no data during a

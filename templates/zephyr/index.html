@@ -67,6 +67,8 @@
 {# Not escaped, because it's guaranteed by the model to be an integer. #}
 var initial_pointer = {{ user_profile.pointer }};
 
+var poll_timeout = {{ poll_timeout }};
+
 var email = "{{ user_profile.user.email|escapejs }}";
 var domain = "{{ user_profile.realm.domain|escapejs }}";
 var have_initial_messages = {{ have_initial_messages|escapejs }};

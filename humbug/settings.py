@@ -257,6 +257,12 @@ LOGIN_REDIRECT_URL='/'
 
 MESSAGE_LOG="all_messages_log." + platform.node()
 
+# Polling timeout for get_updates, in milliseconds.
+# We configure this here so that the client test suite can override it.
+# The default is 55 seconds, to deal with crappy home wireless routers that
+# kill "inactive" http connections.
+POLL_TIMEOUT = 55 * 1000
+
 if DEPLOYED:
     ALLOW_REGISTER = False
     FULL_NAVBAR    = False

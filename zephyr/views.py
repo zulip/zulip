@@ -213,6 +213,7 @@ def home(request):
                                'email_hash'  : gravatar_hash(user_profile.user.email),
                                'people'      : people,
                                'streams'     : streams,
+                               'poll_timeout': settings.POLL_TIMEOUT,
                                'have_initial_messages':
                                    'true' if num_messages > 0 else 'false',
                                'show_debug':
