@@ -457,7 +457,8 @@ class Message(models.Model):
             gravatar_hash     = gravatar_hash(self.sender.user.email))
 
         if apply_markdown:
-            if self.sending_client.name in ('API', 'github_bot'):
+            if (self.sender.realm.domain != "customer1.invalid" or
+                self.sending_client.name in ('API', 'github_bot')):
                 obj['content'] = bugdown.convert(self.content)
             else:
                 obj['content'] = linebreak(escape(self.content))
