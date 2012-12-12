@@ -229,7 +229,8 @@ function ajaxSubscribe(stream) {
     });
 }
 
-exports.unsubscribe = function (stream) {
+exports.unsubscribe_button_click = function (e) {
+    var stream = $(e.target).parent().prev().find('.subscription_name').text();
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/remove",
