@@ -1,0 +1,4 @@
+; put this file in ~/.humbugrc
+[api]
+key=<api key from the web interface>
+email=<your email address>

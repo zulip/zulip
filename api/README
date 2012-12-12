@@ -15,9 +15,14 @@ as we make any changes to them.
 The easiest way to use these API bindings is to base your tools off
 of the example tools under api/examples in this distribution.
 
-If you place your API key in ~/.humbug-api-key the Python API
-bindings will automatically read it in.  You can obtain your Humbug
-API key from the Humbug settings page.
+If you place your API key in `~/.humbugrc` the Python API bindings will
+automatically read it in. The format of the config file is as follows:
+
+    [api]
+    key=<api key from the web interface>
+    email=<your email address>
+
+You can obtain your Humbug API key from the Humbug settings page.
 
 A typical simple bot sending API messages will look as follows:
 
@@ -48,3 +53,11 @@ send_message() returns a dict guaranteed to contain the following
 keys: msg, result.  For successful calls, result will be "success" and
 msg will be the empty string.  On error, result will be "error" and
 msg will describe what went wrong.
+
+#### Sending messages
+
+You can use the included `api/bin/humbug-send` script to send messages via the
+API directly from existing scripts.
+
+    humbug-send hamlet@example.com cordelia@example.com -m \
+        "Conscience doth make cowards of us all."
