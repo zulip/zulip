@@ -47,7 +47,7 @@ humbug_client = humbug.Client(
     site=options.site)
 
 # Configure logging
-log_file     = "/home/humbug/check-mirroring-log"
+log_file     = os.path.join(options.root_path, "check-mirroring-log")
 log_format   = "%(asctime)s: %(message)s"
 logging.basicConfig(format=log_format)
 
