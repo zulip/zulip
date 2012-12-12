@@ -34,13 +34,31 @@ exports.allow_collapse = function () {
     return (!filter_function) || allow_collapse;
 };
 
-/* Build a filter function from a list of operators.
+/* Convert a list of operators to a string.
    Each operator is a key-value pair like
 
        ['subject', 'my amazing subject']
 
    These are not keys in a JavaScript object, because we
    might need to support multiple operators of the same type. */
+function unparse(operators) {
+    var parts = [];
+    $.each(operators, function (index, elem) {
+        var operator = elem[0];
+        if (operator === 'search') {
+            // Search terms are the catch-all case.
+            // All tokens that don't start with a known operator and
+            // a colon are glued together to form a search term.
+            parts.push(elem[1]);
+        } else {
+            // FIXME: URI encoding will look really ugly
+            parts.push(elem[0] + ':' + encodeURIComponent(elem[1]));
+        }
+    });
+    return parts.join(' ');
+}
+
+// Build a filter function from a list of operators.
 function build_filter(operators) {
     // FIXME: This is probably pretty slow.
     // We could turn it into something more like a compiler:
@@ -155,8 +173,9 @@ exports.activate = function (operators, bar, opts) {
         search.update_highlight_on_narrow();
     }
 
-    // Put the narrow operators in the URL fragment
+    // Put the narrow operators in the URL fragment and search bar
     hashchange.save_narrow(operators);
+    $('#search_query').val(unparse(operators));
 };
 
 exports.time_travel = function () {
@@ -252,6 +271,7 @@ exports.show_all_messages = function () {
     $("#searchbox").removeClass('narrowed_view');
     $("#show_all_messages").attr("disabled", "disabled");
     $("#currently_narrowed_to").empty();
+    $('#search_query').val('');
     // Includes scrolling.
     select_message_by_id(persistent_message_id, {then_scroll: true});
 
