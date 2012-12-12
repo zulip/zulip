@@ -4,6 +4,7 @@ import platform
 
 DEPLOYED = (('humbughq.com' in platform.node())
             or os.path.exists('/etc/humbug-server'))
+STAGING_DEPLOYED = (platform.node() == 'staging.humbughq.com')
 
 DEBUG = not DEPLOYED
 TEMPLATE_DEBUG = DEBUG
@@ -31,7 +32,20 @@ DATABASES = {
     },
 }
 
-if DEPLOYED:
+if STAGING_DEPLOYED or platform.node() == 'postgres.humbughq.com':
+    DATABASES["default"] = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'humbug',
+        'USER': 'humbug',
+        'PASSWORD': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        'HOST': '10.254.4.99',
+        'OPTIONS': {
+            # Note that 'require' does NOT check certificates.  You
+            # need 'verify-full' for that.
+            'sslmode': 'require',
+            },
+        }
+elif DEPLOYED:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
