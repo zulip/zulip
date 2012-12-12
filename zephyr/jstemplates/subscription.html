@@ -1,4 +1,6 @@
 {{! Client-side Mustache template for rendering subscriptions.}}
+{{#each subscriptions}}
+{{#with this}}
 <tr>
   <td>
     <input class="colorpicker" type="text" value="{{color}}" />
@@ -10,3 +12,5 @@
             value="{{subscription}}">Unsubscribe</button>
   </td>
 </tr>
+{{/with}}
+{{/each}}

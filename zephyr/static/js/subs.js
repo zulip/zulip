@@ -89,7 +89,7 @@ function add_to_stream_list(stream_name) {
                 .click(function (event) {exports.unsubscribe(stream_name);});
         } else {
             $('#subscriptions_table').prepend(templates.subscription({
-                subscription: stream_name,color: "c2c2c2"}));
+                subscriptions: [{subscription: stream_name, color: "c2c2c2"}]}));
             draw_colorpicker(stream_name);
         }
     }
@@ -139,13 +139,16 @@ exports.fetch = function () {
         success: function (data) {
             $('#subscriptions_table tr').remove();
             if (data) {
+                var subscriptions = [];
                 $.each(data.subscriptions, function (index, data) {
                     var stream_name = data[0];
                     var color = data[1];
                     stream_colors[stream_name] = color;
-                    $('#subscriptions_table').append(templates.subscription({
-                        subscription: stream_name, color: color}));
-                    draw_colorpicker(stream_name);
+                    subscriptions.push({subscription: stream_name, color: color});
+                });
+                $('#subscriptions_table').append(templates.subscription({subscriptions: subscriptions}));
+                $.each(subscriptions, function (index, data) {
+                    draw_colorpicker(data.subscription);
                 });
             }
             $('#streams').focus().select();
