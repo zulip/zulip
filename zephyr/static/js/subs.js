@@ -68,12 +68,25 @@ var colorpicker_options = {
     }
 };
 
-// TODO: The way that we find the row is kind of fragile
-// and liable to break with streams with " in their name,
-// just like our unsubscribe button code.
+function get_button_for_stream(stream_name) {
+    // Actually using the jQuery find is hard, because we need to
+    // properly escape the stream name to stick it into the selector.
+    // This approach is simpler from a "think about escaping"
+    // perspective, but seems to be 3-4x slower.  Fortunately, it's
+    // not called particularly often.
+    var desired_button;
+    $('#subscriptions_table .subscription_name').each(function (idx, elt) {
+        var candidate = $(elt);
+        if (candidate.text() === stream_name) {
+            desired_button = candidate.parent().next().children().first();
+            return false;
+        }
+    });
+    return desired_button;
+}
+
 function draw_colorpicker(stream_name) {
-    var colorpicker = $('#subscriptions_table').find('button[value="' + stream_name + '"]')
-                                               .parent().prev().find('input');
+    var colorpicker = get_button_for_stream(stream_name).parent().prev().find('input');
     colorpicker.spectrum(colorpicker_options);
 }
 
@@ -88,8 +101,8 @@ function add_to_stream_list(stream_name) {
         stream_list.push(stream_name);
         stream_set[stream_name.toLowerCase()] = true;
 
-        stream_sub_row = $('#subscriptions_table').find('button[value="' + stream_name + '"]');
-        if (stream_sub_row.length) {
+        stream_sub_row = get_button_for_stream(stream_name);
+        if (stream_sub_row !== undefined) {
             stream_sub_row.text("Unsubscribe")
                 .removeClass("btn-primary")
                 .unbind("click")
@@ -233,7 +246,7 @@ exports.unsubscribe = function (stream) {
                 ui.report_success("Successfully removed subscription to " + name,
                                $("#subscriptions-status"));
             }
-            $('#subscriptions_table').find('button[value="' + name + '"]').text("Subscribe")
+            get_button_for_stream(name).text("Subscribe")
                 .addClass("btn-primary")
                 .unbind("click")
                 .removeAttr("onclick")
