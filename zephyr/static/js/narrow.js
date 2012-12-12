@@ -217,7 +217,7 @@ exports.by_search_term = function (term) {
     load_more_messages();
 };
 
-exports.show_all_messages = function () {
+exports.deactivate = function () {
     if (!filter_function) {
         return;
     }
@@ -246,7 +246,7 @@ exports.restore_home_state = function() {
     // back to the state you were in (possibly still narrowed) before
     // you left the Home pane.
     if ($('#sidebar li[title="Home"]').hasClass("active")) {
-        exports.show_all_messages();
+        exports.deactivate();
     }
 };
 

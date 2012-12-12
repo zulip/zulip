@@ -110,7 +110,7 @@ function process_hotkey(e) {
         } else if (search.keyboard_currently_finding()) {
             search.clear_search();
         } else {
-            narrow.show_all_messages();
+            narrow.deactivate();
         }
         return true;
     case 99: // 'c': compose

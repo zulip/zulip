@@ -65,7 +65,7 @@ function hashchanged() {
         case "":
         case "#":
             ui.change_tab_to("#home");
-            narrow.show_all_messages();
+            narrow.deactivate();
             ui.update_floating_recipient_bar();
             break;
         case "#subscriptions":
