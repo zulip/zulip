@@ -57,6 +57,12 @@ def json_to_dict(json):
         raise ValueError("argument is not a dictionary")
     return data
 
+def json_to_list(json):
+    data = simplejson.loads(json)
+    if not isinstance(data, list):
+        raise ValueError("argument is not a list")
+    return data
+
 def get_stream(stream_name, realm):
     try:
         return Stream.objects.get(name__iexact=stream_name, realm=realm)
@@ -573,7 +579,7 @@ def same_realm_email(user_profile, email):
 
 def extract_recipients(raw_recipients):
     try:
-        recipients = simplejson.loads(raw_recipients)
+        recipients = json_to_list(raw_recipients)
     except simplejson.decoder.JSONDecodeError:
         recipients = [raw_recipients]
 
@@ -734,7 +740,7 @@ def notify_new_message(request):
 
     # FIXME: better query
     users   = [UserProfile.objects.get(id=user)
-               for user in simplejson.loads(request.POST['users'])]
+               for user in json_to_list(request.POST['users'])]
     message = Message.objects.get(id=request.POST['message'])
 
     # Cause message.to_dict() to return the dicts already rendered in the other process.
@@ -820,10 +826,7 @@ def json_remove_subscriptions(request, user_profile):
 
 @has_request_variables
 def remove_subscriptions_backend(request, user_profile,
-                                 streams_raw = POST("subscriptions", simplejson.loads)):
-    if not isinstance(streams_raw, list):
-        return json_error("'subscriptions' argument must be a list")
-
+                                 streams_raw = POST("subscriptions", json_to_list)):
     streams = []
     for stream_name in set(stream_name.strip() for stream_name in streams_raw):
         stream = get_stream(stream_name, user_profile.realm)
@@ -854,10 +857,7 @@ def json_add_subscriptions(request, user_profile):
 
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
-                              streams_raw = POST('subscriptions', simplejson.loads)):
-    if not isinstance(streams_raw, list):
-        return json_error("'subscriptions' argument must be a list")
-
+                              streams_raw = POST('subscriptions', json_to_list)):
     stream_names = []
     for stream_name in streams_raw:
         stream_name = stream_name.strip()
@@ -1076,7 +1076,7 @@ def get_activity(request):
 @authenticated_api_view
 @has_request_variables
 def api_github_landing(request, user_profile, event=POST,
-                       payload=POST(converter=simplejson.loads)):
+                       payload=POST(converter=json_to_dict)):
     # TODO: this should all be moved to an external bot
 
     repository = payload['repository']
