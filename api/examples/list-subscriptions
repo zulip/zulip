@@ -31,18 +31,13 @@ Prints out a list of the user's subscriptions.
 
 Example: list-subscriptions --user=tabbott@humbughq.com --site=https://zephyr.humbughq.com
 """
-parser = optparse.OptionParser(usage=usage)
-parser.add_option('--site', default='https://humbughq.com')
-parser.add_option('--api-key')
-parser.add_option('--user')
-(options, args) = parser.parse_args()
-
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import humbug
-client = humbug.Client(
-    email=options.user,
-    api_key=options.api_key,
-    verbose=True,
-    site=options.site)
+
+parser = optparse.OptionParser(usage=usage)
+parser.add_option_group(humbug.generate_option_group(parser))
+(options, args) = parser.parse_args()
+
+client = humbug.init_from_options(options)
 
 print client.list_subscriptions()
