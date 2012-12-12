@@ -42,9 +42,7 @@ function parse_narrow(hash) {
         var operand  = decodeURIComponent(hash[i+1] || '');
         operators.push([operator, operand]);
     }
-    // The narrowbar description here is bogus, but it's going away in
-    // a subsequent commit.
-    narrow.activate(operators, {icon: 'search', description: 'FIXME'});
+    narrow.activate(operators);
 }
 
 // Returns true if this function performed a narrow

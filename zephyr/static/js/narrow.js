@@ -110,7 +110,7 @@ function build_filter(operators) {
     };
 }
 
-exports.activate = function (operators, bar, opts) {
+exports.activate = function (operators, opts) {
     opts = $.extend({}, {
         time_travel:             false,
         show_floating_recipient: true,
@@ -154,12 +154,8 @@ exports.activate = function (operators, bar, opts) {
 
     reset_load_more_status();
     $("#show_all_messages").removeAttr("disabled");
-    $(".narrowed_to_bar").show();
-    $("#top_narrowed_whitespace").show();
     $("#main_div").addClass("narrowed_view");
     $("#searchbox").addClass("narrowed_view");
-    $("#currently_narrowed_to").remove();
-    $("#narrowlabel").append(templates.narrowbar(bar));
 
     $("#zhome").removeClass("focused_table");
     // Indicate both which message is persistently selected and which
@@ -179,11 +175,7 @@ exports.activate = function (operators, bar, opts) {
 };
 
 exports.time_travel = function () {
-    var bar = {
-        icon:        'time',
-        description: 'Messages around time ' + message_dict[target_id].full_date_str
-    };
-    exports.activate([], bar, {time_travel: true});
+    exports.activate([], {time_travel: true});
 };
 
 // This is the message we're about to select, within the narrowed view.
@@ -196,8 +188,7 @@ exports.target = function (id) {
 };
 
 exports.all_private_messages = function () {
-    var bar = {icon: 'user', description: 'You and anyone else'};
-    exports.activate([['is', 'private-message']], bar);
+    exports.activate([['is', 'private-message']]);
 };
 
 exports.by_subject = function () {
@@ -216,28 +207,21 @@ exports.by_stream_and_subject_names = function (stream, subject) {
     var operators = [
         ['stream',  stream],
         ['subject', subject.toLowerCase()]];
-    var bar = {
-        icon:           'bullhorn',
-        description:    stream,
-        subject:        subject
-    };
-    exports.activate(operators, bar, {show_floating_recipient: false});
+    exports.activate(operators, {show_floating_recipient: false});
 };
 
 exports.by_stream_name = function (name) {
-    var bar = {icon: 'bullhorn', description: name};
-    exports.activate([['stream', name]], bar);
+    exports.activate([['stream', name]]);
 };
 
 exports.by_private_message_group = function (names, emails) {
-    var bar = {icon: 'user', description: "You and " + names};
-    exports.activate([['pm-with', emails]], bar, {show_floating_recipient: false});
+    exports.activate([['pm-with', emails]], {show_floating_recipient: false});
 };
 
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function () {
     var message = message_dict[target_id];
-    var bar, new_narrow, emails;
+    var new_narrow, emails;
     switch (message.type) {
     case 'private':
         exports.by_private_message_group(message.display_reply_to,
@@ -251,8 +235,7 @@ exports.by_recipient = function () {
 };
 
 exports.by_search_term = function (term) {
-    var bar = {icon: 'search', description: 'Messages containing "' + term + '"'};
-    exports.activate([['search', term.toLowerCase()]], bar, {allow_collapse: false});
+    exports.activate([['search', term.toLowerCase()]], {allow_collapse: false});
     load_more_messages();
 };
 
@@ -264,13 +247,10 @@ exports.show_all_messages = function () {
 
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
-    $(".narrowed_to_bar").hide();
     reset_load_more_status();
-    $("#top_narrowed_whitespace").hide();
     $("#main_div").removeClass('narrowed_view');
     $("#searchbox").removeClass('narrowed_view');
     $("#show_all_messages").attr("disabled", "disabled");
-    $("#currently_narrowed_to").empty();
     $('#search_query').val('');
     // Includes scrolling.
     select_message_by_id(persistent_message_id, {then_scroll: true});

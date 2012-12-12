@@ -448,18 +448,6 @@ input.recipient_box {
     -moz-border-radius: 0;
 }
 
-.narrowed_to_bar {
-    /* We use display: to toggle whether or not this actually shows up,
-       but we need visibility: visible because its parent,
-       top_statusbar, is visibility: hidden and we don't want to
-       inherit that. */
-    visibility: visible;
-    display: none;
-    padding: 5px 10px;
-    background-color: #DDD;
-    border: 1px solid black;
-}
-
 .floating_recipient_bar {
     max-width: 640px;
     /* from .message_list */
@@ -473,17 +461,6 @@ table.floating_recipient {
     width: 100%;
 }
 
-#narrowlabel {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    padding-left: 46px;
-}
-
-#currently_narrowed_to {
-    font-weight: bold;
-}
-
 .narrowed_view {
     background-color: #DDD;
 }
@@ -491,12 +468,6 @@ table.floating_recipient {
 #top_whitespace {
   display: block;
   height: 40px;
-}
-
-#top_narrowed_whitespace {
-  visibility: hidden;
-  display: none;
-  height: 34px; /* Height of narrowlabel + floating indicator */
 }
 
 #bottom_whitespace {

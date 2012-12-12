@@ -115,7 +115,7 @@ function expected_messages(table, headings, bodies) {
 
 function un_narrow() {
     casper.test.info('Un-narrowing');
-    casper.click('.narrowed_to_bar .close');
+    keypress(27); // Esc
 }
 
 // Start of test script.

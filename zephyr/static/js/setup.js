@@ -14,7 +14,7 @@ $(function () {
     }
 
     // Compile Handlebars templates.
-    $.each(['message', 'subscription', 'narrowbar',
+    $.each(['message', 'subscription',
             'userinfo_popover_title', 'userinfo_popover_content',
             'timeinfo_popover_content'],
         function (index, name) {
