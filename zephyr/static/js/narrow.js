@@ -174,10 +174,6 @@ exports.activate = function (operators, opts) {
     $('#search_query').val(unparse(operators));
 };
 
-exports.time_travel = function () {
-    exports.activate([], {time_travel: true});
-};
-
 // This is the message we're about to select, within the narrowed view.
 // But it won't necessarily be selected once the user un-narrows.
 //
@@ -185,10 +181,6 @@ exports.time_travel = function () {
 // persistent_message_id.
 exports.target = function (id) {
     target_id = id;
-};
-
-exports.all_private_messages = function () {
-    exports.activate([['is', 'private-message']]);
 };
 
 exports.by_subject = function () {
@@ -199,23 +191,10 @@ exports.by_subject = function () {
         exports.by_recipient();
         return;
     }
-    exports.by_stream_and_subject_names(original.display_recipient,
-                                        original.subject);
-};
-
-exports.by_stream_and_subject_names = function (stream, subject) {
-    var operators = [
-        ['stream',  stream],
-        ['subject', subject.toLowerCase()]];
-    exports.activate(operators, {show_floating_recipient: false});
-};
-
-exports.by_stream_name = function (name) {
-    exports.activate([['stream', name]]);
-};
-
-exports.by_private_message_group = function (names, emails) {
-    exports.activate([['pm-with', emails]], {show_floating_recipient: false});
+    exports.activate([
+            ['stream',  original.display_recipient],
+            ['subject', original.subject.toLowerCase()]
+        ], {show_floating_recipient: false});
 };
 
 // Called for the 'narrow by stream' hotkey.
@@ -224,12 +203,11 @@ exports.by_recipient = function () {
     var new_narrow, emails;
     switch (message.type) {
     case 'private':
-        exports.by_private_message_group(message.display_reply_to,
-                                         message.reply_to);
+        exports.activate([['pm-with', message.reply_to]], {show_floating_recipient: false});
         break;
 
     case 'stream':
-        exports.by_stream_name(message.display_recipient);
+        exports.activate([['stream', message.display_recipient]]);
         break;
     }
 };

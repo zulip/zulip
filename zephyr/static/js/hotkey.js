@@ -14,7 +14,9 @@ var directional_hotkeys = {
 var narrow_hotkeys = {
     115: narrow.by_recipient,           // 's'
     83:  narrow.by_subject,             // 'S'
-    118: narrow.all_private_messages    // 'v'
+    118: function () {                  // 'v'
+        narrow.activate([['is', 'private-message']]);
+    }
 };
 
 // Process a keydown or keypress event.

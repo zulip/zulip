@@ -66,7 +66,7 @@ function narrow_or_search_for_term(item) {
         exports.search_button_handler(true);
         return obj.query;
     } else if (obj.action === "stream") {
-        narrow.by_stream_name(obj.query);
+        narrow.activate([['stream', obj.query]]);
         // It's sort of annoying that this is not in a position to
         // blur the search box, because it means that Esc won't
         // unnarrow, it'll leave the searchbox.
@@ -75,7 +75,7 @@ function narrow_or_search_for_term(item) {
         // so leave the current text in.
         return search_query_box.val();
     } else if (obj.action === "private_message") {
-        narrow.by_private_message_group(obj.query.full_name, obj.query.email);
+        narrow.activate([['pm-with', obj.query.email]], {show_floating_recipient: false});
         return search_query_box.val();
     } else if (obj.action === "search_narrow") {
         narrow.by_search_term(obj.query);
