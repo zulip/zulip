@@ -13,17 +13,19 @@ if ! $(echo "$hostname" | grep -q humbughq.com$); then
     exit 1
 fi
 
-if ! [ -e ~/humbug/humbug.pem ]; then
-    echo "You need humbug.pem at ~/humbug/humbug.pem; ask tabbott for it"
+amazon_key_file=~/humbug/humbug.pem
+if ! [ -e $amazon_key_file ]; then
+    echo "You need humbug.pem at $amazon_key_file; ask tabbott for it"
     exit 1
 fi
 
-if ! [ -e ~/humbug/servers/puppet/files/id_rsa ]; then
-    echo "You need a server ssh key at ~/humbug/servers/puppet/files/id_rsa"
+server_private_key_file=~/humbug/servers/puppet/files/id_rsa
+if ! [ -e $server_private_key_file ]; then
+    echo "You need a server ssh key at $server_private_key_file"
     exit 1
 fi
 
-ssh "$server" -t -i ~/humbug/humbug.pem -lroot <<EOF
+ssh "$server" -t -i "$amazon_key_file" -lroot <<EOF
 resize2fs /dev/xvda1
 
 # First, install a sufficiently new version of puppet on the target
@@ -40,9 +42,9 @@ EOF
 
 # Give new server git access
 # TODO: Don't give servers push access to our git!
-scp -i ~/humbug/humbug.pem ~/humbug/servers/puppet/files/id_rsa root@"$server":/root/.ssh/id_rsa
+scp -i "$amazon_key_file" "$server_private_key_file" root@"$server":/root/.ssh/id_rsa
 
-ssh "$server" -t -i ~/humbug/humbug.pem -lroot <<EOF
+ssh "$server" -t -i "$amazon_key_file" -lroot <<EOF
 chmod 600 /root/.ssh/id_rsa
 # Setup initial known_hosts including git server
 cat > /root/.ssh/known_hosts <<EOF2
@@ -58,11 +60,11 @@ git checkout origin/tabbott-puppet
 EOF
 
 # Stupid hack because humbug-self-signed.key isn't in git
-scp -i ~/humbug/humbug.pem ~/humbug/certs/humbug-self-signed.key root@"$server":/root/humbug/certs/humbug-self-signed.key
+scp -i "$amazon_key_file" ~/humbug/certs/humbug-self-signed.key root@"$server":/root/humbug/certs/humbug-self-signed.key
 
 # TODO: Copy the real certs into place for prod servers
 
-ssh "$server" -t -i ~/humbug/humbug.pem -lroot <<EOF
+ssh "$server" -t -i "$amazon_key_file" -lroot <<EOF
 cp -a /root/humbug/servers/puppet/puppet.conf /etc/puppet/
 # HACK: run puppet twice to workaround bug in puppet's dependency
 # resolution (namely apache module 'ssl' being enabled _after_ the
@@ -86,8 +88,8 @@ sed -i 's/localhost$/localhost $hostname/' /etc/hosts
 EOF
 
 # TODO: Don't give servers push access to our git!
-scp -i ~/humbug/humbug.pem ~/humbug/servers/puppet/files/id_rsa humbug@"$server":/home/humbug/.ssh/id_rsa
-ssh "$server" -t -i ~/humbug/humbug.pem -lhumbug <<EOF
+scp -i "$amazon_key_file" "$server_private_key_file" humbug@"$server":/home/humbug/.ssh/id_rsa
+ssh "$server" -t -i "$amazon_key_file" -lhumbug <<EOF
 chmod 600 /home/humbug/.ssh/id_rsa
 EOF
 
