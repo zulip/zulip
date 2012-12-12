@@ -39,6 +39,17 @@ function get_rendered_messages(table) {
     });
 }
 
+// Inject key presses by running some jQuery code in page context.
+// If we upgrade to CasperJS 1.0 and PhantomJS 1.7+, we can do this
+// in a more straightforward way.
+function keypress(code) {
+    casper.evaluate(function (code) {
+        $('body').trigger($.Event('keydown', { which: code }));
+    }, {
+        code: code
+    });
+}
+
 function timestamp() {
     return new Date().getTime();
 }
