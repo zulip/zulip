@@ -38,39 +38,47 @@ function update_historical_message_color(stream_name, color) {
     }
 }
 
+var colorpicker_options = {
+    clickoutFiresChange: true,
+    showPalette: true,
+    palette: [
+        ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
+        ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
+        ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
+        ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
+    ],
+    change: function (color) {
+        // TODO: Kind of a hack.
+        var stream_name = $(this).parent().find('.subscription_name').text();
+        var hex_color = color.toHexString();
+        stream_colors[stream_name] = hex_color;
+        update_historical_message_color(stream_name, hex_color);
+
+        $.ajax({
+            type:     'POST',
+            url:      '/json/subscriptions/property',
+            dataType: 'json',
+            data: {
+                "property": "stream_colors",
+                "stream_name": stream_name,
+                "color": hex_color
+            },
+            timeout:  10*1000
+        });
+    }
+};
+
 // TODO: The way that we find the row is kind of fragile
 // and liable to break with streams with " in their name,
 // just like our unsubscribe button code.
 function draw_colorpicker(stream_name) {
     var colorpicker = $('#subscriptions_table').find('button[value="' + stream_name + '"]')
                                                .parent().prev().find('input');
-    colorpicker.spectrum({
-        clickoutFiresChange: true,
-        showPalette: true,
-        palette: [
-            ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
-            ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
-            ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
-            ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
-        ],
-        change: function (color) {
-            var hex_color = color.toHexString();
-            stream_colors[stream_name] = hex_color;
-            update_historical_message_color(stream_name, hex_color);
+    colorpicker.spectrum(colorpicker_options);
+}
 
-            $.ajax({
-                type:     'POST',
-                url:      '/json/subscriptions/property',
-                dataType: 'json',
-                data: {
-                    "property": "stream_colors",
-                    "stream_name": stream_name,
-                    "color": hex_color
-                },
-                timeout:  10*1000
-            });
-        }
-    });
+function draw_all_colorpickers() {
+    $('.colorpicker').spectrum(colorpicker_options);
 }
 
 function add_to_stream_list(stream_name) {
@@ -147,9 +155,7 @@ exports.fetch = function () {
                     subscriptions.push({subscription: stream_name, color: color});
                 });
                 $('#subscriptions_table').append(templates.subscription({subscriptions: subscriptions}));
-                $.each(subscriptions, function (index, data) {
-                    draw_colorpicker(data.subscription);
-                });
+                draw_all_colorpickers();
             }
             $('#streams').focus().select();
         },
