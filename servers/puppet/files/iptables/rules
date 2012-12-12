@@ -17,10 +17,11 @@
 # Accept incoming traffic related to established connections
 -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-# Accept incoming traffic on TCP ports 22 (SSH), 80 (HTTP), and 443 (HTTPS)
--A INPUT -p tcp --dport  22 -j ACCEPT
--A INPUT -p tcp --dport  80 -j ACCEPT
--A INPUT -p tcp --dport 443 -j ACCEPT
+# Accept incoming traffic on TCP ports 22 (SSH), 80 (HTTP), 443 (HTTPS), and 5432 (Postgres)
+-A INPUT -p tcp --dport   22 -j ACCEPT
+-A INPUT -p tcp --dport   80 -j ACCEPT
+-A INPUT -p tcp --dport  443 -j ACCEPT
+-A INPUT -p tcp --dport 5432 -j ACCEPT
 
 # Drop everything else
 -A INPUT   -j LOGDROP
