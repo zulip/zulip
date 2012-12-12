@@ -297,8 +297,39 @@ class humbug_nagios {
   #TODO: Need to install our Nagios config
 }
 
+class humbug_postgres {
+  $postgres_packages = [ "postgresql-9.1", "pgtune", ]
+  package { $postgres_packages: ensure => "installed" }
+
+  file { '/etc/sysctl.d/30-postgresql-shm.conf':
+    ensure => file,
+    owner  => root,
+    group  => root,
+    mode   => 644
+  }
+
+  common::append_if_no_such_line { 'shmmax':
+    require    => Package['postgresql-9.1'],
+    file       => '/etc/sysctl.d/30-postgresql-shm.conf',
+    line       => 'kernel.shmmax = 6979321856'
+  }
+  common::append_if_no_such_line { 'shmall':
+    require    => Package['postgresql-9.1'],
+    file       => '/etc/sysctl.d/30-postgresql-shm.conf',
+    line       => 'kernel.shmall = 1703936'
+  }
+
+  exec { "sysctl_p":
+    command  => "sysctl -p /etc/sysctl.d/30-postgresql-shm.conf",
+    require  => [ Common::Append_if_no_such_line['shmmax'],
+                  Common::Append_if_no_such_line['shmall'],
+                ],
+  }
+}
+
 class { "humbug_base": }
 #class { "humbug_apache_base": }
 #class { "humbug_wiki": }
 #class { "humbug_app_frontend": }
 #class { "humbug_database": }
+#class { "humbug_postgres": }
