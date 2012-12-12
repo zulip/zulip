@@ -25,6 +25,12 @@ if ! [ -e $server_private_key_file ]; then
     exit 1
 fi
 
+humbug_cert_file=~/humbug/certs/humbug-self-signed.key
+if ! [ -e $humbug_cert_file ]; then
+    echo "You need humbug-self-signed.key at $humbug_cert_file"
+    exit 1
+fi
+
 ssh "$server" -t -i "$amazon_key_file" -lroot <<EOF
 resize2fs /dev/xvda1
 
@@ -60,7 +66,7 @@ git checkout origin/tabbott-puppet
 EOF
 
 # Stupid hack because humbug-self-signed.key isn't in git
-scp -i "$amazon_key_file" ~/humbug/certs/humbug-self-signed.key root@"$server":/root/humbug/certs/humbug-self-signed.key
+scp -i "$amazon_key_file" "$humbug_cert_file" root@"$server":/root/humbug/certs/humbug-self-signed.key
 
 # TODO: Copy the real certs into place for prod servers
 
