@@ -6,6 +6,7 @@ import os
 import random
 import logging
 import subprocess
+import hashlib
 from os import path
 
 parser = optparse.OptionParser()
@@ -67,23 +68,27 @@ if options.sharded:
     # (stream, shard_name), where sha1sum(stream).startswith(shard_name)
     test_streams = [
         ("message", "p"),
-        ("tabbott-nagios-test-15", "0"),
-        ("tabbott-nagios-test-1",  "1"),
-        ("tabbott-nagios-test-4",  "2"),
-        ("tabbott-nagios-test-32", "3"),
-        ("tabbott-nagios-test-6",  "4"),
-        ("tabbott-nagios-test-93", "5"),
-        ("tabbott-nagios-test-23", "6"),
-        ("tabbott-nagios-test-16", "7"),
-        ("tabbott-nagios-test-22", "8"),
+        ("tabbott-nagios-test-32", "0"),
+        ("tabbott-nagios-test-33", "1"),
+        ("tabbott-nagios-test-2",  "2"),
+        ("tabbott-nagios-test-5",  "3"),
+        ("tabbott-nagios-test-13", "4"),
+        ("tabbott-nagios-test-7",  "5"),
+        ("tabbott-nagios-test-22", "6"),
+        ("tabbott-nagios-test-35", "7"),
+        ("tabbott-nagios-test-4",  "8"),
         ("tabbott-nagios-test-3",  "9"),
-        ("tabbott-nagios-test-2",  "a"),
-        ("tabbott-nagios-test-10", "b"),
-        ("tabbott-nagios-test-14", "c"),
-        ("tabbott-nagios-test-8",  "d"),
-        ("tabbott-nagios-test-13", "e"),
-        ("tabbott-nagios-test-45", "f"),
+        ("tabbott-nagios-test-1",  "a"),
+        ("tabbott-nagios-test-49", "b"),
+        ("tabbott-nagios-test-34", "c"),
+        ("tabbott-nagios-test-12", "d"),
+        ("tabbott-nagios-test-11", "e"),
+        ("tabbott-nagios-test-9",  "f"),
         ]
+    for (stream, test) in test_streams:
+        if stream == "message":
+            continue
+        assert(hashlib.sha1(stream).hexdigest().startswith(test))
 else:
     test_streams = [
         ("message", "p"),
