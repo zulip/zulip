@@ -8,12 +8,11 @@ var persistent_message_id = 0;
 // For narrowing based on a particular message
 var target_id = 0;
 
-var narrowdata = false;
 var filter_function = false;
 
 exports.active = function () {
     // Cast to bool
-    return !!narrowdata;
+    return !!filter_function;
 };
 
 exports.predicate = function () {
@@ -24,65 +23,88 @@ exports.predicate = function () {
     }
 };
 
-exports.narrowing_type = function () {
-    if (narrowdata) {
-        return narrowdata.type;
-    } else {
-        return '';
-    }
+var show_floating_recipient;
+var allow_collapse;
+
+exports.show_floating_recipient = function () {
+    return (!filter_function) || show_floating_recipient;
 };
 
 exports.allow_collapse = function () {
-    if (narrowdata && narrowdata.allow_collapse !== undefined) {
-        return narrowdata.allow_collapse;
-    } else {
-        return true;
-    }
+    return (!filter_function) || allow_collapse;
 };
 
-exports.data = function () {
-    return narrowdata;
-};
+/* Build a filter function from a list of operators.
+   Each operator is a key-value pair like
 
-exports.hashchanged = function (hash) {
-    var full_names, decoded, emails;
+       ['subject', 'my amazing subject']
 
-    if (hash[1] === "all_private_messages") {
-        exports.all_private_messages();
-    }
-    else if (hash[1] === "stream" && hash[3] === "subject") {
-        exports.by_stream_and_subject_names(decodeURIComponent(hash[2]),
-                                            decodeURIComponent(hash[4]));
-    }
-    else if (hash[1] === "stream") {
-        exports.by_stream_name(decodeURIComponent(hash[2]));
-    }
-    else if (hash[1] === "private_messages") {
-        decoded = decodeURIComponent(hash[2]);
-        emails = decoded.split(", ");
+   These are not keys in a JavaScript object, because we
+   might need to support multiple operators of the same type. */
+function build_filter(operators) {
+    // FIXME: This is probably pretty slow.
+    // We could turn it into something more like a compiler:
+    // build JavaScript code in a string and then eval() it.
 
-        $.each(emails, function (index, email) {
-            $.each(people_list, function (index, person) {
-                if (person.email === email) {
-                    if (full_names === undefined) {
-                        full_names = person.full_name;
-                    }
-                    else {
-                        full_names += ", " + person.full_name;
-                    }
-                    return false;
+    return function (message) {
+        var operand, i;
+        for (i=0; i<operators.length; i++) {
+            operand = operators[i][1];
+            switch (operators[i][0]) {
+            case 'is':
+                if ((operand === 'private-message') || (operand === 'pm')) {
+                    if (message.type !== 'private')
+                        return false;
                 }
-            });
-        });
-        exports.by_private_message_group(full_names, decoded);
-    }
-};
+                break;
 
-function do_narrow(new_narrow, bar, time_travel, new_filter) {
+            case 'stream':
+                if ((message.type !== 'stream') ||
+                    (message.display_recipient !== operand))
+                    return false;
+                break;
+
+            case 'subject':
+                if ((message.type !== 'stream') ||
+                    (message.subject.toLowerCase() !== operand))
+                    return false;
+                break;
+
+            case 'pm-with':
+                if ((message.type !== 'private') ||
+                    (message.reply_to !== operand))
+                    return false;
+                break;
+
+            case 'search':
+                if (message.content.toLowerCase().indexOf(operand) === -1) {
+                    if ((message.type !== 'stream') ||
+                        (message.subject.toLowerCase().indexOf(operand) === -1)) {
+                        return false;
+                    }
+                }
+                break;
+            }
+        }
+
+        // All filters passed.
+        return true;
+    };
+}
+
+exports.activate = function (operators, bar, opts) {
+    opts = $.extend({}, {
+        time_travel:             false,
+        show_floating_recipient: true,
+        allow_collapse:          true
+    }, opts);
+
     var was_narrowed = exports.active();
 
-    narrowdata = new_narrow;
-    filter_function = new_filter;
+    filter_function = build_filter(operators);
+
+    show_floating_recipient = opts.show_floating_recipient;
+    allow_collapse          = opts.allow_collapse;
 
     // Your pointer isn't changed when narrowed.
     if (! was_narrowed) {
@@ -93,12 +115,12 @@ function do_narrow(new_narrow, bar, time_travel, new_filter) {
     var highlighted = search.something_is_highlighted();
 
     // Empty the filtered table right before we fill it again
-    if (time_travel) {
+    if (opts.time_travel) {
         load_old_messages(target_id, 200, 200, function (messages) {
             // We do this work inside the load_old_messages
             // continuation, to shorten the window with just 1 visible message
             clear_table('zfilt');
-            add_to_table([message_dict[target_id]], 'zfilt', filter_function, 'bottom', exports.allow_collapse());
+            add_to_table([message_dict[target_id]], 'zfilt', filter_function, 'bottom', allow_collapse);
             // Select target_id so that we will correctly arrange messages
             // surrounding the target message.
             select_message_by_id(target_id, {then_scroll: false});
@@ -106,7 +128,7 @@ function do_narrow(new_narrow, bar, time_travel, new_filter) {
         }, true, true);
     } else {
         clear_table('zfilt');
-        add_to_table(message_array, 'zfilt', filter_function, 'bottom', exports.allow_collapse());
+        add_to_table(message_array, 'zfilt', filter_function, 'bottom', allow_collapse);
     }
 
     // Show the new set of messages.
@@ -132,16 +154,17 @@ function do_narrow(new_narrow, bar, time_travel, new_filter) {
     if (highlighted) {
         search.update_highlight_on_narrow();
     }
-}
+
+    // Put the narrow operators in the URL fragment
+    hashchange.save_narrow(operators);
+};
 
 exports.time_travel = function () {
     var bar = {
         icon:        'time',
         description: 'Messages around time ' + message_dict[target_id].full_date_str
     };
-    do_narrow({}, bar, true, function (other) {
-        return true;
-    });
+    exports.activate([], bar, {time_travel: true});
 };
 
 // This is the message we're about to select, within the narrowed view.
@@ -154,13 +177,8 @@ exports.target = function (id) {
 };
 
 exports.all_private_messages = function () {
-    hashchange.changehash("#narrow/all_private_messages");
-
-    var new_narrow = {type: "all_private_messages"};
     var bar = {icon: 'user', description: 'You and anyone else'};
-    do_narrow(new_narrow, bar, false, function (other) {
-        return other.type === "private";
-    });
+    exports.activate([['is', 'private-message']], bar);
 };
 
 exports.by_subject = function () {
@@ -176,47 +194,25 @@ exports.by_subject = function () {
 };
 
 exports.by_stream_and_subject_names = function (stream, subject) {
-    hashchange.changehash("#narrow/stream/" +
-                          encodeURIComponent(stream) +
-                          "/subject/" +
-                          encodeURIComponent(subject));
-
-    var new_narrow = {type: "subject", stream: stream, subject: subject};
+    var operators = [
+        ['stream',  stream],
+        ['subject', subject.toLowerCase()]];
     var bar = {
         icon:           'bullhorn',
         description:    stream,
         subject:        subject
     };
-    do_narrow(new_narrow, bar, false, function (other) {
-        return ((other.type === 'stream') &&
-                (other.display_recipient === stream &&
-                 other.subject.toLowerCase() === subject.toLowerCase()));
-    });
+    exports.activate(operators, bar, {show_floating_recipient: false});
 };
 
 exports.by_stream_name = function (name) {
-    hashchange.changehash("#narrow/stream/" +
-                          encodeURIComponent(name));
-
-    var new_narrow = {type: "stream", stream: name};
     var bar = {icon: 'bullhorn', description: name};
-    do_narrow(new_narrow, bar, false, function (other) {
-        return (other.type === 'stream' &&
-                name === other.display_recipient);
-    });
+    exports.activate([['stream', name]], bar);
 };
 
 exports.by_private_message_group = function (names, emails) {
-    hashchange.changehash("#narrow/private_messages/" +
-                          encodeURIComponent(emails));
-
-    var new_narrow = {type: "private", emails: emails.split(", ")};
     var bar = {icon: 'user', description: "You and " + names};
-    var my_email = email;
-    do_narrow(new_narrow, bar, false, function (other) {
-        return (other.type === 'private' &&
-                other.reply_to === emails);
-    });
+    exports.activate([['pm-with', emails]], bar, {show_floating_recipient: false});
 };
 
 // Called for the 'narrow by stream' hotkey.
@@ -236,25 +232,15 @@ exports.by_recipient = function () {
 };
 
 exports.by_search_term = function (term) {
-    hashchange.changehash("#narrow/searchterm/" + encodeURIComponent(term));
-
-    var new_narrow = {type: "searchterm", searchterm: term, allow_collapse: false};
     var bar = {icon: 'search', description: 'Messages containing "' + term + '"'};
-    var term_lowercase = term.toLowerCase();
-    do_narrow(new_narrow, bar, false, function (other) {
-        return other.subject.toLowerCase().indexOf(term_lowercase) !== -1 ||
-               other.content.toLowerCase().indexOf(term_lowercase) !== -1;
-    });
+    exports.activate([['search', term.toLowerCase()]], bar, {allow_collapse: false});
     load_more_messages();
 };
 
 exports.show_all_messages = function () {
-    hashchange.changehash("");
-
-    if (!narrowdata) {
+    if (!filter_function) {
         return;
     }
-    narrowdata = false;
     filter_function = false;
 
     $("#zfilt").removeClass('focused_table');
@@ -269,9 +255,11 @@ exports.show_all_messages = function () {
     // Includes scrolling.
     select_message_by_id(persistent_message_id, {then_scroll: true});
 
-    scroll_to_selected();
-
     search.update_highlight_on_narrow();
+
+    hashchange.save_narrow();
+
+    scroll_to_selected();
 };
 
 exports.restore_home_state = function() {

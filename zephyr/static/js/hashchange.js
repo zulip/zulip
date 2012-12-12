@@ -20,6 +20,33 @@ exports.changehash = function (newhash) {
     }
 };
 
+exports.save_narrow = function (operators) {
+    if (operators === undefined) {
+        exports.changehash('#');
+    } else {
+        var new_hash = '#narrow';
+        $.each(operators, function (idx, elem) {
+            new_hash += '/' + encodeURIComponent(elem[0])
+                      + '/' + encodeURIComponent(elem[1]);
+        });
+        exports.changehash(new_hash);
+    }
+};
+
+function parse_narrow(hash) {
+    var i, operators = [];
+    for (i=1; i<hash.length; i+=2) {
+        // We don't construct URLs with an odd number of components,
+        // but the user might write one.
+        var operator = decodeURIComponent(hash[i]);
+        var operand  = decodeURIComponent(hash[i+1] || '');
+        operators.push([operator, operand]);
+    }
+    // The narrowbar description here is bogus, but it's going away in
+    // a subsequent commit.
+    narrow.activate(operators, {icon: 'search', description: 'FIXME'});
+}
+
 // Returns true if this function performed a narrow
 function hashchanged() {
     // If window.location.hash changed because our app explicitly
@@ -34,7 +61,7 @@ function hashchanged() {
     switch (hash[0]) {
         case "#narrow":
             ui.change_tab_to("#home");
-            narrow.hashchanged(hash);
+            parse_narrow(hash);
             ui.update_floating_recipient_bar();
             return true;
         case "":

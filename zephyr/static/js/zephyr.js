@@ -617,24 +617,18 @@ function get_updates(options) {
 
 function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
                            cont_will_add_messages) {
-    var narrow_str;
     if (for_narrow === undefined) {
         for_narrow = false;
     }
     if (cont_will_add_messages === undefined) {
         cont_will_add_messages = false;
     }
-    if (for_narrow) {
-        narrow_str = JSON.stringify(narrow.data());
-    } else {
-        narrow_str = JSON.stringify({});
-    }
 
     $.ajax({
         type:     'POST',
         url:      '/json/get_old_messages',
         data:     {anchor: anchor, num_before: num_before, num_after: num_after,
-                   narrow: narrow_str},
+                   narrow: '{}'}, // FIXME
         dataType: 'json',
         success: function (data) {
             if (! data) {
