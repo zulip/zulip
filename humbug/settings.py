@@ -37,12 +37,23 @@ if STAGING_DEPLOYED or platform.node() == 'postgres.humbughq.com':
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'humbug',
         'USER': 'humbug',
-        'PASSWORD': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+        'PASSWORD': '', # Authentication done via certificates
         'HOST': '10.254.4.99',
         'OPTIONS': {
-            # Note that 'require' does NOT check certificates.  You
-            # need 'verify-full' for that.
-            'sslmode': 'require',
+            # Note that 'verify-ca' only checks that the server certificate was
+            # signed by a trusted root.  You need 'verify-full' if you want to
+            # check that the server's hostname in the certificate matches the
+            # host you connect to.
+            #
+            # We don't currently do 'verify-full' because the web servers
+            # connect to the database using its AWS internal IP address, which
+            # doesn't reverse-resolve to its hostname.  And because the
+            # database's certificate is for its hostname instead of its internal
+            # IP address, the frontend can't verify that the certificate is for
+            # the correct machine.  This can be solved by running DNS
+            # internally.  For now, 'verify-ca' is probably sufficient because
+            # the certificates are signed by our own CA.
+            'sslmode': 'verify-ca',
             },
         }
 elif DEPLOYED:
