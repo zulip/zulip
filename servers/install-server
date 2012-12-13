@@ -40,10 +40,10 @@ deb http://backports.debian.org/debian-backports squeeze-backports main
 deb-src http://backports.debian.org/debian-backports squeeze-backports main
 EOF2
 apt-get update
-yes '' | apt-get upgrade
+apt-get -y upgrade
 
 # need to get puppet from squeeze-backports before we can do anything with puppet
-yes '' | apt-get install -t squeeze-backports puppet git
+apt-get install -y -t squeeze-backports puppet git
 EOF
 
 # Give new server git access
@@ -78,7 +78,7 @@ cp -a /root/humbug/servers/puppet/puppet.conf /etc/puppet/
 puppet apply /root/humbug/servers/puppet/manifests/site.pp || true
 puppet apply /root/humbug/servers/puppet/manifests/site.pp
 # These server restarting bits should be moveable into puppet-land, ideally
-yes '' | apt-get upgrade
+apt-get -y upgrade
 service iptables-persistent start
 service ssh restart
 if [ -e "/etc/init.d/nginx" ]; then
