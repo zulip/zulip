@@ -483,6 +483,7 @@ def restore_saved_messages():
     if first_message_id is None:
         first_message_id = min(messages_by_id.keys())
 
+    tot_user_messages = 0
     pending_subs = {}
     current_message_id = first_message_id
     for old_message in old_messages:
@@ -566,8 +567,13 @@ def restore_saved_messages():
                                  message=message)
                 user_messages_to_create.append(um)
 
+        if len(user_messages_to_create) > 100000:
+            tot_user_messages += len(user_messages_to_create)
+            batch_bulk_create(UserMessage, user_messages_to_create)
+            user_messages_to_create = []
+
     print datetime.datetime.now(), "Importing usermessages, part 2..."
-    tot_user_messages = len(user_messages_to_create)
+    tot_user_messages += len(user_messages_to_create)
     batch_bulk_create(UserMessage, user_messages_to_create)
 
     print datetime.datetime.now(), "Finalizing subscriptions..."
