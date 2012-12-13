@@ -63,7 +63,7 @@ def get_stream(stream_name, realm):
     except Stream.DoesNotExist:
         return None
 
-def notify_new_user(user, internal=False):
+def notify_new_user(user_profile, internal=False):
     if internal:
         # When this is done using manage.py vs. the web interface
         internal_blurb = " **INTERNAL SIGNUP** "
@@ -71,12 +71,13 @@ def notify_new_user(user, internal=False):
         internal_blurb = " "
 
     internal_send_message("humbug+signups@humbughq.com",
-            Recipient.STREAM, "signups", user.realm.domain,
+            Recipient.STREAM, "signups", user_profile.realm.domain,
             "%s <`%s`> just signed up for Humbug!%s(total: **%i**)" % (
-                user.full_name,
-                user.user.email,
+                user_profile.full_name,
+                user_profile.user.email,
                 internal_blurb,
-                UserProfile.objects.filter(realm=user.realm, user__is_active=True).count(),
+                UserProfile.objects.filter(realm=user_profile.realm,
+                                           user__is_active=True).count(),
                 )
             )
 
@@ -115,12 +116,13 @@ def accounts_register(request):
                 user = User.objects.get(email=email)
                 do_activate_user(user)
                 do_change_password(user, password)
-                do_change_full_name(user.userprofile, full_name)
+                user_profile = user.userprofile
+                do_change_full_name(user_profile, full_name)
             else:
-                user = do_create_user(email, password, realm, full_name, short_name)
-                add_default_subs(user)
+                user_profile = do_create_user(email, password, realm, full_name, short_name)
+                add_default_subs(user_profile)
 
-            notify_new_user(user)
+            notify_new_user(user_profile)
 
             login(request, authenticate(username=email, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))
