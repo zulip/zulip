@@ -11,7 +11,11 @@ def dump():
 
 def restore(change):
     for (email, password) in simplejson.loads(file("dumped-passwords").read()):
-        user = User.objects.get(email__iexact=email)
+        try:
+            user = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            print "Skipping...", email
+            continue
         if change:
             user.password = password
             user.save()

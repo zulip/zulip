@@ -17,13 +17,20 @@ def dump():
 
 def restore(change):
     for (email, timestamp) in simplejson.loads(file("dumped-pointers").read()):
-        u = UserProfile.objects.get(user__email__iexact=email)
+        try:
+            u = UserProfile.objects.get(user__email__iexact=email)
+        except UserProfile.DoesNotExist:
+            print "Skipping...", email
+            continue
         if timestamp == -1:
             pointer = -1
         else:
-            pointer = Message.objects.filter(
-                pub_date__gte=timestamp_to_datetime(timestamp)).order_by("id")[0].id
-        print "%s: pointer %s => %s" % (email, u.pointer, pointer)
+            try:
+                pointer = Message.objects.filter(
+                    pub_date__gte=timestamp_to_datetime(timestamp - 1)).order_by("id")[0].id
+            except IndexError:
+                print "Alert...", email, timestamp
+                continue
         if change:
             u.pointer = pointer
             u.save()
