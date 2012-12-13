@@ -14,19 +14,19 @@ if ! $(echo "$hostname" | grep -q humbughq.com$); then
 fi
 
 amazon_key_file=~/humbug/humbug.pem
-if ! [ -e $amazon_key_file ]; then
+if ! [ -e "$amazon_key_file" ]; then
     echo "You need humbug.pem at $amazon_key_file; ask tabbott for it"
     exit 1
 fi
 
 server_private_key_file=~/humbug/servers/puppet/files/id_rsa
-if ! [ -e $server_private_key_file ]; then
+if ! [ -e "$server_private_key_file" ]; then
     echo "You need a server ssh key at $server_private_key_file"
     exit 1
 fi
 
 humbug_cert_file=~/humbug/certs/humbug-self-signed.key
-if ! [ -e $humbug_cert_file ]; then
+if ! [ -e "$humbug_cert_file" ]; then
     echo "You need humbug-self-signed.key at $humbug_cert_file"
     exit 1
 fi
