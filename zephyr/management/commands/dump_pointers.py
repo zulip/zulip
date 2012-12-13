@@ -11,7 +11,7 @@ def dump():
 
 def restore(change):
     for (email, pointer) in simplejson.loads(file("dumped-pointers").read()):
-        u = UserProfile.objects.get(user__email=email)
+        u = UserProfile.objects.get(user__email__iexact=email)
         print "%s: pointer %s => %s" % (email, u.pointer, pointer)
         if change:
             u.pointer = pointer
