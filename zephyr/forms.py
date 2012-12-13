@@ -3,9 +3,10 @@ from django.core import validators
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
+from django.contrib.auth.forms import SetPasswordForm
 
 from humbug import settings
-from models import Realm
+from zephyr.models import Realm, do_change_password
 
 def is_unique(value):
     try:
@@ -48,3 +49,9 @@ class HomepageForm(forms.Form):
     else:
         validators = UniqueEmailField.default_validators + [has_valid_realm, isnt_mit]
         email = UniqueEmailField(validators=validators)
+
+class LoggingSetPasswordForm(SetPasswordForm):
+    def save(self, commit=True):
+        do_change_password(self.user, self.cleaned_data['new_password1'],
+                           log=True, commit=commit)
+        return self.user

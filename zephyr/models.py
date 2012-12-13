@@ -639,9 +639,10 @@ def do_activate_user(user, log=True, join_date=timezone.now()):
         log_event({'type': 'user_activated',
                    'user': user.email})
 
-def do_change_password(user, password, log=True):
+def do_change_password(user, password, log=True, commit=True):
     user.set_password(password)
-    user.save()
+    if commit:
+        user.save()
     if log:
         log_event({'type': 'user_change_password',
                    'user': user.email,

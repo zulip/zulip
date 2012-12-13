@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.conf.urls import patterns, url
 import os.path
+import zephyr.forms
 
 urlpatterns = patterns('',
     url(r'^$', 'zephyr.views.home'),
@@ -18,7 +19,8 @@ urlpatterns = patterns('',
     url(r'^accounts/password/reset/done/$', 'django.contrib.auth.views.password_reset_done',
         {'template_name': 'zephyr/reset_emailed.html'}),
     url(r'^accounts/password/reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 'django.contrib.auth.views.password_reset_confirm',
-        {'post_reset_redirect' : '/accounts/password/done/', 'template_name': 'zephyr/reset_confirm.html'}),
+        {'post_reset_redirect' : '/accounts/password/done/', 'template_name': 'zephyr/reset_confirm.html',
+         'set_password_form' : zephyr.forms.LoggingSetPasswordForm}),
     url(r'^accounts/password/done/$', 'django.contrib.auth.views.password_reset_complete',
         {'template_name': 'zephyr/reset_done.html'}),
 
