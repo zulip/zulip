@@ -7,7 +7,7 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
     bulk_create_realms, bulk_create_streams, bulk_create_users, bulk_create_huddles, \
     bulk_create_clients, set_default_streams, \
-    do_send_message, clear_database, \
+    do_send_message, clear_database, StreamColor, \
     get_huddle_hash, get_client, do_activate_user
 from zephyr.views import set_stream_color
 from zephyr.lib.parallel import run_parallel
@@ -39,17 +39,6 @@ def create_streams(realms, realm, stream_list):
     for stream_name in stream_list:
         stream_set.add((realm.domain, stream_name))
     bulk_create_streams(realms, stream_set)
-
-class UnknownSubscriptionProperty(Exception):
-    pass
-
-def handle_subscription_property(message):
-    property = message.get("property")
-    if property == "stream_color":
-        user_profile = UserProfile.objects.get(user__email=message["user"])
-        set_stream_color(user_profile, message["stream_name"], message["color"])
-    else:
-        raise UnknownSubscriptionProperty(property)
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -292,6 +281,8 @@ def restore_saved_messages():
         if message_type in ["subscription_added", "subscription_removed"]:
             old_message["domain"] = old_message["domain"].lower()
             old_message["user"] = fix_email(old_message["user"])
+        elif message_type == "subscription_property":
+            old_message["user"] = fix_email(old_message["user"])
         elif message_type.startswith("user_"):
             old_message["user"] = fix_email(old_message["user"])
         elif message_type.startswith("enable_"):
@@ -486,6 +477,7 @@ def restore_saved_messages():
     tot_user_messages = 0
     pending_subs = {}
     current_message_id = first_message_id
+    pending_colors = {}
     for old_message in old_messages:
         message_type = old_message["type"]
         if message_type == 'subscription_added':
@@ -539,7 +531,12 @@ def restore_saved_messages():
                                 old_message["streams"])
             continue
         elif message_type == "subscription_property":
-            handle_subscription_property(old_message)
+            property_name = old_message.get("property")
+            if property_name == "stream_color":
+                pending_colors[(old_message["user"],
+                                old_message["stream_name"].lower())] = old_message["color"]
+            else:
+                raise RuntimeError("Unknown property %s" % (property_name,))
             continue
         elif message_type == "realm_created":
             continue
@@ -604,6 +601,23 @@ def restore_saved_messages():
         for (sub, active) in subscriptions_to_change:
             current_subs_obj[sub].active = active
             current_subs_obj[sub].save()
+
+    subs = {}
+    for sub in Subscription.objects.all():
+        subs[(sub.user_profile_id, sub.recipient_id)] = sub
+
+    colors_to_change = []
+    for key in pending_colors.keys():
+        (email, stream_name) = key
+        color = pending_colors[key]
+        user_profile = users[email]
+        domain = email.split("@")[1]
+        realm = realms[domain]
+        recipient = stream_recipients[(realm.id, stream_name)]
+        subscription = subs[(user_profile.id, recipient.id)]
+        colors_to_change.append(StreamColor(subscription=subscription,
+                                            color=color))
+    batch_bulk_create(StreamColor, colors_to_change)
 
     print datetime.datetime.now(), "Finished importing %s messages (%s usermessages)" % \
         (len(all_messages), tot_user_messages)
