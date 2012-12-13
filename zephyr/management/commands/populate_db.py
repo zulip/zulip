@@ -223,6 +223,7 @@ class Command(BaseCommand):
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
             restore_saved_messages()
+        connection.close()
 
 recipient_hash = {}
 def get_recipient_by_id(rid):
@@ -730,4 +731,5 @@ def send_messages(data):
 
         recipients[num_messages] = [message_type, message.recipient.id, saved_data]
         num_messages += 1
+    connection.close()
     return tot_messages
