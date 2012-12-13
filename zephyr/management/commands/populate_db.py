@@ -244,7 +244,7 @@ def restore_saved_messages():
     huddle_user_set = set()
     # First, determine all the objects our messages will need.
     print datetime.datetime.now(), "Creating realms/streams/etc..."
-    for line in file(settings.MESSAGE_LOG, "r").readlines():
+    def process_line(line):
         old_message_json = line.strip()
 
         # Due to populate_db's shakespeare mode, we have a lot of
@@ -262,7 +262,7 @@ def restore_saved_messages():
             tmp_message['id'] = '1'
             duplicate_suppression_key = simplejson.dumps(tmp_message)
             if duplicate_suppression_key in duplicate_suppression_hash:
-                continue
+                return
             duplicate_suppression_hash[duplicate_suppression_key] = True
 
         old_message = simplejson.loads(old_message_json)
@@ -308,7 +308,7 @@ def restore_saved_messages():
             realm_set.add(old_message["domain"])
 
         if message_type not in ["stream", "huddle", "personal"]:
-            continue
+            return
 
         sender_email = old_message["sender_email"]
 
@@ -343,6 +343,10 @@ def restore_saved_messages():
             huddle_user_set.add(tuple(sorted(set(u["email"] for u in old_message["recipient"]))))
         else:
             raise ValueError('Bad message type')
+
+    with file(settings.MESSAGE_LOG, "r") as message_log:
+        for line in message_log.readlines():
+            process_line(line)
 
     stream_recipients = {}
     user_recipients = {}
@@ -457,6 +461,7 @@ def restore_saved_messages():
 
     print datetime.datetime.now(), "Importing messages, part 2..."
     batch_bulk_create(Message, messages_to_create, batch_size=100)
+    messages_to_create = []
 
     # Finally, create all the UserMessage objects
     print datetime.datetime.now(), "Importing usermessages, part 1..."
