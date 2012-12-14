@@ -8,7 +8,6 @@ var viewport = $(window);
 var selected_message_id = -1;  /* to be filled in on document.ready */
 var selected_message = $();    /* = rows.get(selected_message_id)   */
 var get_updates_params = {
-    last: -1,
     pointer: -1,
     server_generation: -1 /* to be filled in on document.ready */
 };
@@ -416,7 +415,7 @@ function add_message_metadata(message, dummy) {
     if (message_dict[message.id]) {
         return message_dict[message.id];
     }
-    get_updates_params.last = Math.max(get_updates_params.last, message.id);
+    get_updates_params.last = Math.max(get_updates_params.last || 0, message.id);
 
     var involved_people;
 
