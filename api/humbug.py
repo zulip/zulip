@@ -58,7 +58,7 @@ def generate_option_group(parser):
 
 def init_from_options(options):
     return Client(email=options.email, api_key=options.api_key, config_file=options.config_file,
-                  verbose=options.verbose)
+                  verbose=options.verbose, site=options.site)
 
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
