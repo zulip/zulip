@@ -100,10 +100,6 @@ def return_messages_immediately(user_profile, client_id, last,
         # TODO: Make this work with server_generation
         return None
 
-    if UserMessage.objects.filter(user_profile=user_profile).count() == 0:
-        # The client has no messages, so we should immediately start long-polling
-        return None
-
     new_pointer = None
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
 
