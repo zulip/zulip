@@ -9,7 +9,6 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     bulk_create_clients, set_default_streams, \
     do_send_message, clear_database, StreamColor, \
     get_huddle_hash, get_client, do_activate_user
-from zephyr.views import set_stream_color
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction, connection
 from django.conf import settings
