@@ -2,7 +2,7 @@ from zephyr.models import Message, UserProfile, UserMessage, UserActivity
 
 from zephyr.decorator import asynchronous, authenticated_api_view, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
-    has_request_variables, POST, json_to_list
+    has_request_variables, POST, json_to_list, to_non_negative_int
 from zephyr.lib.response import json_success, json_error
 
 import datetime
@@ -104,9 +104,6 @@ def return_messages_immediately(user_profile, client_id, last,
         # The client has no messages, so we should immediately start long-polling
         return None
 
-    if last < 0:
-        return {"msg": "Invalid 'last' argument", "result": "error"}
-
     new_pointer = None
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
 
@@ -165,7 +162,7 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
 
 @has_request_variables
 def get_updates_backend(request, user_profile, handler, client_id,
-                        last = POST(converter=int, default=None),
+                        last = POST(converter=to_non_negative_int, default=None),
                         client_server_generation = POST(whence='server_generation', default=None,
                                                         converter=int),
                         client_pointer = POST(whence='pointer', converter=int, default=None),
