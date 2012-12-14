@@ -1,9 +1,7 @@
-#!/bin/sh
+#!/bin/sh -xe
 
-# We used to have COLLATE utf8_bin.  But amazingly, the choice of collation
-# order affects whether Django returns bytestring or Unicode values.
-echo "drop database humbug; create database humbug DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;" | mysql
+echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | psql -h localhost humbug humbug
 
 python manage.py syncdb --noinput
-echo "ALTER TABLE auth_user ADD UNIQUE INDEX (email);" | mysql
+echo "CREATE UNIQUE INDEX ON auth_user (email);" | psql -h localhost humbug humbug
 python manage.py populate_db --replay-old-messages -n0
