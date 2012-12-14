@@ -94,30 +94,8 @@ def format_updates_response(messages=[], apply_markdown=True,
 def return_messages_immediately(user_profile, client_id, last,
                                 client_server_generation,
                                 client_pointer, dont_block, **kwargs):
-    if last is None:
-        # When an API user is first querying the server to subscribe,
-        # there's no reason to reply immediately.
-        # TODO: Make this work with server_generation
-        return None
-
-    new_pointer = None
-    query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
-
-    messages = query.filter(id__gt=last)[:400]
-
-    # Filter for mirroring before checking whether there are any
-    # messages to pass on.  If we don't do this, when the only message
-    # to forward is one that was sent via the mirroring, the API
-    # client will end up in an endless loop requesting more data from
-    # us.
-    if "client" in kwargs and kwargs["client"].name.endswith("_mirror"):
-        messages = [m for m in messages if
-                    m.sending_client.name != kwargs["client"].name]
-
     update_types = []
-    if messages:
-        update_types.append("new_messages")
-
+    new_pointer = None
     if dont_block:
         update_types.append("nonblocking_request")
 
@@ -129,6 +107,25 @@ def return_messages_immediately(user_profile, client_id, last,
     if (client_pointer is not None and ptr > client_pointer):
         new_pointer = ptr
         update_types.append("pointer_update")
+
+    if last is not None:
+        query = Message.objects.select_related().filter(
+                usermessage__user_profile = user_profile).order_by('id')
+        messages = query.filter(id__gt=last)[:400]
+
+        # Filter for mirroring before checking whether there are any
+        # messages to pass on.  If we don't do this, when the only message
+        # to forward is one that was sent via the mirroring, the API
+        # client will end up in an endless loop requesting more data from
+        # us.
+        if "client" in kwargs and kwargs["client"].name.endswith("_mirror"):
+            messages = [m for m in messages if
+                        m.sending_client.name != kwargs["client"].name]
+    else: # last is None, so we're not interested in any old messages
+        messages = []
+
+    if messages:
+        update_types.append("new_messages")
 
     if update_types:
         return format_updates_response(messages=messages,
