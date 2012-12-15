@@ -1,6 +1,6 @@
 from optparse import make_option
 from django.core.management.base import BaseCommand
-from zephyr.models import Realm, UserProfile, Message
+from zephyr.models import Realm, UserProfile, Message, UserMessage
 from zephyr.lib.time import datetime_to_timestamp, timestamp_to_datetime
 import simplejson
 
@@ -26,8 +26,8 @@ def restore(change):
             pointer = -1
         else:
             try:
-                pointer = Message.objects.filter(
-                    pub_date__gte=timestamp_to_datetime(timestamp - 1)).order_by("id")[0].id
+                pointer = UserMessage.objects.filter(user_profile=u,
+                    message__pub_date__gte=timestamp_to_datetime(timestamp)).order_by("message")[0].message_id
             except IndexError:
                 print "Alert...", email, timestamp
                 continue
