@@ -32,7 +32,7 @@ DATABASES = {
     },
 }
 
-if STAGING_DEPLOYED or platform.node() == 'postgres.humbughq.com':
+if DEPLOYED:
     DATABASES["default"] = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'humbug',
@@ -56,13 +56,6 @@ if STAGING_DEPLOYED or platform.node() == 'postgres.humbughq.com':
             'sslmode': 'verify-ca',
             },
         }
-elif DEPLOYED:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': '/etc/mysql/my.cnf',
-        },
-    }
 elif False:
     DATABASES["default"] = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
