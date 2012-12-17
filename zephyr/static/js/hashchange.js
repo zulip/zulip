@@ -31,6 +31,7 @@ function hashchanged() {
 
 exports.initialize = function () {
     window.onhashchange = hashchanged;
+    hashchanged();
 };
 
 return exports;

@@ -36,12 +36,12 @@ function preserve_compose(send_after_reload) {
 // done before the first call to get_updates
 $(function () {
     var location = window.location.toString();
-    window.location.hash = '';
-    util.reset_favicon();
     var fragment = location.substring(location.indexOf('#') + 1);
     if (fragment.search("reload:") !== 0) {
         return;
     }
+    window.location.hash = '';
+    util.reset_favicon();
 
     fragment = fragment.replace(/^reload:/, "");
     var keyvals = fragment.split("+");
