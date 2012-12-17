@@ -58,6 +58,32 @@ function unparse(operators) {
     return parts.join(' ');
 }
 
+// Convert a list of operators to a human-readable description.
+exports.describe = function (operators) {
+    return $.map(operators, function (elem) {
+        var operand = elem[1];
+        switch (elem[0]) {
+        case 'is':
+            if (operand === 'private-message')
+                return 'private messages';
+            break;
+
+        case 'stream':
+            return 'stream ' + operand;
+
+        case 'subject':
+            return 'subject ' + operand;
+
+        case 'pm-with':
+            return 'private messages with ' + operand;
+
+        case 'search':
+            return 'messages containing ' + operand;
+        }
+        return '(unknown operator)';
+    }).join(', ');
+};
+
 // Parse a string into a list of operators (see below).
 exports.parse = function (str) {
     var operators   = [];
