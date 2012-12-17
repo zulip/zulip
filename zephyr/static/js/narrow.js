@@ -58,6 +58,30 @@ function unparse(operators) {
     return parts.join(' ');
 }
 
+// Parse a string into a list of operators (see below).
+exports.parse = function (str) {
+    var operators   = [];
+    var search_term = [];
+    $.each(str.split(/ +/), function (idx, token) {
+        var parts, operator;
+        if (token.length === 0)
+            return;
+        parts = token.split(':');
+        if (parts.length > 1) {
+            // Looks like an operator.
+            // FIXME: Should we skip unknown operator names here?
+            operator = parts.shift();
+            operators.push([operator, decodeURIComponent(parts.join(':'))]);
+        } else {
+            // Looks like a normal search term.
+            search_term.push(token);
+        }
+    });
+    if (search_term.length > 0)
+        operators.push(['search', search_term.join(' ').toLowerCase()]);
+    return operators;
+};
+
 // Build a filter function from a list of operators.
 function build_filter(operators) {
     // FIXME: This is probably pretty slow.
