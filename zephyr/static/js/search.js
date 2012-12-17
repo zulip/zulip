@@ -96,38 +96,30 @@ function get_person(obj) {
 }
 
 function searchbox_sorter(items) {
-    var searches = [];
-    var search_narrows = [];
-    var streams = [];
-    var people = [];
-    var objects = [];
+    var objects_by_action = {};
+    var result = [];
 
     $.each(items, function (idx, elt) {
         var obj = mapped[elt];
-        if (obj.action === 'stream') {
-            streams.push(obj);
-        } else if (obj.action === 'private_message') {
-            people.push(obj);
-        } else if (obj.action === 'search') {
-            searches.push(obj);
-        } else if (obj.action === 'search_narrow') {
-            search_narrows.push(obj);
-        }
+        if (objects_by_action[obj.action] === undefined)
+            objects_by_action[obj.action] = [];
+        objects_by_action[obj.action].push(obj);
     });
 
-    searches = typeahead_helper.sorter(this.query, searches, get_query);
-    search_narrows = typeahead_helper.sorter(this.query, search_narrows, get_query);
-    streams = typeahead_helper.sorter(this.query, streams, get_query);
-    people = typeahead_helper.sorter(this.query, people, get_person);
-
-    $.each([searches, search_narrows, streams, people], function (idx, elt) {
-        var obj = elt.shift();
-        if (obj) objects.push(obj);
+    var query = this.query;
+    $.each(['search', 'search_narrow', 'stream', 'private_message'], function (idx, action) {
+        var objs = objects_by_action[action];
+        if (!objs)
+            return;
+        // Get the first object in sorted order.
+        var obj = typeahead_helper.sorter(query, objs,
+                (action === 'private_message') ? get_person : get_query)
+            .shift();
+        if (obj)
+            result.push(render_object(obj));
     });
 
-    return $.map(objects, function (elt, idx) {
-        return render_object(elt);
-    });
+    return result;
 }
 
 exports.initialize = function () {
