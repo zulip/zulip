@@ -12,29 +12,28 @@ var labels = [];
 var mapped = {};
 
 function render_object_in_parts(obj) {
-    // N.B. action_string is *not* escaped by the caller
-    var action_string = "Error";
-    var search_string = "Error";
-    if (obj.action === 'search') {
-        action_string = "Find";
-        search_string = obj.query;
-    } else if (obj.action === 'stream') {
-        action_string = "Narrow to stream";
-        search_string = obj.query;
-    } else if (obj.action === 'private_message') {
-        action_string = "Narrow to person";
-        search_string = typeahead_helper.render_pm_object(obj.query);
-    } else if (obj.action === 'search_narrow') {
-        action_string = "Narrow to messages containing";
-        search_string = obj.query;
+    // N.B. action is *not* escaped by the caller
+    switch (obj.action) {
+    case 'search':
+        return {action: 'Find', search: obj.query};
+
+    case 'stream':
+        return {action: 'Narrow to stream', search: obj.query};
+
+    case 'private_message':
+        return {action: 'Narrow to person',
+                search: typeahead_helper.render_pm_object(obj.query)};
+
+    case 'search_narrow':
+        return {action: 'Narrow to messages containing',
+                search: obj.query};
     }
-    return {action_string: action_string,
-            search_string: search_string};
+    return {action: 'Error', search: 'Error'};
 }
 
 function render_object(obj) {
     var parts = render_object_in_parts(obj);
-    return parts.action_string + " " + parts.search_string;
+    return parts.action + " " + parts.search;
 }
 
 exports.update_typeahead = function() {
@@ -154,10 +153,10 @@ exports.initialize = function () {
         highlighter: function (item) {
             var query = this.query;
             var parts = render_object_in_parts(mapped[item]);
-            // We provide action_string, not the user, so this should
+            // We provide action, not the user, so this should
             // be fine from a not-needing-escaping perspective.
-            return parts.action_string + " " +
-                typeahead_helper.highlight_with_escaping(query, parts.search_string);
+            return parts.action + " " +
+                typeahead_helper.highlight_with_escaping(query, parts.search);
         },
         matcher: function (item) {
             var obj = mapped[item];
