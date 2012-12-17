@@ -61,11 +61,13 @@ exports.update_typeahead = function() {
 function narrow_or_search_for_term(item) {
     var search_query_box = $("#search_query");
     var obj = mapped[item];
-    if (obj.action === "search") {
+    switch (obj.action) {
+    case 'search':
         $("#search_up").focus();
         exports.search_button_handler(true);
         return obj.query;
-    } else if (obj.action === "stream") {
+
+    case 'stream':
         narrow.activate([['stream', obj.query]]);
         // It's sort of annoying that this is not in a position to
         // blur the search box, because it means that Esc won't
@@ -74,10 +76,12 @@ function narrow_or_search_for_term(item) {
         // Narrowing will have already put some operators in the search box,
         // so leave the current text in.
         return search_query_box.val();
-    } else if (obj.action === "private_message") {
+
+    case 'private_message':
         narrow.activate([['pm-with', obj.query.email]], {show_floating_recipient: false});
         return search_query_box.val();
-    } else if (obj.action === "search_narrow") {
+
+    case 'search_narrow':
         narrow.by_search_term(obj.query);
         return search_query_box.val();
     }
