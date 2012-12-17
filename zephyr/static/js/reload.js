@@ -37,6 +37,7 @@ function preserve_compose(send_after_reload) {
 $(function () {
     var location = window.location.toString();
     window.location.hash = '';
+    util.reset_favicon();
     var fragment = location.substring(location.indexOf('#') + 1);
     if (fragment.search("reload:") !== 0) {
         return;
