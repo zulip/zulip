@@ -103,6 +103,7 @@ exports.parse = function (str) {
             search_term.push(token);
         }
     });
+    // NB: Callers of 'parse' can assume that the 'search' operator is last.
     if (search_term.length > 0)
         operators.push(['search', search_term.join(' ').toLowerCase()]);
     return operators;
@@ -260,11 +261,6 @@ exports.by_recipient = function () {
         exports.activate([['stream', message.display_recipient]]);
         break;
     }
-};
-
-exports.by_search_term = function (term) {
-    exports.activate([['search', term.toLowerCase()]], {allow_collapse: false});
-    load_more_messages();
 };
 
 exports.deactivate = function () {

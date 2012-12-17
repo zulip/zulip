@@ -24,9 +24,12 @@ function render_object_in_parts(obj) {
         return {action: 'Narrow to person',
                 search: typeahead_helper.render_pm_object(obj.query)};
 
-    case 'search_narrow':
-        return {action: 'Narrow to messages containing',
-                search: obj.query};
+    case 'operators':
+        // HACK: This label needs to be distinct from the above, because of the
+        // way we identify action objects by their labels.  Using two spaces
+        // after 'Narrow to' ensures this, and is invisible with standard HTML
+        // whitespace handling.
+        return {action: 'Narrow to  ', search: narrow.describe(obj.operators)};
     }
     return {action: 'Error', search: 'Error'};
 }
@@ -36,7 +39,7 @@ function render_object(obj) {
     return parts.action + " " + parts.search;
 }
 
-exports.update_typeahead = function() {
+exports.update_typeahead = function () {
     var streams = $.map(stream_list, function(elt,idx) {
         return {action: 'stream', query: elt};
     });
@@ -45,7 +48,7 @@ exports.update_typeahead = function() {
     });
     var options = streams.concat(people);
     // The first two slots are reserved for our query.
-    options.unshift({action: 'search_narrow', query: ''});
+    options.unshift({action: 'operators', query: '', operators: []});
     options.unshift({action: 'search', query: ''});
 
     mapped = {};
@@ -80,8 +83,8 @@ function narrow_or_search_for_term(item) {
         narrow.activate([['pm-with', obj.query.email]], {show_floating_recipient: false});
         return search_query_box.val();
 
-    case 'search_narrow':
-        narrow.by_search_term(obj.query);
+    case 'operators':
+        narrow.activate(obj.operators);
         return search_query_box.val();
     }
     return item;
@@ -107,7 +110,7 @@ function searchbox_sorter(items) {
     });
 
     var query = this.query;
-    $.each(['search', 'search_narrow', 'stream', 'private_message'], function (idx, action) {
+    $.each(['search', 'operators', 'stream', 'private_message'], function (idx, action) {
         var objs = objects_by_action[action];
         if (!objs)
             return;
@@ -125,20 +128,30 @@ function searchbox_sorter(items) {
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
-            // Delete our old search queries (one for search-in-page, one for search-history)
-            var old_search_label = labels.shift();
-            delete mapped[old_search_label];
-            var old_search_narrow_label = labels.shift();
-            delete mapped[old_search_narrow_label];
-            // Add our new ones
-            var obj = {action: 'search_narrow', query: query};
+            // Delete our old search queries (one for find-in-page, one for operators)
+            var i;
+            for (i=0; i<2; i++) {
+                delete mapped[labels.shift()];
+            }
+
+            // Add an entry for narrow by operators.
+            var operators = narrow.parse(query);
+            var obj = {action: 'operators', query: query, operators: operators};
             var label = render_object(obj);
             mapped[label] = obj;
             labels.unshift(label);
+
+            // Add an entry for find-in-page.
             obj = {action: 'search', query: query};
+            if (operators.length > 0 && operators[0][0] !== 'search') {
+                // We have operators other than a search term.
+                // Disable find-in-page.
+                obj.disabled = true;
+            }
             label = render_object(obj);
             mapped[label] = obj;
             labels.unshift(label);
+
             return labels;
         },
         items: 4,
@@ -152,6 +165,8 @@ exports.initialize = function () {
         },
         matcher: function (item) {
             var obj = mapped[item];
+            if (obj.disabled)
+                return false;
             var actual_search_term = obj.query;
             if (obj.action === 'private_message') {
                 actual_search_term = obj.query.full_name + ' <' + obj.query.email + '>';
