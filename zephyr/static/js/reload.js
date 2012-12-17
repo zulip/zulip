@@ -36,7 +36,7 @@ function preserve_compose(send_after_reload) {
 // done before the first call to get_updates
 $(function () {
     var location = window.location.toString();
-    window.location = '#';
+    window.location.hash = '';
     var fragment = location.substring(location.indexOf('#') + 1);
     if (fragment.search("reload:") !== 0) {
         return;
