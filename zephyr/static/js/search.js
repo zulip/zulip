@@ -188,8 +188,7 @@ exports.initialize = function () {
             e.preventDefault();
             return false;
         }
-    });
-    $("#searchbox_form").keyup(function (e) {
+    }).keyup(function (e) {
         var code = e.which;
         var search_query_box = $("#search_query");
         if (code === 13 && search_query_box.is(":focus")) {
