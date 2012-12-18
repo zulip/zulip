@@ -433,7 +433,7 @@ def send_unauthed_zephyr(zwrite_args, content):
     return send_zephyr(zwrite_args + ["-d"], content)
 
 def forward_to_zephyr(message):
-    wrapper = textwrap.TextWrapper(break_long_words=False)
+    wrapper = textwrap.TextWrapper(break_long_words=False, break_on_hyphens=False)
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].split("\n"))
 
