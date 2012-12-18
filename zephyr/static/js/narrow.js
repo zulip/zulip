@@ -52,7 +52,7 @@ function unparse(operators) {
             parts.push(elem[1]);
         } else {
             // FIXME: URI encoding will look really ugly
-            parts.push(elem[0] + ':' + encodeURIComponent(elem[1]));
+            parts.push(elem[0] + ':' + encodeURIComponent(elem[1]).toLowerCase());
         }
     });
     return parts.join(' ');
@@ -105,12 +105,18 @@ exports.parse = function (str) {
     });
     // NB: Callers of 'parse' can assume that the 'search' operator is last.
     if (search_term.length > 0)
-        operators.push(['search', search_term.join(' ').toLowerCase()]);
+        operators.push(['search', search_term.join(' ')]);
     return operators;
 };
 
 // Build a filter function from a list of operators.
-function build_filter(operators) {
+function build_filter(operators_mixed_case) {
+    var operators = [];
+    // We don't use $.map because it flattens returned arrays.
+    $.each(operators_mixed_case, function (idx, operator) {
+        operators.push([operator[0], operator[1].toLowerCase()]);
+    });
+
     // FIXME: This is probably pretty slow.
     // We could turn it into something more like a compiler:
     // build JavaScript code in a string and then eval() it.
@@ -129,7 +135,7 @@ function build_filter(operators) {
 
             case 'stream':
                 if ((message.type !== 'stream') ||
-                    (message.display_recipient !== operand))
+                    (message.display_recipient.toLowerCase() !== operand))
                     return false;
                 break;
 
@@ -141,7 +147,7 @@ function build_filter(operators) {
 
             case 'pm-with':
                 if ((message.type !== 'private') ||
-                    (message.reply_to !== operand))
+                    (message.reply_to.toLowerCase() !== operand))
                     return false;
                 break;
 
@@ -244,7 +250,7 @@ exports.by_subject = function () {
     }
     exports.activate([
             ['stream',  original.display_recipient],
-            ['subject', original.subject.toLowerCase()]
+            ['subject', original.subject]
         ], {show_floating_recipient: false});
 };
 
