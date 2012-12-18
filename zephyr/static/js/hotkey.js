@@ -107,10 +107,8 @@ function process_hotkey(e) {
             ui.hide_userinfo_popover();
         } else if (compose.composing()) {
             compose.cancel();
-        } else if (search.keyboard_currently_finding()) {
-            search.clear_search();
         } else {
-            narrow.deactivate();
+            search.clear_search();
         }
         return true;
     case 99: // 'c': compose

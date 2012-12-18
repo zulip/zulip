@@ -337,6 +337,7 @@ exports.initiate_search = function () {
 };
 
 exports.clear_search = function () {
+    narrow.deactivate();
     $('table tr').removeHighlight();
     // Clear & reset searchbox to its normal size
     $('#search_query').val('').width('');
