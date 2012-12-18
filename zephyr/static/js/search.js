@@ -125,6 +125,36 @@ function searchbox_sorter(items) {
     return result;
 }
 
+exports.update_button_visibility = function (will_be_focused) {
+    var search_query = $('#search_query');
+    var focused = search_query.is(':focus') || will_be_focused;
+
+    // Show buttons iff the search input is focused, or has non-empty contents,
+    // or we are narrowed.
+    if (focused
+        || search_query.val()
+        || narrow.active()) {
+
+        if ($('.search_button').is(':visible')) {
+            // Already visible, and the width manipulation below
+            // will break if we do it again.
+            return;
+        }
+        // Shrink the searchbox to make room for the buttons.
+        var new_width = search_query.width() -
+            $('.search_button').outerWidth(true)*3;
+        search_query.width(new_width);
+        $("#search_arrows").addClass("input-append");
+        $('.search_button').show();
+    } else {
+        // Hide buttons.
+        $('#search_query').width('');
+        $("#search_arrows").removeClass("input-append");
+        $("#search_up, #search_down").removeAttr("disabled");
+        $('.search_button').blur().hide();
+    }
+};
+
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
@@ -179,6 +209,7 @@ exports.initialize = function () {
     });
 
     $("#searchbox_form").keydown(function (e) {
+        exports.update_button_visibility();
         var code = e.which;
         var search_query_box = $("#search_query");
         if (code === 13 && search_query_box.is(":focus")) {
@@ -318,27 +349,8 @@ function clear_search_cache() {
     cached_term = "";
 }
 
-function show_buttons() {
-    if (!$('.search_button').is(':visible')) {
-        // Shrink the searchbox to make room for the buttons.
-        var search_query = $('#search_query');
-        var new_width = search_query.width() -
-            $('.search_button').outerWidth(true)*3;
-        search_query.width(new_width);
-        $("#search_arrows").addClass("input-append");
-        $('.search_button').show();
-    }
-}
-
-function hide_buttons() {
-    $('#search_query').width('');
-    $("#search_arrows").removeClass("input-append");
-    $("#search_up, #search_down").removeAttr("disabled");
-    $('.search_button').blur().hide();
-}
-
 exports.focus_search = function () {
-    show_buttons();
+    exports.update_button_visibility(true);
     disable_search_arrows_if(false, ["up", "down"]);
 };
 
@@ -350,8 +362,8 @@ exports.clear_search = function () {
     narrow.deactivate();
     $('table tr').removeHighlight();
     // Clear & reset searchbox to its normal size
-    $('#search_query').val('');
-    hide_buttons();
+    $('#search_query').val('').blur();
+    exports.update_button_visibility();
     clear_search_cache();
 };
 
