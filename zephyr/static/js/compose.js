@@ -56,6 +56,8 @@ exports.start = function (msg_type, opts) {
         return;
     }
 
+    compose.clear();
+
     opts = $.extend({ message_type:     msg_type,
                       stream:           '',
                       subject:          '',
@@ -175,7 +177,6 @@ exports.hide = function () {
     $('input, textarea, button').blur();
     $('.message_comp').slideUp(100,
                               function() { $('#compose').css({visibility: "hidden"});});
-    compose.clear();
 };
 
 exports.clear = function () {
