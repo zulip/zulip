@@ -191,7 +191,8 @@ def update_subscriptions_from_humbug():
         canonical_cls = unicodedata.normalize("NFKC", stream).lower().encode("utf-8")
         if canonical_cls in current_zephyr_subs:
             continue
-        if canonical_cls in ['security', 'login', 'network', 'ops', 'user_locate']:
+        if canonical_cls in ['security', 'login', 'network', 'ops', 'user_locate',
+                             'hm_ctl', 'hm_stat', 'zephyr_admin', 'zephyr_ctl']:
             # These zephyr classes cannot be subscribed to by us, due
             # to MIT's Zephyr access control settings
             continue
