@@ -3,3 +3,4 @@
 /zephyrdb
 /all_messages_log.*
 /server.log
+*.sw[po]
