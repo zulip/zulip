@@ -133,6 +133,8 @@ function resizehandler(e) {
         sidebar_nav.width('');
     }
 
+    $("#bottom_whitespace").height($(window).height() * 0.4);
+
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
