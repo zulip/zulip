@@ -127,7 +127,7 @@ function build_filter(operators_mixed_case) {
             operand = operators[i][1];
             switch (operators[i][0]) {
             case 'is':
-                if ((operand === 'private-message') || (operand === 'pm')) {
+                if (operand === 'private-message') {
                     if (message.type !== 'private')
                         return false;
                 }
