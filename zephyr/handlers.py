@@ -30,17 +30,17 @@ class AdminHumbugHandler(logging.Handler):
                 request.META["SERVER_NAME"],
                 record.getMessage()
             )
-            request_repr = "Request info:\n\n"
-
 
             filter = get_exception_reporter_filter(request)
+            request_repr = "Request info:\n~~~~\n"
             request_repr += "- path: %s\n" % (request.path,)
             if request.method == "GET":
                 request_repr += "- GET: %s\n" % (request.GET,)
             elif request.method == "POST":
                 request_repr += "- POST: %s\n" % (filter.get_post_parameters(request),)
             for field in ["REMOTE_ADDR", "QUERY_STRING"]:
-                request_repr += "- %s: %s\n" % (field, request.META.get(field, "(None)"))
+                request_repr += "- %s: \"%s\"\n" % (field, request.META.get(field, "(None)"))
+            request_repr += "~~~~"
         except Exception:
             subject = '%s: %s' % (
                 request.META["SERVER_NAME"],
