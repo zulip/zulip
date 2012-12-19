@@ -335,7 +335,7 @@ class PointerTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": -2})
-        self.assert_json_error(result, "Invalid pointer value")
+        self.assert_json_error(result, "Bad value for 'pointer': -2")
         self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
 
 class MessagePOSTTest(AuthedTestCase):

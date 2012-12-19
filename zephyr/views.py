@@ -232,10 +232,8 @@ def json_update_pointer(request, user_profile):
                                   request.session.session_key)
 
 @has_request_variables
-def update_pointer_backend(request, user_profile, updater, pointer=POST(converter=int)):
-    if pointer < 0:
-        return json_error("Invalid pointer value")
-
+def update_pointer_backend(request, user_profile, updater,
+                           pointer=POST(converter=to_non_negative_int)):
     if pointer <= user_profile.pointer:
         return json_success()
 
