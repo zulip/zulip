@@ -31,11 +31,14 @@ class AdminHumbugHandler(logging.Handler):
                 record.getMessage()
             )
             request_repr = "Request info:\n\n"
+
+
+            filter = get_exception_reporter_filter(request)
             request_repr += "- path: %s\n" % (request.path,)
             if request.method == "GET":
                 request_repr += "- GET: %s\n" % (request.GET,)
             elif request.method == "POST":
-                request_repr += "- POST: %s\n" % (request.POST,)
+                request_repr += "- POST: %s\n" % (filter.get_post_parameters(request),)
             for field in ["REMOTE_ADDR", "QUERY_STRING"]:
                 request_repr += "- %s: %s\n" % (field, request.META.get(field, "(None)"))
         except Exception:
