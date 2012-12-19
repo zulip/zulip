@@ -118,6 +118,27 @@ def internal_notify_view(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
+class RequestVariableMissingError(Exception):
+    def __init__(self, var_name):
+        self.var_name = var_name
+
+    def to_json_error_msg(self):
+        return "Missing '%s' argument" % (self.var_name,)
+
+    def __str__(self):
+        return self.to_json_error_msg()
+
+class RequestVariableConversionError(Exception):
+    def __init__(self, var_name, bad_value):
+        self.var_name = var_name
+        self.bad_value = bad_value
+
+    def to_json_error_msg(self):
+        return "Bad value for '%s': %s" % (self.var_name, self.bad_value)
+
+    def __str__(self):
+        return self.to_json_error_msg()
+
 # Used in conjunction with @has_request_variables, below
 class POST(object):
     # NotSpecified is a sentinel value for determining whether a
@@ -195,7 +216,7 @@ def has_request_variables(view_func):
                 val = request.POST[param.post_var_name]
             except KeyError:
                 if param.default is POST.NotSpecified:
-                    return json_error("Missing '%s' argument" % (param.post_var_name,))
+                    raise RequestVariableMissingError(param.post_var_name)
                 val = param.default
                 default_assigned = True
 
@@ -203,8 +224,7 @@ def has_request_variables(view_func):
                 try:
                     val = param.converter(val)
                 except:
-                    return json_error("Bad value for '%s': %s"
-                                      % (param.post_var_name, val))
+                    raise RequestVariableConversionError(param.post_var_name, val)
             kwargs[param.func_var_name] = val
 
         return view_func(request, *args, **kwargs)

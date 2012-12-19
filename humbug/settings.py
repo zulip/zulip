@@ -146,6 +146,7 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     # Our logging middleware should be the first middleware item.
     'zephyr.middleware.LogRequests',
+    'zephyr.middleware.JsonErrorHandler',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

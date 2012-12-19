@@ -7,7 +7,7 @@ from django.db.models import Q
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, get_display_recipient, Realm, do_send_message, Client
 from zephyr.views import json_get_updates, api_get_messages, gather_subscriptions
-from zephyr.decorator import RespondAsynchronously
+from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
 from zephyr.lib.initial_password import initial_password, initial_api_key
 
 import simplejson
@@ -722,6 +722,17 @@ class GetUpdatesTest(AuthedTestCase):
 
         request = POSTRequestMock({}, user)
         self.assertEquals(json_get_updates(request), RespondAsynchronously)
+
+    def test_bad_input(self):
+        """
+        Specifying a bad value for 'pointer' should return an error
+        """
+        self.login("hamlet@humbughq.com")
+        user = User.objects.get(email="hamlet@humbughq.com")
+
+        request = POSTRequestMock({'pointer': 'foo'}, user)
+        self.assertRaises(RequestVariableConversionError, json_get_updates, request)
+
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (

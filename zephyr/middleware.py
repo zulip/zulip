@@ -1,3 +1,6 @@
+from decorator import RequestVariableMissingError, RequestVariableConversionError
+from zephyr.lib.response import json_error
+
 import logging
 import time
 
@@ -23,3 +26,9 @@ class LogRequests(object):
             % (remote_ip, request.method, response.status_code,
                time_delta, request.get_full_path()))
         return response
+
+class JsonErrorHandler(object):
+    def process_exception(self, request, exception):
+        if hasattr(exception, 'to_json_error_msg') and callable(exception.to_json_error_msg):
+            return json_error(exception.to_json_error_msg())
+        return None
