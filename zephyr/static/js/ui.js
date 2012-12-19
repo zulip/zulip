@@ -18,6 +18,10 @@ exports.home_tab_obscured = function () {
 var scroll_positions = {};
 var gravatar_stamp = 1;
 
+exports.change_tab_to = function (tabname) {
+    $('#sidebar a[href="' + tabname + '"]').tab('show');
+};
+
 exports.focus_on = function (field_id) {
     // Call after autocompleting on a field, to advance the focus to
     // the next input field.
@@ -505,9 +509,9 @@ $(function () {
         // Set the URL bar title to show the sub-page you're currently on.
         var browser_url = target_tab;
         if (browser_url === "#home") {
-            browser_url = "#";
+            browser_url = "";
         }
-        window.history.pushState("object or string", "Title", browser_url);
+        hashchange.changehash(browser_url);
     });
 
     $('#sidebar a[href="#subscriptions"]').click(subs.fetch);

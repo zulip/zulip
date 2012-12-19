@@ -73,7 +73,7 @@ exports.start = function (msg_type, opts) {
         compose.message_content(opts.message);
     }
 
-    $('#sidebar a[href="#home"]').tab('show');
+    ui.change_tab_to("#home");
 
     var focus_area;
     if (opts.stream && ! opts.subject) {
