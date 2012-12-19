@@ -63,6 +63,17 @@ def json_to_list(json):
         raise ValueError("argument is not a list")
     return data
 
+def json_to_list_of_string_pairs(json):
+    data = json_to_list(json)
+    for elem in data:
+        if not isinstance(elem, list):
+            raise ValueError("element is not a list")
+        if (len(elem) != 2
+            or any(not isinstance(x, str) and not isinstance(x, unicode)
+                   for x in elem)):
+            raise ValueError("element is not a string pair")
+    return data
+
 def get_stream(stream_name, realm):
     try:
         return Stream.objects.get(name__iexact=stream_name, realm=realm)
@@ -263,55 +274,91 @@ def api_get_old_messages(request, user_profile,
     return get_old_messages_backend(request, user_profile=user_profile,
                                     apply_markdown=apply_markdown)
 
+class BadNarrowOperator(Exception):
+    def __init__(self, desc):
+        self.desc = desc
+
+    def to_json_error_msg(self):
+        return 'Invalid narrow operator: ' + self.desc
+
+class NarrowBuilder(object):
+    def __init__(self, user_profile):
+        self.user_profile = user_profile
+
+    def __call__(self, operator, operand):
+        # We have to be careful here because we're letting users call a method
+        # by name! The prefix 'by_' prevents it from colliding with builtin
+        # Python __magic__ stuff.
+        method_name = 'by_' + operator.replace('-', '_')
+        method = getattr(self, method_name, None)
+        if method is None:
+            raise BadNarrowOperator('unknown operator ' + operator)
+        return method(operand)
+
+    def by_is(self, operand):
+        if operand == 'private-message':
+            return (Q(recipient__type=Recipient.PERSONAL) |
+                    Q(recipient__type=Recipient.HUDDLE))
+        raise BadNarrowOperator("unknown 'is' operand " + operand)
+
+    def by_stream(self, operand):
+        try:
+            stream = Stream.objects.get(realm=self.user_profile.realm,
+                                        name__iexact=operand)
+        except Stream.DoesNotExist:
+            raise BadNarrowOperator('unknown stream ' + operand)
+        recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
+        return Q(recipient=recipient)
+
+    def by_subject(self, operand):
+        return Q(subject=operand)
+
+    def by_pm_with(self, operand):
+        if ',' in operand:
+            # Huddle
+            try:
+                emails = [e.strip() for e in operand.split(',')]
+                recipient = recipient_for_emails(emails, False,
+                    self.user_profile, self.user_profile)
+            except ValidationError:
+                raise BadNarrowOperator('unknown recipient ' + operand)
+            return Q(recipient=recipient)
+        else:
+            # Personal message
+            try:
+                recipient_profile = UserProfile.objects.get(user__email=operand)
+            except UserProfile.DoesNotExist:
+                raise BadNarrowOperator('unknown user ' + operand)
+
+            recipient = Recipient.objects.get(type=Recipient.PERSONAL,
+                type_id=recipient_profile.id)
+
+            if operand == self.user_profile.user.email:
+                # Personals with self
+                return Q(recipient__type=Recipient.PERSONAL,
+                    sender__user__email=operand,
+                    recipient=recipient)
+            else:
+                # Personals with other user; include both directions.
+                return (Q(recipient__type=Recipient.PERSONAL) &
+                    (Q(sender__user__email=operand) | Q(recipient=recipient)))
+
+    def by_search(self, operand):
+        return (Q(content__icontains=operand) |
+                Q(subject__icontains=operand))
+
 @has_request_variables
 def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_int),
                              num_before = POST(converter=to_non_negative_int),
                              num_after = POST(converter=to_non_negative_int),
-                             narrow = POST('narrow', converter=json_to_dict),
+                             narrow = POST('narrow', converter=json_to_list_of_string_pairs, default=None),
                              user_profile=None, apply_markdown=True):
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
 
-    if 'recipient_id' in narrow:
-        query = query.filter(recipient_id = narrow['recipient_id'])
-    if 'stream' in narrow:
-        try:
-            stream = Stream.objects.get(realm=user_profile.realm, name__iexact=narrow['stream'])
-        except Stream.DoesNotExist:
-            return json_error("Invalid stream %s" % (narrow['stream'],))
-        recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-        query = query.filter(recipient_id = recipient.id)
-
-    if 'emails' in narrow and (type(narrow['emails']) != type([]) or len(narrow['emails']) == 0):
-        return json_error("Invalid emails %s" % (narrow['emails'],))
-    elif 'emails' in narrow and len(narrow['emails']) == 1:
-        query = query.filter(recipient__type=Recipient.PERSONAL)
-        try:
-            recipient_user = UserProfile.objects.get(user__email = narrow['emails'][0])
-        except UserProfile.DoesNotExist:
-            return json_error("Invalid emails ['" + narrow['emails'][0] + "']")
-        recipient = Recipient.objects.get(type=Recipient.PERSONAL, type_id=recipient_user.id)
-        # If we are narrowed to personals with ourself, we want to search for personals where the user
-        # with the desired e-mail address is the sender *and* the recipient, not personals where the
-        # user with the desired e-mail address is the sender *or* the recipient.
-        if narrow['emails'][0] == user_profile.user.email:
-            query = query.filter(Q(sender__user__email=narrow['emails'][0]) & Q(recipient=recipient))
-        else:
-            query = query.filter(Q(sender__user__email=narrow['emails'][0]) | Q(recipient=recipient))
-    elif 'emails' in narrow:
-        try:
-            recipient = recipient_for_emails(narrow['emails'], False, user_profile, user_profile)
-        except ValidationError, e:
-            return json_error(e.messages[0])
-        query = query.filter(recipient=recipient)
-    elif 'type' in narrow and (narrow['type'] == "private" or narrow['type'] == "all_private_messages"):
-        query = query.filter(Q(recipient__type=Recipient.PERSONAL) | Q(recipient__type=Recipient.HUDDLE))
-
-    if 'subject' in narrow:
-        query = query.filter(subject = narrow['subject'])
-
-    if 'searchterm' in narrow:
-        query = query.filter(Q(content__icontains=narrow['searchterm']) |
-                             Q(subject__icontains=narrow['searchterm']))
+    if narrow is not None:
+        build = NarrowBuilder(user_profile)
+        for operator, operand in narrow:
+            query = query.filter(build(operator, operand))
 
     # We add 1 to the number of messages requested to ensure that the
     # resulting list always contains the anchor message

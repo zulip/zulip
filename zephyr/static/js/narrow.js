@@ -8,7 +8,8 @@ var persistent_message_id = 0;
 // For narrowing based on a particular message
 var target_id = 0;
 
-var filter_function = false;
+var filter_function   = false;
+var current_operators = false;
 
 exports.active = function () {
     // Cast to bool
@@ -21,6 +22,10 @@ exports.predicate = function () {
     } else {
         return function () { return true; };
     }
+};
+
+exports.operators = function () {
+    return current_operators;
 };
 
 var show_floating_recipient;
@@ -176,7 +181,8 @@ exports.activate = function (operators, opts) {
 
     var was_narrowed = exports.active();
 
-    filter_function = build_filter(operators);
+    filter_function   = build_filter(operators);
+    current_operators = operators;
 
     show_floating_recipient = opts.show_floating_recipient;
     allow_collapse          = opts.allow_collapse;
@@ -274,7 +280,8 @@ exports.deactivate = function () {
     if (!filter_function) {
         return;
     }
-    filter_function = false;
+    filter_function   = false;
+    current_operators = false;
 
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');

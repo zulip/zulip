@@ -536,8 +536,7 @@ class GetOldMessagesTest(AuthedTestCase):
     fixtures = ['messages.json']
 
     def post_with_params(self, modified_params):
-        post_params = {"anchor": 1, "num_before": 1, "num_after": 1,
-                  "narrow": simplejson.dumps({})}
+        post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
         post_params.update(modified_params)
         result = self.client.post("/json/get_old_messages", dict(post_params))
         self.assert_json_success(result)
@@ -560,26 +559,36 @@ class GetOldMessagesTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         self.check_well_formed_messages_response(self.post_with_params({}))
 
-    def test_get_old_messages_with_narrow_recipient_id(self):
+    def test_get_old_messages_with_narrow_pm_with(self):
         """
-        A request for old messages with a narrow recipient_id only returns
-        messages for that id.
+        A request for old messages with a narrow by pm-with only returns
+        conversations with that user.
         """
-        self.login("hamlet@humbughq.com")
-        messages = self.message_stream(User.objects.get(email="hamlet@humbughq.com"))
-        recipient_id = messages[0].recipient.id
+        me = 'hamlet@humbughq.com'
+        def dr_emails(dr):
+            return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
+        personals = [m for m in self.message_stream(User.objects.get(email=me))
+            if m.recipient.type == Recipient.PERSONAL
+            or m.recipient.type == Recipient.HUDDLE]
+        if not personals:
+            # FIXME: This is bad.  We should use test data that is guaranteed
+            # to contain some personals for every user.  See #617.
+            return
+        emails = dr_emails(get_display_recipient(personals[0].recipient))
+
+        self.login(me)
         result = self.post_with_params({"narrow": simplejson.dumps(
-                    {"recipient_id": recipient_id})})
+                    [['pm-with', emails]])})
         self.check_well_formed_messages_response(result)
 
         for message in result["messages"]:
-            self.assertEquals(message["recipient_id"], recipient_id)
+            self.assertEquals(dr_emails(message['display_recipient']), emails)
 
     def test_get_old_messages_with_narrow_stream(self):
         """
-        A request for old messages with a narrow stream only returns messages
-        for that stream.
+        A request for old messages with a narrow by stream only returns
+        messages for that stream.
         """
         self.login("hamlet@humbughq.com")
         messages = self.message_stream(User.objects.get(email="hamlet@humbughq.com"))
@@ -589,7 +598,7 @@ class GetOldMessagesTest(AuthedTestCase):
         stream_id = stream_messages[0].recipient.id
 
         result = self.post_with_params({"narrow": simplejson.dumps(
-                    {"stream": stream_name})})
+                    [['stream', stream_name]])})
         self.check_well_formed_messages_response(result)
 
         for message in result["messages"]:
@@ -598,13 +607,12 @@ class GetOldMessagesTest(AuthedTestCase):
 
     def test_missing_params(self):
         """
-        anchor, num_before, num_after, and narrow are all required
+        anchor, num_before, and num_after are all required
         POST parameters for get_old_messages.
         """
         self.login("hamlet@humbughq.com")
 
-        required_args = (("anchor", 1), ("num_before", 1), ("num_after", 1),
-                         ("narrow", {}))
+        required_args = (("anchor", 1), ("num_before", 1), ("num_after", 1))
 
         for i in range(len(required_args)):
             post_params = dict(required_args[:i] + required_args[i + 1:])
@@ -637,27 +645,39 @@ class GetOldMessagesTest(AuthedTestCase):
 
     def test_bad_narrow_type(self):
         """
-        narrow must be a dictionary.
+        narrow must be a list of string pairs.
         """
         self.login("hamlet@humbughq.com")
 
         other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
 
-        bad_types = (False, 0, "", "{malformed json,")
+        bad_types = (False, 0, '', '{malformed json,',
+            '{}', '{foo: 3}', '[1,2]', '[["x","y","z"]]')
         for type in bad_types:
             post_params = dict(other_params + [("narrow", type)])
             result = self.client.post("/json/get_old_messages", post_params)
             self.assert_json_error(result,
                                    "Bad value for 'narrow': %s" % (type,))
 
-    def exercise_bad_narrow_content(self, narrow_key, bad_content):
+    def test_bad_narrow_operator(self):
+        """
+        Unrecognized narrow operators are rejected.
+        """
+        self.login("hamlet@humbughq.com")
+        for operator in ['', 'foo', 'stream:verona', '__init__']:
+            params = dict(anchor=0, num_before=0, num_after=0,
+                narrow=simplejson.dumps([[operator, '']]))
+            result = self.client.post("/json/get_old_messages", params)
+            self.assert_json_error_contains(result,
+                "Invalid narrow operator: unknown operator")
+
+    def exercise_bad_narrow_operand(self, operator, operands, error_msg):
         other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
-        for content in bad_content:
-            post_params = dict(other_params + [("narrow",
-                                                simplejson.dumps({narrow_key: content}))])
+        for operand in operands:
+            post_params = dict(other_params + [
+                ("narrow", simplejson.dumps([[operator, operand]]))])
             result = self.client.post("/json/get_old_messages", post_params)
-            self.assert_json_error(result,
-                                   "Invalid %s %s" % (narrow_key, content,))
+            self.assert_json_error_contains(result, error_msg)
 
     def test_bad_narrow_stream_content(self):
         """
@@ -665,17 +685,30 @@ class GetOldMessagesTest(AuthedTestCase):
         returned.
         """
         self.login("hamlet@humbughq.com")
-        bad_stream_content = ("non-existent stream", 0, [])
-        self.exercise_bad_narrow_content("stream", bad_stream_content)
+        bad_stream_content = (0, [], ["x", "y"])
+        self.exercise_bad_narrow_operand("stream", bad_stream_content,
+            "Bad value for 'narrow'")
 
     def test_bad_narrow_one_on_one_email_content(self):
         """
-        If an invalid 'emails' is requested in get_old_messages, an
+        If an invalid 'pm-with' is requested in get_old_messages, an
         error is returned.
         """
         self.login("hamlet@humbughq.com")
-        bad_stream_content = (["non-existent email"], "non-existent email", 0, [])
-        self.exercise_bad_narrow_content("emails", bad_stream_content)
+        bad_stream_content = (0, [], ["x","y"])
+        self.exercise_bad_narrow_operand("pm-with", bad_stream_content,
+            "Bad value for 'narrow'")
+
+    def test_bad_narrow_nonexistent_stream(self):
+        self.login("hamlet@humbughq.com")
+        self.exercise_bad_narrow_operand("stream", ['non-existent stream'],
+            "Invalid narrow operator: unknown stream")
+
+    def test_bad_narrow_nonexistent_email(self):
+        self.login("hamlet@humbughq.com")
+        self.exercise_bad_narrow_operand("pm-with", ['non-existent-user@humbughq.com'],
+            "Invalid narrow operator: unknown user")
+
 
 
 class ChangeSettingsTest(AuthedTestCase):

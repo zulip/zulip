@@ -624,11 +624,15 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
         cont_will_add_messages = false;
     }
 
+    var data = {anchor: anchor, num_before: num_before, num_after: num_after};
+
+    if (for_narrow && narrow.active())
+        data.narrow = JSON.stringify(narrow.operators());
+
     $.ajax({
         type:     'POST',
         url:      '/json/get_old_messages',
-        data:     {anchor: anchor, num_before: num_before, num_after: num_after,
-                   narrow: '{}'}, // FIXME
+        data:     data,
         dataType: 'json',
         success: function (data) {
             if (! data) {
