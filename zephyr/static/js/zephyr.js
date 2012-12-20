@@ -725,7 +725,13 @@ function load_more_messages() {
     table = narrow.active() ? "zfilt" : "zhome";
     oldest_message_id = rows.id(rows.get_table(table).find("tr[zid]:first"));
     if (isNaN(oldest_message_id)) {
-        oldest_message_id = selected_message_id;
+        if (selected_message_id === -1) {
+            // If we arrived on the page via a #narrow URL, selected_message_id
+            // will still be -1, so use the initial_pointer as our anchor
+            oldest_message_id = initial_pointer;
+        } else {
+            oldest_message_id = selected_message_id;
+        }
     }
     load_old_messages(oldest_message_id, batch_size, 0,
                       function (messages) {
