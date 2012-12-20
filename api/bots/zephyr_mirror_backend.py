@@ -35,6 +35,7 @@ import signal
 import logging
 import hashlib
 import unicodedata
+import tempfile
 
 DEFAULT_SITE = "https://humbughq.com"
 
@@ -711,7 +712,12 @@ def configure_logger(direction_name):
         else:
             log_file = "/home/humbug/mirror-log"
     else:
-        log_file = "/tmp/humbug-log." + options.user
+        f = tempfile.NamedTemporaryFile(prefix="humbug-log.%s." % (options.user,),
+                                        delete=False)
+        log_file = f.name
+        # Close the file descriptor, since the logging system will
+        # reopen it anyway.
+        f.close()
     logger = logging.getLogger(__name__)
     log_format = "%(asctime)s " + direction_name + ": %(message)s"
     formatter = logging.Formatter(log_format)
