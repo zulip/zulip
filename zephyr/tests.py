@@ -88,15 +88,21 @@ class AuthedTestCase(TestCase):
         # empty value.
         self.assertIn("msg", json)
 
+    def get_json_error(self, result):
+        self.assertEquals(result.status_code, 400)
+        json = simplejson.loads(result.content)
+        self.assertEquals(json.get("result"), "error")
+        return json['msg']
+
     def assert_json_error(self, result, msg):
         """
         Invalid POSTs return a 400 and JSON of the form {"result": "error",
         "msg": "reason"}.
         """
-        self.assertEquals(result.status_code, 400)
-        json = simplejson.loads(result.content)
-        self.assertEquals(json.get("result"), "error")
-        self.assertEquals(json.get("msg"), msg)
+        self.assertEquals(self.get_json_error(result), msg)
+
+    def assert_json_error_contains(self, result, msg_substring):
+        self.assertIn(msg_substring, self.get_json_error(result))
 
 class PublicURLTest(TestCase):
     """
