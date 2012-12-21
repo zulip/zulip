@@ -649,6 +649,59 @@ class GetOldMessagesTest(AuthedTestCase):
         bad_stream_content = (["non-existent email"], "non-existent email", 0, [])
         self.exercise_bad_narrow_content("emails", bad_stream_content)
 
+
+class ChangeSettingsTest(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def post_with_params(self, modified_params):
+        post_params = {"full_name": "Foo Bar",
+                  "old_password": initial_password("hamlet@humbughq.com"),
+                  "new_password": "foobar1", "confirm_password": "foobar1",
+                  "enable_desktop_notifications": ""}
+        post_params.update(modified_params)
+        return self.client.post("/json/settings/change", dict(post_params))
+
+    def check_well_formed_change_settings_response(self, result):
+        self.assertIn("full_name", result)
+        self.assertIn("enable_desktop_notifications", result)
+
+    def successful_change_settings(self):
+        """
+        A call to /json/settings/change with valid parameters changes the user's
+        settings correctly and returns correct values.
+        """
+        self.login("hamlet@humbughq.com")
+        json_result = self.post_with_params({})
+        self.assert_json_success(json_result)
+        result = simplejson.loads(json_result)
+        self.check_well_formed_change_settings_response(result)
+        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").
+                full_name, "Foo Bar")
+        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").
+                enable_desktop_notifications, False)
+        self.client.post('/accounts/logout/')
+        self.login("hamlet@humbughq.com", "foobar1")
+        user = User.objects.get(email='hamlet@humbughq.com')
+        self.assertEqual(self.client.session['_auth_user_id'], user.id)
+
+    def test_mismatching_passwords(self):
+        """
+        new_password and confirm_password must match
+        """
+        self.login("hamlet@humbughq.com")
+        result = self.post_with_params({"new_password": "mismatched_password"})
+        self.assert_json_error(result,
+                "New password must match confirmation password!")
+
+    def test_wrong_old_password(self):
+        """
+        new_password and confirm_password must match
+        """
+        self.login("hamlet@humbughq.com")
+        result = self.post_with_params({"old_password": "bad_password"})
+        self.assert_json_error(result, "Wrong password!")
+
+
 class DummyHandler(object):
     def __init__(self, assert_callback):
         self.assert_callback = assert_callback
