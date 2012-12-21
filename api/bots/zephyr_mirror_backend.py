@@ -831,25 +831,26 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
         add_humbug_subscriptions(True)
         sys.exit(0)
 
-    # First check that there are no other bots running
-    bot_name = "zephyr_mirror_backend.py"
+    # Kill all zephyr_mirror processes other than this one and its parent.
     if not options.test_mode:
-        pgrep_query = bot_name
+        pgrep_query = "/usr/bin/python.*zephyr_mirror"
         if options.shard is not None:
-            pgrep_query = "%s.*--shard=%s" % (bot_name, options.shard)
+            pgrep_query = "%s.*--shard=%s" % (pgrep_query, options.shard)
         proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", pgrep_query],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         out, _err_unused = proc.communicate()
-        for pid in out.split():
-            if int(pid.strip()) != os.getpid():
-                # Another copy of zephyr_mirror.py!  Kill it.
-                print "Killing duplicate zephyr_mirror process %s" % (pid,)
-                try:
-                    os.kill(int(pid), signal.SIGKILL)
-                except OSError:
-                    # We don't care if the child process no longer exists, so just print the error
-                    traceback.print_exc()
+        for pid in map(int, out.split()):
+            if pid == os.getpid() or pid == os.getppid():
+                continue
+
+            # Another copy of zephyr_mirror.py!  Kill it.
+            print "Killing duplicate zephyr_mirror process %s" % (pid,)
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except OSError:
+                # We don't care if the target process no longer exists, so just print the error
+                traceback.print_exc()
 
     if options.shard is not None and set(options.shard) != set("a"):
         # The shard that is all "a"s is the one that handles personals
