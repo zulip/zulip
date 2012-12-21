@@ -665,7 +665,7 @@ class ChangeSettingsTest(AuthedTestCase):
         self.assertIn("full_name", result)
         self.assertIn("enable_desktop_notifications", result)
 
-    def successful_change_settings(self):
+    def test_successful_change_settings(self):
         """
         A call to /json/settings/change with valid parameters changes the user's
         settings correctly and returns correct values.
@@ -673,7 +673,7 @@ class ChangeSettingsTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         json_result = self.post_with_params({})
         self.assert_json_success(json_result)
-        result = simplejson.loads(json_result)
+        result = simplejson.loads(json_result.content)
         self.check_well_formed_change_settings_response(result)
         self.assertEquals(self.get_user_profile("hamlet@humbughq.com").
                 full_name, "Foo Bar")
@@ -683,6 +683,23 @@ class ChangeSettingsTest(AuthedTestCase):
         self.login("hamlet@humbughq.com", "foobar1")
         user = User.objects.get(email='hamlet@humbughq.com')
         self.assertEqual(self.client.session['_auth_user_id'], user.id)
+
+    def test_missing_params(self):
+        """
+        full_name, old_password, and new_password are all required POST
+        parameters for json_change_settings. (enable_desktop_notifications is
+        false by default)
+        """
+        self.login("hamlet@humbughq.com")
+        required_params = (("full_name", "Foo Bar"),
+                  ("old_password", initial_password("hamlet@humbughq.com")),
+                  ("new_password", initial_password("hamlet@humbughq.com")),
+                  ("confirm_password", initial_password("hamlet@humbughq.com")))
+        for i in range(len(required_params)):
+            post_params = dict(required_params[:i])
+            result = self.client.post("/json/settings/change", post_params)
+            self.assert_json_error(result,
+                    "Missing '%s' argument" % (required_params[i][0],))
 
     def test_mismatching_passwords(self):
         """
