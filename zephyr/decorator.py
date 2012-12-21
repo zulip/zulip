@@ -176,6 +176,10 @@ class POST(object):
 # automatically populated from the HTTP request.  The request object
 # must be the first argument to the decorated function.
 #
+# This should generally be the innermost (syntactically bottommost)
+# decorator applied to a view, since other decorators won't preserve
+# the default parameter values used by has_request_variables.
+#
 # Note that this can't be used in helper functions which are not
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
