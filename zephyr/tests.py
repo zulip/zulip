@@ -527,7 +527,10 @@ class GetOldMessagesTest(AuthedTestCase):
         messages.
         """
         self.login("hamlet@humbughq.com")
-        self.check_well_formed_messages_response(self.post_with_params({}))
+        json_result = self.post_with_params({})
+        self.assert_json_success(json_result)
+        result = simplejson.loads(json_result.content)
+        self.check_well_formed_messages_response(result)
 
     def test_get_old_messages_with_narrow_recipient_id(self):
         """
