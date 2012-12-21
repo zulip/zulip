@@ -218,6 +218,11 @@ def maybe_restart_mirroring_script():
         except OSError:
             # We don't care if the child process no longer exists, so just print the error
             logging.exception("")
+        try:
+            zephyr._z.cancelSubs()
+        except IOError:
+            # We don't care whether we failed to cancel subs properly, but we should log it
+            logging.exception("")
         while True:
             try:
                 os.execvp(os.path.join(options.root_path, "user_root", "zephyr_mirror_backend.py"), sys.argv)
