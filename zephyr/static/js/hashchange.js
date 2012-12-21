@@ -20,13 +20,14 @@ exports.changehash = function (newhash) {
     }
 };
 
+// Returns true if this function performed a narrow
 function hashchanged() {
     // If window.location.hash changed because our app explicitly
     // changed it, then we don't need to do anything.
     // (This function only neds to jump into action if it changed
     // because e.g. the back button was pressed by the user)
     if (window.location.hash === expected_hash) {
-        return;
+        return false;
     }
 
     var hash = window.location.hash.split("/");
@@ -35,7 +36,7 @@ function hashchanged() {
             ui.change_tab_to("#home");
             narrow.hashchanged(hash);
             ui.update_floating_recipient_bar();
-            break;
+            return true;
         case "":
         case "#":
             ui.change_tab_to("#home");
@@ -49,11 +50,14 @@ function hashchanged() {
             ui.change_tab_to("#settings");
             break;
     }
+    return false;
 }
 
 exports.initialize = function () {
     window.onhashchange = hashchanged;
-    hashchanged();
+    if (hashchanged()) {
+        load_more_messages();
+    }
 };
 
 return exports;
