@@ -483,7 +483,7 @@ table.floating_recipient {
 
 #bottom_whitespace {
   display: block;
-  height: 40%;
+  height: 300px;
 }
 
 #home-error {
