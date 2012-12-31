@@ -495,21 +495,6 @@ def get_updates_backend(request, user_profile, handler, client_id,
                                     'update_types': []})
                     return
 
-                # We need to check whether there are any new messages
-                # between the client's get_updates call and the
-                # message we're about to return to the client and
-                # return them as well or the client will miss them.
-                # See #174.
-                extra_messages = (Message.objects.select_related()
-                                  .filter(usermessage__user_profile = user_profile,
-                                          id__gt = last,
-                                          id__lt = messages[0].id)
-                                  .order_by('id'))
-                if extra_messages:
-                    new_messages = list(extra_messages)
-                    new_messages.append(messages[0])
-                    cb_kwargs["messages"] = new_messages
-
             kwargs.update(cb_kwargs)
             res = format_updates_response(user_profile=user_profile,
                                           client_server_generation=client_server_generation,
