@@ -244,7 +244,7 @@ def update_pointer_backend(request, user_profile, updater,
     if settings.TORNADO_SERVER:
         requests.post(settings.TORNADO_SERVER + '/notify_pointer_update', data=dict(
             secret          = settings.SHARED_SECRET,
-            user            = user_profile.user.id,
+            user            = user_profile.id,
             new_pointer     = pointer,
             pointer_updater = updater))
 
