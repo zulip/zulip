@@ -193,6 +193,7 @@ def update_subscriptions_from_humbug():
         if canonical_cls in current_zephyr_subs:
             continue
         if canonical_cls in ['security', 'login', 'network', 'ops', 'user_locate',
+                             'mit',
                              'hm_ctl', 'hm_stat', 'zephyr_admin', 'zephyr_ctl']:
             # These zephyr classes cannot be subscribed to by us, due
             # to MIT's Zephyr access control settings
