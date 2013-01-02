@@ -32,7 +32,8 @@ class humbug_base {
   $packages = [ "screen", "strace", "vim", "emacs23-nox", "git", "python-tz",
                 "sqlite3", "ntp", "python-simplejson", "host",
                 "openssh-server", "python-pip", "puppet-el",
-                "iptables-persistent", "nagios-plugins-basic", ]
+                "iptables-persistent", "nagios-plugins-basic", "munin-node",
+                "munin-plugins-extra" ]
   package { $packages: ensure => "installed" }
 
   # FIXME: Stop using pip since it is insecure
@@ -285,7 +286,7 @@ class humbug_trac {
 }
 
 class humbug_nagios {
-  $nagios_packages = [ "nagios3", ]
+  $nagios_packages = [ "nagios3", "munin", "autossh" ]
   package { $nagios_packages: ensure => "installed" }
 
   apache2site { 'nagios':
