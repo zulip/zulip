@@ -71,7 +71,7 @@ function wait_and_send(type, params) {
 
 // Wait to receive queued messages.
 function wait_for_receive(step) {
-    // Wait until the last send or get_updates result was more than 100 ms ago.
+    // Wait until the last send or get_updates result was more than 300 ms ago.
     casper.waitFor(function () {
         return (timestamp() - last_send_or_update) > 300;
     }, step);
