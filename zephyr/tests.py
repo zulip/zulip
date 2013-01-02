@@ -86,7 +86,7 @@ class AuthedTestCase(TestCase):
         self.assertEquals(json.get("result"), "success")
         # We have a msg key for consistency with errors, but it typically has an
         # empty value.
-        self.assertTrue("msg" in json)
+        self.assertIn("msg", json)
 
     def assert_json_error(self, result, msg):
         """
@@ -435,8 +435,8 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
         subs = gather_subscriptions(self.get_user_profile(test_email))
         for stream, color in json["stream_colors"]:
-            self.assertTrue(isinstance(color, str))
-            self.assertTrue(isinstance(stream, str))
+            self.assertIsInstance(color,  str)
+            self.assertIsInstance(stream, str)
             self.assertIn((stream, color), subs)
             subs.remove((stream, color))
         self.assertFalse(subs)
@@ -514,7 +514,7 @@ class GetOldMessagesTest(AuthedTestCase):
 
     def check_well_formed_messages_response(self, result):
         self.assertIn("messages", result)
-        self.assertTrue(isinstance(result["messages"], list))
+        self.assertIsInstance(result["messages"], list)
         for message in result["messages"]:
             for field in ("content", "content_type", "display_recipient",
                           "gravatar_hash", "recipient_id", "sender_full_name",
