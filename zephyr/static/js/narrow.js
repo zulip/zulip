@@ -238,6 +238,12 @@ exports.activate = function (operators, opts) {
     search.update_button_visibility();
 };
 
+// Activate narrowing with a single operator.
+// This is just for syntactic convenience.
+exports.by = function (operator, operand, opts) {
+    exports.activate([[operator, operand]], opts);
+};
+
 // This is the message we're about to select, within the narrowed view.
 // But it won't necessarily be selected once the user un-narrows.
 //
@@ -267,11 +273,11 @@ exports.by_recipient = function () {
     var new_narrow, emails;
     switch (message.type) {
     case 'private':
-        exports.activate([['pm-with', message.reply_to]], {show_floating_recipient: false});
+        exports.by('pm-with', message.reply_to, {show_floating_recipient: false});
         break;
 
     case 'stream':
-        exports.activate([['stream', message.display_recipient]]);
+        exports.by('stream', message.display_recipient);
         break;
     }
 };

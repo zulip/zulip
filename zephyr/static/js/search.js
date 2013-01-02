@@ -70,7 +70,7 @@ function narrow_or_search_for_term(item) {
         return obj.query;
 
     case 'stream':
-        narrow.activate([['stream', obj.query]]);
+        narrow.by('stream', obj.query);
         // It's sort of annoying that this is not in a position to
         // blur the search box, because it means that Esc won't
         // unnarrow, it'll leave the searchbox.
@@ -80,7 +80,7 @@ function narrow_or_search_for_term(item) {
         return search_query_box.val();
 
     case 'private_message':
-        narrow.activate([['pm-with', obj.query.email]], {show_floating_recipient: false});
+        narrow.by('pm-with', obj.query.email, {show_floating_recipient: false});
         return search_query_box.val();
 
     case 'operators':

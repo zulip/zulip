@@ -15,7 +15,7 @@ var narrow_hotkeys = {
     115: narrow.by_recipient,           // 's'
     83:  narrow.by_subject,             // 'S'
     118: function () {                  // 'v'
-        narrow.activate([['is', 'private-message']]);
+        narrow.by('is', 'private-message');
     }
 };
 
