@@ -167,6 +167,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'south',
     'jstemplate',
     'confirmation',
     'zephyr',
