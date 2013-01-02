@@ -36,7 +36,7 @@ class AdminHumbugHandler(logging.Handler):
                 request_repr += "- GET: %s\n" % (request.GET,)
             elif request.method == "POST":
                 request_repr += "- POST: %s\n" % (filter.get_post_parameters(request),)
-            for field in ["REMOTE_ADDR", "QUERY_STRING"]:
+            for field in ["REMOTE_ADDR", "QUERY_STRING", "SERVER_NAME"]:
                 request_repr += "- %s: \"%s\"\n" % (field, request.META.get(field, "(None)"))
             request_repr += "~~~~"
         except Exception:
