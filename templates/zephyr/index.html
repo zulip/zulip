@@ -138,12 +138,14 @@ var people_list = [
                     <span class="hidden-phone"> Feedback</span>
                   </a>
                 </li>
+                {% if show_invites %}
                 <li title="Invite users to Humbug">
                   <a href="#invite-user" role="button" data-toggle="modal">
                     <i class="icon-gift"></i>
                     <span class="hidden-phone"> Invite users to Humbug</span>
                   </a>
                 </li>
+                {% endif %}
                   <hr class="sidebar"/>
                 <li title="Log out">
                   <a href="/accounts/logout">

@@ -22,7 +22,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
-    is_active
+    is_active, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
 
 from zephyr.decorator import require_post, \
@@ -167,6 +167,12 @@ def accounts_accept_terms(request):
 @has_request_variables
 def json_invite_users(request, user_profile, invitee_emails=POST):
     # Validation
+    if settings.ALLOW_REGISTER == False:
+        try:
+            isnt_mit(user_profile.user.email)
+        except ValidationError:
+            return json_error("Invitations are not enabled for MIT at this time.")
+
     if not invitee_emails:
         return json_error("You must specify at least one email address.")
 
@@ -198,6 +204,15 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
         if email.split('@')[-1] != user_profile.realm.domain:
             errors.append((email, "Outside your domain."))
             continue
+
+        # Redundant check in case earlier validation preventing MIT users from
+        # inviting people fails.
+        if settings.ALLOW_REGISTER == False:
+            try:
+                isnt_mit(email)
+            except ValidationError:
+                errors.append((email, "Invitations are not enabled for MIT at this time."))
+                continue
 
         try:
             is_unique(email)
@@ -303,6 +318,12 @@ def home(request):
 
     js_bool = lambda x: 'true' if x else 'false'
 
+    try:
+        isnt_mit(user_profile.user.email)
+        show_invites = True
+    except ValidationError:
+        show_invites = settings.ALLOW_REGISTER
+
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
                                'email_hash'  : gravatar_hash(user_profile.user.email),
@@ -315,7 +336,8 @@ def home(request):
                                    js_bool(desktop_notifications_enabled),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
-                               'show_activity': can_view_activity(request) },
+                               'show_activity': can_view_activity(request),
+                               'show_invites': show_invites },
                               context_instance=RequestContext(request))
 
 @authenticated_api_view
