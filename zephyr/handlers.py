@@ -1,6 +1,7 @@
 import sys
 import logging
 import traceback
+import platform
 
 from django.utils.timezone import now
 from django.views.debug import get_exception_reporter_filter
@@ -24,12 +25,9 @@ class AdminHumbugHandler(logging.Handler):
                 create_stream_if_needed, get_client, internal_send_message
         from django.conf import settings
 
+        subject = '%s: %s' % (platform.node(), record.getMessage())
         try:
             request = record.request
-            subject = '%s: %s' % (
-                request.META["SERVER_NAME"],
-                record.getMessage()
-            )
 
             filter = get_exception_reporter_filter(request)
             request_repr = "Request info:\n~~~~\n"
@@ -42,11 +40,6 @@ class AdminHumbugHandler(logging.Handler):
                 request_repr += "- %s: \"%s\"\n" % (field, request.META.get(field, "(None)"))
             request_repr += "~~~~"
         except Exception:
-            subject = '%s: %s' % (
-                request.META["SERVER_NAME"],
-                record.getMessage()
-            )
-            request = None
             request_repr = "Request repr() unavailable."
         subject = self.format_subject(subject)
 
