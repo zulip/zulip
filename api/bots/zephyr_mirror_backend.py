@@ -797,10 +797,11 @@ if __name__ == "__main__":
 
     # The 'api' directory needs to go first, so that 'import humbug' won't pick
     # up some other directory named 'humbug'.
+    pyzephyr_lib_path = "python-zephyr/build/lib.linux-" + os.uname()[4] + "-2.6/"
     sys.path[:0] = [os.path.join(options.root_path, 'api'),
                     options.root_path,
                     os.path.join(options.root_path, "python-zephyr"),
-                    os.path.join(options.root_path, "python-zephyr/build/lib.linux-x86_64-2.6/")]
+                    os.path.join(options.root_path, pyzephyr_lib_path)]
 
     # In case this is an automated restart of the mirroring script,
     # and we have lost AFS tokens, first try reading the API key from
