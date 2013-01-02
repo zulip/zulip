@@ -149,7 +149,7 @@ def zephyr_bulk_subscribe(subs):
         # retrying the next time the bot checks its subscriptions are
         # up to date.
         logger.exception("Error subscribing to streams (will retry automatically):")
-        logging.warning("Streams were: %s" % ((cls for cls, instance, recipient in subs),))
+        logging.warning("Streams were: %s" % (list(cls for cls, instance, recipient in subs),))
         return
     try:
         actual_zephyr_subs = [cls for (cls, _, _) in zephyr._z.getSubscriptions()]
