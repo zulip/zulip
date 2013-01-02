@@ -357,6 +357,10 @@ class humbug_postgres {
                   Common::Append_if_no_such_line['shmall'],
                 ],
   }
+
+  exec { "disable_logrotate":
+    command => "dpkg-divert --rename --divert /etc/logrotate.d/postgresql-common.disabled --add /etc/logrotate.d/postgresql-common"
+  }
 }
 
 class { "humbug_base": }
