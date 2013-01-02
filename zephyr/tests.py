@@ -508,7 +508,9 @@ class GetOldMessagesTest(AuthedTestCase):
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1,
                   "narrow": simplejson.dumps({})}
         post_params.update(modified_params)
-        return self.client.post("/json/get_old_messages", dict(post_params))
+        result = self.client.post("/json/get_old_messages", dict(post_params))
+        self.assert_json_success(result)
+        return simplejson.loads(result.content)
 
     def check_well_formed_messages_response(self, result):
         self.assertIn("messages", result)
@@ -519,7 +521,7 @@ class GetOldMessagesTest(AuthedTestCase):
                           "sender_short_name", "timestamp"):
                 self.assertIn(field, message)
 
-    def successful_get_old_messages(self):
+    def test_successful_get_old_messages(self):
         """
         A call to /json/get_old_messages with valid parameters returns a list of
         messages.
@@ -527,7 +529,7 @@ class GetOldMessagesTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         self.check_well_formed_messages_response(self.post_with_params({}))
 
-    def get_old_messages_with_narrow_recipient_id(self):
+    def test_get_old_messages_with_narrow_recipient_id(self):
         """
         A request for old messages with a narrow recipient_id only returns
         messages for that id.
@@ -536,17 +538,14 @@ class GetOldMessagesTest(AuthedTestCase):
         messages = self.message_stream(User.objects.get(email="hamlet@humbughq.com"))
         recipient_id = messages[0].recipient.id
 
-        json_result = self.post_with_params({"narrow": simplejson.dumps(
+        result = self.post_with_params({"narrow": simplejson.dumps(
                     {"recipient_id": recipient_id})})
-        self.assert_json_success(json_result)
-
-        result = simplejson.loads(json_result.content)
         self.check_well_formed_messages_response(result)
 
         for message in result["messages"]:
             self.assertEquals(message["recipient_id"], recipient_id)
 
-    def get_old_messages_with_narrow_stream(self):
+    def test_get_old_messages_with_narrow_stream(self):
         """
         A request for old messages with a narrow stream only returns messages
         for that stream.
@@ -558,11 +557,8 @@ class GetOldMessagesTest(AuthedTestCase):
         stream_name = get_display_recipient(stream_messages[0].recipient)
         stream_id = stream_messages[0].recipient.id
 
-        json_result = self.post_with_params({"narrow": simplejson.dumps(
+        result = self.post_with_params({"narrow": simplejson.dumps(
                     {"stream": stream_name})})
-        self.assert_json_success(json_result)
-
-        result = simplejson.loads(json_result.content)
         self.check_well_formed_messages_response(result)
 
         for message in result["messages"]:
