@@ -125,9 +125,8 @@ function searchbox_sorter(items) {
     return result;
 }
 
-exports.update_button_visibility = function (will_be_focused) {
+function update_buttons_with_focus(focused) {
     var search_query = $('#search_query');
-    var focused = search_query.is(':focus') || will_be_focused;
 
     // Show buttons iff the search input is focused, or has non-empty contents,
     // or we are narrowed.
@@ -153,6 +152,10 @@ exports.update_button_visibility = function (will_be_focused) {
         $("#search_up, #search_down").removeAttr("disabled");
         $('.search_button').blur().hide();
     }
+}
+
+exports.update_button_visibility = function () {
+    update_buttons_with_focus($('#search_query').is(':focus'));
 };
 
 exports.initialize = function () {
@@ -350,7 +353,8 @@ function clear_search_cache() {
 }
 
 exports.focus_search = function () {
-    exports.update_button_visibility(true);
+    // The search bar is not focused yet, but will be.
+    update_buttons_with_focus(true);
     disable_search_arrows_if(false, ["up", "down"]);
 };
 
