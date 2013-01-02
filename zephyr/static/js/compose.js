@@ -140,6 +140,7 @@ function send_message() {
                 // a nice response.
                 response += ": " + $.parseJSON(xhr.responseText).msg;
             }
+            show(is_composing_message, $("#new_message_content"));
             send_status.removeClass(status_classes)
                        .addClass('alert-error')
                        .text(response)
@@ -243,7 +244,7 @@ function check_stream_for_send(stream_name) {
             if (!data.exists) {
                 // The stream doesn't exist
                 result = "does-not-exist";
-                $('#send-status').removeClass(status_classes).show();
+                $('#send-status').removeClass(status_classes);
                 $('#stream-dne-name').text(stream_name);
                 $('#stream-dne').show();
                 $("#compose-send-button").removeAttr('disabled');
@@ -288,7 +289,7 @@ function validate_stream_message() {
             // browser window doesn't know it.
             return true;
         case "not-subscribed":
-            $('#send-status').removeClass(status_classes).show();
+            $('#send-status').removeClass(status_classes);
             $('#stream-nosub-name').text(stream_name);
             $('#stream-nosub').show();
             $("#compose-send-button").removeAttr('disabled');
