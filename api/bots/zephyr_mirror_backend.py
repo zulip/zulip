@@ -445,9 +445,7 @@ def forward_to_zephyr(message):
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].split("\n"))
 
-    zwrite_args = ["zwrite", "-n", "-s", zsig_fullname, "-F", "Class $class, Instance $instance:\n" +
-                   "To: $recipient at $time $date\n" +
-                   "From: $1 <$sender>\n\n$2@(@color(blue))"]
+    zwrite_args = ["zwrite", "-n", "-s", zsig_fullname, "-F", "http://zephyr.1ts.org/wiki/df @(@color(blue))"]
     if message['type'] == "stream":
         zephyr_class = message["display_recipient"]
         instance = message["subject"]
