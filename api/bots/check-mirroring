@@ -230,6 +230,7 @@ for key, (stream, test) in zhkeys.items():
         else:
             logging.warning("Replaced key %s with %s due to Zephyr server failure." %
                             (key, new_key))
+    receive_zephyrs()
 
 receive_zephyrs()
 logger.info("Sent Zephyr messages!")
