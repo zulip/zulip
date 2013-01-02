@@ -63,17 +63,6 @@ def json_to_list(json):
         raise ValueError("argument is not a list")
     return data
 
-def json_to_list_of_string_pairs(json):
-    data = json_to_list(json)
-    for elem in data:
-        if not isinstance(elem, list):
-            raise ValueError("element is not a list")
-        if (len(elem) != 2
-            or any(not isinstance(x, str) and not isinstance(x, unicode)
-                   for x in elem)):
-            raise ValueError("element is not a string pair")
-    return data
-
 def get_stream(stream_name, realm):
     try:
         return Stream.objects.get(name__iexact=stream_name, realm=realm)
@@ -347,11 +336,26 @@ class NarrowBuilder(object):
         return (Q(content__icontains=operand) |
                 Q(subject__icontains=operand))
 
+def narrow_parameter(json):
+    # FIXME: A hack to support old mobile clients
+    if json == '{}':
+        return None
+
+    data = json_to_list(json)
+    for elem in data:
+        if not isinstance(elem, list):
+            raise ValueError("element is not a list")
+        if (len(elem) != 2
+            or any(not isinstance(x, str) and not isinstance(x, unicode)
+                   for x in elem)):
+            raise ValueError("element is not a string pair")
+    return data
+
 @has_request_variables
 def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_int),
                              num_before = POST(converter=to_non_negative_int),
                              num_after = POST(converter=to_non_negative_int),
-                             narrow = POST('narrow', converter=json_to_list_of_string_pairs, default=None),
+                             narrow = POST('narrow', converter=narrow_parameter, default=None),
                              user_profile=None, apply_markdown=True):
     query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
 

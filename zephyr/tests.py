@@ -28,6 +28,9 @@ def find_key_by_email(address):
         if address in message.to:
             return key_regex.search(message.body).groups()[0]
 
+def message_ids(result):
+    return set(message['id'] for message in result['messages'])
+
 class AuthedTestCase(TestCase):
     def login(self, email, password=None):
         if password is None:
@@ -652,12 +655,25 @@ class GetOldMessagesTest(AuthedTestCase):
         other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
 
         bad_types = (False, 0, '', '{malformed json,',
-            '{}', '{foo: 3}', '[1,2]', '[["x","y","z"]]')
+            '{foo: 3}', '[1,2]', '[["x","y","z"]]')
         for type in bad_types:
             post_params = dict(other_params + [("narrow", type)])
             result = self.client.post("/json/get_old_messages", post_params)
             self.assert_json_error(result,
                                    "Bad value for 'narrow': %s" % (type,))
+
+    def test_old_empty_narrow(self):
+        """
+        '{}' is accepted to mean 'no narrow', for use by old mobile clients.
+        """
+        self.login("hamlet@humbughq.com")
+        all_result    = self.post_with_params({})
+        narrow_result = self.post_with_params({'narrow': '{}'})
+
+        for r in (all_result, narrow_result):
+            self.check_well_formed_messages_response(r)
+
+        self.assertEqual(message_ids(all_result), message_ids(narrow_result))
 
     def test_bad_narrow_operator(self):
         """
