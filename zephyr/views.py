@@ -831,6 +831,30 @@ def add_subscriptions_backend(request, user_profile,
 
     return json_success(result)
 
+@authenticated_api_view
+def api_get_subscribers(request, user_profile):
+    return get_subscribers_backend(request, user_profile)
+
+@authenticated_json_post_view
+def json_get_subscribers(request, user_profile):
+    return get_subscribers_backend(request, user_profile)
+
+@has_request_variables
+def get_subscribers_backend(request, user_profile, stream_name=POST('stream')):
+    if user_profile.realm.domain == "mit.edu":
+        return json_error("You cannot get subscribers in this realm")
+
+    try:
+        stream = Stream.objects.get(name=stream_name, realm=user_profile.realm)
+    except Stream.DoesNotExist:
+        return json_error("Stream does not exist: %s" % stream_name)
+    subscriptions = Subscription.objects.filter(recipient__type=Recipient.STREAM,
+                                                recipient__type_id=stream.id,
+                                                active=True).select_related()
+
+    return json_success({'subscribers': [subscription.user_profile.user.email
+                                         for subscription in subscriptions]})
+
 @authenticated_json_post_view
 @has_request_variables
 def json_change_settings(request, user_profile, full_name=POST,
