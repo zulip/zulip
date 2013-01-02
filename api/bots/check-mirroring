@@ -148,23 +148,30 @@ for (stream, test) in test_streams:
     else:
         zephyr_subs_to_add.append((stream, '*', '*'))
 
+actually_subscribed = False
 for tries in xrange(10):
     try:
         zephyr.init()
         zephyr._z.subAll(zephyr_subs_to_add)
         zephyr_subs = zephyr._z.getSubscriptions()
+
+        missing = 0
         for elt in zephyr_subs_to_add:
             if elt not in zephyr_subs:
                 logging.error("Failed to subscribe to %s" % (elt,))
-                continue
-        break
+                missing += 1
+        if missing == 0:
+            actually_subscribed = True
+            break
     except IOError, e:
-        if tries > 5:
-            if "SERVNAK received" in e:
-                logger.error("SERVNAK repeatedly received, punting rest of test")
-            else:
-                logger.exception("Exception subscribing to zephyrs")
-            print_status_and_exit(1)
+        if "SERVNAK received" in e:
+            logger.error("SERVNAK repeatedly received, punting rest of test")
+        else:
+            logger.exception("Exception subscribing to zephyrs")
+
+if not actually_subscribed:
+    logger.error("Failed to subscribe to zephyrs")
+    print_status_and_exit(1)
 
 # Prepare keys
 zhkeys = {}
