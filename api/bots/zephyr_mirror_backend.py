@@ -423,15 +423,15 @@ def send_zephyr(zwrite_args, content):
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate(input=content.encode("utf-8"))
     if p.returncode:
-        print "zwrite command '%s' failed with return code %d:" % (
-            " ".join(zwrite_args), p.returncode,)
+        logging.error("zwrite command '%s' failed with return code %d:" % (
+            " ".join(zwrite_args), p.returncode,))
         if stdout:
-            print stdout
+            logging.info("stdout: " + stdout)
     elif stderr:
-        print "zwrite command '%s' printed the following warning:" % (
-            " ".join(zwrite_args),)
+        logging.warning("zwrite command '%s' printed the following warning:" % (
+            " ".join(zwrite_args),))
     if stderr:
-        print stderr
+        logging.warning("stderr: " + stderr)
     return (p.returncode, stderr)
 
 def send_authed_zephyr(zwrite_args, content):
