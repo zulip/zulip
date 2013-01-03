@@ -576,7 +576,7 @@ class GetOldMessagesTest(AuthedTestCase):
                          ("narrow", {}))
 
         for i in range(len(required_args)):
-            post_params = dict(required_args[:i])
+            post_params = dict(required_args[:i] + required_args[i + 1:])
             result = self.client.post("/json/get_old_messages", post_params)
             self.assert_json_error(result,
                                    "Missing '%s' argument" % (required_args[i][0],))
@@ -693,7 +693,7 @@ class ChangeSettingsTest(AuthedTestCase):
                   ("new_password", initial_password("hamlet@humbughq.com")),
                   ("confirm_password", initial_password("hamlet@humbughq.com")))
         for i in range(len(required_params)):
-            post_params = dict(required_params[:i])
+            post_params = dict(required_params[:i] + required_params[i + 1:])
             result = self.client.post("/json/settings/change", post_params)
             self.assert_json_error(result,
                     "Missing '%s' argument" % (required_params[i][0],))
