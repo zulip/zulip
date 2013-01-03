@@ -176,7 +176,7 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
     if not invitee_emails:
         return json_error("You must specify at least one email address.")
 
-    invitee_emails = re.split(r'[, \n]', invitee_emails)
+    invitee_emails = set(re.split(r'[, \n]', invitee_emails))
 
     stream_names = request.POST.getlist('stream')
     if not stream_names:
