@@ -314,23 +314,23 @@ class NarrowBuilder(object):
             return Q(recipient=recipient)
         else:
             # Personal message
-            try:
-                recipient_profile = UserProfile.objects.get(user__email=operand)
-            except UserProfile.DoesNotExist:
-                raise BadNarrowOperator('unknown user ' + operand)
-
-            recipient = Recipient.objects.get(type=Recipient.PERSONAL,
-                type_id=recipient_profile.id)
-
+            self_recipient = Recipient.objects.get(type=Recipient.PERSONAL,
+                                                   type_id=self.user_profile.id)
             if operand == self.user_profile.user.email:
                 # Personals with self
                 return Q(recipient__type=Recipient.PERSONAL,
-                    sender__user__email=operand,
-                    recipient=recipient)
-            else:
-                # Personals with other user; include both directions.
-                return (Q(recipient__type=Recipient.PERSONAL) &
-                    (Q(sender__user__email=operand) | Q(recipient=recipient)))
+                         sender=self.user_profile, recipient=self_recipient)
+
+            # Personals with other user; include both directions.
+            try:
+                narrow_profile = UserProfile.objects.get(user__email=operand)
+            except UserProfile.DoesNotExist:
+                raise BadNarrowOperator('unknown user ' + operand)
+
+            narrow_recipient = Recipient.objects.get(type=Recipient.PERSONAL,
+                                                     type_id=narrow_profile.id)
+            return ((Q(sender=narrow_profile) & Q(recipient=self_recipient)) |
+                    (Q(sender=self.user_profile) & Q(recipient=narrow_recipient)))
 
     def by_search(self, operand):
         return (Q(content__icontains=operand) |
