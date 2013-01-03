@@ -364,6 +364,20 @@ class humbug_postgres {
   }
 }
 
+class humbug_bots {
+  $bots_packages = [ "supervisor" ]
+  package { $bots_packages: ensure => "installed" }
+
+  file { '/var/log/humbug':
+    ensure => 'directory',
+    owner  => 'humbug',
+    group  => 'humbug',
+    mode   => 640,
+  }
+
+  #TODO: Need to install our supervisor config
+}
+
 class { "humbug_base": }
 #class { "humbug_apache_base": }
 #class { "humbug_wiki": }
@@ -371,3 +385,4 @@ class { "humbug_base": }
 #class { "humbug_database": }
 #class { "humbug_postgres": }
 #class { "humbug_zmirror": }
+#class { "humbug_bots": }
