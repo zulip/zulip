@@ -43,11 +43,18 @@ MIT Zephyr account.
  5) Visit the running app at:
         <https://humbughq.com/>
 
+If you're interested in mobile apps, we have early alphas available
+as well. You can get the Android app at:
+    <https://play.google.com/store/apps/details?id=com.humbughq.mobile>
+
+If you're interested in an iPhone version, join our waitlist here:
+    <http://goo.gl/ROOVQ>
+
 Feel free to send us a message via the Feedback button from within the
 app if you have any questions or encounter any problems.
 
 
 Cheers,
 
-Jeff, Waseem, Jessica, Tim, Keegan, Luke, and Zev
+All of us here at Humbug
 
