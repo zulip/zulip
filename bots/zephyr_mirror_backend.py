@@ -39,6 +39,10 @@ import tempfile
 
 DEFAULT_SITE = "https://humbughq.com"
 
+class States:
+    Startup, HumbugToZephyr, ZephyrToHumbug, ChildSending = range(4)
+CURRENT_STATE = States.Startup
+
 def to_humbug_username(zephyr_username):
     if "@" in zephyr_username:
         (user, realm) = zephyr_username.split("@")
@@ -334,6 +338,8 @@ def process_notice(notice, log):
         log.flush()
 
     if os.fork() == 0:
+        global CURRENT_STATE
+        CURRENT_STATE = States.ChildSending
         # Actually send the message in a child process, to avoid blocking.
         try:
             res = send_humbug(zeph)
@@ -774,6 +780,21 @@ def parse_args():
                       default=os.path.join(os.environ["HOME"], "Private", ".humbug-api-key"))
     return parser.parse_args()
 
+def die_gracefully(signal, frame):
+    if CURRENT_STATE == States.HumbugToZephyr or CURRENT_STATE == States.ChildSending:
+        # this is a child process, so we want os._exit (no clean-up necessary)
+        os._exit(1)
+
+    if CURRENT_STATE == States.ZephyrToHumbug:
+        try:
+            # zephyr=>humbug processes may have added subs, so run cancelSubs
+            zephyr._z.cancelSubs()
+        except IOError:
+            # We don't care whether we failed to cancel subs properly, but we should log it
+            logging.exception("")
+
+    sys.exit(1)
+
 if __name__ == "__main__":
     # Set the SIGCHLD handler back to SIG_DFL to prevent these errors
     # when importing the "requests" module after being restarted using
@@ -782,6 +803,8 @@ if __name__ == "__main__":
     # close failed in file object destructor:
     # IOError: [Errno 10] No child processes
     signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+
+    signal.signal(signal.SIGINT, die_gracefully)
 
     (options, args) = parse_args()
 
@@ -842,7 +865,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
             # Another copy of zephyr_mirror.py!  Kill it.
             print "Killing duplicate zephyr_mirror process %s" % (pid,)
             try:
-                os.kill(pid, signal.SIGKILL)
+                os.kill(pid, signal.SIGINT)
             except OSError:
                 # We don't care if the target process no longer exists, so just print the error
                 traceback.print_exc()
@@ -856,6 +879,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
     if options.forward_from_humbug:
         child_pid = os.fork()
         if child_pid == 0:
+            CURRENT_STATE = States.HumbugToZephyr
             # Run the humbug => zephyr mirror in the child
             logger = configure_logger("humbug=>zephyr")
             zsig_fullname = fetch_fullname(options.user)
@@ -863,6 +887,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
             sys.exit(0)
     else:
         child_pid = None
+    CURRENT_STATE = States.ZephyrToHumbug
 
     import zephyr
     while True:

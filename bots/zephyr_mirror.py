@@ -27,8 +27,15 @@ import time
 import optparse
 import os
 import traceback
+import signal
 
 from zephyr_mirror_backend import parse_args
+
+def die(signal, frame):
+    # We actually want to exit, so run os._exit (so as not to be caught and restarted)
+    os._exit(1)
+
+signal.signal(signal.SIGINT, die)
 
 (options, args) = parse_args()
 
