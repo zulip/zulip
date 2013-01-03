@@ -238,7 +238,10 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
     # If we encounter an exception at any point before now, there are no unwanted side-effects,
     # since it is totally fine to have duplicate PreregistrationUsers
     for user in new_prereg_users:
-        Confirmation.objects.send_confirmation(user, user.email)
+        Confirmation.objects.send_confirmation(user, user.email,
+                additional_context={'referrer': user_profile},
+                subject_template_path='confirmation/invite_email_subject.txt',
+                body_template_path='confirmation/invite_email_body.txt')
 
     return json_success()
 
