@@ -47,7 +47,8 @@ class ConfirmationManager(models.Manager):
             return obj
         return False
 
-    def send_confirmation(self, obj, email_address):
+    def send_confirmation(self, obj, email_address, additional_context=None,
+            subject_template_path=None, body_template_path=None):
         confirmation_key = sha1(str(os.urandom(20)) + str(email_address)).hexdigest()
         current_site = Site.objects.get_current()
         activate_url = u'https://%s%s' % (current_site.domain,
@@ -59,17 +60,25 @@ class ConfirmationManager(models.Manager):
             'target': obj,
             'days': getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10),
         })
+        if additional_context is not None:
+            context.update(additional_context)
         templates = [
             'confirmation/%s_confirmation_email_subject.txt' % obj._meta.module_name,
             'confirmation/confirmation_email_subject.txt',
         ]
-        template = loader.select_template(templates)
+        if subject_template_path:
+            template = loader.get_template(subject_template_path)
+        else:
+            template = loader.select_template(templates)
         subject = template.render(context).strip().replace(u'\n', u' ') # no newlines, please
         templates = [
             'confirmation/%s_confirmation_email_body.txt' % obj._meta.module_name,
             'confirmation/confirmation_email_body.txt',
         ]
-        template = loader.select_template(templates)
+        if body_template_path:
+            template = loader.get_template(body_template_path)
+        else:
+            template = loader.select_template(templates)
         body = template.render(context)
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address])
         return self.create(content_object=obj, date_sent=now(), confirmation_key=confirmation_key)
