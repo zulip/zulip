@@ -228,7 +228,6 @@ function ajaxSubscribe(stream) {
                                $("#subscriptions-status"));
             }
             add_to_stream_list(name);
-            $("#streams").focus();
         },
         error: function (xhr) {
             ui.report_error("Error adding subscription", xhr, $("#subscriptions-status"));
@@ -268,7 +267,6 @@ exports.unsubscribe_button_click = function (e) {
                 });
             remove_from_stream_list(name);
             typeahead_helper.update_autocomplete();
-            $("#streams").focus();
         },
         error: function (xhr) {
             ui.report_error("Error removing subscription", xhr, $("#subscriptions-status"));
