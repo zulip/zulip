@@ -47,10 +47,20 @@ class AuthedTestCase(TestCase):
     def register(self, username, password):
         self.client.post('/accounts/home/',
                          {'email': username + '@humbughq.com'})
+        return self.submit_reg_form_for_user(username, password)
+
+    def submit_reg_form_for_user(self, username, password):
+        """
+        Stage two of the two-step registration process.
+
+        If things are working correctly the account should be fully
+        registered after this call.
+        """
         return self.client.post('/accounts/register/',
                                 {'full_name': username, 'password': password,
                                  'key': find_key_by_email(username + '@humbughq.com'),
                                  'terms': True})
+
     def get_api_key(self, email):
         return initial_api_key(email)
 
@@ -735,6 +745,68 @@ class GetOldMessagesTest(AuthedTestCase):
             "Invalid narrow operator: unknown user")
 
 
+class InviteUserTest(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def invite(self, users, streams):
+        """
+        Invites the specified users to Humbug with the specified streams.
+
+        users should be a string containing the users to invite, comma or
+            newline separated.
+
+        streams should be a list of strings.
+        """
+
+        return self.client.post("/json/invite_users",
+                {"invitee_emails": users,
+                    "stream": streams})
+
+    def test_successful_invite_user(self):
+        """
+        A call to /json/invite_users with valid parameters causes an invitation
+        email to be sent.
+        """
+        self.login("hamlet@humbughq.com")
+        self.assert_json_success(self.invite("alice-test@humbughq.com", streams=["Denmark"]))
+        self.assertTrue(find_key_by_email("alice-test@humbughq.com"))
+
+    def test_multi_user_invite(self):
+        """
+        Invites multiple users with a variety of delimiters.
+        """
+        self.login("hamlet@humbughq.com")
+        # Intentionally use a weird string.
+        self.assert_json_success(self.invite(
+"""bob-test@humbughq.com,     carol-test@humbughq.com,
+dave-test@humbughq.com
+
+
+earl-test@humbughq.com""", streams=["Denmark"]))
+        for user in ("bob", "carol", "dave", "earl"):
+            self.assertTrue(find_key_by_email("%s-test@humbughq.com" % user))
+
+    def test_missing_params(self):
+        """
+        Tests inviting with various invalid parameters.
+        """
+        self.login("hamlet@humbughq.com")
+        self.assert_json_error(
+            self.client.post("/json/invite_users", {"invitee_emails": "foo@humbughq.com"}),
+            "You must specify at least one stream for invitees to join.")
+
+        for address in ("noatsign.com", "outsideyourdomain@example.net"):
+            self.assert_json_error(
+                self.invite(address, ["Denmark"]),
+                "Some emails did not validate. No invites have been sent.")
+
+    def test_invalid_stream(self):
+        """
+        Tests inviting to a non-existent stream.
+        """
+        self.login("hamlet@humbughq.com")
+        self.assert_json_error(self.invite("iago-test@humbughq.com", {"NotARealStream"}),
+                "Stream does not exist: NotARealStream. No invites were sent.")
 
 class ChangeSettingsTest(AuthedTestCase):
     fixtures = ['messages.json']
