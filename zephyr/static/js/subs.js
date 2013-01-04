@@ -108,7 +108,7 @@ function add_to_stream_list(stream_name) {
                 .removeClass("btn-primary")
                 .unbind("click")
                 .removeAttr("onclick")
-                .click(function (event) {exports.unsubscribe(stream_name);});
+                .click(function (event) {exports.unsubscribe_button_click(event);});
         } else {
             $('#subscriptions_table').prepend(templates.subscription({
                 subscriptions: [{subscription: stream_name, color: default_color}]}));
