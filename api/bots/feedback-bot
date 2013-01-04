@@ -1,11 +1,37 @@
 #!/usr/bin/python
 import sys
-import os
-import optparse
 from os import path
+import logging
 
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import humbug
+
+class StreamLogger(object):
+   """
+   Give a file-like interface to a logger instance.
+   """
+   def __init__(self, logger, log_level=logging.INFO):
+      self.logger = logger
+      self.log_level = log_level
+      self.buffer = ""
+
+   def write(self, message):
+       self.buffer += message
+
+       if message[-1] == "\n":
+           self.logger.log(self.log_level, self.buffer.rstrip())
+           self.buffer = ""
+
+logging.basicConfig(filename="/var/log/humbug/feedback-bot.log",
+                    level=logging.DEBUG, format="%(asctime)s %(levelname)s\t%(message)s")
+
+# The API prints to stdout, so capture and format those messages as well.
+stdout_logger = StreamLogger(logging.getLogger("stdout"), logging.INFO)
+sys.stdout = stdout_logger
+
+stderr_logger = StreamLogger(logging.getLogger("stderr"), logging.ERROR)
+sys.stderr = stderr_logger
+
 prod_client = humbug.Client(
     email="feedback@humbughq.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -27,5 +53,6 @@ def forward_message(message):
         "content": message["content"],
         }
     staging_client.send_message(forwarded_message)
+    logging.info("Forwarded feedback from %s" % (message["sender_email"],))
 
 prod_client.call_on_each_message(forward_message)
