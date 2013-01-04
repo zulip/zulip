@@ -677,6 +677,14 @@ $(function () {
         narrow.target(row.attr('zid'));
         narrow.by_subject();
     });
+
+    $("#subscriptions_table").on("mouseover", ".subscription_header", function (e) {
+        $(this).addClass("active");
+    });
+
+    $("#subscriptions_table").on("mouseout", ".subscription_header", function (e) {
+        $(this).removeClass("active");
+    });
 });
 
 return exports;

@@ -9,7 +9,7 @@ var removed_streams = {};
 // that have already been rendered.
 var initial_color_fetch = true;
 
-var default_color = "c2c2c2";
+var default_color = "#c2c2c2";
 var next_sub_id = 0;
 
 function case_insensitive_subscription_index(stream_name) {
@@ -52,9 +52,11 @@ var colorpicker_options = {
     ],
     change: function (color) {
         // TODO: Kind of a hack.
-        var stream_name = $(this).parent().find('.subscription_name').text();
+        var sub_row = $(this).closest('.subscription_row');
+        var stream_name = sub_row.find('.subscription_name').text();
         var hex_color = color.toHexString();
         stream_info[stream_name].color = hex_color;
+        sub_row.find('.color_swatch').css('background-color', hex_color);
         update_historical_message_color(stream_name, hex_color);
 
         $.ajax({
@@ -236,6 +238,8 @@ function ajaxSubscribe(stream) {
 }
 
 exports.unsubscribe_button_click = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
     var stream = $(e.target).closest('.subscription_row').find('.subscription_name').text();
     $.ajax({
         type: "POST",
@@ -259,6 +263,7 @@ exports.unsubscribe_button_click = function (e) {
                 .removeAttr("onclick")
                 .click(function (e) {
                     e.preventDefault();
+                    e.stopPropagation();
                     ajaxSubscribe(name);
                 });
             remove_from_stream_list(name);

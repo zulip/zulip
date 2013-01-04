@@ -562,7 +562,51 @@ table.floating_recipient {
     table-layout: fixed;
 }
 
-.subscription_name {
+.subscription_header {
+    padding: 2px;
+    height: 30px;
+    line-height: 30px;
+}
+
+.subscription_header.active {
+    border-color: rgba(82, 168, 236, 0.8);
+    cursor: pointer;
+
+  -webkit-box-shadow: inset 0 0 0 1px rgba(82, 168, 236, 0.8), 0 0 8px rgba(82, 168, 236, 0.6);
+     -moz-box-shadow: inset 0 0 0 1px rgba(82, 168, 236, 0.8), 0 0 8px rgba(82, 168, 236, 0.6);
+          box-shadow: inset 0 0 0 1px rgba(82, 168, 236, 0.8), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+.color_swatch {
+    display: inline-block;
+    height: 1em;
+    width: 1em;
+    border: 1px #666 solid;
+    padding: 0;
+    margin: 0 0 0 5px;
     vertical-align: middle;
+}
+
+.subscription_name {
     padding-left: 0.5em;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.subscription_settings {
+    margin-left: 35px;
+}
+
+.subscription_settings ul {
+    list-style-type: none;
+}
+
+.sub_setting_control {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.unsubscribe_button {
+    width: 140px;
+    float: right;
 }

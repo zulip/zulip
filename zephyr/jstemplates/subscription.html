@@ -3,12 +3,20 @@
 {{#with this}}
 <tr class="subscription_row" id="subscription_{{id}}">
   <td>
-    <input class="colorpicker" type="text" value="{{color}}" />
-    <span class="subscription_name">{{name}}</span>
-  </td>
-  <td class="span2">
-    <button class="btn btn-block unsubscribe_button" type="button" name="subscription"
-            onclick="subs.unsubscribe_button_click(event);">Unsubscribe</button>
+    <div class="subscription_header" data-toggle="collapse" data-target="#subscription_settings_{{id}}">
+      <span class="color_swatch" style="background-color: {{color}}"></span>
+      <span class="subscription_name">{{name}}</span>
+      <button class="btn btn-block unsubscribe_button" type="button" name="subscription"
+              onclick="subs.unsubscribe_button_click(event);">Unsubscribe</button>
+    </div>
+
+    <div id="subscription_settings_{{id}}" class="collapse subscription_settings">
+      <h5>Settings</h5>
+      <ul>
+        <li><span class="sub_setting_control"><input class="colorpicker" type="text" value="{{color}}" /></span>
+          Stream color
+      </ul>
+    </div>
   </td>
 </tr>
 {{/with}}
