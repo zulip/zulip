@@ -27,7 +27,7 @@ states = {
 def report(state, short_msg, too_old=None):
     too_old_data = ""
     if too_old:
-        too_old_data = "\nLast call to get_message for out of date mirrors:\n" + "\n".join(
+        too_old_data = "\nLast call to get_message for recently out of date mirrors:\n" + "\n".join(
             ["%16s: %s" % (user.user_profile.user.email,
                            user.last_visit.strftime("%Y-%m-%d %H:%M %Z")
                            ) for user in too_old]
@@ -40,10 +40,13 @@ now = datetime.datetime.utcnow()
 
 all_users = UserActivity.objects.filter(query="/api/v1/get_messages",
                                         client__name="zephyr_mirror")
-inactive_users = [user for user in all_users if user.last_visit.replace(tzinfo=None) < \
-                      now - datetime.timedelta(minutes=5)]
+new_inactive_users = [user for user in all_users if user.last_visit.replace(tzinfo=None) < \
+                          now - datetime.timedelta(minutes=10)]
+old_inactive_users = [user for user in new_inactive_users if user.last_visit.replace(tzinfo=None) < \
+                          now - datetime.timedelta(minutes=60)]
+recently_inactive_users = set(new_inactive_users) - set(old_inactive_users)
 
-if (len(inactive_users) / float(len(all_users))) < .15:
-    report("OK", "Most mirrors are active")
+if (len(recently_inactive_users) / float(len(old_inactive_users))) > .25:
+    report("CRITICAL", "Many mirrors recently became inactive", recently_inactive_users)
 else:
-    report("CRITICAL", "Many mirrors are inactive", inactive_users)
+    report("OK", "Most mirrors that were recently active continue to be active")
