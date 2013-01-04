@@ -332,10 +332,7 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
             message.stamp = ui.get_gravatar_stamp();
         }
 
-        var background_color = subs.get_color(message.display_recipient);
-        if (background_color !== undefined) {
-            message.background_color = background_color;
-        }
+        message.background_color = subs.get_color(message.display_recipient);
 
         messages_to_render.push(message);
         prev = message;

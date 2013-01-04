@@ -2,12 +2,13 @@ var subs = (function () {
 
 var exports = {};
 
-var stream_set = {};
-var stream_colors = {};
+var stream_info = {};
 // We fetch the stream colors asynchronous while the message feed is
 // getting constructed, so we may need to go back and color streams
 // that have already been rendered.
 var initial_color_fetch = true;
+
+var default_color = "c2c2c2";
 
 function case_insensitive_subscription_index(stream_name) {
     var i;
@@ -51,7 +52,7 @@ var colorpicker_options = {
         // TODO: Kind of a hack.
         var stream_name = $(this).parent().find('.subscription_name').text();
         var hex_color = color.toHexString();
-        stream_colors[stream_name] = hex_color;
+        stream_info[stream_name].color = hex_color;
         update_historical_message_color(stream_name, hex_color);
 
         $.ajax({
@@ -99,7 +100,7 @@ function add_to_stream_list(stream_name) {
 
     if (!exports.have(stream_name)) {
         stream_list.push(stream_name);
-        stream_set[stream_name.toLowerCase()] = true;
+        stream_info[stream_name.toLowerCase()] = {color: default_color};
 
         stream_sub_row = get_button_for_stream(stream_name);
         if (stream_sub_row !== undefined) {
@@ -110,14 +111,14 @@ function add_to_stream_list(stream_name) {
                 .click(function (event) {exports.unsubscribe(stream_name);});
         } else {
             $('#subscriptions_table').prepend(templates.subscription({
-                subscriptions: [{subscription: stream_name, color: "c2c2c2"}]}));
+                subscriptions: [{subscription: stream_name, color: default_color}]}));
             draw_colorpicker(stream_name);
         }
     }
 }
 
 function remove_from_stream_list(stream_name) {
-    delete stream_set[stream_name.toLowerCase()];
+    delete stream_info[stream_name.toLowerCase()];
     var removal_index = case_insensitive_subscription_index(stream_name);
     if (removal_index !== -1) {
         stream_list.splice(removal_index, 1);
@@ -125,7 +126,10 @@ function remove_from_stream_list(stream_name) {
 }
 
 exports.get_color = function (stream_name) {
-    return stream_colors[stream_name];
+    if (stream_info[stream_name] === undefined) {
+        return default_color;
+    }
+    return stream_info[stream_name].color;
 };
 
 exports.fetch_colors = function () {
@@ -140,7 +144,7 @@ exports.fetch_colors = function () {
                 $.each(data.stream_colors, function (index, data) {
                     var stream_name = data[0];
                     var color = data[1];
-                    stream_colors[stream_name] = color;
+                    stream_info[stream_name].color = color;
                     if (initial_color_fetch) {
                         update_historical_message_color(stream_name, color);
                     }
@@ -164,7 +168,7 @@ exports.fetch = function () {
                 $.each(data.subscriptions, function (index, data) {
                     var stream_name = data[0];
                     var color = data[1];
-                    stream_colors[stream_name] = color;
+                    stream_info[stream_name].color = color;
                     subscriptions.push({subscription: stream_name, color: color});
                 });
                 $('#subscriptions_table').append(templates.subscription({subscriptions: subscriptions}));
@@ -197,7 +201,7 @@ exports.subscribe_for_send = function (stream, prompt_button) {
 };
 
 exports.have = function (stream_name) {
-    return (stream_set[stream_name.toLowerCase()] === true);
+    return (stream_info[stream_name.toLowerCase()] !== undefined);
 };
 
 function ajaxSubscribe(stream) {
@@ -268,9 +272,9 @@ exports.unsubscribe_button_click = function (e) {
 
 $(function () {
     var i;
-    // Populate stream_set with data handed over to client-side template.
+    // Populate stream_info with data handed over to client-side template.
     for (i = 0; i < stream_list.length; i++) {
-        stream_set[stream_list[i].toLowerCase()] = true;
+        stream_info[stream_list[i].toLowerCase()] = {color: default_color};
     }
 
     $("#add_new_subscription").on("submit", function (e) {
