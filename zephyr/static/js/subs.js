@@ -3,12 +3,14 @@ var subs = (function () {
 var exports = {};
 
 var stream_info = {};
+var removed_streams = {};
 // We fetch the stream colors asynchronous while the message feed is
 // getting constructed, so we may need to go back and color streams
 // that have already been rendered.
 var initial_color_fetch = true;
 
 var default_color = "c2c2c2";
+var next_sub_id = 0;
 
 function case_insensitive_subscription_index(stream_name) {
     var i;
@@ -70,24 +72,11 @@ var colorpicker_options = {
 };
 
 function get_button_for_stream(stream_name) {
-    // Actually using the jQuery find is hard, because we need to
-    // properly escape the stream name to stick it into the selector.
-    // This approach is simpler from a "think about escaping"
-    // perspective, but seems to be 3-4x slower.  Fortunately, it's
-    // not called particularly often.
-    var desired_button;
-    $('#subscriptions_table .subscription_name').each(function (idx, elt) {
-        var candidate = $(elt);
-        if (candidate.text() === stream_name) {
-            desired_button = candidate.parent().next().children().first();
-            return false;
-        }
-    });
-    return desired_button;
+    return $('#subscription_' + stream_info[stream_name].id).find('.unsubscribe_button');
 }
 
 function draw_colorpicker(stream_name) {
-    var colorpicker = get_button_for_stream(stream_name).parent().prev().find('input');
+    var colorpicker = $('#subscription_' + stream_info[stream_name].id).find('.colorpicker');
     colorpicker.spectrum(colorpicker_options);
 }
 
@@ -97,28 +86,41 @@ function draw_all_colorpickers() {
 
 function add_to_stream_list(stream_name) {
     var stream_sub_row;
+    var sub;
 
-    if (!exports.have(stream_name)) {
-        stream_list.push(stream_name);
-        stream_info[stream_name.toLowerCase()] = {color: default_color};
+    if (exports.have(stream_name)) {
+        return;
+    }
+
+    var lstream_name = stream_name.toLowerCase();
+
+    stream_list.push(stream_name);
+
+    if (removed_streams[lstream_name] !== undefined) {
+        sub = removed_streams[lstream_name];
+        delete removed_streams[lstream_name];
+        stream_info[lstream_name] = sub;
 
         stream_sub_row = get_button_for_stream(stream_name);
-        if (stream_sub_row !== undefined) {
-            stream_sub_row.text("Unsubscribe")
-                .removeClass("btn-primary")
-                .unbind("click")
-                .removeAttr("onclick")
-                .click(function (event) {exports.unsubscribe_button_click(event);});
-        } else {
-            $('#subscriptions_table').prepend(templates.subscription({
-                subscriptions: [{subscription: stream_name, color: default_color}]}));
-            draw_colorpicker(stream_name);
-        }
+        stream_sub_row.text("Unsubscribe")
+            .removeClass("btn-primary")
+            .unbind("click")
+            .removeAttr("onclick")
+            .click(function (event) {exports.unsubscribe_button_click(event);});
+
+    } else {
+        sub = {name: lstream_name, id: next_sub_id++, color: default_color};
+        stream_info[lstream_name] = sub;
+
+        $('#subscriptions_table').prepend(templates.subscription({subscriptions: [sub]}));
+        draw_colorpicker(stream_name);
     }
 }
 
 function remove_from_stream_list(stream_name) {
-    delete stream_info[stream_name.toLowerCase()];
+    var lstream_name = stream_name.toLowerCase();
+    removed_streams[lstream_name] = stream_info[lstream_name];
+    delete stream_info[lstream_name];
     var removal_index = case_insensitive_subscription_index(stream_name);
     if (removal_index !== -1) {
         stream_list.splice(removal_index, 1);
@@ -167,9 +169,9 @@ exports.fetch = function () {
                 var subscriptions = [];
                 $.each(data.subscriptions, function (index, data) {
                     var stream_name = data[0];
-                    var color = data[1];
-                    stream_info[stream_name].color = color;
-                    subscriptions.push({subscription: stream_name, color: color});
+                    var sub = {name: stream_name, id: next_sub_id++, color: data[1]};
+                    stream_info[stream_name] = sub;
+                    subscriptions.push(sub);
                 });
                 $('#subscriptions_table').append(templates.subscription({subscriptions: subscriptions}));
                 draw_all_colorpickers();
@@ -234,7 +236,7 @@ function ajaxSubscribe(stream) {
 }
 
 exports.unsubscribe_button_click = function (e) {
-    var stream = $(e.target).parent().prev().find('.subscription_name').text();
+    var stream = $(e.target).closest('.subscription_row').find('.subscription_name').text();
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/remove",

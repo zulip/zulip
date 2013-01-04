@@ -1,13 +1,13 @@
 {{! Client-side Mustache template for rendering subscriptions.}}
 {{#each subscriptions}}
 {{#with this}}
-<tr>
+<tr class="subscription_row" id="subscription_{{id}}">
   <td>
     <input class="colorpicker" type="text" value="{{color}}" />
-    <span class="subscription_name">{{subscription}}</span>
+    <span class="subscription_name">{{name}}</span>
   </td>
   <td class="span2">
-    <button class="btn btn-block" type="button" name="subscription"
+    <button class="btn btn-block unsubscribe_button" type="button" name="subscription"
             onclick="subs.unsubscribe_button_click(event);">Unsubscribe</button>
   </td>
 </tr>
