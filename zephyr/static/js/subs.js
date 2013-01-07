@@ -168,6 +168,7 @@ exports.fetch = function () {
         timeout:  10*1000,
         success: function (data) {
             $('#subscriptions_table tr').remove();
+            removed_streams = {};
             if (data) {
                 var subscriptions = [];
                 $.each(data.subscriptions, function (index, data) {
