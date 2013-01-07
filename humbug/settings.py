@@ -62,7 +62,7 @@ elif False:
         'NAME': 'humbug',
         'USER': 'humbug',
         'PASSWORD': 'yuHavmefbek5',
-        'HOST': ''
+        'HOST': 'localhost'
         }
 
 # Local time zone for this installation. Choices can be found here:
