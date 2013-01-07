@@ -288,6 +288,32 @@ $(function () {
         e.preventDefault();
         ajaxSubscribe($("#streams").val());
     });
+
+
+    $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
+        var sub_row = $(e.target).closest('.subscription_row');
+        var stream = sub_row.find('.subscription_name').text();
+        var error_elem = sub_row.find('.subscriber_list_container .alert');
+        var list = sub_row.find('.subscriber_list_container ul');
+        error_elem.addClass('hide');
+        list.empty();
+
+        // TODO: Show a spinner while the list is loading
+        $.ajax({
+            type: "POST",
+            url: "/json/get_subscribers",
+            dataType: 'json', // This seems to be ignored. We still get back an xhr.
+            data: {stream: stream},
+            success: function (data) {
+                $.each(data.subscribers, function (idx, elem) {
+                    list.append('<li>' + elem);
+                });
+            },
+            error: function (xhr) {
+                error_elem.removeClass("hide").text("Could not fetch subscriber list");
+            }
+        });
+    });
 });
 
 return exports;

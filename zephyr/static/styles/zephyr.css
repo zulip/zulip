@@ -631,6 +631,11 @@ table.floating_recipient {
     float: right;
 }
 
+.subscriber_list_container {
+    max-height: 200px;
+    overflow: auto;
+}
+
 #invite_user_form {
     margin-bottom: 0px;
 }
