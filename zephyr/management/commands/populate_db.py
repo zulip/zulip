@@ -210,6 +210,7 @@ class Command(BaseCommand):
                 ("Humbug Nagios Bot", "humbug+nagios@humbughq.com"),
                 ("Humbug Feedback Bot", "feedback@humbughq.com"),
                 ("Humbug New User Bot", "humbug+signups@humbughq.com"),
+                ("Humbug Error Bot", "humbug+errors@humbughq.com"),
                 ]
             create_users(realms, internal_humbug_users_nosubs)
 
