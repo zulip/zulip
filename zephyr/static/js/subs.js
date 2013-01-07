@@ -12,6 +12,10 @@ var initial_color_fetch = true;
 var default_color = "#c2c2c2";
 var next_sub_id = 0;
 
+function render_subscribers() {
+    return domain !== 'mit.edu';
+}
+
 function case_insensitive_subscription_index(stream_name) {
     var i;
     var name = stream_name.toLowerCase();
@@ -111,7 +115,8 @@ function add_to_stream_list(stream_name) {
             .click(function (event) {exports.unsubscribe_button_click(event);});
 
     } else {
-        sub = {name: stream_name, id: next_sub_id++, color: default_color};
+        sub = {name: stream_name, id: next_sub_id++, color: default_color,
+               render_subscribers: render_subscribers()};
         stream_info[lstream_name] = sub;
 
         $('#subscriptions_table').prepend(templates.subscription({subscriptions: [sub]}));
@@ -173,7 +178,8 @@ exports.fetch = function () {
                 var subscriptions = [];
                 $.each(data.subscriptions, function (index, data) {
                     var stream_name = data[0];
-                    var sub = {name: stream_name, id: next_sub_id++, color: data[1]};
+                    var sub = {name: stream_name, id: next_sub_id++,
+                               color: data[1], render_subscribers: render_subscribers()};
                     stream_info[stream_name.toLowerCase()] = sub;
                     subscriptions.push(sub);
                 });
@@ -291,6 +297,9 @@ $(function () {
 
 
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
+        if (! render_subscribers()) {
+            return;
+        }
         var sub_row = $(e.target).closest('.subscription_row');
         var stream = sub_row.find('.subscription_name').text();
         var error_elem = sub_row.find('.subscriber_list_container .alert');

@@ -16,12 +16,14 @@
         <li><span class="sub_setting_control"><input class="colorpicker" type="text" value="{{color}}" /></span>
           Stream color
       </ul>
+      {{#render_subscribers}}
       <h5>Subscribers</h5>
       <div class="subscriber_list_container">
         <div class="alert alert-error hide"></div>
         <ul>
         </ul>
       </div>
+      {{/render_subscribers}}
     </div>
   </td>
 </tr>
