@@ -629,6 +629,18 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
     if (for_narrow && narrow.active())
         data.narrow = JSON.stringify(narrow.operators());
 
+    function process_result(messages) {
+        $('#connection-error').hide();
+
+        if (messages.length !== 0 && !cont_will_add_messages) {
+            add_messages(messages, !for_narrow);
+        }
+
+        if (cont !== undefined) {
+            cont(messages);
+        }
+    }
+
     $.ajax({
         type:     'POST',
         url:      '/json/get_old_messages',
@@ -645,17 +657,19 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
                 return;
             }
 
-            $('#connection-error').hide();
-
-            if (data.messages.length !== 0 && !cont_will_add_messages) {
-                add_messages(data.messages, !for_narrow);
-            }
-
-            if (cont !== undefined) {
-                cont(data.messages);
-            }
+            process_result(data.messages);
         },
         error: function (xhr, error_type, exn) {
+            if (xhr.status === 400) {
+                // Bad request: We probably specified a narrow operator
+                // for a nonexistent stream or something.  We shouldn't
+                // retry or display a connection error.
+                //
+                // FIXME: Warn the user when this has happened?
+                process_result([]);
+                return;
+            }
+
             // We might want to be more clever here
             $('#connection-error').show();
             setTimeout(function () {
