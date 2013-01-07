@@ -279,6 +279,23 @@ casper.then(function () {
     ]);
 });
 
+// Subscriptions page tests
+casper.then(function() {
+    casper.test.info('Subscriptions page');
+    casper.click('a[href^="#subscriptions"]');
+    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#subscriptions/, 'URL suggests we are on subscriptions page');
+    casper.test.assertExists('#subscriptions.tab-pane.active', 'Subscriptions page is active');
+});
+
+// Settings page tests
+casper.then(function() {
+    casper.test.info('Settings page');
+    casper.click('a[href^="#settings"]');
+    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#settings/, 'URL suggests we are on settings page');
+    casper.test.assertExists('#settings.tab-pane.active', 'Settings page is active');
+});
+
+
 // Run the above queued actions.
 casper.run(function () {
     casper.exit((casper.test.getFailures().length > 0) ? 1 : 0);
