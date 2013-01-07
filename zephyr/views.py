@@ -610,8 +610,8 @@ def recipient_for_emails(emails, not_forged_zephyr_mirror, user_profile, sender)
         except UserProfile.DoesNotExist:
             raise ValidationError("Invalid email '%s'" % (email,))
 
-        if not_forged_zephyr_mirror and user_profile.id not in recipient_profile_ids:
-            raise ValidationError("User not authorized for this query")
+    if not_forged_zephyr_mirror and user_profile.id not in recipient_profile_ids:
+        raise ValidationError("User not authorized for this query")
 
     # If the private message is just between the sender and
     # another person, force it to be a personal internally
