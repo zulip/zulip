@@ -415,6 +415,31 @@ class MessagePOSTTest(AuthedTestCase):
                                                          "to": "othello@humbughq.com"})
         self.assert_json_error(result, "Invalid message type")
 
+    def test_mirrored_huddle(self):
+        """
+        Sending a mirrored huddle message works
+        """
+        self.login("starnine@mit.edu")
+        result = self.client.post("/json/send_message", {"type": "private",
+                                                         "sender": "sipbtest@mit.edu",
+                                                         "content": "Test message",
+                                                         "client": "zephyr_mirror",
+                                                         "to": simplejson.dumps(["starnine@mit.edu",
+                                                                                 "espuser@mit.edu"])})
+        self.assert_json_success(result)
+
+    def test_mirrored_personal(self):
+        """
+        Sending a mirrored personal message works
+        """
+        self.login("starnine@mit.edu")
+        result = self.client.post("/json/send_message", {"type": "private",
+                                                         "sender": "sipbtest@mit.edu",
+                                                         "content": "Test message",
+                                                         "client": "zephyr_mirror",
+                                                         "to": "starnine@mit.edu"})
+        self.assert_json_success(result)
+
 class SubscriptionPropertiesTest(AuthedTestCase):
     fixtures = ['messages.json']
 
