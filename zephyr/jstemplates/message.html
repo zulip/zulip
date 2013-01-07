@@ -54,6 +54,7 @@
     <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
         {{#include_sender}}
         <span class="message_sender user_info_hover">
+            <img class="inline_profile_picture message_body_gravatar img-rounded" src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30?stamp={{stamp}}"/>
             <span class="sender_name">{{sender_full_name}}</span>
             <span class="sender_email invisible">{{sender_email}}</span>
         </span>

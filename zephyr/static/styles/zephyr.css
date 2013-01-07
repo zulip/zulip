@@ -139,6 +139,11 @@ td.pointer {
 .ztable_col1 {    /* sender's gravatar */
     width: 46px;
 }
+@media (max-width: 480px) {
+    .ztable_col1 {
+        width: 0px;
+    }
+}
 .ztable_col2 {    /* pointer */
     width: 2px;
 }
@@ -283,6 +288,19 @@ img.profile_picture {
     width:  30px;
     height: 30px;
     cursor: pointer;
+}
+@media (max-width: 480px) {
+    img.profile_picture {
+        display: none;
+    }
+}
+img.inline_profile_picture {
+    display: none;
+}
+@media (max-width: 480px) {
+    img.inline_profile_picture {
+        display: inline;
+    }
 }
 
 #compose {
