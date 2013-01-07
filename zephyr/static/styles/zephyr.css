@@ -136,7 +136,7 @@ td.pointer {
 .ztable_layout_row {
     visibility: collapse;
 }
-.ztable_col1 {    /* streamname */
+.ztable_col1 {    /* sender's gravatar */
     width: 46px;
 }
 .ztable_col2 {    /* pointer */
