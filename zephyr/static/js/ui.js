@@ -509,7 +509,7 @@ $(function () {
         hashchange.changehash(browser_url);
     });
 
-    $('#sidebar a[href="#subscriptions"]').click(subs.fetch);
+    $('#sidebar a[href="#subscriptions"]').on('show', subs.fetch);
 
     var settings_status = $('#settings-status');
     $("#settings-change-box form").ajaxForm({
