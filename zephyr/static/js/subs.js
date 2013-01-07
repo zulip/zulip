@@ -2,7 +2,7 @@ var subs = (function () {
 
 var exports = {};
 
-var stream_info = {};
+var stream_info = {}; // Maps lowercase stream name to stream properties object
 var removed_streams = {};
 // We fetch the stream colors asynchronous while the message feed is
 // getting constructed, so we may need to go back and color streams
@@ -74,7 +74,7 @@ var colorpicker_options = {
 };
 
 function get_button_for_stream(stream_name) {
-    return $('#subscription_' + stream_info[stream_name].id).find('.unsubscribe_button');
+    return $('#subscription_' + stream_info[stream_name.toLowerCase()].id).find('.unsubscribe_button');
 }
 
 function draw_colorpicker(stream_name) {
@@ -130,10 +130,11 @@ function remove_from_stream_list(stream_name) {
 }
 
 exports.get_color = function (stream_name) {
-    if (stream_info[stream_name] === undefined) {
+    var lstream_name = stream_name.toLowerCase();
+    if (stream_info[lstream_name] === undefined) {
         return default_color;
     }
-    return stream_info[stream_name].color;
+    return stream_info[lstream_name].color;
 };
 
 exports.fetch_colors = function () {
@@ -148,7 +149,7 @@ exports.fetch_colors = function () {
                 $.each(data.stream_colors, function (index, data) {
                     var stream_name = data[0];
                     var color = data[1];
-                    stream_info[stream_name].color = color;
+                    stream_info[stream_name.toLowerCase()].color = color;
                     if (initial_color_fetch) {
                         update_historical_message_color(stream_name, color);
                     }
@@ -172,7 +173,7 @@ exports.fetch = function () {
                 $.each(data.subscriptions, function (index, data) {
                     var stream_name = data[0];
                     var sub = {name: stream_name, id: next_sub_id++, color: data[1]};
-                    stream_info[stream_name] = sub;
+                    stream_info[stream_name.toLowerCase()] = sub;
                     subscriptions.push(sub);
                 });
                 $('#subscriptions_table').append(templates.subscription({subscriptions: subscriptions}));
