@@ -55,7 +55,7 @@ var colorpicker_options = {
         var sub_row = $(this).closest('.subscription_row');
         var stream_name = sub_row.find('.subscription_name').text();
         var hex_color = color.toHexString();
-        stream_info[stream_name].color = hex_color;
+        stream_info[stream_name.toLowerCase()].color = hex_color;
         sub_row.find('.color_swatch').css('background-color', hex_color);
         update_historical_message_color(stream_name, hex_color);
 
@@ -78,7 +78,7 @@ function get_button_for_stream(stream_name) {
 }
 
 function draw_colorpicker(stream_name) {
-    var colorpicker = $('#subscription_' + stream_info[stream_name].id).find('.colorpicker');
+    var colorpicker = $('#subscription_' + stream_info[stream_name.toLowerCase()].id).find('.colorpicker');
     colorpicker.spectrum(colorpicker_options);
 }
 
@@ -111,7 +111,7 @@ function add_to_stream_list(stream_name) {
             .click(function (event) {exports.unsubscribe_button_click(event);});
 
     } else {
-        sub = {name: lstream_name, id: next_sub_id++, color: default_color};
+        sub = {name: stream_name, id: next_sub_id++, color: default_color};
         stream_info[lstream_name] = sub;
 
         $('#subscriptions_table').prepend(templates.subscription({subscriptions: [sub]}));
