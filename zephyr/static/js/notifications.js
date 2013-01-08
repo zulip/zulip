@@ -5,6 +5,7 @@ var exports = {};
 var notice_memory = {};
 var window_has_focus = true;
 var new_message_count = 0;
+var asked_permission_already = false;
 
 function browser_desktop_notifications_on () {
     return (window.webkitNotifications &&
@@ -30,11 +31,12 @@ exports.initialize = function () {
     }
 
     $(document).click(function () {
-        if (!desktop_notifications_enabled) {
+        if (!desktop_notifications_enabled || asked_permission_already) {
             return;
         }
         if (window.webkitNotifications.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
             window.webkitNotifications.requestPermission();
+            asked_permission_already = true;
         }
     });
 };
