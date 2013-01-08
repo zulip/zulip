@@ -119,11 +119,7 @@ td.pointer {
 }
 
 .selected_message .pointer {
-    background-color: blue;
-}
-
-.narrowed_selected_message .pointer {
-    background-color: #6699FF;
+    background-color: #08c;
 }
 
 .message_picture {

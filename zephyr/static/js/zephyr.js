@@ -151,11 +151,7 @@ $(function () {
 });
 
 function update_selected_message(message, opts) {
-    opts = $.extend({}, {
-        for_narrow: narrow.active()
-    }, opts);
-
-    var cls = opts.for_narrow ? 'narrowed_selected_message' : 'selected_message';
+    var cls = 'selected_message';
     $('.' + cls).removeClass(cls);
     message.addClass(cls);
 
