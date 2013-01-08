@@ -5,6 +5,7 @@ from zephyr.lib.response import json_success, json_error
 from django.utils.timezone import now
 from django.db import transaction, IntegrityError
 from django.conf import settings
+import simplejson
 
 from functools import wraps
 
@@ -234,3 +235,22 @@ def has_request_variables(view_func):
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view_func
+
+# Converter functions for use with has_request_variables
+def to_non_negative_int(x):
+    x = int(x)
+    if x < 0:
+        raise ValueError("argument is negative")
+    return x
+
+def json_to_dict(json):
+    data = simplejson.loads(json)
+    if not isinstance(data, dict):
+        raise ValueError("argument is not a dictionary")
+    return data
+
+def json_to_list(json):
+    data = simplejson.loads(json)
+    if not isinstance(data, list):
+        raise ValueError("argument is not a list")
+    return data

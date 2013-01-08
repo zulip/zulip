@@ -42,8 +42,8 @@ urlpatterns = patterns('',
     url(r'^new-user$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/new-user.html'}),
 
     # These are json format views used by the web client.  They require a logged in browser.
+    url(r'^json/get_updates$',              'zephyr.tornadoviews.json_get_updates'),
     url(r'^json/update_pointer$',           'zephyr.views.json_update_pointer'),
-    url(r'^json/get_updates$',              'zephyr.views.json_get_updates'),
     url(r'^json/get_old_messages$',         'zephyr.views.json_get_old_messages'),
     url(r'^json/send_message$',             'zephyr.views.json_send_message'),
     url(r'^json/settings/change$',          'zephyr.views.json_change_settings'),
@@ -55,8 +55,8 @@ urlpatterns = patterns('',
     url(r'^json/fetch_api_key$',            'zephyr.views.json_fetch_api_key'),
 
     # These are json format views used by the API.  They require an API key.
+    url(r'^api/v1/get_messages$',           'zephyr.tornadoviews.api_get_messages'),
     url(r'^api/v1/get_profile$',            'zephyr.views.api_get_profile'),
-    url(r'^api/v1/get_messages$',           'zephyr.views.api_get_messages'),
     url(r'^api/v1/get_old_messages$',       'zephyr.views.api_get_old_messages'),
     url(r'^api/v1/get_public_streams$',     'zephyr.views.api_get_public_streams'),
     url(r'^api/v1/subscriptions/list$',     'zephyr.views.api_list_subscriptions'),
@@ -72,8 +72,8 @@ urlpatterns = patterns('',
     url(r'^robots\.txt$', 'django.views.generic.simple.redirect_to', {'url': '/static/public/robots.txt'}),
 
     # Used internally for communication between Django and Tornado processes
-    url(r'^notify_new_message$',            'zephyr.views.notify_new_message'),
-    url(r'^notify_pointer_update$',         'zephyr.views.notify_pointer_update'),
+    url(r'^notify_new_message$',            'zephyr.tornadoviews.notify_new_message'),
+    url(r'^notify_pointer_update$',         'zephyr.tornadoviews.notify_pointer_update'),
 )
 
 if not settings.DEPLOYED:

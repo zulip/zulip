@@ -6,7 +6,8 @@ from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, get_display_recipient, Realm, do_send_message, Client
-from zephyr.views import json_get_updates, api_get_messages, gather_subscriptions
+from zephyr.tornadoviews import json_get_updates, api_get_messages
+from zephyr.views import gather_subscriptions
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
 from zephyr.lib.initial_password import initial_password, initial_api_key
 
