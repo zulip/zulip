@@ -286,34 +286,28 @@ casper.then(function() {
     casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#subscriptions/, 'URL suggests we are on subscriptions page');
     casper.test.assertExists('#subscriptions.tab-pane.active', 'Subscriptions page is active');
     casper.waitForText('Denmark'); // subscriptions need to load
-    casper.test.assertTextExists('Denmark', 'Initial subscriptions loaded');
 });
 casper.then(function() {
+    casper.test.assertTextExists('Denmark', 'Initial subscriptions loaded');
     casper.fill('form#add_new_subscription', {streams: 'Waseemio'});
     casper.click('form#add_new_subscription input.btn.btn-primary');
+    casper.waitForText('Waseemio');
 });
 casper.then(function() {
-    casper.waitForText('Waseemio');
     // TODO: Make this more robust.
     // I tried to do it with assertSelectorHasText, but it wasn't quite working.
     casper.test.assertTextExists('Successfully added subscription to Waseemio', 'Subscribing to a stream');
-});
-
-casper.then(function() {
     casper.fill('form#add_new_subscription', {streams: 'WASeemio'});
     casper.click('form#add_new_subscription input.btn.btn-primary');
-});
-casper.then(function() {
     casper.waitForText('Already subscribed');
-    casper.test.assertTextExists('Already subscribed', "Can't subscribe twice to a stream");
 });
-
 casper.then(function() {
+    casper.test.assertTextExists('Already subscribed', "Can't subscribe twice to a stream");
     casper.fill('form#add_new_subscription', {streams: '  '});
     casper.click('form#add_new_subscription input.btn.btn-primary');
+    casper.waitForText('Error adding subscription');
 });
 casper.then(function() {
-    casper.waitForText('Error adding subscription');
     casper.test.assertTextExists('Error adding subscription', "Can't subscribe to an empty stream name");
 });
 
