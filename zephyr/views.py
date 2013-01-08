@@ -3,12 +3,13 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.shortcuts import render_to_response, redirect
+from django.template import RequestContext, loader
 from django.utils.timezone import utc, now
 from django.core.exceptions import ValidationError
 from django.contrib.auth.views import login as django_login_page
 from django.db.models import Q
+from django.core.mail import send_mail
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     do_add_subscription, do_remove_subscription, do_change_password, \
@@ -18,7 +19,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     PreregistrationUser, get_client, MitUser, User, UserActivity, \
     log_subscription_property_change, internal_send_message, \
     MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH
-from zephyr.forms import RegistrationForm, HomepageForm, is_unique, \
+from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_active
 from django.views.decorators.csrf import csrf_exempt
 
@@ -116,6 +117,31 @@ def accounts_register(request):
 
     return render_to_response('zephyr/register.html',
         { 'form': form, 'company_name': company_name, 'email': email, 'key': key },
+        context_instance=RequestContext(request))
+
+@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+def accounts_accept_terms(request):
+    email = request.user.email
+    company_name = email.split('@')[-1]
+    if request.method == "POST":
+        form = ToSForm(request.POST)
+        if form.is_valid():
+            full_name = form.cleaned_data['full_name']
+            send_mail('Terms acceptance for ' + full_name,
+                    loader.render_to_string('zephyr/tos_accept_body.txt',
+                        {'name': full_name,
+                         'email': email,
+                         'ip': request.META['REMOTE_ADDR'],
+                         'browser': request.META['HTTP_USER_AGENT']}),
+                        "humbug@humbughq.com",
+                        ["all@humbughq.com"])
+            do_change_full_name(request.user.userprofile, full_name)
+            return redirect(home)
+
+    else:
+        form = ToSForm()
+    return render_to_response('zephyr/accounts_accept_terms.html',
+        { 'form': form, 'company_name': company_name, 'email': email },
         context_instance=RequestContext(request))
 
 def login_page(request, **kwargs):

@@ -1,0 +1,14 @@
+{% comment %}
+Mail sent to us when a user accepts the ToS
+{% endcomment %}
+
+Hello,
+
+{{ name }} <{{ email }}> just accepted the Humbug Terms of Service.
+
+{{ ip }} submitted /accounts/accept_tos from {{ browser }}.
+
+Cheers,
+
+Humbug Legal Bot
+

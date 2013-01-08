@@ -34,6 +34,9 @@ urlpatterns = patterns('',
     url(r'^accounts/register/', 'zephyr.views.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
 
+    # Portico-styled page used to provide email confirmation of terms acceptance.
+    url(r'^accounts/accept_terms', 'zephyr.views.accounts_accept_terms'),
+
     # Terms of service and privacy policy
     url(r'^terms$',   'django.views.generic.simple.direct_to_template', {'template': 'zephyr/terms.html'}),
     url(r'^privacy$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/privacy.html'}),
