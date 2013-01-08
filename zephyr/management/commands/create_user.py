@@ -39,10 +39,8 @@ Terms of Service by passing --this-user-has-accepted-the-tos.""")
                 raise CommandError("Invalid email address.")
         except ValueError:
             if len(args) != 0:
-                raise CommandError("Either specify an email and full name" + \
-                        "as two parameters, or specify no parameters for" + \
-                        "interactive user creation.")
-                return 1
+                raise CommandError("""Either specify an email and full name as two
+parameters, or specify no parameters for interactive user creation.""")
             else:
                 while True:
                     email = raw_input("Email: ")
