@@ -595,6 +595,9 @@ class GetOldMessagesTest(AuthedTestCase):
         messages for that stream.
         """
         self.login("hamlet@humbughq.com")
+        # We need to send a message here to ensure that we actually
+        # have a stream message in this narrow view.
+        self.send_message("hamlet@humbughq.com", "Scotland", Recipient.STREAM)
         messages = self.message_stream(User.objects.get(email="hamlet@humbughq.com"))
         stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
                                  messages)

@@ -87,6 +87,10 @@ class Command(BaseCommand):
                     default=True,
                     dest='delete',
                     help='Whether to delete all the existing messages.'),
+        make_option('--test-suite',
+                    default=False,
+                    action="store_true",
+                    help='Whether to delete all the existing messages.'),
         make_option('--replay-old-messages',
                     action="store_true",
                     default=False,
@@ -164,42 +168,63 @@ class Command(BaseCommand):
         connection.close()
 
         if options["delete"]:
-            # Create internal users
-            internal_mit_users = []
-            create_users(realms, internal_mit_users)
-
-            internal_humbug_users = []
-            create_users(realms, internal_humbug_users)
-            humbug_stream_list = ["devel", "all", "humbug", "design", "support", "social", "test"]
-            create_streams(realms, humbug_realm, humbug_stream_list)
-
-            # Now subscribe everyone to these streams
-            subscriptions_to_add = []
-            profiles = UserProfile.objects.select_related().filter(realm=humbug_realm)
-            for cls in humbug_stream_list:
-                stream = Stream.objects.get(name=cls, realm=humbug_realm)
-                recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-                for profile in profiles:
-                    # Subscribe to some streams.
-                    s = Subscription(recipient=recipient, user_profile=profile)
-                    subscriptions_to_add.append(s)
-            batch_bulk_create(Subscription, subscriptions_to_add)
-
-            internal_humbug_users_nosubs = [
-                ("Humbug Commit Bot", "humbug+commits@humbughq.com"),
-                ("Humbug Trac Bot", "humbug+trac@humbughq.com"),
-                ("Humbug Nagios Bot", "humbug+nagios@humbughq.com"),
-                ("Humbug Feedback Bot", "feedback@humbughq.com"),
-                ("Humbug New User Bot", "humbug+signups@humbughq.com"),
-                ("Humbug Error Bot", "humbug+errors@humbughq.com"),
-                ]
-            create_users(realms, internal_humbug_users_nosubs)
-
             # Create the "website" and "API" clients; if we don't, the
             # default values in zephyr/decorators.py will not work
             # with the Django test suite.
             get_client("website")
             get_client("API")
+
+            # Create internal users; first the ones who are referenced
+            # directly by the test suite; the MIT ones are needed to
+            # test the Zephyr mirroring codepaths.
+            testsuite_mit_users = [
+                ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
+                ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
+                ("Esp Classroom (MIT)", "espuser@mit.edu"),
+                ]
+            create_users(realms, testsuite_mit_users)
+
+            # These bots are directly referenced from code and thus
+            # are needed for the test suite.
+            hardcoded_humbug_users_nosubs = [
+                ("Humbug New User Bot", "humbug+signups@humbughq.com"),
+                ("Humbug Error Bot", "humbug+errors@humbughq.com"),
+                ]
+            create_users(realms, hardcoded_humbug_users_nosubs)
+
+            if not options["test_suite"]:
+                # To keep the messages.json fixtures file for the test
+                # suite fast, don't add these users and subscriptions
+                # when running populate_db for the test suite
+
+                internal_mit_users = []
+                create_users(realms, internal_mit_users)
+
+                internal_humbug_users = []
+                create_users(realms, internal_humbug_users)
+                humbug_stream_list = ["devel", "all", "humbug", "design", "support", "social", "test"]
+                create_streams(realms, humbug_realm, humbug_stream_list)
+
+                # Now subscribe everyone to these streams
+                subscriptions_to_add = []
+                profiles = UserProfile.objects.select_related().filter(realm=humbug_realm)
+                for cls in humbug_stream_list:
+                    stream = Stream.objects.get(name=cls, realm=humbug_realm)
+                    recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
+                    for profile in profiles:
+                        # Subscribe to some streams.
+                        s = Subscription(recipient=recipient, user_profile=profile)
+                        subscriptions_to_add.append(s)
+                batch_bulk_create(Subscription, subscriptions_to_add)
+
+                # These bots are not needed by the test suite
+                internal_humbug_users_nosubs = [
+                    ("Humbug Commit Bot", "humbug+commits@humbughq.com"),
+                    ("Humbug Trac Bot", "humbug+trac@humbughq.com"),
+                    ("Humbug Nagios Bot", "humbug+nagios@humbughq.com"),
+                    ("Humbug Feedback Bot", "feedback@humbughq.com"),
+                    ]
+                create_users(realms, internal_humbug_users_nosubs)
 
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
