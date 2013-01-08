@@ -17,6 +17,14 @@ var casper = require('casper').create({
     //logLevel: 'debug',
 });
 
+// Uncomment this to get page-context console.log in the CasperJS output
+// (plus some CasperJS-specific messages)
+/*
+casper.on('remote.message', function (msg) {
+    casper.echo(msg);
+});
+*/
+
 // Get message headings (recipient rows) and bodies out of the DOM.
 // casper.evaluate plays weird tricks with a closure, evaluating
 // it in the web page's context.  Passing arguments from the test
