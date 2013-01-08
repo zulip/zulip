@@ -215,6 +215,11 @@ def home(request):
     streams = [get_display_recipient(sub.recipient) for sub in subscriptions
                if sub.recipient.type == Recipient.STREAM]
 
+    desktop_notifications_enabled = (user_profile.enable_desktop_notifications
+        and getattr(settings, 'ENABLE_NOTIFICATIONS', True))
+
+    js_bool = lambda x: 'true' if x else 'false'
+
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
                                'email_hash'  : gravatar_hash(user_profile.user.email),
@@ -222,7 +227,9 @@ def home(request):
                                'streams'     : streams,
                                'poll_timeout': settings.POLL_TIMEOUT,
                                'have_initial_messages':
-                                   'true' if num_messages > 0 else 'false',
+                                   js_bool(num_messages > 0),
+                               'desktop_notifications_enabled':
+                                   js_bool(desktop_notifications_enabled),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
                                'show_activity': can_view_activity(request) },
