@@ -257,13 +257,10 @@ def accounts_home(request):
     if request.method == 'POST':
         form = HomepageForm(request.POST)
         if form.is_valid():
-            try:
-                email = form.cleaned_data['email']
-                user = PreregistrationUser.objects.get(email=email)
-            except PreregistrationUser.DoesNotExist:
-                user = PreregistrationUser()
-                user.email = email
-                user.save()
+            email = form.cleaned_data['email']
+            user = PreregistrationUser()
+            user.email = email
+            user.save()
             Confirmation.objects.send_confirmation(user, user.email)
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email':user.email}))
         try:
