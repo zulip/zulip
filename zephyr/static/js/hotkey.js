@@ -29,6 +29,13 @@ function process_hotkey(e) {
     if (ui.home_tab_obscured())
         return false;
 
+    // In browsers where backspace sends the browser back (e.g. Mac Chrome),
+    // do not go back if the send button is in focus
+    if ($('#compose-send-button:focus').length > 0 && code === 8) {
+        e.preventDefault();
+        return false;
+    }
+
     // Process hotkeys specially when in an input, textarea, or send button
     if ($('input:focus,textarea:focus,#compose-send-button:focus').length > 0) {
         if (code === 27) {
