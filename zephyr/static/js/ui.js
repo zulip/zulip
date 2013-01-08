@@ -236,14 +236,6 @@ exports.update_floating_recipient_bar = function () {
         }
     }
 
-    // If we're narrowed to a huddle or a subject, the floating
-    // recipient bar would be identical to the narrowing header, so
-    // don't display it.
-    if (!narrow.show_floating_recipient()) {
-        hide_floating_recipient_bar();
-        return;
-    }
-
     replace_floating_recipient_bar(current_label);
 };
 

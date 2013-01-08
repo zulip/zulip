@@ -80,7 +80,7 @@ function narrow_or_search_for_term(item) {
         return search_query_box.val();
 
     case 'private_message':
-        narrow.by('pm-with', obj.query.email, {show_floating_recipient: false});
+        narrow.by('pm-with', obj.query.email);
         return search_query_box.val();
 
     case 'operators':

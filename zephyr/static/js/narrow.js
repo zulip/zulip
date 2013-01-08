@@ -28,12 +28,7 @@ exports.operators = function () {
     return current_operators;
 };
 
-var show_floating_recipient;
 var allow_collapse;
-
-exports.show_floating_recipient = function () {
-    return (!filter_function) || show_floating_recipient;
-};
 
 exports.allow_collapse = function () {
     return (!filter_function) || allow_collapse;
@@ -174,9 +169,8 @@ function build_filter(operators_mixed_case) {
 
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
-        time_travel:             false,
-        show_floating_recipient: true,
-        allow_collapse:          true
+        time_travel:    false,
+        allow_collapse: true
     }, opts);
 
     var was_narrowed = exports.active();
@@ -184,7 +178,6 @@ exports.activate = function (operators, opts) {
     filter_function   = build_filter(operators);
     current_operators = operators;
 
-    show_floating_recipient = opts.show_floating_recipient;
     allow_collapse          = opts.allow_collapse;
 
     // Your pointer isn't changed when narrowed.
@@ -264,7 +257,7 @@ exports.by_subject = function () {
     exports.activate([
             ['stream',  original.display_recipient],
             ['subject', original.subject]
-        ], {show_floating_recipient: false});
+        ]);
 };
 
 // Called for the 'narrow by stream' hotkey.
@@ -273,7 +266,7 @@ exports.by_recipient = function () {
     var new_narrow, emails;
     switch (message.type) {
     case 'private':
-        exports.by('pm-with', message.reply_to, {show_floating_recipient: false});
+        exports.by('pm-with', message.reply_to);
         break;
 
     case 'stream':
