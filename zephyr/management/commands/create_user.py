@@ -1,4 +1,5 @@
 import sys
+from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
 from django.core.exceptions import ValidationError
@@ -12,9 +13,25 @@ from zephyr.views import notify_new_user
 from zephyr.lib.initial_password import initial_password
 
 class Command(BaseCommand):
-    help = "Create the specified user with a default initial password."
+    help = """Create the specified user with a default initial password.
+
+A user MUST have ALREADY accepted the Terms of Service before creating their
+account this way.
+"""
+
+    option_list = BaseCommand.option_list + (
+        make_option('--this-user-has-accepted-the-tos',
+                    dest='tos',
+                    action="store_true",
+                    default=False,
+                    help='Acknowledgement that the user has already accepted the ToS.'),
+        )
 
     def handle(self, *args, **options):
+        if not options["tos"]:
+            raise CommandError("""You must confirm that this user has accepted the
+Terms of Service by passing --this-user-has-accepted-the-tos.""")
+
         try:
             email, full_name = args
             try:
