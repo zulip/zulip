@@ -285,6 +285,18 @@ casper.then(function() {
     casper.click('a[href^="#subscriptions"]');
     casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#subscriptions/, 'URL suggests we are on subscriptions page');
     casper.test.assertExists('#subscriptions.tab-pane.active', 'Subscriptions page is active');
+    casper.waitForText('Denmark'); // subscriptions need to load
+    casper.test.assertTextExists('Denmark', 'Initial subscriptions loaded');
+});
+casper.then(function() {
+    casper.fill('form#add_new_subscription', {streams: 'waseemio'});
+    casper.click('form#add_new_subscription input.btn.btn-primary');
+});
+casper.then(function() {
+    casper.waitForText('waseemio');
+    // TODO: Make this more robust.
+    // I tried to do it with assertSelectorHasText, but it wasn't quite working.
+    casper.test.assertTextExists('Successfully added subscription to waseemio', 'Subscribing to a stream');
 });
 
 // Settings page tests
