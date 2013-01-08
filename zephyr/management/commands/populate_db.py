@@ -12,7 +12,6 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction, connection
 from django.conf import settings
-from api.bots import mit_subs_list
 from zephyr.lib.bulk_create import batch_bulk_create
 from zephyr.lib.time import timestamp_to_datetime
 from zephyr.models import MAX_MESSAGE_LENGTH
@@ -106,7 +105,7 @@ class Command(BaseCommand):
 
             # Create our two default realms
             humbug_realm = Realm.objects.create(domain="humbughq.com")
-            mit_realm = Realm.objects.create(domain="mit.edu")
+            Realm.objects.create(domain="mit.edu")
             realms = {}
             for realm in Realm.objects.all():
                 realms[realm.domain] = realm
@@ -168,24 +167,6 @@ class Command(BaseCommand):
             # Create internal users
             internal_mit_users = []
             create_users(realms, internal_mit_users)
-            create_streams(realms, mit_realm, mit_subs_list.all_subs)
-
-            # Now subscribe everyone to these streams
-            subscriptions_to_add = []
-            profiles = UserProfile.objects.select_related().filter(realm=mit_realm)
-            for cls in mit_subs_list.all_subs:
-                stream = Stream.objects.get(name=cls, realm=mit_realm)
-                recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-                for profile in profiles:
-                    if profile.user.email in mit_subs_list.subs_lists:
-                        key = profile.user.email
-                    else:
-                        key = "default"
-                    if cls in mit_subs_list.subs_lists[key]:
-                        s = Subscription(recipient=recipient,
-                                         user_profile=profile)
-                        subscriptions_to_add.append(s)
-            batch_bulk_create(Subscription, subscriptions_to_add)
 
             internal_humbug_users = []
             create_users(realms, internal_humbug_users)
