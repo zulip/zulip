@@ -57,8 +57,15 @@ def receive(user_profile_id, message):
 # to the cache.
 user_pointers = {}
 def get_user_pointer(user_profile_id):
+    if user_pointers == {}:
+        # Once, on startup, fill in the user_pointers table with
+        # everyone's current pointers
+        for u in UserProfile.objects.all():
+            user_pointers[u.id] = u.pointer
     if user_profile_id not in user_pointers:
-        user_pointers[user_profile_id] = UserProfile.objects.get(id=user_profile_id).pointer
+        # This is a new user created since Tornado was started, so
+        # they will have an initial pointer of -1.
+        return -1
     return user_pointers[user_profile_id]
 
 def set_user_pointer(user_profile_id, pointer):
