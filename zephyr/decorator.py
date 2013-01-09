@@ -138,26 +138,30 @@ def internal_notify_view(view_func):
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
-class RequestVariableMissingError(Exception):
+class JsonableError(Exception):
+    def __init__(self, error):
+        self.error = error
+
+    def __str__(self):
+        return self.to_json_error_msg()
+
+    def to_json_error_msg(self):
+        return self.error
+
+class RequestVariableMissingError(JsonableError):
     def __init__(self, var_name):
         self.var_name = var_name
 
     def to_json_error_msg(self):
         return "Missing '%s' argument" % (self.var_name,)
 
-    def __str__(self):
-        return self.to_json_error_msg()
-
-class RequestVariableConversionError(Exception):
+class RequestVariableConversionError(JsonableError):
     def __init__(self, var_name, bad_value):
         self.var_name = var_name
         self.bad_value = bad_value
 
     def to_json_error_msg(self):
         return "Bad value for '%s': %s" % (self.var_name, self.bad_value)
-
-    def __str__(self):
-        return self.to_json_error_msg()
 
 # Used in conjunction with @has_request_variables, below
 class POST(object):
