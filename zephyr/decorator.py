@@ -58,7 +58,7 @@ def authenticated_api_view(view_func):
                            client=POST(default=get_client("API"), converter=get_client),
                            *args, **kwargs):
         try:
-            user_profile = UserProfile.objects.get(user__email=email)
+            user_profile = UserProfile.objects.select_related().get(user__email=email)
         except UserProfile.DoesNotExist:
             return json_error("Invalid user: %s" % (email,))
         if api_key != user_profile.api_key:
@@ -72,7 +72,7 @@ def authenticate_log_and_execute_json(request, client, view_func, *args, **kwarg
     if not request.user.is_authenticated():
         return json_error("Not logged in", status=401)
     request._client = client
-    user_profile = request.user.userprofile
+    user_profile = UserProfile.objects.select_related().get(user=request.user)
     update_user_activity(request, user_profile, client)
     return view_func(request, user_profile, *args, **kwargs)
 
