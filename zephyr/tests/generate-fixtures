@@ -2,6 +2,7 @@
 mkdir -p zephyr/fixtures
 rm -f zephyr/tests/zephyrdb.test
 python manage.py syncdb --noinput --settings=humbug.test_settings
+python manage.py migrate --settings=humbug.test_settings --all
 # This next line can be simplified to "-n0" once we fix our app with 0 messages.
 python manage.py populate_db --settings=humbug.test_settings --test-suite -n2 \
     --threads=1 --huddles=0 --personals=0 --percent-huddles=0 --percent-personals=0
