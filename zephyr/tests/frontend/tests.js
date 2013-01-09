@@ -285,10 +285,12 @@ casper.then(function() {
     casper.click('a[href^="#subscriptions"]');
     casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#subscriptions/, 'URL suggests we are on subscriptions page');
     casper.test.assertExists('#subscriptions.tab-pane.active', 'Subscriptions page is active');
-    casper.waitForText('Denmark'); // subscriptions need to load
+    // subscriptions need to load; if they have *any* subs,
+    // the word "Unsubscribe" will appear
+    casper.waitForText('Unsubscribe');
 });
 casper.then(function() {
-    casper.test.assertTextExists('Denmark', 'Initial subscriptions loaded');
+    casper.test.assertTextExists('Unsubscribe', 'Initial subscriptions loaded');
     casper.fill('form#add_new_subscription', {streams: 'Waseemio'});
     casper.click('form#add_new_subscription input.btn.btn-primary');
     casper.waitForText('Waseemio');
