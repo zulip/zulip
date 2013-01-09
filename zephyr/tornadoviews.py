@@ -50,7 +50,22 @@ def receive(user_profile, message):
     callbacks_table.call(user_profile.id, Callbacks.TYPE_RECEIVE,
                          messages=[message], update_types=["new_messages"])
 
+# Simple caching implementation module for user pointers
+#
+# TODO: Write something generic in cache.py to support this
+# functionality?  The current primitives there don't support storing
+# to the cache.
+user_pointers = {}
+def get_user_pointer(user_profile_id):
+    if user_profile_id not in user_pointers:
+        user_pointers[user_profile_id] = UserProfile.objects.get(id=user_profile_id).pointer
+    return user_pointers[user_profile_id]
+
+def set_user_pointer(user_profile_id, pointer):
+    user_pointers[user_profile_id] = pointer
+
 def update_pointer(user_profile, new_pointer, pointer_updater):
+    set_user_pointer(user_profile.id, new_pointer)
     callbacks_table.call(user_profile.id, Callbacks.TYPE_POINTER_UPDATE,
                          new_pointer=new_pointer,
                          update_types=["pointer_update"])
@@ -146,7 +161,7 @@ def return_messages_immediately(user_profile, client_id, last,
         client_server_generation != SERVER_GENERATION):
         update_types.append("client_reload")
 
-    ptr = user_profile.pointer
+    ptr = get_user_pointer(user_profile.id)
     if (client_pointer is not None and ptr > client_pointer):
         new_pointer = ptr
         update_types.append("pointer_update")
