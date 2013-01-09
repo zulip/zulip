@@ -2,13 +2,21 @@ from zephyr.models import Message, UserProfile, UserMessage, UserActivity
 
 from zephyr.decorator import asynchronous, authenticated_api_view, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
-    has_request_variables, POST, json_to_list, to_non_negative_int
+    has_request_variables, POST, json_to_list, to_non_negative_int, \
+    JsonableError
 from zephyr.lib.response import json_success, json_error
 
 import datetime
 import simplejson
 import socket
 import time
+import collections
+import sys
+import logging
+from django.core.cache import cache
+from zephyr.lib.cache import cache_with_key
+from zephyr.lib.message_cache import cache_save_message, cache_get_message, \
+    populate_message_cache
 
 SERVER_GENERATION = int(time.time())
 
@@ -45,8 +53,57 @@ def add_receive_callback(user_profile, cb):
 def add_pointer_update_callback(user_profile, cb):
     callbacks_table.add(user_profile.id, Callbacks.TYPE_POINTER_UPDATE, cb)
 
+# in-process caching mechanism for tracking usermessages
+#
+# user_messages:   Map user_profile_id => [deque of message ids he received]
+#
+# We don't use all the features of a deque -- the important ones are:
+# * O(1) insert of new highest message id
+# * O(k) read of highest k message ids
+# * Automatic maximum size support.
+user_messages = {}
+CACHE_COUNT = 25000
+cache_minimum_id = sys.maxint
+def initialize_user_messages():
+    global cache_minimum_id
+    max_message_id, cache_minimum_id = populate_message_cache(CACHE_COUNT)
+
+    for um in UserMessage.objects.filter(message_id__gt=max_message_id - CACHE_COUNT).order_by("message_id"):
+        add_user_message(um.user_profile_id, um.message_id)
+
+def add_user_message(user_profile_id, message_id):
+    if cache_minimum_id == sys.maxint:
+        initialize_user_messages()
+    global user_messages
+    user_messages.setdefault(user_profile_id, collections.deque(maxlen=400))
+    user_messages[user_profile_id].appendleft(message_id)
+
+def fetch_user_messages(user_profile_id, last):
+    if cache_minimum_id == sys.maxint:
+        initialize_user_messages()
+    global user_messages
+
+    # We need to do this check after initialize_user_messages has been called.
+    if last < cache_minimum_id:
+        # The user's client has a way-too-old value for 'last', we
+        # should return an error
+        raise JsonableError("last value of %d too old!  Minimum valid is %d!" %
+                            (last, cache_minimum_id))
+
+    # We need to initialize the deque here for any new users that were
+    # created since Tornado was started
+    user_messages.setdefault(user_profile_id, collections.deque(maxlen=400))
+
+    message_list = []
+    for message_id in user_messages[user_profile_id]:
+        if message_id <= last:
+            return reversed(message_list)
+        message_list.append(message_id)
+    return []
+
 # The user receives this message
 def receive(user_profile_id, message):
+    add_user_message(user_profile_id, message.id)
     callbacks_table.call(user_profile_id, Callbacks.TYPE_RECEIVE,
                          messages=[message], update_types=["new_messages"])
 
@@ -80,7 +137,7 @@ def update_pointer(user_profile_id, new_pointer, pointer_updater):
 @internal_notify_view
 def notify_new_message(request):
     recipient_profile_ids = map(int, json_to_list(request.POST['users']))
-    message = Message.objects.get(id=request.POST['message'])
+    message = cache_get_message(int(request.POST['message']))
 
     # Cause message.to_dict() to return the dicts already rendered in the other process.
     #
@@ -165,9 +222,8 @@ def return_messages_immediately(user_profile, client_id, last,
         update_types.append("pointer_update")
 
     if last is not None:
-        query = Message.objects.select_related().filter(
-                usermessage__user_profile = user_profile).order_by('id')
-        messages = query.filter(id__gt=last)[:400]
+        message_ids = fetch_user_messages(user_profile.id, last)
+        messages = map(cache_get_message, message_ids)
 
         # Filter for mirroring before checking whether there are any
         # messages to pass on.  If we don't do this, when the only message

@@ -8,6 +8,7 @@ from zephyr.models import Realm, Stream, UserProfile, \
 from django.db import transaction, IntegrityError
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.cache import cache_with_key
+from zephyr.lib.message_cache import cache_save_message
 from django.utils import timezone
 from django.contrib.auth.models import UserManager
 
@@ -144,6 +145,8 @@ def do_send_message(message, no_log=False):
             # Only deliver messages to "active" user accounts
             if user_profile.user.is_active:
                 UserMessage(user_profile=user_profile, message=message).save()
+
+    cache_save_message(message)
 
     # We can only publish messages to longpolling clients if the Tornado server is running.
     if settings.TORNADO_SERVER:

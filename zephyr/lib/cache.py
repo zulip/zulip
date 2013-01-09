@@ -1,6 +1,6 @@
 from functools import wraps
 
-import django.core.cache
+from django.core.cache import cache as djcache
 
 def cache_with_key(keyfunc):
     """Decorator which applies Django caching to a function.
@@ -11,8 +11,6 @@ def cache_with_key(keyfunc):
        other uses of caching."""
 
     def decorator(func):
-        djcache = django.core.cache.cache
-
         @wraps(func)
         def func_with_caching(*args, **kwargs):
             key = keyfunc(*args, **kwargs)
