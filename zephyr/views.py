@@ -28,7 +28,8 @@ from django.views.decorators.csrf import csrf_exempt
 from zephyr.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, POST, authenticated_json_view, \
-    to_non_negative_int, json_to_dict, json_to_list
+    to_non_negative_int, json_to_dict, json_to_list, \
+    JsonableError
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error
@@ -70,6 +71,32 @@ def notify_new_user(user_profile, internal=False):
                                            user__is_active=True).count(),
                 )
             )
+
+class PrincipalError(JsonableError):
+    def __init__(self, principal):
+        self.principal = principal
+
+    def to_json_error_msg(self):
+        return ("User not authorized to execute queries on behalf of '%s'"
+                % (self.principal,))
+
+def principal_to_user_profile(agent, principal):
+    principal_doesnt_exist = False
+    try:
+        principal_user_profile = UserProfile.objects.get(user__email=principal)
+    except UserProfile.DoesNotExist:
+        principal_doesnt_exist = True
+
+    if (principal_doesnt_exist
+        or agent.realm.domain == 'mit.edu'
+        or agent.realm != principal_user_profile.realm):
+        # We have to make sure we don't leak information about which users
+        # are registered for Humbug in a different realm.  We could do
+        # something a little more clever and check the domain part of the
+        # principal to maybe give a better error message
+        raise PrincipalError(principal)
+
+    return principal_user_profile
 
 @require_post
 def accounts_register(request):
@@ -810,7 +837,8 @@ def json_add_subscriptions(request, user_profile):
 
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
-                              streams_raw = POST('subscriptions', json_to_list)):
+                              streams_raw = POST('subscriptions', json_to_list),
+                              principal = POST(default=None)):
     stream_names = []
     for stream_name in streams_raw:
         stream_name = stream_name.strip()
@@ -820,14 +848,35 @@ def add_subscriptions_backend(request, user_profile,
             return json_error("Invalid stream name (%s)." % (stream_name,))
         stream_names.append(stream_name)
 
+    if principal is not None:
+        subscriber = principal_to_user_profile(user_profile, principal)
+    else:
+        subscriber = user_profile
+
     result = dict(subscribed=[], already_subscribed=[])
     for stream_name in set(stream_names):
-        stream = create_stream_if_needed(user_profile.realm, stream_name)
-        did_subscribe = do_add_subscription(user_profile, stream)
+        stream = create_stream_if_needed(subscriber.realm, stream_name)
+        did_subscribe = do_add_subscription(subscriber, stream)
         if did_subscribe:
             result["subscribed"].append(stream_name)
         else:
             result["already_subscribed"].append(stream_name)
+
+    # Inform the user if someone else subscribed them to stuff
+    if subscriber != user_profile and result["subscribed"]:
+        if len(result["subscribed"]) == 1:
+            msg = ("Hi there!  We thought you'd like to know that %s just "
+                   "subscribed you to stream '%s'"
+                   % (user_profile.full_name, result["subscribed"][0]))
+        else:
+            msg = ("Hi there!  We thought you'd like to know that %s just "
+                   "subscribed you to the following streams: \n\n"
+                   % (user_profile.full_name,))
+            for stream in result["subscribed"]:
+                msg += "* %s\n" % (stream,)
+        internal_send_message("humbug+notifications@humbughq.com",
+                              Recipient.PERSONAL, subscriber.user.email, "",
+                              msg)
 
     return json_success(result)
 
