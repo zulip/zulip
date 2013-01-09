@@ -12,6 +12,49 @@ import time
 
 SERVER_GENERATION = int(time.time())
 
+class Callbacks(object):
+    TYPE_RECEIVE = 0
+    TYPE_POINTER_UPDATE = 1
+    TYPE_MAX = 2
+
+    def __init__(self):
+        self.table = {}
+
+    def add(self, key, cb_type, callback):
+        if not self.table.has_key(key):
+            self.create_key(key)
+        self.table[key][cb_type].append(callback)
+
+    def call(self, key, cb_type, **kwargs):
+        if not self.table.has_key(key):
+            self.create_key(key)
+
+        for cb in self.table[key][cb_type]:
+            cb(**kwargs)
+
+        self.table[key][cb_type] = []
+
+    def create_key(self, key):
+        self.table[key] = [[] for i in range(0, Callbacks.TYPE_MAX)]
+
+callbacks_table = Callbacks()
+
+# The user receives this message
+def receive(user_profile, message):
+    callbacks_table.call(user_profile.user.id, Callbacks.TYPE_RECEIVE,
+                         messages=[message], update_types=["new_messages"])
+
+def update_pointer(user_profile, new_pointer, pointer_updater):
+    callbacks_table.call(user_profile.user.id, Callbacks.TYPE_POINTER_UPDATE,
+                         new_pointer=new_pointer,
+                         update_types=["pointer_update"])
+
+def add_receive_callback(user_profile, cb):
+    callbacks_table.add(user_profile.user.id, Callbacks.TYPE_RECEIVE, cb)
+
+def add_pointer_update_callback(user_profile, cb):
+    callbacks_table.add(user_profile.user.id, Callbacks.TYPE_POINTER_UPDATE, cb)
+
 @internal_notify_view
 def notify_new_message(request):
     # If a message for some reason has no recipients (e.g. it is sent
@@ -32,8 +75,8 @@ def notify_new_message(request):
     # (see send_with_safety_check).  It's probably not a big deal.
     message.precomputed_dicts = simplejson.loads(request.POST['rendered'])
 
-    for user in users:
-        user.receive(message)
+    for user_profile in users:
+        receive(user_profile, message)
 
     return json_success()
 
@@ -44,7 +87,7 @@ def notify_pointer_update(request):
     new_pointer = int(request.POST['new_pointer'])
     pointer_updater = request.POST['pointer_updater']
 
-    user_profile.update_pointer(new_pointer, pointer_updater)
+    update_pointer(user_profile, new_pointer, pointer_updater)
 
     return json_success()
 
@@ -210,9 +253,9 @@ def get_updates_backend(request, user_profile, handler, client_id,
         except socket.error:
             pass
 
-    user_profile.add_receive_callback(handler.async_callback(cb))
+    add_receive_callback(user_profile, handler.async_callback(cb))
     if client_pointer is not None:
-        user_profile.add_pointer_update_callback(handler.async_callback(cb))
+        add_pointer_update_callback(user_profile, handler.async_callback(cb))
 
     # runtornado recognizes this special return value.
     return RespondAsynchronously

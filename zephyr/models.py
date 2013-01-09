@@ -47,32 +47,6 @@ def get_display_recipient(recipient):
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name} for user_profile in user_profile_list]
 
-class Callbacks(object):
-    TYPE_RECEIVE = 0
-    TYPE_POINTER_UPDATE = 1
-    TYPE_MAX = 2
-
-    def __init__(self):
-        self.table = {}
-
-    def add(self, key, cb_type, callback):
-        if not self.table.has_key(key):
-            self.create_key(key)
-        self.table[key][cb_type].append(callback)
-
-    def call(self, key, cb_type, **kwargs):
-        if not self.table.has_key(key):
-            self.create_key(key)
-
-        for cb in self.table[key][cb_type]:
-            cb(**kwargs)
-
-        self.table[key][cb_type] = []
-
-    def create_key(self, key):
-        self.table[key] = [[] for i in range(0, Callbacks.TYPE_MAX)]
-
-
 class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True)
 
@@ -100,27 +74,6 @@ class UserProfile(models.Model):
     realm = models.ForeignKey(Realm)
     api_key = models.CharField(max_length=32)
     enable_desktop_notifications = models.BooleanField(default=True)
-
-    # This is class data, not instance data!
-    # There is one callbacks_table for the whole process.
-    callbacks_table = Callbacks()
-
-    # The user receives this message
-    # Called in the Tornado process
-    def receive(self, message):
-        self.callbacks_table.call(self.user.id, Callbacks.TYPE_RECEIVE,
-            messages=[message], update_types=["new_messages"])
-
-    def update_pointer(self, new_pointer, pointer_updater):
-        self.callbacks_table.call(self.user.id, Callbacks.TYPE_POINTER_UPDATE,
-                                  new_pointer=new_pointer,
-                                  update_types=["pointer_update"])
-
-    def add_receive_callback(self, cb):
-        self.callbacks_table.add(self.user.id, Callbacks.TYPE_RECEIVE, cb)
-
-    def add_pointer_update_callback(self, cb):
-        self.callbacks_table.add(self.user.id, Callbacks.TYPE_POINTER_UPDATE, cb)
 
     def __repr__(self):
         return "<UserProfile: %s %s>" % (self.user.email, self.realm)
