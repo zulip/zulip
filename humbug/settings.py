@@ -262,7 +262,10 @@ MESSAGE_LOG="all_messages_log." + platform.node()
 # We configure this here so that the client test suite can override it.
 # The default is 55 seconds, to deal with crappy home wireless routers that
 # kill "inactive" http connections.
-POLL_TIMEOUT = 55 * 1000
+#POLL_TIMEOUT = 55 * 1000
+# As a stopgap to deal with increased load, increase the polling
+# timeout to 5 minutes.
+POLL_TIMEOUT = 5 * 60 * 1000
 
 if DEPLOYED:
     ALLOW_REGISTER = False
