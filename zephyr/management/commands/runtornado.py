@@ -8,9 +8,6 @@ import logging
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
-        make_option('--noreload', action='store_false',
-            dest='auto_reload', default=True,
-            help="Configures tornado to not auto-reload (for prod use)."),
         make_option('--nokeepalive', action='store_true',
             dest='no_keep_alive', default=False,
             help="Tells Tornado to NOT keep alive http connections."),
@@ -41,7 +38,6 @@ class Command(BaseCommand):
         if not port.isdigit():
             raise CommandError("%r is not a valid port number." % port)
 
-        auto_reload = options.get('auto_reload', False)
         xheaders = options.get('xheaders', True)
         no_keep_alive = options.get('no_keep_alive', False)
         quit_command = 'CTRL-C'
@@ -82,10 +78,6 @@ class Command(BaseCommand):
                 ioloop.IOLoop.instance().start()
             except KeyboardInterrupt:
                 sys.exit(0)
-
-        if auto_reload:
-            from tornado import autoreload
-            autoreload.start()
 
         inner_run()
 
