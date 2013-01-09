@@ -46,8 +46,8 @@ def add_pointer_update_callback(user_profile, cb):
     callbacks_table.add(user_profile.id, Callbacks.TYPE_POINTER_UPDATE, cb)
 
 # The user receives this message
-def receive(user_profile, message):
-    callbacks_table.call(user_profile.id, Callbacks.TYPE_RECEIVE,
+def receive(user_profile_id, message):
+    callbacks_table.call(user_profile_id, Callbacks.TYPE_RECEIVE,
                          messages=[message], update_types=["new_messages"])
 
 # Simple caching implementation module for user pointers
@@ -78,9 +78,7 @@ def notify_new_message(request):
     if request.POST["users"] == "":
         return json_success()
 
-    # FIXME: better query
-    users   = [UserProfile.objects.get(id=user)
-               for user in json_to_list(request.POST['users'])]
+    recipient_profile_ids = map(int, json_to_list(request.POST['users']))
     message = Message.objects.get(id=request.POST['message'])
 
     # Cause message.to_dict() to return the dicts already rendered in the other process.
@@ -90,8 +88,8 @@ def notify_new_message(request):
     # (see send_with_safety_check).  It's probably not a big deal.
     message.precomputed_dicts = simplejson.loads(request.POST['rendered'])
 
-    for user_profile in users:
-        receive(user_profile, message)
+    for user_profile_id in recipient_profile_ids:
+        receive(user_profile_id, message)
 
     return json_success()
 
