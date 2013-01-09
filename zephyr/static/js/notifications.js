@@ -6,6 +6,7 @@ var notice_memory = {};
 var window_has_focus = true;
 var new_message_count = 0;
 var asked_permission_already = false;
+var names;
 
 function browser_desktop_notifications_on () {
     return (window.webkitNotifications &&
@@ -14,6 +15,8 @@ function browser_desktop_notifications_on () {
 }
 
 exports.initialize = function () {
+    names = fullname.split(" ");
+
     $(window).focus(function () {
         window_has_focus = true;
         new_message_count = 0;
@@ -47,16 +50,22 @@ function gravatar_url(message) {
 }
 
 function process_desktop_notification(message) {
-    var i, notification_object;
-    var key = message.display_reply_to;
+    var i, notification_object, key;
     var title = message.sender_full_name;
     var content = $('<div/>').html(message.content).text();
-    var other_recipients = message.display_reply_to;
+    var other_recipients;
     var msg_count = 1;
 
-    // Remove the sender from the list of other recipients
-    other_recipients = other_recipients.replace(", " + message.sender_full_name, "");
-    other_recipients = other_recipients.replace(message.sender_full_name + ", ", "");
+    if (message.type === "private") {
+        key = message.display_reply_to;
+        other_recipients = message.display_reply_to;
+        // Remove the sender from the list of other recipients
+        other_recipients = other_recipients.replace(", " + message.sender_full_name, "");
+        other_recipients = other_recipients.replace(message.sender_full_name + ", ", "");
+    } else {
+        key = message.sender_full_name + " to " +
+              message.display_recipient + " | " + message.subject;
+    }
 
     if (content.length > 150) {
         // Truncate content at a word boundary
@@ -89,6 +98,9 @@ function process_desktop_notification(message) {
         }
         title += " (to you and " + other_recipients + ")";
     }
+    if (message.type === "stream") {
+        title += " (to " + message.display_recipient + " | " + message.subject + ")";
+    }
 
     notice_memory[key] = {
         obj: window.webkitNotifications.createNotification(
@@ -106,6 +118,32 @@ function process_desktop_notification(message) {
     notification_object.show();
 }
 
+function speaking_at_me(message) {
+    var content_lc = $('<div/>').html(message.content).text().toLowerCase();
+    var match_so_far = false;
+    var indexof, after_name, after_atname;
+
+    $.each(names, function (index, name) {
+        indexof = content_lc.indexOf(name.toLowerCase());
+        after_name = content_lc.charAt(name.length);
+        after_atname = content_lc.charAt(name.length+1);
+        if ((indexof === 0 &&
+             (after_name === " " || after_name === ":")) ||
+            (indexof === 1 && content_lc.charAt(0) === "@" &&
+             (after_atname === " " || after_atname === ":"))) {
+            if (match_so_far) {
+                match_so_far = false;
+                return false;
+            }
+            else {
+                match_so_far = true;
+            }
+        }
+    });
+
+    return match_so_far;
+}
+
 exports.received_messages = function (messages) {
     var i, title_needs_update = false;
     if (window_has_focus) {
@@ -119,7 +157,8 @@ exports.received_messages = function (messages) {
 
             if (desktop_notifications_enabled &&
                 browser_desktop_notifications_on() &&
-                message.type === "private") {
+                (message.type === "private" ||
+                speaking_at_me(message))) {
                 process_desktop_notification(message);
             }
         }
