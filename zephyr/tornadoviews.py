@@ -41,19 +41,19 @@ callbacks_table = Callbacks()
 
 # The user receives this message
 def receive(user_profile, message):
-    callbacks_table.call(user_profile.user.id, Callbacks.TYPE_RECEIVE,
+    callbacks_table.call(user_profile.id, Callbacks.TYPE_RECEIVE,
                          messages=[message], update_types=["new_messages"])
 
 def update_pointer(user_profile, new_pointer, pointer_updater):
-    callbacks_table.call(user_profile.user.id, Callbacks.TYPE_POINTER_UPDATE,
+    callbacks_table.call(user_profile.id, Callbacks.TYPE_POINTER_UPDATE,
                          new_pointer=new_pointer,
                          update_types=["pointer_update"])
 
 def add_receive_callback(user_profile, cb):
-    callbacks_table.add(user_profile.user.id, Callbacks.TYPE_RECEIVE, cb)
+    callbacks_table.add(user_profile.id, Callbacks.TYPE_RECEIVE, cb)
 
 def add_pointer_update_callback(user_profile, cb):
-    callbacks_table.add(user_profile.user.id, Callbacks.TYPE_POINTER_UPDATE, cb)
+    callbacks_table.add(user_profile.id, Callbacks.TYPE_POINTER_UPDATE, cb)
 
 @internal_notify_view
 def notify_new_message(request):
