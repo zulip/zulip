@@ -32,6 +32,128 @@ exports.focus_on = function (field_id) {
     $("#" + field_id).focus();
 };
 
+$(document).bind('copy', function (e) {
+    var selection = window.getSelection();
+    var i, j, range, ranges = [], startc, endc, start_tr, end_tr, startid, endid, row, message;
+    var skip_same_td_check = false;
+    var div = $('<div>'), p  = $('<p>'), content;
+    for (i = 0; i < selection.rangeCount; i++) {
+        range = selection.getRangeAt(i);
+        ranges.push(range);
+
+        startc = $(range.startContainer);
+        start_tr = $(startc.parents('tr')[0]);
+
+        // If the selection starts somewhere that does not have a parent tr,
+        // we should let the browser handle the copy-paste entirely on its own
+        if (start_tr.length === 0) {
+            return;
+        }
+
+        // If the selection starts on a table row that does not have an
+        // associated message id (because the user clicked between messages),
+        // then scan downwards until we hit a table row with a message id.
+        // To ensure we can't enter an infinite loop, bail out (and let the
+        // browser handle the copy-paste on its own) if we don't hit what we
+        // are looking for within 10 rows.
+        for (j = 0; start_tr.attr('zid') === undefined && j < 10; j++) {
+            start_tr = start_tr.next();
+        }
+        if (j === 10) {
+            return;
+        } else if (j !== 0) {
+            // If we updated start_tr, then we are not dealing with a selection
+            // that is entirely within one td, and we can skip the same td check
+            // (In fact, we need to because it won't work correctly in this case)
+            skip_same_td_check = true;
+        }
+        startid = start_tr.attr('zid');
+
+        endc = $(range.endContainer);
+        // If the selection ends in the bottom whitespace, we should act as
+        // though the selection ends on the final message
+        if (endc.attr('id') === "bottom_whitespace") {
+            end_tr = $("tr.message_row:last");
+            skip_same_td_check = true;
+        } else {
+            end_tr = $(endc.parents('tr')[0]);
+        }
+
+        // If the selection ends somewhere that does not have a parent tr,
+        // we should let the browser handle the copy-paste entirely on its own
+        if (end_tr.length === 0) {
+            return;
+        }
+
+        // If the selection ends on a table row that does not have an
+        // associated message id (because the user clicked between messages),
+        // then scan upwards until we hit a table row with a message id.
+        // To ensure we can't enter an infinite loop, bail out (and let the
+        // browser handle the copy-paste on its own) if we don't hit what we
+        // are looking for within 10 rows.
+        for (j = 0; end_tr.attr('zid') === undefined && j < 10; j++) {
+            end_tr = end_tr.prev();
+        }
+        if (j === 10) {
+            return;
+        } else if (j !== 0) {
+            // If we updated start_tr, then we are not dealing with a selection
+            // that is entirely within one td, and we can skip the same td check
+            // (In fact, we need to because it won't work correctly in this case)
+            skip_same_td_check = true;
+        }
+        endid = end_tr.attr('zid');
+
+        // If the selection starts and ends in the same td,
+        // we should let the browser handle the copy-paste entirely on its own
+        // (In this case, there is no need for our special copy code)
+        if (!skip_same_td_check &&
+            startc.parents('td')[0] === endc.parents('td')[0]) {
+            return;
+        }
+        row = rows.get(startid);
+
+        // Construct a div for what we want to copy (div)
+        for (row = rows.get(startid); rows.id(row) <= endid; row = rows.next_visible(row)) {
+            if (row.prev().hasClass("recipient_row")) {
+                div.append(p);
+                p = $('<p>');
+                content = $('<div>').text(row.prev().children(".right_part").text()
+                                            .replace(/\s+/g, " ")
+                                            .replace(/^\s/, "").replace(/\s$/, ""));
+                p.html(p.html() + "<b>" + content.text() + "</b>" + "<br>");
+            }
+
+            message = message_dict[row.attr('zid')];
+
+            content = $('<div>').text(message.sender_full_name + ": " +
+                                $('<div/>').html(message.content).text()
+                                .replace("\n", "<br>"));
+            p.html(p.html() + content.text());
+            p.html(p.html() + "<br>");
+        }
+    }
+    div.append(p);
+
+    // Select div so that the browser will copy it
+    // instead of copying the original selection
+    div.css({position: 'absolute', 'left': '-99999px'})
+            .attr('id', 'copytempdiv');
+    $('body').append(div);
+    selection.selectAllChildren(div[0]);
+
+    // After the copy has happened, delete the div and
+    // change the selection back to the original selection
+    window.setTimeout(function() {
+        selection = window.getSelection();
+        selection.removeAllRanges();
+        $.each(ranges, function (index, range) {
+            selection.addRange(range);
+        });
+        $('body').remove('#copytempdiv');
+    },0);
+});
+
 /* We use 'visibility' rather than 'display' and jQuery's show() / hide(),
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
