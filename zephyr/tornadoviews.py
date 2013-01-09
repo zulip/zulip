@@ -64,9 +64,9 @@ def get_user_pointer(user_profile_id):
 def set_user_pointer(user_profile_id, pointer):
     user_pointers[user_profile_id] = pointer
 
-def update_pointer(user_profile, new_pointer, pointer_updater):
-    set_user_pointer(user_profile.id, new_pointer)
-    callbacks_table.call(user_profile.id, Callbacks.TYPE_POINTER_UPDATE,
+def update_pointer(user_profile_id, new_pointer, pointer_updater):
+    set_user_pointer(user_profile_id, new_pointer)
+    callbacks_table.call(user_profile_id, Callbacks.TYPE_POINTER_UPDATE,
                          new_pointer=new_pointer,
                          update_types=["pointer_update"])
 
@@ -97,12 +97,11 @@ def notify_new_message(request):
 
 @internal_notify_view
 def notify_pointer_update(request):
-    # FIXME: better query
-    user_profile = UserProfile.objects.get(id=request.POST['user'])
+    user_profile_id = int(request.POST['user'])
     new_pointer = int(request.POST['new_pointer'])
     pointer_updater = request.POST['pointer_updater']
 
-    update_pointer(user_profile, new_pointer, pointer_updater)
+    update_pointer(user_profile_id, new_pointer, pointer_updater)
 
     return json_success()
 
