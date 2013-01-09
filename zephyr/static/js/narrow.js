@@ -209,7 +209,6 @@ exports.activate = function (operators, opts) {
     $("#zfilt").addClass("focused_table");
 
     reset_load_more_status();
-    $("#show_all_messages").removeAttr("disabled");
     $("#main_div").addClass("narrowed_view");
     $("#searchbox").addClass("narrowed_view");
 
@@ -287,7 +286,6 @@ exports.deactivate = function () {
     reset_load_more_status();
     $("#main_div").removeClass('narrowed_view');
     $("#searchbox").removeClass('narrowed_view');
-    $("#show_all_messages").attr("disabled", "disabled");
     $('#search_query').val('');
     // Includes scrolling.
     select_message_by_id(persistent_message_id, {then_scroll: true});
