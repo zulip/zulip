@@ -206,13 +206,12 @@ exports.activate = function (operators, opts) {
     }
 
     // Show the new set of messages.
-    $("#zfilt").addClass("focused_table");
-
-    reset_load_more_status();
     $("#main_div").addClass("narrowed_view");
     $("#searchbox").addClass("narrowed_view");
-
+    $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
+
+    reset_load_more_status();
     // Indicate both which message is persistently selected and which
     // is temporarily selected
     select_message_by_id(persistent_message_id,
@@ -281,12 +280,12 @@ exports.deactivate = function () {
     filter_function   = false;
     current_operators = false;
 
-    $("#zfilt").removeClass('focused_table');
-    $("#zhome").addClass('focused_table');
-    reset_load_more_status();
     $("#main_div").removeClass('narrowed_view');
     $("#searchbox").removeClass('narrowed_view');
+    $("#zfilt").removeClass('focused_table');
+    $("#zhome").addClass('focused_table');
     $('#search_query').val('');
+    reset_load_more_status();
     // Includes scrolling.
     select_message_by_id(persistent_message_id, {then_scroll: true});
 
