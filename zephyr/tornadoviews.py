@@ -72,12 +72,6 @@ def update_pointer(user_profile_id, new_pointer, pointer_updater):
 
 @internal_notify_view
 def notify_new_message(request):
-    # If a message for some reason has no recipients (e.g. it is sent
-    # by a bot to a stream that nobody is subscribed to), just skip
-    # the message gracefully
-    if request.POST["users"] == "":
-        return json_success()
-
     recipient_profile_ids = map(int, json_to_list(request.POST['users']))
     message = Message.objects.get(id=request.POST['message'])
 
