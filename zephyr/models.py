@@ -241,6 +241,7 @@ class Recipient(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
 
+@cache_with_key(lambda name: 'get_client:%s' % (hashlib.sha1(name).hexdigest(),))
 @transaction.commit_on_success
 def get_client(name):
     try:
