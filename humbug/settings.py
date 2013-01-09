@@ -180,6 +180,7 @@ if DEPLOYED:
         'LOCATION': '127.0.0.1:11211',
         'TIMEOUT':  3600
     } }
+    SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 else:
     CACHES = { 'default': {
         'BACKEND':  'django.core.cache.backends.locmem.LocMemCache',
