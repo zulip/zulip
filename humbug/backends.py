@@ -1,4 +1,13 @@
 from django.contrib.auth.models import User
+from django.conf import settings
+from zephyr.lib.cache import cache_with_key
+
+@cache_with_key(lambda user_id: 'tornado_user:%d' % (user_id,))
+def get_tornado_user(user_id):
+    try:
+        return User.objects.select_related().get(id=user_id)
+    except User.DoesNotExist:
+        return None
 
 class EmailAuthBackend(object):
     """
@@ -25,6 +34,10 @@ class EmailAuthBackend(object):
 
     def get_user(self, user_id):
         """ Get a User object from the user_id. """
+        if settings.RUNNING_INSIDE_TORNADO:
+            # Get the User from a cache because we aren't accessing
+            # any mutable fields from Tornado (just the id)
+            return get_tornado_user(user_id)
         try:
             return User.objects.get(pk=user_id)
         except User.DoesNotExist:

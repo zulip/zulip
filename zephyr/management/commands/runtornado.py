@@ -1,6 +1,7 @@
+from django.conf import settings
+settings.RUNNING_INSIDE_TORNADO = True
 from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
-from django.conf import settings
 import os
 import sys
 import tornado.web

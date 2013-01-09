@@ -6,6 +6,7 @@ from django.utils.timezone import now
 from django.db import transaction, IntegrityError
 from django.conf import settings
 import simplejson
+from zephyr.lib.cache import cache_with_key
 
 from functools import wraps
 
@@ -46,6 +47,14 @@ def update_user_activity(request, user_profile, client):
     activity.last_visit = current_time
     activity.save()
 
+@cache_with_key(lambda user_profile_id: 'tornado_user_profile:%d' % (user_profile_id,))
+def get_tornado_user_profile(user_id):
+    return UserProfile.objects.select_related().get(user_id=user_id)
+
+@cache_with_key(lambda email: 'tornado_user_profile_email:%s' % (email,))
+def get_tornado_user_profile_by_email(email):
+    return UserProfile.objects.select_related().get(user__email=email)
+
 # authenticated_api_view will add the authenticated user's user_profile to
 # the view function's arguments list, since we have to look it up
 # anyway.
@@ -58,7 +67,12 @@ def authenticated_api_view(view_func):
                            client=POST(default=get_client("API"), converter=get_client),
                            *args, **kwargs):
         try:
-            user_profile = UserProfile.objects.select_related().get(user__email=email)
+            if settings.RUNNING_INSIDE_TORNADO:
+                # Get the UserProfile from a cache because we aren't accessing
+                # any mutable fields (just ids plus the realm.domain)
+                user_profile = get_tornado_user_profile_by_email(email)
+            else:
+                user_profile = UserProfile.objects.select_related().get(user__email=email)
         except UserProfile.DoesNotExist:
             return json_error("Invalid user: %s" % (email,))
         if api_key != user_profile.api_key:
@@ -72,7 +86,12 @@ def authenticate_log_and_execute_json(request, client, view_func, *args, **kwarg
     if not request.user.is_authenticated():
         return json_error("Not logged in", status=401)
     request._client = client
-    user_profile = UserProfile.objects.select_related().get(user=request.user)
+    if settings.RUNNING_INSIDE_TORNADO:
+        # Get the UserProfile from a cache because we aren't accessing
+        # any mutable fields (just ids plus the realm.domain)
+        user_profile = get_tornado_user_profile(request.user.id)
+    else:
+        user_profile = UserProfile.objects.select_related().get(user=request.user)
     update_user_activity(request, user_profile, client)
     return view_func(request, user_profile, *args, **kwargs)
 

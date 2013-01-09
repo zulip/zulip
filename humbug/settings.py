@@ -133,6 +133,7 @@ SHARED_SECRET = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # We set it to None when running backend tests or populate_db.
 # We override the port number when running frontend tests.
 TORNADO_SERVER = 'http://localhost:9993'
+RUNNING_INSIDE_TORNADO = False
 
 # Make redirects work properly behind a reverse proxy
 USE_X_FORWARDED_HOST = True
