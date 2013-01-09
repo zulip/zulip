@@ -407,6 +407,9 @@ input.recipient_box {
     text-decoration: none;
     top: 0px;
     visibility: hidden; /* so that we pass clicks through to underneath us */
+    /* If zhome has opacity on it, it suddenly starts getting drawn on top
+       of top_statusbar -- unless we specify a z-index.  */
+    z-index: 2;
 }
 
 #searchbox {
