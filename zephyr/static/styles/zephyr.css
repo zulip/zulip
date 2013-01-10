@@ -118,6 +118,14 @@ td.pointer {
     padding-top: 10px;
 }
 
+.selected_message .messagebox {
+    background-color: #F2F2F2;
+}
+
+.selected_message .messagebox.private-message {
+    background-color: #FDFFB5;
+}
+
 .selected_message .pointer {
     background-color: #08c;
 }
