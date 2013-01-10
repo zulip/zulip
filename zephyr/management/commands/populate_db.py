@@ -13,7 +13,7 @@ from django.conf import settings
 from zephyr.lib.bulk_create import batch_bulk_create, bulk_create_realms, \
     bulk_create_streams, bulk_create_users, bulk_create_huddles, \
     bulk_create_clients
-from zephyr.lib.time import timestamp_to_datetime
+from zephyr.lib.timestamp import timestamp_to_datetime
 from zephyr.models import MAX_MESSAGE_LENGTH
 
 import simplejson

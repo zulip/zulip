@@ -30,7 +30,7 @@ from zephyr.decorator import require_post, \
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error
-from zephyr.lib.time import timestamp_to_datetime
+from zephyr.lib.timestamp import timestamp_to_datetime
 
 from confirmation.models import Confirmation
 

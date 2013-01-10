@@ -2,7 +2,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 from zephyr.models import Realm, UserProfile, UserActivity, get_client
 import simplejson
-from zephyr.lib.time import datetime_to_timestamp, timestamp_to_datetime
+from zephyr.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 
 def dump():
     pointers = []

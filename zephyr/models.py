@@ -20,7 +20,7 @@ import subprocess
 import traceback
 import re
 from django.utils.html import escape
-from zephyr.lib.time import datetime_to_timestamp
+from zephyr.lib.timestamp import datetime_to_timestamp
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
