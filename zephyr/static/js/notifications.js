@@ -125,16 +125,25 @@ function speaking_at_me(message) {
 
     if (domain === "mit.edu") {
         return false;
-    } 
+    }
 
     $.each(names, function (index, name) {
         indexof = content_lc.indexOf(name.toLowerCase());
-        after_name = content_lc.charAt(name.length);
-        after_atname = content_lc.charAt(name.length+1);
+        if (indexof === -1) {
+            // If there is no match, we don't need after_name
+            after_name = undefined;
+        } else if (indexof + name.length >= content_lc.length) {
+            // If the @name is at the end of the string, that's OK,
+            // so we set after_name to " " so that the code below
+            // will identify a match
+            after_name = " ";
+        } else {
+            after_name = content_lc.charAt(indexof + name.length);
+        }
         if ((indexof === 0 &&
              (after_name === " " || after_name === ":")) ||
-            (indexof === 1 && content_lc.charAt(0) === "@" &&
-             (after_atname === " " || after_atname === ":"))) {
+            (indexof > 0 && content_lc.charAt(indexof-1) === "@" &&
+             (after_name === " " || after_name === ":"))) {
             if (match_so_far) {
                 match_so_far = false;
                 return false;
