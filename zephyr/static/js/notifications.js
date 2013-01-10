@@ -123,6 +123,10 @@ function speaking_at_me(message) {
     var match_so_far = false;
     var indexof, after_name, after_atname;
 
+    if (domain === "mit.edu") {
+        return false;
+    } 
+
     $.each(names, function (index, name) {
         indexof = content_lc.indexOf(name.toLowerCase());
         after_name = content_lc.charAt(name.length);
