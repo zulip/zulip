@@ -81,15 +81,6 @@ function get_button_for_stream(stream_name) {
     return $('#subscription_' + stream_info[stream_name.toLowerCase()].id).find('.unsubscribe_button');
 }
 
-function draw_colorpicker(stream_name) {
-    var colorpicker = $('#subscription_' + stream_info[stream_name.toLowerCase()].id).find('.colorpicker');
-    colorpicker.spectrum(colorpicker_options);
-}
-
-function draw_all_colorpickers() {
-    $('.colorpicker').spectrum(colorpicker_options);
-}
-
 function add_to_stream_list(stream_name) {
     var stream_sub_row;
     var sub;
@@ -120,7 +111,6 @@ function add_to_stream_list(stream_name) {
         stream_info[lstream_name] = sub;
 
         $('#subscriptions_table').prepend(templates.subscription({subscriptions: [sub]}));
-        draw_colorpicker(stream_name);
     }
 }
 
@@ -184,7 +174,6 @@ exports.fetch = function () {
                     subscriptions.push(sub);
                 });
                 $('#subscriptions_table').append(templates.subscription({subscriptions: subscriptions}));
-                draw_all_colorpickers();
             }
             $('#streams').focus().select();
         },
@@ -342,6 +331,9 @@ $(function () {
         var stream = sub_row.find('.subscription_name').text();
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var list = sub_row.find('.subscriber_list_container ul');
+        var colorpicker = sub_row.find('.colorpicker');
+        colorpicker.spectrum(colorpicker_options);
+
         error_elem.addClass('hide');
         list.empty();
 
