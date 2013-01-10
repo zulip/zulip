@@ -748,6 +748,13 @@ def send_message_backend(request, user_profile, client,
 
 @authenticated_api_view
 def api_get_public_streams(request, user_profile):
+    return get_public_streams_backend(request, user_profile)
+
+@authenticated_json_post_view
+def json_get_public_streams(request, user_profile):
+    return get_public_streams_backend(request, user_profile)
+
+def get_public_streams_backend(request, user_profile):
     # Only get streams someone is currently subscribed to
     subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
     stream_ids = Recipient.objects.filter(
