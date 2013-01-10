@@ -1,6 +1,11 @@
 #!/bin/sh -e
 mkdir -p zephyr/fixtures
 rm -f zephyr/tests/zephyrdb.test
+
+# Remove time.pyc to try to prevent it from screwing people importing
+# time from inside zephyr.lib.  We can drop this hack after a bit.
+rm -f zephyr/lib/time.pyc
+
 python manage.py syncdb --noinput --settings=humbug.test_settings
 python manage.py migrate --settings=humbug.test_settings --all
 # This next line can be simplified to "-n0" once we fix our app with 0 messages.
