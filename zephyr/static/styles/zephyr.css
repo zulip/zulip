@@ -631,6 +631,13 @@ table.floating_recipient {
     float: right;
 }
 
+.sub_settings_title {
+    line-height: 30px;
+    font-size: 14px;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
 .subscriber_list_container {
     max-height: 200px;
     overflow: auto;
