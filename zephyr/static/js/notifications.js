@@ -16,6 +16,7 @@ function browser_desktop_notifications_on () {
 
 exports.initialize = function () {
     names = fullname.split(" ");
+    names.push(email.split("@")[0]);
 
     $(window).focus(function () {
         window_has_focus = true;
@@ -122,6 +123,7 @@ function speaking_at_me(message) {
     var content_lc = $('<div/>').html(message.content).text().toLowerCase();
     var match_so_far = false;
     var indexof, after_name, after_atname;
+    var punctuation = /[\.,-\/#!$%\^&\*;:{}=\-_`~()\+\?\[\]\s]/;
 
     if (domain === "mit.edu") {
         return false;
@@ -141,9 +143,9 @@ function speaking_at_me(message) {
             after_name = content_lc.charAt(indexof + name.length);
         }
         if ((indexof === 0 &&
-             (after_name === " " || after_name === ":")) ||
+             after_name.match(punctuation) !== null) ||
             (indexof > 0 && content_lc.charAt(indexof-1) === "@" &&
-             (after_name === " " || after_name === ":"))) {
+             after_name.match(punctuation) !== null)) {
             if (match_so_far) {
                 match_so_far = false;
                 return false;
