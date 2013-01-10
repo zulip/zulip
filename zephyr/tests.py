@@ -17,11 +17,6 @@ import optparse
 from django.conf import settings
 import re
 
-settings.MESSAGE_LOG = "/tmp/test-message-log"
-settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
-settings.TORNADO_SERVER = None
-
-
 def find_key_by_email(address):
     from django.core.mail import outbox
     key_regex = re.compile("accounts/do_confirm/([a-f0-9]{40})>")

@@ -6,6 +6,8 @@ import sys
 import os
 from os import path
 
+os.environ["TORNADO_SERVER"] = "http://localhost:9983"
+
 os.chdir(path.join(path.dirname(__file__), '../../..'))
 
 subprocess.check_call('zephyr/tests/generate-fixtures')
