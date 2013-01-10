@@ -295,14 +295,52 @@ $(function () {
         ajaxSubscribe($("#streams").val());
     });
 
+    if (! render_subscribers()) {
+        return;
+    }
 
-    $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
-        if (! render_subscribers()) {
-            return;
-        }
+    // From here down is only stuff that happens when we're rendering
+    // the subscriber settings
+
+    $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
+        e.preventDefault();
         var sub_row = $(e.target).closest('.subscription_row');
         var stream = sub_row.find('.subscription_name').text();
-        var error_elem = sub_row.find('.subscriber_list_container .alert');
+        var text_box = sub_row.find('input[name="principal"]');
+        var principal = text_box.val();
+        // TODO: clean up this error handling
+        var error_elem = sub_row.find('.subscriber_list_container .alert-error');
+        var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
+        var list = sub_row.find('.subscriber_list_container ul');
+
+        $.ajax({
+            type: "POST",
+            url: "/json/subscriptions/add",
+            dataType: 'json',
+            data: {"subscriptions": JSON.stringify([stream]),
+                   "principal": principal},
+            success: function (data) {
+                text_box.val('');
+                if (data.subscribed.length) {
+                    error_elem.addClass("hide");
+                    warning_elem.addClass("hide");
+                    list.prepend('<li>' + principal);
+                } else {
+                    error_elem.addClass("hide");
+                    warning_elem.removeClass("hide").text("User already subscribed");
+                }
+            },
+            error: function (xhr) {
+                warning_elem.addClass("hide");
+                error_elem.removeClass("hide").text("Could not add user to this stream");
+            }
+        });
+    });
+
+    $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
+        var sub_row = $(e.target).closest('.subscription_row');
+        var stream = sub_row.find('.subscription_name').text();
+        var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var list = sub_row.find('.subscriber_list_container ul');
         error_elem.addClass('hide');
         list.empty();

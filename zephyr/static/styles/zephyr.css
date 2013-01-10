@@ -615,6 +615,11 @@ table.floating_recipient {
 
 .subscription_settings {
     margin-left: 35px;
+    margin-right: 35px;
+}
+
+.subscription_settings form {
+    margin: 0;
 }
 
 .subscription_settings ul {
@@ -641,6 +646,11 @@ table.floating_recipient {
 .subscriber_list_container {
     max-height: 200px;
     overflow: auto;
+    margin-top: 10px;
+}
+
+.subscriber_list_add {
+    float: right;
 }
 
 #invite_user_form {

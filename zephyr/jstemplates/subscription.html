@@ -17,9 +17,18 @@
           Stream color
       </ul>
       {{#render_subscribers}}
-      <span class="sub_settings_title">Subscribers</span>
+      <div>
+        <span class="sub_settings_title">Subscribers</span>
+        <div class="subscriber_list_add">
+          <form class="form-inline">
+            <input type="text" name="principal" placeholder="Email address" value="" class="span2" />
+            <input type="submit" name="add_subscriber" value="Add" class="btn btn-primary" />
+          </form>
+        </div>
+      </div>
       <div class="subscriber_list_container">
         <div class="alert alert-error hide"></div>
+        <div class="alert alert-warning hide"></div>
         <ul>
         </ul>
       </div>
