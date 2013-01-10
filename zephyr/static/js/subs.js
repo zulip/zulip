@@ -77,10 +77,6 @@ var colorpicker_options = {
     }
 };
 
-function get_button_for_stream(stream_name) {
-    return $('#subscription_' + stream_info[stream_name.toLowerCase()].id).find('.unsubscribe_button');
-}
-
 function add_to_stream_list(stream_name) {
     var stream_sub_row;
     var sub;
@@ -97,14 +93,6 @@ function add_to_stream_list(stream_name) {
         sub = removed_streams[lstream_name];
         delete removed_streams[lstream_name];
         stream_info[lstream_name] = sub;
-
-        stream_sub_row = get_button_for_stream(stream_name);
-        stream_sub_row.text("Unsubscribe")
-            .removeClass("btn-primary")
-            .unbind("click")
-            .removeAttr("onclick")
-            .click(function (event) {exports.unsubscribe_button_click(event);});
-
     } else {
         sub = {name: stream_name, id: next_sub_id++, color: default_color,
                render_subscribers: render_subscribers()};
@@ -207,7 +195,7 @@ exports.have = function (stream_name) {
     return (stream_info[stream_name.toLowerCase()] !== undefined);
 };
 
-function ajaxSubscribe(stream) {
+function ajaxSubscribe(stream, button) {
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/add",
@@ -227,6 +215,10 @@ function ajaxSubscribe(stream) {
                                $("#subscriptions-status"));
             }
             add_to_stream_list(name);
+            if (button !== undefined) {
+                button.text("Unsubscribe").removeClass("btn-primary");
+            }
+            typeahead_helper.update_autocomplete();
         },
         error: function (xhr) {
             ui.report_error("Error adding subscription", xhr, $("#subscriptions-status"));
@@ -235,10 +227,7 @@ function ajaxSubscribe(stream) {
     });
 }
 
-exports.unsubscribe_button_click = function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    var stream = $(e.target).closest('.subscription_row').find('.subscription_name').text();
+function ajaxUnsubscribe(stream, button) {
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/remove",
@@ -255,16 +244,8 @@ exports.unsubscribe_button_click = function (e) {
                 ui.report_success("Successfully removed subscription to " + name,
                                $("#subscriptions-status"));
             }
-            get_button_for_stream(name).text("Subscribe")
-                .addClass("btn-primary")
-                .unbind("click")
-                .removeAttr("onclick")
-                .click(function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    ajaxSubscribe(name);
-                });
             remove_from_stream_list(name);
+            button.text("Subscribe").addClass("btn-primary");
             typeahead_helper.update_autocomplete();
         },
         error: function (xhr) {
@@ -272,7 +253,7 @@ exports.unsubscribe_button_click = function (e) {
             $("#streams").focus();
         }
     });
-};
+}
 
 $(function () {
     var i;
@@ -289,6 +270,20 @@ $(function () {
     if (! render_subscribers()) {
         return;
     }
+
+    $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var sub_row = $(e.target).closest('.subscription_row');
+        var stream_name = sub_row.find('.subscription_name').text();
+        var sub = stream_info[stream_name.toLowerCase()];
+
+        if (sub) {
+            ajaxUnsubscribe(stream_name, $(e.target));
+        } else {
+            ajaxSubscribe(stream_name, $(e.target));
+        }
+    });
 
     // From here down is only stuff that happens when we're rendering
     // the subscriber settings

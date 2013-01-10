@@ -631,7 +631,7 @@ table.floating_recipient {
     margin-right: 10px;
 }
 
-.unsubscribe_button {
+.sub_unsub_button {
     width: 140px;
     float: right;
 }
