@@ -45,7 +45,8 @@ function process_hotkey(e) {
             // will go to close it
             if ($("#subject").data().typeahead.shown ||
                 $("#stream").data().typeahead.shown ||
-                $("#private_message_recipient").data().typeahead.shown) {
+                $("#private_message_recipient").data().typeahead.shown ||
+                $("#new_message_content").data().typeahead.shown) {
                 return false;
             } else {
                 // If the user hit the escape key, cancel the current compose
