@@ -360,6 +360,18 @@ $(function () {
                 error_elem.removeClass("hide").text("Could not fetch subscriber list");
             }
         });
+
+        sub_row.find('input[name="principal"]').typeahead({
+            source: typeahead_helper.private_message_typeahead_list,
+            items: 4,
+            highlighter: function (item) {
+                var query = this.query;
+                return typeahead_helper.highlight_with_escaping(query, item);
+            },
+            updater: function (item) {
+                return typeahead_helper.private_message_mapped[item].email;
+            }
+        });
     });
 });
 
