@@ -5,14 +5,14 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
-    bulk_create_realms, bulk_create_streams, bulk_create_users, bulk_create_huddles, \
-    bulk_create_clients, set_default_streams, \
-    do_send_message, clear_database, StreamColor, \
+    do_send_message, clear_database, StreamColor, set_default_streams, \
     get_huddle_hash, get_client, do_activate_user
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction, connection
 from django.conf import settings
-from zephyr.lib.bulk_create import batch_bulk_create
+from zephyr.lib.bulk_create import batch_bulk_create, bulk_create_realms, \
+    bulk_create_streams, bulk_create_users, bulk_create_huddles, \
+    bulk_create_clients
 from zephyr.lib.time import timestamp_to_datetime
 from zephyr.models import MAX_MESSAGE_LENGTH
 
