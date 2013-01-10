@@ -16,6 +16,15 @@ import subprocess
 import optparse
 from django.conf import settings
 import re
+import sys
+
+try:
+    settings.TEST_SUITE
+except:
+    print
+    print "ERROR: Test suite only runs correctly with --settings=humbug.test_settings"
+    print
+    sys.exit(1)
 
 def find_key_by_email(address):
     from django.core.mail import outbox

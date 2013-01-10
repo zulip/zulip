@@ -23,3 +23,5 @@ MESSAGE_LOG = "/tmp/test-message-log"
 
 # Print our emails rather than sending them
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+
+TEST_SUITE = True
