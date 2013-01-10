@@ -12,13 +12,14 @@ from django.db.models import Q
 from django.core.mail import send_mail
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
-    do_add_subscription, do_remove_subscription, do_change_password, \
+    StreamColor, PreregistrationUser, get_client, MitUser, User, UserActivity, \
+    MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH
+from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
+    do_change_password, create_mit_user_if_needed, \
     do_change_full_name, do_change_enable_desktop_notifications, \
     do_activate_user, add_default_subs, do_create_user, do_send_message, \
-    create_mit_user_if_needed, create_stream_if_needed, StreamColor, \
-    PreregistrationUser, get_client, MitUser, User, UserActivity, \
     log_subscription_property_change, internal_send_message, \
-    MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH
+    create_stream_if_needed
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_active
 from django.views.decorators.csrf import csrf_exempt

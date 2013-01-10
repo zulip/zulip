@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 
-from zephyr.models import Realm, set_default_streams, log_event
+from zephyr.models import Realm
+from zephyr.lib.actions import set_default_streams, log_event
 
 from optparse import make_option
 import sys

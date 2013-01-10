@@ -6,8 +6,9 @@ from django.db.utils import IntegrityError
 from django.utils.timezone import now
 from django.core import validators
 
-from zephyr.models import Realm, do_create_user
-from zephyr.views import do_send_message, notify_new_user
+from zephyr.models import Realm
+from zephyr.lib.actions import do_send_message, do_create_user
+from zephyr.views import notify_new_user
 from zephyr.lib.initial_password import initial_password
 
 class Command(BaseCommand):

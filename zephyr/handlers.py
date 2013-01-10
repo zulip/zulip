@@ -21,9 +21,8 @@ class AdminHumbugHandler(logging.Handler):
 
     def emit(self, record):
         # We have to defer imports to avoid circular imports in settings.py.
-        from zephyr.models import Message, UserProfile, Recipient, \
-                create_stream_if_needed, get_client, internal_send_message
-        from django.conf import settings
+        from zephyr.models import Recipient
+        from zephyr.lib.actions import internal_send_message
 
         subject = '%s: %s' % (platform.node(), record.getMessage())
         try:

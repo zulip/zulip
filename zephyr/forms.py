@@ -6,7 +6,8 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth.forms import SetPasswordForm
 
 from humbug import settings
-from zephyr.models import Realm, do_change_password
+from zephyr.models import Realm
+from zephyr.lib.actions import do_change_password
 
 def is_unique(value):
     try:

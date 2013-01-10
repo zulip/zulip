@@ -4,9 +4,10 @@ from django.utils.timezone import utc, now
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
-    Subscription, Huddle, get_huddle, Realm, UserMessage, get_user_profile_by_id, \
-    do_send_message, clear_database, StreamColor, set_default_streams, \
-    get_huddle_hash, get_client, do_activate_user
+    Subscription, Huddle, get_huddle, Realm, UserMessage, StreamColor, \
+    get_huddle_hash, clear_database, get_client
+from zephyr.lib.actions import get_user_profile_by_id, \
+    do_send_message, set_default_streams, do_activate_user
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction, connection
 from django.conf import settings

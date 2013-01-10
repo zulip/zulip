@@ -1,7 +1,9 @@
 from optparse import make_option
 from django.core.management.base import BaseCommand
 
-from zephyr.models import UserProfile, compute_mit_user_fullname
+from zephyr.models import UserProfile
+from zephyr.lib.actions import compute_mit_user_fullname
+
 # Helper to be used with manage.py shell to fix bad names on prod.
 def update_mit_fullnames(change=False):
     for u in UserProfile.objects.select_related().all():

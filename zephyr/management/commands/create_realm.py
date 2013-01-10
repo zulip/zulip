@@ -1,8 +1,5 @@
 from django.core.management.base import BaseCommand
-from zephyr.models import Realm, Message, UserProfile, Recipient, create_stream_if_needed, \
-        get_client, do_create_realm
-from zephyr.views import do_send_message
-from django.utils.timezone import now
+from zephyr.lib.actions import do_create_realm
 
 class Command(BaseCommand):
     help = "Create a realm for the specified domain(s)."
