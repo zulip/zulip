@@ -307,7 +307,7 @@ $(function () {
         var sub_row = $(e.target).closest('.subscription_row');
         var stream = sub_row.find('.subscription_name').text();
         var text_box = sub_row.find('input[name="principal"]');
-        var principal = text_box.val();
+        var principal = $.trim(text_box.val());
         // TODO: clean up this error handling
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
@@ -367,6 +367,14 @@ $(function () {
             highlighter: function (item) {
                 var query = this.query;
                 return typeahead_helper.highlight_with_escaping(query, item);
+            },
+            matcher: function (item) {
+                var query = $.trim(this.query);
+                if (query === '') {
+                    return false;
+                }
+                // Case-insensitive.
+                return (item.toLowerCase().indexOf(query.toLowerCase()) !== -1);
             },
             updater: function (item) {
                 return typeahead_helper.private_message_mapped[item].email;
