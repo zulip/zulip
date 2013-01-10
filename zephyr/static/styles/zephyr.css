@@ -268,8 +268,18 @@ blockquote p {
     cursor: pointer;
 }
 
+#send_message_form {
+    margin: 0px;
+}
+
 #send_message_form .messagebox {
+    padding-right: 5px; /* normally 5px 14px; pull in the right a bit */
     cursor: default;
+}
+
+#send_message_form .message_content {
+    display: table-row;
+    margin-right: 0px;
 }
 
 .messagebox p {
@@ -377,8 +387,9 @@ img.inline_profile_picture {
 }
 
 textarea.new_message_textarea {
-    width: 100%;
-    min-height: 48px;
+    display: table-cell;
+    width: 99%;
+    min-height: 40px;
     max-height: 150px;
     resize: none;
 }
@@ -392,24 +403,29 @@ input.recipient_box {
     width: 20%;
 }
 #subject.recipient_box {
-    width: 64%;
+    width: 30%;
 }
 #private_message_recipient.recipient_box {
-    width: 75%;
+    width: 72%;
 }
 
 #send_controls {
-    float: right;
-
+    display: table-cell;
+    vertical-align: bottom;
+    padding-left: 21px;
+    padding-bottom: 9px;
     /* jQuery's slideDown() animation seems to compute the target height by
        drawing these elements in an (offscreen) context where they would reflow
        onto multiple lines.  We need to prevent that in order to avoid an
        animation glitch.  See: http://is.gd/EVJFZ8 */
     white-space: nowrap;
+    /* This white-space nowrap is also critical for making sure that the
+       button doesn't get smushed as the textarea expands; clearly the
+       button is taking up more than the 1% width specified below. */
+    width: 1%;
 }
 
 .compose_help_text {
-    margin-right: 20px;
     font-size: 90%;
 }
 
@@ -503,6 +519,7 @@ table.floating_recipient {
 }
 
 #stream_or_private_message {
+    display: none;
     margin: 3px;
     padding: 5px;
     width: 90%;
