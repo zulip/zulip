@@ -189,7 +189,6 @@ function select_message(next_message, opts) {
 
     if (opts.then_scroll) {
         recenter_view(next_message);
-        ui.update_floating_recipient_bar();
     }
 
     return true;
