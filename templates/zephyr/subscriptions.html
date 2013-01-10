@@ -4,8 +4,7 @@
   <div class="span6">
     <div class="subscriptions">
       <h1>Subscriptions</h1>
-      <form id="add_new_subscription" action="/json/subscriptions/add"
-            method="post" class="form-inline">{% csrf_token %}
+      <form id="add_new_subscription" class="form-inline">{% csrf_token %}
         <input type="text" name="streams" id="streams"
                placeholder="Stream name" value="" class="span4" />
         <input type="submit" name="add_subscription" value="Subscribe" class="btn btn-primary" />
