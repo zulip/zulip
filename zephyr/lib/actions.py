@@ -150,14 +150,14 @@ def do_send_message(message, no_log=False):
 
     # We can only publish messages to longpolling clients if the Tornado server is running.
     if settings.TORNADO_SERVER:
-        # Render Markdown etc. here, so that the single-threaded Tornado server doesn't have to.
-        # TODO: Reduce duplication in what we send.
-        rendered = { 'text/html':       message.to_dict(apply_markdown=True),
-                     'text/x-markdown': message.to_dict(apply_markdown=False) }
+        # Render Markdown etc. here and store (automatically) in
+        # memcached, so that the single-threaded Tornado server
+        # doesn't have to.
+        message.to_dict(apply_markdown=True)
+        message.to_dict(apply_markdown=False)
         requests.post(settings.TORNADO_SERVER + '/notify_new_message', data=dict(
             secret   = settings.SHARED_SECRET,
             message  = message.id,
-            rendered = simplejson.dumps(rendered),
             users    = simplejson.dumps([str(user.id) for user in recipients])))
 
 def create_stream_if_needed(realm, stream_name):

@@ -171,14 +171,6 @@ class Message(models.Model):
 
     @cache_with_key(lambda self, apply_markdown: 'message_dict:%d:%d' % (self.id, apply_markdown))
     def to_dict(self, apply_markdown):
-        # Messages arrive in the Tornado process with the dicts already rendered.
-        # This avoids running the Markdown parser and some database queries in the single-threaded
-        # Tornado server.
-        #
-        # This field is not persisted to the database and will disappear if the object is re-fetched.
-        if hasattr(self, 'precomputed_dicts'):
-            return self.precomputed_dicts['text/html' if apply_markdown else 'text/x-markdown']
-
         display_recipient = get_display_recipient(self.recipient)
         if self.recipient.type == Recipient.STREAM:
             display_type = "stream"

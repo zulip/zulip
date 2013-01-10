@@ -139,13 +139,6 @@ def notify_new_message(request):
     recipient_profile_ids = map(int, json_to_list(request.POST['users']))
     message = cache_get_message(int(request.POST['message']))
 
-    # Cause message.to_dict() to return the dicts already rendered in the other process.
-    #
-    # We decode this JSON only to eventually re-encode it as JSON.
-    # This isn't trivial to fix, because we do access some fields in the meantime
-    # (see send_with_safety_check).  It's probably not a big deal.
-    message.precomputed_dicts = simplejson.loads(request.POST['rendered'])
-
     for user_profile_id in recipient_profile_ids:
         receive(user_profile_id, message)
 
