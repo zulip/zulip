@@ -102,7 +102,7 @@ def fetch_user_messages(user_profile_id, last):
     return []
 
 # The user receives this message
-def receive(user_profile_id, message):
+def receive_message(user_profile_id, message):
     add_user_message(user_profile_id, message.id)
     callbacks_table.call(user_profile_id, Callbacks.TYPE_RECEIVE,
                          messages=[message], update_types=["new_messages"])
@@ -140,7 +140,7 @@ def notify_new_message(request):
     message = cache_get_message(int(request.POST['message']))
 
     for user_profile_id in recipient_profile_ids:
-        receive(user_profile_id, message)
+        receive_message(user_profile_id, message)
 
     return json_success()
 
