@@ -17,6 +17,6 @@ function run {
 
 run 'lint checkers'    ./tools/check-all
 run 'web client tests' ./zephyr/tests/frontend/run
-run 'server tests'     ./manage.py test zephyr --skip-generate
+run 'server tests'     ./tools/test-backend
 
 printf '\n\e[32mAll OK!\e[0m\n'

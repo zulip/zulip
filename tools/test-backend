@@ -1,0 +1,4 @@
+#!/bin/bash -e
+
+cd "$(dirname "$0")"/..
+./manage.py test zephyr --skip-generate --settings=humbug.test_settings
