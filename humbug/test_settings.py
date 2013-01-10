@@ -25,3 +25,13 @@ MESSAGE_LOG = "/tmp/test-message-log"
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 TEST_SUITE = True
+
+# Disable use of memcached for caching
+CACHES = { 'default': {
+        'BACKEND':  'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'humbug-default-local-cache',
+        'TIMEOUT':  3600,
+        'OPTIONS': {
+            'MAX_ENTRIES': 100000
+        }
+    } }
