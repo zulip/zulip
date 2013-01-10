@@ -155,7 +155,9 @@ exports.fetch_colors = function () {
     });
 };
 
-exports.fetch = function () {
+exports.setup_page = function () {
+    // TODO: We really want to show a spinner while we're fetching
+    // the subs
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/list',

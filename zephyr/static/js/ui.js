@@ -509,9 +509,7 @@ $(function () {
         hashchange.changehash(browser_url);
     });
 
-    // TODO: We really want to show a spinner while we're fetching
-    // the subs
-    $('#sidebar a[href="#subscriptions"]').on('show', subs.fetch);
+    $('#sidebar a[href="#subscriptions"]').on('show', subs.setup_page);
 
     var settings_status = $('#settings-status');
     $("#settings-change-box form").ajaxForm({
