@@ -291,12 +291,8 @@ exports.deactivate = function () {
     reset_load_more_status();
     // Includes scrolling.
     select_message_by_id(persistent_message_id, {then_scroll: true});
-
     search.update_highlight_on_narrow();
-
     hashchange.save_narrow();
-
-    scroll_to_selected();
 };
 
 exports.restore_home_state = function() {
