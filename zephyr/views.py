@@ -755,6 +755,9 @@ def json_get_public_streams(request, user_profile):
     return get_public_streams_backend(request, user_profile)
 
 def get_public_streams_backend(request, user_profile):
+    if user_profile.realm.domain == "mit.edu" and not is_super_user_api(request):
+        return json_error("User not authorized for this query")
+
     # Only get streams someone is currently subscribed to
     subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
     stream_ids = Recipient.objects.filter(
