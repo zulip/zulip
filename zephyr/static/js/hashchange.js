@@ -6,17 +6,16 @@ var expected_hash = false;
 
 exports.changehash = function (newhash) {
     expected_hash = newhash;
-    // Some browsers reset scrollTop when changing the hash
-    // to "" or "#" (Mac Chrome, for example)
+    // Some browsers reset scrollTop when changing the hash to "",
     // so we save and restore it.
     // http://stackoverflow.com/questions/4715073/window-location-hash-prevent-scrolling-to-the-top
     var scrolltop;
-    if (newhash === "" || newhash === "#") {
+    if (newhash === "") {
         scrolltop = viewport.scrollTop();
     }
     window.location.hash = newhash;
     util.reset_favicon();
-    if (newhash === "" || newhash === "#") {
+    if (newhash === "") {
         viewport.scrollTop(scrolltop);
     }
 };

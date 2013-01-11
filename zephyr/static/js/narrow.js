@@ -228,10 +228,6 @@ exports.activate = function (operators, opts) {
     hashchange.save_narrow(operators);
     $('#search_query').val(unparse(operators));
     search.update_button_visibility();
-    // For good measure, redraw the floating recipient bar
-    // (if the page didn't scroll in achieving this narrow,
-    //  it might still read the wrong thing.)
-    ui.update_floating_recipient_bar();
 };
 
 // Activate narrowing with a single operator.
@@ -295,8 +291,12 @@ exports.deactivate = function () {
     reset_load_more_status();
     // Includes scrolling.
     select_message_by_id(persistent_message_id, {then_scroll: true});
+
     search.update_highlight_on_narrow();
+
     hashchange.save_narrow();
+
+    scroll_to_selected();
 };
 
 exports.restore_home_state = function() {
