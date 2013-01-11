@@ -112,7 +112,7 @@ exports.initialize = function () {
         source: function (query, process) {
             return stream_list;
         },
-        items: 3,
+        items: 2,
         highlighter: composebox_typeahead_highlighter,
         sorter: typeahead_helper.sort_streams
     });
@@ -125,14 +125,14 @@ exports.initialize = function () {
             }
             return [];
         },
-        items: 3,
+        items: 2,
         highlighter: composebox_typeahead_highlighter,
         sorter: typeahead_helper.sort_subjects
     });
 
     $( "#private_message_recipient" ).typeahead({
         source: typeahead_helper.private_message_typeahead_list,
-        items: 4,
+        items: 2,
         highlighter: composebox_typeahead_highlighter,
         matcher: function (item) {
             var current_recipient = get_last_recipient_in_pm(this.query);
