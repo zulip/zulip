@@ -4,9 +4,6 @@ error_log /var/log/nginx/humbug.error.log;
 # Enable HSTS: tell browsers to always use HTTPS
 add_header Strict-Transport-Security max-age=15768000;
 
-# Avoid clickjacking attacks
-add_header X-Frame-Options DENY;
-
 # Serve a custom error page when the app is down
 error_page 502 503 504 /static/public/html/5xx.html;
 

@@ -26,5 +26,8 @@ server {
 
     server_name humbughq.com zephyr.humbughq.com;
 
+    # Avoid clickjacking attacks
+    add_header X-Frame-Options DENY;
+
     include /etc/nginx/humbug-include/app;
 }
