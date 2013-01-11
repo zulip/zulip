@@ -62,13 +62,16 @@ def add_pointer_update_callback(user_profile, cb):
 # * O(k) read of highest k message ids
 # * Automatic maximum size support.
 user_messages = {}
-CACHE_COUNT = 25000
+USERMESSAGE_CACHE_COUNT = 25000
 cache_minimum_id = sys.maxint
 def initialize_user_messages():
     global cache_minimum_id
-    max_message_id, cache_minimum_id = populate_message_cache(CACHE_COUNT)
+    try:
+        cache_minimum_id = Message.objects.all().order_by("-id")[0].id - USERMESSAGE_CACHE_COUNT
+    except Message.DoesNotExist:
+        cache_minimum_id = 1
 
-    for um in UserMessage.objects.filter(message_id__gt=max_message_id - CACHE_COUNT).order_by("message"):
+    for um in UserMessage.objects.filter(message_id__gte=cache_minimum_id).order_by("message"):
         add_user_message(um.user_profile_id, um.message_id)
 
 def add_user_message(user_profile_id, message_id):
