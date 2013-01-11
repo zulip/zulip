@@ -7,7 +7,8 @@ from django.db import transaction, IntegrityError
 from django.conf import settings
 import simplejson
 from zephyr.lib.cache import cache_with_key
-from zephyr.lib.actions import update_user_activity
+from zephyr.lib.queue import SimpleQueue
+from zephyr.lib.timestamp import datetime_to_timestamp
 
 from functools import wraps
 
@@ -26,6 +27,20 @@ def asynchronous(method):
     if getattr(method, 'csrf_exempt', False):
         wrapper.csrf_exempt = True
     return wrapper
+
+activity_queue = SimpleQueue()
+def update_user_activity(request, user_profile, client):
+    event={'query': request.META["PATH_INFO"],
+           'user_profile_id': user_profile.id,
+           'time': datetime_to_timestamp(now()),
+           'client': client.name}
+    if not settings.USING_RABBITMQ:
+        # Don't try to publish messages to rabbitmq if we're not using
+        # it.  UserActivity updates aren't really important for most
+        # local development, so skipping publishing them here is
+        # reasonable.
+        return
+    activity_queue.json_publish("user_activity", event)
 
 # I like the all-lowercase name better
 require_post = require_POST

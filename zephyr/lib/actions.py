@@ -8,6 +8,7 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
 from django.db import transaction, IntegrityError
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.cache import cache_with_key
+from zephyr.lib.timestamp import timestamp_to_datetime
 from zephyr.lib.message_cache import cache_save_message
 from django.utils import timezone
 from django.contrib.auth.models import UserManager
@@ -297,19 +298,25 @@ def add_default_subs(user_profile):
         do_add_subscription(user_profile, default.stream)
 
 @transaction.commit_on_success
-def update_user_activity(request, user_profile, client):
-    current_time = timezone.now()
+def do_update_user_activity(user_profile, client, query, log_time):
     try:
         (activity, created) = UserActivity.objects.get_or_create(
             user_profile = user_profile,
             client = client,
-            query = request.META["PATH_INFO"],
-            defaults={'last_visit': current_time, 'count': 0})
+            query = query,
+            defaults={'last_visit': log_time, 'count': 0})
     except IntegrityError:
         transaction.commit()
         activity = UserActivity.objects.get(user_profile = user_profile,
                                             client = client,
-                                            query = request.META["PATH_INFO"])
+                                            query = query)
     activity.count += 1
-    activity.last_visit = current_time
+    activity.last_visit = log_time
     activity.save()
+
+def process_user_activity_event(event):
+    user_profile = UserProfile.objects.get(id=event["user_profile_id"])
+    client = get_client(event["client"])
+    log_time = timestamp_to_datetime(event["time"])
+    query = event["query"]
+    return do_update_user_activity(user_profile, client, query, log_time)

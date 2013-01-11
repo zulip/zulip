@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# Delete the "guest" default user and replace it with a Humbug user
+# with a real password
+
+rabbitmqctl delete_user guest
+rabbitmqctl add_user humbug 'xxxxxxxxxxxxxxxx'
+rabbitmqctl set_user_tags humbug administrator
+rabbitmqctl set_permissions -p / humbug '.*' '.*' '.*'

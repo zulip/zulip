@@ -8,6 +8,7 @@ STAGING_DEPLOYED = (platform.node() == 'staging.humbughq.com')
 
 DEBUG = not DEPLOYED
 TEMPLATE_DEBUG = DEBUG
+TEST_SUITE = False
 
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
@@ -173,6 +174,10 @@ INSTALLED_APPS = (
     'confirmation',
     'zephyr',
 )
+
+USING_RABBITMQ = DEPLOYED
+# This password also appears in servers/configure-rabbitmq
+RABBITMQ_PASSWORD = 'xxxxxxxxxxxxxxxx'
 
 # Caching
 if DEPLOYED:

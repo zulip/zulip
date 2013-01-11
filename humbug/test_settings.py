@@ -26,6 +26,11 @@ EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 TEST_SUITE = True
 
+# Don't use rabbitmq from the test suite -- the user_profile_ids for
+# any generated queue elements won't match those being used by the
+# real app.
+USING_RABBITMQ = False
+
 # Disable use of memcached for caching
 CACHES = { 'default': {
         'BACKEND':  'django.core.cache.backends.locmem.LocMemCache',

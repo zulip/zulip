@@ -49,6 +49,10 @@ class humbug_base {
     command  => "pip install requests",
     onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/requests"
   }
+  exec {"pip4":
+    command  => "pip install pika",
+    onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/pika"
+  }
 
   group { 'humbug':
     ensure     => present,
@@ -372,6 +376,13 @@ class humbug_postgres {
   }
 }
 
+class humbug_rabbit {
+  $rabbit_packages = [ "rabbitmq-server" ]
+  package { $rabbit_packages: ensure => "installed" }
+
+  # TODO: Should also call exactly once "servers/configure-rabbitmq"
+}
+
 class humbug_bots {
   $bots_packages = [ "supervisor" ]
   package { $bots_packages: ensure => "installed" }
@@ -394,3 +405,4 @@ class { "humbug_base": }
 #class { "humbug_postgres": }
 #class { "humbug_zmirror": }
 #class { "humbug_bots": }
+#class { "humbug_rabbit": }
