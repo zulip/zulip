@@ -213,6 +213,14 @@ class humbug_app_frontend {
     mode => 644,
     source => "/root/humbug/servers/puppet/files/nginx/nginx.conf",
   }
+  file { "/etc/nginx/humbug-include/":
+    require => Package[nginx],
+    recurse => true,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "/root/humbug/servers/puppet/files/nginx/humbug-include/",
+  }
   file { "/etc/nginx/sites-available/humbug":
     require => Package[nginx],
     ensure => file,
