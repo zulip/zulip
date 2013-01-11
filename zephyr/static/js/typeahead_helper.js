@@ -120,22 +120,6 @@ exports.sort_subjects = function (items) {
     return exports.sorter(this.query, items, identity);
 };
 
-exports.sort_recipients = function (matches) {
-    matches.sort(function (x, y) {
-        var x_count = typeahead_helper.private_message_mapped[x].count;
-        var y_count = typeahead_helper.private_message_mapped[y].count;
-
-        if (x_count > y_count) {
-            return -1;
-        } else if (x_count < y_count) {
-            return 1;
-        }
-        return 0;
-    });
-
-    return matches;
-};
-
 return exports;
 
 }());

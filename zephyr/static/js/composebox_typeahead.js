@@ -60,11 +60,6 @@ function handle_keydown(e) {
             e.preventDefault();
         }
 
-        // In the new_message_content box, preventDefault() for tab but not for enter
-        if (e.target.id === "new_message_content" && code !== 13) {
-            e.preventDefault();
-        }
-
         if (e.target.id === "stream") {
             nextFocus = "subject";
         } else if (e.target.id === "subject") {
@@ -72,12 +67,6 @@ function handle_keydown(e) {
             nextFocus = "new_message_content";
         } else if (e.target.id === "private_message_recipient") {
             nextFocus = "new_message_content";
-        } else if (e.target.id === "new_message_content") {
-            if (code === 13) {
-                nextFocus = false;
-            } else {
-                nextFocus = "compose-send-button";
-            }
         } else {
             nextFocus = false;
         }
@@ -156,7 +145,21 @@ exports.initialize = function () {
             // Case-insensitive.
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
-        sorter: typeahead_helper.sort_recipients,
+        sorter: function (matches) {
+            matches.sort(function (x, y) {
+                var x_count = typeahead_helper.private_message_mapped[x].count;
+                var y_count = typeahead_helper.private_message_mapped[y].count;
+
+                if (x_count > y_count) {
+                    return -1;
+                } else if (x_count < y_count) {
+                    return 1;
+                }
+                return 0;
+            });
+
+            return matches;
+        },
         updater: function (item) {
             var previous_recipients = get_cleaned_pm_recipients(this.query);
             previous_recipients.pop();
@@ -165,31 +168,6 @@ exports.initialize = function () {
                 previous_recipients += ", ";
             }
             return previous_recipients + typeahead_helper.private_message_mapped[item].email + ", ";
-        },
-        stopAdvance: true // Do not advance to the next field on a tab or enter
-    });
-
-    $( "#new_message_content" ).typeahead({
-        source: typeahead_helper.private_message_typeahead_list,
-        items: 2,
-        highlighter: composebox_typeahead_highlighter,
-        matcher: function (item) {
-            var strings = this.query.split(/[\s*(){}\[\]]/);
-            if (strings.length < 1) {
-                return false;
-            }
-            var current_recipient = strings[strings.length-1];
-            if (current_recipient.charAt(0) !== "@") {
-                return false;
-            }
-            current_recipient = current_recipient.substring(1);
-
-            // Case-insensitive.
-            return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
-        },
-        sorter: typeahead_helper.sort_recipients,
-        updater: function (item) {
-            return this.query.replace(/@\S+$/, "") + "@" + typeahead_helper.private_message_mapped[item].email.split("@")[0];
         },
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
