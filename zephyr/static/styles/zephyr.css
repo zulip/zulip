@@ -518,14 +518,6 @@ table.floating_recipient {
     padding-right: 40px;
 }
 
-#stream_or_private_message {
-    display: none;
-    margin: 3px;
-    padding: 5px;
-    width: 90%;
-    border: 1px solid grey;
-}
-
 #message-type-tabs {
     margin-top: 0px;
     margin-bottom: 0px;
