@@ -119,11 +119,11 @@ td.pointer {
 }
 
 .selected_message .messagebox {
-    background-color: #F2F2F2;
+    background-color: #F7F7F7;
 }
 
 .selected_message .messagebox.private-message {
-    background-color: #FDFFB5;
+    background-color: #FEFFCC;
 }
 
 .selected_message .pointer {
