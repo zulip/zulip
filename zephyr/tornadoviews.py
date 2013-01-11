@@ -68,7 +68,7 @@ def initialize_user_messages():
     global cache_minimum_id
     max_message_id, cache_minimum_id = populate_message_cache(CACHE_COUNT)
 
-    for um in UserMessage.objects.filter(message_id__gt=max_message_id - CACHE_COUNT).order_by("message_id"):
+    for um in UserMessage.objects.filter(message_id__gt=max_message_id - CACHE_COUNT).order_by("message"):
         add_user_message(um.user_profile_id, um.message_id)
 
 def add_user_message(user_profile_id, message_id):
