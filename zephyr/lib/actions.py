@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import User
 from zephyr.lib.context_managers import lockfile
-from zephyr.models import Realm, Stream, UserProfile, \
+from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, \
     DefaultStream, \
     MAX_MESSAGE_LENGTH, get_client
@@ -295,3 +295,21 @@ def set_default_streams(realm, stream_names):
 def add_default_subs(user_profile):
     for default in DefaultStream.objects.filter(realm=user_profile.realm):
         do_add_subscription(user_profile, default.stream)
+
+@transaction.commit_on_success
+def update_user_activity(request, user_profile, client):
+    current_time = timezone.now()
+    try:
+        (activity, created) = UserActivity.objects.get_or_create(
+            user_profile = user_profile,
+            client = client,
+            query = request.META["PATH_INFO"],
+            defaults={'last_visit': current_time, 'count': 0})
+    except IntegrityError:
+        transaction.commit()
+        activity = UserActivity.objects.get(user_profile = user_profile,
+                                            client = client,
+                                            query = request.META["PATH_INFO"])
+    activity.count += 1
+    activity.last_visit = current_time
+    activity.save()

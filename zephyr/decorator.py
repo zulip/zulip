@@ -7,6 +7,7 @@ from django.db import transaction, IntegrityError
 from django.conf import settings
 import simplejson
 from zephyr.lib.cache import cache_with_key
+from zephyr.lib.actions import update_user_activity
 
 from functools import wraps
 
@@ -28,24 +29,6 @@ def asynchronous(method):
 
 # I like the all-lowercase name better
 require_post = require_POST
-
-@transaction.commit_on_success
-def update_user_activity(request, user_profile, client):
-    current_time = now()
-    try:
-        (activity, created) = UserActivity.objects.get_or_create(
-            user_profile = user_profile,
-            client = client,
-            query = request.META["PATH_INFO"],
-            defaults={'last_visit': current_time, 'count': 0})
-    except IntegrityError:
-        transaction.commit()
-        activity = UserActivity.objects.get(user_profile = user_profile,
-                                            client = client,
-                                            query = request.META["PATH_INFO"])
-    activity.count += 1
-    activity.last_visit = current_time
-    activity.save()
 
 @cache_with_key(lambda user_profile_id: 'tornado_user_profile:%d' % (user_profile_id,))
 def get_tornado_user_profile(user_id):
