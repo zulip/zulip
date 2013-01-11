@@ -273,13 +273,22 @@ blockquote p {
 }
 
 #send_message_form .messagebox {
-    padding-right: 5px; /* normally 5px 14px; pull in the right a bit */
+    /* normally 5px 14px; pull in the right and bottom a bit */
+    padding-right: 5px;
+    padding-bottom: 0px;
     cursor: default;
 }
 
 #send_message_form .message_content {
     display: table-row;
     margin-right: 0px;
+}
+
+#tab-enter-message {
+    display: table-row;
+    font-size: 80%;
+    white-space: nowrap;
+    text-align: right;
 }
 
 .messagebox p {
@@ -391,6 +400,7 @@ textarea.new_message_textarea {
     width: 99%;
     min-height: 40px;
     max-height: 150px;
+    margin-bottom: 0px;
     resize: none;
 }
 
@@ -413,7 +423,6 @@ input.recipient_box {
     display: table-cell;
     vertical-align: bottom;
     padding-left: 21px;
-    padding-bottom: 9px;
     /* jQuery's slideDown() animation seems to compute the target height by
        drawing these elements in an (offscreen) context where they would reflow
        onto multiple lines.  We need to prevent that in order to avoid an
