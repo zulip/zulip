@@ -45,6 +45,9 @@ subprocess.check_call(["git", "fetch"], stdout=open('/dev/null', 'w'))
 subprocess.check_call(["git", "reset", "--hard", refname], stdout=open('/dev/null', 'w'))
 #subprocess.check_call(["python", "manage.py", "syncdb"], stdout=open('/dev/null', 'w'))
 
+# Delete all .pyc files to avoid old module files hanging around
+subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/dev/null', 'w'))
+
 # Restart the FastCGI process, which is running in a shell loop in screen.
 # TODO: real daemonization
 for cmd in ('runfcgi', 'runtornado'):
