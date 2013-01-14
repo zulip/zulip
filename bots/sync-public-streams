@@ -20,7 +20,7 @@ def fetch_public_streams():
         if res.get("result") == "success":
             streams = res["streams"]
         else:
-            logging.error("Error getting public streams:\n%s" % res)
+            logging.error("Error getting public streams:\n%s" % (res,))
             return None
     except Exception:
         logging.exception("Error getting public streams:")

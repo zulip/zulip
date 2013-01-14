@@ -153,19 +153,19 @@ def zephyr_bulk_subscribe(subs):
         # retrying the next time the bot checks its subscriptions are
         # up to date.
         logger.exception("Error subscribing to streams (will retry automatically):")
-        logging.warning("Streams were: %s" % ([cls for cls, instance, recipient in subs],))
+        logger.warning("Streams were: %s" % ([cls for cls, instance, recipient in subs],))
         return
     try:
         actual_zephyr_subs = [cls for (cls, _, _) in zephyr._z.getSubscriptions()]
     except IOError:
-        logging.exception("Error getting current Zephyr subscriptions")
+        logger.exception("Error getting current Zephyr subscriptions")
         # Don't add anything to current_zephyr_subs so that we'll
         # retry the next time we check for streams to subscribe to
         # (within 15 seconds).
         return
     for (cls, instance, recipient) in subs:
         if cls not in actual_zephyr_subs:
-            logging.error("Zephyr failed to subscribe us to %s; will retry" % (cls,))
+            logger.error("Zephyr failed to subscribe us to %s; will retry" % (cls,))
             try:
                 # We'll retry automatically when we next check for
                 # streams to subscribe to (within 15 seconds), but
@@ -211,13 +211,13 @@ def maybe_restart_mirroring_script():
             if child_pid is not None:
                 os.kill(child_pid, signal.SIGTERM)
         except OSError:
-            # We don't care if the child process no longer exists, so just print the error
-            logging.exception("")
+            # We don't care if the child process no longer exists, so just log the error
+            logger.exception("")
         try:
             zephyr._z.cancelSubs()
         except IOError:
             # We don't care whether we failed to cancel subs properly, but we should log it
-            logging.exception("")
+            logger.exception("")
         while True:
             try:
                 os.execvp(os.path.join(options.root_path, "user_root", "zephyr_mirror_backend.py"), sys.argv)
@@ -245,7 +245,7 @@ def process_loop(log):
         try:
             maybe_restart_mirroring_script()
         except Exception:
-            logging.exception("Error checking whether restart is required:")
+            logger.exception("Error checking whether restart is required:")
 
         time.sleep(sleep_time)
         sleep_count += sleep_time
@@ -256,7 +256,7 @@ def process_loop(log):
                 try:
                     update_subscriptions()
                 except Exception:
-                    logging.exception("Error updating subscriptions from Humbug:")
+                    logger.exception("Error updating subscriptions from Humbug:")
 
 def parse_zephyr_body(zephyr_data):
     try:
@@ -346,7 +346,7 @@ def process_notice(notice, log):
             if res.get("result") != "success":
                 logger.error("Error relaying zephyr:\n%s\n%s" % (zeph, res))
         except Exception:
-            logging.exception("Error relaying zephyr:")
+            logger.exception("Error relaying zephyr:")
         finally:
             os._exit(0)
 
@@ -366,7 +366,7 @@ def zephyr_subscribe_autoretry(sub):
             zephyr.Subscriptions().add(sub)
             return
         except IOError:
-            # Probably a SERVNAK from the zephyr server, but print the
+            # Probably a SERVNAK from the zephyr server, but log the
             # traceback just in case it's something else
             logger.exception("Error subscribing to personals (retrying).  Traceback:")
             time.sleep(1)
@@ -419,15 +419,15 @@ def send_zephyr(zwrite_args, content):
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate(input=content.encode("utf-8"))
     if p.returncode:
-        logging.error("zwrite command '%s' failed with return code %d:" % (
+        logger.error("zwrite command '%s' failed with return code %d:" % (
             " ".join(zwrite_args), p.returncode,))
         if stdout:
-            logging.info("stdout: " + stdout)
+            logger.info("stdout: " + stdout)
     elif stderr:
-        logging.warning("zwrite command '%s' printed the following warning:" % (
+        logger.warning("zwrite command '%s' printed the following warning:" % (
             " ".join(zwrite_args),))
     if stderr:
-        logging.warning("stderr: " + stderr)
+        logger.warning("stderr: " + stderr)
     return (p.returncode, stderr)
 
 def send_authed_zephyr(zwrite_args, content):
@@ -597,7 +597,7 @@ def add_humbug_subscriptions(verbose):
             zephyr_subscriptions.add(instance)
             continue
         elif cls.lower() == "mail" and instance.lower() == "inbox":
-            # We forward mail zephyrs, so no need to print a warning.
+            # We forward mail zephyrs, so no need to log a warning.
             continue
         elif len(cls) > 30:
             skipped.add((cls, instance, recipient, "Class longer than 30 characters"))
@@ -613,24 +613,20 @@ def add_humbug_subscriptions(verbose):
     if len(zephyr_subscriptions) != 0:
         res = humbug_client.add_subscriptions(list(zephyr_subscriptions))
         if res.get("result") != "success":
-            print "Error subscribing to streams:"
-            print res["msg"]
+            logger.error("Error subscribing to streams:\n%s" % (res["msg"],))
             return
 
         already = res.get("already_subscribed")
         new = res.get("subscribed")
         if verbose:
             if already is not None and len(already) > 0:
-                print
-                print "Already subscribed to:", ", ".join(already)
+                logger.info("\nAlready subscribed to: %s" % (", ".join(already),))
             if new is not None and len(new) > 0:
-                print
-                print "Successfully subscribed to:",  ", ".join(new)
+                logger.info("\nSuccessfully subscribed to: %s" % (", ".join(new),))
 
     if len(skipped) > 0:
         if verbose:
-            print
-            print "\n".join(textwrap.wrap("""\
+            logger.info("\n" + "\n".join(textwrap.wrap("""\
 You have some lines in ~/.zephyr.subs that could not be
 synced to your Humbug subscriptions because they do not
 use "*" as both the instance and recipient and not one of
@@ -639,27 +635,23 @@ Humbug has a mechanism for forwarding.  Humbug does not
 allow subscribing to only some subjects on a Humbug
 stream, so this tool has not created a corresponding
 Humbug subscription to these lines in ~/.zephyr.subs:
-"""))
-            print
+""")) + "\n")
 
     for (cls, instance, recipient, reason) in skipped:
         if verbose:
             if reason != "":
-                print "  [%s,%s,%s] (%s)" % (cls, instance, recipient, reason)
+                logger.info("  [%s,%s,%s] (%s)" % (cls, instance, recipient, reason))
             else:
-                print "  [%s,%s,%s]" % (cls, instance, recipient, reason)
+                logger.info("  [%s,%s,%s]" % (cls, instance, recipient))
     if len(skipped) > 0:
         if verbose:
-            print
-            print "\n".join(textwrap.wrap("""\
+            logger.info("\n" + "\n".join(textwrap.wrap("""\
 If you wish to be subscribed to any Humbug streams related
 to these .zephyrs.subs lines, please do so via the Humbug
 web interface.
-"""))
-            print
+""")) + "\n")
     if verbose:
-        print
-        print "IMPORTANT: Please reload the Humbug app for these changes to take effect."
+        logger.info("\nIMPORTANT: Please reload the Humbug app for these changes to take effect.\n")
 
 def valid_stream_name(name):
     return name != ""
@@ -669,7 +661,7 @@ def parse_zephyr_subs(verbose=False):
     subs_file = os.path.join(os.environ["HOME"], ".zephyr.subs")
     if not os.path.exists(subs_file):
         if verbose:
-            print >>sys.stderr, "Couldn't find ~/.zephyr.subs!"
+            logger.error("Couldn't find ~/.zephyr.subs!")
         return []
 
     for line in file(subs_file, "r").readlines():
@@ -683,11 +675,11 @@ def parse_zephyr_subs(verbose=False):
             recipient = recipient.replace("%me%", options.user)
             if not valid_stream_name(cls):
                 if verbose:
-                    print >>sys.stderr, "Skipping subscription to unsupported class name: [%s]" % (line,)
+                    logger.error("Skipping subscription to unsupported class name: [%s]" % (line,))
                 continue
         except Exception:
             if verbose:
-                print >>sys.stderr, "Couldn't parse ~/.zephyr.subs line: [%s]" % (line,)
+                logger.error("Couldn't parse ~/.zephyr.subs line: [%s]" % (line,))
             continue
         zephyr_subscriptions.add((cls.strip(), instance.strip(), recipient.strip()))
     return zephyr_subscriptions
@@ -705,7 +697,7 @@ def fetch_fullname(username):
 
     return username
 
-def configure_logger(direction_name):
+def open_logger():
     if options.forward_class_messages:
         if options.test_mode:
             log_file = "/home/humbug/test-mirror-log"
@@ -719,7 +711,7 @@ def configure_logger(direction_name):
         # reopen it anyway.
         f.close()
     logger = logging.getLogger(__name__)
-    log_format = "%(asctime)s " + direction_name + ": %(message)s"
+    log_format = "%(asctime)s <initial>: %(message)s"
     formatter = logging.Formatter(log_format)
     logging.basicConfig(format=log_format)
     logger.setLevel(logging.DEBUG)
@@ -727,6 +719,20 @@ def configure_logger(direction_name):
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     return logger
+
+def configure_logger(logger, direction_name):
+    if direction_name is None:
+        log_format = "%(message)s"
+    else:
+        log_format = "%(asctime)s [" + direction_name + "] %(message)s"
+    formatter = logging.Formatter(log_format)
+
+    # Replace the formatters for the file and stdout loggers
+    for handler in logger.handlers:
+        handler.setFormatter(formatter)
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers:
+        handler.setFormatter(formatter)
 
 def parse_args():
     parser = optparse.OptionParser()
@@ -791,7 +797,7 @@ def die_gracefully(signal, frame):
             zephyr._z.cancelSubs()
         except IOError:
             # We don't care whether we failed to cancel subs properly, but we should log it
-            logging.exception("")
+            logger.exception("")
 
     sys.exit(1)
 
@@ -808,6 +814,9 @@ if __name__ == "__main__":
 
     (options, args) = parse_args()
 
+    logger = open_logger()
+    configure_logger(logger, "parent")
+
     # The 'api' directory needs to go first, so that 'import humbug' won't pick
     # up some other directory named 'humbug'.
     pyzephyr_lib_path = "python-zephyr/build/lib.linux-" + os.uname()[4] + "-2.6/"
@@ -823,10 +832,10 @@ if __name__ == "__main__":
         api_key = os.environ.get("HUMBUG_API_KEY")
     else:
         if not os.path.exists(options.api_key_file):
-            print "\n".join(textwrap.wrap("""\
+            logger.error("\n" + "\n".join(textwrap.wrap("""\
 Could not find API key file.
 You need to either place your api key file at %s,
-or specify the --api-key-file option.""" % (options.api_key_file,)))
+or specify the --api-key-file option.""" % (options.api_key_file,))))
             sys.exit(1)
         api_key = file(options.api_key_file).read().strip()
         # Store the API key in the environment so that our children
@@ -845,7 +854,8 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
     start_time = time.time()
 
     if options.sync_subscriptions:
-        print "Syncing your ~/.zephyr.subs to your Humbug Subscriptions!"
+        configure_logger(logger, None)  # make the output cleaner
+        logger.info("Syncing your ~/.zephyr.subs to your Humbug Subscriptions!")
         add_humbug_subscriptions(True)
         sys.exit(0)
 
@@ -863,12 +873,12 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
                 continue
 
             # Another copy of zephyr_mirror.py!  Kill it.
-            print "Killing duplicate zephyr_mirror process %s" % (pid,)
+            logger.info("Killing duplicate zephyr_mirror process %s" % (pid,))
             try:
                 os.kill(pid, signal.SIGINT)
             except OSError:
-                # We don't care if the target process no longer exists, so just print the error
-                traceback.print_exc()
+                # We don't care if the target process no longer exists, so just log the error
+                logger.exception("")
 
     if options.shard is not None and set(options.shard) != set("a"):
         # The shard that is all "a"s is the one that handles personals
@@ -881,7 +891,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
         if child_pid == 0:
             CURRENT_STATE = States.HumbugToZephyr
             # Run the humbug => zephyr mirror in the child
-            logger = configure_logger("humbug=>zephyr")
+            configure_logger(logger, "humbug=>zephyr")
             zsig_fullname = fetch_fullname(options.user)
             humbug_to_zephyr(options)
             sys.exit(0)
@@ -897,12 +907,12 @@ or specify the --api-key-file option.""" % (options.api_key_file,)))
             zephyr.init()
             break
         except IOError:
-            traceback.print_exc()
+            logger.exception("")
             time.sleep(1)
     logger_name = "zephyr=>humbug"
     if options.shard is not None:
         logger_name += "(%s)" % (options.shard,)
-    logger = configure_logger(logger_name)
+    configure_logger(logger, logger_name)
     # Have the kernel reap children for when we fork off processes to send Humbugs
     signal.signal(signal.SIGCHLD, signal.SIG_IGN)
     zephyr_to_humbug(options)
