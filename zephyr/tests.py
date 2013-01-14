@@ -768,7 +768,7 @@ class InviteUserTest(AuthedTestCase):
         email to be sent.
         """
         self.login("hamlet@humbughq.com")
-        self.assert_json_success(self.invite("alice-test@humbughq.com", streams=["Denmark"]))
+        self.assert_json_success(self.invite("alice-test@humbughq.com", ["Denmark"]))
         self.assertTrue(find_key_by_email("alice-test@humbughq.com"))
 
     def test_multi_user_invite(self):
@@ -782,7 +782,7 @@ class InviteUserTest(AuthedTestCase):
 dave-test@humbughq.com
 
 
-earl-test@humbughq.com""", streams=["Denmark"]))
+earl-test@humbughq.com""", ["Denmark"]))
         for user in ("bob", "carol", "dave", "earl"):
             self.assertTrue(find_key_by_email("%s-test@humbughq.com" % user))
 
