@@ -805,7 +805,7 @@ earl-test@humbughq.com""", streams=["Denmark"]))
         Tests inviting to a non-existent stream.
         """
         self.login("hamlet@humbughq.com")
-        self.assert_json_error(self.invite("iago-test@humbughq.com", {"NotARealStream"}),
+        self.assert_json_error(self.invite("iago-test@humbughq.com", ["NotARealStream"]),
                 "Stream does not exist: NotARealStream. No invites were sent.")
 
 class ChangeSettingsTest(AuthedTestCase):
