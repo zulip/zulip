@@ -549,13 +549,16 @@ table.floating_recipient {
     text-overflow: ellipsis;
 }
 
+.hotkeys_table {
+    float: left;
+    width: 250px;
+    margin-right: 10px;
+    font-size: 90%;
+}
+
 .hotkeys_table .hotkey {
     text-align: right;
     font-weight: bold;
-}
-
-.hotkeys_table .hotkey_heading {
-    padding-top: 1em;
 }
 
 .cursor_pointer {
