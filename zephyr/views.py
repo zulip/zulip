@@ -868,9 +868,9 @@ def add_subscriptions_backend(request, user_profile,
         stream = create_stream_if_needed(subscriber.realm, stream_name)
         did_subscribe = do_add_subscription(subscriber, stream)
         if did_subscribe:
-            result["subscribed"].append(stream_name)
+            result["subscribed"].append(stream.name)
         else:
-            result["already_subscribed"].append(stream_name)
+            result["already_subscribed"].append(stream.name)
 
     # Inform the user if someone else subscribed them to stuff
     if subscriber != user_profile and result["subscribed"]:
