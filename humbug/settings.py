@@ -263,7 +263,7 @@ DEFAULT_FROM_EMAIL = "Humbug <humbug@humbughq.com>"
 
 LOGIN_REDIRECT_URL='/'
 
-MESSAGE_LOG="all_messages_log." + platform.node()
+EVENT_LOG_DIR = 'event_log'
 
 # Polling timeout for get_updates, in milliseconds.
 # We configure this here so that the client test suite can override it.

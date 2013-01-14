@@ -19,7 +19,7 @@ POLL_TIMEOUT = 1000
 ENABLE_NOTIFICATIONS = False
 
 # Don't use the real message log for tests
-MESSAGE_LOG = "/tmp/test-message-log"
+EVENT_LOG_DIR = '/tmp/humbug-test-event-log'
 
 # Print our emails rather than sending them
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'

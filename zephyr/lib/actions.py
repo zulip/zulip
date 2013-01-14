@@ -21,13 +21,25 @@ import re
 import requests
 import hashlib
 import base64
+import datetime
+import os
+import platform
+from os import path
 
 # Store an event in the log for re-importing messages
 def log_event(event):
     if "timestamp" not in event:
         event["timestamp"] = time.time()
-    with lockfile(settings.MESSAGE_LOG + '.lock'):
-        with open(settings.MESSAGE_LOG, 'a') as log:
+
+    if not path.exists(settings.EVENT_LOG_DIR):
+        os.mkdir(settings.EVENT_LOG_DIR)
+
+    template = path.join(settings.EVENT_LOG_DIR,
+        '%s.' + platform.node()
+        + datetime.datetime.now().strftime('.%Y-%m-%d'))
+
+    with lockfile(template % ('lock',)):
+        with open(template % ('events',), 'a') as log:
             log.write(simplejson.dumps(event) + '\n')
 
 # create_user_hack is the same as Django's User.objects.create_user,

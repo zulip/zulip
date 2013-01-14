@@ -20,8 +20,10 @@ from zephyr.models import MAX_MESSAGE_LENGTH
 import simplejson
 import datetime
 import random
+import glob
 import sys
 import os
+from os import path
 from optparse import make_option
 
 settings.TORNADO_SERVER = None
@@ -352,9 +354,11 @@ def restore_saved_messages():
         else:
             raise ValueError('Bad message type')
 
-    with file(settings.MESSAGE_LOG, "r") as message_log:
-        for line in message_log.readlines():
-            process_line(line)
+    event_glob = path.join(settings.EVENT_LOG_DIR, 'events.*')
+    for filename in sorted(glob.glob(event_glob)):
+        with file(filename, "r") as message_log:
+            for line in message_log.readlines():
+                process_line(line)
 
     stream_recipients = {}
     user_recipients = {}
