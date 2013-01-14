@@ -211,10 +211,10 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
 
     streams = []
     for stream_name in stream_names:
-        try:
-            streams.append(Stream.objects.get(realm=user_profile.realm, name__iexact=stream_name))
-        except Stream.DoesNotExist:
+        stream = get_stream(stream_name, user_profile.realm)
+        if stream is None:
             return json_error("Stream does not exist: %s. No invites were sent." % stream_name)
+        streams.append(stream)
 
     new_prereg_users = []
     errors = []
@@ -437,10 +437,8 @@ class NarrowBuilder(object):
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
     def by_stream(self, operand):
-        try:
-            stream = Stream.objects.get(realm=self.user_profile.realm,
-                                        name__iexact=operand)
-        except Stream.DoesNotExist:
+        stream = get_stream(operand, self.user_profile.realm)
+        if stream is None:
             raise BadNarrowOperator('unknown stream ' + operand)
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
         return Q(recipient=recipient)
@@ -712,9 +710,8 @@ def send_message_backend(request, user_profile, client,
         # if not valid_stream_name(subject_name):
         #     return json_error("Invalid subject name")
 
-        try:
-            stream = Stream.objects.get(realm=user_profile.realm, name__iexact=stream_name)
-        except Stream.DoesNotExist:
+        stream = get_stream(stream_name, user_profile.realm)
+        if stream is None:
             return json_error("Stream does not exist")
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     elif message_type_name == 'private':
@@ -903,9 +900,8 @@ def get_subscribers_backend(request, user_profile, stream_name=POST('stream')):
     if user_profile.realm.domain == "mit.edu":
         return json_error("You cannot get subscribers in this realm")
 
-    try:
-        stream = Stream.objects.get(name=stream_name, realm=user_profile.realm)
-    except Stream.DoesNotExist:
+    stream = get_stream(stream_name, user_profile.realm)
+    if stream is None:
         return json_error("Stream does not exist: %s" % stream_name)
     subscriptions = Subscription.objects.filter(recipient__type=Recipient.STREAM,
                                                 recipient__type_id=stream.id,
