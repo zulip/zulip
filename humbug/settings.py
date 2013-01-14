@@ -225,6 +225,7 @@ PIPELINE_JS = {
             'js/zephyr.js',
             'js/activity.js',
             'js/colorspace.js',
+            'js/timerender.js',
         ),
         'output_filename': 'min/app.js'
     },

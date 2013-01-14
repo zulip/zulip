@@ -54,6 +54,9 @@ var globals =
     // invite.js
     + ' invite'
 
+    // timerender.js
+    + ' timerender'
+
     // ui.js
     + ' ui'
 
