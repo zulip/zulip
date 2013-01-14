@@ -310,7 +310,7 @@ $(function () {
                 if (data.subscribed.length) {
                     error_elem.addClass("hide");
                     warning_elem.addClass("hide");
-                    list.prepend('<li>' + principal);
+                    $('<li>').prependTo(list).text(principal);
                 } else {
                     error_elem.addClass("hide");
                     warning_elem.removeClass("hide").text("User already subscribed");
@@ -342,7 +342,7 @@ $(function () {
             data: {stream: stream},
             success: function (data) {
                 $.each(data.subscribers.sort(), function (idx, elem) {
-                    list.append('<li>' + elem);
+                    $('<li>').appendTo(list).text(elem);
                 });
             },
             error: function (xhr) {
