@@ -2,6 +2,7 @@ var message_array = [];
 var message_dict = {};
 var message_in_table = {zhome: {}, zfilt: {}};
 var subject_dict = {};
+var people_dict = {};
 
 var viewport = $(window);
 
@@ -27,6 +28,17 @@ var message_groups = {
 };
 
 var disable_pointer_movement = false;
+
+function add_person(person) {
+    people_list.push(person);
+    people_dict[person.email] = person;
+}
+
+$(function () {
+    $.each(people_list, function (idx, person) {
+        people_dict[person.email] = person;
+    });
+});
 
 // Why do we look at the 'bottom' in above_view_threshold and the top
 // in below_view_threshold as opposed to vice versa?  Mostly to handle
@@ -452,7 +464,7 @@ function add_message_metadata(message, dummy) {
         // Do the hasOwnProperty() call via the prototype to avoid problems
         // with keys like "hasOwnProperty"
         if (! typeahead_helper.known_to_typeahead(person)) {
-            people_list.push(person);
+            add_person(person);
             typeahead_helper.autocomplete_needs_update(true);
         }
     });
