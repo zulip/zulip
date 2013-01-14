@@ -105,9 +105,7 @@ ul#sidebar {
     border: 1px solid #EEE;
     max-width: 640px;
     background-color: white;
-    padding-left: 10px;
-    padding-right: 20px;
-    padding-top: 8px;
+    padding: 8px 20px 8px 10px;
     box-shadow: 0px 3px 7px rgba(0, 0, 0, 0.3);
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
