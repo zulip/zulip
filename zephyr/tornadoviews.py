@@ -1,3 +1,4 @@
+from django.conf import settings
 from zephyr.models import Message, UserProfile, UserMessage, UserActivity
 
 from zephyr.decorator import asynchronous, authenticated_api_view, \
@@ -6,6 +7,7 @@ from zephyr.decorator import asynchronous, authenticated_api_view, \
     JsonableError
 from zephyr.lib.response import json_success, json_error
 
+import os
 import datetime
 import simplejson
 import socket
@@ -13,10 +15,10 @@ import time
 import collections
 import sys
 import logging
+import subprocess
 from django.core.cache import cache
 from zephyr.lib.cache import cache_with_key
-from zephyr.lib.message_cache import cache_save_message, cache_get_message, \
-    populate_message_cache
+from zephyr.lib.message_cache import cache_save_message, cache_get_message
 
 SERVER_GENERATION = int(time.time())
 
@@ -73,6 +75,10 @@ def initialize_user_messages():
 
     for um in UserMessage.objects.filter(message_id__gte=cache_minimum_id).order_by("message"):
         add_user_message(um.user_profile_id, um.message_id)
+
+    # Filling the memcached cache is a little slow, so do it in a child process.
+    subprocess.Popen(["python", os.path.join(os.path.dirname(__file__), "..", "manage.py"),
+                      "fill_message_cache"])
 
 def add_user_message(user_profile_id, message_id):
     if cache_minimum_id == sys.maxint:
