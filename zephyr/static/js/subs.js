@@ -310,7 +310,8 @@ $(function () {
                 if (data.subscribed.length) {
                     error_elem.addClass("hide");
                     warning_elem.addClass("hide");
-                    $('<li>').prependTo(list).text(principal);
+                    var subscriber = people_dict[principal].full_name + ' <' + principal + '>';
+                    $('<li>').prependTo(list).text(subscriber);
                 } else {
                     error_elem.addClass("hide");
                     warning_elem.removeClass("hide").text("User already subscribed");
@@ -341,7 +342,10 @@ $(function () {
             dataType: 'json', // This seems to be ignored. We still get back an xhr.
             data: {stream: stream},
             success: function (data) {
-                $.each(data.subscribers.sort(), function (idx, elem) {
+                var subscribers = $.map(data.subscribers, function (elem) {
+                    return people_dict[elem].full_name + ' <' + elem + '>';
+                });
+                $.each(subscribers.sort(), function (idx, elem) {
                     $('<li>').appendTo(list).text(elem);
                 });
             },
