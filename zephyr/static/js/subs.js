@@ -341,7 +341,7 @@ $(function () {
             dataType: 'json', // This seems to be ignored. We still get back an xhr.
             data: {stream: stream},
             success: function (data) {
-                $.each(data.subscribers, function (idx, elem) {
+                $.each(data.subscribers.sort(), function (idx, elem) {
                     list.append('<li>' + elem);
                 });
             },
