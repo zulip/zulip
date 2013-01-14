@@ -26,7 +26,7 @@ autofocus('#id_username');
 </div>
 {% endif %}
 
-<form method="post" class="form-horizontal"
+<form name="login_form" method="post" class="form-horizontal"
       action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
     {% csrf_token %}
     <div class="control-group">
@@ -49,5 +49,10 @@ autofocus('#id_username');
         </div>
     </div>
 </form>
+<script type="text/javascript">
+if (window.location.hash.substring(0, 1) === "#") {
+    document.login_form.action += window.location.hash;
+}
+</script>
 
 {% endblock %}
