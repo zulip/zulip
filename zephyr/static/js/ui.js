@@ -685,6 +685,8 @@ $(function () {
     $("#search_up")  .on("click", function () { search.search_button_handler(true); });
     $("#search_down").on("click", function () { search.search_button_handler(false); });
     $("#search_exit").on("click", search.clear_search);
+
+    $("#stream").on('blur', function () { compose.decorate_stream_bar(this.value); });
 });
 
 return exports;

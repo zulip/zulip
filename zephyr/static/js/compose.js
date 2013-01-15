@@ -51,6 +51,15 @@ function show(tabname, focus_area) {
     focus_area.select();
 }
 
+// In an attempt to decrease mixing, make the composebox's
+// stream bar look like what you're replying to.
+// (In particular, if there's a color associated with it,
+//  have that color be reflected here too.)
+exports.decorate_stream_bar = function (stream_name) {
+    var color = subs.get_color(stream_name);
+    $("#stream-message .message_header_stream").css("background-color", color);
+};
+
 exports.start = function (msg_type, opts) {
     if (reload.is_in_progress()) {
         return;
@@ -89,6 +98,7 @@ exports.start = function (msg_type, opts) {
     }
 
     is_composing_message = msg_type;
+    exports.decorate_stream_bar(opts.stream);
     $(document).trigger($.Event('compose_started.zephyr', opts));
 };
 
