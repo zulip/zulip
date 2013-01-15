@@ -98,6 +98,9 @@ class Stream(models.Model):
     def __str__(self):
         return self.__repr__()
 
+    def is_public(self):
+        return self.realm.domain in ["humbughq.com"]
+
     class Meta:
         unique_together = ("name", "realm")
 
