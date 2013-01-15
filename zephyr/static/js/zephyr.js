@@ -548,6 +548,8 @@ function get_updates(options) {
 
     get_updates_params.pointer = furthest_read;
     get_updates_params.dont_block = options.dont_block || get_updates_failures > 0;
+    if (lurk_stream !== undefined)
+        get_updates_params.stream_name = lurk_stream;
     if (reload.is_pending()) {
         // We only send a server_generation to the server if we're
         // interested in an immediate reply to tell us if we need to
@@ -633,6 +635,9 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
     }
 
     var data = {anchor: anchor, num_before: num_before, num_after: num_after};
+
+    if (lurk_stream !== undefined)
+        data.stream = lurk_stream;
 
     if (for_narrow && narrow.active())
         data.narrow = JSON.stringify(narrow.operators());

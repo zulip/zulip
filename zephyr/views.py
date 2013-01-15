@@ -309,21 +309,45 @@ def home(request):
 
     user_profile = UserProfile.objects.get(user=request.user)
 
-    num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
+    lurk_stream = None
+    lurk_name = request.GET.get('lurk')
+    if lurk_name is not None:
+        try:
+            lurk_stream = get_public_stream(request, lurk_name, user_profile.realm)
+        except JsonableError:
+            # Something bad happened, e.g. nonexistent or non-public stream.
+            # Fall back to the regular Home view as though we never existed.
+            lurk_name = None
 
-    if user_profile.pointer == -1 and num_messages > 0:
-        # Put the new user's pointer at the bottom
-        #
-        # This improves performance, because we limit backfilling of messages
-        # before the pointer.  It's also likely that someone joining an
-        # organization is interested in recent messages more than the very
-        # first messages on the system.
+    if lurk_stream is not None:
+        recipient = Recipient.objects.get(type_id=lurk_stream.id, type=Recipient.STREAM)
+        num_messages = Message.objects.filter(recipient=recipient).count()
 
-        max_id = (UserMessage.objects.filter(user_profile=user_profile)
-                                     .order_by('message')
-                                     .reverse()[0]).message_id
-        user_profile.pointer = max_id
-        user_profile.last_pointer_updater = request.session.session_key
+        # There are no per-user-and-stream pointers, so let's have the
+        # client initially select the most recent message to the
+        # stream.
+        if num_messages > 0:
+            initial_pointer = Message.objects.filter(recipient=recipient).order_by('id').reverse()[0].id
+        else:
+            initial_pointer = -1
+    else:
+        num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
+
+        if user_profile.pointer == -1 and num_messages > 0:
+            # Put the new user's pointer at the bottom
+            #
+            # This improves performance, because we limit backfilling of messages
+            # before the pointer.  It's also likely that someone joining an
+            # organization is interested in recent messages more than the very
+            # first messages on the system.
+
+            max_id = (UserMessage.objects.filter(user_profile=user_profile)
+                                         .order_by('message')
+                                         .reverse()[0]).message_id
+            user_profile.pointer = max_id
+            user_profile.last_pointer_updater = request.session.session_key
+
+        initial_pointer = user_profile.pointer
 
     # Populate personals autocomplete list based on everyone in your
     # realm.  Later we might want a 2-layer autocomplete, where we
@@ -356,6 +380,8 @@ def home(request):
                                'people'      : people,
                                'streams'     : streams,
                                'poll_timeout': settings.POLL_TIMEOUT,
+                               'initial_pointer':
+                                   initial_pointer,
                                'have_initial_messages':
                                    js_bool(num_messages > 0),
                                'desktop_notifications_enabled':
@@ -363,7 +389,9 @@ def home(request):
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
                                'show_activity': can_view_activity(request),
-                               'show_invites': show_invites },
+                               'show_invites': show_invites,
+                               'lurk_stream': lurk_name
+                               },
                               context_instance=RequestContext(request))
 
 @authenticated_api_view
@@ -494,6 +522,16 @@ def narrow_parameter(json):
             raise ValueError("element is not a string pair")
     return data
 
+def get_public_stream(request, stream, realm):
+    if not valid_stream_name(stream):
+        raise JsonableError("Invalid stream name")
+    stream = get_stream(stream, realm)
+    if stream is None:
+        raise JsonableError("Stream does not exist")
+    if not stream.is_public():
+        raise JsonableError("Stream is not public")
+    return stream
+
 @has_request_variables
 def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_int),
                              num_before = POST(converter=to_non_negative_int),
@@ -502,13 +540,7 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
                              stream = POST(default=None),
                              user_profile=None, apply_markdown=True):
     if stream is not None:
-        if not valid_stream_name(stream):
-            return json_error("Invalid stream name")
-        stream = get_stream(stream, user_profile.realm)
-        if stream is None:
-            return json_error("Stream does not exist")
-        if not stream.is_public():
-            return json_error("Stream is not public")
+        stream = get_public_stream(request, stream, user_profile.realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         query = Message.objects.select_related().filter(recipient = recipient).order_by('id')
     else:
