@@ -328,11 +328,11 @@ function search(term, highlighted_message, reverse) {
 
 function highlight_match(row, search_term) {
     $('table tr').removeHighlight();
-    row.highlight(search_term);
+    row.find('.message_content').highlight(search_term);
 
     row = row.prev('.recipient_row');
     if ((row.length !== 0) && (match_on_visible_text(row, search_term))) {
-        row.highlight(search_term);
+        row.find('.message_label_clickable').highlight(search_term);
     }
 }
 
