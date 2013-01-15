@@ -270,6 +270,7 @@ class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
     active = models.BooleanField(default=True)
+    in_home_view = models.NullBooleanField(default=True)
 
     class Meta:
         unique_together = ("user_profile", "recipient")
