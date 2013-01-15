@@ -515,7 +515,7 @@ table.floating_recipient {
     font-weight: bold;
 }
 
-#loading_spinner {
+.loading_spinner {
     width: 40px;
     padding-right: 40px;
 }

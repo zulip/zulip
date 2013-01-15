@@ -8,7 +8,7 @@ $(function () {
     // Display loading indicator.  This disappears after the first
     // get_updates completes.
     if (have_initial_messages) {
-        loading_spinner = new Spinner().spin($('#loading_spinner')[0]);
+        loading_spinner = util.make_spinner($('#loading_indicator'), 'Loading...');
     } else {
         $('#loading_indicator').hide();
     }

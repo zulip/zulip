@@ -367,15 +367,9 @@ exports.wait_for_gravatar = function () {
 var load_more_messages_spinner;
 exports.show_load_more_messages_spinner = function () {
     if (load_more_messages_spinner === undefined) {
-        load_more_messages_spinner = new Spinner({
-            lines: 8,
-            length: 0,
-            width: 9,
-            radius: 9,
-            speed: 1.25,
-            shadow: false
-        }).spin($('#load_more_messages_spinner')[0]);
-        $("#load_more_messages_indicator").show();
+        var indicator = $('#load_more_messages_indicator');
+        load_more_messages_spinner = util.make_spinner(indicator, '');
+        indicator.show();
         hide_floating_recipient_bar();
     }
 };
