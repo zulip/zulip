@@ -168,10 +168,21 @@ def do_send_message(message, no_log=False):
         # doesn't have to.
         message.to_dict(apply_markdown=True)
         message.to_dict(apply_markdown=False)
-        requests.post(settings.TORNADO_SERVER + '/notify_new_message', data=dict(
+        data = dict(
             secret   = settings.SHARED_SECRET,
             message  = message.id,
-            users    = simplejson.dumps([str(user.id) for user in recipients])))
+            users    = simplejson.dumps([str(user.id) for user in recipients]))
+        if message.recipient.type == Recipient.STREAM:
+            # Note: This is where authorization for single-stream
+            # get_updates happens! We only attach stream data to the
+            # notify_new_message request if it's a public stream,
+            # ensuring that in the tornado server, non-public stream
+            # messages are only associated to their subscribed users.
+            stream = Stream.objects.get(id=message.recipient.type_id)
+            if stream.is_public():
+                data['realm_id'] = stream.realm.id
+                data['stream_name'] = stream.name
+        requests.post(settings.TORNADO_SERVER + '/notify_new_message', data=data)
 
 def create_stream_if_needed(realm, stream_name):
     (stream, created) = Stream.objects.get_or_create(
