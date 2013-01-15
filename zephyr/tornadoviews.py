@@ -263,7 +263,8 @@ def format_updates_response(messages=[], apply_markdown=True,
 
 def return_messages_immediately(user_profile, client_id, last,
                                 client_server_generation,
-                                client_pointer, dont_block, **kwargs):
+                                client_pointer, dont_block,
+                                stream_name, **kwargs):
     update_types = []
     new_pointer = None
     if dont_block:
@@ -279,7 +280,10 @@ def return_messages_immediately(user_profile, client_id, last,
         update_types.append("pointer_update")
 
     if last is not None:
-        message_ids = fetch_user_messages(user_profile.id, last)
+        if stream_name is not None:
+            message_ids = fetch_stream_messages(user_profile.realm.id, stream_name, last)
+        else:
+            message_ids = fetch_user_messages(user_profile.id, last)
         messages = map(cache_get_message, message_ids)
 
         # Filter for mirroring before checking whether there are any
@@ -322,6 +326,11 @@ def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
         handler.set_status(400)
     handler.finish(response)
 
+# Note: We allow any stream name at all here! Validation and
+# authorization (is the stream "public") are handled by the caller of
+# notify_new_message. If a user makes a get_updates request for a
+# nonexistent or non-public stream, they won't get an error -- they'll
+# just never receive any messages.
 @has_request_variables
 def get_updates_backend(request, user_profile, handler, client_id,
                         last = POST(converter=to_non_negative_int, default=None),
@@ -329,11 +338,12 @@ def get_updates_backend(request, user_profile, handler, client_id,
                                                         converter=int),
                         client_pointer = POST(whence='pointer', converter=int, default=None),
                         dont_block = POST(converter=simplejson.loads, default=False),
+                        stream_name = POST(default=None),
                         **kwargs):
     resp = return_messages_immediately(user_profile, client_id, last,
                                        client_server_generation,
                                        client_pointer,
-                                       dont_block, **kwargs)
+                                       dont_block, stream_name, **kwargs)
     if resp is not None:
         send_with_safety_check(resp, handler, **kwargs)
 
@@ -379,7 +389,10 @@ def get_updates_backend(request, user_profile, handler, client_id,
         except socket.error:
             pass
 
-    add_user_receive_callback(user_profile, handler.async_callback(cb))
+    if stream_name is not None:
+        add_stream_receive_callback(user_profile.realm.id, stream_name, handler.async_callback(cb))
+    else:
+        add_user_receive_callback(user_profile, handler.async_callback(cb))
     if client_pointer is not None:
         add_pointer_update_callback(user_profile, handler.async_callback(cb))
 

@@ -499,8 +499,20 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
                              num_before = POST(converter=to_non_negative_int),
                              num_after = POST(converter=to_non_negative_int),
                              narrow = POST('narrow', converter=narrow_parameter, default=None),
+                             stream = POST(default=None),
                              user_profile=None, apply_markdown=True):
-    query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
+    if stream is not None:
+        if not valid_stream_name(stream):
+            return json_error("Invalid stream name")
+        stream = get_stream(stream, user_profile.realm)
+        if stream is None:
+            return json_error("Stream does not exist")
+        if not stream.is_public():
+            return json_error("Stream is not public")
+        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        query = Message.objects.select_related().filter(recipient = recipient).order_by('id')
+    else:
+        query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
 
     if narrow is not None:
         build = NarrowBuilder(user_profile)
