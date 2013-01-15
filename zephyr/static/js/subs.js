@@ -343,6 +343,10 @@ $(function () {
             data: {stream: stream},
             success: function (data) {
                 var subscribers = $.map(data.subscribers, function (elem) {
+                    var person = people_dict[elem];
+                    if (person === undefined) {
+                        return elem;
+                    }
                     return people_dict[elem].full_name + ' <' + elem + '>';
                 });
                 $.each(subscribers.sort(), function (idx, elem) {
