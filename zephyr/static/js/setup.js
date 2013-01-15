@@ -1,16 +1,16 @@
 // Miscellaneous early setup.
 // This is the first of our Javascript files to be included.
 
-var loading_spinner;
+var page_loading_spinner;
 var templates = {};
 var csrf_token;
 $(function () {
     // Display loading indicator.  This disappears after the first
     // get_updates completes.
     if (have_initial_messages) {
-        loading_spinner = util.make_spinner($('#loading_indicator'), 'Loading...');
+        page_loading_spinner = util.make_spinner($('#page_loading_indicator'), 'Loading...');
     } else {
-        $('#loading_indicator').hide();
+        $('#page_loading_indicator').hide();
     }
 
     // Compile Handlebars templates.

@@ -479,10 +479,10 @@ function add_messages(messages, add_to_home) {
     if (!messages)
         return;
 
-    if (loading_spinner) {
-        loading_spinner.stop();
-        $('#loading_indicator').hide();
-        loading_spinner = undefined;
+    if (page_loading_spinner) {
+        page_loading_spinner.stop();
+        $('#page_loading_indicator').hide();
+        page_loading_spinner = undefined;
     }
     messages = $.map(messages, add_message_metadata);
 

@@ -509,7 +509,7 @@ table.floating_recipient {
     display: none;
 }
 
-#loading_indicator {
+#page_loading_indicator {
     margin-top:  40px;
     font-size:   36px;
     font-weight: bold;
