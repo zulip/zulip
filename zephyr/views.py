@@ -333,8 +333,7 @@ def home(request):
     people = [{'email'     : profile.user.email,
                'full_name' : profile.full_name}
               for profile in
-              UserProfile.objects.select_related().filter(realm=user_profile.realm) if
-              profile != user_profile]
+              UserProfile.objects.select_related().filter(realm=user_profile.realm)]
 
     subscriptions = Subscription.objects.select_related().filter(user_profile_id=user_profile, active=True)
     streams = [get_display_recipient(sub.recipient) for sub in subscriptions
