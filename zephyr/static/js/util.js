@@ -15,14 +15,23 @@ exports.reset_favicon = function () {
 };
 
 exports.make_spinner = function (container, text) {
-    // assumes that container is a table
-    var row = $('<tr>');
-    var spinner_elem = $('<td class="loading_spinner"></td>');
-    var text_elem = $('<td></td>');
-    text_elem.text(text);
+    container.empty();
+    var spinner_elem = $('<div class="loading_spinner"></div>');
+    container.append(spinner_elem);
+    var text_width = 0;
 
-    row.append(spinner_elem, text_elem);
-    container.append(row);
+    if (text !== '' && text !== undefined) {
+        var text_elem = $('<span class="loading_text"></span>');
+        text_elem.text(text);
+        container.append(text_elem);
+        // See note, below
+        text_width = 20 + text_elem.width();
+    }
+
+    // These width calculations are tied to the spinner width and
+    // margins defined via CSS
+    container.css({width: 38 + text_width,
+                   height: 38});
 
     var spinner = new Spinner({
         lines: 8,

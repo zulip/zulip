@@ -368,7 +368,7 @@ var load_more_messages_spinner;
 exports.show_load_more_messages_spinner = function () {
     if (load_more_messages_spinner === undefined) {
         var indicator = $('#load_more_messages_indicator');
-        load_more_messages_spinner = util.make_spinner(indicator, '');
+        load_more_messages_spinner = util.make_spinner(indicator);
         indicator.show();
         hide_floating_recipient_bar();
     }

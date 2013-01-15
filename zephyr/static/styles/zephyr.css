@@ -509,15 +509,17 @@ table.floating_recipient {
     display: none;
 }
 
-#page_loading_indicator {
-    margin-top:  40px;
-    font-size:   36px;
-    font-weight: bold;
+.loading_spinner {
+    height: 38px;
+    width: 38px;
+    float: left;
 }
 
-.loading_spinner {
-    width: 40px;
-    padding-right: 40px;
+.loading_text {
+    margin-left: 20px;
+    font-size:   36px;
+    font-weight: bold;
+    line-height: 38px;
 }
 
 #message-type-tabs {
@@ -562,9 +564,11 @@ table.floating_recipient {
 
 #load_more_messages_indicator {
     display: none;
-    margin: 0 auto;
-    height: 50px;
-    padding-top: 30px;
+    margin: 10px auto;
+}
+
+#page_loading_indicator {
+    margin: 10px auto;
 }
 
 .table-striped thead th {
