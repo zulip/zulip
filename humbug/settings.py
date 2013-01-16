@@ -237,7 +237,7 @@ LOGGING = {
         },
         'mail_admins': {
             'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
+            'class': 'zephyr.handlers.HumbugAdminEmailHandler',
             'filters': ['EmailLimiter', 'require_debug_false'],
         },
     },
