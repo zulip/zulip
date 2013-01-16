@@ -4,5 +4,5 @@ if [ -z "$ref" ]; then
     echo "You must specify the ref to base the API tarball on."
     exit 1
 fi
-cd api
-git archive --prefix=humbug-api/ -o /tmp/humbug-api.tar.gz "$ref" examples/ humbug.py __init__.py README bin/
+cd api/humbug
+git archive --prefix=humbug/ -o /tmp/humbug-api.tar.gz "$ref" examples/ humbug.py __init__.py README bin/
