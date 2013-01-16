@@ -207,7 +207,7 @@ exports.set_mode = function (mode) {
         show('private', $("#private_message_recipient"));
         is_composing_message = "private";
     } else {
-        show('stream', $(lurk_stream !== undefined ? "#stream" : "#subject"));
+        show('stream', $(lurk_stream !== undefined ? "#subject" : "#stream"));
         is_composing_message = "stream";
     }
 };
