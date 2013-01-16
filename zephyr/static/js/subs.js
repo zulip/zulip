@@ -144,14 +144,14 @@ exports.fetch_colors = function () {
 };
 
 exports.setup_page = function () {
-    // TODO: We really want to show a spinner while we're fetching
-    // the subs
+    util.make_loading_indicator($('#subs_page_loading_indicator'));
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/list',
         dataType: 'json',
         timeout:  10*1000,
         success: function (data) {
+            util.destroy_loading_indicator($('#subs_page_loading_indicator'));
             $('#subscriptions_table tr').remove();
             removed_streams = {};
             if (data) {
@@ -168,6 +168,7 @@ exports.setup_page = function () {
             $('#streams').focus().select();
         },
         error: function (xhr) {
+            util.destroy_loading_indicator($('#subs_page_loading_indicator'));
             ui.report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
         }
     });

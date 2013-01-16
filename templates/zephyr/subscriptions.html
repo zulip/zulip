@@ -10,6 +10,7 @@
         <input type="submit" name="add_subscription" value="Subscribe" class="btn btn-primary" />
       </form>
       <div class="alert" id="subscriptions-status"></div>
+      <div id="subs_page_loading_indicator"></div>
       <form id="current_subscriptions" action="/json/subscriptions/remove"
             method="post" class="subscriptions">{% csrf_token %}
         <table class="table table-condensed table-striped">
