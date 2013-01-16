@@ -336,17 +336,20 @@ $(function () {
         var stream = sub_row.find('.subscription_name').text();
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var list = sub_row.find('.subscriber_list_container ul');
+        var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
 
         error_elem.addClass('hide');
         list.empty();
 
-        // TODO: Show a spinner while the list is loading
+        util.make_loading_indicator(indicator_elem);
+
         $.ajax({
             type: "POST",
             url: "/json/get_subscribers",
             dataType: 'json', // This seems to be ignored. We still get back an xhr.
             data: {stream: stream},
             success: function (data) {
+                util.destroy_loading_indicator(indicator_elem);
                 var subscribers = $.map(data.subscribers, function (elem) {
                     var person = people_dict[elem];
                     if (person === undefined) {
@@ -359,6 +362,7 @@ $(function () {
                 });
             },
             error: function (xhr) {
+                util.destroy_loading_indicator(indicator_elem);
                 error_elem.removeClass("hide").text("Could not fetch subscriber list");
             }
         });

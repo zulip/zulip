@@ -610,6 +610,10 @@ table.floating_recipient {
     margin: 10px auto;
 }
 
+.subscriber_list_loading_indicator {
+    margin: 10px auto;
+}
+
 .table-striped thead th {
     background-color: #444;
     color: white;
