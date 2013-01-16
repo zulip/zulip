@@ -166,6 +166,7 @@ WSGI_APPLICATION = 'humbug.wsgi.application'
 
 INSTALLED_APPS = (
     'django.contrib.auth',
+    'humbug.authhack',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
