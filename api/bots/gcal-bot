@@ -93,7 +93,9 @@ def get_events():
 
     for event in feed.entry:
         start = event.when[0].start.split('.')[0]
-        start = datetime.datetime.strptime(start, '%Y-%m-%dT%H:%M:%S')
+        # All-day events can have only a date
+        fmt = '%Y-%m-%dT%H:%M:%S' if 'T' in start else '%Y-%m-%d'
+        start = datetime.datetime.strptime(start, fmt)
         yield (event.uid.value, start, event.title.text)
 
 # Our cached view of the calendar, updated periodically.
