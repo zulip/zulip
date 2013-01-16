@@ -509,13 +509,13 @@ table.floating_recipient {
     display: none;
 }
 
-.loading_spinner {
+.loading_indicator_spinner {
     height: 38px;
     width: 38px;
     float: left;
 }
 
-.loading_text {
+.loading_indicator_text {
     margin-left: 20px;
     font-size:   36px;
     font-weight: bold;
@@ -562,7 +562,7 @@ table.floating_recipient {
     cursor: pointer;
 }
 
-#load_more_messages_indicator {
+#loading_more_messages_indicator {
     margin: 10px auto;
 }
 

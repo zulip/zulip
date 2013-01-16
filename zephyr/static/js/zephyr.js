@@ -479,7 +479,7 @@ function add_messages(messages, add_to_home) {
     if (!messages)
         return;
 
-    util.destroy_spinner($('#page_loading_indicator'));
+    util.destroy_loading_indicator($('#page_loading_indicator'));
     messages = $.map(messages, add_message_metadata);
 
     if (add_to_home) {
@@ -741,7 +741,7 @@ function load_more_messages() {
     if (!load_more_enabled) {
         return;
     }
-    ui.show_load_more_messages_spinner();
+    ui.show_loading_more_messages_indicator();
     load_more_enabled = false;
     table = narrow.active() ? "zfilt" : "zhome";
     oldest_message_id = rows.id(rows.get_table(table).find("tr[zid]:first"));
@@ -756,7 +756,7 @@ function load_more_messages() {
     }
     load_old_messages(oldest_message_id, batch_size, 0,
                       function (messages) {
-                          ui.hide_load_more_messages_spinner();
+                          ui.hide_loading_more_messages_indicator();
                           if (messages.length === batch_size + 1) {
                               load_more_enabled = true;
                           }

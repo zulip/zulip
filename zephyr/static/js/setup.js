@@ -7,7 +7,7 @@ $(function () {
     // Display loading indicator.  This disappears after the first
     // get_updates completes.
     if (have_initial_messages) {
-        util.make_spinner($('#page_loading_indicator'), 'Loading...');
+        util.make_loading_indicator($('#page_loading_indicator'), 'Loading...');
     }
 
     // Compile Handlebars templates.

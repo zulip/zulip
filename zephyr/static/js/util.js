@@ -14,14 +14,14 @@ exports.reset_favicon = function () {
     $('link[rel="shortcut icon"]').detach().appendTo('head');
 };
 
-exports.make_spinner = function (container, text) {
+exports.make_loading_indicator = function (container, text) {
     container.empty();
-    var spinner_elem = $('<div class="loading_spinner"></div>');
+    var spinner_elem = $('<div class="loading_indicator_spinner"></div>');
     container.append(spinner_elem);
     var text_width = 0;
 
     if (text !== '' && text !== undefined) {
-        var text_elem = $('<span class="loading_text"></span>');
+        var text_elem = $('<span class="loading_indicator_text"></span>');
         text_elem.text(text);
         container.append(text_elem);
         // See note, below
@@ -44,7 +44,7 @@ exports.make_spinner = function (container, text) {
     container.data("spinner_obj", spinner);
 };
 
-exports.destroy_spinner = function (container) {
+exports.destroy_loading_indicator = function (container) {
     var spinner = container.data("spinner_obj");
     if (spinner !== undefined) {
         spinner.stop();

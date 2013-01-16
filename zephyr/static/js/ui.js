@@ -364,19 +364,19 @@ exports.wait_for_gravatar = function () {
     poll_for_gravatar_update($.now(), $(".gravatar-profile").attr("src"));
 };
 
-var load_more_messages_spinner_showing = false;
-exports.show_load_more_messages_spinner = function () {
-    if (! load_more_messages_spinner_showing) {
-        util.make_spinner($('#load_more_messages_indicator'));
-        load_more_messages_spinner_showing = true;
+var loading_more_messages_indicator_showing = false;
+exports.show_loading_more_messages_indicator = function () {
+    if (! loading_more_messages_indicator_showing) {
+        util.make_loading_indicator($('#loading_more_messages_indicator'));
+        loading_more_messages_indicator_showing = true;
         hide_floating_recipient_bar();
     }
 };
 
-exports.hide_load_more_messages_spinner = function () {
-    if (load_more_messages_spinner_showing) {
-        util.destroy_spinner($("#load_more_messages_indicator"));
-        load_more_messages_spinner_showing = false;
+exports.hide_loading_more_messages_indicator = function () {
+    if (loading_more_messages_indicator_showing) {
+        util.destroy_loading_indicator($("#loading_more_messages_indicator"));
+        loading_more_messages_indicator_showing = false;
     }
 };
 
