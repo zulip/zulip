@@ -268,10 +268,6 @@ $(function () {
         ajaxSubscribe($("#streams").val());
     });
 
-    if (! render_subscribers()) {
-        return;
-    }
-
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -285,6 +281,15 @@ $(function () {
             ajaxSubscribe(stream_name, $(e.target));
         }
     });
+
+    $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
+        var colorpicker = $(e.target).closest('.subscription_row').find('.colorpicker');
+        colorpicker.spectrum(colorpicker_options);
+    });
+
+    if (! render_subscribers()) {
+        return;
+    }
 
     // From here down is only stuff that happens when we're rendering
     // the subscriber settings
@@ -330,8 +335,6 @@ $(function () {
         var stream = sub_row.find('.subscription_name').text();
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var list = sub_row.find('.subscriber_list_container ul');
-        var colorpicker = sub_row.find('.colorpicker');
-        colorpicker.spectrum(colorpicker_options);
 
         error_elem.addClass('hide');
         list.empty();
