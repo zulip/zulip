@@ -10,7 +10,6 @@ error_page 502 503 504 /static/public/html/5xx.html;
 # Serve static files directly
 location /static/ {
     alias /home/humbug/humbug/zephyr/static-access-control/;
-    expires 30d;
     error_page 404 /static/public/html/404.html;
 }
 
