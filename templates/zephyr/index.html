@@ -102,127 +102,128 @@ var people_list = [
 {% block content %}
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
-        <a class="brand" href="#">Humbug</a>
-        <form class="navbar-search pull-left">
-          <input type="text" class="search-query" placeholder="Search">
-        </form>
+        <div class="container">
+          <div class="row">
+            <div class="span3 hidden-phone">
+              <a class="brand" href="#">Humbug</a>
+            </div>
+            <div class="span9" id="navbar-middle">
+              <a class="brand skinny-user-gravatar visible-phone" href="#"
+                 title="{{user_profile.full_name}} - {{user_profile.user.email}}">
+                <img class="img-rounded gravatar-profile"
+                   src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=30" />
+              </a>
+              <div id="searchbox">
+                <form id="searchbox_form" class="form-search navbar-search">
+                  <div id="search_arrows">
+                    <input class="search-query" id="search_query" type="text" placeholder="Search…"
+                           autocomplete="off">
+                    <button class="btn search_button search_button_middle" type="button" id="search_up"><i class="icon-chevron-up"></i></button>
+                    <button class="btn search_button search_button_middle" type="button" id="search_down"><i class="icon-chevron-down"></i></button>
+                    <button class="btn search_button" type="button" id="search_exit"><i class="icon-remove"></i></button>
+                  </div>
+                </form>
+              </div><!-- /searchbox -->
+
+              <div id="navbar-buttons">
+              <ul class="nav" role="navigation">
+                <!-- stuff that gets visible in skinny mode -->
+                <li class="visible-phone" title="New stream message">
+                  <a href="#" onclick="compose.set_mode('stream'); return false;">
+                    <i class="icon-bullhorn"></i>
+                  </a>
+                </li>
+                <li class="visible-phone" title="New private message">
+                  <a href="#" onclick="compose.set_mode('private'); return false;">
+                    <i class="icon-user"></i>
+                  </a>
+                </li>
+                <!-- /stuff that gets visible in skinny mode -->
+                <li class="dropdown" id="gear-menu">
+                  <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">SE <b class="caret"></b></a>
+                  <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="settings-dropdown">
+                    <li title="Home">
+                      <a href="#home" data-toggle="tab" onclick="narrow.restore_home_state();">
+                        <i class="icon-home"></i>
+                        {% if lurk_stream %}Stream {{ lurk_stream }}{% else %}Home{% endif %}
+                      </a>
+                    </li>
+                    <li title="Subscriptions">
+                      <a href="#subscriptions" data-toggle="tab">
+                        <i class="icon-globe"></i> Subscriptions
+                      </a>
+                    </li>
+                    <li title="Settings">
+                      <a href="#settings" data-toggle="tab">
+                        <i class="icon-wrench"></i> Settings
+                      </a>
+                    </li>
+                    <li title="Keyboard shortcuts">
+                      <a href="#keyboard-shortcuts" role="button" data-toggle="modal">
+                        <i class="icon-info-sign"></i> Keyboard shortcuts
+                      </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li title="Feedback">
+                      <a href="#feedback" onclick="compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com' });">
+                        <i class="icon-comment"></i> Feedback
+                      </a>
+                    </li>
+                    {% if show_invites %}
+                    <li title="Invite users to Humbug">
+                      <a href="#invite-user" role="button" data-toggle="modal">
+                        <i class="icon-gift"></i> Invite users to Humbug
+                      </a>
+                    </li>
+                    {% endif %}
+                    <li class="divider"></li>
+                    <li title="Log out">
+                      <a href="/accounts/logout">
+                        <i class="icon-off"></i> Log out
+                      </a>
+                    </li>
+                    {% if show_debug %}
+                    <li title="Debug">
+                      <a href="#debug" data-toggle="tab">
+                        <i class="icon-barcode"></i> Debug
+                      </a>
+                    </li>
+                    {% endif %}
+                    {% if show_activity %}
+                    <li title="Activity">
+                      <a href="/activity" target="_blank">
+                        <i class="icon-eye-open"></i> Activity
+                      </a>
+                    </li>
+                    {% endif %}
+                  </ul>
+                </li>
+              </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+    <div id="navbar-spacer"></div>
     <div class="row">
         <div class="span3">
           <div class="row">
-            <div class="span3 sidebar-nav affix">
+            <div class="span3 sidebar-nav affix hidden-phone">
               <span>
-                <img class="img-rounded hidden-phone gravatar-profile"
+                <img class="img-rounded gravatar-profile"
                      src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=60" />
-                <img class="img-rounded visible-phone gravatar-profile"
-                     src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=30" />
               </span>
               <span class="my_fullname">{{ user_profile.full_name }}</span>
-              <span class="my_email {% if lurk_stream %}hidden-phone{% endif %}">{{ user_profile.user.email }}</span>
-              {% if lurk_stream %}
-              <ul class="nav nav-pills visible-phone lurk-navbar-phone">
-                <li title="Keyboard shortcuts">
-                  <a href="#keyboard-shortcuts" role="button" data-toggle="modal">
-                    <i class="icon-info-sign"></i>
-                  </a>
-                </li>
-                <li title="Home">
-                  <a href="/" target="_blank" role="button">
-                    <i class="icon-home"></i>
-                  </a>
-                </li>
-              </ul>
-              {% endif %}
-              <ul class="nav nav-pills nav-stacked {% if lurk_stream %}hidden-phone{% endif %}" id="sidebar">
-                <li title="Home" class="active">
-                  <a href="#home" data-toggle="pill" onclick="narrow.restore_home_state();">
-                    <i class="icon-home"></i>
-                    <span class="hidden-phone">  {% if lurk_stream %}Stream {{ lurk_stream }}{% else %}Home{% endif %}</span>
-                  </a>
-                </li>
-                <li title="Subscriptions">
-                  <a href="#subscriptions" data-toggle="pill">
-                    <i class="icon-globe"></i>
-                    <span class="hidden-phone">  Subscriptions</span>
-                  </a>
-                </li>
-                <li title="Settings">
-                  <a href="#settings" data-toggle="pill">
-                    <i class="icon-wrench"></i>
-                    <span class="hidden-phone"> Settings</span>
-                  </a>
-                </li>
-                <li title="Keyboard shortcuts">
-                  <a href="#keyboard-shortcuts" role="button" data-toggle="modal">
-                    <i class="icon-info-sign"></i>
-                    <span class="hidden-phone"> Keyboard shortcuts</span>
-                  </a>
-                  <hr class="sidebar" />
-                </li>
-                <li title="Feedback">
-                  <a href="#feedback" onclick="compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com' });">
-                    <i class="icon-comment"></i>
-                    <span class="hidden-phone"> Feedback</span>
-                  </a>
-                </li>
-                {% if show_invites %}
-                <li title="Invite users to Humbug">
-                  <a href="#invite-user" role="button" data-toggle="modal">
-                    <i class="icon-gift"></i>
-                    <span class="hidden-phone"> Invite users to Humbug</span>
-                  </a>
-                </li>
-                {% endif %}
-                  <hr class="sidebar"/>
-                <li title="Log out">
-                  <a href="/accounts/logout">
-                    <i class="icon-off"></i>
-                    <span class="hidden-phone"> Log out</span>
-                  </a>
-                </li>
-
-                {% if show_debug %}
-                <li title="Debug">
-                  <a href="#debug" data-toggle="pill">
-                    <i class="icon-barcode"></i>
-                    <span class="hidden-phone">  Debug</span>
-                  </a>
-                </li>
-                {% endif %}
-
-                {% if show_activity %}
-                <li title="Activity">
-                  <a href="/activity" target="_blank">
-                    <i class="icon-eye-open"></i>
-                    <span class="hidden-phone">  Activity</span>
-                  </a>
-                </li>
-                {% endif %}
-
-                <div>
-                  <button type="button" class="visible-phone btn btn-small phone_new_message_button"
-                          id="left_bar_compose_stream_button_little"
-                          onclick="compose.set_mode('stream');"
-                          title="New stream message">
-                    <i class="icon-bullhorn"></i>
-                  </button>
-                  <button type="button" class="visible-phone btn btn-small phone_new_message_button"
-                          id="left_bar_compose_private_button_little"
-                          onclick="compose.set_mode('private');"
-                          title="New private message">
-                    <i class="icon-user"></i>
-                  </button>
-                </div>
-              </ul>
-              <div class="hidden-phone new_message_button">
+              <span class="my_email">{{ user_profile.user.email }}</span>
+              <div class="new_message_button">
                 <button type="button" class="btn btn-large btn-block"
                         id="left_bar_compose_stream_button_big"
                         onclick="compose.set_mode('stream');">
                   <i class="icon-bullhorn"></i> New stream message
                 </button>
               </div>
-              <div class="hidden-phone new_message_button">
+              <div class="new_message_button">
                 <button type="button" class="btn btn-large btn-block"
                         id="left_bar_compose_private_button_big"
                         onclick="compose.set_mode('private');">
@@ -260,7 +261,6 @@ var people_list = [
           </div>
         </div><!--/sidebar-->
         <div class="span9 tab-content" id="application_area">
-            <div class="visible-phone" id="nav_whitespace"></div>
             <div class="tab-pane active" id="home">
                 {% include "zephyr/home.html" %}
             </div>

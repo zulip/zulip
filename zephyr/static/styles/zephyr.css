@@ -34,7 +34,7 @@ a:hover code {
 .sidebar-nav {
     background-color: white;
     padding: 0.5em;
-    margin-top: 3em;
+    margin-top: 1em;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -45,19 +45,6 @@ a:hover code {
         margin: 0px;
         border: 1px solid black;
     }
-}
-
-ul#sidebar {
-    margin-bottom: 0px;
-}
-
-ul.lurk-navbar-phone {
-    float: right;
-    margin-bottom: 0px;
-}
-
-ul.lurk-navbar-phone li {
-    display: inline;
 }
 
 #nav_whitespace {
@@ -451,29 +438,60 @@ input.recipient_box {
     font-size: 90%;
 }
 
+#navbar-spacer {
+    /* A spacer that is exactly a navbar size, so that all content
+    gets pushed unerneath it */
+    width: 100%;
+    height: 40px;
+}
 #top_statusbar {
     position: fixed;
     /* .message_list max-width + 30px margin */
     max-width: 670px;
     text-decoration: none;
-    top: 0px;
+    top: 40px; /* should really be the same as the height of navbar-spacer */
     visibility: hidden; /* so that we pass clicks through to underneath us */
     /* If zhome has opacity on it, it suddenly starts getting drawn on top
        of top_statusbar -- unless we specify a z-index.  */
     z-index: 2;
 }
 
-#searchbox {
-    /* Needed because top_statusbar is visibility: hidden
-       and we don't want to inherit that */
-    visibility: visible;
-    max-height: 30px;
-    padding: 5px 10px;
-    max-width: 640px;
+#navbar-middle {
+    display: table-row;
+    max-width: 670px;
 }
 
-.always_in_view {
-    background-color: aliceblue;
+.brand.skinny-user-gravatar {
+    padding-top: 5px;
+    padding-bottom: 0px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+}
+
+#searchbox {
+    display: table-cell;
+    width: 99%;
+}
+
+#navbar-buttons {
+    display: table-cell;
+    white-space: nowrap;
+    width: 1%;
+}
+
+#navbar-buttons ul.nav {
+    /* Firefox-specific hack; Technically white-space: nowrap applies to
+       text, not "stuff in general", so in Firefox without this, the
+       <li>s all get smushed vertically (in Chrome and Safari, they
+       don't).
+       Fortunately, Firefox also provides this nice 'max-content'
+       thing which is basically 'give us as much space as we need'. */
+    width: -moz-max-content;
+}
+
+#searchbox_form {
+    width: 99%;
+    padding-right: 10px;
 }
 
 #search_query {
@@ -482,8 +500,8 @@ input.recipient_box {
 @media (max-width: 480px) {
     /* This is a hack to keep the search box from overflowing outside the
        message area -- really the formula should be something like
-       [message area width] - [search query horizontal overhead]
-       At narrow widths, the overhead is a larger % of the window width.
+       [message area width] - [search query horizontal overhead] At
+       narrow widths, the overhead is a larger % of the window width.
        */
     #search_query {
         width: 90%;
@@ -494,12 +512,16 @@ input.recipient_box {
     background-color: #FCEA81;
 }
 
+#search_arrows {
+    margin-bottom: 5px;
+}
+
 #searchbox .search_button {
     display: none;
-    margin-bottom: 10px;
     text-align: center;
     padding: 4px 10px 4px 10px;
 }
+
 /* A cheat, because input-prepend and input-append aren't
    smart enough to do the right thing with search-query */
 #searchbox .search_button_middle {
@@ -529,11 +551,6 @@ table.floating_recipient {
 
 .narrowed_view {
     background-color: #DDD;
-}
-
-#top_whitespace {
-  display: block;
-  height: 40px;
 }
 
 #bottom_whitespace {
@@ -706,10 +723,6 @@ table.floating_recipient {
 
 #invite_status {
     display: none;
-}
-
-hr.sidebar {
-    margin: 0px;
 }
 
 @media (max-width: 480px) {

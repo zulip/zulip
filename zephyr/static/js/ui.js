@@ -19,7 +19,7 @@ var scroll_positions = {};
 var gravatar_stamp = 1;
 
 exports.change_tab_to = function (tabname) {
-    $('#sidebar a[href="' + tabname + '"]').tab('show');
+    $('#gear-menu a[href="' + tabname + '"]').tab('show');
 };
 
 exports.focus_on = function (field_id) {
@@ -224,20 +224,9 @@ function need_skinny_mode() {
 }
 
 function resizehandler(e) {
-    var sidebar = $("#sidebar");
-    var sidebar_nav = $(".sidebar-nav");
     var composebox = $("#compose");
     var top_statusbar = $("#top_statusbar");
     if (need_skinny_mode()) {
-        sidebar.removeClass('nav-stacked');
-
-        var space_taken_up_by_navbar = sidebar_nav.outerHeight(true);
-
-        // .visible-phone only, so doesn't need undoing
-        $("#nav_whitespace").height(space_taken_up_by_navbar);
-
-        top_statusbar.css('top', space_taken_up_by_navbar);
-
         var desired_width;
         if (exports.home_tab_obscured() === 'other_tab') {
             desired_width = $("div.tab-pane.active").outerWidth();
@@ -246,13 +235,9 @@ function resizehandler(e) {
             composebox.width(desired_width);
         }
         top_statusbar.width(desired_width);
-        sidebar_nav.width(desired_width);
     } else {
-        sidebar.addClass('nav-stacked');
-        top_statusbar.css('top', 0);
         top_statusbar.width('');
         composebox.width('');
-        sidebar_nav.width('');
     }
 
     $("#bottom_whitespace").height(viewport.height() * 0.4);
@@ -588,12 +573,12 @@ $(function () {
         $('#old_password, #new_password, #confirm_password').val('');
     }
 
-    $('#sidebar a[data-toggle="pill"]').on('show', function (e) {
+    $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
         var old_tab = $(e.relatedTarget).attr('href');
         scroll_positions[old_tab] = viewport.scrollTop();
     });
-    $('#sidebar a[data-toggle="pill"]').on('shown', function (e) {
+    $('#gear-menu a[data-toggle="tab"]').on('shown', function (e) {
         // Right after we show the new tab, restore its old scroll position
         var target_tab = $(e.target).attr('href');
         if (scroll_positions.hasOwnProperty(target_tab)) {
@@ -623,7 +608,7 @@ $(function () {
         hashchange.changehash(browser_url);
     });
 
-    $('#sidebar a[href="#subscriptions"]').on('shown', subs.setup_page);
+    $('#gear-menu a[href="#subscriptions"]').on('shown', subs.setup_page);
 
     var settings_status = $('#settings-status');
     $("#settings-change-box form").ajaxForm({
