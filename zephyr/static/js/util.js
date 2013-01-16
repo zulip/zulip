@@ -31,7 +31,8 @@ exports.make_loading_indicator = function (container, text) {
     // These width calculations are tied to the spinner width and
     // margins defined via CSS
     container.css({width: 38 + text_width,
-                   height: 38});
+                   height: 38,
+                   display: 'block'});
 
     var spinner = new Spinner({
         lines: 8,
@@ -51,7 +52,7 @@ exports.destroy_loading_indicator = function (container) {
     }
     container.removeData("spinner_obj");
     container.empty();
-    container.css({width: 0, height: 0});
+    container.css({width: 0, height: 0, display: 'none'});
 };
 
 return exports;
