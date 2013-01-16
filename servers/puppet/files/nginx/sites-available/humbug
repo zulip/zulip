@@ -29,5 +29,11 @@ server {
     # Avoid clickjacking attacks
     add_header X-Frame-Options DENY;
 
+    # Downloadable software
+    location /dist/ {
+        autoindex on;
+        alias /srv/www/dist/;
+    }
+
     include /etc/nginx/humbug-include/app;
 }
