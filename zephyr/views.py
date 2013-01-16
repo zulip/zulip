@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
 from django.utils.timezone import utc, now
@@ -23,7 +23,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     create_stream_if_needed
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_active, isnt_mit
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 
 from zephyr.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
@@ -97,6 +97,55 @@ def principal_to_user_profile(agent, principal):
         raise PrincipalError(principal)
 
     return principal_user_profile
+
+# This view is both CSRF exempt and requires the token. This is because
+# depending on whether the user arrived here via a redirect from Thymes
+# or is submitting the form we either want to validate CSRF or not.
+#
+# See also:
+# <https://docs.djangoproject.com/en/dev/ref/contrib/csrf/#view-needs-protection-for-one-path>
+@require_post
+@csrf_exempt
+@requires_csrf_token
+def accounts_customer30(request):
+    domain = 'customer30.invalid'
+
+    # support a username, realname via either GET or POST
+    try:
+        username = request.POST['username']
+        realname = request.POST['realname']
+    except KeyError:
+        return HttpResponseBadRequest('You must POST with username and realname parameters.')
+
+    if not username.isalnum():
+        return HttpResponseBadRequest("Your username was non-alphanumeric and is not allowed.")
+    email = username + '@' + domain
+    try:
+        is_unique(email)
+    except ValidationError:
+        return HttpResponseBadRequest("That username is already registered with Humbug.")
+
+    try:
+        request.POST['terms']
+    except KeyError:
+        return render_to_response('zephyr/accounts_customer30.html',
+                {'username': username,
+                 'realname': realname,
+                 'company_name': domain},
+                context_instance=RequestContext(request))
+
+    # We want CSRF protection if you're actually registering, not if you're just displaying the form
+    return accounts_customer30_register(request, username, realname, email, domain)
+
+def accounts_customer30_register(request, username, realname, email, domain):
+    user_profile = do_create_user(email,
+                                  "xxxxxxxxxxx",
+                                  Realm.objects.get_or_create(domain=domain)[0],
+                                  realname,
+                                  username)
+    add_default_subs(user_profile)
+    login(request, authenticate(username=email, password="xxxxxxxxxxx"))
+    return HttpResponseRedirect(reverse('zephyr.views.home'))
 
 @require_post
 def accounts_register(request):

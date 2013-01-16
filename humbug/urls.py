@@ -24,6 +24,8 @@ urlpatterns = patterns('',
     url(r'^accounts/password/done/$', 'django.contrib.auth.views.password_reset_complete',
         {'template_name': 'zephyr/reset_done.html'}),
 
+    url(r'^accounts/customer30/',  'zephyr.views.accounts_customer30'),
+
 
     url(r'^activity$', 'zephyr.views.get_activity'),
 

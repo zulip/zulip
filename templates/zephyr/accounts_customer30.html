@@ -1,0 +1,81 @@
+{% extends "zephyr/portico_signup.html" %}
+
+{% comment %}
+Get ToS acceptance and handle account creation for CUSTOMER30 users
+
+Form is validated both client-side using jquery-validate (see signup.js) and server-side.
+{% endcomment %}
+
+{% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
+{% block portico_content %}
+
+<p>(Welcome! We think you'll like it here.)</p>
+
+<div class="pitch">
+    <hr/>
+    <p>You're almost there. We just need you to do one last thing.</p>
+    <h3>Confirm your registration</h3>
+</div>
+
+<form method="post" class="form-horizontal" id="registration" action="{% url zephyr.views.accounts_customer30 %}">
+{% csrf_token %}
+    <div class="control-group">
+        <label for="id_email" class="control-label">Username</label>
+        <div class="controls fakecontrol">
+            <input type='hidden' name='username' value='{{ username }}' />
+            <p>{{ username }}@{{ company_name }}<p>
+        </div>
+    </div>
+    <div class="control-group">
+        <label for="id_full_name" class="control-label">Your name</label>
+        <div class="controls">
+            <input type='hidden' name='realname' value='{{ realname }}' />
+            <p>{{ realname }}<p>
+        </div>
+    </div>
+    <div class="control-group">
+        <label for="id_password" class="control-label">Password</label>
+        <div class="controls">
+            Your password is set by your domain administrator.
+        </div>
+    </div>
+
+    <div class="control-group">
+        <div class="controls">
+            <label class="checkbox">
+                {% comment %}
+                This is somewhat subtle.
+                Checkboxes have a name and value, and when the checkbox is ticked, the form posts
+                with name=value. If the checkbox is unticked, the field just isn't present at all.
+                This is distinct from 'checked', which determines whether the checkbox appears
+                at all. (So, it's not symmetric to the code above.)
+                {% endcomment %}
+                <input id="id_terms" class="required" type="checkbox" name="terms"
+                       {% if terms.value %}checked="checked"{% endif %} />
+                I agree to the <a href="/terms">Terms of Service</a>.
+            </label>
+            {% if form.terms.errors %}
+                {% for error in form.terms.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <br />
+    <div class="control-group">
+        <div class="controls">
+            <input type="submit" class="btn btn-primary" value="Confirm registration" /><br />
+            <input type="hidden" name="next" value="{{ next }}" />
+        </div>
+    </div>
+</form>
+
+<script type="text/javascript">
+if ($('#id_email:visible').length) {
+    autofocus('#id_email');
+} else {
+    autofocus('#id_full_name');
+}
+</script>
+
+{% endblock %}
