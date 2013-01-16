@@ -168,10 +168,11 @@ function update_selected_message(message, opts) {
     message.addClass(cls);
 
     var new_selected_id = rows.id(message);
-    if (! narrow.active() && new_selected_id > furthest_read)
+    if (! narrow.active() && lurk_stream === undefined && new_selected_id > furthest_read)
     {
         // Narrowing is a temporary view on top of the home view and
         // doesn't permanently affect where you are.
+        // Similarly, lurk mode does not affect your pointer.
         furthest_read = new_selected_id;
     }
     selected_message_id = new_selected_id;
