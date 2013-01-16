@@ -183,7 +183,8 @@ exports.subscribe_for_send = function (stream, prompt_button) {
         success: function (response) {
             add_to_stream_list(stream);
             compose.finish();
-            prompt_button.stop(true).fadeOut(500);
+            if (prompt_button !== undefined)
+                prompt_button.stop(true).fadeOut(500);
         },
         error: function (xhr, error_type, exn) {
             ui.report_error("Unable to subscribe", xhr, $("#home-error"));

@@ -302,6 +302,15 @@ function validate_stream_message() {
             // browser window doesn't know it.
             return true;
         case "not-subscribed":
+            if (lurk_stream.toLowerCase() === stream_name.toLowerCase()) {
+                // Just subscribe them.
+                subs.subscribe_for_send(stream_name);
+                // When the subscription request completes,
+                // subscribe_for_send will send our message (like when
+                // the user clicks on subscribe-and-send).
+                return false;
+            }
+
             $('#send-status').removeClass(status_classes);
             $('#stream-nosub-name').text(stream_name);
             $('#stream-nosub').show();
