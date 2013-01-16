@@ -34,7 +34,7 @@ a:hover code {
 .sidebar-nav {
     background-color: white;
     padding: 0.5em;
-    margin-top: 2em;
+    margin-top: 3em;
     overflow: hidden;
     text-overflow: ellipsis;
 }
