@@ -67,8 +67,11 @@ exports.start = function (msg_type, opts) {
 
     compose.clear();
 
+    var default_stream = '';
+    if (msg_type === 'stream' && lurk_stream !== undefined)
+        default_stream = lurk_stream;
     opts = $.extend({ message_type:     msg_type,
-                      stream:           '',
+                      stream:           default_stream,
                       subject:          '',
                       private_message_recipient: ''
                     }, opts);
@@ -204,7 +207,7 @@ exports.set_mode = function (mode) {
         show('private', $("#private_message_recipient"));
         is_composing_message = "private";
     } else {
-        show('stream', $("#stream"));
+        show('stream', $(lurk_stream !== undefined ? "#stream" : "#subject"));
         is_composing_message = "stream";
     }
 };

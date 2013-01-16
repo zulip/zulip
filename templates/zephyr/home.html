@@ -75,7 +75,7 @@
               </td>
               <td class="message_header message_header_stream right_part">
                   <input type="text" class="recipient_box" name="stream" id="stream"
-                         maxlength="30"
+                         maxlength="30" {% if lurk_stream %}readonly{% endif %}
                          value="" placeholder="Stream" autocomplete="off" tabindex="120"/>
                 | <input type="text" class="recipient_box" name="subject" id="subject"
                          maxlength="60"
