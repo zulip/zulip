@@ -116,7 +116,7 @@ var people_list = [
                 <li title="Home" class="active">
                   <a href="#home" data-toggle="pill" onclick="narrow.restore_home_state();">
                     <i class="icon-home"></i>
-                    <span class="hidden-phone">  Home</span>
+                    <span class="hidden-phone">  {% if lurk_stream %}Stream {{ lurk_stream }}{% else %}Home{% endif %}</span>
                   </a>
                 </li>
                 <li title="Subscriptions">
