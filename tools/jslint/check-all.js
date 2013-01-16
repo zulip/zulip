@@ -31,7 +31,7 @@ var globals =
     + ' search'
 
     // setup.js
-    + ' page_loading_spinner templates csrf_token'
+    + ' templates csrf_token'
 
     // subs.js
     + ' subs'

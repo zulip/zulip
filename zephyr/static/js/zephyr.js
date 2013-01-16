@@ -479,11 +479,7 @@ function add_messages(messages, add_to_home) {
     if (!messages)
         return;
 
-    if (page_loading_spinner) {
-        page_loading_spinner.stop();
-        $('#page_loading_indicator').hide();
-        page_loading_spinner = undefined;
-    }
+    util.destroy_spinner($('#page_loading_indicator'));
     messages = $.map(messages, add_message_metadata);
 
     if (add_to_home) {

@@ -41,7 +41,17 @@ exports.make_spinner = function (container, text) {
         speed: 1.25,
         shadow: false
     }).spin(spinner_elem[0]);
-    return spinner;
+    container.data("spinner_obj", spinner);
+};
+
+exports.destroy_spinner = function (container) {
+    var spinner = container.data("spinner_obj");
+    if (spinner !== undefined) {
+        spinner.stop();
+    }
+    container.removeData("spinner_obj");
+    container.empty();
+    container.css({width: 0, height: 0});
 };
 
 return exports;

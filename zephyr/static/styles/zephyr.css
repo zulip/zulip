@@ -563,7 +563,6 @@ table.floating_recipient {
 }
 
 #load_more_messages_indicator {
-    display: none;
     margin: 10px auto;
 }
 
