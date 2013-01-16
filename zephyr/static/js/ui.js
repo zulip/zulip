@@ -501,7 +501,7 @@ $(function () {
         hashchange.changehash(browser_url);
     });
 
-    $('#sidebar a[href="#subscriptions"]').on('show', subs.setup_page);
+    $('#sidebar a[href="#subscriptions"]').on('shown', subs.setup_page);
 
     var settings_status = $('#settings-status');
     $("#settings-change-box form").ajaxForm({
