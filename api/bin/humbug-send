@@ -60,14 +60,14 @@ def main(argv=None):
               %prog hamlet@example.com cordelia@example.com -m "Conscience doth make cowards of us all."
     """
 
-    sys.path.append(os.path.join(os.path.dirname(__file__), os.path.join('..', '..')))
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-    import api.humbug
+    import humbug
 
     parser = optparse.OptionParser(usage=usage)
 
     # Grab parser options from the API common set
-    parser.add_option_group(api.humbug.generate_option_group(parser))
+    parser.add_option_group(humbug.generate_option_group(parser))
 
     parser.add_option('-m', '--message',
                       help='Specifies the message to send, prevents interactive prompting.')
@@ -96,7 +96,7 @@ def main(argv=None):
     if len(recipients) == 0 and not (options.stream and options.subject):
         parser.error('You must specify a stream/subject or at least one recipient.')
 
-    client = api.humbug.init_from_options(options)
+    client = humbug.init_from_options(options)
 
     if not options.message:
         options.message = sys.stdin.read()
