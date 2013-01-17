@@ -7,13 +7,11 @@ import simplejson
 # interface for external files to put things into queues and take them
 # out from bots without having to import pika code all over our codebase.
 class SimpleQueueClient(object):
-    connection = None
-    channel = None
-    queues = set()
-    _inited = False
-
     def __init__(self):
-        pass
+        self.connection = None
+        self.channel = None
+        self.queues = set()
+        self._inited = False
 
     def initialize(self):
         # Initialize the connection
