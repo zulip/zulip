@@ -53,6 +53,10 @@ class humbug_base {
     command  => "pip install pika",
     onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/pika"
   }
+  exec {"pip5":
+    command  => "pip install South",
+    onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/south"
+  }
 
   group { 'humbug':
     ensure     => present,
