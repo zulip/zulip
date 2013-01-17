@@ -94,6 +94,12 @@ ul#sidebar {
     padding-right: 20px;
     overflow-x: hidden;
 }
+@media (max-width: 480px) {
+    .message_list {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
 
 .message_comp {
     display: none;
@@ -241,6 +247,11 @@ table.focused_table {
 .message_content {
     margin-left: 5px;
     margin-right: 35px; /* size of the timestamp */
+}
+@media (max-width: 480px) {
+    .message_content {
+        margin-right: 5px;
+    }
 }
 
 blockquote {
@@ -494,6 +505,12 @@ input.recipient_box {
     padding-left: 10px;
     padding-right: 20px;
 }
+@media (max-width: 480px) {
+    .floating_recipient_bar {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
 
 table.floating_recipient {
     table-layout: fixed;
@@ -676,4 +693,11 @@ table.floating_recipient {
 
 hr.sidebar {
     margin: 0px;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding-right: 5px;
+        padding-left: 5px;
+    }
 }
