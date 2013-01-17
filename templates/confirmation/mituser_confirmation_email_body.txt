@@ -8,8 +8,8 @@ MIT Zephyr account.
  1) Create a password and activate your account:
         <{{ activate_url }}>
 
- 2) Get your API key from the "Settings" panel and put it in your
-    Athena home directory at ~/Private/.humbug-api-key.
+ 2) Get your API key from the "Settings" panel and put it in a file in your
+    Athena home directory called ~/Private/.humbug-api-key .
 
  3) Copy over your Zephyr subscriptions
 
