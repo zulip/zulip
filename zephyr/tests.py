@@ -919,7 +919,7 @@ class GetUpdatesTest(AuthedTestCase):
                 self.assertGreater(message['id'], 1)
                 self.assertIn(message['id'], correct_message_ids)
 
-        post_data = {"last": str(1), "first": str(1)}
+        post_data = {}
         post_data.update(extra_post_data)
         request = POSTRequestMock(post_data, user, callback)
         self.assertEquals(view_func(request), RespondAsynchronously)
