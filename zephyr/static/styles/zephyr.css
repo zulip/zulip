@@ -459,6 +459,16 @@ input.recipient_box {
 #search_query {
     width: 95%;
 }
+@media (max-width: 480px) {
+    /* This is a hack to keep the search box from overflowing outside the
+       message area -- really the formula should be something like
+       [message area width] - [search query horizontal overhead]
+       At narrow widths, the overhead is a larger % of the window width.
+       */
+    #search_query {
+        width: 90%;
+    }
+}
 
 .highlight {
     background-color: #FCEA81;
