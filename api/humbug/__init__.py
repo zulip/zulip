@@ -34,7 +34,7 @@ from ConfigParser import SafeConfigParser
 
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
-assert(requests.__version__ > '0.12.1')
+assert(requests.__version__ >= '0.12.1')
 # And versions in the 1.x series aren't backwards compatible
 assert(requests.__version__ < '1.0.0')
 API_VERSTRING = "/api/v1/"
