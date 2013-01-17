@@ -100,17 +100,17 @@ class AuthedTestCase(TestCase):
         Successful POSTs return a 200 and JSON of the form {"result": "success",
         "msg": ""}.
         """
-        self.assertEquals(result.status_code, 200)
+        self.assertEqual(result.status_code, 200)
         json = simplejson.loads(result.content)
-        self.assertEquals(json.get("result"), "success")
+        self.assertEqual(json.get("result"), "success")
         # We have a msg key for consistency with errors, but it typically has an
         # empty value.
         self.assertIn("msg", json)
 
     def get_json_error(self, result):
-        self.assertEquals(result.status_code, 400)
+        self.assertEqual(result.status_code, 400)
         json = simplejson.loads(result.content)
-        self.assertEquals(json.get("result"), "error")
+        self.assertEqual(json.get("result"), "error")
         return json['msg']
 
     def assert_json_error(self, result, msg):
@@ -118,7 +118,7 @@ class AuthedTestCase(TestCase):
         Invalid POSTs return a 400 and JSON of the form {"result": "error",
         "msg": "reason"}.
         """
-        self.assertEquals(self.get_json_error(result), msg)
+        self.assertEqual(self.get_json_error(result), msg)
 
     def assert_json_error_contains(self, result, msg_substring):
         self.assertIn(msg_substring, self.get_json_error(result))
@@ -331,10 +331,10 @@ class PointerTest(AuthedTestCase):
         the pointer we store for your UserProfile.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": 1})
         self.assert_json_success(result)
-        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, 1)
+        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, 1)
 
     def test_api_update_pointer(self):
         """
@@ -342,13 +342,13 @@ class PointerTest(AuthedTestCase):
         """
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
-        self.assertEquals(self.get_user_profile(email).pointer, -1)
+        self.assertEqual(self.get_user_profile(email).pointer, -1)
         result = self.client.post("/api/v1/update_pointer", {"email": email,
                                                              "api-key": api_key,
                                                              "client_id": "blah",
                                                              "pointer": 1})
         self.assert_json_success(result)
-        self.assertEquals(self.get_user_profile(email).pointer, 1)
+        self.assertEqual(self.get_user_profile(email).pointer, 1)
 
     def test_missing_pointer(self):
         """
@@ -356,10 +356,10 @@ class PointerTest(AuthedTestCase):
         returns a 400 and error message.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"foo": 1})
         self.assert_json_error(result, "Missing 'pointer' argument")
-        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
 
     def test_invalid_pointer(self):
         """
@@ -367,10 +367,10 @@ class PointerTest(AuthedTestCase):
         message.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Bad value for 'pointer': foo")
-        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
 
     def test_pointer_out_of_range(self):
         """
@@ -378,10 +378,10 @@ class PointerTest(AuthedTestCase):
         and error message.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": -2})
         self.assert_json_error(result, "Bad value for 'pointer': -2")
-        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
 
 class MessagePOSTTest(AuthedTestCase):
     fixtures = ['messages.json']
@@ -622,7 +622,7 @@ class GetOldMessagesTest(AuthedTestCase):
         self.check_well_formed_messages_response(result)
 
         for message in result["messages"]:
-            self.assertEquals(dr_emails(message['display_recipient']), emails)
+            self.assertEqual(dr_emails(message['display_recipient']), emails)
 
     def test_get_old_messages_with_narrow_stream(self):
         """
@@ -644,8 +644,8 @@ class GetOldMessagesTest(AuthedTestCase):
         self.check_well_formed_messages_response(result)
 
         for message in result["messages"]:
-            self.assertEquals(message["type"], "stream")
-            self.assertEquals(message["recipient_id"], stream_id)
+            self.assertEqual(message["type"], "stream")
+            self.assertEqual(message["recipient_id"], stream_id)
 
     def test_missing_params(self):
         """
@@ -853,9 +853,9 @@ class ChangeSettingsTest(AuthedTestCase):
         self.assert_json_success(json_result)
         result = simplejson.loads(json_result.content)
         self.check_well_formed_change_settings_response(result)
-        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").
+        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").
                 full_name, "Foo Bar")
-        self.assertEquals(self.get_user_profile("hamlet@humbughq.com").
+        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").
                 enable_desktop_notifications, False)
         self.client.post('/accounts/logout/')
         self.login("hamlet@humbughq.com", "foobar1")
@@ -942,7 +942,7 @@ class GetUpdatesTest(AuthedTestCase):
         post_data = {}
         post_data.update(extra_post_data)
         request = POSTRequestMock(post_data, user, callback)
-        self.assertEquals(view_func(request), RespondAsynchronously)
+        self.assertEqual(view_func(request), RespondAsynchronously)
 
     def test_json_get_updates(self):
         """
@@ -968,7 +968,7 @@ class GetUpdatesTest(AuthedTestCase):
         user = User.objects.get(email="hamlet@humbughq.com")
 
         request = POSTRequestMock({}, user)
-        self.assertEquals(json_get_updates(request), RespondAsynchronously)
+        self.assertEqual(json_get_updates(request), RespondAsynchronously)
 
     def test_bad_input(self):
         """
@@ -1006,7 +1006,7 @@ class GetProfileTest(AuthedTestCase):
         self.assertIn("max_message_id", json)
         self.assertIn("pointer", json)
 
-        self.assertEquals(json["max_message_id"], max_id)
+        self.assertEqual(json["max_message_id"], max_id)
         return json
 
     def test_api_get_empty_profile(self):
@@ -1014,7 +1014,7 @@ class GetProfileTest(AuthedTestCase):
         Ensure get_profile returns a max message id and returns successfully
         """
         json = self.common_get_profile("othello@humbughq.com")
-        self.assertEquals(json["pointer"], -1)
+        self.assertEqual(json["pointer"], -1)
 
     def test_profile_with_pointer(self):
         """
@@ -1024,11 +1024,11 @@ class GetProfileTest(AuthedTestCase):
 
         self.common_update_pointer("hamlet@humbughq.com", 1)
         json = self.common_get_profile("hamlet@humbughq.com")
-        self.assertEquals(json["pointer"], 1)
+        self.assertEqual(json["pointer"], 1)
 
         self.common_update_pointer("hamlet@humbughq.com", 0)
         json = self.common_get_profile("hamlet@humbughq.com")
-        self.assertEquals(json["pointer"], 1)
+        self.assertEqual(json["pointer"], 1)
 
 class GetPublicStreamsTest(AuthedTestCase):
     fixtures = ['messages.json']
@@ -1073,8 +1073,8 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assert_json_success(result)
 
         json = simplejson.loads(result.content)
-        self.assertEquals(json["subscribed"], ['Saxony'])
-        self.assertEquals(json["already_subscribed"], [])
+        self.assertEqual(json["subscribed"], ['Saxony'])
+        self.assertEqual(json["already_subscribed"], [])
 
         # Subscribing oneself to an invite-only stream is not allowed
         email = "othello@humbughq.com"
@@ -1086,8 +1086,8 @@ class InviteOnlyStreamTest(AuthedTestCase):
         result = self.common_subscribe_to_stream(email, '["Saxony"]',
                                                  extra_post_data={'principal':
                                                                   'othello@humbughq.com'})
-        self.assertEquals(json["subscribed"], ['Saxony'])
-        self.assertEquals(json["already_subscribed"], [])
+        self.assertEqual(json["subscribed"], ['Saxony'])
+        self.assertEqual(json["already_subscribed"], [])
 
         # Make sure both users are subscribed to this stream
         result = self.client.post("/json/get_subscribers", {'email':email,
@@ -1103,7 +1103,7 @@ class BugdownTest(TestCase):
 
     def common_bugdown_test(self, text, expected):
         converted = convert(text)
-        self.assertEquals(converted, expected)
+        self.assertEqual(converted, expected)
 
     def test_codeblock_hilite(self):
         fenced_code = \
