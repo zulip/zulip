@@ -302,7 +302,8 @@ function validate_stream_message() {
             // browser window doesn't know it.
             return true;
         case "not-subscribed":
-            if (lurk_stream.toLowerCase() === stream_name.toLowerCase()) {
+            if (lurk_stream !== undefined &&
+                lurk_stream.toLowerCase() === stream_name.toLowerCase()) {
                 // Just subscribe them.
                 subs.subscribe_for_send(stream_name);
                 // When the subscription request completes,
