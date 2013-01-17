@@ -1,5 +1,6 @@
 from django.conf import settings
-from zephyr.models import Message, UserProfile, UserMessage, UserActivity, Recipient, Stream
+from zephyr.models import Message, UserProfile, UserMessage, UserActivity, \
+    Recipient, Stream, get_stream
 
 from zephyr.decorator import asynchronous, authenticated_api_view, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
@@ -136,16 +137,49 @@ def fetch_table_messages(table, key, last):
     if cache_minimum_id == sys.maxint:
         initialize_user_messages()
 
-    # We need to do this check after initialize_user_messages has been called.
-    if last < cache_minimum_id:
-        # The user's client has a way-too-old value for 'last', we
-        # should return an error
-        raise JsonableError("last value of %d too old!  Minimum valid is %d!" %
-                            (last, cache_minimum_id))
-
     # We need to initialize the deque here for any new users or
     # streams that were created since Tornado was started
     table.setdefault(key, collections.deque(maxlen=400))
+
+    # We need to do this check after initialize_user_messages has been called.
+    if len(table[key]) == 0:
+        # Since the request contains a value of "last", we can assume
+        # that the relevant user or stream has actually received a
+        # message, which means that table[key] will not remain empty
+        # after the below completes.
+        #
+        # Thus, we will run this code at most once per key (user or
+        # stream that is being lurked on).  Further, we only do this
+        # query for those keys that have not received a message since
+        # cache_minimum_id.  So we can afford to do a database query
+        # from Tornado in this case.
+        if table == user_messages:
+            logging.info("tornado: Doing database query for user %d" % (key,),)
+            for um in reversed(UserMessage.objects.filter(user_profile_id=key).order_by('-message')[:400]):
+                add_user_message(um.user_profile_id, um.message_id)
+        elif table == stream_messages:
+            logging.info("tornado: Doing database query for stream %s" % (key,))
+            (realm_id, stream_name) = key
+            stream = get_stream(stream_name, realm_id)
+            # If a buggy client submits a "last" value with a nonexistent stream,
+            # do nothing (and proceed to longpoll) rather than crashing.
+            if stream is not None:
+                recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
+                for m in Message.objects.only("id", "recipient").filter(recipient=recipient).order_by("id")[:400]:
+                    add_stream_message(realm_id, stream_name, m.id)
+
+    if len(table[key]) == 0:
+        # Check the our assumption above that there are messages here.
+        # If false, this may just mean a misbehaving client submitted
+        # "last" even though it has no messages (in which case we
+        # should proceed with longpolling by falling through).  But it
+        # could also be a server bug, so we log a warning.
+        logging.warning("Unexpected empty message queue for key %s!" % (key,))
+    elif last < table[key][-1]:
+        # The user's client has a way-too-old value for 'last'
+        # (presumably 400 messages old), we should return an error
+        raise JsonableError("last value of %d too old!  Minimum valid is %d!" %
+                            (last, table[key][-1]))
 
     message_list = []
     for message_id in table[key]:
