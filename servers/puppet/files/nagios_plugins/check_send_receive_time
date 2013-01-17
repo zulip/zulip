@@ -1,0 +1,103 @@
+#!/usr/bin/env python
+
+"""
+Nagios plugin to check that messages take no longer than 15 seconds to
+be received after being sent on Humbug.
+
+It must be run on a machine that is using the live database for the
+Django ORM.
+"""
+
+import datetime
+import os
+import sys
+import optparse
+
+usage = "usage: check_send_receive_time [options]"
+parser = optparse.OptionParser(usage=usage)
+parser.add_option('--site',
+                  dest='site',
+                  default="https://humbughq.com",
+                  action='store')
+parser.add_option('--root-path',
+                  dest='root_path',
+                  default="/home/humbug",
+                  action='store')
+
+(options, args) = parser.parse_args()
+os.environ['DJANGO_SETTINGS_MODULE'] = "humbug.settings"
+sys.path.append(options.root_path)
+sys.path.append(options.root_path + "/zephyr")
+
+from zephyr.models import UserProfile
+from api import humbug
+
+states = {
+    "OK": 0,
+    "WARNING": 1,
+    "CRITICAL": 2,
+    "UNKNOWN": 3
+    }
+
+def report(state, time, msg=None):
+    if msg:
+        print "%s: %s" % (state, msg)
+    else:
+        print "%s: send time was %s" % (state, time)
+    exit(states[state])
+
+def send_humbug(sender, message):
+    result = sender.send_message(message)
+    if result["result"] != "success":
+        report("CRITICAL", "Error sending Humbug, args were: %s, %s" % (message, result))
+
+def get_humbug(recipient, max_message_id):
+    return recipient.get_messages({'last': str(max_message_id)})['messages']
+
+# Hamlet and Othello are default users
+sender = UserProfile.objects.get(user__email="hamlet@humbughq.com")
+recipient = UserProfile.objects.get(user__email="othello@humbughq.com")
+
+humbug_sender = humbug.Client(
+    email=sender.user.email,
+    api_key=sender.api_key,
+    verbose=True,
+    client="test: Humbug API",
+    site=options.site)
+
+humbug_recipient = humbug.Client(
+    email=recipient.user.email,
+    api_key=recipient.api_key,
+    verbose=True,
+    client="test: Humbug API",
+    site=options.site)
+
+max_message_id = humbug_recipient.get_profile().get('max_message_id')
+# This msg could be randomly generated everytime, may be better to do so.
+msg_to_send = "Testing time to send and receive a message."
+time_start = datetime.datetime.now()
+
+send_humbug(humbug_sender, {
+    "type": 'private',
+    "content": msg_to_send,
+    "subject": "time to send",
+    "to": recipient.user.email,
+    })
+
+msg_content = []
+
+while msg_to_send not in msg_content:
+    messages = get_humbug(humbug_recipient, max_message_id)
+    time_diff = datetime.datetime.now() - time_start
+
+    # Prevents checking the same messages everytime in the conditional
+    # statement of the while loop
+    max_message_id = max([msg['id'] for msg in messages])
+    msg_content = [m['content'] for m in messages]
+
+    if time_diff.seconds > 3:
+        report('WARNING', time_diff)
+    if time_diff.seconds > 6:
+        report('CRITICAL', time_diff)
+
+report('OK', time_diff)
