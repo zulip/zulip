@@ -51,6 +51,15 @@ ul#sidebar {
     margin-bottom: 0px;
 }
 
+ul.lurk-navbar-phone {
+    float: right;
+    margin-bottom: 0px;
+}
+
+ul.lurk-navbar-phone li {
+    display: inline;
+}
+
 #nav_whitespace {
     visibility: hidden;
 }
