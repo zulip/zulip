@@ -14,7 +14,7 @@ from django.core.mail import send_mail
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
     StreamColor, PreregistrationUser, get_client, MitUser, User, UserActivity, \
-    MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH
+    MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH, get_stream
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, \
     do_change_full_name, do_change_enable_desktop_notifications, \
@@ -47,12 +47,6 @@ import os
 import base64
 
 SERVER_GENERATION = int(time.time())
-
-def get_stream(stream_name, realm):
-    try:
-        return Stream.objects.get(name__iexact=stream_name, realm=realm)
-    except Stream.DoesNotExist:
-        return None
 
 def send_signup_message(sender, signups_stream, user_profile, internal=False):
     if internal:

@@ -159,6 +159,17 @@ def get_client(name):
         return Client.objects.get(name=name)
     return client
 
+# get_stream takes either a realm id or a realm
+def get_stream(stream_name, realm):
+    if isinstance(realm, Realm):
+        realm_id = realm.id
+    else:
+        realm_id = realm
+    try:
+        return Stream.objects.get(name__iexact=stream_name, realm_id=realm_id)
+    except Stream.DoesNotExist:
+        return None
+
 def linebreak(string):
     return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
 
