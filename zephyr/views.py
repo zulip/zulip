@@ -54,15 +54,15 @@ def get_stream(stream_name, realm):
     except Stream.DoesNotExist:
         return None
 
-def notify_new_user(user_profile, internal=False):
+def send_signup_message(sender, signups_stream, user_profile, internal=False):
     if internal:
         # When this is done using manage.py vs. the web interface
         internal_blurb = " **INTERNAL SIGNUP** "
     else:
         internal_blurb = " "
 
-    internal_send_message("humbug+signups@humbughq.com",
-            Recipient.STREAM, "signups", user_profile.realm.domain,
+    internal_send_message(sender,
+            Recipient.STREAM, signups_stream, user_profile.realm.domain,
             "%s <`%s`> just signed up for Humbug!%s(total: **%i**)" % (
                 user_profile.full_name,
                 user_profile.user.email,
@@ -71,6 +71,15 @@ def notify_new_user(user_profile, internal=False):
                                            user__is_active=True).count(),
                 )
             )
+
+def notify_new_user(user_profile, internal=False):
+    send_signup_message("humbug+signups@humbughq.com", "signups", user_profile, internal)
+
+    if user_profile.realm.domain == "customer29.invalid":
+        try:
+            send_signup_message("bot1@customer29.invalid", "signups", user_profile, internal)
+        except UserProfile.DoesNotExist:
+            pass
 
 class PrincipalError(JsonableError):
     def __init__(self, principal):
