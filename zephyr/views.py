@@ -145,6 +145,7 @@ def accounts_customer30_register(request, username, realname, email, domain):
                                   username)
     add_default_subs(user_profile)
     login(request, authenticate(username=email, password="xxxxxxxxxxx"))
+    notify_new_user(user_profile)
     return HttpResponseRedirect(reverse('zephyr.views.home'))
 
 @require_post
