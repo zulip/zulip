@@ -89,6 +89,7 @@ user_messages = {}
 # lookup to find the matching entry in this table.
 stream_messages = {}
 USERMESSAGE_CACHE_COUNT = 25000
+STREAMMESSAGE_CACHE_COUNT = 5000
 cache_minimum_id = sys.maxint
 def initialize_user_messages():
     global cache_minimum_id
@@ -104,7 +105,7 @@ def initialize_user_messages():
     for stream in Stream.objects.select_related().all():
         streams[stream.id] = stream
     for m in (Message.objects.only("id", "recipient").select_related("recipient")
-              .filter(id__gte=cache_minimum_id,
+              .filter(id__gte=cache_minimum_id + (USERMESSAGE_CACHE_COUNT - STREAMMESSAGE_CACHE_COUNT),
                       recipient__type=Recipient.STREAM).order_by("id")):
         stream = streams[m.recipient.type_id]
         add_stream_message(stream.realm.id, stream.name, m.id)
