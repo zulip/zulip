@@ -103,7 +103,7 @@ def initialize_user_messages():
     streams = {}
     for stream in Stream.objects.select_related().all():
         streams[stream.id] = stream
-    for m in (Message.objects.select_related()
+    for m in (Message.objects.only("id", "recipient").select_related("recipient")
               .filter(id__gte=cache_minimum_id,
                       recipient__type=Recipient.STREAM).order_by("id")):
         stream = streams[m.recipient.type_id]
