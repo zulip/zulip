@@ -8,19 +8,20 @@ import simplejson
 # out from bots without having to import pika code all over our codebase.
 class SimpleQueueClient(object):
     def __init__(self):
-        self.connection = None
-        self.channel = None
         self.queues = set()
-        self._inited = False
 
-    def initialize(self):
-        # Initialize the connection
         credentials = pika.PlainCredentials('humbug', settings.RABBITMQ_PASSWORD)
         parameters = pika.ConnectionParameters('localhost',
                                                credentials=credentials)
         self.connection = pika.BlockingConnection(parameters)
         self.channel = self.connection.channel()
-        self._inited = True
+
+    @classmethod
+    def get_instance(cls):
+        # When subclassed, we will get one instance per subclass.
+        if not hasattr(cls, '_instance'):
+            cls._instance = cls()
+        return cls._instance
 
     def create_queue(self, queue_name):
         # Initialize the queues we need
@@ -28,8 +29,6 @@ class SimpleQueueClient(object):
         self.queues.add(queue_name)
 
     def publish(self, queue_name, body):
-        if not self._inited:
-            self.initialize()
         if queue_name not in self.queues:
             self.create_queue(queue_name)
         self.channel.basic_publish(exchange='',
@@ -41,8 +40,6 @@ class SimpleQueueClient(object):
         return self.publish(queue_name, simplejson.dumps(body))
 
     def register_consumer(self, queue_name, callback):
-        if not self._inited:
-            self.initialize()
         if queue_name not in self.queues:
             self.create_queue(queue_name)
 

@@ -28,7 +28,6 @@ def asynchronous(method):
         wrapper.csrf_exempt = True
     return wrapper
 
-activity_queue = SimpleQueueClient()
 def update_user_activity(request, user_profile, client):
     event={'query': request.META["PATH_INFO"],
            'user_profile_id': user_profile.id,
@@ -40,7 +39,7 @@ def update_user_activity(request, user_profile, client):
         # local development, so skipping publishing them here is
         # reasonable.
         return
-    activity_queue.json_publish("user_activity", event)
+    SimpleQueueClient.get_instance().json_publish("user_activity", event)
 
 # I like the all-lowercase name better
 require_post = require_POST

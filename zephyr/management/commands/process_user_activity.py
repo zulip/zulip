@@ -10,7 +10,7 @@ class Command(BaseCommand):
     help = "Process UserActivity log messages."
 
     def handle(self, *args, **options):
-        activity_queue = SimpleQueueClient()
+        activity_queue = SimpleQueueClient.get_instance()
 
         def callback(ch, method, properties, event):
             print " [x] Received %r" % (event,)
