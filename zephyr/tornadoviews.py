@@ -89,7 +89,7 @@ user_messages = {}
 # we're running within tornado, we don't want to have to do a database
 # lookup to find the matching entry in this table.
 stream_messages = {}
-USERMESSAGE_CACHE_COUNT = 50000
+USERMESSAGE_CACHE_COUNT = 25000
 STREAMMESSAGE_CACHE_COUNT = 5000
 cache_minimum_id = sys.maxint
 def initialize_user_messages():
