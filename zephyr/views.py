@@ -1120,6 +1120,12 @@ def set_stream_color(user_profile, stream_name, color):
     stream_color.color = color
     stream_color.save()
 
+def set_in_home_view(user_profile, stream_name, value):
+    subscription = get_subscription_or_die(stream_name, user_profile)[0]
+
+    subscription.in_home_view = value
+    subscription.save()
+
 class SubscriptionProperties(object):
     """
     A class for managing GET and POST requests for subscription properties. The
@@ -1130,6 +1136,7 @@ class SubscriptionProperties(object):
     Requests that set or change subscription properties should typically log the
     change through log_event.
     """
+
     def __call__(self, request, user_profile, property):
         property_method = getattr(self, "%s_%s" % (request.method.lower(), property), None)
         if not property_method:
@@ -1153,6 +1160,21 @@ class SubscriptionProperties(object):
         set_stream_color(user_profile, stream_name, color)
         log_subscription_property_change(user_profile.user.email, "stream_color",
                                          {"stream_name": stream_name, "color": color})
+        return json_success()
+
+    def post_in_home_view(self, request, user_profile):
+        stream_name = self.request_property(request.POST, "stream_name")
+        value = self.request_property(request.POST, "in_home_view").lower()
+
+        if value == "true":
+            value = True
+        elif value == "false":
+            value = False
+        else:
+            raise JsonableError("Invalid value for `in_home_view`.")
+
+        set_in_home_view(user_profile, stream_name, value)
+
         return json_success()
 
 subscription_properties = SubscriptionProperties()
