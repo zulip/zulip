@@ -68,3 +68,23 @@ class SimpleQueueClient(object):
 
     def stop_consuming(self):
         self.channel.stop_consuming()
+
+class TornadoQueueClient(SimpleQueueClient):
+    # Based on:
+    # https://pika.readthedocs.org/en/0.9.8/examples/asynchronous_consumer_example.html
+
+    def _connect(self):
+        self.connection = pika.adapters.TornadoConnection(
+            self._get_parameters(),
+            on_open_callback = self._on_open)
+
+        # Docs suggest we should also pass stop_ioloop_on_close = False, but
+        # my version of TornadoConnection doesn't recognize it.
+
+    def _on_open(self, connection):
+        self.connection.channel(
+            on_open_callback = self._on_channel_open)
+
+    def _on_channel_open(self, channel):
+        self.channel = channel
+        self.log.info('TornadoQueueClient connected')
