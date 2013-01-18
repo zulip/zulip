@@ -15,8 +15,8 @@ function browser_desktop_notifications_on () {
 }
 
 exports.initialize = function () {
-    names = fullname.split(" ");
-    var username = email.split("@")[0];
+    names = fullname.toLowerCase().split(" ");
+    var username = email.split("@")[0].toLowerCase();
     // If the username is part of the user's full name, then don't add it
     // to names because we don't send notifications to ambiguous names
     // that could refer to multiple people in the domain.
