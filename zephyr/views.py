@@ -1158,8 +1158,9 @@ class SubscriptionProperties(object):
 subscription_properties = SubscriptionProperties()
 
 def make_property_call(request, query_dict, user_profile):
-    property = query_dict.get("property").strip()
-    if not property:
+    try:
+        property = query_dict["property"].strip()
+    except KeyError:
         return json_error("Missing property")
 
     return subscription_properties(request, user_profile, property.lower())
