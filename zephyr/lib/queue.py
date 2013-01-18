@@ -9,12 +9,17 @@ import simplejson
 class SimpleQueueClient(object):
     def __init__(self):
         self.queues = set()
+        self.channel = None
+        self._connect()
 
-        credentials = pika.PlainCredentials('humbug', settings.RABBITMQ_PASSWORD)
-        parameters = pika.ConnectionParameters('localhost',
-                                               credentials=credentials)
-        self.connection = pika.BlockingConnection(parameters)
-        self.channel = self.connection.channel()
+    def _connect(self):
+        self.connection = pika.BlockingConnection(self._get_parameters())
+        self.channel    = self.connection.channel()
+
+    def _get_parameters(self):
+        return pika.ConnectionParameters('localhost',
+            credentials = pika.PlainCredentials(
+                'humbug', settings.RABBITMQ_PASSWORD))
 
     @classmethod
     def get_instance(cls):
@@ -22,6 +27,9 @@ class SimpleQueueClient(object):
         if not hasattr(cls, '_instance'):
             cls._instance = cls()
         return cls._instance
+
+    def ready(self):
+        return self.channel is not None
 
     def create_queue(self, queue_name):
         # Initialize the queues we need
