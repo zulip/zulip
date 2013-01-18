@@ -29,7 +29,7 @@ from zephyr.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, POST, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
-    JsonableError
+    JsonableError, RequestVariableMissingError
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error
@@ -1102,12 +1102,12 @@ def json_stream_exists(request, user_profile, stream=POST):
 def set_stream_color(user_profile, stream_name, color):
     stream = get_stream(stream_name, user_profile.realm)
     if not stream:
-        return json_error("Invalid stream %s" % (stream.name,))
+        raise JsonableError("Invalid stream %s" % (stream.name,))
     recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     subscription = Subscription.objects.filter(user_profile=user_profile,
                                                recipient=recipient, active=True)
     if not subscription.exists():
-        return json_error("Not subscribed to stream %s" % (stream_name,))
+        raise JsonableError("Not subscribed to stream %s" % (stream_name,))
 
     stream_color, _ = StreamColor.objects.get_or_create(subscription=subscription[0])
     # TODO: sanitize color.
@@ -1132,18 +1132,17 @@ class SubscriptionProperties(object):
         return property_method(request, user_profile)
 
     def request_property(self, request_dict, property):
-        return request_dict.get(property, "").strip()
+        try:
+            return request_dict[property].strip()
+        except KeyError:
+            raise RequestVariableMissingError(property)
 
     def get_stream_colors(self, request, user_profile):
         return json_success({"stream_colors": gather_subscriptions(user_profile)})
 
     def post_stream_colors(self, request, user_profile):
         stream_name = self.request_property(request.POST, "stream_name")
-        if not stream_name:
-            return json_error("Missing stream_name")
         color = self.request_property(request.POST, "color")
-        if not color:
-            return json_error("Missing color")
 
         set_stream_color(user_profile, stream_name, color)
         log_subscription_property_change(user_profile.user.email, "stream_color",

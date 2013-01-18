@@ -547,7 +547,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
                                   {"property": "stream_colors",
                                    "color": "#ffffff"})
 
-        self.assert_json_error(result, "Missing stream_name")
+        self.assert_json_error(result, "Missing 'stream_name' argument")
 
     def test_set_color_missing_color(self):
         """
@@ -559,7 +559,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
                                   {"property": "stream_colors",
                                    "stream_name": "test"})
 
-        self.assert_json_error(result, "Missing color")
+        self.assert_json_error(result, "Missing 'color' argument")
 
     def test_set_invalid_property(self):
         """
