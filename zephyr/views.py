@@ -1099,15 +1099,21 @@ def json_stream_exists(request, user_profile, stream=POST):
                                                            active=True).exists()
     return json_success(result)
 
-def set_stream_color(user_profile, stream_name, color):
+def get_subscription_or_die(stream_name, user_profile):
     stream = get_stream(stream_name, user_profile.realm)
     if not stream:
         raise JsonableError("Invalid stream %s" % (stream.name,))
     recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     subscription = Subscription.objects.filter(user_profile=user_profile,
                                                recipient=recipient, active=True)
+
     if not subscription.exists():
         raise JsonableError("Not subscribed to stream %s" % (stream_name,))
+
+    return subscription
+
+def set_stream_color(user_profile, stream_name, color):
+    subscription = get_subscription_or_die(stream_name, user_profile)
 
     stream_color, _ = StreamColor.objects.get_or_create(subscription=subscription[0])
     # TODO: sanitize color.
