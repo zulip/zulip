@@ -16,7 +16,14 @@ function browser_desktop_notifications_on () {
 
 exports.initialize = function () {
     names = fullname.split(" ");
-    names.push(email.split("@")[0]);
+    var username = email.split("@")[0];
+    // If the username is part of the user's full name, then don't add it
+    // to names because we don't send notifications to ambiguous names
+    // that could refer to multiple people in the domain.
+    // (We later add to names all of the names from the domain)
+    if (names.indexOf(username) === -1) {
+        names.push(username);
+    }
 
     $(window).focus(function () {
         window_has_focus = true;
