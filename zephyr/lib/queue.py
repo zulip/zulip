@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from django.conf import settings
 import pika
 import simplejson
