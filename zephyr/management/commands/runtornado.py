@@ -10,6 +10,7 @@ import time
 from tornado import ioloop
 from zephyr.lib.debug import interactive_debug_listen
 from zephyr.lib.response import json_response
+from zephyr.lib.queue import TornadoQueueClient
 
 # A hack to keep track of how much time we spend working, versus sleeping in
 # the event loop.
@@ -64,6 +65,12 @@ class InstrumentedPoll(object):
 
 ioloop._poll = InstrumentedPoll
 
+def step_tornado_ioloop():
+    """Run the Tornado ioloop for a short time and return."""
+    loop = ioloop.IOLoop.instance()
+    loop.add_timeout(time.time() + 0.1, loop.stop)
+    loop.start()
+
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--nokeepalive', action='store_true',
@@ -115,6 +122,13 @@ class Command(BaseCommand):
             print "\nDjango version %s" % (django.get_version())
             print "Tornado server is running at http://%s:%s/" % (addr, port)
             print "Quit the server with %s." % quit_command
+
+            if settings.USING_RABBITMQ:
+                queue_client = TornadoQueueClient()
+                while not queue_client.ready():
+                    step_tornado_ioloop()
+
+                # FIXME: Register consumer callbacks here
 
             try:
                 # Application is an instance of Django's standard wsgi handler.
