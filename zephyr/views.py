@@ -1159,6 +1159,7 @@ class ActivityTable(object):
                     client__name=client_name):
                 row = self.rows.setdefault(record.user_profile.user.email, {})
                 row['realm'] = record.user_profile.realm.domain
+                row['full_name'] = record.user_profile.full_name
                 row[query_name + '_count'] = record.count
                 row[query_name + '_last' ] = record.last_visit
 

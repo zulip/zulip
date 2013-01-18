@@ -27,7 +27,8 @@
     <table class="table sortable table-striped table-bordered">
     <thead class="activity_head">
     <tr>
-    <th>User</th>
+    <th>Name</th>
+    <th>Email</th>
     <th>Realm</th>
     <th>Last get_updates</th>
     <th>Last send_message</th>
@@ -41,6 +42,7 @@
     <tbody>
     {% for email, row in activity.sorted_rows %}
         <tr class="{{ row.class }}">
+        <td><strong>{{ row.full_name }}</strong></td>
         <td><strong>{{ email }}</strong></td>
         <td><strong>{{ row.realm }}</strong></td>
         <td sorttable_customkey="{{ row.get_updates_last|date:'YmdHi' }}">{{ row.get_updates_last }}</td>
