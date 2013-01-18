@@ -1,5 +1,6 @@
 from django.conf import settings
 import pika
+import logging
 import simplejson
 
 # This simple queuing library doesn't expose much of the power of
@@ -8,6 +9,7 @@ import simplejson
 # out from bots without having to import pika code all over our codebase.
 class SimpleQueueClient(object):
     def __init__(self):
+        self.log = logging.getLogger('humbug.queue')
         self.queues = set()
         self.channel = None
         self._connect()
@@ -15,6 +17,7 @@ class SimpleQueueClient(object):
     def _connect(self):
         self.connection = pika.BlockingConnection(self._get_parameters())
         self.channel    = self.connection.channel()
+        self.log.info('SimpleQueueClient connected')
 
     def _get_parameters(self):
         return pika.ConnectionParameters('localhost',
