@@ -3,14 +3,14 @@ from django.core.management.base import BaseCommand
 import simplejson
 import pika
 from zephyr.lib.actions import process_user_activity_event
-from zephyr.lib.queue import SimpleQueue
+from zephyr.lib.queue import SimpleQueueClient
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list
     help = "Process UserActivity log messages."
 
     def handle(self, *args, **options):
-        activity_queue = SimpleQueue()
+        activity_queue = SimpleQueueClient()
 
         def callback(ch, method, properties, event):
             print " [x] Received %r" % (event,)

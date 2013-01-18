@@ -6,7 +6,7 @@ import simplejson
 # rabbitmq/pika's queuing system; its purpose is to just provide an
 # interface for external files to put things into queues and take them
 # out from bots without having to import pika code all over our codebase.
-class SimpleQueue(object):
+class SimpleQueueClient(object):
     connection = None
     channel = None
     queues = set()

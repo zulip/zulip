@@ -7,7 +7,7 @@ from django.db import transaction, IntegrityError
 from django.conf import settings
 import simplejson
 from zephyr.lib.cache import cache_with_key
-from zephyr.lib.queue import SimpleQueue
+from zephyr.lib.queue import SimpleQueueClient
 from zephyr.lib.timestamp import datetime_to_timestamp
 
 from functools import wraps
@@ -28,7 +28,7 @@ def asynchronous(method):
         wrapper.csrf_exempt = True
     return wrapper
 
-activity_queue = SimpleQueue()
+activity_queue = SimpleQueueClient()
 def update_user_activity(request, user_profile, client):
     event={'query': request.META["PATH_INFO"],
            'user_profile_id': user_profile.id,
