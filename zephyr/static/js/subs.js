@@ -165,6 +165,9 @@ exports.setup_page = function () {
                 });
                 $('#subscriptions_table').append(templates.subscription({subscriptions: subscriptions}));
             }
+            // If we're anywhere other than the top of the page, focusing
+            // the streams box somewhat obscures the word "Subscriptions"
+            $(window).scrollTop(0);
             $('#streams').focus().select();
         },
         error: function (xhr) {
