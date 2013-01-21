@@ -63,6 +63,7 @@ exports.update_typeahead = function () {
 function narrow_or_search_for_term(item) {
     var search_query_box = $("#search_query");
     var obj = mapped[item];
+    ui.change_tab_to('#home');
     switch (obj.action) {
     case 'search':
         $("#search_up").focus();
