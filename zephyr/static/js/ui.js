@@ -573,6 +573,38 @@ $(function () {
         $('#old_password, #new_password, #confirm_password').val('');
     }
 
+    // So, this is a rather inelegant hack that addresses two issues.
+    //
+    // The first issue goes something like this: we use Bootstrap's
+    // notion of tabs to show what pane you're in.  Bootstrap likes to
+    // highlight the active tab. Since "Settings", etc. are in our
+    // dropdown, therefore the dropdown is the "active" tab, so we
+    // draw it as though it is pushed in! However, this is
+    // inappropriate for what we're trying to do.  (we're trying to
+    // give you a menu, not indicate where you are; and undoing this
+    // and doing all the tab work by hand is just unnecessarily
+    // painful.)
+    //
+    // So to get around this, we take away the "active" status of
+    // gear-menu every single time a tab is shown.
+    $('#gear-menu a[data-toggle="tab"]').on('shown', function (e) {
+        $('#gear-menu').removeClass('active');
+    });
+    // Doing so ends up causing some other problem, though, where the
+    // little 'active' indicators get stuck on the menu sub-items, so
+    // we need to flush the old ones too once a new one is
+    // activated. (Otherwise, once you've been to a tab you can never
+    // go to it again).
+    //
+    // Incidentally, this also fixes a problem we have with
+    // e.relatedTarget; if you don't do the clearing as specified
+    // above, e.relatedTarget always ends up being the last link in
+    // our dropdown, as opposed to "the previously selected menu
+    // item."
+    $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
+        $('#gear-menu li').removeClass('active');
+    });
+
     $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
         var old_tab = $(e.relatedTarget).attr('href');
@@ -608,6 +640,9 @@ $(function () {
         hashchange.changehash(browser_url);
     });
 
+    // N.B. that subs.setup_page calls focus() on our stream textbox,
+    // which may cause the page to scroll away from where we used to
+    // have it (and instead to scroll to a weird place.)
     $('#gear-menu a[href="#subscriptions"]').on('shown', subs.setup_page);
 
     var settings_status = $('#settings-status');
