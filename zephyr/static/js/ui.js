@@ -611,13 +611,7 @@ $(function () {
         scroll_positions[old_tab] = viewport.scrollTop();
     });
     $('#gear-menu a[data-toggle="tab"]').on('shown', function (e) {
-        // Right after we show the new tab, restore its old scroll position
         var target_tab = $(e.target).attr('href');
-        if (scroll_positions.hasOwnProperty(target_tab)) {
-            viewport.scrollTop(scroll_positions[target_tab]);
-        } else {
-            viewport.scrollTop(0);
-        }
 
         // Hide all our error messages when switching tabs
         $('.alert-error').hide();
@@ -638,6 +632,15 @@ $(function () {
             browser_url = "";
         }
         hashchange.changehash(browser_url);
+
+        // After we show the new tab, restore its old scroll position
+        // (we apparently have to do this after setting the hash,
+        // because otherwise that action may scroll us somewhere.)
+        if (scroll_positions.hasOwnProperty(target_tab)) {
+            viewport.scrollTop(scroll_positions[target_tab]);
+        } else {
+            viewport.scrollTop(0);
+        }
     });
 
     // N.B. that subs.setup_page calls focus() on our stream textbox,
