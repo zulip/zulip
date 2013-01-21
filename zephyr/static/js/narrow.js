@@ -207,7 +207,6 @@ exports.activate = function (operators, opts) {
 
     // Show the new set of messages.
     $("#main_div").addClass("narrowed_view");
-    $("#searchbox").addClass("narrowed_view");
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
     $("#zfilt").css("opacity", 0).animate({opacity: 1});
