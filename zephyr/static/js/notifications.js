@@ -37,6 +37,9 @@ exports.initialize = function () {
         });
     }).blur(function () {
         window_has_focus = false;
+    }).mouseover(function () {
+        new_message_count = 0;
+        document.title = domain + " - Humbug";
     });
 
     if (!window.webkitNotifications) {
