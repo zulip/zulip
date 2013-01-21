@@ -10,6 +10,8 @@ var names;
 
 function browser_desktop_notifications_on () {
     return (window.webkitNotifications &&
+            // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
+            $.browser.webkit &&
             // 0 is PERMISSION_ALLOWED
             window.webkitNotifications.checkPermission() === 0);
 }
