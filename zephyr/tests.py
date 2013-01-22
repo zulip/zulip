@@ -7,7 +7,7 @@ from django.db.models import Q
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, get_display_recipient, Realm, Client
 from zephyr.tornadoviews import json_get_updates, api_get_messages
-from zephyr.views import gather_subscriptions
+from zephyr.views import gather_subscriptions, api_get_profile, api_get_public_streams
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
 from zephyr.lib.initial_password import initial_password, initial_api_key
 from zephyr.lib.actions import do_send_message
@@ -960,6 +960,56 @@ class GetUpdatesTest(AuthedTestCase):
         request = POSTRequestMock({'pointer': 'foo'}, user)
         self.assertRaises(RequestVariableConversionError, json_get_updates, request)
 
+class GetProfileTest(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def common_update_pointer(self, email, pointer):
+        self.login(email)
+        result = self.client.post("/json/update_pointer", {"pointer": 1})
+        self.assert_json_success(result)
+
+    def common_get_profile(self, email):
+        user = User.objects.get(email=email)
+
+        api_key = self.get_api_key(email)
+        request = POSTRequestMock({'email': email, 'api-key': api_key}, user, None)
+        result = api_get_profile(request)
+
+        stream = self.message_stream(user)
+        max_id = -1
+        if len(stream) > 0:
+            max_id = stream[-1].id
+
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+
+        self.assertIn("client_id", json)
+        self.assertIn("max_message_id", json)
+        self.assertIn("pointer", json)
+
+        self.assertEquals(json["max_message_id"], max_id)
+        return json
+
+    def test_api_get_empty_profile(self):
+        """
+        Ensure get_profile returns a max message id and returns successfully
+        """
+        json = self.common_get_profile("othello@humbughq.com")
+        self.assertEquals(json["pointer"], -1)
+
+    def test_profile_with_pointer(self):
+        """
+        Ensure get_profile returns a proper pointer id after the pointer is updated
+        """
+        json = self.common_get_profile("hamlet@humbughq.com")
+
+        self.common_update_pointer("hamlet@humbughq.com", 1)
+        json = self.common_get_profile("hamlet@humbughq.com")
+        self.assertEquals(json["pointer"], 1)
+
+        self.common_update_pointer("hamlet@humbughq.com", 0)
+        json = self.common_get_profile("hamlet@humbughq.com")
+        self.assertEquals(json["pointer"], 1)
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (
