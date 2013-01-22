@@ -140,7 +140,9 @@ var people_list = [
                 </li>
                 <!-- /stuff that gets visible in skinny mode -->
                 <li class="dropdown" id="gear-menu">
-                  <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><img src="/static/third/glyphicons/glyphicons_136_cogwheel.png" /> <b class="caret"></b></a>
+                  <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
+                    <span class="glyphicons cogwheel"><i></i></span><b class="caret"></b>
+                  </a>
                   <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="settings-dropdown">
                     <li title="Home">
                       <a href="#home" data-toggle="tab" onclick="narrow.restore_home_state();">
