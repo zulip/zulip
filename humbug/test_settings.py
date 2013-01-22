@@ -1,5 +1,6 @@
 from settings import *
 import os
+import logging
 
 DATABASES["default"] = {"NAME": "zephyr/tests/zephyrdb.test",
                         "ENGINE": "django.db.backends.sqlite3",
@@ -40,3 +41,6 @@ CACHES = { 'default': {
             'MAX_ENTRIES': 100000
         }
     } }
+
+requests_logger = logging.getLogger('humbug.requests')
+requests_logger.setLevel(logging.WARNING)
