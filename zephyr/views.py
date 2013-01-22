@@ -1200,7 +1200,9 @@ def get_activity(request):
         { 'data': {
             'Website': ActivityTable('website',       web_queries, default_tab=True),
             'Mirror':  ActivityTable('zephyr_mirror', api_queries),
-            'API':     ActivityTable('API',           api_queries)
+            'API':     ActivityTable('API',           api_queries),
+            'Android': ActivityTable('Android',       api_queries),
+            'iPhone':  ActivityTable('iPhone',        api_queries)
         }}, context_instance=RequestContext(request))
 
 @authenticated_api_view
