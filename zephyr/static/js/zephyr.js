@@ -718,8 +718,6 @@ $(function () {
                           }});
     }
 
-    subs.fetch_colors();
-
     if (have_initial_messages) {
         load_old_messages(initial_pointer, 200, 200, load_more);
     } else {

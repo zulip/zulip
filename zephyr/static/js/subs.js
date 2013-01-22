@@ -147,7 +147,7 @@ exports.get_color = function (stream_name) {
     return stream_info[lstream_name].color;
 };
 
-exports.fetch_colors = function () {
+function fetch_colors() {
     $.ajax({
         type:     'GET',
         url:      '/json/subscriptions/property',
@@ -166,7 +166,7 @@ exports.fetch_colors = function () {
             }
         }
     });
-};
+}
 
 exports.setup_page = function () {
     util.make_loading_indicator($('#subs_page_loading_indicator'));
@@ -290,6 +290,7 @@ $(function () {
     for (i = 0; i < stream_list.length; i++) {
         stream_info[stream_list[i].toLowerCase()] = create_sub(stream_list[i]);
     }
+    fetch_colors();
 
     $("#add_new_subscription").on("submit", function (e) {
         e.preventDefault();
