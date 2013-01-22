@@ -40,6 +40,17 @@ function update_historical_message_color(stream_name, color) {
     }
 }
 
+function update_stream_color(stream_name, color, opts) {
+    opts = $.extend({}, {update_historical: false}, opts);
+    var sub = stream_info[stream_name.toLowerCase()];
+    sub.color = color;
+    var id = parseInt(sub.id, 10);
+    $("#subscription_" + id + " .color_swatch").css('background-color', color);
+    if (opts.update_historical) {
+        update_historical_message_color(stream_name, color);
+    }
+}
+
 var colorpicker_options = {
     clickoutFiresChange: true,
     showPalette: true,
@@ -54,9 +65,8 @@ var colorpicker_options = {
         var sub_row = $(this).closest('.subscription_row');
         var stream_name = sub_row.find('.subscription_name').text();
         var hex_color = color.toHexString();
-        stream_info[stream_name.toLowerCase()].color = hex_color;
-        sub_row.find('.color_swatch').css('background-color', hex_color);
-        update_historical_message_color(stream_name, hex_color);
+
+        update_stream_color(stream_name, hex_color, {update_historical: true});
 
         $.ajax({
             type:     'POST',
@@ -121,10 +131,8 @@ exports.fetch_colors = function () {
                 $.each(data.stream_colors, function (index, data) {
                     var stream_name = data[0];
                     var color = data[1];
-                    stream_info[stream_name.toLowerCase()].color = color;
-                    if (initial_color_fetch) {
-                        update_historical_message_color(stream_name, color);
-                    }
+                    update_stream_color(stream_name, color,
+                                        {update_historical: initial_color_fetch});
                 });
                 initial_color_fetch = false;
             }
