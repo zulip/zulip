@@ -3,7 +3,6 @@ var subs = (function () {
 var exports = {};
 
 var stream_info = {}; // Maps lowercase stream name to stream properties object
-var removed_streams = {};
 // We fetch the stream colors asynchronous while the message feed is
 // getting constructed, so we may need to go back and color streams
 // that have already been rendered.
@@ -14,7 +13,13 @@ var next_sub_id = 0;
 
 exports.subscribed_streams = function () {
     // TODO: Object.keys() compatibility
-    var list = Object.keys(stream_info);
+    var list = [];
+    $.each(Object.keys(stream_info), function (idx, key) {
+        var sub = stream_info[key];
+        if (sub.subscribed) {
+            list.push(sub.name);
+        }
+    });
     list.sort();
     return list;
 };
@@ -82,33 +87,56 @@ var colorpicker_options = {
     }
 };
 
-function add_to_stream_list(stream_name) {
-    var stream_sub_row;
-    var sub;
-
-    if (exports.have(stream_name)) {
-        return;
-    }
-
-    var lstream_name = stream_name.toLowerCase();
-
-    if (removed_streams[lstream_name] !== undefined) {
-        sub = removed_streams[lstream_name];
-        delete removed_streams[lstream_name];
-        stream_info[lstream_name] = sub;
-    } else {
-        sub = {name: stream_name, id: next_sub_id++, color: default_color,
-               render_subscribers: render_subscribers()};
-        stream_info[lstream_name] = sub;
-
-        $('#subscriptions_table').prepend(templates.subscription({subscriptions: [sub]}));
-    }
+function create_sub(stream_name, attrs) {
+    var sub = $.extend({}, {name: stream_name, color: default_color, id: next_sub_id++,
+                            render_subscribers: render_subscribers(),
+                            subscribed: true}, attrs);
+    stream_info[stream_name.toLowerCase()] = sub;
+    return sub;
 }
 
-function remove_from_stream_list(stream_name) {
+function button_for_sub(sub) {
+    var id = parseInt(sub.id, 10);
+    return $("#subscription_" + id + " .sub_unsub_button");
+}
+
+function mark_subscribed(stream_name) {
     var lstream_name = stream_name.toLowerCase();
-    removed_streams[lstream_name] = stream_info[lstream_name];
-    delete stream_info[lstream_name];
+    var sub = stream_info[lstream_name];
+
+    if (sub === undefined) {
+        sub = create_sub(stream_name, {});
+        $('#subscriptions_table').prepend(templates.subscription({subscriptions: [sub]}));
+    } else if (! sub.subscribed) {
+        sub.subscribed = true;
+        var button = button_for_sub(sub);
+        if (button.length !== 0) {
+            button.text("Unsubscribe").removeClass("btn-primary");
+        } else {
+            $('#subscriptions_table').prepend(templates.subscription({subscriptions: [sub]}));
+        }
+    } else {
+        // Already subscribed
+        return;
+    }
+    typeahead_helper.update_autocomplete();
+}
+
+function mark_unsubscribed(stream_name) {
+    var lstream_name = stream_name.toLowerCase();
+    var sub = stream_info[lstream_name];
+
+    if (sub === undefined) {
+        // We don't know about this stream
+        return;
+    } else if (sub.subscribed) {
+        sub.subscribed = false;
+        button_for_sub(sub).text("Subscribe").addClass("btn-primary");
+    } else {
+        // Already unsubscribed
+        return;
+    }
+    typeahead_helper.update_autocomplete();
 }
 
 exports.get_color = function (stream_name) {
@@ -150,14 +178,15 @@ exports.setup_page = function () {
         success: function (data) {
             util.destroy_loading_indicator($('#subs_page_loading_indicator'));
             $('#subscriptions_table tr').remove();
-            removed_streams = {};
             if (data) {
                 var subscriptions = [];
                 $.each(data.subscriptions, function (index, data) {
                     var stream_name = data[0];
-                    var sub = {name: stream_name, id: next_sub_id++,
-                               color: data[1], render_subscribers: render_subscribers()};
-                    stream_info[stream_name.toLowerCase()] = sub;
+                    var sub = stream_info[stream_name.toLowerCase()];
+                    if (! sub) {
+                        sub = create_sub(stream_name, {});
+                        stream_info[stream_name.toLowerCase()] = sub;
+                    }
                     subscriptions.push(sub);
                 });
                 $('#subscriptions_table').append(templates.subscription({subscriptions: subscriptions}));
@@ -182,7 +211,7 @@ exports.subscribe_for_send = function (stream, prompt_button) {
         dataType: 'json',
         timeout:  10*60*1000, // 10 minutes in ms
         success: function (response) {
-            add_to_stream_list(stream);
+            mark_subscribed(stream);
             compose.finish();
             if (prompt_button !== undefined)
                 prompt_button.stop(true).fadeOut(500);
@@ -194,10 +223,14 @@ exports.subscribe_for_send = function (stream, prompt_button) {
 };
 
 exports.have = function (stream_name) {
-    return (stream_info[stream_name.toLowerCase()] !== undefined);
+    var sub = stream_info[stream_name.toLowerCase()];
+    if (sub !== undefined && sub.subscribed) {
+        return sub;
+    }
+    return false;
 };
 
-function ajaxSubscribe(stream, button) {
+function ajaxSubscribe(stream) {
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/add",
@@ -216,11 +249,7 @@ function ajaxSubscribe(stream, button) {
                 ui.report_success("Successfully added subscription to " + name,
                                $("#subscriptions-status"));
             }
-            add_to_stream_list(name);
-            if (button !== undefined) {
-                button.text("Unsubscribe").removeClass("btn-primary");
-            }
-            typeahead_helper.update_autocomplete();
+            mark_subscribed(name);
         },
         error: function (xhr) {
             ui.report_error("Error adding subscription", xhr, $("#subscriptions-status"));
@@ -229,7 +258,7 @@ function ajaxSubscribe(stream, button) {
     });
 }
 
-function ajaxUnsubscribe(stream, button) {
+function ajaxUnsubscribe(stream) {
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/remove",
@@ -246,9 +275,7 @@ function ajaxUnsubscribe(stream, button) {
                 ui.report_success("Successfully removed subscription to " + name,
                                $("#subscriptions-status"));
             }
-            remove_from_stream_list(name);
-            button.text("Subscribe").addClass("btn-primary");
-            typeahead_helper.update_autocomplete();
+            mark_unsubscribed(name);
         },
         error: function (xhr) {
             ui.report_error("Error removing subscription", xhr, $("#subscriptions-status"));
@@ -261,7 +288,7 @@ $(function () {
     var i;
     // Populate stream_info with data handed over to client-side template.
     for (i = 0; i < stream_list.length; i++) {
-        stream_info[stream_list[i].toLowerCase()] = {color: default_color};
+        stream_info[stream_list[i].toLowerCase()] = create_sub(stream_list[i]);
     }
 
     $("#add_new_subscription").on("submit", function (e) {
@@ -276,10 +303,10 @@ $(function () {
         var stream_name = sub_row.find('.subscription_name').text();
         var sub = stream_info[stream_name.toLowerCase()];
 
-        if (sub) {
-            ajaxUnsubscribe(stream_name, $(e.target));
+        if (sub.subscribed) {
+            ajaxUnsubscribe(stream_name);
         } else {
-            ajaxSubscribe(stream_name, $(e.target));
+            ajaxSubscribe(stream_name);
         }
     });
 
