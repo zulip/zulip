@@ -40,7 +40,7 @@ function render_object(obj) {
 }
 
 exports.update_typeahead = function () {
-    var streams = $.map(stream_list, function(elt,idx) {
+    var streams = $.map(subs.subscribed_streams(), function(elt,idx) {
         return {action: 'stream', query: elt};
     });
     var people = $.map(people_list, function(elt,idx) {

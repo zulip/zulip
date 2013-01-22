@@ -134,7 +134,7 @@ exports.initialize = function () {
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({
         source: function (query, process) {
-            return stream_list;
+            return subs.subscribed_streams();
         },
         items: 2,
         highlighter: composebox_typeahead_highlighter,

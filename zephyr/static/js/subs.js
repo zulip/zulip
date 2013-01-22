@@ -12,20 +12,15 @@ var initial_color_fetch = true;
 var default_color = "#c2c2c2";
 var next_sub_id = 0;
 
+exports.subscribed_streams = function () {
+    // TODO: Object.keys() compatibility
+    var list = Object.keys(stream_info);
+    list.sort();
+    return list;
+};
+
 function render_subscribers() {
     return domain !== 'mit.edu';
-}
-
-function case_insensitive_subscription_index(stream_name) {
-    var i;
-    var name = stream_name.toLowerCase();
-
-    for (i = 1; i < stream_list.length; i++) {
-        if (name === stream_list[i].toLowerCase()) {
-            return i;
-        }
-    }
-    return -1;
 }
 
 function update_table_stream_color(table, stream_name, color) {
@@ -87,8 +82,6 @@ function add_to_stream_list(stream_name) {
 
     var lstream_name = stream_name.toLowerCase();
 
-    stream_list.push(stream_name);
-
     if (removed_streams[lstream_name] !== undefined) {
         sub = removed_streams[lstream_name];
         delete removed_streams[lstream_name];
@@ -106,10 +99,6 @@ function remove_from_stream_list(stream_name) {
     var lstream_name = stream_name.toLowerCase();
     removed_streams[lstream_name] = stream_info[lstream_name];
     delete stream_info[lstream_name];
-    var removal_index = case_insensitive_subscription_index(stream_name);
-    if (removal_index !== -1) {
-        stream_list.splice(removal_index, 1);
-    }
 }
 
 exports.get_color = function (stream_name) {

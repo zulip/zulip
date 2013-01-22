@@ -12,7 +12,6 @@ exports.autocomplete_needs_update = function (needs_update) {
 };
 
 exports.update_autocomplete = function () {
-    stream_list.sort();
     search.update_typeahead();
     autocomplete_needs_update = false;
 };
