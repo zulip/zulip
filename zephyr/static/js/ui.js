@@ -786,6 +786,15 @@ $(function () {
     $("#search_exit").on("click", search.clear_search);
 
     $("#stream").on('blur', function () { compose.decorate_stream_bar(this.value); });
+
+    $("a.brand").on('click', function (e) {
+        if (exports.home_tab_obscured()) {
+            ui.change_tab_to('#home');
+        } else {
+            narrow.restore_home_state();
+        }
+        e.preventDefault();
+    });
 });
 
 return exports;
