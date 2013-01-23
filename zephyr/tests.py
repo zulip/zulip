@@ -7,7 +7,8 @@ from django.db.models import Q
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, get_display_recipient, Realm, Client
 from zephyr.tornadoviews import json_get_updates, api_get_messages
-from zephyr.views import gather_subscriptions, api_get_profile, api_get_public_streams
+from zephyr.views import gather_subscriptions, api_get_profile, \
+    api_get_public_streams, api_add_subscriptions, api_get_subscribers
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
 from zephyr.lib.initial_password import initial_password, initial_api_key
 from zephyr.lib.actions import do_send_message
@@ -1050,6 +1051,58 @@ class GetPublicStreamsTest(AuthedTestCase):
 
         self.assertIn("streams", json)
         self.assertIsInstance(json["streams"], list)
+
+class InviteOnlyStreamTest(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def common_subscribe_to_stream(self, email, streams, extra_post_data = {}, invite_only=False):
+        user = User.objects.get(email=email)
+        api_key = self.get_api_key(email)
+
+        post_data = {'email': email,
+                     'api-key': api_key,
+                     'subscriptions': streams,
+                     'invite_only': invite_only}
+        post_data.update(extra_post_data)
+        request = POSTRequestMock(post_data, user, None)
+        result = api_add_subscriptions(request)
+        return result
+
+    def test_inviteonly(self):
+        # Creating an invite-only stream is allowed
+        email = 'hamlet@humbughq.com'
+        result = self.common_subscribe_to_stream(email, '["Saxony"]', invite_only=True)
+        self.assert_json_success(result)
+
+        json = simplejson.loads(result.content)
+        self.assertEquals(json["subscribed"], ['Saxony'])
+        self.assertEquals(json["already_subscribed"], [])
+
+        # Subscribing oneself to an invite-only stream is not allowed
+        email = "othello@humbughq.com"
+        result = self.common_subscribe_to_stream(email, '["Saxony"]')
+        self.assert_json_error(result, "Unable to join an invite-only stream")
+
+        # Inviting another user to an invite-only stream is allowed
+        email = 'hamlet@humbughq.com'
+        result = self.common_subscribe_to_stream(email, '["Saxony"]',
+                                                 extra_post_data={'principal':
+                                                                  'othello@humbughq.com'})
+        self.assertEquals(json["subscribed"], ['Saxony'])
+        self.assertEquals(json["already_subscribed"], [])
+
+        # Make sure both users are subscribed to this stream
+        user = User.objects.get(email=email)
+        request = POSTRequestMock({'email':email,
+                                   'api-key': self.get_api_key(email),
+                                   'stream': 'Saxony'},
+                                  user, None)
+        result = api_get_subscribers(request)
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+
+        self.assertTrue('othello@humbughq.com' in json['subscribers'])
+        self.assertTrue('hamlet@humbughq.com' in json['subscribers'])
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (
