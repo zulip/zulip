@@ -19,18 +19,21 @@ parser.add_option('--site',
                   dest='site',
                   default="https://humbughq.com",
                   action='store')
-parser.add_option('--root-path',
-                  dest='root_path',
-                  default="/home/humbug",
-                  action='store')
 
 (options, args) = parser.parse_args()
-os.environ['DJANGO_SETTINGS_MODULE'] = "humbug.settings"
-sys.path.append(options.root_path)
-sys.path.append(options.root_path + "/zephyr")
 
+sys.path.append('/home/humbug/humbug/api')
+import humbug
+# Until we run scripts like this with a packaged and installed API, or
+# rename the top-level humbug directory to something that doesn't
+# conflict with an API module, we have to use hacks like this to be
+# able to import both api.humbug and the top level humbug for
+# humbug.settings.
+del sys.modules["humbug"]
+
+sys.path.insert(0, '/home/humbug/humbug')
+os.environ['DJANGO_SETTINGS_MODULE'] = "humbug.settings"
 from zephyr.models import UserProfile
-from api import humbug
 
 states = {
     "OK": 0,
