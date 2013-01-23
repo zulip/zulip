@@ -185,13 +185,13 @@ def do_send_message(message, no_log=False):
                 data['stream_name'] = stream.name
         requests.post(settings.TORNADO_SERVER + '/notify_new_message', data=data)
 
-def create_stream_if_needed(realm, stream_name):
+def create_stream_if_needed(realm, stream_name, invite_only=False):
     (stream, created) = Stream.objects.get_or_create(
         realm=realm, name__iexact=stream_name,
-        defaults={'name': stream_name})
+        defaults={'name': stream_name, 'invite_only': invite_only})
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
-    return stream
+    return stream, created
 
 def internal_send_message(sender_email, recipient_type, recipient,
                           subject, content):
@@ -201,7 +201,8 @@ def internal_send_message(sender_email, recipient_type, recipient,
     message.sender = UserProfile.objects.get(user__email=sender_email)
 
     if recipient_type == Recipient.STREAM:
-        type_id = create_stream_if_needed(message.sender.realm, recipient).id
+        stream, _ = create_stream_if_needed(message.sender.realm, recipient)
+        type_id = stream.id
     else:
         type_id = UserProfile.objects.get(user__email=recipient).id
 
@@ -293,8 +294,8 @@ def do_create_realm(domain, replay=False):
         # Sent a notification message
         message = Message()
         message.sender = UserProfile.objects.get(user__email="humbug+signups@humbughq.com")
-        message.recipient = Recipient.objects.get(type_id=create_stream_if_needed(
-                message.sender.realm, "signups").id, type=Recipient.STREAM)
+        stream, _ = create_stream_if_needed(message.sender.realm, "signups")
+        message.recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         message.subject = domain
         message.content = "Signups enabled."
         message.pub_date = timezone.now()
@@ -314,7 +315,7 @@ def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifica
 def set_default_streams(realm, stream_names):
     DefaultStream.objects.filter(realm=realm).delete()
     for stream_name in stream_names:
-        stream = create_stream_if_needed(realm, stream_name)
+        stream, _ = create_stream_if_needed(realm, stream_name)
         DefaultStream.objects.create(stream=stream, realm=realm)
 
 def add_default_subs(user_profile):

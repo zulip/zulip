@@ -941,7 +941,8 @@ def json_add_subscriptions(request, user_profile):
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = POST('subscriptions', json_to_list),
-                              principal = POST(default=None)):
+                              invite_only = POST('invite_only', default=False),
+                              principal = POST(default=None),):
     stream_names = []
     for stream_name in streams_raw:
         stream_name = stream_name.strip()
@@ -958,7 +959,11 @@ def add_subscriptions_backend(request, user_profile,
 
     result = dict(subscribed=[], already_subscribed=[])
     for stream_name in set(stream_names):
-        stream = create_stream_if_needed(subscriber.realm, stream_name)
+        stream, created = create_stream_if_needed(subscriber.realm, stream_name, invite_only = invite_only)
+        # Users cannot subscribe themselves to an invite-only stream
+        if stream.invite_only and subscriber == user_profile and not created:
+            return json_error("Unable to join an invite-only stream")
+
         did_subscribe = do_add_subscription(subscriber, stream)
         if did_subscribe:
             result["subscribed"].append(stream.name)
