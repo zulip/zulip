@@ -178,6 +178,10 @@ def fetch_table_messages(table, key, last):
     elif last < table[key][-1]:
         # The user's client has a way-too-old value for 'last'
         # (presumably 400 messages old), we should return an error
+
+        # The error handler for get_updates in zephyr.js parses this
+        # message. If you change this message, you must update that
+        # error handler.
         raise JsonableError("last value of %d too old!  Minimum valid is %d!" %
                             (last, table[key][-1]))
 
