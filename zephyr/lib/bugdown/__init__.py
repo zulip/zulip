@@ -33,10 +33,10 @@ class UListProcessor(markdown.blockprocessors.OListProcessor):
     """ Process unordered list blocks.
 
         Based on markdown.blockprocessors.UListProcessor, but does not accept
-        '+' as a bullet character."""
+        '+' or '-' as a bullet character."""
 
     TAG = 'ul'
-    RE = re.compile(r'^[ ]{0,3}[*-][ ]+(.*)')
+    RE = re.compile(r'^[ ]{0,3}[*][ ]+(.*)')
 
 # Based on markdown.inlinepatterns.LinkPattern
 class LinkPattern(markdown.inlinepatterns.Pattern):
