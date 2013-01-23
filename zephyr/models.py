@@ -92,6 +92,7 @@ class MitUser(models.Model):
 class Stream(models.Model):
     name = models.CharField(max_length=30, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True)
+    invite_only = models.NullBooleanField(default=False)
 
     def __repr__(self):
         return "<Stream: %s>" % (self.name,)
