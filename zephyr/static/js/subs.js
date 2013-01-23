@@ -104,20 +104,30 @@ function button_for_sub(sub) {
     return $("#subscription_" + id + " .sub_unsub_button");
 }
 
+function settings_for_sub(sub) {
+    var id = parseInt(sub.id, 10);
+    return $("#subscription_settings_" + id);
+}
+
+function add_sub_to_table(sub) {
+    $('#create_stream_row').after(templates.subscription({subscriptions: [sub]}));
+    settings_for_sub(sub).collapse('show');
+}
+
 function mark_subscribed(stream_name) {
     var lstream_name = stream_name.toLowerCase();
     var sub = stream_info[lstream_name];
 
     if (sub === undefined) {
         sub = create_sub(stream_name, {});
-        $('#create_stream_row').after(templates.subscription({subscriptions: [sub]}));
+        add_sub_to_table(sub);
     } else if (! sub.subscribed) {
         sub.subscribed = true;
         var button = button_for_sub(sub);
         if (button.length !== 0) {
             button.text("Unsubscribe").removeClass("btn-primary");
         } else {
-            $('#create_stream_row').after(templates.subscription({subscriptions: [sub]}));
+            add_sub_to_table(sub);
         }
     } else {
         // Already subscribed
