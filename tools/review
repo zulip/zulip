@@ -153,8 +153,27 @@ def make_header(repo, opts, revs):
       name = name[len(prefix):]
       tip_name = '%s (%s)' % (name, revs[-1].hexsha[:7])
   else:
-      print >>sys.stderr, "WARNING: Can't find this commit in remote -- did you push?"
-      tip_name = revs[-1].hexsha[:7]
+    (_, local_name) = repo.git.name_rev(revs[-1].hexsha,
+                                        refs='refs/heads/*',
+                                        always=True).split()
+    if local_name == "undefined":
+      print >>sys.stderr, "ERROR: Can't find this commit in remote or identify local branch!"
+      sys.exit(1)
+
+    email_basename = get_current_user_email(repo).split("@")[0]
+    if local_name.startswith("%s-" % (email_basename,)):
+      # Try to push the local branch to the remote automatically
+      try:
+        print "Attempting to push %s to remote %s" % (local_name, remote)
+        repo.git.push(remote, local_name)
+        tip_name = '%s (%s)' % (local_name, revs[-1].hexsha[:7])
+      except git.GitCommandError, e:
+        print >>sys.stderr, "ERROR: Couldn't push %s to remote" % (local_name,)
+        print >>sys.stderr, e
+        sys.exit(1)
+    else:
+      print >>sys.stderr, "ERROR: Can't find this commit in remote -- did you push %s?" % (local_name)
+      sys.exit(1)
 
   objective_summary = '%d commit(s) to %s' % (len(revs), tip_name)
   summary = ('%s (%s)' % (opts.summary, objective_summary) if opts.summary
