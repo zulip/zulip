@@ -1011,6 +1011,26 @@ class GetProfileTest(AuthedTestCase):
         json = self.common_get_profile("hamlet@humbughq.com")
         self.assertEquals(json["pointer"], 1)
 
+class GetPublicStreamsTest(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def test_public_streams(self):
+        """
+        Ensure that get_public_streams successfully returns a list of streams
+        """
+        email = 'hamlet@humbughq.com'
+        user = User.objects.get(email=email)
+
+        api_key = self.get_api_key(email)
+        request = POSTRequestMock({'email': email, 'api-key': api_key}, user, None)
+        result = api_get_public_streams(request)
+
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+
+        self.assertIn("streams", json)
+        self.assertIsInstance(json["streams"], list)
+
 class Runner(DjangoTestSuiteRunner):
     option_list = (
         optparse.make_option('--skip-generate',
