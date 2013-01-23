@@ -28,6 +28,10 @@ function should_render_subscribers() {
     return domain !== 'mit.edu';
 }
 
+function should_list_all_streams() {
+    return domain !== 'mit.edu';
+}
+
 function update_table_stream_color(table, stream_name, color) {
     $.each(table.find(".stream_label"), function () {
         if ($(this).text() === stream_name) {
@@ -207,6 +211,29 @@ exports.setup_page = function () {
         $('#streams').focus().select();
     }
 
+    if (should_list_all_streams()) {
+        // This query must go first to prevent a race when we are not
+        // listing all streams
+        $.ajax({
+            type:     'POST',
+            url:      '/json/get_public_streams',
+            dataType: 'json',
+            timeout:  10*1000,
+            success: function (data) {
+                if (data) {
+                    all_streams = data.streams;
+                    maybe_populate_subscriptions();
+                }
+            },
+            error: function (xhr) {
+                util.destroy_loading_indicator($('#subs_page_loading_indicator'));
+                ui.report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
+            }
+        });
+    } else {
+        all_streams = [];
+    }
+
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/list',
@@ -215,23 +242,6 @@ exports.setup_page = function () {
         success: function (data) {
             if (data) {
                 our_subs = data.subscriptions;
-                maybe_populate_subscriptions();
-            }
-        },
-        error: function (xhr) {
-            util.destroy_loading_indicator($('#subs_page_loading_indicator'));
-            ui.report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
-        }
-    });
-
-    $.ajax({
-        type:     'POST',
-        url:      '/json/get_public_streams',
-        dataType: 'json',
-        timeout:  10*1000,
-        success: function (data) {
-            if (data) {
-                all_streams = data.streams;
                 maybe_populate_subscriptions();
             }
         },
