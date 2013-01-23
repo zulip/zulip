@@ -146,6 +146,10 @@ function mark_unsubscribed(stream_name) {
     } else if (sub.subscribed) {
         sub.subscribed = false;
         button_for_sub(sub).text("Subscribe").addClass("btn-primary");
+        var settings = settings_for_sub(sub);
+        if (settings.hasClass('in')) {
+            settings.collapse('hide');
+        }
     } else {
         // Already unsubscribed
         return;
