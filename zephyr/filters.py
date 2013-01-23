@@ -3,7 +3,7 @@ from django.views.debug import SafeExceptionReporterFilter
 class HumbugExceptionReporterFilter(SafeExceptionReporterFilter):
     def get_post_parameters(self, request):
         filtered_post = SafeExceptionReporterFilter.get_post_parameters(self, request).copy()
-        filtered_vars = ['content', 'secret', 'password', 'key', 'api_key', 'subject', 'stream',
+        filtered_vars = ['content', 'secret', 'password', 'key', 'api-key', 'subject', 'stream',
                          'subscriptions', 'to']
 
         for var in filtered_vars:
