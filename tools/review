@@ -194,7 +194,6 @@ def write_template(target, repo, opts):
   print >>target, 'Dear %s,' % ", ".join(opts.reviewers)
   print >>target
   print >>target, 'At your convenience, please review the following commits.'
-  print >>target, 'Reply with any comments, or advance master when you are satisfied.'
   print >>target
   if opts.message:
     print >>target, opts.message
