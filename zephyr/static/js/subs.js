@@ -170,31 +170,70 @@ function fetch_colors() {
 
 exports.setup_page = function () {
     util.make_loading_indicator($('#subs_page_loading_indicator'));
+
+    var our_subs;
+    var all_streams;
+
+    function maybe_populate_subscriptions() {
+        // We only execute if both asynchronous queries have returned
+        if (our_subs === undefined || all_streams === undefined) {
+            return;
+        }
+
+        var sub_rows = [];
+        our_subs.forEach(function (elem) {
+            var stream_name = elem[0];
+            var sub = create_sub(stream_name, {color: elem[1], subscribed: true});
+            stream_info[stream_name.toLowerCase()] = sub;
+            sub_rows.push(sub);
+        });
+
+        all_streams.forEach(function (stream) {
+            if (exports.have(stream)) {
+                return;
+            }
+            var sub = create_sub(stream, {subscribed: false});
+            stream_info[stream.toLowerCase()] = sub;
+            sub_rows.push(sub);
+        });
+
+        sub_rows.sort(function (a, b) {
+            return a.name.localeCompare(b.name);
+        });
+
+        $('#subscriptions_table tr').remove();
+        $('#subscriptions_table').append(templates.subscription({subscriptions: sub_rows}));
+        util.destroy_loading_indicator($('#subs_page_loading_indicator'));
+        $('#streams').focus().select();
+    }
+
     $.ajax({
         type:     'POST',
         url:      '/json/subscriptions/list',
         dataType: 'json',
         timeout:  10*1000,
         success: function (data) {
-            util.destroy_loading_indicator($('#subs_page_loading_indicator'));
-            $('#subscriptions_table tr').remove();
             if (data) {
-                var subscriptions = [];
-                $.each(data.subscriptions, function (index, data) {
-                    var stream_name = data[0];
-                    var sub = stream_info[stream_name.toLowerCase()];
-                    if (! sub) {
-                        sub = create_sub(stream_name, {});
-                        stream_info[stream_name.toLowerCase()] = sub;
-                    }
-                    subscriptions.push(sub);
-                });
-                $('#subscriptions_table').append(templates.subscription({subscriptions: subscriptions}));
+                our_subs = data.subscriptions;
+                maybe_populate_subscriptions();
             }
-            // If we're anywhere other than the top of the page, focusing
-            // the streams box somewhat obscures the word "Subscriptions"
-            $(window).scrollTop(0);
-            $('#streams').focus().select();
+        },
+        error: function (xhr) {
+            util.destroy_loading_indicator($('#subs_page_loading_indicator'));
+            ui.report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
+        }
+    });
+
+    $.ajax({
+        type:     'POST',
+        url:      '/json/get_public_streams',
+        dataType: 'json',
+        timeout:  10*1000,
+        success: function (data) {
+            if (data) {
+                all_streams = data.streams;
+                maybe_populate_subscriptions();
+            }
         },
         error: function (xhr) {
             util.destroy_loading_indicator($('#subs_page_loading_indicator'));
