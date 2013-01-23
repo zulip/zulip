@@ -114,6 +114,20 @@ function add_sub_to_table(sub) {
     settings_for_sub(sub).collapse('show');
 }
 
+function format_member_list_elem(name, email) {
+    return name + ' <' + email + '>';
+}
+
+function add_to_member_list(ul, name, email) {
+    var member;
+    if (email === undefined) {
+        member = name;
+    } else {
+        member = format_member_list_elem(name, email);
+    }
+    $('<li>').prependTo(ul).text(member);
+}
+
 function mark_subscribed(stream_name) {
     var lstream_name = stream_name.toLowerCase();
     var sub = stream_info[lstream_name];
@@ -404,8 +418,7 @@ $(function () {
                 if (data.subscribed.length) {
                     error_elem.addClass("hide");
                     warning_elem.addClass("hide");
-                    var subscriber = people_dict[principal].full_name + ' <' + principal + '>';
-                    $('<li>').prependTo(list).text(subscriber);
+                    add_to_member_list(list, people_dict[principal].full_name, principal);
                 } else {
                     error_elem.addClass("hide");
                     warning_elem.removeClass("hide").text("User already subscribed");
@@ -442,10 +455,10 @@ $(function () {
                     if (person === undefined) {
                         return elem;
                     }
-                    return people_dict[elem].full_name + ' <' + elem + '>';
+                    return format_member_list_elem(people_dict[elem].full_name, elem);
                 });
                 $.each(subscribers.sort(), function (idx, elem) {
-                    $('<li>').appendTo(list).text(elem);
+                    add_to_member_list(list, elem);
                 });
             },
             error: function (xhr) {
