@@ -143,6 +143,11 @@ function mark_subscribed(stream_name) {
         } else {
             add_sub_to_table(sub);
         }
+        var settings = settings_for_sub(sub);
+        if (settings.hasClass('in')) {
+            var members = settings.find(".subscriber_list_container ul");
+            add_to_member_list(members, fullname, email);
+        }
     } else {
         // Already subscribed
         return;
