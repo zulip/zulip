@@ -107,6 +107,7 @@ def compute_mit_user_fullname(email):
         traceback.print_exc()
     return email.lower()
 
+@transaction.commit_on_success
 def create_mit_user_if_needed(realm, email):
     try:
         return UserProfile.objects.get(user__email=email)
