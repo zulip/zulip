@@ -312,9 +312,7 @@ casper.then(function() {
     casper.waitForText('Waseemio');
 });
 casper.then(function() {
-    // TODO: Make this more robust.
-    // I tried to do it with assertSelectorHasText, but it wasn't quite working.
-    casper.test.assertTextExists('Successfully added subscription to Waseemio', 'Subscribing to a stream');
+    casper.test.assertSelectorHasText('.subscription_name', 'Waseemio', 'Subscribing to a stream');
     casper.fill('form#add_new_subscription', {stream_name: 'WASeemio'});
     casper.click('form#add_new_subscription input.btn.btn-primary');
     casper.waitForText('Already subscribed');

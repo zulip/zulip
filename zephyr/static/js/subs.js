@@ -295,8 +295,6 @@ function ajaxSubscribe(stream) {
                 ui.report_success("Already subscribed to " + name, $("#subscriptions-status"));
             } else {
                 name = res.subscribed[0];
-                ui.report_success("Successfully added subscription to " + name,
-                               $("#subscriptions-status"));
             }
             mark_subscribed(name);
         },
@@ -321,8 +319,6 @@ function ajaxUnsubscribe(stream) {
                                $("#subscriptions-status"));
             } else {
                 name = res.removed[0];
-                ui.report_success("Successfully removed subscription to " + name,
-                               $("#subscriptions-status"));
             }
             mark_unsubscribed(name);
         },
