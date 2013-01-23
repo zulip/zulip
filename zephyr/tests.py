@@ -128,12 +128,17 @@ class PublicURLTest(TestCase):
     Account creation URLs are accessible even when not logged in. Authenticated
     URLs redirect to a page.
     """
-    def fetch(self, urls, expected_status):
+    fixtures = ['messages.json']
+
+    def fetch(self, method, urls, expected_status):
         for url in urls:
-            response = self.client.get(url)
+            if method == "get":
+                response = self.client.get(url)
+            else:
+                response = self.client.post(url)
             self.assertEqual(response.status_code, expected_status,
-                             msg="Expected %d, received %d for %s" % (
-                    expected_status, response.status_code, url))
+                             msg="Expected %d, received %d for %s to %s" % (
+                    expected_status, response.status_code, method, url))
 
     def test_public_urls(self):
         """
@@ -142,27 +147,42 @@ class PublicURLTest(TestCase):
         # FIXME: We should also test the Tornado URLs -- this codepath
         # can't do so because this Django test mechanism doesn't go
         # through Tornado.
-        urls = {200: ["/accounts/home/", "/accounts/login/"],
-                302: ["/", "/accounts/logout/"],
-                405: ["/accounts/register/",
-                      "/api/v1/get_public_streams",
-                      "/api/v1/subscriptions/list",
-                      "/api/v1/subscriptions/add",
-                      "/api/v1/subscriptions/remove",
-                      "/api/v1/send_message",
-                      "/api/v1/fetch_api_key",
-                      "/json/fetch_api_key",
-                      "/json/send_message",
-                      "/json/update_pointer",
-                      "/json/settings/change",
-                      "/json/subscriptions/list",
-                      "/json/subscriptions/remove",
-                      "/json/subscriptions/exists",
-                      "/json/subscriptions/add"],
+        get_urls = {200: ["/accounts/home/", "/accounts/login/"],
+                    302: ["/"],
                 }
-        for status_code, url_set in urls.iteritems():
-            self.fetch(url_set, status_code)
-
+        post_urls = {200: ["/accounts/login/"],
+                     302: ["/accounts/logout/"],
+                     401: ["/json/get_public_streams",
+                           "/json/get_old_messages",
+                           "/json/update_pointer",
+                           "/json/send_message",
+                           "/json/invite_users",
+                           "/json/settings/change",
+                           "/json/subscriptions/list",
+                           "/json/subscriptions/remove",
+                           "/json/subscriptions/exists",
+                           "/json/subscriptions/add",
+                           "/json/subscriptions/property",
+                           "/json/get_subscribers",
+                           "/json/fetch_api_key",
+                           ],
+                     400: ["/api/v1/get_profile",
+                           "/api/v1/get_old_messages",
+                           "/api/v1/get_public_streams",
+                           "/api/v1/subscriptions/list",
+                           "/api/v1/subscriptions/add",
+                           "/api/v1/subscriptions/remove",
+                           "/api/v1/get_subscribers",
+                           "/api/v1/send_message",
+                           "/api/v1/update_pointer",
+                           "/api/v1/external/github",
+                           "/api/v1/fetch_api_key",
+                           ],
+                }
+        for status_code, url_set in get_urls.iteritems():
+            self.fetch("get", url_set, status_code)
+        for status_code, url_set in post_urls.iteritems():
+            self.fetch("post", url_set, status_code)
 
 class LoginTest(AuthedTestCase):
     """
