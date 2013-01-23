@@ -143,11 +143,19 @@ function mark_subscribed(stream_name) {
         } else {
             add_sub_to_table(sub);
         }
+
+        // Add the user to the member list if they're currently
+        // viewing the members of this stream
         var settings = settings_for_sub(sub);
-        if (settings.hasClass('in')) {
+        if (sub.render_subscribers && settings.hasClass('in')) {
             var members = settings.find(".subscriber_list_container ul");
             add_to_member_list(members, fullname, email);
         }
+
+        // Display the swatch and subscription settings
+        var sub_row = settings.closest('.subscription_row');
+        sub_row.find(".color_swatch").removeClass("invisible");
+        sub_row.find(".regular_subscription_settings").show();
     } else {
         // Already subscribed
         return;
@@ -168,6 +176,17 @@ function mark_unsubscribed(stream_name) {
         var settings = settings_for_sub(sub);
         if (settings.hasClass('in')) {
             settings.collapse('hide');
+        }
+
+        // Hide the swatch and subscription settings
+        var sub_row = settings.closest('.subscription_row');
+        sub_row.find(".color_swatch").addClass("invisible");
+        if (sub.render_subscribers) {
+            // TODO: having a completely empty settings div messes
+            // with Bootstrap's collapser.  We currently just ensure
+            // that it's not empty on the MIT realm, even though it
+            // looks weird
+            sub_row.find(".regular_subscription_settings").hide();
         }
     } else {
         // Already unsubscribed

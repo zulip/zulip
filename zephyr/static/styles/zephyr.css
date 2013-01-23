@@ -685,6 +685,10 @@ table.floating_recipient {
     list-style-type: none;
 }
 
+.subscriber_list_settings {
+    margin-top: 10px;
+}
+
 .sub_setting_control {
     display: inline-block;
     margin-right: 10px;
