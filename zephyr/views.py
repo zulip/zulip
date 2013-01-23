@@ -41,6 +41,8 @@ from zephyr.lib.response import json_success, json_error
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key
 
+from zephyr import tornado_callbacks
+
 from confirmation.models import Confirmation
 
 import datetime
@@ -470,8 +472,8 @@ def update_pointer_backend(request, user_profile,
                            .update(flags=F('flags') | UserMessage.flags.read)
 
     if settings.TORNADO_SERVER:
-        requests.post(settings.TORNADO_SERVER + '/notify_pointer_update', data=dict(
-            secret          = settings.SHARED_SECRET,
+        tornado_callbacks.send_notification(dict(
+            type            = 'pointer_update',
             user            = user_profile.id,
             new_pointer     = pointer))
 

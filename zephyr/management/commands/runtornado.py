@@ -134,8 +134,7 @@ class Command(BaseCommand):
                 # Application is an instance of Django's standard wsgi handler.
                 application = web.Application([(r"/json/get_updates", AsyncDjangoHandler),
                                                (r"/api/v1/get_messages", AsyncDjangoHandler),
-                                               (r"/notify_new_message", AsyncDjangoHandler),
-                                               (r"/notify_pointer_update", AsyncDjangoHandler),
+                                               (r"/notify_tornado", AsyncDjangoHandler),
 
                                                ], debug=django.conf.settings.DEBUG,
                                               # Disable Tornado's own request logging, since we have our own

@@ -3,14 +3,14 @@ from zephyr.models import UserActivity
 
 from zephyr.decorator import asynchronous, authenticated_api_view, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
-    has_request_variables, POST, json_to_list, to_non_negative_int
+    has_request_variables, POST, to_non_negative_int
 
 from zephyr.lib.response import json_success
 
-from zephyr.tornado_callbacks import user_receive_message, stream_receive_message, \
-    update_pointer, get_user_pointer, fetch_stream_messages, fetch_user_messages, \
+from zephyr.tornado_callbacks import \
+    get_user_pointer, fetch_stream_messages, fetch_user_messages, \
     add_stream_receive_callback, add_user_receive_callback, \
-    add_pointer_update_callback
+    add_pointer_update_callback, process_notification
 
 from zephyr.lib.cache_helpers import cache_get_message
 
@@ -24,27 +24,8 @@ import logging
 SERVER_GENERATION = int(time.time())
 
 @internal_notify_view
-def notify_new_message(request):
-    recipient_profile_ids = map(int, json_to_list(request.POST['users']))
-    message = cache_get_message(int(request.POST['message']))
-
-    for user_profile_id in recipient_profile_ids:
-        user_receive_message(user_profile_id, message)
-
-    if 'stream_name' in request.POST:
-        realm_id = int(request.POST['realm_id'])
-        stream_name = request.POST['stream_name']
-        stream_receive_message(realm_id, stream_name, message)
-
-    return json_success()
-
-@internal_notify_view
-def notify_pointer_update(request):
-    user_profile_id = int(request.POST['user'])
-    new_pointer = int(request.POST['new_pointer'])
-
-    update_pointer(user_profile_id, new_pointer)
-
+def notify(request):
+    process_notification(simplejson.loads(request.POST['data']))
     return json_success()
 
 @asynchronous
@@ -131,7 +112,7 @@ def return_messages_immediately(user_profile, client_id, last,
 
 # Note: We allow any stream name at all here! Validation and
 # authorization (is the stream "public") are handled by the caller of
-# notify_new_message. If a user makes a get_updates request for a
+# notify new_message. If a user makes a get_updates request for a
 # nonexistent or non-public stream, they won't get an error -- they'll
 # just never receive any messages.
 @has_request_variables

@@ -102,8 +102,7 @@ urlpatterns = patterns('',
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
 
     # Used internally for communication between Django and Tornado processes
-    url(r'^notify_new_message$',            'zephyr.tornadoviews.notify_new_message'),
-    url(r'^notify_pointer_update$',         'zephyr.tornadoviews.notify_pointer_update'),
+    url(r'^notify_tornado$', 'zephyr.tornadoviews.notify'),
 )
 
 if not settings.DEPLOYED:

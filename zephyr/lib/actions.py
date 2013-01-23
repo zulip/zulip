@@ -21,12 +21,13 @@ from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key, \
     user_profile_by_email_cache_key
 from zephyr.decorator import get_user_profile_by_email, json_to_list
 
+from zephyr import tornado_callbacks
+
 import subprocess
 import simplejson
 import time
 import traceback
 import re
-import requests
 import datetime
 import os
 import platform
@@ -176,13 +177,13 @@ def do_send_message(message, rendered_content=None, no_log=False,
         message.to_dict(apply_markdown=True, rendered_content=rendered_content)
         message.to_dict(apply_markdown=False)
         data = dict(
-            secret   = settings.SHARED_SECRET,
+            type     = 'new_message',
             message  = message.id,
-            users    = simplejson.dumps([str(user.id) for user in recipients]))
+            users    = [user.id for user in recipients])
         if message.recipient.type == Recipient.STREAM:
             # Note: This is where authorization for single-stream
             # get_updates happens! We only attach stream data to the
-            # notify_new_message request if it's a public stream,
+            # notify new_message request if it's a public stream,
             # ensuring that in the tornado server, non-public stream
             # messages are only associated to their subscribed users.
             if stream is None:
@@ -190,7 +191,7 @@ def do_send_message(message, rendered_content=None, no_log=False,
             if stream.is_public():
                 data['realm_id'] = stream.realm.id
                 data['stream_name'] = stream.name
-        requests.post(settings.TORNADO_SERVER + '/notify_new_message', data=data)
+        tornado_callbacks.send_notification(data)
 
 def create_stream_if_needed(realm, stream_name, invite_only=False):
     (stream, created) = Stream.objects.get_or_create(

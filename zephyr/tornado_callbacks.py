@@ -1,11 +1,15 @@
+from django.conf import settings
 from zephyr.models import Message, UserProfile, UserMessage, \
     Recipient, Stream, get_stream
 
 from zephyr.decorator import JsonableError
+from zephyr.lib.cache_helpers import cache_get_message
 
 import os
 import sys
 import logging
+import requests
+import simplejson
 import subprocess
 import collections
 
@@ -221,3 +225,29 @@ def update_pointer(user_profile_id, new_pointer):
     callbacks_table.call(user_profile_id, Callbacks.TYPE_POINTER_UPDATE,
                          new_pointer=new_pointer,
                          update_types=["pointer_update"])
+
+def process_new_message(data):
+    message = cache_get_message(data['message'])
+
+    for user_profile_id in data['users']:
+        user_receive_message(user_profile_id, message)
+
+    if 'stream_name' in data:
+        stream_receive_message(data['realm_id'], data['stream_name'], message)
+
+def process_notification(data):
+    if data['type'] == 'new_message':
+        process_new_message(data)
+    elif data['type'] == 'pointer_update':
+        update_pointer(data['user'], data['new_pointer'])
+    else:
+        raise JsonableError('bad notification type ' + data['type'])
+
+# Runs in the Django process to send a notification to Tornado.
+#
+# We use JSON rather than bare form parameters, so that we can represent
+# different types and for compatibility with non-HTTP transports.
+def send_notification(data):
+    requests.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
+        data   = simplejson.dumps(data),
+        secret = settings.SHARED_SECRET))
