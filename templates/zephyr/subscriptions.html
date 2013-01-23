@@ -4,15 +4,21 @@
   <div class="span6">
     <div class="subscriptions">
       <h1>Subscriptions</h1>
-      <form id="add_new_subscription" class="form-inline">{% csrf_token %}
-        <input type="text" name="streams" id="streams"
-               placeholder="Stream name" value="" class="span4" />
-        <input type="submit" name="add_subscription" value="Subscribe" class="btn btn-primary" />
-      </form>
       <div class="alert" id="subscriptions-status"></div>
       <div id="subs_page_loading_indicator"></div>
       <table class="table table-condensed table-striped">
-        <tbody id="subscriptions_table"></tbody>
+        <tbody id="subscriptions_table">
+          <tr id="create_stream_row"><td>
+              <div class="subscription_table_elem">
+                <form id="add_new_subscription" class="form-inline">
+                  <input type="text" name="stream_name" id="create_stream_name"
+                         placeholder="Stream name" value="" class="span3" />
+                  <input type="submit" class="btn btn-primary"
+                         id="create_stream_button" value="Create stream" />
+                </form>
+              </div>
+          </td></tr>
+        </tbody>
       </table>
     </div>
   </div>

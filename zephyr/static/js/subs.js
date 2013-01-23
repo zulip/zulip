@@ -110,14 +110,14 @@ function mark_subscribed(stream_name) {
 
     if (sub === undefined) {
         sub = create_sub(stream_name, {});
-        $('#subscriptions_table').prepend(templates.subscription({subscriptions: [sub]}));
+        $('#create_stream_row').after(templates.subscription({subscriptions: [sub]}));
     } else if (! sub.subscribed) {
         sub.subscribed = true;
         var button = button_for_sub(sub);
         if (button.length !== 0) {
             button.text("Unsubscribe").removeClass("btn-primary");
         } else {
-            $('#subscriptions_table').prepend(templates.subscription({subscriptions: [sub]}));
+            $('#create_stream_row').after(templates.subscription({subscriptions: [sub]}));
         }
     } else {
         // Already subscribed
@@ -205,10 +205,10 @@ exports.setup_page = function () {
             return a.name.localeCompare(b.name);
         });
 
-        $('#subscriptions_table tr').remove();
+        $('#subscriptions_table tr:gt(0)').remove();
         $('#subscriptions_table').append(templates.subscription({subscriptions: sub_rows}));
         util.destroy_loading_indicator($('#subs_page_loading_indicator'));
-        $('#streams').focus().select();
+        $('#create_stream_name').focus().select();
     }
 
     if (should_list_all_streams()) {
@@ -286,8 +286,8 @@ function ajaxSubscribe(stream) {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         data: {"subscriptions": JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
-            if ($("#streams").val() === stream) {
-                $("#streams").val("");
+            if ($("#create_stream_name").val() === stream) {
+                $("#create_stream_name").val("");
             }
             var name, res = $.parseJSON(xhr.responseText);
             if (res.subscribed.length === 0) {
@@ -302,7 +302,7 @@ function ajaxSubscribe(stream) {
         },
         error: function (xhr) {
             ui.report_error("Error adding subscription", xhr, $("#subscriptions-status"));
-            $("#streams").focus();
+            $("#create_stream_name").focus();
         }
     });
 }
@@ -328,7 +328,7 @@ function ajaxUnsubscribe(stream) {
         },
         error: function (xhr) {
             ui.report_error("Error removing subscription", xhr, $("#subscriptions-status"));
-            $("#streams").focus();
+            $("#create_stream_name").focus();
         }
     });
 }
@@ -343,7 +343,7 @@ $(function () {
 
     $("#add_new_subscription").on("submit", function (e) {
         e.preventDefault();
-        ajaxSubscribe($("#streams").val());
+        ajaxSubscribe($("#create_stream_name").val());
     });
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {

@@ -641,7 +641,7 @@ table.floating_recipient {
     table-layout: fixed;
 }
 
-.subscription_header {
+.subscription_table_elem {
     padding: 2px;
     height: 30px;
     line-height: 30px;
@@ -691,6 +691,15 @@ table.floating_recipient {
 }
 
 .sub_unsub_button {
+    width: 140px;
+    float: right;
+}
+
+#create_stream_name {
+    margin-left: 25px;
+}
+
+#create_stream_button {
     width: 140px;
     float: right;
 }
