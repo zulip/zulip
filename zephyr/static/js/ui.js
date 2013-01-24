@@ -241,7 +241,7 @@ function resizehandler(e) {
     }
 
     $("#bottom_whitespace").height(viewport.height() * 0.4);
-    $("#main_div").css('min-height', viewport.height());
+    $("#main_div").css('min-height', viewport.height() - $("#top_navbar").height());
 
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
