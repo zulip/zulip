@@ -80,10 +80,13 @@ import markdown
 from zephyr.lib.bugdown.codehilite import CodeHilite, CodeHiliteExtension
 
 # Global vars
+FENCE_RE = re.compile(r'(?P<fence>^(?:~{3,}|`{3,}))[ ]*(\{?\.?(?P<lang>[a-zA-Z0-9_+-]*)\}?)', re.MULTILINE|re.DOTALL)
 FENCED_BLOCK_RE = re.compile( \
     r'(?P<fence>^(?:~{3,}|`{3,}))[ ]*(\{?\.?(?P<lang>[a-zA-Z0-9_+-]*)\}?)?[ ]*\n(?P<code>.*?)(?<=\n)(?P=fence)[ ]*$',
     re.MULTILINE|re.DOTALL
     )
+# Match an inline code expression in markdown: `x=1` or ``def foo(self): bar`` for example
+INLINE_CODE_RE = re.compile(r'(?P<fence>`+).+?(?P=fence)')
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
 
@@ -121,30 +124,49 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         text = "\n".join(lines)
         while 1:
             m = FENCED_BLOCK_RE.search(text)
-            if m:
-                lang = ''
-                if m.group('lang'):
-                    lang = LANG_TAG % m.group('lang')
+            if not m:
+                # If there is an inline code block, skip past it
+                start = 0
+                inline = INLINE_CODE_RE.search(text, start)
+                while inline:
+                    start = inline.end()
+                    inline = INLINE_CODE_RE.search(text, start)
 
-                # If config is not empty, then the codehighlite extension
-                # is enabled, so we call it to highlite the code
-                if self.codehilite_conf:
-                    highliter = CodeHilite(m.group('code'),
-                            force_linenos=self.codehilite_conf['force_linenos'][0],
-                            guess_lang=self.codehilite_conf['guess_lang'][0],
-                            css_class=self.codehilite_conf['css_class'][0],
-                            style=self.codehilite_conf['pygments_style'][0],
-                            lang=(m.group('lang') or None),
-                            noclasses=self.codehilite_conf['noclasses'][0])
+                fence = FENCE_RE.search(text, start)
+                if fence:
+                    # If we found a starting fence but no ending fence,
+                    # then we add a closing fence before the two newlines that
+                    # markdown automatically inserts
+                    if text[-2:] == '\n\n':
+                        text = text[:-2] + '\n' + fence.group('fence') + text[-2:]
+                    else:
+                        text += fence.group('fence')
 
-                    code = highliter.hilite()
+                    continue
                 else:
-                    code = CODE_WRAP % (lang, self._escape(m.group('code')))
+                    break
 
-                placeholder = self.markdown.htmlStash.store(code, safe=True)
-                text = '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
+            lang = ''
+            if m.group('lang'):
+                lang = LANG_TAG % m.group('lang')
+
+            # If config is not empty, then the codehighlite extension
+            # is enabled, so we call it to highlite the code
+            if self.codehilite_conf:
+                highliter = CodeHilite(m.group('code'),
+                        force_linenos=self.codehilite_conf['force_linenos'][0],
+                        guess_lang=self.codehilite_conf['guess_lang'][0],
+                        css_class=self.codehilite_conf['css_class'][0],
+                        style=self.codehilite_conf['pygments_style'][0],
+                        lang=(m.group('lang') or None),
+                        noclasses=self.codehilite_conf['noclasses'][0])
+
+                code = highliter.hilite()
             else:
-                break
+                code = CODE_WRAP % (lang, self._escape(m.group('code')))
+
+            placeholder = self.markdown.htmlStash.store(code, safe=True)
+            text = '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
         return text.split("\n")
 
     def _escape(self, txt):
