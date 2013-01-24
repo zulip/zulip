@@ -47,7 +47,8 @@ exports.make_loading_indicator = function (container, text) {
         width: 9,
         radius: 9,
         speed: 1.25,
-        shadow: false
+        shadow: false,
+        zIndex: 1000
     }).spin(spinner_elem[0]);
     container.data("spinner_obj", spinner);
 
