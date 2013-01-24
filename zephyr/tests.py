@@ -12,6 +12,7 @@ from zephyr.views import gather_subscriptions, api_get_profile, \
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
 from zephyr.lib.initial_password import initial_password, initial_api_key
 from zephyr.lib.actions import do_send_message
+from zephyr.lib.bugdown import convert
 
 import simplejson
 import subprocess
@@ -1103,6 +1104,108 @@ class InviteOnlyStreamTest(AuthedTestCase):
 
         self.assertTrue('othello@humbughq.com' in json['subscribers'])
         self.assertTrue('hamlet@humbughq.com' in json['subscribers'])
+
+class BugdownTest(TestCase):
+
+    def common_bugdown_test(self, text, expected):
+        converted = convert(text)
+        self.assertEquals(converted, expected)
+
+    def test_codeblock_hilite(self):
+        fenced_code = \
+"""Hamlet said:
+~~~~.python
+def speak(self):
+    x = 1
+~~~~"""
+
+        expected_convert = \
+"""<p>Hamlet said:</p>
+<div class="codehilite"><pre><span class="k">def</span> <span class="nf">\
+speak</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>"""
+
+        self.common_bugdown_test(fenced_code, expected_convert)
+
+    def test_codeblock_multiline(self):
+        fenced_code = \
+"""Hamlet once said
+````
+def func():
+    x = 1
+
+
+    y = 2
+
+    z = 3
+````
+And all was good."""
+
+        expected_convert = \
+"""<p>Hamlet once said</p>
+<div class="codehilite"><pre>def func():
+    x = 1
+
+    y = 2
+
+    z = 3
+</pre></div>
+
+
+<p>And all was good.</p>"""
+
+        self.common_bugdown_test(fenced_code, expected_convert)
+
+
+    def test_hanging_multi_codeblock(self):
+        fenced_code = \
+"""Hamlet said:
+~~~~
+def speak(self):
+    x = 1
+~~~~
+
+Then he mentioned ````y = 4 + x**2```` and
+~~~~
+def foobar(self):
+    return self.baz()"""
+
+        expected_convert = \
+"""<p>Hamlet said:</p>
+<div class="codehilite"><pre>def speak(self):
+    x = 1
+</pre></div>
+
+
+<p>Then he mentioned <code>y = 4 + x**2</code> and</p>
+<div class="codehilite"><pre>def foobar(self):
+    return self.baz()
+</pre></div>"""
+        self.common_bugdown_test(fenced_code, expected_convert)
+
+    def test_dangerous_block(self):
+        fenced_code = u'xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\n```\
+"xxxx xxxx\\xxxxx\\xxxxxx"```\n\nxxx xxxx xxxxx:```xx.xxxxxxx(x\'^xxxx$\'\
+, xx.xxxxxxxxx)```\n\nxxxxxxx\'x xxxx xxxxxxxxxx ```\'xxxx\'```, xxxxx \
+xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?'
+
+        expected = """<p>xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:</p>\n\
+<p><code>"xxxx xxxx\\xxxxx\\xxxxxx"</code></p>\n<p>xxx xxxx xxxxx:<code>xx.xxxxxxx\
+(x\'^xxxx$\', xx.xxxxxxxxx)</code></p>\n<p>xxxxxxx\'x xxxx xxxxxxxxxx <code>\'xxxx\'\
+</code>, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x \
+xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>"""
+
+        self.common_bugdown_test(fenced_code, expected)
+
+        fenced_code = """``` one ```
+
+``` two ```
+
+~~~~
+x = 1"""
+        expected_convert = '<p><code>one</code></p>\n<p><code>two</code></p>\n<div class="codehilite"><pre>x = 1\n</pre></div>'
+        self.common_bugdown_test(fenced_code, expected_convert)
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (
