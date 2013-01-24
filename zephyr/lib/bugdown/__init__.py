@@ -6,6 +6,7 @@ import re
 
 from zephyr.lib.avatar  import gravatar_hash
 from zephyr.lib.bugdown import codehilite, fenced_code
+from zephyr.lib.bugdown.fenced_code import FENCE_RE
 
 class Gravatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
@@ -37,6 +38,38 @@ class UListProcessor(markdown.blockprocessors.OListProcessor):
 
     TAG = 'ul'
     RE = re.compile(r'^[ ]{0,3}[*][ ]+(.*)')
+
+class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
+    """ Allows unordered list blocks that come directly after a
+        paragraph to be rendered as an unordered list
+
+        Detects paragraphs that have a matching list item that comes
+        directly after a line of text, and inserts a newline between
+        to satisfy Markdown"""
+
+    LI_RE = re.compile(r'^[ ]{0,3}[*][ ]+(.*)', re.MULTILINE)
+    HANGING_ULIST_RE = re.compile(r'^.+\n([ ]{0,3}[*][ ]+.*)', re.MULTILINE)
+
+    def run(self, lines):
+        """ Insert a newline between a paragraph and ulist if missing """
+        inserts = 0
+        fence = None
+        copy = lines[:]
+        for i in xrange(len(lines) - 1):
+            # Ignore anything that is inside a fenced code block
+            m = FENCE_RE.match(lines[i])
+            if not fence and m:
+                fence = m.group('fence')
+            elif fence and m and fence == m.group('fence'):
+                fence = None
+
+            # If we're not in a fenced block and we detect an upcoming list
+            #  hanging off a paragraph, add a newline
+            if not fence and lines[i] and \
+                self.LI_RE.match(lines[i+1]) and not self.LI_RE.match(lines[i]):
+                copy.insert(i+inserts+1, '')
+                inserts += 1
+        return copy
 
 # Based on markdown.inlinepatterns.LinkPattern
 class LinkPattern(markdown.inlinepatterns.Pattern):
@@ -114,6 +147,10 @@ class Bugdown(markdown.Extension):
         # is important because we're using \w.
         link_regex = r'\b(?P<url>https?://[^\s]+?)(?=[^\w/]*(\s|\Z))'
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
+
+        md.preprocessors.add('hanging_ulists',
+                                 BugdownUListPreprocessor(md),
+                                 "_begin")
 
 _md_engine = markdown.Markdown(
     safe_mode     = 'escape',
