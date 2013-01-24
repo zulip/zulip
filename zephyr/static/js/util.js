@@ -30,9 +30,16 @@ exports.make_loading_indicator = function (container, text) {
 
     // These width calculations are tied to the spinner width and
     // margins defined via CSS
+    //
+    // TODO: We set white-space to 'nowrap' because under some
+    // unknown circumstances (it happens on Keegan's laptop) the text
+    // width calculation, above, returns a result that's a few pixels
+    // too small.  The container's div will be slightly too small,
+    // but that's probably OK for our purposes.
     container.css({width: 38 + text_width,
                    height: 38,
-                   display: 'block'});
+                   display: 'block',
+                   'white-space': 'nowrap'});
 
     var spinner = new Spinner({
         lines: 8,
