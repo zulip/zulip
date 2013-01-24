@@ -24,7 +24,7 @@ exports.subscribed_streams = function () {
     return list;
 };
 
-function render_subscribers() {
+function should_render_subscribers() {
     return domain !== 'mit.edu';
 }
 
@@ -89,7 +89,7 @@ var colorpicker_options = {
 
 function create_sub(stream_name, attrs) {
     var sub = $.extend({}, {name: stream_name, color: default_color, id: next_sub_id++,
-                            render_subscribers: render_subscribers(),
+                            render_subscribers: should_render_subscribers(),
                             subscribed: true}, attrs);
     stream_info[stream_name.toLowerCase()] = sub;
     return sub;
@@ -355,7 +355,7 @@ $(function () {
         colorpicker.spectrum(colorpicker_options);
     });
 
-    if (! render_subscribers()) {
+    if (! should_render_subscribers()) {
         return;
     }
 
