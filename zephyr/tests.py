@@ -1207,6 +1207,92 @@ x = 1"""
         expected_convert = '<p><code>one</code></p>\n<p><code>two</code></p>\n<div class="codehilite"><pre>x = 1\n</pre></div>'
         self.common_bugdown_test(fenced_code, expected_convert)
 
+    def test_ulist_standard(self):
+        ulisted = """Some text with a list:
+
+* One item
+* Two items
+* Three items"""
+
+        expected = """<p>Some text with a list:</p>
+<ul>
+<li>One item</li>
+<li>Two items</li>
+<li>Three items</li>
+</ul>"""
+        self.common_bugdown_test(ulisted, expected)
+
+    def test_ulist_hanging(self):
+        ulisted = """Some text with a hanging list:
+* One item
+* Two items
+* Three items"""
+
+        expected = """<p>Some text with a hanging list:</p>
+<ul>
+<li>One item</li>
+<li>Two items</li>
+<li>Three items</li>
+</ul>"""
+        self.common_bugdown_test(ulisted, expected)
+
+    def test_ulist_hanging_mixed(self):
+        ulisted = """Plain list
+
+* Alpha
+
+* Beta
+
+Then hang it off:
+* Ypsilon
+* Zeta"""
+
+        expected = """<p>Plain list</p>
+<ul>
+<li>
+<p>Alpha</p>
+</li>
+<li>
+<p>Beta</p>
+</li>
+</ul>
+<p>Then hang it off:</p>
+<ul>
+<li>Ypsilon</li>
+<li>Zeta</li>
+</ul>"""
+        self.common_bugdown_test(ulisted, expected)
+
+    def test_hanging_multi(self):
+        ulisted = """Plain list
+* Alpha
+* Beta
+
+And Again:
+* A
+* B
+* C
+
+Once more for feeling:
+* Q
+* E
+* D"""
+
+        expected = '<p>Plain list</p>\n<ul>\n<li>Alpha</li>\n<li>Beta\
+</li>\n</ul>\n<p>And Again:</p>\n<ul>\n<li>A</li>\n<li>B</li>\n<li>C\
+</li>\n</ul>\n<p>Once more for feeling:</p>\n<ul>\n<li>Q</li>\n<li>E\
+</li>\n<li>D</li>\n</ul>'
+        self.common_bugdown_test(ulisted, expected)
+
+    def test_ulist_codeblock(self):
+        ulisted_code = """~~~
+int x = 3
+* 4;
+~~~"""
+
+        expected = '<div class="codehilite"><pre>int x = 3\n* 4;\n</pre></div>'
+        self.common_bugdown_test(ulisted_code, expected)
+
 class Runner(DjangoTestSuiteRunner):
     option_list = (
         optparse.make_option('--skip-generate',
