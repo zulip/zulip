@@ -1131,7 +1131,7 @@ speak</span><span class="p">(</span><span class="bp">self</span><span class="p">
     def test_codeblock_multiline(self):
         fenced_code = \
 """Hamlet once said
-````
+~~~~
 def func():
     x = 1
 
@@ -1139,7 +1139,7 @@ def func():
     y = 2
 
     z = 3
-````
+~~~~
 And all was good."""
 
         expected_convert = \
