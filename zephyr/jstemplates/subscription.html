@@ -4,7 +4,7 @@
 <tr class="subscription_row" id="subscription_{{id}}">
   <td>
     <div class="subscription_table_elem subscription_header" data-toggle="collapse" data-target="#subscription_settings_{{id}}">
-      <span class="color_swatch {{^subscribed}}invisible{{/subscribed}}" style="background-color: {{color}}"></span>
+      <span class="color_swatch fade {{#subscribed}}in{{/subscribed}}" style="background-color: {{color}}"></span>
       <span class="subscription_name">{{name}}</span>
       <button class="btn sub_unsub_button {{^subscribed}}btn-primary{{/subscribed}}"
               type="button" name="subscription">
@@ -18,7 +18,7 @@
     </div>
 
     <div id="subscription_settings_{{id}}" class="collapse subscription_settings">
-      <div class="regular_subscription_settings {{^subscribed}}hide{{/subscribed}}">
+      <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
         <span class="sub_settings_title">Settings</span>
         <ul>
           <li><span class="sub_setting_control"><input class="colorpicker" type="text" value="{{color}}" /></span>

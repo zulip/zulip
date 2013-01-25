@@ -154,8 +154,8 @@ function mark_subscribed(stream_name) {
 
         // Display the swatch and subscription settings
         var sub_row = settings.closest('.subscription_row');
-        sub_row.find(".color_swatch").removeClass("invisible");
-        sub_row.find(".regular_subscription_settings").show();
+        sub_row.find(".color_swatch").addClass('in');
+        sub_row.find(".regular_subscription_settings").collapse('show');
     } else {
         // Already subscribed
         return;
@@ -180,13 +180,13 @@ function mark_unsubscribed(stream_name) {
 
         // Hide the swatch and subscription settings
         var sub_row = settings.closest('.subscription_row');
-        sub_row.find(".color_swatch").addClass("invisible");
+        sub_row.find(".color_swatch").removeClass('in');
         if (sub.render_subscribers) {
             // TODO: having a completely empty settings div messes
             // with Bootstrap's collapser.  We currently just ensure
             // that it's not empty on the MIT realm, even though it
             // looks weird
-            sub_row.find(".regular_subscription_settings").hide();
+            sub_row.find(".regular_subscription_settings").collapse('hide');
         }
     } else {
         // Already unsubscribed
@@ -453,6 +453,13 @@ $(function () {
                 error_elem.removeClass("hide").text("Could not add user to this stream");
             }
         });
+    });
+
+    $("#subscriptions_table").on("show", ".regular_subscription_settings", function (e) {
+        // We want 'show' events that originate from
+        // 'regular_subscription_settings' divs not to trigger the
+        // handler for the entire subscription_settings div
+        e.stopPropagation();
     });
 
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
