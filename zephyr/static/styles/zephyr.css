@@ -699,6 +699,12 @@ table.floating_recipient {
     float: right;
 }
 
+#create_stream_row td {
+    background-color: #f3f3f3;
+    border-color: #BBB;
+    border-bottom: 1px solid #BBB;
+}
+
 #create_stream_name {
     margin-left: 25px;
 }
