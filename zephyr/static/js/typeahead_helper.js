@@ -141,7 +141,8 @@ exports.sort_subjects = function (items) {
 };
 
 exports.sort_recipients = function (matches) {
-    var query = this.query;
+    var cleaned = composebox_typeahead.get_cleaned_pm_recipients(this.query);
+    var query = cleaned[cleaned.length - 1];
     if (query[0] === '@')
         query = query.substring(1);
 

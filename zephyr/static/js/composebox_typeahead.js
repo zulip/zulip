@@ -20,13 +20,13 @@ function get_pm_recipients(query_string) {
 
 // Returns an array of private message recipients, removing empty elements.
 // For example, "a,,b, " => ["a", "b"]
-function get_cleaned_pm_recipients(query_string) {
+exports.get_cleaned_pm_recipients = function (query_string) {
     var recipients = get_pm_recipients(query_string);
     recipients = $.grep(recipients, function (elem, idx) {
         return elem.match(/\S/);
     });
     return recipients;
-}
+};
 
 function get_last_recipient_in_pm(query_string) {
     var recipients = get_pm_recipients(query_string);
@@ -171,7 +171,7 @@ exports.initialize = function () {
         },
         sorter: typeahead_helper.sort_recipients,
         updater: function (item) {
-            var previous_recipients = get_cleaned_pm_recipients(this.query);
+            var previous_recipients = exports.get_cleaned_pm_recipients(this.query);
             previous_recipients.pop();
             previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
@@ -209,7 +209,7 @@ exports.initialize = function () {
 
     $( "#private_message_recipient" ).blur(function (event) {
         var val = $(this).val();
-        var recipients = get_cleaned_pm_recipients(val);
+        var recipients = exports.get_cleaned_pm_recipients(val);
         $(this).val(recipients.join(", "));
     });
 
