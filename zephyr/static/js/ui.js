@@ -639,7 +639,11 @@ $(function () {
         if (scroll_positions.hasOwnProperty(target_tab)) {
             viewport.scrollTop(scroll_positions[target_tab]);
         } else {
-            viewport.scrollTop(0);
+            if (target_tab === '#home') {
+                scroll_to_selected();
+            } else {
+                viewport.scrollTop(0);
+            }
         }
     });
 
