@@ -237,6 +237,9 @@ exports.setup_page = function () {
         }
 
         var sub_rows = [];
+        our_subs.sort(function (a, b) {
+            return a[0].localeCompare(b[0]);
+        });
         our_subs.forEach(function (elem) {
             var stream_name = elem[0];
             var sub = create_sub(stream_name, {color: elem[1], subscribed: true});
@@ -244,6 +247,7 @@ exports.setup_page = function () {
             sub_rows.push(sub);
         });
 
+        all_streams.sort();
         all_streams.forEach(function (stream) {
             if (exports.have(stream)) {
                 return;
@@ -251,10 +255,6 @@ exports.setup_page = function () {
             var sub = create_sub(stream, {subscribed: false});
             stream_info[stream.toLowerCase()] = sub;
             sub_rows.push(sub);
-        });
-
-        sub_rows.sort(function (a, b) {
-            return a.name.localeCompare(b.name);
         });
 
         $('#subscriptions_table tr:gt(0)').remove();
