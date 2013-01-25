@@ -141,8 +141,12 @@ exports.sort_subjects = function (items) {
 };
 
 exports.sort_recipients = function (matches) {
-    var name_results =  prefix_sort(this.query, matches, identity);
-    var email_results = prefix_sort(this.query, name_results.rest, email_from_identity);
+    var query = this.query;
+    if (query[0] === '@')
+        query = query.substring(1);
+
+    var name_results =  prefix_sort(query, matches, identity);
+    var email_results = prefix_sort(query, name_results.rest, email_from_identity);
     var sorted_by_pms = exports.sort_by_pms(email_results.rest);
     return name_results.matches.concat(email_results.matches.concat(sorted_by_pms));
 };
