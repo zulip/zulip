@@ -169,7 +169,7 @@ exports.initialize = function () {
             // Case-insensitive.
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
-        sorter: typeahead_helper.sort_recipients,
+        sorter: typeahead_helper.sort_recipientbox_typeahead,
         updater: function (item) {
             var previous_recipients = exports.get_cleaned_pm_recipients(this.query);
             previous_recipients.pop();
@@ -200,7 +200,7 @@ exports.initialize = function () {
             // Case-insensitive.
             return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
         },
-        sorter: typeahead_helper.sort_recipients,
+        sorter: typeahead_helper.sort_textbox_typeahead,
         updater: function (item) {
             return this.query.replace(/@\S+$/, "") + "@" + typeahead_helper.private_message_mapped[item].email.split("@")[0];
         },

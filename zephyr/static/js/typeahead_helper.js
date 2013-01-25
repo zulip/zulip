@@ -140,17 +140,28 @@ exports.sort_subjects = function (items) {
     return exports.sorter(this.query, items, identity);
 };
 
-exports.sort_recipients = function (matches) {
-    var cleaned = composebox_typeahead.get_cleaned_pm_recipients(this.query);
-    var query = cleaned[cleaned.length - 1];
-    if (query[0] === '@')
-        query = query.substring(1);
-
+exports.sort_recipients = function (matches, query) {
     var name_results =  prefix_sort(query, matches, identity);
     var email_results = prefix_sort(query, name_results.rest, email_from_identity);
     var sorted_by_pms = exports.sort_by_pms(email_results.rest);
     return name_results.matches.concat(email_results.matches.concat(sorted_by_pms));
 };
+
+exports.sort_textbox_typeahead = function(matches) {
+    // input may be free text ending in @ for autocomplete
+    var query = this.query;
+    if (query.indexOf('@') > -1) {
+        var parts = this.query.split('@');
+        query = parts[parts.length - 1];
+    }
+    return exports.sort_recipients(matches, query);
+};
+
+exports.sort_recipientbox_typeahead = function(matches) {
+    // input_text may be one or more pm recipients
+    var cleaned = composebox_typeahead.get_cleaned_pm_recipients(this.query);
+    var query = cleaned[cleaned.length - 1];
+    return exports.sort_recipients(matches, query);};
 
 return exports;
 
