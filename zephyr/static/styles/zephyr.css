@@ -712,6 +712,17 @@ table.floating_recipient {
 
 #create_stream_name {
     margin-left: 25px;
+    width: 220px;
+}
+@media (max-width: 480px) {
+    #create_stream_name {
+        width: 130px;
+    }
+}
+@media (min-width: 768px) and (max-width: 979px) {
+    #create_stream_name {
+        width: 140px;
+    }
 }
 
 #create_stream_button {
