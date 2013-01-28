@@ -34,7 +34,7 @@ USING_RABBITMQ = False
 
 # Disable use of memcached for caching
 CACHES = { 'default': {
-        'BACKEND':  'django.core.cache.backends.locmem.LocMemCache',
+        'BACKEND':  'django.core.cache.backends.dummy.DummyCache',
         'LOCATION': 'humbug-default-local-cache',
         'TIMEOUT':  3600,
         'OPTIONS': {
