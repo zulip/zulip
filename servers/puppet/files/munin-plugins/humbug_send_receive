@@ -1,0 +1,2 @@
+#!/bin/sh
+/home/humbug/humbug/api/humbug/bots/check_send_receive.py --munin $1
