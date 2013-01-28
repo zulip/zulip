@@ -351,5 +351,7 @@ class DefaultStream(models.Model):
 # We should change things around so that is possible.  Probably this should
 # just be a column on Subscription.
 class StreamColor(models.Model):
+    DEFAULT_STREAM_COLOR = "#c2c2c2"
+
     subscription = models.ForeignKey(Subscription)
     color = models.CharField(max_length=10)

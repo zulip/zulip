@@ -20,7 +20,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_full_name, do_change_enable_desktop_notifications, \
     do_activate_user, add_default_subs, do_create_user, do_send_message, \
     log_subscription_property_change, internal_send_message, \
-    create_stream_if_needed
+    create_stream_if_needed, gather_subscriptions
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_active, isnt_mit
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
@@ -860,36 +860,11 @@ def get_public_streams_backend(request, user_profile):
                                            realm=user_profile.realm))
     return json_success({"streams": streams})
 
-default_stream_color = "#c2c2c2"
-
 def get_stream_color(sub):
     try:
         return StreamColor.objects.get(subscription=sub).color
     except StreamColor.DoesNotExist:
-        return default_stream_color
-
-def gather_subscriptions(user_profile):
-    # This is a little awkward because the StreamColor table has foreign keys
-    # to Subscription, but not vice versa, and not all Subscriptions have a
-    # StreamColor.
-    #
-    # We could do this with a single OUTER JOIN query but Django's ORM does
-    # not provide a simple way to specify one.
-
-    # For now, don't display the subscription for your ability to receive personals.
-    subs = Subscription.objects.filter(
-        user_profile    = user_profile,
-        active          = True,
-        recipient__type = Recipient.STREAM)
-    with_color = StreamColor.objects.filter(subscription__in = subs).select_related()
-    no_color   = subs.exclude(id__in = with_color.values('subscription_id')).select_related()
-
-    result = [(get_display_recipient(sc.subscription.recipient), sc.color)
-        for sc in with_color]
-    result.extend((get_display_recipient(sub.recipient), default_stream_color)
-        for sub in no_color)
-
-    return sorted(result)
+        return StreamColor.DEFAULT_STREAM_COLOR
 
 @authenticated_api_view
 def api_list_subscriptions(request, user_profile):

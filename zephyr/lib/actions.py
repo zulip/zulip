@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, \
-    DefaultStream, \
-    MAX_MESSAGE_LENGTH, get_client
+    DefaultStream, StreamColor, \
+    MAX_MESSAGE_LENGTH, get_client, get_display_recipient
 from django.db import transaction, IntegrityError
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.cache import cache_with_key
@@ -345,3 +345,26 @@ def process_user_activity_event(event):
     log_time = timestamp_to_datetime(event["time"])
     query = event["query"]
     return do_update_user_activity(user_profile, client, query, log_time)
+
+def gather_subscriptions(user_profile):
+    # This is a little awkward because the StreamColor table has foreign keys
+    # to Subscription, but not vice versa, and not all Subscriptions have a
+    # StreamColor.
+    #
+    # We could do this with a single OUTER JOIN query but Django's ORM does
+    # not provide a simple way to specify one.
+
+    # For now, don't display the subscription for your ability to receive personals.
+    subs = Subscription.objects.filter(
+        user_profile    = user_profile,
+        active          = True,
+        recipient__type = Recipient.STREAM)
+    with_color = StreamColor.objects.filter(subscription__in = subs).select_related()
+    no_color   = subs.exclude(id__in = with_color.values('subscription_id')).select_related()
+
+    result = [(get_display_recipient(sc.subscription.recipient), sc.color)
+        for sc in with_color]
+    result.extend((get_display_recipient(sub.recipient), StreamColor.DEFAULT_STREAM_COLOR)
+        for sub in no_color)
+
+    return sorted(result)
