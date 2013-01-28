@@ -117,11 +117,6 @@ if DEPLOYED:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE    = True
 
-# For get_updates host sharding
-if STAGING_DEPLOYED:
-    SESSION_COOKIE_DOMAIN = '.' + platform.node()
-    CSRF_COOKIE_DOMAIN    = '.' + platform.node()
-
 # Prevent Javascript from reading the CSRF token from cookies.  Our code gets
 # the token from the DOM, which means malicious code could too.  But hiding the
 # cookie will slow down some attackers.
