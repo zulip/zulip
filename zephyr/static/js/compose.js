@@ -216,23 +216,23 @@ exports.composing = function () {
     return is_composing_message;
 };
 
-function get_or_set(fieldname) {
+function get_or_set(fieldname, keep_outside_whitespace) {
     // We can't hoist the assignment of 'elem' out of this lambda,
     // because the DOM element might not exist yet when get_or_set
     // is called.
     return function (newval) {
         var elem = $('#'+fieldname);
-        var oldval = $.trim(elem.val());
+        var oldval = elem.val();
         if (newval !== undefined) {
             elem.val(newval);
         }
-        return oldval;
+        return keep_outside_whitespace ? oldval : $.trim(oldval);
     };
 }
 
 exports.stream_name     = get_or_set('stream');
 exports.subject         = get_or_set('subject');
-exports.message_content = get_or_set('new_message_content');
+exports.message_content = get_or_set('new_message_content', true);
 exports.recipient       = get_or_set('private_message_recipient');
 
 function compose_error(error_text, bad_input) {
