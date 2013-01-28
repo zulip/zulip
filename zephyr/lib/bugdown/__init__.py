@@ -172,10 +172,6 @@ _privacy_re = re.compile(r'\w', flags=re.UNICODE)
 def _sanitize_for_log(md):
     return repr(_privacy_re.sub('x', md))
 
-def _linkify(match):
-    url = match.group('url')
-    return ' [%s](%s) ' % (url, url)
-
 def convert(md):
     """Convert Markdown to HTML, with Humbug-specific settings and hacks."""
 
