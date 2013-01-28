@@ -31,32 +31,33 @@ class SimpleQueueClient(object):
     def ready(self):
         return self.channel is not None
 
-    def create_queue(self, queue_name):
-        # Initialize the queues we need
-        self.channel.queue_declare(queue=queue_name, durable=True)
-        self.queues.add(queue_name)
+    def ensure_queue(self, queue_name, callback):
+        '''Ensure that a given queue has been declared, and then call
+           the callback with no arguments.'''
+        if queue_name not in self.queues:
+            self.channel.queue_declare(queue=queue_name, durable=True)
+            self.queues.add(queue_name)
+        callback()
 
     def publish(self, queue_name, body):
-        if queue_name not in self.queues:
-            self.create_queue(queue_name)
-        self.channel.basic_publish(exchange='',
-                                   routing_key=queue_name,
-                                   properties=pika.BasicProperties(delivery_mode = 2,),
-                                   body=body)
+        self.ensure_queue(queue_name,
+            lambda: self.channel.basic_publish(
+                exchange='',
+                routing_key=queue_name,
+                properties=pika.BasicProperties(delivery_mode=2),
+                body=body))
 
     def json_publish(self, queue_name, body):
         return self.publish(queue_name, simplejson.dumps(body))
 
-    def register_consumer(self, queue_name, callback):
-        if queue_name not in self.queues:
-            self.create_queue(queue_name)
-
-        def wrapped_callback(ch, method, properties, body):
-            callback(ch, method, properties, body)
+    def register_consumer(self, queue_name, consumer):
+        def wrapped_consumer(ch, method, properties, body):
+            consumer(ch, method, properties, body)
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
-        self.channel.basic_consume(wrapped_callback, queue=queue_name,
-            consumer_tag=self._generate_ctag(queue_name))
+        self.ensure_queue(queue_name,
+            lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
+                consumer_tag=self._generate_ctag(queue_name)))
 
     def register_json_consumer(self, queue_name, callback):
         def wrapped_callback(ch, method, properties, body):
@@ -88,3 +89,14 @@ class TornadoQueueClient(SimpleQueueClient):
     def _on_channel_open(self, channel):
         self.channel = channel
         self.log.info('TornadoQueueClient connected')
+
+    def ensure_queue(self, queue_name, callback):
+        def finish(frame):
+            self.queues.add(queue_name)
+            callback()
+
+        if queue_name not in self.queues:
+            self.channel.queue_declare(queue=queue_name, durable=True,
+                callback=finish)
+        else:
+            callback()
