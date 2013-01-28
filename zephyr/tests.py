@@ -7,8 +7,7 @@ from django.db.models import Q
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, get_display_recipient, Realm, Client
 from zephyr.tornadoviews import json_get_updates, api_get_messages
-from zephyr.views import gather_subscriptions, api_get_profile, \
-    api_get_public_streams, api_add_subscriptions, api_get_subscribers
+from zephyr.views import gather_subscriptions
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
 from zephyr.lib.initial_password import initial_password, initial_api_key
 from zephyr.lib.actions import do_send_message
@@ -994,8 +993,7 @@ class GetProfileTest(AuthedTestCase):
         user = User.objects.get(email=email)
 
         api_key = self.get_api_key(email)
-        request = POSTRequestMock({'email': email, 'api-key': api_key}, user, None)
-        result = api_get_profile(request)
+        result = self.client.post("/api/v1/get_profile", {'email': email, 'api-key': api_key})
 
         stream = self.message_stream(user)
         max_id = -1
@@ -1041,11 +1039,10 @@ class GetPublicStreamsTest(AuthedTestCase):
         Ensure that get_public_streams successfully returns a list of streams
         """
         email = 'hamlet@humbughq.com'
-        user = User.objects.get(email=email)
+        self.login(email)
 
         api_key = self.get_api_key(email)
-        request = POSTRequestMock({'email': email, 'api-key': api_key}, user, None)
-        result = api_get_public_streams(request)
+        result = self.client.post("/json/get_public_streams", {'email': email, 'api-key': api_key})
 
         self.assert_json_success(result)
         json = simplejson.loads(result.content)
@@ -1057,7 +1054,6 @@ class InviteOnlyStreamTest(AuthedTestCase):
     fixtures = ['messages.json']
 
     def common_subscribe_to_stream(self, email, streams, extra_post_data = {}, invite_only=False):
-        user = User.objects.get(email=email)
         api_key = self.get_api_key(email)
 
         post_data = {'email': email,
@@ -1065,13 +1061,15 @@ class InviteOnlyStreamTest(AuthedTestCase):
                      'subscriptions': streams,
                      'invite_only': invite_only}
         post_data.update(extra_post_data)
-        request = POSTRequestMock(post_data, user, None)
-        result = api_add_subscriptions(request)
+
+        result = self.client.post("/json/subscriptions/add", post_data)
         return result
 
     def test_inviteonly(self):
         # Creating an invite-only stream is allowed
         email = 'hamlet@humbughq.com'
+        self.login(email)
+
         result = self.common_subscribe_to_stream(email, '["Saxony"]', invite_only=True)
         self.assert_json_success(result)
 
@@ -1093,12 +1091,9 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assertEquals(json["already_subscribed"], [])
 
         # Make sure both users are subscribed to this stream
-        user = User.objects.get(email=email)
-        request = POSTRequestMock({'email':email,
-                                   'api-key': self.get_api_key(email),
-                                   'stream': 'Saxony'},
-                                  user, None)
-        result = api_get_subscribers(request)
+        result = self.client.post("/json/get_subscribers", {'email':email,
+                                                            'api-key': self.get_api_key(email),
+                                                            'stream': 'Saxony'})
         self.assert_json_success(result)
         json = simplejson.loads(result.content)
 
