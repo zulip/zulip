@@ -77,10 +77,8 @@ class TornadoQueueClient(SimpleQueueClient):
     def _connect(self):
         self.connection = pika.adapters.TornadoConnection(
             self._get_parameters(),
-            on_open_callback = self._on_open)
-
-        # Docs suggest we should also pass stop_ioloop_on_close = False, but
-        # my version of TornadoConnection doesn't recognize it.
+            on_open_callback = self._on_open,
+            stop_ioloop_on_close = False)
 
     def _on_open(self, connection):
         self.connection.channel(
