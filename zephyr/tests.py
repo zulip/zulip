@@ -508,8 +508,8 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         for stream, color in json["stream_colors"]:
             self.assertIsInstance(color,  str)
             self.assertIsInstance(stream, str)
-            self.assertIn((stream, color), subs)
-            subs.remove((stream, color))
+            self.assertIn({'name': stream, 'color': color}, subs)
+            subs.remove({'name': stream, 'color': color})
         self.assertFalse(subs)
 
     def test_set_stream_color(self):
@@ -521,7 +521,9 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.login(test_email)
 
         old_subs = gather_subscriptions(self.get_user_profile(test_email))
-        stream_name, old_color = old_subs[0]
+        sub = old_subs[0]
+        stream_name = sub['name']
+        old_color = sub['color']
         new_color = "#ffffff" # TODO: ensure that this is different from old_color
         result = self.client.post("/json/subscriptions/property",
                                   {"property": "stream_colors",
@@ -531,10 +533,10 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.assert_json_success(result)
 
         new_subs = gather_subscriptions(self.get_user_profile(test_email))
-        self.assertIn((stream_name, new_color), new_subs)
+        self.assertIn({'name': stream_name, 'color': new_color}, new_subs)
 
-        old_subs.remove((stream_name, old_color))
-        new_subs.remove((stream_name, new_color))
+        old_subs.remove({'name': stream_name, 'color': old_color})
+        new_subs.remove({'name': stream_name, 'color': new_color})
         self.assertEqual(old_subs, new_subs)
 
     def test_set_color_missing_stream_name(self):
@@ -618,15 +620,15 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_json_success(result)
         json = simplejson.loads(result.content)
         self.assertIn("subscriptions", json)
-        for stream, color in json["subscriptions"]:
-            self.assertIsInstance(stream, str)
-            self.assertIsInstance(color, str)
+        for stream in json["subscriptions"]:
+            self.assertIsInstance(stream['name'], str)
+            self.assertIsInstance(stream['color'], str)
             # check that the stream name corresponds to an actual stream
             try:
-                Stream.objects.get(name__iexact=stream, realm=self.realm)
+                Stream.objects.get(name__iexact=stream['name'], realm=self.realm)
             except Stream.DoesNotExist:
                 self.fail("stream does not exist")
-        list_streams = [stream for stream, color in json["subscriptions"]]
+        list_streams = [stream['name'] for stream in json["subscriptions"]]
         # also check that this matches the list of your subscriptions
         self.assertItemsEqual(list_streams, self.streams)
 
@@ -1450,7 +1452,7 @@ class GetSubscribersTest(AuthedTestCase):
         """
         get_subscribers returns the list of subscribers.
         """
-        stream_name = gather_subscriptions(self.user_profile)[0][0]
+        stream_name = gather_subscriptions(self.user_profile)[0]['name']
         self.make_successful_subscriber_request(stream_name)
 
     def test_nonsubscriber(self):

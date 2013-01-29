@@ -1151,7 +1151,7 @@ class SubscriptionProperties(object):
             raise RequestVariableMissingError(property)
 
     def get_stream_colors(self, request, user_profile):
-        return json_success({"stream_colors": gather_subscriptions(user_profile)})
+        return json_success({"stream_colors": [(sub["name"], sub["color"]) for sub in gather_subscriptions(user_profile)]})
 
     def post_stream_colors(self, request, user_profile):
         stream_name = self.request_property(request.POST, "stream_name")

@@ -254,11 +254,11 @@ exports.setup_page = function () {
 
         var sub_rows = [];
         our_subs.sort(function (a, b) {
-            return a[0].localeCompare(b[0]);
+            return a.name.localeCompare(b.name);
         });
         our_subs.forEach(function (elem) {
-            var stream_name = elem[0];
-            var sub = create_sub(stream_name, {color: elem[1], subscribed: true});
+            var stream_name = elem.name;
+            var sub = create_sub(stream_name, {color: elem.color, subscribed: true});
             stream_info[stream_name.toLowerCase()] = sub;
             sub_rows.push(sub);
         });
