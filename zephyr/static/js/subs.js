@@ -442,7 +442,12 @@ $(function () {
                 if (data.subscribed.length) {
                     error_elem.addClass("hide");
                     warning_elem.addClass("hide");
-                    add_to_member_list(list, people_dict[principal].full_name, principal);
+                    if (principal === email) {
+                        // mark_subscribed adds the user to the member list
+                        mark_subscribed(stream);
+                    } else {
+                        add_to_member_list(list, people_dict[principal].full_name, principal);
+                    }
                 } else {
                     error_elem.addClass("hide");
                     warning_elem.removeClass("hide").text("User already subscribed");
