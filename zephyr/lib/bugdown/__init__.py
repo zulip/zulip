@@ -7,6 +7,7 @@ import re
 from zephyr.lib.avatar  import gravatar_hash
 from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
+from zephyr.lib.timeout import timeout
 
 class Gravatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
@@ -179,7 +180,10 @@ def convert(md):
     _md_engine.reset()
 
     try:
-        html = _md_engine.convert(md)
+        # Spend at most 5 seconds rendering.
+        # Sometimes Python-Markdown is really slow; see
+        # https://trac.humbughq.com/ticket/345
+        html = timeout(5, _md_engine.convert, md)
     except:
         # FIXME: Do something more reasonable here!
         html = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
