@@ -143,8 +143,9 @@ exports.sort_subjects = function (items) {
 exports.sort_recipients = function (matches, query) {
     var name_results =  prefix_sort(query, matches, identity);
     var email_results = prefix_sort(query, name_results.rest, email_from_identity);
-    var sorted_by_pms = exports.sort_by_pms(email_results.rest);
-    return name_results.matches.concat(email_results.matches.concat(sorted_by_pms));
+    var matches_sorted_by_pms = exports.sort_by_pms(name_results.matches.concat(email_results.matches));
+    var rest_sorted_by_pms = exports.sort_by_pms(email_results.rest);
+    return matches_sorted_by_pms.concat(rest_sorted_by_pms);
 };
 
 exports.sort_textbox_typeahead = function(matches) {
