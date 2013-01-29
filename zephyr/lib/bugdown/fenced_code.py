@@ -95,6 +95,30 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         self.checked_for_codehilite = False
         self.codehilite_conf = {}
 
+
+    def process_fence(self, m, text):
+        lang = ''
+        if m.group('lang'):
+            lang = LANG_TAG % m.group('lang')
+
+        # If config is not empty, then the codehighlite extension
+        # is enabled, so we call it to highlite the code
+        if self.codehilite_conf:
+            highliter = CodeHilite(m.group('code'),
+                    force_linenos=self.codehilite_conf['force_linenos'][0],
+                    guess_lang=self.codehilite_conf['guess_lang'][0],
+                    css_class=self.codehilite_conf['css_class'][0],
+                    style=self.codehilite_conf['pygments_style'][0],
+                    lang=(m.group('lang') or None),
+                    noclasses=self.codehilite_conf['noclasses'][0])
+
+            code = highliter.hilite()
+        else:
+            code = CODE_WRAP % (lang, self._escape(m.group('code')))
+
+        placeholder = self.markdown.htmlStash.store(code, safe=True)
+        return '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
+
     def run(self, lines):
         """ Match and store Fenced Code Blocks in the HtmlStash. """
 
@@ -108,44 +132,29 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
             self.checked_for_codehilite = True
 
         text = "\n".join(lines)
+        end = 0
         while 1:
             m = FENCED_BLOCK_RE.search(text)
-            if not m:
-                fence = FENCE_RE.search(text)
-                if fence:
-                    # If we found a starting fence but no ending fence,
-                    # then we add a closing fence before the two newlines that
-                    # markdown automatically inserts
-                    if text[-2:] == '\n\n':
-                        text = text[:-2] + '\n' + fence.group('fence') + text[-2:]
-                    else:
-                        text += fence.group('fence')
-
-                    continue
-                else:
-                    break
-
-            lang = ''
-            if m.group('lang'):
-                lang = LANG_TAG % m.group('lang')
-
-            # If config is not empty, then the codehighlite extension
-            # is enabled, so we call it to highlite the code
-            if self.codehilite_conf:
-                highliter = CodeHilite(m.group('code'),
-                        force_linenos=self.codehilite_conf['force_linenos'][0],
-                        guess_lang=self.codehilite_conf['guess_lang'][0],
-                        css_class=self.codehilite_conf['css_class'][0],
-                        style=self.codehilite_conf['pygments_style'][0],
-                        lang=(m.group('lang') or None),
-                        noclasses=self.codehilite_conf['noclasses'][0])
-
-                code = highliter.hilite()
+            if m:
+                end = m.end()
+                text = self.process_fence(m, text)
             else:
-                code = CODE_WRAP % (lang, self._escape(m.group('code')))
+                break
 
-            placeholder = self.markdown.htmlStash.store(code, safe=True)
-            text = '%s\n%s\n%s'% (text[:m.start()], placeholder, text[m.end():])
+
+        fence = FENCE_RE.search(text, end)
+        if fence:
+            # If we found a starting fence but no ending fence,
+            # then we add a closing fence before the two newlines that
+            # markdown automatically inserts
+            if text[-2:] == '\n\n':
+                text = text[:-2] + '\n' + fence.group('fence') + text[-2:]
+            else:
+                text += fence.group('fence')
+            m = FENCED_BLOCK_RE.search(text)
+            if m:
+                text = self.process_fence(m, text)
+
         return text.split("\n")
 
     def _escape(self, txt):
