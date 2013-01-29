@@ -68,7 +68,7 @@ import markdown
 from zephyr.lib.bugdown.codehilite import CodeHilite, CodeHiliteExtension
 
 # Global vars
-FENCE_RE = re.compile(r'(?P<fence>^(?:~{3,}))[ ]*(\{?\.?(?P<lang>[a-zA-Z0-9_+-]*)\}?)', re.MULTILINE|re.DOTALL)
+FENCE_RE = re.compile(r'(?P<fence>^(?:~{3,}))[ ]*(\{?\.?(?P<lang>[a-zA-Z0-9_+-]*)\}?)$', re.MULTILINE|re.DOTALL)
 FENCED_BLOCK_RE = re.compile( \
     r'(?P<fence>^(?:~{3,}))[ ]*(\{?\.?(?P<lang>[a-zA-Z0-9_+-]*)\}?)?[ ]*\n(?P<code>.*?)(?<=\n)(?P=fence)[ ]*$',
     re.MULTILINE|re.DOTALL
