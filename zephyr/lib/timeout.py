@@ -1,3 +1,5 @@
+import time
+import ctypes
 import threading
 
 # Based on http://code.activestate.com/recipes/483752/
@@ -10,9 +12,14 @@ class TimeoutExpired(Exception):
 def timeout(timeout, func, *args, **kwargs):
     '''Call the function in a separate thread.
        Return its return value, or raise an exception,
-       within 'timeout' seconds.
+       within approximately 'timeout' seconds.
 
-       The function may still be running in the background!
+       The function may receive a TimeoutExpired exception
+       anywhere in its code, which could have arbitrary
+       unsafe effects (resources not released, etc.).
+       It might also fail to receive the exception and
+       keep running in the background even though
+       timeout() has returned.
 
        This may also fail to interrupt functions which are
        stuck in a long-running primitive interpreter
@@ -34,12 +41,38 @@ def timeout(timeout, func, *args, **kwargs):
             except BaseException, e:
                 self.exn = e
 
+        def raise_async_timeout(self):
+            # Called from another thread.
+            # Attempt to raise a TimeoutExpired in the thread represented by 'self'.
+            tid = ctypes.c_long(self.ident)
+            result = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                tid, ctypes.py_object(TimeoutExpired))
+            if result > 1:
+                # "if it returns a number greater than one, you're in trouble,
+                # and you should call it again with exc=NULL to revert the effect"
+                #
+                # I was unable to find the actual source of this quote, but it
+                # appears in the many projects across the Internet that have
+                # copy-pasted this recipe.
+                ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+
     thread = TimeoutThread()
     thread.start()
     thread.join(timeout)
 
     if thread.isAlive():
+        # Gamely try to kill the thread, following the dodgy approach from
+        # http://stackoverflow.com/questions/323972/is-there-any-way-to-kill-a-thread-in-python
+        #
+        # We need to retry, because an async exception received while the
+        # thread is in a system call is simply ignored.
+        for i in xrange(10):
+            thread.raise_async_timeout()
+            time.sleep(0.1)
+            if not thread.isAlive():
+                break
         raise TimeoutExpired
+
     if thread.exn:
         raise thread.exn
     return thread.result
