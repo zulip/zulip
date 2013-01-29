@@ -496,6 +496,7 @@ input.recipient_box {
 
 #search_query {
     width: 95%;
+    line-height: normal;
 }
 @media (max-width: 480px) {
     /* This is a hack to keep the search box from overflowing outside the

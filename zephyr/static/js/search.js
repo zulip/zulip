@@ -360,7 +360,7 @@ exports.focus_search = function () {
 };
 
 exports.initiate_search = function () {
-    $('#search_query').val('').focus();
+    $('#search_query').select();
 };
 
 exports.clear_search = function () {
