@@ -470,10 +470,12 @@ $(function () {
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
         var sub_row = $(e.target).closest('.subscription_row');
         var stream = sub_row.find('.subscription_name').text();
+        var warning_elem = sub_row.find('.subscriber_list_container .alert-warning');
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var list = sub_row.find('.subscriber_list_container ul');
         var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
 
+        warning_elem.addClass('hide');
         error_elem.addClass('hide');
         list.empty();
 
