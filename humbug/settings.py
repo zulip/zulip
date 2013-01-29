@@ -40,6 +40,7 @@ if DEPLOYED:
         'USER': 'humbug',
         'PASSWORD': '', # Authentication done via certificates
         'HOST': '10.254.4.99',
+        'SCHEMA': 'humbug',
         'OPTIONS': {
             # Note that 'verify-ca' only checks that the server certificate was
             # signed by a trusted root.  You need 'verify-full' if you want to
@@ -63,7 +64,8 @@ elif False:
         'NAME': 'humbug',
         'USER': 'humbug',
         'PASSWORD': 'yuHavmefbek5',
-        'HOST': 'localhost'
+        'HOST': 'localhost',
+        'SCHEMA': 'humbug'
         }
 
 # Local time zone for this installation. Choices can be found here:
