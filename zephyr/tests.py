@@ -1564,6 +1564,11 @@ int x = 3
         expected = '<div class="codehilite"><pre>int x = 3\n* 4;\n</pre></div>'
         self.common_bugdown_test(ulisted_code, expected)
 
+    def test_malformed_fence(self):
+        bad =  "~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~"
+        good = "<p>~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~</p>"
+        self.common_bugdown_test(bad, good)
+
 class Runner(DjangoTestSuiteRunner):
     option_list = (
         optparse.make_option('--skip-generate',
