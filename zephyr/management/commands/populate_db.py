@@ -247,7 +247,7 @@ def restore_saved_messages():
 
     stream_dict = {}
     user_set = set()
-    email_set = set(u.email for u in User.objects.all())
+    email_set = set([u.email for u in User.objects.all()])
     realm_set = set()
     # Initial client_set is nonempty temporarily because we don't have
     # clients in logs at all right now -- later we can start with nothing.
