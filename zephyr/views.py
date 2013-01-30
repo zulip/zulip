@@ -505,6 +505,8 @@ class NarrowBuilder(object):
         # by name! The prefix 'by_' prevents it from colliding with builtin
         # Python __magic__ stuff.
         method_name = 'by_' + operator.replace('-', '_')
+        if method_name == 'by_search':
+            return self.do_search(query, operand)
         method = getattr(self, method_name, None)
         if method is None:
             raise BadNarrowOperator('unknown operator ' + operator)
@@ -556,9 +558,14 @@ class NarrowBuilder(object):
             return ((Q(sender=narrow_profile) & Q(recipient=self_recipient)) |
                     (Q(sender=self.user_profile) & Q(recipient=narrow_recipient)))
 
-    def by_search(self, operand):
-        return (Q(content__icontains=operand) |
-                Q(subject__icontains=operand))
+    def do_search(self, query, operand):
+        if "postgres" in settings.DATABASES["default"]["ENGINE"]:
+            sql = "to_tsvector('english', subject || ' ' || content) @@ to_tsquery('english', %s)"
+            return query.extra(where=[sql], params=[operand])
+        else:
+            return query.filter(Q(content__icontains=operand) |
+                                Q(subject__icontains=operand))
+
 
 def narrow_parameter(json):
     # FIXME: A hack to support old mobile clients
