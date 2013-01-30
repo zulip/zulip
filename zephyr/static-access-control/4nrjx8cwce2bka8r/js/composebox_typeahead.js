@@ -1,1 +1,0 @@
-../../../static/js/composebox_typeahead.js

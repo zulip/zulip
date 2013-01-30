@@ -78,7 +78,7 @@ urlpatterns = patterns('',
     # This json format view used by the API accepts a username password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'zephyr.views.api_fetch_api_key'),
 
-    url(r'^robots\.txt$', 'django.views.generic.simple.redirect_to', {'url': '/static/public/robots.txt'}),
+    url(r'^robots\.txt$', 'django.views.generic.simple.redirect_to', {'url': '/static/robots.txt'}),
 
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_new_message$',            'zephyr.tornadoviews.notify_new_message'),
@@ -88,4 +88,4 @@ urlpatterns = patterns('',
 if not settings.DEPLOYED:
     urlpatterns += patterns('',
         url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
-            {'document_root': os.path.join(settings.SITE_ROOT, '../zephyr/static-access-control')}))
+            {'document_root': os.path.join(settings.SITE_ROOT, '../zephyr/static')}))

@@ -1,1 +1,0 @@
-../../../static/js/typeahead_helper.js
