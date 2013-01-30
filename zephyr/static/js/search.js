@@ -48,8 +48,8 @@ exports.update_typeahead = function () {
     });
     var options = streams.concat(people);
     // The first two slots are reserved for our query.
-    options.unshift({action: 'operators', query: '', operators: []});
     options.unshift({action: 'search', query: ''});
+    options.unshift({action: 'operators', query: '', operators: []});
 
     mapped = {};
     labels = [];
@@ -111,7 +111,7 @@ function searchbox_sorter(items) {
     });
 
     var query = this.query;
-    $.each(['search', 'operators', 'stream', 'private_message'], function (idx, action) {
+    $.each(['operators', 'search', 'stream', 'private_message'], function (idx, action) {
         var objs = objects_by_action[action];
         if (!objs)
             return;
