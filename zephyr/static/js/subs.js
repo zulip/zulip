@@ -94,7 +94,7 @@ var colorpicker_options = {
 function create_sub(stream_name, attrs) {
     var sub = $.extend({}, {name: stream_name, color: default_color, id: next_sub_id++,
                             render_subscribers: should_render_subscribers(),
-                            subscribed: true}, attrs);
+                            subscribed: true, in_home_view: true}, attrs);
     stream_info[stream_name.toLowerCase()] = sub;
     return sub;
 }

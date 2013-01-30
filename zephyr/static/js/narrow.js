@@ -79,6 +79,9 @@ exports.describe = function (operators) {
 
         case 'search':
             return 'messages containing ' + operand;
+
+        case 'in':
+            return 'messages in ' + operand;
         }
         return '(unknown operator)';
     }).join(', ');
@@ -109,6 +112,10 @@ exports.parse = function (str) {
     return operators;
 };
 
+exports.in_home = function (message) {
+    return message.type === "private" || subs.have(message.display_recipient).in_home_view;
+};
+
 // Build a filter function from a list of operators.
 function build_filter(operators_mixed_case) {
     var operators = [];
@@ -130,6 +137,15 @@ function build_filter(operators_mixed_case) {
                 if (operand === 'private-message') {
                     if (message.type !== 'private')
                         return false;
+                }
+                break;
+
+            case 'in':
+                if (operand === 'home') {
+                    return exports.in_home(message);
+                }
+                else if (operand === 'all') {
+                    return true;
                 }
                 break;
 

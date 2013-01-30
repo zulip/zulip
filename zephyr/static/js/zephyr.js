@@ -490,8 +490,8 @@ function add_messages(messages, add_to_home) {
             return (elem.id >= selected_message_id && ! message_in_table.zhome[elem.id]);
         });
         message_array = top_messages_home.concat(message_array).concat(bottom_messages_home);
-        add_to_table(top_messages_home,    'zhome', function () { return true; }, "top",    true);
-        add_to_table(bottom_messages_home, 'zhome', function () { return true; }, "bottom", true);
+        add_to_table(top_messages_home,    'zhome', narrow.in_home, "top",    true);
+        add_to_table(bottom_messages_home, 'zhome', narrow.in_home, "bottom", true);
         if ((top_messages_home.length > 0) && !narrow.active()) {
             prepended = true;
         }
