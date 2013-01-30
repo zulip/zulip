@@ -500,7 +500,7 @@ class NarrowBuilder(object):
     def __init__(self, user_profile):
         self.user_profile = user_profile
 
-    def __call__(self, operator, operand):
+    def __call__(self, query, operator, operand):
         # We have to be careful here because we're letting users call a method
         # by name! The prefix 'by_' prevents it from colliding with builtin
         # Python __magic__ stuff.
@@ -508,7 +508,7 @@ class NarrowBuilder(object):
         method = getattr(self, method_name, None)
         if method is None:
             raise BadNarrowOperator('unknown operator ' + operator)
-        return method(operand)
+        return query.filter(method(operand))
 
     def by_is(self, operand):
         if operand == 'private-message':
@@ -602,7 +602,7 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
     if narrow is not None:
         build = NarrowBuilder(user_profile)
         for operator, operand in narrow:
-            query = query.filter(build(operator, operand))
+            query = build(query, operator, operand)
 
     # We add 1 to the number of messages requested to ensure that the
     # resulting list always contains the anchor message
