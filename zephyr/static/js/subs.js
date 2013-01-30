@@ -388,14 +388,15 @@ function ajaxUnsubscribe(stream) {
     });
 }
 
-function ajaxSubscribeForCreation(stream, principals) {
+function ajaxSubscribeForCreation(stream, principals, invite_only) {
     // Subscribe yourself and possible other people to a new stream.
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/add",
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         data: {"subscriptions": JSON.stringify([stream]),
-               "principals": JSON.stringify(principals)
+               "principals": JSON.stringify(principals),
+               "invite_only": JSON.stringify(invite_only)
         },
         success: function (data) {
             $("#create_stream_name").val("");
@@ -463,7 +464,7 @@ $(function () {
         });
         // You are always subscribed to streams you create.
         principals.push(email);
-        ajaxSubscribeForCreation(stream, principals);
+        ajaxSubscribeForCreation(stream, principals, $('#invite-only').is(':checked'));
     });
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
