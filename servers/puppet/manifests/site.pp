@@ -238,6 +238,11 @@ class humbug_app_frontend {
     mode => 644,
     source => "/root/humbug/servers/puppet/files/nginx/sites-available/humbug",
   }
+
+  exec {"pip6":
+    command  => "pip install django-pipeline",
+    onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/django-pipeline"
+  }
 }
 
 # TODO: Setup dotdeb repository for this, including apt preferences to
