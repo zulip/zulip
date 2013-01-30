@@ -535,6 +535,9 @@ function add_messages(messages, add_to_home) {
     if (typeahead_helper.autocomplete_needs_update()) {
         typeahead_helper.update_autocomplete();
     }
+
+    // If the new messages are off the screen, show a notification
+    notifications_bar.update();
 }
 
 var get_updates_xhr;

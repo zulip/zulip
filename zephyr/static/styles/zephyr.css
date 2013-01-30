@@ -772,3 +772,19 @@ table.floating_recipient {
     margin-right: -10px;
     margin-bottom: 5px;
 }
+
+.notifications {
+    position: fixed;
+    z-index: 9000;
+    bottom: 0px;
+    right: 20px;
+    width: 200px;
+    height: 30px;
+    border-radius: 10px 10px 0px 0px;
+    padding: 10px 0px 0px 10px;
+    background: #58F;
+    color: white;
+    font-size: 125%;
+    cursor: default;
+    display: none;
+}

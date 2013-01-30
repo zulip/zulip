@@ -27,6 +27,9 @@ var globals =
     // reload.js
     + ' reload'
 
+    // notifications_bar.js
+    + ' notifications_bar'
+
     // search.js
     + ' search'
 

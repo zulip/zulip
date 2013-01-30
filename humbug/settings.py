@@ -211,6 +211,7 @@ PIPELINE_JS = {
             'js/rows.js',
             'js/narrow.js',
             'js/reload.js',
+            'js/notifications_bar.js',
             'js/compose.js',
             'js/subs.js',
             'js/ui.js',

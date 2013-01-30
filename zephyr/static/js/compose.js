@@ -49,6 +49,8 @@ function show(tabname, focus_area) {
     });
     focus_area.focus();
     focus_area.select();
+    // Disable the notifications bar if it overlaps with the composebox
+    notifications_bar.maybe_disable();
 }
 
 // In an attempt to decrease mixing, make the composebox's
@@ -191,6 +193,7 @@ exports.hide = function () {
     $('input, textarea, button').blur();
     $('.message_comp').slideUp(100,
                               function() { $('#compose').css({visibility: "hidden"});});
+    notifications_bar.enable();
 };
 
 exports.clear = function () {

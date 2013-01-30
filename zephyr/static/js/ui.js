@@ -249,6 +249,8 @@ function resizehandler(e) {
     if (selected_message_id !== -1) {
         scroll_to_selected();
     }
+    // When the screen resizes, it may cause some messages to go off the screen
+    notifications_bar.update();
 }
 
 var old_label;
@@ -513,6 +515,8 @@ $(function () {
             } else if (!have_scrolled_away_from_top) {
                 have_scrolled_away_from_top = true;
             }
+            // When the window scrolls, it may cause some messages to go off the screen
+            notifications_bar.update();
         }
     }));
 
