@@ -374,8 +374,10 @@ def gather_subscriptions(user_profile):
     no_color   = subs.exclude(id__in = with_color.values('subscription_id')).select_related()
 
     result = [{'name': get_display_recipient(sc.subscription.recipient),
+               'in_home_view': sc.subscription.in_home_view,
                'color': sc.color} for sc in with_color]
     result.extend({'name': get_display_recipient(sub.recipient),
+                   'in_home_view': sub.in_home_view,
                    'color': StreamColor.DEFAULT_STREAM_COLOR} for sub in no_color)
 
 

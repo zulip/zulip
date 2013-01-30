@@ -508,8 +508,8 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         for stream, color in json["stream_colors"]:
             self.assertIsInstance(color,  str)
             self.assertIsInstance(stream, str)
-            self.assertIn({'name': stream, 'color': color}, subs)
-            subs.remove({'name': stream, 'color': color})
+            self.assertIn({'name': stream, 'in_home_view': True, 'color': color}, subs)
+            subs.remove({'name': stream, 'in_home_view': True, 'color': color})
         self.assertFalse(subs)
 
     def test_set_stream_color(self):
@@ -533,10 +533,10 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.assert_json_success(result)
 
         new_subs = gather_subscriptions(self.get_user_profile(test_email))
-        self.assertIn({'name': stream_name, 'color': new_color}, new_subs)
+        self.assertIn({'name': stream_name, 'in_home_view': True, 'color': new_color}, new_subs)
 
-        old_subs.remove({'name': stream_name, 'color': old_color})
-        new_subs.remove({'name': stream_name, 'color': new_color})
+        old_subs.remove({'name': stream_name, 'in_home_view': True, 'color': old_color})
+        new_subs.remove({'name': stream_name, 'in_home_view': True, 'color': new_color})
         self.assertEqual(old_subs, new_subs)
 
     def test_set_color_missing_stream_name(self):
