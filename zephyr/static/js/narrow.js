@@ -169,7 +169,6 @@ function build_filter(operators_mixed_case) {
 
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
-        time_travel:    false,
         allow_collapse: true
     }, opts);
 
@@ -188,8 +187,10 @@ exports.activate = function (operators, opts) {
     // Before we clear the table, check if anything was highlighted.
     var highlighted = search.something_is_highlighted();
 
-    // Empty the filtered table right before we fill it again
-    if (opts.time_travel) {
+    // If our message id is not in range of the loaded message list, we need to fetch the messages
+    //  around the target message time
+    if (message_array.length > 0 && (selected_message_id < message_array[0].id ||
+                                     selected_message_id > message_array[message_array.length - 1])) {
         load_old_messages(target_id, 200, 200, function (messages) {
             // We do this work inside the load_old_messages
             // continuation, to shorten the window with just 1 visible message
