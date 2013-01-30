@@ -1,6 +1,6 @@
 Hi there,
 
-{{ referrer.full_name }} ({{ referrer.user.email }}) wants you to join them on Humbug -- the group instant messaging tool you've always wished you had at work.
+{{ referrer.full_name }} ({{ referrer.user.email }}) wants you to join them on Humbug -- the group communication tool you've always wished you had at work.
 
 To get started, visit the link below:
     <{{ activate_url }}>
