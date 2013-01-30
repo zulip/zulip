@@ -46,8 +46,12 @@ os.chdir(path.join(path.dirname(__file__), '..'))
 # and all of the processes they spawn.
 os.setpgrp()
 
-for cmd in ['python manage.py runserver  %s localhost:%d' % (manage_args, django_port),
-            'python manage.py runtornado %s localhost:%d' % (manage_args, tornado_port)]:
+# Pass --nostatic because we configure static serving ourselves in
+# humbug/urls.py.
+for cmd in ['python manage.py runserver --nostatic %s localhost:%d'
+                % (manage_args, django_port),
+            'python manage.py runtornado %s localhost:%d'
+                % (manage_args, tornado_port)]:
     subprocess.Popen(cmd, shell=True)
 
 class Resource(resource.Resource):

@@ -236,6 +236,11 @@ PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
 # event handlers defined in HTML.
 PIPELINE_DISABLE_WRAPPER = True
 
+# To use minified files in dev, uncomment:
+#PIPELINE = True
+
+# You will need to run ./tools/update-prod-static after changing static files.
+
 
 USING_RABBITMQ = DEPLOYED
 # This password also appears in servers/configure-rabbitmq
