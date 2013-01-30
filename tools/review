@@ -136,6 +136,10 @@ def get_current_user(repo):
   ident = unicode(repo.git.var('GIT_AUTHOR_IDENT'), 'utf-8', 'replace')
   return ident[:ident.rindex('>') + 1]
 
+def get_current_user_email(repo):
+  me = get_current_user(repo)
+  return me[me.index("<") + 1:me.index('>')]
+
 def make_header(repo, opts, revs):
   me = get_current_user(repo)
   reponame = get_reponame(repo)
@@ -300,9 +304,8 @@ def main(args):
   else:
     sys.path.append(os.path.join(os.path.dirname(__file__), '../api'))
     import humbug
-    me = get_current_user(repo)
     client = humbug.Client(
-        email=me[me.index("<") + 1:me.index('>')],
+        email=get_current_user_email(repo),
         site="https://staging.humbughq.com",
         verbose=True)
     client.send_message({'type': "private",
