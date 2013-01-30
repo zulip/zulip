@@ -104,6 +104,9 @@ def get_default_remote(repo):
   except git.exc.GitCommandError:
     try:
       branch = repo.active_branch
+    except TypeError:
+      return 'origin'
+    try:
       return repo.git.config('--get', 'branch.%s.remote' % branch)
     except git.exc.GitCommandError:
       return 'origin'
