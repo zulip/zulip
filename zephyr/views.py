@@ -461,9 +461,7 @@ def home(request):
               for profile in
               UserProfile.objects.select_related().filter(realm=user_profile.realm)]
 
-    subscriptions = Subscription.objects.select_related().filter(user_profile_id=user_profile, active=True)
-    streams = [get_display_recipient(sub.recipient) for sub in subscriptions
-               if sub.recipient.type == Recipient.STREAM]
+    streams = simplejson.encoder.JSONEncoderForHTML().encode(gather_subscriptions(user_profile))
 
     desktop_notifications_enabled = (user_profile.enable_desktop_notifications
         and getattr(settings, 'ENABLE_NOTIFICATIONS', True))

@@ -73,11 +73,8 @@ var lurk_stream = "{{ lurk_stream|escapejs }}";
 var lurk_stream = undefined;
 {% endif %}
 
-var stream_list = [
-{% for stream in streams %}
-    "{{ stream|escapejs }}",
-{% endfor %}
-];
+{# We use JSONEncoderForHTML to generate "streams". #}
+var stream_list = {{ streams }};
 
 var people_list = [
 {% for person in people %}

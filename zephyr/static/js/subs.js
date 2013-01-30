@@ -203,27 +203,6 @@ exports.get_color = function (stream_name) {
     return stream_info[lstream_name].color;
 };
 
-function fetch_colors() {
-    $.ajax({
-        type:     'GET',
-        url:      '/json/subscriptions/property',
-        dataType: 'json',
-        data: {"property": "stream_colors"},
-        timeout:  10*1000,
-        success: function (data) {
-            if (data) {
-                $.each(data.stream_colors, function (index, data) {
-                    var stream_name = data[0];
-                    var color = data[1];
-                    update_stream_color(stream_name, color,
-                                        {update_historical: initial_color_fetch});
-                });
-                initial_color_fetch = false;
-            }
-        }
-    });
-}
-
 function get_disjoint_list(list1, list2) {
     return $.grep(list1, function (elt) {
         return $.inArray(elt, list2) === -1;
@@ -258,7 +237,7 @@ exports.setup_page = function () {
         });
         our_subs.forEach(function (elem) {
             var stream_name = elem.name;
-            var sub = create_sub(stream_name, {color: elem.color, subscribed: true});
+            var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view, subscribed: true});
             stream_info[stream_name.toLowerCase()] = sub;
             sub_rows.push(sub);
         });
@@ -463,9 +442,8 @@ $(function () {
     var i;
     // Populate stream_info with data handed over to client-side template.
     for (i = 0; i < stream_list.length; i++) {
-        stream_info[stream_list[i].toLowerCase()] = create_sub(stream_list[i]);
+        stream_info[stream_list[i].name.toLowerCase()] = create_sub(stream_list[i].name, stream_list[i]);
     }
-    fetch_colors();
 
     $("#add_new_subscription").on("submit", function (e) {
         e.preventDefault();
