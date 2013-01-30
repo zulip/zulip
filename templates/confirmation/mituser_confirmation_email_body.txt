@@ -16,7 +16,8 @@ MIT Zephyr account.
     NOTE: Humbug does not currently support filters; everything you subscribe
     to will be in your default view. If you have too many subscriptions (you
     know who you are), you may want to manually subscribe to just your main
-    view via the "Subscriptions" tab in Humbug.
+    view. You can add or remove subscriptions from the Humbug app by clicking
+    the gear in the upper right-hand corner and then selecting "Streams."
 
     If you would like to copy over all of your subscriptions, please run the
     command below:
