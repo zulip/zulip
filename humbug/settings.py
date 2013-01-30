@@ -172,11 +172,70 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     'south',
     'jstemplate',
     'confirmation',
+    'pipeline',
     'zephyr',
 )
+
+
+# Static files and minification
+
+STATIC_URL = '/static/'
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
+
+STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
+
+STATIC_ROOT = 'prod-static/collected'
+
+PIPELINE_CSS = {
+    'app': {
+        'source_filenames': (
+            'styles/zephyr.css',
+            'styles/pygments.css',
+        ),
+        'output_filename': 'min/app.css'
+    },
+}
+
+PIPELINE_JS = {
+    'app': {
+        'source_filenames': (
+            'js/util.js',
+            'js/setup.js',
+            'js/rows.js',
+            'js/narrow.js',
+            'js/reload.js',
+            'js/compose.js',
+            'js/subs.js',
+            'js/ui.js',
+            'js/typeahead_helper.js',
+            'js/search.js',
+            'js/composebox_typeahead.js',
+            'js/hotkey.js',
+            'js/notifications.js',
+            'js/hashchange.js',
+            'js/invite.js',
+            'js/zephyr.js',
+        ),
+        'output_filename': 'min/app.js'
+    },
+}
+
+PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yui.YUICompressor'
+PIPELINE_JS_COMPRESSOR  = 'pipeline.compressors.yui.YUICompressor'
+PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
+
+# Disable stuffing the entire JavaScript codebase inside an anonymous function.
+# We need modules to be externally visible, so that methods can be called from
+# event handlers defined in HTML.
+PIPELINE_DISABLE_WRAPPER = True
+
 
 USING_RABBITMQ = DEPLOYED
 # This password also appears in servers/configure-rabbitmq

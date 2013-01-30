@@ -1,0 +1,28 @@
+#!/bin/bash -e
+
+# Update static files in production.
+
+cd "$(dirname "$0")"/..
+
+# Redirect output to a log file (most recent run only)
+exec >update-prod-static.log
+
+# Collect both original and minified files
+rm -rf prod-static/collected
+./manage.py collectstatic --noinput
+
+# Copy the files we want to expose
+rm -rf prod-static/serve-new
+mkdir -p prod-static/serve-new/{js,styles}
+cp -r prod-static/collected/{favicon.ico,robots.txt,html,third,min} prod-static/serve-new/
+cp prod-static/collected/js/{common,debug,signup}.js prod-static/serve-new/js/
+cp prod-static/collected/styles/{activity,portico}.css prod-static/serve-new/styles/
+
+# Sync the new directory to the one nginx actually serves.
+# Hopefully this doesn't race too badly for clients loading
+# right as a deploy happens.
+mkdir -p prod-static/serve
+rsync -ar --delete prod-static/serve-new/* prod-static/serve/
+
+# Clean up
+rm -rf prod-static/{collected,serve-new}

@@ -27,6 +27,9 @@ except:
 # Delete all .pyc files to avoid old module files hanging around
 subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/dev/null', 'w'))
 
+# Update static files
+subprocess.check_call(["./tools/update-prod-static"])
+
 # Restart the FastCGI process, which is running in a shell loop in screen.
 # TODO: real daemonization
 for cmd in ('runfcgi', 'runtornado', "process_user_activity"):

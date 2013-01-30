@@ -4,4 +4,6 @@
 /all_messages_log.*
 /event_log/*
 /server.log
+/update-prod-static.log
+/prod-static
 *.sw[po]

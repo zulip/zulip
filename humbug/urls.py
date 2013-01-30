@@ -85,7 +85,4 @@ urlpatterns = patterns('',
     url(r'^notify_pointer_update$',         'zephyr.tornadoviews.notify_pointer_update'),
 )
 
-if not settings.DEPLOYED:
-    urlpatterns += patterns('',
-        url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
-            {'document_root': os.path.join(settings.SITE_ROOT, '../zephyr/static')}))
+# Static file serving in dev is now handled by django.contrib.staticfiles
