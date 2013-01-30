@@ -822,7 +822,7 @@ class SubscriptionAPITest(AuthedTestCase):
         streams_to_remove = random_streams[:1]  # pick only one fake stream, to make checking the error message easy
         result = self.client.post("/json/subscriptions/remove",
                                   {"subscriptions": simplejson.dumps(streams_to_remove)})
-        self.assert_json_error(result, "Stream %s does not exist" % (random_streams[0],))
+        self.assert_json_error(result, "Stream(s) (%s) do not exist" % (random_streams[0],))
 
     def helper_subscriptions_exists(self, stream, exists, subscribed):
         """
@@ -1371,13 +1371,12 @@ class InviteOnlyStreamTest(AuthedTestCase):
                      'invite_only': simplejson.dumps(invite_only)}
         post_data.update(extra_post_data)
 
-        result = self.client.post("/json/subscriptions/add", post_data)
+        result = self.client.post("/api/v1/subscriptions/add", post_data)
         return result
 
     def test_inviteonly(self):
         # Creating an invite-only stream is allowed
         email = 'hamlet@humbughq.com'
-        self.login(email)
 
         result = self.common_subscribe_to_stream(email, '["Saxony"]', invite_only=True)
         self.assert_json_success(result)
@@ -1390,7 +1389,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         email = "othello@humbughq.com"
         self.login(email)
         result = self.common_subscribe_to_stream(email, '["Saxony"]')
-        self.assert_json_error(result, "Unable to join an invite-only stream")
+        self.assert_json_error(result, 'Unable to access invite-only stream (Saxony).')
 
         # Inviting another user to an invite-only stream is allowed
         email = 'hamlet@humbughq.com'
@@ -1403,7 +1402,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assertEqual(json["already_subscribed"], {})
 
         # Make sure both users are subscribed to this stream
-        result = self.client.post("/json/get_subscribers", {'email':email,
+        result = self.client.post("/api/v1/get_subscribers", {'email':email,
                                                             'api-key': self.get_api_key(email),
                                                             'stream': 'Saxony'})
         self.assert_json_success(result)

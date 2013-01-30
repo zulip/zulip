@@ -49,6 +49,54 @@ from collections import defaultdict
 
 SERVER_GENERATION = int(time.time())
 
+
+def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
+    """Converts plaintext stream names to a list of Streams, validating input in the process
+
+    For each stream name, we validate it to ensure it meets our requirements for a proper
+    stream name: that is, that it is shorter than 30 characters and passes valid_stream_name.
+
+    We also ensure the stream is visible to the user_profile who made the request; a call
+    to list_to_streams will fail if one of the streams is invite_only and user_profile
+    is not already on the stream.
+
+    This function in autocreate mode should be atomic: either an exception will be raised
+    during a precheck, or all the streams specified will have been created if applicable.
+
+    @param streams_raw The list of stream names to process
+    @param user_profile The user for whom we are retreiving the streams
+    @param autocreate Whether we should create streams if they don't already exist
+    @param invite_only Whether newly created streams should have the invite_only bit set
+    """
+    streams = []
+    # Validate all streams, getting extant ones, then get-or-creating the rest.
+    stream_set = set(stream_name.strip() for stream_name in streams_raw)
+    rejects = []
+    for stream_name in stream_set:
+        if len(stream_name) > 30:
+            raise JsonableError("Stream name (%s) too long." % (stream_name,))
+        if not valid_stream_name(stream_name):
+            raise JsonableError("Invalid stream name (%s)." % (stream_name,))
+        stream = get_stream(stream_name, user_profile.realm)
+
+        if stream is None:
+            rejects.append(stream_name)
+        else:
+            streams.append(stream)
+            # Verify we can access the stream
+            if stream.invite_only and not subscribed_to_stream(user_profile, stream):
+                raise JsonableError("Unable to access invite-only stream (%s)." % stream.name)
+    if autocreate:
+        for stream_name in rejects:
+            stream, created = create_stream_if_needed(user_profile.realm,
+                                                 stream_name,
+                                                 invite_only=invite_only)
+            streams.append(stream)
+    elif rejects:
+        raise JsonableError("Stream(s) (%s) do not exist" % ", ".join(rejects))
+
+    return streams
+
 def send_signup_message(sender, signups_stream, user_profile, internal=False):
     if internal:
         # When this is done using manage.py vs. the web interface
@@ -897,12 +945,8 @@ def json_remove_subscriptions(request, user_profile):
 @has_request_variables
 def remove_subscriptions_backend(request, user_profile,
                                  streams_raw = POST("subscriptions", json_to_list)):
-    streams = []
-    for stream_name in set(stream_name.strip() for stream_name in streams_raw):
-        stream = get_stream(stream_name, user_profile.realm)
-        if stream is None:
-            return json_error("Stream %s does not exist" % stream_name)
-        streams.append(stream)
+
+    streams = list_to_streams(streams_raw, user_profile)
 
     result = dict(removed=[], not_subscribed=[])
     for stream in streams:
@@ -945,22 +989,18 @@ def add_subscriptions_backend(request, user_profile,
     else:
         subscribers = [user_profile]
 
+    streams = list_to_streams(streams_raw, user_profile, autocreate=True, invite_only=invite_only)
     private_streams = {}
-    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
-    for stream_name in set(stream_names):
-        stream, created = create_stream_if_needed(user_profile.realm, stream_name, invite_only = invite_only)
-        # Users cannot subscribe themselves or other people to an invite-only
-        # stream they're not on.
-        if stream.invite_only and not created and not subscribed_to_stream(user_profile, stream):
-            return json_error("Unable to join an invite-only stream")
+    result = dict(subscribed=[], already_subscribed=[])
 
+    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
+    for stream in streams:
         for subscriber in subscribers:
             did_subscribe = do_add_subscription(subscriber, stream)
             if did_subscribe:
                 result["subscribed"][subscriber.user.email].append(stream.name)
             else:
                 result["already_subscribed"][subscriber.user.email].append(stream.name)
-
         private_streams[stream.name] = stream.invite_only
 
     # Inform the user if someone else subscribed them to stuff
