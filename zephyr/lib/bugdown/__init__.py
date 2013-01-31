@@ -130,8 +130,14 @@ class Bugdown(markdown.Extension):
 
         for k in ('image_link', 'image_reference', 'automail',
                   'autolink', 'link', 'reference', 'short_reference',
-                  'escape'):
+                  'escape', 'strong_em', 'emphasis', 'emphasis2',
+                  'strong'):
             del md.inlinePatterns[k]
+
+        # Custom bold syntax: **foo** but not __foo__
+        md.inlinePatterns.add('strong',
+            markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)(.+?)\2', 'strong'),
+            '>not_strong')
 
         for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
             del md.parser.blockprocessors[k]
