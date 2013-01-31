@@ -83,14 +83,17 @@ function narrow_or_search_for_term(item) {
 
         // Narrowing will have already put some operators in the search box,
         // so leave the current text in.
+        search_query_box.blur();
         return search_query_box.val();
 
     case 'private_message':
         narrow.by('pm-with', obj.query.email);
+        search_query_box.blur();
         return search_query_box.val();
 
     case 'operators':
         narrow.activate(obj.operators);
+        search_query_box.blur();
         return search_query_box.val();
     }
     return item;
@@ -231,24 +234,17 @@ exports.initialize = function () {
         var code = e.which;
         var search_query_box = $("#search_query");
         if (code === 13 && search_query_box.is(":focus")) {
-            // We just pressed enter and the box had focus, so one of
-            // two things is true:
-            // 1) There's a value in the search box and we should
-            // search for it
-            // 2) There's no value in the searchbox, so we just
-            // narrowed, so we should blur the box.
-            //
-            // Note that if the typeahead completion box was up, it
-            // has already handled the keypress and defocused the
-            // box.  So we only get here when enter was pressed while
-            // the completion box was not displayed.
+            // We just pressed enter and the box had focus, which
+            // means we didn't use the typeahead at all.  In that
+            // case, we should act as though we're searching by
+            // operators.  (The reason the other actions don't call
+            // this codepath is that they first all blur the box to
+            // indicate that they've done what they need to do)
             if (search_query_box.val()) {
-                $("#search_up").focus();
-                exports.search_button_handler(true);
-            } else {
-                exports.clear_search();
-                search_query_box.blur();
+                narrow.activate(narrow.parse(search_query_box.val()));
             }
+            search_query_box.blur();
+            update_buttons_with_focus(false);
         }
     });
 };
