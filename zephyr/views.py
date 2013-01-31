@@ -45,6 +45,7 @@ import time
 import requests
 import os
 import base64
+from collections import defaultdict
 
 SERVER_GENERATION = int(time.time())
 
@@ -927,7 +928,8 @@ def json_add_subscriptions(request, user_profile):
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = POST('subscriptions', json_to_list),
                               invite_only = POST('invite_only', default=False),
-                              principal = POST(default=None),):
+                              principals = POST('principals', json_to_list, default=None),):
+
     stream_names = []
     for stream_name in streams_raw:
         stream_name = stream_name.strip()
@@ -937,40 +939,47 @@ def add_subscriptions_backend(request, user_profile,
             return json_error("Invalid stream name (%s)." % (stream_name,))
         stream_names.append(stream_name)
 
-    if principal is not None:
-        subscriber = principal_to_user_profile(user_profile, principal)
+    if principals is not None:
+        subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:
-        subscriber = user_profile
+        subscribers = [user_profile]
 
-    result = dict(subscribed=[], already_subscribed=[])
+    result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
     for stream_name in set(stream_names):
-        stream, created = create_stream_if_needed(subscriber.realm, stream_name, invite_only = invite_only)
+        stream, created = create_stream_if_needed(user_profile.realm, stream_name, invite_only = invite_only)
         # Users cannot subscribe themselves to an invite-only stream
-        if stream.invite_only and subscriber == user_profile and not created:
+        if stream.invite_only and not principals and not created:
             return json_error("Unable to join an invite-only stream")
 
-        did_subscribe = do_add_subscription(subscriber, stream)
-        if did_subscribe:
-            result["subscribed"].append(stream.name)
-        else:
-            result["already_subscribed"].append(stream.name)
+        for subscriber in subscribers:
+            did_subscribe = do_add_subscription(subscriber, stream)
+            if did_subscribe:
+                result["subscribed"][subscriber.user.email].append(stream.name)
+            else:
+                result["already_subscribed"][subscriber.user.email].append(stream.name)
 
     # Inform the user if someone else subscribed them to stuff
-    if subscriber != user_profile and result["subscribed"]:
-        if len(result["subscribed"]) == 1:
-            msg = ("Hi there!  We thought you'd like to know that %s just "
-                   "subscribed you to stream '%s'"
-                   % (user_profile.full_name, result["subscribed"][0]))
-        else:
-            msg = ("Hi there!  We thought you'd like to know that %s just "
-                   "subscribed you to the following streams: \n\n"
-                   % (user_profile.full_name,))
-            for stream in result["subscribed"]:
-                msg += "* %s\n" % (stream,)
-        internal_send_message("humbug+notifications@humbughq.com",
-                              Recipient.PERSONAL, subscriber.user.email, "",
-                              msg)
+    if principals and result["subscribed"]:
+        for email, subscriptions in result["subscribed"].iteritems():
+            if email == user_profile.user.email:
+                # Don't send a Humbug if you invited yourself.
+                continue
 
+            if len(subscriptions) == 1:
+                msg = ("Hi there!  We thought you'd like to know that %s just "
+                       "subscribed you to stream '%s'"
+                       % (user_profile.full_name, subscriptions[0]))
+            else:
+                msg = ("Hi there!  We thought you'd like to know that %s just "
+                       "subscribed you to the following streams: \n\n"
+                       % (user_profile.full_name,))
+                for stream in subscriptions:
+                    msg += "* %s\n" % (stream,)
+            internal_send_message("humbug+notifications@humbughq.com",
+                                  Recipient.PERSONAL, email, "", msg)
+
+    result["subscribed"] = dict(result["subscribed"])
+    result["already_subscribed"] = dict(result["already_subscribed"])
     return json_success(result)
 
 @authenticated_api_view
