@@ -1,0 +1,136 @@
+<div class="navbar navbar-fixed-top" id="top_navbar">
+  <div class="navbar-inner">
+    <div class="container">
+      <div class="row">
+        <div class="span3 hidden-phone">
+          <a class="brand" href="#">Humbug</a>
+        </div>
+        <div class="span9" id="navbar-middle">
+          <a class="brand skinny-user-gravatar visible-phone" href="#"
+             title="{{user_profile.full_name}} - {{user_profile.user.email}}">
+            <img class="img-rounded gravatar-profile"
+                 src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=30" />
+          </a>
+          <div id="searchbox">
+            <form id="searchbox_form" class="form-search navbar-search">
+              <div id="search_arrows">
+                <input class="search-query" id="search_query" type="text" placeholder="Search…"
+                       autocomplete="off">
+                <button class="btn search_button search_button_middle" type="button" id="search_up"><i class="icon-chevron-up"></i></button>
+                <button class="btn search_button search_button_middle" type="button" id="search_down"><i class="icon-chevron-down"></i></button>
+                <button class="btn search_button" type="button" id="search_exit"><i class="icon-remove"></i></button>
+              </div>
+            </form>
+          </div><!-- /searchbox -->
+
+          <div id="navbar-buttons">
+            <ul class="nav" role="navigation">
+              <!-- stuff that gets visible in skinny mode -->
+              <li class="visible-phone" title="New stream message">
+                <a href="#" onclick="compose.set_mode('stream'); return false;">
+                  <i class="icon-bullhorn"></i>
+                </a>
+              </li>
+              <li class="visible-phone" title="New private message">
+                <a href="#" onclick="compose.set_mode('private'); return false;">
+                  <i class="icon-user"></i>
+                </a>
+              </li>
+              <!-- /stuff that gets visible in skinny mode -->
+              <li class="dropdown" id="gear-menu">
+                <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
+                  <span class="glyphicons cogwheel"><i></i></span><b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="settings-dropdown">
+                  <li title="Home">
+                    <a href="#home" data-toggle="tab" onclick="narrow.restore_home_state();">
+                      <i class="icon-home"></i>
+                      {% if lurk_stream %}Stream {{ lurk_stream }}{% else %}Home{% endif %}
+                    </a>
+                  </li>
+                  <li title="Streams">
+                    <a href="#subscriptions" data-toggle="tab">
+                      <i class="icon-globe"></i> Streams
+                    </a>
+                  </li>
+                  <li title="Settings">
+                    <a href="#settings" data-toggle="tab">
+                      <i class="icon-wrench"></i> Settings
+                    </a>
+                  </li>
+                  <li title="Keyboard shortcuts">
+                    <a href="#keyboard-shortcuts" role="button" data-toggle="modal">
+                      <i class="icon-info-sign"></i> Keyboard shortcuts
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li title="Feedback">
+                    <a href="#feedback" onclick="compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com' });">
+                      <i class="icon-comment"></i> Feedback
+                    </a>
+                  </li>
+                  {% if show_invites %}
+                  <li title="Invite users to Humbug">
+                    <a href="#invite-user" role="button" data-toggle="modal">
+                      <i class="icon-gift"></i> Invite users to Humbug
+                    </a>
+                  </li>
+                  {% endif %}
+                  <li class="divider"></li>
+                  <li title="Log out">
+                    <a href="/accounts/logout">
+                      <i class="icon-off"></i> Log out
+                    </a>
+                  </li>
+                  {% if show_debug %}
+                  <li title="Debug">
+                    <a href="#debug" data-toggle="tab">
+                      <i class="icon-barcode"></i> Debug
+                    </a>
+                  </li>
+                  {% endif %}
+                  {% if show_activity %}
+                  <li title="Activity">
+                    <a href="/activity" target="_blank">
+                      <i class="icon-eye-open"></i> Activity
+                    </a>
+                  </li>
+                  {% endif %}
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
+          <strong>Can't receive messages</strong>
+          &mdash; retrying soon. <a class="cursor_pointer" onclick="restart_get_updates({dont_block: true});">Try now</a>.
+        </div>
+        <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
+          <strong>Messages you send are not being mirrored to MIT zephyr</strong>
+          &mdash; Please check that you are still running the MIT
+          Zephyr mirroring bot. <a class="cursor_pointer" onclick="restart_get_updates({dont_block: true});">Check now</a>
+        </div>
+        <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application">
+        </div>
+        <div class="alert alert_sidebar" id="home-error"></div>
+        <div class="alert alert_sidebar" id="stream-dne">
+          <p>The stream <span class="streamname" id="stream-dne-name"></span> does not exist.</p>
+          <button type="button" id="create-it" class="btn btn-primary">Create and send</button>
+          <button type="button" class="btn" onClick="$('#stream-dne').stop(true).fadeOut(500);">
+            Cancel message
+          </button>
+        </div>
+        <div class="alert alert_sidebar" id="stream-nosub">
+          <p>You're not subscribed to the stream <span class="streamname" id="stream-nosub-name"></span>.</p>
+          <button type="button" id="sub-it" class="btn btn-primary">Subscribe and send</button>
+          <button type="button" class="btn" onClick="$('#stream-nosub').stop(true).fadeOut(500);">
+            Cancel message
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="navbar-spacer"></div>
