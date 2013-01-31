@@ -773,13 +773,20 @@ table.floating_recipient {
     margin-bottom: 5px;
 }
 
-.notifications {
+#notifications-area {
     position: fixed;
     z-index: 9000;
     bottom: 0px;
     right: 20px;
     width: 200px;
-    height: 30px;
+    height: 35px;
+}
+
+#notifications-bar {
+    position: absolute;
+    bottom: 0px; /* necessary to get slideUp, slideDown directions correct */
+    width: 100%;
+    height: 100%;
     border-radius: 10px 10px 0px 0px;
     padding: 10px 0px 0px 10px;
     background: #58F;
@@ -787,4 +794,8 @@ table.floating_recipient {
     font-size: 125%;
     cursor: default;
     display: none;
+    /* For now, cut off long messages (but we should find a better solution) */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
