@@ -3,7 +3,7 @@ import sys
 import optparse
 from os import path
 
-sys.path.append(path.join(path.dirname(__file__), '..'))
+sys.path.append(path.join(path.dirname(__file__), '../api'))
 import humbug
 
 # Nagios passes the notification details as command line options.

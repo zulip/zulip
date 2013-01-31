@@ -7,7 +7,7 @@ from os import path
 
 CONFIGFILE = os.path.expanduser("~/.humbug_twitterrc")
 
-sys.path.append(path.join(path.dirname(__file__), '../..'))
+sys.path.append(path.join(path.dirname(__file__), '../api'))
 import humbug
 
 def write_config(config, since_id, user):

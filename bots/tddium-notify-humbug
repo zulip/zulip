@@ -42,7 +42,7 @@ from os import path, environ
 # Here we assume it's in the parent of the directory
 # where this script lives.
 
-humbug_directory = path.join(path.dirname(__file__), '..')
+humbug_directory = path.join(path.dirname(__file__), '../api')
 
 
 sys.path.append(humbug_directory)

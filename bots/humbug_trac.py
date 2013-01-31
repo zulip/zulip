@@ -18,6 +18,7 @@ from trac.core import Component, implements
 from trac.ticket import ITicketChangeListener
 import sys
 
+# This script lives on one machine, so an absolute path is fine.
 sys.path.append("/home/humbug/humbug/api")
 import humbug
 client = humbug.Client(
