@@ -190,6 +190,34 @@ var people_list = [
               </div>
             </div>
           </div>
+          <div class="row">
+            <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
+              <strong>Can't receive messages</strong>
+              &mdash; retrying soon. <a class="cursor_pointer" onclick="restart_get_updates({dont_block: true});">Try now</a>.
+            </div>
+            <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
+              <strong>Messages you send are not being mirrored to MIT zephyr</strong>
+              &mdash; Please check that you are still running the MIT
+              Zephyr mirroring bot. <a class="cursor_pointer" onclick="restart_get_updates({dont_block: true});">Check now</a>
+            </div>
+            <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application">
+            </div>
+            <div class="alert alert_sidebar" id="home-error"></div>
+            <div class="alert alert_sidebar" id="stream-dne">
+              <p>The stream <span class="streamname" id="stream-dne-name"></span> does not exist.</p>
+              <button type="button" id="create-it" class="btn btn-primary">Create and send</button>
+              <button type="button" class="btn" onClick="$('#stream-dne').stop(true).fadeOut(500);">
+                Cancel message
+              </button>
+            </div>
+            <div class="alert alert_sidebar" id="stream-nosub">
+              <p>You're not subscribed to the stream <span class="streamname" id="stream-nosub-name"></span>.</p>
+              <button type="button" id="sub-it" class="btn btn-primary">Subscribe and send</button>
+              <button type="button" class="btn" onClick="$('#stream-nosub').stop(true).fadeOut(500);">
+                Cancel message
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -216,33 +244,6 @@ var people_list = [
                         id="left_bar_compose_private_button_big"
                         onclick="compose.set_mode('private');">
                   <i class="icon-user"></i> New private message
-                </button>
-              </div>
-
-              <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
-                <strong>Can't receive messages</strong>
-                &mdash; retrying soon. <a class="cursor_pointer" onclick="restart_get_updates({dont_block: true});">Try now</a>.
-              </div>
-              <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
-                <strong>Messages you send are not being mirrored to MIT zephyr</strong>
-                &mdash; Please check that you are still running the MIT
-                Zephyr mirroring bot. <a class="cursor_pointer" onclick="restart_get_updates({dont_block: true});">Check now</a>
-              </div>
-             <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application">
-              </div>
-              <div class="alert alert_sidebar" id="home-error"></div>
-              <div class="alert alert_sidebar" id="stream-dne">
-                <p>The stream <span class="streamname" id="stream-dne-name"></span> does not exist.</p>
-                <button type="button" id="create-it" class="btn btn-primary">Create and send</button>
-                <button type="button" class="btn" onClick="$('#stream-dne').stop(true).fadeOut(500);">
-                  Cancel message
-                </button>
-              </div>
-              <div class="alert alert_sidebar" id="stream-nosub">
-                <p>You're not subscribed to the stream <span class="streamname" id="stream-nosub-name"></span>.</p>
-                <button type="button" id="sub-it" class="btn btn-primary">Subscribe and send</button>
-                <button type="button" class="btn" onClick="$('#stream-nosub').stop(true).fadeOut(500);">
-                  Cancel message
                 </button>
               </div>
             </div>
