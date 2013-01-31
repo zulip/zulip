@@ -333,23 +333,29 @@ exports.have = function (stream_name) {
 };
 
 function ajaxSubscribe(stream) {
+    // Subscribe yourself to a single stream.
+    var true_stream_name;
+
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/add",
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         data: {"subscriptions": JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
-            if ($("#create_stream_name").val() === stream) {
-                $("#create_stream_name").val("");
-            }
-            var name, res = $.parseJSON(xhr.responseText);
-            if (res.subscribed.length === 0) {
-                name = res.already_subscribed[0];
-                ui.report_success("Already subscribed to " + name, $("#subscriptions-status"));
+            $("#create_stream_name").val("");
+
+            var res = $.parseJSON(xhr.responseText);
+            if (!$.isEmptyObject(res.already_subscribed)) {
+                // Display the canonical stream capitalization.
+                true_stream_name = res.already_subscribed[email][0];
+                ui.report_success("Already subscribed to " + true_stream_name,
+                                  $("#subscriptions-status"));
             } else {
-                name = res.subscribed[0];
+                // Display the canonical stream capitalization.
+                true_stream_name = res.subscribed[email][0];
+                ui.report_success("Subscribed to " + true_stream_name, $("#subscriptions-status"));
             }
-            mark_subscribed(name);
+            mark_subscribed(true_stream_name);
         },
         error: function (xhr) {
             ui.report_error("Error adding subscription", xhr, $("#subscriptions-status"));
@@ -382,6 +388,52 @@ function ajaxUnsubscribe(stream) {
     });
 }
 
+function ajaxSubscribeForCreation(stream, principals) {
+    // Subscribe yourself and possible other people to a new stream.
+    $.ajax({
+        type: "POST",
+        url: "/json/subscriptions/add",
+        dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        data: {"subscriptions": JSON.stringify([stream]),
+               "principals": JSON.stringify(principals)
+        },
+        success: function (data) {
+            $("#create_stream_name").val("");
+
+            $('#stream-creation').modal("hide");
+            mark_subscribed(stream);
+        },
+        error: function (xhr) {
+            ui.report_error("Error creating stream", xhr, $("#subscriptions-status"));
+            $('#stream-creation').modal("hide");
+        }
+    });
+}
+
+function people_sort(person1, person2) {
+    // Compares objects of the form used in people_list.
+    if (person1.full_name < person2.full_name) {
+        return -1;
+    } else if (person1.full_name > person2.full_name) {
+        return 1;
+    }
+    return person1.email < person2.email ? -1 : 1;
+}
+
+function show_new_stream_modal() {
+    var people_minus_you = [];
+    $.each(people_list, function (idx, person) {
+        if (person.email !== email) {
+            people_minus_you.push({"email": person.email, "full_name": person.full_name});
+        }
+    });
+
+    $('#people_to_add').html(templates.new_stream_users({
+        users: people_minus_you.sort(people_sort)
+    }));
+    $('#stream-creation').modal("show");
+}
+
 $(function () {
     var i;
     // Populate stream_info with data handed over to client-side template.
@@ -392,7 +444,26 @@ $(function () {
 
     $("#add_new_subscription").on("submit", function (e) {
         e.preventDefault();
-        ajaxSubscribe($("#create_stream_name").val());
+        var stream = $.trim($("#create_stream_name").val());
+        var stream_status = compose.check_stream_existence(stream)[0];
+        if (stream_status === "does-not-exist") {
+            $("#stream_name").text(stream);
+            show_new_stream_modal();
+        } else {
+            ajaxSubscribe(stream);
+        }
+    });
+
+    $("#stream_creation_form").on("submit", function (e) {
+        e.preventDefault();
+        var stream = $.trim($("#create_stream_name").val());
+        var principals = [];
+        $("#stream_creation_form input:checkbox[name=user]:checked").each(function () {
+            principals.push($(this).val());
+        });
+        // You are always subscribed to streams you create.
+        principals.push(email);
+        ajaxSubscribeForCreation(stream, principals);
     });
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
@@ -437,10 +508,11 @@ $(function () {
             url: "/json/subscriptions/add",
             dataType: 'json',
             data: {"subscriptions": JSON.stringify([stream]),
-                   "principal": principal},
+                   "principals": JSON.stringify([principal])},
             success: function (data) {
                 text_box.val('');
-                if (data.subscribed.length) {
+
+                if (data.subscribed.hasOwnProperty(principal)) {
                     error_elem.addClass("hide");
                     warning_elem.addClass("hide");
                     if (principal === email) {
@@ -527,6 +599,11 @@ $(function () {
         });
     });
 });
+
+exports.set_all_users = function (e, val) {
+    $('#people_to_add :checkbox').attr('checked', val);
+    e.preventDefault();
+};
 
 return exports;
 
