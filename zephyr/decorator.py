@@ -264,14 +264,17 @@ def to_non_negative_int(x):
         raise ValueError("argument is negative")
     return x
 
-def json_to_dict(json):
+def json_to_foo(json, type):
     data = simplejson.loads(json)
-    if not isinstance(data, dict):
-        raise ValueError("argument is not a dictionary")
+    if not isinstance(data, type):
+        raise ValueError("argument is not a %s" % (type().__class__.__name__))
     return data
 
+def json_to_dict(json):
+    return json_to_foo(json, dict)
+
 def json_to_list(json):
-    data = simplejson.loads(json)
-    if not isinstance(data, list):
-        raise ValueError("argument is not a list")
-    return data
+    return json_to_foo(json, list)
+
+def json_to_bool(json):
+    return json_to_foo(json, bool)
