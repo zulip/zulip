@@ -630,25 +630,33 @@ class SubscriptionAPITest(AuthedTestCase):
         # also check that this matches the list of your subscriptions
         self.assertItemsEqual(list_streams, self.streams)
 
-    def helper_check_subs_before_and_after(self, url, subscriptions, other_params, json_dict, email, new_subs):
+    def helper_check_subs_before_and_after_add(self, url, subscriptions, other_params,
+                                               json_dict, email, new_subs):
         """
-        Helper function that posts to url with the subscriptions value set to
-        subscriptions and optional other_params specified as a dict. It checks
-        that the returned JSON dict contains all keys in json_dict with the
-        corresponding correct values. Finally, it checks that the subscriptions
-        after this call for the given email are equal to new_subs.
+        Check result of adding subscriptions.
+
+        You can add subscriptions for yourself or possibly many
+        principals, which is why e-mails map to subscriptions in the
+        result.
+
+        The result json is of the form
+
+        {"msg": "",
+         "result": "success",
+         "already_subscribed": {"iago@humbughq.com": ["Venice", "Verona"]},
+         "subscribed": {"iago@humbughq.com": ["Venice8"]}}
         """
         data = {"subscriptions": simplejson.dumps(subscriptions)}
         data.update(other_params)
         result = self.client.post(url, data)
         self.assert_json_success(result)
         json = simplejson.loads(result.content)
-        for key, val in json_dict.iteritems():
-            self.assertIn(key, json)
-            if isinstance(val, list):
-                self.assertItemsEqual(val, json[key])  # we don't care about the order of the items
-            else:
-                self.assertEqual(val, json[key])
+        for subscription_status, val in json_dict.iteritems():
+            # keys are subscribed, already_subscribed.
+            # vals are a dict mapping e-mails to streams.
+            self.assertIn(subscription_status, json)
+            for email, streams in val.iteritems():
+                self.assertItemsEqual(streams, json[subscription_status][email])
         new_streams = self.get_streams(email)
         self.assertItemsEqual(new_streams, new_subs)
 
@@ -662,10 +670,11 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
         add_streams = self.make_random_stream_names(self.streams, self.streams)
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
-        self.helper_check_subs_before_and_after("/json/subscriptions/add", self.streams + add_streams, {},
-                                                {"subscribed": add_streams,
-                                                 "already_subscribed": self.streams},
-                                                self.test_email, self.streams + add_streams)
+        self.helper_check_subs_before_and_after_add(
+            "/json/subscriptions/add", self.streams + add_streams, {},
+            {"subscribed": {self.test_email: add_streams},
+             "already_subscribed": {self.test_email: self.streams}},
+            self.test_email, self.streams + add_streams)
 
     def test_subscriptions_add_too_long(self):
         """
@@ -708,17 +717,19 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
         streams_to_sub = add_streams[:1]  # just add one, to make the message easier to check
         streams_to_sub.extend(current_streams)
-        self.helper_check_subs_before_and_after("/json/subscriptions/add", streams_to_sub,
-                                                {"principal": other_email},
-                                                {"subscribed": add_streams[:1],
-                                                 "already_subscribed": current_streams},
-                                                other_email, streams_to_sub)
+        self.helper_check_subs_before_and_after_add(
+            "/json/subscriptions/add", streams_to_sub,
+            {"principals": simplejson.dumps([other_email])},
+            {"subscribed": {other_email: add_streams[:1]},
+             "already_subscribed": {other_email: current_streams}},
+            other_email, streams_to_sub)
         # verify that the user was sent a message informing them about the subscription
         msg = Message.objects.latest('id')
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
-        self.assertEqual(msg.sender_id, UserProfile.objects.get(user__email="humbug+notifications@humbughq.com").id)
+        self.assertEqual(msg.sender_id, UserProfile.objects.get(
+                user__email="humbug+notifications@humbughq.com").id)
         expected_msg = ("Hi there!  We thought you'd like to know that %s just "
-                        "subscribed you to stream '%s'"
+                        "subscribed you to the stream '%s'"
                         % (self.user_profile.full_name, add_streams[0]))
         self.assertEqual(msg.content, expected_msg)
         recipients = get_display_recipient(msg.recipient)
@@ -736,7 +747,7 @@ class SubscriptionAPITest(AuthedTestCase):
             UserProfile.objects.get(user__email=invalid_principal)
         result = self.client.post("/json/subscriptions/add",
                                    {"subscriptions": simplejson.dumps(self.streams),
-                                    "principal": invalid_principal})
+                                    "principals": simplejson.dumps([invalid_principal])})
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
                                % (invalid_principal,))
 
@@ -751,9 +762,31 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertIsInstance(profile, UserProfile)
         result = self.client.post("/json/subscriptions/add",
                                    {"subscriptions": simplejson.dumps(self.streams),
-                                    "principal": principal})
+                                    "principals": simplejson.dumps([principal])})
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
                                % (principal,))
+
+    def helper_check_subs_before_and_after_remove(self, url, subscriptions, other_params,
+                                               json_dict, email, new_subs):
+        """
+        Check result of removing subscriptions.
+
+        Unlike adding subscriptions, you can only remove subscriptions
+        for yourself, so the result format is different.
+
+        {"msg": "",
+         "removed": ["Denmark", "Scotland", "Verona"],
+         "not_subscribed": ["Rome"], "result": "success"}
+        """
+        data = {"subscriptions": simplejson.dumps(subscriptions)}
+        data.update(other_params)
+        result = self.client.post(url, data)
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        for key, val in json_dict.iteritems():
+            self.assertItemsEqual(val, json[key])  # we don't care about the order of the items
+        new_streams = self.get_streams(email)
+        self.assertItemsEqual(new_streams, new_subs)
 
     def test_successful_subscriptions_remove(self):
         """
@@ -773,10 +806,10 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertNotEqual(len(not_subbed), 0)  # necessary for full test coverage
         try_to_remove = not_subbed[:3]  # attempt to remove up to 3 streams not already subbed to
         streams_to_remove.extend(try_to_remove)
-        self.helper_check_subs_before_and_after("/json/subscriptions/remove", streams_to_remove, {},
-                                                {"removed": self.streams[1:],
-                                                 "not_subscribed": try_to_remove},
-                                                self.test_email, [self.streams[0]])
+        self.helper_check_subs_before_and_after_remove(
+            "/json/subscriptions/remove", streams_to_remove, {},
+            {"removed": self.streams[1:], "not_subscribed": try_to_remove},
+            self.test_email, [self.streams[0]])
 
     def test_subscriptions_remove_fake_stream(self):
         """
@@ -1335,7 +1368,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         post_data = {'email': email,
                      'api-key': api_key,
                      'subscriptions': streams,
-                     'invite_only': invite_only}
+                     'invite_only': simplejson.dumps(invite_only)}
         post_data.update(extra_post_data)
 
         result = self.client.post("/json/subscriptions/add", post_data)
@@ -1350,8 +1383,8 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assert_json_success(result)
 
         json = simplejson.loads(result.content)
-        self.assertEqual(json["subscribed"], ['Saxony'])
-        self.assertEqual(json["already_subscribed"], [])
+        self.assertEqual(json["subscribed"], {email: ['Saxony']})
+        self.assertEqual(json["already_subscribed"], {})
 
         # Subscribing oneself to an invite-only stream is not allowed
         email = "othello@humbughq.com"
@@ -1360,11 +1393,12 @@ class InviteOnlyStreamTest(AuthedTestCase):
 
         # Inviting another user to an invite-only stream is allowed
         email = 'hamlet@humbughq.com'
-        result = self.common_subscribe_to_stream(email, '["Saxony"]',
-                                                 extra_post_data={'principal':
-                                                                  'othello@humbughq.com'})
-        self.assertEqual(json["subscribed"], ['Saxony'])
-        self.assertEqual(json["already_subscribed"], [])
+        result = self.common_subscribe_to_stream(
+            email, '["Saxony"]',
+            extra_post_data={'principals': simplejson.dumps(["othello@humbughq.com"])})
+        json = simplejson.loads(result.content)
+        self.assertEqual(json["subscribed"], {"othello@humbughq.com": ['Saxony']})
+        self.assertEqual(json["already_subscribed"], {})
 
         # Make sure both users are subscribed to this stream
         result = self.client.post("/json/get_subscribers", {'email':email,
