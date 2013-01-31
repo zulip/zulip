@@ -318,6 +318,16 @@ class humbug_nagios {
     ensure => present,
   }
   #TODO: Need to install our Nagios config
+  #
+  # Also need to run this sequence to enable commands to set the
+  # permissions for using the Nagios commands feature
+  #
+  # /etc/init.d/nagios3 stop
+  # dpkg-statoverride --update --add nagios www-data 2710 /var/lib/nagios3/rw
+  # dpkg-statoverride --update --add nagios nagios 751 /var/lib/nagios3
+  # /etc/init.d/nagios3 start
+  #
+  #
 }
 
 class humbug_zmirror {
