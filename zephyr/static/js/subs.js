@@ -284,6 +284,7 @@ exports.setup_page = function () {
         });
     } else {
         all_streams = [];
+        $('#create_stream_button').val("Subscribe");
     }
 
     $.ajax({
