@@ -1,0 +1,11 @@
+{{! Client-side Mustache template for rendering users in the stream creation modal.}}
+<a href="#" onclick="subs.set_all_users(event, true);">Check all</a> |
+<a href="#" onclick="subs.set_all_users(event, false);">Uncheck all</a>
+<div id="user-checkboxes">
+  {{#each users}}
+  <label class="checkbox">
+    <input type="checkbox" name="user" value="{{this.email}}" checked="true"> {{this.full_name}} ({{this.email}})
+  </label><br />
+  {{/each}}
+</div>
+

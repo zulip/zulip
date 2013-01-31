@@ -813,4 +813,13 @@ table.floating_recipient {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+#stream-creation {
+    max-height: 80%;
+}
+
+#stream-creation .modal-body {
+    // Setting max-height to a percentage doesn't work.
+    max-height: 400px;
+    overflow-y: scroll;
 }
