@@ -30,6 +30,7 @@ exports.initialize = function () {
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
 
+    $('#submit-invitation').button();
     $('#invite-user').on('show', prepare_form_to_be_shown);
     invitee_emails.focus();
     invitee_emails.autosize();
@@ -38,21 +39,22 @@ exports.initialize = function () {
         clearForm: true,
         beforeSubmit: function(arr, $form, options) {
             reset_error_messages();
-            // The array of form data takes the following form:
-            // [ { name: 'username', value: 'jresig' }, { name: 'password', value: 'secret' } ]
             // TODO: You could alternatively parse the textarea here, and return errors to
             // the user if they don't match certain constraints (i.e. not real email addresses,
             // aren't in the right domain, etc.)
             //
             // OR, you could just let the server do it. Probably my temptation.
+            $('#submit-invitation').button('loading');
             return true;
         },
         success: function (resp, statusText, xhr, form) {
+            $('#submit-invitation').button('reset');
             invite_status.text('Users invited successfully.')
                           .addClass('alert-success')
                           .show();
         },
         error: function (xhr, error_type, xhn) {
+            $('#submit-invitation').button('reset');
             var arr = $.parseJSON(xhr.responseText);
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
