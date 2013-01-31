@@ -248,9 +248,9 @@ function compose_error(error_text, bad_input) {
 }
 
 // *Synchronously* check if a stream exists.
-// If not, displays an error and returns false.
-function check_stream_for_send(stream_name) {
+exports.check_stream_existence = function (stream_name) {
     var result = "error";
+    var error_xhr = "";
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/exists",
@@ -260,26 +260,44 @@ function check_stream_for_send(stream_name) {
             if (!data.exists) {
                 // The stream doesn't exist
                 result = "does-not-exist";
-                $('#send-status').removeClass(status_classes);
-                $('#stream-dne-name').text(stream_name);
-                $('#stream-dne').show();
-                $("#compose-send-button").removeAttr('disabled');
-                exports.hide();
-                $('#create-it').focus();
             } else if (data.subscribed) {
                 result = "subscribed";
             } else {
                 result = "not-subscribed";
             }
-            $("#home-error").hide();
         },
         error: function (xhr) {
             result = "error";
-            ui.report_error("Error checking subscription", xhr, $("#home-error"));
-            $("#stream").focus();
-            $("#compose-send-button").removeAttr('disabled');
+            error_xhr = xhr;
         }
     });
+    return [result, error_xhr];
+};
+
+
+// Checks if a stream exists. If not, displays an error and returns
+// false.
+function check_stream_for_send(stream_name) {
+    var stream_check = exports.check_stream_existence(stream_name);
+    var result = stream_check[0];
+    var xhr = stream_check[1];
+
+    if (result === "error") {
+        ui.report_error("Error checking subscription", xhr, $("#home-error"));
+        $("#stream").focus();
+        $("#compose-send-button").removeAttr('disabled');
+    } else {
+        if (result === "does-not-exist") {
+           $('#send-status').removeClass(status_classes);
+                $('#stream-dne-name').text(stream_name);
+                $('#stream-dne').show();
+                $("#compose-send-button").removeAttr('disabled');
+                exports.hide();
+                $('#create-it').focus();
+        }
+        $("#home-error").hide();
+    }
+
     return result;
 }
 
