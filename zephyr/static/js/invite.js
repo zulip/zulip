@@ -11,21 +11,33 @@ function update_subscription_checkboxes() {
                                                              subs.subscribed_streams()}));
 }
 
+function reset_error_messages() {
+    var invite_status = $('#invite_status');
+    var invitee_emails = $("#invitee_emails");
+    var invitee_emails_group = invitee_emails.closest('.control-group');
+
+    invite_status.hide().text('').removeClass('alert-error alert-warning alert-success');
+    invitee_emails_group.removeClass('warning error');
+}
+
+function prepare_form_to_be_shown() {
+    update_subscription_checkboxes();
+    reset_error_messages();
+}
+
 exports.initialize = function () {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
 
-    $('#invite-user').on('show', update_subscription_checkboxes);
+    $('#invite-user').on('show', prepare_form_to_be_shown);
     invitee_emails.focus();
     invitee_emails.autosize();
     $("#invite_user_form").ajaxForm({
         dataType: 'json',
         clearForm: true,
         beforeSubmit: function(arr, $form, options) {
-            invite_status.hide()
-                         .removeClass('alert-error alert-warning alert-success');
-            invitee_emails_group.removeClass('warning error');
+            reset_error_messages();
             // The array of form data takes the following form:
             // [ { name: 'username', value: 'jresig' }, { name: 'password', value: 'secret' } ]
             // TODO: You could alternatively parse the textarea here, and return errors to
