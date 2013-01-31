@@ -32,6 +32,9 @@ import optparse
 
 from ConfigParser import SafeConfigParser
 
+
+__version__ = "0.1.0"
+
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
 assert(requests.__version__ >= '0.12.1')
