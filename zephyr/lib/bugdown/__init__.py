@@ -4,6 +4,8 @@ import traceback
 import urlparse
 import re
 
+from django.core import mail
+
 from zephyr.lib.avatar  import gravatar_hash
 from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
@@ -185,9 +187,22 @@ def convert(md):
         # https://trac.humbughq.com/ticket/345
         html = timeout(5, _md_engine.convert, md)
     except:
-        # FIXME: Do something more reasonable here!
+        from zephyr.models import Recipient
+        from zephyr.lib.actions import internal_send_message
+
+        cleaned = _sanitize_for_log(md)
+
         html = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
+
+        # Output error to log as well as sending a humbug and email
         logging.getLogger('').error('Exception in Markdown parser: %sInput (sanitized) was: %s'
-            % (traceback.format_exc(), _sanitize_for_log(md)))
+            % (traceback.format_exc(), cleaned))
+        subject = "Markdown parser failure"
+        internal_send_message("humbug+errors@humbughq.com",
+                Recipient.STREAM, "devel", subject,
+                "Markdown parser failed, message sent to devel@")
+        mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
+                                    cleaned, traceback.format_exc()),
+                         fail_silently=False)
 
     return html
