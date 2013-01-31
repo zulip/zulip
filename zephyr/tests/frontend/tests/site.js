@@ -312,6 +312,11 @@ casper.then(function() {
     casper.waitForText('Waseemio');
 });
 casper.then(function() {
+    casper.test.assertTextExists('Create stream Waseemio', 'Modal for specifying new stream users');
+    casper.click('form#stream_creation_form button.btn.btn-primary');
+    casper.waitForText('Waseemio');
+});
+casper.then(function() {
     casper.test.assertSelectorHasText('.subscription_name', 'Waseemio', 'Subscribing to a stream');
     casper.fill('form#add_new_subscription', {stream_name: 'WASeemio'});
     casper.click('form#add_new_subscription input.btn.btn-primary');
