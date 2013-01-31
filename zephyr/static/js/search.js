@@ -15,28 +15,31 @@ function render_object_in_parts(obj) {
     // N.B. action is *not* escaped by the caller
     switch (obj.action) {
     case 'search':
-        return {action: 'Find', search: obj.query};
+        return {prefix: 'Find', query: obj.query, suffix: 'in page'};
 
     case 'stream':
-        return {action: 'Narrow to stream', search: obj.query};
+        return {prefix: 'Narrow to stream', query: obj.query, suffix: ''};
 
     case 'private_message':
-        return {action: 'Narrow to person',
-                search: typeahead_helper.render_pm_object(obj.query)};
+        return {prefix: 'Narrow to person',
+                query: typeahead_helper.render_pm_object(obj.query),
+                suffix: ''};
 
     case 'operators':
         // HACK: This label needs to be distinct from the above, because of the
         // way we identify action objects by their labels.  Using two spaces
         // after 'Narrow to' ensures this, and is invisible with standard HTML
         // whitespace handling.
-        return {action: 'Narrow to  ', search: narrow.describe(obj.operators)};
+        return {prefix: 'Narrow to  ',
+                query: narrow.describe(obj.operators),
+                suffix: ''};
     }
-    return {action: 'Error', search: 'Error'};
+    return {prefix: 'Error', query: 'Error', suffix: 'Error'};
 }
 
 function render_object(obj) {
     var parts = render_object_in_parts(obj);
-    return parts.action + " " + parts.search;
+    return parts.prefix + " " + parts.query + " " + parts.suffix;
 }
 
 exports.update_typeahead = function () {
@@ -194,8 +197,9 @@ exports.initialize = function () {
             var parts = render_object_in_parts(mapped[item]);
             // We provide action, not the user, so this should
             // be fine from a not-needing-escaping perspective.
-            return parts.action + " " +
-                typeahead_helper.highlight_with_escaping(query, parts.search);
+            return parts.prefix + " " +
+                typeahead_helper.highlight_with_escaping(query, parts.query)
+                + " " + parts.suffix;
         },
         matcher: function (item) {
             var obj = mapped[item];
