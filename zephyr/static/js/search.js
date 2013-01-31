@@ -50,9 +50,11 @@ exports.update_typeahead = function () {
         return {action: 'private_message', query: elt};
     });
     var options = streams.concat(people);
-    // The first two slots are reserved for our query.
-    options.unshift({action: 'search', query: ''});
+    // The first slot is reserved for "narrow to messages containing x",
+    // and the last one for "Find in page"
+    // (this is updated in the source function for our typeahead as well)
     options.unshift({action: 'operators', query: '', operators: []});
+    options.push({action: 'search', query: ''});
 
     mapped = {};
     labels = [];
@@ -114,7 +116,7 @@ function searchbox_sorter(items) {
     });
 
     var query = this.query;
-    $.each(['operators', 'search', 'stream', 'private_message'], function (idx, action) {
+    $.each(['operators', 'stream', 'private_message', 'search'], function (idx, action) {
         var objs = objects_by_action[action];
         if (!objs)
             return;
@@ -166,10 +168,8 @@ exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
             // Delete our old search queries (one for find-in-page, one for operators)
-            var i;
-            for (i=0; i<2; i++) {
-                delete mapped[labels.shift()];
-            }
+            delete mapped[labels.shift()]; // Operators
+            delete mapped[labels.pop()]; // Find-in-page
 
             // Add an entry for narrow by operators.
             var operators = narrow.parse(query);
@@ -187,7 +187,7 @@ exports.initialize = function () {
             }
             label = render_object(obj);
             mapped[label] = obj;
-            labels.unshift(label);
+            labels.push(label);
 
             return labels;
         },
