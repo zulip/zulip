@@ -233,9 +233,7 @@ def write_commitmsg(target, repo, opts, revs):
     raise Exception("Bad format option.")
 
 
-def edit(repo, opts, revs):
-  headers = make_header(repo, opts, revs)
-
+def edit(repo, opts, revs, headers):
   template = StringIO()
   commitmsg = StringIO()
 
@@ -298,13 +296,14 @@ def main(args):
     print >>sys.stderr, '%s: no revisions specified' % os.path.basename(args[0])
     return 2
 
+  headers = make_header(repo, opts, revs)
   if opts.edit:
-    msg = edit(repo, opts, revs)
+    msg = edit(repo, opts, revs, headers)
 
   else:
     # Just build the message.
     msg = Message()
-    for (key, value) in make_header(repo, opts, revs):
+    for (key, value) in headers:
       msg[key] = value
 
     template = StringIO()
@@ -329,9 +328,16 @@ def main(args):
         email=get_current_user_email(repo),
         site="https://staging.humbughq.com",
         verbose=True)
+    content = ""
+    for (key, value) in headers:
+      if key == "To":
+        content += "Sent a review request to @%s for\n" % (value,)
+      if key == "Subject":
+        content += str(value)
+
     client.send_message({'type': "private",
                          'to': opts.reviewers,
-                         'content': "I just sent you a review request!  Check your email for details."})
+                         'content': content})
 
     if os.environ.get('REVIEW_USE_SENDMAIL', ''):
       command = ['/usr/sbin/sendmail', '-bm', '-t']
