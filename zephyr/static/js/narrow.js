@@ -152,10 +152,14 @@ function build_filter(operators_mixed_case) {
                 break;
 
             case 'search':
-                if (message.content.toLowerCase().indexOf(operand) === -1) {
-                    if ((message.type !== 'stream') ||
-                        (message.subject.toLowerCase().indexOf(operand) === -1)) {
-                        return false;
+                var words = operand.trim().split(/\s+/);
+                var j;
+                for (j = 0; j < words.length; ++j) {
+                    if (message.content.toLowerCase().indexOf(words[j]) === -1) {
+                        if ((message.type !== 'stream') ||
+                            (message.subject.toLowerCase().indexOf(words[j]) === -1)) {
+                            return false;
+                        }
                     }
                 }
                 break;

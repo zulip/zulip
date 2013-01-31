@@ -559,12 +559,15 @@ class NarrowBuilder(object):
                     (Q(sender=self.user_profile) & Q(recipient=narrow_recipient)))
 
     def do_search(self, query, operand):
+        words = operand.split()
         if "postgres" in settings.DATABASES["default"]["ENGINE"]:
             sql = "to_tsvector('english', subject || ' ' || content) @@ to_tsquery('english', %s)"
-            return query.extra(where=[sql], params=[operand])
+            return query.extra(where=[sql], params=[" & ".join(words)])
         else:
-            return query.filter(Q(content__icontains=operand) |
-                                Q(subject__icontains=operand))
+            for word in words:
+                query = query.filter(Q(content__icontains=word) |
+                                     Q(subject__icontains=word))
+            return query
 
 
 def narrow_parameter(json):
