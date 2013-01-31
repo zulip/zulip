@@ -33,30 +33,10 @@ if len(sys.argv) > 1:
     newrev = sys.argv[2]
     refname = sys.argv[3]
 
-try:
-    if not pylibmc.Client(['127.0.0.1']).flush_all():
-        print "%sflush_all returned False%s" % (WARNING, ENDC)
-    # There doesn't seem to be a method to close a pylibmc Client object.
-except:
-    print "%sCould not flush cache:%s" % (WARNING, ENDC)
-    traceback.print_exc()
-
 subprocess.check_call(["git", "fetch"], stdout=open('/dev/null', 'w'))
 subprocess.check_call(["git", "reset", "--hard", refname], stdout=open('/dev/null', 'w'))
-#subprocess.check_call(["python", "manage.py", "syncdb"], stdout=open('/dev/null', 'w'))
 
-# Delete all .pyc files to avoid old module files hanging around
-subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/dev/null', 'w'))
-
-# Restart the FastCGI process, which is running in a shell loop in screen.
-# TODO: real daemonization
-for cmd in ('runfcgi', 'runtornado'):
-    try:
-        subprocess.check_call(["pkill", "-f", "python manage.py " + cmd])
-    except subprocess.CalledProcessError:
-        print "%sCould not kill %s; is it running?%s" % (WARNING, cmd, ENDC)
-
-print OKGREEN + "Updated deployed version of humbug application!" + ENDC
+subprocess.check_call(["./tools/restart-server"])
 
 if newrev == '0000000000000000000000000000000000000000':
     # 0000000000000000000000000000000000000000 means we're deleting the ref
