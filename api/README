@@ -5,6 +5,13 @@ The Humbug API Python bindings require the following Python libraries:
 * simplejson
 * requests (version >= 0.12 and << 1.0.0)
 
+
+#### Installing
+
+This package uses distutils, so you can just run:
+
+    python setup.py install
+
 #### Using the API
 
 For now, the only fully supported API operation is sending a message.
@@ -13,7 +20,7 @@ please make sure we know you're using them so that we can notify you
 as we make any changes to them.
 
 The easiest way to use these API bindings is to base your tools off
-of the example tools under api/examples in this distribution.
+of the example tools under examples/ in this distribution.
 
 If you place your API key in `~/.humbugrc` the Python API bindings will
 automatically read it in. The format of the config file is as follows:
@@ -56,7 +63,7 @@ msg will describe what went wrong.
 
 #### Sending messages
 
-You can use the included `api/bin/humbug-send` script to send messages via the
+You can use the included `humbug-send` script to send messages via the
 API directly from existing scripts.
 
     humbug-send hamlet@example.com cordelia@example.com -m \
