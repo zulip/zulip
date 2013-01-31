@@ -1569,6 +1569,14 @@ int x = 3
         good = "<p>~~~~~~~~xxxxxxxxx:  xxxxxxxxxxxx xxxxx x xxxxxxxx~~~~~~</p>"
         self.common_bugdown_test(bad, good)
 
+    def test_italic_bold(self):
+        '''Italics (*foo*, _foo_) and bold syntax __foo__ are disabled.
+           Bold **foo** still works.'''
+        self.common_bugdown_test('_foo_',   '<p>_foo_</p>')
+        self.common_bugdown_test('*foo*',   '<p>*foo*</p>')
+        self.common_bugdown_test('__foo__', '<p>__foo__</p>')
+        self.common_bugdown_test('**foo**', '<p><strong>foo</strong></p>')
+
 class Runner(DjangoTestSuiteRunner):
     option_list = (
         optparse.make_option('--skip-generate',
