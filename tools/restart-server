@@ -29,7 +29,7 @@ subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/
 
 # Restart the FastCGI process, which is running in a shell loop in screen.
 # TODO: real daemonization
-for cmd in ('runfcgi', 'runtornado'):
+for cmd in ('runfcgi', 'runtornado', "process_user_activity"):
     try:
         subprocess.check_call(["pkill", "-f", "python manage.py " + cmd])
     except subprocess.CalledProcessError:

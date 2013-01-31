@@ -1,0 +1,2 @@
+#!/bin/sh -xe
+while true; do python manage.py process_user_activity; sleep 1; done
