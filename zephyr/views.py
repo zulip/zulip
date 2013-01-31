@@ -28,7 +28,7 @@ from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
 from zephyr.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, POST, authenticated_json_view, \
-    to_non_negative_int, json_to_dict, json_to_list, \
+    to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
@@ -928,7 +928,7 @@ def json_add_subscriptions(request, user_profile):
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = POST('subscriptions', json_to_list),
-                              invite_only = POST('invite_only', default=False),
+                              invite_only = POST('invite_only', json_to_bool, default=False),
                               principals = POST('principals', json_to_list, default=None),):
 
     stream_names = []
@@ -945,6 +945,7 @@ def add_subscriptions_backend(request, user_profile,
     else:
         subscribers = [user_profile]
 
+    private_streams = {}
     result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
     for stream_name in set(stream_names):
         stream, created = create_stream_if_needed(user_profile.realm, stream_name, invite_only = invite_only)
@@ -959,6 +960,8 @@ def add_subscriptions_backend(request, user_profile,
             else:
                 result["already_subscribed"][subscriber.user.email].append(stream.name)
 
+        private_streams[stream.name] = stream.invite_only
+
     # Inform the user if someone else subscribed them to stuff
     if principals and result["subscribed"]:
         for email, subscriptions in result["subscribed"].iteritems():
@@ -968,14 +971,18 @@ def add_subscriptions_backend(request, user_profile,
 
             if len(subscriptions) == 1:
                 msg = ("Hi there!  We thought you'd like to know that %s just "
-                       "subscribed you to stream '%s'"
-                       % (user_profile.full_name, subscriptions[0]))
+                       "subscribed you to the%s stream '%s'"
+                       % (user_profile.full_name,
+                          " **invite-only**" if private_streams[subscriptions[0]] else "",
+                          subscriptions[0]))
             else:
                 msg = ("Hi there!  We thought you'd like to know that %s just "
                        "subscribed you to the following streams: \n\n"
                        % (user_profile.full_name,))
                 for stream in subscriptions:
-                    msg += "* %s\n" % (stream,)
+                    msg += "* %s%s\n" % (
+                        stream,
+                        " (**invite-only**)" if private_streams[stream] else "")
             internal_send_message("humbug+notifications@humbughq.com",
                                   Recipient.PERSONAL, email, "", msg)
 
