@@ -949,8 +949,10 @@ def add_subscriptions_backend(request, user_profile,
     result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
     for stream_name in set(stream_names):
         stream, created = create_stream_if_needed(user_profile.realm, stream_name, invite_only = invite_only)
-        # Users cannot subscribe themselves to an invite-only stream
-        if stream.invite_only and not principals and not created:
+        # Users cannot subscribe themselves or other people to an invite-only
+        # stream they're not on.
+        if stream.invite_only and not created and \
+                stream.name not in [sub[0] for sub in gather_subscriptions(user_profile)]:
             return json_error("Unable to join an invite-only stream")
 
         for subscriber in subscribers:
