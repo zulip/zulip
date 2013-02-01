@@ -243,6 +243,9 @@ class humbug_app_frontend {
     command  => "pip install django-pipeline",
     onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/django-pipeline"
   }
+
+  # TODO: Add /usr/lib/nagios/plugins/check_send_receive_time ->
+  # /home/humbug/humbug/api/humbug/bots/check_send_receive.py symlink
 }
 
 # TODO: Setup dotdeb repository for this, including apt preferences to
@@ -394,6 +397,15 @@ class humbug_postgres {
   exec { "disable_logrotate":
     command => "dpkg-divert --rename --divert /etc/logrotate.d/postgresql-common.disabled --add /etc/logrotate.d/postgresql-common"
   }
+}
+
+class humbug_git {
+  $git_packages = [ ]
+  package { $git_packages: ensure => "installed" }
+
+  # TODO: Should confirm git repos at /srv/git and then setup
+  # /srv/git/humbug.git/hooks/post-receive ->
+  # /home/humbug/humbug/tools/post-receive
 }
 
 class humbug_rabbit {
