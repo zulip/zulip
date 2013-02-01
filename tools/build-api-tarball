@@ -1,8 +1,5 @@
 #!/bin/sh -x
-ref="$1"
-if [ -z "$ref" ]; then
-    echo "You must specify the ref to base the API tarball on."
-    exit 1
-fi
-cd api/humbug
-git archive --prefix=humbug/ -o /tmp/humbug-api.tar.gz "$ref" examples/ humbug.py __init__.py README bin/
+
+cd api/
+python setup.py sdist
+echo API tarball written to api/dist
