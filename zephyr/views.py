@@ -608,7 +608,7 @@ class NarrowBuilder(object):
     def do_search(self, query, operand):
         words = operand.split()
         if "postgres" in settings.DATABASES["default"]["ENGINE"]:
-            sql = "to_tsvector('english', subject || ' ' || content) @@ to_tsquery('english', %s)"
+            sql = "search_tsvector @@ to_tsquery('pg_catalog.english', %s)"
             return query.extra(where=[sql], params=[" & ".join(words)])
         else:
             for word in words:
