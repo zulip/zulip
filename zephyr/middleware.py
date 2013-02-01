@@ -25,6 +25,13 @@ class LogRequests(object):
         logger.info('%-15s %-7s %3d %.3fs %s'
             % (remote_ip, request.method, response.status_code,
                time_delta, request.get_full_path()))
+        # Log some additional data whenever we return a 40x error
+        if 400 <= response.status_code < 500:
+            try:
+                user_id = request.user.id
+            except:
+                user_id = "unknown"
+            logger.info('status=%3d, data=%s, uid=%s' % (response.status_code, response.content, user_id))
         return response
 
 class JsonErrorHandler(object):
