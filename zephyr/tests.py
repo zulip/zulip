@@ -1577,6 +1577,42 @@ int x = 3
         self.common_bugdown_test('__foo__', '<p>__foo__</p>')
         self.common_bugdown_test('**foo**', '<p><strong>foo</strong></p>')
 
+    def test_linkify(self):
+        def replaced(payload, url):
+            return payload % ('<a href="URL" target="_blank" title="URL">URL</a>'.replace('URL', url),)
+
+        conversions = \
+        [('http://www.google.com',                     "<p>%s</p>",                         'http://www.google.com'),
+         ('https://www.google.com',                    "<p>%s</p>",                         'https://www.google.com'),
+         (' some text https://www.google.com/',        "<p>some text %s</p>",               'https://www.google.com/'),
+         ('with short example.com url',                "<p>with short %s url</p>",          'example.com'),
+         ('t.co',                                      "<p>%s</p>",                         't.co'),
+         ('go to views.org please',                    "<p>go to %s please</p>",            'views.org'),
+         ('http://foo.com/blah_blah/',                 "<p>%s</p>",                         'http://foo.com/blah_blah/'),
+         ('python class views.py is',                  "<p>python class views.py is</p>",   ''),
+         ('with www www.humbughq.com/foo ok?',         "<p>with www %s ok?</p>",            'www.humbughq.com/foo'),
+         ('allow questions like foo.com?',             "<p>allow questions like %s?</p>",   'foo.com'),
+         ('"is.gd/foo/ "',                             "<p>\"%s \"</p>",                    'is.gd/foo/'),
+         ('end of sentence https://t.co.',             "<p>end of sentence %s.</p>",        'https://t.co'),
+         ('(Something like http://foo.com/blah_blah)', "<p>(Something like %s)</p>",        'http://foo.com/blah_blah'),
+         ('"is.gd/foo/"',                              "<p>\"%s\"</p>",                     'is.gd/foo/'),
+         ('end with a quote www.google.com"',          "<p>end with a quote %s\"</p>",      'www.google.com'),
+
+         ('http://example.com/something?with,commas,in,url, but not at end',
+                        "<p>%s but not at end</p>",         'http://example.com/something?with,commas,in,url,'),
+         (' some text https://www.google.com/baz_(match)?with=foo&bar=baz with extras',
+                        "<p>some text %s with extras</p>",  'https://www.google.com/baz_(match)?with=foo&amp;bar=baz'),
+         ('hash it http://foo.com/blah_(wikipedia)_blah#cite-1',
+                        "<p>hash it %s</p>",                'http://foo.com/blah_(wikipedia)_blah#cite-1'),]
+
+        for inline_url, reference, url in conversions:
+            try:
+                match = replaced(reference, url)
+            except TypeError:
+                match = reference
+            converted = convert(inline_url)
+            self.assertEqual(match, converted)
+
 class Runner(DjangoTestSuiteRunner):
     option_list = (
         optparse.make_option('--skip-generate',
