@@ -1,4 +1,13 @@
 #!/bin/bash -e
 
+target='zephyr'
+
+case "$1" in
+    zephyr*)
+      target="$1"
+      shift
+      ;;
+esac
+
 cd "$(dirname "$0")"/..
-./manage.py test zephyr --skip-generate --settings=humbug.test_settings "$@"
+./manage.py test "$target" --skip-generate --settings=humbug.test_settings "$@"
