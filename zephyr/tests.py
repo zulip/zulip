@@ -1578,11 +1578,22 @@ int x = 3
         self.common_bugdown_test('**foo**', '<p><strong>foo</strong></p>')
 
     def test_linkify(self):
-        def replaced(payload, url):
-            return payload % ('<a href="URL" target="_blank" title="URL">URL</a>'.replace('URL', url),)
+        def replaced(payload, url, phrase=''):
+            if url is None: # xss type
+                href = ''
+                url = phrase
+            elif url[:4] == 'http':
+                href = url
+            elif '@' in url:
+                href = 'mailto:' + url
+            else:
+                href = 'http://' + url
+            return payload % ("<a href=\"%s\" target=\"_blank\" title=\"%s\">%s</a>" % (href, href, url),)
 
         conversions = \
-        [('http://www.google.com',                     "<p>%s</p>",                         'http://www.google.com'),
+        [
+         # General linkification tests
+         ('http://www.google.com',                     "<p>%s</p>",                         'http://www.google.com'),
          ('https://www.google.com',                    "<p>%s</p>",                         'https://www.google.com'),
          (' some text https://www.google.com/',        "<p>some text %s</p>",               'https://www.google.com/'),
          ('with short example.com url',                "<p>with short %s url</p>",          'example.com'),
@@ -1598,6 +1609,15 @@ int x = 3
          ('"is.gd/foo/"',                              "<p>\"%s\"</p>",                     'is.gd/foo/'),
          ('end with a quote www.google.com"',          "<p>end with a quote %s\"</p>",      'www.google.com'),
 
+         # XSS Sanitization
+         ('javascript:alert(\'hi\');.com',              "<p>%s</p>",                         None), # None marks xss
+         ('javascript:foo.com',                         "<p>%s</p>",                         None),
+         ('about:blank.com',                            "<p>%s</p>",                         None),
+
+         # Emails
+         ('Sent to othello@humbughq.com',               "<p>Sent to %s</p>",                 'othello@humbughq.com'),
+         ('http://leo@foo.com/my/file',                 "<p>%s</p>",                         None),
+
          ('http://example.com/something?with,commas,in,url, but not at end',
                         "<p>%s but not at end</p>",         'http://example.com/something?with,commas,in,url,'),
          (' some text https://www.google.com/baz_(match)?with=foo&bar=baz with extras',
@@ -1607,7 +1627,7 @@ int x = 3
 
         for inline_url, reference, url in conversions:
             try:
-                match = replaced(reference, url)
+                match = replaced(reference, url, phrase=inline_url)
             except TypeError:
                 match = reference
             converted = convert(inline_url)
