@@ -24,13 +24,51 @@ def fixup_link(link):
     link.set('target', '_blank')
     link.set('title',  link.get('href'))
 
+
+def sanitize_url(url):
+    """
+    Sanitize a url against xss attacks.
+    See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
+    """
+    try:
+        parts = urlparse.urlparse(url.replace(' ', '%20'))
+        scheme, netloc, path, params, query, fragment = parts
+    except ValueError:
+        # Bad url - so bad it couldn't be parsed.
+        return ''
+
+    # Humbug modification: If scheme is not specified, assume http://
+    # It's unlikely that users want relative links within humbughq.com.
+    # We re-enter sanitize_url because netloc etc. need to be re-parsed.
+    if not scheme:
+        return sanitize_url('http://' + url)
+
+    locless_schemes = ['', 'mailto', 'news']
+    if netloc == '' and scheme not in locless_schemes:
+        # This fails regardless of anything else.
+        # Return immediately to save additional proccessing
+        return ''
+
+    for part in parts[2:]:
+        if ":" in part:
+            # Not a safe url
+            return ''
+
+    # Url passes all tests. Return url as-is.
+    return urlparse.urlunparse(parts)
+
 class AutoLink(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
         url = match.group('url')
         a = markdown.util.etree.Element('a')
-        a.set('href', url)
+        if '@' in url:
+            href = 'mailto:' + url
+        else:
+            href = url
+        a.set('href', sanitize_url(href))
         a.text = url
         fixup_link(a)
+
         return a
 
 class UListProcessor(markdown.blockprocessors.OListProcessor):
@@ -85,44 +123,12 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         if href:
             if href[0] == "<":
                 href = href[1:-1]
-            el.set("href", self.sanitize_url(self.unescape(href.strip())))
+            el.set("href", sanitize_url(self.unescape(href.strip())))
         else:
             el.set("href", "")
 
         fixup_link(el)
         return el
-
-    def sanitize_url(self, url):
-        """
-        Sanitize a url against xss attacks.
-        See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
-        """
-        try:
-            parts = urlparse.urlparse(url.replace(' ', '%20'))
-            scheme, netloc, path, params, query, fragment = parts
-        except ValueError:
-            # Bad url - so bad it couldn't be parsed.
-            return ''
-
-        # Humbug modification: If scheme is not specified, assume http://
-        # It's unlikely that users want relative links within humbughq.com.
-        # We re-enter sanitize_url because netloc etc. need to be re-parsed.
-        if not scheme:
-            return self.sanitize_url('http://' + url)
-
-        locless_schemes = ['', 'mailto', 'news']
-        if netloc == '' and scheme not in locless_schemes:
-            # This fails regardless of anything else.
-            # Return immediately to save additional proccessing
-            return ''
-
-        for part in parts[2:]:
-            if ":" in part:
-                # Not a safe url
-                return ''
-
-        # Url passes all tests. Return url as-is.
-        return urlparse.urlunparse(parts)
 
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
