@@ -480,6 +480,7 @@ input.recipient_box {
 }
 
 #navbar-buttons ul.nav {
+    margin: 0px;
     /* Firefox-specific hack; Technically white-space: nowrap applies to
        text, not "stuff in general", so in Firefox without this, the
        <li>s all get smushed vertically (in Chrome and Safari, they

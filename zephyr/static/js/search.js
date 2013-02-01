@@ -148,7 +148,7 @@ function update_buttons_with_focus(focused) {
         // Shrink the searchbox to make room for the buttons.
         var new_width = search_query.width() -
             $('.search_button').outerWidth(true)*3;
-        search_query.width(new_width);
+        search_query.width(new_width-1);
         $("#search_arrows").addClass("input-append");
         $('.search_button').show();
     } else {
