@@ -335,8 +335,10 @@ def main(args):
       if key == "Subject":
         content += str(value)
 
-    client.send_message({'type': "private",
-                         'to': opts.reviewers,
+    subject = "Reviews for " + ", ".join(x.split("@")[0] for x in opts.reviewers)
+    client.send_message({'type': "stream",
+                         'subject': subject[:60],
+                         'to': "review",
                          'content': content})
 
     if os.environ.get('REVIEW_USE_SENDMAIL', ''):
