@@ -54,7 +54,10 @@
   <div class="span7 compose" id="compose">
     <div class="close composebox-close" onclick="compose.cancel()">&times;</div>
     <div class="message_comp">
-      <div class="alert" id="send-status"></div>
+      <div class="alert" id="send-status">
+	<span id="error-msg"></span>
+	<span class="send-status-close">&times;</span>
+      </div>
       <form id="send_message_form" action="/json/send_message" method="post">
         {% csrf_token %}
         <table class="compose_table">

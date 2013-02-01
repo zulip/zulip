@@ -495,17 +495,9 @@ exports.hide_loading_more_messages_indicator = function () {
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
-
-    // Prepare the click handler for subbing to a new stream to which
-    // you have composed a message.
-    $('#create-it').click(function () {
-        subs.subscribe_for_send(compose.stream_name(), $('#stream-dne'));
-    });
-
-    // Prepare the click handler for subbing to an existing stream.
-    $('#sub-it').click(function () {
-        subs.subscribe_for_send(compose.stream_name(), $('#stream-nosub'));
-    });
+    $('#send-status .send-status-close').click(
+        function () { $('#send-status').stop(true).fadeOut(500); }
+    );
 
     function scroll_finished() {
         if ($('#home').hasClass('active')) {

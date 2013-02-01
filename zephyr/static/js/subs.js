@@ -448,25 +448,6 @@ exports.setup_page = function () {
     });
 };
 
-exports.subscribe_for_send = function (stream, prompt_button) {
-    $.ajax({
-        type:     'POST',
-        url:      '/json/subscriptions/add',
-        data: {"subscriptions": JSON.stringify([stream]) },
-        dataType: 'json',
-        timeout:  10*60*1000, // 10 minutes in ms
-        success: function (response) {
-            mark_subscribed(stream);
-            compose.finish();
-            if (prompt_button !== undefined)
-                prompt_button.stop(true).fadeOut(500);
-        },
-        error: function (xhr, error_type, exn) {
-            ui.report_error("Unable to subscribe", xhr, $("#home-error"));
-        }
-    });
-};
-
 exports.have = function (stream_name) {
     var sub = stream_info[stream_name.toLowerCase()];
     if (sub !== undefined && sub.subscribed) {

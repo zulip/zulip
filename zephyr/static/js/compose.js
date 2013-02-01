@@ -114,6 +114,15 @@ exports.cancel = function () {
     $(document).trigger($.Event('compose_canceled.zephyr'));
 };
 
+function compose_error(error_text, bad_input) {
+    $('#send-status').removeClass(status_classes)
+               .addClass('alert-error')
+               .stop(true).fadeTo(0, 1);
+    $('#error-msg').text(error_text);
+    $("#compose-send-button").removeAttr('disabled');
+    bad_input.focus().select();
+}
+
 var send_options;
 
 function send_message() {
@@ -166,16 +175,7 @@ function send_message() {
                 // a nice response.
                 response += ": " + $.parseJSON(xhr.responseText).msg;
             }
-            show(is_composing_message, $("#new_message_content"));
-            send_status.removeClass(status_classes)
-                       .addClass('alert-error')
-                       .text(response)
-                       .append($('<span />')
-                           .addClass('send-status-close').html('&times;')
-                           .click(function () { send_status.stop(true).fadeOut(500); }))
-                       .stop(true).fadeTo(0,1);
-
-            $("#compose-send-button").removeAttr('disabled');
+            compose_error(response, $('#new_message_content'));
         }
     });
 
@@ -250,15 +250,6 @@ exports.subject         = get_or_set('subject');
 exports.message_content = get_or_set('new_message_content', true);
 exports.recipient       = get_or_set('private_message_recipient');
 
-function compose_error(error_text, bad_input) {
-    $('#send-status').removeClass(status_classes)
-               .addClass('alert-error')
-               .text(error_text)
-               .stop(true).fadeTo(0, 1);
-    $("#compose-send-button").removeAttr('disabled');
-    bad_input.focus().select();
-}
-
 // *Synchronously* check if a stream exists.
 exports.check_stream_existence = function (stream_name) {
     var result = "error";
@@ -270,7 +261,6 @@ exports.check_stream_existence = function (stream_name) {
         async: false,
         success: function (data) {
             if (!data.exists) {
-                // The stream doesn't exist
                 result = "does-not-exist";
             } else if (data.subscribed) {
                 result = "subscribed";
@@ -325,9 +315,14 @@ function validate_stream_message() {
         return false;
     }
 
+    var response;
+
     if (!subs.have(stream_name)) {
         switch(check_stream_for_send(stream_name)) {
         case "does-not-exist":
+            response = 'The stream "' + stream_name + '" does not exist.';
+            compose_error(response, $('#stream'));
+            return false;
         case "error":
             return false;
         case "subscribed":
@@ -335,12 +330,8 @@ function validate_stream_message() {
             // browser window doesn't know it.
             return true;
         case "not-subscribed":
-            $('#send-status').removeClass(status_classes);
-            $('#stream-nosub-name').text(stream_name);
-            $('#stream-nosub').show();
-            $("#compose-send-button").removeAttr('disabled');
-            exports.hide();
-            $('#sub-it').focus();
+            response = 'You\'re not subscribed to the stream "' + stream_name + '".';
+            compose_error(response, $('#stream'));
             return false;
         }
     }
