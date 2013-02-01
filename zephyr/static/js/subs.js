@@ -434,14 +434,15 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
     });
 }
 
-function people_sort(person1, person2) {
+function people_cmp(person1, person2) {
     // Compares objects of the form used in people_list.
-    if (person1.full_name < person2.full_name) {
+    var name_cmp = person1.full_name.localeCompare(person2.full_name);
+    if (name_cmp < 0) {
         return -1;
-    } else if (person1.full_name > person2.full_name) {
+    } else if (name_cmp > 0) {
         return 1;
     }
-    return person1.email < person2.email ? -1 : 1;
+    return person1.email.localeCompare(person2.email);
 }
 
 function show_new_stream_modal() {
@@ -453,7 +454,7 @@ function show_new_stream_modal() {
     });
 
     $('#people_to_add').html(templates.new_stream_users({
-        users: people_minus_you.sort(people_sort)
+        users: people_minus_you.sort(people_cmp)
     }));
     $('#stream-creation').modal("show");
 }
