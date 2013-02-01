@@ -113,10 +113,10 @@ function process_hotkey(e) {
         }
         return true;
     case 99: // 'c': compose
-        compose.start('stream');
+        compose.set_mode('stream');
         return true;
     case 67: // 'C': compose private message
-        compose.start('private');
+        compose.set_mode('private');
         return true;
     case  13: // Enter: respond to message (unless we need to do something else)
         if (search.keyboard_currently_finding()) {
