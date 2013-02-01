@@ -167,7 +167,7 @@ def get_stream(stream_name, realm):
     else:
         realm_id = realm
     try:
-        return Stream.objects.get(name__iexact=stream_name, realm_id=realm_id)
+        return Stream.objects.get(name__iexact=stream_name.strip(), realm_id=realm_id)
     except Stream.DoesNotExist:
         return None
 
