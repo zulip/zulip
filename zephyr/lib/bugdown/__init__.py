@@ -147,14 +147,16 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
         md.inlinePatterns.add('link', LinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
 
-        # A link starts at a word boundary, and ends at space or end-of-input.
-        # But any trailing punctuation (other than /) is not included.
-        # We accomplish this with a non-greedy match followed by a greedy
-        # lookahead assertion.
+        # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
         #
-        # markdown.inlinepatterns.Pattern compiles this with re.UNICODE, which
-        # is important because we're using \w.
-        link_regex = r'\b(?P<url>https?://[^\s]+?)(?=[^\w/]*(\s|\Z))'
+        # We detect a url by checking for the TLD, and building around it.
+        #
+        # To support () in urls but not match ending ) when a url is inside a parenthesis,
+        # we match at maximum one set of matching parens in a url. We could extend this
+        # to match two parenthetical groups, at the cost of more regex complexity.
+        tlds = '|'.join(['com', 'co', 'biz', 'gd', 'co.uk', 'org', 'net', 'ly', 'edu', 'mil',
+                         'gov', 'info', 'me', 'it', '.ca', 'tv', 'fm',])
+        link_regex = r"\b(?P<url>[^\s]+\.(%s)(?:/[^\s()\"]*|([^\s()\"]*\([^\s()\"]+\)[^\s()\"]*))?)(?=[\s:;\?\),\.\'\"]|\Z)" % (tlds,)
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
         md.preprocessors.add('hanging_ulists',
