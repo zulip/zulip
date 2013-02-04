@@ -285,7 +285,7 @@ def process_notice(notice, log):
         logger.debug("Skipping ... %s/%s/%s" %
                      (zephyr_class, notice.instance, is_personal))
         return
-    if notice.format.endswith("@(@color(blue))"):
+    if notice.format.startswith("Zephyr error: See") or notice.format.endswith("@(@color(blue))"):
         logger.debug("Skipping message we got from Humbug!")
         return
 
@@ -441,7 +441,7 @@ def forward_to_zephyr(message):
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].split("\n"))
 
-    zwrite_args = ["zwrite", "-n", "-s", zsig_fullname, "-F", "http://zephyr.1ts.org/wiki/df @(@color(blue))"]
+    zwrite_args = ["zwrite", "-n", "-s", zsig_fullname, "-F", "Zephyr error: See http://zephyr.1ts.org/wiki/df"]
     if message['type'] == "stream":
         zephyr_class = message["display_recipient"]
         instance = message["subject"]
