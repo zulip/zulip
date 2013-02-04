@@ -20,7 +20,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_full_name, do_change_enable_desktop_notifications, \
     do_activate_user, add_default_subs, do_create_user, do_send_message, \
     log_subscription_property_change, internal_send_message, \
-    create_stream_if_needed, gather_subscriptions
+    create_stream_if_needed, gather_subscriptions, subscribed_to_stream
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_active, isnt_mit
 from django.views.decorators.csrf import csrf_exempt, requires_csrf_token
@@ -951,8 +951,7 @@ def add_subscriptions_backend(request, user_profile,
         stream, created = create_stream_if_needed(user_profile.realm, stream_name, invite_only = invite_only)
         # Users cannot subscribe themselves or other people to an invite-only
         # stream they're not on.
-        if stream.invite_only and not created and \
-                stream.name not in [sub[0] for sub in gather_subscriptions(user_profile)]:
+        if stream.invite_only and not created and not subscribed_to_stream(user_profile, stream):
             return json_error("Unable to join an invite-only stream")
 
         for subscriber in subscribers:
@@ -1008,6 +1007,10 @@ def get_subscribers_backend(request, user_profile, stream_name=POST('stream')):
     stream = get_stream(stream_name, user_profile.realm)
     if stream is None:
         return json_error("Stream does not exist: %s" % stream_name)
+
+    if stream.invite_only and not subscribed_to_stream(user_profile, stream):
+        return json_error("Unable to retrieve subscribers for invite-only stream")
+
     subscriptions = Subscription.objects.filter(recipient__type=Recipient.STREAM,
                                                 recipient__type_id=stream.id,
                                                 active=True).select_related()

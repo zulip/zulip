@@ -346,6 +346,17 @@ def process_user_activity_event(event):
     query = event["query"]
     return do_update_user_activity(user_profile, client, query, log_time)
 
+def subscribed_to_stream(user_profile, stream):
+    try:
+        if Subscription.objects.get(user_profile=user_profile,
+                                    active=True,
+                                    recipient__type=Recipient.STREAM,
+                                    recipient__type_id=stream.id):
+            return True
+        return False
+    except Subscription.DoesNotExist:
+        return False
+
 def gather_subscriptions(user_profile):
     # This is a little awkward because the StreamColor table has foreign keys
     # to Subscription, but not vice versa, and not all Subscriptions have a
