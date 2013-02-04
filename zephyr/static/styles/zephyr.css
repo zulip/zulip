@@ -125,6 +125,21 @@ td.pointer {
     background-color: #08c;
 }
 
+/* Adjust certain message elements so they still
+   stand out against the grey background */
+
+.selected_message pre {
+    background-color: white;
+}
+
+.selected_message code {
+    background-color: white;
+}
+
+.selected_message blockquote {
+    border-left-color: #BBB;
+}
+
 .message_picture {
     vertical-align: top;
     text-align: right;
