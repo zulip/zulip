@@ -1388,11 +1388,13 @@ class InviteOnlyStreamTest(AuthedTestCase):
 
         # Subscribing oneself to an invite-only stream is not allowed
         email = "othello@humbughq.com"
+        self.login(email)
         result = self.common_subscribe_to_stream(email, '["Saxony"]')
         self.assert_json_error(result, "Unable to join an invite-only stream")
 
         # Inviting another user to an invite-only stream is allowed
         email = 'hamlet@humbughq.com'
+        self.login(email)
         result = self.common_subscribe_to_stream(
             email, '["Saxony"]',
             extra_post_data={'principals': simplejson.dumps(["othello@humbughq.com"])})
