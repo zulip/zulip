@@ -1,2 +1,2 @@
-#!/bin/sh -xe
+#!/bin/sh -x
 while true; do python manage.py runfcgi socket=$(pwd)/fastcgi-socket outlog=$(pwd)/app.out errlog=$(pwd)/app.err daemonize=False; sleep 1; done

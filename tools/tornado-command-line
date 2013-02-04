@@ -1,2 +1,2 @@
-#!/bin/sh -xe
+#!/bin/sh -x
 while true; do python manage.py runtornado localhost:9993; sleep 1; done
