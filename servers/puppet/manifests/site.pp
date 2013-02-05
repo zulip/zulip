@@ -426,7 +426,14 @@ class humbug_bots {
     mode   => 640,
   }
 
-  #TODO: Need to install our supervisor config
+  file { '/etc/supervisor/conf.d/feedback-bot.conf':
+    require => Package['supervisor'],
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => 640,
+    source  => "/root/humbug/servers/puppet/files/supervisor/conf.d/feedback-bot.conf",
+  }
 }
 
 class { "humbug_base": }
