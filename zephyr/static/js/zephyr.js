@@ -343,6 +343,7 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
 
         if (message.is_stream) {
             message.background_color = subs.get_color(message.display_recipient);
+            message.invite_only = subs.get_invite_only(message.display_recipient);
         }
 
         messages_to_render.push(message);

@@ -203,6 +203,14 @@ exports.get_color = function (stream_name) {
     return stream_info[lstream_name].color;
 };
 
+exports.get_invite_only = function (stream_name) {
+    var lstream_name = stream_name.toLowerCase();
+    if (stream_info[lstream_name] === undefined) {
+        return false;
+    }
+    return stream_info[lstream_name].invite_only;
+};
+
 function get_disjoint_list(list1, list2) {
     return $.grep(list1, function (elt) {
         return $.inArray(elt, list2) === -1;
