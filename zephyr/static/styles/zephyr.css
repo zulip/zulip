@@ -813,6 +813,7 @@ table.floating_recipient {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
 
 #stream-creation {
     max-height: 80%;
