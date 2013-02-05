@@ -1378,6 +1378,28 @@ class InviteOnlyStreamTest(AuthedTestCase):
         result = self.client.post("/api/v1/subscriptions/add", post_data)
         return result
 
+    def test_list_respects_invite_only_bit(self):
+        """
+        Make sure that /json/subscriptions/list properly returns
+        the invite-only bit for streams that are invite-only
+        """
+        email = 'hamlet@humbughq.com'
+        self.login(email)
+
+        result1 = self.common_subscribe_to_stream(email, '["Saxony"]', invite_only=True)
+        self.assert_json_success(result1)
+        result2 = self.common_subscribe_to_stream(email, '["Normandy"]', invite_only=False)
+        self.assert_json_success(result2)
+        result = self.client.post("/json/subscriptions/list", {})
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        self.assertIn("subscriptions", json)
+        for sub in json["subscriptions"]:
+            if sub['name'] == "Normandy":
+                self.assertEqual(sub['invite_only'], False, "Normandy was mistakenly marked invite-only")
+            if sub['name'] == "Saxony":
+                self.assertEqual(sub['invite_only'], True, "Saxony was not properly marked invite-only")
+
     def test_inviteonly(self):
         # Creating an invite-only stream is allowed
         email = 'hamlet@humbughq.com'
