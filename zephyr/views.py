@@ -118,12 +118,6 @@ def send_signup_message(sender, signups_stream, user_profile, internal=False):
 def notify_new_user(user_profile, internal=False):
     send_signup_message("humbug+signups@humbughq.com", "signups", user_profile, internal)
 
-    if user_profile.realm.domain == "customer29.invalid":
-        try:
-            send_signup_message("bot1@customer29.invalid", "signups", user_profile, internal)
-        except UserProfile.DoesNotExist:
-            pass
-
 class PrincipalError(JsonableError):
     def __init__(self, principal):
         self.principal = principal
