@@ -328,14 +328,14 @@ def main(args):
         email=get_current_user_email(repo),
         site="https://staging.humbughq.com",
         verbose=True)
-    content = ""
-    for (key, value) in headers:
-      if key == "To":
-        content += "Sent a review request to @%s for\n" % (value,)
-      if key == "Subject":
-        content += str(value)
 
-    subject = "Reviews for " + ", ".join(x.split("@")[0] for x in opts.reviewers)
+    reviewer_usernames = [x.split("@")[0] for x in opts.reviewers]
+
+    content = ("Sent a review request to %s for\n%s" %
+        (' '.join('@'+x for x in reviewer_usernames),
+         msg.get('Subject', '<unknown>')))
+    subject = "Reviews for " + ", ".join(reviewer_usernames)
+
     client.send_message({'type': "stream",
                          'subject': subject[:60],
                          'to': "review",
