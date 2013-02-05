@@ -28,10 +28,10 @@ class LogRequests(object):
         # Log some additional data whenever we return a 40x error
         if 400 <= response.status_code < 500:
             try:
-                user_id = request.user.id
+                email = request._email
             except:
-                user_id = "unknown"
-            logger.info('status=%3d, data=%s, uid=%s' % (response.status_code, response.content, user_id))
+                email = "unknown"
+            logger.info('status=%3d, data=%s, uid=%s' % (response.status_code, response.content, email))
         return response
 
 class JsonErrorHandler(object):

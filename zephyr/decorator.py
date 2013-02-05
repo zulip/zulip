@@ -76,6 +76,7 @@ def authenticated_api_view(view_func):
         if api_key != user_profile.api_key:
             return json_error("Invalid API key for user '%s'" % (email,))
         request._client = client
+        request._email = email
         update_user_activity(request, user_profile, client)
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
@@ -90,6 +91,7 @@ def authenticate_log_and_execute_json(request, client, view_func, *args, **kwarg
         user_profile = get_tornado_user_profile(request.user.id)
     else:
         user_profile = UserProfile.objects.select_related().get(user=request.user)
+    request._email = user_profile.user.email
     update_user_activity(request, user_profile, client)
     return view_func(request, user_profile, *args, **kwargs)
 
