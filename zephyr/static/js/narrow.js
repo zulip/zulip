@@ -28,6 +28,21 @@ exports.operators = function () {
     return current_operators;
 };
 
+/* Operators we should send to the server. */
+exports.public_operators = function () {
+    var safe_to_return;
+    safe_to_return = [];
+    $.each(current_operators, function (index, value) {
+        // Currently just filter out the "in" keyword.
+        if (value[0] !== "in") {
+            safe_to_return.push(value);
+        }
+    });
+    if (safe_to_return.length !== 0) {
+        return safe_to_return;
+    }
+};
+
 var allow_collapse;
 
 exports.allow_collapse = function () {

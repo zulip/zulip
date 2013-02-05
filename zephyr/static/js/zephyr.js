@@ -647,7 +647,7 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
         data.stream = lurk_stream;
 
     if (for_narrow && narrow.active())
-        data.narrow = JSON.stringify(narrow.operators());
+        data.narrow = JSON.stringify(narrow.public_operators());
 
     function process_result(messages) {
         $('#connection-error').hide();
