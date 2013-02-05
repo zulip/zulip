@@ -819,7 +819,7 @@ table.floating_recipient {
 }
 
 #stream-creation .modal-body {
-    // Setting max-height to a percentage doesn't work.
+    /* Setting max-height to a percentage doesn't work. */
     max-height: 400px;
     overflow-y: scroll;
 }
