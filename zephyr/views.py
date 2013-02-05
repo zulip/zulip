@@ -324,13 +324,13 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
     for email in invitee_emails:
         if email == '':
             continue
-        try:
-            validators.validate_email(email)
-        except ValidationError:
+
+        if not validators.email_re.match(email):
             errors.append((email, "Invalid address."))
             continue
 
-        if email.split('@')[-1] != user_profile.realm.domain:
+        if user_profile.realm.restricted_to_domain and \
+                email.split('@', 1)[-1] != user_profile.realm.domain:
             errors.append((email, "Outside your domain."))
             continue
 
