@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import glob
 import humbug
 
 from distutils.core import setup
@@ -20,6 +19,6 @@ setup(name='humbug',
       ],
       url='https://humbughq.com/dist/api/',
       packages=['humbug'],
-      data_files=[('examples', glob.glob('examples/*'))],
-      scripts=glob.glob('bin/*'),
+      data_files=[('examples', ["examples/humbugrc", "examples/send-message"])],
+      scripts=["bin/humbug-send"],
      )
