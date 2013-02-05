@@ -38,8 +38,9 @@ __version__ = "0.1.0"
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
 assert(requests.__version__ >= '0.12.1')
-# And versions in the 1.x series aren't backwards compatible
-assert(requests.__version__ < '1.0.0')
+# In newer versions, the 'json' attribute is a function, not a property
+requests_json_is_function = isinstance(requests.Response.json, property)
+
 API_VERSTRING = "/api/v1/"
 
 def generate_option_group(parser):
@@ -168,9 +169,13 @@ class Client(object):
                 return {'msg': "Unexpected error:\n%s" % traceback.format_exc(),
                         "result": "unexpected-error"}
 
-            if res.json is not None:
+            if requests_json_is_function:
+                json_result = res.json()
+            else:
+                json_result = res.json
+            if json_result is not None:
                 end_error_retry(True)
-                return res.json
+                return json_result
             end_error_retry(False)
             return {'msg': res.text, "result": "http-error",
                     "status_code": res.status_code}
