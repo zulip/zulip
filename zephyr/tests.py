@@ -1412,6 +1412,90 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assertTrue('othello@humbughq.com' in json['subscribers'])
         self.assertTrue('hamlet@humbughq.com' in json['subscribers'])
 
+class GetSubscribersTest(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def setUp(self):
+        self.email = "hamlet@humbughq.com"
+        self.api_key = self.get_api_key(self.email)
+        self.user_profile = self.get_user_profile(self.email)
+        self.login(self.email)
+
+    def check_well_formed_result(self, result, stream_name, domain):
+        """
+        A successful call to get_subscribers returns the list of subscribers in
+        the form:
+
+        {"msg": "",
+         "result": "success",
+         "subscribers": ["hamlet@humbughq.com", "prospero@humbughq.com"]}
+        """
+        self.assertIn("subscribers", result)
+        self.assertIsInstance(result["subscribers"], list)
+        true_subscribers = [user.email for user in self.users_subscribed_to_stream(
+                stream_name, domain)]
+        self.assertItemsEqual(result["subscribers"], true_subscribers)
+
+    def make_subscriber_request(self, stream_name):
+        return self.client.post("/json/get_subscribers",
+                                {'email': self.email, 'api-key': self.api_key,
+                                 'stream': stream_name})
+
+    def make_successful_subscriber_request(self, stream_name):
+        result = self.make_subscriber_request(stream_name)
+        self.assert_json_success(result)
+        self.check_well_formed_result(simplejson.loads(result.content),
+                                      stream_name, self.user_profile.realm.domain)
+
+    def test_subscriber(self):
+        """
+        get_subscribers returns the list of subscribers.
+        """
+        stream_name = gather_subscriptions(self.user_profile)[0][0]
+        self.make_successful_subscriber_request(stream_name)
+
+    def test_nonsubscriber(self):
+        """
+        Even a non-subscriber to a public stream can query a stream's membership
+        with get_subscribers.
+        """
+        # Create a stream for which Hamlet is the only subscriber.
+        stream_name = "Saxony"
+        self.client.post("/json/subscriptions/add",
+                         {"subscriptions": simplejson.dumps([stream_name])})
+        other_email = "othello@humbughq.com"
+
+        # Fetch the subscriber list as a non-member.
+        self.login(other_email)
+        self.make_successful_subscriber_request(stream_name)
+
+    def test_subscriber_private_stream(self):
+        """
+        A subscriber to a private stream can query that stream's membership.
+        """
+        stream_name = "Saxony"
+        self.client.post("/json/subscriptions/add",
+                         {"subscriptions": simplejson.dumps([stream_name]),
+                          "invite_only": simplejson.dumps(True)})
+        self.make_successful_subscriber_request(stream_name)
+
+    def test_nonsubscriber_private_stream(self):
+        """
+        A non-subscriber to a private stream can't query that stream's membership.
+        """
+        # Create a private stream for which Hamlet is the only subscriber.
+        stream_name = "Saxony"
+        self.client.post("/json/subscriptions/add",
+                         {"subscriptions": simplejson.dumps([stream_name]),
+                          "invite_only": simplejson.dumps(True)})
+        other_email = "othello@humbughq.com"
+
+        # Try to fetch the subscriber list as a non-member.
+        self.login(other_email)
+        result = self.make_subscriber_request(stream_name)
+        self.assert_json_error(result,
+                               "Unable to retrieve subscribers for invite-only stream")
+
 class BugdownTest(TestCase):
 
     def common_bugdown_test(self, text, expected):
