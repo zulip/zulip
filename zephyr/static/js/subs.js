@@ -94,7 +94,7 @@ var colorpicker_options = {
 function create_sub(stream_name, attrs) {
     var sub = $.extend({}, {name: stream_name, color: default_color, id: next_sub_id++,
                             render_subscribers: should_render_subscribers(),
-                            subscribed: true, in_home_view: true}, attrs);
+                            subscribed: true, in_home_view: true, invite_only: false}, attrs);
     stream_info[stream_name.toLowerCase()] = sub;
     return sub;
 }
@@ -128,12 +128,12 @@ function add_to_member_list(ul, name, email) {
     $('<li>').prependTo(ul).text(member);
 }
 
-function mark_subscribed(stream_name) {
+function mark_subscribed(stream_name, attrs) {
     var lstream_name = stream_name.toLowerCase();
     var sub = stream_info[lstream_name];
 
     if (sub === undefined) {
-        sub = create_sub(stream_name, {});
+        sub = create_sub(stream_name, attrs);
         add_sub_to_table(sub);
     } else if (! sub.subscribed) {
         sub.subscribed = true;
@@ -237,7 +237,8 @@ exports.setup_page = function () {
         });
         our_subs.forEach(function (elem) {
             var stream_name = elem.name;
-            var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view, subscribed: true});
+            var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
+                                               invite_only: elem.invite_only, subscribed: true});
             stream_info[stream_name.toLowerCase()] = sub;
             sub_rows.push(sub);
         });
@@ -399,7 +400,7 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
             $("#create_stream_name").val("");
 
             $('#stream-creation').modal("hide");
-            mark_subscribed(stream);
+            mark_subscribed(stream, {invite_only: invite_only});
             if (invite_only) {
                 add_lock_to_rows($(".subscription_name").filter(function () {
                     return $(this).text() === stream;
