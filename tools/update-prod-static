@@ -14,7 +14,7 @@ rm -rf prod-static/collected
 # Copy the files we want to expose
 rm -rf prod-static/serve-new
 mkdir -p prod-static/serve-new/{js,styles}
-cp -r prod-static/collected/{favicon.ico,robots.txt,html,third,min} prod-static/serve-new/
+cp -r prod-static/collected/{favicon.ico,robots.txt,html,images,third,min} prod-static/serve-new/
 cp prod-static/collected/js/{common,debug,signup}.js prod-static/serve-new/js/
 cp prod-static/collected/styles/{activity,portico,pygments}.css prod-static/serve-new/styles/
 
