@@ -1,5 +1,8 @@
 #!/bin/sh -x
 
 cd api/
+# Strip out non-send_message bindings.
+perl -i.bak -ne 'print if !m/Client._register/ ||m/send_message/' humbug/__init__.py
 python setup.py sdist
+mv humbug/__init__.py.bak humbug/__init__.py
 echo API tarball written to api/dist
