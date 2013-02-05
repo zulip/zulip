@@ -361,6 +361,7 @@ function ajaxUnsubscribe(stream) {
         data: {"subscriptions": JSON.stringify([stream]) },
         success: function (resp, statusText, xhr, form) {
             var name, res = $.parseJSON(xhr.responseText);
+            $("#subscriptions-status").hide();
             if (res.removed.length === 0) {
                 name = res.not_subscribed[0];
                 ui.report_success("Already not subscribed to " + name,
@@ -389,7 +390,7 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
         },
         success: function (data) {
             $("#create_stream_name").val("");
-
+            $("#subscriptions-status").hide();
             $('#stream-creation').modal("hide");
             mark_subscribed(stream, {invite_only: invite_only});
         },
