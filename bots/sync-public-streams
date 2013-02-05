@@ -1,0 +1,66 @@
+#!/usr/bin/python
+import sys
+from os import path
+import logging
+import time
+import simplejson
+import subprocess
+import unicodedata
+
+sys.path.append(path.join(path.dirname(__file__), '..', 'api'))
+import humbug
+
+humbug_client = humbug.Client()
+
+def fetch_public_streams():
+    public_streams = set()
+
+    try:
+        res = humbug_client.get_public_streams()
+        if res.get("result") == "success":
+            streams = res["streams"]
+        else:
+            logging.error("Error getting public streams:\n%s" % res)
+            return None
+    except Exception:
+        logging.exception("Error getting public streams:")
+        return None
+
+    for stream in streams:
+        # Zephyr class names are canonicalized by first applying NFKC
+        # normalization and then lower-casing server-side
+        canonical_cls = unicodedata.normalize("NFKC", stream).lower().encode("utf-8")
+        if canonical_cls in ['security', 'login', 'network', 'ops', 'user_locate',
+                             'mit',
+                             'hm_ctl', 'hm_stat', 'zephyr_admin', 'zephyr_ctl']:
+            # These zephyr classes cannot be subscribed to by us, due
+            # to MIT's Zephyr access control settings
+            continue
+
+        public_streams.add(canonical_cls)
+
+    return public_streams
+
+if __name__ == "__main__":
+    log_file = "/home/humbug/sync_public_streams.log"
+    logger = logging.getLogger(__name__)
+    log_format = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=log_format)
+    formatter = logging.Formatter(log_format)
+    logger.setLevel(logging.DEBUG)
+    file_handler = logging.FileHandler(log_file)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    while True:
+        time.sleep(15)
+        public_streams = fetch_public_streams()
+        if public_streams is None:
+            continue
+
+        f = file("/home/humbug/public_streams.tmp", "w")
+        f.write(simplejson.dumps(list(public_streams)) + "\n")
+        f.close()
+
+        subprocess.call(["mv", "/home/humbug/public_streams.tmp", "/home/humbug/public_streams"])
+
