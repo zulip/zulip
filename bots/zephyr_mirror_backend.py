@@ -174,36 +174,26 @@ def zephyr_bulk_subscribe(subs):
         else:
             current_zephyr_subs.add(cls)
 
-def update_subscriptions_from_humbug():
+def update_subscriptions():
     try:
-        res = humbug_client.get_public_streams()
-        if res.get("result") == "success":
-            streams = res["streams"]
-        else:
-            logger.error("Error getting public streams:\n%s" % res)
-            return
-    except Exception:
-        logger.exception("Error getting public streams:")
+        f = file("/home/humbug/public_streams", "r")
+        public_streams = simplejson.loads(f.read())
+        f.close()
+    except:
+        logger.exception("Error reading public streams:")
         return
+
     classes_to_subscribe = set()
-    for stream in streams:
-        # Zephyr class names are canonicalized by first applying NFKC
-        # normalization and then lower-casing server-side
-        canonical_cls = unicodedata.normalize("NFKC", stream).lower().encode("utf-8")
-        if canonical_cls in current_zephyr_subs:
-            continue
-        if canonical_cls in ['security', 'login', 'network', 'ops', 'user_locate',
-                             'mit',
-                             'hm_ctl', 'hm_stat', 'zephyr_admin', 'zephyr_ctl']:
-            # These zephyr classes cannot be subscribed to by us, due
-            # to MIT's Zephyr access control settings
-            continue
+    for stream in public_streams:
+        zephyr_class = stream.encode("utf-8")
         if (options.shard is not None and
-            not hashlib.sha1(canonical_cls).hexdigest().startswith(options.shard)):
+            not hashlib.sha1(zephyr_class).hexdigest().startswith(options.shard)):
             # This stream is being handled by a different zephyr_mirror job.
             continue
+        if zephyr_class in current_zephyr_subs:
+            continue
+        classes_to_subscribe.add((zephyr_class, "*", "*"))
 
-        classes_to_subscribe.add((canonical_cls, "*", "*"))
     if len(classes_to_subscribe) > 0:
         zephyr_bulk_subscribe(list(classes_to_subscribe))
 
@@ -260,7 +250,7 @@ def process_loop(log):
             if options.forward_class_messages:
                 # Ask the Humbug server about any new classes to subscribe to
                 try:
-                    update_subscriptions_from_humbug()
+                    update_subscriptions()
                 except Exception:
                     logging.exception("Error updating subscriptions from Humbug:")
 
@@ -377,7 +367,7 @@ def zephyr_subscribe_autoretry(sub):
 
 def zephyr_to_humbug(options):
     if options.forward_class_messages:
-        update_subscriptions_from_humbug()
+        update_subscriptions()
     if options.forward_personals:
         # Subscribe to personals; we really can't operate without
         # those subscriptions, so just retry until it works.
