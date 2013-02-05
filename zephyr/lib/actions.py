@@ -4,7 +4,7 @@ from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, \
     DefaultStream, StreamColor, \
-    MAX_MESSAGE_LENGTH, get_client, get_display_recipient
+    MAX_MESSAGE_LENGTH, get_client, get_display_recipient, get_stream
 from django.db import transaction, IntegrityError
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.cache import cache_with_key
@@ -373,12 +373,18 @@ def gather_subscriptions(user_profile):
     with_color = StreamColor.objects.filter(subscription__in = subs).select_related()
     no_color   = subs.exclude(id__in = with_color.values('subscription_id')).select_related()
 
-    result = [{'name': get_display_recipient(sc.subscription.recipient),
-               'in_home_view': sc.subscription.in_home_view,
-               'color': sc.color} for sc in with_color]
-    result.extend({'name': get_display_recipient(sub.recipient),
-                   'in_home_view': sub.in_home_view,
-                   'color': StreamColor.DEFAULT_STREAM_COLOR} for sub in no_color)
-
+    result = []
+    for sc in with_color:
+        stream_name = get_display_recipient(sc.subscription.recipient)
+        result.append({'name': stream_name,
+                       'in_home_view': sc.subscription.in_home_view,
+                       'invite_only': get_stream(stream_name, user_profile.realm).invite_only,
+                       'color': sc.color})
+    for sub in no_color:
+        stream_name = get_display_recipient(sub.recipient)
+        result.append({'name': stream_name,
+                       'in_home_view': sub.in_home_view,
+                       'invite_only': get_stream(stream_name, user_profile.realm).invite_only,
+                       'color': StreamColor.DEFAULT_STREAM_COLOR})
 
     return sorted(result)
