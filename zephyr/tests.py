@@ -1715,6 +1715,7 @@ int x = 3
          # General linkification tests
          ('http://www.google.com',                     "<p>%s</p>",                         'http://www.google.com'),
          ('https://www.google.com',                    "<p>%s</p>",                         'https://www.google.com'),
+         ('http://www.theregister.co.uk/foo/bar',      "<p>%s</p>",                         'http://www.theregister.co.uk/foo/bar'),
          (' some text https://www.google.com/',        "<p>some text %s</p>",               'https://www.google.com/'),
          ('with short example.com url',                "<p>with short %s url</p>",          'example.com'),
          ('t.co',                                      "<p>%s</p>",                         't.co'),

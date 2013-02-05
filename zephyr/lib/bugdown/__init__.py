@@ -160,7 +160,7 @@ class Bugdown(markdown.Extension):
         # To support () in urls but not match ending ) when a url is inside a parenthesis,
         # we match at maximum one set of matching parens in a url. We could extend this
         # to match two parenthetical groups, at the cost of more regex complexity.
-        tlds = '|'.join(['com', 'co', 'biz', 'gd', 'co.uk', 'org', 'net', 'ly', 'edu', 'mil',
+        tlds = '|'.join(['co.uk', 'com', 'co', 'biz', 'gd', 'org', 'net', 'ly', 'edu', 'mil',
                          'gov', 'info', 'me', 'it', '.ca', 'tv', 'fm',])
         link_regex = r"\b(?P<url>[^\s]+\.(%s)(?:/[^\s()\"]*|([^\s()\"]*\([^\s()\"]+\)[^\s()\"]*))?)(?=[\s:;\?\),\.\'\"]|\Z)" % (tlds,)
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
