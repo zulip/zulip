@@ -244,9 +244,7 @@ $(function () {
 
         // Narrowing is a temporary view on top of the home view and
         // doesn't affect your pointer in the home view.
-        // Similarly, lurk mode does not affect your pointer.
         if (event.msg_list === all_msg_list
-            && lurk_stream === undefined
             && event.id > furthest_read)
         {
             furthest_read = event.id;
@@ -599,8 +597,6 @@ function get_updates(options) {
 
     get_updates_params.pointer = furthest_read;
     get_updates_params.dont_block = options.dont_block || get_updates_failures > 0;
-    if (lurk_stream !== undefined)
-        get_updates_params.stream_name = lurk_stream;
     if (reload.is_pending()) {
         // We only send a server_generation to the server if we're
         // interested in an immediate reply to tell us if we need to
@@ -700,9 +696,6 @@ function load_old_messages(anchor, num_before, num_after, msg_list, cont, for_na
     }
 
     var data = {anchor: anchor, num_before: num_before, num_after: num_after};
-
-    if (lurk_stream !== undefined)
-        data.stream = lurk_stream;
 
     if (for_narrow && narrow.active())
         data.narrow = JSON.stringify(narrow.public_operators());

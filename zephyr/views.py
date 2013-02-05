@@ -373,45 +373,21 @@ def home(request):
 
     user_profile = UserProfile.objects.get(user=request.user)
 
-    lurk_stream = None
-    lurk_name = request.GET.get('lurk')
-    if lurk_name is not None:
-        try:
-            lurk_stream = get_public_stream(request, lurk_name, user_profile.realm)
-        except JsonableError:
-            # Something bad happened, e.g. nonexistent or non-public stream.
-            # Fall back to the regular Home view as though we never existed.
-            lurk_name = None
+    num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
 
-    if lurk_stream is not None:
-        recipient = Recipient.objects.get(type_id=lurk_stream.id, type=Recipient.STREAM)
-        num_messages = Message.objects.filter(recipient=recipient).count()
+    if user_profile.pointer == -1 and num_messages > 0:
+        # Put the new user's pointer at the bottom
+        #
+        # This improves performance, because we limit backfilling of messages
+        # before the pointer.  It's also likely that someone joining an
+        # organization is interested in recent messages more than the very
+        # first messages on the system.
 
-        # There are no per-user-and-stream pointers, so let's have the
-        # client initially select the most recent message to the
-        # stream.
-        if num_messages > 0:
-            initial_pointer = Message.objects.filter(recipient=recipient).order_by('id').reverse()[0].id
-        else:
-            initial_pointer = -1
-    else:
-        num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
-
-        if user_profile.pointer == -1 and num_messages > 0:
-            # Put the new user's pointer at the bottom
-            #
-            # This improves performance, because we limit backfilling of messages
-            # before the pointer.  It's also likely that someone joining an
-            # organization is interested in recent messages more than the very
-            # first messages on the system.
-
-            max_id = (UserMessage.objects.filter(user_profile=user_profile)
-                                         .order_by('message')
-                                         .reverse()[0]).message_id
-            user_profile.pointer = max_id
-            user_profile.last_pointer_updater = request.session.session_key
-
-        initial_pointer = user_profile.pointer
+        max_id = (UserMessage.objects.filter(user_profile=user_profile)
+                                     .order_by('message')
+                                     .reverse()[0]).message_id
+        user_profile.pointer = max_id
+        user_profile.last_pointer_updater = request.session.session_key
 
     # Populate personals autocomplete list based on everyone in your
     # realm.  Later we might want a 2-layer autocomplete, where we
@@ -442,8 +418,6 @@ def home(request):
                                'people'      : people,
                                'streams'     : streams,
                                'poll_timeout': settings.POLL_TIMEOUT,
-                               'initial_pointer':
-                                   initial_pointer,
                                'have_initial_messages':
                                    js_bool(num_messages > 0),
                                'desktop_notifications_enabled':
@@ -452,7 +426,6 @@ def home(request):
                                    settings.DEBUG and ('show_debug' in request.GET),
                                'show_activity': can_view_activity(request),
                                'show_invites': show_invites,
-                               'lurk_stream': lurk_name
                                },
                               context_instance=RequestContext(request))
 

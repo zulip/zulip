@@ -54,8 +54,8 @@
 <script type="text/javascript">
 {% autoescape off %}
 
-{# Not escaped, because it's guaranteed to be an integer (either the UserProfile's pointer, or the id of a Stream, or -1). #}
-var initial_pointer = {{ initial_pointer }};
+{# Not escaped, because it's guaranteed by the model to be an integer. #}
+var initial_pointer = {{ user_profile.pointer }};
 
 var poll_timeout = {{ poll_timeout }};
 
@@ -64,12 +64,6 @@ var email = "{{ user_profile.user.email|escapejs }}";
 var domain = "{{ user_profile.realm.domain|escapejs }}";
 var have_initial_messages = {{ have_initial_messages|escapejs }};
 var desktop_notifications_enabled = {{ desktop_notifications_enabled|escapejs }};
-
-{% if lurk_stream %}
-var lurk_stream = "{{ lurk_stream|escapejs }}";
-{% else %}
-var lurk_stream = undefined;
-{% endif %}
 
 {# We use JSONEncoderForHTML to generate "streams". #}
 var stream_list = {{ streams }};

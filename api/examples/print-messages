@@ -25,9 +25,9 @@ import sys
 from os import path
 import optparse
 
-usage = """print-messages --user=<email address> [--stream=<stream>] [options]
+usage = """print-messages --user=<email address> [options]
 
-Prints out each message received by the indicated user, or on the indicated public stream.
+Prints out each message received by the indicated user.
 
 Example: print-messages --user=tabbott@humbughq.com --site=https://zephyr.humbughq.com
 """
@@ -36,7 +36,6 @@ import humbug
 
 parser = optparse.OptionParser(usage=usage)
 parser.add_option_group(humbug.generate_option_group(parser))
-parser.add_option('--stream', default=None)
 (options, args) = parser.parse_args()
 
 client = humbug.init_from_options(options)
@@ -44,7 +43,4 @@ client = humbug.init_from_options(options)
 def print_message(message):
     print message
 
-get_messages_options = {}
-if options.stream is not None:
-    get_messages_options['stream_name'] = options.stream
-client.call_on_each_message(print_message, get_messages_options)
+client.call_on_each_message(print_message)

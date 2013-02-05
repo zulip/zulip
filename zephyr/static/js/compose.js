@@ -73,11 +73,8 @@ exports.start = function (msg_type, opts) {
 
     compose.clear();
 
-    var default_stream = '';
-    if (msg_type === 'stream' && lurk_stream !== undefined)
-        default_stream = lurk_stream;
     opts = $.extend({ message_type:     msg_type,
-                      stream:           default_stream,
+                      stream:           '',
                       subject:          '',
                       private_message_recipient: ''
                     }, opts);
@@ -225,7 +222,7 @@ exports.set_mode = function (mode) {
         show('private', $("#private_message_recipient"));
         is_composing_message = "private";
     } else {
-        show('stream', $(lurk_stream !== undefined ? "#subject" : "#stream"));
+        show('stream', $("#stream"));
         is_composing_message = "stream";
     }
 };
@@ -338,16 +335,6 @@ function validate_stream_message() {
             // browser window doesn't know it.
             return true;
         case "not-subscribed":
-            if (lurk_stream !== undefined &&
-                lurk_stream.toLowerCase() === stream_name.toLowerCase()) {
-                // Just subscribe them.
-                subs.subscribe_for_send(stream_name);
-                // When the subscription request completes,
-                // subscribe_for_send will send our message (like when
-                // the user clicks on subscribe-and-send).
-                return false;
-            }
-
             $('#send-status').removeClass(status_classes);
             $('#stream-nosub-name').text(stream_name);
             $('#stream-nosub').show();
