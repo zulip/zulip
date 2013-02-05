@@ -729,14 +729,19 @@ def already_sent_mirrored_message(message):
         pub_date__gte=pub_date_lowres - time_window,
         pub_date__lte=pub_date_lowres + time_window).exists()
 
-# Validte that the passed in object is an email address from the user's realm
-# TODO: Check that it's a real email address here.
-def same_realm_email(user_profile, email):
-    try:
-        domain = email.split("@", 1)[1]
-        return user_profile.realm.domain == domain
-    except:
+def mit_to_mit(user_profile, email):
+    # Are the sender and recipient both @mit.edu addresses?
+    # We have to handle this specially, inferring the domain from the
+    # e-mail address, because the recipient may not existing in Humbug
+    # and we may need to make a stub MIT user on the fly.
+    if not validators.email_re.match(email):
         return False
+
+    if user_profile.realm.domain != "mit.edu":
+        return False
+
+    domain = email.split("@", 1)[1]
+    return user_profile.realm.domain == domain
 
 def extract_recipients(raw_recipients):
     try:
@@ -761,7 +766,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
 
     # Check that all referenced users are in our realm:
     for email in referenced_users:
-        if not same_realm_email(user_profile, email):
+        if not mit_to_mit(user_profile, email):
             return (False, None)
 
     # Create users for the referenced users, if needed.
