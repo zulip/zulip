@@ -39,7 +39,7 @@ __version__ = "0.1.0"
 # Older versions don't provide the 'json' attribute on responses.
 assert(requests.__version__ >= '0.12.1')
 # In newer versions, the 'json' attribute is a function, not a property
-requests_json_is_function = isinstance(requests.Response.json, property)
+requests_json_is_function = not isinstance(requests.Response.json, property)
 
 API_VERSTRING = "/api/v1/"
 
