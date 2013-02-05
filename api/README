@@ -22,8 +22,9 @@ as we make any changes to them.
 The easiest way to use these API bindings is to base your tools off
 of the example tools under examples/ in this distribution.
 
-If you place your API key in `~/.humbugrc` the Python API bindings will
-automatically read it in. The format of the config file is as follows:
+If you place your API key in the config file `~/.humbugrc` the Python
+API bindings will automatically read it in. The format of the config
+file is as follows:
 
     [api]
     key=<api key from the web interface>
