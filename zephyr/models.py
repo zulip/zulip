@@ -39,6 +39,7 @@ def get_display_recipient(recipient):
 
 class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True)
+    restricted_to_domain = models.BooleanField(default=True)
 
     def __repr__(self):
         return "<Realm: %s %s>" % (self.domain, self.id)
