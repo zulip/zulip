@@ -15,6 +15,7 @@ hence the name.
 <div class="navbar">
     <ul class="nav pull-right">
         <li><a href="/accounts/login/?next=/">Log in</a></li>
+        <li><span class="navbar-text">·</span></li>
         <li><a href="{% url zephyr.views.accounts_home %}">Register</a></li>
     </ul>
 </div>
@@ -30,5 +31,15 @@ hence the name.
         {% endblock %}
     </div>
 </div>
-
+<div class="navbar">
+    <ul class="nav pull-right">
+      <li><span class="navbar-text">Humbug © 2013</span></li>
+      <li><span class="navbar-text little-bullet">·</span></li>
+      <li><a href="/terms">Legal</a></li>
+      <li><span class="navbar-text">·</span></li>
+      <li><a href="/accounts/login/?next=/">Log in</a></li>
+      <li><span class="navbar-text">·</span></li>
+      <li><a href="{% url zephyr.views.accounts_home %}">Register</a></li>
+    </ul>
+</div>
 {% endblock %}

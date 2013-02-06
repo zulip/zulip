@@ -67,3 +67,8 @@ img.screenshot{
     /* This makes it so screenshots are still shown if they are larger than their span.*/
     max-width: 150%;
 }
+
+.little-bullet {
+    /* In our footer navbar, the · doesn't get appropriate padding without this */
+    padding-left: 15px;
+}
