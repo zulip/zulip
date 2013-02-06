@@ -620,9 +620,9 @@ def add_humbug_subscriptions(verbose):
         new = res.get("subscribed")
         if verbose:
             if already is not None and len(already) > 0:
-                logger.info("\nAlready subscribed to: %s" % (", ".join(already),))
+                logger.info("\nAlready subscribed to: %s" % (", ".join(already.values()[0]),))
             if new is not None and len(new) > 0:
-                logger.info("\nSuccessfully subscribed to: %s" % (", ".join(new),))
+                logger.info("\nSuccessfully subscribed to: %s" % (", ".join(new.values()[0]),))
 
     if len(skipped) > 0:
         if verbose:
