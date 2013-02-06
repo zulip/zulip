@@ -7,3 +7,4 @@
 /update-prod-static.log
 /prod-static
 *.sw[po]
+.DS_Store
