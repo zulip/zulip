@@ -1,33 +1,61 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Copyright © 2012 Humbug, Inc.
 #
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+
 # Humbug trac plugin -- sends humbugs when tickets change.
 #
-# Install by placing in the plugins/ subdirectory and then adding
-# "humbug_trac" to the [components] section of the conf/trac.ini file,
-# like so:
+# Install by copying this file to the trac plugins/ subdirectory,
+# customizing the constants below this comment, and then adding
+# "humbug_trac" to the [components] section of the conf/trac.ini
+# file, like so:
 #
 # [components]
 # humbug_trac = enabled
 #
 # You may then need to restart trac (or restart Apache) for the bot
 # (or changes to the bot) to actually be loaded by trac.
-#
-# Our install is trac.humbughq.com:/home/humbug/trac/
+
+# Change these constants:
+HUMBUG_API_PATH = "/home/humbug/humbug/api"
+HUMBUG_SITE = "https://staging.humbughq.com"
+HUMBUG_USER = "humbug+trac@humbughq.com"
+HUMBUG_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+TRAC_BASE_TICKET_URL = "https://trac.humbughq.com/ticket"
+
 
 from trac.core import Component, implements
 from trac.ticket import ITicketChangeListener
 import sys
 
-# This script lives on one machine, so an absolute path is fine.
-sys.path.append("/home/humbug/humbug/api")
+sys.path.append(HUMBUG_API_PATH)
 import humbug
 client = humbug.Client(
-    email="humbug+trac@humbughq.com",
-    site="https://staging.humbughq.com",
-    api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+    email=HUMBUG_USER,
+    site=HUMBUG_SITE,
+    api_key=HUMBUG_API_KEY)
 
 def markdown_ticket_url(ticket, heading="ticket"):
-    return "[%s #%s](https://trac.humbughq.com/ticket/%s)" % (heading, ticket.id, ticket.id)
+    return "[%s #%s](%s/%s)" % (heading, ticket.id, TRAC_BASE_TICKET_URL, ticket.id)
 
 def markdown_block(desc):
     return "\n\n>" + "\n> ".join(desc.split("\n")) + "\n"
