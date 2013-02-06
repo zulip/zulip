@@ -10,13 +10,12 @@ The code in this module does not actually remove anything; it just identifies
 which items should be kept or removed.
 """
 
-import sys
 import operator
 
 from django.utils     import timezone
 from django.db.models import Q
 from datetime         import datetime, timedelta
-from zephyr.models    import Realm, UserMessage
+from zephyr.models    import Realm, UserMessage, UserProfile
 
 # Each domain has a maximum age for retained messages.
 #
@@ -24,6 +23,8 @@ from zephyr.models    import Realm, UserMessage
 max_age = {
     'customer1.invalid': timedelta(days=31),
 }
+
+domain_cache = {}
 
 def should_expunge_from_log(msg, now):
     """Should a particular log entry be expunged?
@@ -40,9 +41,11 @@ def should_expunge_from_log(msg, now):
         # etc.
         return False
 
-    # FIXME: Yet another place where we compute the domain manually.
-    # See #260.
-    domain = msg['sender_email'].split('@', 1)[1]
+    user_email = msg['sender_email']
+    domain = domain_cache.get(user_email)
+    if not domain:
+        domain = UserProfile.objects.get(user__email=user_email).realm.domain
+        domain_cache[user_email] = domain
 
     if domain not in max_age:
         # Keep forever.
