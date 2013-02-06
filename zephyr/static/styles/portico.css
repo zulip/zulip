@@ -74,6 +74,11 @@ img.screenshot{
 }
 
 /* Silly easter egg for /integrations */
+.show-integral:hover {
+    position: relative;
+    left: -27px;
+}
+
 .show-integral:hover:before {
     content: "∫";
     font-weight: normal;
