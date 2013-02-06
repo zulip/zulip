@@ -32,7 +32,9 @@
       <li><a href="#nagios">Nagios</a></li>
       <li><a href="#pivotal">Pivotal Tracker</a></li>
       <li><a href="#svn">Subversion</a></li>
+      {% endcomment %}
       <li><a href="#trac">Trac</a></li>
+      {% comment %}
       <li><a href="#trello">Trello</a></li>
       <li><a href="#twitter">Twitter</a></li>
       {% endcomment %}
@@ -54,6 +56,43 @@
 to your repository, you'll see a commit message like the
 following, to the stream <code>commits</code> with a subject that matches the respository name (in this case "humbug-test"):</p>
       <img style="screenshot" src="/static/images/integrations/github/004.png">
+
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
+
+    <div id="trac" class="integration">
+      <h4>Trac</h4>
+      <p>First, download and install our <a href="/api">Python bindings and example scripts</a>.</p>
+
+      <p>Next, open <code>examples/humbug_trac.py</code> in your
+      favorite editor, and change the following lines to specify your
+      bot's email address, API key, and where you'd like your
+      notification messages to go (by default,
+      stream <code>trac</code>):</p>
+
+<div class="codehilite"><pre><span class="n">HUMBUG_USER</span> <span class="o">=</span> <span class="s">"trac-notifications@example.com"</span>
+<span class="n">HUMBUG_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
+<span class="n">STREAM_FOR_NOTIFICATIONS</span> <span class="o">=</span> <span class="s">"trac"</span>
+<span class="n">TRAC_BASE_TICKET_URL</span> <span class="o">=</span> <span class="s">"https://trac.example.com/ticket"</span></pre></div>
+
+      <p>Copy the file to your Trac server, placing it in the
+      Trac <code>plugins/</code> subdirectory. Once you've done that,
+      edit <code>conf/trac.ini</code> to add <code>humbug_trac</code>
+      to the <code>[components]</code> section, as follows:</p>
+
+<div class="codehilite"><pre><span class="k">[components]</span>
+<span class="na">humbug_trac</span> <span class="o">=</span> <span class="s">enabled</span></pre></div>
+
+      <p>You may then need to restart Trac (or Apache) so that Trac will load our plugin.</p>
+
+      <p><b>Congratulations! You're done!</b><br /> When people open
+      new tickets (or edit existing tickets), you'll see a message
+      like the following, to the stream <code>trac</code> (or whatever
+      you configured above) with a subject that matches the ticket
+      name:</p>
+      <img style="screenshot" src="/static/images/integrations/trac/001.png">
 
       <p>
         <a href="#services">^ Back to top</a>
