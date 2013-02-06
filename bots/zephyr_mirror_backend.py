@@ -22,7 +22,6 @@
 # SOFTWARE.
 
 import sys
-import traceback
 import simplejson
 import re
 import time
@@ -34,7 +33,6 @@ import textwrap
 import signal
 import logging
 import hashlib
-import unicodedata
 import tempfile
 
 DEFAULT_SITE = "https://humbughq.com"
