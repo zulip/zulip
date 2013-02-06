@@ -268,6 +268,8 @@ exports.activate = function (operators, opts) {
     if (operators.length === 1) {
         if (operators[0][0] === "stream") {
             $("#stream_filters li[data-name='" + encodeURIComponent(operators[0][1]) + "']").addClass('active-filter');
+        } else if (operators[0][0] === "is" && operators[0][1] === "private-message") {
+            $("#filtpers").addClass('active-filter');
         }
     }
 };
