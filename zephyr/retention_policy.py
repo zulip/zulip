@@ -35,7 +35,7 @@ def should_expunge_from_log(msg, now):
     # entries against a consistent "current time".  So the caller passes
     # that time as a parameter.
 
-    if msg.get('type') == 'default_streams':
+    if msg.get('type') in ('default_streams', 'realm_created'):
         # These don't have an associated user.
         # We could use the 'domain' field, but it probably makes sense to
         # keep these forever.
