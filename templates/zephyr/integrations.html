@@ -1,0 +1,69 @@
+{% extends "zephyr/portico.html" %}
+
+{# API information page #}
+
+{% block customhead %}
+{{ block.super }}
+<link rel="stylesheet" href="/static/styles/pygments.css" />
+{% endblock %}
+
+{% block portico_content %}
+<div class="row-fluid">
+  <div class="span8">
+    <h2>Integrations</h2>
+
+    <h3>Getting started</h3>
+    <p>Many of these integrations are available in
+    our <a href="/api">API download</a>. They also require a
+    registered Humbug user to send as. You can use your existing
+    account, or <a href="{% url zephyr.views.accounts_home
+    %}">register</a> a new one for them. (If new email addresses are
+    hard to come by, you can use something
+    like <code>wdaher+github@example.com</code>.)</p>
+
+    <h3 id="services">Services with integrations</h3>
+    <ul>
+      {% comment %}
+      <li><a href="#git">Git</a></li>
+      {% endcomment %}
+      <li><a href="#github">GitHub</a></li>
+      {% comment %}
+      <li><a href="#jenkins">Jenkins/Hudson</a></li>
+      <li><a href="#nagios">Nagios</a></li>
+      <li><a href="#pivotal">Pivotal Tracker</a></li>
+      <li><a href="#svn">Subversion</a></li>
+      <li><a href="#trac">Trac</a></li>
+      <li><a href="#trello">Trello</a></li>
+      <li><a href="#twitter">Twitter</a></li>
+      {% endcomment %}
+      <li>...and more coming soon! <a href="mailto:support@humbughq.com?subject=Integration+request">Email us</a> with requests!</li>
+    </ul>
+
+    <div id="github" class="integration">
+      <h4>GitHub</h4>
+      <p>First, go to your repository page and click "Settings":</p>
+      <img src="/static/images/integrations/github/001.png">
+
+      <p>From there, select "Service Hooks":</p>
+      <img src="/static/images/integrations/github/002.png">
+
+      <p>Select "Humbug" from the list, fill in the API key and email address for your bot, tick the "active" tickybox, and pick "Update settings":</p>
+      <img src="/static/images/integrations/github/003.png">
+
+      <p><b>Congratulations! You're done!</b><br /> When people push
+to your repository, you'll see a commit message like the
+following, to the stream <code>commits</code> with a subject that matches the respository name (in this case "humbug-test"):</p>
+      <img style="screenshot" src="/static/images/integrations/github/004.png">
+
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function() {
+    $("a.title").addClass("show-integral");
+});
+</script>
+{% endblock %}

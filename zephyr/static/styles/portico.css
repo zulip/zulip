@@ -72,3 +72,26 @@ img.screenshot{
     /* In our footer navbar, the · doesn't get appropriate padding without this */
     padding-left: 15px;
 }
+
+/* Silly easter egg for /integrations */
+.show-integral:hover:before {
+    content: "∫";
+    font-weight: normal;
+}
+
+.show-integral:hover:after {
+    content: "dx";
+    font-weight: normal;
+    font-style: italic;
+    font-size: 70%;
+}
+
+.integration {
+    margin-top: 2em;
+    padding-top: 1em;
+    border-top: 1px dashed black;
+}
+
+.integration p {
+    margin-top: 2em;
+}
