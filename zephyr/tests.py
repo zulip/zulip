@@ -1142,6 +1142,7 @@ earl-test@humbughq.com""", ["Denmark"]))
         self.assert_json_error(self.invite("iago-test@humbughq.com", ["NotARealStream"]),
                 "Stream does not exist: NotARealStream. No invites were sent.")
 
+
 class ChangeSettingsTest(AuthedTestCase):
     fixtures = ['messages.json']
 

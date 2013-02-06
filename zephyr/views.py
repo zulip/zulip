@@ -362,7 +362,12 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
 
     if errors:
         return json_error(data={'errors': errors},
-                          msg="Some emails did not validate. No invites have been sent.")
+                          msg="Some emails did not validate, so we didn't send any invitations.")
+
+    if skipped and len(skipped) == len(invitee_emails):
+        # All e-mails were skipped, so we didn't actually invite anyone.
+        return json_error(data={'errors': skipped},
+                          msg="We weren't able to invite anyone.")
 
     # If we encounter an exception at any point before now, there are no unwanted side-effects,
     # since it is totally fine to have duplicate PreregistrationUsers
@@ -372,7 +377,12 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
                 subject_template_path='confirmation/invite_email_subject.txt',
                 body_template_path='confirmation/invite_email_body.txt')
 
-    return json_success()
+    if skipped:
+        return json_error(data={'errors': skipped},
+                          msg="Some of those addresses are already using Humbug, \
+so we didn't send them an invitation. We did send invitations to everyone else!")
+    else:
+        return json_success()
 
 def login_page(request, **kwargs):
     template_response = django_login_page(request, **kwargs)
