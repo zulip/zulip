@@ -61,6 +61,8 @@ class Command(BaseCommand):
         for infile in args:
             try:
                 expunge(infile)
+            except KeyboardInterrupt:
+                raise
             except:
                 print >>sys.stderr, 'WARNING: Could not expunge from', infile
                 traceback.print_exc()
