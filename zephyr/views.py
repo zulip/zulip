@@ -208,7 +208,12 @@ def accounts_register(request):
     email = prereg_user.email
     mit_beta_user = isinstance(confirmation.content_object, MitUser)
 
-    company_name = email.split('@')[-1]
+    # If someone invited you, you are joining their realm regardless
+    # of your e-mail address.
+    if prereg_user.referred_by:
+        domain = prereg_user.referred_by.realm.domain
+    else:
+        domain = email.split('@')[-1]
 
     try:
         if mit_beta_user:
@@ -228,7 +233,6 @@ def accounts_register(request):
             password   = form.cleaned_data['password']
             full_name  = form.cleaned_data['full_name']
             short_name = email.split('@')[0]
-            domain     = email.split('@')[-1]
             (realm, _) = Realm.objects.get_or_create(domain=domain)
 
             # FIXME: sanitize email addresses and fullname
@@ -264,7 +268,7 @@ def accounts_register(request):
             return HttpResponseRedirect(reverse('zephyr.views.home'))
 
     return render_to_response('zephyr/register.html',
-        { 'form': form, 'company_name': company_name, 'email': email, 'key': key },
+        { 'form': form, 'company_name': domain, 'email': email, 'key': key },
         context_instance=RequestContext(request))
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
