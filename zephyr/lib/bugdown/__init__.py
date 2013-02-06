@@ -161,8 +161,8 @@ class Bugdown(markdown.Extension):
         # we match at maximum one set of matching parens in a url. We could extend this
         # to match two parenthetical groups, at the cost of more regex complexity.
         tlds = '|'.join(['co.uk', 'com', 'co', 'biz', 'gd', 'org', 'net', 'ly', 'edu', 'mil',
-                         'gov', 'info', 'me', 'it', '.ca', 'tv', 'fm',])
-        link_regex = r"\b(?P<url>[^\s]+\.(%s)(?:/[^\s()\"]*|([^\s()\"]*\([^\s()\"]+\)[^\s()\"]*))?)(?=[\s:;\?\),\.\'\"]|\Z)" % (tlds,)
+                         'gov', 'info', 'me', 'it', '.ca', 'tv', 'fm', 'io', 'gl'])
+        link_regex = r"\b(?P<url>[^\s]+\.(%s)(?:/[^\s()\":]*?|([^\s()\":]*\([^\s()\":]*\)[^\s()\":]*))?)(?=([:;\?\),\.\'\"]\Z|[:;\?\),\.\'\"]\s|\Z|\s))" % (tlds,)
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
         md.preprocessors.add('hanging_ulists',

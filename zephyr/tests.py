@@ -1754,6 +1754,11 @@ int x = 3
          ('(Something like http://foo.com/blah_blah)', "<p>(Something like %s)</p>",        'http://foo.com/blah_blah'),
          ('"is.gd/foo/"',                              "<p>\"%s\"</p>",                     'is.gd/foo/'),
          ('end with a quote www.google.com"',          "<p>end with a quote %s\"</p>",      'www.google.com'),
+         ('http://www.guardian.co.uk/foo/bar',         "<p>%s</p>",                         'http://www.guardian.co.uk/foo/bar'),
+         ('from http://supervisord.org/running.html:', "<p>from %s:</p>",                   'http://supervisord.org/running.html'),
+         ('http://raven.io',                           "<p>%s</p>",                         'http://raven.io'),
+         ('at https://humbughq.com/api. Check it!',    "<p>at %s. Check it!</p>",           'https://humbughq.com/api'),
+         ('goo.gl/abc',                                "<p>%s</p>",                        'goo.gl/abc'),
 
          # XSS Sanitization
          ('javascript:alert(\'hi\');.com',              "<p>%s</p>",                         None), # None marks xss
@@ -1765,11 +1770,14 @@ int x = 3
          ('http://leo@foo.com/my/file',                 "<p>%s</p>",                         None),
 
          ('http://example.com/something?with,commas,in,url, but not at end',
-                        "<p>%s but not at end</p>",         'http://example.com/something?with,commas,in,url,'),
+                        "<p>%s, but not at end</p>",         'http://example.com/something?with,commas,in,url'),
          (' some text https://www.google.com/baz_(match)?with=foo&bar=baz with extras',
                         "<p>some text %s with extras</p>",  'https://www.google.com/baz_(match)?with=foo&amp;bar=baz'),
          ('hash it http://foo.com/blah_(wikipedia)_blah#cite-1',
-                        "<p>hash it %s</p>",                'http://foo.com/blah_(wikipedia)_blah#cite-1'),]
+                        "<p>hash it %s</p>",                'http://foo.com/blah_(wikipedia)_blah#cite-1'),
+         ('http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).gif',
+                        "<p>%s</p>",
+                        'http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).gif')]
 
         for inline_url, reference, url in conversions:
             try:
