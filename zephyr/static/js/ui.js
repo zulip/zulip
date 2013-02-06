@@ -243,6 +243,9 @@ function resizehandler(e) {
     $("#bottom_whitespace").height(viewport.height() * 0.4);
     $("#main_div").css('min-height', viewport.height() - $("#top_navbar").height());
 
+    /* total viewport - height of navbar - height of upper sidebar - padding*/
+    $(".bottom_sidebar").height(viewport.height() - $("#top_navbar").height() - $(".upper_sidebar").height() - 40);
+
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
@@ -252,6 +255,11 @@ function resizehandler(e) {
     // When the screen resizes, it may cause some messages to go off the screen
     notifications_bar.update();
 }
+
+$(function () {
+    // When the user's profile picture loads this can change the height of the sidebar
+    $("img.gravatar-profile").bind('load', resizehandler);
+});
 
 var old_label;
 var is_floating_recipient_bar_showing = false;
@@ -842,6 +850,49 @@ $(function () {
         e.preventDefault();
     });
 });
+
+function sort_narrow_list() {
+    var items = $('#stream_filters li').get();
+    var div = $('#stream_filters');
+    items.sort(function(a,b){
+        var keyA = $(a).text();
+        var keyB = $(b).text();
+
+        if (keyA < keyB) return -1;
+        if (keyA > keyB) return 1;
+        return 0;
+    });
+
+    div.empty();
+
+    $.each(items, function(i, li){
+          div.append(li);
+    });
+}
+
+exports.add_narrow_filter = function(name, type, uri) {
+    var list_item;
+
+    if ($("#" + type + "_filters li[data-name='" + encodeURIComponent(name) + "']").length) {
+        // already exists
+        return false;
+    }
+
+
+    list_item = $('<li>').attr('data-name', encodeURIComponent(name))
+                         .html($('<a>').attr('href', uri)
+                                       .addClass('subscription_name')
+                                       .text(name));
+    if (type === "stream" && subs.have(name).invite_only) {
+        list_item.append("<i class='icon-lock'/>");
+    }
+    $("#" + type + "_filters").append(list_item);
+    sort_narrow_list();
+};
+
+exports.remove_narrow_filter = function (name, type) {
+    $("#" + type + "_filters li[data-name='" + encodeURIComponent(name) + "']").remove();
+};
 
 return exports;
 }());

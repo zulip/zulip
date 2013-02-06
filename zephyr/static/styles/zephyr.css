@@ -75,6 +75,30 @@ a:hover code {
 .new_message_button {
     padding-top: 1em;
 }
+
+.bottom_sidebar {
+    margin-top: 1em;
+    overflow-y: auto;
+}
+
+ul.filters {
+    list-style-type: none;
+    padding-right: 1em;
+}
+
+ul.filters a {
+    color: black;
+}
+
+ul.filters hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+li.active-filter {
+    font-weight: bold;
+}
+
 .phone_new_message_button {
     margin-top: 5px;
     float: left;

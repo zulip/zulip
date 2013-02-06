@@ -96,6 +96,9 @@ function create_sub(stream_name, attrs) {
                             render_subscribers: should_render_subscribers(),
                             subscribed: true, in_home_view: true, invite_only: false}, attrs);
     stream_info[stream_name.toLowerCase()] = sub;
+    if (sub.subscribed) {
+        ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + encodeURIComponent(stream_name));
+    }
     return sub;
 }
 
@@ -137,6 +140,7 @@ function mark_subscribed(stream_name, attrs) {
         add_sub_to_table(sub);
     } else if (! sub.subscribed) {
         sub.subscribed = true;
+        ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + encodeURIComponent(stream_name));
         var button = button_for_sub(sub);
         if (button.length !== 0) {
             button.text("Unsubscribe").removeClass("btn-primary");
@@ -166,6 +170,8 @@ function mark_subscribed(stream_name, attrs) {
 function mark_unsubscribed(stream_name) {
     var lstream_name = stream_name.toLowerCase();
     var sub = stream_info[lstream_name];
+
+    ui.remove_narrow_filter(stream_name, 'stream');
 
     if (sub === undefined) {
         // We don't know about this stream

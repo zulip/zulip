@@ -263,6 +263,13 @@ exports.activate = function (operators, opts) {
     hashchange.save_narrow(operators);
     $('#search_query').val(unparse(operators));
     search.update_button_visibility();
+
+    $("ul.filters li").removeClass('active-filter');
+    if (operators.length === 1) {
+        if (operators[0][0] === "stream") {
+            $("#stream_filters li[data-name='" + encodeURIComponent(operators[0][1]) + "']").addClass('active-filter');
+        }
+    }
 };
 
 // Activate narrowing with a single operator.
@@ -330,6 +337,9 @@ exports.deactivate = function () {
     search.update_highlight_on_narrow();
 
     hashchange.save_narrow();
+
+    $("ul.filters li").removeClass('active-filter');
+    $("#filthome").addClass('active-filter');
 
     scroll_to_selected();
 };
