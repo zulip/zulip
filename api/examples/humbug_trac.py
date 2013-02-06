@@ -36,18 +36,24 @@
 # (or changes to the bot) to actually be loaded by trac.
 
 # Change these constants:
-HUMBUG_API_PATH = "/path/to/humbug/api"
-HUMBUG_SITE = "https://example.humbughq.com"
-HUMBUG_USER = "trac_user@example.com"
+HUMBUG_USER = "trac-notifications@example.com"
 HUMBUG_API_KEY = "0123456789abcdef0123456789abcdef"
+STREAM_FOR_NOTIFICATIONS = "trac"
 TRAC_BASE_TICKET_URL = "https://trac.example.com/ticket"
 
+# This should not need to change unless you have a custom Humbug subdomain.
+HUMBUG_SITE = "https://humbughq.com"
+## If properly installed, the Humbug API should be in your import
+## path, but if not, set a custom path below
+HUMBUG_API_PATH = None
 
 from trac.core import Component, implements
 from trac.ticket import ITicketChangeListener
 import sys
 
-sys.path.append(HUMBUG_API_PATH)
+if HUMBUG_API_PATH is not None:
+    sys.path.append(HUMBUG_API_PATH)
+
 import humbug
 client = humbug.Client(
     email=HUMBUG_USER,
@@ -71,7 +77,7 @@ def trac_subject(ticket):
 def send_update(ticket, content):
     client.send_message({
             "type": "stream",
-            "to": "trac",
+            "to": STREAM_FOR_NOTIFICATIONS,
             "content": content,
             "subject": trac_subject(ticket)
             })
