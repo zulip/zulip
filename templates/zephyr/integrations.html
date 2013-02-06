@@ -16,10 +16,10 @@
     <p>Many of these integrations are available in
     our <a href="/api">API download</a>. They also require a
     registered Humbug user to send as. You can use your existing
-    account, or <a href="{% url zephyr.views.accounts_home
-    %}">register</a> a new one for them. (If new email addresses are
-    hard to come by, you can use something
-    like <code>wdaher+github@example.com</code>.)</p>
+    account, or
+    <a href="{% url zephyr.views.accounts_home %}">register</a> a new
+    one for them. (If new email addresses are hard to come by, you can
+    use something like <code>wdaher+github@example.com</code>.)</p>
 
     <h3 id="services">Services with integrations</h3>
     <ul>
@@ -49,13 +49,15 @@
       <p>From there, select "Service Hooks":</p>
       <img src="/static/images/integrations/github/002.png">
 
-      <p>Select "Humbug" from the list, fill in the API key and email address for your bot, tick the "active" tickybox, and pick "Update settings":</p>
+      <p>Select "Humbug" from the list, fill in the API key and email
+      address for your bot, check the "active" checkbox, and pick
+      "Update settings":</p>
       <img src="/static/images/integrations/github/003.png">
 
       <p><b>Congratulations! You're done!</b><br /> When people push
 to your repository, you'll see a commit message like the
 following, to the stream <code>commits</code> with a subject that matches the respository name (in this case "humbug-test"):</p>
-      <img style="screenshot" src="/static/images/integrations/github/004.png">
+      <img class="screenshot" src="/static/images/integrations/github/004.png">
 
       <p>
         <a href="#services">^ Back to top</a>
@@ -92,7 +94,7 @@ following, to the stream <code>commits</code> with a subject that matches the re
       like the following, to the stream <code>trac</code> (or whatever
       you configured above) with a subject that matches the ticket
       name:</p>
-      <img style="screenshot" src="/static/images/integrations/trac/001.png">
+      <img class="screenshot" src="/static/images/integrations/trac/001.png">
 
       <p>
         <a href="#services">^ Back to top</a>
