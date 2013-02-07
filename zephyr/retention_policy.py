@@ -35,23 +35,14 @@ def should_expunge_from_log(msg, now):
     # entries against a consistent "current time".  So the caller passes
     # that time as a parameter.
 
-    if msg.get('type') in ('default_streams', 'realm_created'):
-        # These don't have an associated user.
-        # We could use the 'domain' field, but it probably makes sense to
-        # keep these forever.
+    if msg.get('type') not in ('stream', 'huddle', 'personal'):
+        # Keep all metadata changes like realm_created, subscription_added,
+        # etc.
         return False
 
     # FIXME: Yet another place where we compute the domain manually.
     # See #260.
-    user = msg.get('sender_email')
-    if user is None:
-        user = msg.get('user')
-    if user is None:
-        # Avoid printing the entire message, but give enough information to find it later.
-        # Print the repr of the timestamp; otherwise it gets rounded!
-        print >>sys.stderr, "WARNING: Can't get user for entry at", repr(msg['timestamp'])
-        return False
-    domain = user.split('@', 1)[1]
+    domain = msg['sender_email'].split('@', 1)[1]
 
     if domain not in max_age:
         # Keep forever.
