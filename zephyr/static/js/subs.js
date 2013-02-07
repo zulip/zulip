@@ -562,7 +562,10 @@ $(function () {
                     }
                     return format_member_list_elem(people_dict[elem].full_name, elem);
                 });
-                $.each(subscribers.sort(), function (idx, elem) {
+                $.each(subscribers.sort().reverse(), function (idx, elem) {
+                    // add_to_member_list *prepends* the element,
+                    // so we need to sort in reverse order for it to
+                    // appear in alphabetical order.
                     add_to_member_list(list, elem);
                 });
             },
