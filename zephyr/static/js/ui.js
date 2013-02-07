@@ -753,6 +753,7 @@ $(function () {
     notifications.initialize();
     hashchange.initialize();
     invite.initialize();
+    activity.initialize();
 
     $("body").bind('click', function () {
         ui.hide_actions_popover();
@@ -911,6 +912,19 @@ exports.add_narrow_filter = function(name, type, uri) {
 
 exports.remove_narrow_filter = function (name, type) {
     $("#" + type + "_filters li[data-name='" + encodeURIComponent(name) + "']").remove();
+};
+
+exports.set_presence_list = function(users, presence_info) {
+    $('#user_presences').empty();
+    $.each(users, function(idx, email) {
+        var user = $('<li>').html($('<a>').attr('href', '#narrow/pm-with/' + email)
+                                          .text(people_dict[email].full_name));
+        if (presence_info[email]) {
+            user.prepend($('<img>').addClass('active-icon').attr('src', '/static/images/green-dot.png'));
+        }
+
+        $('#user_presences').append(user);
+    });
 };
 
 return exports;

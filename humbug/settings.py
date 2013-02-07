@@ -223,6 +223,7 @@ PIPELINE_JS = {
             'js/hashchange.js',
             'js/invite.js',
             'js/zephyr.js',
+            'js/activity.js',
         ),
         'output_filename': 'min/app.js'
     },

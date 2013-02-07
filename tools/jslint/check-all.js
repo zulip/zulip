@@ -60,6 +60,9 @@ var globals =
     // util.js
     + ' util'
 
+    // activity.js
+    + ' activity'
+
     // zephyr.js
     + ' message_array message_dict get_updates_params'
     + ' clear_table add_to_table add_messages'

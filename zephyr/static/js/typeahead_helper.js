@@ -108,17 +108,26 @@ exports.sorter = function (query, objs, get_item) {
    return results.matches.concat(results.rest);
 };
 
+exports.compare_by_pms = function(user_a, user_b) {
+    var x_count = 0, y_count = 0;
+    if (typeahead_helper.private_message_mapped[user_a]) {
+        x_count = typeahead_helper.private_message_mapped[user_a].count;
+    }
+    if (typeahead_helper.private_message_mapped[user_b]) {
+        y_count = typeahead_helper.private_message_mapped[user_b].count;
+    }
+
+    if (x_count > y_count) {
+        return -1;
+    } else if (x_count < y_count) {
+        return 1;
+    }
+    return 0;
+};
+
 exports.sort_by_pms = function(objs) {
     objs.sort(function (x, y) {
-        var x_count = typeahead_helper.private_message_mapped[x].count;
-        var y_count = typeahead_helper.private_message_mapped[y].count;
-
-        if (x_count > y_count) {
-            return -1;
-        } else if (x_count < y_count) {
-            return 1;
-        }
-        return 0;
+        return exports.compare_by_pms(x, y);
     });
 
     return objs;

@@ -876,3 +876,19 @@ table.floating_recipient {
     max-height: 400px;
     overflow-y: scroll;
 }
+
+li img.active-icon {
+    margin-left: -14px;
+    margin-right: 4px;
+    margin-bottom: 2px;
+}
+
+#user_presences_scroll {
+    max-height: 20em;
+
+    overflow: auto;
+}
+
+#user_presences {
+    margin-left: 16px;
+}
