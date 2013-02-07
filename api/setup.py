@@ -3,6 +3,7 @@
 
 import humbug
 
+import glob
 from distutils.core import setup
 
 setup(name='humbug',
@@ -19,6 +20,8 @@ setup(name='humbug',
       ],
       url='https://humbughq.com/dist/api/',
       packages=['humbug'],
-      data_files=[('examples', ["examples/humbugrc", "examples/send-message"])],
+      data_files=[('examples', ["examples/humbugrc", "examples/send-message"]),
+                  ('integrations', glob.glob('integrations/*')),
+                  ],
       scripts=["bin/humbug-send"],
      )
