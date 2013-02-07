@@ -246,6 +246,8 @@ class humbug_app_frontend {
 
   # TODO: Add /usr/lib/nagios/plugins/check_send_receive_time ->
   # /home/humbug/humbug/api/humbug/bots/check_send_receive.py symlink
+
+  # TODO: Setup the API distribution directory at /srv/www/dist/api/.
 }
 
 # TODO: Setup dotdeb repository for this, including apt preferences to
