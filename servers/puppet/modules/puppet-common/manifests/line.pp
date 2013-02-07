@@ -27,13 +27,13 @@ define common::line($file, $line, $ensure = 'present') {
 	case $ensure {
 		default : { err ( "unknown ensure value '${ensure}'" ) }
 		present: {
-			exec { "echo '${line}' >> '${file}'":
-				unless => "grep -qFx '${line}' '${file}'"
+			exec { "/bin/echo '${line}' >> '${file}'":
+				unless => "/bin/grep -qFx '${line}' '${file}'"
 			}
 		}
 		absent: {
-			exec { "perl -ni -e 'print if \$_ ne \"${line}\n\";' '${file}'":
-				onlyif => "grep -qFx '${line}' '${file}'"
+			exec { "/usr/bin/perl -ni -e 'print if \$_ ne \"${line}\n\";' '${file}'":
+				onlyif => "/bin/grep -qFx '${line}' '${file}'"
 			}
 		}
 	}
