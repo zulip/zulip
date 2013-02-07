@@ -80,7 +80,8 @@ def do_create_user(email, password, realm, full_name, short_name,
                'timestamp': time.time(),
                'full_name': full_name,
                'short_name': short_name,
-               'user': email})
+               'user': email,
+               'domain': realm.domain})
     return create_user(email, password, realm, full_name, short_name, active)
 
 def compute_mit_user_fullname(email):
