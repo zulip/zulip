@@ -342,7 +342,6 @@ function ajaxSubscribe(stream) {
             } else {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.subscribed[email][0];
-                ui.report_success("Subscribed to " + true_stream_name, $("#subscriptions-status"));
             }
             mark_subscribed(true_stream_name);
         },
@@ -364,8 +363,6 @@ function ajaxUnsubscribe(stream) {
             $("#subscriptions-status").hide();
             if (res.removed.length === 0) {
                 name = res.not_subscribed[0];
-                ui.report_success("Already not subscribed to " + name,
-                               $("#subscriptions-status"));
             } else {
                 name = res.removed[0];
             }
