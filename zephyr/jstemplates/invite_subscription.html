@@ -2,9 +2,11 @@
 <a href="#" onclick="invite.set_all_streams(event, true);">Check all</a> |
 <a href="#" onclick="invite.set_all_streams(event, false);">Uncheck all</a>
 <div id="stream-checkboxes">
-  {{#each subscriptions}}
+  {{#each streams}}
   <label class="checkbox">
-    <input type="checkbox" name="stream" value="{{this}}" checked="true"> {{this}}
+    <input type="checkbox" name="stream" value="{{name}}"
+           {{#unless invite_only}}checked="true"{{/unless}}> {{name}}
+    {{#if invite_only}}<i class="icon-lock"></i>{{/if}}
   </label>
   {{/each}}
 </div>
