@@ -10,23 +10,23 @@ class humbug::base {
 
   # FIXME: Stop using pip since it is insecure
   exec {"pip":
-    command  => "pip install django-jstemplate",
+    command  => "/usr/bin/pip install django-jstemplate",
     onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/jstemplate"
   }
   exec {"pip2":
-    command  => "pip install markdown",
+    command  => "/usr/bin/pip install markdown",
     onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/markdown"
   }
   exec {"pip3":
-    command  => "pip install requests",
+    command  => "/usr/bin/pip install requests",
     onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/requests"
   }
   exec {"pip4":
-    command  => "pip install pika",
+    command  => "/usr/bin/pip install pika",
     onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/pika"
   }
   exec {"pip5":
-    command  => "pip install South",
+    command  => "/usr/bin/pip install South",
     onlyif   => "test ! -d /usr/local/lib/python2.6/dist-packages/south"
   }
 

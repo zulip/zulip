@@ -41,13 +41,13 @@ class humbug::postgres {
   }
 
   exec { "sysctl_p":
-    command  => "sysctl -p /etc/sysctl.d/30-postgresql-shm.conf",
+    command  => "/sbin/sysctl -p /etc/sysctl.d/30-postgresql-shm.conf",
     require  => [ Common::Append_if_no_such_line['shmmax'],
                   Common::Append_if_no_such_line['shmall'],
                 ],
   }
 
   exec { "disable_logrotate":
-    command => "dpkg-divert --rename --divert /etc/logrotate.d/postgresql-common.disabled --add /etc/logrotate.d/postgresql-common"
+    command => "/usr/bin/dpkg-divert --rename --divert /etc/logrotate.d/postgresql-common.disabled --add /etc/logrotate.d/postgresql-common",
   }
 }
