@@ -99,10 +99,12 @@ class humbug::base {
     ensure     => file,
   }
 
+  # TODO: we should really just have a known sshd_config file
   common::line { 'no_password_auth':
     file       => '/etc/ssh/sshd_config',
     line       => 'PasswordAuthentication no',
-    require    => Package['openssh-server'],
+    subscribe  => File['/etc/ssh/sshd_config'],
+    notify     => Service['ssh'],
   }
 
   service { 'ssh':
