@@ -99,6 +99,3 @@ for ln in sys.stdin:
     elif refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
         send_bot_message(oldrev, newrev, refname)
         update_deployment("staging.humbughq.com", oldrev, newrev, "origin/master")
-    elif refname in ["refs/heads/hunt"]:
-        send_bot_message(oldrev, newrev, refname)
-        update_deployment("hunt.humbughq.com", oldrev, newrev, "origin/hunt")
