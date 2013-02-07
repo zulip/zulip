@@ -5,7 +5,8 @@ from django.utils.timezone import now
 from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
-    filter_by_subscriptions, get_display_recipient, Realm, Client
+    filter_by_subscriptions, get_display_recipient, Realm, Client, \
+    PreregistrationUser
 from zephyr.tornadoviews import json_get_updates, api_get_messages
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
 from zephyr.lib.initial_password import initial_password, initial_api_key
@@ -1142,6 +1143,60 @@ earl-test@humbughq.com""", ["Denmark"]))
         self.assert_json_error(self.invite("iago-test@humbughq.com", ["NotARealStream"]),
                 "Stream does not exist: NotARealStream. No invites were sent.")
 
+    def test_invite_existing_user(self):
+        """
+        If you invite an address already using Humbug, no invitation is sent.
+        """
+        self.login("hamlet@humbughq.com")
+        self.assert_json_error(
+            self.client.post("/json/invite_users",
+                             {"invitee_emails": "hamlet@humbughq.com",
+                              "stream": ["Denmark"]}),
+            "We weren't able to invite anyone.")
+        self.assertRaises(PreregistrationUser.DoesNotExist,
+                          lambda: PreregistrationUser.objects.get(
+                email="hamlet@humbughq.com"))
+
+    def test_invite_some_existing_some_new(self):
+        """
+        If you invite a mix of already existing and new users, invitations are
+        only sent to the new users.
+        """
+        self.login("hamlet@humbughq.com")
+        existing = ["hamlet@humbughq.com", "othello@humbughq.com"]
+        new = ["foo-test@humbughq.com", "bar-test@humbughq.com"]
+
+        result = self.client.post("/json/invite_users",
+                                  {"invitee_emails": "\n".join(existing + new),
+                                   "stream": ["Denmark"]})
+        self.assert_json_error(result,
+                               "Some of those addresses are already using Humbug, \
+so we didn't send them an invitation. We did send invitations to everyone else!")
+
+        for email in existing:
+            self.assertRaises(PreregistrationUser.DoesNotExist,
+                              lambda: PreregistrationUser.objects.get(
+                    email=email))
+        for email in new:
+            self.assertTrue(PreregistrationUser.objects.get(email=email))
+
+    def test_invite_outside_domain_in_open_realm(self):
+        """
+        In a realm with `restricted_to_domain = False`, you can invite people
+        with a different domain from that of the realm or your e-mail address.
+        """
+        self.login("hamlet@humbughq.com")
+        external_address = "foo@example.com"
+
+        self.assert_json_error(
+            self.invite(external_address, ["Denmark"]),
+            "Some emails did not validate, so we didn't send any invitations.")
+
+        humbug_realm = Realm.objects.get(domain="humbughq.com")
+        humbug_realm.restricted_to_domain = False
+        humbug_realm.save()
+
+        self.assert_json_success(self.invite(external_address, ["Denmark"]))
 
 class ChangeSettingsTest(AuthedTestCase):
     fixtures = ['messages.json']
