@@ -6,9 +6,10 @@ class humbug::postgres {
 
   file { '/etc/sysctl.d/30-postgresql-shm.conf':
     ensure => file,
-    owner  => root,
-    group  => root,
-    mode   => 644
+    owner  => 'root',
+    group  => 'root',
+    mode   => 644,
+    source   => 'puppet:///modules/humbug/postgresql/30-postgresql-shm.conf',
   }
 
   file { "/etc/postgresql/9.1/main/postgresql.conf":
@@ -29,25 +30,10 @@ class humbug::postgres {
     source => "puppet:///modules/humbug/postgresql/pg_hba.conf",
   }
 
-  common::line { 'shmmax':
-    require    => [ Package['postgresql-9.1'],
-                    File["/etc/sysctl.d/30-postgresql-shm.conf"] ],
-    file       => '/etc/sysctl.d/30-postgresql-shm.conf',
-    line       => 'kernel.shmmax = 6979321856',
-  }
-
-  common::line { 'shmall':
-    require    => [ Package['postgresql-9.1'],
-                    File["/etc/sysctl.d/30-postgresql-shm.conf"] ],
-    file       => '/etc/sysctl.d/30-postgresql-shm.conf',
-    line       => 'kernel.shmall = 1703936',
-  }
-
   exec { "sysctl_p":
-    command  => "/sbin/sysctl -p /etc/sysctl.d/30-postgresql-shm.conf",
-    require  => [ Common::Line['shmmax'],
-                  Common::Line['shmall'],
-                ],
+    command   => "/sbin/sysctl -p /etc/sysctl.d/30-postgresql-shm.conf",
+    subscribe => File['/etc/sysctl.d/30-postgresql-shm.conf'],
+    refreshonly => true,
   }
 
   exec { "disable_logrotate":
