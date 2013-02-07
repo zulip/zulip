@@ -2,17 +2,17 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
-from django.utils.timezone import utc, now
+from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.core import validators
 from django.contrib.auth.views import login as django_login_page
 from django.db.models import Q
 from django.core.mail import send_mail
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
-    Recipient, get_display_recipient, get_huddle, Realm, UserMessage, \
+    Recipient, get_huddle, Realm, UserMessage, \
     StreamColor, PreregistrationUser, get_client, MitUser, User, UserActivity, \
     MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH, get_stream
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
