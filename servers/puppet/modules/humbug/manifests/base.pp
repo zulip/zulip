@@ -97,14 +97,10 @@ class humbug::base {
   file { '/etc/ssh/sshd_config':
     require    => Package['openssh-server'],
     ensure     => file,
-  }
-
-  # TODO: we should really just have a known sshd_config file
-  common::line { 'no_password_auth':
-    file       => '/etc/ssh/sshd_config',
-    line       => 'PasswordAuthentication no',
-    subscribe  => File['/etc/ssh/sshd_config'],
-    notify     => Service['ssh'],
+    source     => 'puppet:///modules/humbug/sshd_config',
+    owner      => 'root',
+    group      => 'root',
+    mode       => 644,
   }
 
   service { 'ssh':
