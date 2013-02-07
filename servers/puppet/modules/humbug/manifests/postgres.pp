@@ -52,5 +52,6 @@ class humbug::postgres {
 
   exec { "disable_logrotate":
     command => "/usr/bin/dpkg-divert --rename --divert /etc/logrotate.d/postgresql-common.disabled --add /etc/logrotate.d/postgresql-common",
+    creates => '/etc/logrotate.d/postgresql-common.disabled',
   }
 }
