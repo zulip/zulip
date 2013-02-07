@@ -1079,7 +1079,6 @@ class GetOldMessagesTest(AuthedTestCase):
         self.exercise_bad_narrow_operand("pm-with", ['non-existent-user@humbughq.com'],
             "Invalid narrow operator: unknown user")
 
-
 class InviteUserTest(AuthedTestCase):
     fixtures = ['messages.json']
 
@@ -1097,14 +1096,22 @@ class InviteUserTest(AuthedTestCase):
                 {"invitee_emails": users,
                     "stream": streams})
 
+    def check_sent_emails(self, correct_recipients):
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), len(correct_recipients))
+        email_recipients = [email.recipients()[0] for email in outbox]
+        self.assertItemsEqual(email_recipients, correct_recipients)
+
     def test_successful_invite_user(self):
         """
         A call to /json/invite_users with valid parameters causes an invitation
         email to be sent.
         """
         self.login("hamlet@humbughq.com")
-        self.assert_json_success(self.invite("alice-test@humbughq.com", ["Denmark"]))
-        self.assertTrue(find_key_by_email("alice-test@humbughq.com"))
+        invitee = "alice-test@humbughq.com"
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(invitee))
+        self.check_sent_emails([invitee])
 
     def test_multi_user_invite(self):
         """
@@ -1120,6 +1127,8 @@ dave-test@humbughq.com
 earl-test@humbughq.com""", ["Denmark"]))
         for user in ("bob", "carol", "dave", "earl"):
             self.assertTrue(find_key_by_email("%s-test@humbughq.com" % user))
+        self.check_sent_emails(["bob-test@humbughq.com", "carol-test@humbughq.com",
+                                "dave-test@humbughq.com", "earl-test@humbughq.com"])
 
     def test_missing_or_invalid_params(self):
         """
@@ -1134,6 +1143,7 @@ earl-test@humbughq.com""", ["Denmark"]))
             self.assert_json_error(
                 self.invite(address, ["Denmark"]),
                 "Some emails did not validate, so we didn't send any invitations.")
+        self.check_sent_emails([])
 
     def test_invalid_stream(self):
         """
@@ -1142,6 +1152,7 @@ earl-test@humbughq.com""", ["Denmark"]))
         self.login("hamlet@humbughq.com")
         self.assert_json_error(self.invite("iago-test@humbughq.com", ["NotARealStream"]),
                 "Stream does not exist: NotARealStream. No invites were sent.")
+        self.check_sent_emails([])
 
     def test_invite_existing_user(self):
         """
@@ -1156,6 +1167,7 @@ earl-test@humbughq.com""", ["Denmark"]))
         self.assertRaises(PreregistrationUser.DoesNotExist,
                           lambda: PreregistrationUser.objects.get(
                 email="hamlet@humbughq.com"))
+        self.check_sent_emails([])
 
     def test_invite_some_existing_some_new(self):
         """
@@ -1173,12 +1185,16 @@ earl-test@humbughq.com""", ["Denmark"]))
                                "Some of those addresses are already using Humbug, \
 so we didn't send them an invitation. We did send invitations to everyone else!")
 
+        # We only created accounts for the new users.
         for email in existing:
             self.assertRaises(PreregistrationUser.DoesNotExist,
                               lambda: PreregistrationUser.objects.get(
                     email=email))
         for email in new:
             self.assertTrue(PreregistrationUser.objects.get(email=email))
+
+        # We only sent emails to the new users.
+        self.check_sent_emails(new)
 
     def test_invite_outside_domain_in_open_realm(self):
         """
@@ -1197,6 +1213,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         humbug_realm.save()
 
         self.assert_json_success(self.invite(external_address, ["Denmark"]))
+        self.check_sent_emails([external_address])
 
 class ChangeSettingsTest(AuthedTestCase):
     fixtures = ['messages.json']
