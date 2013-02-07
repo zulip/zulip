@@ -39,7 +39,6 @@ exports.initialize = function () {
     invitee_emails.autosize();
     $("#invite_user_form").ajaxForm({
         dataType: 'json',
-        clearForm: true,
         beforeSubmit: function(arr, $form, options) {
             reset_error_messages();
             // TODO: You could alternatively parse the textarea here, and return errors to
@@ -52,6 +51,7 @@ exports.initialize = function () {
         },
         success: function (resp, statusText, xhr, form) {
             $('#submit-invitation').button('reset');
+            $('#invitee_emails').val('');
             invite_status.text('Users invited successfully.')
                           .addClass('alert-success')
                           .show();
