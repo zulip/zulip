@@ -1120,9 +1120,9 @@ earl-test@humbughq.com""", ["Denmark"]))
         for user in ("bob", "carol", "dave", "earl"):
             self.assertTrue(find_key_by_email("%s-test@humbughq.com" % user))
 
-    def test_missing_params(self):
+    def test_missing_or_invalid_params(self):
         """
-        Tests inviting with various invalid parameters.
+        Tests inviting with various missing or invalid parameters.
         """
         self.login("hamlet@humbughq.com")
         self.assert_json_error(
@@ -1132,7 +1132,7 @@ earl-test@humbughq.com""", ["Denmark"]))
         for address in ("noatsign.com", "outsideyourdomain@example.net"):
             self.assert_json_error(
                 self.invite(address, ["Denmark"]),
-                "Some emails did not validate. No invites have been sent.")
+                "Some emails did not validate, so we didn't send any invitations.")
 
     def test_invalid_stream(self):
         """
