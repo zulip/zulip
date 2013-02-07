@@ -94,10 +94,15 @@ class humbug::base {
     source     => '/root/humbug/servers/puppet/files/apt/apt.conf.d/02periodic',
   }
 
-  common::append { '/etc/ssh/sshd_config':
+  file { '/etc/ssh/sshd_config':
     require    => Package['openssh-server'],
+    ensure     => file,
+  }
+
+  common::line { 'no_password_auth':
     file       => '/etc/ssh/sshd_config',
     line       => 'PasswordAuthentication no',
+    require    => Package['openssh-server'],
   }
 
   service { 'ssh':

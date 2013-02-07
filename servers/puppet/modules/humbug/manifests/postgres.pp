@@ -29,21 +29,24 @@ class humbug::postgres {
     source => "/root/humbug/servers/puppet/files/postgresql/pg_hba.conf",
   }
 
-  common::append_if_no_such_line { 'shmmax':
-    require    => Package['postgresql-9.1'],
+  common::line { 'shmmax':
+    require    => [ Package['postgresql-9.1'],
+                    File["/etc/sysctl.d/30-postgresql-shm.conf"] ],
     file       => '/etc/sysctl.d/30-postgresql-shm.conf',
-    line       => 'kernel.shmmax = 6979321856'
+    line       => 'kernel.shmmax = 6979321856',
   }
-  common::append_if_no_such_line { 'shmall':
-    require    => Package['postgresql-9.1'],
+
+  common::line { 'shmall':
+    require    => [ Package['postgresql-9.1'],
+                    File["/etc/sysctl.d/30-postgresql-shm.conf"] ],
     file       => '/etc/sysctl.d/30-postgresql-shm.conf',
-    line       => 'kernel.shmall = 1703936'
+    line       => 'kernel.shmall = 1703936',
   }
 
   exec { "sysctl_p":
     command  => "/sbin/sysctl -p /etc/sysctl.d/30-postgresql-shm.conf",
-    require  => [ Common::Append_if_no_such_line['shmmax'],
-                  Common::Append_if_no_such_line['shmall'],
+    require  => [ Common::Line['shmmax'],
+                  Common::Line['shmall'],
                 ],
   }
 
