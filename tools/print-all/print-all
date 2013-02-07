@@ -25,7 +25,10 @@ from os import path
 
 exclude_trees = """
 zephyr/static/third
-servers/puppet/modules
+servers/puppet/modules/common
+servers/puppet/modules/puppet-common
+servers/puppet/modules/apt
+servers/puppet/modules/puppet-apt
 certs
 """.split()
 

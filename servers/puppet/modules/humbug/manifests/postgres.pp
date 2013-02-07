@@ -17,7 +17,7 @@ class humbug::postgres {
     owner  => "postgres",
     group  => "postgres",
     mode => 644,
-    source => "/root/humbug/servers/puppet/files/postgresql/postgresql.conf",
+    source => "puppet:///modules/humbug/postgresql/postgresql.conf",
   }
 
   file { "/etc/postgresql/9.1/main/pg_hba.conf":
@@ -26,7 +26,7 @@ class humbug::postgres {
     owner  => "postgres",
     group  => "postgres",
     mode => 640,
-    source => "/root/humbug/servers/puppet/files/postgresql/pg_hba.conf",
+    source => "puppet:///modules/humbug/postgresql/pg_hba.conf",
   }
 
   common::line { 'shmmax':

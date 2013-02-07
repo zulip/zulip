@@ -21,7 +21,7 @@ if ! [ -e "$amazon_key_file" ]; then
     exit 1
 fi
 
-server_private_key_file=$humbug_root/servers/puppet/files/id_rsa
+server_private_key_file=$humbug_root/servers/puppet/modules/humbug/files/id_rsa
 if ! [ -e "$server_private_key_file" ]; then
     echo "You need a server ssh key at $server_private_key_file"
     exit 1
@@ -73,7 +73,7 @@ scp -i "$amazon_key_file" "$humbug_cert_file" root@"$server":/root/humbug/certs/
 # TODO: Copy the real certs into place for prod servers
 
 ssh "$server" -t -i "$amazon_key_file" -lroot <<EOF
-cp -a /root/humbug/servers/puppet/puppet.conf /etc/puppet/
+cp -a /root/humbug/servers/puppet/modules/humbug/files/puppet.conf /etc/puppet/
 # HACK: run puppet twice to workaround bug in puppet's dependency
 # resolution (namely apache module 'ssl' being enabled _after_ the
 # sites that use it )

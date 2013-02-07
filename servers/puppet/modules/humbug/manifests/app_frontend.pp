@@ -13,7 +13,7 @@ class humbug::app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "/root/humbug/servers/puppet/files/nginx/nginx.conf",
+    source => "puppet:///modules/humbug/nginx/nginx.conf",
   }
   file { "/etc/nginx/humbug-include/":
     require => Package[nginx],
@@ -21,7 +21,7 @@ class humbug::app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "/root/humbug/servers/puppet/files/nginx/humbug-include/",
+    source => "puppet:///modules/humbug/nginx/humbug-include/",
   }
   file { "/etc/nginx/sites-available/humbug":
     require => Package[nginx],
@@ -29,7 +29,7 @@ class humbug::app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "/root/humbug/servers/puppet/files/nginx/sites-available/humbug",
+    source => "puppet:///modules/humbug/nginx/sites-available/humbug",
   }
 
   exec {"pip6":

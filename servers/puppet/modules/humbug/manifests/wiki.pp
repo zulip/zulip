@@ -31,6 +31,6 @@ class humbug::wiki {
     recurse => true,
     owner  => "wiki",
     group  => "wiki",
-    source => "/root/humbug/servers/puppet/files/wiki",
+    source => "puppet:///modules/humbug/wiki",
   }
 }

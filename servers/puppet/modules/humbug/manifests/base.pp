@@ -51,7 +51,7 @@ class humbug::base {
     mode       => 600,
     owner      => "humbug",
     group      => "humbug",
-    source     => '/root/humbug/servers/puppet/files/authorized_keys',
+    source     => 'puppet:///modules/humbug/authorized_keys',
   }
 
   file { '/home/humbug/.ssh':
@@ -65,7 +65,7 @@ class humbug::base {
   file { '/root/.ssh/authorized_keys':
     ensure     => file,
     mode       => 600,
-    source     => '/root/humbug/servers/puppet/files/root_authorized_keys',
+    source     => 'puppet:///modules/humbug/root_authorized_keys',
   }
 
   # This is just an empty file.  It's used by the app to test if it's running
@@ -73,25 +73,25 @@ class humbug::base {
   file { '/etc/humbug-server':
     ensure     => file,
     mode       => 644,
-    source     => '/root/humbug/servers/puppet/files/humbug-server',
+    source     => 'puppet:///modules/humbug/humbug-server',
   }
 
   file { '/etc/puppet/puppet.conf':
     ensure     => file,
     mode       => 640,
-    source     => '/root/humbug/servers/puppet/puppet.conf',
+    source     => 'puppet:///modules/humbug/puppet.conf',
   }
 
   file { '/etc/iptables/rules':
     ensure     => file,
     mode       => 600,
-    source     => '/root/humbug/servers/puppet/files/iptables/rules',
+    source     => 'puppet:///modules/humbug/iptables/rules',
   }
 
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure     => file,
     mode       => 644,
-    source     => '/root/humbug/servers/puppet/files/apt/apt.conf.d/02periodic',
+    source     => 'puppet:///modules/humbug/apt/apt.conf.d/02periodic',
   }
 
   file { '/etc/ssh/sshd_config':

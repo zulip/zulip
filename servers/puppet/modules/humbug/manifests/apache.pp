@@ -19,7 +19,7 @@ class humbug::apache {
     owner  => "www-data",
     group  => "www-data",
     mode => 600,
-    source => "/root/humbug/servers/puppet/files/apache/users",
+    source => "puppet:///modules/humbug/apache/users",
   }
 
   file { "/etc/apache2/certs/":
@@ -53,7 +53,7 @@ class humbug::apache {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "/root/humbug/servers/puppet/files/apache/ports.conf",
+    source => "puppet:///modules/humbug/apache/ports.conf",
   }
 
   file { "/etc/apache2/sites-available/":
@@ -62,7 +62,7 @@ class humbug::apache {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "/root/humbug/servers/puppet/files/apache/sites/",
+    source => "puppet:///modules/humbug/apache/sites/",
   }
 
   apache2site { 'humbug-default':
