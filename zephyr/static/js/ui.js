@@ -399,8 +399,8 @@ function show_userinfo_popover(element, id) {
                 // Only show the time-travel popover when narrowed
                 return;
             }
+            // Bootstrap takes the title from the 'title' attribute of elt
             elt.popover({placement: "bottom",
-                         title: templates.userinfo_popover_title(message),
                          content: templates.timeinfo_popover_content(message),
                          trigger: "manual"
                         });
