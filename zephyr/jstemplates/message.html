@@ -47,20 +47,20 @@
     class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}">
     <td class="message_picture">
     {{#include_sender}}
-        <img class="img-rounded profile_picture user_info_hover"
+        <img class="img-rounded profile_picture actions_hover"
              src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30?stamp={{stamp}}"/>
     {{/include_sender}}
     </td>
     <td class="pointer"><p></p></td>
     <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
         {{#include_sender}}
-        <span class="message_sender user_info_hover">
+        <span class="message_sender actions_hover">
             <img class="inline_profile_picture message_body_gravatar img-rounded" src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30?stamp={{stamp}}"/>
             <span class="sender_name">{{sender_full_name}}</span>
             <span class="sender_email invisible">{{sender_email}}</span>
         </span>
     {{/include_sender}}
-        <span class="message_time user_info_hover"
+        <span class="message_time actions_hover"
               title="{{full_date_str}}">{{{timestr}}}</span>
         <div class="message_content">{{{content}}}</div>
     </td>

@@ -103,9 +103,9 @@ function process_hotkey(e) {
             select_message(rows.last_visible(), {then_scroll: false});
         }
         return false;
-    case 27: // Esc: close userinfo popup, cancel compose, clear a find, or un-narrow
-        if (ui.userinfo_currently_popped()) {
-            ui.hide_userinfo_popover();
+    case 27: // Esc: close actions popup, cancel compose, clear a find, or un-narrow
+        if (ui.actions_currently_popped()) {
+            ui.hide_actions_popover();
         } else if (compose.composing()) {
             compose.cancel();
         } else {

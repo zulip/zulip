@@ -635,7 +635,7 @@ table.floating_recipient {
     height: 20px;
 }
 
-.userinfo_popover a {
+.actions_popover a {
     cursor: pointer;
 }
 

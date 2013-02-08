@@ -382,16 +382,16 @@ exports.show_api_key_box = function () {
     $("#api_key_button_box").hide();
 };
 
-var current_userinfo_popover_elem;
-function show_userinfo_popover(element, id) {
+var current_actions_popover_elem;
+function show_actions_popover(element, id) {
     select_message_by_id(id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
         var content, message = message_dict[id];
         if (elt.hasClass("message_sender") || elt.hasClass("profile_picture")) {
             elt.popover({placement: "bottom",
-                         title: templates.userinfo_popover_title(message),
-                         content: templates.userinfo_popover_content(message),
+                         title: templates.actions_popover_title(message),
+                         content: templates.actions_popover_content(message),
                          trigger: "manual"
                         });
         } else if (elt.hasClass("message_time")) {
@@ -406,19 +406,19 @@ function show_userinfo_popover(element, id) {
                         });
         }
         elt.popover("show");
-        current_userinfo_popover_elem = elt;
+        current_actions_popover_elem = elt;
     }
 }
 
-exports.hide_userinfo_popover = function () {
-    if (ui.userinfo_currently_popped()) {
-        current_userinfo_popover_elem.popover("destroy");
-        current_userinfo_popover_elem = undefined;
+exports.hide_actions_popover = function () {
+    if (ui.actions_currently_popped()) {
+        current_actions_popover_elem.popover("destroy");
+        current_actions_popover_elem = undefined;
     }
 };
 
-exports.userinfo_currently_popped = function () {
-    return current_userinfo_popover_elem !== undefined;
+exports.actions_currently_popped = function () {
+    return current_actions_popover_elem !== undefined;
 };
 
 exports.safari_composebox_workaround = function () {
@@ -753,7 +753,7 @@ $(function () {
     invite.initialize();
 
     $("body").bind('click', function () {
-        ui.hide_userinfo_popover();
+        ui.hide_actions_popover();
     });
 
     $("#main_div").on("click", ".messagebox", function (e) {
@@ -790,32 +790,32 @@ $(function () {
         hide_email();
     });
 
-    $("#main_div").on("mouseover", ".user_info_hover", function (e) {
+    $("#main_div").on("mouseover", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
         show_email(row);
         row.find(".sender_name").addClass("sender_hovered");
     });
 
-    $("#main_div").on("mouseout", ".user_info_hover", function (e) {
+    $("#main_div").on("mouseout", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
         hide_email();
         row.find(".sender_name").removeClass("sender_hovered");
     });
 
-    $("#main_div").on("click", ".user_info_hover", function (e) {
+    $("#main_div").on("click", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
-        var last_popover_elem = current_userinfo_popover_elem;
-        ui.hide_userinfo_popover();
+        var last_popover_elem = current_actions_popover_elem;
+        ui.hide_actions_popover();
         if (last_popover_elem === undefined
             || last_popover_elem.get()[0] !== this) {
             // Only show the popover if either no popover is
             // currently up or if the user has clicked on a different
-            // user_info_hover element than the one that deployed the
+            // actions_hover element than the one that deployed the
             // last popover.  That is, we want it to be the case that
             // a user can dismiss a popover by clicking on the same
             // element that caused the popover
-            show_userinfo_popover(this, rows.id(row));
+            show_actions_popover(this, rows.id(row));
         }
     });
 

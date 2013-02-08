@@ -1,5 +1,5 @@
-{{! Client-side Mustache template for the contents of the little "userinfo" popup that shows up when you click on a name }}
-<ul class="nav nav-list userinfo_popover">
+{{! Contents of the "message actions" popup }}
+<ul class="nav nav-list actions_popover">
   <li>
     <a onclick="respond_to_message();">
       <i class="icon-share-alt"></i> Reply to this {{#if is_stream}}stream{{else}}private message{{/if}}
