@@ -11,23 +11,28 @@ class humbug::base {
   # FIXME: Stop using pip since it is insecure
   exec {"pip":
     command  => "/usr/bin/pip install django-jstemplate",
-    creates  => "/usr/local/lib/python2.6/dist-packages/jstemplate"
+    creates  => "/usr/local/lib/python2.6/dist-packages/jstemplate",
+    require  => Package['python-pip'],
   }
   exec {"pip2":
     command  => "/usr/bin/pip install markdown",
-    creates  => "/usr/local/lib/python2.6/dist-packages/markdown"
+    creates  => "/usr/local/lib/python2.6/dist-packages/markdown",
+    require  => Package['python-pip'],
   }
   exec {"pip3":
     command  => "/usr/bin/pip install requests",
-    creates  => "/usr/local/lib/python2.6/dist-packages/requests"
+    creates  => "/usr/local/lib/python2.6/dist-packages/requests",
+    require  => Package['python-pip'],
   }
   exec {"pip4":
     command  => "/usr/bin/pip install pika",
-    creates  => "/usr/local/lib/python2.6/dist-packages/pika"
+    creates  => "/usr/local/lib/python2.6/dist-packages/pika",
+    require  => Package['python-pip'],
   }
   exec {"pip5":
     command  => "/usr/bin/pip install South",
-    creates  => "/usr/local/lib/python2.6/dist-packages/south"
+    creates  => "/usr/local/lib/python2.6/dist-packages/south",
+    require  => Package['python-pip'],
   }
 
   group { 'humbug':
