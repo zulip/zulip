@@ -14,13 +14,14 @@ from django.core.mail import send_mail
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_huddle, Realm, UserMessage, \
     StreamColor, PreregistrationUser, get_client, MitUser, User, UserActivity, \
-    MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH, get_stream
+    MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH, get_stream, UserPresence
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, \
     do_change_full_name, do_change_enable_desktop_notifications, \
     do_activate_user, add_default_subs, do_create_user, do_send_message, \
     log_subscription_property_change, internal_send_message, \
-    create_stream_if_needed, gather_subscriptions, subscribed_to_stream
+    create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
+    do_update_user_idle
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_active, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -33,7 +34,7 @@ from zephyr.decorator import require_post, \
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error
-from zephyr.lib.timestamp import timestamp_to_datetime
+from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 
 from confirmation.models import Confirmation
 
@@ -1321,3 +1322,22 @@ def api_github_landing(request, user_profile, event=POST,
                                 message_to=["commits"],
                                 forged=False, subject_name=subject,
                                 message_content=content)
+
+@authenticated_json_post_view
+@has_request_variables
+def json_update_active_status(request, user_profile,
+                              status=POST):
+    do_update_user_idle(user_profile, request._client, now(), status)
+    return json_success()
+
+@authenticated_json_post_view
+def json_get_active_statuses(request, user_profile):
+    def presence_to_dict(presence):
+        return {'status': presence.status, 'timestamp': datetime_to_timestamp(presence.timestamp)}
+
+    user_statuses = {}
+    for user_profile in UserProfile.objects.filter(realm=user_profile.realm):
+        statuses = dict((presence.client.name, presence_to_dict(presence)) for presence in UserPresence.objects.filter(user_profile=user_profile))
+        user_statuses[user_profile.user.email] = statuses
+
+    return json_success({'presences': user_statuses})

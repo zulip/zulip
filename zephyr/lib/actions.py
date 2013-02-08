@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, \
-    DefaultStream, StreamColor, \
+    DefaultStream, StreamColor, UserPresence, \
     MAX_MESSAGE_LENGTH, get_client, get_display_recipient, get_stream
 from django.db import transaction, IntegrityError
 from zephyr.lib.initial_password import initial_password
@@ -351,6 +351,21 @@ def do_update_user_activity(user_profile, client, query, log_time):
     activity.count += 1
     activity.last_visit = log_time
     activity.save()
+
+@transaction.commit_on_success
+def do_update_user_idle(user_profile, client, log_time, status):
+    try:
+        (presence, created) = UserPresence.objects.get_or_create(
+            user_profile = user_profile,
+            client = client,
+            defaults = {'timestamp': log_time})
+    except IntegrityError:
+        transaction.commit()
+        presence = UserPresence.objects.get(user_profile = user_profile,
+                                            client = client)
+    presence.timestamp = log_time
+    presence.status = status
+    presence.save()
 
 def process_user_activity_event(event):
     user_profile = UserProfile.objects.get(id=event["user_profile_id"])

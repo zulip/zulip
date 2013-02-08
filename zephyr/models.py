@@ -338,6 +338,20 @@ class UserActivity(models.Model):
     class Meta:
         unique_together = ("user_profile", "client", "query")
 
+class UserPresence(models.Model):
+    user_profile = models.ForeignKey(UserProfile)
+    client = models.ForeignKey(Client)
+
+    # Valid statuses
+    ACTIVE = 1
+    IDLE = 2
+
+    timestamp = models.DateTimeField('presence changed')
+    status = models.PositiveSmallIntegerField(default=ACTIVE)
+
+    class Meta:
+        unique_together = ("user_profile", "client")
+
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm)
     stream = models.ForeignKey(Stream)
