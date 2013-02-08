@@ -264,9 +264,12 @@ def do_activate_user(user, log=True, join_date=timezone.now()):
     user.set_password(initial_password(user.email))
     user.date_joined = join_date
     user.save()
+
     if log:
+        domain = UserProfile.objects.get(user=user).realm.domain
         log_event({'type': 'user_activated',
-                   'user': user.email})
+                   'user': user.email,
+                   'domain': domain})
 
 def do_change_password(user, password, log=True, commit=True):
     user.set_password(password)

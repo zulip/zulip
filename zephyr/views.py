@@ -210,7 +210,9 @@ def accounts_register(request):
 
     # If someone invited you, you are joining their realm regardless
     # of your e-mail address.
-    if prereg_user.referred_by:
+    #
+    # MitUsers can't be referred and don't have a referred_by field.
+    if not mit_beta_user and prereg_user.referred_by:
         domain = prereg_user.referred_by.realm.domain
     else:
         domain = email.split('@')[-1]
