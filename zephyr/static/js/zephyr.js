@@ -483,6 +483,23 @@ function add_message_metadata(message, dummy) {
     return message;
 }
 
+function add_messages_helper(messages, table, center_message_id,
+                             predicate, allow_collapse) {
+    // center_message_id is guaranteed to be between the top and bottom
+    var top_messages = $.grep(messages, function (elem, idx) {
+        return (elem.id < center_message_id && ! message_in_table[table][elem.id]);
+    });
+    var bottom_messages = $.grep(messages, function (elem, idx) {
+        return (elem.id >= center_message_id && ! message_in_table[table][elem.id]);
+    });
+    if (table === "zhome") {
+        message_array = top_messages.concat(message_array).concat(bottom_messages);
+    }
+    add_to_table(top_messages,    table, predicate, "top",    allow_collapse);
+    add_to_table(bottom_messages, table, predicate, "bottom", allow_collapse);
+    return top_messages.length > 0;
+}
+
 function add_messages(messages, add_to_home) {
     var prepended = false;
     if (!messages)
@@ -492,32 +509,16 @@ function add_messages(messages, add_to_home) {
     messages = $.map(messages, add_message_metadata);
 
     if (add_to_home) {
-        // persistent_message_id is guaranteed to be between the top and bottom
-        var top_messages_home = $.grep(messages, function (elem, idx) {
-            return (elem.id < persistent_message_id && ! message_in_table.zhome[elem.id]);
-        });
-        var bottom_messages_home = $.grep(messages, function (elem, idx) {
-            return (elem.id >= persistent_message_id && ! message_in_table.zhome[elem.id]);
-        });
-        message_array = top_messages_home.concat(message_array).concat(bottom_messages_home);
-        add_to_table(top_messages_home,    'zhome', narrow.in_home, "top",    true);
-        add_to_table(bottom_messages_home, 'zhome', narrow.in_home, "bottom", true);
-        if ((top_messages_home.length > 0) && !narrow.active()) {
+        if (add_messages_helper(messages, "zhome", persistent_message_id,
+                                narrow.in_home, true)
+            && !narrow.active()) {
             prepended = true;
         }
     }
 
     if (narrow.active()) {
-        // selected_message_id is guaranteed to be between the top and bottom
-        var top_messages_narrow = $.grep(messages, function (elem, idx) {
-            return (elem.id < selected_message_id && ! message_in_table.zfilt[elem.id]);
-        });
-        var bottom_messages_narrow = $.grep(messages, function (elem, idx) {
-            return (elem.id >= selected_message_id && ! message_in_table.zfilt[elem.id]);
-        });
-        add_to_table(top_messages_narrow,    'zfilt', narrow.predicate(), "top",    narrow.allow_collapse());
-        add_to_table(bottom_messages_narrow, 'zfilt', narrow.predicate(), "bottom", narrow.allow_collapse());
-        if (top_messages_narrow.length > 0) {
+        if (add_messages_helper(messages, "zfilt", selected_message_id,
+                                narrow.predicate(), narrow.allow_collapse())) {
             prepended = true;
         }
     }
