@@ -2,9 +2,6 @@ var narrow = (function () {
 
 var exports = {};
 
-// For tracking where you were before you narrowed.
-var persistent_message_id = 0;
-
 // For narrowing based on a particular message
 var target_id = 0;
 
@@ -213,11 +210,6 @@ exports.activate = function (operators, opts) {
     current_operators = operators;
 
     allow_collapse          = opts.allow_collapse;
-
-    // Your pointer isn't changed when narrowed.
-    if (! was_narrowed) {
-        persistent_message_id = selected_message_id;
-    }
 
     // Before we clear the table, check if anything was highlighted.
     var highlighted = search.something_is_highlighted();

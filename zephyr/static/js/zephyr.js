@@ -6,6 +6,9 @@ var people_dict = {};
 
 var viewport = $(window);
 
+// For tracking where you are in the home view
+var persistent_message_id = -1;
+
 var selected_message_id = -1;  /* to be filled in on document.ready */
 var selected_message = $();    /* = rows.get(selected_message_id)   */
 var get_updates_params = {
@@ -155,6 +158,7 @@ function send_pointer_update() {
 }
 
 $(function () {
+    persistent_message_id = initial_pointer;
     furthest_read = initial_pointer;
     server_furthest_read = initial_pointer;
     $(document).idle({idle: 1000,
@@ -168,13 +172,17 @@ function update_selected_message(message, opts) {
     message.addClass(cls);
 
     var new_selected_id = rows.id(message);
-    if (! narrow.active() && lurk_stream === undefined && new_selected_id > furthest_read)
-    {
-        // Narrowing is a temporary view on top of the home view and
-        // doesn't permanently affect where you are.
-        // Similarly, lurk mode does not affect your pointer.
-        furthest_read = new_selected_id;
+    // Narrowing is a temporary view on top of the home view and
+    // doesn't affect your pointer in the home view.
+    // Similarly, lurk mode does not affect your pointer.
+    if (! narrow.active() && lurk_stream === undefined) {
+        persistent_message_id = new_selected_id;
+        if (new_selected_id > furthest_read)
+        {
+            furthest_read = new_selected_id;
+        }
     }
+
     selected_message_id = new_selected_id;
     selected_message = message;
 }
@@ -484,11 +492,12 @@ function add_messages(messages, add_to_home) {
     messages = $.map(messages, add_message_metadata);
 
     if (add_to_home) {
+        // persistent_message_id is guaranteed to be between the top and bottom
         var top_messages_home = $.grep(messages, function (elem, idx) {
-            return (elem.id < selected_message_id && ! message_in_table.zhome[elem.id]);
+            return (elem.id < persistent_message_id && ! message_in_table.zhome[elem.id]);
         });
         var bottom_messages_home = $.grep(messages, function (elem, idx) {
-            return (elem.id >= selected_message_id && ! message_in_table.zhome[elem.id]);
+            return (elem.id >= persistent_message_id && ! message_in_table.zhome[elem.id]);
         });
         message_array = top_messages_home.concat(message_array).concat(bottom_messages_home);
         add_to_table(top_messages_home,    'zhome', narrow.in_home, "top",    true);
@@ -499,6 +508,7 @@ function add_messages(messages, add_to_home) {
     }
 
     if (narrow.active()) {
+        // selected_message_id is guaranteed to be between the top and bottom
         var top_messages_narrow = $.grep(messages, function (elem, idx) {
             return (elem.id < selected_message_id && ! message_in_table.zfilt[elem.id]);
         });
