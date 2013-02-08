@@ -3,10 +3,12 @@ class humbug::apache {
   package { $apache_packages: ensure => "installed" }
 
   apache2mod { [ "headers", "proxy", "proxy_http", "rewrite", "auth_digest", "ssl" ]:
-    ensure => present,
+    ensure  => present,
+    require => Package['apache2'],
   }
 
   file { "/etc/apache2/users/":
+    require => Package['apache2'],
     ensure   => directory,
     owner    => "www-data",
     group    => "www-data",
@@ -23,6 +25,7 @@ class humbug::apache {
   }
 
   file { "/etc/apache2/certs/":
+    require => Package['apache2'],
     ensure => directory,
     owner => "root",
     group => "root",
