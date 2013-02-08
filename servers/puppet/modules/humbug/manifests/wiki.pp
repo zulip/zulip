@@ -32,5 +32,6 @@ class humbug::wiki {
     owner  => "wiki",
     group  => "wiki",
     source => "puppet:///modules/humbug/wiki",
+    require => User['wiki'],
   }
 }
