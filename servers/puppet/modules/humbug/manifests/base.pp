@@ -91,6 +91,7 @@ class humbug::base {
     ensure     => file,
     mode       => 600,
     source     => 'puppet:///modules/humbug/iptables/rules',
+    require    => Package['iptables-persistent'],
   }
 
   file { '/etc/apt/apt.conf.d/02periodic':
