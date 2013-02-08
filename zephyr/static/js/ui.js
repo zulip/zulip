@@ -259,6 +259,12 @@ function resizehandler(e) {
 $(function () {
     // When the user's profile picture loads this can change the height of the sidebar
     $("img.gravatar-profile").bind('load', resizehandler);
+
+    // We don't have a stream list at MIT.
+    if (domain === "mit.edu") {
+        $("#stream_filters").remove();
+        $("#stream_filters_sep").remove();
+    }
 });
 
 var old_label;
@@ -872,6 +878,18 @@ function sort_narrow_list() {
 
 exports.add_narrow_filter = function(name, type, uri) {
     var list_item;
+
+    /*
+     * We don't give MIT a stream list currently since that would likely be
+     * overwhelming for users given the vast number of streams MIT users are
+     * commonly subscribed to.
+     *
+     * This will not be as much of an issue once we do prioritization of streams
+     * in the list.
+     */
+    if (domain === "mit.edu" && type === "stream") {
+        return false;
+    }
 
     if ($("#" + type + "_filters li[data-name='" + encodeURIComponent(name) + "']").length) {
         // already exists

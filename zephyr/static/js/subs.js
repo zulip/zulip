@@ -97,6 +97,7 @@ function create_sub(stream_name, attrs) {
                             subscribed: true, in_home_view: true, invite_only: false}, attrs);
     stream_info[stream_name.toLowerCase()] = sub;
     if (sub.subscribed) {
+        // This will do nothing on MIT
         ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + encodeURIComponent(stream_name));
     }
     return sub;
@@ -140,6 +141,7 @@ function mark_subscribed(stream_name, attrs) {
         add_sub_to_table(sub);
     } else if (! sub.subscribed) {
         sub.subscribed = true;
+        // This will do nothing on MIT
         ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + encodeURIComponent(stream_name));
         var button = button_for_sub(sub);
         if (button.length !== 0) {
