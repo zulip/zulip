@@ -37,8 +37,8 @@
       <li><a href="#git">Git</a></li>
       {% endcomment %}
       <li><a href="#github">GitHub</a></li>
+      <li><a href="#jenkins">Jenkins (or Hudson)</a></li>
       {% comment %}
-      <li><a href="#jenkins">Jenkins/Hudson</a></li>
       <li><a href="#nagios">Nagios</a></li>
       <li><a href="#pivotal">Pivotal Tracker</a></li>
       <li><a href="#svn">Subversion</a></li>
@@ -73,7 +73,86 @@ following, to the stream <code>commits</code> with a subject that matches the re
         <a href="#services">^ Back to top</a>
       </p>
     </div>
+{#--------------------------------------------------------------------#}
+    <div id="jenkins" class="integration">
+      <h4>Jenkins (or Hudson)</h4>
 
+      <p>Download
+      the <a href="https://humbughq.com/dist/integrations/jenkins/humbug-jenkins-0.1.hpi">Humbug
+      Jenkins plugin</a>. To install the plugin, select "Manage
+      Jenkins", "Manage Plugins", and then "Advanced". Under the
+      section labeled "Upload Plugin",
+      select <code>humbug-jenkins-0.1.hpi</code> from your computer,
+      and upload it:</p>
+
+      <img src="/static/images/integrations/jenkins/001.png">
+      <hr />
+      <img src="/static/images/integrations/jenkins/002.png">
+      <hr />
+      <img src="/static/images/integrations/jenkins/003.png">
+      <hr />
+      <img src="/static/images/integrations/jenkins/004.png">
+
+      <p>After uploading the plugin, restart Jenkins for the
+      installation to take effect. Some versions of Jenkins have a
+      link to restart on the "Install" tab of the "Manage Plugins"
+      page. If your version does not, and you have access to a shell
+      on the computer running Jenkins, <code>service jenkins
+      restart</code> will restart it on a Linux system.</p>
+
+      <p>Once Jenkins has restarted, it's time to configure our
+      plugin. Go to "Manage Jenkins" and then to "Configure
+      System".</p>
+
+      <img src="/static/images/integrations/jenkins/005.png">
+
+      <p>Scroll to the section labeled "Humbug Notification
+      Settings", and specify your bot's email address, API key, and
+      where you'd like your notification messages to go (we recommend,
+      e.g. stream <code>jenkins</code>).</p>
+
+      <p>The other two options you might want to adjust are "Smart
+      Notification" (do you want a message after every single build,
+      or only after a status change?), and "Jenkins URL" -- the URL to
+      your instance of Jenkins, so that we can link you to specific
+      build reports.</p>
+
+      <img src="/static/images/integrations/jenkins/006.png">
+
+      <p>(If you don't see the Humbug option in the list, confirm that
+      the plugin was successfully installed by going to "Manage
+      Jenkins", "Manage Plugins", "Installed", and confirming that
+      "Jenkins Humbug Plugin" appears in the list. If it does not, the
+      plugin was not successfully installed. Make sure that you have
+      the <a href="https://wiki.jenkins-ci.org/display/JENKINS/Maven+2+Project+Plugin">Maven
+      plugin</a> installed and try again, or
+      email <a href="mailto:support@humbughq.com">support@humbughq.com</a>
+      for help.)</p>
+
+      <p>Once you've done that, it's time to configure one of your
+      projects to use the Humbug notification plugin. From your
+      project page, click "Configure" on the left sidebar:</p>
+
+      <img src="/static/images/integrations/jenkins/007.png">
+
+      <p>Then, scroll to the bottom until you find the section labeled
+      "Post-build Actions". Click the dropdown and select "Humbug
+      Notification". It should look as below. Then click "Save".</p>
+
+      <img src="/static/images/integrations/jenkins/008.png">
+
+      <p><b>Congratulations! You're done!</b><br /> When your builds
+      fail or succeed, you'll see a commit message like the following
+      with a subject that matches the project name (in this case
+      "Humbug Test"):</p>
+      <img class="screenshot" src="/static/images/integrations/jenkins/009.png">
+      <img class="screenshot" src="/static/images/integrations/jenkins/010.png">
+
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
+{#--------------------------------------------------------------------#}
     <div id="trac" class="integration">
       <h4>Trac</h4>
       <p>First, download and install our <a href="/api">Python bindings and example scripts</a>.</p>
