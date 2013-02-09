@@ -784,13 +784,13 @@ $(function () {
     $("#main_div").on("mouseover", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
         message_hover(row);
-        row.find(".sender_name").addClass("sender_hovered");
+        row.addClass("actions_hovered");
     });
 
     $("#main_div").on("mouseout", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
         message_unhover();
-        row.find(".sender_name").removeClass("sender_hovered");
+        row.removeClass("actions_hovered");
     });
 
     $("#main_div").on("click", ".actions_hover", function (e) {

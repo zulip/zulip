@@ -231,7 +231,7 @@ td.pointer {
     font-weight: bold;
 }
 
-.sender_hovered {
+.actions_hovered .sender_name {
     color: #0088CC;
     text-decoration: underline;
 }
