@@ -272,6 +272,12 @@ exports.by = function (operator, operand, opts) {
     exports.activate([[operator, operand]], opts);
 };
 
+// Helper function for the actions popover
+exports.from_popover = function (message_id) {
+    ui.hide_actions_popover();
+    exports.target(message_id);
+};
+
 // This is the message we're about to select, within the narrowed view.
 // But it won't necessarily be selected once the user un-narrows.
 //
