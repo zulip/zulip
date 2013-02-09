@@ -56,7 +56,7 @@ $(document).bind('copy', function (e) {
         // To ensure we can't enter an infinite loop, bail out (and let the
         // browser handle the copy-paste on its own) if we don't hit what we
         // are looking for within 10 rows.
-        for (j = 0; start_tr.attr('zid') === undefined && j < 10; j++) {
+        for (j = 0; (!start_tr.is('.message_row')) && j < 10; j++) {
             start_tr = start_tr.next();
         }
         if (j === 10) {
@@ -67,7 +67,7 @@ $(document).bind('copy', function (e) {
             // (In fact, we need to because it won't work correctly in this case)
             skip_same_td_check = true;
         }
-        startid = start_tr.attr('zid');
+        startid = rows.id(start_tr);
 
         endc = $(range.endContainer);
         // If the selection ends in the bottom whitespace, we should act as
@@ -91,7 +91,7 @@ $(document).bind('copy', function (e) {
         // To ensure we can't enter an infinite loop, bail out (and let the
         // browser handle the copy-paste on its own) if we don't hit what we
         // are looking for within 10 rows.
-        for (j = 0; end_tr.attr('zid') === undefined && j < 10; j++) {
+        for (j = 0; (!end_tr.is('.message_row')) && j < 10; j++) {
             end_tr = end_tr.prev();
         }
         if (j === 10) {
@@ -102,7 +102,7 @@ $(document).bind('copy', function (e) {
             // (In fact, we need to because it won't work correctly in this case)
             skip_same_td_check = true;
         }
-        endid = end_tr.attr('zid');
+        endid = rows.id(end_tr);
 
         // If the selection starts and ends in the same td,
         // we should let the browser handle the copy-paste entirely on its own
@@ -124,7 +124,7 @@ $(document).bind('copy', function (e) {
                 p.html(p.html() + "<b>" + content.text() + "</b>" + "<br>");
             }
 
-            message = message_dict[row.attr('zid')];
+            message = message_dict[rows.id(row)];
 
             content = $('<div>').text(message.sender_full_name + ": " +
                                 $('<div/>').html(message.content).text()
@@ -289,7 +289,7 @@ function replace_floating_recipient_bar(desired_label) {
         new_label.find("td:last").replaceWith(header.clone());
         other_label.css('display', 'none');
         new_label.css('display', 'table-row');
-        new_label.attr("zid", desired_label.attr("zid"));
+        new_label.attr("zid", rows.id(desired_label));
 
         old_label = desired_label;
     }
@@ -772,7 +772,7 @@ $(function () {
         if (!(clicking && mouse_moved)) {
             // Was a click (not a click-and-drag).
             var row = $(this).closest(".message_row");
-            select_message_by_id(row.attr('zid'));
+            select_message_by_id(rows.id(row));
             respond_to_message();
         }
         mouse_moved = false;
@@ -815,19 +815,19 @@ $(function () {
             // last popover.  That is, we want it to be the case that
             // a user can dismiss a popover by clicking on the same
             // element that caused the popover
-            show_userinfo_popover(this, row.attr('zid'));
+            show_userinfo_popover(this, rows.id(row));
         }
     });
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {
         var row = $(this).closest(".recipient_row");
-        narrow.target(row.attr('zid'));
+        narrow.target(rows.id(row));
         narrow.by_recipient();
     });
 
     $("#home").on("click", ".narrows_by_subject", function (e) {
         var row = $(this).closest(".recipient_row");
-        narrow.target(row.attr('zid'));
+        narrow.target(rows.id(row));
         narrow.by_subject();
     });
 

@@ -381,7 +381,7 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         if (! row.hasClass('message_row')) {
             return;
         }
-        var id = row.attr('zid');
+        var id = rows.id(row);
         if (ids_where_next_is_same_sender[id]) {
             row.find('.messagebox').addClass("next_is_same_sender");
         }
