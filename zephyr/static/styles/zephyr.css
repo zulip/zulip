@@ -646,6 +646,7 @@ table.floating_recipient {
 .popover-title {
     overflow-x: hidden;
     text-overflow: ellipsis;
+    text-align: center;
 }
 
 .popover_info {

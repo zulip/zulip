@@ -1,8 +1,6 @@
 {{! Title of the "message actions" popup }}
-<span title="{{message.sender_full_name}}">
-  <b>{{message.sender_full_name}}</b>
-</span><br />
-
-<span class='my_email' title="{{message.sender_email}}">
-  {{message.sender_email}}
-</span>
+{{#if message.is_stream}}
+Message to stream <b>{{message.display_recipient}}</b>
+{{else}}
+Private message
+{{/if}}
