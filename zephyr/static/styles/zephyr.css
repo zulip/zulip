@@ -239,6 +239,7 @@ td.pointer {
 .sender_email {
     font-size: 80%;
     color: gray;
+    visibility: hidden;
 
     /* Use padding, not margin, so that there's a continuous
        region of 'hover-ability' between fullname and email. */
@@ -248,6 +249,10 @@ td.pointer {
     .sender_email {
         display: none;
     }
+}
+
+.message_hovered .sender_email {
+    visibility: visible;
 }
 
 .message_label_clickable:hover {

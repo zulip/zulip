@@ -158,22 +158,21 @@ $(document).bind('copy', function (e) {
    because we want to reserve space for the email address.  This avoids
    things jumping around slightly when the email address is shown. */
 
-var current_email_elem;
-function hide_email() {
-    if (current_email_elem !== undefined) {
-        current_email_elem.addClass('invisible');
-        current_email_elem = undefined;
-    }
+var current_message_hover;
+function message_unhover() {
+    if (current_message_hover === undefined)
+        return;
+    current_message_hover.removeClass('message_hovered');
+    current_message_hover = undefined;
 }
 
-function show_email(message_row) {
-    hide_email();
+function message_hover(message_row) {
+    message_unhover();
     while (!message_row.hasClass('include-sender')) {
         message_row = message_row.prev();
     }
-    var elem = message_row.find('.sender_email');
-    elem.removeClass('invisible');
-    current_email_elem = elem;
+    message_row.addClass('message_hovered');
+    current_message_hover = message_row;
 }
 
 exports.report_message = function (response, status_box, cls) {
@@ -775,22 +774,22 @@ $(function () {
     $("#main_div").on("mousemove", ".messagebox", mousemove);
     $("#main_div").on("mouseover", ".messagebox", function (e) {
         var row = $(this).closest(".message_row");
-        show_email(row);
+        message_hover(row);
     });
 
     $("#main_div").on("mouseout", ".messagebox", function (e) {
-        hide_email();
+        message_unhover();
     });
 
     $("#main_div").on("mouseover", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
-        show_email(row);
+        message_hover(row);
         row.find(".sender_name").addClass("sender_hovered");
     });
 
     $("#main_div").on("mouseout", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
-        hide_email();
+        message_unhover();
         row.find(".sender_name").removeClass("sender_hovered");
     });
 
