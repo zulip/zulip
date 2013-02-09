@@ -383,6 +383,15 @@ exports.show_api_key_box = function () {
 
 var current_actions_popover_elem;
 function show_actions_popover(element, id) {
+    var last_popover_elem = current_actions_popover_elem;
+    ui.hide_actions_popover();
+    if (last_popover_elem !== undefined
+        && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
     select_message_by_id(id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
@@ -796,18 +805,7 @@ $(function () {
     $("#main_div").on("click", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
-        var last_popover_elem = current_actions_popover_elem;
-        ui.hide_actions_popover();
-        if (last_popover_elem === undefined
-            || last_popover_elem.get()[0] !== this) {
-            // Only show the popover if either no popover is
-            // currently up or if the user has clicked on a different
-            // actions_hover element than the one that deployed the
-            // last popover.  That is, we want it to be the case that
-            // a user can dismiss a popover by clicking on the same
-            // element that caused the popover
-            show_actions_popover(this, rows.id(row));
-        }
+        show_actions_popover(this, rows.id(row));
     });
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {
