@@ -78,6 +78,10 @@ a:hover code {
 
 .bottom_sidebar {
     margin-top: 1em;
+    overflow-y: hidden;
+}
+
+.bottom_sidebar:hover {
     overflow-y: auto;
 }
 
