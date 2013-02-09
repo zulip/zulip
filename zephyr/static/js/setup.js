@@ -13,7 +13,7 @@ $(function () {
     // Compile Handlebars templates.
     $.each(['message', 'subscription',
             'actions_popover_title', 'actions_popover_content',
-            'timeinfo_popover_content', 'invite_subscription', 'new_stream_users'],
+            'invite_subscription', 'new_stream_users'],
         function (index, name) {
             templates[name] = Handlebars.compile($('#template_'+name).html());
         }

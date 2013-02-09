@@ -1,14 +1,28 @@
 {{! Contents of the "message actions" popup }}
 <ul class="nav nav-list actions_popover">
+  <div class="popover_info">
+    <li>{{message.full_date_str}}</li>
+    <li>{{message.full_time_str}}</li>
+    <hr />
+  </div>
+
+  {{#if narrowed}}
   <li>
-    <a onclick="respond_to_message();">
-      <i class="icon-share-alt"></i> Reply to this {{#if is_stream}}stream{{else}}private message{{/if}}
+    <a onclick="ui.hide_actions_popover(); narrow.target({{message.id}}); narrow.activate([]);">
+      <i class="icon-time"></i> Narrow to messages around this time
     </a>
   </li>
-  {{#unless is_private}}
+  {{/if}}
+  <li>
+    <a onclick="respond_to_message();">
+      <i class="icon-share-alt"></i>
+      Reply to this {{#if message.is_stream}}stream{{else}}private message{{/if}}
+    </a>
+  </li>
+  {{#unless message.is_private}}
   <li>
     <a onclick="respond_to_message('personal');">
-      <i class="icon-user"></i> Reply to {{sender_full_name}} only
+      <i class="icon-user"></i> Reply to {{message.sender_full_name}} only
     </a>
   </li>
   {{/unless}}

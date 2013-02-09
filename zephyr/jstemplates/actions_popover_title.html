@@ -1,3 +1,8 @@
 {{! Title of the "message actions" popup }}
-<span title="{{sender_full_name}}"><b>{{sender_full_name}}</b></span><br />
-<span class='my_email' title="{{sender_email}}">{{sender_email}}</span>
+<span title="{{message.sender_full_name}}">
+  <b>{{message.sender_full_name}}</b>
+</span><br />
+
+<span class='my_email' title="{{message.sender_email}}">
+  {{message.sender_email}}
+</span>

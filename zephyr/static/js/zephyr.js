@@ -272,9 +272,15 @@ function add_display_time(message, prev) {
     } else {
         message.timestr = time.toString("HH:mm");
     }
-    // Rather than using time.toLocaleString(), which varies by
-    // browser, just do our own hardcoded formatting.
-    message.full_date_str = time.toDateString() + " " + time.toTimeString();
+
+    // Convert to number of hours ahead/behind UTC.
+    // The sign of getTimezoneOffset() is reversed wrt
+    // the conventional meaning of UTC+n / UTC-n
+    var tz_offset = -time.getTimezoneOffset() / 60;
+
+    message.full_date_str = time.toLocaleDateString();
+    message.full_time_str = time.toLocaleTimeString() +
+        ' (UTC' + ((tz_offset < 0) ? '' : '+') + tz_offset + ')';
 }
 
 function add_to_table(messages, table_name, filter_function, where, allow_collapse) {

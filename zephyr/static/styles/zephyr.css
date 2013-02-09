@@ -648,6 +648,15 @@ table.floating_recipient {
     text-overflow: ellipsis;
 }
 
+.popover_info {
+    text-align: center;
+}
+
+.popover hr {
+    margin-top:    5px;
+    margin-bottom: 5px;
+}
+
 .hotkeys_table {
     float: left;
     width: 250px;

@@ -387,24 +387,16 @@ function show_actions_popover(element, id) {
     select_message_by_id(id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
-        var content, message = message_dict[id];
-        if (elt.hasClass("message_sender") || elt.hasClass("profile_picture")) {
-            elt.popover({placement: "bottom",
-                         title: templates.actions_popover_title(message),
-                         content: templates.actions_popover_content(message),
-                         trigger: "manual"
-                        });
-        } else if (elt.hasClass("message_time")) {
-            if (!narrow.active()) {
-                // Only show the time-travel popover when narrowed
-                return;
-            }
-            // Bootstrap takes the title from the 'title' attribute of elt
-            elt.popover({placement: "bottom",
-                         content: templates.timeinfo_popover_content(message),
-                         trigger: "manual"
-                        });
-        }
+        var args = {
+            message:  message_dict[id],
+            narrowed: narrow.active()
+        };
+        elt.popover({
+            placement: "bottom",
+            title:     templates.actions_popover_title(args),
+            content:   templates.actions_popover_content(args),
+            trigger:   "manual"
+        });
         elt.popover("show");
         current_actions_popover_elem = elt;
     }
