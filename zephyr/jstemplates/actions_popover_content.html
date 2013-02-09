@@ -20,13 +20,17 @@
   <li>
     <a onclick="respond_to_message();">
       <i class="icon-share-alt"></i>
-      Reply to this {{#if message.is_stream}}stream{{else}}private message{{/if}}
+      {{#if message.is_stream}}
+      Reply to stream <b>{{message.display_recipient}}</b> on this subject
+      {{else}}
+      Reply to this private message
+      {{/if}}
     </a>
   </li>
   {{#unless message.is_private}}
   <li>
     <a onclick="respond_to_message('personal');">
-      <i class="icon-user"></i> Reply to {{message.sender_full_name}} only
+      <i class="icon-user"></i> Reply to <b>{{message.sender_full_name}}</b> only
     </a>
   </li>
   {{/unless}}
