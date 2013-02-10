@@ -84,6 +84,15 @@ def do_create_user(email, password, realm, full_name, short_name,
                'domain': realm.domain})
     return create_user(email, password, realm, full_name, short_name, active)
 
+def do_change_user_email(user, new_email):
+    old_email = user.email
+    user.email = new_email
+    user.save()
+
+    log_event({'type': 'user_email_changed',
+               'old_email': old_email,
+               'new_email': new_email})
+
 def compute_mit_user_fullname(email):
     try:
         # Input is either e.g. starnine@mit.edu or user|CROSSREALM.INVALID@mit.edu
