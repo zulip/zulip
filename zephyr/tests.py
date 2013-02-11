@@ -1831,7 +1831,12 @@ int x = 3
          ('from http://supervisord.org/running.html:', "<p>from %s:</p>",                   'http://supervisord.org/running.html'),
          ('http://raven.io',                           "<p>%s</p>",                         'http://raven.io'),
          ('at https://humbughq.com/api. Check it!',    "<p>at %s. Check it!</p>",           'https://humbughq.com/api'),
-         ('goo.gl/abc',                                "<p>%s</p>",                        'goo.gl/abc'),
+         ('goo.gl/abc',                                "<p>%s</p>",                         'goo.gl/abc'),
+         ('http://d.pr/i/FMXO',                        "<p>%s</p>",                         'http://d.pr/i/FMXO'),
+         ('http://fmota.eu/blog/test.html',            "<p>%s</p>",                         'http://fmota.eu/blog/test.html'),
+         ('http://j.mp/14Hwm3X',                       "<p>%s</p>",                         'http://j.mp/14Hwm3X'),
+         ('http://localhost:9991/?show_debug=1',       "<p>%s</p>",                         'http://localhost:9991/?show_debug=1'),
+         ('anyone before? (http://d.pr/i/FMXO)',       "<p>anyone before? (%s)</p>",        'http://d.pr/i/FMXO'),
 
          # XSS Sanitization
          ('javascript:alert(\'hi\');.com',              "<p>%s</p>",                         None), # None marks xss
@@ -1844,6 +1849,8 @@ int x = 3
 
          ('http://example.com/something?with,commas,in,url, but not at end',
                         "<p>%s, but not at end</p>",         'http://example.com/something?with,commas,in,url'),
+         ('http://www.yelp.com/biz/taim-mobile-falafel-and-smoothie-truck-new-york#query',
+                        "<p>%s</p>", 'http://www.yelp.com/biz/taim-mobile-falafel-and-smoothie-truck-new-york#query'),
          (' some text https://www.google.com/baz_(match)?with=foo&bar=baz with extras',
                         "<p>some text %s with extras</p>",  'https://www.google.com/baz_(match)?with=foo&amp;bar=baz'),
          ('hash it http://foo.com/blah_(wikipedia)_blah#cite-1',
@@ -1859,6 +1866,17 @@ int x = 3
                 match = reference
             converted = convert(inline_url)
             self.assertEqual(match, converted)
+
+    def test_linkify_interference(self):
+        # Check our auto links don't interfere with normal markdown linkification
+        msg = 'link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](xxxx://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):\
+**xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx'
+        converted = convert(msg)
+
+        self.assertEqual(converted, '<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href="xxxx://xxxxxxxxx:xxxx/\
+xxx/xxxxxx%xxxxxx/xx/" target="_blank" title="xxxx://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/">xxxxx #xx</a>:<strong>\
+xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx\
+<br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>')
 
 class UserPresenceTests(AuthedTestCase):
     fixtures = ['messages.json']
