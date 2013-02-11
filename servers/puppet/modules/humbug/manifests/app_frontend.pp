@@ -34,7 +34,8 @@ class humbug::app_frontend {
 
   exec {"pip6":
     command  => "/usr/bin/pip install django-pipeline",
-    creates  => "/usr/local/lib/python2.6/dist-packages/django-pipeline"
+    creates  => "/usr/local/lib/python2.6/dist-packages/pipeline",
+    require  => Package['python-pip'],
   }
 
   # TODO: Add /usr/lib/nagios/plugins/check_send_receive_time ->
