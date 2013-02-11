@@ -8,8 +8,9 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
 from django.db import transaction, IntegrityError
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.cache import cache_with_key
-from zephyr.lib.timestamp import timestamp_to_datetime
+from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.message_cache import cache_save_message
+from zephyr.lib.queue import SimpleQueueClient
 from django.utils import timezone
 from django.contrib.auth.models import UserManager
 
@@ -352,8 +353,15 @@ def do_update_user_activity(user_profile, client, query, log_time):
     activity.last_visit = log_time
     activity.save()
 
+def process_user_activity_event(event):
+    user_profile = UserProfile.objects.get(id=event["user_profile_id"])
+    client = get_client(event["client"])
+    log_time = timestamp_to_datetime(event["time"])
+    query = event["query"]
+    return do_update_user_activity(user_profile, client, query, log_time)
+
 @transaction.commit_on_success
-def do_update_user_idle(user_profile, client, log_time, status):
+def do_update_user_presence(user_profile, client, log_time, status):
     try:
         (presence, created) = UserPresence.objects.get_or_create(
             user_profile = user_profile,
@@ -367,12 +375,29 @@ def do_update_user_idle(user_profile, client, log_time, status):
     presence.status = status
     presence.save()
 
-def process_user_activity_event(event):
+if settings.USING_RABBITMQ or settings.TEST_SUITE:
+    # RabbitMQ is required for idle functionality
+    presence_queue = SimpleQueueClient()
+
+    def update_user_presence(user_profile, client, log_time, status):
+        event={'user_profile_id': user_profile.id,
+               'status': status,
+               'time': datetime_to_timestamp(log_time),
+               'client': client.name}
+
+        if settings.USING_RABBITMQ:
+            presence_queue.json_publish("user_presence", event)
+        elif settings.TEST_SUITE:
+            process_user_presence_event(event)
+else:
+    update_user_presence = lambda user_profile, client, log_time, status: None
+
+def process_user_presence_event(event):
     user_profile = UserProfile.objects.get(id=event["user_profile_id"])
     client = get_client(event["client"])
     log_time = timestamp_to_datetime(event["time"])
-    query = event["query"]
-    return do_update_user_activity(user_profile, client, query, log_time)
+    status = event["status"]
+    return do_update_user_presence(user_profile, client, log_time, status)
 
 def subscribed_to_stream(user_profile, stream):
     try:

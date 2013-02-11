@@ -28,18 +28,28 @@ def asynchronous(method):
         wrapper.csrf_exempt = True
     return wrapper
 
-def update_user_activity(request, user_profile, client):
-    event={'query': request.META["PATH_INFO"],
-           'user_profile_id': user_profile.id,
-           'time': datetime_to_timestamp(now()),
-           'client': client.name}
-    if not settings.USING_RABBITMQ:
-        # Don't try to publish messages to rabbitmq if we're not using
-        # it.  UserActivity updates aren't really important for most
-        # local development, so skipping publishing them here is
-        # reasonable.
-        return
-    SimpleQueueClient.get_instance().json_publish("user_activity", event)
+if settings.USING_RABBITMQ:
+    # Don't try to publish messages to rabbitmq if we're not using
+    # it.  UserActivity updates aren't really important for most
+    # local development, so skipping publishing them here is
+    # reasonable.
+    #
+    # update_active_status also pushes to rabbitmq, and we don't
+    #  want to log it
+
+    activity_queue = SimpleQueueClient()
+
+    def update_user_activity(request, user_profile, client):
+        if request.META["PATH_INFO"] == '/json/update_active_status':
+            return
+        event={'query': request.META["PATH_INFO"],
+               'user_profile_id': user_profile.id,
+               'time': datetime_to_timestamp(now()),
+               'client': client.name}
+        activity_queue.json_publish("user_activity", event)
+else:
+   update_user_activity = lambda request, user_profile, client: None
+
 
 # I like the all-lowercase name better
 require_post = require_POST

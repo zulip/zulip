@@ -21,7 +21,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_activate_user, add_default_subs, do_create_user, do_send_message, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
-    do_update_user_idle
+    update_user_presence
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_active, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -1323,21 +1323,43 @@ def api_github_landing(request, user_profile, event=POST,
                                 forged=False, subject_name=subject,
                                 message_content=content)
 
+def get_status_list(requesting_user_profile):
+    def presence_to_dict(presence):
+        if presence.status == UserPresence.ACTIVE:
+            presence_val = 'active'
+        elif presence.status == UserPresence.IDLE:
+            presence_val = 'idle'
+        else:
+            raise JsonableError("Invalid presence value in db: %s" % (presence,))
+
+        return {'status'   : presence_val,
+                'timestamp': datetime_to_timestamp(presence.timestamp)}
+
+
+    user_statuses = defaultdict(dict)
+    for presence in UserPresence.objects.filter(
+        user_profile__realm=requesting_user_profile.realm).select_related('user_profile', 'client'):
+
+        user_statuses[presence.user_profile.user.email][presence.client.name] = \
+            presence_to_dict(presence)
+
+    return json_success({'presences': user_statuses})
+
 @authenticated_json_post_view
 @has_request_variables
 def json_update_active_status(request, user_profile,
                               status=POST):
-    do_update_user_idle(user_profile, request._client, now(), status)
-    return json_success()
+    if status == 'active':
+        status_val = UserPresence.ACTIVE
+    elif status == 'idle':
+        status_val = UserPresence.IDLE
+    else:
+        raise JsonableError("Invalid presence status: %s" % (status,))
+
+    update_user_presence(user_profile, request._client, now(), status_val)
+
+    return get_status_list(user_profile)
 
 @authenticated_json_post_view
 def json_get_active_statuses(request, user_profile):
-    def presence_to_dict(presence):
-        return {'status': presence.status, 'timestamp': datetime_to_timestamp(presence.timestamp)}
-
-    user_statuses = {}
-    for user_profile in UserProfile.objects.filter(realm=user_profile.realm):
-        statuses = dict((presence.client.name, presence_to_dict(presence)) for presence in UserPresence.objects.filter(user_profile=user_profile))
-        user_statuses[user_profile.user.email] = statuses
-
-    return json_success({'presences': user_statuses})
+    return get_status_list(user_profile)
