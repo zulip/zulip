@@ -399,8 +399,10 @@ function show_actions_popover(element, id) {
             message:  message_dict[id],
             narrowed: narrow.active()
         };
+
+        var ypos = elt.offset().top - viewport.scrollTop();
         elt.popover({
-            placement: "bottom",
+            placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
             title:     templates.actions_popover_title(args),
             content:   templates.actions_popover_content(args),
             trigger:   "manual"
