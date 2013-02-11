@@ -35,10 +35,6 @@ def isnt_mit(value):
     if "@mit.edu" in value:
         raise ValidationError(mark_safe(u'Humbug for MIT is by invitation only. ' + SIGNUP_STRING))
 
-
-class UniqueEmailField(forms.EmailField):
-    default_validators = [validators.validate_email, is_unique]
-
 class RegistrationForm(forms.Form):
     full_name = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput, max_length=100)
@@ -50,10 +46,10 @@ class ToSForm(forms.Form):
 
 class HomepageForm(forms.Form):
     if settings.ALLOW_REGISTER:
-        email = UniqueEmailField()
+        email = forms.EmailField()
     else:
-        validators = UniqueEmailField.default_validators + [has_valid_realm, isnt_mit]
-        email = UniqueEmailField(validators=validators)
+        validators = [has_valid_realm, isnt_mit, is_active]
+        email = forms.EmailField(validators=validators)
 
 class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):

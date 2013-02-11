@@ -355,7 +355,8 @@ def accounts_home(request):
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email':user.email}))
         try:
             email = request.POST['email']
-            is_unique(email)
+            # Note: We don't check for uniqueness
+            is_active(email)
         except ValidationError:
             return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
     else:
