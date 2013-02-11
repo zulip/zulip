@@ -1860,6 +1860,104 @@ int x = 3
             converted = convert(inline_url)
             self.assertEqual(match, converted)
 
+class UserPresenceTests(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def common_init(self, email):
+        self.login(email)
+        api_key = self.get_api_key(email)
+        return api_key
+
+    def test_get_empty(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.common_init(email)
+
+        result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
+
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        for email, presence in json['presences'].items():
+            self.assertEqual(presence, {})
+
+    def test_set_idle(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.common_init(email)
+        client = 'website'
+
+        def test_result(result):
+            self.assert_json_success(result)
+            json = simplejson.loads(result.content)
+            self.assertEqual(json['presences'][email][client]['status'], 'idle')
+            self.assertIn('timestamp', json['presences'][email][client])
+            self.assertIsInstance(json['presences'][email][client]['timestamp'], int)
+            self.assertEqual(json['presences'].keys(), ['hamlet@humbughq.com'])
+            return json['presences'][email][client]['timestamp']
+
+        result = self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
+        test_result(result)
+
+        result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
+        timestamp = test_result(result)
+
+        email = "othello@humbughq.com"
+        api_key = self.common_init(email)
+        self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
+        result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        self.assertEqual(json['presences'][email][client]['status'], 'idle')
+        self.assertEqual(json['presences']['hamlet@humbughq.com'][client]['status'], 'idle')
+        self.assertEqual(json['presences'].keys(), ['hamlet@humbughq.com', 'othello@humbughq.com'])
+        newer_timestamp = json['presences'][email][client]['timestamp']
+        self.assertGreaterEqual(newer_timestamp, timestamp)
+
+    def test_set_active(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.common_init(email)
+        client = 'website'
+
+        self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
+        result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
+
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        self.assertEqual(json['presences'][email][client]['status'], 'idle')
+
+        email = "othello@humbughq.com"
+        api_key = self.common_init(email)
+        self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
+        result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        self.assertEqual(json['presences'][email][client]['status'], 'idle')
+        self.assertEqual(json['presences']['hamlet@humbughq.com'][client]['status'], 'idle')
+
+        self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'active'})
+        result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        self.assertEqual(json['presences'][email][client]['status'], 'active')
+        self.assertEqual(json['presences']['hamlet@humbughq.com'][client]['status'], 'idle')
+
+    def test_same_realm(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.common_init(email)
+        client = 'website'
+
+        self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
+        result = self.client.post("/accounts/logout/")
+
+        # Ensure we don't see hamlet@humbughq.com information leakage
+        email = "espuser@mit.edu"
+        api_key = self.common_init(email)
+        result = self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        self.assertEqual(json['presences'][email][client]['status'], 'idle')
+        # We only want @mit.edu emails
+        for email in json['presences'].keys():
+            self.assertEqual(email.split('@')[1], 'mit.edu')
+
 class Runner(DjangoTestSuiteRunner):
     option_list = (
         optparse.make_option('--skip-generate',
