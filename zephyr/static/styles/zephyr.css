@@ -231,6 +231,11 @@ td.pointer {
     font-weight: bold;
 }
 
+.actions_hovered .sender_name {
+    color:           #0088CC;
+    text-decoration: underline;
+}
+
 .message_label_clickable:hover {
     cursor: pointer;
     color:  #08C;
@@ -253,6 +258,11 @@ td.pointer {
 .message_time {
     color: gray;
     font-size: 90%;
+}
+
+.actions_hovered .message_time {
+    color:           #0088CC;
+    text-decoration: underline;
 }
 
 .actions_link {
