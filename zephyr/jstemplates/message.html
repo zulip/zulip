@@ -55,12 +55,12 @@
     <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
         <div class="message_top_line actions_hover">
         {{#include_sender}}
-        <span class="message_sender">
+        <span class="message_sender actions_hover">
             <img class="inline_profile_picture message_body_gravatar img-rounded" src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30?stamp={{stamp}}"/>
             <span class="sender_name">{{sender_full_name}}</span>
         </span>
         {{/include_sender}}
-        <div class="message_right">
+        <div class="message_right actions_hover">
             {{! If include_sender is not set, we will never show this link anyway. }}
             {{#include_sender}}<span class="actions_link">&laquo; Info</span>{{/include_sender}}
             <span class="message_time"
