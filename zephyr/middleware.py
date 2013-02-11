@@ -22,15 +22,17 @@ class LogRequests(object):
         # didn't run for some reason
         if hasattr(request, '_time_started'):
             time_delta = time.time() - request._time_started
-        logger.info('%-15s %-7s %3d %.3fs %s'
+
+        try:
+            email = request._email
+        except Exception:
+            email = "unauth"
+
+        logger.info('%-15s %-7s %3d %.3fs %s (%s)'
             % (remote_ip, request.method, response.status_code,
-               time_delta, request.get_full_path()))
+               time_delta, request.get_full_path(), email))
         # Log some additional data whenever we return a 40x error
         if 400 <= response.status_code < 500:
-            try:
-                email = request._email
-            except:
-                email = "unknown"
             logger.info('status=%3d, data=%s, uid=%s' % (response.status_code, response.content, email))
         return response
 

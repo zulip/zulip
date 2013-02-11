@@ -144,6 +144,7 @@ def internal_notify_view(view_func):
             # This is not a security check; it's an internal assertion
             # to help us find bugs.
             raise RuntimeError, 'notify view called with no Tornado handler'
+        request._email = "internal"
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func
 
