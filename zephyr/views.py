@@ -1213,7 +1213,7 @@ class ActivityTable(object):
                 self.has_pointer = True
             for record in UserActivity.objects.filter(
                     query=url,
-                    client__name=client_name):
+                    client__name=client_name).select_related():
                 row = self.rows.setdefault(record.user_profile.user.email, {})
                 row['realm'] = record.user_profile.realm.domain
                 row['full_name'] = record.user_profile.full_name
