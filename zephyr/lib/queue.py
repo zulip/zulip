@@ -24,13 +24,6 @@ class SimpleQueueClient(object):
             credentials = pika.PlainCredentials(
                 'humbug', settings.RABBITMQ_PASSWORD))
 
-    @classmethod
-    def get_instance(cls):
-        # When subclassed, we will get one instance per subclass.
-        if not hasattr(cls, '_instance'):
-            cls._instance = cls()
-        return cls._instance
-
     def ready(self):
         return self.channel is not None
 
