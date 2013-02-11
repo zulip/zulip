@@ -63,6 +63,7 @@ urlpatterns = patterns('',
     url(r'^json/subscriptions/property$',   'zephyr.views.json_subscription_property'),
     url(r'^json/get_subscribers$',          'zephyr.views.json_get_subscribers'),
     url(r'^json/fetch_api_key$',            'zephyr.views.json_fetch_api_key'),
+    url(r'^json/get_members$',              'zephyr.views.json_get_members'),
 
     # These are json format views used by the API.  They require an API key.
     url(r'^api/v1/get_messages$',           'zephyr.tornadoviews.api_get_messages'),
@@ -76,6 +77,7 @@ urlpatterns = patterns('',
     url(r'^api/v1/send_message$',           'zephyr.views.api_send_message'),
     url(r'^api/v1/update_pointer$',         'zephyr.views.api_update_pointer'),
     url(r'^api/v1/external/github$',        'zephyr.views.api_github_landing'),
+    url(r'^api/v1/get_members$',            'zephyr.views.api_get_members'),
 
     # This json format view used by the API accepts a username password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'zephyr.views.api_fetch_api_key'),
