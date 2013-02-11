@@ -57,19 +57,30 @@ def sanitize_url(url):
     # Url passes all tests. Return url as-is.
     return urlparse.urlunparse(parts)
 
+def url_to_a(url):
+    a = markdown.util.etree.Element('a')
+    if '@' in url:
+        href = 'mailto:' + url
+    else:
+        href = url
+    a.set('href', sanitize_url(href))
+    a.text = url
+    fixup_link(a)
+    return a
+
 class AutoLink(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
         url = match.group('url')
-        a = markdown.util.etree.Element('a')
-        if '@' in url:
-            href = 'mailto:' + url
-        else:
-            href = url
-        a.set('href', sanitize_url(href))
-        a.text = url
-        fixup_link(a)
+        # As this will also match already-matched https?:// links,
+        # don't doubly-link them
+        if url[:5] == 'http:' or url[:6] == 'https:':
+            return url
+        return url_to_a(url)
 
-        return a
+class HttpLink(markdown.inlinepatterns.Pattern):
+    def handleMatch(self, match):
+        url = match.group('url')
+        return url_to_a(url)
 
 class UListProcessor(markdown.blockprocessors.OListProcessor):
     """ Process unordered list blocks.
@@ -153,6 +164,14 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
         md.inlinePatterns.add('link', LinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
 
+        # markdown.inlinepatterns.Pattern compiles this with re.UNICODE, which
+        # is important because we're using \w.
+        #
+        # This rule must come after the built-in 'link' markdown linkifier to
+        # avoid errors.
+        http_link_regex = r'\b(?P<url>https?://[^\s]+?)(?=[^\w/]*(\s|\Z))'
+        md.inlinePatterns.add('http_autolink', HttpLink(http_link_regex), '>link')
+
         # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
         #
         # We detect a url by checking for the TLD, and building around it.
@@ -160,10 +179,13 @@ class Bugdown(markdown.Extension):
         # To support () in urls but not match ending ) when a url is inside a parenthesis,
         # we match at maximum one set of matching parens in a url. We could extend this
         # to match two parenthetical groups, at the cost of more regex complexity.
+        #
+        # This rule must come after the http_autolink rule we add above to avoid double
+        # linkifying.
         tlds = '|'.join(['co.uk', 'com', 'co', 'biz', 'gd', 'org', 'net', 'ly', 'edu', 'mil',
                          'gov', 'info', 'me', 'it', '.ca', 'tv', 'fm', 'io', 'gl'])
         link_regex = r"\b(?P<url>[^\s]+\.(%s)(?:/[^\s()\":]*?|([^\s()\":]*\([^\s()\":]*\)[^\s()\":]*))?)(?=([:;\?\),\.\'\"]\Z|[:;\?\),\.\'\"]\s|\Z|\s))" % (tlds,)
-        md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
+        md.inlinePatterns.add('autolink', AutoLink(link_regex), '>http_autolink')
 
         md.preprocessors.add('hanging_ulists',
                                  BugdownUListPreprocessor(md),
