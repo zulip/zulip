@@ -1,0 +1,10 @@
+#!/bin/bash
+
+machinetype=$(cat /etc/humbug-machinetype | sed -e 's/\n$//')
+if [ -z "$machinetype" ]; then
+    echo "No /etc/humbug-machinetype file found."
+    echo "Please create it and then re-run this script."
+    exit 1
+fi
+
+puppet apply -e "class {'humbug': machinetype => '$machinetype'}"

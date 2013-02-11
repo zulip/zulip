@@ -74,7 +74,7 @@ scp -i "$amazon_key_file" "$humbug_cert_file" root@"$server":/root/humbug/certs/
 
 ssh "$server" -t -i "$amazon_key_file" -lroot <<EOF
 cp -a /root/humbug/servers/puppet/modules/humbug/files/puppet.conf /etc/puppet/
-puppet apply -e 'include humbug::$type'
+puppet apply -e 'class {"humbug": machinetype => "$type"}'
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get -y upgrade
 if [ -e "/etc/init.d/nginx" ]; then

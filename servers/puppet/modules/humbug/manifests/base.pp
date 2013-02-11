@@ -1,6 +1,4 @@
 class humbug::base {
-  class {'humbug': }
-
   $packages = [ "screen", "strace", "vim", "emacs23-nox", "git", "python-tz",
                 "sqlite3", "ntp", "python-simplejson", "host",
                 "openssh-server", "python-pip", "puppet-el",
