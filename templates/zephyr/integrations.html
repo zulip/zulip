@@ -194,6 +194,16 @@ following, to the stream <code>commits</code> with a subject that matches the re
 <script type="text/javascript">
 $(function() {
     $("a.title").addClass("show-integral");
+    $("a.title").prepend($("<span class='integral'>∫</span>"));
+    $("a.title").hover(function (e) {
+                         $(".integral").css("display", "inline");
+                         var width = $(".integral").width();
+                         $("a.title").css("left", -1 * width);
+                       },
+                       function (e) {
+                         $(".integral").css("display", "none");
+                         $("a.title").css("left", 0);
+                       });
 });
 </script>
 {% endblock %}
