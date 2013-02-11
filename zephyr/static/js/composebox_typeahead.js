@@ -202,7 +202,7 @@ exports.initialize = function () {
         },
         sorter: typeahead_helper.sort_textbox_typeahead,
         updater: function (item) {
-            return this.query.replace(/@\S+$/, "") + "@" + typeahead_helper.private_message_mapped[item].email.split("@")[0];
+            return this.query.replace(/@\S+$/, "") + "@**" + typeahead_helper.private_message_mapped[item].full_name + "**";
         },
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
