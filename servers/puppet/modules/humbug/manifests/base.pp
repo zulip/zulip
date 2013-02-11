@@ -113,4 +113,9 @@ class humbug::base {
     ensure     => running,
     subscribe  => File['/etc/ssh/sshd_config'],
   }
+
+  service { 'iptables-persistent':
+    ensure     => running,
+    subscribe  => File['/etc/iptables/rules'],
+  }
 }

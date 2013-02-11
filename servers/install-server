@@ -77,8 +77,6 @@ cp -a /root/humbug/servers/puppet/modules/humbug/files/puppet.conf /etc/puppet/
 puppet apply -e 'include humbug::$type'
 # These server restarting bits should be moveable into puppet-land, ideally
 apt-get -y upgrade
-service iptables-persistent start
-service ssh restart
 if [ -e "/etc/init.d/nginx" ]; then
     service nginx restart
 fi
