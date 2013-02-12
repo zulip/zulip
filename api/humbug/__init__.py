@@ -195,15 +195,28 @@ class Client(object):
         while True:
             if max_message_id is not None:
                 options["last"] = str(max_message_id)
+            elif options.get('last') is not None:
+                options.pop('last')
             res = self.get_messages(options)
             if 'error' in res.get('result'):
-                if self.verbose:
-                    if res["result"] == "http-error":
+                if res["result"] == "http-error":
+                    if self.verbose:
                         print "HTTP error fetching messages -- probably a server restart"
-                    elif res["result"] == "connection-error":
+                elif res["result"] == "connection-error":
+                    if self.verbose:
                         print "Connection error fetching messages -- probably server is temporarily down?"
-                    else:
+                else:
+                    if self.verbose:
                         print "Server returned error:\n%s" % res["msg"]
+                    if res["msg"].startswith("last value of") and \
+                            "too old!  Minimum valid is" in res["msg"]:
+                        # We may have missed some messages while the
+                        # network was down or something, but there's
+                        # not really anything we can do about it other
+                        # than resuming getting new ones.
+                        #
+                        # Reset max_message_id to just subscribe to new messages
+                        max_message_id = None
                 # TODO: Make this back off once it's more reliable
                 time.sleep(1)
                 continue
