@@ -103,7 +103,7 @@ a:hover code {
     margin-left: 0px;
 }
 #user_presences li.active-icon:before {
-    content: url(/static/images/green-dot.png);
+    content: url(/static/images/presence/user-active.png);
     margin-right: 6px; /* +9px image = 15px */
 }
 
@@ -111,7 +111,7 @@ a:hover code {
     margin-left: 0px;
 }
 #user_presences li.away-icon:before {
-    content: url(/static/images/orange-dot.png);
+    content: url(/static/images/presence/user-away.png);
     margin-right: 6px; /* +9px image = 15px */
 }
 
