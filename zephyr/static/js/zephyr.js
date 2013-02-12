@@ -166,6 +166,52 @@ $(function () {
                       keepTracking: true});
 });
 
+function message_range(start, end) {
+    // Returns messages from the global message_dict in the specified range, inclusive
+    var result = [];
+    var i;
+
+    for (i = start; i <= end; i++) {
+        if (message_dict[i] !== undefined) {
+            result.push(message_dict[i]);
+        }
+    }
+
+    return result;
+}
+
+var unread_filters = {'stream': {}, 'private': {}};
+
+function process_unread_counts(messages, decrement) {
+    var existing, hashkey;
+    $.each(messages, function (index, message) {
+        if (message.id <= furthest_read && decrement !== true) {
+            return;
+        }
+
+        if (message.sender_email === email) {
+            return;
+        }
+        if (message.type === 'stream') {
+            hashkey = message.display_recipient;
+        } else {
+            hashkey = message.display_reply_to;
+        }
+        existing = unread_filters[message.type][hashkey];
+        if (existing === undefined) {
+            unread_filters[message.type][hashkey] = {};
+        }
+        if (decrement) {
+            delete unread_filters[message.type][hashkey][message.id];
+        } else {
+            unread_filters[message.type][hashkey][message.id] = true;
+        }
+    });
+    $.each(unread_filters.stream, function(index, obj) {
+        ui.set_count("stream", index, Object.keys(obj).length);
+    });
+}
+
 function update_selected_message(message, opts) {
     var cls = 'selected_message';
     $('.' + cls).removeClass(cls);
@@ -175,6 +221,7 @@ function update_selected_message(message, opts) {
     // Narrowing is a temporary view on top of the home view and
     // doesn't affect your pointer in the home view.
     // Similarly, lurk mode does not affect your pointer.
+    process_unread_counts(message_range(furthest_read + 1, new_selected_id), true);
     if (! narrow.active() && lurk_stream === undefined) {
         persistent_message_id = new_selected_id;
         if (new_selected_id > furthest_read)
@@ -521,6 +568,7 @@ function add_messages(messages, add_to_home) {
             && !narrow.active()) {
             prepended = true;
         }
+        process_unread_counts(messages);
     }
 
     if (narrow.active()) {

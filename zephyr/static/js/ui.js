@@ -889,6 +889,10 @@ function sort_narrow_list() {
     });
 }
 
+exports.get_filter_li = function(type, name) {
+    return $("#" + type + "_filters li[data-name='" + encodeURIComponent(name) + "']");
+};
+
 exports.add_narrow_filter = function(name, type, uri) {
     var list_item;
 
@@ -904,7 +908,7 @@ exports.add_narrow_filter = function(name, type, uri) {
         return false;
     }
 
-    if ($("#" + type + "_filters li[data-name='" + encodeURIComponent(name) + "']").length) {
+    if (exports.get_filter_li(type, name).length) {
         // already exists
         return false;
     }
@@ -913,7 +917,8 @@ exports.add_narrow_filter = function(name, type, uri) {
     list_item = $('<li>').attr('data-name', encodeURIComponent(name))
                          .html($('<a>').attr('href', uri)
                                        .addClass('subscription_name')
-                                       .text(name));
+                                       .text(name)
+                                       .append('<span class="count">(<span class="value"></span>)</span>'));
     if (type === "stream" && subs.have(name).invite_only) {
         list_item.append("<i class='icon-lock'/>");
     }
@@ -921,8 +926,29 @@ exports.add_narrow_filter = function(name, type, uri) {
     sort_narrow_list();
 };
 
+exports.get_count = function (type, name) {
+    return exports.get_filter_li(type, name).find('.count .value').text();
+};
+
+exports.set_count = function (type, name, count) {
+    var count_span = exports.get_filter_li(type, name).find('.count');
+    var value_span = count_span.find('.value');
+
+    if (count === 0) {
+        return exports.clear_count(type, name);
+    }
+    count_span.show();
+
+    value_span.text(count);
+};
+
+exports.clear_count = function (type, name) {
+    exports.get_filter_li(type, name).find('.count').hide()
+                                                    .find('.value').text('');
+};
+
 exports.remove_narrow_filter = function (name, type) {
-    $("#" + type + "_filters li[data-name='" + encodeURIComponent(name) + "']").remove();
+    exports.get_filter_li(type, name).remove();
 };
 
 exports.set_presence_list = function(users, presence_info) {

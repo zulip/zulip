@@ -128,6 +128,11 @@ li.active-filter {
     font-weight: bold;
 }
 
+ul.filters .count {
+    margin-left: 0.5em;
+    display: none;
+}
+
 .phone_new_message_button {
     margin-top: 5px;
     float: left;
