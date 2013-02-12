@@ -21,6 +21,7 @@ exports.initialize = function () {
     names.push(email.split("@")[0].toLowerCase());
     names.push("all");
     names.push("everyone");
+    names.push("<strong>" + fullname.toLowerCase() + "</strong>");
 
     $(window).focus(function () {
         window_has_focus = true;
@@ -127,9 +128,9 @@ function process_desktop_notification(message) {
 }
 
 function speaking_at_me(message) {
-    var content_lc = $('<div/>').html(message.content).text().toLowerCase();
+    var content_lc = message.content.toLowerCase();
     var found_match = false, indexof, after_name, after_atname;
-    var punctuation = /[\.,-\/#!$%\^&\*;:{}=\-_`~()\+\?\[\]\s]/;
+    var punctuation = /[\.,-\/#!$%\^&\*;:{}=\-_`~()\+\?\[\]\s<>]/;
 
     if (domain === "mit.edu") {
         return false;
