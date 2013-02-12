@@ -571,11 +571,12 @@ $(function () {
 
     $(window).resize($.throttle(50, resizehandler));
 
-    // Scrolling in modals and input boxes should not scroll the main view.
-    // Stop propagation in all cases.  Also, ignore the event if the element
-    // is already at the top or bottom.  Otherwise we get a new scroll event
-    // on the parent (?).
-    $('.modal-body, .bottom_sidebar, input, textarea').mousewheel(function (e, delta) {
+    // Scrolling in modals, input boxes, and other elements that
+    // explicitly scroll should not scroll the main view.  Stop
+    // propagation in all cases.  Also, ignore the event if the
+    // element is already at the top or bottom.  Otherwise we get a
+    // new scroll event on the parent (?).
+    $('.modal-body, .scrolling_list, input, textarea').mousewheel(function (e, delta) {
         var self = $(this);
         var scroll = self.scrollTop();
         e.stopPropagation();
