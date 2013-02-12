@@ -27,6 +27,7 @@ exports.initialize = function () {
         window_has_focus = true;
         new_message_count = 0;
         document.title = domain + " - Humbug";
+        Notificon("");
 
         $.each(notice_memory, function (index, notice_mem_entry) {
            notice_mem_entry.obj.cancel();
@@ -36,6 +37,7 @@ exports.initialize = function () {
     }).mouseover(function () {
         new_message_count = 0;
         document.title = domain + " - Humbug";
+        Notificon("");
     });
 
     if (!window.webkitNotifications) {
@@ -183,6 +185,7 @@ exports.received_messages = function (messages) {
 
     if (title_needs_update) {
         document.title = "(" + new_message_count + ") " + domain + " - Humbug";
+        Notificon(new_message_count);
     }
 };
 

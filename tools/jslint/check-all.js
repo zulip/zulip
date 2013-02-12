@@ -3,7 +3,7 @@
 // Global variables, categorized by place of definition.
 var globals =
     // Third-party libraries
-      ' $ jQuery Spinner Handlebars XDate'
+      ' $ jQuery Spinner Handlebars XDate Notificon'
 
     // index.html
     + ' initial_pointer email stream_list people_list have_initial_messages'
@@ -87,6 +87,8 @@ var jslint_options = {
     plusplus: true,  // Allow increment/decrement operators
     regexp:   true,  // Allow . and [^...] in regular expressions
     todo:     true,  // Allow "TODO" comments.
+    newcap:   true,  // Don't assume that capitalized functions are
+                     // constructors (and the converse)
 
     predef: globals.split(/\s+/)
 };
