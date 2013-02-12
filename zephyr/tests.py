@@ -1957,8 +1957,17 @@ class UserPresenceTests(AuthedTestCase):
         self.assertEqual(json['presences'][email][client]['status'], 'active')
         self.assertEqual(json['presences']['hamlet@humbughq.com'][client]['status'], 'idle')
 
+    def test_no_mit(self):
+        # MIT never gets a list of users
+        email = "espuser@mit.edu"
+        api_key = self.common_init(email)
+        result = self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        self.assertEqual(json['presences'], {})
+
     def test_same_realm(self):
-        email = "hamlet@humbughq.com"
+        email = "espuser@mit.edu"
         api_key = self.common_init(email)
         client = 'website'
 
@@ -1966,15 +1975,16 @@ class UserPresenceTests(AuthedTestCase):
         result = self.client.post("/accounts/logout/")
 
         # Ensure we don't see hamlet@humbughq.com information leakage
-        email = "espuser@mit.edu"
+        email = "hamlet@humbughq.com"
         api_key = self.common_init(email)
+
         result = self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
         self.assert_json_success(result)
         json = simplejson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        # We only want @mit.edu emails
+        # We only want @humbughq.com emails
         for email in json['presences'].keys():
-            self.assertEqual(email.split('@')[1], 'mit.edu')
+            self.assertEqual(email.split('@')[1], 'humbughq.com')
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (
