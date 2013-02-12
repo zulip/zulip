@@ -377,7 +377,8 @@ def do_update_user_presence(user_profile, client, log_time, status):
 
 if settings.USING_RABBITMQ or settings.TEST_SUITE:
     # RabbitMQ is required for idle functionality
-    presence_queue = SimpleQueueClient()
+    if settings.USING_RABBITMQ:
+        presence_queue = SimpleQueueClient()
 
     def update_user_presence(user_profile, client, log_time, status):
         event={'user_profile_id': user_profile.id,
