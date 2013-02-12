@@ -39,9 +39,12 @@ class LogRequests(object):
                time_delta, query_time, len(connection.queries),
                request.get_full_path(), email))
 
-        # Log some additional data whenever we return a 40x error
-        if 400 <= response.status_code < 500:
-            logger.info('status=%3d, data=%s, uid=%s' % (response.status_code, response.content, email))
+        # Log some additional data whenever we return certain 40x errors
+        if 400 <= response.status_code < 500 and response.status_code not in [401, 404, 405]:
+            content = response.content
+            if len(content) > 100:
+                content = "[content more than 100 characters]"
+            logger.info('status=%3d, data=%s, uid=%s' % (response.status_code, content, email))
         return response
 
 class JsonErrorHandler(object):
