@@ -4,7 +4,7 @@ from zephyr.lib.initial_password import initial_password, initial_api_key
 from zephyr.models import Realm, Stream, User, UserProfile, Huddle, \
     Subscription, Recipient, Client, Message, \
     get_huddle_hash
-from zephyr.lib.actions import create_user_base
+from zephyr.lib.create_user import create_user_base
 
 # batch_bulk_create should become obsolete with Django 1.5, when the
 # Django bulk_create method accepts a batch_size directly.

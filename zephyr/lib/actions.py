@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.auth.models import User
 from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, \
@@ -12,7 +11,7 @@ from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.message_cache import cache_save_message
 from zephyr.lib.queue import SimpleQueueClient
 from django.utils import timezone
-from django.contrib.auth.models import UserManager
+from zephyr.lib.create_user import create_user
 
 import subprocess
 import simplejson
@@ -20,8 +19,6 @@ import time
 import traceback
 import re
 import requests
-import hashlib
-import base64
 import datetime
 import os
 import platform
@@ -42,38 +39,6 @@ def log_event(event):
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
             log.write(simplejson.dumps(event) + '\n')
-
-# create_user_hack is the same as Django's User.objects.create_user,
-# except that we don't save to the database so it can used in
-# bulk_creates
-def create_user_hack(username, password, email, active):
-    now = timezone.now()
-    email = UserManager.normalize_email(email)
-    user = User(username=username, email=email,
-                is_staff=False, is_active=active, is_superuser=False,
-                last_login=now, date_joined=now)
-
-    if active:
-        user.set_password(password)
-    else:
-        user.set_unusable_password()
-    return user
-
-def create_user_base(email, password, active=True):
-    # NB: the result of Base32 + truncation is not a valid Base32 encoding.
-    # It's just a unique alphanumeric string.
-    # Use base32 instead of base64 so we don't have to worry about mixed case.
-    # Django imposes a limit of 30 characters on usernames.
-    email_hash = hashlib.sha256(settings.HASH_SALT + email).digest()
-    username = base64.b32encode(email_hash)[:30]
-    return create_user_hack(username, password, email, active)
-
-def create_user(email, password, realm, full_name, short_name,
-                active=True):
-    user = create_user_base(email=email, password=password,
-                            active=active)
-    user.save()
-    return UserProfile.create(user, realm, full_name, short_name)
 
 def do_create_user(email, password, realm, full_name, short_name,
                    active=True):
