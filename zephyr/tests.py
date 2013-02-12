@@ -21,13 +21,19 @@ import re
 import sys
 import random
 
+def bail(msg):
+    print '\nERROR: %s\n' % (msg,)
+    sys.exit(1)
+
 try:
     settings.TEST_SUITE
 except:
-    print
-    print "ERROR: Test suite only runs correctly with --settings=humbug.test_settings"
-    print
-    sys.exit(1)
+    bail('Test suite only runs correctly with --settings=humbug.test_settings')
+
+try:
+    import pygments
+except ImportError:
+    bail('The Pygments library is required to run the backend test suite.')
 
 def find_key_by_email(address):
     from django.core.mail import outbox
