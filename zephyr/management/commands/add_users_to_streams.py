@@ -48,7 +48,7 @@ class Command(BaseCommand):
 
         for stream_name in set(stream_names):
             for user_profile in user_profiles:
-                stream = create_stream_if_needed(user_profile.realm, stream_name)
+                stream, _ = create_stream_if_needed(user_profile.realm, stream_name)
                 did_subscribe = do_add_subscription(user_profile, stream)
                 print "%s %s to %s" % (
                     "Subscribed" if did_subscribe else "Already subscribed",
