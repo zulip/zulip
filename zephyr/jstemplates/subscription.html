@@ -22,8 +22,13 @@
       <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
         <span class="sub_settings_title">Settings</span>
         <ul>
+          <li><div class="sub_setting_show_in_home">
+            <input class="sub_setting_show_in_home_cb" type="checkbox" name="Include in home" value="in_home_view" {{#if in_home_view}}checked{{/if}} />
+            <span class="sub_setting_show_in_home_label">Include in home view</span></div>
+          </li>
           <li><span class="sub_setting_control"><input class="colorpicker" type="text" value="{{color}}" /></span>
             Stream color
+          </li>
         </ul>
       </div>
       {{#render_subscribers}}

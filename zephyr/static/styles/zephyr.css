@@ -855,6 +855,15 @@ table.floating_recipient {
     margin-top: 10px;
 }
 
+.sub_setting_show_in_home {
+    margin-left: 20px;
+    margin-bottom: 5px;
+}
+
+.sub_setting_show_in_home_label {
+    margin-left: 30px;
+}
+
 .sub_setting_control {
     display: inline-block;
     margin-right: 10px;

@@ -70,6 +70,55 @@ function update_stream_color(stream_name, color, opts) {
     }
 }
 
+function stream_home_view_clicked(e) {
+    var in_home_view, cb;
+    if (e.target.type === "checkbox") {
+        in_home_view = e.target.checked;
+    } else {
+        cb = $(e.target).closest('.sub_setting_show_in_home').children('.sub_setting_show_in_home_cb')[0];
+        in_home_view = !cb.checked;
+        $(cb).prop("checked", in_home_view);
+    }
+
+    var sub_row = $(e.target).closest('.subscription_row');
+    var stream = sub_row.find('.subscription_name').text();
+
+    if (in_home_view === undefined) {
+        return;
+    }
+
+    var sub = stream_info[stream.toLowerCase()];
+    sub.in_home_view = in_home_view;
+
+    clear_table('zhome');
+    // We don't want to mess with the message_array, just filter the home view
+    // by the new in_home_view settings
+    add_messages(message_array, {add_to_home: true, append_new_messages: false, update_unread_counts: false});
+    // In case we added messages to what's visible in the home view, we need to re-scroll to make
+    // sure the pointer is still visible. We don't want the auto-scroll handler to move our pointer
+    // to the old scroll location before we have a chance to update it.
+    recenter_pointer_on_display = true;
+    suppress_scroll_pointer_update = true;
+
+    // If we added any messages that were unread but before the currently selected message pointer
+    // we need to re-process them to update the unread count
+    if (message_array.length > 0) {
+        process_unread_counts(message_range(message_array[0].id, selected_message_id), true);
+    }
+
+    $.ajax({
+        type:     'POST',
+        url:      '/json/subscriptions/property',
+        dataType: 'json',
+        data: {
+            "property": "in_home_view",
+            "stream_name": stream,
+            "in_home_view": in_home_view
+        },
+        timeout:  10*1000
+    });
+}
+
 var colorpicker_options = {
     clickoutFiresChange: true,
     showPalette: true,
@@ -548,6 +597,8 @@ $(function () {
         var colorpicker = $(e.target).closest('.subscription_row').find('.colorpicker');
         colorpicker.spectrum(colorpicker_options);
     });
+
+    $("#subscriptions_table").on("click", ".sub_setting_show_in_home", stream_home_view_clicked);
 
     if (! should_render_subscribers()) {
         return;

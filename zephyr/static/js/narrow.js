@@ -225,7 +225,7 @@ exports.activate = function (operators, opts) {
             // Select target_id so that we will correctly arrange messages
             // surrounding the target message.
             select_message_by_id(target_id, {then_scroll: false});
-            add_messages(messages, false);
+            add_messages(messages, {add_to_home: false, append_new_messages: true});
         }, true, true);
     } else {
         clear_table('zfilt');
@@ -338,6 +338,7 @@ exports.restore_home_state = function() {
     if ($('#gear-menu li[title="Home"]').hasClass("active")) {
         exports.deactivate();
     }
+    maybe_scroll_to_selected();
 };
 
 return exports;

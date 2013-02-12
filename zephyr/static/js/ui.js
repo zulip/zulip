@@ -510,6 +510,11 @@ $(function () {
         hotkeys.in_scroll_caused_by_keypress = false;
         exports.update_floating_recipient_bar();
         if ($('#home').hasClass('active')) {
+            if (!suppress_scroll_pointer_update) {
+                keep_pointer_in_view();
+            } else {
+                suppress_scroll_pointer_update = false;
+            }
             if (viewport.scrollTop() === 0 &&
                 have_scrolled_away_from_top) {
                 have_scrolled_away_from_top = false;
@@ -840,12 +845,22 @@ $(function () {
 
     $("#stream").on('blur', function () { compose.decorate_stream_bar(this.value); });
 
+    $("li[data-name='home']").on('click', function () {
+        ui.change_tab_to('#home');
+        narrow.deactivate();
+        // We need to maybe scroll to the selected message
+        // once we have the proper viewport set up
+        setTimeout(maybe_scroll_to_selected, 0);
+        return false;
+    });
+
     $("a.brand").on('click', function (e) {
         if (exports.home_tab_obscured()) {
             ui.change_tab_to('#home');
         } else {
             narrow.restore_home_state();
         }
+        maybe_scroll_to_selected();
         e.preventDefault();
     });
 

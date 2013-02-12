@@ -32,6 +32,11 @@ var message_groups = {
 
 var disable_pointer_movement = false;
 
+// Toggles re-centering the pointer in the window
+// when Home is next clicked by the user
+var recenter_pointer_on_display = false;
+var suppress_scroll_pointer_update = false;
+
 function add_person(person) {
     people_list.push(person);
     people_dict[person.email] = person;
@@ -91,6 +96,15 @@ function recenter_view(message) {
 function scroll_to_selected() {
     if (selected_message && (selected_message.length !== 0))
         recenter_view(selected_message);
+}
+
+function maybe_scroll_to_selected() {
+    // If we have been previously instructed to re-center to the
+    // selected message, then do so
+    if (recenter_pointer_on_display) {
+        scroll_to_selected();
+        recenter_pointer_on_display = false;
+    }
 }
 
 function get_private_message_recipient(message, attr) {
@@ -194,6 +208,13 @@ function process_unread_counts(messages, is_read) {
         if (message.sender_email === email) {
             return;
         }
+
+        if (is_read === true &&
+            !narrow.active() &&
+            !narrow.in_home(message)) {
+            return;
+        }
+
         var hashkey;
         if (message.type === 'stream') {
             hashkey = message.display_recipient;
@@ -552,7 +573,7 @@ function add_message_metadata(message, dummy) {
 }
 
 function add_messages_helper(messages, table, center_message_id,
-                             predicate, allow_collapse) {
+                             predicate, allow_collapse, append_new_messages) {
     // center_message_id is guaranteed to be between the top and bottom
     var top_messages = $.grep(messages, function (elem, idx) {
         return (elem.id < center_message_id && ! message_in_table[table][elem.id]);
@@ -560,7 +581,7 @@ function add_messages_helper(messages, table, center_message_id,
     var bottom_messages = $.grep(messages, function (elem, idx) {
         return (elem.id >= center_message_id && ! message_in_table[table][elem.id]);
     });
-    if (table === "zhome") {
+    if (table === "zhome" && append_new_messages) {
         message_array = top_messages.concat(message_array).concat(bottom_messages);
     }
     add_to_table(top_messages,    table, predicate, "top",    allow_collapse);
@@ -568,27 +589,32 @@ function add_messages_helper(messages, table, center_message_id,
     return top_messages.length > 0;
 }
 
-function add_messages(messages, add_to_home) {
+function add_messages(messages, opts) {
     var prepended = false;
     if (!messages)
         return;
+
+    opts = $.extend({}, {update_unread_counts: true}, opts);
 
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
     messages = $.map(messages, add_message_metadata);
 
-    if (add_to_home) {
+    if (opts.add_to_home) {
         if (add_messages_helper(messages, "zhome", persistent_message_id,
-                                narrow.in_home, true)
+                                narrow.in_home, true, opts.append_new_messages)
             && !narrow.active()) {
             prepended = true;
         }
-        process_unread_counts(messages, false);
+
+        if (opts.update_unread_counts) {
+            process_unread_counts(messages, false);
+        }
     }
 
     if (narrow.active()) {
         if (add_messages_helper(messages, "zfilt", selected_message_id,
-                                narrow.predicate(), narrow.allow_collapse())) {
+                                narrow.predicate(), narrow.allow_collapse(), opts.append_new_messages)) {
             prepended = true;
         }
     }
@@ -666,7 +692,7 @@ function get_updates(options) {
             }
 
             if (data.messages.length !== 0) {
-                add_messages(data.messages, true);
+                add_messages(data.messages, {add_to_home: true, append_new_messages: true});
                 notifications.received_messages(data.messages);
             }
 
@@ -735,7 +761,7 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
         $('#connection-error').hide();
 
         if (messages.length !== 0 && !cont_will_add_messages) {
-            add_messages(messages, !for_narrow);
+            add_messages(messages, {add_to_home: !for_narrow, append_new_messages: true});
         }
 
         if (cont !== undefined) {
