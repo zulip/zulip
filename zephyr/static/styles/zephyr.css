@@ -78,9 +78,20 @@ a:hover code {
 
 .bottom_sidebar {
     margin-top: 1em;
+}
+
+#stream_filters {
     overflow-y: hidden;
 }
-.bottom_sidebar:hover {
+#stream_filters:hover {
+    overflow-y: auto;
+}
+
+#user_presences {
+    margin-top: 1em;
+    overflow-y: hidden;
+}
+#user_presences:hover {
     overflow-y: auto;
 }
 
