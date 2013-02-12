@@ -571,7 +571,7 @@ $(function () {
     // Stop propagation in all cases.  Also, ignore the event if the element
     // is already at the top or bottom.  Otherwise we get a new scroll event
     // on the parent (?).
-    $('.modal-body, input, textarea').mousewheel(function (e, delta) {
+    $('.modal-body, .bottom_sidebar, input, textarea').mousewheel(function (e, delta) {
         var self = $(this);
         var scroll = self.scrollTop();
         e.stopPropagation();
