@@ -12,6 +12,7 @@ from zephyr.lib.message_cache import cache_save_message
 from zephyr.lib.queue import SimpleQueueClient
 from django.utils import timezone
 from zephyr.lib.create_user import create_user
+from zephyr.lib.bulk_create import batch_bulk_create
 
 import subprocess
 import simplejson
@@ -123,18 +124,18 @@ def do_send_message(message, no_log=False):
     elif (message.recipient.type == Recipient.STREAM or
           message.recipient.type == Recipient.HUDDLE):
         recipients = [s.user_profile for
-                      s in Subscription.objects.select_related().filter(recipient=message.recipient, active=True)]
+                      s in Subscription.objects.select_related(
+                "user_profile", "user_profile__user").filter(recipient=message.recipient, active=True)]
     else:
         raise ValueError('Bad recipient type')
 
     # Save the message receipts in the database
-    # TODO: Use bulk_create here
     with transaction.commit_on_success():
         message.save()
-        for user_profile in recipients:
-            # Only deliver messages to "active" user accounts
-            if user_profile.user.is_active:
-                UserMessage(user_profile=user_profile, message=message).save()
+        ums_to_create = [UserMessage(user_profile=user_profile, message=message)
+                         for user_profile in recipients
+                         if user_profile.user.is_active]
+        batch_bulk_create(UserMessage, ums_to_create)
 
     cache_save_message(message)
 
