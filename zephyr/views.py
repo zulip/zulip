@@ -1337,6 +1337,11 @@ def get_status_list(requesting_user_profile):
 
 
     user_statuses = defaultdict(dict)
+
+    # Return no status info for MIT
+    if requesting_user_profile.realm.domain == 'mit.edu':
+        return json_success({'presences': user_statuses})
+
     for presence in UserPresence.objects.filter(
         user_profile__realm=requesting_user_profile.realm).select_related('user_profile', 'client'):
 
