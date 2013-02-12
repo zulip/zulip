@@ -427,18 +427,25 @@ def gather_subscriptions(user_profile):
     with_color = StreamColor.objects.filter(subscription__in = subs).select_related()
     no_color   = subs.exclude(id__in = with_color.values('subscription_id')).select_related()
 
+    stream_ids = [sc.subscription.recipient.type_id for sc in with_color] + \
+        [sub.recipient.type_id for sub in no_color]
+
+    stream_hash = {}
+    for stream in Stream.objects.filter(id__in=stream_ids):
+        stream_hash[stream.id] = (stream.name, stream.invite_only)
+
     result = []
     for sc in with_color:
-        stream_name = get_display_recipient(sc.subscription.recipient)
+        (stream_name, invite_only) = stream_hash[sc.subscription.recipient.type_id]
         result.append({'name': stream_name,
                        'in_home_view': sc.subscription.in_home_view,
-                       'invite_only': get_stream(stream_name, user_profile.realm).invite_only,
+                       'invite_only': invite_only,
                        'color': sc.color})
     for sub in no_color:
-        stream_name = get_display_recipient(sub.recipient)
+        (stream_name, invite_only) = stream_hash[sub.recipient.type_id]
         result.append({'name': stream_name,
                        'in_home_view': sub.in_home_view,
-                       'invite_only': get_stream(stream_name, user_profile.realm).invite_only,
+                       'invite_only': invite_only,
                        'color': StreamColor.DEFAULT_STREAM_COLOR})
 
     return sorted(result)
