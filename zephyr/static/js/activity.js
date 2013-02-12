@@ -30,14 +30,6 @@ function sort_users(users, user_info) {
             return 1;
         }
 
-        // Sort individual active/inactive statuses by pm activity
-        var pmsort = typeahead_helper.compare_by_pms(
-                        typeahead_helper.render_pm_object(people_dict[a]),
-                        typeahead_helper.render_pm_object(people_dict[b]));
-        if (pmsort !== 0) {
-            return pmsort;
-        }
-
         // Sort equivalent PM names alphabetically
         if (a < b) {
             return -1;
