@@ -72,23 +72,25 @@ def add_pointer_update_callback(user_profile, cb):
 
 # in-process caching mechanism for tracking usermessages
 #
-# user_messages:   Map user_profile_id => [deque of message ids he received]
+# user table:   Map user_profile_id => [deque of message ids he received]
 #
 # We don't use all the features of a deque -- the important ones are:
 # * O(1) insert of new highest message id
 # * O(k) read of highest k message ids
 # * Automatic maximum size support.
-user_messages = {}
-
-# Same deal as user_messages, but for streams.
 #
-# stream_messages: Map (realm_id, lowercased stream name) => [deque of message ids it received]
+# stream table: Map (realm_id, lowercased stream name) => [deque of message ids it received]
 #
 # Why don't we index by the stream_id? Because the client will make a
 # request that specifies a particular realm and stream name, and since
 # we're running within tornado, we don't want to have to do a database
 # lookup to find the matching entry in this table.
-stream_messages = {}
+
+mtables = {
+    'user': {},
+    'stream': {},
+}
+
 USERMESSAGE_CACHE_COUNT = 25000
 STREAMMESSAGE_CACHE_COUNT = 5000
 cache_minimum_id = sys.maxint
@@ -116,22 +118,22 @@ def initialize_user_messages():
                       "fill_message_cache"])
 
 def add_user_message(user_profile_id, message_id):
-    add_table_message(user_messages, user_profile_id, message_id)
+    add_table_message("user", user_profile_id, message_id)
 
 def add_stream_message(realm_id, stream_name, message_id):
-    add_table_message(stream_messages, (realm_id, stream_name.lower()), message_id)
+    add_table_message("stream", (realm_id, stream_name.lower()), message_id)
 
 def add_table_message(table, key, message_id):
     if cache_minimum_id == sys.maxint:
         initialize_user_messages()
-    table.setdefault(key, collections.deque(maxlen=400))
-    table[key].appendleft(message_id)
+    mtables[table].setdefault(key, collections.deque(maxlen=400))
+    mtables[table][key].appendleft(message_id)
 
 def fetch_user_messages(user_profile_id, last):
-    return fetch_table_messages(user_messages, user_profile_id, last)
+    return fetch_table_messages("user", user_profile_id, last)
 
 def fetch_stream_messages(realm_id, stream_name, last):
-    return fetch_table_messages(stream_messages, (realm_id, stream_name.lower()), last)
+    return fetch_table_messages("stream", (realm_id, stream_name.lower()), last)
 
 def fetch_table_messages(table, key, last):
     if cache_minimum_id == sys.maxint:
@@ -139,25 +141,25 @@ def fetch_table_messages(table, key, last):
 
     # We need to initialize the deque here for any new users or
     # streams that were created since Tornado was started
-    table.setdefault(key, collections.deque(maxlen=400))
+    mtables[table].setdefault(key, collections.deque(maxlen=400))
 
     # We need to do this check after initialize_user_messages has been called.
-    if len(table[key]) == 0:
+    if len(mtables[table][key]) == 0:
         # Since the request contains a value of "last", we can assume
         # that the relevant user or stream has actually received a
-        # message, which means that table[key] will not remain empty
-        # after the below completes.
+        # message, which means that mtabes[table][key] will not remain
+        # empty after the below completes.
         #
         # Thus, we will run this code at most once per key (user or
         # stream that is being lurked on).  Further, we only do this
         # query for those keys that have not received a message since
         # cache_minimum_id.  So we can afford to do a database query
         # from Tornado in this case.
-        if table == user_messages:
+        if table == "user":
             logging.info("tornado: Doing database query for user %d" % (key,),)
             for um in reversed(UserMessage.objects.filter(user_profile_id=key).order_by('-message')[:400]):
                 add_user_message(um.user_profile_id, um.message_id)
-        elif table == stream_messages:
+        elif table == "stream":
             logging.info("tornado: Doing database query for stream %s" % (key,))
             (realm_id, stream_name) = key
             stream = get_stream(stream_name, realm_id)
@@ -168,14 +170,14 @@ def fetch_table_messages(table, key, last):
                 for m in Message.objects.only("id", "recipient").filter(recipient=recipient).order_by("id")[:400]:
                     add_stream_message(realm_id, stream_name, m.id)
 
-    if len(table[key]) == 0:
+    if len(mtables[table][key]) == 0:
         # Check the our assumption above that there are messages here.
         # If false, this may just mean a misbehaving client submitted
         # "last" even though it has no messages (in which case we
         # should proceed with longpolling by falling through).  But it
         # could also be a server bug, so we log a warning.
         logging.warning("Unexpected empty message queue for key %s!" % (key,))
-    elif last < table[key][-1]:
+    elif last < mtables[table][key][-1]:
         # The user's client has a way-too-old value for 'last'
         # (presumably 400 messages old), we should return an error
 
@@ -183,10 +185,10 @@ def fetch_table_messages(table, key, last):
         # message. If you change this message, you must update that
         # error handler.
         raise JsonableError("last value of %d too old!  Minimum valid is %d!" %
-                            (last, table[key][-1]))
+                            (last, mtables[table][key][-1]))
 
     message_list = []
-    for message_id in table[key]:
+    for message_id in mtables[table][key]:
         if message_id <= last:
             return reversed(message_list)
         message_list.append(message_id)
