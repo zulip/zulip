@@ -115,7 +115,7 @@ var people_list = [
                   <ul class="filters">
                       <div id="global_filters">
                           {# Special-case this link so we don't actually go to page top. #}
-                          <li id="filthome" class="active-filter"><a href="#" onclick="narrow.deactivate();return false" >Home</a></li>
+                          <li id="filthome" class="active-filter"><a href="#" onclick="ui.change_tab_to('#home');narrow.deactivate();return false" >Home</a></li>
                       </div>
                       <hr id="stream_filters_sep">
                       <div id="stream_filters">
