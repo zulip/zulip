@@ -27,10 +27,6 @@ class LogRequests(object):
 
         # Get the amount of time spent doing database queries
         query_time = sum(float(query.get('time', 0)) for query in connection.queries)
-        if settings.DEBUG:
-            db_stats = "(db: %.3fs/%sq) " % (query_time, len(connection.queries),)
-        else:
-            db_stats = ""
 
         # Get the requestor's email address, if available.
         try:
@@ -38,9 +34,11 @@ class LogRequests(object):
         except Exception:
             email = "unauth"
 
-        logger.info('%-15s %-7s %3d %.3fs %s%s (%s)'
+        logger.info('%-15s %-7s %3d %.3fs (db: %.3fs/%sq) %s (%s)'
             % (remote_ip, request.method, response.status_code,
-               time_delta, db_stats, request.get_full_path(), email))
+               time_delta, query_time, len(connection.queries),
+               request.get_full_path(), email))
+
         # Log some additional data whenever we return a 40x error
         if 400 <= response.status_code < 500:
             logger.info('status=%3d, data=%s, uid=%s' % (response.status_code, response.content, email))
@@ -51,3 +49,26 @@ class JsonErrorHandler(object):
         if hasattr(exception, 'to_json_error_msg') and callable(exception.to_json_error_msg):
             return json_error(exception.to_json_error_msg())
         return None
+
+# Monkeypatch in time tracking to the Django non-debug cursor
+# Code comes from CursorDebugWrapper
+def wrapper_execute(self, action, sql, params=()):
+    self.set_dirty()
+    start = time.time()
+    try:
+        return action(sql, params)
+    finally:
+        stop = time.time()
+        duration = stop - start
+        self.db.queries.append({
+                'time': "%.3f" % duration,
+                })
+
+from django.db.backends.util import CursorWrapper
+def cursor_execute(self, sql, params=()):
+    return wrapper_execute(self, self.cursor.execute, sql, params)
+CursorWrapper.execute = cursor_execute
+
+def cursor_executemany(self, sql, params=()):
+    return wrapper_execute(self, self.cursor.executemany, sql, params)
+CursorWrapper.executemany = cursor_executemany
