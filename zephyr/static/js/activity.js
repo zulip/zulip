@@ -7,7 +7,7 @@ var activity = (function () {
 /* 5 minutes after no activity, idle regardless of focus */
 var DEFAULT_IDLE_TIMEOUT = 5 * 60 * 1000 ;
 /* 1 minute between keep-alive pings */
-var ACTIVE_PING_INTERVAL = 1 * 60 * 1000;
+var ACTIVE_PING_INTERVAL = 60 * 1000;
 /* Twice the ping interval is the cutoff for dead clients */
 var IDLE_THRESHOLD_SECS = 2 * ACTIVE_PING_INTERVAL / 1000;
 
