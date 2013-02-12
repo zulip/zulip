@@ -1,32 +1,42 @@
 var activity = (function () {
+var exports = {};
 
 /*
     Helpers for detecting user activity and managing user idle states
 */
 
-/* 5 minutes after no activity, idle regardless of focus */
-var DEFAULT_IDLE_TIMEOUT = 5 * 60 * 1000 ;
+/* 15 minutes after no activity, idle regardless of focus */
+var DEFAULT_IDLE_TIMEOUT_MS = 15 * 60 * 1000;
 /* 1 minute between keep-alive pings */
-var ACTIVE_PING_INTERVAL = 60 * 1000;
-/* Twice the ping interval is the cutoff for dead clients */
-var IDLE_THRESHOLD_SECS = 2 * ACTIVE_PING_INTERVAL / 1000;
+var ACTIVE_PING_INTERVAL_MS = 60 * 1000;
+
+/* Timeouts for away and idle state */
+var AWAY_THRESHOLD_SECS = 5 * 60;
+var IDLE_THRESHOLD_SECS = DEFAULT_IDLE_TIMEOUT_MS / 1000;
 
 /* Keep in sync with views.py:json_update_active_status() */
 var ACTIVE = "active";
 var IDLE = "idle";
+/* Client-side state constants */
+exports.user_active = "active";
+exports.user_away = "away";
+exports.user_idle = "idle";
 
 var has_focus = true;
 var ping_timer;
 
-var exports = {};
-
-
 function sort_users(users, user_info) {
     // TODO sort by unread count first, once we support that
     users.sort(function (a, b) {
-        if (user_info[a] && !user_info[b]) {
+        if (user_info[a] === exports.user_active && user_info[b] !== exports.user_active) {
             return -1;
-        } else if (user_info[b] && !user_info[a]) {
+        } else if (user_info[b] === exports.user_active && user_info[a] !== exports.user_active) {
+            return 1;
+        }
+
+        if (user_info[a] === exports.user_away && user_info[b] !== exports.user_away) {
+            return -1;
+        } else if (user_info[b] === exports.user_away && user_info[a] !== exports.user_away) {
             return 1;
         }
 
@@ -76,9 +86,16 @@ function focus_ping() {
             }
 
             if (email !== this_email) {
-                var active = presence.website !== undefined && presence.website.status === ACTIVE &&
-                                age >= 0 && age < IDLE_THRESHOLD_SECS;
-                user_info[this_email] = active;
+                var status = exports.user_idle;
+                if (presence.website !== undefined
+                    && presence.website.status === ACTIVE && age >= 0) {
+                    if (age < AWAY_THRESHOLD_SECS) {
+                        status = exports.user_active;
+                    } else if (age < IDLE_THRESHOLD_SECS) {
+                        status = exports.user_away;
+                    }
+                }
+                user_info[this_email] = status;
             }
         });
         users = sort_users(Object.keys(user_info), user_info);
@@ -89,7 +106,7 @@ function focus_ping() {
 function focus_gained() {
     if (!has_focus) {
         has_focus = true;
-        ping_timer = setInterval(focus_ping, ACTIVE_PING_INTERVAL);
+        ping_timer = setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
 
         focus_ping();
     }
@@ -97,12 +114,12 @@ function focus_gained() {
 
 exports.initialize = function () {
     $(window).focus(focus_gained);
-    $(window).idle({idle: DEFAULT_IDLE_TIMEOUT,
+    $(window).idle({idle: DEFAULT_IDLE_TIMEOUT_MS,
                 onIdle: focus_lost,
                 onActive: focus_gained,
                 keepTracking: true});
 
-    ping_timer = setInterval(focus_ping, ACTIVE_PING_INTERVAL);
+    ping_timer = setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
 
     focus_ping();
 };

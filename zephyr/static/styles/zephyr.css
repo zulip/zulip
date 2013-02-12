@@ -98,11 +98,20 @@ a:hover code {
 #user_presences li {
     margin-left: 15px;
 }
+
 #user_presences li.active-icon {
     margin-left: 0px;
 }
 #user_presences li.active-icon:before {
     content: url(/static/images/green-dot.png);
+    margin-right: 6px; /* +9px image = 15px */
+}
+
+#user_presences li.away-icon {
+    margin-left: 0px;
+}
+#user_presences li.away-icon:before {
+    content: url(/static/images/orange-dot.png);
     margin-right: 6px; /* +9px image = 15px */
 }
 

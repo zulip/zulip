@@ -936,8 +936,13 @@ exports.set_presence_list = function(users, presence_info) {
                                               compose.start('private', {'private_message_recipient': email});
                                               e.preventDefault();
                                           });
-        if (presence_info[email]) {
-            user.addClass('active-icon');
+        switch (presence_info[email]) {
+            case activity.user_active:
+                user.addClass('active-icon');
+                break;
+            case activity.user_away:
+                user.addClass('away-icon');
+                break;
         }
 
         $('#user_presences').append(user);
