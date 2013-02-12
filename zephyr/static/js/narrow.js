@@ -2,9 +2,6 @@ var narrow = (function () {
 
 var exports = {};
 
-// For narrowing based on a particular message
-var target_id = 0;
-
 var filter_function   = false;
 var current_operators = false;
 
@@ -201,10 +198,12 @@ function build_filter(operators_mixed_case) {
 
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
-        allow_collapse: true
+        allow_collapse: true,
+        target_id: selected_message_id
     }, opts);
 
     var was_narrowed = exports.active();
+    var target_id    = opts.target_id;
 
     filter_function   = build_filter(operators);
     current_operators = operators;
@@ -278,40 +277,31 @@ exports.from_popover = function (message_id) {
     exports.target(message_id);
 };
 
-// This is the message we're about to select, within the narrowed view.
-// But it won't necessarily be selected once the user un-narrows.
-//
-// FIXME: We probably don't need this variable, selected_message_id, *and*
-// persistent_message_id.
-exports.target = function (id) {
-    target_id = id;
-};
-
-exports.by_subject = function () {
+exports.by_subject = function (target_id) {
     var original = message_dict[target_id];
     if (original.type !== 'stream') {
         // Only stream messages have subjects, but the
         // user wants us to narrow in some way.
-        exports.by_recipient();
+        exports.by_recipient(target_id);
         return;
     }
     exports.activate([
             ['stream',  original.display_recipient],
             ['subject', original.subject]
-        ]);
+        ], { target_id: target_id });
 };
 
 // Called for the 'narrow by stream' hotkey.
-exports.by_recipient = function () {
+exports.by_recipient = function (target_id) {
     var message = message_dict[target_id];
     var new_narrow, emails;
     switch (message.type) {
     case 'private':
-        exports.by('pm-with', message.reply_to);
+        exports.by('pm-with', message.reply_to, { target_id: target_id });
         break;
 
     case 'stream':
-        exports.by('stream', message.display_recipient);
+        exports.by('stream', message.display_recipient, { target_id: target_id });
         break;
     }
 };

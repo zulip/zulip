@@ -12,7 +12,7 @@
 
   {{#if narrowed}}
   <li>
-    <a onclick="narrow.from_popover({{message.id}}); narrow.activate([]);">
+    <a onclick="narrow.from_popover(); narrow.activate([], {target_id: {{message.id}} });">
       <i class="icon-time"></i> Narrow to messages around this time
     </a>
   </li>
@@ -20,14 +20,14 @@
 
   {{#if message.is_stream}}
     <li>
-      <a onclick="narrow.from_popover({{message.id}}); narrow.by_subject();">
+      <a onclick="narrow.from_popover(); narrow.by_subject({{message.id}});">
         <i class="icon-bullhorn"></i>
         Narrow to this subject on stream <b>{{message.display_recipient}}</b>
       </a>
     </li>
   {{else}}
     <li>
-      <a onclick="narrow.from_popover({{message.id}}); narrow.by_recipient();">
+      <a onclick="narrow.from_popover(); narrow.by_recipient({{message.id}});">
         <i class="icon-user"></i>
         Narrow to this private message conversation
       </a>

@@ -828,14 +828,12 @@ $(function () {
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {
         var row = $(this).closest(".recipient_row");
-        narrow.target(rows.id(row));
-        narrow.by_recipient();
+        narrow.by_recipient(rows.id(row));
     });
 
     $("#home").on("click", ".narrows_by_subject", function (e) {
         var row = $(this).closest(".recipient_row");
-        narrow.target(rows.id(row));
-        narrow.by_subject();
+        narrow.by_subject(rows.id(row));
     });
 
     $("#subscriptions_table").on("mouseover", ".subscription_header", function (e) {

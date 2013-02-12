@@ -79,8 +79,7 @@ function process_hotkey(e) {
     }
 
     if (narrow_hotkeys.hasOwnProperty(code)) {
-        narrow.target(selected_message_id);
-        narrow_hotkeys[code]();
+        narrow_hotkeys[code](selected_message_id);
         return true;
     }
 
