@@ -271,12 +271,6 @@ exports.by = function (operator, operand, opts) {
     exports.activate([[operator, operand]], opts);
 };
 
-// Helper function for the actions popover
-exports.from_popover = function (message_id) {
-    ui.hide_actions_popover();
-    exports.target(message_id);
-};
-
 exports.by_subject = function (target_id) {
     var original = message_dict[target_id];
     if (original.type !== 'stream') {
