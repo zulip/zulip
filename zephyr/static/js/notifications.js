@@ -25,9 +25,11 @@ exports.initialize = function () {
 
     $(window).focus(function () {
         window_has_focus = true;
-        new_message_count = 0;
-        document.title = domain + " - Humbug";
-        Notificon("");
+        if (new_message_count !== 0) {
+            Notificon("");
+            new_message_count = 0;
+            document.title = domain + " - Humbug";
+        }
 
         $.each(notice_memory, function (index, notice_mem_entry) {
            notice_mem_entry.obj.cancel();
@@ -35,9 +37,11 @@ exports.initialize = function () {
     }).blur(function () {
         window_has_focus = false;
     }).mouseover(function () {
-        new_message_count = 0;
-        document.title = domain + " - Humbug";
-        Notificon("");
+        if (new_message_count !== 0) {
+            Notificon("");
+            new_message_count = 0;
+            document.title = domain + " - Humbug";
+        }
     });
 
     if (!window.webkitNotifications) {
