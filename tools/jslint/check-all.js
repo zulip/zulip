@@ -114,6 +114,10 @@ var exceptions = {
 
     "Unexpected 'else' after 'return'." : function () {
         return true;
+    },
+
+    "Don't make functions within a loop." : function () {
+        return true;
     }
 };
 
