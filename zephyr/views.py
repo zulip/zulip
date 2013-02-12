@@ -23,7 +23,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
-    is_active, isnt_mit
+    is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
 
 from zephyr.decorator import require_post, \
@@ -165,7 +165,7 @@ def accounts_register(request):
     try:
         if mit_beta_user:
             # MIT users already exist, but are supposed to be inactive.
-            is_active(email)
+            is_inactive(email)
         else:
             # Other users should not already exist at all.
             is_unique(email)
@@ -356,7 +356,7 @@ def accounts_home(request):
         try:
             email = request.POST['email']
             # Note: We don't check for uniqueness
-            is_active(email)
+            is_inactive(email)
         except ValidationError:
             return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
     else:

@@ -16,7 +16,7 @@ def is_unique(value):
     except User.DoesNotExist:
         pass
 
-def is_active(value):
+def is_inactive(value):
     try:
         if User.objects.get(email=value).is_active:
             raise ValidationError(u'%s is already active' % value)
@@ -48,7 +48,7 @@ class HomepageForm(forms.Form):
     if settings.ALLOW_REGISTER:
         email = forms.EmailField()
     else:
-        validators = [has_valid_realm, isnt_mit, is_active]
+        validators = [has_valid_realm, isnt_mit, is_inactive]
         email = forms.EmailField(validators=validators)
 
 class LoggingSetPasswordForm(SetPasswordForm):
