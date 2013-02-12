@@ -173,6 +173,9 @@ td.pointer {
 .selected_message .pointer {
     background-color: #08c;
 }
+.window_blurred .selected_message .pointer {
+    background-color: #9bc;
+}
 
 /* Adjust certain message elements so they still
    stand out against the grey background */

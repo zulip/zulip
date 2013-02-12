@@ -862,6 +862,14 @@ $(function () {
         }
         e.preventDefault();
     });
+
+    $(window).on('blur', function () {
+        $(document.body).addClass('window_blurred');
+    });
+
+    $(window).on('focus', function () {
+        $(document.body).removeClass('window_blurred');
+    });
 });
 
 function sort_narrow_list() {
