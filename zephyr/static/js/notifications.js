@@ -19,6 +19,8 @@ function browser_desktop_notifications_on () {
 exports.initialize = function () {
     names = fullname.toLowerCase().split(" ");
     names.push(email.split("@")[0].toLowerCase());
+    names.push("all");
+    names.push("everyone");
 
     $(window).focus(function () {
         window_has_focus = true;
