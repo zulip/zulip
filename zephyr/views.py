@@ -1343,7 +1343,8 @@ def get_status_list(requesting_user_profile):
         return json_success({'presences': user_statuses})
 
     for presence in UserPresence.objects.filter(
-        user_profile__realm=requesting_user_profile.realm).select_related('user_profile', 'client'):
+        user_profile__realm=requesting_user_profile.realm).select_related(
+        'user_profile', 'user_profile__user', 'client'):
 
         user_statuses[presence.user_profile.user.email][presence.client.name] = \
             presence_to_dict(presence)
