@@ -924,7 +924,7 @@ exports.set_presence_list = function(users, presence_info) {
                                               e.preventDefault();
                                           });
         if (presence_info[email]) {
-            user.prepend($('<img>').addClass('active-icon').attr('src', '/static/images/green-dot.png'));
+            user.addClass('active-icon');
         }
 
         $('#user_presences').append(user);

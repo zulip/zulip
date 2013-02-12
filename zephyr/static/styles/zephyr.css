@@ -80,9 +80,19 @@ a:hover code {
     margin-top: 1em;
     overflow-y: hidden;
 }
-
 .bottom_sidebar:hover {
     overflow-y: auto;
+}
+
+#user_presences li {
+    margin-left: 15px;
+}
+#user_presences li.active-icon {
+    margin-left: 0px;
+}
+#user_presences li.active-icon:before {
+    content: url(/static/images/green-dot.png);
+    margin-right: 6px; /* +9px image = 15px */
 }
 
 ul.filters {
@@ -875,20 +885,4 @@ table.floating_recipient {
     /* Setting max-height to a percentage doesn't work. */
     max-height: 400px;
     overflow-y: scroll;
-}
-
-li img.active-icon {
-    margin-left: -14px;
-    margin-right: 4px;
-    margin-bottom: 2px;
-}
-
-#user_presences_scroll {
-    max-height: 20em;
-
-    overflow: auto;
-}
-
-#user_presences {
-    margin-left: 16px;
 }
