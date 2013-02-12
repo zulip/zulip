@@ -119,7 +119,8 @@ function stream_home_view_clicked(e) {
 
         // We don't want to mess with the message_array, just filter the home view
         // by the new in_home_view settings
-        add_messages(message_array, {add_to_home: true, append_new_messages: false, update_unread_counts: false});
+        // TODO: We should possibly just rebuild the message list
+        add_messages(all_msg_list, {append_new_messages: false, update_unread_counts: false});
 
         $.each(hidden, function (idx, shown) {
             $(shown).setAttribute('display', 'table');
@@ -133,8 +134,8 @@ function stream_home_view_clicked(e) {
 
         // If we added any messages that were unread but before the currently selected message pointer
         // we need to re-process them to update the unread count
-        if (message_array.length > 0) {
-            process_unread_counts(message_range(message_array[0].id, selected_message_id), true);
+        if (! all_msg_list.empty()) {
+            process_unread_counts(message_range(all_msg_list.first().id, selected_message_id), true);
         }
     }, 0);
 

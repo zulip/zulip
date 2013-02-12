@@ -224,34 +224,28 @@ exports.activate = function (operators, opts) {
     // Before we clear the table, check if anything was highlighted.
     var highlighted = search.something_is_highlighted();
 
-    // If our message id is not in range of the loaded message list, we need to fetch the messages
-    //  around the target message time
-    if (message_array.length > 0 && (selected_message_id < message_array[0].id ||
-                                     selected_message_id > message_array[message_array.length - 1])) {
-        load_old_messages(target_id, 200, 200, function (messages) {
-            // We do this work inside the load_old_messages
-            // continuation, to shorten the window with just 1 visible message
-            clear_table('zfilt');
-            add_to_table([message_dict[target_id]], 'zfilt', filter_function, 'bottom', allow_collapse);
-            // Select target_id so that we will correctly arrange messages
-            // surrounding the target message.
-            select_message_by_id(target_id, {then_scroll: false});
-            add_messages(messages, {add_to_home: false, append_new_messages: true});
-        }, true, true);
+    clear_table('zfilt');
+    narrowed_msg_list = new MessageList('zfilt');
+    current_msg_list = narrowed_msg_list;
+
+    // If our message id is not in range of the loaded message list,
+    // we need to fetch the messages around the target message time
+    if (all_msg_list.get(target_id) === undefined) {
+        load_old_messages(target_id, 200, 200, narrowed_msg_list, function (messages) {
+            select_message_by_id(target_id, {then_scroll: true});
+        }, true, false);
     } else {
-        clear_table('zfilt');
-        add_to_table(message_array, 'zfilt', filter_function, 'bottom', allow_collapse);
+        add_messages(all_msg_list.all(), narrowed_msg_list);
     }
 
     // Mark as read any messages before or at the pointer in the narrowed view
-    var start = parseInt(Object.keys(message_in_table.zfilt)[0], 10);
-    var to_process = [];
-    var i;
-    if (!isNaN(start)) {
-        for (i = start; i <= selected_message_id; i++) {
-            if (message_dict[i] !== undefined) {
-                to_process.push(message_dict[i]);
-            }
+    if (! narrowed_msg_list.empty()) {
+        // XXX: We shouldn't really be directly accessing the message list
+        var msgs = narrowed_msg_list.all();
+        var i;
+        var to_process = [];
+        for (i = 0; i < msgs.length && msgs[i].id <= selected_message_id; ++i) {
+            to_process.push(msgs[i]);
         }
 
         process_unread_counts(to_process, true);
@@ -299,7 +293,7 @@ exports.by = function (operator, operand, opts) {
 };
 
 exports.by_subject = function (target_id) {
-    var original = message_dict[target_id];
+    var original = current_msg_list.get(target_id);
     if (original.type !== 'stream') {
         // Only stream messages have subjects, but the
         // user wants us to narrow in some way.
@@ -314,7 +308,7 @@ exports.by_subject = function (target_id) {
 
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function (target_id) {
-    var message = message_dict[target_id];
+    var message = current_msg_list.get(target_id);
     var new_narrow, emails;
     switch (message.type) {
     case 'private':
@@ -339,6 +333,8 @@ exports.deactivate = function () {
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
     $("#zhome").css("opacity", 0).animate({opacity: 1});
+
+    current_msg_list = all_msg_list;
 
     $('#search_query').val('');
     reset_load_more_status();

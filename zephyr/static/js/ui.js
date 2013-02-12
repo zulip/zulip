@@ -124,7 +124,7 @@ $(document).bind('copy', function (e) {
                 p.html(p.html() + "<b>" + content.text() + "</b>" + "<br>");
             }
 
-            message = message_dict[rows.id(row)];
+            message = current_msg_list.get(rows.id(row));
 
             content = $('<div>').text(message.sender_full_name + ": " +
                                 $('<div/>').html(message.content).text()
@@ -407,7 +407,7 @@ function show_actions_popover(element, id) {
     var elt = $(element);
     if (elt.data('popover') === undefined) {
         var args = {
-            message:  message_dict[id],
+            message:  current_msg_list.get(id),
             narrowed: narrow.active()
         };
 
@@ -519,7 +519,7 @@ $(function () {
             if (viewport.scrollTop() === 0 &&
                 have_scrolled_away_from_top) {
                 have_scrolled_away_from_top = false;
-                load_more_messages();
+                load_more_messages(current_msg_list);
             } else if (!have_scrolled_away_from_top) {
                 have_scrolled_away_from_top = true;
             }

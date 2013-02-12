@@ -78,7 +78,7 @@ function hashchanged() {
 exports.initialize = function () {
     window.onhashchange = hashchanged;
     if (hashchanged()) {
-        load_more_messages();
+        load_more_messages(current_msg_list);
     }
 };
 

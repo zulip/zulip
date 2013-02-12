@@ -1,6 +1,6 @@
-var message_array = [];
-var message_dict = {};
-var message_in_table = {zhome: {}, zfilt: {}};
+var all_msg_list = new MessageList('zhome');
+var narrowed_msg_list;
+var current_msg_list = all_msg_list;
 var subject_dict = {};
 var people_dict = {};
 
@@ -127,7 +127,7 @@ function get_private_message_recipient(message, attr) {
 
 function respond_to_message(reply_type) {
     var message, msg_type;
-    message = message_dict[selected_message_id];
+    message = current_msg_list.get(selected_message_id);
 
     var stream = '';
     var subject = '';
@@ -180,14 +180,14 @@ $(function () {
                       keepTracking: true});
 });
 
-function message_range(start, end) {
-    // Returns messages from the global message_dict in the specified range, inclusive
+function message_range(msg_list, start, end) {
+    // Returns messages from the given message list in the specified range, inclusive
     var result = [];
     var i;
 
     for (i = start; i <= end; i++) {
-        if (message_dict[i] !== undefined) {
-            result.push(message_dict[i]);
+        if (msg_list.get(i) !== undefined) {
+            result.push(msg_list.get(i));
         }
     }
 
@@ -253,10 +253,10 @@ function update_selected_message(message, opts) {
     message.addClass(cls);
 
     var new_selected_id = rows.id(message);
+    process_unread_counts(message_range(all_msg_list, furthest_read + 1, new_selected_id), true);
     // Narrowing is a temporary view on top of the home view and
     // doesn't affect your pointer in the home view.
     // Similarly, lurk mode does not affect your pointer.
-    process_unread_counts(message_range(furthest_read + 1, new_selected_id), true);
     if (! narrow.active() && lurk_stream === undefined) {
         persistent_message_id = new_selected_id;
         if (new_selected_id > furthest_read)
@@ -332,7 +332,6 @@ function clear_table(table_name) {
     // mindful of memory leaks.
     rows.get_table(table_name).children().detach();
     message_groups[table_name] = [];
-    message_in_table[table_name] = {};
 }
 
 function add_display_time(message, prev) {
@@ -364,10 +363,11 @@ function add_display_time(message, prev) {
         ' (UTC' + ((tz_offset < 0) ? '' : '+') + tz_offset + ')';
 }
 
-function add_to_table(messages, table_name, filter_function, where, allow_collapse) {
+function add_to_table(messages, msg_list, filter_function, where, allow_collapse) {
     if (messages.length === 0)
         return;
 
+    var table_name = msg_list.table_name;
     var table = rows.get_table(table_name);
     var messages_to_render = [];
     var ids_where_next_is_same_sender = {};
@@ -389,7 +389,7 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         var top_messages = [];
         $.each(top_group, function (index, id) {
             rows.get(id, table_name).remove();
-            top_messages.push(message_dict[id]);
+            top_messages.push(msg_list.get(id));
         });
         messages = messages.concat(top_messages);
 
@@ -397,14 +397,12 @@ function add_to_table(messages, table_name, filter_function, where, allow_collap
         table.find('.recipient_row:first').remove();
     } else {
         last_message_id = rows.id(table.find('tr[zid]:last'));
-        prev = message_dict[last_message_id];
+        prev = msg_list.get(last_message_id);
     }
 
     $.each(messages, function (index, message) {
         if (! filter_function(message))
             return;
-
-        message_in_table[table_name][message.id] = true;
 
         message.include_recipient = false;
         message.include_bookend   = false;
@@ -517,8 +515,8 @@ function case_insensitive_find(term, array) {
 }
 
 function add_message_metadata(message, dummy) {
-    if (message_dict[message.id]) {
-        return message_dict[message.id];
+    if (all_msg_list.get(message.id)) {
+        return all_msg_list.get(message.id);
     }
     get_updates_params.last = Math.max(get_updates_params.last || 0, message.id);
 
@@ -567,65 +565,68 @@ function add_message_metadata(message, dummy) {
         }
     });
 
-    message_dict[message.id] = message;
     return message;
 }
 
-function add_messages_helper(messages, table, center_message_id,
+function add_messages_helper(messages, msg_list, center_message_id,
                              predicate, allow_collapse, append_new_messages) {
     // center_message_id is guaranteed to be between the top and bottom
     var top_messages = $.grep(messages, function (elem, idx) {
-        return (elem.id < center_message_id && ! message_in_table[table][elem.id]);
+        return (elem.id < center_message_id && msg_list.get(elem.id) === undefined);
     });
     var bottom_messages = $.grep(messages, function (elem, idx) {
-        return (elem.id >= center_message_id && ! message_in_table[table][elem.id]);
+        return (elem.id >= center_message_id && msg_list.get(elem.id) === undefined);
     });
-    if (table === "zhome" && append_new_messages) {
-        message_array = top_messages.concat(message_array).concat(bottom_messages);
+
+    if (append_new_messages) {
+        msg_list.prepend(top_messages);
+        msg_list.append(bottom_messages);
     }
-    add_to_table(top_messages,    table, predicate, "top",    allow_collapse);
-    add_to_table(bottom_messages, table, predicate, "bottom", allow_collapse);
+
+    add_to_table(top_messages,    msg_list, predicate, "top",    allow_collapse);
+    add_to_table(bottom_messages, msg_list, predicate, "bottom", allow_collapse);
     return top_messages.length > 0;
 }
 
-function add_messages(messages, opts) {
+function add_messages(messages, msg_list, opts) {
     var prepended = false;
     if (!messages)
         return;
 
-    opts = $.extend({}, {update_unread_counts: true}, opts);
+    opts = $.extend({}, {update_unread_counts: true, append_new_messages: true}, opts);
 
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
     messages = $.map(messages, add_message_metadata);
 
-    if (opts.add_to_home) {
-        if (add_messages_helper(messages, "zhome", persistent_message_id,
-                                narrow.in_home, true, opts.append_new_messages)
-            && !narrow.active()) {
-            prepended = true;
-        }
-
-        if (opts.update_unread_counts) {
-            process_unread_counts(messages, false);
-        }
+    var predicate, allow_collapse, center_message_id;
+    if (msg_list === all_msg_list) {
+        predicate = narrow.in_home;
+        allow_collapse = true;
+        center_message_id = persistent_message_id;
+    } else {
+        predicate = narrow.predicate();
+        allow_collapse = narrow.allow_collapse();
+        center_message_id = selected_message_id;
     }
 
-    if (narrow.active()) {
-        if (add_messages_helper(messages, "zfilt", selected_message_id,
-                                narrow.predicate(), narrow.allow_collapse(), opts.append_new_messages)) {
-            prepended = true;
-        }
+    if (add_messages_helper(messages, msg_list, center_message_id,
+                            predicate, allow_collapse, opts.append_new_messages)) {
+        prepended = true;
+    }
+
+    if (msg_list === all_msg_list && opts.update_unread_counts) {
+        process_unread_counts(messages, false);
     }
 
     // If we received the initially selected message, select it on the client side,
     // but not if the user has already selected another one during load.
-    if ((selected_message_id === -1) && (message_dict.hasOwnProperty(initial_pointer))) {
+    if ((selected_message_id === -1) && (msg_list.get(initial_pointer) !== undefined)) {
         select_message_by_id(initial_pointer, {then_scroll: true});
     }
 
     if ((selected_message_id === -1) && ! have_initial_messages) {
-        select_message_by_id(message_array[0].id, {then_scroll: false});
+        select_message_by_id(msg_list.first().id, {then_scroll: false});
     }
 
     // If we prepended messages, then we need to scroll back to the pointer.
@@ -691,7 +692,10 @@ function get_updates(options) {
             }
 
             if (data.messages.length !== 0) {
-                add_messages(data.messages, {add_to_home: true, append_new_messages: true});
+                add_messages(data.messages, all_msg_list);
+                if (narrowed_msg_list !== undefined) {
+                    add_messages(data.messages, narrowed_msg_list);
+                }
                 notifications.received_messages(data.messages);
             }
 
@@ -739,7 +743,7 @@ function get_updates(options) {
     });
 }
 
-function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
+function load_old_messages(anchor, num_before, num_after, msg_list, cont, for_narrow,
                            cont_will_add_messages) {
     if (for_narrow === undefined) {
         for_narrow = false;
@@ -760,7 +764,7 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
         $('#connection-error').hide();
 
         if (messages.length !== 0 && !cont_will_add_messages) {
-            add_messages(messages, {add_to_home: !for_narrow, append_new_messages: true});
+            add_messages(messages, msg_list);
         }
 
         if (cont !== undefined) {
@@ -778,8 +782,8 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
                 // The server occationally returns no data during a
                 // restart.  Ignore those responses and try again
                 setTimeout(function () {
-                    load_old_messages(anchor, num_before, num_after, cont, for_narrow,
-                                      cont_will_add_messages);
+                    load_old_messages(anchor, num_before, num_after, msg_list,
+                                      cont, for_narrow, cont_will_add_messages);
                 }, 0);
                 return;
             }
@@ -800,8 +804,8 @@ function load_old_messages(anchor, num_before, num_after, cont, for_narrow,
             // We might want to be more clever here
             $('#connection-error').show();
             setTimeout(function () {
-                load_old_messages(anchor, num_before, num_after, cont, for_narrow,
-                                  cont_will_add_messages);
+                load_old_messages(anchor, num_before, num_after, msg_list,
+                                  cont, for_narrow, cont_will_add_messages);
             }, 5000);
         }
     });
@@ -813,7 +817,7 @@ $(function () {
         // catch the user up
         if (messages.length !== 1) {
             var latest_id = messages[messages.length-1].id;
-            load_old_messages(latest_id, 0, 400, load_more);
+            load_old_messages(latest_id, 0, 400, all_msg_list, load_more);
             return;
         }
         // now start subscribing to updates
@@ -821,7 +825,7 @@ $(function () {
     }
 
     if (have_initial_messages) {
-        load_old_messages(initial_pointer, 200, 200, load_more);
+        load_old_messages(initial_pointer, 200, 200, all_msg_list, load_more);
     } else {
         get_updates();
     }
@@ -842,26 +846,20 @@ function reset_load_more_status() {
     have_scrolled_away_from_top = true;
 }
 
-function load_more_messages() {
+function load_more_messages(msg_list) {
     var batch_size = 400;
-    var table, oldest_message_id;
+    var oldest_message_id;
     if (!load_more_enabled) {
         return;
     }
     ui.show_loading_more_messages_indicator();
     load_more_enabled = false;
-    table = narrow.active() ? "zfilt" : "zhome";
-    oldest_message_id = rows.id(rows.get_table(table).find("tr[zid]:first"));
-    if (isNaN(oldest_message_id)) {
-        if (selected_message_id === -1) {
-            // If we arrived on the page via a #narrow URL, selected_message_id
-            // will still be -1, so use the initial_pointer as our anchor
-            oldest_message_id = initial_pointer;
-        } else {
-            oldest_message_id = selected_message_id;
-        }
+    if (msg_list.first() === undefined) {
+        oldest_message_id = initial_pointer;
+    } else {
+        oldest_message_id = msg_list.first().id;
     }
-    load_old_messages(oldest_message_id, batch_size, 0,
+    load_old_messages(oldest_message_id, batch_size, 0, msg_list,
                       function (messages) {
                           ui.hide_loading_more_messages_indicator();
                           if (messages.length === batch_size + 1) {
