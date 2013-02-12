@@ -18,14 +18,7 @@ function browser_desktop_notifications_on () {
 
 exports.initialize = function () {
     names = fullname.toLowerCase().split(" ");
-    var username = email.split("@")[0].toLowerCase();
-    // If the username is part of the user's full name, then don't add it
-    // to names because we don't send notifications to ambiguous names
-    // that could refer to multiple people in the domain.
-    // (We later add to names all of the names from the domain)
-    if (names.indexOf(username) === -1) {
-        names.push(username);
-    }
+    names.push(email.split("@")[0].toLowerCase());
 
     $(window).focus(function () {
         window_has_focus = true;
@@ -133,8 +126,7 @@ function process_desktop_notification(message) {
 
 function speaking_at_me(message) {
     var content_lc = $('<div/>').html(message.content).text().toLowerCase();
-    var match_so_far = false;
-    var indexof, after_name, after_atname;
+    var found_match = false, indexof, after_name, after_atname;
     var punctuation = /[\.,-\/#!$%\^&\*;:{}=\-_`~()\+\?\[\]\s]/;
 
     if (domain === "mit.edu") {
@@ -158,17 +150,12 @@ function speaking_at_me(message) {
              after_name.match(punctuation) !== null) ||
             (indexof > 0 && content_lc.charAt(indexof-1) === "@" &&
              after_name.match(punctuation) !== null)) {
-            if (match_so_far) {
-                match_so_far = false;
+                found_match = true;
                 return false;
-            }
-            else {
-                match_so_far = true;
-            }
         }
     });
 
-    return match_so_far;
+    return found_match;
 }
 
 exports.received_messages = function (messages) {
