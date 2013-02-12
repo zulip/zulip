@@ -512,6 +512,7 @@ function add_messages(messages, add_to_home) {
         return;
 
     util.destroy_loading_indicator($('#page_loading_indicator'));
+    util.destroy_first_run_message();
     messages = $.map(messages, add_message_metadata);
 
     if (add_to_home) {

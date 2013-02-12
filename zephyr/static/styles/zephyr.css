@@ -897,3 +897,12 @@ table.floating_recipient {
     max-height: 400px;
     overflow-y: scroll;
 }
+
+#first_run_message {
+    padding: 1em 4em;
+    display: none;
+}
+
+#first_run_message h4 {
+    text-align: center;
+}

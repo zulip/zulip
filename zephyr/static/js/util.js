@@ -71,5 +71,14 @@ exports.destroy_loading_indicator = function (container) {
     container.css({width: 0, height: 0, display: 'none'});
 };
 
+exports.show_first_run_message = function () {
+    $('#first_run_message').show();
+};
+
+exports.destroy_first_run_message = function () {
+    // A no-op if the element no longer exists
+    $('#first_run_message').remove();
+};
+
 return exports;
 }());

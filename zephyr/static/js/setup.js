@@ -8,6 +8,8 @@ $(function () {
     // get_updates completes.
     if (have_initial_messages) {
         util.make_loading_indicator($('#page_loading_indicator'), 'Loading...');
+    } else {
+        util.show_first_run_message();
     }
 
     // Compile Handlebars templates.
