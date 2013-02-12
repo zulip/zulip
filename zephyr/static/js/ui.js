@@ -917,8 +917,12 @@ exports.remove_narrow_filter = function (name, type) {
 exports.set_presence_list = function(users, presence_info) {
     $('#user_presences').empty();
     $.each(users, function(idx, email) {
-        var user = $('<li>').html($('<a>').attr('href', '#narrow/pm-with/' + email)
-                                          .text(people_dict[email].full_name));
+        var user = $('<li>').html($('<a>').attr('href', '#')
+                                          .text(people_dict[email].full_name))
+                                          .click(function(e) {
+                                              compose.start('private', {'private_message_recipient': email});
+                                              e.preventDefault();
+                                          });
         if (presence_info[email]) {
             user.prepend($('<img>').addClass('active-icon').attr('src', '/static/images/green-dot.png'));
         }
