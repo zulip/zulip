@@ -226,6 +226,7 @@ PIPELINE_JS = {
             'js/activity.js',
             'js/colorspace.js',
             'js/timerender.js',
+            'js/tutorial.js',
         ),
         'output_filename': 'min/app.js'
     },
