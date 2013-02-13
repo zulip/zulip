@@ -816,16 +816,6 @@ $(function () {
         show_actions_popover(this, rows.id(row));
     });
 
-    $("#main_div").on("contextmenu", ".message_row, .recipient_row", function (e) {
-        // Let the browser handle right-click on links in messages;
-        // otherwise we take over
-        if ($(e.target).is('a'))
-            return;
-        e.preventDefault();
-
-        show_actions_popover(this, rows.id($(this)));
-    });
-
     $("#home").on("click", ".narrows_by_recipient", function (e) {
         var row = $(this).closest(".recipient_row");
         narrow.by_recipient(rows.id(row));
