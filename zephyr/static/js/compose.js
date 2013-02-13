@@ -134,6 +134,16 @@ function send_message() {
         request.to = JSON.stringify([compose.stream_name()]);
     }
 
+    if (tutorial.is_running()) {
+        // We make a new copy of the request object for the tutorial so that we
+        // don't mess up the request we're actually sending to the server
+        var tutorial_copy_of_message = $.extend({}, request, {to: compose.stream_name()});
+        if (request.type === "private") {
+            $.extend(tutorial_copy_of_message, {to: recipients});
+        }
+        tutorial.message_was_sent(tutorial_copy_of_message);
+    }
+
     $.ajax({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         url: '/json/send_message',

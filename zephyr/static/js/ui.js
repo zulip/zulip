@@ -762,6 +762,7 @@ $(function () {
     invite.initialize();
     activity.initialize();
     subs.maybe_toggle_all_messages();
+    tutorial.initialize();
 
     $("body").bind('click', function () {
         ui.hide_actions_popover();
