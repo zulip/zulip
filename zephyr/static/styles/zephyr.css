@@ -96,10 +96,6 @@ a:hover code {
     }
 }
 
-#nav_whitespace {
-    visibility: hidden;
-}
-
 .my_fullname {
     font-weight: bold;
     font-size: 150%;
@@ -180,11 +176,6 @@ li.active-filter {
 ul.filters .count {
     margin-left: 0.5em;
     display: none;
-}
-
-.phone_new_message_button {
-    margin-top: 5px;
-    float: left;
 }
 
 #application_area {
@@ -727,11 +718,6 @@ table.floating_recipient {
     font-size:   33px;
     font-weight: bold;
     line-height: 38px;
-}
-
-#message-type-tabs {
-    margin-top: 0px;
-    margin-bottom: 0px;
 }
 
 .message_body_gravatar {
