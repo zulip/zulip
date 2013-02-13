@@ -157,9 +157,9 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <h4>Trac</h4>
       <p>First, download and install our <a href="/api">Python bindings and example scripts</a>.</p>
 
-      <p>Next, open <code>integrations/humbug_trac.py</code> in your
-      favorite editor, and change the following lines to specify your
-      bot's email address, API key, and where you'd like your
+      <p>Next, open <code>integrations/humbug_trac_config.py</code> in
+      your favorite editor, and change the following lines to specify
+      your bot's email address, API key, and where you'd like your
       notification messages to go (by default,
       stream <code>trac</code>):</p>
 
@@ -168,8 +168,10 @@ following, to the stream <code>commits</code> with a subject that matches the re
 <span class="n">STREAM_FOR_NOTIFICATIONS</span> <span class="o">=</span> <span class="s">"trac"</span>
 <span class="n">TRAC_BASE_TICKET_URL</span> <span class="o">=</span> <span class="s">"https://trac.example.com/ticket"</span></pre></div>
 
-      <p>Copy the file to your Trac server, placing it in the
-      Trac <code>plugins/</code> subdirectory. Once you've done that,
+      <p>Copy <code>humbug_trac.py</code>
+      and <code>humbug_trac_config.py</code> to your Trac server,
+      placing them in the Trac <code>plugins/</code>
+      subdirectory. Once you've done that,
       edit <code>conf/trac.ini</code> to add <code>humbug_trac</code>
       to the <code>[components]</code> section, as follows:</p>
 
@@ -184,6 +186,12 @@ following, to the stream <code>commits</code> with a subject that matches the re
       you configured above) with a subject that matches the ticket
       name:</p>
       <img class="screenshot" src="/static/images/integrations/trac/001.png">
+
+      <p><b>Additional trac configuration</b><br /> After using the plugin
+      for a while, you may want to customize which changes to tickets
+      result in a Humbug notification using
+      the <code>TRAC_NOTIFY_FIELDS</code> setting
+      in <code>humbug_trac_config.py</code>.</p>
 
       <p>
         <a href="#services">^ Back to top</a>
