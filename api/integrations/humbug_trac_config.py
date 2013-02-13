@@ -28,8 +28,24 @@ HUMBUG_API_KEY = "0123456789abcdef0123456789abcdef"
 STREAM_FOR_NOTIFICATIONS = "trac"
 TRAC_BASE_TICKET_URL = "https://trac.example.com/ticket"
 
-# This should not need to change unless you have a custom Humbug subdomain.
-HUMBUG_SITE = "https://humbughq.com"
+# Most people find that having every change in Trac result in a
+# notification is too noisy -- in particular, when someone goes
+# through recategorizing a bunch of tickets, that can often be noisy
+# and annoying.  We solve this issue by only sending a notification if
+# one of the more important fields is changed or the person making the
+# change makes a comment.
+#
+# Total list of fields is:
+# (priority, milestone, cc, owner, keywords, component, severity,
+#  type, versions, description, resolution, summary)
+#
+# The following is the list of fields which can be changed without
+# triggering a Humbug notification
+TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution"]
+
 ## If properly installed, the Humbug API should be in your import
 ## path, but if not, set a custom path below
 HUMBUG_API_PATH = None
+
+# This should not need to change unless you have a custom Humbug subdomain.
+HUMBUG_SITE = "https://humbughq.com"
