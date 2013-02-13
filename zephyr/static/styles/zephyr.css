@@ -7,6 +7,55 @@ textarea, input {
     font-family: 'Droid Sans', Helvetica, Arial, sans-serif;
 }
 
+
+/* Override Bootstrap's fixed sizes for various elements */
+
+textarea, label {
+    font-size:   inherit;
+    line-height: inherit;
+}
+
+/* List of text-like input types taken from Bootstrap */
+input[type="text"],
+input[type="password"],
+input[type="datetime"],
+input[type="datetime-local"],
+input[type="date"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="number"],
+input[type="email"],
+input[type="url"],
+input[type="search"],
+input[type="tel"],
+input[type="color"]
+{
+    font-size: inherit;
+    height:    1.4em;
+}
+
+li, .table th, .table td {
+    line-height: inherit;
+}
+
+.btn {
+    font-size:  inherit;
+    height:     auto;
+    min-height: 2.2em;
+}
+
+.btn-large {
+    font-size: 115%;
+}
+
+.navbar .brand {
+    font-size: 140%;
+}
+
+
+/* Inline and block code */
+
 code {
     white-space: nowrap;
 }
@@ -228,7 +277,8 @@ td.pointer {
 .message_header {
     vertical-align: middle;
     text-align:     left;
-    overflow-x:     hidden;
+    /* We can overflow-y if the font size gets big */
+    overflow:       hidden hidden;
     text-overflow:  ellipsis;
     white-space:    nowrap;
     font-weight:    bold;
@@ -488,8 +538,8 @@ img.inline_profile_picture {
 textarea.new_message_textarea {
     display: table-cell;
     width: 99%;
-    min-height: 40px;
-    max-height: 150px;
+    min-height: 3em;
+    max-height: 11em;
     margin-bottom: 0px;
     resize: none;
 }
@@ -586,8 +636,10 @@ input.recipient_box {
 }
 
 #search_query {
-    width: 95%;
+    width:       95%;
     line-height: normal;
+    font-size:   inherit;
+    height:      1.6em;
 }
 @media (max-width: 480px) {
     /* This is a hack to keep the search box from overflowing outside the
@@ -606,6 +658,12 @@ input.recipient_box {
 
 #search_arrows {
     margin-bottom: 5px;
+
+    /* Bootstrap wants font-size: 0 to eliminate space between
+       the buttons.  We need to inherit the font size, so we
+       remove the button gap by adjusting "letter" spacing. */
+    font-size: 90%;
+    letter-spacing: -.3em;
 }
 
 #searchbox .search_button {
@@ -694,6 +752,9 @@ table.floating_recipient {
     overflow-x: hidden;
     text-overflow: ellipsis;
     text-align: center;
+
+    font-size:   inherit;
+    line-height: inherit;
 }
 
 .popover_info {
@@ -749,7 +810,6 @@ table.floating_recipient {
 
 .subscription_table_elem {
     padding: 2px;
-    height: 30px;
     line-height: 30px;
 }
 
@@ -774,13 +834,13 @@ table.floating_recipient {
 
 .subscription_name {
     padding-left: 0.5em;
-    font-size: 14px;
     vertical-align: middle;
 }
 
 .subscription_settings {
     margin-left: 35px;
     margin-right: 35px;
+    clear: right;
 }
 
 .subscription_settings form {
@@ -801,7 +861,7 @@ table.floating_recipient {
 }
 
 .sub_unsub_button {
-    width: 140px;
+    min-width: 140px;
     float: right;
 }
 
@@ -827,13 +887,12 @@ table.floating_recipient {
 }
 
 #create_stream_button {
-    width: 140px;
+    min-width: 140px;
     float: right;
 }
 
 .sub_settings_title {
     line-height: 30px;
-    font-size: 14px;
     margin: 10px 0;
     font-weight: bold;
 }
@@ -842,6 +901,7 @@ table.floating_recipient {
     max-height: 200px;
     overflow: auto;
     margin-top: 10px;
+    clear: right;
 }
 
 .subscriber_list_add {
