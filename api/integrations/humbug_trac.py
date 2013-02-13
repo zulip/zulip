@@ -89,10 +89,8 @@ class HumbugPlugin(Component):
         `old_values` is a dictionary containing the previous values of the
         fields that have changed.
         """
-        if not comment and not set(old_values.keys()).intersection(set(config.TRAC_NOTIFY_FIELDS)):
-            # This is probably someone going through trac and updating
-            # the priorities; this can result in a lot of messages
-            # nobody wants to read, so don't send them without a comment.
+        if not (set(old_values.keys()).intersection(set(config.TRAC_NOTIFY_FIELDS)) or
+                (comment and "comment" in set(config.TRAC_NOTIFY_FIELDS))):
             return
 
         content = "%s updated %s" % (author, markdown_ticket_url(ticket))
