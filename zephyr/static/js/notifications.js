@@ -79,7 +79,7 @@ function process_desktop_notification(message) {
         other_recipients = other_recipients.replace(message.sender_full_name + ", ", "");
     } else {
         key = message.sender_full_name + " to " +
-              message.display_recipient + " | " + message.subject;
+              message.display_recipient + " > " + message.subject;
     }
 
     if (content.length > 150) {
@@ -114,7 +114,7 @@ function process_desktop_notification(message) {
         title += " (to you and " + other_recipients + ")";
     }
     if (message.type === "stream") {
-        title += " (to " + message.display_recipient + " | " + message.subject + ")";
+        title += " (to " + message.display_recipient + " > " + message.subject + ")";
     }
 
     notice_memory[key] = {
