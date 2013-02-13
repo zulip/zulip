@@ -213,6 +213,9 @@ exports.activate = function (operators, opts) {
         then_select_id: current_msg_list.selected_id()
     }, opts);
 
+    // Unfade the home view before we switch tables.
+    compose.unfade_messages();
+
     var was_narrowed = exports.active();
     var then_select_id  = opts.then_select_id;
 

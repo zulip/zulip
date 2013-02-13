@@ -2,6 +2,7 @@ var compose = (function () {
 
 var exports = {};
 var is_composing_message = false;
+var faded_to;
 
 function show(tabname, focus_area) {
     if (tabname === "stream") {
@@ -66,6 +67,59 @@ exports.decorate_stream_bar = function (stream_name) {
         .addClass(subs.get_color_class(color));
 };
 
+function neighbors(target_message) {
+    var table = narrow.active() ? "zfilt" : "zhome";
+    var message_tr = $(rows.get(target_message.id, table));
+    var message_neighbors = $();
+
+    var candidates = $.merge(message_tr.prevAll("*:lt(20)"), message_tr.nextAll("*:lt(20)"));
+
+    $.each(candidates, function () {
+        var row = $(this);
+        if (row.hasClass("recipient_row")) {
+            message_neighbors = message_neighbors.add(row);
+        } else {
+            message_neighbors = message_neighbors.add(row.children(".messagebox")[0]);
+        }
+    });
+
+    return message_neighbors;
+}
+
+function neighbors_with_different_recipients(target_message) {
+    return neighbors(target_message).filter(function (index) {
+        if ($(this).hasClass("recipient_row")) {
+            // This is a recipient_row.
+            return !same_recipient(target_message, current_msg_list.get(rows.id($(this))));
+        } else {
+            // This is a messagebox.
+            var row = $(this).parent("tr");
+            return !same_recipient(target_message, current_msg_list.get(rows.id(row)));
+        }
+    });
+}
+
+function fade_around(reply_message) {
+    faded_to = reply_message;
+    var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
+
+    neighbors_with_different_recipients(reply_message).addClass(fade_class);
+    ui.disable_floating_recipient_bar();
+}
+
+exports.unfade_messages = function () {
+    if (faded_to === undefined) {
+        return;
+    }
+
+    var table = narrow.active() ? "zfilt" : "zhome";
+    var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
+
+    neighbors_with_different_recipients(faded_to).removeClass(fade_class);
+    faded_to = undefined;
+    ui.enable_floating_recipient_bar();
+};
+
 exports.start = function (msg_type, opts) {
     if (reload.is_in_progress()) {
         return;
@@ -101,6 +155,14 @@ exports.start = function (msg_type, opts) {
         show('stream', $("#" + (focus_area || 'stream')));
     } else {
         show('private', $("#" + (focus_area || 'private_message_recipient')));
+    }
+
+    if (opts.replying_to_message !== undefined) {
+        if (exports.composing() && (faded_to !== opts.replying_to_message)) {
+            // Already faded to another message. First unfade everything.
+            exports.unfade_messages();
+        }
+        fade_around(opts.replying_to_message);
     }
 
     is_composing_message = msg_type;
@@ -205,6 +267,7 @@ exports.hide = function () {
     $('.message_comp').slideUp(100,
                               function() { $('#compose').css({visibility: "hidden"});});
     notifications_bar.enable();
+    exports.unfade_messages();
 };
 
 exports.clear = function () {

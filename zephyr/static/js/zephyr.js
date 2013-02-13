@@ -158,7 +158,8 @@ function respond_to_message(reply_type) {
         msg_type = message.type;
     }
     compose.start(msg_type, {'stream': stream, 'subject': subject,
-                             'private_message_recipient': pm_recipient});
+                             'private_message_recipient': pm_recipient,
+                             'replying_to_message': message});
 }
 
 function message_range(msg_list, start, end) {

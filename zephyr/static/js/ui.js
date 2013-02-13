@@ -281,6 +281,7 @@ function show_floating_recipient_bar() {
 }
 
 var old_label;
+var disable_floating_recipient_bar = false;
 function replace_floating_recipient_bar(desired_label) {
     var new_label, other_label, header;
     if (desired_label !== old_label) {
@@ -315,7 +316,20 @@ function hide_floating_recipient_bar() {
     }
 }
 
+exports.disable_floating_recipient_bar = function () {
+    disable_floating_recipient_bar = true;
+    hide_floating_recipient_bar();
+};
+
+exports.enable_floating_recipient_bar = function () {
+    disable_floating_recipient_bar = false;
+};
+
 exports.update_floating_recipient_bar = function () {
+    if (disable_floating_recipient_bar) {
+        return;
+    }
+
     var top_statusbar = $("#top_statusbar");
     var top_statusbar_top = top_statusbar.offset().top;
     var top_statusbar_bottom = top_statusbar_top + top_statusbar.outerHeight();

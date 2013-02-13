@@ -210,6 +210,7 @@ ul.filters .count {
 
 .message_list {
     max-width: 640px;
+    /* If we change this color, we must change message_reply_fade */
     background-color: aliceblue;
     padding-left: 10px;
     padding-right: 20px;
@@ -292,6 +293,10 @@ td.pointer {
 .ztable_col3 {    /* subjectname */
 }
 
+.recipient_row {
+    border: 1px solid grey;
+}
+
 .message_header {
     vertical-align: middle;
     text-align:     left;
@@ -305,23 +310,13 @@ td.pointer {
 
 .message_header_stream {
     background-color: #bbb;
-    border: 1px solid grey;
 }
 
 .message_header_private_message {
     background-color: #444;
-    border: 1px solid #444;
-}
-
-.message_header.left_part {
-    border-right: 0px;
-}
-.message_header.right_part {
-    border-left: 0px;
 }
 
 .messagebox.private-message {
-    border-color: #444;
     border-width: 0px 1px 1px 1px;
     background-color: #feffe0;
 }
@@ -711,6 +706,8 @@ table.floating_recipient {
 }
 
 .narrowed_view {
+    /* If we change this color, also change
+       message_reply_fade_narrowed */
     background-color: #DDD;
 }
 
@@ -996,4 +993,20 @@ table.floating_recipient {
 
 #empty_narrow_message p {
     text-align: center;
+}
+
+.message_reply_fade {
+    /* If we change the message_list background, we must change this */
+    border-color: aliceblue;
+    opacity: .4;
+}
+
+.message_reply_fade_narrowed {
+    /* If we change the narrowed_view background, we must change this */
+    border-color: #DDD;
+    opacity: .4;
+}
+
+#stream-message, #private-message {
+    border: 1px solid grey;
 }
