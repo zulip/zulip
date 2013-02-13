@@ -30,13 +30,13 @@
     <th>Name</th>
     <th>Email</th>
     <th>Realm</th>
-    <th>Last get_updates</th>
     <th>Last send_message</th>
+    <th>Messages sent</th>
     {% if activity.has_pointer %}
     <th>Last update_pointer</th>
     <th>Pointer updates</th>
     {% endif %}
-    <th>Messages sent</th>
+    <th>Last get_updates</th>
     </tr>
     </thead>
     <tbody>
@@ -45,13 +45,13 @@
         <td><strong>{{ row.full_name }}</strong></td>
         <td><strong>{{ row.email }}</strong></td>
         <td><strong>{{ row.realm }}</strong></td>
-        <td sorttable_customkey="{{ row.get_updates_last|date:'YmdHi' }}">{{ row.get_updates_last }}</td>
         <td sorttable_customkey="{{ row.send_message_last|date:'YmdHi' }}">{{ row.send_message_last }}</td>
+        <td class="number">{{ row.send_message_count }}</td>
         {% if activity.has_pointer %}
         <td sorttable_customkey="{{ row.update_pointer_last|date:'YmdHi' }}">{{ row.update_pointer_last }}</td>
         <td class="number">{{ row.update_pointer_count }}</td>
         {% endif %}
-        <td class="number">{{ row.send_message_count }}</td>
+        <td sorttable_customkey="{{ row.get_updates_last|date:'YmdHi' }}">{{ row.get_updates_last }}</td>
         </tr>
     {% endfor %}
     </tbody>
