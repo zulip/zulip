@@ -38,6 +38,8 @@
 from trac.core import Component, implements
 from trac.ticket import ITicketChangeListener
 import sys
+import os.path
+sys.path.insert(0, os.path.dirname(__file__))
 import humbug_trac_config as config
 
 if config.HUMBUG_API_PATH is not None:
