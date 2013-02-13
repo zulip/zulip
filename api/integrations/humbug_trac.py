@@ -24,10 +24,10 @@
 
 # Humbug trac plugin -- sends humbugs when tickets change.
 #
-# Install by copying this file to the trac plugins/ subdirectory,
-# customizing the constants below this comment, and then adding
-# "humbug_trac" to the [components] section of the conf/trac.ini
-# file, like so:
+# Install by copying this file and humbug_trac_config.py to the trac
+# plugins/ subdirectory, customizing the constants in
+# humbug_trac_config.py, and then adding "humbug_trac" to the
+# components section of the conf/trac.ini file, like so:
 #
 # [components]
 # humbug_trac = enabled
@@ -35,33 +35,22 @@
 # You may then need to restart trac (or restart Apache) for the bot
 # (or changes to the bot) to actually be loaded by trac.
 
-# Change these constants:
-HUMBUG_USER = "trac-notifications@example.com"
-HUMBUG_API_KEY = "0123456789abcdef0123456789abcdef"
-STREAM_FOR_NOTIFICATIONS = "trac"
-TRAC_BASE_TICKET_URL = "https://trac.example.com/ticket"
-
-# This should not need to change unless you have a custom Humbug subdomain.
-HUMBUG_SITE = "https://humbughq.com"
-## If properly installed, the Humbug API should be in your import
-## path, but if not, set a custom path below
-HUMBUG_API_PATH = None
-
 from trac.core import Component, implements
 from trac.ticket import ITicketChangeListener
 import sys
+import humbug_trac_config as config
 
-if HUMBUG_API_PATH is not None:
-    sys.path.append(HUMBUG_API_PATH)
+if config.HUMBUG_API_PATH is not None:
+    sys.path.append(config.HUMBUG_API_PATH)
 
 import humbug
 client = humbug.Client(
-    email=HUMBUG_USER,
-    site=HUMBUG_SITE,
-    api_key=HUMBUG_API_KEY)
+    email=config.HUMBUG_USER,
+    site=config.HUMBUG_SITE,
+    api_key=config.HUMBUG_API_KEY)
 
 def markdown_ticket_url(ticket, heading="ticket"):
-    return "[%s #%s](%s/%s)" % (heading, ticket.id, TRAC_BASE_TICKET_URL, ticket.id)
+    return "[%s #%s](%s/%s)" % (heading, ticket.id, config.TRAC_BASE_TICKET_URL, ticket.id)
 
 def markdown_block(desc):
     return "\n\n>" + "\n> ".join(desc.split("\n")) + "\n"
@@ -77,7 +66,7 @@ def trac_subject(ticket):
 def send_update(ticket, content):
     client.send_message({
             "type": "stream",
-            "to": STREAM_FOR_NOTIFICATIONS,
+            "to": config.STREAM_FOR_NOTIFICATIONS,
             "content": content,
             "subject": trac_subject(ticket)
             })
