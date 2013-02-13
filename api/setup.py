@@ -22,6 +22,7 @@ setup(name='humbug',
       packages=['humbug'],
       data_files=[('share/humbug/examples', ["examples/humbugrc", "examples/send-message"]),
                   ('share/humbug/integrations/trac', glob.glob('integrations/trac/*')),
+                  ('share/humbug/integrations/nagios', glob.glob('integrations/nagios/*')),
                   ],
       scripts=["bin/humbug-send"],
      )

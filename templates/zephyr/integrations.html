@@ -38,8 +38,8 @@
       {% endcomment %}
       <li><a href="#github">GitHub</a></li>
       <li><a href="#jenkins">Jenkins (or Hudson)</a></li>
-      {% comment %}
       <li><a href="#nagios">Nagios</a></li>
+      {% comment %}
       <li><a href="#pivotal">Pivotal Tracker</a></li>
       <li><a href="#svn">Subversion</a></li>
       {% endcomment %}
@@ -152,6 +152,72 @@ following, to the stream <code>commits</code> with a subject that matches the re
         <a href="#services">^ Back to top</a>
       </p>
     </div>
+
+{#--------------------------------------------------------------------#}
+    <div id="nagios" class="integration">
+      <h4>Nagios</h4>
+      <p>First, download and install our <a href="/api">Python
+      bindings and example scripts</a> on your Nagios server.</p>
+
+      <p>Next, open <code>integrations/nagios/humbugrc.example</code>
+      in your favorite editor, and change the following lines to
+      specify the email address and API key for your Nagios bot,
+      saving it to <code>/etc/nagios3/humbugrc</code> on your Nagios
+      server:</p>
+
+<div class="codehilite"><pre>[api]
+email=NAGIOS_EMAIL_ADDRESS
+key=NAGIOS_API_KEY
+</pre></div>
+
+      <p>Copy <code>integrations/nagios/humbug_nagios.cfg</code>
+      to <code>/etc/nagios3/conf.d</code> on your Nagios server.</p>
+
+      <p>Finally, add <code>humbug</code> to the <code>members</code>
+      list for one or more of the contact groups in the <code>CONTACT
+      GROUPS</code> section
+      of <code>/etc/nagios3/conf.d/contacts.cfg</code>, doing
+      something like:
+
+<div class="codehilite"><pre>define contactgroup{
+        contactgroup_name       admins
+        alias                   Nagios Administrators
+        members                 monitoring<span class="na">, humbug</span>
+        }
+</pre></div>
+
+      Once you've done that, reload your Nagios configuration
+      using <code>/etc/init.d/nagios3 reload</code>.</p>
+
+      <p><b>Congratulations! You're done!</b><br /> When your Nagios
+      system makes an alert, you'll see a message like the following,
+      to the stream <code>nagios</code> (to change this, edit the
+      arguments to <code>nagios-notify-humbug</code>
+      in <code>/etc/nagios3/conf.d/humbug_nagios.cfg</code>) with a
+      subject indicating the service with an issue:</p>
+      <img class="screenshot" src="/static/images/integrations/nagios/001.png">
+
+      <p><b>Testing</b><br />If you
+        have <a href="http://nagios.sourceforge.net/docs/3_0/extcommands.html">external
+        commands enabled in Nagios</a>, you can generate a test notice
+        from your Nagios instance by visiting using the <code>Send
+        custom service notification</code> command in
+        the <code>Service Commands</code> section of any individual
+        service's page on your Nagios instance.</p>
+
+      <p><b>Troubleshooting</b><br />You can confirm whether you've
+      correctly configured Nagios to run the Humbug plugin by looking
+      for <code>SERVICE NOTIFICATION</code> lines mentioning humbug
+      in <code>/var/log/nagios3/nagios.log</code>.  You can confirm
+      whether you've configured the Humbug plugin code correctly by
+      running <code>/usr/local/share/humbug/integrations/nagios/nagios-notify-humbug</code>
+      directly.</p>
+
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
+
 {#--------------------------------------------------------------------#}
     <div id="trac" class="integration">
       <h4>Trac</h4>

@@ -22,4 +22,8 @@ class humbug::nagios {
   # /etc/init.d/nagios3 start
   #
   #
+
+  # TODO: Install our API
+  # TODO: Install humbug_nagios.cfg from our API.
+
 }

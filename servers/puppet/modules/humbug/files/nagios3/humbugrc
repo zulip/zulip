@@ -1,0 +1,7 @@
+# Humbug Inc's internal nagios plugin configuration.
+# The plugin and example config are under api/integrations/
+
+[api]
+email = humbug+nagios@humbughq.com
+key = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+site = https://staging.humbughq.com
