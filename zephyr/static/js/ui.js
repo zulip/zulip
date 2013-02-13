@@ -984,5 +984,39 @@ exports.set_presence_list = function(users, presence_info) {
     });
 };
 
+function add_font_size(offset, name) {
+    var style = {
+        'font-size':   (14 + 3*offset) + 'px',
+        'line-height': (20 + 3*offset) + 'px'
+    };
+
+    var entry = $('<li>').append(
+        $('<a href="#">')
+            .text(name)
+            .css(style)
+            .click(function (e) {
+                $('body').css(style);
+                scroll_to_selected();
+                e.preventDefault();
+            }));
+
+    $('#font_size_menu').append(entry);
+}
+
+$(function () {
+    // Create font size menu entries
+    add_font_size(-1, 'Small'  );
+    add_font_size( 0, 'Medium' );
+    add_font_size( 1, 'Large'  );
+    add_font_size( 3, 'Larger' );
+    add_font_size( 5, 'Largest');
+
+    // The entry that produces the submenu has a href
+    // for style, but we don't want to navigate on click.
+    $('#font_size_menu_link').click(function (e) {
+        e.preventDefault();
+    });
+});
+
 return exports;
 }());
