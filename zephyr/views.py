@@ -708,7 +708,7 @@ def mit_to_mit(user_profile, email):
 def extract_recipients(raw_recipients):
     try:
         recipients = json_to_list(raw_recipients)
-    except simplejson.decoder.JSONDecodeError:
+    except (simplejson.decoder.JSONDecodeError, ValueError):
         recipients = [raw_recipients]
 
     # Strip recipients, and then remove any duplicates and any that
