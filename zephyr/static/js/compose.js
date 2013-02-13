@@ -128,7 +128,7 @@ function send_message() {
     if (request.type === "private") {
         request.to = JSON.stringify(recipients);
     } else {
-        request.to = compose.stream_name();
+        request.to = JSON.stringify([compose.stream_name()]);
     }
 
     $.ajax({
