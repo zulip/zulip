@@ -95,23 +95,18 @@ a:hover code {
     overflow-y: auto;
 }
 
-#user_presences li {
-    margin-left: 15px;
-}
-
-#user_presences li.active-icon {
-    margin-left: 0px;
-}
 #user_presences li.active-icon:before {
     content: url(/static/images/presence/user-active.png);
     margin-right: 6px; /* +9px image = 15px */
 }
 
-#user_presences li.away-icon {
-    margin-left: 0px;
-}
 #user_presences li.away-icon:before {
     content: url(/static/images/presence/user-away.png);
+    margin-right: 6px; /* +9px image = 15px */
+}
+
+#user_presences li.idle-icon:before {
+    content: url(/static/images/presence/user-idle.png);
     margin-right: 6px; /* +9px image = 15px */
 }
 

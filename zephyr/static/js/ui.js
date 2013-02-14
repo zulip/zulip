@@ -949,6 +949,9 @@ exports.set_presence_list = function(users, presence_info) {
             case activity.user_away:
                 user.addClass('away-icon');
                 break;
+            case activity.user_idle:
+                user.addClass('idle-icon')
+                break;
         }
 
         $('#user_presences').append(user);
