@@ -927,13 +927,21 @@ exports.remove_narrow_filter = function (name, type) {
 
 exports.set_presence_list = function(users, presence_info) {
     $('#user_presences').empty();
-    $.each(users, function(idx, email) {
-        var user = $('<li>').html($('<a>').attr('href', '#')
+
+    var create_user = function(name, email) {
+        return $('<li>').html($('<a>').attr('href', '#')
                                           .text(people_dict[email].full_name))
                                           .click(function(e) {
                                               compose.start('private', {'private_message_recipient': email});
                                               e.preventDefault();
                                           });
+    }
+
+    $('#user_presences').append(create_user(fullname, email).addClass('active-icon'));
+
+    $.each(users, function(idx, email) {
+        var user = create_user(people_dict[email].full_name, email);
+
         switch (presence_info[email]) {
             case activity.user_active:
                 user.addClass('active-icon');
