@@ -41,7 +41,8 @@ TRAC_BASE_TICKET_URL = "https://trac.example.com/ticket"
 # The following is the list of fields which can be changed without
 # triggering a Humbug notification; change these to match your team's
 # workflow.
-TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment"]
+TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment",
+                      "owner"]
 
 ## If properly installed, the Humbug API should be in your import
 ## path, but if not, set a custom path below

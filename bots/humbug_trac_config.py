@@ -9,6 +9,7 @@ HUMBUG_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 STREAM_FOR_NOTIFICATIONS = "trac"
 TRAC_BASE_TICKET_URL = "https://trac.humbughq.com/ticket"
 
-TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment"]
+TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment",
+                      "owner"]
 HUMBUG_API_PATH = "/home/humbug/humbug/api"
 HUMBUG_SITE = "https://staging.humbughq.com"
