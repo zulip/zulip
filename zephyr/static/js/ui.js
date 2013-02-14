@@ -935,7 +935,7 @@ exports.set_presence_list = function(users, presence_info) {
                                               compose.start('private', {'private_message_recipient': email});
                                               e.preventDefault();
                                           });
-    }
+    };
 
     $('#user_presences').append(create_user(fullname, email).addClass('active-icon'));
 
@@ -950,7 +950,7 @@ exports.set_presence_list = function(users, presence_info) {
                 user.addClass('away-icon');
                 break;
             case activity.user_idle:
-                user.addClass('idle-icon')
+                user.addClass('idle-icon');
                 break;
         }
 
