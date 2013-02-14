@@ -21,7 +21,7 @@ setup(name='humbug',
       url='https://humbughq.com/dist/api/',
       packages=['humbug'],
       data_files=[('share/humbug/examples', ["examples/humbugrc", "examples/send-message"]),
-                  ('share/humbug/integrations', glob.glob('integrations/*')),
+                  ('share/humbug/integrations/trac', glob.glob('integrations/trac/*')),
                   ],
       scripts=["bin/humbug-send"],
      )

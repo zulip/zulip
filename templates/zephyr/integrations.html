@@ -155,9 +155,10 @@ following, to the stream <code>commits</code> with a subject that matches the re
 {#--------------------------------------------------------------------#}
     <div id="trac" class="integration">
       <h4>Trac</h4>
-      <p>First, download and install our <a href="/api">Python bindings and example scripts</a>.</p>
+      <p>First, download and install our <a href="/api">Python
+      bindings and example scripts</a> on your Trac server.</p>
 
-      <p>Next, open <code>integrations/humbug_trac_config.py</code> in
+      <p>Next, open <code>integrations/trac/humbug_trac_config.py</code> in
       your favorite editor, and change the following lines to specify
       your bot's email address, API key, and where you'd like your
       notification messages to go (by default,
@@ -168,12 +169,13 @@ following, to the stream <code>commits</code> with a subject that matches the re
 <span class="n">STREAM_FOR_NOTIFICATIONS</span> <span class="o">=</span> <span class="s">"trac"</span>
 <span class="n">TRAC_BASE_TICKET_URL</span> <span class="o">=</span> <span class="s">"https://trac.example.com/ticket"</span></pre></div>
 
-      <p>Copy <code>humbug_trac.py</code>
-      and <code>humbug_trac_config.py</code> to your Trac server,
-      placing them in the Trac <code>plugins/</code>
-      subdirectory. Once you've done that,
-      edit <code>conf/trac.ini</code> to add <code>humbug_trac</code>
-      to the <code>[components]</code> section, as follows:</p>
+      <p>Copy <code>integrations/trac/humbug_trac.py</code>
+      and <code>integrations/trac/humbug_trac_config.py</code> into
+      your Trac installation's <code>plugins/</code>
+      subdirectory. Once you've done that, edit your Trac
+      installation's <code>conf/trac.ini</code> to
+      add <code>humbug_trac</code> to the <code>[components]</code>
+      section, as follows:</p>
 
 <div class="codehilite"><pre><span class="k">[components]</span>
 <span class="na">humbug_trac</span> <span class="o">=</span> <span class="s">enabled</span></pre></div>
