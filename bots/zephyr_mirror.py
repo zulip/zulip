@@ -30,6 +30,7 @@ import traceback
 import signal
 
 from zephyr_mirror_backend import parse_args
+from zephyr_mirror_backend import RandomExponentialBackoff
 
 def die(signal, frame):
     # We actually want to exit, so run os._exit (so as not to be caught and restarted)
@@ -59,10 +60,19 @@ if options.forward_class_messages and not options.noshard:
         pass
     sys.exit(0)
 
-while True:
+backoff = RandomExponentialBackoff()
+while backoff.keep_going():
     print "Starting zephyr mirroring bot"
     try:
         subprocess.call(args)
     except:
         traceback.print_exc()
-    time.sleep(1)
+    backoff.fail()
+
+print ""
+print ""
+print "ERROR: The Zephyr mirroring bot is unable to continue mirroring Zephyrs."
+print "This is often caused by failing to maintain unexpired Kerberos tickets"
+print "or AFS tokens."
+print ""
+sys.exit(1)
