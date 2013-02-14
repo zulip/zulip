@@ -674,7 +674,7 @@ function get_updates(options) {
         timeout:  poll_timeout,
         success: function (data) {
             if (! data) {
-                // The server occationally returns no data during a
+                // The server occasionally returns no data during a
                 // restart.  Ignore those responses so the page keeps
                 // working
                 get_updates_timeout = setTimeout(get_updates, 0);
