@@ -1884,6 +1884,17 @@ xxx/xxxxxx%xxxxxx/xx/" target="_blank" title="xxxx://xxxxxxxxx:xxxx/xxx/xxxxxx%x
 xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx\
 <br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>')
 
+    def test_multiline_strong(self):
+        msg = "Welcome to **the jungle**"
+        converted = convert(msg)
+
+        self.assertEqual(converted, '<p>Welcome to <strong>the jungle</strong></p>')
+
+        msg = """You can check out **any time you'd like
+But you can never leave**"""
+        converted = convert(msg)
+        self.assertEqual(converted, "<p>You can check out **any time you'd like<br>\nBut you can never leave**</p>")
+
 class UserPresenceTests(AuthedTestCase):
     fixtures = ['messages.json']
 
