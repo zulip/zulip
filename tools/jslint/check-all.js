@@ -29,7 +29,7 @@ var globals =
     // zephyr.js
     + ' all_msg_list narrowed_msg_list current_msg_list get_updates_params'
     + ' clear_table add_to_table add_messages'
-    + ' subject_dict people_dict same_stream_and_subject'
+    + ' subject_dict people_dict same_recipient same_stream_and_subject'
     + ' keep_pointer_in_view move_pointer_at_page_top_and_bottom'
     + ' respond_to_message'
     + ' select_message select_message_by_id'

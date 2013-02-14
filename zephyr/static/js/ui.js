@@ -823,13 +823,23 @@ $(function () {
     });
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {
-        var row = $(this).closest(".recipient_row");
-        narrow.by_recipient(rows.id(row));
+        var nearest = current_msg_list.get(rows.id($(this).closest(".recipient_row")));
+        var selected = current_msg_list.selected_message();
+        if (same_recipient(nearest, selected)) {
+            narrow.by_recipient(selected.id);
+        } else {
+            narrow.by_recipient(nearest.id);
+        }
     });
 
     $("#home").on("click", ".narrows_by_subject", function (e) {
-        var row = $(this).closest(".recipient_row");
-        narrow.by_subject(rows.id(row));
+        var nearest = current_msg_list.get(rows.id($(this).closest(".recipient_row")));
+        var selected = current_msg_list.selected_message();
+        if (nearest.subject === selected.subject) {
+            narrow.by_subject(selected.id);
+        } else {
+            narrow.by_subject(nearest.id);
+        }
     });
 
     $("#subscriptions_table").on("mouseover", ".subscription_header", function (e) {
