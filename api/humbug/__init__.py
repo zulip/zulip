@@ -46,7 +46,7 @@ API_VERSTRING = "/api/v1/"
 def generate_option_group(parser):
     group = optparse.OptionGroup(parser, 'API configuration')
     group.add_option('--site',
-                      default='https://humbughq.com',
+                      default=None,
                       help=optparse.SUPPRESS_HELP)
     group.add_option('--api-key',
                      action='store')
@@ -69,7 +69,7 @@ def init_from_options(options):
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
                  verbose=False, retry_on_errors=True,
-                 site="https://humbughq.com", client="API"):
+                 site=None, client="API"):
         if None in (api_key, email):
             if config_file is None:
                 config_file = os.path.join(os.environ["HOME"], ".humbugrc")
@@ -83,11 +83,16 @@ class Client(object):
                 api_key = config.get("api", "key")
             if email is None:
                 email = config.get("api", "email")
+            if site is None:
+                site = config.get("api", "site", None)
 
         self.api_key = api_key
         self.email = email
         self.verbose = verbose
-        self.base_url = site
+        if site is not None:
+            self.base_url = site
+        else:
+            self.base_url = "https://humbughq.com"
         self.retry_on_errors = retry_on_errors
         self.client_name = client
 
