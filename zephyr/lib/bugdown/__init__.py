@@ -153,7 +153,7 @@ class Bugdown(markdown.Extension):
 
         # Custom bold syntax: **foo** but not __foo__
         md.inlinePatterns.add('strong',
-            markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)(.+?)\2', 'strong'),
+            markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
             '>not_strong')
 
         for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
