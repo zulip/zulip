@@ -210,7 +210,7 @@ function build_filter(operators_mixed_case) {
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
         allow_collapse: true,
-        target_id: selected_message_id
+        target_id: current_msg_list.selected_id
     }, opts);
 
     var was_narrowed = exports.active();
@@ -232,7 +232,7 @@ exports.activate = function (operators, opts) {
     // we need to fetch the messages around the target message time
     if (all_msg_list.get(target_id) === undefined) {
         load_old_messages(target_id, 200, 200, narrowed_msg_list, function (messages) {
-            select_message_by_id(target_id, {then_scroll: true});
+            select_message_by_id(target_id, narrowed_msg_list, {then_scroll: true});
         }, true, false);
     } else {
         add_messages(all_msg_list.all(), narrowed_msg_list);
@@ -244,7 +244,7 @@ exports.activate = function (operators, opts) {
         var msgs = narrowed_msg_list.all();
         var i;
         var to_process = [];
-        for (i = 0; i < msgs.length && msgs[i].id <= selected_message_id; ++i) {
+        for (i = 0; i < msgs.length && msgs[i].id <= narrowed_msg_list.selected_id; ++i) {
             to_process.push(msgs[i]);
         }
 
@@ -258,11 +258,7 @@ exports.activate = function (operators, opts) {
     $("#zfilt").css("opacity", 0).animate({opacity: 1});
 
     reset_load_more_status();
-    // Indicate both which message is persistently selected and which
-    // is temporarily selected
-    select_message_by_id(persistent_message_id,
-                         {then_scroll: false, for_narrow: false});
-    select_message_by_id(target_id, {then_scroll: true});
+    select_message_by_id(target_id, narrowed_msg_list, {then_scroll: true});
 
     // If anything was highlighted before, try to rehighlight it.
     if (highlighted) {
@@ -334,12 +330,12 @@ exports.deactivate = function () {
     $("#zhome").addClass('focused_table');
     $("#zhome").css("opacity", 0).animate({opacity: 1});
 
-    current_msg_list = all_msg_list;
-
     $('#search_query').val('');
     reset_load_more_status();
-    // Includes scrolling.
-    select_message_by_id(persistent_message_id, {then_scroll: true});
+
+    current_msg_list = all_msg_list;
+    select_message_by_id(all_msg_list.selected_id, all_msg_list,
+                         {then_scroll: true});
 
     search.update_highlight_on_narrow();
 
@@ -347,8 +343,6 @@ exports.deactivate = function () {
 
     $("ul.filters li").removeClass('active-filter');
     $("#global_filters li[data-name='home']").addClass('active-filter');
-
-    scroll_to_selected();
 };
 
 exports.restore_home_state = function() {

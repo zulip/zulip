@@ -39,7 +39,7 @@ function parse_narrow(hash) {
         var operand  = decodeURIComponent(hash[i+1] || '');
         operators.push([operator, operand]);
     }
-    narrow.activate(operators);
+    narrow.activate(operators, {target_id: initial_pointer});
 }
 
 // Returns true if this function performed a narrow

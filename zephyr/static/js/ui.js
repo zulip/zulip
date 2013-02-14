@@ -111,10 +111,10 @@ $(document).bind('copy', function (e) {
             startc.parents('td')[0] === endc.parents('td')[0]) {
             return;
         }
-        row = rows.get(startid);
 
         // Construct a div for what we want to copy (div)
-        for (row = rows.get(startid); rows.id(row) <= endid; row = rows.next_visible(row)) {
+        row = current_msg_list.selected_row();
+        for (0 /* for linter */; rows.id(row) <= endid; row = rows.next_visible(row)) {
             if (row.prev().hasClass("recipient_row")) {
                 div.append(p);
                 p = $('<p>');
@@ -254,7 +254,7 @@ function resizehandler(e) {
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
-    if (selected_message_id !== -1) {
+    if (current_msg_list.selected_id !== -1) {
         scroll_to_selected();
     }
     // When the screen resizes, it may cause some messages to go off the screen
@@ -324,7 +324,7 @@ exports.update_floating_recipient_bar = function () {
     // Find the last message where the top of the recipient
     // row is at least partially occluded by our box.
     // Start with the pointer's current location.
-    var candidate = selected_message;
+    var candidate = current_msg_list.selected_row();
     if (candidate === undefined) {
         return;
     }
@@ -403,7 +403,7 @@ function show_actions_popover(element, id) {
         return;
     }
 
-    select_message_by_id(id);
+    select_message_by_id(id, current_msg_list);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
         var args = {
@@ -786,7 +786,7 @@ $(function () {
         if (!(clicking && mouse_moved)) {
             // Was a click (not a click-and-drag).
             var row = $(this).closest(".message_row");
-            select_message_by_id(rows.id(row));
+            select_message_by_id(rows.id(row), current_msg_list);
             respond_to_message();
         }
         mouse_moved = false;

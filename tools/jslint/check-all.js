@@ -35,7 +35,6 @@ var globals =
     + ' select_message select_message_by_id'
     + ' scroll_to_selected disable_pointer_movement get_private_message_recipient'
     + ' load_old_messages'
-    + ' selected_message selected_message_id persistent_message_id'
     + ' at_top_of_viewport at_bottom_of_viewport'
     + ' viewport'
     + ' load_more_messages reset_load_more_status have_scrolled_away_from_top'

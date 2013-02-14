@@ -21,12 +21,13 @@ function show(tabname, focus_area) {
     $('.message_comp').slideDown(100, function () {
         // If the compose box is obscuring the currently selected message,
         // scroll up until the message is no longer occluded.
-        if (selected_message_id === -1) {
+        if (current_msg_list.selected_id === -1) {
             // If there's no selected message, there's no need to
             // scroll the compose box to avoid it.
             return;
         }
-        var cover = selected_message.offset().top + selected_message.height()
+        var selected_row = current_msg_list.selected_row();
+        var cover = selected_row.offset().top + selected_row.height()
             - $("#compose").offset().top;
         if (cover > 0) {
             disable_pointer_movement = true;

@@ -3,6 +3,7 @@ function MessageList(table_name) {
     this._items = [];
     this._hash = {};
     this.table_name = table_name;
+    this.selected_id = -1;
     return this;
 }
 
@@ -25,6 +26,14 @@ MessageList.prototype = {
 
     last: function MessageList_last() {
         return this._items[this._items.length - 1];
+    },
+
+    selected_message: function MessageList_selected_message() {
+        return this.get(this.selected_id);
+    },
+
+    selected_row: function MessageList_selected_row() {
+        return rows.get(this.selected_id, this.table_name);
     },
 
     _add_to_hash: function MessageList__add_to_hash(messages) {

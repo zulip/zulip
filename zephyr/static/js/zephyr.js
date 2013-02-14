@@ -6,11 +6,6 @@ var people_dict = {};
 
 var viewport = $(window);
 
-// For tracking where you are in the home view
-var persistent_message_id = -1;
-
-var selected_message_id = -1;  /* to be filled in on document.ready */
-var selected_message = $();    /* = rows.get(selected_message_id)   */
 var get_updates_params = {
     pointer: -1,
     server_generation: -1 /* to be filled in on document.ready */
@@ -80,6 +75,7 @@ function recenter_view(message) {
 
     // If this logic changes, above_view_threshold andd
     // below_view_threshold must also change.
+    var selected_row_top = current_msg_list.selected_row().offset().top;
     if (above_view_threshold(message, true)) {
         // We specifically say useTop=true here, because suppose you're using
         // the arrow keys to arrow up and you've moved up to a huge message.
@@ -87,15 +83,16 @@ function recenter_view(message) {
         // "above the view threshold". But since we're using the arrow keys
         // to get here, the reason we selected this message is because
         // we want to read it; so here we care about the top part.
-        viewport.scrollTop(selected_message.offset().top - viewport.height() / 2);
+        viewport.scrollTop(selected_row_top - viewport.height() / 2);
     } else if (below_view_threshold(message)) {
-        viewport.scrollTop(selected_message.offset().top - viewport.height() / 5);
+        viewport.scrollTop(selected_row_top - viewport.height() / 5);
     }
 }
 
 function scroll_to_selected() {
-    if (selected_message && (selected_message.length !== 0))
-        recenter_view(selected_message);
+    var selected_row = current_msg_list.selected_row();
+    if (selected_row && (selected_row.length !== 0))
+        recenter_view(selected_row);
 }
 
 function maybe_scroll_to_selected() {
@@ -127,7 +124,7 @@ function get_private_message_recipient(message, attr) {
 
 function respond_to_message(reply_type) {
     var message, msg_type;
-    message = current_msg_list.get(selected_message_id);
+    message = current_msg_list.selected_message();
 
     var stream = '';
     var subject = '';
@@ -153,8 +150,8 @@ function respond_to_message(reply_type) {
 }
 
 // Called by mouseover etc.
-function select_message_by_id(message_id, opts) {
-    return select_message(rows.get(message_id), opts);
+function select_message_by_id(message_id, msg_list, opts) {
+    return select_message(rows.get(message_id, msg_list.table_name), msg_list, opts);
 }
 
 var furthest_read = -1;
@@ -172,7 +169,6 @@ function send_pointer_update() {
 }
 
 $(function () {
-    persistent_message_id = initial_pointer;
     furthest_read = initial_pointer;
     server_furthest_read = initial_pointer;
     $(document).idle({idle: 1000,
@@ -247,29 +243,26 @@ function process_unread_counts(messages, is_read) {
     total_unread_messages += pm_count;
 }
 
-function update_selected_message(message, opts) {
+function update_selected_message(message, msg_list, opts) {
     var cls = 'selected_message';
     $('.' + cls).removeClass(cls);
     message.addClass(cls);
 
     var new_selected_id = rows.id(message);
-    process_unread_counts(message_range(all_msg_list, furthest_read + 1, new_selected_id), true);
+    process_unread_counts(message_range(msg_list, furthest_read + 1, new_selected_id), true);
     // Narrowing is a temporary view on top of the home view and
     // doesn't affect your pointer in the home view.
     // Similarly, lurk mode does not affect your pointer.
-    if (! narrow.active() && lurk_stream === undefined) {
-        persistent_message_id = new_selected_id;
-        if (new_selected_id > furthest_read)
-        {
-            furthest_read = new_selected_id;
-        }
+    if (! narrow.active() && lurk_stream === undefined
+        && new_selected_id > furthest_read)
+    {
+        furthest_read = new_selected_id;
     }
 
-    selected_message_id = new_selected_id;
-    selected_message = message;
+    msg_list.selected_id = new_selected_id;
 }
 
-function select_message(next_message, opts) {
+function select_message(next_message, msg_list, opts) {
     opts = $.extend({}, {then_scroll: false}, opts);
 
     /* If the message exists but is hidden, try to find the next visible one. */
@@ -286,11 +279,11 @@ function select_message(next_message, opts) {
         }
     }
 
-    if (next_message.id !== selected_message_id) {
-        update_selected_message(next_message, opts);
+    if (rows.id(next_message) !== msg_list.selected_id) {
+        update_selected_message(next_message, msg_list, opts);
     }
 
-    if (opts.then_scroll) {
+    if (opts.then_scroll && current_msg_list === msg_list) {
         recenter_view(next_message);
     }
 
@@ -568,8 +561,8 @@ function add_message_metadata(message, dummy) {
     return message;
 }
 
-function add_messages_helper(messages, msg_list, center_message_id,
-                             predicate, allow_collapse, append_new_messages) {
+function add_messages_helper(messages, msg_list, predicate, allow_collapse, append_new_messages) {
+    var center_message_id = msg_list.selected_id;
     // center_message_id is guaranteed to be between the top and bottom
     var top_messages = $.grep(messages, function (elem, idx) {
         return (elem.id < center_message_id && msg_list.get(elem.id) === undefined);
@@ -599,34 +592,21 @@ function add_messages(messages, msg_list, opts) {
     util.destroy_first_run_message();
     messages = $.map(messages, add_message_metadata);
 
-    var predicate, allow_collapse, center_message_id;
+    var predicate, allow_collapse;
     if (msg_list === all_msg_list) {
         predicate = narrow.in_home;
         allow_collapse = true;
-        center_message_id = persistent_message_id;
     } else {
         predicate = narrow.predicate();
         allow_collapse = narrow.allow_collapse();
-        center_message_id = selected_message_id;
     }
 
-    if (add_messages_helper(messages, msg_list, center_message_id,
-                            predicate, allow_collapse, opts.append_new_messages)) {
+    if (add_messages_helper(messages, msg_list, predicate, allow_collapse, opts.append_new_messages)) {
         prepended = true;
     }
 
     if (msg_list === all_msg_list && opts.update_unread_counts) {
         process_unread_counts(messages, false);
-    }
-
-    // If we received the initially selected message, select it on the client side,
-    // but not if the user has already selected another one during load.
-    if ((selected_message_id === -1) && (msg_list.get(initial_pointer) !== undefined)) {
-        select_message_by_id(initial_pointer, {then_scroll: true});
-    }
-
-    if ((selected_message_id === -1) && ! have_initial_messages) {
-        select_message_by_id(msg_list.first().id, {then_scroll: false});
     }
 
     // If we prepended messages, then we need to scroll back to the pointer.
@@ -636,8 +616,8 @@ function add_messages(messages, msg_list, opts) {
     //
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
-    if (prepended && (selected_message_id >= 0)) {
-        select_message_by_id(selected_message_id, {then_scroll: true});
+    if (prepended && (msg_list.selected_id >= 0)) {
+        select_message_by_id(msg_list.selected_id, msg_list, {then_scroll: true});
     }
 
     if (typeahead_helper.autocomplete_needs_update()) {
@@ -710,7 +690,11 @@ function get_updates(options) {
             {
                 furthest_read = data.new_pointer;
                 server_furthest_read = data.new_pointer;
-                select_message_by_id(data.new_pointer, {then_scroll: true});
+                select_message_by_id(data.new_pointer, all_msg_list, {then_scroll: true});
+            }
+
+            if (all_msg_list.selected_id === -1) {
+                select_message_by_id(all_msg_list.first().id, all_msg_list, {then_scroll: false});
             }
 
             get_updates_timeout = setTimeout(get_updates, 0);
@@ -814,6 +798,12 @@ function load_old_messages(anchor, num_before, num_after, msg_list, cont, for_na
 // get the initial message list
 $(function () {
     function load_more(messages) {
+        // If we received the initially selected message, select it on the client side,
+        // but not if the user has already selected another one during load.
+        if (all_msg_list.selected_id === -1) {
+            select_message_by_id(initial_pointer, all_msg_list, {then_scroll: true});
+        }
+
         // catch the user up
         if (messages.length !== 1) {
             var latest_id = messages[messages.length-1].id;
@@ -892,23 +882,23 @@ function at_bottom_of_viewport() {
 
 function keep_pointer_in_view() {
     var candidate;
-    var next_message = selected_message;
+    var next_row = current_msg_list.selected_row();
 
     if (disable_pointer_movement) {
         return;
     }
 
-    if (next_message.length === 0)
+    if (next_row.length === 0)
         return;
 
     function adjust(past_threshold, at_end, advance) {
-        if (!past_threshold(next_message) || at_end())
+        if (!past_threshold(next_row) || at_end())
             return false;  // try other side
-        while (past_threshold(next_message)) {
-            candidate = advance(next_message);
+        while (past_threshold(next_row)) {
+            candidate = advance(next_row);
             if (candidate.length === 0)
                 break;
-            next_message = candidate;
+            next_row = candidate;
         }
         return true;
     }
@@ -916,7 +906,7 @@ function keep_pointer_in_view() {
     if (! adjust(above_view_threshold, at_top_of_viewport, rows.next_visible))
         adjust(below_view_threshold, at_bottom_of_viewport, rows.prev_visible);
 
-    update_selected_message(next_message);
+    update_selected_message(next_row, current_msg_list);
 }
 
 // The idea here is when you've scrolled to the very
@@ -926,16 +916,16 @@ function keep_pointer_in_view() {
 // I'm at the very top or the very bottom of the page.
 function move_pointer_at_page_top_and_bottom(delta) {
     if (delta !== 0 && (at_top_of_viewport() || at_bottom_of_viewport())) {
-        var next_message = selected_message;
+        var next_row = current_msg_list.selected_row();
         if (delta > 0) {
             // Scrolling up (want older messages)
-            next_message = rows.prev_visible(next_message);
+            next_row = rows.prev_visible(next_row);
         } else {
             // We're scrolling down (we want more recent messages)
-            next_message = rows.next_visible(next_message);
+            next_row = rows.next_visible(next_row);
         }
-        if (next_message.length !== 0) {
-            update_selected_message(next_message);
+        if (next_row.length !== 0) {
+            update_selected_message(next_row, current_msg_list);
         }
     }
 }

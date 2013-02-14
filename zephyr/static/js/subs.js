@@ -135,7 +135,7 @@ function stream_home_view_clicked(e) {
         // If we added any messages that were unread but before the currently selected message pointer
         // we need to re-process them to update the unread count
         if (! all_msg_list.empty()) {
-            process_unread_counts(message_range(all_msg_list.first().id, selected_message_id), true);
+            process_unread_counts(message_range(all_msg_list.first().id, all_msg_list.selected_id), true);
         }
     }, 0);
 

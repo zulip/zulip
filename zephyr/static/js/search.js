@@ -339,12 +339,12 @@ function highlight_match(row, search_term) {
 
 exports.search_button_handler = function (reverse) {
     var query = $('#search_query').val().toLowerCase();
-    var res = search(query, selected_message, reverse);
+    var res = search(query, current_msg_list.selected_row(), reverse);
     if (!res) {
         return;
     }
 
-    select_message(res);
+    select_message(res, current_msg_list);
     highlight_match(res, query);
     scroll_to_selected();
 };
@@ -377,7 +377,7 @@ exports.something_is_highlighted = function () {
 };
 
 exports.update_highlight_on_narrow = function () {
-    highlight_match(selected_message, cached_term);
+    highlight_match(current_msg_list.selected_row(), cached_term);
     clear_search_cache();
 };
 

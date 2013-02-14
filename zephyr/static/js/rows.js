@@ -49,9 +49,6 @@ var rows = (function () {
         if (isNaN(message_id))
             return $();
 
-        if (table_name === undefined)
-            table_name = (narrow.active() ? 'zfilt' : 'zhome');
-
         // To avoid attacks and bizarre errors, we have a whitelist
         // of valid table names.
         if (! valid_table_names.hasOwnProperty(table_name))
