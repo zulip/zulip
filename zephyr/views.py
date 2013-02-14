@@ -663,6 +663,22 @@ def api_send_message(request, user_profile):
 def json_send_message(request, user_profile):
     return send_message_backend(request, user_profile, request._client)
 
+@authenticated_json_post_view
+@has_request_variables
+def json_tutorial_send_message(request, user_profile, message=POST('message')):
+    """
+    This function, used by the onboarding tutorial, causes the
+    Tutorial Bot to send you the message you pass in here.
+    (That way, the Tutorial Bot's messages to you get rendered
+     by the server and therefore look like any other message.)
+    """
+    internal_send_message("humbug+tutorial@humbughq.com",
+                          Recipient.PERSONAL,
+                          user_profile.user.email,
+                          "",
+                          message)
+    return json_success()
+
 # Currently tabbott/extra@mit.edu is our only superuser.  TODO: Make
 # this a real superuser security check.
 def is_super_user_api(request):

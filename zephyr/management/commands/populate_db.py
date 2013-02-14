@@ -193,6 +193,7 @@ class Command(BaseCommand):
                 ("Humbug New User Bot", "humbug+signups@humbughq.com"),
                 ("Humbug Error Bot", "humbug+errors@humbughq.com"),
                 ("Humbug Notification Bot", "humbug+notifications@humbughq.com"),
+                ("Humbug Tutorial Bot", "humbug+tutorial@humbughq.com"),
                 ]
             create_users(realms, hardcoded_humbug_users_nosubs)
 
