@@ -183,7 +183,7 @@ function message_range(start, end) {
 var unread_filters = {'stream': {}, 'private': {}};
 
 function process_unread_counts(messages, decrement) {
-    var existing, hashkey;
+    var existing, hashkey, pm_count;
     $.each(messages, function (index, message) {
         if (message.id <= furthest_read && decrement !== true) {
             return;
@@ -210,6 +210,12 @@ function process_unread_counts(messages, decrement) {
     $.each(unread_filters.stream, function(index, obj) {
         ui.set_count("stream", index, Object.keys(obj).length);
     });
+
+    pm_count = 0;
+    $.each(unread_filters["private"], function(index, obj) {
+        pm_count += Object.keys(obj).length;
+    });
+    ui.set_count("global", "private", pm_count);
 }
 
 function update_selected_message(message, opts) {

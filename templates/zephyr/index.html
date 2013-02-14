@@ -116,8 +116,8 @@ var people_list = [
                   <ul class="filters">
                       <div id="global_filters">
                           {# Special-case this link so we don't actually go to page top. #}
-                          <li id="filthome" class="active-filter"><a href="#" onclick="ui.change_tab_to('#home');narrow.deactivate();return false" >Home</a></li>
-                          <li id="filtpers"><a href="#narrow/is/private-message">All private messages</a></li>
+                          <li data-name="home" class="active-filter"><a href="#" onclick="ui.change_tab_to('#home');narrow.deactivate();return false" >Home <span class="count">(<span class="value"></span>)</span></a></li>
+                          <li data-name="private" ><a href="#narrow/is/private-message">All private messages <span class="count">(<span class="value"></span>)</span></a></li>
                       </div>
                       <hr id="stream_filters_sep">
                       <div id="stream_filters" class="scrolling_list"></div>
