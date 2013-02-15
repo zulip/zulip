@@ -568,12 +568,11 @@ class NarrowBuilder(object):
                     (Q(sender=self.user_profile) & Q(recipient=narrow_recipient)))
 
     def do_search(self, query, operand):
-        words = operand.split()
         if "postgres" in settings.DATABASES["default"]["ENGINE"]:
-            sql = "search_tsvector @@ to_tsquery('pg_catalog.english', %s)"
-            return query.extra(where=[sql], params=[" & ".join(words)])
+            sql = "search_tsvector @@ plainto_tsquery('pg_catalog.english', %s)"
+            return query.extra(where=[sql], params=[operand])
         else:
-            for word in words:
+            for word in operand.split():
                 query = query.filter(Q(content__icontains=word) |
                                      Q(subject__icontains=word))
             return query
