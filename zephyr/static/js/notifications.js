@@ -16,6 +16,22 @@ function browser_desktop_notifications_on () {
             window.webkitNotifications.checkPermission() === 0);
 }
 
+function update_title_count(new_count) {
+    // Update window title and favicon to reflect new_message_count.
+    //
+    // If new_count is given, set new_message_count to that first.
+
+    if (new_count !== undefined) {
+        if (new_message_count === new_count)
+            return;
+        new_message_count = new_count;
+    }
+
+    document.title = (new_message_count ? ("(" + new_message_count + ") ") : "")
+        + domain + " - Humbug";
+    Notificon(new_message_count || "");
+}
+
 exports.initialize = function () {
     names = fullname.toLowerCase().split(" ");
     names.push(email.split("@")[0].toLowerCase());
@@ -25,11 +41,7 @@ exports.initialize = function () {
 
     $(window).focus(function () {
         window_has_focus = true;
-        if (new_message_count !== 0) {
-            Notificon("");
-            new_message_count = 0;
-            document.title = domain + " - Humbug";
-        }
+        update_title_count(0);
 
         $.each(notice_memory, function (index, notice_mem_entry) {
            notice_mem_entry.obj.cancel();
@@ -37,11 +49,7 @@ exports.initialize = function () {
     }).blur(function () {
         window_has_focus = false;
     }).mouseover(function () {
-        if (new_message_count !== 0) {
-            Notificon("");
-            new_message_count = 0;
-            document.title = domain + " - Humbug";
-        }
+        update_title_count(0);
     });
 
     if (!window.webkitNotifications) {
@@ -188,8 +196,7 @@ exports.received_messages = function (messages) {
     });
 
     if (title_needs_update) {
-        document.title = "(" + new_message_count + ") " + domain + " - Humbug";
-        Notificon(new_message_count);
+        update_title_count();
     }
 };
 
