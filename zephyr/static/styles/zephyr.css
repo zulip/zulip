@@ -57,7 +57,17 @@ li, .table th, .table td {
 /* Inline and block code */
 
 code {
+    /* 12/14 em, so bootstrap's default 12 px,
+       when body is the default 14 px */
+    font-size: 0.857em;
+
     white-space: nowrap;
+}
+
+pre {
+    /* 13/14 em, so bootstrap's default 13 px,
+       when body is the default 14 px */
+    font-size: 0.929em;
 }
 
 pre code {
