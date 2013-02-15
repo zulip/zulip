@@ -65,3 +65,6 @@ class SimpleQueueClient(object):
 
     def start_consuming(self):
         self.channel.start_consuming()
+
+    def stop_consuming(self):
+        self.channel.stop_consuming()
