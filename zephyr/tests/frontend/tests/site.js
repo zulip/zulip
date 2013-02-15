@@ -160,7 +160,7 @@ casper.then(function () {
 
     msg.headings.forEach(function (heading) {
         casper.test.assertMatch(normalize_spaces(heading),
-            /(^You and )|( \| )/,
+            /(^You and )|( > )/,
             'Heading is well-formed');
     });
 
