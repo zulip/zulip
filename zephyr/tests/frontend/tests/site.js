@@ -208,8 +208,8 @@ wait_and_send('private', {
 
 wait_for_receive(function () {
     expected_messages('zhome', [
-        'Verona | frontend test',
-        'Verona | other subject',
+        'Verona > frontend test',
+        'Verona > other subject',
         'You and Cordelia Lear, King Hamlet',
         'You and Cordelia Lear'
     ], [
@@ -242,9 +242,9 @@ wait_for_receive(function () {
 
 casper.then(function () {
     expected_messages('zfilt', [
-        'Verona | frontend test',
-        'Verona | other subject',
-        'Verona | frontend test',
+        'Verona > frontend test',
+        'Verona > other subject',
+        'Verona > frontend test',
     ], [
         '<p>test message A</p>',
         '<p>test message B</p>',
@@ -257,7 +257,7 @@ casper.then(function () {
 
 casper.then(function () {
     expected_messages('zhome', [
-        'Verona | frontend test',
+        'Verona > frontend test',
         'You and Cordelia Lear, King Hamlet'
     ], [
         '<p>test message D</p>',
@@ -270,7 +270,7 @@ casper.then(function () {
 
 casper.then(function () {
     expected_messages('zfilt', [
-        'Verona | frontend test',
+        'Verona > frontend test',
     ], [
         '<p>test message A</p>',
         '<p>test message B</p>',
