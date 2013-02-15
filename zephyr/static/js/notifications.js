@@ -20,6 +20,7 @@ function update_title_count(new_count) {
     // Update window title and favicon to reflect new_message_count.
     //
     // If new_count is given, set new_message_count to that first.
+    var n;
 
     if (new_count !== undefined) {
         if (new_message_count === new_count)
@@ -29,7 +30,23 @@ function update_title_count(new_count) {
 
     document.title = (new_message_count ? ("(" + new_message_count + ") ") : "")
         + domain + " - Humbug";
-    Notificon(new_message_count || "");
+
+    // IE doesn't support PNG favicons, *shrug*
+    if (! $.browser.msie) {
+        // Indicate the message count in the favicon
+        if (new_message_count) {
+            // Make sure we're working with a number, as a defensive programming
+            // measure.  And we don't have images above 99, so display those as
+            // 'infinite'.
+            n = (+new_message_count);
+            if (n > 99)
+                n = 'infinite';
+
+            util.set_favicon('/static/images/favicon/favicon-'+n+'.png');
+        } else {
+            util.set_favicon('/static/favicon.ico?v=2');
+        }
+    }
 }
 
 exports.initialize = function () {

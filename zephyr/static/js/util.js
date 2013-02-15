@@ -7,11 +7,22 @@ exports.random_int = function random_int(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
+var favicon_selector = 'link[rel="shortcut icon"]';
+
 // We need to reset the favicon after changing the
 // window.location.hash or Firefox will drop the favicon.  See
 // https://bugzilla.mozilla.org/show_bug.cgi?id=519028
 exports.reset_favicon = function () {
-    $('link[rel="shortcut icon"]').detach().appendTo('head');
+    $(favicon_selector).detach().appendTo('head');
+};
+
+exports.set_favicon = function (url) {
+    // I'm not sure whether setting the href attr on the existing
+    // node would be sufficient.  Notificon recreates the node.
+    $(favicon_selector).remove();
+    $('head').append($('<link>')
+        .attr('rel',  'shortcut icon')
+        .attr('href', url));
 };
 
 exports.make_loading_indicator = function (container, text) {
