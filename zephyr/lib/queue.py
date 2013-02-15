@@ -2,6 +2,7 @@ from django.conf import settings
 import pika
 import logging
 import simplejson
+import random
 
 # This simple queuing library doesn't expose much of the power of
 # rabbitmq/pika's queuing system; its purpose is to just provide an
@@ -23,6 +24,9 @@ class SimpleQueueClient(object):
         return pika.ConnectionParameters('localhost',
             credentials = pika.PlainCredentials(
                 'humbug', settings.RABBITMQ_PASSWORD))
+
+    def _generate_ctag(self, queue_name):
+        return "%s_%s" % (queue_name, str(random.getrandbits(16)))
 
     def ready(self):
         return self.channel is not None
@@ -51,7 +55,8 @@ class SimpleQueueClient(object):
             callback(ch, method, properties, body)
             ch.basic_ack(delivery_tag=method.delivery_tag)
 
-        self.channel.basic_consume(wrapped_callback, queue=queue_name)
+        self.channel.basic_consume(wrapped_callback, queue=queue_name,
+            consumer_tag=self._generate_ctag(queue_name))
 
     def register_json_consumer(self, queue_name, callback):
         def wrapped_callback(ch, method, properties, body):
