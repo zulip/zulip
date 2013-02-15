@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="667.06"
+   height="667.06"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="hat.svg"
+   inkscape:export-filename="/home/lfaraone/Downloads/humbug.png"
+   inkscape:export-xdpi="216.42531"
+   inkscape:export-ydpi="216.42531">
+  <title
+     id="title2993">Humbug Hat</title>
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35355339"
+     inkscape:cx="44.299826"
+     inkscape:cy="120.05373"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="716"
+     inkscape:window-height="747"
+     inkscape:window-x="0"
+     inkscape:window-y="19"
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Humbug Hat</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Luke Faraone &lt;lfaraone@humbughq.com&gt;</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>© 2012 Humbug, Inc. All Rights Reserved</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:date>28 Sept 2012</dc:date>
+        <dc:language>The Hat transcends all language</dc:language>
+        <dc:coverage>Your head</dc:coverage>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-112.53125,-29.94001)">
+    <path
+       sodipodi:type="arc"
+       style="fill:#999999;fill-opacity:0.59633029;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path2985"
+       sodipodi:cx="314.15744"
+       sodipodi:cy="236.15892"
+       sodipodi:rx="81.822357"
+       sodipodi:ry="101.01525"
+       d="m 395.9798,236.15892 c 0,55.78918 -36.63312,101.01525 -81.82236,101.01525 -45.18924,0 -81.82236,-45.22607 -81.82236,-101.01525 0,-55.78918 36.63312,-101.01525 81.82236,-101.01525 45.18924,0 81.82236,45.22607 81.82236,101.01525 z"
+       transform="matrix(0.91160631,0,0,0.73840115,164.83841,-69.490619)" />
+    <path
+       sodipodi:type="star"
+       style="fill:#ff0000;fill-opacity:0.59633029;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="path3761"
+       sodipodi:sides="3"
+       sodipodi:cx="165"
+       sodipodi:cy="545.36218"
+       sodipodi:r1="263.86551"
+       sodipodi:r2="131.93274"
+       sodipodi:arg1="0.52359878"
+       sodipodi:arg2="1.5707963"
+       inkscape:flatsided="false"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="M 393.51423,677.29494 165,677.29492 -63.514235,677.29494 50.742894,479.39582 165,281.49667 279.2571,479.39581 z"
+       inkscape:transform-center-y="-65.966374"
+       transform="translate(285.65685,-100.6518)" />
+    <rect
+       style="fill:#b3b3b3;fill-opacity:0.59633029;stroke:#000000;stroke-width:1.22679794;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       id="rect3765"
+       width="511.94531"
+       height="119.19256"
+       x="195.13708"
+       y="577.1864" />
+  </g>
+</svg>
