@@ -14,10 +14,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="hat.svg"
-   inkscape:export-filename="/home/lfaraone/Downloads/humbug.png"
-   inkscape:export-xdpi="216.42531"
-   inkscape:export-ydpi="216.42531">
+   sodipodi:docname="orig.svg"
+   inkscape:export-filename="/tmp/icon.png"
+   inkscape:export-xdpi="90.235413"
+   inkscape:export-ydpi="90.235413">
   <title
      id="title2993">Humbug Hat</title>
   <defs
@@ -29,9 +29,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="32"
-     inkscape:cx="10.005889"
-     inkscape:cy="4.198985"
+     inkscape:zoom="22.627417"
+     inkscape:cx="9.9158448"
+     inkscape:cy="9.6950594"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -108,5 +108,29 @@
        height="2.8460152"
        x="114.41927"
        y="694.10614" />
+    <text
+       sodipodi:linespacing="125%"
+       id="number_back"
+       y="696.09375"
+       x="116.34375"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:none;stroke:#ffffff;stroke-width:2;stroke-miterlimit:4;stroke-opacity:0.84705882;stroke-dasharray:none;font-family:Monospace;-inkscape-font-specification:Monospace"
+       xml:space="preserve"
+       inkscape:label="#text3802"><tspan
+         y="696.09375"
+         x="116.34375"
+         id="tspan3804"
+         sodipodi:role="line">99</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Monospace;-inkscape-font-specification:Monospace"
+       x="116.34375"
+       y="696.09375"
+       id="number_front"
+       sodipodi:linespacing="125%"
+       inkscape:label="#text3798"><tspan
+         sodipodi:role="line"
+         id="tspan3800"
+         x="116.34375"
+         y="696.09375">99</tspan></text>
   </g>
 </svg>
