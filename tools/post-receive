@@ -86,9 +86,6 @@ def send_bot_message(oldrev, newrev, refname):
         "subject": u"deploy \u21D2 " + branch,
         "content": message,
     }
-    # Sleep a bit to give time for the server to restart.
-    # TODO: Make this work without the sleep
-    time.sleep(1)
     client.send_message(message_data)
 
 for ln in sys.stdin:
