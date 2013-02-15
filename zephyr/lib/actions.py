@@ -381,13 +381,14 @@ if settings.USING_RABBITMQ or settings.TEST_SUITE:
         presence_queue = SimpleQueueClient()
 
     def update_user_presence(user_profile, client, log_time, status):
-        event={'user_profile_id': user_profile.id,
+        event={'type': 'user_presence',
+               'user_profile_id': user_profile.id,
                'status': status,
                'time': datetime_to_timestamp(log_time),
                'client': client.name}
 
         if settings.USING_RABBITMQ:
-            presence_queue.json_publish("user_presence", event)
+            presence_queue.json_publish("user_activity", event)
         elif settings.TEST_SUITE:
             process_user_presence_event(event)
 else:

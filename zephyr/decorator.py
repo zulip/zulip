@@ -42,7 +42,8 @@ if settings.USING_RABBITMQ:
     def update_user_activity(request, user_profile, client):
         if request.META["PATH_INFO"] == '/json/update_active_status':
             return
-        event={'query': request.META["PATH_INFO"],
+        event={'type': 'user_activity',
+               'query': request.META["PATH_INFO"],
                'user_profile_id': user_profile.id,
                'time': datetime_to_timestamp(now()),
                'client': client.name}
