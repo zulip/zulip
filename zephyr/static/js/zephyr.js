@@ -181,6 +181,7 @@ function message_range(start, end) {
 }
 
 var unread_filters = {'stream': {}, 'private': {}};
+var total_unread_messages = 0;
 
 // Record each message in the array 'messages' as either read or
 // unread, depending on the value of the 'is_read' flag.
@@ -209,8 +210,12 @@ function process_unread_counts(messages, is_read) {
         }
     });
 
-    $.each(unread_filters["stream"], function(index, obj) {
-        ui.set_count("stream", index, Object.keys(obj).length);
+    total_unread_messages = 0;
+
+    $.each(unread_filters.stream, function(index, obj) {
+        var count = Object.keys(obj).length;
+        ui.set_count("stream", index, count);
+        total_unread_messages += count;
     });
 
     var pm_count = 0;
@@ -218,6 +223,7 @@ function process_unread_counts(messages, is_read) {
         pm_count += Object.keys(obj).length;
     });
     ui.set_count("global", "private", pm_count);
+    total_unread_messages += pm_count;
 }
 
 function update_selected_message(message, opts) {
