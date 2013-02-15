@@ -1,0 +1,117 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Humbug notification post-receive hook.
+# Copyright © 2012-2013 Humbug, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# The "post-receive" script is run after receive-pack has accepted a pack
+# and the repository has been updated.  It is passed arguments in through
+# stdin in the form
+#  <oldrev> <newrev> <refname>
+# For example:
+#  aa453216d1b3e49e7f6f98441fa56946ddcd6a20 68f7abf4e6f922807889f52bc043ecd31b79f814 refs/heads/master
+
+import os
+import sys
+import subprocess
+import time
+import os.path
+
+sys.path.insert(0, os.path.dirname(__file__))
+import humbug_git_config as config
+
+if config.HUMBUG_API_PATH is not None:
+    sys.path.append(config.HUMBUG_API_PATH)
+
+import humbug
+client = humbug.Client(
+    email=config.HUMBUG_USER,
+    site=config.HUMBUG_SITE,
+    api_key=config.HUMBUG_API_KEY)
+
+# check_output is backported from subprocess.py in Python 2.7
+def check_output(*popenargs, **kwargs):
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        cmd = kwargs.get("args")
+        if cmd is None:
+            cmd = popenargs[0]
+        raise subprocess.CalledProcessError(retcode, cmd, output=output)
+    return output
+subprocess.check_output = check_output
+
+def git_repository_name():
+    output = subprocess.check_output(["git", "rev-parse", "--is-bare-repository"])
+    if output.strip() == "true":
+        return os.path.basename(os.getcwd())[:-len(".git")]
+    else:
+        return os.path.basename(os.path.dirname(os.getcwd()))
+
+def git_commit_range(oldrev, newrev):
+    log_cmd = ["git", "log", "--reverse",
+               "--pretty=%aE %s", "%s..%s" % (oldrev, newrev)]
+    commits = ''
+    for ln in subprocess.check_output(log_cmd).splitlines():
+        email, subject = ln.split(None, 1)
+        if len(subject) > 60:
+            subject = subject[:58].rstrip() + '...'
+        commits += '!gravatar(%s) %s\n' % (email, subject)
+    return commits
+
+def send_bot_message(oldrev, newrev, refname):
+    repo_name   = git_repository_name()
+    branch      = refname.replace('refs/heads/', '')
+    destination = config.commit_notice_destination(repo_name, branch, newrev)
+    if destination is None:
+        # Don't forward the notice anywhere
+        return
+
+    added   = git_commit_range(oldrev, newrev)
+    removed = git_commit_range(newrev, oldrev)
+
+    new_head = newrev[:12]
+
+    if removed:
+        message = '`%s` was pushed to `%s`, **REMOVING**:\n\n%s' % (new_head, branch, removed)
+        if added:
+            message += '\n**and adding**:\n\n' + added
+        message += '\n**A HISTORY REWRITE HAS OCCURRED!**'
+        message += '\nPlease check your local branches to deal with this.'
+    elif added:
+        message = '`%s` was deployed to `%s` with:\n\n%s' % (new_head, branch, added)
+    else:
+        message = '`%s` was pushed to `%s`... but nothing changed?' % (new_head, branch)
+
+    message_data = {
+        "type": "stream",
+        "to": destination["stream"],
+        "subject": destination["subject"],
+        "content": message,
+    }
+    client.send_message(message_data)
+
+for ln in sys.stdin:
+    oldrev, newrev, refname = ln.strip().split()
+    send_bot_message(oldrev, newrev, refname)

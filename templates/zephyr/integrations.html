@@ -33,9 +33,7 @@
 
     <h3 id="services">Services with integrations</h3>
     <ul>
-      {% comment %}
       <li><a href="#git">Git</a></li>
-      {% endcomment %}
       <li><a href="#github">GitHub</a></li>
       <li><a href="#jenkins">Jenkins (or Hudson)</a></li>
       <li><a href="#nagios">Nagios</a></li>
@@ -50,6 +48,51 @@
       {% endcomment %}
       <li>...and more coming soon! <a href="mailto:support@humbughq.com?subject=Integration+request">Email us</a> with requests!</li>
     </ul>
+
+{#--------------------------------------------------------------------#}
+    <div id="git" class="integration">
+      <h4>Git</h4>
+      <p>First, download and install our <a href="/api">Python
+      bindings and example scripts</a> on your Git server.</p>
+
+      <p>Next, open <code>integrations/git/humbug_git_config.py</code>
+      in your favorite editor, and change the following lines to
+      specify the email address and API key for your Git bot:</p>
+
+
+<div class="codehilite"><pre><span class="n">HUMBUG_USER</span> <span class="o">=</span> <span class="s">"git@example.com"</span>
+<span class="n">HUMBUG_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span></pre></div>
+
+      <p>You can also specify which pushes will result in
+      notifications and to what stream the notifications will be sent
+      by modifying the <code>commit_notice_destination</code> function
+      in <code>humbug_git_config.py</code>.  By default, pushes to
+      the <code>master</code> and <code>test-post-receive</code>
+      branches will result in a notification to
+      stream <code>commits</code>.</p>
+
+      <p>Save <code>integrations/git/humbug_git_config.py</code> to
+      the <code>.git/hooks</code> directory of your git
+      repository.</p>
+
+      <p>Symlink
+      <code>/usr/local/share/humbug/integrations/git/post-receive</code>
+      into the <code>.git/hooks</code> directory of your git repository.</p>
+
+      <p><b>Congratulations! You're done!</b><br /> Whenever you make
+      a push to the <code>master</code> branch of your git repository
+      (or whatever you configured above), the Humbug git plugin will
+      send an automated notification that looks like this:</p>
+      <img class="screenshot" src="/static/images/integrations/git/001.png">
+
+      <p><b>Testing</b><br />You can test the plugin without changing
+      your <code>master</code> branch by pushing to
+      the <code>test-post-receive</code> branch.</p>
+
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
 
     <div id="github" class="integration">
       <h4>GitHub</h4>

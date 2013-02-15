@@ -22,14 +22,9 @@ import subprocess
 import time
 from os import path
 
-sys.path.append(path.join(path.dirname(os.readlink(__file__)), '../api'))
-import humbug
-client = humbug.Client(
-    email="humbug+commits@humbughq.com",
-    site="https://staging.humbughq.com",
-    api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    verbose=False)
+import os.path
 
+# check_output is backported from subprocess.py in Python 2.7
 def check_output(*popenargs, **kwargs):
     if 'stdout' in kwargs:
         raise ValueError('stdout argument not allowed, it will be overridden.')
@@ -49,50 +44,17 @@ def update_deployment(server, oldrev, newrev, refname):
                            "/home/humbug/humbug/tools/update-deployment",
                            oldrev, newrev, refname])
 
-def git_commit_range(oldrev, newrev):
-    log_cmd = ["git", "log", "--reverse",
-               "--pretty=%aE %s", "%s..%s" % (oldrev, newrev)]
-    commits = ''
-    for ln in subprocess.check_output(log_cmd).splitlines():
-        email, subject = ln.split(None, 1)
-        # This truncation approximately fits the normal message width in the browser.
-        # It would be nicer to move this into the client via CSS and a Markdown extension.
-        if len(subject) > 60:
-            subject = subject[:58].rstrip() + '...'
-        commits += '!gravatar(%s) %s\n' % (email, subject)
-    return commits
-
-def send_bot_message(oldrev, newrev, refname):
-    added   = git_commit_range(oldrev, newrev)
-    removed = git_commit_range(newrev, oldrev)
-
-    new_head = newrev[:12]
-    branch   = refname.replace('refs/heads/', '')
-
-    if removed:
-        message = '`%s` was pushed to `%s`, **REMOVING**:\n\n%s' % (new_head, branch, removed)
-        if added:
-            message += '\n**and adding**:\n\n' + added
-        message += '\n**A HISTORY REWRITE HAS OCCURRED!**'
-        message += '\nPlease check your local branches to deal with this.'
-    elif added:
-        message = '`%s` was deployed to `%s` with:\n\n%s' % (new_head, branch, added)
-    else:
-        message = '`%s` was pushed to `%s`... but nothing changed?' % (new_head, branch)
-
-    message_data = {
-        "type": "stream",
-        "to": "test" if refname == "refs/heads/test-post-receive" else "devel",
-        "subject": u"deploy \u21D2 " + branch,
-        "content": message,
+deployments = {
+    'refs/heads/prod': ('humbughq.com', 'prod'),
+    'refs/heads/master': ('staging.humbughq.com', 'master'),
+    'refs/heads/test-post-receive': ('staging.humbughq.com', 'master'),
     }
-    client.send_message(message_data)
 
 for ln in sys.stdin:
     oldrev, newrev, refname = ln.strip().split()
-    if refname in ["refs/heads/prod"]:
-        send_bot_message(oldrev, newrev, refname)
-        update_deployment("humbughq.com", oldrev, newrev, "origin/prod")
-    elif refname in ["refs/heads/master", "refs/heads/test-post-receive"]:
-        send_bot_message(oldrev, newrev, refname)
-        update_deployment("staging.humbughq.com", oldrev, newrev, "origin/master")
+    if refname in deployments:
+        (server, branch) = deployments[refname]
+        p = subprocess.Popen("/home/humbug/humbug/api/integrations/git/post-receive",
+                             stdin=subprocess.PIPE)
+        p.communicate(input=ln)
+        update_deployment(server, oldrev, newrev, branch)
