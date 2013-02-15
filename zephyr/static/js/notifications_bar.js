@@ -53,7 +53,8 @@ exports.update = function () {
     if (on_custom)
         show(custom_message);
     else if (rows.last_visible().offset() !== null // otherwise the next line will error
-        && rows.last_visible().offset().top + rows.last_visible().height() > viewport.scrollTop() + viewport.height())
+        && rows.last_visible().offset().top + rows.last_visible().height() > viewport.scrollTop() + viewport.height()
+        && total_unread_messages > 0)
         show("More messages below");
     else
         hide();
