@@ -182,36 +182,38 @@ function message_range(start, end) {
 
 var unread_filters = {'stream': {}, 'private': {}};
 
-function process_unread_counts(messages, decrement) {
-    var existing, hashkey, pm_count;
+// Record each message in the array 'messages' as either read or
+// unread, depending on the value of the 'is_read' flag.
+function process_unread_counts(messages, is_read) {
     $.each(messages, function (index, message) {
-        if (message.id <= furthest_read && decrement !== true) {
+        if (message.id <= furthest_read && is_read !== true) {
             return;
         }
 
         if (message.sender_email === email) {
             return;
         }
+        var hashkey;
         if (message.type === 'stream') {
             hashkey = message.display_recipient;
         } else {
             hashkey = message.display_reply_to;
         }
-        existing = unread_filters[message.type][hashkey];
-        if (existing === undefined) {
+        if (unread_filters[message.type][hashkey] === undefined) {
             unread_filters[message.type][hashkey] = {};
         }
-        if (decrement) {
+        if (is_read) {
             delete unread_filters[message.type][hashkey][message.id];
         } else {
             unread_filters[message.type][hashkey][message.id] = true;
         }
     });
-    $.each(unread_filters.stream, function(index, obj) {
+
+    $.each(unread_filters["stream"], function(index, obj) {
         ui.set_count("stream", index, Object.keys(obj).length);
     });
 
-    pm_count = 0;
+    var pm_count = 0;
     $.each(unread_filters["private"], function(index, obj) {
         pm_count += Object.keys(obj).length;
     });
@@ -574,7 +576,7 @@ function add_messages(messages, add_to_home) {
             && !narrow.active()) {
             prepended = true;
         }
-        process_unread_counts(messages);
+        process_unread_counts(messages, false);
     }
 
     if (narrow.active()) {
