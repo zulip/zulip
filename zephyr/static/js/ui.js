@@ -946,7 +946,7 @@ exports.set_presence_list = function(users, presence_info) {
 
     var create_user = function(name, email) {
         return $('<li>').html($('<a>').attr('href', '#')
-                                          .text(people_dict[email].full_name))
+                                          .text(name))
                                           .click(function(e) {
                                               compose.start('private', {'private_message_recipient': email});
                                               e.preventDefault();
@@ -956,6 +956,10 @@ exports.set_presence_list = function(users, presence_info) {
     $('#user_presences').append(create_user(fullname, email).addClass('active-icon'));
 
     $.each(users, function(idx, email) {
+        if (people_dict[email] === undefined) {
+            return;
+        }
+
         var user = create_user(people_dict[email].full_name, email);
 
         switch (presence_info[email]) {
