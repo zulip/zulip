@@ -307,7 +307,7 @@ MessageList.prototype = {
             this._message_groups = this._message_groups.concat(new_message_groups);
         }
 
-        var rendered_elems = $(templates.message({
+        var rendered_elems = $(templates.render('message', {
             messages: messages_to_render,
             include_layout_row: (table.find('tr:first').length === 0)
         }));

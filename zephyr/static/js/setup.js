@@ -1,6 +1,5 @@
 // Miscellaneous early setup.
 
-var templates = {};
 var csrf_token;
 $(function () {
     // Display loading indicator.  This disappears after the first
@@ -10,15 +9,6 @@ $(function () {
     } else {
         util.show_first_run_message();
     }
-
-    // Compile Handlebars templates.
-    $.each(['message', 'subscription',
-            'actions_popover_title', 'actions_popover_content',
-            'invite_subscription', 'new_stream_users'],
-        function (index, name) {
-            templates[name] = Handlebars.compile($('#template_'+name).html());
-        }
-    );
 
     // This requires that we used Django's {% csrf_token %} somewhere on the page.
     csrf_token = $('input[name="csrfmiddlewaretoken"]').attr('value');

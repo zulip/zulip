@@ -11,7 +11,7 @@ function update_subscription_checkboxes() {
     $.each(subs.subscribed_streams(), function (index, value) {
         streams.push({name: value, invite_only: subs.get_invite_only(value)});
     });
-    $('#streams_to_add').html(templates.invite_subscription({streams: streams}));
+    $('#streams_to_add').html(templates.render('invite_subscription', {streams: streams}));
 }
 
 function reset_error_messages() {

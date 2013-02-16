@@ -256,7 +256,8 @@ function settings_for_sub(sub) {
 }
 
 function add_sub_to_table(sub) {
-    $('#create_stream_row').after(templates.subscription({subscriptions: [sub]}));
+    $('#create_stream_row').after(
+        templates.render('subscription', {subscriptions: [sub]}));
     settings_for_sub(sub).collapse('show');
 }
 
@@ -463,7 +464,8 @@ exports.setup_page = function () {
         });
 
         $('#subscriptions_table tr:gt(0)').remove();
-        $('#subscriptions_table').append(templates.subscription({subscriptions: sub_rows}));
+        $('#subscriptions_table').append(
+            templates.render('subscription', {subscriptions: sub_rows}));
 
         util.destroy_loading_indicator($('#subs_page_loading_indicator'));
         $('#create_stream_name').focus().select();
@@ -627,7 +629,7 @@ function show_new_stream_modal() {
         }
     });
 
-    $('#people_to_add').html(templates.new_stream_users({
+    $('#people_to_add').html(templates.render('new_stream_users', {
         users: people_minus_you_and_maybe_humbuggers.sort(people_cmp)
     }));
     $('#stream-creation').modal("show");

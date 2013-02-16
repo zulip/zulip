@@ -427,8 +427,8 @@ function show_actions_popover(element, id) {
         var ypos = elt.offset().top - viewport.scrollTop();
         elt.popover({
             placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
-            title:     templates.actions_popover_title(args),
-            content:   templates.actions_popover_content(args),
+            title:     templates.render('actions_popover_title',   args),
+            content:   templates.render('actions_popover_content', args),
             trigger:   "manual"
         });
         elt.popover("show");

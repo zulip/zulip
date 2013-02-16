@@ -3,33 +3,10 @@
 {# The app itself. #}
 {# Includes some other templates as tabs. #}
 
-{% load jstemplate %}
 {% load compressed %}
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script id="template_message" type="text/x-handlebars-template">
-{% rawjstemplate "message" %}
-</script>
-
-<script id="template_subscription" type="text/x-handlebars-template">
-{% rawjstemplate "subscription" %}
-</script>
-
-<script id="template_new_stream_users" type="text/x-handlebars-template">
-{% rawjstemplate "new_stream_users" %}
-</script>
-
-<script id="template_invite_subscription" type="text/x-handlebars-template">
-{% rawjstemplate "invite_subscription" %}
-</script>
-
-<script id="template_actions_popover_title" type="text/x-handlebars-template">
-{% rawjstemplate "actions_popover_title" %}
-</script>
-<script id="template_actions_popover_content" type="text/x-handlebars-template">
-{% rawjstemplate "actions_popover_content" %}
-</script>
 
 {% compressed_css 'app' %}
 <link rel="stylesheet" href="/static/third/spectrum/spectrum.css" />

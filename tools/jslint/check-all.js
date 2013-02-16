@@ -12,7 +12,7 @@ var globals =
     + ' status_classes'
 
     // setup.js
-    + ' templates csrf_token'
+    + ' csrf_token'
 
     // Modules, defined in their respective files.
     + ' compose rows hotkeys narrow reload notifications_bar search subs'
@@ -24,6 +24,9 @@ var globals =
 
     // tutorial.js
     + ' tutorial'
+
+    // templates.js
+    + ' templates'
 
     // zephyr.js
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list get_updates_params'

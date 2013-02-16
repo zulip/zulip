@@ -174,7 +174,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'south',
     'django_openid_auth',
-    'jstemplate',
     'confirmation',
     'pipeline',
     'zephyr',
@@ -271,6 +270,7 @@ PIPELINE_JS = {
             'js/colorspace.js',
             'js/timerender.js',
             'js/tutorial.js',
+            'js/templates.js',
         ),
         'output_filename': 'min/app.js'
     },
