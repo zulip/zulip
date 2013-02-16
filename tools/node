@@ -1,0 +1,11 @@
+#!/bin/bash -e
+
+# Wrapper for node which finds the right binary.
+
+if which nodejs >/dev/null; then
+    # Name used by Debian etc.
+    exec nodejs "$@"
+else
+    # Name used by upstream
+    exec node "$@"
+fi

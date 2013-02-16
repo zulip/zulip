@@ -11,7 +11,7 @@ fi
 # Make the output of the tools red
 echo -en '\e[0;31m'
 
-if ! "$SCRIPT_DIR"/jslint/check-all; then
+if ! "$SCRIPT_DIR"/node "$SCRIPT_DIR"/jslint/check-all.js; then
     EXITCODE=1;
 fi
 
