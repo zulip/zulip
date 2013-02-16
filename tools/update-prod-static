@@ -7,6 +7,11 @@ cd "$(dirname "$0")"/..
 # Redirect output to a log file (most recent run only)
 exec >update-prod-static.log
 
+# Compile Handlebars templates
+./tools/node node_modules/.bin/handlebars zephyr/static/templates/*.handlebars \
+    --output ./zephyr/static/templates/compiled.js \
+    --known if,unless,each,with
+
 # Collect both original and minified files.
 #
 # We don't delete the old files, because doing so makes the
