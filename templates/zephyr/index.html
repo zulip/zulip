@@ -15,13 +15,19 @@
 <script type="text/javascript" src="/static/third/jquery/jquery.highlight.js"></script>
 <script type="text/javascript" src="/static/third/jcaret/jquery.caret.1.02.min.js"></script>
 <script type="text/javascript" src="/static/third/xdate/xdate.js"></script>
-<script type="text/javascript" src="/static/third/handlebars/handlebars.js"></script>
 <script type="text/javascript" src="/static/third/spin/spin.min.js"></script>
 <script type="text/javascript" src="/static/third/jquery-mousewheel/jquery.mousewheel.js"></script>
 <script type="text/javascript" src="/static/third/jquery-throttle-debounce/jquery.ba-throttle-debounce.min.js"></script>
 <script type="text/javascript" src="/static/third/jquery.idle/jquery.idle.js"></script>
 <script type="text/javascript" src="/static/third/jquery-autosize/jquery.autosize.js"></script>
 <script type="text/javascript" src="/static/third/spectrum/spectrum.js"></script>
+
+{% if full_handlebars %}
+<script type="text/javascript" src="/static/third/handlebars/handlebars.js"></script>
+{% else %}
+<script type="text/javascript" src="/static/third/handlebars/handlebars.runtime.js"></script>
+{% endif %}
+
 {% compressed_js 'app' %}
 
 {% if debug %}
