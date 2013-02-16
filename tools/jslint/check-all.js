@@ -63,6 +63,9 @@ var globals =
     // activity.js
     + ' activity'
 
+    // colorspace.js
+    + ' colorspace'
+
     // zephyr.js
     + ' message_array message_dict get_updates_params'
     + ' clear_table add_to_table add_messages'

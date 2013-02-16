@@ -22,9 +22,11 @@
 {{#if is_stream}}
 <tr zid="{{id}}" class="recipient_row">
     <td colspan="2"
-        class="message_header message_header_stream left_part" style="background-color: {{background_color}};">
+        class="message_header message_header_stream left_part {{color_class}}"
+        style="background-color: {{background_color}};">
     </td>
-    <td class="message_header message_header_stream right_part" style="background-color: {{background_color}};">
+    <td class="message_header message_header_stream right_part {{color_class}}"
+        style="background-color: {{background_color}};">
       {{#if invite_only}}<i class="icon-lock" title="This is an invite-only stream"></i>{{/if}}
       <span class="message_label_clickable narrows_by_recipient stream_label"
             title="Narrow to stream &quot;{{display_recipient}}&quot;">{{display_recipient}}</span>
@@ -36,10 +38,13 @@
 {{else}}
 <tr zid="{{id}}" class="recipient_row">
     <td colspan="2"
-        class="message_header message_header_private_message left_part">
+        class="message_header message_header_private_message left_part dark_background">
     </td>
-    <td class="message_label_clickable narrows_by_recipient message_header message_header_private_message right_part"
-        title="Narrow to your private messages with {{display_reply_to}}">You and {{display_reply_to}}</td>
+    <td class="message_header message_header_private_message right_part dark_background">
+        <span class="message_label_clickable narrows_by_recipient"
+               title="Narrow to your private messages with {{display_reply_to}}">
+        You and {{display_reply_to}}</span>
+    </td>
 </tr>
 {{/if}}
 {{/include_recipient}}

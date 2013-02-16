@@ -11,6 +11,9 @@ var initial_color_fetch = true;
 var default_color = "#c2c2c2";
 var next_sub_id = 0;
 
+// Classes which could be returned by get_color_class.
+var color_classes = 'dark_background';
+
 exports.subscribed_streams = function () {
     // TODO: Object.keys() compatibility
     var list = [];
@@ -33,11 +36,18 @@ function should_list_all_streams() {
 }
 
 function update_table_stream_color(table, stream_name, color) {
+    var color_class = exports.get_color_class(color);
+    function fixup(elem) {
+        elem.css("background-color", color)
+            .removeClass(color_classes)
+            .addClass(color_class);
+    }
+
     $.each(table.find(".stream_label"), function () {
         if ($(this).text() === stream_name) {
             var parent_label = $(this).parent("td");
-            parent_label.css("background-color", color);
-            parent_label.prev("td").css("background-color", color);
+            fixup(parent_label);
+            fixup(parent_label.prev("td"));
         }
     });
 }
@@ -210,6 +220,58 @@ exports.get_color = function (stream_name) {
     }
     return stream_info[lstream_name].color;
 };
+
+var lightness_threshold;
+$(function () {
+    // sRGB color component for dark label text.
+    // 0x33 to match the color #333333 set by Bootstrap.
+    var label_color = 0x33;
+    var lightness = colorspace.luminance_to_lightness(
+        colorspace.sRGB_to_linear(label_color));
+
+    // Compute midpoint lightness between that and white (100).
+    lightness_threshold = (lightness + 100) / 2;
+});
+
+// From a background color (in format "#fff" or "#ffffff")
+// pick a CSS class (or empty string) to determine the
+// text label color etc.
+//
+// It would be better to work with an actual data structure
+// rather than a hex string, but we have to deal with values
+// already saved on the server, etc.
+//
+// This gets called on every message, so cache the results.
+exports.get_color_class = util.memoize(function (color) {
+    var match, i, lightness, channel = [0, 0, 0], mult = 1;
+
+    match = /^#([\da-fA-F]{2})([\da-fA-F]{2})([\da-fA-F]{2})$/.exec(color);
+    if (!match) {
+        // 3-digit shorthand; Spectrum gives this e.g. for pure black.
+        // Multiply each digit by 16+1.
+        mult = 17;
+
+        match = /^#([\da-fA-F])([\da-fA-F])([\da-fA-F])$/.exec(color);
+        if (!match) {
+            // Can't understand color.
+            return '';
+        }
+    }
+
+    // CSS colors are specified in the sRGB color space.
+    // Convert to linear intensity values.
+    for (i=0; i<3; i++) {
+        channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i+1], 16));
+    }
+
+    // Compute perceived lightness as CIE L*.
+    lightness = colorspace.luminance_to_lightness(
+        colorspace.rgb_luminance(channel));
+
+    // Determine if we're past the midpoint between the
+    // dark and light label lightness.
+    return (lightness < lightness_threshold) ? 'dark_background' : '';
+});
 
 exports.get_invite_only = function (stream_name) {
     var lstream_name = stream_name.toLowerCase();

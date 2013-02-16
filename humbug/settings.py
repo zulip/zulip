@@ -224,6 +224,7 @@ PIPELINE_JS = {
             'js/invite.js',
             'js/zephyr.js',
             'js/activity.js',
+            'js/colorspace.js',
         ),
         'output_filename': 'min/app.js'
     },

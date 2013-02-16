@@ -293,7 +293,6 @@ td.pointer {
 }
 
 .message_header_private_message {
-    color: white;
     background-color: #444;
     border: 1px solid #444;
 }
@@ -326,8 +325,12 @@ td.pointer {
     color:  #08C;
 }
 
-/* Brighten hover because of the dark background */
-.recipient_row .message_header_private_message:hover {
+/* Brighten text because of the dark background */
+.dark_background {
+    color: white;
+}
+
+.dark_background .message_label_clickable:hover {
     color: #3BF;
 }
 
