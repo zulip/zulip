@@ -954,31 +954,29 @@ exports.remove_narrow_filter = function (name, type) {
     exports.get_filter_li(type, name).remove();
 };
 
-exports.set_presence_list = function(users, presence_info) {
+exports.set_presence_list = function (users, presence_info) {
     $('#user_presences').empty();
 
-    var create_user = function(name, email) {
-        return $('<li>').html($('<a>').attr('href', '#')
-                                          .text(name))
-                                          .click(function(e) {
-                                              compose.start('private', {'private_message_recipient': email});
-                                              e.preventDefault();
-                                          });
-    };
-
-    if (domain !== "mit.edu") {
-        $('#user_presences').append(create_user(fullname, email).addClass('user_active'));
+    function add_entry(name, email, type) {
+        var entry = $('<li>')
+            .append($('<a>').attr('href', '#')
+                            .text(name))
+            .addClass('user_' + type)
+            .click(function (e) {
+                compose.start('private', {private_message_recipient: email});
+                e.preventDefault();
+            });
+        $('#user_presences').append(entry);
     }
 
-    $.each(users, function(idx, email) {
-        if (people_dict[email] === undefined) {
-            return;
+    if (domain !== "mit.edu") {
+        add_entry(fullname, email, 'active');
+    }
+
+    $.each(users, function (idx, email) {
+        if (people_dict[email] !== undefined) {
+            add_entry(people_dict[email].full_name, email, presence_info[email]);
         }
-
-        var user = create_user(people_dict[email].full_name, email);
-        user.addClass('user_' + presence_info[email]);
-
-        $('#user_presences').append(user);
     });
 };
 
