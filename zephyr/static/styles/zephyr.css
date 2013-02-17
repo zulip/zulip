@@ -155,15 +155,15 @@ a:hover code {
     overflow-y: auto;
 }
 
-#user_presences li.active-icon {
+#user_presences li.user_active {
     list-style-image: url(/static/images/presence/user-active.png);
 }
 
-#user_presences li.away-icon {
+#user_presences li.user_away {
     list-style-image: url(/static/images/presence/user-away.png);
 }
 
-#user_presences li.idle-icon {
+#user_presences li.user_idle {
     list-style-image: url(/static/images/presence/user-idle.png);
 }
 

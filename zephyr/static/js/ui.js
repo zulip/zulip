@@ -967,7 +967,7 @@ exports.set_presence_list = function(users, presence_info) {
     };
 
     if (domain !== "mit.edu") {
-        $('#user_presences').append(create_user(fullname, email).addClass('active-icon'));
+        $('#user_presences').append(create_user(fullname, email).addClass('user_active'));
     }
 
     $.each(users, function(idx, email) {
@@ -979,13 +979,13 @@ exports.set_presence_list = function(users, presence_info) {
 
         switch (presence_info[email]) {
             case activity.user_active:
-                user.addClass('active-icon');
+                user.addClass('user_active');
                 break;
             case activity.user_away:
-                user.addClass('away-icon');
+                user.addClass('user_away');
                 break;
             case activity.user_idle:
-                user.addClass('idle-icon');
+                user.addClass('user_idle');
                 break;
         }
 
