@@ -954,6 +954,12 @@ exports.remove_narrow_filter = function (name, type) {
     exports.get_filter_li(type, name).remove();
 };
 
+var presence_descriptions = {
+    active: ' is active',
+    away:   ' was recently active',
+    idle:   ' is not active'
+};
+
 exports.set_presence_list = function (users, presence_info) {
     $('#user_presences').empty();
 
@@ -962,6 +968,7 @@ exports.set_presence_list = function (users, presence_info) {
             .append($('<a>').attr('href', '#')
                             .text(name))
             .addClass('user_' + type)
+            .attr('title', name + presence_descriptions[type])
             .click(function (e) {
                 compose.start('private', {private_message_recipient: email});
                 e.preventDefault();
