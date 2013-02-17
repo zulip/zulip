@@ -203,6 +203,7 @@ exports.clear = function () {
 // Set the mode of a compose already in progress.
 // Does not clear the input fields.
 exports.set_mode = function (mode) {
+    ui.change_tab_to('#home');
     if (!is_composing_message) {
         exports.start(mode);
     }
