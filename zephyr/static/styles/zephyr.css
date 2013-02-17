@@ -269,7 +269,7 @@ td.pointer {
     vertical-align: middle;
     text-align:     left;
     /* We can overflow-y if the font size gets big */
-    overflow:       hidden hidden;
+    overflow:       hidden;
     text-overflow:  ellipsis;
     white-space:    nowrap;
     font-weight:    bold;
