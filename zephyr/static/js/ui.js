@@ -976,18 +976,7 @@ exports.set_presence_list = function(users, presence_info) {
         }
 
         var user = create_user(people_dict[email].full_name, email);
-
-        switch (presence_info[email]) {
-            case activity.user_active:
-                user.addClass('user_active');
-                break;
-            case activity.user_away:
-                user.addClass('user_away');
-                break;
-            case activity.user_idle:
-                user.addClass('user_idle');
-                break;
-        }
+        user.addClass('user_' + presence_info[email]);
 
         $('#user_presences').append(user);
     });
