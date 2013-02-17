@@ -144,26 +144,27 @@ a:hover code {
 }
 
 #user_presences {
-    margin-top: 1em;
-    overflow-y: hidden;
+    /* Pad so the bullets are visible */
+    padding-left: 20px;
+
+    margin-top:  1em;
+    margin-left: 0;
+    overflow-y:  hidden;
 }
 #user_presences:hover {
     overflow-y: auto;
 }
 
-#user_presences li.active-icon:before {
-    content: url(/static/images/presence/user-active.png);
-    margin-right: 6px; /* +9px image = 15px */
+#user_presences li.active-icon {
+    list-style-image: url(/static/images/presence/user-active.png);
 }
 
-#user_presences li.away-icon:before {
-    content: url(/static/images/presence/user-away.png);
-    margin-right: 6px; /* +9px image = 15px */
+#user_presences li.away-icon {
+    list-style-image: url(/static/images/presence/user-away.png);
 }
 
-#user_presences li.idle-icon:before {
-    content: url(/static/images/presence/user-idle.png);
-    margin-right: 6px; /* +9px image = 15px */
+#user_presences li.idle-icon {
+    list-style-image: url(/static/images/presence/user-idle.png);
 }
 
 ul.filters {
