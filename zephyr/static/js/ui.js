@@ -270,8 +270,16 @@ $(function () {
     }
 });
 
-var old_label;
 var is_floating_recipient_bar_showing = false;
+
+function show_floating_recipient_bar() {
+    if (!is_floating_recipient_bar_showing) {
+        $(".floating_recipient_bar").css('visibility', 'visible');
+        is_floating_recipient_bar_showing = true;
+    }
+}
+
+var old_label;
 function replace_floating_recipient_bar(desired_label) {
     var new_label, other_label, header;
     if (desired_label !== old_label) {
@@ -296,10 +304,7 @@ function replace_floating_recipient_bar(desired_label) {
 
         old_label = desired_label;
     }
-    if (!is_floating_recipient_bar_showing) {
-        $(".floating_recipient_bar").css('visibility', 'visible');
-        is_floating_recipient_bar_showing = true;
-    }
+    show_floating_recipient_bar();
 }
 
 function hide_floating_recipient_bar() {
@@ -524,10 +529,11 @@ $(function () {
         subs.subscribe_for_send(compose.stream_name(), $('#stream-nosub'));
     });
 
-    $(window).scroll($.throttle(50, function (e) {
+    function scroll_finished() {
+        show_floating_recipient_bar();
+        exports.update_floating_recipient_bar();
+        keep_pointer_in_view();
         if ($('#home').hasClass('active')) {
-            keep_pointer_in_view();
-            exports.update_floating_recipient_bar();
             if (viewport.scrollTop() === 0 &&
                 have_scrolled_away_from_top) {
                 have_scrolled_away_from_top = false;
@@ -538,6 +544,17 @@ $(function () {
             // When the window scrolls, it may cause some messages to go off the screen
             notifications_bar.update();
         }
+    }
+
+    var scroll_timer;
+    function scroll_finish() {
+        clearTimeout(scroll_timer);
+        scroll_timer = setTimeout(scroll_finished, 100);
+    }
+
+    $(window).scroll($.throttle(50, function (e) {
+        hide_floating_recipient_bar();
+        scroll_finish();
     }));
 
     var throttled_mousewheelhandler = $.throttle(50, function (e, delta) {
