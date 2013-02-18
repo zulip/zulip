@@ -33,11 +33,17 @@ function process_hotkey(e) {
     if (ui.home_tab_obscured())
         return false;
 
-    // In browsers where backspace sends the browser back (e.g. Mac Chrome),
-    // do not go back if the send button is in focus
-    if ($('#compose-send-button:focus').length > 0 && code === 8) {
-        e.preventDefault();
-        return false;
+    // Handle a few keys specially when the send button is focused.
+    if ($('#compose-send-button').is(':focus')) {
+        if (code === 8) {
+            // Ignore backspace; don't navigate back a page.
+            return true;
+        } else if ((code === 9) && e.shiftKey) {
+            // Shift-Tab: go back to content textarea and restore
+            // cursor position.
+            ui.restore_compose_cursor();
+            return true;
+        }
     }
 
     // Process hotkeys specially when in an input, textarea, or send button

@@ -1010,5 +1010,24 @@ $(function () {
     });
 });
 
+
+// Save the compose content cursor position and restore when we
+// shift-tab back in (see hotkey.js).
+var saved_compose_cursor = 0;
+
+$(function () {
+    $('#new_message_content').blur(function () {
+        saved_compose_cursor = $(this).caret().start;
+    });
+});
+
+exports.restore_compose_cursor = function () {
+    // Restore as both the start and end point, i.e.
+    // nothing selected.
+    $('#new_message_content')
+        .focus()
+        .caret(saved_compose_cursor, saved_compose_cursor);
+};
+
 return exports;
 }());
