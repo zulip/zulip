@@ -88,8 +88,7 @@ var globals =
     ;
 
 
-var jslint_options = {
-    browser:  true,  // Assume browser environment
+var options = {
     vars:     true,  // Allow multiple 'var' per function
     sloppy:   true,  // Don't require "use strict"
     white:    true,  // Lenient whitespace rules
@@ -98,8 +97,8 @@ var jslint_options = {
     todo:     true,  // Allow "TODO" comments.
     newcap:   true,  // Don't assume that capitalized functions are
                      // constructors (and the converse)
-
-    predef: globals.split(/\s+/)
+    nomen:    true,  // Tolerate underscore at the beginning of a name
+    stupid:   true   // Allow synchronous methods
 };
 
 
@@ -127,19 +126,39 @@ var path   = require('path');
 var JSLINT = require(path.join(__dirname, 'jslint')).JSLINT;
 
 var cwd    = process.cwd();
-var js_dir = fs.realpathSync(path.join(__dirname, '../../zephyr/static/js'));
 
 var exit_code = 0;
+var i;
 
-fs.readdirSync(js_dir).forEach(function (filename) {
-    if (filename.slice('-3') !== '.js')
-        return;
+// Drop 'node' and the script name from args.
+for (i=0; i<2; i++) {
+    process.argv.shift();
+}
 
-    var filepath = path.join(js_dir, filename);
+process.argv.forEach(function (filepath) {
     var contents = fs.readFileSync(filepath, 'utf8');
     var messages = [];
 
-    if (!JSLINT(contents, jslint_options)) {
+    // We mutate 'options' so be sure to clear everything.
+    if (filepath.indexOf('zephyr/static/js/') !== -1) {
+        // Frontend browser code
+        options.browser = true;
+        options.node    = false;
+        options.predef  = globals.split(/\s+/);
+    } else {
+        // Backend code for Node.js
+        options.browser = false;
+        options.node    = true;
+
+        if (filepath.indexOf('zephyr/tests/frontend/') !== -1) {
+            // Include '$' because we use jQuery inside casper.evaluate
+            options.predef = ['casper', '$'];
+        } else {
+            options.predef = [];
+        }
+    }
+
+    if (!JSLINT(contents, options)) {
         JSLINT.errors.forEach(function (error) {
             if (error === null) {
                 // JSLint stopping error

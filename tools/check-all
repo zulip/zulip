@@ -1,34 +1,85 @@
-#!/bin/bash
+#!/usr/bin/env python
+import os
+import re
+import sys
+import optparse
+import subprocess
 
-SCRIPT_DIR="$(dirname "$0")"
-EXITCODE=0
+from os          import path
+from collections import defaultdict
 
-FILTER_IMPORTS="-v imported.but.unused"
-if [ "$1" = "--imports" ]; then
-    FILTER_IMPORTS="."
-fi
+from humbug_tools import check_output
 
-# Make the output of the tools red
-echo -en '\e[0;31m'
+parser = optparse.OptionParser()
+parser.add_option('--full',
+    action='store_true',
+    help='Check some things we typically ignore')
+(options, args) = parser.parse_args()
 
-if ! "$SCRIPT_DIR"/node "$SCRIPT_DIR"/jslint/check-all.js; then
-    EXITCODE=1;
-fi
+os.chdir(path.join(path.dirname(__file__), '..'))
 
-cd "$SCRIPT_DIR"/..;
 
-PYTHON_FILES=$(git ls-files | grep [.]py$ | egrep -v '^(confirmation/|humbug/test_settings\.py)')
-for file in $(git ls-files | grep -v [.][^/]*$ | egrep -v '^(confirmation/|humbug/test_settings\.py)'); do
-    if [ -f "$file" ] && head -n1 "$file" | grep -q "^#!.*python"; then
-        PYTHON_FILES="$PYTHON_FILES $file"
-    fi
-done
+# Exclude some directories and files from lint checking
 
-if pyflakes $PYTHON_FILES | grep $FILTER_IMPORTS; then
-    EXITCODE=1;
-fi
+exclude_trees = """
+zephyr/static/third
+confirmation
+zephyr/tests/frontend/casperjs
+zephyr/migrations
+""".split()
 
-# reset the terminal color
-echo -en '\e[0m'
+exclude_files = """
+humbug/test_settings.py
+tools/jslint/jslint.js
+""".split()
 
-exit $EXITCODE
+
+# Categorize by language all files known to Git
+
+git_files = map(str.strip, check_output(['git', 'ls-files']).split('\n'))
+by_lang   = defaultdict(list)
+
+for filepath in git_files:
+    if (not filepath or not path.isfile(filepath)
+        or (filepath in exclude_files)
+        or any(filepath.startswith(d+'/') for d in exclude_trees)):
+        continue
+
+    _, exn = path.splitext(filepath)
+    if not exn:
+        # No extension; look at the first line
+        with file(filepath) as f:
+            if re.match(r'^#!.*\bpython', f.readline()):
+                exn = '.py'
+
+    by_lang[exn].append(filepath)
+
+
+# Invoke the appropriate lint checker for each language
+
+try:
+    failed = False
+
+    # Make the lint output bright red
+    sys.stdout.write('\x1B[1;31m')
+    sys.stdout.flush()
+
+    try:
+        subprocess.check_call(['tools/node', 'tools/jslint/check-all.js']
+            + by_lang['.js'])
+    except subprocess.CalledProcessError:
+        failed = True
+
+    pyflakes = subprocess.Popen(['pyflakes'] + by_lang['.py'],
+        stdout = subprocess.PIPE)
+
+    for ln in pyflakes.stdout:
+        if options.full or not 'imported but unused' in ln:
+            sys.stdout.write(ln)
+            failed = True
+
+    sys.exit(1 if failed else 0)
+
+finally:
+    # Restore normal terminal colors
+    sys.stdout.write('\x1B[0m')
