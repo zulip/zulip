@@ -4,10 +4,9 @@
 Nagios plugin to check that Zephyr mirror forwarding is running.
 
 This script just checks the contents of a file. The forwarding test
-itself lives in api/bots/check-mirroring and should be run out of cron
-at least every 5 minutes, e.g.:
+itself lives in api/bots/check-mirroring and should be run out of cron.
 
-*/5 * * * * /home/humbug/api/bots/check-mirroring &> /var/run/nagios/check-mirroring-results
+See bots/zephyr-mirror-crontab for the crontab details.
 """
 
 import os
