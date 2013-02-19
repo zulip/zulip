@@ -36,6 +36,24 @@ MessageList.prototype = {
         return rows.get(this.selected_id, this.table_name);
     },
 
+    closest_id: function MessageList_closest_id(id) {
+        if (this._items.length === 0) {
+            return -1;
+        }
+        var closest = util.lower_bound(this._items, id,
+                                       function (a, b) {
+                                           return a.id < b;
+                                       });
+        if (closest === this._items.length
+            || (closest !== 0
+                && (id - this._items[closest - 1].id <
+                    this._items[closest].id - id)))
+        {
+            closest = closest - 1;
+        }
+        return this._items[closest].id;
+    },
+
     _add_to_hash: function MessageList__add_to_hash(messages) {
         var self = this;
         messages.forEach(function (elem) {

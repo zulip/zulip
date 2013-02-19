@@ -110,5 +110,53 @@ exports.memoize = function (fun) {
     };
 };
 
+// Like C++'s std::lower_bound.  Returns the first index at which
+// `value` could be inserted without changing the ordering.  Assumes
+// the array is sorted.
+//
+// `first` and `last` are indices and `less` is an optionally-specified
+// function that returns true if
+//   array[i] < value
+// for some i and false otherwise.
+//
+// Usage: lower_bound(array, value, [less])
+//        lower_bound(array, first, last, value, [less])
+exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
+    var first, last, value, less;
+    if (arg3 === undefined) {
+        first = 0;
+        last = array.length;
+        value = arg1;
+        less = arg2;
+    } else {
+        first = arg1;
+        last = arg2;
+        value = arg3;
+        less = arg4;
+    }
+
+    if (less === undefined) {
+        less = function (a, b) { return a < b; };
+    }
+
+    var len = last - first;
+    var middle;
+    var step;
+    var lower = 0;
+    while (len > 0) {
+        step = Math.floor(len / 2);
+        middle = first + step;
+        if (less(array[middle], value)) {
+            first = middle;
+            first++;
+            len = len - step - 1;
+        }
+        else {
+            len = step;
+        }
+    }
+    return first;
+};
+
 return exports;
 }());
