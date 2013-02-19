@@ -68,6 +68,7 @@ pre {
     /* 13/14 em, so bootstrap's default 13 px,
        when body is the default 14 px */
     font-size: 0.929em;
+    line-height: inherit;
 }
 
 pre code {
