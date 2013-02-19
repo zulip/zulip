@@ -83,8 +83,8 @@ class Client(object):
                 api_key = config.get("api", "key")
             if email is None:
                 email = config.get("api", "email")
-            if site is None:
-                site = config.get("api", "site", None)
+            if site is None and config.has_option("api", "site"):
+                site = config.get("api", "site")
 
         self.api_key = api_key
         self.email = email
