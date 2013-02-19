@@ -12,7 +12,7 @@ var default_color = "#c2c2c2";
 var next_sub_id = 0;
 
 // Classes which could be returned by get_color_class.
-var color_classes = 'dark_background';
+exports.color_classes = 'dark_background';
 
 exports.subscribed_streams = function () {
     // TODO: Object.keys() compatibility
@@ -39,7 +39,7 @@ function update_table_stream_color(table, stream_name, color) {
     var color_class = exports.get_color_class(color);
     function fixup(elem) {
         elem.css("background-color", color)
-            .removeClass(color_classes)
+            .removeClass(exports.color_classes)
             .addClass(color_class);
     }
 

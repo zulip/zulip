@@ -59,7 +59,10 @@ function show(tabname, focus_area) {
 //  have that color be reflected here too.)
 exports.decorate_stream_bar = function (stream_name) {
     var color = subs.get_color(stream_name);
-    $("#stream-message .message_header_stream").css("background-color", color);
+    $("#stream-message .message_header_stream")
+        .css('background-color', color)
+        .removeClass(subs.color_classes)
+        .addClass(subs.get_color_class(color));
 };
 
 exports.start = function (msg_type, opts) {
