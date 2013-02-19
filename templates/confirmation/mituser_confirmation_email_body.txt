@@ -8,51 +8,12 @@ MIT Zephyr account.
  1) Create a password and activate your account:
         <{{ activate_url }}>
 
- 2) Get your API key from the "Settings" panel and put it in a file in your
-    Athena home directory called ~/Private/.humbug-api-key .
+ 2) Follow the instructions on <https://humbughq.com/zephyr> to setup
+ the Zephyr mirroring system.
 
- 3) Copy over your Zephyr subscriptions
-
-    NOTE: Humbug does not currently support filters; everything you subscribe
-    to will be in your default view. If you have too many subscriptions (you
-    know who you are), you may want to manually subscribe to just your main
-    view. You can add or remove subscriptions from the Humbug app by clicking
-    the gear in the upper right-hand corner and then selecting "Streams."
-
-    If you would like to copy over all of your subscriptions, please run the
-    command below:
-            /mit/tabbott/humbug/zephyr_mirror.py --sync-subscriptions
-
-    After running the script, please reload Humbug to allow the changes to
-    take effect.
-
- 4) On an Athena dialup (linerva.mit.edu, scrubbing-bubbles.mit.edu, etc),
-    run the Zephyr mirroring script.
-
-    IMPORTANT: You must keep this script always running in a session
-    with unexpired Kerberos tickets.  The script forwards personals
-    you receive on Zephyr to Humbug, and forwards messages you send in
-    Humbug to Zephyr.
-
-    If you already have Barnowl running in screen/tmux somewhere, you can just
-    run the command below inside that session. If not, see "Running Barnowl in
-    Screen" at <http://sipb.mit.edu/doc/zephyr/> for an explanation.
-
-    To set up Zephyr mirroring, run:
-        /mit/tabbott/humbug/zephyr_mirror.py
-
- 5) Visit the running app at:
-        <https://humbughq.com/>
-
-If you're interested in mobile apps, we have early alphas available
-as well. You can get the Android app at:
-    <https://play.google.com/store/apps/details?id=com.humbughq.mobile>
-
-If you're interested in an iPhone version, join our waitlist here:
-    <http://goo.gl/ROOVQ>
-
-Feel free to send us a message via the Feedback button from within the
-app if you have any questions or encounter any problems.
+Feel free to send us a message via the Feedback button under the gear
+tab within the app if you have any questions or encounter any
+problems.
 
 
 Cheers,

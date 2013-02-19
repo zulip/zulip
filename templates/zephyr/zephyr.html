@@ -1,0 +1,92 @@
+{% extends "zephyr/portico.html" %}
+
+{# Zephyr Mirroring information page #}
+
+{% block customhead %}
+{{ block.super }}
+<link rel="stylesheet" href="/static/styles/pygments.css" />
+{% endblock %}
+
+{% block portico_content %}
+<div class="row-fluid">
+  <div class="span8">
+    <h2>Zephyr Mirroring for Humbug</h2>
+
+<p>Thanks for giving Humbug a try!  This page describes how to use
+  Humbug as to use MIT Zephyr; if you're not a current Zephyr user,
+  you probably want to visit the main Humbug website.</p>
+
+<p>There are a few steps you need to take to setup Humbug for your
+MIT Zephyr account.</p>
+
+<h3>First time setup</h3>
+<ol>
+  <li><p>Create a password and activate your account using the URL in
+  your email.</p></li>
+
+  <li><p>Get your API key from the "Settings" panel and put it in a file in your
+    Athena home directory called <code>~/Private/.humbug-api-key</code>.</p></li>
+
+  <li><p>Copy over your Zephyr subscriptions</p>
+
+    <p> NOTE: Humbug does not currently support the equivalent of
+    Barnowl filters; everything you subscribe to will be in your
+    default view. If you have too many subscriptions (you know who you
+    are), you may want to manually subscribe to just your main
+    view. You can add or remove subscriptions from the Humbug app by
+    clicking the gear in the upper right-hand corner and then
+    selecting "Streams."</p>
+
+    <p>If you would like to copy over all of your subscriptions, please
+    run the following command:<br />
+            <code>/mit/tabbott/humbug/zephyr_mirror.py --sync-subscriptions</code></p>
+
+    <p>After running the script, please reload Humbug to allow the changes to
+    take effect.</p></li>
+</ol>
+
+<h3>Long-term setup</h3>
+    <p>On an Athena dialup
+    (<a href="https://linerva.mit.edu">linerva.mit.edu</a>,
+     <a href="https://athena.dialup.mit.edu">athena.dialup.mit.edu</a>,
+    etc.), run the Zephyr mirroring script inside a screen
+    session.</p>
+
+    <p><strong>IMPORTANT: You must keep the Zephyr mirroring script
+    always running in a session with unexpired Kerberos
+    tickets.</strong>  The script forwards personals you receive on
+    Zephyr to Humbug, and forwards messages you send in Humbug to
+    Zephyr.  <strong>If it is not running, only other Humbug users
+    will receive messages you send from Humbug!</strong>.  The Humbug
+    web application will warn you if the Zephyr mirroring script is
+    not running.</p>
+
+    <p>If you already have Barnowl running in screen/tmux somewhere,
+    you can just run the command below inside that session.  If not,
+    see <a href="https://sipb.mit.edu/doc/zephyr/">Running Barnowl in
+    Screen</a> for an explanation of how to do this.<p>
+
+    <p>To set up Zephyr mirroring, run: <br />
+        <code>/mit/tabbott/humbug/zephyr_mirror.py</code></p>
+
+    <p>Don't run multiple copies of the Zephyr mirroring script;
+    doing so will result in messages you sent being forwarded to
+    Zephyr twice.</p>
+
+<h3>Using the app</h3>
+    <p>You can use the app by visiting <a href="https://humbughq.com/">https://humbughq.com</a></p>
+
+<p>If you're interested in mobile apps, we have early alphas available
+as well. You can get the
+  <a href="https://play.google.com/store/apps/details?id=com.humbughq.mobile">
+     Android app</a> immediately or <a href="http://goo.gl/ROOVQ">join
+     our waitlist for the iPhone version</a>.</p>
+
+<p>Feel free to send us a message via the Feedback button under the
+  gear tab within the app if you have any questions or encounter any
+  problems.</p>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -47,6 +47,7 @@ urlpatterns = patterns('',
     # API and integrations documentation
     url(r'^api$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/api.html'}),
     url(r'^integrations$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/integrations.html'}),
+    url(r'^zephyr$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/zephyr.html'}),
 
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/get_updates$',              'zephyr.tornadoviews.json_get_updates'),
