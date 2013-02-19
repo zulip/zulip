@@ -109,7 +109,7 @@ def send_bot_message(oldrev, newrev, refname):
         if added:
             message += '\n**and adding**:\n\n' + added
         message += '\n**A HISTORY REWRITE HAS OCCURRED!**'
-        message += '\nPlease check your local branches to deal with this.'
+        message += '\n@everyone: Please check your local branches to deal with this.'
     elif added:
         message = '`%s` was deployed to `%s` with:\n\n%s' % (new_head, branch, added)
     else:
