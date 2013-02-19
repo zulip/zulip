@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 """
 CodeHilite Extension for Python-Markdown
 ========================================

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (C) 2012 Humbug, Inc.
 #
 # Permission is hereby granted, free of charge, to any person

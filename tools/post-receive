@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Humbug's post-receive hook.  There is a symlink
 #   from /srv/git/humbug.git/hooks/post-receive
