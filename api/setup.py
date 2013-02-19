@@ -4,6 +4,7 @@
 import humbug
 
 import glob
+import os.path
 from distutils.core import setup
 
 setup(name='humbug',
@@ -20,9 +21,10 @@ setup(name='humbug',
       ],
       url='https://humbughq.com/dist/api/',
       packages=['humbug'],
-      data_files=[('share/humbug/examples', ["examples/humbugrc", "examples/send-message"]),
-                  ('share/humbug/integrations/trac', glob.glob('integrations/trac/*')),
-                  ('share/humbug/integrations/nagios', glob.glob('integrations/nagios/*')),
-                  ],
+      data_files=[('share/humbug/examples', ["examples/humbugrc", "examples/send-message"])] + \
+          [(os.path.join('share/humbug/', relpath),
+            glob.glob(os.path.join(relpath, '*'))) for relpath in
+           glob.glob("integrations/*")
+           ],
       scripts=["bin/humbug-send"],
      )
