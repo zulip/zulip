@@ -88,12 +88,23 @@ def send_bot_message(oldrev, newrev, refname):
         # Don't forward the notice anywhere
         return
 
-    added   = git_commit_range(oldrev, newrev)
-    removed = git_commit_range(newrev, oldrev)
-
     new_head = newrev[:12]
+    old_head = oldrev[:12]
 
-    if removed:
+    if (oldrev == '0000000000000000000000000000000000000000' or
+        newrev == '0000000000000000000000000000000000000000'):
+        # New branch pushed or old branch removed
+        added = ''
+        removed = ''
+    else:
+        added   = git_commit_range(oldrev, newrev)
+        removed = git_commit_range(newrev, oldrev)
+
+    if oldrev == '0000000000000000000000000000000000000000':
+        message = '`%s` was pushed to new branch `%s`' % (new_head, branch)
+    elif newrev == '0000000000000000000000000000000000000000':
+        message = 'branch `%s` was removed (was `%s`)' % (branch, old_head)
+    elif removed:
         message = '`%s` was pushed to `%s`, **REMOVING**:\n\n%s' % (new_head, branch, removed)
         if added:
             message += '\n**and adding**:\n\n' + added
