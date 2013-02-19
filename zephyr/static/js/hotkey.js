@@ -2,6 +2,8 @@ var hotkeys = (function () {
 
 var exports = {};
 
+exports.in_scroll_caused_by_keypress = false;
+
 var directional_hotkeys = {
     40:  rows.next_visible,  // down arrow
     106: rows.next_visible,  // 'j'
@@ -65,6 +67,7 @@ function process_hotkey(e) {
     if (directional_hotkeys.hasOwnProperty(code)) {
         next_message = directional_hotkeys[code](selected_message);
         if (next_message.length !== 0) {
+            exports.in_scroll_caused_by_keypress = true;
             select_message(next_message, {then_scroll: true});
         }
         if ((next_message.length === 0) && (code === 40 || code === 106)) {

@@ -530,9 +530,9 @@ $(function () {
     });
 
     function scroll_finished() {
-        show_floating_recipient_bar();
-        exports.update_floating_recipient_bar();
         keep_pointer_in_view();
+        hotkeys.in_scroll_caused_by_keypress = false;
+        exports.update_floating_recipient_bar();
         if ($('#home').hasClass('active')) {
             if (viewport.scrollTop() === 0 &&
                 have_scrolled_away_from_top) {
@@ -553,7 +553,12 @@ $(function () {
     }
 
     $(window).scroll($.throttle(50, function (e) {
-        hide_floating_recipient_bar();
+        if (!hotkeys.in_scroll_caused_by_keypress) {
+            // Only hide the recipient bar when mousewheel/trackpad scrolling,
+            // not when going through messages one by one with the arrow
+            // keys.
+            hide_floating_recipient_bar();
+        }
         scroll_finish();
     }));
 
