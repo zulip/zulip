@@ -16,13 +16,8 @@
 #
 # see contrib/hooks/ for a sample
 
-import os
 import sys
 import subprocess
-import time
-from os import path
-
-import os.path
 
 # check_output is backported from subprocess.py in Python 2.7
 def check_output(*popenargs, **kwargs):
