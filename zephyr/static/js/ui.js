@@ -966,7 +966,9 @@ exports.set_presence_list = function(users, presence_info) {
                                           });
     };
 
-    $('#user_presences').append(create_user(fullname, email).addClass('active-icon'));
+    if (domain !== "mit.edu") {
+        $('#user_presences').append(create_user(fullname, email).addClass('active-icon'));
+    }
 
     $.each(users, function(idx, email) {
         if (people_dict[email] === undefined) {
