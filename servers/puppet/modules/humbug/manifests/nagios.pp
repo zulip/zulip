@@ -25,5 +25,6 @@ class humbug::nagios {
 
   # TODO: Install our API
   # TODO: Install humbug_nagios.cfg from our API.
-
+  # TODO: Install pagerduty_nagios.pl from http://www.pagerduty.com/docs/nagios-integration-guide/
+  # TODO: Install the pagerduty_nagios cron job as well (pagerduty config is already in puppet)
 }
