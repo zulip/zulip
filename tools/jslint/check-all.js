@@ -12,59 +12,13 @@ var globals =
     // common.js
     + ' status_classes'
 
-    // compose.js
-    + ' compose'
-
-    // rows.js
-    + ' rows'
-
-    // hotkey.js
-    + ' hotkeys'
-
-    // narrow.js
-    + ' narrow'
-
-    // reload.js
-    + ' reload'
-
-    // notifications_bar.js
-    + ' notifications_bar'
-
-    // search.js
-    + ' search'
-
     // setup.js
     + ' templates csrf_token'
 
-    // subs.js
-    + ' subs'
-
-    // composebox_typeahead.js
-    + ' composebox_typeahead'
-
-    // typeahead_helper.js
-    + ' typeahead_helper'
-
-    // notifications.js
-    + ' notifications'
-
-    // hashchange.js
-    + ' hashchange'
-
-    // invite.js
-    + ' invite'
-
-    // timerender.js
-    + ' timerender'
-
-    // ui.js
-    + ' ui'
-
-    // util.js
-    + ' util'
-
-    // activity.js
-    + ' activity'
+    // Modules, defined in their respective files.
+    + ' compose rows hotkeys narrow reload notifications_bar search subs'
+    + ' composebox_typeahead typeahead_helper notifications hashchange'
+    + ' invite ui util activity timerender'
 
     // colorspace.js
     + ' colorspace'
