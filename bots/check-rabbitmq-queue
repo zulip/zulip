@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+
+import sys
+import subprocess
+import re
+import time
+
+WARN_THRESHOLD = 100
+CRIT_THRESHOLD = 200
+
+states = {
+    0: "OK",
+    1: "WARNING",
+    2: "CRITICAL",
+    3: "UNKNOWN"
+}
+
+# check_output is backported from subprocess.py in Python 2.7
+def check_output(*popenargs, **kwargs):
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        cmd = kwargs.get("args")
+        if cmd is None:
+            cmd = popenargs[0]
+        raise subprocess.CalledProcessError(retcode, cmd, output=output)
+    return output
+subprocess.check_output = check_output
+
+re = re.compile(r'(\w+)\t(\d+)')
+output = subprocess.check_output(['rabbitmqctl', 'list_queues'], shell=False)
+
+status = 0
+max_count = 0
+warn_queues = []
+
+for line in output.split("\n"):
+    line = line.strip()
+    m = re.match(line)
+    if m:
+        queue = m.group(1)
+        count = int(m.group(2))
+        this_status = 0
+        if count > CRIT_THRESHOLD:
+            this_status = 2
+            warn_queues.append(queue)
+        elif count > WARN_THRESHOLD:
+            this_status = max(status, 1)
+            warn_queues.append(queue)
+
+        status = max(status, this_status)
+        max_count = max(max_count, count)
+
+warn_about =  ", ".join(warn_queues)
+now = int(time.time())
+
+if status > 0:
+    print("%s|%s|%s|max count %s, queues affected: %s" % (now, status, states[status], max_count, warn_about))
+else:
+    print("%s|%s|%s|queues normal, max count %s" % (now, status, states[status], max_count))
