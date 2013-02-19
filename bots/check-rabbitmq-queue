@@ -31,7 +31,7 @@ def check_output(*popenargs, **kwargs):
 subprocess.check_output = check_output
 
 re = re.compile(r'(\w+)\t(\d+)')
-output = subprocess.check_output(['rabbitmqctl', 'list_queues'], shell=False)
+output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], shell=False)
 
 status = 0
 max_count = 0
