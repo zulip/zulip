@@ -244,12 +244,12 @@ casper.then(function () {
     expected_messages('zfilt', [
         'Verona > frontend test',
         'Verona > other subject',
-        'Verona > frontend test',
+        'Verona > frontend test'
     ], [
         '<p>test message A</p>',
         '<p>test message B</p>',
         '<p>test message C</p>',
-        '<p>test message D</p>',
+        '<p>test message D</p>'
     ]);
 
     un_narrow();
@@ -270,11 +270,11 @@ casper.then(function () {
 
 casper.then(function () {
     expected_messages('zfilt', [
-        'Verona > frontend test',
+        'Verona > frontend test'
     ], [
         '<p>test message A</p>',
         '<p>test message B</p>',
-        '<p>test message D</p>',
+        '<p>test message D</p>'
     ]);
 
     un_narrow();
@@ -287,11 +287,11 @@ casper.then(function () {
 
 casper.then(function () {
     expected_messages('zfilt', [
-        'You and Cordelia Lear, King Hamlet',
+        'You and Cordelia Lear, King Hamlet'
     ], [
         '<p>personal A</p>',
         '<p>personal B</p>',
-        '<p>personal D</p>',
+        '<p>personal D</p>'
     ]);
 });
 
