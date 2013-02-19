@@ -5,6 +5,11 @@ import subprocess
 import re
 import time
 
+from os import path
+
+sys.path.append(path.join(path.dirname(__file__), '../tools'))
+from humbug_tools import check_output
+
 WARN_THRESHOLD = 100
 CRIT_THRESHOLD = 200
 
@@ -15,23 +20,8 @@ states = {
     3: "UNKNOWN"
 }
 
-# check_output is backported from subprocess.py in Python 2.7
-def check_output(*popenargs, **kwargs):
-    if 'stdout' in kwargs:
-        raise ValueError('stdout argument not allowed, it will be overridden.')
-    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
-    output, unused_err = process.communicate()
-    retcode = process.poll()
-    if retcode:
-        cmd = kwargs.get("args")
-        if cmd is None:
-            cmd = popenargs[0]
-        raise subprocess.CalledProcessError(retcode, cmd, output=output)
-    return output
-subprocess.check_output = check_output
-
 re = re.compile(r'(\w+)\t(\d+)')
-output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], shell=False)
+output = check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], shell=False)
 
 status = 0
 max_count = 0
