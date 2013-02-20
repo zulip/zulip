@@ -509,9 +509,7 @@ img.inline_profile_picture {
     text-shadow: 0 1px 0 white;
     opacity:     .2;
     filter:      alpha(opacity=20);
-    margin-left: 5px;
-    position:    relative;
-    top:         1px;
+    float:       right;
 }
 
 .composebox-close {
