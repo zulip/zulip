@@ -90,21 +90,36 @@ function stream_home_view_clicked(e) {
     var sub = stream_info[stream.toLowerCase()];
     sub.in_home_view = in_home_view;
 
-    clear_table('zhome');
-    // We don't want to mess with the message_array, just filter the home view
-    // by the new in_home_view settings
-    add_messages(message_array, {add_to_home: true, append_new_messages: false, update_unread_counts: false});
-    // In case we added messages to what's visible in the home view, we need to re-scroll to make
-    // sure the pointer is still visible. We don't want the auto-scroll handler to move our pointer
-    // to the old scroll location before we have a chance to update it.
-    recenter_pointer_on_display = true;
-    suppress_scroll_pointer_update = true;
+    setTimeout(function () {
+        clear_table('zhome');
 
-    // If we added any messages that were unread but before the currently selected message pointer
-    // we need to re-process them to update the unread count
-    if (message_array.length > 0) {
-        process_unread_counts(message_range(message_array[0].id, selected_message_id), true);
-    }
+        // Hide the visible message tables as inserting or removing a large
+        // number of rows might cause the page to scroll in unexpected ways
+        var hidden = $('.focused_table');
+        $.each(hidden, function (idx, shown) {
+            $(shown).setAttribute('display', 'none');
+        });
+
+        // We don't want to mess with the message_array, just filter the home view
+        // by the new in_home_view settings
+        add_messages(message_array, {add_to_home: true, append_new_messages: false, update_unread_counts: false});
+
+        $.each(hidden, function (idx, shown) {
+            $(shown).setAttribute('display', 'table');
+        });
+
+        // In case we added messages to what's visible in the home view, we need to re-scroll to make
+        // sure the pointer is still visible. We don't want the auto-scroll handler to move our pointer
+        // to the old scroll location before we have a chance to update it.
+        recenter_pointer_on_display = true;
+        suppress_scroll_pointer_update = true;
+
+        // If we added any messages that were unread but before the currently selected message pointer
+        // we need to re-process them to update the unread count
+        if (message_array.length > 0) {
+            process_unread_counts(message_range(message_array[0].id, selected_message_id), true);
+        }
+    }, 0);
 
     $.ajax({
         type:     'POST',
