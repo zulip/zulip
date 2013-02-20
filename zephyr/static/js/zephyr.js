@@ -229,19 +229,19 @@ function process_unread_counts(messages, is_read) {
     total_unread_messages += pm_count;
 }
 
+function send_pointer_update() {
+    if (furthest_read > server_furthest_read) {
+        $.post("/json/update_pointer",
+               {pointer: furthest_read},
+               function () {
+                   server_furthest_read = furthest_read;
+               });
+    }
+}
+
 $(function () {
     furthest_read = initial_pointer;
     server_furthest_read = initial_pointer;
-
-    function send_pointer_update() {
-        if (furthest_read > server_furthest_read) {
-            $.post("/json/update_pointer",
-                   {pointer: furthest_read},
-                   function () {
-                       server_furthest_read = furthest_read;
-                   });
-        }
-    }
 
     // We only send pointer updates when the user has been idle for a
     // short while to avoid hammering the server
@@ -928,4 +928,19 @@ function move_pointer_at_page_top_and_bottom(delta) {
             current_msg_list.select_id(rows.id(next_row));
         }
     }
+}
+
+function fast_forward_pointer() {
+    $.ajax({
+        type: 'POST',
+        url: '/json/get_profile',
+        data: {email: email},
+        dataType: 'json',
+        success: function (data) {
+            furthest_read = data.max_message_id;
+            send_pointer_update();
+            ui.change_tab_to('#home');
+            reload.initiate({immediate: true});
+        }
+    });
 }

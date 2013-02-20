@@ -616,7 +616,6 @@ def generate_client_id():
     return base64.b16encode(os.urandom(16)).lower()
 
 @authenticated_json_post_view
-@has_request_variables
 def json_get_profile(request, user_profile):
     return get_profile_backend(request, user_profile)
 
