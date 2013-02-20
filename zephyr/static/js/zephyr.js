@@ -356,7 +356,7 @@ function add_display_time(message, prev) {
         ' (UTC' + ((tz_offset < 0) ? '' : '+') + tz_offset + ')';
 }
 
-function add_to_table(messages, msg_list, filter_function, where, allow_collapse) {
+function add_to_table(messages, msg_list, where, allow_collapse) {
     if (messages.length === 0)
         return;
 
@@ -394,9 +394,6 @@ function add_to_table(messages, msg_list, filter_function, where, allow_collapse
     }
 
     $.each(messages, function (index, message) {
-        if (! filter_function(message))
-            return;
-
         message.include_recipient = false;
         message.include_bookend   = false;
         if (same_recipient(prev, message) && allow_collapse) {
@@ -565,10 +562,12 @@ function add_messages_helper(messages, msg_list, predicate, allow_collapse, appe
     var center_message_id = msg_list.selected_id;
     // center_message_id is guaranteed to be between the top and bottom
     var top_messages = $.grep(messages, function (elem, idx) {
-        return (elem.id < center_message_id && msg_list.get(elem.id) === undefined);
+        return (elem.id < center_message_id && msg_list.get(elem.id) === undefined
+                && predicate(elem));
     });
     var bottom_messages = $.grep(messages, function (elem, idx) {
-        return (elem.id >= center_message_id && msg_list.get(elem.id) === undefined);
+        return (elem.id >= center_message_id && msg_list.get(elem.id) === undefined
+                && predicate(elem));
     });
 
     if (append_new_messages) {
@@ -576,8 +575,8 @@ function add_messages_helper(messages, msg_list, predicate, allow_collapse, appe
         msg_list.append(bottom_messages);
     }
 
-    add_to_table(top_messages,    msg_list, predicate, "top",    allow_collapse);
-    add_to_table(bottom_messages, msg_list, predicate, "bottom", allow_collapse);
+    add_to_table(top_messages,    msg_list, "top",    allow_collapse);
+    add_to_table(bottom_messages, msg_list, "bottom", allow_collapse);
     return top_messages.length > 0;
 }
 
