@@ -615,8 +615,16 @@ def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_in
 def generate_client_id():
     return base64.b16encode(os.urandom(16)).lower()
 
+@authenticated_json_post_view
+@has_request_variables
+def json_get_profile(request, user_profile):
+    return get_profile_backend(request, user_profile)
+
 @authenticated_api_view
 def api_get_profile(request, user_profile):
+    return get_profile_backend(request, user_profile)
+
+def get_profile_backend(request, user_profile):
     result = dict(pointer        = user_profile.pointer,
                   client_id      = generate_client_id(),
                   max_message_id = -1)
