@@ -228,14 +228,22 @@ exports.activate = function (operators, opts) {
     narrowed_msg_list = new MessageList('zfilt');
     current_msg_list = narrowed_msg_list;
 
+    function maybe_select_closest() {
+        if (! narrowed_msg_list.empty()) {
+            var id = narrowed_msg_list.closest_id(target_id);
+            select_message_by_id(id, narrowed_msg_list, {then_scroll: true});
+        }
+    }
+
     // If our message id is not in range of the loaded message list,
     // we need to fetch the messages around the target message time
     if (all_msg_list.get(target_id) === undefined) {
         load_old_messages(target_id, 200, 200, narrowed_msg_list, function (messages) {
-            select_message_by_id(target_id, narrowed_msg_list, {then_scroll: true});
+            maybe_select_closest();
         }, true, false);
     } else {
         add_messages(all_msg_list.all(), narrowed_msg_list);
+        maybe_select_closest();
     }
 
     // Mark as read any messages before or at the pointer in the narrowed view
@@ -258,7 +266,6 @@ exports.activate = function (operators, opts) {
     $("#zfilt").css("opacity", 0).animate({opacity: 1});
 
     reset_load_more_status();
-    select_message_by_id(target_id, narrowed_msg_list, {then_scroll: true});
 
     // If anything was highlighted before, try to rehighlight it.
     if (highlighted) {
