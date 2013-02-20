@@ -232,6 +232,20 @@ exports.activate = function (operators, opts) {
         add_to_table(message_array, 'zfilt', filter_function, 'bottom', allow_collapse);
     }
 
+    // Mark as read any messages before or at the pointer in the narrowed view
+    var start = parseInt(Object.keys(message_in_table.zfilt)[0], 10);
+    var to_process = [];
+    var i;
+    if (!isNaN(start)) {
+        for (i = start; i <= selected_message_id; i++) {
+            if (message_dict[i] !== undefined) {
+                to_process.push(message_dict[i]);
+            }
+        }
+
+        process_unread_counts(to_process, true);
+    }
+
     // Show the new set of messages.
     $("#main_div").addClass("narrowed_view");
     $("#zfilt").addClass("focused_table");
