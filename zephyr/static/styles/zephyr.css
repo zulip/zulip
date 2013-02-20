@@ -534,14 +534,6 @@ img.inline_profile_picture {
     display: none;
 }
 
-#stream-dne {
-    display: none;
-}
-
-#stream-nosub {
-    display: none;
-}
-
 .streamname {
     font-weight: bold;
 }
