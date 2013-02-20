@@ -39,7 +39,13 @@ function parse_narrow(hash) {
         var operand  = decodeURIComponent(hash[i+1] || '');
         operators.push([operator, operand]);
     }
-    narrow.activate(operators, {target_id: initial_pointer});
+    var new_selection;
+    if (current_msg_list.selected_id() !== -1) {
+        new_selection = current_msg_list.selected_id();
+    } else {
+        new_selection = initial_pointer;
+    }
+    narrow.activate(operators, {then_select_id: new_selection});
 }
 
 // Returns true if this function performed a narrow

@@ -210,11 +210,11 @@ function build_filter(operators_mixed_case) {
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
         allow_collapse: true,
-        target_id: current_msg_list.selected_id()
+        then_select_id: current_msg_list.selected_id()
     }, opts);
 
     var was_narrowed = exports.active();
-    var target_id    = opts.target_id;
+    var then_select_id  = opts.then_select_id;
 
     filter_function   = build_filter(operators);
     current_operators = operators;
@@ -230,19 +230,22 @@ exports.activate = function (operators, opts) {
 
     function maybe_select_closest() {
         if (! narrowed_msg_list.empty()) {
-            var id = narrowed_msg_list.closest_id(target_id);
+            var id = narrowed_msg_list.closest_id(then_select_id);
             narrowed_msg_list.select_id(id, {then_scroll: true});
         }
     }
 
-    // If our message id is not in range of the loaded message list,
-    // we need to fetch the messages around the target message time
-    if (all_msg_list.get(target_id) === undefined) {
-        load_old_messages(target_id, 200, 200, narrowed_msg_list, function (messages) {
+    // Don't bother populating a message list when it won't contain
+    // the message we want anyway
+    if (all_msg_list.get(then_select_id) !== undefined) {
+        add_messages(all_msg_list.all(), narrowed_msg_list);
+    }
+
+    if (narrowed_msg_list.empty()) {
+        load_old_messages(then_select_id, 200, 200, narrowed_msg_list, function (messages) {
             maybe_select_closest();
         }, true, false);
     } else {
-        add_messages(all_msg_list.all(), narrowed_msg_list);
         maybe_select_closest();
     }
 
@@ -306,7 +309,7 @@ exports.by_subject = function (target_id) {
     exports.activate([
             ['stream',  original.display_recipient],
             ['subject', original.subject]
-        ], { target_id: target_id });
+        ], { then_select_id: target_id });
 };
 
 // Called for the 'narrow by stream' hotkey.
@@ -315,11 +318,11 @@ exports.by_recipient = function (target_id) {
     var new_narrow, emails;
     switch (message.type) {
     case 'private':
-        exports.by('pm-with', message.reply_to, { target_id: target_id });
+        exports.by('pm-with', message.reply_to, { then_select_id: target_id });
         break;
 
     case 'stream':
-        exports.by('stream', message.display_recipient, { target_id: target_id });
+        exports.by('stream', message.display_recipient, { then_select_id: target_id });
         break;
     }
 };
