@@ -1,0 +1,14 @@
+{% extends "zephyr/portico.html" %}
+
+{% block for_you %} isn't feeling too good. {% endblock %}
+
+{% block portico_content %}
+
+<br/>
+<p class="lead">We couldn't validate your Google account<p>
+
+<p>You might want to <a href="{% url django_openid_auth.views.login_begin %}">try logging in via Google again</a> or <a href="{%url django.contrib.auth.views.login %}">log in with a username or password.</a></p>
+
+<p>If you'd like, you can also <a href="mailto:support@humbughq.com?Subject=Error%20logging%20in%20with%20Google%20Apps&Body=Hi%20there%2C%0A%0AI%20encountered%20an%20error%20when%20attempting%20to%20log%20in%20with%20Google%20Apps%20on%20Humbug%20using%20my%20email%20address%20youremailgoeshere@yourdomain.example.com%0A%0AError%20message%3A%20%20{{ message|escape }}%0A%0ASincerely%2C%20%0A%0AYour%20name%20here">drop us a line</a> to let us know what happened.</p>
+
+{% endblock %}

@@ -5,6 +5,8 @@ import zephyr.forms
 
 urlpatterns = patterns('',
     url(r'^$', 'zephyr.views.home'),
+    url(r'^accounts/login/openid/$', 'django_openid_auth.views.login_begin', name='openid-login'),
+    url(r'^accounts/login/openid/done/$', 'django_openid_auth.views.login_complete', name='openid-complete'),
     # We have two entries for accounts/login to allow reverses on the Django
     # view we're wrapping to continue to function.
     url(r'^accounts/login/',  'zephyr.views.login_page',         {'template_name': 'zephyr/login.html'}),

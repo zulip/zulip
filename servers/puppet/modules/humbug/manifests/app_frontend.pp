@@ -4,7 +4,7 @@ class humbug::app_frontend {
 
   $web_packages = [ "nginx", "memcached", "python-pylibmc", "python-tornado", "python-django",
                     "python-pygments", "python-flup", "ipython", "python-psycopg2",
-                    "yui-compressor", ]
+                    "yui-compressor", "python-django-auth-openid"]
   package { $web_packages: ensure => "installed" }
 
   file { "/etc/nginx/nginx.conf":

@@ -2,6 +2,8 @@
 import os
 import platform
 
+from zephyr.openid import openid_failure_handler
+
 DEPLOYED = (('humbughq.com' in platform.node())
             or os.path.exists('/etc/humbug-server'))
 STAGING_DEPLOYED = (platform.node() == 'staging.humbughq.com')
@@ -157,7 +159,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-AUTHENTICATION_BACKENDS = ('humbug.backends.EmailAuthBackend',)
+AUTHENTICATION_BACKENDS = ('humbug.backends.EmailAuthBackend',
+                           'humbug.backends.GoogleBackend')
 
 TEST_RUNNER = 'zephyr.tests.Runner'
 
@@ -174,6 +177,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'south',
+    'django_openid_auth',
     'jstemplate',
     'confirmation',
     'pipeline',
@@ -372,6 +376,9 @@ EMAIL_PORT = 587
 DEFAULT_FROM_EMAIL = "Humbug <humbug@humbughq.com>"
 
 LOGIN_REDIRECT_URL='/'
+OPENID_SSO_SERVER_URL = 'https://www.google.com/accounts/o8/id'
+OPENID_CREATE_USERS = True
+OPENID_RENDER_FAILURE = openid_failure_handler
 
 EVENT_LOG_DIR = 'event_log'
 
