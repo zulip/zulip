@@ -159,9 +159,9 @@ exports.sort_recipients = function (matches, query) {
 
 exports.sort_textbox_typeahead = function(matches) {
     // input may be free text ending in @ for autocomplete
-    var query = this.query;
+    var query = composebox_typeahead.split_at_cursor(this.query)[0];
     if (query.indexOf('@') > -1) {
-        var parts = this.query.split('@');
+        var parts = query.split('@');
         query = parts[parts.length - 1];
     }
     return exports.sort_recipients(matches, query);

@@ -118,6 +118,11 @@ function select_on_focus(field_id) {
     });
 }
 
+exports.split_at_cursor = function(query) {
+    var cursor = $('#new_message_content').caret().start;
+    return [query.slice(0, cursor), query.slice(cursor)];
+};
+
 exports.initialize = function () {
     select_on_focus("stream");
     select_on_focus("subject");
@@ -187,7 +192,9 @@ exports.initialize = function () {
         items: 2,
         highlighter: composebox_typeahead_highlighter,
         matcher: function (item) {
-            var strings = this.query.split(/[\s*(){}\[\]]/);
+            var query = exports.split_at_cursor(this.query)[0];
+
+            var strings = query.split(/[\s*(){}\[\]]/);
             if (strings.length < 1) {
                 return false;
             }
@@ -202,7 +209,17 @@ exports.initialize = function () {
         },
         sorter: typeahead_helper.sort_textbox_typeahead,
         updater: function (item) {
-            return this.query.replace(/@\S+$/, "") + "@**" + typeahead_helper.private_message_mapped[item].full_name + "**";
+            var pieces = exports.split_at_cursor(this.query);
+            var beginning = pieces[0];
+            var rest = pieces[1];
+
+            beginning = beginning.replace(/@\S+$/, "") + "@**" + typeahead_helper.private_message_mapped[item].full_name + "**";
+            // Keep the cursor after the newly inserted name, as Bootstrap will call textbox.change() to overwrite the text
+            // in the textbox.
+            setTimeout(function () {
+                $('#new_message_content').caret(beginning.length, beginning.length);
+            }, 0);
+            return beginning + rest;
         },
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
