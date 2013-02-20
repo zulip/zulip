@@ -27,6 +27,23 @@ exports.subscribed_streams = function () {
     return list;
 };
 
+exports.maybe_toggle_all_messages = function () {
+    var show_all_messages = false;
+    $.each(stream_info, function (idx, stream) {
+        if (!stream.in_home_view) {
+            show_all_messages = true;
+            return false;
+        }
+    });
+
+    var all_messages = $("#global_filters [data-name='all']")[0];
+    if (!show_all_messages) {
+        $(all_messages).addClass('hidden-filter');
+    } else {
+        $(all_messages).removeClass('hidden-filter');
+    }
+};
+
 function should_render_subscribers() {
     return domain !== 'mit.edu';
 }
@@ -120,6 +137,8 @@ function stream_home_view_clicked(e) {
             process_unread_counts(message_range(message_array[0].id, selected_message_id), true);
         }
     }, 0);
+
+    exports.maybe_toggle_all_messages();
 
     $.ajax({
         type:     'POST',

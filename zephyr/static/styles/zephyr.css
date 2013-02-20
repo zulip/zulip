@@ -185,6 +185,11 @@ li.active-filter {
     font-weight: bold;
 }
 
+li.hidden-filter {
+    visibility: hidden;
+    display: none;
+}
+
 ul.filters .count {
     margin-left: 0.5em;
     display: none;

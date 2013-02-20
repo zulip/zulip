@@ -762,6 +762,7 @@ $(function () {
     hashchange.initialize();
     invite.initialize();
     activity.initialize();
+    subs.maybe_toggle_all_messages();
 
     $("body").bind('click', function () {
         ui.hide_actions_popover();
