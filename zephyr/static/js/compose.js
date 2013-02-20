@@ -288,16 +288,6 @@ function check_stream_for_send(stream_name) {
         ui.report_error("Error checking subscription", xhr, $("#home-error"));
         $("#stream").focus();
         $("#compose-send-button").removeAttr('disabled');
-    } else {
-        if (result === "does-not-exist") {
-           $('#send-status').removeClass(status_classes);
-                $('#stream-dne-name').text(stream_name);
-                $('#stream-dne').show();
-                $("#compose-send-button").removeAttr('disabled');
-                exports.hide();
-                $('#create-it').focus();
-        }
-        $("#home-error").hide();
     }
 
     return result;
