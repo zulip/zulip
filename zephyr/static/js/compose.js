@@ -118,7 +118,7 @@ function compose_error(error_text, bad_input) {
     $('#send-status').removeClass(status_classes)
                .addClass('alert-error')
                .stop(true).fadeTo(0, 1);
-    $('#error-msg').text(error_text);
+    $('#error-msg').html(error_text);
     $("#compose-send-button").removeAttr('disabled');
     bad_input.focus().select();
 }
@@ -320,7 +320,9 @@ function validate_stream_message() {
     if (!subs.have(stream_name)) {
         switch(check_stream_for_send(stream_name)) {
         case "does-not-exist":
-            response = 'The stream "' + stream_name + '" does not exist.';
+            response = "<p>The stream <b>" +
+                Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
+                "<p>Manage your subscriptions <a href='#subscriptions'>on your Streams page</a>.</p>";
             compose_error(response, $('#stream'));
             return false;
         case "error":
@@ -330,7 +332,9 @@ function validate_stream_message() {
             // browser window doesn't know it.
             return true;
         case "not-subscribed":
-            response = 'You\'re not subscribed to the stream "' + stream_name + '".';
+            response = "<p>You're not subscribed to the stream <b>" +
+                Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
+                "<p>Manage your subscriptions <a href='#subscriptions'>on your Streams page</a>.</p>";
             compose_error(response, $('#stream'));
             return false;
         }
