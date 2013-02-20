@@ -32,7 +32,7 @@ var globals =
     + ' subject_dict people_dict same_recipient same_stream_and_subject'
     + ' keep_pointer_in_view move_pointer_at_page_top_and_bottom'
     + ' respond_to_message'
-    + ' select_message select_message_by_id'
+    + ' select_message'
     + ' scroll_to_selected disable_pointer_movement get_private_message_recipient'
     + ' load_old_messages'
     + ' at_top_of_viewport at_bottom_of_viewport'

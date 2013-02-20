@@ -32,6 +32,18 @@ MessageList.prototype = {
         return this._selected_id;
     },
 
+    select_id: function MessageList_select_id(id, opts) {
+        id = parseInt(id, 10);
+        if (isNaN(id)) {
+            throw (new Error("Bad message id"));
+        }
+        if (this.get(id) === undefined) {
+            throw (new Error("Selected message id not in MessageList"));
+        }
+        this._selected_id = id;
+        select_message(rows.get(id, this.table_name), this, opts);
+    },
+
     selected_message: function MessageList_selected_message() {
         return this.get(this._selected_id);
     },

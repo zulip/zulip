@@ -403,7 +403,7 @@ function show_actions_popover(element, id) {
         return;
     }
 
-    select_message_by_id(id, current_msg_list);
+    current_msg_list.select_id(id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
         var args = {
@@ -786,7 +786,7 @@ $(function () {
         if (!(clicking && mouse_moved)) {
             // Was a click (not a click-and-drag).
             var row = $(this).closest(".message_row");
-            select_message_by_id(rows.id(row), current_msg_list);
+            current_msg_list.select_id(rows.id(row));
             respond_to_message();
         }
         mouse_moved = false;

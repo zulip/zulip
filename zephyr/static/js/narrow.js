@@ -231,7 +231,7 @@ exports.activate = function (operators, opts) {
     function maybe_select_closest() {
         if (! narrowed_msg_list.empty()) {
             var id = narrowed_msg_list.closest_id(target_id);
-            select_message_by_id(id, narrowed_msg_list, {then_scroll: true});
+            narrowed_msg_list.select_id(id, {then_scroll: true});
         }
     }
 
@@ -341,8 +341,7 @@ exports.deactivate = function () {
     reset_load_more_status();
 
     current_msg_list = all_msg_list;
-    select_message_by_id(all_msg_list.selected_id(), all_msg_list,
-                         {then_scroll: true});
+    all_msg_list.select_id(all_msg_list.selected_id(), {then_scroll: true});
 
     search.update_highlight_on_narrow();
 

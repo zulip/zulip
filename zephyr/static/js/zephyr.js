@@ -149,11 +149,6 @@ function respond_to_message(reply_type) {
                              'private_message_recipient': pm_recipient});
 }
 
-// Called by mouseover etc.
-function select_message_by_id(message_id, msg_list, opts) {
-    return select_message(rows.get(message_id, msg_list.table_name), msg_list, opts);
-}
-
 var furthest_read = -1;
 var server_furthest_read = -1;
 // We only send pointer updates when the user has been idle for a
@@ -258,8 +253,6 @@ function update_selected_message(message, msg_list, opts) {
     {
         furthest_read = new_selected_id;
     }
-
-    msg_list._selected_id = new_selected_id;
 }
 
 function select_message(next_message, msg_list, opts) {
@@ -616,7 +609,7 @@ function add_messages(messages, msg_list, opts) {
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
     if (prepended && (msg_list.selected_id() >= 0)) {
-        select_message_by_id(msg_list.selected_id(), msg_list, {then_scroll: true});
+        msg_list.select_id(msg_list.selected_id(), {then_scroll: true});
     }
 
     if (typeahead_helper.autocomplete_needs_update()) {
@@ -689,11 +682,11 @@ function get_updates(options) {
             {
                 furthest_read = data.new_pointer;
                 server_furthest_read = data.new_pointer;
-                select_message_by_id(data.new_pointer, all_msg_list, {then_scroll: true});
+                all_msg_list.select_id(data.new_pointer, {then_scroll: true});
             }
 
             if (all_msg_list.selected_id() === -1) {
-                select_message_by_id(all_msg_list.first().id, all_msg_list, {then_scroll: false});
+                all_msg_list.select_id(all_msg_list.first().id, {then_scroll: false});
             }
 
             get_updates_timeout = setTimeout(get_updates, 0);
@@ -800,7 +793,7 @@ $(function () {
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
         if (all_msg_list.selected_id() === -1) {
-            select_message_by_id(initial_pointer, all_msg_list, {then_scroll: true});
+            all_msg_list.select_id(initial_pointer, {then_scroll: true});
         }
 
         // catch the user up
