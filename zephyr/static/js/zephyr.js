@@ -32,6 +32,9 @@ var disable_pointer_movement = false;
 var recenter_pointer_on_display = false;
 var suppress_scroll_pointer_update = false;
 
+var furthest_read = -1;
+var server_furthest_read = -1;
+
 function add_person(person) {
     people_list.push(person);
     people_dict[person.email] = person;
@@ -149,28 +152,6 @@ function respond_to_message(reply_type) {
                              'private_message_recipient': pm_recipient});
 }
 
-var furthest_read = -1;
-var server_furthest_read = -1;
-// We only send pointer updates when the user has been idle for a
-// short while to avoid hammering the server
-function send_pointer_update() {
-    if (furthest_read > server_furthest_read) {
-        $.post("/json/update_pointer",
-               {pointer: furthest_read},
-               function () {
-                   server_furthest_read = furthest_read;
-               });
-    }
-}
-
-$(function () {
-    furthest_read = initial_pointer;
-    server_furthest_read = initial_pointer;
-    $(document).idle({idle: 1000,
-                      onIdle: send_pointer_update,
-                      keepTracking: true});
-});
-
 function message_range(msg_list, start, end) {
     // Returns messages from the given message list in the specified range, inclusive
     var result = [];
@@ -238,50 +219,40 @@ function process_unread_counts(messages, is_read) {
     total_unread_messages += pm_count;
 }
 
-function update_selected_message(message, msg_list, opts) {
-    var cls = 'selected_message';
-    $('.' + cls).removeClass(cls);
-    message.addClass(cls);
+$(function () {
+    furthest_read = initial_pointer;
+    server_furthest_read = initial_pointer;
 
-    var new_selected_id = rows.id(message);
-    process_unread_counts(message_range(msg_list, furthest_read + 1, new_selected_id), true);
-    // Narrowing is a temporary view on top of the home view and
-    // doesn't affect your pointer in the home view.
-    // Similarly, lurk mode does not affect your pointer.
-    if (! narrow.active() && lurk_stream === undefined
-        && new_selected_id > furthest_read)
-    {
-        furthest_read = new_selected_id;
-    }
-}
-
-function select_message(next_message, msg_list, opts) {
-    opts = $.extend({}, {then_scroll: false}, opts);
-
-    /* If the message exists but is hidden, try to find the next visible one. */
-    if (next_message.is(':hidden')) {
-        next_message = rows.next_visible(next_message);
-    }
-
-    /* Fall back to the last visible message. */
-    if (next_message.length === 0) {
-        next_message = rows.last_visible();
-        if (next_message.length === 0) {
-            // There are no messages!
-            return false;
+    function send_pointer_update() {
+        if (furthest_read > server_furthest_read) {
+            $.post("/json/update_pointer",
+                   {pointer: furthest_read},
+                   function () {
+                       server_furthest_read = furthest_read;
+                   });
         }
     }
 
-    if (rows.id(next_message) !== msg_list.selected_id()) {
-        update_selected_message(next_message, msg_list, opts);
-    }
+    // We only send pointer updates when the user has been idle for a
+    // short while to avoid hammering the server
+    $(document).idle({idle: 1000,
+                      onIdle: send_pointer_update,
+                      keepTracking: true});
 
-    if (opts.then_scroll && current_msg_list === msg_list) {
-        recenter_view(next_message);
-    }
+    $(document).on('message_selected.zephyr', function (event) {
+        process_unread_counts(message_range(event.msg_list, furthest_read + 1, event.id), true);
 
-    return true;
-}
+        // Narrowing is a temporary view on top of the home view and
+        // doesn't affect your pointer in the home view.
+        // Similarly, lurk mode does not affect your pointer.
+        if (event.msg_list === all_msg_list
+            && lurk_stream === undefined
+            && event.id > furthest_read)
+        {
+            furthest_read = event.id;
+        }
+    });
+});
 
 function same_stream_and_subject(a, b) {
     // Streams and subjects are case-insensitive. Streams have
@@ -898,7 +869,7 @@ function keep_pointer_in_view() {
     if (! adjust(above_view_threshold, at_top_of_viewport, rows.next_visible))
         adjust(below_view_threshold, at_bottom_of_viewport, rows.prev_visible);
 
-    update_selected_message(next_row, current_msg_list);
+    current_msg_list.select_id(rows.id(next_row));
 }
 
 // The idea here is when you've scrolled to the very
@@ -917,7 +888,7 @@ function move_pointer_at_page_top_and_bottom(delta) {
             next_row = rows.next_visible(next_row);
         }
         if (next_row.length !== 0) {
-            update_selected_message(next_row, current_msg_list);
+            current_msg_list.select_id(rows.id(next_row));
         }
     }
 }

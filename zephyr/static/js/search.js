@@ -344,7 +344,7 @@ exports.search_button_handler = function (reverse) {
         return;
     }
 
-    select_message(res, current_msg_list);
+    current_msg_list.select_id(rows.id(res));
     highlight_match(res, query);
     scroll_to_selected();
 };

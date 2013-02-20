@@ -41,7 +41,8 @@ MessageList.prototype = {
             throw (new Error("Selected message id not in MessageList"));
         }
         this._selected_id = id;
-        select_message(rows.get(id, this.table_name), this, opts);
+        opts = $.extend({then_scroll: false}, opts, {id: id, msg_list: this});
+        $(document).trigger($.Event('message_selected.zephyr', opts));
     },
 
     selected_message: function MessageList_selected_message() {

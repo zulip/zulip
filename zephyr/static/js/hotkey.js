@@ -74,7 +74,7 @@ function process_hotkey(e) {
         next_row = directional_hotkeys[code](current_msg_list.selected_row());
         if (next_row.length !== 0) {
             exports.in_scroll_caused_by_keypress = true;
-            select_message(next_row, current_msg_list, {then_scroll: true});
+            current_msg_list.select_id(rows.id(next_row), {then_scroll: true});
         }
         if ((next_row.length === 0) && (code === 40 || code === 106)) {
             // At the last message, scroll to the bottom so we have
@@ -102,13 +102,13 @@ function process_hotkey(e) {
     switch (code) {
     case 33: // Page Up
         if (at_top_of_viewport()) {
-            select_message(rows.first_visible(), current_msg_list, {then_scroll: false});
+            current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
         }
         return false; // We want the browser to actually page up and down
     case 32: // Spacebar
     case 34: // Page Down
         if (at_bottom_of_viewport()) {
-            select_message(rows.last_visible(), current_msg_list, {then_scroll: false});
+            current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
         }
         return false;
     case 27: // Esc: close actions popup, cancel compose, clear a find, or un-narrow
