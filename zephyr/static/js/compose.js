@@ -21,7 +21,7 @@ function show(tabname, focus_area) {
     $('.message_comp').slideDown(100, function () {
         // If the compose box is obscuring the currently selected message,
         // scroll up until the message is no longer occluded.
-        if (current_msg_list.selected_id === -1) {
+        if (current_msg_list.selected_id() === -1) {
             // If there's no selected message, there's no need to
             // scroll the compose box to avoid it.
             return;

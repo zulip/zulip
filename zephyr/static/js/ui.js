@@ -254,7 +254,7 @@ function resizehandler(e) {
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
-    if (current_msg_list.selected_id !== -1) {
+    if (current_msg_list.selected_id() !== -1) {
         scroll_to_selected();
     }
     // When the screen resizes, it may cause some messages to go off the screen

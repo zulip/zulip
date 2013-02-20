@@ -88,7 +88,7 @@ function process_hotkey(e) {
     }
 
     if (narrow_hotkeys.hasOwnProperty(code)) {
-        narrow_hotkeys[code](current_msg_list.selected_id);
+        narrow_hotkeys[code](current_msg_list.selected_id());
         return true;
     }
 

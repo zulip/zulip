@@ -3,7 +3,7 @@ function MessageList(table_name) {
     this._items = [];
     this._hash = {};
     this.table_name = table_name;
-    this.selected_id = -1;
+    this._selected_id = -1;
     return this;
 }
 
@@ -28,12 +28,16 @@ MessageList.prototype = {
         return this._items[this._items.length - 1];
     },
 
+    selected_id: function MessageList_selected_id() {
+        return this._selected_id;
+    },
+
     selected_message: function MessageList_selected_message() {
-        return this.get(this.selected_id);
+        return this.get(this._selected_id);
     },
 
     selected_row: function MessageList_selected_row() {
-        return rows.get(this.selected_id, this.table_name);
+        return rows.get(this._selected_id, this.table_name);
     },
 
     closest_id: function MessageList_closest_id(id) {

@@ -259,7 +259,7 @@ function update_selected_message(message, msg_list, opts) {
         furthest_read = new_selected_id;
     }
 
-    msg_list.selected_id = new_selected_id;
+    msg_list._selected_id = new_selected_id;
 }
 
 function select_message(next_message, msg_list, opts) {
@@ -279,7 +279,7 @@ function select_message(next_message, msg_list, opts) {
         }
     }
 
-    if (rows.id(next_message) !== msg_list.selected_id) {
+    if (rows.id(next_message) !== msg_list.selected_id()) {
         update_selected_message(next_message, msg_list, opts);
     }
 
@@ -559,7 +559,7 @@ function add_message_metadata(message, dummy) {
 }
 
 function add_messages_helper(messages, msg_list, predicate, allow_collapse, append_new_messages) {
-    var center_message_id = msg_list.selected_id;
+    var center_message_id = msg_list.selected_id();
     // center_message_id is guaranteed to be between the top and bottom
     var top_messages = $.grep(messages, function (elem, idx) {
         return (elem.id < center_message_id && msg_list.get(elem.id) === undefined
@@ -615,8 +615,8 @@ function add_messages(messages, msg_list, opts) {
     //
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
-    if (prepended && (msg_list.selected_id >= 0)) {
-        select_message_by_id(msg_list.selected_id, msg_list, {then_scroll: true});
+    if (prepended && (msg_list.selected_id() >= 0)) {
+        select_message_by_id(msg_list.selected_id(), msg_list, {then_scroll: true});
     }
 
     if (typeahead_helper.autocomplete_needs_update()) {
@@ -692,7 +692,7 @@ function get_updates(options) {
                 select_message_by_id(data.new_pointer, all_msg_list, {then_scroll: true});
             }
 
-            if (all_msg_list.selected_id === -1) {
+            if (all_msg_list.selected_id() === -1) {
                 select_message_by_id(all_msg_list.first().id, all_msg_list, {then_scroll: false});
             }
 
@@ -799,7 +799,7 @@ $(function () {
     function load_more(messages) {
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
-        if (all_msg_list.selected_id === -1) {
+        if (all_msg_list.selected_id() === -1) {
             select_message_by_id(initial_pointer, all_msg_list, {then_scroll: true});
         }
 

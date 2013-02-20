@@ -210,7 +210,7 @@ function build_filter(operators_mixed_case) {
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
         allow_collapse: true,
-        target_id: current_msg_list.selected_id
+        target_id: current_msg_list.selected_id()
     }, opts);
 
     var was_narrowed = exports.active();
@@ -252,7 +252,7 @@ exports.activate = function (operators, opts) {
         var msgs = narrowed_msg_list.all();
         var i;
         var to_process = [];
-        for (i = 0; i < msgs.length && msgs[i].id <= narrowed_msg_list.selected_id; ++i) {
+        for (i = 0; i < msgs.length && msgs[i].id <= narrowed_msg_list.selected_id(); ++i) {
             to_process.push(msgs[i]);
         }
 
@@ -341,7 +341,7 @@ exports.deactivate = function () {
     reset_load_more_status();
 
     current_msg_list = all_msg_list;
-    select_message_by_id(all_msg_list.selected_id, all_msg_list,
+    select_message_by_id(all_msg_list.selected_id(), all_msg_list,
                          {then_scroll: true});
 
     search.update_highlight_on_narrow();
