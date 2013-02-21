@@ -23,7 +23,7 @@ HUMBUG_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 # * subject "deploy => master" (using a pretty unicode right arrow)
 # And similarly for branch "test-post-receive" (for use when testing).
 def commit_notice_destination(repo, branch, commit):
-    if branch in ["master", "post-receive-test"]:
+    if branch in ["master", "prod", "post-receive-test"]:
         return dict(stream  = "commits",
                     subject = u"deploy \u21D2 %s" % (branch,))
 
