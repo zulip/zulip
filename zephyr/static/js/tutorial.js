@@ -124,11 +124,11 @@ function make_script() {
   go(sleep, 4000),
   go(send_message, "By the way, right now we are exchanging **private messages**. Private messages can go to one or more recipients, and basically are just like a normal IM."),
   go(sleep, 4000),
-  go(send_message, "But Humbug also has **stream messages**. A stream is kind of like a group chatroom or a mailing list. Every stream message has two parts parts:\n"
+  go(send_message, "But Humbug also has **stream messages**. A stream is kind of like a group chatroom or a mailing list. Every stream message has two parts:\n"
     + "* The **stream** name: e.g. `" + my_streams[0] + "` or `" + my_streams[1] + "` or `" + my_streams[2] + "`\n"
-    + "* The **subject**: typically one word describing the topic of the message (e.g. `lunch`, or `humbug-test.git` or `jQuery`)\n"),
+    + "* The **subject**: typically one word describing the topic of the message (e.g. `lunch` or `humbug-test.git` or `jQuery`)\n"),
   go(sleep, 10000),
-  go(send_message, "The one-word subject is important because it lets you quickly read what you care about, and ignore what you don't. (Think of how useful email subject lines are!)"),
+  go(send_message, "The brief subject is important because it lets you quickly read what you care about, and ignore what you don't. (Think of how useful email subject lines are!)"),
   go(sleep, 4000),
   go(send_message, "I know that's a lot to take in, but once you understand the model, Humbug can be really powerful. I'll give you a second to catch your breath, but send me a reply when you're ready to continue."),
   go2(wait_for_message, 180, pm_to_me),
@@ -160,7 +160,7 @@ function make_script() {
     + "* Subjects are preserved across replies, so most of the time you won't even have to think about them\n"),
   go(sleep, 8000),
   // Narrowing
-  go(send_message, "Another valuable feature of Humbug is **narrowing**. Click on **You and Humbug Tutorial Bot**, scroll to the bottom, and tell me when you've done so."),
+  go(send_message, "Another valuable feature of Humbug is **narrowing**. Click on **You and Humbug Tutorial Bot** above, scroll to the bottom, and tell me when you've done so."),
   go2(wait_for_message, 180, pm_to_me),
   go(sleep, 1000),
   go(send_message, "Great! We're now looking only at messages between us. You can tell because the background is grey, and the search bar at the top has a query in it. You can narrow on many different types of things, including:\n"
