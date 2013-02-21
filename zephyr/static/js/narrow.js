@@ -122,7 +122,18 @@ exports.parse = function (str) {
 };
 
 exports.in_home = function (message) {
-    return message.type === "private" || subs.have(message.display_recipient).in_home_view;
+    if (message.type === "private") {
+        return true;
+    }
+
+    // If we don't know about this stream for some reason,
+    // we might not have loaded the in_home_view information
+    // yet so show it
+    if (subs.have(message.display_recipient)) {
+        return subs.have(message.display_recipient).in_home_view;
+    } else {
+        return true;
+    }
 };
 
 // Build a filter function from a list of operators.
