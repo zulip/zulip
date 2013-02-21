@@ -122,14 +122,12 @@ var people_list = [
                       </div>
                       <hr id="stream_filters_sep">
                       <div id="stream_filters" class="scrolling_list"></div>
-                      <hr />
-                      <ul id="user_presences" class="scrolling_list"></ul>
                   </ul>
               </div>
             </div>
           </div>
-        </div><!--/sidebar-->
-        <div class="span9 tab-content" id="application_area">
+        </div><!--/left sidebar-->
+        <div class="span7 tab-content" id="application_area">
             <div class="tab-pane active" id="home">
                 {% include "zephyr/home.html" %}
             </div>
@@ -147,6 +145,13 @@ var people_list = [
             {% endif %}
 
         </div><!--/tab-content-->
+        <div class="span2">
+          <div class="row right_sidebar">
+            <div class="span2 sidebar-nav affix hidden-phone">
+              <ul id="user_presences" class="scrolling_list"></ul>
+            </div>
+          </div>
+        </div><!--/right sidebar-->
     </div><!--/row-->
     {% include "zephyr/keyboard_shortcuts.html" %}
     {% include "zephyr/markdown_help.html" %}

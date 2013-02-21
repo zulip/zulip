@@ -245,9 +245,11 @@ function resizehandler(e) {
     /* total viewport - height of navbar - height of upper sidebar - padding*/
     var bottom_sidebar_height = viewport.height() - $("#top_navbar").height() - $(".upper_sidebar").height() - 40;
     $(".bottom_sidebar").height(bottom_sidebar_height);
+    var right_sidebar_height = viewport.height() - $("#top_navbar").height();
+    $(".right_sidebar").height(right_sidebar_height);
 
-    $("#stream_filters").css('max-height', bottom_sidebar_height * 0.35);
-    $("#user_presences").css('max-height', bottom_sidebar_height * 0.35);
+    $("#stream_filters").css('max-height', bottom_sidebar_height * 0.75);
+    $("#user_presences").css('max-height', right_sidebar_height * 0.90);
 
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
