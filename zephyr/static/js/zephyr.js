@@ -177,7 +177,7 @@ function process_unread_counts(messages, is_read) {
             return;
         }
 
-        if (message.sender_email === email) {
+        if (message.sender_email === email && message.client === "website") {
             return;
         }
 

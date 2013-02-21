@@ -220,7 +220,8 @@ class Message(models.Model):
             recipient_id      = self.recipient.id,
             subject           = self.subject,
             timestamp         = datetime_to_timestamp(self.pub_date),
-            gravatar_hash     = gravatar_hash(self.sender.user.email))
+            gravatar_hash     = gravatar_hash(self.sender.user.email),
+            client            = self.sending_client.name)
 
         if apply_markdown:
             obj['content'] = bugdown.convert(self.content)
