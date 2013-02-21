@@ -107,6 +107,10 @@ a:hover code {
     }
 }
 
+#my_information {
+    cursor: pointer;
+}
+
 .my_fullname {
     font-weight: bold;
     font-size: 150%;

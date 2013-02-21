@@ -91,12 +91,12 @@ var people_list = [
           <div class="row">
             <div class="span3 sidebar-nav affix hidden-phone">
               <div class="upper_sidebar">
-                  <span>
+                  <span class="brand" id="my_information">
                     <img class="img-rounded gravatar-profile"
                          src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=60" />
+                    <span class="my_fullname">{{ user_profile.full_name }}</span>
+                    <span class="my_email">{{ user_profile.user.email }}</span>
                   </span>
-                  <span class="my_fullname">{{ user_profile.full_name }}</span>
-                  <span class="my_email">{{ user_profile.user.email }}</span>
                   <div class="new_message_button">
                     <button type="button" class="btn btn-large btn-block"
                             id="left_bar_compose_stream_button_big"

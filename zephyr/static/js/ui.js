@@ -855,7 +855,7 @@ $(function () {
         return false;
     });
 
-    $("a.brand").on('click', function (e) {
+    $(".brand").on('click', function (e) {
         if (exports.home_tab_obscured()) {
             ui.change_tab_to('#home');
         } else {
