@@ -171,6 +171,10 @@ a:hover code {
     list-style-image: url(/static/images/presence/user-idle.png);
 }
 
+#user_presences a {
+    color: black;
+}
+
 ul.filters {
     list-style-type: none;
     padding-right: 1em;
