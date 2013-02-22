@@ -109,16 +109,16 @@ function stream_home_view_clicked(e) {
 
     setTimeout(function () {
         clear_table('zhome');
+        home_msg_list.clear({clear_selected_id: false});
 
-        // Hide the visible message tables as inserting or removing a large
+        // Remember the scroll position as the adding or removing this
         // number of rows might cause the page to scroll in unexpected ways
         var hidden = $('.focused_table');
         hidden.removeClass('focused_table');
 
-        // We don't want to mess with the message_array, just filter the home view
-        // by the new in_home_view settings
-        // TODO: We should possibly just rebuild the message list
-        add_messages(all_msg_list, {append_new_messages: false, update_unread_counts: false});
+
+        // Recreate the home_msg_list with the newly filtered all_msg_list
+        add_messages(all_msg_list.all(), home_msg_list, {append_to_table: true, update_unread_counts: false});
 
         hidden.addClass('focused_table');
 
@@ -130,8 +130,8 @@ function stream_home_view_clicked(e) {
 
         // If we added any messages that were unread but before the currently selected message pointer
         // we need to re-process them to update the unread count
-        if (! all_msg_list.empty()) {
-            process_unread_counts(message_range(all_msg_list.first().id, all_msg_list.selected_id()), true);
+        if (! home_msg_list.empty()) {
+            process_unread_counts(message_range(home_msg_list.first().id, home_msg_list.selected_id()), true);
         }
     }, 0);
 

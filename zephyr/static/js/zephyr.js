@@ -1,6 +1,7 @@
-var all_msg_list = new MessageList('zhome');
+var all_msg_list = new MessageList('zall');
+var home_msg_list = new MessageList('zhome');
 var narrowed_msg_list;
-var current_msg_list = all_msg_list;
+var current_msg_list = home_msg_list;
 var subject_dict = {};
 var people_dict = {};
 
@@ -252,7 +253,7 @@ $(function () {
 
         // Narrowing is a temporary view on top of the home view and
         // doesn't affect your pointer in the home view.
-        if (event.msg_list === all_msg_list
+        if (event.msg_list === home_msg_list
             && event.id > furthest_read)
         {
             furthest_read = event.id;
@@ -528,7 +529,7 @@ function add_message_metadata(message, dummy) {
     return message;
 }
 
-function add_messages_helper(messages, msg_list, predicate, allow_collapse, append_new_messages) {
+function add_messages_helper(messages, msg_list, predicate, allow_collapse, append_to_table) {
     var center_message_id = msg_list.selected_id();
     // center_message_id is guaranteed to be between the top and bottom
     var top_messages = $.grep(messages, function (elem, idx) {
@@ -540,13 +541,14 @@ function add_messages_helper(messages, msg_list, predicate, allow_collapse, appe
                 && predicate(elem));
     });
 
-    if (append_new_messages) {
-        msg_list.prepend(top_messages);
-        msg_list.append(bottom_messages);
+    msg_list.prepend(top_messages);
+    msg_list.append(bottom_messages);
+
+    if (append_to_table) {
+        add_to_table(top_messages,    msg_list, "top",    allow_collapse);
+        add_to_table(bottom_messages, msg_list, "bottom", allow_collapse);
     }
 
-    add_to_table(top_messages,    msg_list, "top",    allow_collapse);
-    add_to_table(bottom_messages, msg_list, "bottom", allow_collapse);
     return top_messages.length > 0;
 }
 
@@ -555,22 +557,27 @@ function add_messages(messages, msg_list, opts) {
     if (!messages)
         return;
 
-    opts = $.extend({}, {update_unread_counts: true, append_new_messages: true}, opts);
+    opts = $.extend({}, {update_unread_counts: true, append_to_table: true}, opts);
 
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
     messages = $.map(messages, add_message_metadata);
 
     var predicate, allow_collapse;
-    if (msg_list === all_msg_list) {
+    if (msg_list === home_msg_list) {
         predicate = narrow.in_home;
         allow_collapse = true;
-    } else {
+    } else if (msg_list === narrowed_msg_list) {
         predicate = narrow.predicate();
         allow_collapse = narrow.allow_collapse();
+    } else if (msg_list === all_msg_list) {
+        predicate = function () { return true; };
+        allow_collapse = true;
+    } else {
+        throw (new Error("Adding message to a list that is not known"));
     }
 
-    if (add_messages_helper(messages, msg_list, predicate, allow_collapse, opts.append_new_messages)) {
+    if (add_messages_helper(messages, msg_list, predicate, allow_collapse, opts.append_to_table)) {
         prepended = true;
     }
 
@@ -581,7 +588,7 @@ function add_messages(messages, msg_list, opts) {
         util.hide_empty_narrow_message();
     }
 
-    if (msg_list === all_msg_list && opts.update_unread_counts) {
+    if (msg_list === home_msg_list && opts.update_unread_counts) {
         process_unread_counts(messages, false);
     }
 
@@ -592,8 +599,11 @@ function add_messages(messages, msg_list, opts) {
     //
     // We also need to re-select the message by ID, because we might have
     // removed and re-added the row as part of prepend collapsing.
+    //
+    // We select the closest id as a fallback in case the previously selected
+    // message is no longer in the list
     if (prepended && (msg_list.selected_id() >= 0)) {
-        msg_list.select_id(msg_list.selected_id(), {then_scroll: true});
+        msg_list.select_id(msg_list.selected_id(), {then_scroll: true, use_closest: true});
     }
 
     if (typeahead_helper.autocomplete_needs_update()) {
@@ -646,9 +656,16 @@ function get_updates(options) {
             }
 
             if (data.messages.length !== 0) {
-                add_messages(data.messages, all_msg_list);
-                if (narrowed_msg_list !== undefined) {
+                if (narrow.active()) {
                     add_messages(data.messages, narrowed_msg_list);
+                } else {
+                    // Only add to all_msg_list if we're receiving non-narrowed messages,
+                    // because they may be duplicates of all_msg_list or sparsely populated
+                    // message ranges (e.g. filtered by stream)
+                    // TODO intelligently handle all_msg_list so that we can support deduping
+                    // and arbitrary messages
+                    add_messages(data.messages, all_msg_list, {append_to_table: false});
+                    add_messages(data.messages, home_msg_list);
                 }
                 notifications.received_messages(data.messages);
             }
@@ -664,11 +681,11 @@ function get_updates(options) {
             {
                 furthest_read = data.new_pointer;
                 server_furthest_read = data.new_pointer;
-                all_msg_list.select_id(data.new_pointer, {then_scroll: true});
+                home_msg_list.select_id(data.new_pointer, {then_scroll: true});
             }
 
-            if ((all_msg_list.selected_id() === -1) && !all_msg_list.empty()) {
-                all_msg_list.select_id(all_msg_list.first().id, {then_scroll: false});
+            if ((home_msg_list.selected_id() === -1) && !home_msg_list.empty()) {
+                home_msg_list.select_id(home_msg_list.first().id, {then_scroll: false});
             }
 
             get_updates_timeout = setTimeout(get_updates, 0);
@@ -725,6 +742,13 @@ function load_old_messages(anchor, num_before, num_after, msg_list, cont, for_na
             util.show_empty_narrow_message();
         }
 
+        // If we're loading more messages into the home view, save them to
+        // the all_msg_list as well, as the home_msg_list is reconstructed
+        // from all_msg_list.
+        if (msg_list === home_msg_list) {
+            add_messages(messages, all_msg_list, {append_to_table: false});
+        }
+
         if (messages.length !== 0 && !cont_will_add_messages) {
             add_messages(messages, msg_list);
         }
@@ -778,14 +802,17 @@ $(function () {
     function load_more(messages) {
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
-        if (all_msg_list.selected_id() === -1) {
-            all_msg_list.select_id(initial_pointer, {then_scroll: true, use_closest: true});
+        //
+        // We fall back to the closest selected id, as the user may have removed
+        // a stream from the home before already
+        if (home_msg_list.selected_id() === -1) {
+            home_msg_list.select_id(initial_pointer, {then_scroll: true, use_closest: true});
         }
 
         // catch the user up
         if (messages.length !== 1) {
             var latest_id = messages[messages.length-1].id;
-            load_old_messages(latest_id, 0, 400, all_msg_list, load_more);
+            load_old_messages(latest_id, 0, 400, home_msg_list, load_more);
             return;
         }
         // now start subscribing to updates
@@ -793,7 +820,7 @@ $(function () {
     }
 
     if (have_initial_messages) {
-        load_old_messages(initial_pointer, 200, 200, all_msg_list, load_more);
+        load_old_messages(initial_pointer, 200, 200, home_msg_list, load_more);
     } else {
         get_updates();
     }

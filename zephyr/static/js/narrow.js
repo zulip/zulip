@@ -348,8 +348,10 @@ exports.deactivate = function () {
     $('#search_query').val('');
     reset_load_more_status();
 
-    current_msg_list = all_msg_list;
-    all_msg_list.select_id(all_msg_list.selected_id(), {then_scroll: true});
+    current_msg_list = home_msg_list;
+    // We fall back to the closest selected id, if the user has removed a stream from the home
+    // view since leaving it the old selected id might no longer be there
+    home_msg_list.select_id(home_msg_list.selected_id(), {then_scroll: true, use_closest: true});
 
     search.update_highlight_on_narrow();
 

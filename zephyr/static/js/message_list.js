@@ -28,6 +28,17 @@ MessageList.prototype = {
         return this._items[this._items.length - 1];
     },
 
+    clear: function  MessageList_clear(opts) {
+        opts = $.extend({}, {clear_selected_id: true}, opts);
+
+        this._items = [];
+        this._hash = {};
+
+        if (opts.clear_selected_id) {
+            this._selected_id = -1;
+        }
+    },
+
     selected_id: function MessageList_selected_id() {
         return this._selected_id;
     },
