@@ -60,8 +60,6 @@ code {
     /* 12/14 em, so bootstrap's default 12 px,
        when body is the default 14 px */
     font-size: 0.857em;
-
-    white-space: nowrap;
 }
 
 pre {
