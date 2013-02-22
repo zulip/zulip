@@ -757,7 +757,7 @@ $(function () {
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
         if (all_msg_list.selected_id() === -1) {
-            all_msg_list.select_id(initial_pointer, {then_scroll: true});
+            all_msg_list.select_id(initial_pointer, {then_scroll: true, use_closest: true});
         }
 
         // catch the user up

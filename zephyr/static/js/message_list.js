@@ -33,15 +33,21 @@ MessageList.prototype = {
     },
 
     select_id: function MessageList_select_id(id, opts) {
+        opts = $.extend({then_scroll: false, use_closest: false}, opts, {id: id, msg_list: this});
+
         id = parseInt(id, 10);
         if (isNaN(id)) {
             throw (new Error("Bad message id"));
         }
         if (this.get(id) === undefined) {
-            throw (new Error("Selected message id not in MessageList"));
+            if (!opts.use_closest) {
+                throw (new Error("Selected message id not in MessageList"));
+            } else {
+                id = this.closest_id(id);
+                opts.id = id;
+            }
         }
         this._selected_id = id;
-        opts = $.extend({then_scroll: false}, opts, {id: id, msg_list: this});
         $(document).trigger($.Event('message_selected.zephyr', opts));
     },
 
