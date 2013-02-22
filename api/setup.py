@@ -4,7 +4,7 @@
 import humbug
 
 import glob
-import os.path
+import os
 from distutils.core import setup
 
 setup(name='humbug',
@@ -24,7 +24,9 @@ setup(name='humbug',
       data_files=[('share/humbug/examples', ["examples/humbugrc", "examples/send-message"])] + \
           [(os.path.join('share/humbug/', relpath),
             glob.glob(os.path.join(relpath, '*'))) for relpath in
-           glob.glob("integrations/*")
-           ],
+           glob.glob("integrations/*")] + \
+          [('share/humbug/demos',
+            [os.path.join("demos", relpath) for relpath in
+            os.listdir("demos")])],
       scripts=["bin/humbug-send"],
      )
