@@ -129,6 +129,10 @@ function respond_to_message(reply_type) {
     var message, msg_type;
     message = current_msg_list.selected_message();
 
+    if (message === undefined) {
+        return;
+    }
+
     var stream = '';
     var subject = '';
     if (message.type === "stream") {
