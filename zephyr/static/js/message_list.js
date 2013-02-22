@@ -11,7 +11,7 @@ MessageList.prototype = {
     get: function MessageList_get(id) {
         id = parseInt(id, 10);
         if (isNaN(id)) {
-            return false;
+            return undefined;
         }
         return this._hash[id];
     },
