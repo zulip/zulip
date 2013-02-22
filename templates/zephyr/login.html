@@ -26,29 +26,37 @@ autofocus('#id_username');
 </div>
 {% endif %}
 
-<form name="login_form" method="post" class="form-horizontal"
-      action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
-    {% csrf_token %}
-    <div class="control-group">
-        <label for="id_username" class="control-label">Email</label>
-        <div class="controls">
-            <input id="id_username" type="text" name="username" value="{{ email }}" maxlength="72" />
-        </div>
+<div class="row">
+    <div class="span5">
+        <form name="login_form" method="post" class="form-horizontal"
+              action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
+            {% csrf_token %}
+            <div class="control-group">
+                <label for="id_username" class="control-label">Email</label>
+                <div class="controls">
+                    <input id="id_username" type="text" name="username" value="{{ email }}" maxlength="72" />
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="id_password" class="control-label">Password</label>
+                <div class="controls">
+                    {{ form.password }}
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <input type="submit" class="btn btn-large btn-primary" value="Log in" />
+                    <span style="padding: 1em" />
+                    <a href="{% url django.contrib.auth.views.password_reset %}">Forgot password?</a>
+                </div>
+            </div>
+        </form>
     </div>
-    <div class="control-group">
-        <label for="id_password" class="control-label">Password</label>
-        <div class="controls">
-            {{ form.password }}
-        </div>
+    <div class="span4">
+        <span class="or">- or -</span>
+        <a href="/accounts/login/openid/" class="zocial google">Sign in with Google</a>
     </div>
-    <div class="control-group">
-        <div class="controls">
-            <input type="submit" class="btn btn-large btn-primary" value="Log in" />
-            <span style="padding: 1em" />
-            <a href="{% url django.contrib.auth.views.password_reset %}">Forgot password?</a>
-        </div>
-    </div>
-</form>
+</div>
 <script type="text/javascript">
 if (window.location.hash.substring(0, 1) === "#") {
     document.login_form.action += window.location.hash;

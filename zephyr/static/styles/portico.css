@@ -20,7 +20,7 @@ li {
 }
 
 .pitch {
-    width: 500px;
+    width: 600px;
 }
 
 .signup {
@@ -36,8 +36,12 @@ li {
 }
 
 .or {
-    padding-left: 25px;
-    padding-right: 25px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.span4 .or {
+    padding-left: 0px;
 }
 
 .for_you {
