@@ -172,7 +172,7 @@ a:hover code {
 }
 
 #user_presences a {
-    color: black;
+    color: #333;
 }
 
 ul.filters {
@@ -181,7 +181,7 @@ ul.filters {
 }
 
 ul.filters a {
-    color: black;
+    color: #333;
 }
 
 ul.filters hr {
@@ -325,7 +325,7 @@ td.pointer {
 }
 
 .sender_name {
-    color: black;
+    color: #333;
     font-weight: bold;
 }
 
