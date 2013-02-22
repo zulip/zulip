@@ -246,7 +246,6 @@ function resizehandler(e) {
     var bottom_sidebar_height = viewport.height() - $("#top_navbar").height() - $(".upper_sidebar").height() - 40;
     $(".bottom_sidebar").height(bottom_sidebar_height);
     var right_sidebar_height = viewport.height() - $("#top_navbar").height();
-    $(".right_sidebar").height(right_sidebar_height);
 
     $("#stream_filters").css('max-height', bottom_sidebar_height * 0.75);
     $("#user_presences").css('max-height', right_sidebar_height * 0.90);
