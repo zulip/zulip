@@ -113,18 +113,14 @@ function stream_home_view_clicked(e) {
         // Hide the visible message tables as inserting or removing a large
         // number of rows might cause the page to scroll in unexpected ways
         var hidden = $('.focused_table');
-        $.each(hidden, function (idx, shown) {
-            $(shown).setAttribute('display', 'none');
-        });
+        hidden.removeClass('focused_table');
 
         // We don't want to mess with the message_array, just filter the home view
         // by the new in_home_view settings
         // TODO: We should possibly just rebuild the message list
         add_messages(all_msg_list, {append_new_messages: false, update_unread_counts: false});
 
-        $.each(hidden, function (idx, shown) {
-            $(shown).setAttribute('display', 'table');
-        });
+        hidden.addClass('focused_table');
 
         // In case we added messages to what's visible in the home view, we need to re-scroll to make
         // sure the pointer is still visible. We don't want the auto-scroll handler to move our pointer
