@@ -113,7 +113,7 @@ $(document).bind('copy', function (e) {
         }
 
         // Construct a div for what we want to copy (div)
-        row = current_msg_list.selected_row();
+        row = rows.get(startid, current_msg_list.table_name);
         for (0 /* for linter */; rows.id(row) <= endid; row = rows.next_visible(row)) {
             if (row.prev().hasClass("recipient_row")) {
                 div.append(p);
