@@ -230,8 +230,7 @@ exports.activate = function (operators, opts) {
 
     function maybe_select_closest() {
         if (! narrowed_msg_list.empty()) {
-            var id = narrowed_msg_list.closest_id(then_select_id);
-            narrowed_msg_list.select_id(id, {then_scroll: true, use_closest: true});
+            narrowed_msg_list.select_id(then_select_id, {then_scroll: true, use_closest: true});
         }
     }
 
