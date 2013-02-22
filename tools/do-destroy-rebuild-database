@@ -3,5 +3,6 @@
 echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | psql -h localhost humbug humbug
 
 python manage.py syncdb --noinput
+python manage.py migrate
 echo "CREATE UNIQUE INDEX ON auth_user (email);" | psql -h localhost humbug humbug
 python manage.py populate_db --replay-old-messages -n0
