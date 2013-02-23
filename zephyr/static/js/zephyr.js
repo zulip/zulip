@@ -656,7 +656,7 @@ function get_updates(options) {
                 all_msg_list.select_id(data.new_pointer, {then_scroll: true});
             }
 
-            if (all_msg_list.selected_id() === -1) {
+            if ((all_msg_list.selected_id() === -1) && !all_msg_list.empty()) {
                 all_msg_list.select_id(all_msg_list.first().id, {then_scroll: false});
             }
 
