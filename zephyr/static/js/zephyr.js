@@ -44,6 +44,10 @@ $(function () {
     $.each(people_list, function (idx, person) {
         people_dict[person.email] = person;
     });
+    // The special account feedback@humbughq.com is used for in-app
+    // feedback and should always show up as an autocomplete option.
+    typeahead_helper.update_your_recipients([{"email": "feedback@humbughq.com",
+                    "full_name": "Humbug Feedback Bot"}]);
 });
 
 // Why do we look at the 'bottom' in above_view_threshold and the top
