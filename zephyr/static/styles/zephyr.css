@@ -981,11 +981,15 @@ table.floating_recipient {
     overflow-y: scroll;
 }
 
-#first_run_message {
+.empty_feed_notice {
     padding: 1em 4em;
     display: none;
 }
 
-#first_run_message h4 {
+.empty_feed_notice h4 {
+    text-align: center;
+}
+
+#empty_narrow_message p {
     text-align: center;
 }

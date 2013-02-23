@@ -337,6 +337,8 @@ exports.deactivate = function () {
     filter_function   = false;
     current_operators = false;
 
+    util.hide_empty_narrow_message();
+
     $("#main_div").removeClass('narrowed_view');
     $("#searchbox").removeClass('narrowed_view');
     $("#zfilt").removeClass('focused_table');

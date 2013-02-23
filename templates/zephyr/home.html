@@ -27,7 +27,7 @@
     <div class="message_list" id="main_div">
       <div id="loading_more_messages_indicator"></div>
       <div id="page_loading_indicator"></div>
-      <div id="first_run_message">
+      <div id="first_run_message" class="empty_feed_notice">
         <h4>Welcome to Humbug</h4>
         <p>See, the thing about it is... there aren't any messages
         here for you right now. I'm sure someone will eventually send
@@ -36,6 +36,12 @@
         <p>Or, <strong>take matters into your own hands</strong>,
         and <a href="#" onclick="compose.start('stream');return false;">
         compose a new stream message</a>.</p>
+      </div>
+      <div id="empty_narrow_message" class="empty_feed_notice">
+        <h4>Nothing's been sent here yet!</h4>
+
+        <p>Why not <a href="#" onclick="compose.start('stream'); return false;">
+            start the conversation</a>?</p>
       </div>
       <table class="message_table focused_table" id="zhome">
         <tbody>

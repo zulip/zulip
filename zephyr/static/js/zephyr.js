@@ -574,6 +574,13 @@ function add_messages(messages, msg_list, opts) {
         prepended = true;
     }
 
+    if ((msg_list === narrowed_msg_list) && !msg_list.empty()) {
+        // If adding some new messages to the message tables caused
+        // our current narrow to no longer be empty, hide the empty
+        // feed placeholder text.
+        util.hide_empty_narrow_message();
+    }
+
     if (msg_list === all_msg_list && opts.update_unread_counts) {
         process_unread_counts(messages, false);
     }
@@ -710,6 +717,13 @@ function load_old_messages(anchor, num_before, num_after, msg_list, cont, for_na
 
     function process_result(messages) {
         $('#connection-error').hide();
+
+        if ((messages.length === 0) && (current_msg_list === narrowed_msg_list) &&
+            narrowed_msg_list.empty()) {
+            // Even after trying to load more messages, we have no
+            // messages to display in this narrow.
+            util.show_empty_narrow_message();
+        }
 
         if (messages.length !== 0 && !cont_will_add_messages) {
             add_messages(messages, msg_list);
