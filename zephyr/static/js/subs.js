@@ -113,14 +113,13 @@ function stream_home_view_clicked(e) {
 
         // Remember the scroll position as the adding or removing this
         // number of rows might cause the page to scroll in unexpected ways
-        var hidden = $('.focused_table');
-        hidden.removeClass('focused_table');
-
+        var saved_ypos = window.scrollY;
 
         // Recreate the home_msg_list with the newly filtered all_msg_list
         add_messages(all_msg_list.all(), home_msg_list, {append_to_table: true, update_unread_counts: false});
 
-        hidden.addClass('focused_table');
+        // Ensure we're still at the same scroll position
+        window.scrollTo(0, saved_ypos);
 
         // In case we added messages to what's visible in the home view, we need to re-scroll to make
         // sure the pointer is still visible. We don't want the auto-scroll handler to move our pointer
