@@ -189,7 +189,9 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
-STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
+# PipelineCachedStorage inserts a file hash into filenames,
+# to prevent the browser from using stale files from cache.
+STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 
 STATIC_ROOT = 'prod-static/collected'
 

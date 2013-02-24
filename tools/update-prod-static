@@ -25,4 +25,7 @@ mkdir -p prod-static/serve
 rsync -ar --delete prod-static/serve-new/* prod-static/serve/
 
 # Clean up
-rm -rf prod-static/{collected,serve-new}
+rm -rf prod-static/serve-new
+
+# Leave the 'collected' directory around or PipelineCachedStorage
+# will fail.
