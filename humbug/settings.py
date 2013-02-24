@@ -193,6 +193,15 @@ STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 
 STATIC_ROOT = 'prod-static/collected'
 
+# This is the default behavior from Pipeline, but we set it
+# here so that urls.py can read it.
+PIPELINE = not DEBUG
+
+# To use minified files in dev, set PIPELINE = True.
+#
+# You will need to run ./tools/update-prod-static after
+# changing static files.
+
 PIPELINE_CSS = {
     'app': {
         'source_filenames': (
@@ -241,11 +250,6 @@ PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
 # We need modules to be externally visible, so that methods can be called from
 # event handlers defined in HTML.
 PIPELINE_DISABLE_WRAPPER = True
-
-# To use minified files in dev, uncomment:
-#PIPELINE = True
-
-# You will need to run ./tools/update-prod-static after changing static files.
 
 
 USING_RABBITMQ = DEPLOYED
