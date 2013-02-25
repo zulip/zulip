@@ -1,0 +1,16 @@
+#/bin/sh -xe
+
+PASSWORD=xxxxxxxxxxxx
+
+sudo -u postgres psql << EOF
+DROP SCHEMA public CASCADE;
+CREATE DATABASE humbug;
+CREATE USER humbug WITH PASSWORD '$PASSWORD';
+GRANT ALL ON DATABASE humbug TO humbug;
+EOF
+
+echo "Database created"
+
+umask go-rw
+echo "*:*:*:humbug:$PASSWORD" >> ~/.pgpass
+chmod go-rw ~/.pgpass
