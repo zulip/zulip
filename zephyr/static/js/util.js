@@ -17,12 +17,19 @@ exports.reset_favicon = function () {
 };
 
 exports.set_favicon = function (url) {
-    // I'm not sure whether setting the href attr on the existing
-    // node would be sufficient.  Notificon recreates the node.
-    $(favicon_selector).remove();
-    $('head').append($('<link>')
-        .attr('rel',  'shortcut icon')
-        .attr('href', url));
+    if ($.browser.webkit) {
+        // Works in Chrome 22 at least.
+        // Doesn't work in Firefox 10.
+        $(favicon_selector).attr('href', url);
+    } else {
+        // Delete and re-create the node.
+        // May cause excessive work by the browser
+        // in re-rendering the page (see #882).
+        $(favicon_selector).remove();
+        $('head').append($('<link>')
+            .attr('rel',  'shortcut icon')
+            .attr('href', url));
+    }
 };
 
 exports.make_loading_indicator = function (container, text) {
