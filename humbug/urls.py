@@ -41,7 +41,8 @@ urlpatterns = patterns('',
     url(r'^terms$',   'django.views.generic.simple.direct_to_template', {'template': 'zephyr/terms.html'}),
     url(r'^privacy$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/privacy.html'}),
 
-    # New user "tutorial"
+    # "About Humbug" information
+    url(r'^what-is-humbug$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/what-is-humbug.html'}),
     url(r'^new-user$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/new-user.html'}),
 
     # API and integrations documentation
