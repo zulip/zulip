@@ -82,17 +82,28 @@ function handle_keydown(e) {
             nextFocus = false;
         }
 
-        // If no typeaheads are shown, then there's no need to wait and we can change
-        // the focus right away.  Without this code to change the focus right away,
-        // if the user presses enter before they fully release the tab key, the tab
-        // will be lost.
-        if (nextFocus &&
-            !($("#subject").data().typeahead.shown ||
+        // If no typeaheads are shown...
+        if (!($("#subject").data().typeahead.shown ||
               $("#stream").data().typeahead.shown ||
               $("#private_message_recipient").data().typeahead.shown ||
               $("#new_message_content").data().typeahead.shown)) {
-            ui.focus_on(nextFocus);
-            nextFocus = false;
+
+            // If no typeaheads are shown, then there's no need to wait and we can change
+            // the focus right away.  Without this code to change the focus right away,
+            // if the user presses enter before they fully release the tab key, the tab
+            // will be lost.
+            if (nextFocus) {
+                ui.focus_on(nextFocus);
+                nextFocus = false;
+            }
+
+            // If no typeaheads are shown and the user has configured enter to send,
+            // then make enter send instead of inserting a line break.
+            if (e.target.id === "new_message_content" && code === 13 &&
+                $("#enter_sends").is(':checked')) {
+                e.preventDefault();
+                compose.finish();
+            }
         }
 
         return false;
