@@ -7,8 +7,12 @@ cd "$(dirname "$0")"/..
 # Redirect output to a log file (most recent run only)
 exec >update-prod-static.log
 
-# Collect both original and minified files
-rm -rf prod-static/collected
+# Collect both original and minified files.
+#
+# We don't delete the old files, because doing so makes the
+# running app with PipelineCachedStorage unhappy.  So if you
+# remove a static file, you need to manually remove it from
+# prod-static/collected on the app servers.
 ./manage.py collectstatic --noinput
 
 # Copy the files we want to expose
