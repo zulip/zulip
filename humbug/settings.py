@@ -191,7 +191,15 @@ STATICFILES_FINDERS = (
 
 # PipelineCachedStorage inserts a file hash into filenames,
 # to prevent the browser from using stale files from cache.
-STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+#
+# Unlike PipelineStorage, it requires the files to exist in
+# STATIC_ROOT even for dev servers.  So we only use
+# PipelineCachedStorage when not DEBUG.
+
+if DEBUG:
+    STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
+else:
+    STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 
 STATIC_ROOT = 'prod-static/collected'
 
