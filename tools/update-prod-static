@@ -13,10 +13,8 @@ rm -rf prod-static/collected
 
 # Copy the files we want to expose
 rm -rf prod-static/serve-new
-mkdir -p prod-static/serve-new/{js,styles}
+mkdir -p prod-static/serve-new
 cp -r prod-static/collected/{favicon.ico,robots.txt,html,images,third,min} prod-static/serve-new/
-cp prod-static/collected/js/{common,debug,signup}.js prod-static/serve-new/js/
-cp prod-static/collected/styles/{activity,portico,pygments}.css prod-static/serve-new/styles/
 
 # Sync the new directory to the one nginx actually serves.
 # Hopefully this doesn't race too badly for clients loading

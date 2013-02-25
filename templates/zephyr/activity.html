@@ -1,11 +1,13 @@
 {% extends "zephyr/base.html" %}
 
+{% load compressed %}
+
 {# User Activity. #}
 
 {% block customhead %}
 {{ block.super }}
 <script type="text/javascript" src="/static/third/sorttable/sorttable.js"></script>
-<link href='/static/styles/activity.css?dummy_time={% now "U" %}' rel='stylesheet'>
+{% compressed_css 'activity' %}
 {% endblock %}
 
 {% block content %}

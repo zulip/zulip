@@ -205,6 +205,17 @@ PIPELINE = not DEBUG
 # changing static files.
 
 PIPELINE_CSS = {
+    'activity': {
+        'source_filenames': ('styles/activity.css',),
+        'output_filename':  'min/activity.css'
+    },
+    'portico': {
+        'source_filenames': (
+            'styles/portico.css',
+            'styles/pygments.css',
+        ),
+        'output_filename': 'min/portico.css'
+    },
     'app': {
         'source_filenames': (
             'styles/zephyr.css',
@@ -215,6 +226,18 @@ PIPELINE_CSS = {
 }
 
 PIPELINE_JS = {
+    'common': {
+        'source_filenames': ('js/common.js',),
+        'output_filename':  'min/common.js'
+    },
+    'signup': {
+        'source_filenames': ('js/signup.js',),
+        'output_filename':  'min/signup.js'
+    },
+    'app_debug': {
+        'source_filenames': ('js/debug.js',),
+        'output_filename':  'min/app_debug.js'
+    },
     'app': {
         'source_filenames': (
             'js/util.js',

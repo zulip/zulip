@@ -48,7 +48,7 @@
 {% compressed_js 'app' %}
 
 {% if debug %}
-<script type="text/javascript" src="/static/js/debug.js"></script>
+{% compressed_js 'app_debug' %}
 {% endif %}
 
 <script type="text/javascript">

@@ -2,6 +2,7 @@
 <html>
 
 {# Base template for the whole site. #}
+{% load compressed %}
 
 <head>
     <meta charset="UTF-8">
@@ -22,7 +23,7 @@
     {# We need to import jQuery before Bootstrap #}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
     <script src="/static/third/bootstrap/js/bootstrap.min.js"></script>
-    <script src="/static/js/common.js"></script>
+    {% compressed_js 'common' %}
     {% block customhead %}
     {% endblock %}
 </head>

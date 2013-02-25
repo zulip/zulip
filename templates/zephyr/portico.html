@@ -1,5 +1,7 @@
 {% extends "zephyr/base.html" %}
 
+{% load compressed %}
+
 {% comment %}
 A base template for stuff like login, register, etc.
 
@@ -8,7 +10,7 @@ hence the name.
 {% endcomment %}
 
     {% block customhead %}
-    <link href="/static/styles/portico.css?dummy_time={% now "U" %}" rel="stylesheet">
+    {% compressed_css 'portico' %}
     {% endblock %}
 
 {% block content %}

@@ -6,7 +6,10 @@
     <link href="/static/third/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="/static/third/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
     <link href='https://fonts.googleapis.com/css?family=Droid+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link href="/static/styles/portico.css?dummy_time=none" rel="stylesheet">
+    <!-- NB: Relies on the fact that PipelineCachedStorage also includes
+         a copy of the file with no hash in the name.
+         This file will not load in dev unless you set DEBUG = False. -->
+    <link href="/static/min/portico.css" rel="stylesheet">
 </head>
 
 <body>
