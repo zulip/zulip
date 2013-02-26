@@ -87,7 +87,9 @@ exports.render_time = function (time) {
     return node;
 };
 
-setInterval(function () {
+// This isn't expected to be called externally except manually for
+// testing purposes.
+exports.update_timestamps = function () {
     var start_of_today = set_to_start_of_day(now());
     var new_date;
     // This loop won't do anything unless the day changed since the
@@ -118,7 +120,9 @@ setInterval(function () {
         }
     }
     last_updated = start_of_today;
-}, 60 * 1000);
+};
+
+setInterval(exports.update_timestamps, 60 * 1000);
 
 return exports;
 }());
