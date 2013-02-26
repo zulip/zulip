@@ -21,7 +21,7 @@ function now() { return (new XDate()); }
 // Given an XDate object 'time', return a two-element list containing
 //   - a string for the current human-formatted version
 //   - a string like "2013-01-20" representing the day the format
-//     needs to change, or null if it will never need to change.
+//     needs to change, or undefined if it will never need to change.
 function render_now(time) {
     var start_of_today = set_to_start_of_day(now());
     var start_of_other_day = set_to_start_of_day(time.clone());
@@ -30,8 +30,8 @@ function render_now(time) {
     // week ago, -1 = tomorrow, etc.
 
     // Presumably the result of diffDays will be an integer in this
-    // case, but round it to be sure before comparing to an integer
-    // constant.
+    // case, but round it to be sure before comparing to integer
+    // constants.
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
     if (days_old >= 0 && days_old <= MAX_AGE_FOR_WEEKDAY)
