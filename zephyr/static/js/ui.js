@@ -892,7 +892,7 @@ $(function () {
 
 function sort_narrow_list() {
     var items = $('#stream_filters li').get();
-    var div = $('#stream_filters');
+    var parent = $('#stream_filters');
     items.sort(function(a,b){
         var keyA = $(a).text();
         var keyB = $(b).text();
@@ -902,10 +902,10 @@ function sort_narrow_list() {
         return 0;
     });
 
-    div.empty();
+    parent.empty();
 
     $.each(items, function(i, li){
-          div.append(li);
+          parent.append(li);
     });
 }
 

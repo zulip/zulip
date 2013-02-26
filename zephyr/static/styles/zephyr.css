@@ -138,6 +138,10 @@ a:hover code {
     margin-top: 1em;
 }
 
+#stream_filters_sep {
+    margin: 10px 14px 10px 25px;
+}
+
 #stream_filters {
     overflow-y: hidden;
 }

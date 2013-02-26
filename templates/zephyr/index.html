@@ -107,16 +107,14 @@ var people_list = [
                   </div>
               </div>
               <div class="bottom_sidebar">
-                  <ul class="filters">
-                      <div id="global_filters">
+                      <ul id="global_filters" class="filters">
                           {# Special-case this link so we don't actually go to page top. #}
                           <li data-name="home" class="active-filter"><a href="#">Home <span class="count">(<span class="value"></span>)</span></a></li>
                           <li data-name="all" class="hidden-filter"><a href="#narrow/in/all">All messages <span class="count">(<span class="value"></span>)</span></a></li>
                           <li data-name="private" ><a href="#narrow/is/private-message">All private messages <span class="count">(<span class="value"></span>)</span></a></li>
-                      </div>
+                      </ul>
                       <hr id="stream_filters_sep">
-                      <div id="stream_filters" class="scrolling_list"></div>
-                  </ul>
+                      <ul id="stream_filters" class="filters scrolling_list"></ul>
               </div>
             </div>
           </div>
