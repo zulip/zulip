@@ -1803,10 +1803,7 @@ int x = 3
 
     def test_linkify(self):
         def replaced(payload, url, phrase=''):
-            if url is None: # xss type
-                href = ''
-                url = phrase
-            elif url[:4] == 'http':
+            if url[:4] == 'http':
                 href = url
             elif '@' in url:
                 href = 'mailto:' + url
@@ -1844,14 +1841,28 @@ int x = 3
          ('http://localhost:9991/?show_debug=1',       "<p>%s</p>",                         'http://localhost:9991/?show_debug=1'),
          ('anyone before? (http://d.pr/i/FMXO)',       "<p>anyone before? (%s)</p>",        'http://d.pr/i/FMXO'),
 
-         # XSS Sanitization
-         ('javascript:alert(\'hi\');.com',              "<p>%s</p>",                         None), # None marks xss
-         ('javascript:foo.com',                         "<p>%s</p>",                         None),
-         ('about:blank.com',                            "<p>%s</p>",                         None),
+         # XSS sanitization; URL is rendered as plain text
+         ('javascript:alert(\'hi\');.com',             "<p>javascript:alert('hi');.com</p>", ''),
+         ('javascript:foo.com',                        "<p>javascript:foo.com</p>",          ''),
+         ('about:blank.com',                           "<p>about:blank.com</p>",             ''),
+         ('[foo](javascript:foo.com)',                 "<p>[foo](javascript:foo.com)</p>",   ''),
+
+         # We also block things like this.
+         # In the future let's linkify it safely, but for now let's
+         # make sure the behavior doesn't change unexpectedly.
+         ('http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg',
+            '<p>http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg</p>', ''),
+
+         # Make sure we HTML-escape the invalid URL on output.
+         # ' and " aren't escaped here, because we aren't in attribute context.
+         ('javascript:<i>"foo&bar"</i>',
+            '<p>javascript:&lt;i&gt;"foo&amp;bar"&lt;/i&gt;</p>', ''),
+         ('[foo](javascript:<i>"foo&bar"</i>)',
+            '<p>[foo](javascript:&lt;i&gt;"foo&amp;bar"&lt;/i&gt;)</p>', ''),
 
          # Emails
          ('Sent to othello@humbughq.com',               "<p>Sent to %s</p>",                 'othello@humbughq.com'),
-         ('http://leo@foo.com/my/file',                 "<p>%s</p>",                         None),
+         ('http://leo@foo.com/my/file',                 "<p>http://leo@foo.com/my/file</p>", ''),
 
          ('http://example.com/something?with,commas,in,url, but not at end',
                         "<p>%s, but not at end</p>",         'http://example.com/something?with,commas,in,url'),

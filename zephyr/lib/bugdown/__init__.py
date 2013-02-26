@@ -47,12 +47,12 @@ def sanitize_url(url):
     if netloc == '' and scheme not in locless_schemes:
         # This fails regardless of anything else.
         # Return immediately to save additional proccessing
-        return ''
+        return None
 
     for part in parts[2:]:
         if ":" in part:
             # Not a safe url
-            return ''
+            return None
 
     # Url passes all tests. Return url as-is.
     return urlparse.urlunparse(parts)
@@ -63,7 +63,13 @@ def url_to_a(url):
         href = 'mailto:' + url
     else:
         href = url
-    a.set('href', sanitize_url(href))
+
+    href = sanitize_url(href)
+    if href is None:
+        # Rejected by sanitize_url; render it as plain text.
+        return url
+
+    a.set('href', href)
     a.text = url
     fixup_link(a)
     return a
@@ -127,17 +133,23 @@ class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
 class LinkPattern(markdown.inlinepatterns.Pattern):
     """ Return a link element from the given match. """
     def handleMatch(self, m):
-        el = markdown.util.etree.Element("a")
-        el.text = m.group(2)
+        # Return the original link syntax as plain text,
+        # if the link fails checks.
+        orig_syntax = m.group(0)
+
         href = m.group(9)
+        if not href:
+            return orig_syntax
 
-        if href:
-            if href[0] == "<":
-                href = href[1:-1]
-            el.set("href", sanitize_url(self.unescape(href.strip())))
-        else:
-            el.set("href", "")
+        if href[0] == "<":
+            href = href[1:-1]
+        href = sanitize_url(self.unescape(href.strip()))
+        if href is None:
+            return orig_syntax
 
+        el = markdown.util.etree.Element('a')
+        el.text = m.group(2)
+        el.set('href', href)
         fixup_link(el)
         return el
 
