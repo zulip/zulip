@@ -359,6 +359,13 @@ exports.deactivate = function () {
 
     $("ul.filters li").removeClass('active-filter');
     $("#global_filters li[data-name='home']").addClass('active-filter');
+
+    // This really shouldn't be necessary since the act of unnarrowing
+    // fires a "message_selected.zephyr" event that in principle goes
+    // and takes care of this, but on Safari (at least) there
+    // seems to be some sort of order-of-events issue that causes
+    // the scrolling not to happen, so this is my hack for now.
+    scroll_to_selected();
 };
 
 exports.restore_home_state = function() {
