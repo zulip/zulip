@@ -1,8 +1,8 @@
 #!/bin/sh -xe
 
-echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | psql -h localhost humbug humbug
+echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | python manage.py dbshell
 
 python manage.py syncdb --noinput
 python manage.py migrate
-echo "CREATE UNIQUE INDEX ON auth_user (email);" | psql -h localhost humbug humbug
+echo "CREATE UNIQUE INDEX ON auth_user (email);" | python manage.py dbshell
 python manage.py populate_db --replay-old-messages -n0
