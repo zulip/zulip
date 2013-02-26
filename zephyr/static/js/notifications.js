@@ -78,7 +78,7 @@ exports.initialize = function () {
             return;
         }
         if (window.webkitNotifications.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
-            window.webkitNotifications.requestPermission();
+            window.webkitNotifications.requestPermission(function () {});
             asked_permission_already = true;
         }
     });
