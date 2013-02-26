@@ -658,15 +658,9 @@ function get_updates(options) {
             if (data.messages.length !== 0) {
                 if (narrow.active()) {
                     add_messages(data.messages, narrowed_msg_list);
-                } else {
-                    // Only add to all_msg_list if we're receiving non-narrowed messages,
-                    // because they may be duplicates of all_msg_list or sparsely populated
-                    // message ranges (e.g. filtered by stream)
-                    // TODO intelligently handle all_msg_list so that we can support deduping
-                    // and arbitrary messages
-                    add_messages(data.messages, all_msg_list, {append_to_table: false});
-                    add_messages(data.messages, home_msg_list);
                 }
+                add_messages(data.messages, all_msg_list, {append_to_table: false});
+                add_messages(data.messages, home_msg_list);
                 notifications.received_messages(data.messages);
             }
 
