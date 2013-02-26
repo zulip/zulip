@@ -1,4 +1,4 @@
-var all_msg_list = new MessageList('zall');
+var all_msg_list = new MessageList();
 var home_msg_list = new MessageList('zhome');
 var narrowed_msg_list;
 var current_msg_list = home_msg_list;
@@ -18,13 +18,6 @@ var load_more_enabled = true;
 // since the last time that we ran load_more_messages(), we do
 // not load_more_messages().
 var have_scrolled_away_from_top = true;
-
-// The "message groups", i.e. blocks of messages collapsed by recipient.
-// Each message table has a list of lists.
-var message_groups = {
-    zhome: [],
-    zfilt: []
-};
 
 var disable_pointer_movement = false;
 
@@ -269,181 +262,6 @@ function clear_table(table_name) {
     // jQuery data.  This does mean, however, that we need to be
     // mindful of memory leaks.
     rows.get_table(table_name).children().detach();
-    message_groups[table_name] = [];
-}
-
-function add_display_time(message, prev) {
-    var two_digits = function (x) { return ('0' + x).slice(-2); };
-    var time = new XDate(message.timestamp * 1000);
-    var include_date = message.include_recipient;
-
-    if (prev !== undefined) {
-        var prev_time = new XDate(prev.timestamp * 1000);
-        if (time.toDateString() !== prev_time.toDateString()) {
-            include_date = true;
-        }
-    }
-
-    // NB: timestr is HTML, inserted into the document without escaping.
-    if (include_date) {
-        message.timestr = (timerender.render_time(time))[0].outerHTML;
-    } else {
-        message.timestr = time.toString("HH:mm");
-    }
-
-    // Convert to number of hours ahead/behind UTC.
-    // The sign of getTimezoneOffset() is reversed wrt
-    // the conventional meaning of UTC+n / UTC-n
-    var tz_offset = -time.getTimezoneOffset() / 60;
-
-    message.full_date_str = time.toLocaleDateString();
-    message.full_time_str = time.toLocaleTimeString() +
-        ' (UTC' + ((tz_offset < 0) ? '' : '+') + tz_offset + ')';
-}
-
-function add_to_table(messages, msg_list, where, allow_collapse) {
-    if (messages.length === 0)
-        return;
-
-    var table_name = msg_list.table_name;
-    var table = rows.get_table(table_name);
-    var messages_to_render = [];
-    var ids_where_next_is_same_sender = {};
-    var prev;
-    var last_message_id;
-
-    var current_group = [];
-    var new_message_groups = [];
-
-    if (where === 'top' && narrow.allow_collapse() && message_groups[table_name].length > 0) {
-        // Delete the current top message group, and add it back in with these
-        // messages, in order to collapse properly.
-        //
-        // This means we redraw the entire view on each update when narrowed by
-        // subject, which could be a problem down the line.  For now we hope
-        // that subject views will not be very big.
-
-        var top_group = message_groups[table_name][0];
-        var top_messages = [];
-        $.each(top_group, function (index, id) {
-            rows.get(id, table_name).remove();
-            top_messages.push(msg_list.get(id));
-        });
-        messages = messages.concat(top_messages);
-
-        // Delete the leftover recipient label.
-        table.find('.recipient_row:first').remove();
-    } else {
-        last_message_id = rows.id(table.find('tr[zid]:last'));
-        prev = msg_list.get(last_message_id);
-    }
-
-    $.each(messages, function (index, message) {
-        message.include_recipient = false;
-        message.include_bookend   = false;
-        if (util.same_recipient(prev, message) && allow_collapse) {
-            current_group.push(message.id);
-        } else {
-            if (current_group.length > 0)
-                new_message_groups.push(current_group);
-            current_group = [message.id];
-
-            // Add a space to the table, but not for the first element.
-            message.include_recipient = true;
-            message.include_bookend   = (prev !== undefined);
-        }
-
-        message.include_sender = true;
-        if (!message.include_recipient &&
-            util.same_sender(prev, message) &&
-            (Math.abs(message.timestamp - prev.timestamp) < 60*10)) {
-            message.include_sender = false;
-            ids_where_next_is_same_sender[prev.id] = true;
-        }
-
-        add_display_time(message, prev);
-
-        message.dom_id = table_name + message.id;
-
-        if (message.sender_email === email) {
-            message.stamp = ui.get_gravatar_stamp();
-        }
-
-        if (message.is_stream) {
-            message.background_color = subs.get_color(message.display_recipient);
-            message.color_class = subs.get_color_class(message.background_color);
-            message.invite_only = subs.get_invite_only(message.display_recipient);
-        }
-
-        messages_to_render.push(message);
-        prev = message;
-    });
-
-    if (messages_to_render.length === 0) {
-        return;
-    }
-
-    if (current_group.length > 0)
-        new_message_groups.push(current_group);
-
-    if (where === 'top') {
-        message_groups[table_name] = new_message_groups.concat(message_groups[table_name]);
-    } else {
-        message_groups[table_name] = message_groups[table_name].concat(new_message_groups);
-    }
-
-    var rendered_elems = $(templates.message({
-        messages: messages_to_render,
-        include_layout_row: (table.find('tr:first').length === 0)
-    }));
-
-    $.each(rendered_elems, function (index, elem) {
-        var row = $(elem);
-        if (! row.hasClass('message_row')) {
-            return;
-        }
-        var id = rows.id(row);
-        if (ids_where_next_is_same_sender[id]) {
-            row.find('.messagebox').addClass("next_is_same_sender");
-        }
-        if (msg_list === narrowed_msg_list) {
-            // If narrowed, we may need to highlight the message
-            search.maybe_highlight_message(row);
-        }
-    });
-
-    // The message that was last before this batch came in has to be
-    // handled specially because we didn't just render it and
-    // therefore have to lookup its associated element
-    if (last_message_id !== undefined
-        && ids_where_next_is_same_sender[last_message_id])
-    {
-        var row = rows.get(last_message_id, table_name);
-        row.find('.messagebox').addClass("next_is_same_sender");
-    }
-
-    if (where === 'top' && table.find('.ztable_layout_row').length > 0) {
-        // If we have a totally empty narrow, there may not
-        // be a .ztable_layout_row.
-        table.find('.ztable_layout_row').after(rendered_elems);
-    } else {
-        table.append(rendered_elems);
-
-        // XXX: This is absolutely awful.  There is a firefox bug
-        // where when table rows as DOM elements are appended (as
-        // opposed to as a string) a border is sometimes added to the
-        // row.  This border goes away if we add a dummy row to the
-        // top of the table (it doesn't go away on any reflow,
-        // though, as resizing the window doesn't make them go away).
-        // So, we add an empty row and then garbage collect them
-        // later when the user is idle.
-        var dummy = $("<tr></tr>");
-        table.find('.ztable_layout_row').after(dummy);
-        $(document).idle({'idle': 1000*10,
-                          'onIdle': function () {
-                              dummy.remove();
-                          }});
-    }
 }
 
 function case_insensitive_find(term, array) {
@@ -507,7 +325,7 @@ function add_message_metadata(message, dummy) {
     return message;
 }
 
-function add_messages_helper(messages, msg_list, predicate, allow_collapse, append_to_table) {
+function add_messages_helper(messages, msg_list, predicate, allow_collapse) {
     var top_messages = [];
     var bottom_messages = [];
 
@@ -534,14 +352,8 @@ function add_messages_helper(messages, msg_list, predicate, allow_collapse, appe
         });
     }
 
-    msg_list.prepend(top_messages);
-    msg_list.append(bottom_messages);
-
-    if (append_to_table) {
-        add_to_table(top_messages,    msg_list, "top",    allow_collapse);
-        add_to_table(bottom_messages, msg_list, "bottom", allow_collapse);
-    }
-
+    msg_list.prepend(top_messages, allow_collapse);
+    msg_list.append(bottom_messages, allow_collapse);
     return top_messages.length > 0;
 }
 
@@ -550,7 +362,7 @@ function add_messages(messages, msg_list, opts) {
     if (!messages)
         return;
 
-    opts = $.extend({}, {update_unread_counts: true, append_to_table: true}, opts);
+    opts = $.extend({}, {update_unread_counts: true}, opts);
 
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
@@ -570,7 +382,7 @@ function add_messages(messages, msg_list, opts) {
         throw (new Error("Adding message to a list that is not known"));
     }
 
-    if (add_messages_helper(messages, msg_list, predicate, allow_collapse, opts.append_to_table)) {
+    if (add_messages_helper(messages, msg_list, predicate, allow_collapse)) {
         prepended = true;
     }
 
@@ -652,7 +464,7 @@ function get_updates(options) {
                 if (narrow.active()) {
                     add_messages(data.messages, narrowed_msg_list);
                 }
-                add_messages(data.messages, all_msg_list, {append_to_table: false});
+                add_messages(data.messages, all_msg_list);
                 add_messages(data.messages, home_msg_list);
                 notifications.received_messages(data.messages);
                 compose.update_faded_messages();

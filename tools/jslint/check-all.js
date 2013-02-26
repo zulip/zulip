@@ -28,7 +28,7 @@ var globals =
 
     // zephyr.js
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list get_updates_params'
-    + ' clear_table add_to_table add_messages'
+    + ' clear_table add_messages'
     + ' subject_dict people_dict'
     + ' keep_pointer_in_view move_pointer_at_page_top_and_bottom'
     + ' respond_to_message recenter_view'
