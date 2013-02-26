@@ -94,11 +94,11 @@ function neighbors_with_different_recipients(target_message) {
     return neighbors(target_message).filter(function (index) {
         if ($(this).hasClass("recipient_row")) {
             // This is a recipient_row.
-            return !same_recipient(target_message, current_msg_list.get(rows.id($(this))));
+            return !util.same_recipient(target_message, current_msg_list.get(rows.id($(this))));
         } else {
             // This is a messagebox.
             var row = $(this).parent("tr");
-            return !same_recipient(target_message, current_msg_list.get(rows.id(row)));
+            return !util.same_recipient(target_message, current_msg_list.get(rows.id(row)));
         }
     });
 }

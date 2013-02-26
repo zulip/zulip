@@ -173,5 +173,34 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     return first;
 };
 
+exports.same_stream_and_subject = function util_same_stream_and_subject(a, b) {
+    // Streams and subjects are case-insensitive. Streams have
+    // already been forced to the canonical case.
+    return ((a.recipient_id === b.recipient_id) &&
+            (a.subject.toLowerCase() === b.subject.toLowerCase()));
+};
+
+exports.same_recipient = function util_same_recipient(a, b) {
+    if ((a === undefined) || (b === undefined))
+        return false;
+    if (a.type !== b.type)
+        return false;
+
+    switch (a.type) {
+    case 'private':
+        return a.reply_to === b.reply_to;
+    case 'stream':
+        return exports.same_stream_and_subject(a, b);
+    }
+
+    // should never get here
+    return false;
+};
+
+exports.same_sender = function util_same_sender(a, b) {
+    return ((a !== undefined) && (b !== undefined) &&
+            (a.sender_email === b.sender_email));
+};
+
 return exports;
 }());

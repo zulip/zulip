@@ -264,35 +264,6 @@ $(function () {
     });
 });
 
-function same_stream_and_subject(a, b) {
-    // Streams and subjects are case-insensitive. Streams have
-    // already been forced to the canonical case.
-    return ((a.recipient_id === b.recipient_id) &&
-            (a.subject.toLowerCase() === b.subject.toLowerCase()));
-}
-
-function same_recipient(a, b) {
-    if ((a === undefined) || (b === undefined))
-        return false;
-    if (a.type !== b.type)
-        return false;
-
-    switch (a.type) {
-    case 'private':
-        return a.reply_to === b.reply_to;
-    case 'stream':
-        return same_stream_and_subject(a, b);
-    }
-
-    // should never get here
-    return false;
-}
-
-function same_sender(a, b) {
-    return ((a !== undefined) && (b !== undefined) &&
-            (a.sender_email === b.sender_email));
-}
-
 function clear_table(table_name) {
     // We do not want to call .empty() because that also clears
     // jQuery data.  This does mean, however, that we need to be
@@ -370,7 +341,7 @@ function add_to_table(messages, msg_list, where, allow_collapse) {
     $.each(messages, function (index, message) {
         message.include_recipient = false;
         message.include_bookend   = false;
-        if (same_recipient(prev, message) && allow_collapse) {
+        if (util.same_recipient(prev, message) && allow_collapse) {
             current_group.push(message.id);
         } else {
             if (current_group.length > 0)
@@ -384,7 +355,7 @@ function add_to_table(messages, msg_list, where, allow_collapse) {
 
         message.include_sender = true;
         if (!message.include_recipient &&
-            same_sender(prev, message) &&
+            util.same_sender(prev, message) &&
             (Math.abs(message.timestamp - prev.timestamp) < 60*10)) {
             message.include_sender = false;
             ids_where_next_is_same_sender[prev.id] = true;
