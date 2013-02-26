@@ -401,9 +401,6 @@ def home(request):
 
     streams = simplejson.encoder.JSONEncoderForHTML().encode(gather_subscriptions(user_profile))
 
-    desktop_notifications_enabled = (user_profile.enable_desktop_notifications
-        and getattr(settings, 'ENABLE_NOTIFICATIONS', True))
-
     js_bool = lambda x: 'true' if x else 'false'
 
     try:
@@ -421,7 +418,7 @@ def home(request):
                                'have_initial_messages':
                                    js_bool(num_messages > 0),
                                'desktop_notifications_enabled':
-                                   js_bool(desktop_notifications_enabled),
+                                   js_bool(user_profile.enable_desktop_notifications),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
                                'show_activity': can_view_activity(request),

@@ -15,10 +15,6 @@ else:
 # This allows CasperJS to proceed quickly to the next test step.
 POLL_TIMEOUT = 1000
 
-# Disable desktop notifications because CasperJS can't handle them;
-# window.webkitNotifications.requestPermission() throws a type error
-ENABLE_NOTIFICATIONS = False
-
 # Don't use the real message log for tests
 EVENT_LOG_DIR = '/tmp/humbug-test-event-log'
 
