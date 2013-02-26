@@ -34,13 +34,29 @@ function render_now(time) {
     // constants.
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
-    if (days_old >= 0 && days_old <= MAX_AGE_FOR_WEEKDAY)
+    if (days_old >= 0 && days_old <= MAX_AGE_FOR_WEEKDAY) {
+        var day_string;         // e.g. "Yesterday", "Wed"
+        var expire_days;        // after how many days from the
+                                // message send time do we need to
+                                // update?
+
+        if (days_old === 0) {
+            day_string = "Today";
+            expire_days = 1;
+        } else if (days_old === 1) {
+            day_string = "Yesterday";
+            expire_days = 2;
+        } else {
+            day_string = time.toString("ddd");
+            expire_days = MAX_AGE_FOR_WEEKDAY + 1;
+        }
+
         // "\xa0" is U+00A0 NO-BREAK SPACE.
         // Can't use &nbsp; as that represents the literal string "&nbsp;".
-        return [time.toString("ddd") + "\xa0" + time.toString("HH:mm"),
-                start_of_other_day.addDays(MAX_AGE_FOR_WEEKDAY+1)
+        return [day_string + "\xa0" + time.toString("HH:mm"),
+                start_of_other_day.addDays(expire_days)
                 .toString("yyyy-MM-dd")];
-    else {
+    } else {
         // For now, if we get a message from tomorrow, we don't bother
         // rewriting the timestamp when it gets to be tomorrow.
         return [time.toString("MMM dd") + "\xa0\xa0" + time.toString("HH:mm"),
