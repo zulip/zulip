@@ -106,7 +106,11 @@
                     <input type="submit" value="Send" id="compose-send-button" class="btn btn-primary send_message" tabindex="150"/>
                   </div>
                 </div>
-                <div id="tab-enter-message">Press Enter to send&nbsp;&nbsp;
+                <div
+                   {% ifnotequal user_profile.realm.domain "humbughq.com" %}
+                   style="visibility: hidden;"
+                   {% endifnotequal %}
+                   id="tab-enter-message">Press Enter to send&nbsp;&nbsp;
                   <input type="checkbox" id="enter_sends" name="enter_sends" value="ender_sends" />
                 </div>
               </td>
