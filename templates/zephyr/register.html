@@ -67,7 +67,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 {% endcomment %}
                 <input id="id_terms" class="required" type="checkbox" name="terms"
                        {% if form.terms.value %}checked="checked"{% endif %} />
-                I agree to the <a href="/terms">Terms of Service</a>.
+                I agree to the <a href="/terms" target="_blank">Terms of Service</a>.
             </label>
             {% if form.terms.errors %}
                 {% for error in form.terms.errors %}
