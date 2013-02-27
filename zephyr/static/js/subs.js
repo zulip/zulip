@@ -108,7 +108,6 @@ function stream_home_view_clicked(e) {
     sub.in_home_view = in_home_view;
 
     setTimeout(function () {
-        clear_table('zhome');
         home_msg_list.clear({clear_selected_id: false});
 
         // Remember the scroll position as the adding or removing this

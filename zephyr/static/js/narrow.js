@@ -274,7 +274,6 @@ exports.activate = function (operators, opts) {
 
     allow_collapse          = opts.allow_collapse;
 
-    clear_table('zfilt');
     narrowed_msg_list = new MessageList('zfilt');
     current_msg_list = narrowed_msg_list;
 

@@ -5,6 +5,10 @@ function MessageList(table_name) {
     this.table_name = table_name;
     this._selected_id = -1;
     this._message_groups = [];
+
+    if (this.table_name) {
+        this._clear_table();
+    }
     return this;
 }
 
@@ -60,12 +64,20 @@ MessageList.prototype = {
         return this._items[this._items.length - 1];
     },
 
+    _clear_table: function MessageList__clear_table() {
+        // We do not want to call .empty() because that also clears
+        // jQuery data.  This does mean, however, that we need to be
+        // mindful of memory leaks.
+        rows.get_table(this.table_name).children().detach();
+    },
+
     clear: function  MessageList_clear(opts) {
         opts = $.extend({}, {clear_selected_id: true}, opts);
 
         this._items = [];
         this._hash = {};
         this._message_groups = [];
+        this._clear_table();
 
         if (opts.clear_selected_id) {
             this._selected_id = -1;

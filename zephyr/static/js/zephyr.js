@@ -257,13 +257,6 @@ $(function () {
     });
 });
 
-function clear_table(table_name) {
-    // We do not want to call .empty() because that also clears
-    // jQuery data.  This does mean, however, that we need to be
-    // mindful of memory leaks.
-    rows.get_table(table_name).children().detach();
-}
-
 function case_insensitive_find(term, array) {
     var lowered_term = term.toLowerCase();
     return $.grep(array, function (elt) {
