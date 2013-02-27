@@ -129,11 +129,17 @@ exports.start = function (msg_type, opts) {
 
     compose.clear();
 
-    opts = $.extend({ message_type:     msg_type,
-                      stream:           '',
-                      subject:          '',
-                      private_message_recipient: ''
-                    }, opts);
+    var default_opts = {
+        message_type:     msg_type,
+        stream:           '',
+        subject:          '',
+        private_message_recipient: ''
+    };
+
+    // Set default parameters based on the current narrowed view.
+    narrow.set_compose_defaults(default_opts);
+
+    opts = $.extend(default_opts, opts);
 
     compose.stream_name(opts.stream);
     compose.subject(opts.subject);

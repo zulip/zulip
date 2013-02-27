@@ -99,6 +99,43 @@ exports.describe = function (operators) {
     }).join(', ');
 };
 
+// Collect operators which appear only once into an object,
+// and discard those which appear more than once.
+function collect_single(operators) {
+    var seen   = {};
+    var result = {};
+    $.each(operators, function (index, elem) {
+        var key = elem[0];
+        if (seen.hasOwnProperty(key)) {
+            delete result[key];
+        } else {
+            result[key] = elem[1];
+            seen  [key] = true;
+        }
+    });
+    return result;
+}
+
+// Modify default compose parameters (stream etc.) based on
+// the current narrowed view.
+//
+// This logic is here and not in the 'compose' module because
+// it will get more complicated as we add things to the narrow
+// operator language.
+exports.set_compose_defaults = function (opts) {
+    var single = collect_single(exports.operators());
+
+    // Set the stream, subject, and/or PM recipient if they are
+    // uniquely specified in the narrow view.
+    $.each(['stream', 'subject'], function (idx, key) {
+        if (single[key] !== undefined)
+            opts[key] = single[key];
+    });
+
+    if (single['pm-with'] !== undefined)
+        opts.private_message_recipient = single['pm-with'];
+};
+
 // Parse a string into a list of operators (see below).
 exports.parse = function (str) {
     var operators   = [];
