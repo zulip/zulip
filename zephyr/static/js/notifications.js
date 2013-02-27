@@ -199,7 +199,7 @@ exports.received_messages = function (messages) {
     }
 
     $.each(messages, function (index, message) {
-        if (message.sender_email !== email && narrow.in_home(message)) {
+        if (message.sender_email !== email && narrow.message_in_home(message)) {
             new_message_count++;
             title_needs_update = true;
 

@@ -161,19 +161,24 @@ exports.parse = function (str) {
     return operators;
 };
 
-exports.in_home = function (message) {
+exports.stream_in_home = function (stream_name) {
+    // If we don't know about this stream for some reason,
+    // we might not have loaded the in_home_view information
+    // yet so show it
+    var stream = subs.have(stream_name);
+    if (stream) {
+        return stream.in_home_view;
+    } else {
+        return true;
+    }
+};
+
+exports.message_in_home = function (message) {
     if (message.type === "private") {
         return true;
     }
 
-    // If we don't know about this stream for some reason,
-    // we might not have loaded the in_home_view information
-    // yet so show it
-    if (subs.have(message.display_recipient)) {
-        return subs.have(message.display_recipient).in_home_view;
-    } else {
-        return true;
-    }
+    return exports.stream_in_home(message.display_recipient);
 };
 
 // Build a filter function from a list of operators.

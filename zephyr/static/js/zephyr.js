@@ -177,7 +177,7 @@ function message_range(msg_list, start, end) {
 }
 
 var unread_filters = {'stream': {}, 'private': {}};
-var total_unread_messages = 0;
+var home_unread_messages = 0;
 
 // Record each message in the array 'messages' as either read or
 // unread, depending on the value of the 'is_read' flag.
@@ -193,7 +193,7 @@ function process_unread_counts(messages, is_read) {
 
         if (is_read === true &&
             !narrow.active() &&
-            !narrow.in_home(message)) {
+            !narrow.message_in_home(message)) {
             return;
         }
 
@@ -213,12 +213,14 @@ function process_unread_counts(messages, is_read) {
         }
     });
 
-    total_unread_messages = 0;
+    home_unread_messages = 0;
 
     $.each(unread_filters.stream, function(index, obj) {
         var count = Object.keys(obj).length;
         ui.set_count("stream", index, count);
-        total_unread_messages += count;
+        if (narrow.stream_in_home(index)) {
+            home_unread_messages += count;
+        }
     });
 
     var pm_count = 0;
@@ -226,7 +228,7 @@ function process_unread_counts(messages, is_read) {
         pm_count += Object.keys(obj).length;
     });
     ui.set_count("global", "private", pm_count);
-    total_unread_messages += pm_count;
+    home_unread_messages += pm_count;
 }
 
 function send_pointer_update() {
@@ -581,7 +583,7 @@ function add_messages(messages, msg_list, opts) {
 
     var predicate, allow_collapse;
     if (msg_list === home_msg_list) {
-        predicate = narrow.in_home;
+        predicate = narrow.message_in_home;
         allow_collapse = true;
     } else if (msg_list === narrowed_msg_list) {
         predicate = narrow.predicate();
