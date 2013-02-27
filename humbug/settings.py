@@ -65,7 +65,7 @@ elif False:
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'humbug',
         'USER': 'humbug',
-        'PASSWORD': 'yuHavmefbek5',
+        'PASSWORD': 'xxxxxxxxxxxx',
         'HOST': 'localhost',
         'SCHEMA': 'humbug'
         }
