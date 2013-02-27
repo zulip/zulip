@@ -855,12 +855,6 @@ $(function () {
         $(this).removeClass("active");
     });
 
-    $("#search_query").on("focus", search.focus_search);
-    $("#search_query").on("blur", search.update_button_visibility);
-    $("#search_up")  .on("click", function () { search.search_button_handler(true); });
-    $("#search_down").on("click", function () { search.search_button_handler(false); });
-    $("#search_exit").on("click", search.clear_search);
-
     $("#stream").on('blur', function () { compose.decorate_stream_bar(this.value); });
 
     $("li[data-name='home']").on('click', function () {

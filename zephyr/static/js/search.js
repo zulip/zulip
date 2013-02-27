@@ -247,6 +247,15 @@ exports.initialize = function () {
             update_buttons_with_focus(false);
         }
     });
+
+    // Some of these functions don't actually need to be exported,
+    // but the code was moved here from elsewhere, and it would be
+    // more work to re-order everything and make them private.
+    $('#search_up'   ).on('click', function () { exports.search_button_handler(true);  });
+    $('#search_down' ).on('click', function () { exports.search_button_handler(false); });
+    $('#search_exit' ).on('click', exports.clear_search);
+    $('#search_query').on('focus', exports.focus_search);
+    $('#search_query').on('blur' , exports.update_button_visibility);
 };
 
 function match_on_visible_text(row, search_term) {
