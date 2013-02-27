@@ -531,16 +531,31 @@ function add_message_metadata(message, dummy) {
 }
 
 function add_messages_helper(messages, msg_list, predicate, allow_collapse, append_to_table) {
-    var center_message_id = msg_list.selected_id();
-    // center_message_id is guaranteed to be between the top and bottom
-    var top_messages = $.grep(messages, function (elem, idx) {
-        return (elem.id < center_message_id && msg_list.get(elem.id) === undefined
-                && predicate(elem));
-    });
-    var bottom_messages = $.grep(messages, function (elem, idx) {
-        return (elem.id >= center_message_id && msg_list.get(elem.id) === undefined
-                && predicate(elem));
-    });
+    var top_messages = [];
+    var bottom_messages = [];
+
+    // If we're initially populating the list, save the messages in
+    // bottom_messages regardless
+    if (msg_list.selected_id() === -1 && msg_list.empty()) {
+        bottom_messages = $.grep(messages, predicate);
+    } else {
+        $.each(messages, function (idx, msg) {
+            // Filter out duplicates that are already in msg_list, and all messages
+            // that fail our filter predicate
+            if (! (msg_list.get(msg.id) === undefined && predicate(msg))) {
+                return;
+            }
+
+            // Put messages in correct order on either side of the message list
+            if (msg_list.empty() || (msg.id < msg_list.first().id)) {
+                top_messages.push(msg);
+            } else if (msg.id > msg_list.last().id) {
+                bottom_messages.push(msg);
+            } else {
+                throw new Error("Attempting to insert a message in the middle of the msg_list");
+            }
+        });
+    }
 
     msg_list.prepend(top_messages);
     msg_list.append(bottom_messages);
