@@ -7,6 +7,8 @@ var cached_matches = [];
 var cached_index;
 var cached_table = $('table.focused_table');
 
+var search_active = false;
+
 // Data storage for the typeahead -- to go from object to string representation and vice versa.
 var labels = [];
 var mapped = {};
@@ -254,8 +256,33 @@ exports.initialize = function () {
     $('#search_up'   ).on('click', function () { exports.search_button_handler(true);  });
     $('#search_down' ).on('click', function () { exports.search_button_handler(false); });
     $('#search_exit' ).on('click', exports.clear_search);
-    $('#search_query').on('focus', exports.focus_search);
-    $('#search_query').on('blur' , exports.update_button_visibility);
+
+    var query = $('#search_query');
+    query.on('focus', exports.focus_search)
+         .on('blur' , function () {
+
+        // The search query box is a visual cue as to
+        // whether search or narrowing is active.  If
+        // neither is active, we should clear the box on
+        // blur.
+        //
+        // But we can't do this right away, because
+        // selecting something in the typeahead menu causes
+        // the box to lose focus a moment before.  We would
+        // clear the thing we're about to search for.
+        //
+        // The workaround is to check 100ms later -- long
+        // enough for the search to have gone through, but
+        // short enough that the user won't notice (though
+        // really it would be OK if they did).
+
+        setTimeout(function () {
+            if (!(search_active || narrow.active())) {
+                query.val('');
+            }
+            exports.update_button_visibility();
+        }, 100);
+    });
 };
 
 function match_on_visible_text(row, search_term) {
@@ -347,6 +374,8 @@ function highlight_match(row, search_term) {
 }
 
 exports.search_button_handler = function (reverse) {
+    search_active = true;
+
     var query = $('#search_query').val().toLowerCase();
     var res = search(query, current_msg_list.selected_row(), reverse);
     if (!res) {
@@ -373,10 +402,11 @@ exports.initiate_search = function () {
 };
 
 exports.clear_search = function () {
+    search_active = false;
     narrow.deactivate();
+
     $('table tr').removeHighlight();
-    // Clear & reset searchbox to its normal size
-    $('#search_query').val('').blur();
+    $('#search_query').blur();
     exports.update_button_visibility();
     clear_search_cache();
 };
