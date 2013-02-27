@@ -28,7 +28,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         </div>
     </div>
     <div class="control-group">
-        <label for="id_full_name" class="control-label">Your name</label>
+        <label for="id_full_name" class="control-label">Full name</label>
         <div class="controls">
             <input id="id_full_name" class="required" type="text" name="full_name"
                    value="{% if form.full_name.value %}{{ form.full_name.value }}{% endif %}"
