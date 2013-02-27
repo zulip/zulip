@@ -444,7 +444,6 @@ blockquote p {
     display: table-row;
     font-size: 80%;
     white-space: nowrap;
-    text-align: right;
 }
 
 .messagebox p {

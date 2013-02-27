@@ -110,8 +110,10 @@
                    {% ifnotequal user_profile.realm.domain "humbughq.com" %}
                    style="visibility: hidden;"
                    {% endifnotequal %}
-                   id="tab-enter-message">Press Enter to send&nbsp;&nbsp;
-                  <input type="checkbox" id="enter_sends" name="enter_sends" value="ender_sends" />
+                   id="tab-enter-message">
+                  <label class="pull-right">Press Enter to send&nbsp;
+                    <input type="checkbox" id="enter_sends" name="enter_sends" value="ender_sends" />
+                  </label>
                 </div>
               </td>
             </tr>
