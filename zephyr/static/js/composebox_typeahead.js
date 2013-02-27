@@ -99,8 +99,7 @@ function handle_keydown(e) {
 
             // If no typeaheads are shown and the user has configured enter to send,
             // then make enter send instead of inserting a line break.
-            if (e.target.id === "new_message_content" && code === 13 &&
-                $("#enter_sends").is(':checked')) {
+            if (e.target.id === "new_message_content" && code === 13 && enter_sends) {
                 e.preventDefault();
                 compose.finish();
             }
@@ -146,6 +145,17 @@ exports.initialize = function () {
     $("form#send_message_form").keyup(function(e) {
         handle_keyup(e);
     });
+
+    $("#enter_sends").click(function () {
+        enter_sends = $("#enter_sends").is(":checked");
+        return $.ajax({
+            dataType: 'json',
+            url: '/json/change_enter_sends',
+            type: 'POST',
+            data: {'enter_sends': enter_sends}
+        });
+    });
+    $("#enter_sends").prop('checked', enter_sends);
 
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({

@@ -292,6 +292,10 @@ def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifica
                    'user': user_profile.user.email,
                    'enable_desktop_notifications': enable_desktop_notifications})
 
+def do_change_enter_sends(user_profile, enter_sends):
+    user_profile.enter_sends = enter_sends
+    user_profile.save()
+
 def set_default_streams(realm, stream_names):
     DefaultStream.objects.filter(realm=realm).delete()
     for stream_name in stream_names:

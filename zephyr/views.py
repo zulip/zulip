@@ -16,8 +16,8 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     StreamColor, PreregistrationUser, get_client, MitUser, User, UserActivity, \
     MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH, get_stream, UserPresence
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
-    do_change_password, create_mit_user_if_needed, \
-    do_change_full_name, do_change_enable_desktop_notifications, \
+    do_change_password, create_mit_user_if_needed, do_change_full_name, \
+    do_change_enable_desktop_notifications, do_change_enter_sends, \
     do_activate_user, add_default_subs, do_create_user, do_send_message, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
@@ -419,6 +419,8 @@ def home(request):
                                    js_bool(num_messages > 0),
                                'desktop_notifications_enabled':
                                    js_bool(user_profile.enable_desktop_notifications),
+                               'enter_sends':
+                                   js_bool(user_profile.enter_sends),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
                                'show_activity': can_view_activity(request),
@@ -647,6 +649,12 @@ def json_tutorial_send_message(request, user_profile, message=POST('message')):
                           user_profile.user.email,
                           "",
                           message)
+    return json_success()
+
+@authenticated_json_post_view
+@has_request_variables
+def json_change_enter_sends(request, user_profile, enter_sends=POST('enter_sends', json_to_bool)):
+    do_change_enter_sends(user_profile, enter_sends)
     return json_success()
 
 # Currently tabbott/extra@mit.edu is our only superuser.  TODO: Make

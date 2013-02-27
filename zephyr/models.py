@@ -55,6 +55,7 @@ class UserProfile(models.Model):
     realm = models.ForeignKey(Realm)
     api_key = models.CharField(max_length=32)
     enable_desktop_notifications = models.BooleanField(default=True)
+    enter_sends = models.NullBooleanField(default=False)
 
     def __repr__(self):
         return "<UserProfile: %s %s>" % (self.user.email, self.realm)
