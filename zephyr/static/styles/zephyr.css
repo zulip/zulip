@@ -218,6 +218,11 @@ li.hidden-filter {
 ul.filters .count {
     margin-left: 0.5em;
     display: none;
+
+}
+
+ul.filters [data-name="home"] .icon-home {
+    padding-right: 0.5em;
 }
 
 .message_list {
