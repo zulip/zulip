@@ -170,13 +170,19 @@ casper.then(function () {
             'Body is well-formed');
     });
 
-    casper.test.info('Sending messages');
-
-    send_message('stream', {
-        stream:  'Verona',
-        subject: 'frontend test',
-        content: 'test message A'
+    casper.test.info('Disabling tutorial, if present');
+    send_message('private', {
+        recipient: 'humbug+tutorial@humbughq.com',
+        content: 'exit'
     });
+
+    casper.test.info('Sending messages');
+});
+
+wait_and_send('stream', {
+    stream:  'Verona',
+    subject: 'frontend test',
+    content: 'test message A'
 });
 
 wait_and_send('stream', {
