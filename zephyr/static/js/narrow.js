@@ -37,12 +37,6 @@ exports.public_operators = function () {
     }
 };
 
-var allow_collapse;
-
-exports.allow_collapse = function () {
-    return (!filter_function) || allow_collapse;
-};
-
 /* Convert a list of operators to a string.
    Each operator is a key-value pair like
 
@@ -259,7 +253,6 @@ function build_filter(operators_mixed_case) {
 
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
-        allow_collapse: true,
         then_select_id: home_msg_list.selected_id()
     }, opts);
 
@@ -271,8 +264,6 @@ exports.activate = function (operators, opts) {
 
     filter_function   = build_filter(operators);
     current_operators = operators;
-
-    allow_collapse          = opts.allow_collapse;
 
     narrowed_msg_list = new MessageList('zfilt');
     current_msg_list = narrowed_msg_list;

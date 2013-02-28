@@ -1,5 +1,6 @@
 /*jslint nomen: true */
-function MessageList(table_name) {
+function MessageList(table_name, opts) {
+    $.extend(this, {collapse_messages: true}, opts);
     this._items = [];
     this._hash = {};
     this.table_name = table_name;
@@ -147,7 +148,7 @@ MessageList.prototype = {
         });
     },
 
-    _render: function MessageList__render(messages, where, allow_collapse) {
+    _render: function MessageList__render(messages, where) {
         if (messages.length === 0)
             return;
 
@@ -162,7 +163,7 @@ MessageList.prototype = {
         var current_group = [];
         var new_message_groups = [];
 
-        if (where === 'top' && narrow.allow_collapse() && this._message_groups.length > 0) {
+        if (where === 'top' && this.collapse_messages && this._message_groups.length > 0) {
             // Delete the current top message group, and add it back in with these
             // messages, in order to collapse properly.
             //
@@ -188,7 +189,7 @@ MessageList.prototype = {
         $.each(messages, function (index, message) {
             message.include_recipient = false;
             message.include_bookend   = false;
-            if (util.same_recipient(prev, message) && allow_collapse) {
+            if (util.same_recipient(prev, message) && self.collapse_messages) {
                 current_group.push(message.id);
             } else {
                 if (current_group.length > 0)
@@ -293,19 +294,19 @@ MessageList.prototype = {
         }
     },
 
-    append: function MessageList_append(messages, allow_collapse) {
+    append: function MessageList_append(messages) {
         this._items = this._items.concat(messages);
         this._add_to_hash(messages);
         if (this.table_name) {
-            this._render(messages, 'bottom', allow_collapse);
+            this._render(messages, 'bottom');
         }
     },
 
-    prepend: function MessageList_prepend(messages, allow_collapse) {
+    prepend: function MessageList_prepend(messages) {
         this._items = messages.concat(this._items);
         this._add_to_hash(messages);
         if (this.table_name) {
-            this._render(messages, 'top', allow_collapse);
+            this._render(messages, 'top');
         }
     },
 

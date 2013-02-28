@@ -318,7 +318,7 @@ function add_message_metadata(message, dummy) {
     return message;
 }
 
-function add_messages_helper(messages, msg_list, predicate, allow_collapse) {
+function add_messages_helper(messages, msg_list, predicate) {
     var top_messages = [];
     var bottom_messages = [];
 
@@ -345,8 +345,8 @@ function add_messages_helper(messages, msg_list, predicate, allow_collapse) {
         });
     }
 
-    msg_list.prepend(top_messages, allow_collapse);
-    msg_list.append(bottom_messages, allow_collapse);
+    msg_list.prepend(top_messages);
+    msg_list.append(bottom_messages);
     return top_messages.length > 0;
 }
 
@@ -361,21 +361,18 @@ function add_messages(messages, msg_list, opts) {
     util.destroy_first_run_message();
     messages = $.map(messages, add_message_metadata);
 
-    var predicate, allow_collapse;
+    var predicate;
     if (msg_list === home_msg_list) {
         predicate = narrow.message_in_home;
-        allow_collapse = true;
     } else if (msg_list === narrowed_msg_list) {
         predicate = narrow.predicate();
-        allow_collapse = narrow.allow_collapse();
     } else if (msg_list === all_msg_list) {
         predicate = function () { return true; };
-        allow_collapse = true;
     } else {
         throw (new Error("Adding message to a list that is not known"));
     }
 
-    if (add_messages_helper(messages, msg_list, predicate, allow_collapse)) {
+    if (add_messages_helper(messages, msg_list, predicate)) {
         prepended = true;
     }
 
