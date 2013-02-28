@@ -68,8 +68,7 @@ exports.decorate_stream_bar = function (stream_name) {
 };
 
 function neighbors(target_message) {
-    var table = narrow.active() ? "zfilt" : "zhome";
-    var message_tr = $(rows.get(target_message.id, table));
+    var message_tr = $(rows.get(target_message.id, current_msg_list.table_name));
     var message_neighbors = $();
 
     // Being simplistic about this, the smallest message is 30 px high. This
@@ -117,9 +116,7 @@ exports.unfade_messages = function () {
         return;
     }
 
-    var table = narrow.active() ? "zfilt" : "zhome";
     var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
-
     neighbors_with_different_recipients(faded_to).removeClass(fade_class);
     faded_to = undefined;
     ui.enable_floating_recipient_bar();
