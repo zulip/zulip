@@ -264,7 +264,6 @@ exports.activate = function (operators, opts) {
             mark_loaded_as_unread();
         }, true, false);
     } else {
-        maybe_select_closest();
         mark_loaded_as_unread();
     }
 
@@ -275,6 +274,7 @@ exports.activate = function (operators, opts) {
     $("#zfilt").css("opacity", 0).animate({opacity: 1});
 
     reset_load_more_status();
+    maybe_select_closest();
 
     // If anything was highlighted before, try to rehighlight it.
     if (highlighted) {
