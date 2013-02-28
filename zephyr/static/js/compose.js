@@ -72,7 +72,12 @@ function neighbors(target_message) {
     var message_tr = $(rows.get(target_message.id, table));
     var message_neighbors = $();
 
-    var candidates = $.merge(message_tr.prevAll("*:lt(20)"), message_tr.nextAll("*:lt(20)"));
+    // Being simplistic about this, the smallest message is 30 px high. This
+    // gives you a screen's worth of fade on either side of the target message
+    // message at worst.
+    var num_neighbors = Math.floor(viewport.height() / 30);
+    var candidates = $.merge(message_tr.prevAll(":not('.bookend_tr'):lt(" + num_neighbors + ")"),
+                             message_tr.nextAll(":not('.bookend_tr'):lt(" + num_neighbors + ")"));
 
     $.each(candidates, function () {
         var row = $(this);
