@@ -150,7 +150,13 @@ exports.initialize = function () {
     });
 
     $("#enter_sends").click(function () {
+        var send_button = $("#compose-send-button");
         enter_sends = $("#enter_sends").is(":checked");
+        if (enter_sends) {
+            send_button.fadeOut();
+        } else {
+            send_button.fadeIn();
+        }
         return $.ajax({
             dataType: 'json',
             url: '/json/change_enter_sends',
@@ -159,6 +165,7 @@ exports.initialize = function () {
         });
     });
     $("#enter_sends").prop('checked', enter_sends);
+    if (enter_sends) $("#compose-send-button").hide();
 
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({
