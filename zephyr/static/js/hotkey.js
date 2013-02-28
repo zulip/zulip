@@ -61,11 +61,6 @@ function process_hotkey(e) {
                 compose.cancel();
             }
         }
-        // Keycode 13 is Return.
-        if ((code === 13) && $("#search_query").is(":focus")) {
-            // Pass it along to the search up button.
-            $("#search_up").focus();
-        }
         // Let the browser handle the key normally.
         return false;
     }
@@ -127,13 +122,8 @@ function process_hotkey(e) {
         compose.set_mode('private');
         return true;
     case  13: // Enter: respond to message (unless we need to do something else)
-        if (search.keyboard_currently_finding()) {
-            // Pass through to our searchbox (to advance to next result)
-            return false;
-        } else {
-            respond_to_message();
-            return true;
-        }
+        respond_to_message();
+        return true;
     case 114: // 'r': respond to message
         respond_to_message();
         return true;

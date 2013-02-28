@@ -24,9 +24,6 @@ function get_person(obj) {
 function render_object_in_parts(obj) {
     // N.B. action is *not* escaped by the caller
     switch (obj.action) {
-    case 'search':
-        return {prefix: 'Find', query: get_query(obj), suffix: 'in page'};
-
     case 'stream':
         return {prefix: 'Narrow to stream', query: get_query(obj), suffix: ''};
 
@@ -68,11 +65,9 @@ exports.update_typeahead = function () {
         return {action: 'sender', query: elt};
     });
     var options = streams.concat(people).concat(senders);
-    // The first slot is reserved for "narrow to messages containing x",
-    // and the last one for "Find in page"
+    // The first slot is reserved for "narrow to messages containing x".
     // (this is updated in the source function for our typeahead as well)
     options.unshift({action: 'operators', query: '', operators: []});
-    options.push({action: 'search', query: ''});
 
     mapped = {};
     labels = [];
@@ -89,8 +84,6 @@ function narrow_or_search_for_term(item) {
     ui.change_tab_to('#home');
     switch (obj.action) {
     case 'search':
-        $("#search_up").focus();
-        exports.search_button_handler(true);
         return obj.query;
 
     case 'stream':
@@ -165,7 +158,7 @@ function update_buttons_with_focus(focused) {
         }
         // Shrink the searchbox to make room for the buttons.
         var new_width = search_query.width() -
-            $('.search_button').outerWidth(true)*3;
+            $('.search_button').outerWidth(true);
         search_query.width(new_width-1);
         $("#search_arrows").addClass("input-append");
         $('.search_button').show();
@@ -173,7 +166,6 @@ function update_buttons_with_focus(focused) {
         // Hide buttons.
         $('#search_query').width('');
         $("#search_arrows").removeClass("input-append");
-        $("#search_up, #search_down").removeAttr("disabled");
         $('.search_button').blur().hide();
     }
 }
@@ -187,7 +179,6 @@ exports.initialize = function () {
         source: function (query, process) {
             // Delete our old search queries (one for find-in-page, one for operators)
             delete mapped[labels.shift()]; // Operators
-            delete mapped[labels.pop()]; // Find-in-page
 
             // Add an entry for narrow by operators.
             var operators = narrow.parse(query);
@@ -195,17 +186,6 @@ exports.initialize = function () {
             var label = render_object(obj);
             mapped[label] = obj;
             labels.unshift(label);
-
-            // Add an entry for find-in-page.
-            obj = {action: 'search', query: query};
-            if (operators.length > 0 && operators[0][0] !== 'search') {
-                // We have operators other than a search term.
-                // Disable find-in-page.
-                obj.disabled = true;
-            }
-            label = render_object(obj);
-            mapped[label] = obj;
-            labels.push(label);
 
             return labels;
         },
@@ -266,8 +246,6 @@ exports.initialize = function () {
     // Some of these functions don't actually need to be exported,
     // but the code was moved here from elsewhere, and it would be
     // more work to re-order everything and make them private.
-    $('#search_up'   ).on('click', function () { exports.search_button_handler(true);  });
-    $('#search_down' ).on('click', function () { exports.search_button_handler(false); });
     $('#search_exit' ).on('click', exports.clear_search);
 
     var query = $('#search_query');
@@ -305,109 +283,9 @@ function match_on_visible_text(row, search_term) {
               .text().toLowerCase().indexOf(search_term) !== -1;
 }
 
-function disable_search_arrows_if(condition, affected_arrows) {
-    var i, button;
-
-    for (i = 0; i < affected_arrows.length; i++) {
-        button = $("#search_" + affected_arrows[i]);
-        if (condition) {
-            button.attr("disabled", "disabled");
-        } else {
-            button.removeAttr("disabled");
-        }
-    }
-}
-
-function search(term, highlighted_message, reverse) {
-    // term: case-insensitive text to search for
-    // highlighted_message: the current location of the pointer. Ignored
-    //     on cached queries
-    // reverse: boolean as to whether the search is forward or backwards
-    //
-    // returns a message object containing the search term.
-    var previous_header_matched = false;
-
-    var focused_table = $('table.focused_table');
-    if ((term !== cached_term) || (cached_table[0] !== focused_table[0])) {
-        cached_term = term;
-        cached_matches = [];
-        cached_index = null;
-        cached_table = focused_table;
-        var selected_zid = rows.id(highlighted_message);
-
-        focused_table.find('.message_row, .recipient_row').each(function (index, row) {
-            row = $(row);
-            if (previous_header_matched || (match_on_visible_text(row, term))) {
-                previous_header_matched = false;
-
-                if (row.hasClass("recipient_row")) {
-                    previous_header_matched = true;
-                } else {
-                    cached_matches.push(row);
-                    var zid = rows.id(row);
-                    if ((reverse && (zid <= selected_zid)) ||
-                        (!reverse && (zid >= selected_zid) && !cached_index)) {
-                        // Keep track of the closest match going up or down.
-                        cached_index = cached_matches.length - 1;
-                    }
-                }
-            }
-        });
-
-        disable_search_arrows_if(cached_matches.length === 0, ["up", "down"]);
-
-        return cached_matches[cached_index];
-    }
-
-    if (reverse) {
-        if (cached_index > 0) {
-            cached_index--;
-        }
-    } else {
-        if (cached_index < cached_matches.length - 1) {
-            cached_index++;
-        }
-    }
-
-    disable_search_arrows_if(cached_matches.length === 0, ["up", "down"]);
-    disable_search_arrows_if(cached_index === 0, ["up"]);
-    disable_search_arrows_if(cached_index === cached_matches.length - 1, ["down"]);
-
-    return cached_matches[cached_index];
-}
-
-function highlight_match(row, search_term) {
-    $('table tr').removeHighlight();
-    row.find('.message_content').highlight(search_term);
-
-    row = row.prev('.recipient_row');
-    if ((row.length !== 0) && (match_on_visible_text(row, search_term))) {
-        row.find('.message_label_clickable').highlight(search_term);
-    }
-}
-
-exports.search_button_handler = function (reverse) {
-    search_active = true;
-
-    var query = $('#search_query').val().toLowerCase();
-    var res = search(query, current_msg_list.selected_row(), reverse);
-    if (!res) {
-        return;
-    }
-
-    current_msg_list.select_id(rows.id(res));
-    highlight_match(res, query);
-    scroll_to_selected();
-};
-
-function clear_search_cache() {
-    cached_term = "";
-}
-
 exports.focus_search = function () {
     // The search bar is not focused yet, but will be.
     update_buttons_with_focus(true);
-    disable_search_arrows_if(false, ["up", "down"]);
 };
 
 exports.initiate_search = function () {
@@ -421,26 +299,6 @@ exports.clear_search = function () {
     $('table tr').removeHighlight();
     $('#search_query').blur();
     exports.update_button_visibility();
-    clear_search_cache();
-};
-
-exports.something_is_highlighted = function () {
-    return $(".highlight").length > 0;
-};
-
-exports.update_highlight_on_narrow = function () {
-    highlight_match(current_msg_list.selected_row(), cached_term);
-    clear_search_cache();
-};
-
-exports.keyboard_currently_finding = function () {
-    // This is somewhat subtle because it doesn't actually mean
-    // "is a find in progress" -- it means "is the keyboard
-    // currently driving a find"
-    // (If you have a Find going and you just click the button,
-    // the focus goes away and this starts being False,
-    // even though a find is still active.)
-    return $('.search_button').is(':focus');
 };
 
 return exports;

@@ -274,9 +274,6 @@ exports.activate = function (operators, opts) {
 
     allow_collapse          = opts.allow_collapse;
 
-    // Before we clear the table, check if anything was highlighted.
-    var highlighted = search.something_is_highlighted();
-
     clear_table('zfilt');
     narrowed_msg_list = new MessageList('zfilt');
     current_msg_list = narrowed_msg_list;
@@ -325,11 +322,6 @@ exports.activate = function (operators, opts) {
 
     reset_load_more_status();
     maybe_select_closest();
-
-    // If anything was highlighted before, try to rehighlight it.
-    if (highlighted) {
-        search.update_highlight_on_narrow();
-    }
 
     // Put the narrow operators in the URL fragment and search bar
     hashchange.save_narrow(operators);
@@ -405,8 +397,6 @@ exports.deactivate = function () {
     // We fall back to the closest selected id, if the user has removed a stream from the home
     // view since leaving it the old selected id might no longer be there
     home_msg_list.select_id(home_msg_list.selected_id(), {then_scroll: true, use_closest: true});
-
-    search.update_highlight_on_narrow();
 
     hashchange.save_narrow();
 
