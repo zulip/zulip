@@ -6,7 +6,7 @@ __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 
 import os
 import re
-from hashlib import sha1
+import base64
 
 from django.db import models
 from django.core.urlresolvers import reverse
@@ -29,13 +29,21 @@ except ImportError:
     pass
 
 
-SHA1_RE = re.compile('^[a-f0-9]{40}$')
+B16_RE = re.compile('^[a-f0-9]{40}$')
+
+def generate_key():
+    return base64.b16encode(os.urandom(20)).lower()
+
+def generate_activation_url(key):
+    current_site = Site.objects.get_current()
+    return u'https://%s%s' % (current_site.domain,
+            reverse('confirmation.views.confirm', kwargs={'confirmation_key': key}))
 
 
 class ConfirmationManager(models.Manager):
 
     def confirm(self, confirmation_key):
-        if SHA1_RE.search(confirmation_key):
+        if B16_RE.search(confirmation_key):
             try:
                 confirmation = self.get(confirmation_key=confirmation_key)
             except self.model.DoesNotExist:
@@ -49,10 +57,9 @@ class ConfirmationManager(models.Manager):
 
     def send_confirmation(self, obj, email_address, additional_context=None,
             subject_template_path=None, body_template_path=None):
-        confirmation_key = sha1(str(os.urandom(20)) + str(email_address)).hexdigest()
+        confirmation_key = generate_key()
         current_site = Site.objects.get_current()
-        activate_url = u'https://%s%s' % (current_site.domain,
-            reverse('confirmation.views.confirm', kwargs={'confirmation_key': confirmation_key}))
+        activate_url = generate_activation_url(confirmation_key)
         context = Context({
             'activate_url': activate_url,
             'current_site': current_site,
