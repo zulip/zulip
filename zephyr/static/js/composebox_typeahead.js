@@ -99,7 +99,10 @@ function handle_keydown(e) {
 
             // If no typeaheads are shown and the user has configured enter to send,
             // then make enter send instead of inserting a line break.
-            if (e.target.id === "new_message_content" && code === 13 && enter_sends) {
+            // (Unless shift is being held down, which we *do* want to insert a linebreak)
+            if (e.target.id === "new_message_content"
+                && code === 13 && !e.shiftKey
+                && enter_sends) {
                 e.preventDefault();
                 compose.finish();
             }
