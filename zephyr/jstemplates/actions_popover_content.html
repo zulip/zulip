@@ -12,7 +12,7 @@
 
   {{#if narrowed}}
   <li>
-    <a onclick="ui.hide_actions_popover(); narrow.activate([], {then_select_id: {{message.id}} });">
+    <a onclick="ui.hide_actions_popover(); narrow.by_time_travel({{message.id}});">
       <i class="icon-time"></i> Narrow to messages around this time
     </a>
   </li>

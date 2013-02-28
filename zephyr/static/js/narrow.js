@@ -377,6 +377,10 @@ exports.by_recipient = function (target_id) {
     }
 };
 
+exports.by_time_travel = function (target_id) {
+    narrow.activate([], { then_select_id: target_id });
+};
+
 exports.deactivate = function () {
     if (!filter_function) {
         return;
