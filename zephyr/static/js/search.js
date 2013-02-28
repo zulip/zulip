@@ -13,23 +13,31 @@ var search_active = false;
 var labels = [];
 var mapped = {};
 
+function get_query(obj) {
+    return obj.query;
+}
+
+function get_person(obj) {
+    return typeahead_helper.render_person(obj.query);
+}
+
 function render_object_in_parts(obj) {
     // N.B. action is *not* escaped by the caller
     switch (obj.action) {
     case 'search':
-        return {prefix: 'Find', query: obj.query, suffix: 'in page'};
+        return {prefix: 'Find', query: get_query(obj), suffix: 'in page'};
 
     case 'stream':
-        return {prefix: 'Narrow to stream', query: obj.query, suffix: ''};
+        return {prefix: 'Narrow to stream', query: get_query(obj), suffix: ''};
 
     case 'private_message':
         return {prefix: 'Narrow to private messages with',
-                query: typeahead_helper.render_pm_object(obj.query),
+                query: get_person(obj),
                 suffix: ''};
 
     case 'sender':
         return {prefix: 'Narrow to messages sent by',
-                query: typeahead_helper.render_pm_object(obj.query),
+                query: get_person(obj),
                 suffix: ''};
 
     case 'operators':
@@ -112,14 +120,6 @@ function narrow_or_search_for_term(item) {
         return search_query_box.val();
     }
     return item;
-}
-
-function get_query(obj) {
-    return obj.query;
-}
-
-function get_person(obj) {
-    return typeahead_helper.render_pm_object(obj.query);
 }
 
 function searchbox_sorter(items) {

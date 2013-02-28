@@ -46,12 +46,12 @@ exports.highlight_with_escaping = function (query, item) {
 exports.private_message_typeahead_list = [];
 exports.private_message_mapped = {};
 
-exports.render_pm_object = function (person) {
+exports.render_person = function (person) {
     return person.full_name + " <" + person.email + ">";
 };
 
 function add_to_known_recipients(recipient_data, count_towards_autocomplete_preference) {
-    var name_string = exports.render_pm_object(recipient_data);
+    var name_string = exports.render_person(recipient_data);
     if (exports.private_message_mapped[name_string] === undefined) {
         exports.private_message_mapped[name_string] = recipient_data;
         exports.private_message_mapped[name_string].count = 0;
@@ -63,7 +63,7 @@ function add_to_known_recipients(recipient_data, count_towards_autocomplete_pref
 }
 
 exports.known_to_typeahead = function (recipient_data) {
-    return exports.private_message_mapped[exports.render_pm_object(recipient_data)] !== undefined;
+    return exports.private_message_mapped[exports.render_person(recipient_data)] !== undefined;
 };
 
 exports.update_all_recipients = function (recipients) {
