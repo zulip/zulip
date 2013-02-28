@@ -33,6 +33,12 @@
       </a>
     </li>
   {{/if}}
+    <li>
+      <a onclick="ui.hide_actions_popover(); narrow.by('sender', '{{message.sender_email}}', {then_select_id: {{message.id}} });">
+        <i class="icon-user"></i>
+        Narrow to messages sent by <b>{{message.sender_full_name}}</b>
+      </a>
+    </li>
 
   <li>
     <a onclick="respond_to_message();">
