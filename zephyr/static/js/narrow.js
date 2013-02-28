@@ -265,7 +265,15 @@ exports.activate = function (operators, opts) {
     filter_function   = build_filter(operators);
     current_operators = operators;
 
-    narrowed_msg_list = new MessageList('zfilt');
+    var collapse_messages = true;
+    $.each(operators, function (idx, operator) {
+        if (operator[0].toLowerCase() === 'search') {
+            collapse_messages = false;
+            return false;
+        }
+    });
+
+    narrowed_msg_list = new MessageList('zfilt', {collapse_messages: collapse_messages});
     current_msg_list = narrowed_msg_list;
 
     function maybe_select_closest() {
