@@ -105,6 +105,12 @@ MessageList.prototype = {
             }
         }
         this._selected_id = id;
+        if (this._maybe_rerender()) {
+            // We need to scroll because the message list was
+            // rerendered and the new message may no longer be on the
+            // screen
+            opts.then_scroll = true;
+        }
         $(document).trigger($.Event('message_selected.zephyr', opts));
     },
 
@@ -148,8 +154,59 @@ MessageList.prototype = {
         });
     },
 
+    // Number of messages to render at a time
+    _RENDER_WINDOW_SIZE: 400,
+    // Number of messages away from edge of render window at which we
+    // trigger a re-render
+    _RENDER_THRESHOLD: 50,
+
+    _maybe_rerender: function MessageList__maybe_rerender() {
+        if (this.table_name === undefined) {
+            return false;
+        }
+
+        var selected_idx = util.lower_bound(this._items, this._selected_id,
+                                            function (a, b) { return a.id < b; });
+        var new_min_idx = -1;
+
+        // We rerender under the following conditions:
+        // * This is the first render
+        // * The selected message is within this._RENDER_THRESHOLD messages
+        //   of the top of the currently rendered window and the top
+        //   of the window does not abut the beginning of the message
+        //   list
+        // * The selected message is within this._RENDER_THRESHOLD messages
+        //   of the bottom of the currently rendered window and the
+        //   bottom of the window does not abut the end of the
+        //   message list
+        if (! (this._min_rendered_idx === undefined
+               || ((selected_idx - this._min_rendered_idx < this._RENDER_THRESHOLD)
+                   && (this._min_rendered_idx !== 0))
+               || ((this._max_rendered_idx - selected_idx < this._RENDER_THRESHOLD)
+                   && (this._max_rendered_idx !== this._items.length - 1))))
+        {
+            return false;
+        }
+
+        new_min_idx = Math.max(selected_idx - this._RENDER_WINDOW_SIZE / 2, 0);
+        if (new_min_idx === this._min_rendered_idx) {
+            return false;
+        }
+
+        this._min_rendered_idx = new_min_idx;
+        this._max_rendered_idx = Math.max(Math.min(this._min_rendered_idx + this._RENDER_WINDOW_SIZE - 1,
+                                                   this._items.length - 1),
+                                          0);
+
+        this._clear_table();
+        this._render(this._items.slice(this._min_rendered_idx,
+                                       this._max_rendered_idx + 1),
+                     'bottom', true);
+        return true;
+    },
+
     _render: function MessageList__render(messages, where) {
-        if (messages.length === 0)
+        if (messages.length === 0 || this.table_name === undefined)
             return;
 
         var self = this;
@@ -297,16 +354,21 @@ MessageList.prototype = {
     append: function MessageList_append(messages) {
         this._items = this._items.concat(messages);
         this._add_to_hash(messages);
-        if (this.table_name) {
-            this._render(messages, 'bottom');
+
+        var cur_window_size = this._max_rendered_idx - this._min_rendered_idx + 1;
+        if (cur_window_size < this._RENDER_WINDOW_SIZE) {
+            this._render(messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size),
+                         'bottom');
         }
     },
 
     prepend: function MessageList_prepend(messages) {
         this._items = messages.concat(this._items);
         this._add_to_hash(messages);
-        if (this.table_name) {
-            this._render(messages, 'top');
+
+        if (this._min_rendered_idx !== undefined) {
+            this._min_rendered_idx += messages.length;
+            this._max_rendered_idx += messages.length;
         }
     },
 

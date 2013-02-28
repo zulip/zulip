@@ -9,8 +9,11 @@ var directional_hotkeys = {
     106: rows.next_visible,  // 'j'
     38:  rows.prev_visible,  // up arrow
     107: rows.prev_visible,  // 'k'
-    36:  rows.first_visible, // Home
-    35:  rows.last_visible   // End
+    36:  rows.first_visible  // Home
+};
+
+var directional_hotkeys_id = {
+    35:  function () {return current_msg_list.last().id;}   // End
 };
 
 var narrow_hotkeys = {
@@ -63,6 +66,13 @@ function process_hotkey(e) {
         }
         // Let the browser handle the key normally.
         return false;
+    }
+
+    if (directional_hotkeys_id.hasOwnProperty(code)) {
+        var next_id = directional_hotkeys_id[code]();
+        exports.in_scroll_caused_by_keypress = true;
+        current_msg_list.select_id(next_id, {then_scroll: true});
+        return true;
     }
 
     if (directional_hotkeys.hasOwnProperty(code)) {
