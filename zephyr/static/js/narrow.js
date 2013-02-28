@@ -218,7 +218,7 @@ function build_filter(operators_mixed_case) {
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
         allow_collapse: true,
-        then_select_id: current_msg_list.selected_id()
+        then_select_id: home_msg_list.selected_id()
     }, opts);
 
     // Unfade the home view before we switch tables.
