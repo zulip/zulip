@@ -1,0 +1,67 @@
+<div class="row">
+  <div class="span7 compose" id="compose">
+    <div class="close composebox-close" onclick="compose.cancel()">&times;</div>
+    <div class="message_comp">
+      <div class="alert" id="send-status">
+	<span id="error-msg"></span>
+	<span class="send-status-close">&times;</span>
+      </div>
+      <form id="send_message_form" action="/json/send_message" method="post">
+        {% csrf_token %}
+        <table class="compose_table">
+          <tbody>
+            <tr class="ztable_layout_row">
+              <td class="ztable_col1" />
+              <td class="ztable_col2" />
+              <td class="ztable_col3" />
+            </tr>
+            <tr id="stream-message">
+              <td colspan="2" class="message_header message_header_stream left_part">
+              </td>
+              <td class="message_header message_header_stream right_part">
+                  <input type="text" class="recipient_box" name="stream" id="stream"
+                         maxlength="30"
+                         value="" placeholder="Stream" autocomplete="off" tabindex="120"/>
+                  &gt;
+                  <input type="text" class="recipient_box" name="subject" id="subject"
+                         maxlength="60"
+                         value="" placeholder="Subject" autocomplete="off" tabindex="130"/>
+              </td>
+            </tr>
+            <tr id="private-message">
+              <td colspan="2" class="message_header message_header_private_message left_part"></td>
+              <td class="message_header message_header_private_message right_part dark_background">
+                You and <input type="text" class="recipient_box" name="recipient" id="private_message_recipient"
+                               value="" placeholder="one or more people..." autocomplete="off" tabindex="130"/>
+              </td>
+            </tr>
+            <tr>
+              <td class="message_picture"></td>
+              <td class="pointer"></td>
+              <td class="messagebox">
+                <div class="message_content">
+                  <textarea class="new_message_textarea" name="content" id="new_message_content"
+                            value="" placeholder="Compose your message here..." tabindex="140" maxlength="10000"></textarea>
+                  <div id="send_controls">
+                    <a class="compose_help_text" href="#markdown-help" data-toggle="modal" tabindex="160">Formatting</a>
+                    <br />
+                    <input type="submit" value="Send" id="compose-send-button" class="btn btn-primary send_message" tabindex="150"/>
+                  </div>
+                </div>
+                <div
+                   {% ifnotequal user_profile.realm.domain "humbughq.com" %}
+                   style="visibility: hidden;"
+                   {% endifnotequal %}
+                   id="tab-enter-message">
+                  <label class="pull-right">Press Enter to send&nbsp;
+                    <input type="checkbox" id="enter_sends" name="enter_sends" value="ender_sends" />
+                  </label>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div>
+  </div>
+</div>
