@@ -55,6 +55,11 @@ class ConfirmationManager(models.Manager):
             return obj
         return False
 
+    def get_link_for_object(self, obj):
+        key = generate_key()
+        self.create(content_object=obj, date_sent=now(), confirmation_key=key)
+        return generate_activation_url(key)
+
     def send_confirmation(self, obj, email_address, additional_context=None,
             subject_template_path=None, body_template_path=None):
         confirmation_key = generate_key()
