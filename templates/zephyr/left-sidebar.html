@@ -1,5 +1,5 @@
-          <div class="row">
-            <div class="span3 sidebar-nav affix hidden-phone">
+          <div class="row-fluid">
+            <div class="span3 sidebar-nav affix" id="left-sidebar">
               <div class="upper_sidebar">
                   <span class="brand" id="my_information">
                     <img class="img-rounded gravatar-profile"
@@ -8,14 +8,14 @@
                     <span class="my_email">{{ user_profile.user.email }}</span>
                   </span>
                   <div class="new_message_button">
-                    <button type="button" class="btn btn-large btn-block"
+                    <button type="button" class="btn btn-large"
                             id="left_bar_compose_stream_button_big"
                             onclick="compose.set_mode('stream');">
                       <i class="icon-bullhorn"></i> New stream message
                     </button>
                   </div>
                   <div class="new_message_button">
-                    <button type="button" class="btn btn-large btn-block"
+                    <button type="button" class="btn btn-large"
                             id="left_bar_compose_private_button_big"
                             onclick="compose.set_mode('private');">
                       <i class="icon-user"></i> New private message

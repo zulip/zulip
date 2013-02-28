@@ -1,30 +1,33 @@
 {# Home tab of the app, containing messages. #}
 
-<div class="row">
-  <div class="span7" id="top_statusbar">
-    <div class="floating_recipient_bar">
-      <table class="floating_recipient">
-        <tr id="floating_recipient_layout_row" class="ztable_layout_row">
-          <td class="ztable_col1" />
-          <td class="ztable_col2" />
-          <td class="ztable_col3" />
-        </tr>
-        <tr style="display: none;" id="current_label_stream" class="recipient_row">
-          <td colspan="2" class="message_label_clickable message_header message_header_stream left_part"></td>
-          <td class="message_label_clickable message_header message_header_stream right_part"></td>
-        </tr>
-        <tr style="display: none;" id="current_label_private_message" class="recipient_row">
-          <td colspan="2" class="message_label_clickable message_header message_header_private_message left_part"></td>
-          <td class="message_label_clickable message_header message_header_private_message right_part"></td>
-        </tr>
-      </table>
+<div class="row-fluid">
+  {# A span has a min-height of 30px according to Bootstrap but we want this one hidden #}
+  <div class="span12" style="min-height: 0px">
+    <div id="floating_recipient_bar">
+      <div class="message_area_padder">
+        <table class="floating_recipient">
+          <tr id="floating_recipient_layout_row" class="ztable_layout_row">
+            <td class="ztable_col1" />
+            <td class="ztable_col2" />
+            <td class="ztable_col3" />
+          </tr>
+          <tr style="display: none;" id="current_label_stream" class="recipient_row">
+            <td colspan="2" class="message_label_clickable message_header message_header_stream left_part"></td>
+            <td class="message_label_clickable message_header message_header_stream right_part"></td>
+          </tr>
+          <tr style="display: none;" id="current_label_private_message" class="recipient_row">
+            <td colspan="2" class="message_label_clickable message_header message_header_private_message left_part"></td>
+            <td class="message_label_clickable message_header message_header_private_message right_part"></td>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="row">
-  <div class="span7">
-    <div class="message_list" id="main_div">
+<div class="row-fluid">
+  <div class="span12">
+    <div class="message_list message_area_padder" id="main_div">
       <div id="loading_more_messages_indicator"></div>
       <div id="page_loading_indicator"></div>
       <div id="first_run_message" class="empty_feed_notice">

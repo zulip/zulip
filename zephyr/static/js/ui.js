@@ -224,20 +224,15 @@ function need_skinny_mode() {
 
 function resizehandler(e) {
     var composebox = $("#compose");
-    var top_statusbar = $("#top_statusbar");
-    if (need_skinny_mode()) {
-        var desired_width;
-        if (exports.home_tab_obscured() === 'other_tab') {
-            desired_width = $("div.tab-pane.active").outerWidth();
-        } else {
-            desired_width = $("#main_div").outerWidth();
-            composebox.width(desired_width);
-        }
-        top_statusbar.width(desired_width);
+    var floating_recipient_bar = $("#floating_recipient_bar");
+    var desired_width;
+    if (exports.home_tab_obscured() === 'other_tab') {
+        desired_width = $("div.tab-pane.active").outerWidth();
     } else {
-        top_statusbar.width('');
-        composebox.width('');
+        desired_width = $("#main_div").outerWidth();
     }
+    composebox.width(desired_width);
+    floating_recipient_bar.width(desired_width);
 
     $("#bottom_whitespace").height(viewport.height() * 0.4);
     $("#main_div").css('min-height', viewport.height() - $("#top_navbar").height());
@@ -275,7 +270,7 @@ var is_floating_recipient_bar_showing = false;
 
 function show_floating_recipient_bar() {
     if (!is_floating_recipient_bar_showing) {
-        $(".floating_recipient_bar").css('visibility', 'visible');
+        $("#floating_recipient_bar").css('visibility', 'visible');
         is_floating_recipient_bar_showing = true;
     }
 }
@@ -311,7 +306,7 @@ function replace_floating_recipient_bar(desired_label) {
 
 function hide_floating_recipient_bar() {
     if (is_floating_recipient_bar_showing) {
-        $(".floating_recipient_bar").css('visibility', 'hidden');
+        $("#floating_recipient_bar").css('visibility', 'hidden');
         is_floating_recipient_bar_showing = false;
     }
 }
@@ -330,9 +325,9 @@ exports.update_floating_recipient_bar = function () {
         return;
     }
 
-    var top_statusbar = $("#top_statusbar");
-    var top_statusbar_top = top_statusbar.offset().top;
-    var top_statusbar_bottom = top_statusbar_top + top_statusbar.outerHeight();
+    var floating_recipient_bar = $("#floating_recipient_bar");
+    var floating_recipient_bar_top = floating_recipient_bar.offset().top;
+    var floating_recipient_bar_bottom = floating_recipient_bar_top + floating_recipient_bar.outerHeight();
 
     // Find the last message where the top of the recipient
     // row is at least partially occluded by our box.
@@ -349,7 +344,7 @@ exports.update_floating_recipient_bar = function () {
             return;
         }
         if (candidate.is(".focused_table .recipient_row")) {
-            if (candidate.offset().top < top_statusbar_bottom) {
+            if (candidate.offset().top < floating_recipient_bar_bottom) {
                 break;
             }
         }
@@ -362,7 +357,7 @@ exports.update_floating_recipient_bar = function () {
     // Hide if the bottom of our floating stream/subject label is not
     // lower than the bottom of current_label (since that means we're
     // covering up a label that already exists).
-    if (top_statusbar_bottom <=
+    if (floating_recipient_bar_bottom <=
         (current_label.offset().top + current_label.outerHeight())) {
         hide_floating_recipient_bar();
         return;
@@ -376,7 +371,7 @@ exports.update_floating_recipient_bar = function () {
                                        .next(".bookend_tr:first");
     // (The last message currently doesn't have a bookend, which is why this might be 0).
     if (current_bookend.length > 0) {
-        if (top_statusbar_bottom >
+        if (floating_recipient_bar_bottom >
             (current_bookend.offset().top - current_bookend.outerHeight())) {
             hide_floating_recipient_bar();
             return;
@@ -755,9 +750,9 @@ $(function () {
         }
     });
 
-    // A little hackish, because it doesn't seem to totally get us
-    // the exact right width for the top_statusbar and compose box,
-    // but, close enough for now.
+    // A little hackish, because it doesn't seem to totally get us the
+    // exact right width for the floating_recipient_bar and compose
+    // box, but, close enough for now.
     resizehandler();
     hack_for_floating_recipient_bar();
 

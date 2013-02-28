@@ -80,12 +80,13 @@ var people_list = [
 </script>
 {% endblock %}
 {% block content %}
+<div class="container-fluid">
     {% include "zephyr/navbar.html" %}
-    <div class="row">
-        <div class="span3">
+    <div class="row-fluid">
+        <div class="span3 hidden-phone">
           {% include "zephyr/left-sidebar.html" %}
         </div><!--/left sidebar-->
-        <div class="span7 tab-content" id="application_area">
+        <div class="span7 tab-content">
             <div class="tab-pane active" id="home">
                 {% include "zephyr/home.html" %}
             </div>
@@ -103,12 +104,12 @@ var people_list = [
             {% endif %}
 
         </div><!--/tab-content-->
-        <div class="span2">
+        <div class="span2 hidden-phone">
           {% include "zephyr/right-sidebar.html" %}
         </div><!--/right sidebar-->
     </div><!--/row-->
     {% include "zephyr/keyboard_shortcuts.html" %}
     {% include "zephyr/markdown_help.html" %}
     {% include "zephyr/invite_user.html" %}
-
+</div>
 {% endblock %}

@@ -3,6 +3,19 @@ body {
     overflow-y: scroll;
 }
 
+.container-fluid {
+    max-width: 1200px;
+    margin: 0px auto;
+}
+
+#left-sidebar {
+    max-width: 300px;
+}
+
+#right-sidebar {
+    margin-left: 20px;
+}
+
 textarea, input {
     font-family: 'Droid Sans', Helvetica, Arial, sans-serif;
 }
@@ -205,19 +218,21 @@ ul.filters .count {
     display: none;
 }
 
-#application_area {
-}
-
 .message_list {
-    max-width: 640px;
     /* If we change this color, we must change message_reply_fade */
     background-color: aliceblue;
+}
+
+.message_area_padder {
     padding-left: 10px;
     padding-right: 20px;
-    overflow-x: hidden;
+    /* This is needed for the floating recipient bar
+     in Firefox only, for some reason; otherwise it gets
+     a scrollbar */
+    overflow: visible;
 }
 @media (max-width: 480px) {
-    .message_list {
+    .message_area_padder {
         padding-left: 10px;
         padding-right: 10px;
     }
@@ -226,7 +241,6 @@ ul.filters .count {
 .message_comp {
     display: none;
     border: 1px solid #EEE;
-    max-width: 640px;
     background-color: white;
     padding: 8px 20px 8px 10px;
     box-shadow: 0px 3px 7px rgba(0, 0, 0, 0.3);
@@ -491,7 +505,6 @@ img.inline_profile_picture {
     position: fixed;
     bottom: 0px;
     background: white;
-    max-width: 670px;
     z-index: 1;
 }
 
@@ -590,22 +603,6 @@ input.recipient_box {
     width: 100%;
     height: 40px;
 }
-#top_statusbar {
-    position: fixed;
-    /* .message_list max-width + 30px margin */
-    max-width: 670px;
-    text-decoration: none;
-    top: 40px; /* should really be the same as the height of navbar-spacer */
-    visibility: hidden; /* so that we pass clicks through to underneath us */
-    /* If zhome has opacity on it, it suddenly starts getting drawn on top
-       of top_statusbar -- unless we specify a z-index.  */
-    z-index: 2;
-}
-
-#navbar-middle {
-    display: table-row;
-    max-width: 670px;
-}
 
 .brand.skinny-user-gravatar {
     padding-top: 5px;
@@ -686,17 +683,15 @@ input.recipient_box {
     -moz-border-radius: 0;
 }
 
-.floating_recipient_bar {
-    max-width: 640px;
-    /* from .message_list */
-    padding-left: 10px;
-    padding-right: 20px;
-}
-@media (max-width: 480px) {
-    .floating_recipient_bar {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
+#floating_recipient_bar {
+    position: fixed;
+    /* .message_list max-width */
+    text-decoration: none;
+    top: 41px; /* should really be the same as the height of navbar-spacer */
+    visibility: hidden; /* so that we pass clicks through to underneath us */
+    /* If zhome has opacity on it, it suddenly starts getting drawn on top
+       of top_statusbar -- unless we specify a z-index.  */
+    z-index: 2;
 }
 
 table.floating_recipient {

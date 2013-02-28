@@ -15,6 +15,7 @@ hence the name.
     {% endblock %}
 
 {% block content %}
+<div class="container">
 <div class="navbar">
     <ul class="nav pull-right">
         <li><a href="/accounts/login/?next=/">Log in</a></li>
@@ -44,5 +45,6 @@ hence the name.
       <li><span class="navbar-text">·</span></li>
       <li><a href="{% url zephyr.views.accounts_home %}">Register</a></li>
     </ul>
+</div>
 </div>
 {% endblock %}
