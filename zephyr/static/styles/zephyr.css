@@ -492,6 +492,7 @@ img.inline_profile_picture {
     bottom: 0px;
     background: white;
     max-width: 670px;
+    z-index: 1;
 }
 
 /* Like .nav-tabs > li > a */
@@ -946,7 +947,6 @@ table.floating_recipient {
 
 #notifications-area {
     position: fixed;
-    z-index: 9000;
     bottom: 0px;
     right: 20px;
     width: 200px;
@@ -954,6 +954,7 @@ table.floating_recipient {
 }
 
 #notifications-bar {
+    z-index: 9000;
     position: absolute;
     bottom: 0px; /* necessary to get slideUp, slideDown directions correct */
     width: 100%;
