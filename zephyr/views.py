@@ -509,6 +509,9 @@ class NarrowBuilder(object):
     def by_subject(self, operand):
         return Q(subject=operand)
 
+    def by_sender(self, operand):
+        return Q(sender__user__email__iexact=operand)
+
     def by_pm_with(self, operand):
         if ',' in operand:
             # Huddle

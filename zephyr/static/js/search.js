@@ -23,7 +23,12 @@ function render_object_in_parts(obj) {
         return {prefix: 'Narrow to stream', query: obj.query, suffix: ''};
 
     case 'private_message':
-        return {prefix: 'Narrow to person',
+        return {prefix: 'Narrow to private messages with',
+                query: typeahead_helper.render_pm_object(obj.query),
+                suffix: ''};
+
+    case 'sender':
+        return {prefix: 'Narrow to messages sent by',
                 query: typeahead_helper.render_pm_object(obj.query),
                 suffix: ''};
 
@@ -51,7 +56,10 @@ exports.update_typeahead = function () {
     var people = $.map(people_list, function(elt,idx) {
         return {action: 'private_message', query: elt};
     });
-    var options = streams.concat(people);
+    var senders = $.map(people_list, function(elt,idx) {
+        return {action: 'sender', query: elt};
+    });
+    var options = streams.concat(people).concat(senders);
     // The first slot is reserved for "narrow to messages containing x",
     // and the last one for "Find in page"
     // (this is updated in the source function for our typeahead as well)
@@ -93,6 +101,11 @@ function narrow_or_search_for_term(item) {
         search_query_box.blur();
         return search_query_box.val();
 
+    case 'sender':
+        narrow.by('sender', obj.query.email);
+        search_query_box.blur();
+        return search_query_box.val();
+
     case 'operators':
         narrow.activate(obj.operators);
         search_query_box.blur();
@@ -121,13 +134,13 @@ function searchbox_sorter(items) {
     });
 
     var query = this.query;
-    $.each(['operators', 'stream', 'private_message', 'search'], function (idx, action) {
+    $.each(['operators', 'stream', 'private_message', 'sender', 'search'], function (idx, action) {
         var objs = objects_by_action[action];
         if (!objs)
             return;
         // Get the first object in sorted order.
         var obj = typeahead_helper.sorter(query, objs,
-                (action === 'private_message') ? get_person : get_query)
+                (action === 'private_message' || action === 'sender') ? get_person : get_query)
             .shift();
         if (obj)
             result.push(render_object(obj));
@@ -211,7 +224,7 @@ exports.initialize = function () {
             if (obj.disabled)
                 return false;
             var actual_search_term = obj.query;
-            if (obj.action === 'private_message') {
+            if (obj.action === 'private_message' || obj.action === "sender") {
                 actual_search_term = obj.query.full_name + ' <' + obj.query.email + '>';
             }
             // Case-insensitive (from Bootstrap's default matcher).

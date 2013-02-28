@@ -83,6 +83,9 @@ exports.describe = function (operators) {
         case 'subject':
             return 'subject ' + operand;
 
+        case 'sender':
+            return 'sender ' + operand;
+
         case 'pm-with':
             return 'private messages with ' + operand;
 
@@ -178,6 +181,11 @@ function build_filter(operators_mixed_case) {
             case 'subject':
                 if ((message.type !== 'stream') ||
                     (message.subject.toLowerCase() !== operand))
+                    return false;
+                break;
+
+            case 'sender':
+                if ((message.sender_email.toLowerCase() !== operand))
                     return false;
                 break;
 

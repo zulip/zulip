@@ -968,6 +968,26 @@ class GetOldMessagesTest(AuthedTestCase):
             self.assertEqual(message["type"], "stream")
             self.assertEqual(message["recipient_id"], stream_id)
 
+    def test_get_old_messages_with_narrow_sender(self):
+        """
+        A request for old messages with a narrow by sender only returns
+        messages sent by that person.
+        """
+        self.login("hamlet@humbughq.com")
+        # We need to send a message here to ensure that we actually
+        # have a stream message in this narrow view.
+        self.send_message("hamlet@humbughq.com", "Scotland", Recipient.STREAM)
+        self.send_message("othello@humbughq.com", "Scotland", Recipient.STREAM)
+        self.send_message("othello@humbughq.com", "hamlet@humbughq.com", Recipient.PERSONAL)
+        self.send_message("iago@humbughq.com", "Scotland", Recipient.STREAM)
+
+        result = self.post_with_params({"narrow": simplejson.dumps(
+                    [['sender', "othello@humbughq.com"]])})
+        self.check_well_formed_messages_response(result)
+
+        for message in result["messages"]:
+            self.assertEqual(message["sender_email"], "othello@humbughq.com")
+
     def test_missing_params(self):
         """
         anchor, num_before, and num_after are all required
