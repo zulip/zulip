@@ -1,0 +1,35 @@
+          <div class="row">
+            <div class="span3 sidebar-nav affix hidden-phone">
+              <div class="upper_sidebar">
+                  <span class="brand" id="my_information">
+                    <img class="img-rounded gravatar-profile"
+                         src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=60" />
+                    <span class="my_fullname">{{ user_profile.full_name }}</span>
+                    <span class="my_email">{{ user_profile.user.email }}</span>
+                  </span>
+                  <div class="new_message_button">
+                    <button type="button" class="btn btn-large btn-block"
+                            id="left_bar_compose_stream_button_big"
+                            onclick="compose.set_mode('stream');">
+                      <i class="icon-bullhorn"></i> New stream message
+                    </button>
+                  </div>
+                  <div class="new_message_button">
+                    <button type="button" class="btn btn-large btn-block"
+                            id="left_bar_compose_private_button_big"
+                            onclick="compose.set_mode('private');">
+                      <i class="icon-user"></i> New private message
+                    </button>
+                  </div>
+              </div>
+              <div class="bottom_sidebar">
+                      <ul id="global_filters" class="filters">
+                          {# Special-case this link so we don't actually go to page top. #}
+                          <li data-name="home" class="active-filter"><a href="#">Home <span class="count">(<span class="value"></span>)</span></a></li>
+                          <li data-name="all" class="hidden-filter"><a href="#narrow/in/all">All messages <span class="count">(<span class="value"></span>)</span></a></li>
+                          <li data-name="private" ><a href="#narrow/is/private-message">All private messages <span class="count">(<span class="value"></span>)</span></a></li>
+                      </ul>
+                      <ul id="stream_filters" class="filters scrolling_list"></ul>
+              </div>
+            </div>
+          </div>
