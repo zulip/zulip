@@ -130,7 +130,7 @@ class PrincipalError(JsonableError):
 def principal_to_user_profile(agent, principal):
     principal_doesnt_exist = False
     try:
-        principal_user_profile = UserProfile.objects.get(user__email=principal)
+        principal_user_profile = UserProfile.objects.get(user__email__iexact=principal)
     except UserProfile.DoesNotExist:
         principal_doesnt_exist = True
 
@@ -533,7 +533,7 @@ class NarrowBuilder(object):
 
             # Personals with other user; include both directions.
             try:
-                narrow_profile = UserProfile.objects.get(user__email=operand)
+                narrow_profile = UserProfile.objects.get(user__email__iexact=operand)
             except UserProfile.DoesNotExist:
                 raise BadNarrowOperator('unknown user ' + operand)
 
@@ -738,7 +738,7 @@ def create_mirrored_message_users(request, user_profile, recipients):
     for email in referenced_users:
         create_mit_user_if_needed(user_profile.realm, email)
 
-    sender = UserProfile.objects.get(user__email=sender_email)
+    sender = UserProfile.objects.get(user__email__iexact=sender_email)
     return (True, sender)
 
 def recipient_for_emails(emails, not_forged_zephyr_mirror, user_profile, sender):

@@ -61,7 +61,7 @@ def get_tornado_user_profile(user_id):
 
 @cache_with_key(lambda email: 'tornado_user_profile_email:%s' % (email,))
 def get_tornado_user_profile_by_email(email):
-    return UserProfile.objects.select_related().get(user__email=email)
+    return UserProfile.objects.select_related().get(user__email__iexact=email)
 
 # authenticated_api_view will add the authenticated user's user_profile to
 # the view function's arguments list, since we have to look it up
@@ -80,7 +80,7 @@ def authenticated_api_view(view_func):
                 # any mutable fields (just ids plus the realm.domain)
                 user_profile = get_tornado_user_profile_by_email(email)
             else:
-                user_profile = UserProfile.objects.select_related().get(user__email=email)
+                user_profile = UserProfile.objects.select_related().get(user__email__iexact=email)
         except UserProfile.DoesNotExist:
             return json_error("Invalid user: %s" % (email,))
         if api_key != user_profile.api_key:

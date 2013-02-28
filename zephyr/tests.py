@@ -78,7 +78,7 @@ class AuthedTestCase(TestCase):
         User that has that email.
         """
         # Usernames are unique, even across Realms.
-        return UserProfile.objects.get(user__email=email)
+        return UserProfile.objects.get(user__email__iexact=email)
 
     def send_message(self, sender_name, recipient_name, message_type):
         sender = self.get_user_profile(sender_name)
@@ -720,7 +720,7 @@ class SubscriptionAPITest(AuthedTestCase):
         them.
         """
         other_email = "iago@humbughq.com"
-        other_profile = UserProfile.objects.get(user__email=other_email)
+        other_profile = UserProfile.objects.get(user__email__iexact=other_email)
         self.assertIsInstance(other_profile, UserProfile)
         current_streams = self.get_streams(other_email)
         self.assertNotEqual(len(current_streams), 0)  # necessary for full test coverage
@@ -738,7 +738,7 @@ class SubscriptionAPITest(AuthedTestCase):
         msg = Message.objects.latest('id')
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id, UserProfile.objects.get(
-                user__email="humbug+notifications@humbughq.com").id)
+                user__email__iexact="humbug+notifications@humbughq.com").id)
         expected_msg = ("Hi there!  We thought you'd like to know that %s just "
                         "subscribed you to the stream '%s'"
                         % (self.user_profile.full_name, add_streams[0]))
@@ -755,7 +755,7 @@ class SubscriptionAPITest(AuthedTestCase):
         invalid_principal = "rosencrantz-and-guildenstern@humbughq.com"
         # verify that invalid_principal actually doesn't exist
         with self.assertRaises(UserProfile.DoesNotExist):
-            UserProfile.objects.get(user__email=invalid_principal)
+            UserProfile.objects.get(user__email__iexact=invalid_principal)
         result = self.client.post("/json/subscriptions/add",
                                    {"subscriptions": simplejson.dumps(self.streams),
                                     "principals": simplejson.dumps([invalid_principal])})
@@ -768,7 +768,7 @@ class SubscriptionAPITest(AuthedTestCase):
         realm should return a JSON error.
         """
         principal = "starnine@mit.edu"
-        profile = UserProfile.objects.get(user__email=principal)
+        profile = UserProfile.objects.get(user__email__iexact=principal)
         # verify that principal exists (thus, the reason for the error is the cross-realming)
         self.assertIsInstance(profile, UserProfile)
         result = self.client.post("/json/subscriptions/add",

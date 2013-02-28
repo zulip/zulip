@@ -15,7 +15,7 @@ def dump():
 
 def restore(change):
     for (email, client_name, query, count, timestamp) in simplejson.loads(file("dumped-activity").read()):
-        user_profile = UserProfile.objects.get(user__email=email)
+        user_profile = UserProfile.objects.get(user__email__iexact=email)
         client = get_client(client_name)
         last_visit = timestamp_to_datetime(timestamp)
         print "%s: activity for %s,%s" % (email, client_name, query)

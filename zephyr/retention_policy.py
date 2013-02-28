@@ -44,7 +44,7 @@ def should_expunge_from_log(msg, now):
     user_email = msg['sender_email']
     domain = domain_cache.get(user_email)
     if not domain:
-        domain = UserProfile.objects.get(user__email=user_email).realm.domain
+        domain = UserProfile.objects.get(user__email__iexact=user_email).realm.domain
         domain_cache[user_email] = domain
 
     if domain not in max_age:

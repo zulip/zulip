@@ -87,7 +87,7 @@ def compute_mit_user_fullname(email):
 @transaction.commit_on_success
 def create_mit_user_if_needed(realm, email):
     try:
-        return UserProfile.objects.get(user__email=email)
+        return UserProfile.objects.get(user__email__iexact=email)
     except UserProfile.DoesNotExist:
         try:
             # Forge a user for this person
@@ -98,7 +98,7 @@ def create_mit_user_if_needed(realm, email):
             # Unless we raced with another thread doing the same
             # thing, in which case we should get the user they made
             transaction.commit()
-            return UserProfile.objects.get(user__email=email)
+            return UserProfile.objects.get(user__email__iexact=email)
 
 def log_message(message):
     if not message.sending_client.name.startswith("test:"):
@@ -175,13 +175,13 @@ def internal_send_message(sender_email, recipient_type, recipient,
     if len(content) > MAX_MESSAGE_LENGTH:
         content = content[0:3900] + "\n\n[message was too long and has been truncated]"
     message = Message()
-    message.sender = UserProfile.objects.get(user__email=sender_email)
+    message.sender = UserProfile.objects.get(user__email__iexact=sender_email)
 
     if recipient_type == Recipient.STREAM:
         stream, _ = create_stream_if_needed(message.sender.realm, recipient)
         type_id = stream.id
     else:
-        type_id = UserProfile.objects.get(user__email=recipient).id
+        type_id = UserProfile.objects.get(user__email__iexact=recipient).id
 
     message.recipient = Recipient.objects.get(type_id=type_id, type=recipient_type)
 
@@ -273,7 +273,7 @@ def do_create_realm(domain, replay=False):
 
         # Sent a notification message
         message = Message()
-        message.sender = UserProfile.objects.get(user__email="humbug+signups@humbughq.com")
+        message.sender = UserProfile.objects.get(user__email__iexact="humbug+signups@humbughq.com")
         stream, _ = create_stream_if_needed(message.sender.realm, "signups")
         message.recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         message.subject = domain
