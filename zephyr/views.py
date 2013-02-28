@@ -507,7 +507,7 @@ class NarrowBuilder(object):
         return Q(recipient=recipient)
 
     def by_subject(self, operand):
-        return Q(subject=operand)
+        return Q(subject__iexact=operand)
 
     def by_sender(self, operand):
         return Q(sender__user__email__iexact=operand)
