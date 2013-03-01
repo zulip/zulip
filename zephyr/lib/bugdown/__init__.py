@@ -11,6 +11,57 @@ from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
 from zephyr.lib.timeout import timeout
 
+class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
+    def is_image(self, url):
+        # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
+        for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
+            if url.lower().endswith(ext):
+                return True
+        return False
+
+    def youtube_image(self, url):
+        # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
+        # If it matches, match.group(2) is the video id.
+        youtube_re = r'^((?:https?://)?(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=)))?([0-9A-Za-z_-]+)(?(1).+)?$'
+        match = re.match(youtube_re, url)
+        if match is None:
+            return None
+        return "http://i.ytimg.com/vi/%s/default.jpg" % (match.group(2),)
+
+    # Search the tree for <a> tags and read their href values
+    def find_images(self, root):
+        images = []
+        stack = [root]
+
+        while stack:
+            currElement = stack.pop()
+            for child in currElement.getchildren():
+                if child.tag == "a":
+                    url = child.get("href")
+                    if self.is_image(url):
+                        images.append((url, url))
+                    else:
+                        youtube = self.youtube_image(url)
+                        if youtube is not None:
+                            images.append((youtube, url))
+
+                if child.getchildren():
+                    stack.append(child)
+        return images
+
+    def run(self, root):
+        image_urls = self.find_images(root)
+        for (url, link) in image_urls:
+            a = markdown.util.etree.SubElement(root, "a")
+            a.set("href", link)
+            a.set("target", "_blank")
+            a.set("title", link)
+            img = markdown.util.etree.SubElement(a, "img")
+            img.set("src", url)
+            img.set("class", "message_inline_image")
+
+        return root
+
 class Gravatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
         img = markdown.util.etree.Element('img')
@@ -202,6 +253,8 @@ class Bugdown(markdown.Extension):
         md.preprocessors.add('hanging_ulists',
                                  BugdownUListPreprocessor(md),
                                  "_begin")
+
+        md.treeprocessors.add("inline_images", InlineImagePreviewProcessor(md), "_end")
 
 _md_engine = markdown.Markdown(
     safe_mode     = 'escape',

@@ -1892,9 +1892,11 @@ int x = 3
                         "<p>some text %s with extras</p>",  'https://www.google.com/baz_(match)?with=foo&amp;bar=baz'),
          ('hash it http://foo.com/blah_(wikipedia)_blah#cite-1',
                         "<p>hash it %s</p>",                'http://foo.com/blah_(wikipedia)_blah#cite-1'),
-         ('http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).gif',
+         # This last one was originally a .gif but was changed to .mov
+         # to avoid triggering the inline image preview support
+         ('http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov',
                         "<p>%s</p>",
-                        'http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).gif')]
+                        'http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov')]
 
         for inline_url, reference, url in conversions:
             try:
@@ -1914,6 +1916,18 @@ int x = 3
 xxx/xxxxxx%xxxxxx/xx/" target="_blank" title="xxxx://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/">xxxxx #xx</a>:<strong>\
 xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx\
 <br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>')
+
+    def test_inline_image(self):
+        msg = 'Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring'
+        converted = convert(msg)
+
+        self.assertEqual(converted, '<p>Google logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img class="message_inline_image" src="https://www.google.com/images/srpr/logo4w.png"></a>')
+
+    def test_inline_youtube(self):
+        msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
+        converted = convert(msg)
+
+        self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img class="message_inline_image" src="http://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a>')
 
     def test_multiline_strong(self):
         msg = "Welcome to **the jungle**"
