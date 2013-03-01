@@ -1023,3 +1023,7 @@ table.floating_recipient {
 #stream-message, #private-message {
     border: 1px solid grey;
 }
+
+.emoji {
+    width: 20px;
+}
