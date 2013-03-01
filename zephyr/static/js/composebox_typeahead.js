@@ -104,7 +104,10 @@ function handle_keydown(e) {
                 && code === 13 && !e.shiftKey
                 && enter_sends) {
                 e.preventDefault();
-                compose.finish();
+                if ($("#compose-send-button").attr('disabled') !== "disabled") {
+                    $("#compose-send-button").attr('disabled', 'disabled');
+                    compose.finish();
+                }
             }
         }
 
