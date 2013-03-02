@@ -1032,3 +1032,10 @@ table.floating_recipient {
     font-weight: bold;
     display: none;
 }
+
+.streamlist_swatch {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+}

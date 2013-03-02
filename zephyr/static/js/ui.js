@@ -946,12 +946,17 @@ exports.add_narrow_filter = function(name, type, uri) {
         return false;
     }
 
-
-    list_item = $('<li>').attr('data-name', encodeURIComponent(name))
-                         .html($('<a>').attr('href', uri)
-                                       .addClass('subscription_name')
-                                       .text(name)
-                                       .append('<span class="count">(<span class="value"></span>)</span>'));
+    // For some reason, even though the span is inline-block, if it is empty it
+    // takes up no space and you don't see the background color. Thus, add a
+    // &nbsp; to get the inline-block behavior we want.
+    var swatch = $('<span/>').attr('id', "stream_sidebar_swatch_" + subs.stream_id(name))
+                             .addClass('streamlist_swatch')
+                             .css('background-color', subs.get_color(name)).html("&nbsp;");
+    list_item = $('<li>').attr('data-name', encodeURIComponent(name)).html(swatch);
+    list_item.append($('<a>').attr('href', uri)
+                     .addClass('subscription_name')
+                     .text(name)
+                     .append('<span class="count">(<span class="value"></span>)</span>'));
     if (type === "stream" && subs.have(name).invite_only) {
         list_item.append("<i class='icon-lock'/>");
     }

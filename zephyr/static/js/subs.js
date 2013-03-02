@@ -11,6 +11,14 @@ var initial_color_fetch = true;
 var default_color = "#c2c2c2";
 var next_sub_id = 0;
 
+function add_sub(stream_name, sub) {
+    stream_info[stream_name.toLowerCase()] = sub;
+}
+
+function get_sub(stream_name) {
+    return stream_info[stream_name.toLowerCase()];
+}
+
 // Classes which could be returned by get_color_class.
 exports.color_classes = 'dark_background';
 
@@ -69,6 +77,16 @@ function update_table_stream_color(table, stream_name, color) {
     });
 }
 
+exports.stream_id = function(stream_name) {
+    var sub = get_sub(stream_name);
+    return parseInt(sub.id, 10);
+};
+
+function update_stream_sidebar_swatch_color(stream_name, color) {
+    var id = exports.stream_id(stream_name);
+    $("#stream_sidebar_swatch_" + id).css('background-color', color);
+}
+
 function update_historical_message_color(stream_name, color) {
     update_table_stream_color($(".focused_table"), stream_name, color);
     if ($(".focused_table").attr("id") !== "#zhome") {
@@ -78,13 +96,14 @@ function update_historical_message_color(stream_name, color) {
 
 function update_stream_color(stream_name, color, opts) {
     opts = $.extend({}, {update_historical: false}, opts);
-    var sub = stream_info[stream_name.toLowerCase()];
+    var sub = get_sub(stream_name);
     sub.color = color;
     var id = parseInt(sub.id, 10);
     $("#subscription_" + id + " .color_swatch").css('background-color', color);
     if (opts.update_historical) {
         update_historical_message_color(stream_name, color);
     }
+    update_stream_sidebar_swatch_color(stream_name, color);
 }
 
 function stream_home_view_clicked(e) {
@@ -104,7 +123,7 @@ function stream_home_view_clicked(e) {
         return;
     }
 
-    var sub = stream_info[stream.toLowerCase()];
+    var sub = get_sub(stream);
     sub.in_home_view = in_home_view;
 
     setTimeout(function () {
@@ -164,6 +183,7 @@ var colorpicker_options = {
         var hex_color = color.toHexString();
 
         update_stream_color(stream_name, hex_color, {update_historical: true});
+        update_stream_sidebar_swatch_color(stream_name, hex_color);
 
         $.ajax({
             type:     'POST',
@@ -180,10 +200,17 @@ var colorpicker_options = {
 };
 
 function create_sub(stream_name, attrs) {
-    var sub = $.extend({}, {name: stream_name, color: default_color, id: next_sub_id++,
-                            render_subscribers: should_render_subscribers(),
-                            subscribed: true, in_home_view: true, invite_only: false}, attrs);
-    stream_info[stream_name.toLowerCase()] = sub;
+    var sub = get_sub(stream_name);
+    if (sub !== undefined) {
+        // We've already created this subscription, no need to continue.
+        return sub;
+    }
+
+    sub = $.extend({}, {name: stream_name, color: default_color, id: next_sub_id++,
+                        render_subscribers: should_render_subscribers(),
+                        subscribed: true, in_home_view: true, invite_only: false}, attrs);
+
+    add_sub(stream_name, sub);
     if (sub.subscribed) {
         // This will do nothing on MIT
         ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + encodeURIComponent(stream_name));
@@ -221,8 +248,7 @@ function add_to_member_list(ul, name, email) {
 }
 
 function mark_subscribed(stream_name, attrs) {
-    var lstream_name = stream_name.toLowerCase();
-    var sub = stream_info[lstream_name];
+    var sub = get_sub(stream_name);
 
     if (sub === undefined) {
         sub = create_sub(stream_name, attrs);
@@ -258,8 +284,7 @@ function mark_subscribed(stream_name, attrs) {
 }
 
 function mark_unsubscribed(stream_name) {
-    var lstream_name = stream_name.toLowerCase();
-    var sub = stream_info[lstream_name];
+    var sub = get_sub(stream_name);
 
     ui.remove_narrow_filter(stream_name, 'stream');
 
@@ -292,11 +317,11 @@ function mark_unsubscribed(stream_name) {
 }
 
 exports.get_color = function (stream_name) {
-    var lstream_name = stream_name.toLowerCase();
-    if (stream_info[lstream_name] === undefined) {
+    var sub = get_sub(stream_name);
+    if (sub === undefined) {
         return default_color;
     }
-    return stream_info[lstream_name].color;
+    return sub.color;
 };
 
 var lightness_threshold;
@@ -352,11 +377,11 @@ exports.get_color_class = util.memoize(function (color) {
 });
 
 exports.get_invite_only = function (stream_name) {
-    var lstream_name = stream_name.toLowerCase();
-    if (stream_info[lstream_name] === undefined) {
+    var sub = get_sub(stream_name);
+    if (sub === undefined) {
         return false;
     }
-    return stream_info[lstream_name].invite_only;
+    return sub.invite_only;
 };
 
 exports.setup_page = function () {
@@ -379,7 +404,7 @@ exports.setup_page = function () {
             var stream_name = elem.name;
             var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
                                                invite_only: elem.invite_only, subscribed: true});
-            stream_info[stream_name.toLowerCase()] = sub;
+            add_sub(stream_name, sub);
             sub_rows.push(sub);
         });
 
@@ -389,7 +414,7 @@ exports.setup_page = function () {
                 return;
             }
             var sub = create_sub(stream, {subscribed: false});
-            stream_info[stream.toLowerCase()] = sub;
+            add_sub(stream, sub);
             sub_rows.push(sub);
         });
 
@@ -443,7 +468,7 @@ exports.setup_page = function () {
 };
 
 exports.have = function (stream_name) {
-    var sub = stream_info[stream_name.toLowerCase()];
+    var sub = get_sub(stream_name);
     if (sub !== undefined && sub.subscribed) {
         return sub;
     }
@@ -571,7 +596,7 @@ $(function () {
     var i;
     // Populate stream_info with data handed over to client-side template.
     for (i = 0; i < stream_list.length; i++) {
-        stream_info[stream_list[i].name.toLowerCase()] = create_sub(stream_list[i].name, stream_list[i]);
+        create_sub(stream_list[i].name, stream_list[i]);
     }
 
     $("#add_new_subscription").on("submit", function (e) {
@@ -609,7 +634,7 @@ $(function () {
         e.stopPropagation();
         var sub_row = $(e.target).closest('.subscription_row');
         var stream_name = sub_row.find('.subscription_name').text();
-        var sub = stream_info[stream_name.toLowerCase()];
+        var sub = get_sub(stream_name);
 
         if (sub.subscribed) {
             ajaxUnsubscribe(stream_name);
