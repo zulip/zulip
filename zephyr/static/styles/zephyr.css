@@ -118,26 +118,28 @@ a:hover code {
     }
 }
 
+#left-sidebar .brand {
+    display: table-row;
+}
+
+#left-sidebar .gravatar-profile {
+    display: table-cell;
+}
+
 #my_information {
-    cursor: pointer;
+    display: table-cell;
+    vertical-align: middle;
+    padding-left: 0.5em;
 }
 
 .my_fullname {
     font-weight: bold;
-    font-size: 150%;
     white-space: nowrap;
 }
 .my_email {
     color: grey;
 }
-@media (max-width: 767px) {
-    .my_fullname {
-        font-size: 100%;
-    }
-    .my_email {
-        font-size: 80%;
-    }
-}
+
 
 .logout {
     white-space: nowrap;
@@ -602,6 +604,10 @@ input.recipient_box {
     gets pushed unerneath it */
     width: 100%;
     height: 40px;
+}
+
+.brand {
+    cursor: pointer;
 }
 
 .brand.skinny-user-gravatar {
