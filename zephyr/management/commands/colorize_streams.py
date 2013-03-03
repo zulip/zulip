@@ -41,9 +41,12 @@ class Command(BaseCommand):
         for user_profile in users_who_need_colors:
             print "    ", user_profile.full_name
 
-        stream_ids = [result['recipient__type_id'] for result in Message.objects.filter(
-                sender__realm=realm).values('recipient__type_id').annotate(
+        stream_ids = [result['recipient__type_id'] for result in \
+                          Message.objects.filter(sender__realm=realm,
+                                                 recipient__type=Recipient.STREAM)
+                      .values('recipient__type_id').annotate(
                 count=Count('recipient__type_id')).order_by('-count')]
+
         print "Setting color for:"
         for stream_id, color in zip(stream_ids, colors):
             # Give everyone the same color for a stream.
