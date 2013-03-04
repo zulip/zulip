@@ -838,7 +838,7 @@ $(function () {
     $("#home").on("click", ".narrows_by_subject", function (e) {
         var nearest = current_msg_list.get(rows.id($(this).closest(".recipient_row")));
         var selected = current_msg_list.selected_message();
-        if (nearest.subject === selected.subject) {
+        if (same_stream_and_subject(nearest, selected)) {
             narrow.by_subject(selected.id);
         } else {
             narrow.by_subject(nearest.id);
