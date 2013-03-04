@@ -8,8 +8,6 @@ var cached_index;
 var cached_table = $('table.focused_table');
 var current_search_term;
 
-var search_active = false;
-
 // Data storage for the typeahead -- to go from object to string representation and vice versa.
 var labels = [];
 var mapped = {};
@@ -269,7 +267,7 @@ exports.initialize = function () {
         // really it would be OK if they did).
 
         setTimeout(function () {
-            if (!(search_active || narrow.active())) {
+            if (!(narrow.active())) {
                 query.val('');
             }
             exports.update_button_visibility();
@@ -323,7 +321,6 @@ exports.initiate_search = function () {
 };
 
 exports.clear_search = function () {
-    search_active = false;
     narrow.deactivate();
 
     $('table tr').removeHighlight();
