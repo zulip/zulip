@@ -58,9 +58,8 @@ function wait_for_message(time_to_wait_sec, condition) {
             numCalls += 1;
             if (numCalls > time_to_wait_sec * 1000 / POLL_INTERVAL_MS) {
                 clearInterval(intervalId);
-                // Normally we would defer.fail here, but we want the tutorial to continue
-                // regardless, so we'll resolve it.
-                deferred.resolve();
+                // We didn't get an answer; end the tutorial.
+                deferred.fail();
             }
 
             if (received_messages.length > 0) {
