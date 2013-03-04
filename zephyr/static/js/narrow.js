@@ -229,7 +229,7 @@ function build_filter(operators_mixed_case) {
 
             case 'pm-with':
                 if ((message.type !== 'private') ||
-                    (message.reply_to.toLowerCase() !== operand))
+                    message.reply_to.toLowerCase() !== operand.split(',').sort().join(','))
                     return false;
                 break;
 
