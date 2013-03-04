@@ -16,6 +16,9 @@ function MessageList(table_name, opts) {
 (function () {
 
 function add_display_time(message, prev) {
+    if (message.timestr !== undefined) {
+        return;
+    }
     var two_digits = function (x) { return ('0' + x).slice(-2); };
     var time = new XDate(message.timestamp * 1000);
     var include_date = message.include_recipient;
