@@ -524,6 +524,8 @@ $(function () {
             }
             // When the window scrolls, it may cause some messages to go off the screen
             notifications_bar.update();
+
+            setTimeout(process_visible_unread_messages, 0);
         }
     }
 

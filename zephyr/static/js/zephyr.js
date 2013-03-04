@@ -5,6 +5,9 @@ var current_msg_list = home_msg_list;
 var subject_dict = {};
 var people_dict = {};
 
+var queued_mark_as_read = [];
+var queued_flag_timer;
+
 var viewport = $(window);
 
 var get_updates_params = {
@@ -169,46 +172,42 @@ function message_range(msg_list, start, end) {
     return result;
 }
 
-var unread_filters = {'stream': {}, 'private': {}};
+function send_queued_flags() {
+    if (queued_mark_as_read.length === 0) {
+        return;
+    }
+
+    $.ajax({
+        type:     'POST',
+        url:      '/json/update_message_flags',
+        data:     {messages: JSON.stringify(queued_mark_as_read),
+                   op:       'add',
+                   flag:     'read'},
+        dataType: 'json'});
+
+    queued_mark_as_read = [];
+}
+
+var unread_counts = {'stream': {}, 'private': {}};
 var home_unread_messages = 0;
 
-// Record each message in the array 'messages' as either read or
-// unread, depending on the value of the 'is_read' flag.
-function process_unread_counts(messages, is_read) {
-    $.each(messages, function (index, message) {
-        if (message.id <= furthest_read && is_read !== true) {
-            return;
-        }
+function message_unread(message) {
+    if (message === undefined) {
+        return false;
+    }
 
-        if (message.sender_email === email && message.client === "website") {
-            return;
-        }
+    if (message.sender_email === email) {
+        return false;
+    }
 
-        if (is_read === true &&
-            !narrow.active() &&
-            !narrow.message_in_home(message)) {
-            return;
-        }
+    return message.flags === undefined ||
+           message.flags.indexOf('read') === -1;
+}
 
-        var hashkey;
-        if (message.type === 'stream') {
-            hashkey = message.display_recipient;
-        } else {
-            hashkey = message.display_reply_to;
-        }
-        if (unread_filters[message.type][hashkey] === undefined) {
-            unread_filters[message.type][hashkey] = {};
-        }
-        if (is_read) {
-            delete unread_filters[message.type][hashkey][message.id];
-        } else {
-            unread_filters[message.type][hashkey][message.id] = true;
-        }
-    });
-
+function update_unread_counts() {
     home_unread_messages = 0;
 
-    $.each(unread_filters.stream, function(index, obj) {
+    $.each(unread_counts.stream, function(index, obj) {
         var count = Object.keys(obj).length;
         ui.set_count("stream", index, count);
         if (narrow.stream_in_home(index)) {
@@ -217,12 +216,129 @@ function process_unread_counts(messages, is_read) {
     });
 
     var pm_count = 0;
-    $.each(unread_filters["private"], function(index, obj) {
+    $.each(unread_counts["private"], function(index, obj) {
         pm_count += Object.keys(obj).length;
     });
     ui.set_count("global", "private", pm_count);
     home_unread_messages += pm_count;
+
 }
+
+function mark_all_as_read() {
+    $.each(all_msg_list.all(), function (idx, msg) {
+        msg.flags = msg.flags || [];
+        msg.flags.push('read');
+    });
+    unread_counts = {'stream': {}, 'private': {}};
+    update_unread_counts();
+
+    $.ajax({
+        type:     'POST',
+        url:      '/json/update_message_flags',
+        data:     {messages: JSON.stringify([]),
+                   all:      true,
+                   op:       'add',
+                   flag:     'read'},
+        dataType: 'json'});
+}
+
+function unread_hashkey(message) {
+    var hashkey;
+    if (message.type === 'stream') {
+        hashkey = message.display_recipient;
+    } else {
+        hashkey = message.display_reply_to;
+    }
+
+    if (unread_counts[message.type][hashkey] === undefined) {
+        unread_counts[message.type][hashkey] = {};
+    }
+
+    return hashkey;
+}
+
+function process_loaded_for_unread(messages) {
+    $.each(messages, function (idx, message) {
+        var unread = message_unread(message);
+        if (!unread) {
+            return;
+        }
+
+        var hashkey = unread_hashkey(message);
+        unread_counts[message.type][hashkey][message.id] = true;
+    });
+
+    update_unread_counts();
+}
+
+// Takes a list of messages and marks them as read
+function process_read_messages(messages) {
+    var processed = [];
+    $.each(messages, function (idx, message) {
+        var hashkey = unread_hashkey(message);
+
+        message.flags = message.flags || [];
+        message.flags.push('read');
+        processed.push(message.id);
+
+        delete unread_counts[message.type][hashkey][message.id];
+    });
+
+    if (processed.length > 0) {
+        queued_mark_as_read = queued_mark_as_read.concat(processed);
+
+        if (queued_flag_timer !== undefined) {
+            clearTimeout(queued_flag_timer);
+        }
+
+        queued_flag_timer = setTimeout(send_queued_flags, 1000);
+    }
+
+    update_unread_counts();
+}
+
+function process_visible_unread_messages() {
+    // For any messages visible on the screen, make sure they have been marked
+    // as unread.
+    if (! notifications.window_has_focus()) {
+        return;
+    }
+
+    var selected = current_msg_list.selected_message();
+    var bottom = viewport.scrollTop() + viewport.height();
+    var middle = viewport.scrollTop() + (viewport.height() / 2);
+
+    // Being simplistic about this, the smallest message is 30 px high.
+    var selected_row = rows.get(current_msg_list.selected_id(), current_msg_list.table_name);
+    var num_neighbors = Math.floor(viewport.height() / 30);
+    var candidates = $.merge(selected_row.prevAll("tr.message_row[zid]:lt(" + num_neighbors + ")"),
+                             selected_row.nextAll("tr.message_row[zid]:lt(" + num_neighbors + ")"));
+
+    var visible_messages = candidates.filter(function (idx, message) {
+        var row = $(message);
+        var row_bottom = (row.offset().top + row.height());
+        var entirely_within_view = row.offset().top > viewport.scrollTop() && row_bottom < bottom;
+        return entirely_within_view;
+    });
+
+    var mark_as_read = $.map(visible_messages, function(msg) {
+        var message = current_msg_list.get(rows.id($(msg)));
+        if (! message_unread(message)) {
+            return undefined;
+        } else {
+            return message;
+        }
+    });
+
+    if (message_unread(selected)) {
+        mark_as_read.push(selected);
+    }
+
+    if (mark_as_read.length > 0) {
+        process_read_messages(mark_as_read);
+    }
+}
+
 
 function send_pointer_update() {
     if (furthest_read > server_furthest_read) {
@@ -245,8 +361,6 @@ $(function () {
                       keepTracking: true});
 
     $(document).on('message_selected.zephyr', function (event) {
-        process_unread_counts(message_range(event.msg_list, furthest_read + 1, event.id), true);
-
         // Narrowing is a temporary view on top of the home view and
         // doesn't affect your pointer in the home view.
         if (event.msg_list === home_msg_list
@@ -356,8 +470,6 @@ function add_messages(messages, msg_list, opts) {
     if (!messages)
         return;
 
-    opts = $.extend({}, {update_unread_counts: true}, opts);
-
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
     messages = $.map(messages, add_message_metadata);
@@ -377,6 +489,8 @@ function add_messages(messages, msg_list, opts) {
         prepended = true;
     }
 
+    process_loaded_for_unread(messages);
+
     if ((msg_list === narrowed_msg_list) && !msg_list.empty() &&
         (msg_list.selected_id() === -1)) {
         // If adding some new messages to the message tables caused
@@ -385,10 +499,6 @@ function add_messages(messages, msg_list, opts) {
         util.hide_empty_narrow_message();
         // And also select the newly arrived message.
         msg_list.select_id(msg_list.selected_id(), {then_scroll: true, use_closest: true});
-    }
-
-    if (msg_list === home_msg_list && opts.update_unread_counts) {
-        process_unread_counts(messages, false);
     }
 
     // If we prepended messages, then we need to scroll back to the pointer.
@@ -479,6 +589,7 @@ function get_updates(options) {
                 }
                 add_messages(messages, all_msg_list);
                 add_messages(messages, home_msg_list);
+                process_visible_unread_messages();
                 notifications.received_messages(messages);
                 compose.update_faded_messages();
             }

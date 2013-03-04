@@ -172,10 +172,8 @@ function stream_home_view_clicked(e) {
         recenter_pointer_on_display = true;
         suppress_scroll_pointer_update = true;
 
-        // If we added any messages that were unread but before the currently selected message pointer
-        // we need to re-process them to update the unread count
         if (! home_msg_list.empty()) {
-            process_unread_counts(message_range(home_msg_list.first().id, home_msg_list.selected_id()), true);
+            process_loaded_for_unread(home_msg_list.all());
         }
     }, 0);
 

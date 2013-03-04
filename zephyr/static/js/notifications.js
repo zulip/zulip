@@ -63,6 +63,9 @@ exports.initialize = function () {
         $.each(notice_memory, function (index, notice_mem_entry) {
            notice_mem_entry.obj.cancel();
         });
+
+
+        process_visible_unread_messages();
     }).blur(function () {
         window_has_focus = false;
     }).mouseover(function () {
@@ -82,6 +85,10 @@ exports.initialize = function () {
             asked_permission_already = true;
         }
     });
+};
+
+exports.window_has_focus = function () {
+    return window_has_focus;
 };
 
 function gravatar_url(message) {

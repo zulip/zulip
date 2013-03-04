@@ -290,28 +290,10 @@ exports.activate = function (operators, opts) {
         add_messages(all_msg_list.all(), narrowed_msg_list);
     }
 
-    function mark_loaded_as_unread() {
-        // Mark as read any messages before or at the pointer in the narrowed view
-        if (! narrowed_msg_list.empty()) {
-            // XXX: We shouldn't really be directly accessing the message list
-            var msgs = narrowed_msg_list.all();
-            var i;
-            var to_process = [];
-            for (i = 0; i < msgs.length && msgs[i].id <= narrowed_msg_list.selected_id(); ++i) {
-                to_process.push(msgs[i]);
-            }
-
-            process_unread_counts(to_process, true);
-        }
-    }
-
     if (narrowed_msg_list.empty()) {
         load_old_messages(then_select_id, 200, 200, narrowed_msg_list, function (messages) {
             maybe_select_closest();
-            mark_loaded_as_unread();
         }, true, false);
-    } else {
-        mark_loaded_as_unread();
     }
 
     // Show the new set of messages.

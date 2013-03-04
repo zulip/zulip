@@ -40,7 +40,8 @@ var globals =
     + ' load_more_messages reset_load_more_status have_scrolled_away_from_top'
     + ' home_unread_messages'
     + ' maybe_scroll_to_selected recenter_pointer_on_display suppress_scroll_pointer_update'
-    + ' process_unread_counts message_range message_in_table'
+    + ' process_visible_unread_messages message_range message_in_table process_loaded_for_unread'
+    + ' mark_all_as_read '
     ;
 
 
