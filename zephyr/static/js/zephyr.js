@@ -680,6 +680,7 @@ function get_updates(options) {
                 add_messages(data.messages, all_msg_list, {append_to_table: false});
                 add_messages(data.messages, home_msg_list);
                 notifications.received_messages(data.messages);
+                compose.update_faded_messages();
             }
 
             if (data.zephyr_mirror_active === false) {

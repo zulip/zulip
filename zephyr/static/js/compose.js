@@ -122,6 +122,14 @@ exports.unfade_messages = function () {
     ui.enable_floating_recipient_bar();
 };
 
+exports.update_faded_messages = function () {
+    if (faded_to === undefined) {
+        return;
+    }
+
+    fade_around(faded_to);
+};
+
 exports.start = function (msg_type, opts) {
     if (reload.is_in_progress()) {
         return;
