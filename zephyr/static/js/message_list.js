@@ -105,11 +105,23 @@ MessageList.prototype = {
             }
         }
         this._selected_id = id;
+
+        // This is the number of pixels between the top of the
+        // viewable window and the newly selected message
+        var scrolltop_offset;
+        var selected_row = rows.get(id, this.table_name);
+        var new_msg_in_view = (selected_row.length > 0);
+        if (new_msg_in_view) {
+            scrolltop_offset = viewport.scrollTop() - selected_row.offset().top;
+        }
         if (this._maybe_rerender()) {
-            // We need to scroll because the message list was
-            // rerendered and the new message may no longer be on the
-            // screen
-            opts.then_scroll = true;
+            // If we could see the newly selected message, scroll the
+            // window such that the newly selected message is at the
+            // same location as it would have been before we
+            // re-rendered.
+            if (new_msg_in_view) {
+                viewport.scrollTop(rows.get(id, this.table_name).offset().top + scrolltop_offset);
+            }
         }
         $(document).trigger($.Event('message_selected.zephyr', opts));
     },
