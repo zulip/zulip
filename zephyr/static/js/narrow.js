@@ -90,7 +90,7 @@ exports.describe = function (operators) {
             return 'Narrow to private messages with ' + operand;
 
         case 'search':
-            return 'Narrow to messages containing ' + operand;
+            return 'Search for ' + operand;
 
         case 'in':
             return 'Narrow to messages in ' + operand;

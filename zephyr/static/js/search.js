@@ -64,7 +64,7 @@ exports.update_typeahead = function () {
         return {action: 'sender', query: elt};
     });
     var options = streams.concat(people).concat(senders);
-    // The first slot is reserved for "narrow to messages containing x".
+    // The first slot is reserved for "search for x".
     // (this is updated in the source function for our typeahead as well)
     options.unshift({action: 'operators', query: '', operators: []});
 
