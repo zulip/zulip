@@ -19,6 +19,15 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
                 return True
         return False
 
+    def dropbox_image(self, url):
+        if not self.is_image(url):
+            return None
+        parsed_url = urlparse.urlparse(url)
+        if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')) \
+                and parsed_url.path.startswith('/s/'):
+            return "%s?dl=1" % (url,)
+        return None
+
     def youtube_image(self, url):
         # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
         # If it matches, match.group(2) is the video id.
@@ -36,17 +45,22 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
         while stack:
             currElement = stack.pop()
             for child in currElement.getchildren():
-                if child.tag == "a":
-                    url = child.get("href")
-                    if self.is_image(url):
-                        images.append((url, url))
-                    else:
-                        youtube = self.youtube_image(url)
-                        if youtube is not None:
-                            images.append((youtube, url))
-
                 if child.getchildren():
                     stack.append(child)
+
+                if child.tag == "a":
+                    url = child.get("href")
+                    youtube = self.youtube_image(url)
+                    if youtube is not None:
+                        images.append((youtube, url))
+                        continue
+                    dropbox = self.dropbox_image(url)
+                    if dropbox is not None:
+                        images.append((dropbox, url))
+                        continue
+                    if self.is_image(url):
+                        images.append((url, url))
+                        continue
         return images
 
     def run(self, root):
