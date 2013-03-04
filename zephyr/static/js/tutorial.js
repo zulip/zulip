@@ -159,7 +159,7 @@ function make_script() {
     + "* Subjects are preserved across replies, so most of the time you won't even have to think about them\n"),
   go(sleep, 8000),
   // Narrowing
-  go(send_message, "Another valuable feature of Humbug is **narrowing**. Click on **You and Humbug Tutorial Bot** above, scroll to the bottom, and tell me when you've done so."),
+  go(send_message, "Another valuable feature of Humbug is **narrowing**. Click on **You and Humbug Tutorial Bot** (the black bar up there), scroll to the bottom, and tell me when you've done so."),
   go2(wait_for_message, 180, pm_to_me),
   go(sleep, 1000),
   go(send_message, "Great! We're now looking only at messages between us. You can tell because the background is grey, and the search bar at the top has a query in it. You can narrow on many different types of things, including:\n"
@@ -196,7 +196,7 @@ function make_script() {
   go(send_message, "**Congratulations! The tutorial is now complete**. Enjoy Humbug!"),
   go(sleep, 3000),
   go(send_message, "Some things you can do from here:\n"
-    + "* Send a private message to someone by clicking their name in the left sidebar\n"
+    + "* Send a private message to someone by clicking their name in the right sidebar\n"
     + "* Send a new stream message, or reply to an existing one\n"
     + "(One suggestion: A message to stream `" + main_stream_name +"` with subject `today` about what you will be working on today).\n"
     + "* Invite your coworkers (from the gear menu)\n")
