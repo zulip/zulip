@@ -41,7 +41,7 @@ function render_object_in_parts(obj) {
         // way we identify action objects by their labels.  Using two spaces
         // after 'Narrow to' ensures this, and is invisible with standard HTML
         // whitespace handling.
-        return {prefix: 'Narrow to  ',
+        return {prefix: '',
                 query: narrow.describe(obj.operators),
                 suffix: ''};
     }

@@ -74,28 +74,28 @@ exports.describe = function (operators) {
         switch (elem[0]) {
         case 'is':
             if (operand === 'private-message')
-                return 'private messages';
+                return 'Narrow to all private messages';
             break;
 
         case 'stream':
-            return 'stream ' + operand;
+            return 'Narrow to stream ' + operand;
 
         case 'subject':
-            return 'subject ' + operand;
+            return 'Narrow to subject ' + operand;
 
         case 'sender':
-            return 'sender ' + operand;
+            return 'Narrow to sender ' + operand;
 
         case 'pm-with':
-            return 'private messages with ' + operand;
+            return 'Narrow to private messages with ' + operand;
 
         case 'search':
-            return 'messages containing ' + operand;
+            return 'Narrow to messages containing ' + operand;
 
         case 'in':
-            return 'messages in ' + operand;
+            return 'Narrow to messages in ' + operand;
         }
-        return '(unknown operator)';
+        return 'Narrow to (unknown operator)';
     }).join(', ');
 };
 
