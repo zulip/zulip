@@ -292,7 +292,7 @@ function add_message_metadata(message, dummy) {
 
     case 'private':
         message.is_private = true;
-        message.reply_to = get_private_message_recipient(message, 'email');
+        message.reply_to = get_private_message_recipient(message, 'email').replace(/ /g, "");
         message.display_reply_to = get_private_message_recipient(message, 'full_name');
 
         involved_people = message.display_recipient;

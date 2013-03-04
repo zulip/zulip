@@ -43,7 +43,10 @@ exports.public_operators = function () {
        ['subject', 'my amazing subject']
 
    These are not keys in a JavaScript object, because we
-   might need to support multiple operators of the same type. */
+   might need to support multiple operators of the same type.
+
+   Results are not escaped in any way.
+*/
 function unparse(operators) {
     var parts = [];
     $.each(operators, function (index, elem) {
@@ -54,8 +57,7 @@ function unparse(operators) {
             // a colon are glued together to form a search term.
             parts.push(elem[1]);
         } else {
-            // FIXME: URI encoding will look really ugly
-            parts.push(elem[0] + ':' + encodeURIComponent(elem[1]).toLowerCase());
+            parts.push(elem[0] + ':' + elem[1].toLowerCase());
         }
     });
     return parts.join(' ');
