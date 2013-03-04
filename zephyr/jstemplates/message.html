@@ -68,8 +68,7 @@
         <div class="message_right actions_hover">
             {{! If include_sender is not set, we will never show this link anyway. }}
             {{#include_sender}}<span class="actions_link">&laquo; Info</span>{{/include_sender}}
-            <span class="message_time"
-                  title="{{full_date_str}} {{full_time_str}}">{{{timestr}}}</span>
+            <span class="message_time">{{{timestr}}}</span>
         </div>
         </div>
         <div class="message_content">{{{content}}}</div>

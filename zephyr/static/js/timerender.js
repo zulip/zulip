@@ -140,5 +140,26 @@ exports.update_timestamps = function () {
 
 setInterval(exports.update_timestamps, 60 * 1000);
 
+// XDate.toLocaleDateString and XDate.toLocaleTimeString are
+// expensive, so we delay running the following code until we need
+// the full date and time strings.
+exports.set_full_datetime = function timerender_set_full_datetime(message, time_elem) {
+    if (message.full_date_str !== undefined) {
+        return;
+    }
+
+    var time = new XDate(message.timestamp * 1000);
+    // Convert to number of hours ahead/behind UTC.
+    // The sign of getTimezoneOffset() is reversed wrt
+    // the conventional meaning of UTC+n / UTC-n
+    var tz_offset = -time.getTimezoneOffset() / 60;
+
+    message.full_date_str = time.toLocaleDateString();
+    message.full_time_str = time.toLocaleTimeString() +
+        ' (UTC' + ((tz_offset < 0) ? '' : '+') + tz_offset + ')';
+
+    time_elem.attr('title', message.full_date_str + ' ' + message.full_time_str);
+};
+
 return exports;
 }());

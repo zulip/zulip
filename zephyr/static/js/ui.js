@@ -414,6 +414,9 @@ function show_actions_popover(element, id) {
     current_msg_list.select_id(id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
+        timerender.set_full_datetime(current_msg_list.get(id),
+                                     elt.closest(".message_row").find(".message_time"));
+
         var args = {
             message:  current_msg_list.get(id),
             narrowed: narrow.active()
@@ -890,6 +893,13 @@ $(function () {
         if (event.then_scroll) {
             recenter_view(row);
         }
+    });
+
+    $("#main_div").on("mouseenter", ".message_time", function (e) {
+        var time_elem = $(e.target);
+        var row = time_elem.closest(".message_row");
+        var message = current_msg_list.get(rows.id(row));
+        timerender.set_full_datetime(message, time_elem);
     });
 });
 
