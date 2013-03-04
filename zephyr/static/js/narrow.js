@@ -195,7 +195,7 @@ function build_filter(operators_mixed_case) {
 
     return function (message) {
         var operand, i;
-        for (i=0; i<operators.length; i++) {
+        for (i = 0; i < operators.length; i++) {
             operand = operators[i][1];
             switch (operators[i][0]) {
             case 'is':
@@ -323,6 +323,18 @@ exports.activate = function (operators, opts) {
     reset_load_more_status();
     maybe_select_closest();
 
+    function extract_search_terms(operators) {
+        var i = 0;
+        for (i = 0; i < operators.length; i++) {
+            var type = operators[i][0];
+            if (type === "search") {
+                return operators[i][1];
+            }
+        }
+        return undefined;
+    }
+    search.update_highlighting(extract_search_terms(operators));
+
     // Put the narrow operators in the URL fragment and search bar
     hashchange.save_narrow(operators);
     $('#search_query').val(unparse(operators));
@@ -397,6 +409,8 @@ exports.deactivate = function () {
     // We fall back to the closest selected id, if the user has removed a stream from the home
     // view since leaving it the old selected id might no longer be there
     home_msg_list.select_id(home_msg_list.selected_id(), {then_scroll: true, use_closest: true});
+
+    search.clear_highlighting();
 
     hashchange.save_narrow();
 

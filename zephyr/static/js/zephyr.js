@@ -435,6 +435,10 @@ function add_to_table(messages, msg_list, where, allow_collapse) {
         if (ids_where_next_is_same_sender[id]) {
             row.find('.messagebox').addClass("next_is_same_sender");
         }
+        if (msg_list === narrowed_msg_list) {
+            // If narrowed, we may need to highlight the message
+            search.maybe_highlight_message(row);
+        }
     });
 
     // The message that was last before this batch came in has to be
