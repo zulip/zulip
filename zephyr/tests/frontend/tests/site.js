@@ -175,7 +175,12 @@ casper.then(function () {
         recipient: 'humbug+tutorial@humbughq.com',
         content: 'exit'
     });
+});
 
+// Give the tutorial bot a little time to respond to us
+wait_for_receive(function () {});
+
+casper.then(function () {
     casper.test.info('Sending messages');
 });
 
