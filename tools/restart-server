@@ -16,14 +16,6 @@ os.chdir("/home/humbug/humbug")
 
 #subprocess.check_call(["python", "manage.py", "syncdb"], stdout=open('/dev/null', 'w'))
 
-try:
-    if not pylibmc.Client(['127.0.0.1']).flush_all():
-        print "%sflush_all returned False%s" % (WARNING, ENDC)
-    # There doesn't seem to be a method to close a pylibmc Client object.
-except:
-    print "%sCould not flush cache:%s" % (WARNING, ENDC)
-    traceback.print_exc()
-
 # Delete all .pyc files to avoid old module files hanging around
 subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/dev/null', 'w'))
 
@@ -37,5 +29,13 @@ for cmd in ('runfcgi', 'runtornado', "process_user_activity"):
         subprocess.check_call(["pkill", "-f", "python manage.py " + cmd])
     except subprocess.CalledProcessError:
         print "%sCould not kill %s; is it running?%s" % (WARNING, cmd, ENDC)
+
+try:
+    if not pylibmc.Client(['127.0.0.1']).flush_all():
+        print "%sflush_all returned False%s" % (WARNING, ENDC)
+    # There doesn't seem to be a method to close a pylibmc Client object.
+except:
+    print "%sCould not flush cache:%s" % (WARNING, ENDC)
+    traceback.print_exc()
 
 print OKGREEN + "Application restarted successfully!" + ENDC
