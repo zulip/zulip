@@ -86,39 +86,6 @@ class Gravatar(markdown.inlinepatterns.Pattern):
             % (gravatar_hash(match.group('email')),))
         return img
 
-# We first map syntax of the form ":)" to the ":smile:" syntax, and
-# then map syntax of the form ":foo:" to the emoji named "foo".
-smiley_to_emoji = {
-    # We're somewhat restrained here, to avoid false positives
-    ":-)" : "blush",  # This is a very weird coopting of the blush emoticon, but the normal
-    ":)"  : "blush",  # smile was so smiley that it became indistinguishable from grin.
-    ":-(" : "worried",
-    ":("  : "worried",
-    ";-)" : "wink",
-    ";)"  : "wink",
-    ":-P" : "stuck_out_tongue",
-    ":-p" : "stuck_out_tongue",
-    ":P"  : "stuck_out_tongue",
-    ":p"  : "stuck_out_tongue",
-    ":-*" : "kissing_closed_eyes",
-    ":*"  : "kissing_closed_eyes",
-    "8-)" : "sunglasses",
-    "8)"  : "sunglasses",
-    "O:-)": "innocent",
-    "O:)" : "innocent",
-    "o:-)": "innocent",
-    "o:)" : "innocent",
-    ":-/" : "confused",
-    ":/"  : "confused",
-    ":'(" : "cry",
-    ":-D" : "smiley",
-    ":D"  : "smiley",
-    ":-|" : "expressionless",
-    ":|"  : "expressionless",
-    "<3"  : "heart",
-    }
-smiley_regex = '|'.join([re.escape(face) for face in smiley_to_emoji])
-
 path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..',
                              # This should be zephyr/
                              'static', 'third', 'gemoji', 'images', 'emoji', '*.png')
@@ -139,13 +106,6 @@ class Emoji(markdown.inlinepatterns.Pattern):
         if name not in emoji_list:
             return orig_syntax
         return make_emoji(name, orig_syntax)
-
-class Smiley(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, match):
-        orig_syntax = match.group("syntax")
-        if orig_syntax not in smiley_to_emoji:
-            return orig_syntax
-        return make_emoji(smiley_to_emoji[orig_syntax], orig_syntax)
 
 def fixup_link(link):
     """Set certain attributes we want on every link."""
@@ -303,7 +263,6 @@ class Bugdown(markdown.Extension):
 
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\S)(?P<syntax>:[^:\s]+:)(?!\S)'), '_begin')
-        md.inlinePatterns.add('smileys', Smiley(r'(?<!\S)(?P<syntax>' + smiley_regex + r')(?!\S)'), '_begin')
         md.inlinePatterns.add('link', LinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
 
         # markdown.inlinepatterns.Pattern compiles this with re.UNICODE, which

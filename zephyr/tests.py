@@ -11,7 +11,7 @@ from zephyr.tornadoviews import json_get_updates, api_get_messages
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
 from zephyr.lib.initial_password import initial_password, initial_api_key
 from zephyr.lib.actions import do_send_message, gather_subscriptions
-from zephyr.lib.bugdown import convert, emoji_list, smiley_to_emoji
+from zephyr.lib.bugdown import convert, emoji_list
 
 import simplejson
 import subprocess
@@ -1954,25 +1954,12 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
                        (':whale:', emoji_img(':whale:')),
                        (':fakeemoji:', ':fakeemoji:'),
                        (':even faker smile:', ':even faker smile:'),
-                       # Smileys
-                       (':)', emoji_img(':)', 'blush')),
-                       (';)', emoji_img(';)', 'wink')),
-                       ('8)', emoji_img('8)', 'sunglasses')),
-                       ('o:)', emoji_img('o:)', 'innocent')),
-                       ('<3', emoji_img('&lt;3', 'heart')),
-                       (':(', emoji_img(':(', 'worried')),
-                       ('x<3', 'x&lt;3')]
+                       ]
 
         # Check every single emoji
         for img in emoji_list:
             emoji_text = ":%s:" % img
             test_cases.append((emoji_text, emoji_img(emoji_text)))
-
-        # Check every single smiley
-        for smiley, emoji in smiley_to_emoji.iteritems():
-            # Fixup for <3
-            smiley_escaped_text = smiley.replace('<', '&lt;')
-            test_cases.append((smiley, emoji_img(smiley_escaped_text, emoji)))
 
         for input, expected in test_cases:
             self.assertEqual(convert(input), '<p>%s</p>' % expected)
@@ -1981,7 +1968,7 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
         msg = 'test :smile: again :poop:\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:'
         converted = convert(msg)
         self.assertEqual(converted, '<p>test ' + emoji_img(':smile:') + ' again ' + emoji_img(':poop:') + '<br>\n'
-                                  + emoji_img(':)', 'blush') + ' foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>')
+                                  + ':) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>')
 
 
     def test_multiline_strong(self):
