@@ -739,3 +739,7 @@ function fast_forward_pointer() {
         }
     });
 }
+
+function logout() {
+    $('#logout_form').submit();
+}

@@ -8,7 +8,8 @@ from django.template import RequestContext, loader
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.core import validators
-from django.contrib.auth.views import login as django_login_page
+from django.contrib.auth.views import login as django_login_page, \
+    logout_then_login as django_logout_then_login
 from django.db.models import Q
 from django.core.mail import send_mail
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
@@ -342,6 +343,10 @@ def login_page(request, **kwargs):
     except KeyError:
         pass
     return template_response
+
+@require_post
+def logout_then_login(request, **kwargs):
+    return django_logout_then_login(request, kwargs)
 
 def accounts_home(request):
     if request.method == 'POST':

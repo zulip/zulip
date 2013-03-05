@@ -11,7 +11,7 @@ urlpatterns = patterns('',
     # view we're wrapping to continue to function.
     url(r'^accounts/login/',  'zephyr.views.login_page',         {'template_name': 'zephyr/login.html'}),
     url(r'^accounts/login/',  'django.contrib.auth.views.login', {'template_name': 'zephyr/login.html'}),
-    url(r'^accounts/logout/', 'django.contrib.auth.views.logout_then_login'),
+    url(r'^accounts/logout/', 'zephyr.views.logout_then_login'),
 
     url(r'^accounts/password/reset/$', 'django.contrib.auth.views.password_reset',
         {'post_reset_redirect' : '/accounts/password/reset/done/',
