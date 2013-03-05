@@ -29,6 +29,16 @@ casper.then(function () {
     }, true /* submit form */);
 });
 
+casper.then(function () {
+    casper.test.info('Logging out');
+    casper.click('li[title="Log out"] a');
+});
+
+casper.then(function () {
+    casper.test.assertHttpStatus(200);
+    casper.test.assertUrlMatch(/accounts\/login\/$/);
+});
+
 // Run the above queued actions.
 casper.run(function () {
     casper.test.done();

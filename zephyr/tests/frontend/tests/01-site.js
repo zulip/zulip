@@ -10,6 +10,8 @@
 // For example, utils.dump() prints an Object with nice formatting.
 var utils = require('utils');
 
+var common = require('../common.js').common;
+
 // Uncomment this to get page-context console.log in the CasperJS output
 // (plus some CasperJS-specific messages)
 /*
@@ -119,10 +121,7 @@ function un_narrow() {
     keypress(27); // Esc
 }
 
-casper.start('http://localhost:9981/', function () {
-    // URL like http://localhost:9981/ or http://localhost:9981/#
-    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#?$/, 'On home page');
-});    
+common.log_in();
 
 casper.then(function () {
     casper.test.info('Sanity-checking existing messages');
@@ -321,6 +320,8 @@ casper.then(function() {
     casper.test.assertExists('#settings.tab-pane.active', 'Settings page is active');
 });
 
+
+common.log_out();
 
 // Run the above queued actions.
 casper.run(function () {
