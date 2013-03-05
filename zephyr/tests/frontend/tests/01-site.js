@@ -74,6 +74,7 @@ function send_message(type, params) {
     casper.click('#left_bar_compose_' + type + '_button_big');
     casper.fill('form[action^="/json/send_message"]', params);
     casper.click('#compose-send-button');
+    casper.waitWhileVisible('#compose');
 }
 
 // Wait for any previous send to finish, then send a message.
