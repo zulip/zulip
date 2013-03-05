@@ -15,9 +15,10 @@ from zephyr.lib.timeout import timeout
 
 class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url):
+        parsed_url = urlparse.urlparse(url)
         # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
         for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
-            if url.lower().endswith(ext):
+            if parsed_url.path.lower().endswith(ext):
                 return True
         return False
 
