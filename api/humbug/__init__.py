@@ -32,7 +32,7 @@ import optparse
 from ConfigParser import SafeConfigParser
 
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
