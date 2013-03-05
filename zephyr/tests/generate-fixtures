@@ -1,6 +1,15 @@
 #!/bin/sh -e
+
+if [ -e zephyr/tests/zephyrdb.test.pristine ]; then
+    if [ "$1" != "--force" ]; then
+        cp zephyr/tests/zephyrdb.test.pristine zephyr/tests/zephyrdb.test
+        exit 0
+    fi
+fi
+
 mkdir -p zephyr/fixtures
 rm -f zephyr/tests/zephyrdb.test
+rm -f zephyr/tests/zephyrdb.test.pristine
 
 # Remove time.pyc to try to prevent it from screwing people importing
 # time from inside zephyr.lib.  We can drop this hack after a bit.
@@ -16,3 +25,5 @@ python manage.py dumpdata  --settings=humbug.test_settings \
     zephyr.Subscription zephyr.Message zephyr.Huddle zephyr.Realm \
     zephyr.UserMessage zephyr.Client \
     zephyr.DefaultStream > zephyr/fixtures/messages.json
+
+cp zephyr/tests/zephyrdb.test zephyr/tests/zephyrdb.test.pristine
