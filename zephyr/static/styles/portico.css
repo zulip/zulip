@@ -35,15 +35,6 @@ li {
     border-radius: 4px;
 }
 
-.or {
-    padding-left: 15px;
-    padding-right: 15px;
-}
-
-.span4 .or {
-    padding-left: 0px;
-}
-
 .for_you {
     font-size: 30px;
     font-style: italic;
@@ -60,6 +51,14 @@ a.title {
 a.title:hover {
     color: gray;
     text-decoration: none;
+}
+
+.login-area {
+    /* Often, the form itself overshoots the containing span, which
+     is an issue because then it collides with the "Sign in with Google"
+     button. This fix, though hackish, makes sure it's big enough at
+     all times. */
+    min-width: 400px;
 }
 
 .fakecontrol {

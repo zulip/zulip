@@ -27,7 +27,7 @@ autofocus('#id_username');
 {% endif %}
 
 <div class="row">
-    <div class="span5">
+    <div class="span5 login-area">
         <form name="login_form" method="post" class="form-horizontal"
               action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
             {% csrf_token %}
@@ -52,8 +52,10 @@ autofocus('#id_username');
             </div>
         </form>
     </div>
+    <div class="span1">
+        <span>- or -</span>
+    </div>
     <div class="span4">
-        <span class="or">- or -</span>
         <a href="/accounts/login/openid/" class="zocial google">Sign in with Google</a>
     </div>
 </div>
