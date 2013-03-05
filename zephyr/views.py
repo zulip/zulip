@@ -415,6 +415,7 @@ def home(request):
                                'people'      : people,
                                'streams'     : streams,
                                'poll_timeout': settings.POLL_TIMEOUT,
+                               'debug'       : settings.DEBUG,
                                'have_initial_messages':
                                    js_bool(num_messages > 0),
                                'desktop_notifications_enabled':
