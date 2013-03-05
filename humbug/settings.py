@@ -21,54 +21,55 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'zephyrdb',
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-        'OPTIONS': {
-            'timeout': 20,
+DATABASES = {"default": {
+    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'NAME': 'humbug',
+    'USER': 'humbug',
+    'PASSWORD': '', # Authentication done via certificates
+    'HOST': '10.254.4.99',
+    'SCHEMA': 'humbug',
+    'OPTIONS': {
+        # Note that 'verify-ca' only checks that the server certificate was
+        # signed by a trusted root.  You need 'verify-full' if you want to
+        # check that the server's hostname in the certificate matches the
+        # host you connect to.
+        #
+        # We don't currently do 'verify-full' because the web servers
+        # connect to the database using its AWS internal IP address, which
+        # doesn't reverse-resolve to its hostname.  And because the
+        # database's certificate is for its hostname instead of its internal
+        # IP address, the frontend can't verify that the certificate is for
+        # the correct machine.  This can be solved by running DNS
+        # internally.  For now, 'verify-ca' is probably sufficient because
+        # the certificates are signed by our own CA.
+        'sslmode': 'verify-ca',
         },
     },
 }
 
-if DEPLOYED:
-    DATABASES["default"] = {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'humbug',
-        'USER': 'humbug',
-        'PASSWORD': '', # Authentication done via certificates
-        'HOST': '10.254.4.99',
-        'SCHEMA': 'humbug',
-        'OPTIONS': {
-            # Note that 'verify-ca' only checks that the server certificate was
-            # signed by a trusted root.  You need 'verify-full' if you want to
-            # check that the server's hostname in the certificate matches the
-            # host you connect to.
-            #
-            # We don't currently do 'verify-full' because the web servers
-            # connect to the database using its AWS internal IP address, which
-            # doesn't reverse-resolve to its hostname.  And because the
-            # database's certificate is for its hostname instead of its internal
-            # IP address, the frontend can't verify that the certificate is for
-            # the correct machine.  This can be solved by running DNS
-            # internally.  For now, 'verify-ca' is probably sufficient because
-            # the certificates are signed by our own CA.
-            'sslmode': 'verify-ca',
-            },
-        }
-elif False:
-    DATABASES["default"] = {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'humbug',
-        'USER': 'humbug',
-        'PASSWORD': 'xxxxxxxxxxxx',
-        'HOST': 'localhost',
-        'SCHEMA': 'humbug'
-        }
+if not DEPLOYED:
+    # We can delete this if statement and the whole else clause below
+    # once everyone is off sqlite.
+    if False:
+        DATABASES["default"].update({
+                'PASSWORD': 'xxxxxxxxxxxx',
+                'HOST': 'localhost',
+                'OPTIONS': {}
+                })
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': 'zephyrdb',
+                'USER': '',                      # Not used with sqlite3.
+                'PASSWORD': '',                  # Not used with sqlite3.
+                'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
+                'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+                'OPTIONS': {
+                    'timeout': 20,
+                    },
+                },
+            }
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
