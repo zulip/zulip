@@ -527,6 +527,21 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
     });
 }
 
+// The tutorial bot needs this function to add you to the
+// tutorial-yourname stream.
+exports.tutorial_subscribe_or_add_me_to = function (stream_name) {
+    var stream_status = compose.check_stream_existence(stream_name)[0];
+    if (stream_status === 'does-not-exist') {
+        ajaxSubscribeForCreation(stream_name, [email], false);
+    } else {
+        ajaxSubscribe(stream_name);
+    }
+};
+
+exports.tutorial_unsubscribe_me_from = function (stream_name) {
+    ajaxUnsubscribe(stream_name);
+};
+
 function people_cmp(person1, person2) {
     // Compares objects of the form used in people_list.
     var name_cmp = person1.full_name.localeCompare(person2.full_name);

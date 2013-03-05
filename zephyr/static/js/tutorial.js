@@ -23,7 +23,7 @@ function sleep(time_in_ms) {
     });
 }
 
-function send_message(message) {
+function pm(message) {
     return $.ajax({
         dataType: 'json',
         url: '/json/tutorial_send_message',
@@ -33,22 +33,43 @@ function send_message(message) {
     });
 }
 
+function stream_message(subject, message) {
+    return $.ajax({
+        dataType: 'json',
+        url: '/json/tutorial_send_message',
+        type: 'POST',
+        data: {'type': 'stream',
+               'subject': subject,
+               'content': message}
+    });
+}
+
+// populated later -- should be e.g. tutorial-wdaher
+var my_tutorial_stream;
+
+function stream_to_me(message) {
+    return message.type === 'stream' && message.to === my_tutorial_stream;
+}
+
+function pm_to_me(message) {
+    return message.type === 'private' && message.to[0] === 'humbug+tutorial@humbughq.com';
+}
+
+function any_message_to_me(message) {
+    return pm_to_me(message) || stream_to_me(message);
+}
+
 var received_messages = [];
 exports.message_was_sent = function(message) {
     var trimmed_content = message.content.trim().toLowerCase();
-    if (message.type === 'private'
-        && (trimmed_content === 'exit' || trimmed_content === 'stop')) {
-        sleep(1000).then(go(send_message, "OK, cool, we'll stop the tutorial here. If you have any questions, you can always email support@humbughq.com!"));
+    if (any_message_to_me(message) &&
+        (trimmed_content === 'exit' || trimmed_content === 'stop')) {
+        sleep(1000).then(go(pm, "OK, cool, we'll stop the tutorial here. If you have any questions, you can always email support@humbughq.com!"));
         exports.stop();
         return;
     }
     received_messages.push(message);
 };
-
-
-function pm_to_me(message) {
-    return message.type === 'private' && message.to[0] === 'humbug+tutorial@humbughq.com';
-}
 
 function wait_for_message(time_to_wait_sec, condition) {
     var POLL_INTERVAL_MS = 500;
@@ -86,6 +107,8 @@ function wait_for_message(time_to_wait_sec, condition) {
 var script = [];
 
 function make_script() {
+    my_tutorial_stream = 'tutorial-' + email.split('@')[0];
+
     // Try to guess at one of your main streams.
     // This is problematic because it might end up being 'commits' or something.
     var main_stream_name = domain.split('.')[0];
@@ -100,107 +123,101 @@ function make_script() {
     if ($.inArray(main_stream_name, my_streams) === -1) {
       main_stream_name = my_streams[0];
     }
+    // Special hack for CUSTOMER18 -- if there's a stream named customer18stream1, well, then
+    // that's definitely the one to pick
+    if ($.inArray('customer18stream1', my_streams) !== -1) {
+        main_stream_name = 'customer18stream1';
+    }
 
     script = [
   go(sleep, 1000), // The first message seems to sometimes get eaten in Chrome otherwise.
-  go(send_message, "Hello, " + fullname + "!"),
+  go2(stream_message, "tutorial", "Hello, " + fullname + "!"),
   go(sleep, 2000),
-  go(send_message, "Welcome to Humbug!"),
+  go2(stream_message, "tutorial", "Welcome to Humbug!"),
   go(sleep, 2000),
-  go(send_message, "I'm the Humbug tutorial bot and I'll be showing you around."),
+  go2(stream_message, "tutorial", "I'm the Humbug tutorial bot and I'll be showing you around."),
   go(sleep, 2000),
-  go(send_message, 'At any time, you can stop this tutorial by replying to me with the word "exit".'),
+  go2(stream_message, "tutorial",'At any time, you can stop this tutorial by replying to me with the word "exit".'),
   go(sleep, 3000),
-  go(send_message, "Why don't you **reply to me and say hello?** "
+  go2(stream_message, "tutorial", "Why don't you **reply to this message and say hello?** "
     + "(Click on a message to reply.)"),
-  go2(wait_for_message, 120, pm_to_me),
+  go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
-  go(send_message, 'Great, thanks! After you\'ve typed your reply, you can send it by clicking "Send", but you can also send from the keyboard by pressing `Tab` and then `Enter`.'),
+  go2(stream_message, "tutorial",'Great, thanks! After you\'ve typed your reply, you can send it by clicking "Send", but you can also send from the keyboard by pressing `Tab` and then `Enter`.'),
   go(sleep, 4000),
-  go(send_message, "Give it a shot!\n**Reply to me again, and use Tab, then Enter to send it.**"),
-  go2(wait_for_message, 120, pm_to_me),
+  go2(stream_message, "tutorial", "Give it a shot!\n**Reply to me again, and use Tab, then Enter to send it.**"),
+  go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
-  go(send_message, "Nice work. In Humbug, time flows down. Your new messages will always appear at the very bottom of the screen, and we don't automatically scroll. We're always receiving messages for you -- even when you're logged out."),
-  go(sleep, 4000),
-  go(send_message, "By the way, right now we are exchanging **private messages**. Private messages can go to one or more recipients, and basically are just like a normal IM."),
-  go(sleep, 4000),
-  go(send_message, "But Humbug also has **stream messages**. A stream is kind of like a group chatroom or a mailing list. Every stream message has two parts:\n"
-    + "* The **stream** name: e.g. `" + my_streams[0] + "` or `" + my_streams[1] + "` or `" + my_streams[2] + "`\n"
-    + "* The **subject**: typically one word describing the topic of the message (e.g. `lunch` or `humbug-test.git` or `jQuery`)\n"),
-  go(sleep, 10000),
-  go(send_message, "The brief subject is important because it lets you quickly read what you care about, and ignore what you don't. (Think of how useful email subject lines are!)"),
-  go(sleep, 4000),
-  go(send_message, "I know that's a lot to take in, but once you understand the model, Humbug can be really powerful. I'll give you a second to catch your breath, but send me a reply when you're ready to continue."),
-  go2(wait_for_message, 180, pm_to_me),
-  go(sleep, 1000),
-  go(send_message, "We've started out by adding you to a few streams by default -- those appear on the left sidebar."),
-  go(sleep, 2000),
-  go(send_message, "Why don't you send a message to let everyone know you're out there? Click the 'New stream message' button on the left, and send a message to stream `" + main_stream_name + "`,  subject `signups`, with a message like \"Hey, I'm now on Humbug!\". (You could also press `c` to start a new message.)"),
-  go2(wait_for_message, 180, function (message) {
-      return message.type === 'stream' && message.subject.trim().toLowerCase() === 'signups';
-  }),
-  go(sleep, 1000),
-  go(send_message, "Great work! Other people might reply to your message while the tutorial is running, but that's ok! Managing multiple things at once is one of the strengths of Humbug."),
-  go(sleep, 3000),
-  go(send_message, "It's easy to make or join streams. If you click the gear on the top right of the page, and then pick 'Streams', you can create your own stream, join streams that other people have made, or set colors for your streams."),
-  go(sleep, 3000),
-  go(send_message, "Go in there and set a color for `" + main_stream_name + "`. Then come back here, and tell me when you've done so."),
-  go(sleep, 1000),
-  //*********
-  // This call is particularly interesting because unlike all the others, it isn't an async
-  // call at all. But that's ok! Just wrap it in a function and return null and it will work
-  // (though it will proceed with the next task immediately after executing the function)
-  function() { $("#gear-menu").addClass('open'); },
-  //*********
-  go2(wait_for_message, 240, pm_to_me),
-  go(sleep, 1000),
-  go(send_message, "Great! A couple things to note about subjects:\n"
-    + "* It's tempting to overthink your choice of subject. Don't.\n"
-    + "* Go with your gut. Typically one word will do: `meeting`, `Python`, or `lunch`\n"
-    + "* Subjects are preserved across replies, so most of the time you won't even have to think about them\n"),
+  go2(stream_message, "tutorial", "Nice work. In Humbug, time flows down. Your new messages will always appear at the very bottom of the screen, and we don't automatically scroll. We're always receiving messages for you -- even when you're logged out."),
+  go(sleep, 6000),
+  go2(stream_message, "tutorial", "By the way, right now, these messages are going to stream `" + my_tutorial_stream + "`.\n\nA stream is like a chatroom or mailing list; anyone on `" + my_tutorial_stream +"` can see and respond to these messages right now. (In this case, it's just us on this stream right now, so that no one distracts us.)"),
   go(sleep, 8000),
+  go2(stream_message, "tutorial", "Every stream message has a subject associated with it. (In this case, `tutorial`). "
+      + "The subject should ideally be **one word** describing the topic of the message.\n\nGood subjects: `lunch` or `humbug-test.git` or `jQuery`.\n"),
+  go(sleep, 10000),
+  go2(stream_message, "tutorial", "Why subjects are really powerful:\n"
+      + "* They make it easy to keep track of multiple conversations\n"
+      + "* When you return to your computer after being away, they let you easily skim so that you can read what you care about and ignore what you don't. (Especially great if you have remote workers!)\n"
+      + "* They're lightweight (remember, one word)\n"),
+  go(sleep, 8000),
+  go2(stream_message, "tutorial", "I know that's a lot to take in, but once you understand the model, Humbug can be insanely productive. I'll give you a second to catch your breath, but send me a reply when you're ready to continue."),
+  go2(wait_for_message, 300, any_message_to_me),
+  go(sleep, 1000),
+  go(pm, "Psst, Humbug also has private messages, like this one, which you can send to one or more people. No one else can see this message but us.\n\nReply to my private message to continue."),
+  go2(wait_for_message, 300, pm_to_me),
+  go(sleep, 1000),
+  go(pm, "Nicely done. Alright, back to stream messages we go!"),
+  go(sleep, 2000),
+  go2(stream_message, "tutorial", "It's easy to make or join streams. If you click the gear on the top right of the page, and then pick 'Streams', you can create your own stream, join streams that other people have made, or set colors for your streams."),
+  go(sleep, 4000),
+  go2(stream_message, "tutorial", "Go in there now and set a color for `" + my_tutorial_stream + "`. Then come back here, and tell me when you've done so."),
+  go(sleep, 5000),
+  go2(wait_for_message, 300, any_message_to_me),
+  go(sleep, 1000),
   // Narrowing
-  go(send_message, "Another valuable feature of Humbug is **narrowing**. Click on **You and Humbug Tutorial Bot** (the black bar up there), scroll to the bottom, and tell me when you've done so."),
-  go2(wait_for_message, 180, pm_to_me),
+  go2(stream_message, "narrowing", "Another valuable feature of Humbug is **narrowing**. Click on the word \"narrowing\" directly above this message, and tell me when you've done so."),
+  go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
-  go(send_message, "Great! We're now looking only at messages between us. You can tell because the background is grey, and the search bar at the top has a query in it. You can narrow on many different types of things, including:\n"
-   + "* A specific stream, by clicking on the stream name, or\n"
-   + "* A specific stream-subject pair, by clicking on the subject name\n\n"
-   + "Press `Esc` to get out of this narrowed view, and tell me when you've done so.\n"),
-  go2(wait_for_message, 180, pm_to_me),
+  go2(stream_message, "narrowing", "Great! We're now only looking at messages on stream `" + my_tutorial_stream + "`, subject `narrowing`. You can tell because the background is grey, and the search bar at the top has a query in it. You can narrow on many different types of things, including:\n"
+   + "* A specific stream, by clicking on the stream name\n"
+   + "* A specific stream-subject pair, by clicking on the subject name (like we just did)\n"
+   + "* Private messages with a specific person\n\n"
+   + "Press `Esc` to get out of this narrowed view, scroll down to the bottom, and tell me when you've done so.\n"),
+  go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
-  go(send_message, "Okay, we're almost done -- I just want to quickly mention two more things. The first: code blocks."),
-  go(sleep, 3000),
+  go2(stream_message, "tutorial", "You've got a hang of the basics, so let's talk about some advanced features.\nThe first: code."),
+  go(sleep, 5000),
   // Markdown
-  go(send_message, "Humbug makes it really easy to send syntax-highlighted code blocks. Just start the block with three `~`s and the extension for your programming language, like this:\n\n"
-    + "~~~~~\n"
+  go2(stream_message, "tutorial", "Humbug makes it easy to send syntax-highlighted code blocks. Just surround the block in three `~`s and the extension for your programming language, and you get something pretty, like this:\n\n"
+    + "~~~~~ .py\n"
     + "~~~ .py\n"
-    + "def fn(arg):\n"
+    + "def foo(arg):\n"
     + "    print 'Hello'\n"
     + "~~~\n"
     + "~~~~~"),
-  go(sleep, 4000),
-  go(send_message, "Go ahead and try typing in that exact text, in a response to me."),
-  go2(wait_for_message, 300, function (message) {
-    return message.type === 'private' && message.to[0] === 'humbug+tutorial@humbughq.com' &&
-        message.content.trim().toLowerCase().indexOf("~~~") !== -1;
-  }),
+  go(sleep, 7000),
+  go2(stream_message, "tutorial", "You can also do inline preformatted text by surrounding it in `` `s. Finally, there's also more formatting help that you can see by clicking the 'Formatting' link in the new message box."),
+  go(sleep, 6000),
+  go2(stream_message, "tutorial", "(Tell me when you're ready to continue.)"),
+  go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
-  go(send_message, "Great, you did it! There are a bunch of other features I'd love to tell you about that we don't have time for, but experiment with:\n"
+  go2(stream_message, "tutorial", "Great, you did it! There are a bunch of other features I'd love to tell you about that we don't have time for, but look into these later:\n"
     + "* Keyboard shortcuts (press `?` to see them)\n"
-    + "* More formatting support (there's a 'Formatting' link in the composebox, above the Send button)\n"
-    + "  (In particular, you can format one line of code by surrounding it in `` `s)\n"
-    + "* The search bar at the top, and\n"
-    + "* Our [API](https://humbughq.com/api) and [Integrations](https://humbughq.com/integrations)"),
-  go(sleep, 12000),
+    + "* Our [API](https://humbughq.com/api)\n"
+    + "* Our [integrations](https://humbughq.com/integrations) with popular services like GitHub, Jenkins, etc.\n"
+    + '* Alpha mobile apps for [Android](https://play.google.com/store/apps/details?id=com.humbughq.mobile) and (by request) [iPhone](mailto:support@humbughq.com?subject=Request+for+Humbug+iPhone+app&body=Hi+Humbug,+can+you+send+me+a+link+to+the+iPhone+app+alpha?+I+have+an+iPhone+__.)'),
+  go(sleep, 4000),
+  go2(stream_message, "tutorial", "(Tell me when you're ready to continue.)"),
+  go2(wait_for_message, 300, any_message_to_me),
+  go(sleep, 1000),
   // Have them go talk to people
-  go(send_message, "**Congratulations! The tutorial is now complete**. Enjoy Humbug!"),
-  go(sleep, 3000),
-  go(send_message, "Some things you can do from here:\n"
-    + "* Send a private message to someone by clicking their name in the right sidebar\n"
-    + "* Send a new stream message, or reply to an existing one\n"
-    + "(One suggestion: A message to stream `" + main_stream_name +"` with subject `today` about what you will be working on today).\n"
-    + "* Invite your coworkers (from the gear menu)\n")
+  go2(stream_message, "tutorial", ":white_check_mark: **Congratulations! The tutorial is now complete** :tada:\n"
+      + "We've removed you from the `" + my_tutorial_stream + "` stream, since you're done.\n\n"
+      + "Some things you can do from here:\n"
+      + "* Send a private message to someone by clicking their name in the right sidebar\n"
+      + "* Send a new stream message, or reply to an existing one\n"
+      + "(One suggestion: A message to stream `" + main_stream_name +"` with subject `humbug` to let everyone know you're here!)\n"),
+  function () { exports.stop(); }
     ];
 }
 
@@ -224,6 +241,11 @@ function run_tutorial(stepNumber) {
     }
 }
 
+function add_to_tutorial_stream() {
+    if ($.inArray(my_tutorial_stream, subs.subscribed_streams()) === -1) {
+        subs.tutorial_subscribe_or_add_me_to(my_tutorial_stream);
+    }
+}
 
 exports.start = function () {
     if (tutorial_running) {
@@ -231,6 +253,7 @@ exports.start = function () {
         return;
     }
     tutorial_running = true;
+    add_to_tutorial_stream();
     run_tutorial(0);
 };
 
@@ -245,7 +268,10 @@ exports.start = function () {
 // the rationale being that you could just scroll back up and read
 // the tutorial if you still need it.
 exports.stop = function () {
-    tutorial_running = false;
+    if (tutorial_running) {
+        subs.tutorial_unsubscribe_me_from(my_tutorial_stream);
+        tutorial_running = false;
+    }
 };
 
 exports.is_running = function () {
