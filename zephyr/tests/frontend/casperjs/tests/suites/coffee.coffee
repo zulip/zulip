@@ -16,4 +16,4 @@ casper.then ->
 casper.run ->
   @test.assertEquals steps, 3, "Casper.options.onStepComplete() is called on step complete"
   @options.onStepComplete = null
-  @test.done()
+  @test.done(4)

@@ -39,5 +39,5 @@ casper.then(function() {
 
 casper.run(function() {
     this.options.onAlert = null;
-    this.test.done();
+    this.test.done(5);
 });

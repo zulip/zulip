@@ -19,5 +19,5 @@ casper.then(function() {
 casper.run(function() {
     this.test.assert(this.history.length > 0, 'Casper.history contains urls');
     this.test.assertMatch(this.history[0], /tests\/site\/page1\.html$/, 'Casper.history has the correct first url');
-    this.test.done();
+    this.test.done(4);
 });

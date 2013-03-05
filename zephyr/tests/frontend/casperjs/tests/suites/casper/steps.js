@@ -30,5 +30,5 @@ casper.each([1, 2, 3], function(self, item, i) {
 });
 
 casper.run(function() {
-    this.test.done();
+    this.test.done(8);
 });

@@ -1,3 +1,6 @@
+/*jshint strict:false*/
+/*global CasperError console phantom require*/
+
 var failed = [];
 var start = null;
 var links = [

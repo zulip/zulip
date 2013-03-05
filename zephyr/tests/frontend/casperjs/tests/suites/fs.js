@@ -35,4 +35,4 @@ var fs = require('fs'), t = casper.test;
     }
 })();
 
-t.done();
+t.done(14);

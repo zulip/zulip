@@ -17,5 +17,5 @@ casper.thenOpen('tests/site/error.html', function() {
 });
 
 casper.run(function() {
-    this.test.done();
+    this.test.done(2);
 });

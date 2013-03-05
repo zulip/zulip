@@ -30,5 +30,5 @@ casper.thenClick(x('/html/body/a[2]'), function() {
 });
 
 casper.run(function() {
-    this.test.done();
+    this.test.done(6);
 });

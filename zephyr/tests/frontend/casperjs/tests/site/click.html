@@ -16,10 +16,11 @@
                     test2: false,
                     test3: false,
                     test4: false,
-                    testdown:  [],
-                    testup:    [],
-                    testmove:  [],
-                    testclick: []
+                    testdown:        [],
+                    testup:          [],
+                    testmove:        [],
+                    testclick:       [],
+                    testdoubleclick: []
                 };
                 document.querySelector('#test4').onclick = function(event) {
                     results.test4 = true;
@@ -33,6 +34,9 @@
                 };
                 window.onmousemove = function(event) {
                     results.testmove = [event.x, event.y];
+                };
+                window.ondblclick = function(event) {
+                    results.testdoubleclick = [event.x, event.y];
                 };
             })(window);
         </script>

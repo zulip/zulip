@@ -33,14 +33,21 @@
 
 if (!phantom) {
     console.error('CasperJS needs to be executed in a PhantomJS environment http://phantomjs.org/');
-    phantom.exit(1);
 }
 
-if (phantom.version.major === 1 && phantom.version.minor < 6) {
-    console.error('CasperJS needs at least PhantomJS v1.6.0 or later.');
+if (phantom.version.major === 1 && phantom.version.minor < 7) {
+    console.error('CasperJS needs at least PhantomJS v1.7 or later.');
     phantom.exit(1);
 } else {
-    bootstrap(window);
+    try {
+        bootstrap(window);
+    } catch (e) {
+        console.error(e);
+        (e.stackArray || []).forEach(function(entry) {
+            console.error('  In ' + entry.sourceURL + ':' + entry.line);
+        });
+        phantom.exit(1);
+    }
 }
 
 // Polyfills
@@ -106,10 +113,13 @@ function patchRequire(require, requireDirs) {
             fileGuesses.push.apply(fileGuesses, [
                 testPath,
                 testPath + '.js',
+                testPath + '.json',
                 testPath + '.coffee',
                 fs.pathJoin(testPath, 'index.js'),
+                fs.pathJoin(testPath, 'index.json'),
                 fs.pathJoin(testPath, 'index.coffee'),
                 fs.pathJoin(testPath, 'lib', fs.basename(testPath) + '.js'),
+                fs.pathJoin(testPath, 'lib', fs.basename(testPath) + '.json'),
                 fs.pathJoin(testPath, 'lib', fs.basename(testPath) + '.coffee')
             ]);
         });
@@ -120,16 +130,25 @@ function patchRequire(require, requireDirs) {
             }
         }
         if (!file) {
-            throw new Error("CasperJS couldn't find module " + path);
+            throw new window.CasperError("CasperJS couldn't find module " + path);
         }
         if (file in requireCache) {
             return requireCache[file].exports;
+        }
+        if (/\.json/i.test(file)) {
+            var parsed = JSON.parse(fs.read(file));
+            requireCache[file] = parsed;
+            return parsed;
         }
         var scriptCode = (function getScriptCode(file) {
             var scriptCode = fs.read(file);
             if (/\.coffee$/i.test(file)) {
                 /*global CoffeeScript*/
-                scriptCode = CoffeeScript.compile(scriptCode);
+                try {
+                    scriptCode = CoffeeScript.compile(scriptCode);
+                } catch (e) {
+                    throw new Error('Unable to compile coffeescript:' + e);
+                }
             }
             return scriptCode;
         })(file);
@@ -137,8 +156,14 @@ function patchRequire(require, requireDirs) {
         try {
             fn(file, _require, module, module.exports);
         } catch (e) {
-            var error = new window.CasperError('__mod_error(' + path + '):: ' + e);
+            var error = new window.CasperError('__mod_error(' + path + ':' + e.line + '):: ' + e);
             error.file = file;
+            error.line = e.line;
+            error.stack = e.stack;
+            error.stackArray = JSON.parse(JSON.stringify(e.stackArray));
+            if (error.stackArray.length > 0) {
+                error.stackArray[0].sourceURL = file;
+            }
             throw error;
         }
         requireCache[file] = module;
@@ -150,8 +175,19 @@ function patchRequire(require, requireDirs) {
 
 function bootstrap(global) {
     "use strict";
-
     var phantomArgs = require('system').args;
+
+    /**
+     * Hooks in default phantomjs error handler to print a hint when a possible
+     * casperjs command misuse is detected.
+     *
+     */
+    phantom.onError = function onPhantomError(msg, trace) {
+        phantom.defaultErrorHandler.apply(phantom, arguments);
+        if (msg.indexOf("ReferenceError: Can't find variable: casper") === 0) {
+            console.error('Hint: you may want to use the `casperjs test` command.');
+        }
+    };
 
     /**
      * Loads and initialize the CasperJS environment.
@@ -230,7 +266,7 @@ function bootstrap(global) {
                 throw new global.CasperError('Cannot read package file contents: ' + e);
             }
             parts  = pkg.version.trim().split(".");
-            if (parts < 3) {
+            if (parts.length < 3) {
                 throw new global.CasperError("Invalid version number");
             }
             patchPart = parts[2].split('-');
@@ -264,20 +300,21 @@ function bootstrap(global) {
      */
     phantom.initCasperCli = function initCasperCli() {
         var fs = require("fs");
+        var baseTestsPath = fs.pathJoin(phantom.casperPath, 'tests');
 
         if (!!phantom.casperArgs.options.version) {
             console.log(phantom.casperVersion.toString());
-            phantom.exit(0);
+            return phantom.exit();
         } else if (phantom.casperArgs.get(0) === "test") {
-            phantom.casperScript = fs.absolute(fs.pathJoin(phantom.casperPath, 'tests', 'run.js'));
+            phantom.casperScript = fs.absolute(fs.pathJoin(baseTestsPath, 'run.js'));
             phantom.casperTest = true;
             phantom.casperArgs.drop("test");
         } else if (phantom.casperArgs.get(0) === "selftest") {
-            phantom.casperScript = fs.absolute(fs.pathJoin(phantom.casperPath, 'tests', 'run.js'));
-            phantom.casperSelfTest = true;
-            phantom.casperArgs.options.includes = fs.pathJoin(phantom.casperPath, 'tests', 'selftest.js');
+            phantom.casperScript = fs.absolute(fs.pathJoin(baseTestsPath, 'run.js'));
+            phantom.casperSelfTest = phantom.casperTest = true;
+            phantom.casperArgs.options.includes = fs.pathJoin(baseTestsPath, 'selftest.js');
             if (phantom.casperArgs.args.length <= 1) {
-                phantom.casperArgs.args.push(fs.pathJoin(phantom.casperPath, 'tests', 'suites'));
+                phantom.casperArgs.args.push(fs.pathJoin(baseTestsPath, 'suites'));
             }
             phantom.casperArgs.drop("selftest");
         } else if (phantom.casperArgs.args.length === 0 || !!phantom.casperArgs.options.help) {
@@ -287,25 +324,30 @@ function bootstrap(global) {
                         phantom.casperVersion.toString(),
                         phantom.casperPath, phantomVersion));
             console.log(fs.read(fs.pathJoin(phantom.casperPath, 'bin', 'usage.txt')));
-            phantom.exit(0);
+            return phantom.exit(0);
         }
-
 
         if (!phantom.casperScript) {
             phantom.casperScript = phantom.casperArgs.get(0);
         }
 
-        if (phantom.casperScript) {
-            if (!fs.isFile(phantom.casperScript)) {
-                console.error('Unable to open file: ' + phantom.casperScript);
-                phantom.exit(1);
-            } else {
-                // filter out the called script name from casper args
-                phantom.casperArgs.drop(phantom.casperScript);
+        if (!fs.isFile(phantom.casperScript)) {
+            console.error('Unable to open file: ' + phantom.casperScript);
+            return phantom.exit(1);
+        }
 
-                // passed casperjs script execution
-                phantom.injectJs(phantom.casperScript);
-            }
+        // filter out the called script name from casper args
+        phantom.casperArgs.drop(phantom.casperScript);
+
+        // passed casperjs script execution
+        var injected = false;
+        try {
+            injected = phantom.injectJs(phantom.casperScript);
+        } catch (e) {
+            throw new global.CasperError('Error loading script ' + phantom.casperScript + ': ' + e);
+        }
+        if (!injected) {
+            throw new global.CasperError('Unable to load script ' + phantom.casperScript + '; check file syntax');
         }
     };
 

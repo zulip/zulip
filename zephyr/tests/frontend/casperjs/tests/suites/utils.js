@@ -4,6 +4,26 @@ var utils = require('utils'),
     t = casper.test,
     x = require('casper').selectXPath;
 
+t.comment('betterTypeOf()');
+(function() {
+    var testCases = [
+        {subject: 1, expected: 'number'},
+        {subject: '1', expected: 'string'},
+        {subject: {}, expected: 'object'},
+        {subject: [], expected: 'array'},
+        {subject: undefined, expected: 'undefined'},
+        {subject: null, expected: 'null'},
+        {subject: function(){}, expected: 'function'},
+        {subject: window, expected: 'domwindow'},
+        {subject: new Date(), expected: 'date'},
+        {subject: new RegExp(), expected: 'regexp'}
+    ];
+    testCases.forEach(function(testCase) {
+        t.assertEquals(utils.betterTypeOf(testCase.subject), testCase.expected,
+            require('utils').format('betterTypeOf() detects expected type "%s"', testCase.subject));
+    });
+})();
+
 t.comment('cleanUrl()');
 (function() {
     var testCases = {
@@ -21,6 +41,14 @@ t.comment('cleanUrl()');
     for (var testCase in testCases) {
         t.assertEquals(utils.cleanUrl(testCase), testCases[testCase], 'cleanUrl() cleans an URL');
     }
+})();
+
+t.comment('clone()');
+(function() {
+    var a = {a: 1, b: 2, c: [1, 2]};
+    t.assertEquals(utils.clone(a), a);
+    var b = [1, 2, 3, a];
+    t.assertEquals(utils.clone(b), b);
 })();
 
 t.comment('equals()');
@@ -226,6 +254,9 @@ t.comment('mergeObjects()');
             obj1: {}, obj2: {a: 1}, merged: {a: 1}
         },
         {
+            obj1: {}, obj2: {a: {b: 2}}, merged: {a: {b: 2}}
+        },
+        {
             obj1: {a: 1}, obj2: {}, merged: {a: 1}
         },
         {
@@ -245,6 +276,18 @@ t.comment('mergeObjects()');
     testCases.forEach(function(testCase) {
         t.assertEquals(utils.mergeObjects(testCase.obj1, testCase.obj2), testCase.merged, 'mergeObjects() can merge objects');
     });
+    var obj = {x: 1};
+    var merged1 = utils.mergeObjects({}, {a: obj});
+    var merged2 = utils.mergeObjects({a: {}}, {a: obj});
+    merged1.a.x = 2;
+    merged2.a.x = 2;
+    t.assertEquals(obj.x, 1, 'mergeObjects() creates deep clones');
+})();
+
+t.comment('objectValues()');
+(function() {
+    t.assertEquals(utils.objectValues({}), [], 'objectValues() can extract object values');
+    t.assertEquals(utils.objectValues({a: 1, b: 2}), [1, 2], 'objectValues() can extract object values');
 })();
 
 t.comment('unique()');
@@ -272,4 +315,63 @@ t.comment('unique()');
     });
 })();
 
-t.done();
+t.comment('cmpVersion() tests');
+(function() {
+    t.assertEquals(utils.cmpVersion('1.0.0', '2.0.0'), -1,
+        'cmpVersion() can compare version strings');
+    t.assertEquals(utils.cmpVersion('1.0.0-DEV', '2.0.0-BOOM'), -1,
+        'cmpVersion() can compare version strings');
+    t.assertEquals(utils.cmpVersion('1.0.0', '1.1.0'), -1,
+        'cmpVersion() can compare version strings');
+    t.assertEquals(utils.cmpVersion('1.1.0', '1.0.0'), 1,
+        'cmpVersion() can compare version strings');
+    t.assertEquals(utils.cmpVersion('0.0.3', '0.0.4'), -1,
+        'cmpVersion() can compare version strings');
+    t.assertEquals(utils.cmpVersion('0.0.3', '1.0.3'), -1,
+        'cmpVersion() can compare version strings');
+    t.assertEquals(utils.cmpVersion('0.1', '1.0.3.8'), -1,
+        'cmpVersion() can compare version strings');
+    t.assertEquals(utils.cmpVersion({major: 1, minor: 2, patch: 3},
+                                       {major: 1, minor: 2, patch: 4}), -1,
+        'cmpVersion() can compare version objects');
+    t.assertEquals(utils.cmpVersion({major: 2, minor: 0, patch: 3},
+                                       {major: 1, minor: 0, patch: 4}), 1,
+        'cmpVersion() can compare version objects');
+    t.assertEquals(utils.cmpVersion({major: 0, minor: 0, patch: 3},
+                                       {major: 1, minor: 0, patch: 3}), -1,
+        'cmpVersion() can compare version objects');
+    t.done();
+})();
+
+t.comment('gteVersion() tests');
+(function() {
+    t.assert(utils.gteVersion('1.1.0', '1.0.0'),
+        'gteVersion() checks for a greater or equal version');
+    t.assertNot(utils.gteVersion('1.0.0', '1.1.0'),
+        'gteVersion() checks for a greater or equal version');
+    t.assert(utils.gteVersion({major: 1, minor: 1, patch: 0},
+                                 {major: 1, minor: 0, patch: 0}),
+        'gteVersion() checks for a greater or equal version');
+    t.assertNot(utils.gteVersion({major: 1, minor: 0, patch: 0},
+                                    {major: 1, minor: 1, patch: 0}),
+        'gteVersion() checks for a greater or equal version');
+    t.done();
+})();
+
+t.comment('ltVersion() tests');
+(function() {
+    t.assert(utils.ltVersion('1.0.0', '1.1.0'),
+        'ltVersion() checks for a lesser version');
+    t.assertNot(utils.ltVersion('1.1.0', '1.0.0'),
+        'ltVersion() checks for a lesser version');
+    t.assert(utils.ltVersion({major: 1, minor: 0, patch: 0},
+                                {major: 1, minor: 1, patch: 0}),
+        'ltVersion() checks for a lesser version');
+    t.assertNot(utils.ltVersion({major: 1, minor: 1, patch: 0},
+                                   {major: 1, minor: 0, patch: 0}),
+        'ltVersion() checks for a lesser version');
+    t.done();
+})();
+
+
+t.done(132);

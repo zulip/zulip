@@ -34,16 +34,26 @@
  * Provides a better typeof operator equivalent, able to retrieve the array
  * type.
  *
+ * CAVEAT: this function does not necessarilly map to classical js "type" names,
+ * notably a `null` will map to "null" instead of "object".
+ *
  * @param  mixed  input
  * @return String
  * @see    http://javascriptweblog.wordpress.com/2011/08/08/fixing-the-javascript-typeof-operator/
  */
 function betterTypeOf(input) {
     "use strict";
-    try {
-        return Object.prototype.toString.call(input).match(/^\[object\s(.*)\]$/)[1].toLowerCase();
-    } catch (e) {
-        return typeof input;
+    switch (input) {
+        case undefined:
+            return 'undefined';
+        case null:
+            return 'null';
+        default:
+        try {
+            return Object.prototype.toString.call(input).match(/^\[object\s(.*)\]$/)[1].toLowerCase();
+        } catch (e) {
+            return typeof input;
+        }
     }
 }
 exports.betterTypeOf = betterTypeOf;
@@ -68,6 +78,18 @@ function cleanUrl(url) {
     return url;
 }
 exports.cleanUrl = cleanUrl;
+
+/**
+ * Clones an object.
+ *
+ * @param  Mixed  o
+ * @return Mixed
+ */
+function clone(o) {
+    "use strict";
+    return JSON.parse(JSON.stringify(o));
+}
+exports.clone = clone;
 
 /**
  * Dumps a JSON representation of passed value to the console. Used for
@@ -265,6 +287,18 @@ function isClipRect(value) {
 exports.isClipRect = isClipRect;
 
 /**
+ * Checks that the subject is falsy.
+ *
+ * @param  Mixed  subject  Test subject
+ * @return Boolean
+ */
+function isFalsy(subject) {
+    "use strict";
+    /*jshint eqeqeq:false*/
+    return !subject;
+}
+exports.isFalsy = isFalsy;
+/**
  * Checks if value is a javascript Function
  *
  * @param  mixed  value
@@ -338,6 +372,18 @@ function isObject(value) {
 exports.isObject = isObject;
 
 /**
+ * Checks if value is a RegExp
+ *
+ * @param  mixed  value
+ * @return Boolean
+ */
+function isRegExp(value) {
+    "use strict";
+    return isType(value, "regexp");
+}
+exports.isRegExp = isRegExp;
+
+/**
  * Checks if value is a javascript String
  *
  * @param  mixed  value
@@ -348,6 +394,19 @@ function isString(value) {
     return isType(value, "string");
 }
 exports.isString = isString;
+
+/**
+ * Checks that the subject is truthy.
+ *
+ * @param  Mixed  subject  Test subject
+ * @return Boolean
+ */
+function isTruthy(subject) {
+    "use strict";
+    /*jshint eqeqeq:false*/
+    return !!subject;
+}
+exports.isTruthy = isTruthy;
 
 /**
  * Shorthands for checking if a value is of the given type. Can check for
@@ -433,19 +492,31 @@ exports.isWebPage = isWebPage;
 function mergeObjects(origin, add) {
     "use strict";
     for (var p in add) {
-        try {
-            if (add[p].constructor === Object) {
+        if (add[p] && add[p].constructor === Object) {
+            if (origin[p] && origin[p].constructor === Object) {
                 origin[p] = mergeObjects(origin[p], add[p]);
             } else {
-                origin[p] = add[p];
+                origin[p] = clone(add[p]);
             }
-        } catch(e) {
-          origin[p] = add[p];
+        } else {
+            origin[p] = add[p];
         }
     }
     return origin;
 }
 exports.mergeObjects = mergeObjects;
+
+/**
+ * Converts milliseconds to seconds and rounds the results to 3 digits accuracy.
+ *
+ * @param  Number  milliseconds
+ * @return Number  seconds
+ */
+function ms2seconds(milliseconds) {
+    "use strict";
+    return Math.round(milliseconds / 1000 * 1000) / 1000;
+}
+exports.ms2seconds = ms2seconds;
 
 /**
  * Creates an (SG|X)ML node element.
@@ -456,7 +527,7 @@ exports.mergeObjects = mergeObjects;
  */
 function node(name, attributes) {
     "use strict";
-    var _node = document.createElement(name);
+    var _node   = document.createElement(name);
     for (var attrName in attributes) {
         var value = attributes[attrName];
         if (attributes.hasOwnProperty(attrName) && isString(attrName)) {
@@ -466,6 +537,20 @@ function node(name, attributes) {
     return _node;
 }
 exports.node = node;
+
+/**
+ * Maps an object to an array made from its values.
+ *
+ * @param  Object  obj
+ * @return Array
+ */
+function objectValues(obj) {
+    "use strict";
+    return Object.keys(obj).map(function(arg) {
+        return obj[arg];
+    });
+}
+exports.objectValues = objectValues;
 
 /**
  * Serializes a value using JSON.
@@ -506,3 +591,62 @@ function unique(array) {
     return r;
 }
 exports.unique = unique;
+
+/**
+ * Compare two version numbers represented as strings.
+ *
+ * @param  String  a  Version a
+ * @param  String  b  Version b
+ * @return Number
+ */
+function cmpVersion(a, b) {
+    "use strict";
+    var i, cmp, len, re = /(\.0)+[^\.]*$/;
+    function versionToString(version) {
+        if (isObject(version)) {
+            try {
+                return [version.major, version.minor, version.patch].join('.');
+            } catch (e) {}
+        }
+        return version;
+    }
+    a = versionToString(a);
+    b = versionToString(b);
+    a = (a + '').replace(re, '').split('.');
+    b = (b + '').replace(re, '').split('.');
+    len = Math.min(a.length, b.length);
+    for (i = 0; i < len; i++) {
+        cmp = parseInt(a[i], 10) - parseInt(b[i], 10);
+        if (cmp !== 0) {
+            return cmp;
+        }
+    }
+    return a.length - b.length;
+}
+exports.cmpVersion = cmpVersion;
+
+/**
+ * Checks if a version number string is greater or equals another.
+ *
+ * @param  String  a  Version a
+ * @param  String  b  Version b
+ * @return Boolean
+ */
+function gteVersion(a, b) {
+    "use strict";
+    return cmpVersion(a, b) >= 0;
+}
+exports.gteVersion = gteVersion;
+
+/**
+ * Checks if a version number string is less than another.
+ *
+ * @param  String  a  Version a
+ * @param  String  b  Version b
+ * @return Boolean
+ */
+function ltVersion(a, b) {
+    "use strict";
+    return cmpVersion(a, b) < 0;
+}
+exports.ltVersion = ltVersion;

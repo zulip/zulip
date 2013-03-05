@@ -2,7 +2,7 @@
 /*jshint strict:false*/
 var fs = require('fs');
 var modroot = fs.pathJoin(phantom.casperPath, 'tests', 'sample_modules');
-var jsmod, csmod;
+var jsmod, csmod, config;
 
 casper.test.comment('Javascript module loading')
 try {
@@ -20,4 +20,12 @@ try {
     casper.test.fail('require() patched version can load a coffeescript module');
 }
 
-casper.test.done();
+casper.test.comment('JSON module loading')
+try {
+    config = require(fs.pathJoin(modroot, 'config.json'));
+    casper.test.assertTrue(config.ok, 'require() patched version can load a json module');
+} catch (e) {
+    casper.test.fail('require() patched version can load a json module');
+}
+
+casper.test.done(3);

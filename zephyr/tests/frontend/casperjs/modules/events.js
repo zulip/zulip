@@ -19,6 +19,8 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+/*global CasperError*/
+
 var isArray = Array.isArray;
 
 function EventEmitter() {
@@ -228,6 +230,17 @@ EventEmitter.prototype.filter = function() {
     return;
   }
   return filter.apply(this, Array.prototype.splice.call(arguments, 1));
+};
+
+EventEmitter.prototype.removeAllFilters = function(type) {
+  if (arguments.length === 0) {
+    this._filters = {};
+    return this;
+  }
+  if (type && this._filters && this._filters[type]) {
+    this._filters[type] = null;
+  }
+  return this;
 };
 
 EventEmitter.prototype.setFilter = function(type, filterFn) {

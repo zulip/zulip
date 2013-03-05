@@ -37,4 +37,4 @@ casper.test.assertEquals(casper.foo, 42, "filter() applies the correct context")
 
 delete casper.foo;
 
-casper.test.done();
+casper.test.done(5);

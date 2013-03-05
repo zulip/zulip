@@ -1,4 +1,7 @@
-/*
+/*jshint strict:false*/
+/*global CasperError console phantom require*/
+
+/**
  * Takes provided terms passed as arguments and query google for the number of
  * estimated results each have.
  *
@@ -16,7 +19,7 @@ var casper = require("casper").create({
 
 casper.fetchScore = function() {
     return this.evaluate(function() {
-        var result = document.querySelector('#resultStats').innerText;
+        var result = __utils__.findOne('#resultStats').innerText;
         return parseInt(/Environ ([0-9\s]{1,}).*/.exec(result)[1].replace(/\s/g, ''), 10);
     });
 };

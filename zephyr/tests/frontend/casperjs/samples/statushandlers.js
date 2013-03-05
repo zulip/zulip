@@ -1,4 +1,7 @@
-/*
+/*jshint strict:false*/
+/*global CasperError console phantom require*/
+
+/**
  * This script will add a custom HTTP status code handler, here for 404 pages.
  */
 

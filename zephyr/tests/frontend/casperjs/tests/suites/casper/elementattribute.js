@@ -6,5 +6,5 @@ casper.start('tests/site/elementattribute.html', function() {
 });
 
 casper.run(function() {
-    this.test.done();
+    this.test.done(1);
 });

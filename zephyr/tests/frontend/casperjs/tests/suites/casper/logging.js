@@ -36,5 +36,5 @@ casper.then(function() {
 
 casper.run(function() {
     this.test.assertEquals(this.result.log.length, 3, 'Casper.log() logged messages');
-    this.test.done();
+    this.test.done(4);
 });

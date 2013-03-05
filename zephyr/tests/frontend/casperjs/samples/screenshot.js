@@ -1,6 +1,9 @@
-/*
+/*jshint strict:false*/
+/*global CasperError console phantom require*/
+
+/**
  * This script will capture a screenshot of a twitter account page
- * Usage: $ casperjs screenshot.coffee <twitter-account> <filename.[jpg|png|pdf]>
+ * Usage: $ casperjs screenshot.js <twitter-account> <filename.[jpg|png|pdf]>
  */
 
 var casper = require("casper").create({
@@ -15,13 +18,13 @@ var filename       = casper.cli.get(1);
 
 if (!twitterAccount || !filename || !/\.(png|jpg|pdf)$/i.test(filename)) {
     casper
-        .echo("Usage: $ casperjs screenshot.coffee <twitter-account> <filename.[jpg|png|pdf]>")
+        .echo("Usage: $ casperjs screenshot.js <twitter-account> <filename.[jpg|png|pdf]>")
         .exit(1)
     ;
 }
 
-casper.start("https://twitter.com/#!/" + twitterAccount, function() {
-    this.waitForSelector(".tweet-row", (function() {
+casper.start("https://twitter.com/" + twitterAccount, function() {
+    this.waitForSelector(".stream-container", (function() {
         this.captureSelector(filename, "html");
         this.echo("Saved screenshot of " + (this.getCurrentUrl()) + " to " + filename);
     }), (function() {

@@ -1,7 +1,9 @@
-/*
+/*jshint strict:false*/
+/*global CasperError console phantom require*/
+
+/**
  * Create a mosaic image from all headline photos on BBC homepage
  */
-
 var casper = require("casper").create();
 var nbLinks = 0;
 var currentLink = 1;
@@ -12,9 +14,7 @@ var buildPage, next;
 casper.hide = function(selector) {
     this.evaluate(function(selector) {
         document.querySelector(selector).style.display = "none";
-    }, {
-        selector: selector
-    });
+    }, selector);
 };
 
 casper.start("http://www.bbc.co.uk/", function() {
@@ -26,16 +26,17 @@ casper.start("http://www.bbc.co.uk/", function() {
     this.hide(".nav_left");
     this.hide(".nav_right");
     this.mouse.move("#promo2_carousel");
-    this.waitUntilVisible(".autoplay.nav_pause", function() {
-        this.echo("Moving over pause button");
-        this.mouse.move(".autoplay.nav_pause");
-        this.click(".autoplay.nav_pause");
-        this.echo("Clicked on pause button");
-        this.waitUntilVisible(".autoplay.nav_play", function() {
-            this.echo("Carousel has been paused");
-            // hide play button
-            this.hide(".autoplay");
-        });
+});
+
+casper.waitUntilVisible(".autoplay.nav_pause", function() {
+    this.echo("Moving over pause button");
+    this.mouse.move(".autoplay.nav_pause");
+    this.click(".autoplay.nav_pause");
+    this.echo("Clicked on pause button");
+    this.waitUntilVisible(".autoplay.nav_play", function() {
+        this.echo("Carousel has been paused");
+        // hide play button
+        this.hide(".autoplay");
     });
 });
 

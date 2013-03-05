@@ -27,7 +27,7 @@ var codes = [100, 101, 102, 118, 200, 201, 202, 203, 204, 205, 206, 207, 210,
               414, 415, 416, 417, 418, 422, 423, 424, 425, 426, 449, 450,
          500, 501, 502, 503, 504, 505, 507, 509];
 
-casper.thenOpen('http://google.com').each(codes, function(self, code) {
+casper.each(codes, function(self, code) {
     if (code === 100) {
         // HTTP 100 is CONTINUE, so don't expect a terminated response
         return;
@@ -40,5 +40,5 @@ casper.thenOpen('http://google.com').each(codes, function(self, code) {
 
 casper.run(function() {
     server.close();
-    this.test.done();
+    this.test.done(109);
 });

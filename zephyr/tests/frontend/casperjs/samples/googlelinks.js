@@ -1,3 +1,5 @@
+/*jshint strict:false*/
+/*global CasperError console phantom require*/
 var links = [];
 var casper = require("casper").create();
 

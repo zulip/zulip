@@ -45,7 +45,7 @@ var fs = require('fs');
 function generateClassName(classname) {
     "use strict";
     classname = classname.replace(phantom.casperPath, "").trim();
-    var script = classname || phantom.casperScript;
+    var script = classname || phantom.casperScript || "";
     if (script.indexOf(fs.workingDirectory) === 0) {
         script = script.substring(fs.workingDirectory.length + 1);
     }
@@ -55,6 +55,12 @@ function generateClassName(classname) {
     if (~script.indexOf('.')) {
         script = script.substring(0, script.lastIndexOf('.'));
     }
+
+    // If we have trimmed our string down to nothing, default to script name
+    if (!script && phantom.casperScript) {
+      script = phantom.casperScript;
+    }
+
     return script || "unknown";
 }
 
@@ -86,13 +92,18 @@ exports.XUnitExporter = XUnitExporter;
  *
  * @param  String  classname
  * @param  String  name
+ * @param  Number  duration  Test duration in milliseconds
  */
-XUnitExporter.prototype.addSuccess = function addSuccess(classname, name) {
+XUnitExporter.prototype.addSuccess = function addSuccess(classname, name, duration) {
     "use strict";
-    this._xml.appendChild(utils.node('testcase', {
+    var snode = utils.node('testcase', {
         classname: generateClassName(classname),
-        name:      name
-    }));
+        name: name
+    });
+    if (duration !== undefined) {
+        snode.setAttribute('time', utils.ms2seconds(duration));
+    }
+    this._xml.appendChild(snode);
 };
 
 /**
@@ -102,19 +113,35 @@ XUnitExporter.prototype.addSuccess = function addSuccess(classname, name) {
  * @param  String  name
  * @param  String  message
  * @param  String  type
+ * @param  Number  duration  Test duration in milliseconds
  */
-XUnitExporter.prototype.addFailure = function addFailure(classname, name, message, type) {
+XUnitExporter.prototype.addFailure = function addFailure(classname, name, message, type, duration) {
     "use strict";
     var fnode = utils.node('testcase', {
         classname: generateClassName(classname),
         name:      name
     });
+    if (duration !== undefined) {
+        fnode.setAttribute('time', utils.ms2seconds(duration));
+    }
     var failure = utils.node('failure', {
         type: type || "unknown"
     });
     failure.appendChild(document.createTextNode(message || "no message left"));
     fnode.appendChild(failure);
     this._xml.appendChild(fnode);
+};
+
+/**
+ * Adds test suite duration
+ *
+ * @param  Number  duration  Test duration in milliseconds
+ */
+XUnitExporter.prototype.setSuiteDuration = function setSuiteDuration(duration) {
+    "use strict";
+    if (!isNaN(duration)) {
+        this._xml.setAttribute("time", utils.ms2seconds(duration));
+    }
 };
 
 /**

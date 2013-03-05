@@ -11,7 +11,7 @@ images = []
 casper.hide = (selector) ->
     @evaluate (selector) ->
         document.querySelector(selector).style.display = "none"
-    , selector: selector
+    , selector
 
 casper.start "http://www.bbc.co.uk/", ->
     nbLinks = @evaluate ->
@@ -21,15 +21,16 @@ casper.start "http://www.bbc.co.uk/", ->
     @hide ".nav_left"
     @hide ".nav_right"
     @mouse.move "#promo2_carousel"
-    @waitUntilVisible ".autoplay.nav_pause", ->
-        @echo "Moving over pause button"
-        @mouse.move ".autoplay.nav_pause"
-        @click ".autoplay.nav_pause"
-        @echo "Clicked on pause button"
-        @waitUntilVisible ".autoplay.nav_play", ->
-            @echo "Carousel has been paused"
-            # hide play button
-            @hide ".autoplay"
+
+casper.waitUntilVisible ".autoplay.nav_pause", ->
+    @echo "Moving over pause button"
+    @mouse.move ".autoplay.nav_pause"
+    @click ".autoplay.nav_pause"
+    @echo "Clicked on pause button"
+    @waitUntilVisible ".autoplay.nav_play", ->
+        @echo "Carousel has been paused"
+        # hide play button
+        @hide ".autoplay"
 
 # Capture carrousel area
 next = ->

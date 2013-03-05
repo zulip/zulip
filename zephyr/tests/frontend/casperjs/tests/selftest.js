@@ -28,7 +28,11 @@ service = server.listen(testServerPort, function(request, response) {
         console.log(utils.format('Test server url not found: %s (file: %s)', request.url, pageFile), "warning");
         response.write("404 - NOT FOUND");
     } else {
-        response.statusCode = 200;
+        var headers = {};
+        if (/js$/.test(pageFile)) {
+            headers['Content-Type'] = "application/javascript";
+        }
+        response.writeHead(200, headers);
         response.write(fs.read(pageFile));
     }
     response.close();

@@ -1,23 +1,29 @@
 /*global casper*/
 /*jshint strict:false*/
-// skip this test for phantom versions < 1.5
-if (phantom.version.major === 1 && phantom.version.minor < 6) {
-    casper.test.comment('Skipped tests, PhantomJS 1.6 required');
-    casper.test.done();
-} else {
-    var received;
+var received;
 
+casper.setFilter('page.confirm', function(message) {
+    received = message;
+    return true;
+});
+
+casper.start('tests/site/confirm.html', function() {
+    this.test.assert(this.getGlobal('confirmed'), 'confirmation dialog accepted');
+});
+
+casper.then(function() {
+    //remove the page.confirm event filter so we can add a new one
+    casper.removeAllFilters('page.confirm')
     casper.setFilter('page.confirm', function(message) {
-        received = message;
-        return true;
+        return false;
     });
+});
 
-    casper.start('tests/site/confirm.html', function() {
-        this.test.assert(this.getGlobal('confirmed'), 'confirmation received');
-    });
+casper.thenOpen('/tests/site/confirm.html', function() {
+    this.test.assertNot(this.getGlobal('confirmed'), 'confirmation dialog canceled');
+});
 
-    casper.run(function() {
-        this.test.assertEquals(received, 'are you sure?', 'confirmation message is ok');
-        this.test.done();
-    });
-}
+casper.run(function() {
+    this.test.assertEquals(received, 'are you sure?', 'confirmation message is ok');
+    this.test.done(3);
+});

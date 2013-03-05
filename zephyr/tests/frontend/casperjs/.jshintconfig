@@ -9,6 +9,7 @@
     "maxdepth":      3,
     "maxstatements": 15,
     "maxcomplexity": 7,
+    "proto":         true,
     "regexdash":     true,
     "strict":        true,
     "sub":           true,

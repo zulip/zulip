@@ -21,4 +21,4 @@ casper.start "tests/site/resources.html", ->
   onTimeout = -> @test.fail "waitForResource timeout occured"
   @waitForResource "dummy.js", onTime, onTimeout
 
-casper.run(-> @test.done())
+casper.run(-> @test.done(5))

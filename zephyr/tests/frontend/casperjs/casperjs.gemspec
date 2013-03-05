@@ -19,5 +19,5 @@ high-level functions, methods & syntaxic sugar for doing common tasks."
   s.bindir              = "rubybin"
   s.executables         = [ "casperjs" ]
   s.license             = "MIT"
-  s.requirements        = [ "PhantomJS v1.6" ]
+  s.requirements        = [ "PhantomJS v1.7" ]
 end

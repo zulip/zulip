@@ -62,6 +62,7 @@ responseHeaders.prototype.get = function get(name){
  */
 exports.augmentResponse = function(response) {
     "use strict";
+    /*jshint proto:true*/
     if (!utils.isHTTPResource(response)) {
         return;
     }

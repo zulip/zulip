@@ -1,6 +1,7 @@
 
 Usage: casperjs [options] script.[js|coffee] [script argument [script argument ...]]
        casperjs [options] test [test path [test path ...]]
+       casperjs [options] selftest
 
 Options:
 

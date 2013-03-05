@@ -1,6 +1,186 @@
 CasperJS Changelog
 ==================
 
+2013-02-08, v1.0.2
+------------------
+
+- fixed [#375](https://github.com/n1k0/casperjs/pull/375) - Fixes a bug with getting form values for radio inputs, and introduces a minor optimization to avoid processing the same form fields more than once.
+- closed [#373](https://github.com/n1k0/casperjs/issues/373) - added RegExp support to `Casper.waitForText()`
+- fixed [#368](https://github.com/n1k0/casperjs/issues/368) - Remote JS error is thrown when a click target is missing after `click()`
+- merged PR [#357](https://github.com/n1k0/casperjs/pull/357) - fire the `input` event after setting input value (required to support [angular.js](http://angularjs.org/) apps)
+
+2013-01-17, v1.0.1
+------------------
+
+- fixed [#336](https://github.com/n1k0/casperjs/issues/336) - Test result duration may have an exotic value
+- Added `casper.mouse.doubleclick()`
+- fixed [#343](https://github.com/n1k0/casperjs/issues/343) - Better script checks
+- fixed an edge case with xunit export when `phantom.casperScript` may be not defined
+
+2012-12-24, v1.0.0
+------------------
+
+### Important Changes & Caveats
+
+- PhantomJS 1.6.x support has been dropped. Both PhantomJS [1.7](http://phantomjs.org/release-1.7.html) & [1.8](http://phantomjs.org/release-1.8.html) will be supported.
+- the deprecated `injector` module has been removed from the codebase (RIP dude)
+- a [`1.0` maintenance branch](https://github.com/n1k0/casperjs/tree/1.0) has been created
+- CasperJS 1.1 development is now taking place on the `master` branch
+
+### Bugfixes & enhancements
+
+- fixed `page.initialized` event didn't get the initialized `WebPage` instance
+- fixed a bug preventing `Casper.options.onPageInitialized()` from being called
+- fixed [#215](https://github.com/n1k0/casperjs/issues/215) - fixed broken `--fail-fast` option creating an endless loop on error
+- fixed `Tester.renderFailureDetails()` which couldn't print failure details correctly in certain circumstances
+- fixed `Casper.getHTML()` wasn't retrieving active frame contents when using `Casper.withFrame()`
+- fixed [#327](https://github.com/n1k0/casperjs/issues/327) - event handler for `page.confirm` always returns true
+- merged PR [#322](https://github.com/n1k0/casperjs/pull/322) - Support number in `Casper.withFrame()`
+- fixed [#323](https://github.com/n1k0/casperjs/issues/323) - `thenEvaluate()` should be updated to take the same parameters as `evaluate()`, while maintaining backwards compatibility.
+- merged PR [#319](https://github.com/n1k0/casperjs/pull/319), fixed [#209](https://github.com/n1k0/casperjs/issues/209) - test duration has been added to XUnit XML result file.
+- `Casper.userAgent()` does not require the instance to be started anymore
+- dubious tests now have dedicated color & styling
+- added hint printing when a possible `casperjs` command call is detected
+
+2012-12-14, v1.0.0-RC6
+----------------------
+
+I'm still expecting a 1.0 stable for Christmas. Feedback: bring it on.
+
+### Important Changes & Caveats
+
+#### Added experimental support for frames
+
+A minimal convenient API has been added to Casper in order to ease the switch of current page context:
+
+```js
+casper.start('tests/site/frames.html', function() {
+    this.test.assertTitle('CasperJS frameset');
+});
+
+casper.withFrame('frame1', function() {
+    this.test.assertTitle('CasperJS frame 1');
+});
+
+casper.then(function() {
+    this.test.assertTitle('CasperJS frameset');
+});
+```
+
+#### Reverted to emulated mouse events
+
+Native mouse events didn't play well with (i)frames, because the computed element coordinates of the clicked element were erroneous.
+
+So programmatic mouse events are reintroduced back into this corrective RC until a better solution is found.
+
+### Bugfixes & enhancements
+
+- merged [#269](https://github.com/n1k0/casperjs/issues/269) - Windows Batch script: fixed unsupported spaces in path and argument splitting
+
+2012-12-10, v1.0.0-RC5
+----------------------
+
+I told you there won't be an 1.0.0-RC5? I lied. Expect 1.0 stable for Christmas, probably.
+
+### Important Changes & Caveats
+
+#### Casper.evaluate() signature compatibility with PhantomJS
+
+`Casper.evaluate()` method signature is now compatible with PhantomJS' one, so you can now write:
+
+```js
+casper.evaluate(function(a, b) {
+    return a === "foo" && b === "bar";
+}, "foo", "bar"); // true
+```
+
+The old way to pass arguments has been kept backward compatible in order not to break your existing scripts though:
+
+```js
+casper.evaluate(function(a, b) {
+    return a === "foo" && b === "bar";
+}, {a: "foo", b: "bar"}); // true
+```
+
+#### Specification of planned tests
+
+In order to check that every planned test has actuall been executed, a new optional `planned` parameter has been added to `Tester.done()`:
+
+```js
+casper.test.assert(true);
+casper.test.assert(true);
+casper.test.assert(true);
+casper.test.done(4);
+```
+
+Will trigger a failure:
+
+```
+fail: 4 tests planned, 3 tests executed.
+```
+
+That's especially useful in case a given test script is abruptly interrupted leaving you with no obvious way to know it and an erroneous success status.
+
+The whole [CapserJS test suite](https://github.com/n1k0/casperjs/tree/master/tests/) has been migrated to use this new feature.
+
+#### Experimental support for popups
+
+PhantomJS 1.7 ships with support for new opened pages — aka popups. CasperJS can now wait for a popup to be opened and loaded to react accordingly using the new [`Casper.waitForPopup()`](http://casperjs.org/api.html#casper.waitForPopup) and [`Casper.withPopup()`](http://casperjs.org/api.html#casper.withPopup) methods:
+
+```js
+casper.start('http://foo.bar/').then(function() {
+    this.test.assertTitle('Main page title');
+    this.clickLabel('Open me a popup');
+});
+
+// this will wait for the popup to be opened and loaded
+casper.waitForPopup(/popup\.html$/, function() {
+    this.test.assertEquals(this.popups.length, 1);
+});
+
+// this will set the popup DOM as the main active one only for time the
+// step closure being executed
+casper.withPopup(/popup\.html$/, function() {
+    this.test.assertTitle('Popup title');
+});
+
+// next step will automatically revert the current page to the initial one
+casper.then(function() {
+    this.test.assertTitle('Main page title');
+});
+```
+
+#### `Casper.mouseEvent()` now uses native events for most operations
+
+Native mouse events from PhantomJS bring a far more accurate behavior.
+
+Also, `Casper.mouseEvent()` will now directly trigger an error on failure instead of just logging an `error` event.
+
+### Bugfixes & enhancements
+
+- fixed [#308](https://github.com/n1k0/casperjs/issues/308) & [#309](https://github.com/n1k0/casperjs/issues/309) - proper module error backtraces
+- fixed [#306](https://github.com/n1k0/casperjs/issues/306) - Raise an explicit error on invalid test path
+- fixed [#300](https://github.com/n1k0/casperjs/issues/300) - Ensure that `findOne()` and `findAll()` observe the scope for XPath expressions, not just when passed CSS selectors
+- fixed [#294](https://github.com/n1k0/casperjs/issues/294) - Automatically fail test on any runtime error or timeout
+- fixed [#281](https://github.com/n1k0/casperjs/issues/281) - `Casper.evaluate()` should take an array as context not object
+- fixed [#266](https://github.com/n1k0/casperjs/issues/266) - Fix `tester` module and its self tests
+- fixed [#268](https://github.com/n1k0/casperjs/issues/266) - Wrong message on step timeout
+- fixed [#215](https://github.com/n1k0/casperjs/issues/215) - added a `--fail-fast` option to the `casper test` command, in order to terminate a test suite execution as soon as any failure is encountered
+- fixed [#274](https://github.com/n1k0/casperjs/issues/274) - some headers couldn't be set
+- fixed [#277](https://github.com/n1k0/casperjs/issues/277) - multiline support in `ClientUtils.echo()`
+- fixed [#282](https://github.com/n1k0/casperjs/issues/282) - added support for remote client scripts loading with a new `remoteScripts` casper option
+- fixed [#290](https://github.com/n1k0/casperjs/issues/#290) - add a simplistic RPM spec file to make it easier to (un)install casperjs
+- fixed [`utils.betterTypeOf()`](http://casperjs.org/api.html#casper.betterTypeOf) to properly handle `undefined` and `null` values
+- fixed `Casper.die()` and `Casper.evaluateOrDie()` were not printing the error onto the console
+- added JSON support to `require()`
+- added [`Tester.assertTruthy()`](http://casperjs.org/api.html#tester.assertTruthy) and [`Tester.assertFalsy()`](http://casperjs.org/api.html#tester.assertFalsy)
+- added [`Casper.sendKeys()`](http://casperjs.org/api.html#casper.sendKeys) to send native keyboard events to the element matching a given selector
+- added [`Casper.getFormValues()`](http://casperjs.org/api.html#casper.getFormValues) to check for the field values of a given form
+- added [`Tester.assertTextDoesntExist()`](http://casperjs.org/api.html#tester.assertTextDoesntExist)
+- added `Tester.assertFalse()` as an alias of `Tester.assertNot()`
+- added `page.resource.requested` and `page.resource.received` events
+- added [`translate.js`](https://github.com/n1k0/casperjs/tree/master/samples/translate.js) and [`translate.coffee`](https://github.com/n1k0/casperjs/tree/master/samples/translate.coffee) samples
+
 2012-10-31, v1.0.0-RC4
 ----------------------
 

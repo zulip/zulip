@@ -14,7 +14,7 @@ casper = require("casper").create verbose: true
 
 casper.fetchScore = ->
     @evaluate ->
-        result = document.querySelector('#resultStats').innerText
+        result = __utils__.findOne('#resultStats').innerText
         parseInt /Environ ([0-9\s]{1,}).*/.exec(result)[1].replace(/\s/g, '')
 
 terms = casper.cli.args # terms are passed through command-line arguments

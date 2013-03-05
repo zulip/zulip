@@ -37,5 +37,5 @@ casper.thenOpen('http://localhost:8090/', function thenLocalhost(response) {
 
 casper.run(function() {
     server.close();
-    this.test.done();
+    this.test.done(4);
 });

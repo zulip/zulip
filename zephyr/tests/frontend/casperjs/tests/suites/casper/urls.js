@@ -17,6 +17,5 @@ casper.then(function() {
 casper.run(function() {
     this.test.assertHttpStatus(200);
     this.test.assertUrlMatches('Forlì', 'Casper.getCurrentUrl() retrieves a decoded URL');
-    this.test.done();
+    this.test.done(6);
 });
-

@@ -59,4 +59,4 @@ if system(CASPER_COMMAND.join(" ")).nil?
     puts "Fatal: Did you install phantomjs?"
 end
 
-exit $?.exitstatus
+exit $?.exitstatus || 1

@@ -1,4 +1,7 @@
-/*
+/*jshint strict:false*/
+/*global CasperError console phantom require*/
+
+/**
  * download the google logo image onto the local filesystem
  */
 

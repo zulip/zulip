@@ -22,5 +22,5 @@ casper.thenOpen('tests/site/index.html');
 
 casper.run(function() {
     this.removeListener('resource.requested', fetchUA);
-    this.test.done();
+    this.test.done(3);
 });

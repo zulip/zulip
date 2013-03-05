@@ -16,8 +16,8 @@ if not twitterAccount or not filename or not /\.(png|jpg|pdf)$/i.test filename
         .echo("Usage: $ casperjs screenshot.coffee <twitter-account> <filename.[jpg|png|pdf]>")
         .exit(1)
 
-casper.start "https://twitter.com/#!/#{twitterAccount}", ->
-    @waitForSelector ".tweet-row", (->
+casper.start "https://twitter.com/#{twitterAccount}", ->
+    @waitForSelector ".stream-container", (->
         @captureSelector filename, "html"
         @echo "Saved screenshot of #{@getCurrentUrl()} to #{filename}"
     ), (->

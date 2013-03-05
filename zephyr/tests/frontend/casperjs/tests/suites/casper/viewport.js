@@ -10,4 +10,4 @@ casper.test.assertEquals(casper.page.viewportSize.width, 1337, 'Casper.viewport(
 casper.test.assertEquals(casper.page.viewportSize.height, 999, 'Casper.viewport() can change the height of page viewport');
 casper.test.assertRaises(casper.viewport, ['a', 'b'], 'Casper.viewport() validates viewport size data');
 
-casper.test.done();
+casper.test.done(3);

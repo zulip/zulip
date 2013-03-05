@@ -6,5 +6,5 @@ casper.start('tests/site/index.html', function() {
 });
 
 casper.run(function() {
-    casper.test.done();
+    casper.test.done(2);
 });

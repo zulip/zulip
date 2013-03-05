@@ -35,4 +35,4 @@ casper.then ->
 casper.then ->
   @test.assertEquals ++step, 13, "last step"
 
-casper.run(-> @test.done())
+casper.run(-> @test.done(13))
