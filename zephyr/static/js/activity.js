@@ -5,13 +5,13 @@ var exports = {};
     Helpers for detecting user activity and managing user idle states
 */
 
-/* 15 minutes after no activity, idle regardless of focus */
-var DEFAULT_IDLE_TIMEOUT_MS = 15 * 60 * 1000;
-/* 1 minute between keep-alive pings */
+/* After this amount of no activity, mark you idle regardless of your focus */
+var DEFAULT_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+/* Time between keep-alive pings */
 var ACTIVE_PING_INTERVAL_MS = 60 * 1000;
 
 /* Timeouts for away and idle state */
-var AWAY_THRESHOLD_SECS = 5 * 60;
+var AWAY_THRESHOLD_SECS = 10 * 60;
 var IDLE_THRESHOLD_SECS = DEFAULT_IDLE_TIMEOUT_MS / 1000;
 
 /* Keep in sync with views.py:json_update_active_status() */
