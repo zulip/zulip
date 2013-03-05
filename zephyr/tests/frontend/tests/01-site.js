@@ -71,10 +71,7 @@ casper.on('resource.received', function (resource) {
 function send_message(type, params) {
     last_send_or_update = timestamp();
 
-    casper.click('#left_bar_compose_' + type + '_button_big');
-    casper.fill('form[action^="/json/send_message"]', params);
-    casper.click('#compose-send-button');
-    casper.waitWhileVisible('#compose');
+    common.send_message(type, params);
 }
 
 // Wait for any previous send to finish, then send a message.
@@ -134,7 +131,7 @@ function toggle_last_star() {
     });
 }
 
-common.log_in();
+common.start_and_log_in();
 
 casper.then(function () {
     casper.test.info('Sanity-checking existing messages');
@@ -376,7 +373,7 @@ casper.then(function() {
                              "Got expected re-empty star count.");
 });
 
-common.log_out();
+common.then_log_out();
 
 // Run the above queued actions.
 casper.run(function () {

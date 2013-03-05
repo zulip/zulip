@@ -1,6 +1,6 @@
 var common = require('../common.js').common;
 
-common.log_in();
+common.start_and_log_in();
 
 casper.then(function () {
     // TODO: test correct events have fired
@@ -29,7 +29,7 @@ casper.then(function () {
     casper.test.assertNotVisible('#compose', 'Close PM compose box');
 });
 
-common.log_out();
+common.then_log_out();
 
 casper.run(function () {
     casper.test.done(6);
