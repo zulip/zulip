@@ -1,3 +1,6 @@
+// Set default viewport size to something reasonable
+casper.page.viewportSize = {width: 1280, height: 768 };
+
 var common = (function () {
 
 var exports = {};
