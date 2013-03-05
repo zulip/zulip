@@ -647,22 +647,6 @@ def json_send_message(request, user_profile):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_tutorial_send_message(request, user_profile, message=POST('message')):
-    """
-    This function, used by the onboarding tutorial, causes the
-    Tutorial Bot to send you the message you pass in here.
-    (That way, the Tutorial Bot's messages to you get rendered
-     by the server and therefore look like any other message.)
-    """
-    internal_send_message("humbug+tutorial@humbughq.com",
-                          Recipient.PERSONAL,
-                          user_profile.user.email,
-                          "",
-                          message)
-    return json_success()
-
-@authenticated_json_post_view
-@has_request_variables
 def json_change_enter_sends(request, user_profile, enter_sends=POST('enter_sends', json_to_bool)):
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()
@@ -766,6 +750,40 @@ def recipient_for_emails(emails, not_forged_zephyr_mirror, user_profile, sender)
     else:
         return Recipient.objects.get(type_id=list(recipient_profile_ids)[0],
                                      type=Recipient.PERSONAL)
+
+@authenticated_json_post_view
+@has_request_variables
+def json_tutorial_send_message(request, user_profile,
+                               message_type_name = POST('type'),
+                               subject_name = POST('subject', lambda x: x.strip(), None),
+                               message_content=POST('content')):
+    """
+    This function, used by the onboarding tutorial, causes the
+    Tutorial Bot to send you the message you pass in here.
+    (That way, the Tutorial Bot's messages to you get rendered
+     by the server and therefore look like any other message.)
+    """
+    sender_name = "humbug+tutorial@humbughq.com"
+    if message_type_name == 'private':
+        # For now, we discard the recipient on PMs; the tutorial bot
+        # can only send to you.
+        internal_send_message(sender_name,
+                              Recipient.PERSONAL,
+                              user_profile.user.email,
+                              "",
+                              message_content)
+        return json_success()
+    elif message_type_name == 'stream':
+        tutorial_stream_name = 'tutorial-%s' % user_profile.user.email.split('@')[0]
+        ## TODO: For open realms, we need to use the full name here,
+        ## so that me@gmail.com and me@hotmail.com don't get the same stream.
+        internal_send_message(sender_name,
+                              Recipient.STREAM,
+                              tutorial_stream_name,
+                              subject_name,
+                              message_content)
+        return json_success()
+    return json_error('Bad data passed in to tutorial_send_message')
 
 # We do not @require_login for send_message_backend, since it is used
 # both from the API and the web service.  Code calling

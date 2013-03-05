@@ -28,7 +28,8 @@ function send_message(message) {
         dataType: 'json',
         url: '/json/tutorial_send_message',
         type: 'POST',
-        data: {'message': message}
+        data: {'type': 'private',
+               'content': message}
     });
 }
 
