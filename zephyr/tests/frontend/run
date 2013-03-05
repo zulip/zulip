@@ -8,6 +8,12 @@ from os import path
 
 os.environ["TORNADO_SERVER"] = "http://localhost:9983"
 
+test_files = []
+for file in sys.argv[1:]:
+    if not os.path.exists(file):
+        file = path.join(path.dirname(__file__), 'tests', file)
+    test_files.append(path.abspath(file))
+
 os.chdir(path.join(path.dirname(__file__), '../../..'))
 
 subprocess.check_call('zephyr/tests/generate-fixtures')
@@ -42,9 +48,13 @@ try:
         time.sleep(0.1)
     sys.stdout.write('\n')
 
-    ret = subprocess.call(
-        'zephyr/tests/frontend/casperjs/bin/casperjs test zephyr/tests/frontend/tests',
-        shell=True)
+    cmd = 'zephyr/tests/frontend/casperjs/bin/casperjs test '
+    if test_files:
+        cmd += ' '.join(test_files)
+    else:
+        cmd += 'zephyr/tests/frontend/tests'
+    print "Running %s" % (cmd,)
+    ret = subprocess.call(cmd, shell=True)
 finally:
     assert_server_running()
     server.terminate()
