@@ -752,8 +752,7 @@ table.floating_recipient {
 .message_inline_image {
     margin-bottom: 5px;
     margin-left: 5px;
-    max-width:  120px;
-    max-height: 100px;
+    height: 100px;
 }
 
 .actions_popover a {
