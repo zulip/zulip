@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.sessions.models import Session
 from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, \
@@ -50,6 +51,22 @@ def do_create_user(email, password, realm, full_name, short_name,
                'user': email,
                'domain': realm.domain})
     return create_user(email, password, realm, full_name, short_name, active)
+
+def user_sessions(user):
+    return [s for s in Session.objects.all() if s.get_decoded().get('_auth_user_id') == user.id]
+
+def do_deactivate(user_profile):
+    user_profile.user.set_unusable_password()
+    user_profile.user.is_active = False
+    user_profile.user.save()
+
+    for session in user_sessions(user_profile.user):
+        session.delete()
+
+    log_event({'type': 'user_deactivated',
+               'timestamp': time.time(),
+               'user': user_profile.user.email,
+               'domain': user_profile.realm.domain})
 
 def do_change_user_email(user, new_email):
     old_email = user.email
