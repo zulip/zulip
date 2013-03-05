@@ -5,6 +5,7 @@ import time
 import sys
 import os
 from os import path
+import glob
 
 os.environ["TORNADO_SERVER"] = "http://localhost:9983"
 
@@ -17,6 +18,8 @@ for file in sys.argv[1:]:
 os.chdir(path.join(path.dirname(__file__), '../../..'))
 
 subprocess.check_call('zephyr/tests/generate-fixtures')
+
+subprocess.check_call(['rm', '-f'] + glob.glob('/tmp/casper-failure*.png'))
 
 log = open('zephyr/tests/frontend/server.log', 'w')
 
