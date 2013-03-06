@@ -67,47 +67,36 @@ exports.decorate_stream_bar = function (stream_name) {
         .addClass(subs.get_color_class(color));
 };
 
-function neighbors(target_message) {
-    var message_tr = $(rows.get(target_message.id, current_msg_list.table_name));
-    var message_neighbors = $();
-
-    // Being simplistic about this, the smallest message is 30 px high. This
-    // gives you a screen's worth of fade on either side of the target message
-    // message at worst.
-    var num_neighbors = Math.floor(viewport.height() / 30);
-    var candidates = $.merge(message_tr.prevAll(":not('.bookend_tr'):lt(" + num_neighbors + ")"),
-                             message_tr.nextAll(":not('.bookend_tr'):lt(" + num_neighbors + ")"));
-
-    $.each(candidates, function () {
-        var row = $(this);
-        if (row.hasClass("recipient_row")) {
-            message_neighbors = message_neighbors.add(row);
-        } else {
-            message_neighbors = message_neighbors.add(row.children(".messagebox")[0]);
+function messages_with_different_recipients(target_message) {
+    var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .messagebox");
+    var i, elts_to_fade = [];
+    var different_recipient = false;
+    // Note: The below algorithm relies on the fact that all_elts is
+    // sorted as it would be displayed in the message view
+    for (i = 0; i < all_elts.length; i++) {
+        var elt = $(all_elts[i]);
+        if (elt.hasClass("recipient_row")) {
+            if (!util.same_recipient(target_message, current_msg_list.get(rows.id(elt)))) {
+                elts_to_fade.push(elt);
+                different_recipient = true;
+            } else {
+                different_recipient = false;
+            }
+        } else if (different_recipient) {
+            elts_to_fade.push(elt);
         }
-    });
-
-    return message_neighbors;
-}
-
-function neighbors_with_different_recipients(target_message) {
-    return neighbors(target_message).filter(function (index) {
-        if ($(this).hasClass("recipient_row")) {
-            // This is a recipient_row.
-            return !util.same_recipient(target_message, current_msg_list.get(rows.id($(this))));
-        } else {
-            // This is a messagebox.
-            var row = $(this).parent("tr");
-            return !util.same_recipient(target_message, current_msg_list.get(rows.id(row)));
-        }
-    });
+    }
+    return elts_to_fade;
 }
 
 function fade_around(reply_message) {
-    faded_to = reply_message;
-    var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
+    var i, fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
+    var elts_to_fade = messages_with_different_recipients(reply_message);
 
-    neighbors_with_different_recipients(reply_message).addClass(fade_class);
+    faded_to = reply_message;
+    for (i = 0; i < elts_to_fade.length; i++) {
+        $(elts_to_fade[i]).addClass(fade_class);
+    }
     ui.disable_floating_recipient_bar();
 }
 
@@ -117,7 +106,7 @@ exports.unfade_messages = function () {
     }
 
     var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
-    neighbors_with_different_recipients(faded_to).removeClass(fade_class);
+    rows.get_table(current_msg_list.table_name).find(".recipient_row, .messagebox").removeClass(fade_class);
     faded_to = undefined;
     ui.enable_floating_recipient_bar();
 };
