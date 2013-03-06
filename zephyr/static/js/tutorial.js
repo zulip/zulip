@@ -64,8 +64,15 @@ exports.message_was_sent = function(message) {
     var trimmed_content = message.content.trim().toLowerCase();
     if (any_message_to_me(message) &&
         (trimmed_content === 'exit' || trimmed_content === 'stop')) {
-        sleep(1000).then(go(pm, "OK, cool, we'll stop the tutorial here. If you have any questions, you can always email support@humbughq.com!"));
-        exports.stop();
+        sleep(1000).then(function () {
+            var text = "OK, cool, we'll stop the tutorial here. If you have any questions, you can always email support@humbughq.com!";
+            if (pm_to_me(message)) {
+                pm(text);
+            } else {
+                stream_message(message.subject, text);
+            }
+            exports.stop();
+        });
         return;
     }
     received_messages.push(message);
