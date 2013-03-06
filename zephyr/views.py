@@ -22,7 +22,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_activate_user, add_default_subs, do_create_user, do_send_message, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
-    update_user_presence, set_stream_color, get_stream_colors
+    update_user_presence, set_stream_color, get_stream_colors, update_message_flags
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -600,8 +600,8 @@ def get_old_messages_backend(request, anchor = POST(converter=int),
     if stream is not None:
         stream = get_public_stream(request, stream, user_profile.realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-        query = UserMessage.objects.select_related().filter(message__recipient=recipient,
-                                                            user_profile=user_profile) \
+        query = UserMessage.objects.select_related('message').filter(message__recipient=recipient,
+                                                                     user_profile=user_profile) \
                                                     .order_by('id')
     else:
         query = UserMessage.objects.select_related().filter(user_profile=user_profile) \
@@ -654,6 +654,16 @@ def get_profile_backend(request, user_profile):
         result['max_message_id'] = messages[0].id
 
     return json_success(result)
+
+@authenticated_json_post_view
+@has_request_variables
+def json_update_flags(request, user_profile, messages=POST('messages', converter=json_to_list),
+                                            operation=POST('op'),
+                                            flag=POST('flag'),
+                                            all=POST('all', converter=json_to_bool, default=False)):
+    update_message_flags(user_profile, operation, flag, messages, all)
+    return json_success({'result': 'success',
+                         'msg': ''})
 
 @authenticated_api_view
 def api_send_message(request, user_profile):

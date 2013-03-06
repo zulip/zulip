@@ -271,10 +271,10 @@ class UserMessage(models.Model):
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.message.recipient)
-        return "<UserMessage: %s / %s>" % (display_recipient, self.user_profile.user.email)
+        return "<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.user.email, self.flags_dict())
 
     def flags_dict(self):
-        return dict(flags = self.flags.keys())
+        return dict(flags = [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set])
 
 
 class Subscription(models.Model):

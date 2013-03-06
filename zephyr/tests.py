@@ -6,7 +6,7 @@ from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     filter_by_subscriptions, get_display_recipient, Realm, Client, \
-    PreregistrationUser
+    PreregistrationUser, UserMessage
 from zephyr.tornadoviews import json_get_updates, api_get_messages
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
 from zephyr.lib.initial_password import initial_password, initial_api_key
@@ -2143,6 +2143,86 @@ class UserPresenceTests(AuthedTestCase):
         # We only want @humbughq.com emails
         for email in json['presences'].keys():
             self.assertEqual(email.split('@')[1], 'humbughq.com')
+
+class UnreadCountTests(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def get_old_messages(self):
+        post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
+        result = self.client.post("/json/get_old_messages", dict(post_params))
+        data = simplejson.loads(result.content)
+        return data['messages']
+
+    def test_initial_counts(self):
+        # All test users have a pointer at -1, so all messages are read
+        for user in UserProfile.objects.all():
+            for message in UserMessage.objects.filter(user_profile=user):
+                self.assertFalse(message.flags.read)
+
+        self.login('hamlet@humbughq.com')
+        for msg in self.get_old_messages():
+            self.assertEqual(msg['flags'], [])
+
+    def test_new_message(self):
+        # Sending a new message results in unread UserMessages being created
+        self.login("hamlet@humbughq.com")
+        content = "Test message for unset read bit"
+        self.client.post("/json/send_message", {"type": "stream",
+                                                         "to": "Verona",
+                                                         "client": "test suite",
+                                                         "content": content,
+                                                         "subject": "Test subject"})
+        msgs = Message.objects.all().order_by("id")
+        last = msgs[len(msgs) - 1]
+        self.assertEqual(last.content, "Test message for unset read bit")
+        for um in UserMessage.objects.filter(message=last):
+            self.assertEqual(um.message.content, content)
+            if um.user_profile.user.email != "hamlet@humbughq.com":
+                self.assertFalse(um.flags.read)
+
+    def test_update_flags(self):
+        self.login("hamlet@humbughq.com")
+
+        result = self.client.post("/json/update_message_flags", {"messages": simplejson.dumps([1, 2]),
+                                                                 "op": "add",
+                                                                 "flag": "read"})
+        self.assert_json_success(result)
+
+        # Ensure we properly set the flags
+        for msg in self.get_old_messages():
+            if msg['id'] == 1:
+                self.assertEqual(msg['flags'], ['read'])
+            elif msg['id'] == 2:
+                self.assertEqual(msg['flags'], ['read'])
+
+        result = self.client.post("/json/update_message_flags", {"messages": simplejson.dumps([2]),
+                                                                 "op": "remove",
+                                                                 "flag": "read"})
+        self.assert_json_success(result)
+
+        # Ensure we properly remove just one flag
+        for msg in self.get_old_messages():
+            if msg['id'] == 1:
+                self.assertEqual(msg['flags'], ['read'])
+            elif msg['id'] == 2:
+                self.assertEqual(msg['flags'], [])
+
+    def test_update_all_flags(self):
+        self.login("hamlet@humbughq.com")
+
+        result = self.client.post("/json/update_message_flags", {"messages": simplejson.dumps([1, 2]),
+                                                                 "op": "add",
+                                                                 "flag": "read"})
+        self.assert_json_success(result)
+
+        result = self.client.post("/json/update_message_flags", {"messages": simplejson.dumps([]),
+                                                                 "op": "remove",
+                                                                 "flag": "read",
+                                                                 "all": simplejson.dumps(True)})
+        self.assert_json_success(result)
+
+        for msg in self.get_old_messages():
+            self.assertEqual(msg['flags'], [])
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (

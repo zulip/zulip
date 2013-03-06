@@ -2,7 +2,8 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 import simplejson
 import pika
-from zephyr.lib.actions import process_user_activity_event, process_user_presence_event
+from zephyr.lib.actions import process_user_activity_event, \
+        process_user_presence_event, process_update_message_flags
 from zephyr.lib.queue import SimpleQueueClient
 import sys
 import signal
@@ -21,6 +22,8 @@ class Command(BaseCommand):
                 process_user_activity_event(event)
             elif msg_type == 'user_presence':
                 process_user_presence_event(event)
+            elif msg_type == 'update_message':
+                process_update_message_flags(event)
             else:
                 print("[*] Unknown message type: %s" (msg_type,))
 

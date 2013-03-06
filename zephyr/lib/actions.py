@@ -6,6 +6,7 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     DefaultStream, StreamColor, UserPresence, \
     MAX_MESSAGE_LENGTH, get_client, get_stream
 from django.db import transaction, IntegrityError
+from django.db.models import F
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.message_cache import cache_save_message
@@ -152,6 +153,9 @@ def do_send_message(message, rendered_content=None, no_log=False):
         ums_to_create = [UserMessage(user_profile=user_profile, message=message)
                          for user_profile in recipients
                          if user_profile.user.is_active]
+        for um in ums_to_create:
+            if um.user_profile == message.sender:
+                um.flags |= UserMessage.flags.read
         batch_bulk_create(UserMessage, ums_to_create)
 
     cache_save_message(message)
@@ -398,9 +402,9 @@ def do_update_user_presence(user_profile, client, log_time, status):
     presence.save()
 
 if settings.USING_RABBITMQ or settings.TEST_SUITE:
-    # RabbitMQ is required for idle functionality
+    # RabbitMQ is required for idle and unread functionality
     if settings.USING_RABBITMQ:
-        presence_queue = SimpleQueueClient()
+        actions_queue = SimpleQueueClient()
 
     def update_user_presence(user_profile, client, log_time, status):
         event={'type': 'user_presence',
@@ -410,11 +414,24 @@ if settings.USING_RABBITMQ or settings.TEST_SUITE:
                'client': client.name}
 
         if settings.USING_RABBITMQ:
-            presence_queue.json_publish("user_activity", event)
+            actions_queue.json_publish("user_activity", event)
         elif settings.TEST_SUITE:
             process_user_presence_event(event)
+
+    def update_message_flags(user_profile, operation, flag, messages, all):
+        event = {'type':            'update_message',
+                 'user_profile_id': user_profile.id,
+                 'operation':       operation,
+                 'flag':            flag,
+                 'messages':        messages,
+                 'all':             all}
+        if settings.USING_RABBITMQ:
+            actions_queue.json_publish("user_activity", event)
+        else:
+            return process_update_message_flags(event)
 else:
     update_user_presence = lambda user_profile, client, log_time, status: None
+    update_message_flags = lambda user_profile, operation, flag, messages, all: None
 
 def process_user_presence_event(event):
     user_profile = UserProfile.objects.get(id=event["user_profile_id"])
@@ -422,6 +439,28 @@ def process_user_presence_event(event):
     log_time = timestamp_to_datetime(event["time"])
     status = event["status"]
     return do_update_user_presence(user_profile, client, log_time, status)
+
+def process_update_message_flags(event):
+    user_profile = UserProfile.objects.get(id=event["user_profile_id"])
+    try:
+        msg_ids = event["messages"]
+        flag = getattr(UserMessage.flags, event["flag"])
+        op = event["operation"]
+    except (KeyError, AttributeError):
+        return False
+
+    if event["all"] == True:
+        messages = UserMessage.objects.filter(user_profile=user_profile)
+    else:
+        messages = UserMessage.objects.filter(user_profile=user_profile,
+                                              message__id__in=msg_ids)
+
+    if op == "add":
+        messages.update(flags=F('flags') | flag)
+    elif op == "remove":
+        messages.update(flags=F('flags') & ~flag)
+
+    return True
 
 def subscribed_to_stream(user_profile, stream):
     try:
