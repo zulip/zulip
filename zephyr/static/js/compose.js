@@ -198,6 +198,7 @@ function compose_error(error_text, bad_input) {
                .stop(true).fadeTo(0, 1);
     $('#error-msg').html(error_text);
     $("#compose-send-button").removeAttr('disabled');
+    $("#sending-indicator").hide();
     bad_input.focus().select();
 }
 
@@ -240,6 +241,7 @@ function send_message() {
             is_composing_message = false;
             compose.hide();
             $("#compose-send-button").removeAttr('disabled');
+            $("#sending-indicator").hide();
         },
         error: function (xhr, error_type) {
             if (error_type !== 'timeout' && reload.is_pending()) {
@@ -367,6 +369,7 @@ function check_stream_for_send(stream_name) {
         ui.report_error("Error checking subscription", xhr, $("#home-error"));
         $("#stream").focus();
         $("#compose-send-button").removeAttr('disabled');
+        $("#sending-indicator").hide();
     }
 
     return result;
@@ -423,6 +426,7 @@ function validate_private_message() {
 
 exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
+    $("#sending-indicator").show();
 
     if (exports.message_content() === "") {
         compose_error("You have nothing to send!", $("#new_message_content"));

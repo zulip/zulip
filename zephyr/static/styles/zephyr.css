@@ -1026,3 +1026,9 @@ table.floating_recipient {
 .emoji {
     height: 1.4em;
 }
+
+#sending-indicator {
+    float: left;
+    font-weight: bold;
+    display: none;
+}
