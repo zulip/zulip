@@ -1306,6 +1306,13 @@ def api_github_landing(request, user_profile, event=POST,
                       pull_req['body']))
     elif event == 'push':
         short_ref = re.sub(r'^refs/heads/', '', payload['ref'])
+        # This is a bit hackish, but is basically so that CUSTOMER18 doesn't
+        # get spammed when people commit to non-master all over the place.
+        # Long-term, this will be replaced by some GitHub configuration
+        # option of which branches to notify on.
+        if short_ref != 'master' and user_profile.realm.domain in ['customer18.invalid', 'humbughq.com']:
+            return json_success()
+
         subject = repository['name']
         if re.match(r'^0+$', payload['after']):
             content = "%s deleted branch %s" % (payload['pusher']['name'],
