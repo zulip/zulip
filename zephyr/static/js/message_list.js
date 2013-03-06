@@ -366,8 +366,9 @@ MessageList.prototype = {
 
         var cur_window_size = this._max_rendered_idx - this._min_rendered_idx + 1;
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
-            this._render(messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size),
-                         'bottom');
+            var slice_to_render = messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size);
+            this._render(slice_to_render, 'bottom');
+            this._max_rendered_idx += slice_to_render.length;
         }
     },
 
