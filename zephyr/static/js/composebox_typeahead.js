@@ -88,11 +88,15 @@ function handle_keydown(e) {
               $("#private_message_recipient").data().typeahead.shown ||
               $("#new_message_content").data().typeahead.shown)) {
 
-            // If no typeaheads are shown, then there's no need to wait and we can change
-            // the focus right away.  Without this code to change the focus right away,
-            // if the user presses enter before they fully release the tab key, the tab
-            // will be lost.
-            if (nextFocus) {
+            // If no typeaheads are shown and the user is tabbing from the message content box,
+            // then there's no need to wait and we can change the focus right away.
+            // Without this code to change the focus right away, if the user presses enter
+            // before they fully release the tab key, the tab will be lost.  Note that we don't
+            // want to change focus right away in the private_message_recipient box since it
+            // takes the typeaheads a little time to open after the user finishes typing, which
+            // can lead to the focus moving without the autocomplete having a chance to happen.
+            if ((domain === "humbughq.com" && nextFocus === "compose-send-button") ||
+                (domain !== "humbughq.com" && nextFocus)) {
                 ui.focus_on(nextFocus);
                 nextFocus = false;
             }
