@@ -208,7 +208,7 @@ function make_script() {
   go2(stream_message, "tutorial", "(Tell me when you're ready to continue.)"),
   go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
-  go2(stream_message, "tutorial", "Great, you did it! There are a bunch of other features I'd love to tell you about that we don't have time for, but look into these later:\n"
+  go2(stream_message, "tutorial", "There are a bunch of other features I'd love to tell you about that we don't have time for, but look into these later:\n"
     + "* Keyboard shortcuts (press `?` to see them)\n"
     + "* Our [API](https://humbughq.com/api)\n"
     + "* Our [integrations](https://humbughq.com/integrations) with popular services like GitHub, Jenkins, etc.\n"
