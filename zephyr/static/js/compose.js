@@ -100,14 +100,16 @@ function fade_around(reply_message) {
     ui.disable_floating_recipient_bar();
 }
 
-exports.unfade_messages = function () {
+exports.unfade_messages = function (clear_state) {
     if (faded_to === undefined) {
         return;
     }
 
     var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
     rows.get_table(current_msg_list.table_name).find(".recipient_row, .messagebox").removeClass(fade_class);
-    faded_to = undefined;
+    if (clear_state === true) {
+        faded_to = undefined;
+    }
     ui.enable_floating_recipient_bar();
 };
 
@@ -165,7 +167,7 @@ exports.start = function (msg_type, opts) {
     if (opts.replying_to_message !== undefined) {
         if (exports.composing() && (faded_to !== opts.replying_to_message)) {
             // Already faded to another message. First unfade everything.
-            exports.unfade_messages();
+            exports.unfade_messages(true);
         }
         fade_around(opts.replying_to_message);
     }
@@ -274,7 +276,7 @@ exports.hide = function () {
     $('.message_comp').slideUp(100,
                               function() { $('#compose').css({visibility: "hidden"});});
     notifications_bar.enable();
-    exports.unfade_messages();
+    exports.unfade_messages(true);
 };
 
 exports.clear = function () {

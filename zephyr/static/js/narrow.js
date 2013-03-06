@@ -339,6 +339,7 @@ exports.activate = function (operators, opts) {
     hashchange.save_narrow(operators);
     $('#search_query').val(unparse(operators));
     search.update_button_visibility();
+    compose.update_faded_messages();
 
     $("ul.filters li").removeClass('active-filter');
     if (operators.length === 1) {
