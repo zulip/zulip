@@ -3,8 +3,8 @@
     <div class="close composebox-close" onclick="compose.cancel()">&times;</div>
     <div class="message_comp">
       <div class="alert" id="send-status">
-	<span id="error-msg"></span>
-	<span class="send-status-close">&times;</span>
+	    <span class="send-status-close">&times;</span>
+	    <span id="error-msg"></span>
       </div>
       <form id="send_message_form" action="/json/send_message" method="post">
         {% csrf_token %}
