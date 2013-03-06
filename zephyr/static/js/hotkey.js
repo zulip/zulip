@@ -68,6 +68,18 @@ function process_hotkey(e) {
         return false;
     }
 
+    // If we're on a button or a link and have pressed enter, let the
+    // browser handle the keypress
+    //
+    // This is subtle and here's why: Suppose you have the focus on a
+    // stream name in your left sidebar. j and k will still move your
+    // cursor up and down, but Enter won't reply -- it'll just trigger
+    // the link on the sidebar! So you keep pressing enter over and
+    // over again. Until you click somewhere or press r.
+    if ($('a:focus,button:focus').length > 0 && code === 13) {
+        return false;
+    }
+
     if (directional_hotkeys_id.hasOwnProperty(code)) {
         var next_id = directional_hotkeys_id[code]();
         exports.in_scroll_caused_by_keypress = true;
