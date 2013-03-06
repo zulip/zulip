@@ -32,9 +32,42 @@ exports.focus_on = function (field_id) {
     $("#" + field_id).focus();
 };
 
+function find_boundary_tr(initial_tr, iterate_row) {
+    var j, skip_same_td_check = false;
+    var tr = initial_tr;
+
+    // If the selection boundary is somewhere that does not have a
+    // parent tr, we should let the browser handle the copy-paste
+    // entirely on its own
+    if (tr.length === 0) {
+        return;
+    }
+
+    // If the selection bounary is on a table row that does not have an
+    // associated message id (because the user clicked between messages),
+    // then scan downwards until we hit a table row with a message id.
+    // To ensure we can't enter an infinite loop, bail out (and let the
+    // browser handle the copy-paste on its own) if we don't hit what we
+    // are looking for within 10 rows.
+    for (j = 0; (!tr.is('.message_row')) && j < 10; j++) {
+        tr = iterate_row(tr);
+    }
+    if (j === 10) {
+        return;
+    } else if (j !== 0) {
+        // If we updated tr, then we are not dealing with a selection
+        // that is entirely within one td, and we can skip the same td
+        // check (In fact, we need to because it won't work correctly
+        // in this case)
+        skip_same_td_check = true;
+    }
+    return [rows.id(tr), skip_same_td_check];
+}
+
 $(document).bind('copy', function (e) {
     var selection = window.getSelection();
-    var i, j, range, ranges = [], startc, endc, start_tr, end_tr, startid, endid, row, message;
+    var i, range, ranges = [], startc, endc, initial_end_tr, start_id, end_id, row, message;
+    var start_data, end_data;
     var skip_same_td_check = false;
     var div = $('<div>'), p  = $('<p>'), content;
     for (i = 0; i < selection.rangeCount; i++) {
@@ -42,67 +75,28 @@ $(document).bind('copy', function (e) {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_tr = $(startc.parents('tr')[0]);
-
-        // If the selection starts somewhere that does not have a parent tr,
-        // we should let the browser handle the copy-paste entirely on its own
-        if (start_tr.length === 0) {
-            return;
-        }
-
-        // If the selection starts on a table row that does not have an
-        // associated message id (because the user clicked between messages),
-        // then scan downwards until we hit a table row with a message id.
-        // To ensure we can't enter an infinite loop, bail out (and let the
-        // browser handle the copy-paste on its own) if we don't hit what we
-        // are looking for within 10 rows.
-        for (j = 0; (!start_tr.is('.message_row')) && j < 10; j++) {
-            start_tr = start_tr.next();
-        }
-        if (j === 10) {
-            return;
-        } else if (j !== 0) {
-            // If we updated start_tr, then we are not dealing with a selection
-            // that is entirely within one td, and we can skip the same td check
-            // (In fact, we need to because it won't work correctly in this case)
-            skip_same_td_check = true;
-        }
-        startid = rows.id(start_tr);
+        start_data = find_boundary_tr($(startc.parents('tr')[0]), function(row) {
+            return row.next();
+        });
+        start_id = start_data[0];
 
         endc = $(range.endContainer);
         // If the selection ends in the bottom whitespace, we should act as
         // though the selection ends on the final message
         if (endc.attr('id') === "bottom_whitespace") {
-            end_tr = $("tr.message_row:last");
+            initial_end_tr = $("tr.message_row:last");
             skip_same_td_check = true;
         } else {
-            end_tr = $(endc.parents('tr')[0]);
+            initial_end_tr = $(endc.parents('tr')[0]);
         }
+        end_data = find_boundary_tr(initial_end_tr, function(row) {
+            return row.prev();
+        });
+        end_id = end_data[0];
 
-        // If the selection ends somewhere that does not have a parent tr,
-        // we should let the browser handle the copy-paste entirely on its own
-        if (end_tr.length === 0) {
-            return;
-        }
-
-        // If the selection ends on a table row that does not have an
-        // associated message id (because the user clicked between messages),
-        // then scan upwards until we hit a table row with a message id.
-        // To ensure we can't enter an infinite loop, bail out (and let the
-        // browser handle the copy-paste on its own) if we don't hit what we
-        // are looking for within 10 rows.
-        for (j = 0; (!end_tr.is('.message_row')) && j < 10; j++) {
-            end_tr = end_tr.prev();
-        }
-        if (j === 10) {
-            return;
-        } else if (j !== 0) {
-            // If we updated start_tr, then we are not dealing with a selection
-            // that is entirely within one td, and we can skip the same td check
-            // (In fact, we need to because it won't work correctly in this case)
+        if (start_data[1] || end_data[1]) {
             skip_same_td_check = true;
         }
-        endid = rows.id(end_tr);
 
         // If the selection starts and ends in the same td,
         // we should let the browser handle the copy-paste entirely on its own
@@ -113,8 +107,8 @@ $(document).bind('copy', function (e) {
         }
 
         // Construct a div for what we want to copy (div)
-        row = rows.get(startid, current_msg_list.table_name);
-        for (0 /* for linter */; rows.id(row) <= endid; row = rows.next_visible(row)) {
+        row = rows.get(start_id, current_msg_list.table_name);
+        for (0 /* for linter */; rows.id(row) <= end_id; row = rows.next_visible(row)) {
             if (row.prev().hasClass("recipient_row")) {
                 div.append(p);
                 p = $('<p>');
