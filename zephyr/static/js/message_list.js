@@ -317,7 +317,7 @@ MessageList.prototype = {
             if (ids_where_next_is_same_sender[id]) {
                 row.find('.messagebox').addClass("next_is_same_sender");
             }
-            if (this === narrowed_msg_list) {
+            if (self === narrowed_msg_list) {
                 // If narrowed, we may need to highlight the message
                 search.maybe_highlight_message(row);
             }
