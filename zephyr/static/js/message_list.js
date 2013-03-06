@@ -355,6 +355,9 @@ MessageList.prototype = {
                                   dummy.remove();
                               }});
         }
+
+        // Re-add the fading of messages that is lost when we re-render.
+        compose.update_faded_messages();
     },
 
     append: function MessageList_append(messages) {
