@@ -8,6 +8,7 @@ import tornado.web
 import logging
 import time
 from tornado import ioloop
+from zephyr.lib.debug import interactive_debug_listen
 
 # A hack to keep track of how much time we spend working, versus sleeping in
 # the event loop.
@@ -78,6 +79,7 @@ class Command(BaseCommand):
         # setup unbuffered I/O
         sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
         sys.stderr = os.fdopen(sys.stderr.fileno(), 'w', 0)
+        interactive_debug_listen()
 
         import django
         from django.core.handlers.wsgi import WSGIHandler
