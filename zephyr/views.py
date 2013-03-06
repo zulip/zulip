@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.core import validators
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
-from django.db.models import Q
+from django.db.models import Q, F
 from django.core.mail import send_mail, mail_admins
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_huddle, Realm, UserMessage, \
@@ -459,6 +459,16 @@ def update_pointer_backend(request, user_profile, updater,
     user_profile.pointer = pointer
     user_profile.last_pointer_updater = updater
     user_profile.save()
+
+    if updater.lower() in ['android', 'iphone']:
+        # TODO (leo)
+        # Until we handle the new read counts in the mobile apps natively,
+        # this is a shim that will mark as read any messages up until the
+        # pointer move
+        UserMessage.objects.filter(user_profile=user_profile,
+                                   message__id__lte=pointer,
+                                   flags=~UserMessage.flags.read)        \
+                           .update(flags=F('flags') | UserMessage.flags.read)
 
     if settings.TORNADO_SERVER:
         requests.post(settings.TORNADO_SERVER + '/notify_pointer_update', data=dict(
