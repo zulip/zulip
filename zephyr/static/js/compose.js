@@ -279,7 +279,7 @@ $(function () {
 });
 
 exports.hide = function () {
-    $('.message_comp > input, textarea, button').blur();
+    $('.message_comp').find('input, textarea, button').blur();
     $('.message_comp').slideUp(100,
                               function() { $('#compose').css({visibility: "hidden"});});
     notifications_bar.enable();
