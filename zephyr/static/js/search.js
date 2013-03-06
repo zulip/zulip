@@ -149,23 +149,9 @@ function update_buttons_with_focus(focused) {
     if (focused
         || search_query.val()
         || narrow.active()) {
-
-        if ($('.search_button').is(':visible')) {
-            // Already visible, and the width manipulation below
-            // will break if we do it again.
-            return;
-        }
-        // Shrink the searchbox to make room for the buttons.
-        var new_width = search_query.width() -
-            $('.search_button').outerWidth(true);
-        search_query.width(new_width-1);
-        $("#search_arrows").addClass("input-append");
-        $('.search_button').show();
+        $('.search_button').removeAttr('disabled');
     } else {
-        // Hide buttons.
-        $('#search_query').width('');
-        $("#search_arrows").removeClass("input-append");
-        $('.search_button').blur().hide();
+        $('.search_button').attr('disabled', 'disabled');
     }
 }
 

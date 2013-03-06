@@ -615,7 +615,12 @@ input.recipient_box {
     cursor: pointer;
 }
 
+#navbar-middle {
+    display: table-row;
+}
+
 .brand.skinny-user-gravatar {
+    display: table-cell;
     padding-top: 5px;
     padding-bottom: 0px;
     margin-bottom: 5px;
@@ -671,6 +676,7 @@ input.recipient_box {
 }
 
 #search_arrows {
+    width: 99%;
     margin-bottom: 5px;
 
     /* Bootstrap wants font-size: 0 to eliminate space between
@@ -681,17 +687,8 @@ input.recipient_box {
 }
 
 #searchbox .search_button {
-    display: none;
     text-align: center;
     padding: 4px 10px 4px 10px;
-}
-
-/* A cheat, because input-prepend and input-append aren't
-   smart enough to do the right thing with search-query */
-#searchbox .search_button_middle {
-    border-radius: 0;
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
 }
 
 #floating_recipient_bar {
