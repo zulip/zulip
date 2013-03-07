@@ -579,15 +579,20 @@ function people_cmp(person1, person2) {
 }
 
 function show_new_stream_modal() {
-    var people_minus_you = [];
+    var people_minus_you_and_maybe_humbuggers = [];
     $.each(people_list, function (idx, person) {
-        if (person.email !== email) {
-            people_minus_you.push({"email": person.email, "full_name": person.full_name});
+        if (person.email !== email &&
+               (domain === "humbughq.com" ||
+                   person.email.split('@')[1] !== "humbughq.com"
+               )
+           ) {
+            people_minus_you_and_maybe_humbuggers.push({"email": person.email,
+                "full_name": person.full_name});
         }
     });
 
     $('#people_to_add').html(templates.new_stream_users({
-        users: people_minus_you.sort(people_cmp)
+        users: people_minus_you_and_maybe_humbuggers.sort(people_cmp)
     }));
     $('#stream-creation').modal("show");
 }
