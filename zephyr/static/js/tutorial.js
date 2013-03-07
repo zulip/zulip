@@ -178,7 +178,6 @@ function make_script() {
   go2(stream_message, "tutorial", "It's easy to make or join streams. If you click the gear on the top right of the page, and then pick 'Streams', you can create your own stream, join streams that other people have made, or set colors for your streams."),
   go(sleep, 4000),
   go2(stream_message, "tutorial", "Go in there now and set a color for `" + my_tutorial_stream + "`. Then come back here, and tell me when you've done so."),
-  go(sleep, 5000),
   go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
   // Narrowing
