@@ -19,7 +19,12 @@ branch_ref=$(git rev-list --max-count=1 $branch)
 if [ "$old_ref" == "$branch_ref" ]; then
     new_ref=master
 else
-    new_ref=$old_ref
+    ref_name=$(git describe --all --exact $old_ref)
+    if [ $? -eq 0 ]; then
+        new_ref=$(echo $ref_name | perl -pe 's{^(heads|remotes)/}{}')
+    else
+        new_ref=$old_ref
+    fi
 fi
 
 [ -z "$branch" ] && error_out "You must specify a branch name to deploy"
