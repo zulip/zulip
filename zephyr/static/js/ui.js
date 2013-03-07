@@ -907,12 +907,7 @@ function sort_narrow_list() {
     var items = $('#stream_filters li').get();
     var parent = $('#stream_filters');
     items.sort(function(a,b){
-        var keyA = $(a).text();
-        var keyB = $(b).text();
-
-        if (keyA < keyB) return -1;
-        if (keyA > keyB) return 1;
-        return 0;
+        return $(a).data('name').localeCompare($(b).data('name'));
     });
 
     parent.empty();
