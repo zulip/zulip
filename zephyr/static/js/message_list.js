@@ -6,6 +6,8 @@ function MessageList(table_name, opts) {
     this.table_name = table_name;
     this._selected_id = -1;
     this._message_groups = [];
+    this._min_rendered_idx = 0;
+    this._max_rendered_idx = -1;
 
     if (this.table_name) {
         this._clear_table();
@@ -173,10 +175,9 @@ MessageList.prototype = {
 
         var selected_idx = util.lower_bound(this._items, this._selected_id,
                                             function (a, b) { return a.id < b; });
-        var new_min_idx = -1;
+        var new_min_idx;
 
         // We rerender under the following conditions:
-        // * This is the first render
         // * The selected message is within this._RENDER_THRESHOLD messages
         //   of the top of the currently rendered window and the top
         //   of the window does not abut the beginning of the message
@@ -185,11 +186,10 @@ MessageList.prototype = {
         //   of the bottom of the currently rendered window and the
         //   bottom of the window does not abut the end of the
         //   message list
-        if (! (this._min_rendered_idx === undefined
-               || ((selected_idx - this._min_rendered_idx < this._RENDER_THRESHOLD)
-                   && (this._min_rendered_idx !== 0))
-               || ((this._max_rendered_idx - selected_idx < this._RENDER_THRESHOLD)
-                   && (this._max_rendered_idx !== this._items.length - 1))))
+        if (! (((selected_idx - this._min_rendered_idx < this._RENDER_THRESHOLD)
+                && (this._min_rendered_idx !== 0)) ||
+               ((this._max_rendered_idx - selected_idx < this._RENDER_THRESHOLD)
+                && (this._max_rendered_idx !== this._items.length - 1))))
         {
             return false;
         }
@@ -376,10 +376,8 @@ MessageList.prototype = {
         this._items = messages.concat(this._items);
         this._add_to_hash(messages);
 
-        if (this._min_rendered_idx !== undefined) {
-            this._min_rendered_idx += messages.length;
-            this._max_rendered_idx += messages.length;
-        }
+        this._min_rendered_idx += messages.length;
+        this._max_rendered_idx += messages.length;
     },
 
     all: function MessageList_all() {
