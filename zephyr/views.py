@@ -429,7 +429,6 @@ def home(request):
                                    js_bool(user_profile.enter_sends),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
-                               'show_activity': can_view_activity(request),
                                'show_invites': show_invites,
                                },
                               context_instance=RequestContext(request))
