@@ -132,7 +132,7 @@ a:hover code {
     padding-left: 0.5em;
 }
 
-.my_fullname {
+#my_information .my_fullname {
     font-weight: bold;
     white-space: nowrap;
 }

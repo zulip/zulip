@@ -1004,6 +1004,9 @@ exports.set_presence_list = function (users, presence_info) {
                             .text(name))
             .addClass('user_' + type)
             .attr('title', name + presence_descriptions[type]);
+        if (email === this.email) {
+            entry.addClass('my_fullname');
+        }
         $('#user_presences').append(entry);
     }
 
