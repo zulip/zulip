@@ -160,12 +160,12 @@ function make_script() {
   go2(stream_message, "tutorial", "By the way, right now, these messages are going to stream `" + my_tutorial_stream + "`.\n\nA stream is like a chatroom or mailing list; anyone on `" + my_tutorial_stream +"` can see and respond to these messages right now. (In this case, it's just us on this stream right now, so that no one distracts us.)"),
   go(sleep, 8000),
   go2(stream_message, "tutorial", "Every stream message has a subject associated with it. (In this case, `tutorial`). "
-      + "The subject should ideally be **one word** describing the topic of the message.\n\nGood subjects: `lunch` or `humbug-test.git` or `jQuery`.\n"),
+      + "The subject should ideally be **one or two words** describing the topic of the message.\n\nGood subjects: `lunch`, `website redesign` or `Bug #4567`.\n"),
   go(sleep, 10000),
   go2(stream_message, "tutorial", "Why subjects are really powerful:\n"
       + "* They make it easy to keep track of multiple conversations\n"
       + "* When you return to your computer after being away, they let you easily skim so that you can read what you care about and ignore what you don't. (Especially great if you have remote workers!)\n"
-      + "* They're lightweight (remember, one word)\n"),
+      + "* They're lightweight (remember, one or two words; don't overthink it)\n"),
   go(sleep, 8000),
   go2(stream_message, "tutorial", "I know that's a lot to take in, but once you understand the model, Humbug can be insanely productive. I'll give you a second to catch your breath, but send me a reply when you're ready to continue."),
   go2(wait_for_message, 300, any_message_to_me),
