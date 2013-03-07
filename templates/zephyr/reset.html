@@ -7,7 +7,7 @@
     <h3>Reset your password.</h3>
 </div>
 
-<form method="post" class="form-horizontal" action="{% url django.contrib.auth.views.password_reset %}">
+<form method="post" class="form-horizontal" action="{% url 'django.contrib.auth.views.password_reset' %}">
 {% csrf_token %}
     <div class="control-group">
         <label for="id_email" class="control-label">Email</label>

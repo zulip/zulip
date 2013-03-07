@@ -29,7 +29,7 @@ autofocus('#id_username');
 <div class="row">
     <div class="span5 login-area">
         <form name="login_form" method="post" class="form-horizontal"
-              action="{% url django.contrib.auth.views.login %}?next={{ request.get_full_path }}">
+              action="{% url 'django.contrib.auth.views.login' %}?next={{ request.get_full_path }}">
             {% csrf_token %}
             <div class="control-group">
                 <label for="id_username" class="control-label">Email</label>
@@ -47,7 +47,7 @@ autofocus('#id_username');
                 <div class="controls">
                     <input type="submit" class="btn btn-large btn-primary" value="Log in" />
                     <span style="padding: 1em" />
-                    <a href="{% url django.contrib.auth.views.password_reset %}">Forgot password?</a>
+                    <a href="{% url 'django.contrib.auth.views.password_reset' %}">Forgot password?</a>
                 </div>
             </div>
         </form>

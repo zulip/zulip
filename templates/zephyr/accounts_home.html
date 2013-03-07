@@ -11,7 +11,7 @@ autofocus('#email');
 
         <div class="pitch">
             <p class="lead">Let's get started…</p>
-            <form class="form-inline" id="email_signup" name="email_form" action="{% url zephyr.views.accounts_home %}" method="post">
+            <form class="form-inline" id="email_signup" name="email_form" action="{% url 'zephyr.views.accounts_home' %}" method="post">
                 {% csrf_token %}
                 <input type="text" class="email required" placeholder="Enter your work email address"
                        id="email" name="email"/>&nbsp;
