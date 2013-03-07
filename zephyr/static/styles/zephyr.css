@@ -918,6 +918,10 @@ table.floating_recipient {
     font-weight: bold;
 }
 
+.settings_committed {
+    margin: 10px;
+}
+
 .subscriber_list_container {
     max-height: 200px;
     overflow: auto;

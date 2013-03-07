@@ -728,7 +728,14 @@ function move_pointer_at_page_top_and_bottom(delta) {
     }
 }
 
-function fast_forward_pointer() {
+function fast_forward_pointer(btn) {
+    btn = $(btn);
+
+    btn.attr('disabled', 'disabled');
+
+    btn.after($("<div>").addClass("alert alert-info settings_committed")
+                        .text("Working…"));
+
     $.ajax({
         type: 'POST',
         url: '/json/get_profile',
