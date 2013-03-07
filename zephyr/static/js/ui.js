@@ -895,6 +895,12 @@ $(function () {
         var message = current_msg_list.get(rows.id(row));
         timerender.set_full_datetime(message, time_elem);
     });
+
+    $('#user_presences').on('click', 'a', function (e) {
+        var email = $(e.target).attr('data-email');
+        compose.start('private', {private_message_recipient: email});
+        e.preventDefault();
+    });
 });
 
 function sort_narrow_list() {
@@ -994,14 +1000,10 @@ exports.set_presence_list = function (users, presence_info) {
 
     function add_entry(name, email, type) {
         var entry = $('<li>')
-            .append($('<a>').attr('href', '#')
+            .append($('<a>').attr({href: '#', 'data-email': email})
                             .text(name))
             .addClass('user_' + type)
-            .attr('title', name + presence_descriptions[type])
-            .click(function (e) {
-                compose.start('private', {private_message_recipient: email});
-                e.preventDefault();
-            });
+            .attr('title', name + presence_descriptions[type]);
         $('#user_presences').append(entry);
     }
 
