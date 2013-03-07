@@ -6,8 +6,9 @@ function MessageList(table_name, opts) {
     this.table_name = table_name;
     this._selected_id = -1;
     this._message_groups = [];
-    this._min_rendered_idx = 0;
-    this._max_rendered_idx = -1;
+    // Half-open interval of the indices that define the current render window
+    this._render_win_start = 0;
+    this._render_win_end = 0;
 
     if (this.table_name) {
         this._clear_table();
@@ -175,7 +176,7 @@ MessageList.prototype = {
 
         var selected_idx = util.lower_bound(this._items, this._selected_id,
                                             function (a, b) { return a.id < b; });
-        var new_min_idx;
+        var new_start;
 
         // We rerender under the following conditions:
         // * The selected message is within this._RENDER_THRESHOLD messages
@@ -186,27 +187,26 @@ MessageList.prototype = {
         //   of the bottom of the currently rendered window and the
         //   bottom of the window does not abut the end of the
         //   message list
-        if (! (((selected_idx - this._min_rendered_idx < this._RENDER_THRESHOLD)
-                && (this._min_rendered_idx !== 0)) ||
-               ((this._max_rendered_idx - selected_idx < this._RENDER_THRESHOLD)
-                && (this._max_rendered_idx !== this._items.length - 1))))
+        if (! (((selected_idx - this._render_win_start < this._RENDER_THRESHOLD)
+                && (this._render_win_start !== 0)) ||
+               ((this._render_win_end - selected_idx <= this._RENDER_THRESHOLD)
+                && (this._render_win_end !== this._items.length))))
         {
             return false;
         }
 
-        new_min_idx = Math.max(selected_idx - this._RENDER_WINDOW_SIZE / 2, 0);
-        if (new_min_idx === this._min_rendered_idx) {
+        new_start = Math.max(selected_idx - this._RENDER_WINDOW_SIZE / 2, 0);
+        if (new_start === this._render_win_start) {
             return false;
         }
 
-        this._min_rendered_idx = new_min_idx;
-        this._max_rendered_idx = Math.max(Math.min(this._min_rendered_idx + this._RENDER_WINDOW_SIZE - 1,
-                                                   this._items.length - 1),
-                                          0);
+        this._render_win_start = new_start;
+        this._render_win_end = Math.min(this._render_win_start + this._RENDER_WINDOW_SIZE,
+                                        this._items.length);
 
         this._clear_table();
-        this._render(this._items.slice(this._min_rendered_idx,
-                                       this._max_rendered_idx + 1),
+        this._render(this._items.slice(this._render_win_start,
+                                       this._render_win_end),
                      'bottom', true);
         return true;
     },
@@ -364,11 +364,11 @@ MessageList.prototype = {
         this._items = this._items.concat(messages);
         this._add_to_hash(messages);
 
-        var cur_window_size = this._max_rendered_idx - this._min_rendered_idx + 1;
+        var cur_window_size = this._render_win_end - this._render_win_start;
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
             var slice_to_render = messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size);
             this._render(slice_to_render, 'bottom');
-            this._max_rendered_idx += slice_to_render.length;
+            this._render_win_end += slice_to_render.length;
         }
     },
 
@@ -376,8 +376,8 @@ MessageList.prototype = {
         this._items = messages.concat(this._items);
         this._add_to_hash(messages);
 
-        this._min_rendered_idx += messages.length;
-        this._max_rendered_idx += messages.length;
+        this._render_win_start += messages.length;
+        this._render_win_end += messages.length;
     },
 
     all: function MessageList_all() {
