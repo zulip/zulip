@@ -413,6 +413,19 @@ function add_messages(messages, msg_list, opts) {
     notifications_bar.update();
 }
 
+function deduplicate_messages(messages) {
+    var new_message_ids = {};
+    return $.grep(messages, function (msg, idx) {
+        if (new_message_ids[msg.id] === undefined
+            && all_msg_list.get(msg.id) === undefined)
+        {
+            new_message_ids[msg.id] = true;
+            return true;
+        }
+        return false;
+    });
+}
+
 var get_updates_xhr;
 var get_updates_timeout;
 function get_updates(options) {
@@ -455,12 +468,18 @@ function get_updates(options) {
             }
 
             if (data.messages.length !== 0) {
+                // There is a known bug (#1062) in our backend
+                // whereby duplicate messages are delivered during a
+                // server update.  Once that bug is fixed, this
+                // should no longer be needed
+                var messages = deduplicate_messages(data.messages);
+
                 if (narrow.active()) {
-                    add_messages(data.messages, narrowed_msg_list);
+                    add_messages(messages, narrowed_msg_list);
                 }
-                add_messages(data.messages, all_msg_list);
-                add_messages(data.messages, home_msg_list);
-                notifications.received_messages(data.messages);
+                add_messages(messages, all_msg_list);
+                add_messages(messages, home_msg_list);
+                notifications.received_messages(messages);
                 compose.update_faded_messages();
             }
 
