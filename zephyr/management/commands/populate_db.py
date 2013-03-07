@@ -231,6 +231,10 @@ class Command(BaseCommand):
                     ]
                 create_users(realms, internal_humbug_users_nosubs)
 
+            # Mark all messages as read
+            with transaction.commit_on_success():
+                UserMessage.objects.all().update(flags=0)
+
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
             restore_saved_messages()
