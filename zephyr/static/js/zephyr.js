@@ -376,11 +376,14 @@ function add_messages(messages, msg_list, opts) {
         prepended = true;
     }
 
-    if ((msg_list === narrowed_msg_list) && !msg_list.empty()) {
+    if ((msg_list === narrowed_msg_list) && !msg_list.empty() &&
+        (msg_list.selected_id() === -1)) {
         // If adding some new messages to the message tables caused
         // our current narrow to no longer be empty, hide the empty
         // feed placeholder text.
         util.hide_empty_narrow_message();
+        // And also select the newly arrived message.
+        msg_list.select_id(msg_list.selected_id(), {then_scroll: true, use_closest: true});
     }
 
     if (msg_list === home_msg_list && opts.update_unread_counts) {
