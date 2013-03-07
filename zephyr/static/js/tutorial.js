@@ -85,10 +85,16 @@ function wait_for_message(time_to_wait_sec, condition) {
         var numCalls = 0;
         var intervalId = setInterval(function () {
             numCalls += 1;
-            if (numCalls > time_to_wait_sec * 1000 / POLL_INTERVAL_MS) {
+            if (numCalls > time_to_wait_sec * (1000 / POLL_INTERVAL_MS)) {
                 clearInterval(intervalId);
                 // We didn't get an answer; end the tutorial.
-                deferred.fail();
+                var signoff_message = "**I didn't hear from you, so I stopped waiting** :broken_heart:\n\nSince we're done, I've also removed you from `" + my_tutorial_stream + "`.\n\nEnjoy using Humbug, and let us know if you have any questions -- if you click the gear at the top-right, there's an option labeled 'Feedback', which is a great way to reach us.";
+                stream_message("tutorial", signoff_message).then(function () {
+                    // This needs to be in a 'then' because otherwise we unsub
+                    // before the message arrives!
+                    exports.stop();
+                    deferred.fail();
+                });
             }
 
             if (received_messages.length > 0) {
@@ -292,7 +298,7 @@ exports.run_when_ready = function () {
 exports.initialize = function () {
     make_script();
     if (should_autostart_tutorial) {
-        tutorial.start();
+        exports.start();
     }
 };
 
