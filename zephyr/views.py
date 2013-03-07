@@ -777,7 +777,8 @@ def json_tutorial_send_message(request, user_profile,
                               Recipient.PERSONAL,
                               user_profile.user.email,
                               "",
-                              message_content)
+                              message_content,
+                              realm=user_profile.realm)
         return json_success()
     elif message_type_name == 'stream':
         tutorial_stream_name = 'tutorial-%s' % user_profile.user.email.split('@')[0]
@@ -787,7 +788,8 @@ def json_tutorial_send_message(request, user_profile,
                               Recipient.STREAM,
                               tutorial_stream_name,
                               subject_name,
-                              message_content)
+                              message_content,
+                              realm=user_profile.realm)
         return json_success()
     return json_error('Bad data passed in to tutorial_send_message')
 

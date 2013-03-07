@@ -188,14 +188,16 @@ def create_stream_if_needed(realm, stream_name, invite_only=False):
     return stream, created
 
 def internal_send_message(sender_email, recipient_type, recipient,
-                          subject, content):
+                          subject, content, realm=None):
     if len(content) > MAX_MESSAGE_LENGTH:
         content = content[0:3900] + "\n\n[message was too long and has been truncated]"
     message = Message()
     message.sender = UserProfile.objects.get(user__email__iexact=sender_email)
 
     if recipient_type == Recipient.STREAM:
-        stream, _ = create_stream_if_needed(message.sender.realm, recipient)
+        if realm is None:
+            realm = message.sender.realm
+        stream, _ = create_stream_if_needed(realm, recipient)
         type_id = stream.id
     else:
         type_id = UserProfile.objects.get(user__email__iexact=recipient).id
