@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.conf.urls import patterns, url
+from django.views.generic import TemplateView, RedirectView
 import os.path
 import zephyr.forms
 
@@ -31,8 +32,8 @@ urlpatterns = patterns('',
 
     # Registration views, require a confirmation ID.
     url(r'^accounts/home/', 'zephyr.views.accounts_home'),
-    url(r'^accounts/send_confirm/(?P<email>[\S]+)?', 'django.views.generic.simple.direct_to_template',
-        {'template': 'zephyr/accounts_send_confirm.html'}, name='send_confirm'),
+    url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
+        TemplateView.as_view(template_name='zephyr/accounts_send_confirm.html'), name='send_confirm'),
     url(r'^accounts/register/', 'zephyr.views.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
 
@@ -40,17 +41,17 @@ urlpatterns = patterns('',
     url(r'^accounts/accept_terms', 'zephyr.views.accounts_accept_terms'),
 
     # Terms of service and privacy policy
-    url(r'^terms$',   'django.views.generic.simple.direct_to_template', {'template': 'zephyr/terms.html'}),
-    url(r'^privacy$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/privacy.html'}),
+    url(r'^terms$',   TemplateView.as_view(template_name='zephyr/terms.html')),
+    url(r'^privacy$', TemplateView.as_view(template_name='zephyr/privacy.html')),
 
     # "About Humbug" information
-    url(r'^what-is-humbug$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/what-is-humbug.html'}),
-    url(r'^new-user$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/new-user.html'}),
+    url(r'^what-is-humbug$', TemplateView.as_view(template_name='zephyr/what-is-humbug.html')),
+    url(r'^new-user$', TemplateView.as_view(template_name='zephyr/new-user.html')),
 
     # API and integrations documentation
-    url(r'^api$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/api.html'}),
-    url(r'^integrations$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/integrations.html'}),
-    url(r'^zephyr$', 'django.views.generic.simple.direct_to_template', {'template': 'zephyr/zephyr.html'}),
+    url(r'^api$', TemplateView.as_view(template_name='zephyr/api.html')),
+    url(r'^integrations$', TemplateView.as_view(template_name='zephyr/integrations.html')),
+    url(r'^zephyr$', TemplateView.as_view(template_name='zephyr/zephyr.html')),
 
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/get_updates$',              'zephyr.tornadoviews.json_get_updates'),
@@ -91,7 +92,7 @@ urlpatterns = patterns('',
     # This json format view used by the API accepts a username password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'zephyr.views.api_fetch_api_key'),
 
-    url(r'^robots\.txt$', 'django.views.generic.simple.redirect_to', {'url': '/static/robots.txt'}),
+    url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
 
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_new_message$',            'zephyr.tornadoviews.notify_new_message'),
