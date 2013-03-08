@@ -48,6 +48,7 @@ import requests
 import os
 import base64
 from collections import defaultdict
+from zephyr.lib import bugdown
 
 SERVER_GENERATION = int(time.time())
 
@@ -871,6 +872,10 @@ def send_message_backend(request, user_profile, client,
     else:
         return json_error("Invalid message type")
 
+    rendered_content = bugdown.convert(message_content)
+    if rendered_content is None:
+        return json_error("We were unable to render your message")
+
     message = Message()
     message.sender = sender
     message.content = message_content
@@ -887,7 +892,7 @@ def send_message_backend(request, user_profile, client,
     if client.name == "zephyr_mirror" and already_sent_mirrored_message(message):
         return json_success()
 
-    do_send_message(message)
+    do_send_message(message, rendered_content=rendered_content)
 
     return json_success()
 

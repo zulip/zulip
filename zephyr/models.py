@@ -191,8 +191,8 @@ class Message(models.Model):
     def __str__(self):
         return self.__repr__()
 
-    @cache_with_key(lambda self, apply_markdown: 'message_dict:%d:%d' % (self.id, apply_markdown))
-    def to_dict(self, apply_markdown):
+    @cache_with_key(lambda self, apply_markdown, rendered_content=None: 'message_dict:%d:%d' % (self.id, apply_markdown))
+    def to_dict(self, apply_markdown, rendered_content=None):
         display_recipient = get_display_recipient(self.recipient)
         if self.recipient.type == Recipient.STREAM:
             display_type = "stream"
@@ -225,9 +225,10 @@ class Message(models.Model):
             client            = self.sending_client.name)
 
         if apply_markdown:
-            rendered_content = bugdown.convert_safe(self.content)
             if rendered_content is None:
-                rendered_content = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
+                rendered_content = bugdown.convert(self.content)
+                if rendered_content is None:
+                    rendered_content = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
             obj['content'] = rendered_content
             obj['content_type'] = 'text/html'
         else:

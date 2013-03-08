@@ -127,7 +127,7 @@ def get_user_profile_by_id(uid):
         return user_hash[uid]
     return UserProfile.objects.select_related().get(id=uid)
 
-def do_send_message(message, no_log=False):
+def do_send_message(message, rendered_content=None, no_log=False):
     # Log the message to our message log for populate_db to refill
     if not no_log:
         log_message(message)
@@ -161,7 +161,7 @@ def do_send_message(message, no_log=False):
         # Render Markdown etc. here and store (automatically) in
         # memcached, so that the single-threaded Tornado server
         # doesn't have to.
-        message.to_dict(apply_markdown=True)
+        message.to_dict(apply_markdown=True, rendered_content=rendered_content)
         message.to_dict(apply_markdown=False)
         data = dict(
             secret   = settings.SHARED_SECRET,
