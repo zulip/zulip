@@ -2,10 +2,19 @@ import datetime
 import pytz
 
 from django.core.management.base import BaseCommand
-from zephyr.models import UserProfile, Realm, Stream, Message, Recipient, StreamColor
+from zephyr.models import UserProfile, Realm, Stream, Message, Recipient, StreamColor, UserActivity
 
 class Command(BaseCommand):
     help = "Generate statistics on realm activity."
+
+    def active_users(self, realm):
+        # Has been active (on the website, for now) in the last 7 days.
+        activity_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=7)
+        return [activity.user_profile for activity in \
+                    UserActivity.objects.filter(user_profile__realm=realm,
+                                                last_visit__gt=activity_cutoff,
+                                                query="/json/update_pointer",
+                                                client__name="website")]
 
     def messages_sent_by(self, user, days_ago):
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
@@ -26,6 +35,13 @@ class Command(BaseCommand):
         return Message.objects.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).exclude(
             recipient__type=Recipient.STREAM).exclude(recipient__type=Recipient.PERSONAL).count()
 
+    def report_percentage(self, numerator, denominator, text):
+        if not denominator:
+            fraction = 0.0
+        else:
+            fraction = numerator / float(denominator)
+        print "%.2f%% of" % (fraction * 100,), text
+
     def handle(self, *args, **options):
         if args:
             try:
@@ -38,8 +54,12 @@ class Command(BaseCommand):
 
         for realm in realms:
             print realm.domain
+
             user_profiles = UserProfile.objects.filter(realm=realm)
-            print "%d users" % (len(user_profiles),)
+            active_users = self.active_users(realm)
+            num_active = len(active_users)
+
+            print "%d active users (%d total)" % (num_active, len(user_profiles))
             print "%d streams" % (Stream.objects.filter(realm=realm).count(),)
 
             for days_ago in (1, 7, 30):
@@ -52,20 +72,26 @@ class Command(BaseCommand):
                 print "%d stream messages" % (self.stream_messages(realm, days_ago),)
                 print "%d one-on-one private messages" % (self.private_messages(realm, days_ago),)
                 print "%d group private messages" % (self.group_private_messages(realm, days_ago),)
-            print "%.2f%% have desktop notifications enabled" % (float(len(user_profiles.filter(
-                            enable_desktop_notifications=True))) * 100 /len(user_profiles),)
+
+            num_notifications_enabled = len(filter(lambda x: x.enable_desktop_notifications == True,
+                                                   active_users))
+            self.report_percentage(num_notifications_enabled, num_active,
+                                   "active users have desktop notifications enabled")
+
             colorizers = 0
-            for profile in user_profiles:
+            for profile in active_users:
                 if StreamColor.objects.filter(subscription__user_profile=profile).count() > 0:
                     colorizers += 1
-            print "%.2f%% have colorized streams" % (float(colorizers) * 100/len(user_profiles),)
+            self.report_percentage(colorizers, num_active,
+                                   "active users have colorized streams")
 
-            print "%.2f%% have Enter sends" % (
-                float(len(filter(lambda x: x.enter_sends, user_profiles))) * 100 / len(user_profiles),)
+            num_enter_sends = len(filter(lambda x: x.enter_sends, active_users))
+            self.report_percentage(num_enter_sends, num_active,
+                                   "active users have enter-sends")
 
             all_message_count = Message.objects.filter(sender__realm=realm).count()
-            multi_paragraph_message_count = Message.objects.filter(sender__realm=realm,
-                                                                   content__contains="\n\n").count()
-            print "%.2f%% of all messages are multi-paragraph" % (
-                float(multi_paragraph_message_count) * 100 / all_message_count)
+            multi_paragraph_message_count = Message.objects.filter(
+                sender__realm=realm, content__contains="\n\n").count()
+            self.report_percentage(multi_paragraph_message_count, all_message_count,
+                                   "all messages are multi-paragraph")
             print ""
