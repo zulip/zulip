@@ -1299,7 +1299,8 @@ def api_github_landing(request, user_profile, event=POST,
 
     repository = payload['repository']
 
-    if event == 'pull_request':
+    # CUSTOMER18 has requested not to get pull request notifications
+    if event == 'pull_request' and user_profile.realm.domain not in ['customer18.invalid', 'humbughq.com']:
         pull_req = payload['pull_request']
 
         subject = "%s: pull request %d" % (repository['name'],
