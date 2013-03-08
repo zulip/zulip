@@ -59,6 +59,10 @@ class Command(BaseCommand):
                 if StreamColor.objects.filter(subscription__user_profile=profile).count() > 0:
                     colorizers += 1
             print "%.2f%% have colorized streams" % (float(colorizers) * 100/len(user_profiles),)
+
+            print "%.2f%% have Enter sends" % (
+                float(len(filter(lambda x: x.enter_sends, user_profiles))) * 100 / len(user_profiles),)
+
             all_message_count = Message.objects.filter(sender__realm=realm).count()
             multi_paragraph_message_count = Message.objects.filter(sender__realm=realm,
                                                                    content__contains="\n\n").count()
