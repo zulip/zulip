@@ -13,6 +13,22 @@ from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
 from zephyr.lib.timeout import timeout
 
+def walk_tree(root, processor):
+    results = []
+    stack = [root]
+
+    while stack:
+        currElement = stack.pop()
+        for child in currElement.getchildren():
+            if child.getchildren():
+                stack.append(child)
+
+            result = processor(child)
+            if result is not None:
+                results.append(result)
+
+    return results
+
 class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url):
         parsed_url = urlparse.urlparse(url)
@@ -42,29 +58,21 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
 
     # Search the tree for <a> tags and read their href values
     def find_images(self, root):
-        images = []
-        stack = [root]
+        def process_image_links(element):
+            if element.tag != "a":
+                return None
 
-        while stack:
-            currElement = stack.pop()
-            for child in currElement.getchildren():
-                if child.getchildren():
-                    stack.append(child)
+            url = element.get("href")
+            youtube = self.youtube_image(url)
+            if youtube is not None:
+                return (youtube, url)
+            dropbox = self.dropbox_image(url)
+            if dropbox is not None:
+                return (dropbox, url)
+            if self.is_image(url):
+                return (url, url)
 
-                if child.tag == "a":
-                    url = child.get("href")
-                    youtube = self.youtube_image(url)
-                    if youtube is not None:
-                        images.append((youtube, url))
-                        continue
-                    dropbox = self.dropbox_image(url)
-                    if dropbox is not None:
-                        images.append((dropbox, url))
-                        continue
-                    if self.is_image(url):
-                        images.append((url, url))
-                        continue
-        return images
+        return walk_tree(root, process_image_links)
 
     def run(self, root):
         image_urls = self.find_images(root)
