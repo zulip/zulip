@@ -207,9 +207,9 @@ def accounts_register(request):
             # FIXME: sanitize email addresses and fullname
             if mit_beta_user:
                 user = User.objects.get(email=email)
-                do_activate_user(user)
-                do_change_password(user, password)
                 user_profile = user.userprofile
+                do_activate_user(user_profile)
+                do_change_password(user_profile, password)
                 do_change_full_name(user_profile, full_name)
             else:
                 user_profile = do_create_user(email, password, realm, full_name, short_name)
@@ -1039,7 +1039,7 @@ def json_change_settings(request, user_profile, full_name=POST,
             return json_error("New password must match confirmation password!")
         if not authenticate(username=user_profile.user.email, password=old_password):
             return json_error("Wrong password!")
-        do_change_password(user_profile.user, new_password)
+        do_change_password(user_profile, new_password)
 
     result = {}
     if user_profile.full_name != full_name and full_name.strip() != "":

@@ -77,10 +77,10 @@ def do_deactivate(user_profile):
                'user': user_profile.user.email,
                'domain': user_profile.realm.domain})
 
-def do_change_user_email(user, new_email):
-    old_email = user.email
-    user.email = new_email
-    user.save(update_fields=["email"])
+def do_change_user_email(user_profile, new_email):
+    old_email = user_profile.user.email
+    user_profile.user.email = new_email
+    user_profile.user.save(update_fields=["email"])
 
     log_event({'type': 'user_email_changed',
                'old_email': old_email,
@@ -430,19 +430,21 @@ def log_subscription_property_change(user_email, property, property_dict):
     event.update(property_dict)
     log_event(event)
 
-def do_activate_user(user, log=True, join_date=timezone.now()):
+def do_activate_user(user_profile, log=True, join_date=timezone.now()):
+    user = user_profile.user
     user.is_active = True
     user.set_password(initial_password(user.email))
     user.date_joined = join_date
     user.save(update_fields=["is_active", "date_joined", "password"])
 
     if log:
-        domain = UserProfile.objects.get(user=user).realm.domain
+        domain = user_profile.realm.domain
         log_event({'type': 'user_activated',
                    'user': user.email,
                    'domain': domain})
 
-def do_change_password(user, password, log=True, commit=True):
+def do_change_password(user_profile, password, log=True, commit=True):
+    user = user_profile.user
     user.set_password(password)
     if commit:
         user.save(update_fields=["password"])

@@ -53,6 +53,6 @@ class HomepageForm(forms.Form):
 
 class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):
-        do_change_password(self.user, self.cleaned_data['new_password1'],
+        do_change_password(self.user.userprofile, self.cleaned_data['new_password1'],
                            log=True, commit=commit)
         return self.user

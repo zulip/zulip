@@ -523,15 +523,17 @@ def restore_saved_messages():
             continue
         elif message_type == "user_activated" or message_type == "user_created":
             # These are rare, so just handle them the slow way
-            user = User.objects.get(email=old_message["user"])
+            user_profile = users[old_message["user"]]
             join_date = timestamp_to_datetime(old_message['timestamp'])
-            do_activate_user(user, log=False, join_date=join_date)
+            do_activate_user(user_profile, log=False, join_date=join_date)
             # Update the cache of users to show this user as activated
-            users_by_id[user.userprofile.id] = UserProfile.objects.get(user=user)
-            users[user.email] = user.userprofile
+            users_by_id[user_profile.id] = user_profile
+            users[old_message["user"]] = user_profile
             continue
         elif message_type == "user_change_password":
             # Just handle these the slow way
+            # We can't use do_change_password, since we have the
+            # password hash rather than the password itself
             user = User.objects.get(email=old_message["user"])
             user.password = old_message["pwhash"]
             user.save()
