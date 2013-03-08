@@ -687,8 +687,25 @@ $(function () {
     });
 
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
-        var colorpicker = $(e.target).closest('.subscription_row').find('.colorpicker');
+        var subrow = $(e.target).closest('.subscription_row');
+        var colorpicker = subrow.find('.colorpicker');
         colorpicker.spectrum(colorpicker_options);
+
+        // To figure out the worst case for an expanded row's height, we do some math:
+        // .subscriber_list_container max-height,
+        // .subscriber_list_settings,
+        // .regular_subscription_settings
+        // .subscription_header line-height,
+        // .subscription_header padding
+        var expanded_row_size = 200 + 30 + 100 + 30 + 5;
+        var cover = subrow.position().top + expanded_row_size -
+            viewport.height() + $("#top_navbar").height() - viewport.scrollTop();
+        if (cover > 0) {
+            $('html, body').animate({
+                scrollTop: viewport.scrollTop() + cover + 5
+            });
+        }
+
     });
 
     $("#subscriptions_table").on("click", ".sub_setting_show_in_home", stream_home_view_clicked);
