@@ -3,12 +3,10 @@ import os
 import sys
 import optparse
 import ConfigParser
-from os import path
+
+import humbug
 
 CONFIGFILE = os.path.expanduser("~/.humbug_twitterrc")
-
-sys.path.append(path.join(path.dirname(__file__), '../api'))
-import humbug
 
 def write_config(config, since_id, user):
     config.set('twitter', 'since_id', since_id)
@@ -87,7 +85,7 @@ if not consumer_key or not consumer_secret or not access_token_key or not access
 try:
     import twitter
 except ImportError:
-    parser.error("Install twitter-python")
+    parser.error("Please install twitter-python")
 
 api = twitter.Api(consumer_key=consumer_key,
                   consumer_secret=consumer_secret,
