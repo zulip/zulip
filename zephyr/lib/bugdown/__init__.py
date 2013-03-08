@@ -5,8 +5,11 @@ import urlparse
 import re
 import os.path
 import glob
+import urllib2
+import simplejson
 
 from django.core import mail
+from django.conf import settings
 
 from zephyr.lib.avatar  import gravatar_hash
 from zephyr.lib.bugdown import codehilite, fenced_code
@@ -85,6 +88,65 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
             img.set("src", url)
             img.set("class", "message_inline_image")
 
+        return root
+
+class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
+    def twitter_link(self, url):
+        parsed_url = urlparse.urlparse(url)
+        if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
+            return None
+
+        tweet_id_match = re.match(r'^/.*?/status/(\d{18})$', parsed_url.path)
+        if not tweet_id_match:
+            return None
+
+        tweet_id = tweet_id_match.groups()[0]
+        try:
+            if settings.TEST_SUITE:
+                import testing_mocks
+                res = testing_mocks.twitter(tweet_id)
+            else:
+                res = simplejson.load(urllib2.urlopen("https://api.twitter.com/1/statuses/show.json?id=%s" % tweet_id))
+
+            user = res['user']
+            tweet = markdown.util.etree.Element("div")
+            tweet.set("class", "twitter-tweet")
+            img_a = markdown.util.etree.SubElement(tweet, 'a')
+            img_a.set("href", url)
+            img_a.set("target", "_blank")
+            profile_img = markdown.util.etree.SubElement(img_a, 'img')
+            profile_img.set('class', 'twitter-avatar')
+            profile_img.set('src', user['profile_image_url_https'])
+            p = markdown.util.etree.SubElement(tweet, 'p')
+            p.text = res['text']
+            span = markdown.util.etree.SubElement(tweet, 'span')
+            span.text = "- %s (@%s)" % (user['name'], user['screen_name'])
+
+            return ('twitter', tweet)
+        except:
+            # We put this in its own try-except because it requires external
+            # connectivity. If Twitter flakes out, we don't want to not-render
+            # the entire message; we just want to not show the Twitter preview.
+            traceback.print_exc()
+            return None
+
+    # Search the tree for <a> tags and read their href values
+    def find_interesting_links(self, root):
+        def process_interesting_links(element):
+            if element.tag != "a":
+                return None
+
+            url = element.get("href")
+            return self.twitter_link(url)
+
+        return walk_tree(root, process_interesting_links)
+
+    def run(self, root):
+        interesting_links = self.find_interesting_links(root)
+        for (service_name, data) in interesting_links:
+            div = markdown.util.etree.SubElement(root, "div")
+            div.set("class", "inline-preview-%s" % service_name)
+            div.insert(0, data)
         return root
 
 class Gravatar(markdown.inlinepatterns.Pattern):
@@ -302,6 +364,7 @@ class Bugdown(markdown.Extension):
                                  "_begin")
 
         md.treeprocessors.add("inline_images", InlineImagePreviewProcessor(md), "_end")
+        md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
 
 _md_engine = markdown.Markdown(
     safe_mode     = 'escape',

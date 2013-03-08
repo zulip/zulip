@@ -1941,6 +1941,45 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
 
         self.assertEqual(converted, '<p>Look at the new dropbox logo: <a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png">https://www.dropbox.com/static/images/home_logo.png</a></p>\n<a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png"><img class="message_inline_image" src="https://www.dropbox.com/static/images/home_logo.png"></a>')
 
+    def test_inline_interesting_links(self):
+        def make_link(url):
+            return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
+
+        def make_inline_twitter_preview(url):
+            ## As of right now, all previews are mocked to be the exact same tweet
+            return """<div class="inline-preview-twitter"><div class="twitter-tweet"><a href="%s" target="_blank"><img class="twitter-avatar" src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png"></a><p>@twitter meets @seepicturely at #tcdisrupt cc.@boscomonkey @episod http://t.co/6J2EgYM</p><span>- Eoin McMillan  (@imeoin)</span></div></div>""" % (url, )
+
+        msg = 'http://www.twitter.com'
+        converted = convert(msg)
+        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com'))
+
+        msg = 'http://www.twitter.com/wdaher/'
+        converted = convert(msg)
+        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/'))
+
+        msg = 'http://www.twitter.com/wdaher/status/3'
+        converted = convert(msg)
+        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/3'))
+
+        # id too long
+        msg = 'http://www.twitter.com/wdaher/status/2879779692873154569'
+        converted = convert(msg)
+        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/2879779692873154569'))
+
+        msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
+        converted = convert(msg)
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
+                                                       make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456')))
+
+        msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
+        converted = convert(msg)
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
+                                                       make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456')))
+
+        msg = 'http://twitter.com/wdaher/status/287977969287315456'
+        converted = convert(msg)
+        self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315456'),
+                                                       make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456')))
 
     def test_emoji(self):
         def emoji_img(name, filename=None):
