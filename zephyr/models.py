@@ -225,7 +225,10 @@ class Message(models.Model):
             client            = self.sending_client.name)
 
         if apply_markdown:
-            obj['content'] = bugdown.convert(self.content)
+            rendered_content = bugdown.convert_safe(self.content)
+            if rendered_content is None:
+                rendered_content = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
+            obj['content'] = rendered_content
             obj['content_type'] = 'text/html'
         else:
             obj['content'] = self.content

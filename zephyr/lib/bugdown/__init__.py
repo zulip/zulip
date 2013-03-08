@@ -417,14 +417,12 @@ def convert(md):
         # Spend at most 5 seconds rendering.
         # Sometimes Python-Markdown is really slow; see
         # https://trac.humbughq.com/ticket/345
-        html = timeout(5, _md_engine.convert, md)
+        return timeout(5, _md_engine.convert, md)
     except:
         from zephyr.models import Recipient
         from zephyr.lib.actions import internal_send_message
 
         cleaned = _sanitize_for_log(md)
-
-        html = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
 
         # Output error to log as well as sending a humbug and email
         logging.getLogger('').error('Exception in Markdown parser: %sInput (sanitized) was: %s'
@@ -436,5 +434,4 @@ def convert(md):
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)
-
-    return html
+        return None
