@@ -296,17 +296,8 @@ def do_create_realm(domain, replay=False):
         log_event({"type": "realm_created",
                    "domain": domain})
 
-        # Sent a notification message
-        message = Message()
-        message.sender = UserProfile.objects.get(user__email__iexact="humbug+signups@humbughq.com")
-        stream, _ = create_stream_if_needed(message.sender.realm, "signups")
-        message.recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-        message.subject = domain
-        message.content = "Signups enabled."
-        message.pub_date = timezone.now()
-        message.sending_client = get_client("Internal")
-
-        do_send_message(message)
+        internal_send_message("humbug+signups@humbughq.com", Recipient.STREAM,
+                              "signups", domain, "Signups enabled.")
     return (realm, created)
 
 def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications, log=True):
