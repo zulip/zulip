@@ -16,7 +16,7 @@ def write_config(config, since_id, user):
 
 parser = optparse.OptionParser(r"""
 
-%prog --user foo@humbughq.com --twitter_id twitter_handle
+%prog --user foo@humbughq.com --twitter-id twitter_handle
 
     Slurp tweets on your timeline into a specific humbug stream.
 
