@@ -7,6 +7,7 @@ import os.path
 import glob
 import urllib2
 import simplejson
+import twitter
 
 from django.core import mail
 from django.conf import settings
@@ -106,7 +107,21 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 import testing_mocks
                 res = testing_mocks.twitter(tweet_id)
             else:
-                res = simplejson.load(urllib2.urlopen("https://api.twitter.com/1/statuses/show.json?id=%s" % tweet_id))
+                if settings.DEPLOYED:
+                    # This is the real set of API credentials used by our real server,
+                    # and we probably shouldn't test with it just so we don't waste its requests
+                    # Application: "Humbug HQ"
+                    api = twitter.Api(consumer_key = 'xxxxxxxxxxxxxxxxxxxxxx',
+                                      consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                                      access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                                      access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+                else:
+                    # Application: "Humbug HQ Test"
+                    api = twitter.Api(consumer_key = 'xxxxxxxxxxxxxxxxxxxxxx',
+                                      consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                                      access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                                      access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+                res = api.GetStatus(tweet_id).AsDict()
 
             user = res['user']
             tweet = markdown.util.etree.Element("div")
@@ -116,7 +131,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             img_a.set("target", "_blank")
             profile_img = markdown.util.etree.SubElement(img_a, 'img')
             profile_img.set('class', 'twitter-avatar')
-            profile_img.set('src', user['profile_image_url_https'])
+            # For some reason, for, e.g. tweet 285072525413724161,
+            # python-twitter does not give us a
+            # profile_image_url_https, but instead puts that URL in
+            # profile_image_url. So use _https if available, but fall
+            # back gracefully.
+            image_url = user.get('profile_image_url_https', user['profile_image_url'])
+            profile_img.set('src', image_url)
             p = markdown.util.etree.SubElement(tweet, 'p')
             p.text = res['text']
             span = markdown.util.etree.SubElement(tweet, 'span')
