@@ -75,6 +75,10 @@ def user_sessions(user):
     return [s for s in Session.objects.all() if s.get_decoded().get('_auth_user_id') == user.id]
 
 def do_deactivate(user_profile):
+    user_profile.is_active = False;
+    user_profile.set_unusable_password()
+    user_profile.save(update_fields=["is_active", "password"])
+
     user_profile.user.set_unusable_password()
     user_profile.user.is_active = False
     user_profile.user.save(update_fields=["is_active", "password"])
@@ -98,6 +102,10 @@ def do_deactivate(user_profile):
 
 def do_change_user_email(user_profile, new_email):
     old_email = user_profile.user.email
+
+    user_profile.email = new_email
+    user_profile.save(update_fields=["email"])
+
     user_profile.user.email = new_email
     user_profile.user.save(update_fields=["email"])
 
@@ -469,6 +477,12 @@ def log_subscription_property_change(user_email, property, property_dict):
 
 def do_activate_user(user_profile, log=True, join_date=timezone.now()):
     user = user_profile.user
+
+    user_profile.is_active = True
+    user_profile.set_password(initial_password(user_profile.email))
+    user_profile.date_joined = join_date
+    user_profile.save(update_fields=["is_active", "date_joined", "password"])
+
     user.is_active = True
     user.set_password(initial_password(user.email))
     user.date_joined = join_date
@@ -486,10 +500,13 @@ def do_change_password(user_profile, password, log=True, commit=True,
     if hashed_password:
         # This is a hashed password, not the password itself.
         user.password = password
+        user_profile.set_password(password)
     else:
         user.set_password(password)
+        user_profile.set_password(password)
     if commit:
         user.save(update_fields=["password"])
+        user_profile.save(update_fields=["password"])
     if log:
         log_event({'type': 'user_change_password',
                    'user': user.email,

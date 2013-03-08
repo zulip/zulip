@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractBaseUser, UserManager
 from zephyr.lib.cache import cache_with_key, update_user_profile_cache, \
     update_user_cache, user_profile_by_id_cache_key, \
     user_profile_by_email_cache_key
@@ -52,8 +52,21 @@ class Realm(models.Model):
     def __str__(self):
         return self.__repr__()
 
-class UserProfile(models.Model):
+class UserProfile(AbstractBaseUser):
+    # Fields from models.AbstractUser minus last_name and first_name, which we don't use
+    email = models.EmailField(blank=True)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_joined = models.DateTimeField(default=timezone.now)
+    USERNAME_FIELD = 'email'
+
+    # User Legacy code: the object that goes with this UserProfile.
+    # Plan is to for a short time maintain them both in sync, then
+    # later we'll dump the old User field, and perhaps later than
+    # that, rename the surviving field to just User.
     user = models.OneToOneField(User)
+
+    # Our custom site-specific fields
     full_name = models.CharField(max_length=100)
     short_name = models.CharField(max_length=100)
     pointer = models.IntegerField()
@@ -63,16 +76,20 @@ class UserProfile(models.Model):
     enable_desktop_notifications = models.BooleanField(default=True)
     enter_sends = models.NullBooleanField(default=False)
 
-    def __repr__(self):
-        return (u"<UserProfile: %s %s>" % (self.user.email, self.realm)).encode("utf-8")
-    def __str__(self):
-        return self.__repr__()
+    objects = UserManager()
 
     @classmethod
     def create(cls, user, realm, full_name, short_name):
         """When creating a new user, make a profile for him or her."""
         if not cls.objects.filter(user=user):
             profile = cls(user=user, pointer=-1, realm=realm,
+                          # User Legacy code:
+                          is_active=user.is_active,
+                          is_staff=user.is_staff,
+                          date_joined=user.date_joined,
+                          email=user.email,
+                          password=user.password,
+                          # end User Legacy code
                           full_name=full_name, short_name=short_name)
             profile.api_key = initial_api_key(user.email)
             profile.save()
@@ -80,6 +97,11 @@ class UserProfile(models.Model):
             recipient = Recipient.objects.create(type_id=profile.id, type=Recipient.PERSONAL)
             Subscription.objects.create(user_profile=profile, recipient=recipient)
             return profile
+
+    def __repr__(self):
+        return (u"<UserProfile: %s %s>" % (self.user.email, self.realm)).encode("utf-8")
+    def __str__(self):
+        return self.__repr__()
 
 # Make sure we flush the UserProfile object from our memcached
 # whenever we save it.
