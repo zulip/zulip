@@ -17,7 +17,7 @@ from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
 from zephyr.lib.timeout import timeout
 
-def walk_tree(root, processor):
+def walk_tree(root, processor, stop_after_first=False):
     results = []
     stack = [root]
 
@@ -30,6 +30,8 @@ def walk_tree(root, processor):
             result = processor(child)
             if result is not None:
                 results.append(result)
+                if stop_after_first:
+                    return results
 
     return results
 
@@ -160,7 +162,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             url = element.get("href")
             return self.twitter_link(url)
 
-        return walk_tree(root, process_interesting_links)
+        return walk_tree(root, process_interesting_links, stop_after_first=True)
 
     def run(self, root):
         interesting_links = self.find_interesting_links(root)
