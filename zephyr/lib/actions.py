@@ -14,6 +14,7 @@ from zephyr.lib.queue import SimpleQueueClient
 from django.utils import timezone
 from zephyr.lib.create_user import create_user
 from zephyr.lib.bulk_create import batch_bulk_create
+from zephyr.lib import bugdown
 
 import subprocess
 import simplejson
@@ -191,6 +192,11 @@ def internal_send_message(sender_email, recipient_type, recipient,
                           subject, content, realm=None):
     if len(content) > MAX_MESSAGE_LENGTH:
         content = content[0:3900] + "\n\n[message was too long and has been truncated]"
+
+    rendered_content = bugdown.convert(content)
+    if rendered_content is None:
+        rendered_content = "<p>[Message could not be rendered by bugdown!]</p>"
+
     message = Message()
     message.sender = UserProfile.objects.get(user__email__iexact=sender_email)
 
@@ -209,7 +215,7 @@ def internal_send_message(sender_email, recipient_type, recipient,
     message.pub_date = timezone.now()
     message.sending_client = get_client("Internal")
 
-    do_send_message(message)
+    do_send_message(message, rendered_content=rendered_content)
 
 def do_add_subscription(user_profile, stream, no_log=False):
     recipient = Recipient.objects.get(type_id=stream.id,
