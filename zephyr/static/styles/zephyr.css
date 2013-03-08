@@ -1049,6 +1049,7 @@ table.floating_recipient {
 
 .twitter-avatar {
     float: left;
+    width: 48px;
     height: 48px;
-    padding-right: .75em;
+    margin-right: .75em;
 }
