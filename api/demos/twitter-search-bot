@@ -1,0 +1,175 @@
+#!/usr/bin/env python
+import os
+import sys
+import optparse
+import ConfigParser
+from os import path
+
+import humbug
+
+CONFIGFILE = os.path.expanduser("~/.humbug_twitterrc")
+
+def write_config(config, since_id):
+    if 'search' not in config.sections():
+        config.add_section('search')
+    config.set('search', 'since_id', since_id)
+    with open(CONFIGFILE, 'wb') as configfile:
+        config.write(configfile)
+
+parser = optparse.OptionParser(r"""
+
+%prog --user foo@humbughq.com --search="@nprnews,quantum physics"
+
+Send Twitter search results to a Humbug stream.
+
+Depends on: twitter-python
+
+To use this script:
+
+1. Set up Twitter authentication, as described below
+2. Subscribe to the stream that will receive Twitter updates (default stream: twitter)
+3. Test the script by running it manually, like this:
+
+/usr/local/share/humbug/demos/twitter-search-bot --search="@nprnews,quantum physics"
+
+4. Configure a crontab entry for this script. A sample crontab entry
+that will process tweets every 5 minutes is:
+
+*/5 * * * * /usr/local/share/humbug/demos/twitter-search-bot --search="@nprnews,quantum physics"
+
+== Setting up Twitter authentications ==
+
+Run this on a personal or trusted machine, because your API key is
+visible to local users through the command line or config file.
+
+This bot uses OAuth to authenticate with twitter. Please create a
+~/.humbug_twitterrc with the following contents:
+
+[twitter]
+consumer_key =
+consumer_secret =
+access_token_key =
+access_token_secret =
+
+In order to obtain a consumer key & secret, you must register a
+new application under your twitter account:
+
+1. Go to http://dev.twitter.com
+2. Log in
+3. In the menu under your username, click My Applications
+4. Create a new application
+
+Make sure to go the application you created and click "create my
+access token" as well. Fill in the values displayed.
+""")
+
+parser.add_option('--user',
+                  help='Humbug user email address',
+                  metavar='EMAIL')
+parser.add_option('--api-key',
+                  help='API key for that user [default: read ~/.humbugrc]')
+parser.add_option('--search',
+                  dest='search_terms',
+                  help='Terms to search on',
+                  action='store')
+parser.add_option('--site',
+                  dest='site',
+                  default="https://humbughq.com",
+                  help=optparse.SUPPRESS_HELP,
+                  action='store')
+parser.add_option('--stream',
+                  dest='stream',
+                  help='The stream to which to send tweets',
+                  default="twitter",
+                  action='store')
+parser.add_option('--limit-tweets',
+                  default=15,
+                  type='int',
+                  help='Maximum number of tweets to send at once')
+
+(opts, args) = parser.parse_args()
+
+if not opts.search_terms:
+    parser.error('You must specify a search term.')
+
+try:
+    config = ConfigParser.ConfigParser()
+    config.read(CONFIGFILE)
+
+    consumer_key = config.get('twitter', 'consumer_key')
+    consumer_secret = config.get('twitter', 'consumer_secret')
+    access_token_key = config.get('twitter', 'access_token_key')
+    access_token_secret = config.get('twitter', 'access_token_secret')
+except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+   parser.error("Please provide a ~/.humbug_twitterrc")
+
+if not (consumer_key and consumer_secret and access_token_key and access_token_secret):
+   parser.error("Please provide a ~/.humbug_twitterrc")
+
+try:
+    since_id = config.getint('search', 'since_id')
+except (ConfigParser.NoOptionError, ConfigParser.NoSectionError):
+    since_id = 0
+
+try:
+    import twitter
+except ImportError:
+    parser.error("Please install twitter-python")
+
+api = twitter.Api(consumer_key=consumer_key,
+                  consumer_secret=consumer_secret,
+                  access_token_key=access_token_key,
+                  access_token_secret=access_token_secret)
+
+user = api.VerifyCredentials()
+
+if not user.GetId():
+    print "Unable to log in to twitter with supplied credentials.\
+Please double-check and try again."
+    sys.exit()
+
+client = humbug.Client(
+    email=opts.user,
+    api_key=opts.api_key,
+    site=opts.site,
+    verbose=True)
+
+search_query = " OR ".join(opts.search_terms.split(","))
+statuses = api.GetSearch(search_query, since_id=since_id)
+
+for status in statuses[::-1][:opts.limit_tweets]:
+    # https://twitter.com/eatevilpenguins/status/309995853408530432
+    composed = "%s (%s)" % (status.GetUser().GetName(),
+                            status.GetUser().GetScreenName())
+    url = "https://twitter.com/%s/status/%s" % (status.GetUser().GetScreenName(),
+                                                status.GetId())
+    content = status.GetText()
+
+    search_term_used = None
+    for term in opts.search_terms.split(","):
+        if term.lower() in content.lower():
+            search_term_used = term
+            break
+    # For some reason (perhaps encodings or message tranformations we
+    # didn't anticipate), we don't know what term was used, so use a
+    # default.
+    if not search_term_used:
+        search_term_used = "mentions"
+
+    message = {
+      "type": "stream",
+      "to": [opts.stream],
+      "subject": search_term_used,
+      "content": url,
+    }
+
+    ret = client.send_message(message)
+
+    if ret['result'] == 'error':
+        # If sending failed (e.g. no such stream), abort and retry next time
+        print "Error sending message to humbug: %s" % ret['msg']
+        break
+    else:
+        since_id = status.GetId()
+
+write_config(config, since_id)
