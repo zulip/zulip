@@ -345,7 +345,7 @@ exports.activate = function (operators, opts) {
         if (operators[0][0] === 'in' && operators[0][1] === 'all') {
             $("#global_filters li[data-name='all']").addClass('active-filter');
         } else if (operators[0][0] === "stream") {
-            $("#stream_filters li[data-name='" + encodeURIComponent(operators[0][1]) + "']").addClass('active-filter');
+            ui.get_filter_li('stream', operators[0][1]).addClass('active-filter');
         } else if (operators[0][0] === "is" && operators[0][1] === "private-message") {
             $("#global_filters li[data-name='private']").addClass('active-filter');
         }

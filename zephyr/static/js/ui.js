@@ -918,7 +918,15 @@ function sort_narrow_list() {
 }
 
 exports.get_filter_li = function(type, name) {
-    return $("#" + type + "_filters li[data-name='" + encodeURIComponent(name) + "']");
+    var retval = $();
+    $("#" + type + "_filters li").each(function (idx, elem) {
+        var jelem = $(elem);
+        if (jelem.attr('data-name') === name) {
+            retval = jelem;
+            return false;
+        }
+    });
+    return retval;
 };
 
 exports.add_narrow_filter = function(name, type, uri) {
