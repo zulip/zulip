@@ -9,6 +9,15 @@ var stream_info = {}; // Maps lowercase stream name to stream properties object
 var initial_color_fetch = true;
 
 var default_color = "#c2c2c2";
+// Auto-assigned colors should be from the default palette so it's easy to undo
+// changes, so if that pallete changes, change these colors.
+var stream_assignment_colors = ["#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
+                                "#bfd56f", "#f4ae55", "#b0a5fd", "#addfe5",
+                                "#f5ce6e", "#c2726a", "#94c849", "#bd86e5",
+                                "#ee7e4a", "#a6dcbf", "#95a5fd", "#53a063",
+                                "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
+                                "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"];
+
 var next_sub_id = 0;
 
 function add_sub(stream_name, sub) {
@@ -21,6 +30,24 @@ function get_sub(stream_name) {
 
 // Classes which could be returned by get_color_class.
 exports.color_classes = 'dark_background';
+
+function pick_color() {
+    var my_streams = exports.subscribed_streams();
+    var used_colors = my_streams.map(function (stream_name) {
+        return exports.get_color(stream_name);
+    });
+
+    var available_colors = stream_assignment_colors.filter(function (color) {
+        return ($.inArray(color, used_colors) === -1);
+    });
+
+    if (available_colors.length === 0) {
+        // We've used all the palette colors, so start re-using them.
+        return stream_assignment_colors[my_streams.length % stream_assignment_colors.length];
+    }
+
+    return available_colors[0];
+}
 
 exports.subscribed_streams = function () {
     // TODO: Object.keys() compatibility
@@ -167,6 +194,22 @@ function stream_home_view_clicked(e) {
     });
 }
 
+function set_color(stream_name, color) {
+    update_stream_color(stream_name, color, {update_historical: true});
+
+    $.ajax({
+        type:     'POST',
+        url:      '/json/subscriptions/property',
+        dataType: 'json',
+        data: {
+            "property": "stream_colors",
+            "stream_name": stream_name,
+            "color": color
+        },
+        timeout:  10*1000
+    });
+}
+
 var colorpicker_options = {
     clickoutFiresChange: true,
     showPalette: true,
@@ -181,21 +224,7 @@ var colorpicker_options = {
         var sub_row = $(this).closest('.subscription_row');
         var stream_name = sub_row.find('.subscription_name').text();
         var hex_color = color.toHexString();
-
-        update_stream_color(stream_name, hex_color, {update_historical: true});
-        update_stream_sidebar_swatch_color(stream_name, hex_color);
-
-        $.ajax({
-            type:     'POST',
-            url:      '/json/subscriptions/property',
-            dataType: 'json',
-            data: {
-                "property": "stream_colors",
-                "stream_name": stream_name,
-                "color": hex_color
-            },
-            timeout:  10*1000
-        });
+        set_color(stream_name, hex_color);
     }
 };
 
@@ -206,7 +235,7 @@ function create_sub(stream_name, attrs) {
         return sub;
     }
 
-    sub = $.extend({}, {name: stream_name, color: default_color, id: next_sub_id++,
+    sub = $.extend({}, {name: stream_name, color: pick_color(), id: next_sub_id++,
                         render_subscribers: should_render_subscribers(),
                         subscribed: true, in_home_view: true, invite_only: false}, attrs);
 
@@ -251,10 +280,13 @@ function mark_subscribed(stream_name, attrs) {
     var sub = get_sub(stream_name);
 
     if (sub === undefined) {
+        // Create a new stream.
         sub = create_sub(stream_name, attrs);
         add_sub_to_table(sub);
     } else if (! sub.subscribed) {
+        // Add yourself to an existing stream.
         sub.subscribed = true;
+        set_color(stream_name, pick_color());
         // This will do nothing on MIT
         ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + encodeURIComponent(stream_name));
         var button = button_for_sub(sub);

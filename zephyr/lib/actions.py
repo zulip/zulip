@@ -217,6 +217,42 @@ def internal_send_message(sender_email, recipient_type, recipient,
 
     do_send_message(message, rendered_content=rendered_content)
 
+def get_stream_colors(user_profile):
+    return [(sub["name"], sub["color"]) for sub in gather_subscriptions(user_profile)]
+
+def pick_color(user_profile):
+    # These colors are shared with the palette in subs.js.
+    stream_assignment_colors = [
+        "#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
+        "#bfd56f", "#f4ae55", "#b0a5fd", "#addfe5",
+        "#f5ce6e", "#c2726a", "#94c849", "#bd86e5",
+        "#ee7e4a", "#a6dcbf", "#95a5fd", "#53a063",
+        "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
+        "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
+    used_colors = [elt[1] for elt in get_stream_colors(user_profile) if elt[1]]
+    available_colors = filter(lambda x: x not in used_colors,
+                              stream_assignment_colors)
+
+    if available_colors:
+        return available_colors[0]
+    else:
+        return stream_assignment_colors[len(used_colors) % len(stream_assignment_colors)]
+
+def get_subscription(stream_name, user_profile):
+    stream = get_stream(stream_name, user_profile.realm)
+    recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+    return Subscription.objects.filter(user_profile=user_profile,
+                                       recipient=recipient, active=True)
+
+def set_stream_color(user_profile, stream_name, color=None):
+    subscription = get_subscription(stream_name, user_profile)
+    stream_color, _ = StreamColor.objects.get_or_create(subscription=subscription[0])
+    # TODO: sanitize color.
+    if not color:
+        color = pick_color(user_profile)
+    stream_color.color = color
+    stream_color.save()
+
 def do_add_subscription(user_profile, stream, no_log=False):
     recipient = Recipient.objects.get(type_id=stream.id,
                                       type=Recipient.STREAM)
@@ -233,6 +269,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
                    'user': user_profile.user.email,
                    'name': stream.name,
                    'domain': stream.realm.domain})
+    set_stream_color(user_profile, stream.name)
     return did_subscribe
 
 def do_remove_subscription(user_profile, stream, no_log=False):

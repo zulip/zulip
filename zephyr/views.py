@@ -22,7 +22,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_activate_user, add_default_subs, do_create_user, do_send_message, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
-    update_user_presence
+    update_user_presence, set_stream_color, get_stream_colors
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -918,12 +918,6 @@ def get_public_streams_backend(request, user_profile):
                                            invite_only=False))
     return json_success({"streams": streams})
 
-def get_stream_color(sub):
-    try:
-        return StreamColor.objects.get(subscription=sub).color
-    except StreamColor.DoesNotExist:
-        return StreamColor.DEFAULT_STREAM_COLOR
-
 @authenticated_api_view
 def api_list_subscriptions(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)})
@@ -1123,14 +1117,6 @@ def get_subscription_or_die(stream_name, user_profile):
 
     return subscription
 
-def set_stream_color(user_profile, stream_name, color):
-    subscription = get_subscription_or_die(stream_name, user_profile)
-
-    stream_color, _ = StreamColor.objects.get_or_create(subscription=subscription[0])
-    # TODO: sanitize color.
-    stream_color.color = color
-    stream_color.save()
-
 def set_in_home_view(user_profile, stream_name, value):
     subscription = get_subscription_or_die(stream_name, user_profile)[0]
 
@@ -1162,7 +1148,7 @@ class SubscriptionProperties(object):
             raise RequestVariableMissingError(property)
 
     def get_stream_colors(self, request, user_profile):
-        return json_success({"stream_colors": [(sub["name"], sub["color"]) for sub in gather_subscriptions(user_profile)]})
+        return json_success({"stream_colors": get_stream_colors(user_profile)})
 
     def post_stream_colors(self, request, user_profile):
         stream_name = self.request_property(request.POST, "stream_name")
