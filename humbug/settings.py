@@ -316,7 +316,11 @@ else:
     } }
 CACHES['database'] = {
             'BACKEND':  'django.core.cache.backends.db.DatabaseCache',
-            'LOCATION':  'third_party_api_results'
+            'LOCATION':  'third_party_api_results',
+            'OPTIONS': {
+                'MAX_ENTRIES': 100000000,
+                'CULL_FREQUENCY': 10,
+            },
         }
 
 LOGGING = {
