@@ -768,7 +768,8 @@ $(function () {
     });
 
     $("#main_div").on("click", ".messagebox", function (e) {
-        if ($(e.target).is("a") || ($(e.target).is("img.message_inline_image"))) {
+        var target = $(e.target);
+        if (target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar")) {
             // If this click came from a hyperlink, don't trigger the
             // reply action.  The simple way of doing this is simply
             // to call e.stopPropagation() from within the link's
