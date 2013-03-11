@@ -7,9 +7,16 @@
   <form id="stream_creation_form" class="form-inline">
       <div class="modal-body">
           <div id="make-invite-only">
-            <label class="checkbox">
-              <input id="invite-only" type="checkbox" name="invite-only" />
-              Make stream invite-only
+            <b>Stream accessibility</b><br />
+            <label class="radio">
+              <input id="invite-only" type="radio" name="privacy" value="public" checked />
+              <span class="icon-globe"></span>
+              Anyone can join
+            </label><br />
+            <label class="radio">
+              <input id="invite-only" type="radio" name="privacy" value="invite-only" />
+              <span class="icon-lock"></span>
+              People must be invited
             </label>
           </div>
           <br />

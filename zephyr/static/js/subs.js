@@ -663,7 +663,10 @@ $(function () {
         });
         // You are always subscribed to streams you create.
         principals.push(email);
-        ajaxSubscribeForCreation(stream, principals, $('#invite-only').is(':checked'));
+        ajaxSubscribeForCreation(stream,
+            principals,
+            $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only"
+            );
     });
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
