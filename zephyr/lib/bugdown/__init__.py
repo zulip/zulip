@@ -16,6 +16,7 @@ from zephyr.lib.avatar  import gravatar_hash
 from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
 from zephyr.lib.timeout import timeout
+from zephyr.lib.cache import db_cache_with_key
 
 def walk_tree(root, processor, stop_after_first=False):
     results = []
@@ -93,6 +94,29 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
 
         return root
 
+@db_cache_with_key(lambda tweet_id: tweet_id)
+def fetch_tweet_data(tweet_id):
+    if settings.TEST_SUITE:
+        import testing_mocks
+        res = testing_mocks.twitter(tweet_id)
+    else:
+        if settings.DEPLOYED:
+            # This is the real set of API credentials used by our real server,
+            # and we probably shouldn't test with it just so we don't waste its requests
+            # Application: "Humbug HQ"
+            api = twitter.Api(consumer_key = 'xxxxxxxxxxxxxxxxxxxxxx',
+                              consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                              access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                              access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        else:
+            # Application: "Humbug HQ Test"
+            api = twitter.Api(consumer_key = 'xxxxxxxxxxxxxxxxxxxxxx',
+                              consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                              access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+                              access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+        res = api.GetStatus(tweet_id).AsDict()
+    return res
+
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def twitter_link(self, url):
         parsed_url = urlparse.urlparse(url)
@@ -105,26 +129,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         tweet_id = tweet_id_match.groups()[0]
         try:
-            if settings.TEST_SUITE:
-                import testing_mocks
-                res = testing_mocks.twitter(tweet_id)
-            else:
-                if settings.DEPLOYED:
-                    # This is the real set of API credentials used by our real server,
-                    # and we probably shouldn't test with it just so we don't waste its requests
-                    # Application: "Humbug HQ"
-                    api = twitter.Api(consumer_key = 'xxxxxxxxxxxxxxxxxxxxxx',
-                                      consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                                      access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                                      access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-                else:
-                    # Application: "Humbug HQ Test"
-                    api = twitter.Api(consumer_key = 'xxxxxxxxxxxxxxxxxxxxxx',
-                                      consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                                      access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-                                      access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-                res = api.GetStatus(tweet_id).AsDict()
-
+            res = fetch_tweet_data(tweet_id)
             user = res['user']
             tweet = markdown.util.etree.Element("div")
             tweet.set("class", "twitter-tweet")
@@ -150,7 +155,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # We put this in its own try-except because it requires external
             # connectivity. If Twitter flakes out, we don't want to not-render
             # the entire message; we just want to not show the Twitter preview.
-            traceback.print_exc()
+            logging.warning(traceback.format_exc())
             return None
 
     # Search the tree for <a> tags and read their href values

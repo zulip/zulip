@@ -4,5 +4,6 @@ echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | python manage.py dbsh
 
 python manage.py syncdb --noinput
 python manage.py migrate
+python manage.py createcachetable third_party_api_results
 echo "CREATE UNIQUE INDEX ON auth_user (email);" | python manage.py dbshell
 python manage.py populate_db --replay-old-messages -n0

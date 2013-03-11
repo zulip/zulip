@@ -29,13 +29,22 @@ TEST_SUITE = True
 USING_RABBITMQ = False
 
 # Disable use of memcached for caching
-CACHES = { 'default': {
+CACHES = {
+    'default': {
         'BACKEND':  'django.core.cache.backends.dummy.DummyCache',
-        'LOCATION': 'humbug-default-local-cache',
+        'LOCATION': 'humbug-default-test-cache',
         'TIMEOUT':  3600,
         'OPTIONS': {
             'MAX_ENTRIES': 100000
-        }
+        },
+    },
+    'database': {
+        'BACKEND':  'django.core.cache.backends.dummy.DummyCache',
+        'LOCATION': 'humbug-database-test-cache',
+        'TIMEOUT':  3600,
+        'OPTIONS': {
+            'MAX_ENTRIES': 100000
+        },
     } }
 
 requests_logger = logging.getLogger('humbug.requests')

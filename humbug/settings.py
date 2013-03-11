@@ -296,11 +296,17 @@ RABBITMQ_PASSWORD = 'xxxxxxxxxxxxxxxx'
 
 # Caching
 if DEPLOYED:
-    CACHES = { 'default': {
-        'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': '127.0.0.1:11211',
-        'TIMEOUT':  3600
-    } }
+    CACHES = {
+        'default': {
+            'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
+            'LOCATION': '127.0.0.1:11211',
+            'TIMEOUT':  3600
+        },
+        'database': {
+            'BACKEND':  'django.core.cache.backends.db.DatabaseCache',
+            'LOCATION':  'third_party_api_results'
+        },
+    }
     SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 else:
     CACHES = { 'default': {
