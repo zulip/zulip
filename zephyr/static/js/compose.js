@@ -363,11 +363,9 @@ exports.check_stream_existence = function (stream_name) {
 function check_stream_for_send(stream_name) {
     var stream_check = exports.check_stream_existence(stream_name);
     var result = stream_check[0];
-    var xhr = stream_check[1];
 
     if (result === "error") {
-        ui.report_error("Error checking subscription", xhr, $("#home-error"));
-        $("#stream").focus();
+        compose_error("Error checking subscription", $("#stream"));
         $("#compose-send-button").removeAttr('disabled');
         $("#sending-indicator").hide();
     }
