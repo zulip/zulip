@@ -1005,13 +1005,13 @@ class GetOldMessagesTest(AuthedTestCase):
 
     def test_bad_int_params(self):
         """
-        anchor, num_before, num_after, and narrow must all be non-negative
+        num_before, num_after, and narrow must all be non-negative
         integers or strings that can be converted to non-negative integers.
         """
         self.login("hamlet@humbughq.com")
 
-        other_params = [("narrow", {})]
-        int_params = ["anchor", "num_before", "num_after"]
+        other_params = [("narrow", {}), ("anchor", 0)]
+        int_params = ["num_before", "num_after"]
 
         bad_types = (False, "", "-1", -1)
         for idx, param in enumerate(int_params):

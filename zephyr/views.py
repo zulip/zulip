@@ -585,7 +585,7 @@ def get_public_stream(request, stream, realm):
     return stream
 
 @has_request_variables
-def get_old_messages_backend(request, anchor = POST(converter=to_non_negative_int),
+def get_old_messages_backend(request, anchor = POST(converter=int),
                              num_before = POST(converter=to_non_negative_int),
                              num_after = POST(converter=to_non_negative_int),
                              narrow = POST('narrow', converter=narrow_parameter, default=None),
