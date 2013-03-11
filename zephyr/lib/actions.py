@@ -4,10 +4,9 @@ from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, \
     DefaultStream, StreamColor, UserPresence, \
-    MAX_MESSAGE_LENGTH, get_client, get_display_recipient, get_stream
+    MAX_MESSAGE_LENGTH, get_client, get_stream
 from django.db import transaction, IntegrityError
 from zephyr.lib.initial_password import initial_password
-from zephyr.lib.cache import cache_with_key
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.message_cache import cache_save_message
 from zephyr.lib.queue import SimpleQueueClient

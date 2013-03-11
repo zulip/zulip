@@ -14,7 +14,7 @@ from django.db.models import Q
 from django.core.mail import send_mail
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_huddle, Realm, UserMessage, \
-    StreamColor, PreregistrationUser, get_client, MitUser, User, UserActivity, \
+    PreregistrationUser, get_client, MitUser, User, UserActivity, \
     MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH, get_stream, UserPresence
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
