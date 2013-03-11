@@ -7,6 +7,7 @@ var exports = {};
 
 var error_has_stack = Error().hasOwnProperty('stack');
 
+var reported_errors = {};
 function report_error(msg) {
     var stack;
     if (error_has_stack) {
@@ -15,12 +16,20 @@ function report_error(msg) {
         stack = 'No stacktrace available';
     }
 
+    var key = msg + stack;
+    if (reported_errors.hasOwnProperty(key)) {
+        return;
+    }
+
     $.ajax({
         type:     'POST',
         url:      '/json/report_error',
         dataType: 'json',
         data:     { message: msg, stacktrace: stack },
-        timeout:  10*1000
+        timeout:  10*1000,
+        success:  function () {
+            reported_errors[key] = true;
+        }
     });
 }
 
