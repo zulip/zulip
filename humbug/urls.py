@@ -74,6 +74,7 @@ urlpatterns = patterns('',
     url(r'^json/tutorial_send_message$',    'zephyr.views.json_tutorial_send_message'),
     url(r'^json/change_enter_sends$',       'zephyr.views.json_change_enter_sends'),
     url(r'^json/get_profile$',              'zephyr.views.json_get_profile'),
+    url(r'^json/report_error$',             'zephyr.views.json_report_error'),
 
     # These are json format views used by the API.  They require an API key.
     url(r'^api/v1/get_messages$',           'zephyr.tornadoviews.api_get_messages'),

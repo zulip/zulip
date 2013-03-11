@@ -11,7 +11,7 @@ from django.core import validators
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.db.models import Q
-from django.core.mail import send_mail
+from django.core.mail import send_mail, mail_admins
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_huddle, Realm, UserMessage, \
     PreregistrationUser, get_client, MitUser, User, UserActivity, \
@@ -1403,3 +1403,10 @@ def json_update_active_status(request, user_profile,
 @authenticated_json_post_view
 def json_get_active_statuses(request, user_profile):
     return get_status_list(user_profile)
+
+@authenticated_json_post_view
+@has_request_variables
+def json_report_error(request, user_profile, message=POST, stacktrace=POST):
+    mail_admins("Browser error for %s" % (user_profile.user.email,),
+                "Message:\n%s\n\nStacktrace:\n%s" % (message, stacktrace))
+    return json_success()
