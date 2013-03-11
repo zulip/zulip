@@ -32,6 +32,11 @@ class humbug::base {
     creates  => "/usr/local/lib/python2.6/dist-packages/south",
     require  => Package['python-pip'],
   }
+  exec {"pip6":
+    command  => "/usr/bin/pip install django-bitfield",
+    creates  => "/usr/local/lib/python2.6/dist-packages/bitfield",
+    require  => Package['python-pip'],
+  }
 
   group { 'humbug':
     ensure     => present,
