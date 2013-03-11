@@ -88,18 +88,16 @@ MessageList.prototype = {
 
     select_id: function MessageList_select_id(id, opts) {
         opts = $.extend({then_scroll: false, use_closest: false}, opts, {id: id, msg_list: this});
-
         id = parseInt(id, 10);
         if (isNaN(id)) {
-            throw (new Error("Bad message id"));
+            blueslip.fatal("Bad message id");
         }
         if (this.get(id) === undefined) {
             if (!opts.use_closest) {
-                throw (new Error("Selected message id not in MessageList"));
-            } else {
-                id = this.closest_id(id);
-                opts.id = id;
+                blueslip.error("Selected message id not in MessageList");
             }
+            id = this.closest_id(id);
+            opts.id = id;
         }
         this._selected_id = id;
 
@@ -154,10 +152,11 @@ MessageList.prototype = {
         messages.forEach(function (elem) {
             var id = parseInt(elem.id, 10);
             if (isNaN(id)) {
-                throw (new Error("Bad message id"));
+                blueslip.fatal("Bad message id");
             }
             if (self._hash[id] !== undefined) {
-                throw (new Error("Duplicate message added to MessageList"));
+                blueslip.error("Duplicate message added to MessageList");
+                return;
             }
             self._hash[id] = elem;
         });

@@ -340,7 +340,8 @@ function add_messages_helper(messages, msg_list, predicate) {
             } else if (msg.id > msg_list.last().id) {
                 bottom_messages.push(msg);
             } else {
-                throw new Error("Attempting to insert a message in the middle of the msg_list");
+                blueslip.error("Attempting to insert a message in the middle of the msg_list");
+                bottom_messages.push(msg);
             }
         });
     }
@@ -369,7 +370,7 @@ function add_messages(messages, msg_list, opts) {
     } else if (msg_list === all_msg_list) {
         predicate = function () { return true; };
     } else {
-        throw (new Error("Adding message to a list that is not known"));
+        blueslip.fatal("Adding message to a list that is not known");
     }
 
     if (add_messages_helper(messages, msg_list, predicate)) {
