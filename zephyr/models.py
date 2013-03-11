@@ -273,6 +273,10 @@ class UserMessage(models.Model):
         display_recipient = get_display_recipient(self.message.recipient)
         return "<UserMessage: %s / %s>" % (display_recipient, self.user_profile.user.email)
 
+    def flags_dict(self):
+        return dict(flags = self.flags.keys())
+
+
 class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)

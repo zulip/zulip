@@ -507,8 +507,8 @@ class NarrowBuilder(object):
 
     def by_is(self, operand):
         if operand == 'private-message':
-            return (Q(recipient__type=Recipient.PERSONAL) |
-                    Q(recipient__type=Recipient.HUDDLE))
+            return (Q(message__recipient__type=Recipient.PERSONAL) |
+                    Q(message__recipient__type=Recipient.HUDDLE))
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
     def by_stream(self, operand):
@@ -516,13 +516,13 @@ class NarrowBuilder(object):
         if stream is None:
             raise BadNarrowOperator('unknown stream ' + operand)
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-        return Q(recipient=recipient)
+        return Q(message__recipient=recipient)
 
     def by_subject(self, operand):
-        return Q(subject__iexact=operand)
+        return Q(message__subject__iexact=operand)
 
     def by_sender(self, operand):
-        return Q(sender__user__email__iexact=operand)
+        return Q(message__sender__user__email__iexact=operand)
 
     def by_pm_with(self, operand):
         if ',' in operand:
@@ -533,15 +533,15 @@ class NarrowBuilder(object):
                     self.user_profile, self.user_profile)
             except ValidationError:
                 raise BadNarrowOperator('unknown recipient ' + operand)
-            return Q(recipient=recipient)
+            return Q(message__recipient=recipient)
         else:
             # Personal message
             self_recipient = Recipient.objects.get(type=Recipient.PERSONAL,
                                                    type_id=self.user_profile.id)
             if operand == self.user_profile.user.email:
                 # Personals with self
-                return Q(recipient__type=Recipient.PERSONAL,
-                         sender=self.user_profile, recipient=self_recipient)
+                return Q(message__recipient__type=Recipient.PERSONAL,
+                         message__sender=self.user_profile, message__recipient=self_recipient)
 
             # Personals with other user; include both directions.
             try:
@@ -551,8 +551,8 @@ class NarrowBuilder(object):
 
             narrow_recipient = Recipient.objects.get(type=Recipient.PERSONAL,
                                                      type_id=narrow_profile.id)
-            return ((Q(sender=narrow_profile) & Q(recipient=self_recipient)) |
-                    (Q(sender=self.user_profile) & Q(recipient=narrow_recipient)))
+            return ((Q(message__sender=narrow_profile) & Q(message__recipient=self_recipient)) |
+                    (Q(message__sender=self.user_profile) & Q(message__recipient=narrow_recipient)))
 
     def do_search(self, query, operand):
         if "postgres" in settings.DATABASES["default"]["ENGINE"]:
@@ -560,8 +560,8 @@ class NarrowBuilder(object):
             return query.extra(where=[sql], params=[operand])
         else:
             for word in operand.split():
-                query = query.filter(Q(content__icontains=word) |
-                                     Q(subject__icontains=word))
+                query = query.filter(Q(message__content__icontains=word) |
+                                     Q(message__subject__icontains=word))
             return query
 
 
@@ -600,9 +600,12 @@ def get_old_messages_backend(request, anchor = POST(converter=int),
     if stream is not None:
         stream = get_public_stream(request, stream, user_profile.realm)
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
-        query = Message.objects.select_related().filter(recipient = recipient).order_by('id')
+        query = UserMessage.objects.select_related().filter(message__recipient=recipient,
+                                                            user_profile=user_profile) \
+                                                    .order_by('id')
     else:
-        query = Message.objects.select_related().filter(usermessage__user_profile = user_profile).order_by('id')
+        query = UserMessage.objects.select_related().filter(user_profile=user_profile) \
+                                                    .order_by('id')
 
     if narrow is not None:
         build = NarrowBuilder(user_profile)
@@ -613,16 +616,19 @@ def get_old_messages_backend(request, anchor = POST(converter=int),
     # resulting list always contains the anchor message
     if num_before != 0 and num_after == 0:
         num_before += 1
-        messages = last_n(num_before, query.filter(id__lte=anchor))
+        messages = last_n(num_before, query.filter(message__id__lte=anchor))
     elif num_before == 0 and num_after != 0:
         num_after += 1
-        messages = query.filter(id__gte=anchor)[:num_after]
+        messages = query.filter(message__id__gte=anchor)[:num_after]
     else:
         num_after += 1
-        messages = (last_n(num_before, query.filter(id__lt=anchor))
-                    + list(query.filter(id__gte=anchor)[:num_after]))
+        messages = (last_n(num_before, query.filter(message__id__lt=anchor))
+                    + list(query.filter(message__id__gte=anchor)[:num_after]))
 
-    ret = {'messages': [message.to_dict(apply_markdown) for message in messages],
+    message_list = [dict(umessage.message.to_dict(apply_markdown),
+                         **umessage.flags_dict())
+                     for umessage in messages]
+    ret = {'messages': message_list,
            "result": "success",
            "msg": ""}
     return json_success(ret)
