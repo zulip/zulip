@@ -474,7 +474,7 @@ function get_updates(options) {
             {
                 furthest_read = data.new_pointer;
                 server_furthest_read = data.new_pointer;
-                home_msg_list.select_id(data.new_pointer, {then_scroll: true});
+                home_msg_list.select_id(data.new_pointer, {then_scroll: true, use_closest: true});
             }
 
             if ((home_msg_list.selected_id() === -1) && !home_msg_list.empty()) {
