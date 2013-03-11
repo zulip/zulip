@@ -334,7 +334,6 @@ exports.recipient       = get_or_set('private_message_recipient');
 // *Synchronously* check if a stream exists.
 exports.check_stream_existence = function (stream_name) {
     var result = "error";
-    var error_xhr = "";
     $.ajax({
         type: "POST",
         url: "/json/subscriptions/exists",
@@ -351,18 +350,16 @@ exports.check_stream_existence = function (stream_name) {
         },
         error: function (xhr) {
             result = "error";
-            error_xhr = xhr;
         }
     });
-    return [result, error_xhr];
+    return result;
 };
 
 
 // Checks if a stream exists. If not, displays an error and returns
 // false.
 function check_stream_for_send(stream_name) {
-    var stream_check = exports.check_stream_existence(stream_name);
-    var result = stream_check[0];
+    var result = exports.check_stream_existence(stream_name);
 
     if (result === "error") {
         compose_error("Error checking subscription", $("#stream"));

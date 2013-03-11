@@ -587,7 +587,7 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
 // The tutorial bot needs this function to add you to the
 // tutorial-yourname stream.
 exports.tutorial_subscribe_or_add_me_to = function (stream_name) {
-    var stream_status = compose.check_stream_existence(stream_name)[0];
+    var stream_status = compose.check_stream_existence(stream_name);
     if (stream_status === 'does-not-exist') {
         ajaxSubscribeForCreation(stream_name, [email], false);
     } else {
@@ -645,7 +645,7 @@ $(function () {
         }
 
         var stream = $.trim($("#create_stream_name").val());
-        var stream_status = compose.check_stream_existence(stream)[0];
+        var stream_status = compose.check_stream_existence(stream);
         if (stream_status === "does-not-exist") {
             $("#stream_name").text(stream);
             show_new_stream_modal();
