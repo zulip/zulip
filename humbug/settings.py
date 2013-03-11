@@ -275,6 +275,7 @@ PIPELINE_JS = {
             'js/colorspace.js',
             'js/timerender.js',
             'js/tutorial.js',
+            'js/blueslip.js',
         ),
         'output_filename': 'min/app.js'
     },

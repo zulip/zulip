@@ -8,6 +8,7 @@ var globals =
     // index.html
     + ' initial_pointer email stream_list people_list have_initial_messages'
     + ' fullname desktop_notifications_enabled enter_sends domain poll_timeout'
+    + ' debug_mode'
 
     // common.js
     + ' status_classes'
@@ -18,7 +19,7 @@ var globals =
     // Modules, defined in their respective files.
     + ' compose rows hotkeys narrow reload notifications_bar search subs'
     + ' composebox_typeahead typeahead_helper notifications hashchange'
-    + ' invite ui util activity timerender MessageList'
+    + ' invite ui util activity timerender MessageList blueslip'
 
     // colorspace.js
     + ' colorspace'

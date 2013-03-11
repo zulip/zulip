@@ -65,6 +65,7 @@ var domain = "{{ user_profile.realm.domain|escapejs }}";
 var have_initial_messages = {{ have_initial_messages|escapejs }};
 var desktop_notifications_enabled = {{ desktop_notifications_enabled|escapejs }};
 var enter_sends = {{ enter_sends|escapejs }};
+var debug_mode = {% if debug %} true {% else %} false {% endif %};
 
 {# We use JSONEncoderForHTML to generate "streams". #}
 var stream_list = {{ streams }};
