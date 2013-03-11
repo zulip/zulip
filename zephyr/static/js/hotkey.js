@@ -57,11 +57,23 @@ function process_hotkey(e) {
             if ($("#subject").data().typeahead.shown ||
                 $("#stream").data().typeahead.shown ||
                 $("#private_message_recipient").data().typeahead.shown ||
-                $("#new_message_content").data().typeahead.shown) {
-                return false;
-            } else {
+                $("#new_message_content").data().typeahead.shown ||
+                $("#search_query").data().typeahead.shown) {
+                // For some reason this code is only needed in Firefox;
+                // in Chrome our typeahead is able to intercept the Esc
+                // event before we even get it.
+                // Regardless, we do nothing in this case.
+                return true;
+            } else if (compose.composing()) {
                 // If the user hit the escape key, cancel the current compose
                 compose.cancel();
+                return true;
+            } else {
+                // We pressed Esc and something was focused, and the composebox
+                // wasn't open. In that case, we should blur the input.
+                // (this is almost certainly the searchbar)
+                $("input:focus,textarea:focus").blur();
+                return true;
             }
         }
         // Let the browser handle the key normally.
