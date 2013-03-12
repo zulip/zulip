@@ -234,7 +234,9 @@ function resizehandler(e) {
     /* total viewport - height of navbar - height of upper sidebar - padding*/
     var bottom_sidebar_height = viewport.height() - $("#top_navbar").height() - $(".upper_sidebar").height() - 40;
     $(".bottom_sidebar").height(bottom_sidebar_height);
-    var right_sidebar_height = viewport.height() - $("#top_navbar").height();
+    /* viewport - navbar - notifications area - margin on the right-sidebar - padding on the notifications-bar */
+    var right_sidebar_height = viewport.height() - $("#top_navbar").height() - $("#notifications-area").height() - 14 - 10;
+    $("#right-sidebar").height(right_sidebar_height);
 
     $("#stream_filters").css('max-height', bottom_sidebar_height * 0.75);
     $("#user_presences").css('max-height', right_sidebar_height * 0.90);
