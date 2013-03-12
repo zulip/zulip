@@ -285,6 +285,8 @@ MessageList.prototype = {
                 message.invite_only = subs.get_invite_only(message.display_recipient);
             }
 
+            message.contains_mention = notifications.speaking_at_me(message);
+
             messages_to_render.push(message);
             prev = message;
         });

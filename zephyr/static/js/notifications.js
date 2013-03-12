@@ -159,7 +159,7 @@ function process_desktop_notification(message) {
     notification_object.show();
 }
 
-function speaking_at_me(message) {
+exports.speaking_at_me = function (message) {
     var content_lc = message.content.toLowerCase();
     var found_match = false, indexof, after_name, after_atname;
     var punctuation = /[\.,-\/#!$%\^&\*;:{}=\-_`~()\+\?\[\]\s<>]/;
@@ -191,7 +191,7 @@ function speaking_at_me(message) {
     });
 
     return found_match;
-}
+};
 
 exports.received_messages = function (messages) {
     var i, title_needs_update = false;
@@ -207,7 +207,7 @@ exports.received_messages = function (messages) {
             if (desktop_notifications_enabled &&
                 browser_desktop_notifications_on() &&
                 (message.type === "private" ||
-                speaking_at_me(message))) {
+                exports.speaking_at_me(message))) {
                 process_desktop_notification(message);
             }
         }

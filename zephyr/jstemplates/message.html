@@ -57,7 +57,7 @@
     {{/include_sender}}
     </td>
     <td class="pointer"><p></p></td>
-    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
+    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}{{#contains_mention}} mention{{/contains_mention}}">
         <div class="message_top_line">
         {{#include_sender}}
         <span class="message_sender actions_hover">

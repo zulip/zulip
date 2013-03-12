@@ -268,6 +268,10 @@ td.pointer {
     background-color: #FEFFCC;
 }
 
+.selected_message .messagebox.mention {
+    background-color: #ffe192;
+}
+
 .selected_message .pointer {
     background-color: #08c;
 }
@@ -340,6 +344,10 @@ td.pointer {
 .messagebox.private-message {
     border-width: 0px 1px 1px 1px;
     background-color: #feffe0;
+}
+
+.messagebox.mention {
+    background-color: #ffe8ab;
 }
 
 .sender_name {
