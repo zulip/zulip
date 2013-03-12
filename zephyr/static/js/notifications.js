@@ -151,6 +151,7 @@ function process_desktop_notification(message) {
     notification_object.onclick = function () {
         notification_object.cancel();
         delete notice_memory[key];
+        window.focus();
     };
     notification_object.onclose = function () {
         delete notice_memory[key];
