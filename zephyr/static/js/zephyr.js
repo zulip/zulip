@@ -630,6 +630,14 @@ $(function () {
         }
         // now start subscribing to updates
         get_updates();
+
+        // backfill more messages after the user is idle
+        var backfill_batch_size = 1000;
+        $(document).idle({'idle': 1000*10,
+                          'onIdle': function () {
+                              var first_id = all_msg_list.first().id;
+                              load_old_messages(first_id, backfill_batch_size, 0, home_msg_list);
+                          }});
     }
 
     if (have_initial_messages) {
