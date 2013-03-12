@@ -5,15 +5,11 @@ var blueslip = (function () {
 
 var exports = {};
 
-var error_has_stack = Error().hasOwnProperty('stack');
-
 var reported_errors = {};
-function report_error(msg, opts) {
+function report_error(msg, stack, opts) {
     opts = $.extend({}, {show_ui_msg: false}, opts);
-    var stack;
-    if (error_has_stack) {
-        stack = Error().stack;
-    } else {
+
+    if (stack === undefined) {
         stack = 'No stacktrace available';
     }
 
@@ -68,13 +64,13 @@ exports.error = function blueslip_error (msg) {
         throw new Error(msg);
     } else {
         console.error(msg);
-        report_error(msg);
+        report_error(msg, Error().stack);
     }
 };
 
 exports.fatal = function blueslip_fatal (msg) {
     if (! debug_mode) {
-        report_error(msg, {show_ui_msg: true});
+        report_error(msg, Error().stack, {show_ui_msg: true});
     }
 
     throw new Error(msg);
