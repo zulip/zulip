@@ -1,3 +1,7 @@
+// This must be included before the first call to $(document).ready
+// in order to be able to report exceptions that occur during their
+// execution.
+
 // Silence jslint errors about the "console" global
 /*global console: true */
 
@@ -18,6 +22,10 @@ function report_error(msg, stack, opts) {
         return;
     }
 
+    // TODO: If an exception gets thrown before we setup ajax calls
+    // to include the CSRF token, our ajax call will fail.  The
+    // elegant thing to do in that case is to either wait until that
+    // setup is done or do it ourselves and then retry.
     $.ajax({
         type:     'POST',
         url:      '/json/report_error',

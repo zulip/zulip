@@ -1,5 +1,4 @@
 // Miscellaneous early setup.
-// This is the first of our Javascript files to be included.
 
 var templates = {};
 var csrf_token;
