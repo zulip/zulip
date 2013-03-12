@@ -50,7 +50,7 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         parsed_url = urlparse.urlparse(url)
         if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')) \
-                and parsed_url.path.startswith('/s/'):
+                and (parsed_url.path.startswith('/s/') or parsed_url.path.startswith('/sh/')):
             return "%s?dl=1" % (url,)
         return None
 
