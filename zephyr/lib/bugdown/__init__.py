@@ -120,7 +120,28 @@ def fetch_tweet_data(tweet_id):
                               consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
                               access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
                               access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-        res = api.GetStatus(tweet_id).AsDict()
+        try:
+            res = api.GetStatus(tweet_id).AsDict()
+        except twitter.TwitterError as e:
+            t = e.args[0]
+            if len(t) == 1 and ('code' in t[0]) and (t[0]['code'] == 34):
+                # Code 34 means that the message doesn't exist; return
+                # None so that we will cache the error
+                return None
+            elif len(t) == 1 and ('code' in t[0]) and (t[0]['code'] == 88 or
+                                                       t[0]['code'] == 130):
+                # Code 88 means that we were rate-limited and 130
+                # means Twitter is having capacity issues; either way
+                # just raise the error so we don't cache None and will
+                # try again later.
+                raise
+            else:
+                # It's not clear what to do in cases of other errors,
+                # but for now it seems reasonable to log at error
+                # level (so that we get notified), but then cache the
+                # failure to proceed with our usual work
+                logging.error(traceback.format_exc())
+                return None
     return res
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
@@ -136,6 +157,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         tweet_id = tweet_id_match.groups()[0]
         try:
             res = fetch_tweet_data(tweet_id)
+            if res is None:
+                return None
             user = res['user']
             tweet = markdown.util.etree.Element("div")
             tweet.set("class", "twitter-tweet")
