@@ -371,6 +371,13 @@ MessageList.prototype = {
             this._render(slice_to_render, 'bottom');
             this._render_win_end += slice_to_render.length;
         }
+
+        // If the pointer is high on the page such that there is a
+        // lot of empty space below and the render window is full, a
+        // newly recieved message should trigger a rerender so that
+        // the new message, which will appear in the viewable area,
+        // is rendered.
+        this._maybe_rerender();
     },
 
     prepend: function MessageList_prepend(messages) {
