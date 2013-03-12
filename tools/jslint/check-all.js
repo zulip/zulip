@@ -8,7 +8,7 @@ var globals =
     // index.html
     + ' initial_pointer email stream_list people_list have_initial_messages'
     + ' fullname desktop_notifications_enabled enter_sends domain poll_timeout'
-    + ' debug_mode'
+    + ' debug_mode needs_tutorial'
 
     // common.js
     + ' status_classes'

@@ -287,14 +287,10 @@ exports.is_running = function () {
     return tutorial_running;
 };
 
-var should_autostart_tutorial = false;
-exports.run_when_ready = function () {
-    should_autostart_tutorial = true;
-};
-
 exports.initialize = function () {
     make_script();
-    if (should_autostart_tutorial) {
+    // Global variable populated by the server code
+    if (needs_tutorial) {
         exports.start();
     }
 };
