@@ -13,6 +13,8 @@ from django.contrib.sessions.models import Session
 from django.utils.html import escape
 from zephyr.lib.timestamp import datetime_to_timestamp
 
+from bitfield import BitField
+
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
 
@@ -262,6 +264,7 @@ class UserMessage(models.Model):
     # since this table will be an unpleasant one to do schema changes
     # on later
     archived = models.BooleanField()
+    flags = BitField(flags=['read',], default=0)
 
     class Meta:
         unique_together = ("user_profile", "message")
