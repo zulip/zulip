@@ -121,6 +121,22 @@ exports.update_faded_messages = function () {
     fade_around(faded_to);
 };
 
+exports.update_recipient_on_narrow = function() {
+    if (!compose.composing()) {
+        return;
+    }
+    if (compose.message_content() !== "") {
+        return;
+    }
+    var compose_opts = {};
+    narrow.set_compose_defaults(compose_opts);
+    if (compose_opts.stream) {
+        compose.start("stream");
+    } else {
+        compose.start("private");
+    }
+};
+
 exports.start = function (msg_type, opts) {
     if (reload.is_in_progress()) {
         return;
