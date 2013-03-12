@@ -44,6 +44,12 @@ function report_error(msg, stack, opts) {
     });
 }
 
+function BlueslipError() {
+    return Error.apply(this, arguments);
+}
+
+BlueslipError.prototype = Error.prototype;
+
 exports.log = function blueslip_log (msg) {
     console.log(msg);
 };
@@ -61,7 +67,7 @@ exports.warn = function blueslip_warn (msg) {
 
 exports.error = function blueslip_error (msg) {
     if (debug_mode) {
-        throw new Error(msg);
+        throw new BlueslipError(msg);
     } else {
         console.error(msg);
         report_error(msg, Error().stack);
@@ -73,7 +79,7 @@ exports.fatal = function blueslip_fatal (msg) {
         report_error(msg, Error().stack, {show_ui_msg: true});
     }
 
-    throw new Error(msg);
+    throw new BlueslipError(msg);
 };
 
 return exports;
