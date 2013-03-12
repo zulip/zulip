@@ -90,10 +90,11 @@ function messages_with_different_recipients(target_message) {
 }
 
 function fade_around(reply_message) {
+    compose.unfade_messages(true);
+    faded_to = reply_message;
     var i, fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
     var elts_to_fade = messages_with_different_recipients(reply_message);
 
-    faded_to = reply_message;
     for (i = 0; i < elts_to_fade.length; i++) {
         $(elts_to_fade[i]).addClass(fade_class);
     }
@@ -189,10 +190,6 @@ exports.start = function (msg_type, opts) {
     }
 
     if (opts.replying_to_message !== undefined) {
-        if (exports.composing() && (faded_to !== opts.replying_to_message)) {
-            // Already faded to another message. First unfade everything.
-            exports.unfade_messages(true);
-        }
         fade_around(opts.replying_to_message);
     }
 
