@@ -126,8 +126,6 @@ exports.start = function (msg_type, opts) {
         return;
     }
 
-    compose.clear();
-
     var default_opts = {
         message_type:     msg_type,
         stream:           '',
@@ -139,6 +137,16 @@ exports.start = function (msg_type, opts) {
     narrow.set_compose_defaults(default_opts);
 
     opts = $.extend(default_opts, opts);
+
+    if (!(compose.composing() === msg_type &&
+          ((msg_type === "stream" &&
+            opts.stream === compose.stream() &&
+            opts.subject === compose.subject()) ||
+           (msg_type === "private" &&
+            opts.private_message_recipient === compose.recipient())))) {
+        // Clear the compose box if the existing message is to a different recipient
+        compose.clear();
+    }
 
     compose.stream_name(opts.stream);
     compose.subject(opts.subject);
