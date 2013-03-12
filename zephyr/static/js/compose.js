@@ -67,7 +67,7 @@ exports.decorate_stream_bar = function (stream_name) {
         .addClass(subs.get_color_class(color));
 };
 
-function messages_with_different_recipients(target_message) {
+function messages_to_fade() {
     var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .messagebox");
     var i, elts_to_fade = [];
     var different_recipient = false;
@@ -76,7 +76,7 @@ function messages_with_different_recipients(target_message) {
     for (i = 0; i < all_elts.length; i++) {
         var elt = $(all_elts[i]);
         if (elt.hasClass("recipient_row")) {
-            if (!util.same_recipient(target_message, current_msg_list.get(rows.id(elt)))) {
+            if (!util.same_recipient(faded_to, current_msg_list.get(rows.id(elt)))) {
                 elts_to_fade.push(elt);
                 different_recipient = true;
             } else {
@@ -87,18 +87,6 @@ function messages_with_different_recipients(target_message) {
         }
     }
     return elts_to_fade;
-}
-
-function fade_around(reply_message) {
-    compose.unfade_messages(true);
-    faded_to = reply_message;
-    var i, fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
-    var elts_to_fade = messages_with_different_recipients(reply_message);
-
-    for (i = 0; i < elts_to_fade.length; i++) {
-        $(elts_to_fade[i]).addClass(fade_class);
-    }
-    ui.disable_floating_recipient_bar();
 }
 
 exports.unfade_messages = function (clear_state) {
@@ -119,7 +107,15 @@ exports.update_faded_messages = function () {
         return;
     }
 
-    fade_around(faded_to);
+    var i, fade_class, elts_to_fade;
+
+    fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
+    elts_to_fade = messages_to_fade();
+
+    for (i = 0; i < elts_to_fade.length; i++) {
+        $(elts_to_fade[i]).addClass(fade_class);
+    }
+    ui.disable_floating_recipient_bar();
 };
 
 exports.update_recipient_on_narrow = function() {
@@ -137,6 +133,23 @@ exports.update_recipient_on_narrow = function() {
         compose.start("private");
     }
 };
+
+function do_fade(reply_message, fade_type) {
+    compose.unfade_messages();
+
+    // Construct faded_to as a mocked up element which has all the
+    // fields of a message used by util.same_recipient()
+    faded_to = {
+        type: fade_type
+    };
+    if (fade_type === "stream") {
+        faded_to.recipient_id = reply_message.recipient_id;
+        faded_to.subject = reply_message.subject;
+    } else {
+        faded_to.reply_to = reply_message.reply_to;
+    }
+    exports.update_faded_messages();
+}
 
 exports.start = function (msg_type, opts) {
     if (reload.is_in_progress()) {
@@ -190,7 +203,7 @@ exports.start = function (msg_type, opts) {
     }
 
     if (opts.replying_to_message !== undefined) {
-        fade_around(opts.replying_to_message);
+        do_fade(opts.replying_to_message, msg_type);
     }
 
     is_composing_message = msg_type;
