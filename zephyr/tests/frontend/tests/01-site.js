@@ -142,11 +142,20 @@ casper.then(function () {
     });
 
     casper.test.info('Disabling tutorial, if present');
+});
+
+casper.then(function() {
     send_message('private', {
         recipient: 'humbug+tutorial@humbughq.com',
         content: 'exit'
     });
+});
 
+casper.then(function() {
+    casper.waitForText("we'll stop the tutorial here");
+});
+
+casper.then(function () {
     casper.test.info('Sending messages');
 });
 
