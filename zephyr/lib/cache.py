@@ -50,3 +50,15 @@ def cache(func):
         return key.replace('-','--').replace(' ','-s')
 
     return cache_with_key(keyfunc)(func)
+
+def message_cache_key(message_id):
+    return "message:%d" % (message_id,)
+
+def userprofile_by_email_cache_key(email):
+    return 'tornado_user_profile_by_email:%s' % (email,)
+
+def userprofile_by_user_cache_key(user_id):
+    return 'tornado_user_profile_by_user:%d' % (user_id,)
+
+def user_by_id_cache_key(user_id):
+    return 'tornado_user:%d' % (user_id,)

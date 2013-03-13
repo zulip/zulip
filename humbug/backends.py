@@ -4,8 +4,9 @@ from django.conf import settings
 from openid.consumer.consumer import SUCCESS
 
 from zephyr.lib.cache import cache_with_key
+from zephyr.lib.cache import user_by_id_cache_key
 
-@cache_with_key(lambda user_id: 'tornado_user:%d' % (user_id,))
+@cache_with_key(user_by_id_cache_key)
 def get_tornado_user(user_id):
     try:
         return User.objects.select_related().get(id=user_id)

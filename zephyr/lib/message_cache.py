@@ -1,10 +1,7 @@
 from zephyr.models import Message
-from zephyr.lib.cache import cache_with_key, djcache
+from zephyr.lib.cache import cache_with_key, djcache, message_cache_key
 
 MESSAGE_CACHE_SIZE = 25000
-
-def message_cache_key(message_id):
-    return "message:%d" % (message_id,)
 
 def cache_save_message(message):
     djcache.set(message_cache_key(message.id), (message,), timeout=3600*24)
