@@ -4,44 +4,53 @@ import logging
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models, transaction, connection
+from django.conf import settings
 
 from zephyr.lib import utils
 
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        cursor = connection.cursor()
-        cursor.execute("ALTER TABLE zephyr_usermessage ADD COLUMN flags bigint;")
 
-        cursor.execute("""
-CREATE FUNCTION set_flags_trigger() RETURNS TRIGGER AS $set_flags_trigger$
-    BEGIN
-        NEW.flags := 0;
-        RETURN NEW;
-    END;
-$set_flags_trigger$ LANGUAGE plpgsql;
+        if "postgres" in settings.DATABASES["default"]["ENGINE"]:
+            cursor = connection.cursor()
+            cursor.execute("ALTER TABLE zephyr_usermessage ADD COLUMN flags bigint;")
+            cursor.execute("""
+    CREATE FUNCTION set_flags_trigger() RETURNS TRIGGER AS $set_flags_trigger$
+        BEGIN
+            NEW.flags := 0;
+            RETURN NEW;
+        END;
+    $set_flags_trigger$ LANGUAGE plpgsql;
 
-CREATE TRIGGER set_flags_trigger BEFORE INSERT ON zephyr_usermessage
-    FOR EACH ROW EXECUTE PROCEDURE set_flags_trigger();
-""")
-        transaction.commit_unless_managed()
+    CREATE TRIGGER set_flags_trigger BEFORE INSERT ON zephyr_usermessage
+        FOR EACH ROW EXECUTE PROCEDURE set_flags_trigger();
+    """)
+            transaction.commit_unless_managed()
 
-        for user_profile in orm.UserProfile.objects.all():
-            msgs = [m.id for m in orm.UserMessage.objects.filter(user_profile=user_profile).order_by('id')]
+            for user_profile in orm.UserProfile.objects.all():
+                msgs = [m.id for m in orm.UserMessage.objects.filter(user_profile=user_profile).order_by('id')]
 
-            def update_batch(batch):
-                with transaction.commit_on_success():
-                    orm.UserMessage.objects.filter(id__in=batch) \
-                                           .update(flags=0)
-            # Batch in set of 5000
-            utils.run_in_batches(msgs, 250, update_batch, sleep_time=3,
-                                                           logger=logging.info)
+                def update_batch(batch):
+                    with transaction.commit_on_success():
+                        orm.UserMessage.objects.filter(id__in=batch) \
+                                               .update(flags=0)
+                # Batch in set of 5000
+                utils.run_in_batches(msgs, 250, update_batch, sleep_time=3,
+                                                               logger=logging.info)
 
-        cursor.execute("ALTER TABLE zephyr_usermessage ALTER COLUMN flags SET NOT NULL;")
-        cursor.execute("ALTER TABLE zephyr_usermessage ALTER COLUMN flags SET DEFAULT 0;")
-        cursor.execute("DROP TRIGGER set_flags_trigger ON zephyr_usermessage;")
-        cursor.execute("DROP FUNCTION set_flags_trigger();")
-        transaction.commit_unless_managed()
+            cursor.execute("ALTER TABLE zephyr_usermessage ALTER COLUMN flags SET NOT NULL;")
+            cursor.execute("ALTER TABLE zephyr_usermessage ALTER COLUMN flags SET DEFAULT 0;")
+            cursor.execute("DROP TRIGGER set_flags_trigger ON zephyr_usermessage;")
+            cursor.execute("DROP FUNCTION set_flags_trigger();")
+            transaction.commit_unless_managed()
+        else:
+            db.add_column('zephyr_usermessage', 'flags',
+                          self.gf('django.db.models.fields.BigIntegerField')(default=0),
+                          keep_default=True)
+
+
+
 
     def backwards(self, orm):
         # Deleting field 'UserMessage.flags'
