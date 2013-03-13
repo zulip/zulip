@@ -805,7 +805,8 @@ $(function () {
 
     $("#main_div").on("click", ".messagebox", function (e) {
         var target = $(e.target);
-        if (target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar")) {
+        if (target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
+            target.is("div.message_length_controller")) {
             // If this click came from a hyperlink, don't trigger the
             // reply action.  The simple way of doing this is simply
             // to call e.stopPropagation() from within the link's
@@ -854,6 +855,20 @@ $(function () {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         show_actions_popover(this, rows.id(row));
+    });
+
+    $("#home").on("click", ".message_expander", function (e) {
+        var row = $(this).closest(".message_row");
+        row.find(".message_content").addClass("expanded");
+        $(this).hide();
+        row.find(".message_collapser").show();
+    });
+
+    $("#home").on("click", ".message_collapser", function (e) {
+        var row = $(this).closest(".message_row");
+        row.find(".message_content").removeClass("expanded");
+        $(this).hide();
+        row.find(".message_expander").show();
     });
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {

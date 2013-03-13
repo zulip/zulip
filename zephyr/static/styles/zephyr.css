@@ -428,11 +428,28 @@ table.focused_table {
 .message_content {
     margin-left: 5px;
     margin-right: 35px; /* size of the timestamp */
+    line-height: 1.5em;
+    max-height: 9.0em;
+    overflow: hidden;
 }
 @media (max-width: 480px) {
     .message_content {
         margin-right: 5px;
     }
+}
+
+.message_content.expanded {
+    max-height: none;
+}
+
+.message_length_controller {
+    display: none;
+    text-align: center;
+    color: #0088CC;
+}
+
+.message_length_controller:hover {
+    text-decoration: underline;
 }
 
 blockquote {
