@@ -75,8 +75,9 @@ function BlueslipError() {
 
 BlueslipError.prototype = Error.prototype;
 
-// Catch all exceptions from jQuery event handlers and
-// $(document).ready functions and funnel them through blueslip.
+// Catch all exceptions from jQuery event handlers, $(document).ready
+// functions, and ajax success/failure continuations and funnel them
+// through blueslip.
 (function() {
     function wrap_callback(func) {
         var new_func = function blueslip_wrapper() {
@@ -99,6 +100,14 @@ BlueslipError.prototype = Error.prototype;
         };
         return new_func;
     }
+
+    $.ajaxPrefilter(function (options) {
+        $.each(['success', 'error', 'complete'], function (idx, cb_name) {
+            if (options[cb_name] !== undefined) {
+                options[cb_name] = wrap_callback(options[cb_name]);
+            }
+        });
+    });
 
     if (document.addEventListener) {
         var orig_on = $.fn.on;
