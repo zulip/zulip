@@ -113,9 +113,11 @@ def initialize_user_messages():
         stream = streams[m.recipient.type_id]
         add_stream_message(stream.realm.id, stream.name, m.id)
 
-    # Filling the memcached cache is a little slow, so do it in a child process.
-    subprocess.Popen(["python", os.path.join(os.path.dirname(__file__), "..", "manage.py"),
-                      "fill_message_cache"])
+    if not settings.DEPLOYED:
+        # Filling the memcached cache is a little slow, so do it in a child process.
+        # For DEPLOYED cases, we run this from restart_server.
+        subprocess.Popen(["python", os.path.join(os.path.dirname(__file__), "..", "manage.py"),
+                          "fill_memcached_caches"])
 
 def add_user_message(user_profile_id, message_id):
     add_table_message("user", user_profile_id, message_id)

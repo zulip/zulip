@@ -38,4 +38,7 @@ except:
     print "%sCould not flush cache:%s" % (WARNING, ENDC)
     traceback.print_exc()
 
+subprocess.check_call(["python", os.path.join(os.path.dirname(__file__), "..", "manage.py"),
+                       "fill_memcached_caches"])
+
 print OKGREEN + "Application restarted successfully!" + ENDC
