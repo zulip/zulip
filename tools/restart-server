@@ -4,6 +4,10 @@ import sys
 import subprocess
 import pylibmc
 import traceback
+import logging
+
+logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
+                    level=logging.INFO)
 
 # Color codes
 OKBLUE = '\033[94m'
@@ -17,19 +21,23 @@ os.chdir("/home/humbug/humbug")
 #subprocess.check_call(["python", "manage.py", "syncdb"], stdout=open('/dev/null', 'w'))
 
 # Delete all .pyc files to avoid old module files hanging around
+logging.info("Starting restart process")
 subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/dev/null', 'w'))
 
 # Update static files
+logging.info("Updating static files")
 subprocess.check_call(["./tools/update-prod-static"])
 
 # Restart the FastCGI process, which is running in a shell loop in screen.
 # TODO: real daemonization
+logging.info("Killing daemons")
 for cmd in ('runfcgi', 'runtornado', "process_user_activity"):
     try:
         subprocess.check_call(["pkill", "-f", "python manage.py " + cmd])
     except subprocess.CalledProcessError:
         print "%sCould not kill %s; is it running?%s" % (WARNING, cmd, ENDC)
 
+logging.info("Flushing memcached")
 try:
     if not pylibmc.Client(['127.0.0.1']).flush_all():
         print "%sflush_all returned False%s" % (WARNING, ENDC)
@@ -38,7 +46,9 @@ except:
     print "%sCould not flush cache:%s" % (WARNING, ENDC)
     traceback.print_exc()
 
+logging.info("Refilling memcached caches")
 subprocess.check_call(["python", os.path.join(os.path.dirname(__file__), "..", "manage.py"),
                        "fill_memcached_caches"])
 
+logging.info("Done!")
 print OKGREEN + "Application restarted successfully!" + ENDC
