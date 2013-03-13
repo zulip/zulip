@@ -1,4 +1,5 @@
 from functools import wraps
+import hashlib
 
 from django.core.cache import cache as djcache
 from django.core.cache import get_cache
@@ -55,7 +56,7 @@ def message_cache_key(message_id):
     return "message:%d" % (message_id,)
 
 def userprofile_by_email_cache_key(email):
-    return 'tornado_user_profile_by_email:%s' % (email,)
+    return 'tornado_user_profile_by_email:%s' % (hashlib.sha1(email).hexdigest(),)
 
 def userprofile_by_user_cache_key(user_id):
     return 'tornado_user_profile_by_user:%d' % (user_id,)
