@@ -436,7 +436,7 @@ exports.restore_home_state = function() {
     // If we click on the Home link from another nav pane, just go
     // back to the state you were in (possibly still narrowed) before
     // you left the Home pane.
-    if ($('#gear-menu li[title="Home"]').hasClass("active")) {
+    if (!ui.home_tab_obscured()) {
         exports.deactivate();
     }
     maybe_scroll_to_selected();
