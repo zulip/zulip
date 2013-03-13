@@ -1400,7 +1400,7 @@ def get_status_list(requesting_user_profile):
 
     # Return no status info for MIT
     if requesting_user_profile.realm.domain == 'mit.edu':
-        return json_success({'presences': user_statuses})
+        return {'presences': user_statuses}
 
     for presence in UserPresence.objects.filter(
         user_profile__realm=requesting_user_profile.realm).select_related(
@@ -1409,7 +1409,7 @@ def get_status_list(requesting_user_profile):
         user_statuses[presence.user_profile.user.email][presence.client.name] = \
             presence_to_dict(presence)
 
-    return json_success({'presences': user_statuses})
+    return {'presences': user_statuses}
 
 @authenticated_json_post_view
 @has_request_variables
@@ -1424,11 +1424,23 @@ def json_update_active_status(request, user_profile,
 
     update_user_presence(user_profile, request._client, now(), status_val)
 
-    return get_status_list(user_profile)
+    ret = get_status_list(user_profile)
+    if user_profile.realm.domain == "mit.edu":
+        try:
+            activity = UserActivity.objects.get(user_profile = user_profile,
+                                                query="/api/v1/get_messages",
+                                                client__name="zephyr_mirror")
+            ret['zephyr_mirror_active'] = \
+                (activity.last_visit.replace(tzinfo=None) >
+                 datetime.datetime.utcnow() - datetime.timedelta(minutes=5))
+        except UserActivity.DoesNotExist:
+            ret['zephyr_mirror_active'] = False
+
+    return json_success(ret)
 
 @authenticated_json_post_view
 def json_get_active_statuses(request, user_profile):
-    return get_status_list(user_profile)
+    return json_success(get_status_list(user_profile))
 
 @authenticated_json_post_view
 @has_request_variables

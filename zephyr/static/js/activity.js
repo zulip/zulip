@@ -75,6 +75,13 @@ function focus_ping() {
         var user_info = {};
         var users = [];
 
+        // Update Zephyr mirror activity warning
+        if (data.zephyr_mirror_active === false) {
+            $('#zephyr-mirror-error').show();
+        } else {
+            $('#zephyr-mirror-error').hide();
+        }
+
         // Ping returns the active peer list
         $.each(data.presences, function (this_email, presence) {
             var age = -1;

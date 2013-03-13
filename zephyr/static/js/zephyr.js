@@ -594,12 +594,6 @@ function get_updates(options) {
                 compose.update_faded_messages();
             }
 
-            if (data.zephyr_mirror_active === false) {
-                $('#zephyr-mirror-error').show();
-            } else {
-                $('#zephyr-mirror-error').hide();
-            }
-
             if (data.new_pointer !== undefined
                 && data.new_pointer > furthest_read)
             {
