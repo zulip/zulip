@@ -55,11 +55,11 @@ else:
 # I like the all-lowercase name better
 require_post = require_POST
 
-@cache_with_key(lambda user_profile_id: 'tornado_user_profile:%d' % (user_profile_id,))
+@cache_with_key(lambda user_id: 'tornado_user_profile_by_user:%d' % (user_id,))
 def get_tornado_user_profile(user_id):
     return UserProfile.objects.select_related().get(user_id=user_id)
 
-@cache_with_key(lambda email: 'tornado_user_profile_email:%s' % (email,))
+@cache_with_key(lambda email: 'tornado_user_profile_by_email:%s' % (email,))
 def get_tornado_user_profile_by_email(email):
     return UserProfile.objects.select_related().get(user__email__iexact=email)
 
