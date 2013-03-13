@@ -14,7 +14,7 @@ class Migration(DataMigration):
     def forwards(self, orm):
         # Mark all messages not sent by this user, but past her saved pointer,
         # as unread.
-        for user_profile in orm.UserProfile.objects.all():
+        for user_profile in orm.UserProfile.objects.all().order_by("realm__id"):
             pointer = user_profile.pointer
             if pointer == -1:
                 try:
@@ -30,15 +30,16 @@ class Migration(DataMigration):
             # 'read' is the first bit in flags
             msgs = [m.id for m in orm.UserMessage.objects.filter(user_profile=user_profile,
                                                                  message_id__lte=pointer)
-                                          .exclude(flags=1)]
+                                                         .exclude(flags=1)]
 
             def update_batch(batch):
                 with transaction.commit_on_success():
                     orm.UserMessage.objects.filter(id__in=batch) \
                                            .update(flags=1)
 
+            logging.info("Starting to migrate %s" % (user_profile.user.email))
             # Batch in set of 5000
-            utils.run_in_batches(msgs, 5000, update_batch, sleep_time=1,
+            utils.run_in_batches(msgs, 250, update_batch, sleep_time=3,
                                                            logger=logging.info)
 
     def backwards(self, orm):

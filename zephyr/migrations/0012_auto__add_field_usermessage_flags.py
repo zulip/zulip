@@ -34,7 +34,7 @@ CREATE TRIGGER set_flags_trigger BEFORE INSERT ON zephyr_usermessage
                     orm.UserMessage.objects.filter(id__in=batch) \
                                            .update(flags=0)
             # Batch in set of 5000
-            utils.run_in_batches(msgs, 5000, update_batch, sleep_time=1,
+            utils.run_in_batches(msgs, 250, update_batch, sleep_time=3,
                                                            logger=logging.info)
 
         cursor.execute("ALTER TABLE zephyr_usermessage ALTER COLUMN flags SET NOT NULL;")
