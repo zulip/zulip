@@ -16,7 +16,7 @@ from zephyr.lib.avatar  import gravatar_hash
 from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
 from zephyr.lib.timeout import timeout
-from zephyr.lib.cache import db_cache_with_key
+from zephyr.lib.cache import cache_with_key
 
 def walk_tree(root, processor, stop_after_first=False):
     results = []
@@ -94,7 +94,7 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
 
         return root
 
-@db_cache_with_key(lambda tweet_id: tweet_id)
+@cache_with_key(lambda tweet_id: tweet_id, cache_name="database")
 def fetch_tweet_data(tweet_id):
     if settings.TEST_SUITE:
         import testing_mocks
