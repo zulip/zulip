@@ -342,22 +342,6 @@ def return_messages_immediately(user_profile, client_id, last,
 
     return None
 
-def send_with_safety_check(response, handler, apply_markdown=True, **kwargs):
-    # Make sure that Markdown rendering really happened, if requested.
-    # This is a security issue because it's where we escape HTML.
-    # c.f. ticket #64
-    #
-    # apply_markdown=True is the fail-safe default.
-    if response['result'] == 'success' and apply_markdown:
-        for msg in response['messages']:
-            if msg['content_type'] != 'text/html':
-                handler.set_status(500)
-                handler.finish('Internal error: bad message format')
-                return
-    if response['result'] == 'error':
-        handler.set_status(400)
-    handler.finish(response)
-
 # Note: We allow any stream name at all here! Validation and
 # authorization (is the stream "public") are handled by the caller of
 # notify_new_message. If a user makes a get_updates request for a
@@ -370,19 +354,19 @@ def get_updates_backend(request, user_profile, handler, client_id,
                                                         converter=int),
                         client_pointer = POST(whence='pointer', converter=int, default=None),
                         dont_block = POST(converter=simplejson.loads, default=False),
-                        stream_name = POST(default=None),
+                        stream_name = POST(default=None), apply_markdown=True,
                         **kwargs):
     resp = return_messages_immediately(user_profile, client_id, last,
                                        client_server_generation,
                                        client_pointer,
-                                       dont_block, stream_name, **kwargs)
+                                       dont_block, stream_name,
+                                       apply_markdown=apply_markdown, **kwargs)
     if resp is not None:
-        send_with_safety_check(resp, handler, **kwargs)
+        handler.finish(resp, apply_markdown)
 
         # We have already invoked handler.finish(), so we bypass the usual view
         # response path.  We are "responding asynchronously" except that it
-        # already happened.  This is slightly weird, but lets us share
-        # send_with_safety_check with the code below.
+        # already happened.  This is slightly weird.
         return RespondAsynchronously
 
     # Enter long-polling mode.
@@ -416,8 +400,9 @@ def get_updates_backend(request, user_profile, handler, client_id,
             kwargs.update(cb_kwargs)
             res = format_updates_response(user_profile=user_profile,
                                           client_server_generation=client_server_generation,
+                                          apply_markdown=apply_markdown,
                                           **kwargs)
-            send_with_safety_check(res, handler, **kwargs)
+            handler.finish(res, apply_markdown)
         except socket.error:
             pass
 

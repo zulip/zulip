@@ -324,3 +324,22 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             response = self.handle_uncaught_exception(request, resolver, sys.exc_info())
 
         return response
+
+    def finish(self, response=None, apply_markdown=True):
+        superself = super(AsyncDjangoHandler, self)
+        if not isinstance(response, dict):
+            return superself.finish(response)
+
+        # Make sure that Markdown rendering really happened, if requested.
+        # This is a security issue because it's where we escape HTML.
+        # c.f. ticket #64
+        #
+        # apply_markdown=True is the fail-safe default.
+        if response['result'] == 'success' and 'messages' in response and apply_markdown:
+            for msg in response['messages']:
+                if msg['content_type'] != 'text/html':
+                    self.set_status(500)
+                    return superself.finish('Internal error: bad message format')
+        if response['result'] == 'error':
+            self.set_status(400)
+        return superself.finish(response)
