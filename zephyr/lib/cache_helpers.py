@@ -1,8 +1,10 @@
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zephyr.models or we'd have an import
 # loop
-from zephyr.models import Message
-from zephyr.lib.cache import cache_with_key, djcache, message_cache_key
+from zephyr.models import Message, UserProfile
+from zephyr.lib.cache import cache_with_key, djcache, message_cache_key, \
+    userprofile_by_email_cache_key, userprofile_by_user_cache_key, \
+    user_by_id_cache_key
 
 MESSAGE_CACHE_SIZE = 25000
 
@@ -21,3 +23,17 @@ def populate_message_cache():
         items_for_memcached[message_cache_key(m.id)] = (m,)
 
     djcache.set_many(items_for_memcached, timeout=3600*24)
+
+# Fill our various caches of User/UserProfile objects used by Tornado
+def populate_user_cache():
+    items_for_memcached = {}
+    for user_profile in UserProfile.objects.select_related().all():
+        items_for_memcached[userprofile_by_email_cache_key(user_profile.user.email)] = (user_profile,)
+        items_for_memcached[userprofile_by_user_cache_key(user_profile.user.id)] = (user_profile,)
+        items_for_memcached[user_by_id_cache_key(user_profile.user.id)] = (user_profile.user,)
+
+    djcache.set_many(items_for_memcached, timeout=3600*24*7)
+
+def fill_memcached_caches():
+    populate_user_cache()
+    populate_message_cache()
