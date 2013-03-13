@@ -170,7 +170,7 @@ exports.start = function (msg_type, opts) {
 
     if (!(compose.composing() === msg_type &&
           ((msg_type === "stream" &&
-            opts.stream === compose.stream() &&
+            opts.stream === compose.stream_name() &&
             opts.subject === compose.subject()) ||
            (msg_type === "private" &&
             opts.private_message_recipient === compose.recipient())))) {
