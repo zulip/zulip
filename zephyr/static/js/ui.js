@@ -40,7 +40,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // parent tr, we should let the browser handle the copy-paste
     // entirely on its own
     if (tr.length === 0) {
-        return;
+        return undefined;
     }
 
     // If the selection bounary is on a table row that does not have an
@@ -53,7 +53,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
         tr = iterate_row(tr);
     }
     if (j === 10) {
-        return;
+        return undefined;
     } else if (j !== 0) {
         // If we updated tr, then we are not dealing with a selection
         // that is entirely within one td, and we can skip the same td
@@ -78,6 +78,9 @@ $(document).bind('copy', function (e) {
         start_data = find_boundary_tr($(startc.parents('tr')[0]), function(row) {
             return row.next();
         });
+        if (start_data === undefined) {
+            return;
+        }
         start_id = start_data[0];
 
         endc = $(range.endContainer);
@@ -92,6 +95,9 @@ $(document).bind('copy', function (e) {
         end_data = find_boundary_tr(initial_end_tr, function(row) {
             return row.prev();
         });
+        if (end_data === undefined) {
+            return;
+        }
         end_id = end_data[0];
 
         if (start_data[1] || end_data[1]) {
