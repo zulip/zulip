@@ -353,7 +353,6 @@ class PointerTest(AuthedTestCase):
         self.assertEqual(self.get_user_profile(email).pointer, -1)
         result = self.client.post("/api/v1/update_pointer", {"email": email,
                                                              "api-key": api_key,
-                                                             "client_id": "blah",
                                                              "pointer": 1})
         self.assert_json_success(result)
         self.assertEqual(self.get_user_profile(email).pointer, 1)

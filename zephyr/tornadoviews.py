@@ -228,7 +228,7 @@ def get_user_pointer(user_profile_id):
 def set_user_pointer(user_profile_id, pointer):
     user_pointers[user_profile_id] = pointer
 
-def update_pointer(user_profile_id, new_pointer, pointer_updater):
+def update_pointer(user_profile_id, new_pointer):
     set_user_pointer(user_profile_id, new_pointer)
     callbacks_table.call(user_profile_id, Callbacks.TYPE_POINTER_UPDATE,
                          new_pointer=new_pointer,
@@ -253,9 +253,8 @@ def notify_new_message(request):
 def notify_pointer_update(request):
     user_profile_id = int(request.POST['user'])
     new_pointer = int(request.POST['new_pointer'])
-    pointer_updater = request.POST['pointer_updater']
 
-    update_pointer(user_profile_id, new_pointer, pointer_updater)
+    update_pointer(user_profile_id, new_pointer)
 
     return json_success()
 

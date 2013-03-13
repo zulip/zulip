@@ -441,23 +441,20 @@ def home(request):
                               context_instance=RequestContext(request))
 
 @authenticated_api_view
-@has_request_variables
-def api_update_pointer(request, user_profile, updater=POST('client_id')):
-    return update_pointer_backend(request, user_profile, updater)
+def api_update_pointer(request, user_profile):
+    return update_pointer_backend(request, user_profile)
 
 @authenticated_json_post_view
 def json_update_pointer(request, user_profile):
-    return update_pointer_backend(request, user_profile,
-                                  request.session.session_key)
+    return update_pointer_backend(request, user_profile)
 
 @has_request_variables
-def update_pointer_backend(request, user_profile, updater,
+def update_pointer_backend(request, user_profile,
                            pointer=POST(converter=to_non_negative_int)):
     if pointer <= user_profile.pointer:
         return json_success()
 
     user_profile.pointer = pointer
-    user_profile.last_pointer_updater = updater
     user_profile.save()
 
     if request._client.name.lower() in ['android', 'iphone']:
@@ -474,8 +471,7 @@ def update_pointer_backend(request, user_profile, updater,
         requests.post(settings.TORNADO_SERVER + '/notify_pointer_update', data=dict(
             secret          = settings.SHARED_SECRET,
             user            = user_profile.id,
-            new_pointer     = pointer,
-            pointer_updater = updater))
+            new_pointer     = pointer))
 
     return json_success()
 
