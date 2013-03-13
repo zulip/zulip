@@ -99,25 +99,10 @@ MessageList.prototype = {
             id = this.closest_id(id);
             opts.id = id;
         }
-        this._selected_id = id;
 
-        // This is the number of pixels between the top of the
-        // viewable window and the newly selected message
-        var scrolltop_offset;
-        var selected_row = rows.get(id, this.table_name);
-        var new_msg_in_view = (selected_row.length > 0);
-        if (new_msg_in_view) {
-            scrolltop_offset = viewport.scrollTop() - selected_row.offset().top;
-        }
-        if (this._maybe_rerender()) {
-            // If we could see the newly selected message, scroll the
-            // window such that the newly selected message is at the
-            // same location as it would have been before we
-            // re-rendered.
-            if (new_msg_in_view) {
-                viewport.scrollTop(rows.get(id, this.table_name).offset().top + scrolltop_offset);
-            }
-        }
+        this._selected_id = id;
+        this._maybe_rerender();
+
         $(document).trigger($.Event('message_selected.zephyr', opts));
     },
 
@@ -203,10 +188,28 @@ MessageList.prototype = {
         this._render_win_end = Math.min(this._render_win_start + this._RENDER_WINDOW_SIZE,
                                         this._items.length);
 
+        // scrolltop_offset is the number of pixels between the top of the
+        // viewable window and the newly selected message
+        var scrolltop_offset;
+        var selected_row = rows.get(this._selected_id, this.table_name);
+        var selected_in_view = (selected_row.length > 0);
+        if (selected_in_view) {
+            scrolltop_offset = viewport.scrollTop() - selected_row.offset().top;
+        }
+
         this._clear_table();
         this._render(this._items.slice(this._render_win_start,
                                        this._render_win_end),
                      'bottom', true);
+
+        // If we could see the newly selected message, scroll the
+        // window such that the newly selected message is at the
+        // same location as it would have been before we
+        // re-rendered.
+        if (selected_in_view) {
+            viewport.scrollTop(rows.get(this._selected_id, this.table_name).offset().top + scrolltop_offset);
+        }
+
         return true;
     },
 
