@@ -19,7 +19,7 @@ import logging
 import subprocess
 from django.core.cache import cache
 from zephyr.lib.cache import cache_with_key
-from zephyr.lib.message_cache import cache_save_message, cache_get_message
+from zephyr.lib.cache_helpers import cache_save_message, cache_get_message
 
 SERVER_GENERATION = int(time.time())
 

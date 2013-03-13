@@ -9,7 +9,7 @@ from django.db import transaction, IntegrityError
 from django.db.models import F
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
-from zephyr.lib.message_cache import cache_save_message
+from zephyr.lib.cache_helpers import cache_save_message
 from zephyr.lib.queue import SimpleQueueClient
 from django.utils import timezone
 from zephyr.lib.create_user import create_user

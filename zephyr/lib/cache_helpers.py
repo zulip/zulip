@@ -1,3 +1,6 @@
+# This file needs to be different from cache.py because cache.py
+# cannot import anything from zephyr.models or we'd have an import
+# loop
 from zephyr.models import Message
 from zephyr.lib.cache import cache_with_key, djcache, message_cache_key
 

@@ -1,6 +1,6 @@
 from optparse import make_option
 from django.core.management.base import BaseCommand
-from zephyr.lib.message_cache import populate_message_cache
+from zephyr.lib.cache_helpers import populate_message_cache
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list
