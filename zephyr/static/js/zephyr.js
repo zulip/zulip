@@ -31,6 +31,7 @@ var suppress_scroll_pointer_update = false;
 
 var furthest_read = -1;
 var server_furthest_read = -1;
+var pointer_update_in_flight = false;
 
 function add_person(person) {
     people_list.push(person);
@@ -339,14 +340,23 @@ function process_visible_unread_messages() {
     }
 }
 
-
 function send_pointer_update() {
-    if (furthest_read > server_furthest_read) {
-        $.post("/json/update_pointer",
-               {pointer: furthest_read},
-               function () {
-                   server_furthest_read = furthest_read;
-               });
+    if (!pointer_update_in_flight &&
+        furthest_read > server_furthest_read) {
+        pointer_update_in_flight = true;
+        $.ajax({
+            type:     'POST',
+            url:      '/json/update_pointer',
+            data:     {pointer: furthest_read},
+            dataType: 'json',
+            success: function () {
+                server_furthest_read = furthest_read;
+                pointer_update_in_flight = false;
+            },
+            error: function () {
+                pointer_update_in_flight = false;
+            }
+        });
     }
 }
 
