@@ -474,7 +474,7 @@ def update_pointer_backend(request, user_profile,
         UserMessage.objects.filter(user_profile=user_profile,
                                    message__id__lte=pointer,
                                    flags=~UserMessage.flags.read)        \
-                           .update(flags=F('flags') | UserMessage.flags.read)
+                           .update(flags=F('flags').bitor(UserMessage.flags.read))
 
     if settings.TORNADO_SERVER:
         tornado_callbacks.send_notification(dict(

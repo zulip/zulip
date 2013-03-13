@@ -61,7 +61,7 @@ class Command(BaseCommand):
             else:
                 def do_update(batch):
                     with transaction.commit_on_success():
-                        UserMessage.objects.filter(id__in=batch).update(flags=models.F('flags') | UserMessage.flags.read)
+                        UserMessage.objects.filter(id__in=batch).update(flags=models.F('flags').bitor(UserMessage.flags.read))
 
                 mids = [m.id for m in msgs]
                 utils.run_in_batches(mids, 250, do_update, 3, logging.info)

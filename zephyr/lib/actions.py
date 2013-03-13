@@ -571,9 +571,9 @@ if settings.USING_RABBITMQ or settings.TEST_SUITE:
             to_update = UserMessage.objects.filter(id__in=mids)
 
             if operation == "add":
-                to_update.update(flags=F('flags') | flagattr)
+                to_update.update(flags=F('flags').bitor(flagattr))
             elif operation == "remove":
-                to_update.update(flags=F('flags') & ~flagattr)
+                to_update.update(flags=F('flags').bitand(~flagattr))
 
             if len(mids) == 0:
                 return True
@@ -630,9 +630,9 @@ def process_update_message_flags(event):
                                           id__lte=until_id)
 
     if op == 'add':
-        msgs.update(flags=F('flags') | flagattr)
+        msgs.update(flags=F('flags').bitor(flagattr))
     elif op == 'remove':
-        msgs.update(flags=F('flags') & ~flagattr)
+        msgs.update(flags=F('flags').bitand(~flagattr))
 
     return True
 
