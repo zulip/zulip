@@ -912,6 +912,13 @@ $(function () {
         compose.start('private', {private_message_recipient: email});
         e.preventDefault();
     });
+
+    $('#stream_filters li').on('click', 'a', function (e) {
+        var stream = $(e.target).parents('li').data('name');
+        narrow.by('stream', decodeURIComponent(stream), {select_first_unread: true});
+
+        e.preventDefault();
+    });
 });
 
 function sort_narrow_list() {

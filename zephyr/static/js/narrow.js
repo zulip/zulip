@@ -255,7 +255,8 @@ function build_filter(operators_mixed_case) {
 
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
-        then_select_id: home_msg_list.selected_id()
+        then_select_id: home_msg_list.selected_id(),
+        select_first_unread: false
     }, opts);
 
     // Unfade the home view before we switch tables.
@@ -280,6 +281,15 @@ exports.activate = function (operators, opts) {
 
     function maybe_select_closest() {
         if (! narrowed_msg_list.empty()) {
+            if (opts.select_first_unread) {
+                then_select_id = narrowed_msg_list.last().id;
+                $.each(narrowed_msg_list.all(), function (idx, msg) {
+                    if (message_unread(msg)) {
+                        then_select_id = msg.id;
+                        return false;
+                    }
+                });
+            }
             narrowed_msg_list.select_id(then_select_id, {then_scroll: true, use_closest: true});
         }
     }
