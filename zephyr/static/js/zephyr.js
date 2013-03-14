@@ -197,7 +197,10 @@ function message_unread(message) {
         return false;
     }
 
-    if (message.sender_email === email) {
+    var sent_by_human = ['website', 'iphone', 'android']
+                            .indexOf(message.client.toLowerCase()) !== -1;
+
+    if (message.sender_email === email && sent_by_human) {
         return false;
     }
 

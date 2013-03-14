@@ -154,7 +154,9 @@ def do_send_message(message, rendered_content=None, no_log=False):
                          for user_profile in recipients
                          if user_profile.user.is_active]
         for um in ums_to_create:
-            if um.user_profile == message.sender:
+            sent_by_human = message.sending_client.name.lower() in \
+                                ['website', 'iphone', 'android']
+            if um.user_profile == message.sender and sent_by_human:
                 um.flags |= UserMessage.flags.read
         batch_bulk_create(UserMessage, ums_to_create)
 
