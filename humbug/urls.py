@@ -95,6 +95,7 @@ urlpatterns += patterns('zephyr.views',
     url(r'^json/report_error$',             'json_report_error'),
     url(r'^json/update_message_flags$',     'json_update_flags'),
     url(r'^json/register$',                 'json_events_register'),
+    url(r'^json/upload_file$',              'json_upload_file'),
 
     # These are json format views used by the API.  They require an API key.
     url(r'^api/v1/get_profile$',            'api_get_profile'),

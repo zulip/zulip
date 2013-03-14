@@ -13,6 +13,7 @@ from django.contrib.auth.views import login as django_login_page, \
 from django.db.models import Q, F
 from django.core.mail import send_mail, mail_admins
 from django.db import transaction
+from django.template.defaultfilters import slugify
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_huddle, Realm, UserMessage, \
     PreregistrationUser, get_client, MitUser, UserActivity, \
@@ -59,6 +60,9 @@ from os import path
 from functools import wraps
 from collections import defaultdict
 from zephyr.lib import bugdown
+
+from boto.s3.key import Key
+from boto.s3.connection import S3Connection
 
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
     """Converts plaintext stream names to a list of Streams, validating input in the process
@@ -1023,6 +1027,42 @@ def api_get_subscribers(request, user_profile):
 @authenticated_json_post_view
 def json_get_subscribers(request, user_profile):
     return get_subscribers_backend(request, user_profile)
+
+def gen_s3_key(user_profile, name):
+    split_name = name.split('.')
+    base = ".".join(split_name[:-1])
+    extension = split_name[-1]
+
+    # To come up with a s3 key we randomly generate a "directory". The "file
+    # name" is the original filename provided by the user run through Django's
+    # slugify.
+
+    return base64.urlsafe_b64encode(os.urandom(60)) + "/" + slugify(base) + "." + slugify(extension)
+
+@authenticated_json_post_view
+def json_upload_file(request, user_profile):
+    if len(request.FILES) == 0:
+        return json_error("You must specify a file to upload")
+    if len(request.FILES) != 1:
+        return json_error("You may only upload one file at a time")
+
+    user_file = request.FILES.values()[0]
+    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+    key = Key(conn.get_bucket("humbug-user-uploads"))
+    key.key = gen_s3_key(user_profile, user_file.name)
+
+    # So for writing the file to S3, the file could either be stored in RAM
+    # (if it is less than 2.5MiB or so) or an actual temporary file on disk.
+    #
+    # Because we set FILE_UPLOAD_MAX_MEMORY_SIZE to 0, only the latter case
+    # should occur in practice.
+    #
+    # This is great, because passing the pseudofile object that Django gives
+    # you to boto would be a pain.
+
+    key.set_metadata("user_profile_id", str(user_profile.id))
+    key.set_contents_from_filename(user_file.temporary_file_path())
+    return json_success({'uri': "https://humbug-user-uploads.s3.amazonaws.com/" + key.key})
 
 @has_request_variables
 def get_subscribers_backend(request, user_profile, stream_name=POST('stream')):

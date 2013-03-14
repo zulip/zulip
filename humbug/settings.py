@@ -465,3 +465,10 @@ if not DEPLOYED:
 if DEPLOYED:
     # Filter out user data
     DEFAULT_EXCEPTION_REPORTER_FILTER = 'zephyr.filters.HumbugExceptionReporterFilter'
+
+# We want all temporary uploaded files to be stored on disk.
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 0
+
+S3_KEY="xxxxxxxxxxxxxxxxxxxx"
+S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

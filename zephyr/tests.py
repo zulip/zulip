@@ -23,6 +23,11 @@ import re
 import sys
 import random
 import os
+import urllib2
+from StringIO import StringIO
+
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
 
 def bail(msg):
     print '\nERROR: %s\n' % (msg,)
@@ -1447,6 +1452,58 @@ class ChangeSettingsTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         result = self.post_with_params({"old_password": "bad_password"})
         self.assert_json_error(result, "Wrong password!")
+
+class S3Test(AuthedTestCase):
+    fixtures = ['messages.json']
+    test_uris = []
+
+    def test_file_upload(self):
+        """
+        A call to /json/upload_file should return a uri and actually create an object.
+        """
+        self.login("hamlet@humbughq.com")
+        fp = StringIO("humbug!")
+        fp.name = "humbug.txt"
+
+        result = self.client.post("/json/upload_file", {'file': fp})
+        self.assert_json_success(result)
+        json = simplejson.loads(result.content)
+        self.assertIn("uri", json)
+        uri = json["uri"]
+        self.test_uris.append(uri)
+        self.assertEquals("humbug!", urllib2.urlopen(uri).read().strip())
+
+    def test_multiple_upload_failure(self):
+        """
+        Attempting to upload two files should fail.
+        """
+        self.login("hamlet@humbughq.com")
+        fp = StringIO("bah!")
+        fp.name = "a.txt"
+        fp2 = StringIO("pshaw!")
+        fp2.name = "b.txt"
+
+        result = self.client.post("/json/upload_file", {'f1': fp, 'f2': fp2})
+        self.assert_json_error(result, "You may only upload one file at a time")
+
+    def test_no_file_upload_failure(self):
+        """
+        Calling this endpoint with no files should fail.
+        """
+        self.login("hamlet@humbughq.com")
+
+        result = self.client.post("/json/upload_file")
+        self.assert_json_error(result, "You must specify a file to upload")
+
+    def tearDown(self):
+        # clean up
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        for uri in self.test_uris:
+            key = Key(conn.get_bucket("humbug-user-uploads"))
+            key.name = urllib2.urlparse.urlparse(uri).path[1:]
+            key.delete()
+            self.test_uris.remove(uri)
+
 
 
 class DummyHandler(object):

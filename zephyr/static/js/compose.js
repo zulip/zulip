@@ -464,6 +464,29 @@ exports.validate = function () {
 
 $(function () {
     $("#new_message_content").autosize();
+    $("#compose").filedrop({
+        url: "json/upload_file",
+        paramname: "file",
+        maxfilesize: 25,
+        data: {
+            // the token isn't automatically included in filedrop's post
+            csrfmiddlewaretoken: csrf_token
+        },
+        drop: function (i, file, len) {
+            $("#compose-send-button").attr("disabled", "");
+            $("#send-status").addClass("alert-info")
+                             .show();
+            $("#error-msg").text("Uploading…");
+        },
+        uploadFinished: function (i, file, response, time) {
+            var textbox = $("#new_message_content");
+            textbox.val(textbox.val() + " " + response.uri);
+            $("#new_message_content").trigger("autosize");
+            $("#compose-send-button").removeAttr("disabled");
+            $("#send-status").removeClass("alert-info")
+                             .hide();
+        }
+    });
 });
 
 return exports;
