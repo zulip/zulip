@@ -117,16 +117,10 @@ BlueslipError.prototype = Error.prototype;
 
         $.fn.on = function blueslip_jquery_on_wrapper(types, selector, data, fn, one) {
             if (typeof types === 'object') {
-                // This is the syntax where types is a mapping from event
-                // name to handlers
-                var new_types = {};
-                var prop;
-                for (prop in types) {
-                    if (types.hasOwnProperty(prop)) {
-                        new_types[prop] = wrap_callback(types[prop]);
-                    }
-                }
-                return orig_on.call(this, new_types, selector, data, fn, one);
+                // ( types-Object, selector, data)
+                // We'll get called again from the recursive call in the original
+                // $.fn.on
+                return orig_on.call(this, types, selector, data, fn, one);
             }
 
             // Only one handler, but we have to figure out which
