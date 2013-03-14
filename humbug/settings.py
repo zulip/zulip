@@ -51,7 +51,7 @@ DATABASES = {"default": {
 if not DEPLOYED:
     # We can delete this if statement and the whole else clause below
     # once everyone is off sqlite.
-    if False:
+    if platform.system() == 'Linux' or False:
         DATABASES["default"].update({
                 'PASSWORD': 'xxxxxxxxxxxx',
                 'HOST': 'localhost',
