@@ -301,9 +301,17 @@ exports.activate = function (operators, opts) {
     }
 
     if (narrowed_msg_list.empty()) {
-        load_old_messages(then_select_id, 200, 200, narrowed_msg_list, function (messages) {
-            maybe_select_closest();
-        }, true, false);
+        load_old_messages({
+            anchor: then_select_id,
+            num_before: 200,
+            num_after: 200,
+            msg_list: narrowed_msg_list,
+            cont: function (messages) {
+                maybe_select_closest();
+            },
+            for_narrow: true,
+            cont_will_add_messages: false
+        });
     }
 
     // Show the new set of messages.

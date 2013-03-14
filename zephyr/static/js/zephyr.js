@@ -649,18 +649,17 @@ function get_updates(options) {
     });
 }
 
-function load_old_messages(anchor, num_before, num_after, msg_list, cont, for_narrow,
-                           cont_will_add_messages) {
-    if (for_narrow === undefined) {
-        for_narrow = false;
-    }
-    if (cont_will_add_messages === undefined) {
-        cont_will_add_messages = false;
-    }
+function load_old_messages(opts) {
+    opts = $.extend({}, {
+        for_narrow: false,
+        cont_will_add_messages: false
+    }, opts);
 
-    var data = {anchor: anchor, num_before: num_before, num_after: num_after};
+    var data = {anchor: opts.anchor,
+                num_before: opts.num_before,
+                num_after: opts.num_after};
 
-    if (for_narrow && narrow.active())
+    if (opts.for_narrow && narrow.active())
         data.narrow = JSON.stringify(narrow.public_operators());
 
     function process_result(messages) {
@@ -676,16 +675,16 @@ function load_old_messages(anchor, num_before, num_after, msg_list, cont, for_na
         // If we're loading more messages into the home view, save them to
         // the all_msg_list as well, as the home_msg_list is reconstructed
         // from all_msg_list.
-        if (msg_list === home_msg_list) {
+        if (opts.msg_list === home_msg_list) {
             add_messages(messages, all_msg_list, {append_to_table: false});
         }
 
-        if (messages.length !== 0 && !cont_will_add_messages) {
-            add_messages(messages, msg_list);
+        if (messages.length !== 0 && !opts.cont_will_add_messages) {
+            add_messages(messages, opts.msg_list);
         }
 
-        if (cont !== undefined) {
-            cont(messages);
+        if (opts.cont !== undefined) {
+            opts.cont(messages);
         }
     }
 
@@ -699,8 +698,7 @@ function load_old_messages(anchor, num_before, num_after, msg_list, cont, for_na
                 // The server occationally returns no data during a
                 // restart.  Ignore those responses and try again
                 setTimeout(function () {
-                    load_old_messages(anchor, num_before, num_after, msg_list,
-                                      cont, for_narrow, cont_will_add_messages);
+                    load_old_messages(opts);
                 }, 0);
                 return;
             }
@@ -721,8 +719,7 @@ function load_old_messages(anchor, num_before, num_after, msg_list, cont, for_na
             // We might want to be more clever here
             $('#connection-error').show();
             setTimeout(function () {
-                load_old_messages(anchor, num_before, num_after, msg_list,
-                                  cont, for_narrow, cont_will_add_messages);
+                load_old_messages(opts);
             }, 5000);
         }
     });
@@ -743,7 +740,13 @@ $(function () {
         // catch the user up
         if (messages.length !== 1) {
             var latest_id = messages[messages.length-1].id;
-            load_old_messages(latest_id, 0, 400, home_msg_list, load_more);
+            load_old_messages({
+                anchor: latest_id,
+                num_before: 0,
+                num_after: 400,
+                msg_list: home_msg_list,
+                cont: load_more
+            });
             return;
         }
         // now start subscribing to updates
@@ -754,12 +757,23 @@ $(function () {
         $(document).idle({'idle': 1000*10,
                           'onIdle': function () {
                               var first_id = all_msg_list.first().id;
-                              load_old_messages(first_id, backfill_batch_size, 0, home_msg_list);
+                              load_old_messages({
+                                  anchor: first_id,
+                                  num_before: backfill_batch_size,
+                                  num_after: 0,
+                                  msg_list: home_msg_list
+                              });
                           }});
     }
 
     if (have_initial_messages) {
-        load_old_messages(initial_pointer, 200, 200, home_msg_list, load_more);
+        load_old_messages({
+            anchor: initial_pointer,
+            num_before: 200,
+            num_after: 200,
+            msg_list: home_msg_list,
+            cont: load_more
+        });
     } else {
         get_updates();
     }
@@ -793,13 +807,19 @@ function load_more_messages(msg_list) {
     } else {
         oldest_message_id = msg_list.first().id;
     }
-    load_old_messages(oldest_message_id, batch_size, 0, msg_list,
-                      function (messages) {
-                          ui.hide_loading_more_messages_indicator();
-                          if (messages.length === batch_size + 1) {
-                              load_more_enabled = true;
-                          }
-                      }, narrow.active());
+    load_old_messages({
+        anchor: oldest_message_id,
+        num_before: batch_size,
+        num_after: 0,
+        msg_list: msg_list,
+        cont: function (messages) {
+            ui.hide_loading_more_messages_indicator();
+            if (messages.length === batch_size + 1) {
+                load_more_enabled = true;
+            }
+        },
+        for_narrow: narrow.active()
+    });
 }
 
 var watchdog_time = $.now();
