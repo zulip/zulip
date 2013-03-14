@@ -123,7 +123,9 @@ class Command(BaseCommand):
                                                (r"/notify_new_message", AsyncDjangoHandler),
                                                (r"/notify_pointer_update", AsyncDjangoHandler),
 
-                                               ], debug=django.conf.settings.DEBUG)
+                                               ], debug=django.conf.settings.DEBUG,
+                                              # Disable Tornado's own request logging, since we have our own
+                                              log_function=lambda x: None)
 
                 # start tornado web server in single-threaded mode
                 http_server = httpserver.HTTPServer(application,
