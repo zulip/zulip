@@ -80,6 +80,10 @@ BlueslipError.prototype = Error.prototype;
 // through blueslip.
 (function() {
     function wrap_callback(func) {
+        if (func.blueslip_wrapper !== undefined) {
+            func.blueslip_wrapper_refcnt++;
+            return func.blueslip_wrapper;
+        }
         var new_func = function blueslip_wrapper() {
             if (debug_mode) {
                 return func.apply(this, arguments);
@@ -101,7 +105,22 @@ BlueslipError.prototype = Error.prototype;
             }
         };
         func.blueslip_wrapper = new_func;
+        func.blueslip_wrapper_refcnt = 1;
         return new_func;
+    }
+
+    // This reference counting scheme can't break all the circular
+    // references we create because users can remove jQuery event
+    // handlers without referencing the particular handler they want
+    // to remove.  We just hope this memory leak won't be too bad.
+    function dec_wrapper_refcnt(func) {
+        if (func.blueslip_wrapper_refcnt !== undefined) {
+            func.blueslip_wrapper_refcnt--;
+            if (func.blueslip_wrapper_refcnt === 0) {
+                delete func.blueslip_wrapper;
+                delete func.blueslip_wrapper_refcnt;
+            }
+        }
     }
 
     $.ajaxPrefilter(function (options) {
@@ -187,6 +206,7 @@ BlueslipError.prototype = Error.prototype;
             if (fn) {
                 var wrapper = fn.blueslip_wrapper;
                 if (wrapper !== undefined) {
+                    dec_wrapper_refcnt(fn);
                     fn = wrapper;
                 }
             }
