@@ -362,7 +362,7 @@ def get_updates_backend(request, user_profile, handler, client_id,
                                        dont_block, stream_name,
                                        apply_markdown=apply_markdown, **kwargs)
     if resp is not None:
-        handler.finish(resp, apply_markdown)
+        handler.finish(resp, request=request, apply_markdown=apply_markdown)
 
         # We have already invoked handler.finish(), so we bypass the usual view
         # response path.  We are "responding asynchronously" except that it
@@ -394,7 +394,8 @@ def get_updates_backend(request, user_profile, handler, client_id,
                     # must do it by making a new request
                     handler.finish({"result": "success",
                                     "msg": "",
-                                    'update_types': []})
+                                    'update_types': []},
+                                   request=request)
                     return
 
             kwargs.update(cb_kwargs)
@@ -402,7 +403,7 @@ def get_updates_backend(request, user_profile, handler, client_id,
                                           client_server_generation=client_server_generation,
                                           apply_markdown=apply_markdown,
                                           **kwargs)
-            handler.finish(res, apply_markdown)
+            handler.finish(res, request=request, apply_markdown=apply_markdown)
         except socket.error:
             pass
 

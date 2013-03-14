@@ -325,7 +325,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         return response
 
-    def finish(self, response=None, apply_markdown=True):
+    def finish(self, response=None, request=None, apply_markdown=True):
         superself = super(AsyncDjangoHandler, self)
         if not isinstance(response, dict):
             return superself.finish(response)
@@ -342,4 +342,5 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                     return superself.finish('Internal error: bad message format')
         if response['result'] == 'error':
             self.set_status(400)
+
         return superself.finish(response)
