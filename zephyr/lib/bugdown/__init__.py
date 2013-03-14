@@ -421,8 +421,7 @@ class Bugdown(markdown.Extension):
                                  "_begin")
 
         md.treeprocessors.add("inline_images", InlineImagePreviewProcessor(md), "_end")
-        if settings.DEBUG or settings.STAGING_DEPLOYED:
-            md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
+        md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
 
 _md_engine = markdown.Markdown(
     safe_mode     = 'escape',
