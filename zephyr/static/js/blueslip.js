@@ -114,6 +114,7 @@ BlueslipError.prototype = Error.prototype;
 
     if (document.addEventListener) {
         var orig_on = $.fn.on;
+        var orig_off = $.fn.off;
         var orig_ready = $.fn.ready;
 
         $.fn.on = function blueslip_jquery_on_wrapper(types, selector, data, fn, one) {
@@ -154,6 +155,42 @@ BlueslipError.prototype = Error.prototype;
             /*jslint eqeq: false */
 
             return orig_on.call(this, types, selector, data, wrap_callback(fn), one);
+        };
+
+        $.fn.off = function (types, selector, fn) {
+            if (types && types.preventDefault && types.handleObj) {
+                // (event)
+                // We'll get called again through the recursive call in the original
+                // $.fn.off
+                return orig_off.call(this, types, selector, fn);
+            }
+
+            if (typeof types === "object" ) {
+                // ( types-object [, selector] )
+                // We'll get called again through the recursive call in the original
+                // $.fn.off
+                return orig_off.call(this, types, selector, fn);
+            }
+
+            // Only one handler, but we have to figure out which
+            // argument it is.  The argument munging is taken from
+            // jQuery, itself.
+            if ( selector === false || typeof selector === "function" ) {
+                // ( types [, fn] )
+                fn = selector;
+                selector = undefined;
+            }
+            if ( fn === false ) {
+                fn = function () { return false; };
+            }
+
+            if (fn) {
+                var wrapper = fn.blueslip_wrapper;
+                if (wrapper !== undefined) {
+                    fn = wrapper;
+                }
+            }
+            return orig_off.call(this, types, selector, fn);
         };
 
         $.fn.ready = function blueslip_jquery_ready_wrapper(func) {
