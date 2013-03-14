@@ -100,6 +100,7 @@ BlueslipError.prototype = Error.prototype;
                 }
             }
         };
+        func.blueslip_wrapper = new_func;
         return new_func;
     }
 
