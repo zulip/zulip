@@ -9,6 +9,7 @@ import logging
 import time
 from tornado import ioloop
 from zephyr.lib.debug import interactive_debug_listen
+from zephyr.lib.response import json_response
 
 # A hack to keep track of how much time we spend working, versus sleeping in
 # the event loop.
@@ -229,6 +230,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                     urlresolvers.set_urlconf(urlconf)
                     resolver = urlresolvers.RegexURLResolver(r'^/', urlconf)
 
+                ### ADDED BY HUMBUG
+                request._resolver = resolver
+                ### END ADDED BY HUMBUG
+
                 callback, callback_args, callback_kwargs = resolver.resolve(
                         request.path_info)
 
@@ -314,6 +319,15 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             # Reset urlconf on the way out for isolation
             urlresolvers.set_urlconf(None)
 
+        ### HUMBUG CHANGE: The remainder of this function was moved
+        ### into its own function, just below, so we can call it from
+        ### finish().
+        response = self.apply_response_middleware(request, response, resolver)
+
+        return response
+
+    ### Copied from get_response (above in this file)
+    def apply_response_middleware(self, request, response, resolver):
         try:
             # Apply response middleware, regardless of the response
             for middleware_method in self._response_middleware:
@@ -343,4 +357,13 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         if response['result'] == 'error':
             self.set_status(400)
 
-        return superself.finish(response)
+        # Call the Django response middleware on our object so that
+        # e.g. our own logging code can run; but don't actually use
+        # the headers from that since sending those to Tornado seems
+        # tricky; instead just send the (already json-rendered)
+        # content on to Tornado
+        django_response = json_response(res_type=response['result'],
+                                        data=response, status=self.get_status())
+        django_response = self.apply_response_middleware(request, django_response,
+                                                         request._resolver)
+        return superself.finish(django_response.content)
