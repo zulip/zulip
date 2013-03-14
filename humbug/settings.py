@@ -19,7 +19,7 @@ TEST_SUITE = False
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
 if DEPLOYED:
-    ALLOWED_HOSTS = ['.humbughq.com']
+    ALLOWED_HOSTS = ['localhost', '.humbughq.com']
 else:
     ALLOWED_HOSTS = ['localhost']
 

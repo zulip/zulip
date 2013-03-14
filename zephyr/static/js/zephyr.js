@@ -12,7 +12,8 @@ var viewport = $(window);
 
 var get_updates_params = {
     pointer: -1,
-    server_generation: -1 /* to be filled in on document.ready */
+    server_generation: -1, /* to be filled in on document.ready */
+    last_event_id: 0
 };
 var get_updates_failures = 0;
 
@@ -604,6 +605,7 @@ function get_updates(options) {
 
     get_updates_params.pointer = furthest_read;
     get_updates_params.dont_block = options.dont_block || get_updates_failures > 0;
+    get_updates_params.queue_id = page_params.event_queue_id;
     if (reload.is_pending()) {
         // We only send a server_generation to the server if we're
         // interested in an immediate reply to tell us if we need to
@@ -637,9 +639,6 @@ function get_updates(options) {
                 reload.initiate();
             }
 
-            if (get_updates_params.queue_id === undefined) {
-                get_updates_params.queue_id = data.queue_id;
-            }
             var messages = [];
             var new_pointer;
 

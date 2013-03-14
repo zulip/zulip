@@ -93,6 +93,7 @@ urlpatterns += patterns('zephyr.views',
     url(r'^json/get_profile$',              'json_get_profile'),
     url(r'^json/report_error$',             'json_report_error'),
     url(r'^json/update_message_flags$',     'json_update_flags'),
+    url(r'^json/register$',                 'json_events_register'),
 
     # These are json format views used by the API.  They require an API key.
     url(r'^api/v1/get_profile$',            'api_get_profile'),
@@ -137,6 +138,8 @@ urlpatterns += patterns('zephyr.views',
             {'GET': 'list_subscriptions_backend',
              'POST': 'add_subscriptions_backend',
              'PATCH': 'update_subscriptions_backend'}),
+    url(r'^api/v1/register$',               'rest_dispatch',
+            {'POST': 'events_register_backend'}),
 )
 
 urlpatterns += patterns('zephyr.tornadoviews',

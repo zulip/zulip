@@ -43,7 +43,7 @@ from zephyr.lib.response import json_success, json_error, json_response, json_me
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.unminify import SourceMap
-
+from zephyr.lib.event_queue import request_event_queue
 from zephyr import tornado_callbacks
 
 from confirmation.models import Confirmation
@@ -446,6 +446,7 @@ def home(request):
         needs_tutorial        = needs_tutorial,
         desktop_notifications_enabled =
             user_profile.enable_desktop_notifications,
+        event_queue_id        = request_event_queue(user_profile, True)
     ))
 
     try:
@@ -1400,3 +1401,23 @@ def json_report_error(request, user_profile, message=POST, stacktrace=POST,
                 "User saw error in UI: %s"
                 % (message, stacktrace, user_agent, ui_message))
     return json_success()
+
+@authenticated_json_post_view
+def json_events_register(request, user_profile):
+    return events_register_backend(request, user_profile)
+
+@authenticated_api_view
+@has_request_variables
+def api_events_register(request, user_profile,
+                        apply_markdown=POST(default=False, converter=json_to_bool)):
+    return events_register_backend(request, user_profile,
+                                   apply_markdown=apply_markdown)
+
+@has_request_variables
+def events_register_backend(request, user_profile, apply_markdown=True,
+                            event_types=POST(converter=json_to_list)):
+    queue_id = request_event_queue(user_profile, apply_markdown)
+    if queue_id is not None:
+        return json_success({'queue_id': queue_id, 'last_event_id': 0})
+
+    return json_error(msg="Tornado not available")

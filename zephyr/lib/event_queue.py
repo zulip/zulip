@@ -5,6 +5,7 @@ import time
 import socket
 import logging
 import simplejson
+import requests
 
 IDLE_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
 
@@ -118,3 +119,20 @@ def gc_event_queues():
 def setup_event_queue_gc(io_loop):
     pc = PeriodicCallback(gc_event_queues, EVENT_QUEUE_GC_FREQ_MSECS, io_loop)
     pc.start()
+
+# Called from Django
+def request_event_queue(user_profile, apply_markdown):
+    if settings.TORNADO_SERVER:
+        req = {'dont_block'    : 'true',
+               'apply_markdown': simplejson.dumps(apply_markdown),
+               'client'        : 'internal'}
+        resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
+                             auth=requests.auth.HTTPBasicAuth(user_profile.user.email,
+                                                              user_profile.api_key),
+                            params=req)
+
+        resp.raise_for_status()
+
+        return resp.json['queue_id']
+
+    return None

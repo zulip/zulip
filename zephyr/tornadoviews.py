@@ -210,7 +210,8 @@ def rest_get_events(request, user_profile, handler,
 @has_request_variables
 def get_events_backend(request, user_profile, handler,
                        last_event_id = REQ(converter=to_non_negative_int, default=None),
-                       queue_id = REQ(default=None), apply_markdown=True):
+                       queue_id = REQ(default=None), apply_markdown=True,
+                       dont_block = REQ(default=False, converter=json_to_bool)):
     if queue_id is None:
         client = allocate_client_descriptor(user_profile.id, apply_markdown)
         queue_id = client.event_queue.id
@@ -225,7 +226,7 @@ def get_events_backend(request, user_profile, handler,
         client.event_queue.prune(last_event_id)
         client.disconnect_handler()
 
-    if not client.event_queue.empty():
+    if not client.event_queue.empty() or dont_block:
         return json_success({'events': client.event_queue.contents(),
                              'queue_id': queue_id})
 
