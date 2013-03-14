@@ -541,6 +541,8 @@ $(function () {
         scroll_timer = setTimeout(scroll_finished, 100);
     }
 
+    $(window).scroll(process_visible_unread_messages);
+
     $(window).scroll($.throttle(50, function (e) {
         if (!hotkeys.in_scroll_caused_by_keypress) {
             // Only hide the recipient bar when mousewheel/trackpad scrolling,
