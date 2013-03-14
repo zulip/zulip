@@ -246,6 +246,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         if response:
                             break
 
+                ### THIS BLOCK MODIFIED BY HUMBUG
                 if response is None:
                     from ...decorator import RespondAsynchronously
 
