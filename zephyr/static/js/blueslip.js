@@ -81,11 +81,13 @@ BlueslipError.prototype = Error.prototype;
 (function() {
     function wrap_callback(func) {
         var new_func = function blueslip_wrapper() {
-            try {
+            if (debug_mode) {
                 return func.apply(this, arguments);
-            } catch (ex) {
-                // Treat exceptions like a call to fatal()
-                if (! debug_mode) {
+            } else {
+                try {
+                    return func.apply(this, arguments);
+                } catch (ex) {
+                    // Treat exceptions like a call to fatal()
                     var message = ex.message;
                     if (ex.hasOwnProperty('fileName')) {
                         message += " at " + ex.fileName;
@@ -94,8 +96,8 @@ BlueslipError.prototype = Error.prototype;
                         }
                     }
                     report_error(message, ex.stack, {show_ui_msg: true});
+                    throw ex;
                 }
-                throw ex;
             }
         };
         return new_func;
