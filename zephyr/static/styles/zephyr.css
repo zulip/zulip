@@ -269,7 +269,7 @@ td.pointer {
 }
 
 .selected_message .messagebox.mention {
-    background-color: #ffe192;
+    background-color: #FFE0DC;
 }
 
 .selected_message .pointer {
@@ -347,7 +347,7 @@ td.pointer {
 }
 
 .messagebox.mention {
-    background-color: #ffe8ab;
+    background-color: #FFE4E0;
 }
 
 .sender_name {
