@@ -13,13 +13,12 @@ def cache_save_message(message):
 
 @cache_with_key(message_cache_key)
 def cache_get_message(message_id):
-    return Message.objects.select_related("sending_client", "sender").get(id=message_id)
+    return Message.objects.select_related().get(id=message_id)
 
 # Called on Tornado startup to ensure our message cache isn't empty
 def populate_message_cache():
     items_for_memcached = {}
-    for m in Message.objects.select_related("sending_client", "sender").all().order_by(
-        "-id")[0:MESSAGE_CACHE_SIZE]:
+    for m in Message.objects.select_related().all().order_by("-id")[0:MESSAGE_CACHE_SIZE]:
         items_for_memcached[message_cache_key(m.id)] = (m,)
 
     djcache.set_many(items_for_memcached, timeout=3600*24)
