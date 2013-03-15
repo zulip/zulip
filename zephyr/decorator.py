@@ -17,8 +17,9 @@ class _RespondAsynchronously(object):
     pass
 
 # Return RespondAsynchronously from an @asynchronous view if the
-# response will be provided later by calling handler.finish(), or has
-# already been provided this way. We use this for longpolling mode.
+# response will be provided later by calling handler.humbug_finish(),
+# or has already been provided this way. We use this for longpolling
+# mode.
 RespondAsynchronously = _RespondAsynchronously()
 
 def asynchronous(method):
