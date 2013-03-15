@@ -28,16 +28,20 @@ class LogRequests(object):
         # Get the amount of time spent doing database queries
         query_time = sum(float(query.get('time', 0)) for query in connection.queries)
 
-        # Get the requestor's email address, if available.
+        # Get the requestor's email address and client, if available.
         try:
             email = request._email
         except Exception:
             email = "unauth"
+        try:
+            client = request._client.name
+        except Exception:
+            client = "?"
 
-        logger.info('%-15s %-7s %3d %.3fs (db: %.3fs/%sq) %s (%s)'
+        logger.info('%-15s %-7s %3d %.3fs (db: %.3fs/%sq) %s (%s via %s)'
             % (remote_ip, request.method, response.status_code,
                time_delta, query_time, len(connection.queries),
-               request.get_full_path(), email))
+               request.get_full_path(), email, client))
 
         # Log some additional data whenever we return certain 40x errors
         if 400 <= response.status_code < 500 and response.status_code not in [401, 404, 405]:
