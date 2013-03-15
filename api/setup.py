@@ -21,12 +21,12 @@ setup(name='humbug',
       ],
       url='https://humbughq.com/dist/api/',
       packages=['humbug'],
-      data_files=[('share/humbug/examples', ["examples/humbugrc", "examples/send-message"])] + \
+      data_files=[('share/humbug/examples', glob.glob('examples/*'))] + \
           [(os.path.join('share/humbug/', relpath),
             glob.glob(os.path.join(relpath, '*'))) for relpath in
            glob.glob("integrations/*")] + \
           [('share/humbug/demos',
             [os.path.join("demos", relpath) for relpath in
             os.listdir("demos")])],
-      scripts=["bin/humbug-send"],
+      scripts=glob.glob("bin/*"),
      )
