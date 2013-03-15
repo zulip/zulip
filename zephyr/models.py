@@ -2,7 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 import hashlib
-from zephyr.lib.cache import cache_with_key, update_user_profile_cache
+from zephyr.lib.cache import cache_with_key, update_user_profile_cache, \
+    update_user_cache
 from zephyr.lib.initial_password import initial_api_key
 import os
 from django.db import transaction, IntegrityError
@@ -81,6 +82,8 @@ class UserProfile(models.Model):
 # Make sure we flush the UserProfile object from our memcached
 # whenever we save it.
 post_save.connect(update_user_profile_cache, sender=UserProfile)
+# And the same for the User object
+post_save.connect(update_user_cache, sender=User)
 
 class PreregistrationUser(models.Model):
     email = models.EmailField()

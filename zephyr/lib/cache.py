@@ -72,3 +72,12 @@ def update_user_profile_cache(sender, **kwargs):
     items_for_memcached[userprofile_by_email_cache_key(user_profile.user.email)] = (user_profile,)
     items_for_memcached[userprofile_by_user_cache_key(user_profile.user.id)] = (user_profile,)
     djcache.set_many(items_for_memcached)
+
+# Called by models.py to flush the user_profile cache whenever we save
+# a user_profile object
+def update_user_cache(sender, **kwargs):
+    user = kwargs['instance']
+    items_for_memcached = {}
+    items_for_memcached[user_by_id_cache_key(user.id)] = (user,)
+    djcache.set_many(items_for_memcached)
+
