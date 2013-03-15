@@ -1,3 +1,4 @@
+import logging
 import traceback
 from hashlib import sha256
 from datetime import datetime, timedelta
@@ -40,3 +41,7 @@ class HumbugLimiter(_RateLimitFilter):
 
 class EmailLimiter(_RateLimitFilter):
     pass
+
+class ReturnTrue(logging.Filter):
+    def filter(self, record):
+        return True

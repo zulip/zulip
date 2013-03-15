@@ -1,6 +1,7 @@
 # Django settings for humbug project.
 import os
 import platform
+import logging
 
 from zephyr.openid import openid_failure_handler
 
@@ -343,12 +344,16 @@ LOGGING = {
         },
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
-        }
+        },
+        'nop': {
+            '()': 'humbug.ratelimit.ReturnTrue',
+        },
     },
     'handlers': {
         'inapp': {
             'level':     'ERROR',
             'class':     'zephyr.handlers.AdminHumbugHandler',
+            # For testing the handler delete the next line
             'filters':   ['HumbugLimiter', 'require_debug_false'],
             'formatter': 'default'
         },
@@ -363,9 +368,14 @@ LOGGING = {
             'formatter': 'default',
             'filename':  'server.log'
         },
+        # Django has some hardcoded code to add the
+        # require_debug_false filter to the mail_admins handler if no
+        # filters are specified.  So for testing, one is recommended
+        # to replace the list of filters for mail_admins with 'nop'.
         'mail_admins': {
             'level': 'ERROR',
             'class': 'zephyr.handlers.HumbugAdminEmailHandler',
+            # For testing the handler replace the filters list with just 'nop'
             'filters': ['EmailLimiter', 'require_debug_false'],
         },
     },
