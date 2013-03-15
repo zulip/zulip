@@ -694,6 +694,11 @@ function load_old_messages(opts) {
         data:     data,
         dataType: 'json',
         success: function (data) {
+            if (opts.for_narrow && opts.msg_list !== current_msg_list) {
+                // We unnarrowed before receiving new messages so
+                // don't bother processing the newly arrived messages.
+                return;
+            }
             if (! data) {
                 // The server occationally returns no data during a
                 // restart.  Ignore those responses and try again
@@ -706,6 +711,11 @@ function load_old_messages(opts) {
             process_result(data.messages);
         },
         error: function (xhr, error_type, exn) {
+            if (opts.for_narrow && opts.msg_list !== current_msg_list) {
+                // We unnarrowed before getting an error so don't
+                // bother trying again or doing further processing.
+                return;
+            }
             if (xhr.status === 400) {
                 // Bad request: We probably specified a narrow operator
                 // for a nonexistent stream or something.  We shouldn't
@@ -792,6 +802,7 @@ function restart_get_updates(options) {
 function reset_load_more_status() {
     load_more_enabled = true;
     have_scrolled_away_from_top = true;
+    ui.hide_loading_more_messages_indicator();
 }
 
 function load_more_messages(msg_list) {
