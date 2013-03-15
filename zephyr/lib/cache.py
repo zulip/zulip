@@ -4,7 +4,7 @@ import hashlib
 from django.core.cache import cache as djcache
 from django.core.cache import get_cache
 
-def cache_with_key(keyfunc, cache_name=None):
+def cache_with_key(keyfunc, cache_name=None, timeout=None):
     """Decorator which applies Django caching to a function.
 
        Decorator argument is a function which computes a cache key
@@ -29,7 +29,7 @@ def cache_with_key(keyfunc, cache_name=None):
                 return val[0]
 
             val = func(*args, **kwargs)
-            cache_backend.set(key, (val,))
+            cache_backend.set(key, (val,), timeout=timeout)
             return val
 
         return func_with_caching

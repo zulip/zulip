@@ -36,6 +36,7 @@ from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
+from zephyr.lib.cache import cache_with_key
 
 from confirmation.models import Confirmation
 
@@ -1379,6 +1380,7 @@ def api_github_landing(request, user_profile, event=POST,
                                 forged=False, subject_name=subject,
                                 message_content=content)
 
+@cache_with_key(lambda user_profile: user_profile.realm_id, timeout=60)
 def get_status_list(requesting_user_profile):
     def presence_to_dict(presence):
         if presence.status == UserPresence.ACTIVE:
