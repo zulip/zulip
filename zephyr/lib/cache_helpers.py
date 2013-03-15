@@ -18,8 +18,14 @@ def cache_get_message(message_id):
 # Called on Tornado startup to ensure our message cache isn't empty
 def populate_message_cache():
     items_for_memcached = {}
+    BATCH_SIZE = 1000
+    count = 0
     for m in Message.objects.select_related().all().order_by("-id")[0:MESSAGE_CACHE_SIZE]:
         items_for_memcached[message_cache_key(m.id)] = (m,)
+        count += 1
+        if (count % BATCH_SIZE == 0):
+            djcache.set_many(items_for_memcached, timeout=3600*24)
+            items_for_memcached = {}
 
     djcache.set_many(items_for_memcached, timeout=3600*24)
 
