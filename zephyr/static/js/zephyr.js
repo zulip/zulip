@@ -228,7 +228,7 @@ function update_unread_counts() {
 
 }
 
-function mark_all_as_read() {
+function mark_all_as_read(cont) {
     $.each(all_msg_list.all(), function (idx, msg) {
         msg.flags = msg.flags || [];
         msg.flags.push('read');
@@ -243,7 +243,8 @@ function mark_all_as_read() {
                    all:      true,
                    op:       'add',
                    flag:     'read'},
-        dataType: 'json'});
+        dataType: 'json',
+        success:  cont});
 }
 
 function unread_hashkey(message) {
@@ -919,10 +920,12 @@ function fast_forward_pointer(btn) {
         data: {email: email},
         dataType: 'json',
         success: function (data) {
-            furthest_read = data.max_message_id;
-            send_pointer_update();
-            ui.change_tab_to('#home');
-            reload.initiate({immediate: true});
+            mark_all_as_read(function () {
+                furthest_read = data.max_message_id;
+                send_pointer_update();
+                ui.change_tab_to('#home');
+                reload.initiate({immediate: true});
+            });
         }
     });
 }
