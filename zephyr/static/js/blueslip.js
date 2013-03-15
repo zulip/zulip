@@ -148,7 +148,7 @@ BlueslipError.prototype = Error.prototype;
             // argument it is.  The argument munging is taken from
             // jQuery itself, so we tell jslint to ignore the style
             // issues that the jQuery code would raise.  It sucks
-            // that we have to replicate the code :/
+            // that we have to replicate the code :(
             /*jslint eqeq: true */
             if ( data == null && fn == null ) {
                 // ( types, fn )
