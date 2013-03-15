@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 import hashlib
-from zephyr.lib.cache import cache_with_key
+from zephyr.lib.cache import cache_with_key, update_user_profile_cache
 from zephyr.lib.initial_password import initial_api_key
 import os
 from django.db import transaction, IntegrityError
@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.contrib.sessions.models import Session
 from django.utils.html import escape
 from zephyr.lib.timestamp import datetime_to_timestamp
+from django.db.models.signals import post_save
 
 from bitfield import BitField
 
@@ -76,6 +77,10 @@ class UserProfile(models.Model):
             recipient = Recipient.objects.create(type_id=profile.id, type=Recipient.PERSONAL)
             Subscription.objects.create(user_profile=profile, recipient=recipient)
             return profile
+
+# Make sure we flush the UserProfile object from our memcached
+# whenever we save it.
+post_save.connect(update_user_profile_cache, sender=UserProfile)
 
 class PreregistrationUser(models.Model):
     email = models.EmailField()
