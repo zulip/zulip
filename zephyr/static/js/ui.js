@@ -512,6 +512,8 @@ $(function () {
         function () { $('#send-status').stop(true).fadeOut(500); }
     );
 
+    var scroll_start_message = -1;
+
     function scroll_finished() {
         if ($('#home').hasClass('active')) {
             if (!suppress_scroll_pointer_update) {
@@ -531,6 +533,21 @@ $(function () {
             // When the window scrolls, it may cause some messages to go off the screen
             notifications_bar.update();
 
+            var new_selected = current_msg_list.selected_id();
+            if (scroll_start_message === -1) {
+                blueslip.error("Got a scroll finish with no saved message from scroll start");
+            } else if (new_selected > scroll_start_message) {
+                var mark_as_read = [];
+                $.each(message_range(current_msg_list, scroll_start_message, new_selected),
+                        function (idx, msg) {
+                            if (message_unread(msg)) {
+                                mark_as_read.push(msg);
+                            }
+                        });
+                process_read_messages(mark_as_read);
+            }
+            scroll_start_message = -1;
+
             setTimeout(process_visible_unread_messages, 0);
         }
     }
@@ -541,7 +558,12 @@ $(function () {
         scroll_timer = setTimeout(scroll_finished, 100);
     }
 
-    $(window).scroll(process_visible_unread_messages);
+    $(window).scroll(function () {
+        if (scroll_start_message === -1) {
+            scroll_start_message = current_msg_list.selected_id();
+        }
+        process_visible_unread_messages();
+    });
 
     $(window).scroll($.throttle(50, function (e) {
         if (!hotkeys.in_scroll_caused_by_keypress) {
