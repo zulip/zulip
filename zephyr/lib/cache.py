@@ -56,13 +56,13 @@ def message_cache_key(message_id):
     return "message:%d" % (message_id,)
 
 def userprofile_by_email_cache_key(email):
-    return 'tornado_user_profile_by_email:%s' % (hashlib.sha1(email).hexdigest(),)
+    return 'user_profile_by_email:%s' % (hashlib.sha1(email).hexdigest(),)
 
 def userprofile_by_user_cache_key(user_id):
-    return 'tornado_user_profile_by_user:%d' % (user_id,)
+    return 'user_profile_by_user_id:%d' % (user_id,)
 
 def user_by_id_cache_key(user_id):
-    return 'tornado_user:%d' % (user_id,)
+    return 'user_by_id:%d' % (user_id,)
 
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object

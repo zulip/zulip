@@ -58,11 +58,11 @@ else:
 require_post = require_POST
 
 @cache_with_key(userprofile_by_user_cache_key)
-def get_tornado_user_profile(user_id):
+def get_user_profile_by_user_id(user_id):
     return UserProfile.objects.select_related().get(user_id=user_id)
 
 @cache_with_key(userprofile_by_email_cache_key)
-def get_tornado_user_profile_by_email(email):
+def get_user_profile_by_email(email):
     return UserProfile.objects.select_related().get(user__email__iexact=email)
 
 # authenticated_api_view will add the authenticated user's user_profile to
@@ -77,12 +77,7 @@ def authenticated_api_view(view_func):
                            client=POST(default=get_client("API"), converter=get_client),
                            *args, **kwargs):
         try:
-            if settings.RUNNING_INSIDE_TORNADO:
-                # Get the UserProfile from a cache because we aren't accessing
-                # any mutable fields (just ids plus the realm.domain)
-                user_profile = get_tornado_user_profile_by_email(email)
-            else:
-                user_profile = UserProfile.objects.select_related().get(user__email__iexact=email)
+            user_profile = get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:
             return json_error("Invalid user: %s" % (email,))
         if api_key != user_profile.api_key:
@@ -97,12 +92,7 @@ def authenticate_log_and_execute_json(request, client, view_func, *args, **kwarg
     if not request.user.is_authenticated():
         return json_error("Not logged in", status=401)
     request._client = client
-    if settings.RUNNING_INSIDE_TORNADO:
-        # Get the UserProfile from a cache because we aren't accessing
-        # any mutable fields (just ids plus the realm.domain)
-        user_profile = get_tornado_user_profile(request.user.id)
-    else:
-        user_profile = UserProfile.objects.select_related().get(user=request.user)
+    user_profile = get_user_profile_by_user_id(request.user.id)
     request._email = user_profile.user.email
     update_user_activity(request, user_profile, client)
     return view_func(request, user_profile, *args, **kwargs)

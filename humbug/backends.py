@@ -7,7 +7,7 @@ from zephyr.lib.cache import cache_with_key
 from zephyr.lib.cache import user_by_id_cache_key
 
 @cache_with_key(user_by_id_cache_key)
-def get_tornado_user(user_id):
+def get_user_by_id(user_id):
     try:
         return User.objects.select_related().get(id=user_id)
     except User.DoesNotExist:
@@ -38,14 +38,7 @@ class EmailAuthBackend(object):
 
     def get_user(self, user_id):
         """ Get a User object from the user_id. """
-        if settings.RUNNING_INSIDE_TORNADO:
-            # Get the User from a cache because we aren't accessing
-            # any mutable fields from Tornado (just the id)
-            return get_tornado_user(user_id)
-        try:
-            return User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            return None
+        return get_user_by_id(user_id)
 
 # Adapted from http://djangosnippets.org/snippets/2183/ by user Hangya (September 1, 2010)
 
