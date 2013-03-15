@@ -383,7 +383,12 @@ LOGGING = {
         '': {
             'handlers': ['inapp', 'console', 'file', 'mail_admins'],
             'level':    'INFO'
-        }
+        },
+        ## Uncomment the following to get all database queries logged to the console
+        # 'django.db': {
+        #     'handlers': ['console'],
+        #     'level': 'DEBUG',
+        # },
     }
 }
 
