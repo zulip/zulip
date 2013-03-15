@@ -30,7 +30,8 @@ function report_error(msg, stack, opts) {
         type:     'POST',
         url:      '/json/report_error',
         dataType: 'json',
-        data:     { message: msg, stacktrace: stack },
+        data:     { message: msg, stacktrace: stack,
+                    user_agent: window.navigator.userAgent},
         timeout:  3*1000,
         success:  function () {
             reported_errors[key] = true;

@@ -1442,7 +1442,9 @@ def json_get_active_statuses(request, user_profile):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_report_error(request, user_profile, message=POST, stacktrace=POST):
+def json_report_error(request, user_profile, message=POST, stacktrace=POST,
+                      user_agent=POST):
     mail_admins("Browser error for %s" % (user_profile.user.email,),
-                "Message:\n%s\n\nStacktrace:\n%s" % (message, stacktrace))
+                "Message:\n%s\n\nStacktrace:\n%s\n\nUser agent:\n%s"
+                % (message, stacktrace, user_agent))
     return json_success()
