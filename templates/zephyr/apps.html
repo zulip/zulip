@@ -1,0 +1,112 @@
+{% extends "zephyr/portico.html" %}
+
+{# API information page #}
+
+{% block portico_content %}
+<div class="row-fluid">
+  <div class="span8">
+    <h2>Do we have apps? App-solutely.</h2>
+    <span class="muted"><small>Ok, I take it back, I'm sorry, please don't go.</small></span>
+
+    <h3>Installation instructions</h3>
+    <ul class="nav nav-tabs" id="api-example-tabs">
+      <li class="active"><a href="#android" data-toggle="tab">Android</a></li>
+      <li><a href="#iphone" data-toggle="tab">iPhone</a></li>
+      <li><a href="#mac" data-toggle="tab">Mac</a></li>
+      <li><a href="#linux" data-toggle="tab">Linux</a></li>
+      <li><a href="#windows" data-toggle="tab">Windows</a></li>
+      <li><a href="#plan9" data-toggle="tab">Plan 9</a></li>
+    </ul>
+
+    <div class="tab-content">
+
+      <div class="tab-pane active" id="android">
+        <img class="screenshot pull-left" src="/static/images/app-screenshots/humbug-android.png">
+
+        <p><em>Note: The Android app is currently in alpha.</em></p>
+        <p>Humbug has a <strong>100% native app</strong> for Android,
+          and you can easily grab it from
+          the <a href="https://play.google.com/store/apps/details?id=com.humbughq.mobile">Google
+          Play Store</a>.</p>
+
+        <a href="https://play.google.com/store/apps/details?id=com.humbughq.mobile">
+          <img alt="Get it on Google Play"
+               src="https://developer.android.com/images/brand/en_generic_rgb_wo_60.png" />
+        </a>
+      </div>
+
+      <div class="tab-pane" id="iphone">
+        <img class="screenshot pull-left" src="/static/images/app-screenshots/humbug-iphone.png" style="margin: 0px 32px;">
+
+        <p><em>Note: The iPhone app is currently in alpha.</em></p>
+        <p>Humbug has a <strong>100% native app</strong> for iPhone,
+          and we're in the process of getting it into the App Store.
+          For now,
+          please <a target="_blank" href="mailto:support@humbughq.com?subject=Request+for+Humbug+iPhone+app&body=Hi+Humbug,+can+you+send+me+a+link+to+the+iPhone+app+alpha?+I+have+an+iPhone+__.">email
+          us to request access</a>.</p>
+      </div>
+
+      <div class="tab-pane" id="mac">
+        <p>Humbug for Mac is a Chrome Application Shortcut, which
+        means that it runs in its own window, with its own icon in the
+        Dock, and no URL bar, but is fundamentally the same as the
+        webapp. Many of our users find it more convenient because it's
+        easy to keep track of.</p>
+
+        <p style="text-align: center">
+          <a href="https://humbughq.com/dist/apps/mac/Humbug-0.1.0.dmg" class="btn btn-large btn-primary" type="button"><i class="icon-download icon-white"></i> Download Humbug for Mac</a>
+        </p>
+
+        <img class="screenshot" src="/static/images/app-screenshots/humbug-chrome-mac.png">
+        <p><em>Note: Humbug for Mac requires Google Chrome</em>.</p>
+      </div>
+
+      <div class="tab-pane" id="linux">
+        <p>We recommend making
+        a <a href="http://support.google.com/chrome/bin/answer.py?hl=en&answer=95710">Chrome
+        Application Shortcut</a> for Humbug, so that it can appear on
+        your system like a native application. Alternatively, we
+        recommend simply pinning the Humbug tab in your browser.</p>
+
+        <p>You can find instructions for how to make a Chrome
+        Application
+        Shortcut <a href="http://support.google.com/chrome/bin/answer.py?hl=en&answer=95710">here</a>.</p>
+
+        <img class="screenshot" src="/static/images/app-screenshots/humbug-chrome-mac.png">
+      </div>
+
+      <div class="tab-pane" id="windows">
+        <p>First of all: seriously?</p>
+
+        <p>We recommend making
+        a <a href="http://support.google.com/chrome/bin/answer.py?hl=en&answer=95710">Chrome
+        Application Shortcut</a> for Humbug, so that it can appear on
+        your system like a native application. Alternatively, we
+        recommend simply pinning the Humbug tab in your browser.</p>
+
+        <p>You can find instructions for how to make a Chrome
+        Application
+        Shortcut <a href="http://support.google.com/chrome/bin/answer.py?hl=en&answer=95710">here</a>.</p>
+
+        <img class="screenshot" src="/static/images/app-screenshots/humbug-chrome-windows.png">
+      </div>
+
+      <div class="tab-pane" id="plan9">
+        <p>First, connect to our hosted 9P filesystem
+        at <code>plan9.humbughq.com</code> and then... no, we're
+        totally kidding. There definitely isn't a version of Humbug
+        for Plan 9.</p>
+        <p>But if you're the kind of person who would've gotten a kick
+        out of that sort of thing, we'd love to talk to you, because
+        we're hiring. Please send us a resume and any other relevant
+        information (a GitHub account, a portfolio, etc.)
+        to <a target="_blank"
+        href="mailto:jobs@humbughq.com?subject=Humbug+for+Plan+9">jobs@humbughq.com</a>
+        and we'll be in touch!</p>
+      </div>
+
+
+    </div>
+</div>
+
+{% endblock %}
