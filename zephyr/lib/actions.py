@@ -179,7 +179,7 @@ def do_send_message(message, rendered_content=None, no_log=False):
             # notify_new_message request if it's a public stream,
             # ensuring that in the tornado server, non-public stream
             # messages are only associated to their subscribed users.
-            stream = Stream.objects.get(id=message.recipient.type_id)
+            stream = Stream.objects.select_related("realm").get(id=message.recipient.type_id)
             if stream.is_public():
                 data['realm_id'] = stream.realm.id
                 data['stream_name'] = stream.name
