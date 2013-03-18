@@ -3,7 +3,7 @@
 # loop
 from zephyr.models import Message, UserProfile
 from zephyr.lib.cache import cache_with_key, djcache, message_cache_key, \
-    userprofile_by_email_cache_key, userprofile_by_user_cache_key, \
+    user_profile_by_email_cache_key, user_profile_by_user_cache_key, \
     user_by_id_cache_key, user_profile_by_id_cache_key
 
 MESSAGE_CACHE_SIZE = 25000
@@ -33,8 +33,8 @@ def populate_message_cache():
 def populate_user_cache():
     items_for_memcached = {}
     for user_profile in UserProfile.objects.select_related().all():
-        items_for_memcached[userprofile_by_email_cache_key(user_profile.user.email)] = (user_profile,)
-        items_for_memcached[userprofile_by_user_cache_key(user_profile.user.id)] = (user_profile,)
+        items_for_memcached[user_profile_by_email_cache_key(user_profile.user.email)] = (user_profile,)
+        items_for_memcached[user_profile_by_user_cache_key(user_profile.user.id)] = (user_profile,)
         items_for_memcached[user_by_id_cache_key(user_profile.user.id)] = (user_profile.user,)
         items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
 

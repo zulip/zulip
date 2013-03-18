@@ -9,7 +9,8 @@ import simplejson
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.queue import SimpleQueueClient
 from zephyr.lib.timestamp import datetime_to_timestamp
-from zephyr.lib.cache import userprofile_by_email_cache_key, userprofile_by_user_cache_key
+from zephyr.lib.cache import user_profile_by_email_cache_key, \
+    user_profile_by_user_cache_key
 
 from functools import wraps
 
@@ -57,11 +58,11 @@ else:
 # I like the all-lowercase name better
 require_post = require_POST
 
-@cache_with_key(userprofile_by_user_cache_key)
+@cache_with_key(user_profile_by_user_cache_key)
 def get_user_profile_by_user_id(user_id):
     return UserProfile.objects.select_related().get(user_id=user_id)
 
-@cache_with_key(userprofile_by_email_cache_key)
+@cache_with_key(user_profile_by_email_cache_key)
 def get_user_profile_by_email(email):
     return UserProfile.objects.select_related().get(user__email__iexact=email)
 

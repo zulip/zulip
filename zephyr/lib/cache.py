@@ -55,10 +55,10 @@ def cache(func):
 def message_cache_key(message_id):
     return "message:%d" % (message_id,)
 
-def userprofile_by_email_cache_key(email):
+def user_profile_by_email_cache_key(email):
     return 'user_profile_by_email:%s' % (hashlib.sha1(email).hexdigest(),)
 
-def userprofile_by_user_cache_key(user_id):
+def user_profile_by_user_cache_key(user_id):
     return 'user_profile_by_user_id:%d' % (user_id,)
 
 def user_profile_by_id_cache_key(user_profile_id):
@@ -72,8 +72,8 @@ def user_by_id_cache_key(user_id):
 def update_user_profile_cache(sender, **kwargs):
     user_profile = kwargs['instance']
     items_for_memcached = {}
-    items_for_memcached[userprofile_by_email_cache_key(user_profile.user.email)] = (user_profile,)
-    items_for_memcached[userprofile_by_user_cache_key(user_profile.user.id)] = (user_profile,)
+    items_for_memcached[user_profile_by_email_cache_key(user_profile.user.email)] = (user_profile,)
+    items_for_memcached[user_profile_by_user_cache_key(user_profile.user.id)] = (user_profile,)
     items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
     djcache.set_many(items_for_memcached)
 
