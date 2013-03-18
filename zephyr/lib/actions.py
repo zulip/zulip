@@ -15,6 +15,7 @@ from django.utils import timezone
 from zephyr.lib.create_user import create_user
 from zephyr.lib.bulk_create import batch_bulk_create
 from zephyr.lib import bugdown
+from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key
 
 import subprocess
 import simplejson
@@ -122,10 +123,8 @@ def log_message(message):
     if not message.sending_client.name.startswith("test:"):
         log_event(message.to_log_dict())
 
-user_hash = {}
+@cache_with_key(user_profile_by_id_cache_key)
 def get_user_profile_by_id(uid):
-    if uid in user_hash:
-        return user_hash[uid]
     return UserProfile.objects.select_related().get(id=uid)
 
 def do_send_message(message, rendered_content=None, no_log=False,
