@@ -4,7 +4,7 @@ from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, \
     DefaultStream, StreamColor, UserPresence, \
-    MAX_MESSAGE_LENGTH, get_client, get_stream
+    MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient
 from django.db import transaction, IntegrityError
 from django.db.models import F
 from zephyr.lib.initial_password import initial_password
@@ -216,7 +216,7 @@ def internal_send_message(sender_email, recipient_type, recipient,
     else:
         type_id = UserProfile.objects.get(user__email__iexact=recipient).id
 
-    message.recipient = Recipient.objects.get(type_id=type_id, type=recipient_type)
+    message.recipient = get_recipient(recipient_type, type_id)
 
     message.subject = subject
     message.content = content
@@ -248,7 +248,7 @@ def pick_color(user_profile):
 
 def get_subscription(stream_name, user_profile):
     stream = get_stream(stream_name, user_profile.realm)
-    recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+    recipient = get_recipient(Recipient.STREAM, stream.id)
     return Subscription.objects.filter(user_profile=user_profile,
                                        recipient=recipient, active=True)
 
@@ -262,8 +262,7 @@ def set_stream_color(user_profile, stream_name, color=None):
     stream_color.save()
 
 def do_add_subscription(user_profile, stream, no_log=False):
-    recipient = Recipient.objects.get(type_id=stream.id,
-                                      type=Recipient.STREAM)
+    recipient = get_recipient(Recipient.STREAM, stream.id)
     (subscription, created) = Subscription.objects.get_or_create(
         user_profile=user_profile, recipient=recipient,
         defaults={'active': True})
@@ -281,8 +280,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
     return did_subscribe
 
 def do_remove_subscription(user_profile, stream, no_log=False):
-    recipient = Recipient.objects.get(type_id=stream.id,
-                                      type=Recipient.STREAM)
+    recipient = get_recipient(Recipient.STREAM, stream.id)
     maybe_sub = Subscription.objects.filter(user_profile=user_profile,
                                     recipient=recipient)
     if len(maybe_sub) == 0:

@@ -192,6 +192,10 @@ def get_stream(stream_name, realm):
     except Stream.DoesNotExist:
         return None
 
+@cache_with_key(lambda type, type_id: "get_recipient:%s:%s" % (type, type_id,))
+def get_recipient(type, type_id):
+    return Recipient.objects.get(type_id=type_id, type=type)
+
 # NB: This function is currently unused, but may come in handy.
 def linebreak(string):
     return string.replace('\n\n', '<p/>').replace('\n', '<br/>')

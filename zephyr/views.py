@@ -15,7 +15,8 @@ from django.core.mail import send_mail, mail_admins
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_huddle, Realm, UserMessage, \
     PreregistrationUser, get_client, MitUser, User, UserActivity, \
-    MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH, get_stream, UserPresence
+    MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH, get_stream, UserPresence, \
+    get_recipient
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, \
@@ -520,7 +521,7 @@ class NarrowBuilder(object):
         stream = get_stream(operand, self.user_profile.realm)
         if stream is None:
             raise BadNarrowOperator('unknown stream ' + operand)
-        recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
+        recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
         return Q(message__recipient=recipient)
 
     def by_subject(self, operand):
@@ -541,8 +542,7 @@ class NarrowBuilder(object):
             return Q(message__recipient=recipient)
         else:
             # Personal message
-            self_recipient = Recipient.objects.get(type=Recipient.PERSONAL,
-                                                   type_id=self.user_profile.id)
+            self_recipient = get_recipient(Recipient.PERSONAL, type_id=self.user_profile.id)
             if operand == self.user_profile.user.email:
                 # Personals with self
                 return Q(message__recipient__type=Recipient.PERSONAL,
@@ -554,8 +554,7 @@ class NarrowBuilder(object):
             except UserProfile.DoesNotExist:
                 raise BadNarrowOperator('unknown user ' + operand)
 
-            narrow_recipient = Recipient.objects.get(type=Recipient.PERSONAL,
-                                                     type_id=narrow_profile.id)
+            narrow_recipient = get_recipient(Recipient.PERSONAL, narrow_profile.id)
             return ((Q(message__sender=narrow_profile) & Q(message__recipient=self_recipient)) |
                     (Q(message__sender=self.user_profile) & Q(message__recipient=narrow_recipient)))
 
@@ -604,7 +603,7 @@ def get_old_messages_backend(request, anchor = POST(converter=int),
                              user_profile=None, apply_markdown=True):
     if stream is not None:
         stream = get_public_stream(request, stream, user_profile.realm)
-        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        recipient = get_recipient(Recipient.STREAM, stream.id)
         query = UserMessage.objects.select_related('message').filter(message__recipient=recipient,
                                                                      user_profile=user_profile) \
                                                     .order_by('id')
@@ -779,10 +778,9 @@ def recipient_for_emails(emails, not_forged_zephyr_mirror, user_profile, sender)
         # Make sure the sender is included in huddle messages
         recipient_profile_ids.add(sender.id)
         huddle = get_huddle(list(recipient_profile_ids))
-        return Recipient.objects.get(type_id=huddle.id, type=Recipient.HUDDLE)
+        return get_recipient(Recipient.HUDDLE, huddle.id)
     else:
-        return Recipient.objects.get(type_id=list(recipient_profile_ids)[0],
-                                     type=Recipient.PERSONAL)
+        return get_recipient(Recipient.PERSONAL, list(recipient_profile_ids)[0])
 
 @authenticated_json_post_view
 @has_request_variables
@@ -890,7 +888,7 @@ def send_message_backend(request, user_profile, client,
         stream = get_stream(stream_name, user_profile.realm)
         if stream is None:
             return json_error("Stream does not exist")
-        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        recipient = get_recipient(Recipient.STREAM, stream.id)
     elif message_type_name == 'private':
         not_forged_zephyr_mirror = client and client.name == "zephyr_mirror" and not forged
         try:
@@ -1127,7 +1125,7 @@ def json_stream_exists(request, user_profile, stream=POST):
     stream = get_stream(stream, user_profile.realm)
     result = {"exists": bool(stream)}
     if stream is not None:
-        recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+        recipient = get_recipient(Recipient.STREAM, stream.id)
         result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
                                                            recipient=recipient,
                                                            active=True).exists()
@@ -1137,7 +1135,7 @@ def get_subscription_or_die(stream_name, user_profile):
     stream = get_stream(stream_name, user_profile.realm)
     if not stream:
         raise JsonableError("Invalid stream %s" % (stream.name,))
-    recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
+    recipient = get_recipient(Recipient.STREAM, stream.id)
     subscription = Subscription.objects.filter(user_profile=user_profile,
                                                recipient=recipient, active=True)
 
