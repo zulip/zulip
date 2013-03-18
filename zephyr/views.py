@@ -677,11 +677,11 @@ def json_update_flags(request, user_profile, messages=POST('messages', converter
 
 @authenticated_api_view
 def api_send_message(request, user_profile):
-    return send_message_backend(request, user_profile, request._client)
+    return send_message_backend(request, user_profile)
 
 @authenticated_json_post_view
 def json_send_message(request, user_profile):
-    return send_message_backend(request, user_profile, request._client)
+    return send_message_backend(request, user_profile)
 
 @authenticated_json_post_view
 @has_request_variables
@@ -772,12 +772,13 @@ def json_tutorial_send_message(request, user_profile,
 # send_message_backend should either check the API key or check that
 # the user is logged in.
 @has_request_variables
-def send_message_backend(request, user_profile, client,
+def send_message_backend(request, user_profile,
                          message_type_name = POST('type'),
                          message_to = POST('to', converter=extract_recipients),
                          forged = POST(default=False),
                          subject_name = POST('subject', lambda x: x.strip(), None),
                          message_content = POST('content')):
+    client = request.client
     is_super_user = is_super_user_api(request)
     if forged and not is_super_user:
         return json_error("User not authorized for this query")
@@ -1261,7 +1262,8 @@ def api_github_landing(request, user_profile, event=POST,
     if len(subject) > MAX_SUBJECT_LENGTH:
         subject = subject[:57].rstrip() + '...'
 
-    return send_message_backend(request, user_profile, get_client("github_bot"),
+    request.client = get_client("github_bot")
+    return send_message_backend(request, user_profile,
                                 message_type_name="stream",
                                 message_to=["commits"],
                                 forged=False, subject_name=subject,
