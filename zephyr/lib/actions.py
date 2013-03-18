@@ -128,7 +128,8 @@ def get_user_profile_by_id(uid):
         return user_hash[uid]
     return UserProfile.objects.select_related().get(id=uid)
 
-def do_send_message(message, rendered_content=None, no_log=False):
+def do_send_message(message, rendered_content=None, no_log=False,
+                    stream=None):
     # Log the message to our message log for populate_db to refill
     if not no_log:
         log_message(message)
@@ -179,7 +180,8 @@ def do_send_message(message, rendered_content=None, no_log=False):
             # notify_new_message request if it's a public stream,
             # ensuring that in the tornado server, non-public stream
             # messages are only associated to their subscribed users.
-            stream = Stream.objects.select_related("realm").get(id=message.recipient.type_id)
+            if stream is None:
+                stream = Stream.objects.select_related("realm").get(id=message.recipient.type_id)
             if stream.is_public():
                 data['realm_id'] = stream.realm.id
                 data['stream_name'] = stream.name
@@ -195,6 +197,7 @@ def create_stream_if_needed(realm, stream_name, invite_only=False):
 
 def internal_send_message(sender_email, recipient_type, recipient,
                           subject, content, realm=None):
+    stream = None
     if len(content) > MAX_MESSAGE_LENGTH:
         content = content[0:3900] + "\n\n[message was too long and has been truncated]"
 
@@ -220,7 +223,7 @@ def internal_send_message(sender_email, recipient_type, recipient,
     message.pub_date = timezone.now()
     message.sending_client = get_client("Internal")
 
-    do_send_message(message, rendered_content=rendered_content)
+    do_send_message(message, rendered_content=rendered_content, stream=stream)
 
 def get_stream_colors(user_profile):
     return [(sub["name"], sub["color"]) for sub in gather_subscriptions(user_profile)]

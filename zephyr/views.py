@@ -831,6 +831,7 @@ def send_message_backend(request, user_profile, client,
                          forged = POST(default=False),
                          subject_name = POST('subject', lambda x: x.strip(), None),
                          message_content = POST('content')):
+    stream = None
     is_super_user = is_super_user_api(request)
     if forged and not is_super_user:
         return json_error("User not authorized for this query")
@@ -919,7 +920,8 @@ def send_message_backend(request, user_profile, client,
     if client.name == "zephyr_mirror" and already_sent_mirrored_message(message):
         return json_success()
 
-    do_send_message(message, rendered_content=rendered_content)
+    do_send_message(message, rendered_content=rendered_content,
+                    stream=stream)
 
     return json_success()
 
