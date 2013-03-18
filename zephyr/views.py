@@ -859,49 +859,52 @@ def send_message_backend(request, user_profile, client,
     else:
         sender = user_profile
 
-    return check_send_message(sender, client, message_type_name, message_to,
-                              subject_name, message_content, forged=forged,
-                              forged_timestamp = request.POST.get('time'),
-                              forwarder_user_profile=user_profile)
+    ret = check_send_message(sender, client, message_type_name, message_to,
+                             subject_name, message_content, forged=forged,
+                             forged_timestamp = request.POST.get('time'),
+                             forwarder_user_profile=user_profile)
+    if ret is not None:
+        return json_error(ret)
+    return json_success()
 
 def check_send_message(sender, client, message_type_name, message_to,
                        subject_name, message_content, realm=None, forged=False,
                        forged_timestamp=None, forwarder_user_profile=None):
     stream = None
     if len(message_to) == 0:
-        return json_error("Message must have recipients.")
+        return "Message must have recipients."
     if len(message_content) > MAX_MESSAGE_LENGTH:
-        return json_error("Message too long.")
+        return "Message too long."
 
     if realm is None:
         realm = sender.realm
 
     if message_type_name == 'stream':
         if len(message_to) > 1:
-            return json_error("Cannot send to multiple streams")
+            return "Cannot send to multiple streams"
 
         stream_name = message_to[0].strip()
         if stream_name == "":
-            return json_error("Stream can't be empty")
+            return "Stream can't be empty"
         if len(stream_name) > 30:
-            return json_error("Stream name too long")
+            return "Stream name too long"
         if not valid_stream_name(stream_name):
-            return json_error("Invalid stream name")
+            return "Invalid stream name"
 
         if subject_name is None:
-            return json_error("Missing subject")
+            return "Missing subject"
         subject = subject_name.strip()
         if subject == "":
-            return json_error("Subject can't be empty")
+            return "Subject can't be empty"
         if len(subject) > MAX_SUBJECT_LENGTH:
-            return json_error("Subject too long")
+            return "Subject too long"
         ## FIXME: Commented out temporarily while we figure out what we want
         # if not valid_stream_name(subject):
-        #     return json_error("Invalid subject name")
+        #     return "Invalid subject name"
 
         stream = get_stream(stream_name, realm)
         if stream is None:
-            return json_error("Stream does not exist")
+            return "Stream does not exist"
         recipient = get_recipient(Recipient.STREAM, stream.id)
     elif message_type_name == 'private':
         not_forged_zephyr_mirror = client and client.name == "zephyr_mirror" and not forged
@@ -909,13 +912,13 @@ def check_send_message(sender, client, message_type_name, message_to,
             recipient = recipient_for_emails(message_to, not_forged_zephyr_mirror,
                                              forwarder_user_profile, sender)
         except ValidationError, e:
-            return json_error(e.messages[0])
+            return e.messages[0]
     else:
-        return json_error("Invalid message type")
+        return "Invalid message type"
 
     rendered_content = bugdown.convert(message_content)
     if rendered_content is None:
-        return json_error("We were unable to render your message")
+        return "We were unable to render your message"
 
     message = Message()
     message.sender = sender
@@ -931,12 +934,12 @@ def check_send_message(sender, client, message_type_name, message_to,
     message.sending_client = client
 
     if client.name == "zephyr_mirror" and already_sent_mirrored_message(message):
-        return json_success()
+        return None
 
     do_send_message(message, rendered_content=rendered_content,
                     stream=stream)
 
-    return json_success()
+    return None
 
 @authenticated_api_view
 def api_get_public_streams(request, user_profile):
