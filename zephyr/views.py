@@ -382,10 +382,8 @@ def home(request):
 
     num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
 
-    needs_tutorial = False
-    if user_profile.pointer == -1:
-        # Brand new user, give them a tutorial
-        needs_tutorial = True
+    # Brand new users get the tutorial
+    needs_tutorial = settings.TUTORIAL_ENABLED and user_profile.pointer == -1
 
     if user_profile.pointer == -1 and num_messages > 0:
         # Put the new user's pointer at the bottom

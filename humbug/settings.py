@@ -416,6 +416,10 @@ EVENT_LOG_DIR = 'event_log'
 # timeout to 5 minutes.
 POLL_TIMEOUT = 5 * 60 * 1000
 
+# The new user tutorial is enabled by default, and disabled for
+# client tests.
+TUTORIAL_ENABLED = True
+
 if DEPLOYED:
     ALLOW_REGISTER = False
     FULL_NAVBAR    = False

@@ -28,6 +28,9 @@ TEST_SUITE = True
 # real app.
 USING_RABBITMQ = False
 
+# Disable the tutorial because it confuses the client tests.
+TUTORIAL_ENABLED = False
+
 # Disable use of memcached for caching
 CACHES = {
     'default': {
