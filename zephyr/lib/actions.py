@@ -2,11 +2,13 @@ from django.conf import settings
 from django.contrib.sessions.models import Session
 from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
-    Subscription, Recipient, Message, UserMessage, \
-    DefaultStream, StreamColor, UserPresence, \
-    MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient
+    Subscription, Recipient, Message, UserMessage, valid_stream_name, \
+    DefaultStream, StreamColor, UserPresence, MAX_SUBJECT_LENGTH, \
+    MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle
 from django.db import transaction, IntegrityError
 from django.db.models import F
+from django.core.exceptions import ValidationError
+
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.cache_helpers import cache_save_message
@@ -16,6 +18,7 @@ from zephyr.lib.create_user import create_user
 from zephyr.lib.bulk_create import batch_bulk_create
 from zephyr.lib import bugdown
 from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key
+from zephyr.lib.decorator import get_user_profile_by_email
 
 import subprocess
 import simplejson
@@ -26,6 +29,7 @@ import requests
 import datetime
 import os
 import platform
+import logging
 from os import path
 
 # Store an event in the log for re-importing messages
@@ -193,6 +197,129 @@ def create_stream_if_needed(realm, stream_name, invite_only=False):
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
     return stream, created
+
+def recipient_for_emails(emails, not_forged_zephyr_mirror, user_profile, sender):
+    recipient_profile_ids = set()
+    for email in emails:
+        try:
+            recipient_profile_ids.add(get_user_profile_by_email(email).id)
+        except UserProfile.DoesNotExist:
+            raise ValidationError("Invalid email '%s'" % (email,))
+
+    if not_forged_zephyr_mirror and user_profile.id not in recipient_profile_ids:
+        raise ValidationError("User not authorized for this query")
+
+    # If the private message is just between the sender and
+    # another person, force it to be a personal internally
+    if (len(recipient_profile_ids) == 2
+        and sender.id in recipient_profile_ids):
+        recipient_profile_ids.remove(sender.id)
+
+    if len(recipient_profile_ids) > 1:
+        # Make sure the sender is included in huddle messages
+        recipient_profile_ids.add(sender.id)
+        huddle = get_huddle(list(recipient_profile_ids))
+        return get_recipient(Recipient.HUDDLE, huddle.id)
+    else:
+        return get_recipient(Recipient.PERSONAL, list(recipient_profile_ids)[0])
+
+def already_sent_mirrored_message(message):
+    if message.recipient.type == Recipient.HUDDLE:
+        # For huddle messages, we use a 10-second window because the
+        # timestamps aren't guaranteed to actually match between two
+        # copies of the same message.
+        time_window = datetime.timedelta(seconds=10)
+    else:
+        time_window = datetime.timedelta(seconds=0)
+
+    # Since our database doesn't store timestamps with
+    # better-than-second resolution, we should do our comparisons
+    # using objects at second resolution
+    pub_date_lowres = message.pub_date.replace(microsecond=0)
+    return Message.objects.filter(
+        sender=message.sender,
+        recipient=message.recipient,
+        content=message.content,
+        subject=message.subject,
+        sending_client=message.sending_client,
+        pub_date__gte=pub_date_lowres - time_window,
+        pub_date__lte=pub_date_lowres + time_window).exists()
+
+# check_send_message:
+# Returns None on success or the error message on error.
+def check_send_message(sender, client, message_type_name, message_to,
+                       subject_name, message_content, realm=None, forged=False,
+                       forged_timestamp=None, forwarder_user_profile=None):
+    stream = None
+    if len(message_to) == 0:
+        return "Message must have recipients."
+    if len(message_content) > MAX_MESSAGE_LENGTH:
+        return "Message too long."
+
+    if realm is None:
+        realm = sender.realm
+
+    if message_type_name == 'stream':
+        if len(message_to) > 1:
+            return "Cannot send to multiple streams"
+
+        stream_name = message_to[0].strip()
+        if stream_name == "":
+            return "Stream can't be empty"
+        if len(stream_name) > 30:
+            return "Stream name too long"
+        if not valid_stream_name(stream_name):
+            return "Invalid stream name"
+
+        if subject_name is None:
+            return "Missing subject"
+        subject = subject_name.strip()
+        if subject == "":
+            return "Subject can't be empty"
+        if len(subject) > MAX_SUBJECT_LENGTH:
+            return "Subject too long"
+        ## FIXME: Commented out temporarily while we figure out what we want
+        # if not valid_stream_name(subject):
+        #     return json_error("Invalid subject name")
+
+        stream = get_stream(stream_name, realm)
+        if stream is None:
+            return "Stream does not exist"
+        recipient = get_recipient(Recipient.STREAM, stream.id)
+    elif message_type_name == 'private':
+        not_forged_zephyr_mirror = client and client.name == "zephyr_mirror" and not forged
+        try:
+            recipient = recipient_for_emails(message_to, not_forged_zephyr_mirror,
+                                             forwarder_user_profile, sender)
+        except ValidationError, e:
+            return e.messages[0]
+    else:
+        return "Invalid message type"
+
+    rendered_content = bugdown.convert(message_content)
+    if rendered_content is None:
+        return "We were unable to render your message"
+
+    message = Message()
+    message.sender = sender
+    message.content = message_content
+    message.recipient = recipient
+    if message_type_name == 'stream':
+        message.subject = subject
+    if forged:
+        # Forged messages come with a timestamp
+        message.pub_date = timestamp_to_datetime(forged_timestamp)
+    else:
+        message.pub_date = timezone.now()
+    message.sending_client = client
+
+    if client.name == "zephyr_mirror" and already_sent_mirrored_message(message):
+        return None
+
+    do_send_message(message, rendered_content=rendered_content,
+                    stream=stream)
+
+    return None
 
 def internal_send_message(sender_email, recipient_type, recipient,
                           subject, content, realm=None):

@@ -126,6 +126,9 @@ class Stream(models.Model):
                                              type=Recipient.STREAM)
         return (stream, recipient)
 
+def valid_stream_name(name):
+    return name != ""
+
 class Recipient(models.Model):
     type_id = models.IntegerField(db_index=True)
     type = models.PositiveSmallIntegerField(db_index=True)
