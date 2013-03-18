@@ -866,24 +866,26 @@ def send_message_backend(request, user_profile, client,
         sender = user_profile
 
     if message_type_name == 'stream':
-        if subject_name is None:
-            return json_error("Missing subject")
         if len(message_to) > 1:
             return json_error("Cannot send to multiple streams")
+
         stream_name = message_to[0].strip()
         if stream_name == "":
             return json_error("Stream can't be empty")
-        if subject_name == "":
-            return json_error("Subject can't be empty")
         if len(stream_name) > 30:
             return json_error("Stream name too long")
-        if len(subject_name) > MAX_SUBJECT_LENGTH:
-            return json_error("Subject too long")
-
         if not valid_stream_name(stream_name):
             return json_error("Invalid stream name")
+
+        if subject_name is None:
+            return json_error("Missing subject")
+        subject = subject_name.strip()
+        if subject == "":
+            return json_error("Subject can't be empty")
+        if len(subject) > MAX_SUBJECT_LENGTH:
+            return json_error("Subject too long")
         ## FIXME: Commented out temporarily while we figure out what we want
-        # if not valid_stream_name(subject_name):
+        # if not valid_stream_name(subject):
         #     return json_error("Invalid subject name")
 
         stream = get_stream(stream_name, user_profile.realm)
@@ -908,7 +910,7 @@ def send_message_backend(request, user_profile, client,
     message.content = message_content
     message.recipient = recipient
     if message_type_name == 'stream':
-        message.subject = subject_name
+        message.subject = subject
     if forged:
         # Forged messages come with a timestamp
         message.pub_date = timestamp_to_datetime(request.POST['time'])
