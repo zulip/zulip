@@ -39,14 +39,16 @@ def update_deployment(server, oldrev, newrev, refname):
 deployments = {
     'refs/heads/prod': ('humbughq.com', 'prod'),
     'refs/heads/master': ('staging.humbughq.com', 'master'),
-    'refs/heads/test-post-receive': ('staging.humbughq.com', 'master'),
+    'refs/heads/test-post-receive': None,
     }
 
 for ln in sys.stdin:
     oldrev, newrev, refname = ln.strip().split()
     if refname in deployments:
-        (server, branch) = deployments[refname]
         p = subprocess.Popen("/home/humbug/humbug/bots/githook-post-receive",
                              stdin=subprocess.PIPE)
         p.communicate(input=ln)
-        update_deployment(server, oldrev, newrev, "origin/" + branch)
+
+        if deployments[refname]:
+            server, branch = deployments[refname]
+            update_deployment(server, oldrev, newrev, "origin/" + branch)
