@@ -830,15 +830,9 @@ def send_message_backend(request, user_profile, client,
                          forged = POST(default=False),
                          subject_name = POST('subject', lambda x: x.strip(), None),
                          message_content = POST('content')):
-    stream = None
     is_super_user = is_super_user_api(request)
     if forged and not is_super_user:
         return json_error("User not authorized for this query")
-
-    if len(message_to) == 0:
-        return json_error("Message must have recipients.")
-    if len(message_content) > MAX_MESSAGE_LENGTH:
-        return json_error("Message too long.")
 
     if client.name == "zephyr_mirror":
         # Here's how security works for non-superuser mirroring:
@@ -865,6 +859,23 @@ def send_message_backend(request, user_profile, client,
     else:
         sender = user_profile
 
+    return check_send_message(sender, client, message_type_name, message_to,
+                              subject_name, message_content, forged=forged,
+                              forged_timestamp = request.POST.get('time'),
+                              forwarder_user_profile=user_profile)
+
+def check_send_message(sender, client, message_type_name, message_to,
+                       subject_name, message_content, realm=None, forged=False,
+                       forged_timestamp=None, forwarder_user_profile=None):
+    stream = None
+    if len(message_to) == 0:
+        return json_error("Message must have recipients.")
+    if len(message_content) > MAX_MESSAGE_LENGTH:
+        return json_error("Message too long.")
+
+    if realm is None:
+        realm = sender.realm
+
     if message_type_name == 'stream':
         if len(message_to) > 1:
             return json_error("Cannot send to multiple streams")
@@ -888,14 +899,15 @@ def send_message_backend(request, user_profile, client,
         # if not valid_stream_name(subject):
         #     return json_error("Invalid subject name")
 
-        stream = get_stream(stream_name, user_profile.realm)
+        stream = get_stream(stream_name, realm)
         if stream is None:
             return json_error("Stream does not exist")
         recipient = get_recipient(Recipient.STREAM, stream.id)
     elif message_type_name == 'private':
         not_forged_zephyr_mirror = client and client.name == "zephyr_mirror" and not forged
         try:
-            recipient = recipient_for_emails(message_to, not_forged_zephyr_mirror, user_profile, sender)
+            recipient = recipient_for_emails(message_to, not_forged_zephyr_mirror,
+                                             forwarder_user_profile, sender)
         except ValidationError, e:
             return json_error(e.messages[0])
     else:
@@ -913,7 +925,7 @@ def send_message_backend(request, user_profile, client,
         message.subject = subject
     if forged:
         # Forged messages come with a timestamp
-        message.pub_date = timestamp_to_datetime(request.POST['time'])
+        message.pub_date = timestamp_to_datetime(forged_timestamp)
     else:
         message.pub_date = now()
     message.sending_client = client
