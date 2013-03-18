@@ -67,8 +67,9 @@ urlpatterns = patterns('',
     url(r'^jobs$', TemplateView.as_view(template_name='zephyr/jobs/lead-designer.html')),
     url(r'^jobs/lead-designer$', TemplateView.as_view(template_name='zephyr/jobs/lead-designer.html')),
 
+    url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
+
     # These are json format views used by the web client.  They require a logged in browser.
-    url(r'^json/get_updates$',              'zephyr.tornadoviews.json_get_updates'),
     url(r'^json/update_pointer$',           'zephyr.views.json_update_pointer'),
     url(r'^json/get_old_messages$',         'zephyr.views.json_get_old_messages'),
     url(r'^json/get_public_streams$',       'zephyr.views.json_get_public_streams'),
@@ -92,7 +93,6 @@ urlpatterns = patterns('',
     url(r'^json/update_message_flags$',     'zephyr.views.json_update_flags'),
 
     # These are json format views used by the API.  They require an API key.
-    url(r'^api/v1/get_messages$',           'zephyr.tornadoviews.api_get_messages'),
     url(r'^api/v1/get_profile$',            'zephyr.views.api_get_profile'),
     url(r'^api/v1/get_old_messages$',       'zephyr.views.api_get_old_messages'),
     url(r'^api/v1/get_public_streams$',     'zephyr.views.api_get_public_streams'),
@@ -108,8 +108,9 @@ urlpatterns = patterns('',
     # This json format view used by the API accepts a username password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'zephyr.views.api_fetch_api_key'),
 
-    url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
-
+    # Tornado views
+    url(r'^json/get_updates$',              'zephyr.tornadoviews.json_get_updates'),
+    url(r'^api/v1/get_messages$',           'zephyr.tornadoviews.api_get_messages'),
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$', 'zephyr.tornadoviews.notify'),
 )
