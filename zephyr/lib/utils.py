@@ -18,4 +18,6 @@ def run_in_batches(all_list, batch_size, callback, sleep_time = 0, logger = None
             logger("Executing %s in batch %s of %s" % (end-start, i+1, limit))
 
         callback(batch)
-        sleep(sleep_time)
+
+        if i != limit - 1:
+            sleep(sleep_time)
