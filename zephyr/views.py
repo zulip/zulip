@@ -24,7 +24,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, set_stream_color, get_stream_colors, update_message_flags, \
-    recipient_for_emails
+    recipient_for_emails, extract_recipients
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -112,7 +112,7 @@ def send_signup_message(sender, signups_stream, user_profile, internal=False):
         internal_blurb = " "
 
     internal_send_message(sender,
-            Recipient.STREAM, signups_stream, user_profile.realm.domain,
+            "stream", signups_stream, user_profile.realm.domain,
             "%s <`%s`> just signed up for Humbug!%s(total: **%i**)" % (
                 user_profile.full_name,
                 user_profile.user.email,
@@ -208,7 +208,7 @@ def accounts_register(request):
                 if prereg_user.referred_by is not None:
                     # This is a cross-realm private message.
                     internal_send_message("humbug+signups@humbughq.com",
-                            Recipient.PERSONAL, prereg_user.referred_by.user.email, user_profile.realm.domain,
+                            "private", prereg_user.referred_by.user.email, user_profile.realm.domain,
                             "%s <`%s`> accepted your invitation to join Humbug!" % (
                                 user_profile.full_name,
                                 user_profile.user.email,
@@ -704,17 +704,6 @@ def mit_to_mit(user_profile, email):
     domain = email.split("@", 1)[1]
     return user_profile.realm.domain == domain
 
-def extract_recipients(raw_recipients):
-    try:
-        recipients = json_to_list(raw_recipients)
-    except (simplejson.decoder.JSONDecodeError, ValueError):
-        recipients = [raw_recipients]
-
-    # Strip recipients, and then remove any duplicates and any that
-    # are the empty string after being stripped.
-    recipients = [recipient.strip() for recipient in recipients]
-    return list(set(recipient for recipient in recipients if recipient))
-
 def create_mirrored_message_users(request, user_profile, recipients):
     if "sender" not in request.POST:
         return (False, None)
@@ -754,7 +743,7 @@ def json_tutorial_send_message(request, user_profile,
         # For now, we discard the recipient on PMs; the tutorial bot
         # can only send to you.
         internal_send_message(sender_name,
-                              Recipient.PERSONAL,
+                              "private",
                               user_profile.user.email,
                               "",
                               message_content,
@@ -765,7 +754,7 @@ def json_tutorial_send_message(request, user_profile,
         ## TODO: For open realms, we need to use the full name here,
         ## so that me@gmail.com and me@hotmail.com don't get the same stream.
         internal_send_message(sender_name,
-                              Recipient.STREAM,
+                              "stream",
                               tutorial_stream_name,
                               subject_name,
                               message_content,
@@ -939,7 +928,7 @@ def add_subscriptions_backend(request, user_profile,
                         stream,
                         " (**invite-only**)" if private_streams[stream] else "")
             internal_send_message("humbug+notifications@humbughq.com",
-                                  Recipient.PERSONAL, email, "", msg)
+                                  "private", email, "", msg)
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])

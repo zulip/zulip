@@ -464,9 +464,8 @@ def convert(md):
         logging.getLogger('').error('Exception in Markdown parser: %sInput (sanitized) was: %s'
             % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure"
-        internal_send_message("humbug+errors@humbughq.com",
-                Recipient.STREAM, "devel", subject,
-                "Markdown parser failed, message sent to devel@")
+        internal_send_message("humbug+errors@humbughq.com", "stream",
+                "devel", subject, "Markdown parser failed, message sent to devel@")
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)

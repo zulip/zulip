@@ -18,7 +18,7 @@ from zephyr.lib.create_user import create_user
 from zephyr.lib.bulk_create import batch_bulk_create
 from zephyr.lib import bugdown
 from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key
-from zephyr.lib.decorator import get_user_profile_by_email
+from zephyr.decorator import get_user_profile_by_email, json_to_list
 
 import subprocess
 import simplejson
@@ -245,6 +245,17 @@ def already_sent_mirrored_message(message):
         pub_date__gte=pub_date_lowres - time_window,
         pub_date__lte=pub_date_lowres + time_window).exists()
 
+def extract_recipients(raw_recipients):
+    try:
+        recipients = json_to_list(raw_recipients)
+    except (simplejson.decoder.JSONDecodeError, ValueError):
+        recipients = [raw_recipients]
+
+    # Strip recipients, and then remove any duplicates and any that
+    # are the empty string after being stripped.
+    recipients = [recipient.strip() for recipient in recipients]
+    return list(set(recipient for recipient in recipients if recipient))
+
 # check_send_message:
 # Returns None on success or the error message on error.
 def check_send_message(sender, client, message_type_name, message_to,
@@ -321,35 +332,22 @@ def check_send_message(sender, client, message_type_name, message_to,
 
     return None
 
-def internal_send_message(sender_email, recipient_type, recipient,
+def internal_send_message(sender_email, recipient_type_name, recipients,
                           subject, content, realm=None):
-    stream = None
     if len(content) > MAX_MESSAGE_LENGTH:
         content = content[0:3900] + "\n\n[message was too long and has been truncated]"
 
-    rendered_content = bugdown.convert(content)
-    if rendered_content is None:
-        rendered_content = "<p>[Message could not be rendered by bugdown!]</p>"
+    sender = get_user_profile_by_email(sender_email)
+    if realm is None:
+        realm = sender.realm
+    parsed_recipients = extract_recipients(recipients)
+    if recipient_type_name == "stream":
+        stream, _ = create_stream_if_needed(realm, parsed_recipients[0])
 
-    message = Message()
-    message.sender = UserProfile.objects.get(user__email__iexact=sender_email)
-
-    if recipient_type == Recipient.STREAM:
-        if realm is None:
-            realm = message.sender.realm
-        stream, _ = create_stream_if_needed(realm, recipient)
-        type_id = stream.id
-    else:
-        type_id = UserProfile.objects.get(user__email__iexact=recipient).id
-
-    message.recipient = get_recipient(recipient_type, type_id)
-
-    message.subject = subject
-    message.content = content
-    message.pub_date = timezone.now()
-    message.sending_client = get_client("Internal")
-
-    do_send_message(message, rendered_content=rendered_content, stream=stream)
+    ret = check_send_message(sender, get_client("Internal"), recipient_type_name,
+                             parsed_recipients, subject, content, realm)
+    if ret is not None:
+        logging.error("Error sending internal message by %s: %s" % (sender_email, ret))
 
 def get_stream_colors(user_profile):
     return [(sub["name"], sub["color"]) for sub in gather_subscriptions(user_profile)]
@@ -465,7 +463,7 @@ def do_create_realm(domain, replay=False):
         log_event({"type": "realm_created",
                    "domain": domain})
 
-        internal_send_message("humbug+signups@humbughq.com", Recipient.STREAM,
+        internal_send_message("humbug+signups@humbughq.com", "stream",
                               "signups", domain, "Signups enabled.")
     return (realm, created)
 
