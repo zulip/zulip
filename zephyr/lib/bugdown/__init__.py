@@ -18,6 +18,10 @@ from zephyr.lib.bugdown.fenced_code import FENCE_RE
 from zephyr.lib.timeout import timeout
 from zephyr.lib.cache import cache_with_key
 
+# Format version of the bugdown rendering; stored along with rendered
+# messages so that we can efficiently determine what needs to be re-rendered
+version = 1
+
 def walk_tree(root, processor, stop_after_first=False):
     results = []
     stack = [root]

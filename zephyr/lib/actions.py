@@ -316,6 +316,8 @@ def check_send_message(sender, client, message_type_name, message_to,
     message = Message()
     message.sender = sender
     message.content = message_content
+    message.rendered_content = rendered_content
+    message.rendered_content_version = bugdown.version
     message.recipient = recipient
     if message_type_name == 'stream':
         message.subject = subject

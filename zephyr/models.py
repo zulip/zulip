@@ -208,6 +208,8 @@ class Message(models.Model):
     recipient = models.ForeignKey(Recipient)
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True)
     content = models.TextField()
+    rendered_content = models.TextField(null=True)
+    rendered_content_version = models.IntegerField(null=True)
     pub_date = models.DateTimeField('date published', db_index=True)
     sending_client = models.ForeignKey(Client)
 
@@ -250,7 +252,10 @@ class Message(models.Model):
             gravatar_hash     = gravatar_hash(self.sender.user.email),
             client            = self.sending_client.name)
 
-        if apply_markdown:
+        if apply_markdown and self.rendered_content_version is not None:
+            obj['content'] = self.rendered_content
+            obj['content_type'] = 'text/html'
+        elif apply_markdown:
             if rendered_content is None:
                 rendered_content = bugdown.convert(self.content)
                 if rendered_content is None:
