@@ -17,7 +17,8 @@ from django.utils import timezone
 from zephyr.lib.create_user import create_user
 from zephyr.lib.bulk_create import batch_bulk_create
 from zephyr.lib import bugdown
-from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key
+from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key, \
+    userprofile_by_email_cache_key
 from zephyr.decorator import get_user_profile_by_email, json_to_list
 
 import subprocess
@@ -107,6 +108,7 @@ def compute_mit_user_fullname(email):
         traceback.print_exc()
     return email.lower()
 
+@cache_with_key(lambda realm, email: userprofile_by_email_cache_key(email))
 @transaction.commit_on_success
 def create_mit_user_if_needed(realm, email):
     try:
