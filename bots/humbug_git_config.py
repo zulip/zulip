@@ -24,7 +24,7 @@ HUMBUG_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 # And similarly for branch "test-post-receive" (for use when testing).
 def commit_notice_destination(repo, branch, commit):
     if branch in ["master", "prod", "test-post-receive"]:
-        return dict(stream  = "commits",
+        return dict(stream  = 'test' if 'test-' in branch else 'commits',
                     subject = u"deploy \u21D2 %s" % (branch,))
 
     # Return None for cases where you don't want a notice sent
