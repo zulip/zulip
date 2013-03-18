@@ -32,7 +32,8 @@ from zephyr.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, POST, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
-    JsonableError, RequestVariableMissingError
+    JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
+    get_user_profile_by_user_id
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error
@@ -134,7 +135,7 @@ class PrincipalError(JsonableError):
 def principal_to_user_profile(agent, principal):
     principal_doesnt_exist = False
     try:
-        principal_user_profile = UserProfile.objects.get(user__email__iexact=principal)
+        principal_user_profile = get_user_profile_by_email(principal)
     except UserProfile.DoesNotExist:
         principal_doesnt_exist = True
 
@@ -379,7 +380,7 @@ def home(request):
     # session alive.
     request.session.modified = True
 
-    user_profile = UserProfile.objects.get(user=request.user)
+    user_profile = get_user_profile_by_user_id(request.user.id)
 
     num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
 
@@ -550,7 +551,7 @@ class NarrowBuilder(object):
 
             # Personals with other user; include both directions.
             try:
-                narrow_profile = UserProfile.objects.get(user__email__iexact=operand)
+                narrow_profile = get_user_profile_by_email(operand)
             except UserProfile.DoesNotExist:
                 raise BadNarrowOperator('unknown user ' + operand)
 
@@ -754,14 +755,14 @@ def create_mirrored_message_users(request, user_profile, recipients):
     for email in referenced_users:
         create_mit_user_if_needed(user_profile.realm, email)
 
-    sender = UserProfile.objects.get(user__email__iexact=sender_email)
+    sender = get_user_profile_by_email(sender_email)
     return (True, sender)
 
 def recipient_for_emails(emails, not_forged_zephyr_mirror, user_profile, sender):
     recipient_profile_ids = set()
     for email in emails:
         try:
-            recipient_profile_ids.add(UserProfile.objects.get(user__email__iexact=email).id)
+            recipient_profile_ids.add(get_user_profile_by_email(email).id)
         except UserProfile.DoesNotExist:
             raise ValidationError("Invalid email '%s'" % (email,))
 
