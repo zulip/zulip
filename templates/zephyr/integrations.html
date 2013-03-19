@@ -28,6 +28,7 @@
 
     <h3 id="services">Services with integrations</h3>
     <ul>
+      <li><a href="#capistrano">Capistrano</a></li>
       <li><a href="#git">Git</a></li>
       <li><a href="#github">GitHub</a></li>
       <li><a href="#jenkins">Jenkins (or Hudson)</a></li>
@@ -43,7 +44,48 @@
       {% endcomment %}
       <li>...and more coming soon! <a href="mailto:support@humbughq.com?subject=Integration+request">Email us</a> with requests!</li>
     </ul>
+{#--------------------------------------------------------------------#}
+    <div id="capistrano" class="integration">
+      <h4>Capistrano</h4>
+      <p>First, download and install our <a href="/api">Python
+      bindings and example scripts</a> on your Capistrano server.
+      Once you've done that, you'll use the <code>humbug-send</code>
+      utility to notify you when certain events happen.</p>
 
+      <p>Here's some example code for sending a Humbug notification
+      after a deployment has completed:</p>
+<div class="codehilite"><pre><span class="n">after</span> <span class="s1">'deploy:create_symlink'</span><span class="p">,</span> <span class="s1">'notify:humbug'</span>
+
+<span class="n">namespace</span> <span class="ss">:notify</span> <span class="k">do</span>
+  <span class="n">desc</span> <span class="s2">"Post a message to Humbug that we've deployed"</span>
+  <span class="n">task</span> <span class="ss">:humbug</span> <span class="k">do</span>
+    <span class="c1"># this will post to Humbug as the user defined in ~/.humbugrc</span>
+    <span class="n">run_locally</span> <span class="s2">"echo ':beers: I just deployed to </span><span class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="s2">! :beers:' | humbug-send --stream commits --subject deployments || true"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+
+      <p>Some notes:</p>
+      <ul>
+        <li>Make sure you've created a
+      filled-out <code>~/.humbugrc</code> on your Capistrano
+      machine.</li>
+        <li>You may need to change
+        the <code>deploy:create_symlink</code> above to the final step
+        of your deployment process, if it is different.</li>
+      </ul>
+<em></em></p>
+
+      <p><b>Congratulations! You're done!</b><br /> Whenever you do a
+      deployment, you'll get an automated notification that looks like
+      this:</p>
+      <img class="screenshot" src="/static/images/integrations/capistrano/001.png">
+
+      <p><small>Thanks to Wes of TurboVote for <a href="https://gist.github.com/cap10morgan/5100822">submitting this integration</a>!</small></p>
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
 {#--------------------------------------------------------------------#}
     <div id="git" class="integration">
       <h4>Git</h4>
@@ -88,7 +130,7 @@
         <a href="#services">^ Back to top</a>
       </p>
     </div>
-
+{#--------------------------------------------------------------------#}
     <div id="github" class="integration">
       <h4>GitHub</h4>
       <p>First, go to your repository page and click "Settings":</p>
