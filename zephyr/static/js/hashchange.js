@@ -4,6 +4,20 @@ var exports = {};
 
 var expected_hash = false;
 
+// Some browsers zealously URI-decode the contents of
+// window.location.hash.  So we hide our URI-encoding
+// by replacing % with . (like MediaWiki).
+
+function encodeHashComponent(str) {
+    return encodeURIComponent(str)
+        .replace(/\./g, '%2E')
+        .replace(/%/g,  '.');
+}
+
+function decodeHashComponent(str) {
+    return decodeURIComponent(str.replace(/\./g, '%'));
+}
+
 exports.changehash = function (newhash) {
     expected_hash = newhash;
     // Some browsers reset scrollTop when changing the hash to "",
@@ -23,8 +37,8 @@ exports.save_narrow = function (operators) {
     } else {
         var new_hash = '#narrow';
         $.each(operators, function (idx, elem) {
-            new_hash += '/' + encodeURIComponent(elem[0])
-                      + '/' + encodeURIComponent(elem[1]);
+            new_hash += '/' + encodeHashComponent(elem[0])
+                      + '/' + encodeHashComponent(elem[1]);
         });
         exports.changehash(new_hash);
     }
@@ -35,8 +49,8 @@ function parse_narrow(hash) {
     for (i=1; i<hash.length; i+=2) {
         // We don't construct URLs with an odd number of components,
         // but the user might write one.
-        var operator = decodeURIComponent(hash[i]);
-        var operand  = decodeURIComponent(hash[i+1] || '');
+        var operator = decodeHashComponent(hash[i]);
+        var operand  = decodeHashComponent(hash[i+1] || '');
         operators.push([operator, operand]);
     }
     var new_selection;
@@ -61,6 +75,9 @@ function hashchanged() {
         return false;
     }
 
+    // NB: In Firefox, window.location.hash is URI-decoded.
+    // Even if the URL bar says #%41%42%43%44, the value here will
+    // be #ABCD.
     var hash = window.location.hash.split("/");
     switch (hash[0]) {
         case "#narrow":
