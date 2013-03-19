@@ -17,7 +17,7 @@ function run {
 
 run 'clean repo'       ./tools/clean-repo
 run 'lint checkers'    ./tools/check-all
-run 'web client tests' ./zephyr/tests/frontend/run
 run 'server tests'     ./tools/test-backend
+run 'web client tests' ./zephyr/tests/frontend/run
 
 printf '\n\e[32mAll OK!\e[0m\n'
