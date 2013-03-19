@@ -19,6 +19,12 @@ li {
     font-weight: bold;
 }
 
+.jobs-lead {
+    font-weight: normal;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
 .pitch {
     width: 600px;
 }

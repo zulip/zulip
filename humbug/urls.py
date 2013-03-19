@@ -54,6 +54,10 @@ urlpatterns = patterns('',
     url(r'^zephyr$', TemplateView.as_view(template_name='zephyr/zephyr.html')),
     url(r'^apps$', TemplateView.as_view(template_name='zephyr/apps.html')),
 
+    # Job postings
+    url(r'^jobs$', TemplateView.as_view(template_name='zephyr/jobs/lead-designer.html')),
+    url(r'^jobs/lead-designer$', TemplateView.as_view(template_name='zephyr/jobs/lead-designer.html')),
+
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/get_updates$',              'zephyr.tornadoviews.json_get_updates'),
     url(r'^json/update_pointer$',           'zephyr.views.json_update_pointer'),
