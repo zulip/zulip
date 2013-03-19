@@ -66,12 +66,6 @@ class InstrumentedPoll(object):
 
 ioloop._poll = InstrumentedPoll
 
-def step_tornado_ioloop():
-    """Run the Tornado ioloop for a short time and return."""
-    loop = ioloop.IOLoop.instance()
-    loop.add_timeout(time.time() + 0.1, loop.stop)
-    loop.start()
-
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--nokeepalive', action='store_true',
@@ -127,9 +121,6 @@ class Command(BaseCommand):
             if settings.USING_RABBITMQ:
                 # Process notifications received via RabbitMQ
                 queue_client = TornadoQueueClient()
-                while not queue_client.ready():
-                    step_tornado_ioloop()
-
                 def process_notification(chan, method, props, data):
                     tornado_callbacks.process_notification(data)
                 queue_client.register_json_consumer('notify_tornado', process_notification)
