@@ -530,8 +530,10 @@ $(function () {
             } else if (!have_scrolled_away_from_top) {
                 have_scrolled_away_from_top = true;
             }
-            // When the window scrolls, it may cause some messages to go off the screen
+            // When the window scrolls, it may cause some messages to
+            // enter the screen and become read
             notifications_bar.update();
+            notifications.update_title_count();
 
             var new_selected = current_msg_list.selected_id();
             if (scroll_start_message === undefined) {

@@ -4,7 +4,6 @@ var exports = {};
 
 var notice_memory = {};
 var window_has_focus = true;
-var new_message_count = 0;
 var asked_permission_already = false;
 var names;
 
@@ -16,18 +15,49 @@ function browser_desktop_notifications_on () {
             window.webkitNotifications.checkPermission() === 0);
 }
 
-function update_title_count(new_count) {
-    // Update window title and favicon to reflect new_message_count.
-    //
-    // If new_count is given, set new_message_count to that first.
-    var n;
+exports.initialize = function () {
+    names = fullname.toLowerCase().split(" ");
+    names.push(email.split("@")[0].toLowerCase());
+    names.push("all");
+    names.push("everyone");
+    names.push("<strong>" + fullname.toLowerCase() + "</strong>");
 
-    if (new_count !== undefined) {
-        if (new_message_count === new_count)
-            return;
-        new_message_count = new_count;
+    $(window).focus(function () {
+        window_has_focus = true;
+        exports.update_title_count();
+
+        $.each(notice_memory, function (index, notice_mem_entry) {
+           notice_mem_entry.obj.cancel();
+        });
+
+
+        process_visible_unread_messages();
+    }).blur(function () {
+        window_has_focus = false;
+    }).mouseover(function () {
+        exports.update_title_count();
+    });
+
+    if (!window.webkitNotifications) {
+        return;
     }
 
+    $(document).click(function () {
+        if (!desktop_notifications_enabled || asked_permission_already) {
+            return;
+        }
+        if (window.webkitNotifications.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
+            window.webkitNotifications.requestPermission(function () {});
+            asked_permission_already = true;
+        }
+    });
+};
+
+exports.update_title_count = function () {
+    // Update window title and favicon to reflect unread messages in current view
+    var n;
+
+    var new_message_count = unread_in_current_view();
     document.title = (new_message_count ? ("(" + new_message_count + ") ") : "")
         + domain + " - Humbug";
 
@@ -47,44 +77,6 @@ function update_title_count(new_count) {
             util.set_favicon('/static/favicon.ico?v=2');
         }
     }
-}
-
-exports.initialize = function () {
-    names = fullname.toLowerCase().split(" ");
-    names.push(email.split("@")[0].toLowerCase());
-    names.push("all");
-    names.push("everyone");
-    names.push("<strong>" + fullname.toLowerCase() + "</strong>");
-
-    $(window).focus(function () {
-        window_has_focus = true;
-        update_title_count(0);
-
-        $.each(notice_memory, function (index, notice_mem_entry) {
-           notice_mem_entry.obj.cancel();
-        });
-
-
-        process_visible_unread_messages();
-    }).blur(function () {
-        window_has_focus = false;
-    }).mouseover(function () {
-        update_title_count(0);
-    });
-
-    if (!window.webkitNotifications) {
-        return;
-    }
-
-    $(document).click(function () {
-        if (!desktop_notifications_enabled || asked_permission_already) {
-            return;
-        }
-        if (window.webkitNotifications.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
-            window.webkitNotifications.requestPermission(function () {});
-            asked_permission_already = true;
-        }
-    });
 };
 
 exports.window_has_focus = function () {
@@ -208,7 +200,6 @@ exports.received_messages = function (messages) {
 
     $.each(messages, function (index, message) {
         if (message.sender_email !== email && narrow.message_in_home(message)) {
-            new_message_count++;
             title_needs_update = true;
 
             if (desktop_notifications_enabled &&
@@ -221,7 +212,7 @@ exports.received_messages = function (messages) {
     });
 
     if (title_needs_update) {
-        update_title_count();
+        exports.update_title_count();
     }
 };
 

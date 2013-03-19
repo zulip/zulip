@@ -50,21 +50,11 @@ function hide() {
 // If there's a custom message, or if the last message is off the bottom of the
 // screen, then show the notifications bar.
 exports.update = function () {
-    var unread_messages_below = 0;
-    if (!narrow.active()) {
-        unread_messages_below = home_unread_messages;
-    } else {
-        $.each(current_msg_list.all(), function (idx, msg) {
-            if (message_unread(msg) && msg.id > current_msg_list.selected_id()) {
-                unread_messages_below += 1;
-            }
-        });
-    }
     if (on_custom)
         show(custom_message);
     else if (rows.last_visible().offset() !== null // otherwise the next line will error
         && rows.last_visible().offset().top + rows.last_visible().height() > viewport.scrollTop() + viewport.height()
-        && unread_messages_below > 0)
+        && unread_in_current_view() > 0)
         show("More messages below");
     else
         hide();

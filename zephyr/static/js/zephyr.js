@@ -192,6 +192,20 @@ function send_queued_flags() {
 var unread_counts = {'stream': {}, 'private': {}};
 var home_unread_messages = 0;
 
+function unread_in_current_view() {
+    var unread = 0;
+    if (!narrow.active()) {
+        unread = home_unread_messages;
+    } else {
+        $.each(current_msg_list.all(), function (idx, msg) {
+            if (message_unread(msg) && msg.id > current_msg_list.selected_id()) {
+                unread += 1;
+            }
+        });
+    }
+    return unread;
+}
+
 function message_unread(message) {
     if (message === undefined) {
         return false;
