@@ -5,13 +5,13 @@ import subprocess
 import re
 import time
 
-from os import path
+from os import path, environ
 
 sys.path.append(path.join(path.dirname(__file__), '../tools'))
 from humbug_tools import check_output
 
-WARN_THRESHOLD = 100
-CRIT_THRESHOLD = 200
+WARN_THRESHOLD = 50
+CRIT_THRESHOLD = 100
 
 states = {
     0: "OK",
@@ -26,6 +26,9 @@ output = check_output(['/usr/sbin/rabbitmqctl', 'list_queues'], shell=False)
 status = 0
 max_count = 0
 warn_queues = []
+
+if not environ['USER'] in ['root', 'rabbitmq']:
+    print "This script must be run as the root or rabbitmq user"
 
 for line in output.split("\n"):
     line = line.strip()
