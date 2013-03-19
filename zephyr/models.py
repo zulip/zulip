@@ -182,16 +182,20 @@ def get_stream_cache_key(stream_name, realm):
         realm_id = realm
     return "stream_by_realm_and_name:%s:%s" % (realm_id, hashlib.sha1(stream_name.strip().lower()).hexdigest())
 
-# get_stream takes either a realm id or a realm
+# get_stream_backend takes either a realm id or a realm
 @cache_with_key(get_stream_cache_key)
-def get_stream(stream_name, realm):
+def get_stream_backend(stream_name, realm):
     if isinstance(realm, Realm):
         realm_id = realm.id
     else:
         realm_id = realm
+    return Stream.objects.select_related("realm").get(
+        name__iexact=stream_name.strip(), realm_id=realm_id)
+
+# get_stream takes either a realm id or a realm
+def get_stream(stream_name, realm):
     try:
-        return Stream.objects.select_related("realm").get(
-            name__iexact=stream_name.strip(), realm_id=realm_id)
+        return get_stream_backend(stream_name, realm)
     except Stream.DoesNotExist:
         return None
 
