@@ -10,13 +10,23 @@
     <hr />
   </div>
 
-  {{#if narrowed}}
   <li>
-    <a onclick="ui.hide_actions_popover(); narrow.by_time_travel({{message.id}});">
-      <i class="icon-time"></i> Narrow to messages around this time
+    <a onclick="respond_to_message();">
+      <i class="icon-share-alt"></i>
+      {{#if message.is_stream}}
+      Reply to this subject on stream <b>{{message.display_recipient}}</b>
+      {{else}}
+      Reply to this private message
+      {{/if}}
     </a>
   </li>
-  {{/if}}
+  {{#unless message.is_private}}
+  <li>
+    <a onclick="respond_to_message('personal');">
+      <i class="icon-user"></i> Reply to <b>{{message.sender_full_name}}</b> only
+    </a>
+  </li>
+  {{/unless}}
 
   {{#if message.is_stream}}
     <li>
@@ -40,21 +50,12 @@
       </a>
     </li>
 
+  {{#if narrowed}}
   <li>
-    <a onclick="respond_to_message();">
-      <i class="icon-share-alt"></i>
-      {{#if message.is_stream}}
-      Reply to this subject on stream <b>{{message.display_recipient}}</b>
-      {{else}}
-      Reply to this private message
-      {{/if}}
+    <a onclick="ui.hide_actions_popover(); narrow.by_time_travel({{message.id}});">
+      <i class="icon-time"></i> Narrow to messages around this time
     </a>
   </li>
-  {{#unless message.is_private}}
-  <li>
-    <a onclick="respond_to_message('personal');">
-      <i class="icon-user"></i> Reply to <b>{{message.sender_full_name}}</b> only
-    </a>
-  </li>
-  {{/unless}}
+  {{/if}}
+
 </ul>
