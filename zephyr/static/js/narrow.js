@@ -37,6 +37,23 @@ exports.public_operators = function () {
     }
 };
 
+/* We use a variant of URI encoding which looks reasonably
+   nice and still handles unambiguously cases such as
+   spaces in operands.
+
+   This is just for the search bar, not for saving the
+   narrow in the URL fragment.  There we do use full
+   URI encoding to avoid problematic characters. */
+function encodeOperand(operand) {
+    return operand.replace(/%/g,  '%25')
+                  .replace(/\+/g, '%2B')
+                  .replace(/ /g,  '+');
+}
+
+function decodeOperand(encoded) {
+    return decodeURIComponent(encoded.replace(/\+/g, ' '));
+}
+
 /* Convert a list of operators to a string.
    Each operator is a key-value pair like
 
@@ -44,8 +61,6 @@ exports.public_operators = function () {
 
    These are not keys in a JavaScript object, because we
    might need to support multiple operators of the same type.
-
-   Results are not escaped in any way.
 */
 function unparse(operators) {
     var parts = [];
@@ -57,7 +72,7 @@ function unparse(operators) {
             // a colon are glued together to form a search term.
             parts.push(elem[1]);
         } else {
-            parts.push(elem[0] + ':' + elem[1].toLowerCase());
+            parts.push(elem[0] + ':' + encodeOperand(elem[1].toLowerCase()));
         }
     });
     return parts.join(' ');
@@ -145,7 +160,7 @@ exports.parse = function (str) {
             // Looks like an operator.
             // FIXME: Should we skip unknown operator names here?
             operator = parts.shift();
-            operators.push([operator, decodeURIComponent(parts.join(':'))]);
+            operators.push([operator, decodeOperand(parts.join(':'))]);
         } else {
             // Looks like a normal search term.
             search_term.push(token);
