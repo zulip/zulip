@@ -271,7 +271,8 @@ function build_filter(operators_mixed_case) {
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
         then_select_id: home_msg_list.selected_id(),
-        select_first_unread: false
+        select_first_unread: false,
+        change_hash: true
     }, opts);
 
     // Unfade the home view before we switch tables.
@@ -350,8 +351,13 @@ exports.activate = function (operators, opts) {
     }
     search.update_highlighting(extract_search_terms(operators));
 
-    // Put the narrow operators in the URL fragment and search bar
-    hashchange.save_narrow(operators);
+    // Put the narrow operators in the URL fragment.
+    // Disabled when the URL fragment was the source
+    // of this narrow.
+    if (opts.change_hash)
+        hashchange.save_narrow(operators);
+
+    // Put the narrow operators in the search bar.
     $('#search_query').val(unparse(operators));
     search.update_button_visibility();
     compose.update_recipient_on_narrow();

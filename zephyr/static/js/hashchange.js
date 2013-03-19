@@ -45,7 +45,10 @@ function parse_narrow(hash) {
     } else {
         new_selection = initial_pointer;
     }
-    narrow.activate(operators, {then_select_id: new_selection});
+    narrow.activate(operators, {
+        then_select_id: new_selection,
+        change_hash:    false  // already set
+    });
 }
 
 // Returns true if this function performed a narrow
