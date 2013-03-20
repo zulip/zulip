@@ -80,7 +80,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
     stream_set = set(stream_name.strip() for stream_name in streams_raw)
     rejects = []
     for stream_name in stream_set:
-        if len(stream_name) > 30:
+        if len(stream_name) > Stream.MAX_NAME_LENGTH:
             raise JsonableError("Stream name (%s) too long." % (stream_name,))
         if not valid_stream_name(stream_name):
             raise JsonableError("Invalid stream name (%s)." % (stream_name,))
@@ -751,6 +751,7 @@ def json_tutorial_send_message(request, user_profile,
         return json_success()
     elif message_type_name == 'stream':
         tutorial_stream_name = 'tutorial-%s' % user_profile.user.email.split('@')[0]
+        tutorial_stream_name = tutorial_stream_name[:Stream.MAX_NAME_LENGTH]
         ## TODO: For open realms, we need to use the full name here,
         ## so that me@gmail.com and me@hotmail.com don't get the same stream.
         internal_send_message(sender_name,
@@ -881,7 +882,7 @@ def add_subscriptions_backend(request, user_profile,
     stream_names = []
     for stream_name in streams_raw:
         stream_name = stream_name.strip()
-        if len(stream_name) > 30:
+        if len(stream_name) > Stream.MAX_NAME_LENGTH:
             return json_error("Stream name (%s) too long." % (stream_name,))
         if not valid_stream_name(stream_name):
             return json_error("Invalid stream name (%s)." % (stream_name,))

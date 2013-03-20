@@ -121,6 +121,7 @@ var script = [];
 
 function make_script() {
     my_tutorial_stream = 'tutorial-' + email.split('@')[0];
+    my_tutorial_stream = my_tutorial_stream.substring(0, 30);
 
     // Try to guess at one of your main streams.
     // This is problematic because it might end up being 'commits' or something.

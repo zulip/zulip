@@ -279,7 +279,7 @@ def check_send_message(sender, client, message_type_name, message_to,
         stream_name = message_to[0].strip()
         if stream_name == "":
             return "Stream can't be empty"
-        if len(stream_name) > 30:
+        if len(stream_name) > Stream.MAX_NAME_LENGTH:
             return "Stream name too long"
         if not valid_stream_name(stream_name):
             return "Invalid stream name"
