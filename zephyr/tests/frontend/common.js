@@ -120,8 +120,8 @@ exports.get_rendered_messages = function (table) {
 };
 
 // Inject key presses by running some jQuery code in page context.
-// If we upgrade to CasperJS 1.0 and PhantomJS 1.7+, we can do this
-// in a more straightforward way.
+// PhantomJS and CasperJS don't provide a clean way to insert key
+// presses by code, only strings of printable characters.
 exports.keypress = function (code) {
     casper.evaluate(function (code) {
         $('body').trigger($.Event('keydown', { which: code }));
