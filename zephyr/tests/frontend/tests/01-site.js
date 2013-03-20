@@ -141,14 +141,6 @@ casper.then(function () {
     casper.test.info('Sending messages');
 });
 
-// FIXME: The first message is dropped for some reason.
-// Need to investigate why.
-wait_and_send('stream', {
-    stream:  'Verona',
-    subject: 'dummy',
-    content: 'dummy'
-});
-
 wait_and_send('stream', {
     stream:  'Verona',
     subject: 'frontend test',
