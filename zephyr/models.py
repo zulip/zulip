@@ -1,10 +1,10 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
-import hashlib
 from zephyr.lib.cache import cache_with_key, update_user_profile_cache, \
     update_user_cache
 from zephyr.lib.initial_password import initial_api_key
+from zephyr.lib.utils import make_safe_digest
 import os
 from django.db import transaction, IntegrityError
 from zephyr.lib import bugdown
@@ -158,7 +158,7 @@ class Recipient(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
 
-@cache_with_key(lambda name: 'get_client:%s' % (hashlib.sha1(name).hexdigest(),))
+@cache_with_key(lambda name: 'get_client:%s' % (make_safe_digest(name),))
 @transaction.commit_on_success
 def get_client(name):
     try:
@@ -181,7 +181,8 @@ def get_stream_cache_key(stream_name, realm):
         realm_id = realm.id
     else:
         realm_id = realm
-    return "stream_by_realm_and_name:%s:%s" % (realm_id, hashlib.sha1(stream_name.strip().lower()).hexdigest())
+    return "stream_by_realm_and_name:%s:%s" % (
+        realm_id, make_safe_digest(stream_name.strip().lower()))
 
 # get_stream_backend takes either a realm id or a realm
 @cache_with_key(get_stream_cache_key)
@@ -333,7 +334,7 @@ class Huddle(models.Model):
 def get_huddle_hash(id_list):
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
-    return hashlib.sha1(hash_key).hexdigest()
+    return make_safe_digest(hash_key)
 
 def get_huddle(id_list):
     huddle_hash = get_huddle_hash(id_list)

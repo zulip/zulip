@@ -1,8 +1,9 @@
 from functools import wraps
-import hashlib
 
 from django.core.cache import cache as djcache
 from django.core.cache import get_cache
+
+from utils import make_safe_digest
 
 def cache_with_key(keyfunc, cache_name=None, timeout=None):
     """Decorator which applies Django caching to a function.
@@ -56,7 +57,10 @@ def message_cache_key(message_id):
     return "message:%d" % (message_id,)
 
 def user_profile_by_email_cache_key(email):
-    return 'user_profile_by_email:%s' % (hashlib.sha1(email).hexdigest(),)
+    # See the comment in zephyr/lib/avatar.py:gravatar_hash for why we
+    # are proactively encoding email addresses even though they will
+    # with high likelihood be ASCII-only for the foreseeable future.
+    return 'user_profile_by_email:%s' % (make_safe_digest(email),)
 
 def user_profile_by_user_cache_key(user_id):
     return 'user_profile_by_user_id:%d' % (user_id,)
