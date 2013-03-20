@@ -360,18 +360,6 @@ MessageList.prototype = {
                               }});
         }
 
-        $.each(rendered_elems, function (index, elem) {
-            var row = $(elem);
-
-            var content = $(elem).find(".message_content")[0];
-            if (content !== undefined) {
-                if( content.offsetHeight < content.scrollHeight ||
-                    content.offsetWidth < content.scrollWidth) {
-                    $(elem).find(".message_expander").show();
-                }
-            }
-        });
-
         // Re-add the fading of messages that is lost when we re-render.
         compose.update_faded_messages();
     },
