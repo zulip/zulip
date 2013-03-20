@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.simple import DjangoTestSuiteRunner
@@ -217,6 +219,24 @@ class LoginTest(AuthedTestCase):
         self.client.post('/accounts/logout/')
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
+    def test_non_ascii_login(self):
+        """
+        You can log in even if your password contain non-ASCII characters.
+        """
+        email = "test@humbughq.com"
+        password = u"hümbüǵ"
+
+        # Registering succeeds.
+        self.register("test", password)
+        user = User.objects.get(email=email)
+        self.assertEqual(self.client.session['_auth_user_id'], user.id)
+        self.client.post('/accounts/logout/')
+        self.assertIsNone(self.client.session.get('_auth_user_id', None))
+
+        # Logging in succeeds.
+        self.client.post('/accounts/logout/')
+        self.login(email, password)
+        self.assertEqual(self.client.session['_auth_user_id'], user.id)
 
 class PersonalMessagesTest(AuthedTestCase):
     fixtures = ['messages.json']
