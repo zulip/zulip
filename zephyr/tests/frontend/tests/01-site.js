@@ -119,18 +119,6 @@ function un_narrow() {
     keypress(27); // Esc
 }
 
-function star_count() {
-    return casper.evaluate(function () {
-        return $("#zhome .icon-star").length;
-    });
-}
-
-function toggle_last_star() {
-    casper.evaluate(function () {
-        $("#zhome .star").last().click();
-    });
-}
-
 common.start_and_log_in();
 
 casper.then(function () {
@@ -281,96 +269,6 @@ casper.then(function () {
         '<p>personal B</p>',
         '<p>personal D</p>'
     ]);
-});
-
-// Subscriptions page tests
-casper.then(function() {
-    casper.test.info('Subscriptions page');
-    casper.click('a[href^="#subscriptions"]');
-    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#subscriptions/, 'URL suggests we are on subscriptions page');
-    casper.test.assertExists('#subscriptions.tab-pane.active', 'Subscriptions page is active');
-    // subscriptions need to load; if they have *any* subs,
-    // the word "Unsubscribe" will appear
-    casper.waitForText('Unsubscribe');
-});
-casper.then(function() {
-    casper.test.assertTextExists('Unsubscribe', 'Initial subscriptions loaded');
-    casper.fill('form#add_new_subscription', {stream_name: 'Waseemio'});
-    casper.click('form#add_new_subscription input.btn.btn-primary');
-    casper.waitForText('Waseemio');
-});
-casper.then(function() {
-    casper.test.assertTextExists('Create stream Waseemio', 'Modal for specifying new stream users');
-    casper.click('form#stream_creation_form button.btn.btn-primary');
-    casper.waitFor(function () {
-        return casper.evaluate(function () {
-            return $('.subscription_name').is(':contains("Waseemio")');
-        });
-    });
-});
-casper.then(function() {
-    casper.test.assertSelectorHasText('.subscription_name', 'Waseemio', 'Subscribing to a stream');
-    casper.fill('form#add_new_subscription', {stream_name: 'WASeemio'});
-    casper.click('form#add_new_subscription input.btn.btn-primary');
-    casper.waitForText('Already subscribed');
-});
-casper.then(function() {
-    casper.test.assertTextExists('Already subscribed', "Can't subscribe twice to a stream");
-    casper.fill('form#add_new_subscription', {stream_name: '  '});
-    casper.click('form#add_new_subscription input.btn.btn-primary');
-    casper.waitForText('Error adding subscription');
-});
-casper.then(function() {
-    casper.test.assertTextExists('Error adding subscription', "Can't subscribe to an empty stream name");
-});
-
-// Settings page tests
-casper.then(function() {
-    casper.test.info('Settings page');
-    casper.click('a[href^="#settings"]');
-    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#settings/, 'URL suggests we are on settings page');
-    casper.test.assertExists('#settings.tab-pane.active', 'Settings page is active');
-});
-
-// Star tests
-casper.then(function() {
-    casper.test.info("Stars");
-    send_message('stream', {
-        stream:  'Verona',
-        subject: 'stars',
-        content: 'test star'
-    });
-    casper.waitForText("test star");
-});
-
-casper.then(function() {
-    casper.test.info("Stars");
-    casper.click('a[href^="#home"]');
-    un_narrow();
-
-    // Initially, no messages are starred.
-    casper.test.assertEquals(star_count(), 0,
-                             "Got expected empty star count.");
-
-    // Clicking on a message star stars it.
-    toggle_last_star();
-    casper.test.assertEquals(star_count(), 1,
-                             "Got expected single star count.");
-
-    casper.click('a[href^="#narrow/is/starred"]');
-});
-
-casper.then(function() {
-    // You can narrow to your starred messages.
-    expected_messages('zfilt', ['Verona > stars'], ['<p>test star</p>']);
-    un_narrow();
-});
-
-casper.then(function() {
-    // Clicking on a starred message unstars it.
-    toggle_last_star();
-    casper.test.assertEquals(star_count(), 0,
-                             "Got expected re-empty star count.");
 });
 
 common.then_log_out();
