@@ -324,19 +324,29 @@ function process_visible_unread_messages() {
     }
 
     var selected = current_msg_list.selected_message();
-    var bottom = viewport.scrollTop() + viewport.height();
-    var middle = viewport.scrollTop() + (viewport.height() / 2);
+    var top = viewport.scrollTop();
+    var height = viewport.height();
+    var bottom = top + height;
+    var middle = top + (height / 2);
 
     // Being simplistic about this, the smallest message is 30 px high.
     var selected_row = rows.get(current_msg_list.selected_id(), current_msg_list.table_name);
-    var num_neighbors = Math.floor(viewport.height() / 30);
+    var num_neighbors = Math.floor(height / 30);
     var candidates = $.merge(selected_row.prevAll("tr.message_row[zid]:lt(" + num_neighbors + ")"),
                              selected_row.nextAll("tr.message_row[zid]:lt(" + num_neighbors + ")"));
 
     var visible_messages = candidates.filter(function (idx, message) {
         var row = $(message);
-        var row_bottom = (row.offset().top + row.height());
-        var entirely_within_view = row.offset().top > viewport.scrollTop() && row_bottom < bottom;
+        var row_top = row.offset().top;
+        var row_height = row.height();
+        var row_bottom = (row_top + row_height);
+        var entirely_within_view = row_top > top && row_bottom < bottom;
+
+        // Mark very tall messages as read once we've gotten past them
+        if (row_height > height && row_top > top) {
+            return true;
+        }
+
         return entirely_within_view;
     });
 
