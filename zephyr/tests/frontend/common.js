@@ -2,6 +2,13 @@ var common = (function () {
 
 var exports = {};
 
+function timestamp() {
+    return new Date().getTime();
+}
+
+// The timestamp of the last message send or get_events result.
+var last_send_or_update = -1;
+
 function log_in(credentials) {
     if (credentials === undefined) {
         credentials = {username: 'iago@humbughq.com', password: 'FlokrWdZefyEWkfI'};
@@ -43,6 +50,13 @@ exports.initialize_casper = function (viewport) {
             casper_failure_count++;
         }
     });
+
+    // Update last_send_or_update whenever get_events returns.
+    casper.on('resource.received', function (resource) {
+        if (/\/json\/get_events/.test(resource.url)) {
+            last_send_or_update = timestamp();
+        }
+    });
 };
 
 exports.then_log_in = function (credentials) {
@@ -70,7 +84,9 @@ exports.send_message = function (type, params) {
         casper.click('#left_bar_compose_' + type + '_button_big');
         casper.fill('form[action^="/json/send_message"]', params);
         casper.click('#compose-send-button');
-        casper.waitWhileVisible('#compose');
+        casper.waitWhileVisible('#compose', function () {
+            last_send_or_update = timestamp();
+        });
     });
 };
 
@@ -81,6 +97,71 @@ exports.wait_and_send = function (type, params) {
     });
 };
 
+// Get message headings (recipient rows) and bodies out of the DOM.
+// casper.evaluate plays weird tricks with a closure, evaluating
+// it in the web page's context.  Passing arguments from the test
+// script's context is awkward (c.f. the various appearances of
+// 'table' here).
+exports.get_rendered_messages = function (table) {
+    return casper.evaluate(function (table) {
+        var tbl = $('#'+table);
+        return {
+            headings: $.map(tbl.find('.recipient_row .right_part'), function (elem) {
+                return elem.innerText;
+            }),
+
+            bodies: $.map(tbl.find('.message_content'), function (elem) {
+                return elem.innerHTML;
+            })
+        };
+    }, {
+        table: table
+    });
+};
+
+// Inject key presses by running some jQuery code in page context.
+// If we upgrade to CasperJS 1.0 and PhantomJS 1.7+, we can do this
+// in a more straightforward way.
+exports.keypress = function (code) {
+    casper.evaluate(function (code) {
+        $('body').trigger($.Event('keydown', { which: code }));
+    }, {
+        code: code
+    });
+};
+
+// Wait to receive queued messages.
+exports.wait_for_receive = function (step) {
+    // Wait until the last send or get_events result was more than 300 ms ago.
+    casper.waitFor(function () {
+        return (timestamp() - last_send_or_update) > 300;
+    }, step);
+};
+
+// innerText sometimes gives us non-breaking space characters, and occasionally
+// a different number of spaces than we expect.
+exports.normalize_spaces = function (str) {
+    return str.replace(/\s+/g, ' ');
+};
+
+// Call get_rendered_messages and then check that the last few headings and
+// bodies match the specified arrays.
+exports.expected_messages = function (table, headings, bodies) {
+    casper.test.assertVisible('#'+table,
+        table + ' is visible');
+
+    var msg = exports.get_rendered_messages(table);
+
+    casper.test.assertEquals(
+        msg.headings.slice(-headings.length).map(exports.normalize_spaces),
+        headings,
+        'Got expected message headings');
+
+    casper.test.assertEquals(
+        msg.bodies.slice(-bodies.length),
+        bodies,
+        'Got expected message bodies');
+};
 
 return exports;
 

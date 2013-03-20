@@ -20,103 +20,9 @@ casper.on('remote.message', function (msg) {
 });
 */
 
-// Get message headings (recipient rows) and bodies out of the DOM.
-// casper.evaluate plays weird tricks with a closure, evaluating
-// it in the web page's context.  Passing arguments from the test
-// script's context is awkward (c.f. the various appearances of
-// 'table' here).
-function get_rendered_messages(table) {
-    return casper.evaluate(function (table) {
-        var tbl = $('#'+table);
-        return {
-            headings: $.map(tbl.find('.recipient_row .right_part'), function (elem) {
-                return elem.innerText;
-            }),
-
-            bodies: $.map(tbl.find('.message_content'), function (elem) {
-                return elem.innerHTML;
-            })
-        };
-    }, {
-        table: table
-    });
-}
-
-// Inject key presses by running some jQuery code in page context.
-// If we upgrade to CasperJS 1.0 and PhantomJS 1.7+, we can do this
-// in a more straightforward way.
-function keypress(code) {
-    casper.evaluate(function (code) {
-        $('body').trigger($.Event('keydown', { which: code }));
-    }, {
-        code: code
-    });
-}
-
-function timestamp() {
-    return new Date().getTime();
-}
-
-// The timestamp of the last message send or get_updates result.
-var last_send_or_update = -1;
-
-// Update that variable whenever get_updates returns.
-casper.on('resource.received', function (resource) {
-    if (/\/json\/get_events/.test(resource.url)) {
-        last_send_or_update = timestamp();
-    }
-});
-
-// Send a Humbug message.
-function send_message(type, params) {
-    last_send_or_update = timestamp();
-
-    common.send_message(type, params);
-}
-
-// Wait for any previous send to finish, then send a message.
-function wait_and_send(type, params) {
-    casper.waitForSelector('#compose-send-button:enabled', function () {
-        send_message(type, params);
-    });
-}
-
-// Wait to receive queued messages.
-function wait_for_receive(step) {
-    // Wait until the last send or get_updates result was more than 300 ms ago.
-    casper.waitFor(function () {
-        return (timestamp() - last_send_or_update) > 300;
-    }, step);
-}
-
-// innerText sometimes gives us non-breaking space characters, and occasionally
-// a different number of spaces than we expect.
-function normalize_spaces(str) {
-    return str.replace(/\s+/g, ' ');
-}
-
-// Call get_rendered_messages and then check that the last few headings and
-// bodies match the specified arrays.
-function expected_messages(table, headings, bodies) {
-    casper.test.assertVisible('#'+table,
-        table + ' is visible');
-
-    var msg = get_rendered_messages(table);
-
-    casper.test.assertEquals(
-        msg.headings.slice(-headings.length).map(normalize_spaces),
-        headings,
-        'Got expected message headings');
-
-    casper.test.assertEquals(
-        msg.bodies.slice(-bodies.length),
-        bodies,
-        'Got expected message bodies');
-}
-
 function un_narrow() {
     casper.test.info('Un-narrowing');
-    keypress(27); // Esc
+    common.keypress(27); // Esc
 }
 
 common.start_and_log_in();
@@ -124,10 +30,10 @@ common.start_and_log_in();
 casper.then(function () {
     casper.test.info('Sanity-checking existing messages');
 
-    var msg = get_rendered_messages('zhome');
+    var msg = common.get_rendered_messages('zhome');
 
     msg.headings.forEach(function (heading) {
-        casper.test.assertMatch(normalize_spaces(heading),
+        casper.test.assertMatch(common.normalize_spaces(heading),
             /(^You and )|( > )/,
             'Heading is well-formed');
     });
@@ -141,41 +47,41 @@ casper.then(function () {
     casper.test.info('Sending messages');
 });
 
-wait_and_send('stream', {
+common.wait_and_send('stream', {
     stream:  'Verona',
     subject: 'frontend test',
     content: 'test message A'
 });
 
-wait_and_send('stream', {
+common.wait_and_send('stream', {
     stream:  'Verona',
     subject: 'frontend test',
     content: 'test message B'
 });
 
-wait_and_send('stream', {
+common.wait_and_send('stream', {
     stream:  'Verona',
     subject: 'other subject',
     content: 'test message C'
 });
 
-wait_and_send('private', {
+common.wait_and_send('private', {
     recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
     content:   'personal A'
 });
 
-wait_and_send('private', {
+common.wait_and_send('private', {
     recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
     content:   'personal B'
 });
 
-wait_and_send('private', {
+common.wait_and_send('private', {
     recipient: 'cordelia@humbughq.com',
     content:   'personal C'
 });
 
-wait_for_receive(function () {
-    expected_messages('zhome', [
+common.wait_for_receive(function () {
+    common.expected_messages('zhome', [
         'Verona > frontend test',
         'Verona > other subject',
         'You and Cordelia Lear, King Hamlet',
@@ -191,25 +97,25 @@ wait_for_receive(function () {
 
     casper.test.info('Sending more messages');
 
-    send_message('stream', {
+    common.send_message('stream', {
         stream:  'Verona',
         subject: 'frontend test',
         content: 'test message D'
     });
 });
 
-wait_and_send('private', {
+common.wait_and_send('private', {
     recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
     content:   'personal D'
 });
 
-wait_for_receive(function () {
+common.wait_for_receive(function () {
     casper.test.info('Narrowing to stream');
     casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
 });
 
 casper.then(function () {
-    expected_messages('zfilt', [
+    common.expected_messages('zfilt', [
         'Verona > frontend test',
         'Verona > other subject',
         'Verona > frontend test'
@@ -224,7 +130,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    expected_messages('zhome', [
+    common.expected_messages('zhome', [
         'Verona > frontend test',
         'You and Cordelia Lear, King Hamlet'
     ], [
@@ -237,7 +143,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    expected_messages('zfilt', [
+    common.expected_messages('zfilt', [
         'Verona > frontend test'
     ], [
         '<p>test message A</p>',
@@ -254,7 +160,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    expected_messages('zfilt', [
+    common.expected_messages('zfilt', [
         'You and Cordelia Lear, King Hamlet'
     ], [
         '<p>personal A</p>',
