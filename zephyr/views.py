@@ -56,9 +56,6 @@ import base64
 from collections import defaultdict
 from zephyr.lib import bugdown
 
-SERVER_GENERATION = int(time.time())
-
-
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
     """Converts plaintext stream names to a list of Streams, validating input in the process
 
