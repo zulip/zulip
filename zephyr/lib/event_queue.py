@@ -135,10 +135,9 @@ def dump_event_queues():
     logging.info('Tornado dumped %d event queues in %.3fs'
                  % (len(clients), time.time() - start))
 
-def setup_event_queue(io_loop):
+def load_event_queues():
     global clients
     start = time.time()
-    # Read in existing event queues
     try:
         with file(PERSISTENT_QUEUE_FILENAME, "r") as stored_queues:
             clients = pickle.load(stored_queues)
@@ -151,6 +150,13 @@ def setup_event_queue(io_loop):
     logging.info('Tornado loaded %d event queues in %.3fs'
                  % (len(clients), time.time() - start))
 
+def send_restart_events():
+    for client in clients.itervalues():
+        event = dict(type='restart', server_generation=settings.SERVER_GENERATION)
+        client.add_event(event)
+
+def setup_event_queue(io_loop):
+    load_event_queues()
     atexit.register(dump_event_queues)
     # Make sure we dump event queues even if we exit via signal
     signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
@@ -163,6 +169,8 @@ def setup_event_queue(io_loop):
     # Set up event queue garbage collection
     pc = PeriodicCallback(gc_event_queues, EVENT_QUEUE_GC_FREQ_MSECS, io_loop)
     pc.start()
+
+    send_restart_events()
 
 # Called from Django
 def request_event_queue(user_profile, apply_markdown):

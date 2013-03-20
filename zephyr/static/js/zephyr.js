@@ -12,7 +12,6 @@ var viewport = $(window);
 
 var get_updates_params = {
     pointer: -1,
-    server_generation: -1, /* to be filled in on document.ready */
     last_event_id: 0
 };
 var get_updates_failures = 0;
@@ -606,14 +605,6 @@ function get_updates(options) {
     get_updates_params.pointer = furthest_read;
     get_updates_params.dont_block = options.dont_block || get_updates_failures > 0;
     get_updates_params.queue_id = page_params.event_queue_id;
-    if (reload.is_pending()) {
-        // We only send a server_generation to the server if we're
-        // interested in an immediate reply to tell us if we need to
-        // reload.  Once we're already reloading, we need to not
-        // submit the parameter, so that the server will process our
-        // future requests in longpolling mode.
-        delete get_updates_params.server_generation;
-    }
 
     get_updates_xhr = $.ajax({
         type:     'POST',
@@ -633,12 +624,6 @@ function get_updates(options) {
             get_updates_failures = 0;
             $('#connection-error').hide();
 
-            if (get_updates_params.server_generation === -1) {
-                get_updates_params.server_generation = data.server_generation;
-            } else if (data.server_generation !== get_updates_params.server_generation) {
-                reload.initiate();
-            }
-
             var messages = [];
             var new_pointer;
 
@@ -655,7 +640,10 @@ function get_updates(options) {
                     messages.push(event.message);
                     break;
                 case 'pointer':
-                    new_pointer = event.new_pointer;
+                    new_pointer = event.pointer;
+                    break;
+                case 'restart':
+                    reload.initiate();
                     break;
                 }
             });
