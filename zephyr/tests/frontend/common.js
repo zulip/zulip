@@ -79,6 +79,15 @@ exports.then_log_out = function () {
     });
 };
 
+exports.enable_page_console = function () {
+    // Call this (after casper.start) to enable printing page-context
+    // console.log (plus some CasperJS-specific messages) to the
+    // terminal.
+    casper.on('remote.message', function (msg) {
+        casper.echo(msg);
+    });
+};
+
 exports.send_message = function (type, params) {
     casper.waitForSelector('#left_bar_compose_' + type + '_button_big', function () {
         casper.click('#left_bar_compose_' + type + '_button_big');

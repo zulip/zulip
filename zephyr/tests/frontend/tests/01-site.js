@@ -12,14 +12,6 @@ var utils = require('utils');
 
 var common = require('../common.js').common;
 
-// Uncomment this to get page-context console.log in the CasperJS output
-// (plus some CasperJS-specific messages)
-/*
-casper.on('remote.message', function (msg) {
-    casper.echo(msg);
-});
-*/
-
 common.start_and_log_in();
 
 casper.then(function () {
