@@ -1013,9 +1013,12 @@ def json_change_settings(request, user_profile, full_name=POST,
 @authenticated_json_post_view
 @has_request_variables
 def json_stream_exists(request, user_profile, stream=POST):
-    if not valid_stream_name(stream):
+    return stream_exists_backend(request, user_profile, stream)
+
+def stream_exists_backend(request, user_profile, stream_name):
+    if not valid_stream_name(stream_name):
         return json_error("Invalid characters in stream name")
-    stream = get_stream(stream, user_profile.realm)
+    stream = get_stream(stream_name, user_profile.realm)
     result = {"exists": bool(stream)}
     if stream is not None:
         recipient = get_recipient(Recipient.STREAM, stream.id)
