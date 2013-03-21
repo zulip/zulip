@@ -585,8 +585,8 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
         subs = gather_subscriptions(self.get_user_profile(test_email))
         for stream, color in json["stream_colors"]:
-            self.assertIsInstance(color,  str)
-            self.assertIsInstance(stream, str)
+            self.assertIsInstance(color,  basestring)
+            self.assertIsInstance(stream, basestring)
             self.assertIn({'name': stream, 'in_home_view': True, 'color': color, 'invite_only': False}, subs)
             subs.remove({'name': stream, 'in_home_view': True, 'color': color, 'invite_only': False})
         self.assertFalse(subs)
@@ -690,8 +690,8 @@ class SubscriptionAPITest(AuthedTestCase):
         json = simplejson.loads(result.content)
         self.assertIn("subscriptions", json)
         for stream in json["subscriptions"]:
-            self.assertIsInstance(stream['name'], str)
-            self.assertIsInstance(stream['color'], str)
+            self.assertIsInstance(stream['name'], basestring)
+            self.assertIsInstance(stream['color'], basestring)
             self.assertIsInstance(stream['invite_only'], bool)
             # check that the stream name corresponds to an actual stream
             try:
