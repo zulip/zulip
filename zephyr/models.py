@@ -265,11 +265,6 @@ class Message(models.Model):
                 rendered_content = bugdown.convert(self.content)
                 if rendered_content is None:
                     rendered_content = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
-
-                # Update the database cache of the rendered content
-                self.rendered_content = rendered_content
-                self.rendered_content_version = bugdown.version
-                self.save()
             obj['content'] = rendered_content
             obj['content_type'] = 'text/html'
         else:
