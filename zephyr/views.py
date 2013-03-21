@@ -34,10 +34,10 @@ from zephyr.decorator import require_post, \
     has_request_variables, POST, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
-    get_user_profile_by_user_id
+    get_user_profile_by_user_id, authenticated_rest_api_view, \
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
-from zephyr.lib.response import json_success, json_error, json_response
+from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key
 
@@ -149,6 +149,20 @@ def principal_to_user_profile(agent, principal):
         raise PrincipalError(principal)
 
     return principal_user_profile
+
+METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
+
+@authenticated_rest_api_view
+def rest_dispatch(request, user_profile, **kwargs):
+    supported_methods = {}
+    # duplicate kwargs so we can mutate the original as we go
+    for arg in list(kwargs):
+        if arg in METHODS:
+            supported_methods[arg] = kwargs[arg]
+            del kwargs[arg]
+    if request.method in supported_methods.keys():
+        return globals()[supported_methods[request.method]](request, user_profile, **kwargs)
+    return json_method_not_allowed(supported_methods.keys())
 
 @require_post
 def accounts_register(request):

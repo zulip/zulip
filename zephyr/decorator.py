@@ -1,7 +1,7 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from zephyr.models import UserProfile, UserActivity, get_client
-from zephyr.lib.response import json_success, json_error
+from zephyr.lib.response import json_success, json_error, HttpResponseUnauthorized
 from django.utils.timezone import now
 from django.db import transaction, IntegrityError
 from django.conf import settings
@@ -13,6 +13,7 @@ from zephyr.lib.cache import user_profile_by_email_cache_key, \
     user_profile_by_user_cache_key
 
 from functools import wraps
+import base64
 
 class _RespondAsynchronously(object):
     pass
@@ -86,6 +87,35 @@ def authenticated_api_view(view_func):
                            *args, **kwargs):
         user_profile = validate_api_key(email, api_key)
         request._email = email
+        process_client(request, user_profile)
+        return view_func(request, user_profile, *args, **kwargs)
+    return _wrapped_view_func
+
+def authenticated_rest_api_view(view_func):
+    @csrf_exempt
+    @wraps(view_func)
+    def _wrapped_view_func(request, *args, **kwargs):
+        # First try block attempts to get the credentials we need to do authentication
+        try:
+            # Grab the base64-encoded authentication string, decode it, and split it into
+            # the email and API key
+            auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
+            # case insensitive per RFC 1945
+            if auth_type.lower() != "basic":
+                return json_error("Only Basic authentication is supported.")
+            email, api_key = base64.b64decode(encoded_value).split(":")
+        except ValueError:
+            return json_error("Invalid authorization header for basic auth")
+        except KeyError:
+            return HttpResponseUnauthorized("humbug")
+
+        # Now we try to do authentication or die
+        try:
+            user_profile = validate_api_key(email, api_key)
+        except JsonableError, e:
+            resp = HttpResponseUnauthorized("humbug")
+            resp.content = e.error
+            return resp
         process_client(request, user_profile)
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
