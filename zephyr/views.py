@@ -840,10 +840,13 @@ def get_public_streams_backend(request, user_profile):
 
 @authenticated_api_view
 def api_list_subscriptions(request, user_profile):
-    return json_success({"subscriptions": gather_subscriptions(user_profile)})
+    return list_subscriptions_backend(request, user_profile)
 
 @authenticated_json_post_view
 def json_list_subscriptions(request, user_profile):
+    return list_subscriptions_backend(request, user_profile)
+
+def list_subscriptions_backend(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)})
 
 @authenticated_api_view
