@@ -310,6 +310,11 @@ function mark_subscribed(stream_name, attrs) {
         // Already subscribed
         return;
     }
+
+    // Update unread counts as the new stream in sidebar might
+    // need its unread counts re-calculated
+    process_loaded_for_unread(all_msg_list.all());
+
     typeahead_helper.update_autocomplete();
 }
 
