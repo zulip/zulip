@@ -50,15 +50,13 @@ class Command(BaseCommand):
 
         user_profile = UserProfile.objects.get(user__email=email)
 
-        if not all_until:
-            message_ids = [mid.strip() for mid in sys.stdin.read().split(',')]
-            mids = [m.id for m in UserMessage.objects.filter(user_profile=user_profile,
-                                                             message__id__in=message_ids)
-                                                     .order_by('-id')]
+        if all_until:
+            filt = models.Q(id__lte=all_until)
         else:
-            mids = [m.id for m in UserMessage.objects.filter(user_profile=user_profile,
-                                                             id__lte=all_until)
-                                                      .order_by('-id')]
+            filt = models.Q(message__id__in=[mid.strip() for mid in sys.stdin.read().split(',')])
+        mids = [m.id for m in
+                    UserMessage.objects.filter(filt, user_profile=user_profile).order_by('-id')]
+
         if options["for_real"]:
             sys.stdin.close()
             sys.stdout.close()
