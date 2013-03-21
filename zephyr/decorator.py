@@ -1,11 +1,14 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.http import QueryDict
+from django.http.multipartparser import MultiPartParser
 from zephyr.models import UserProfile, UserActivity, get_client
 from zephyr.lib.response import json_success, json_error, HttpResponseUnauthorized
 from django.utils.timezone import now
 from django.db import transaction, IntegrityError
 from django.conf import settings
 import simplejson
+from StringIO import StringIO
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.timestamp import datetime_to_timestamp
@@ -118,6 +121,26 @@ def authenticated_rest_api_view(view_func):
             return resp
         process_client(request, user_profile)
         return view_func(request, user_profile, *args, **kwargs)
+    return _wrapped_view_func
+
+def process_patch_as_post(view_func):
+    @wraps(view_func)
+    def _wrapped_view_func(request, *args, **kwargs):
+        # Adapted from django/http/__init__.py.
+        # So by default Django doesn't populate request.POST for anything besides
+        # POST requests. We want this dict populated for PATCH, so we have to
+        # do it ourselves.
+        #
+        # This will not be required in the future, a bug will be filed against
+        # Django upstream.
+        if request.META.get('CONTENT_TYPE', '').startswith('multipart'):
+            request.POST = MultiPartParser(request.META, StringIO(request.body),
+                    [], request.encoding).parse()[0]
+        else:
+            request.POST = QueryDict(request.body, encoding=request.encoding)
+
+        return view_func(request, *args, **kwargs)
+
     return _wrapped_view_func
 
 def authenticate_log_and_execute_json(request, client, view_func, *args, **kwargs):

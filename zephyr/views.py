@@ -12,6 +12,7 @@ from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.db.models import Q, F
 from django.core.mail import send_mail, mail_admins
+from django.db import transaction
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_huddle, Realm, UserMessage, \
     PreregistrationUser, get_client, MitUser, User, UserActivity, \
@@ -34,7 +35,8 @@ from zephyr.decorator import require_post, \
     has_request_variables, POST, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
-    get_user_profile_by_user_id, authenticated_rest_api_view
+    get_user_profile_by_user_id, authenticated_rest_api_view, \
+    process_patch_as_post
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
@@ -865,6 +867,24 @@ def json_list_subscriptions(request, user_profile):
 
 def list_subscriptions_backend(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)})
+
+@process_patch_as_post
+@transaction.commit_on_success
+@has_request_variables
+def update_subscriptions_backend(request, user_profile,
+        delete=POST(converter=json_to_list, default=[]),
+        add=POST(converter=json_to_list, default=[])):
+    if not add and not delete:
+        return json_error('Nothing to do. Specify at least one of "add" or "delete".')
+
+    json_dict = {}
+    for method, items in ((add_subscriptions_backend, add), (remove_subscriptions_backend, delete)):
+        response = method(request, user_profile, streams_raw=items)
+        if response.status_code != 200:
+            transaction.rollback()
+            return response
+        json_dict.update(simplejson.loads(response.content))
+    return json_success(json_dict)
 
 @authenticated_api_view
 def api_remove_subscriptions(request, user_profile):
