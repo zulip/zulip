@@ -130,6 +130,15 @@ exports.keypress = function (code) {
     });
 };
 
+// Send a whole list of messages using wait_and_send.
+exports.send_many = function (msgs) {
+    msgs.forEach(function (msg) {
+        exports.wait_and_send(
+            (msg.stream !== undefined) ? 'stream' : 'private',
+            msg);
+    });
+};
+
 // Wait to receive queued messages.
 exports.wait_for_receive = function (step) {
     // Wait until the last send or get_events result was more than 300 ms ago.

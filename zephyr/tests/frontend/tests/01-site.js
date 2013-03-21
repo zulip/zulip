@@ -47,38 +47,26 @@ casper.then(function () {
     casper.test.info('Sending messages');
 });
 
-common.wait_and_send('stream', {
-    stream:  'Verona',
-    subject: 'frontend test',
-    content: 'test message A'
-});
+// Send some messages.
 
-common.wait_and_send('stream', {
-    stream:  'Verona',
-    subject: 'frontend test',
-    content: 'test message B'
-});
+common.send_many([
+    { stream:  'Verona', subject: 'frontend test',
+      content: 'test message A' },
 
-common.wait_and_send('stream', {
-    stream:  'Verona',
-    subject: 'other subject',
-    content: 'test message C'
-});
+    { stream:  'Verona', subject: 'frontend test',
+      content: 'test message B' },
 
-common.wait_and_send('private', {
-    recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
-    content:   'personal A'
-});
+    { stream:  'Verona', subject: 'other subject',
+      content: 'test message C' },
 
-common.wait_and_send('private', {
-    recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
-    content:   'personal B'
-});
+    { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
+      content:   'personal A' },
 
-common.wait_and_send('private', {
-    recipient: 'cordelia@humbughq.com',
-    content:   'personal C'
-});
+    { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
+      content:   'personal B' },
+
+    { recipient: 'cordelia@humbughq.com',
+      content:   'personal C' }]);
 
 common.wait_for_receive(function () {
     common.expected_messages('zhome', [
@@ -96,18 +84,15 @@ common.wait_for_receive(function () {
     ]);
 
     casper.test.info('Sending more messages');
-
-    common.send_message('stream', {
-        stream:  'Verona',
-        subject: 'frontend test',
-        content: 'test message D'
-    });
 });
 
-common.wait_and_send('private', {
-    recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
-    content:   'personal D'
-});
+common.send_many([
+    { stream:  'Verona', subject: 'frontend test',
+      content: 'test message D' },
+
+    { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
+      content:   'personal D' }
+]);
 
 common.wait_for_receive(function () {
     casper.test.info('Narrowing to stream');
