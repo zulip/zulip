@@ -42,14 +42,19 @@ common.send_many([
 ]);
 
 
-// Narrow by clicking links.
+// Define the messages we expect to see when narrowed.
 
-common.wait_for_receive(function () {
-    casper.test.info('Narrowing to stream');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
-});
+function expect_home() {
+    common.expected_messages('zhome', [
+        'Verona > frontend test',
+        'You and Cordelia Lear, King Hamlet'
+    ], [
+        '<p>test message D</p>',
+        '<p>personal D</p>'
+    ]);
+}
 
-casper.then(function () {
+function expect_stream() {
     common.expected_messages('zfilt', [
         'Verona > frontend test',
         'Verona > other subject',
@@ -60,24 +65,9 @@ casper.then(function () {
         '<p>test message C</p>',
         '<p>test message D</p>'
     ]);
+}
 
-    un_narrow();
-});
-
-casper.then(function () {
-    common.expected_messages('zhome', [
-        'Verona > frontend test',
-        'You and Cordelia Lear, King Hamlet'
-    ], [
-        '<p>test message D</p>',
-        '<p>personal D</p>'
-    ]);
-
-    casper.test.info('Narrowing to subject');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\", subject \\\"frontend test\\\""]');
-});
-
-casper.then(function () {
+function expect_stream_subject() {
     common.expected_messages('zfilt', [
         'Verona > frontend test'
     ], [
@@ -85,16 +75,9 @@ casper.then(function () {
         '<p>test message B</p>',
         '<p>test message D</p>'
     ]);
+}
 
-    un_narrow();
-});
-
-casper.then(function () {
-    casper.test.info('Narrowing to personals');
-    casper.click('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]');
-});
-
-casper.then(function () {
+function expect_pm() {
     common.expected_messages('zfilt', [
         'You and Cordelia Lear, King Hamlet'
     ], [
@@ -102,7 +85,40 @@ casper.then(function () {
         '<p>personal B</p>',
         '<p>personal D</p>'
     ]);
+}
+
+
+// Narrow by clicking links.
+
+common.wait_for_receive(function () {
+    casper.test.info('Narrowing to stream');
+    casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
 });
+
+casper.then(function () {
+    expect_stream();
+    un_narrow();
+});
+
+casper.then(function () {
+    expect_home();
+    casper.test.info('Narrowing to subject');
+    casper.click('*[title="Narrow to stream \\\"Verona\\\", subject \\\"frontend test\\\""]');
+});
+
+casper.then(function () {
+    expect_stream_subject();
+    un_narrow();
+});
+
+casper.then(function () {
+    expect_home();
+    casper.test.info('Narrowing to personals');
+    casper.click('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]');
+});
+
+casper.then(expect_pm);
+
 
 common.then_log_out();
 
