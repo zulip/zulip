@@ -56,6 +56,24 @@ def get_user_profile_by_user_id(user_id):
 def get_user_profile_by_email(email):
     return UserProfile.objects.select_related().get(user__email__iexact=email)
 
+def process_client(request, user_profile):
+    try:
+        # we want to take from either GET or POST vars
+        request.client = get_client(request.REQUEST['client'])
+    except (AttributeError, KeyError):
+        request.client = get_client("API")
+
+    update_user_activity(request, user_profile)
+
+def validate_api_key(email, api_key):
+    try:
+        user_profile = get_user_profile_by_email(email)
+    except UserProfile.DoesNotExist:
+        raise JsonableError("Invalid user: %s" % (email,))
+    if api_key != user_profile.api_key:
+        raise JsonableError("Invalid API key for user '%s'" % (email,))
+    return user_profile
+
 # authenticated_api_view will add the authenticated user's user_profile to
 # the view function's arguments list, since we have to look it up
 # anyway.
@@ -65,17 +83,10 @@ def authenticated_api_view(view_func):
     @has_request_variables
     @wraps(view_func)
     def _wrapped_view_func(request, email=POST, api_key=POST('api-key'),
-                           client=POST(default=get_client("API"), converter=get_client),
                            *args, **kwargs):
-        try:
-            user_profile = get_user_profile_by_email(email)
-        except UserProfile.DoesNotExist:
-            return json_error("Invalid user: %s" % (email,))
-        if api_key != user_profile.api_key:
-            return json_error("Invalid API key for user '%s'" % (email,))
-        request.client = client
+        user_profile = validate_api_key(email, api_key)
         request._email = email
-        update_user_activity(request, user_profile)
+        process_client(request, user_profile)
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
