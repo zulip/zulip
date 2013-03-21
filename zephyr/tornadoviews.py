@@ -209,7 +209,7 @@ def rest_get_events(request, user_profile, handler,
 
 @has_request_variables
 def get_events_backend(request, user_profile, handler,
-                       last_event_id = REQ(converter=to_non_negative_int, default=None),
+                       last_event_id = REQ(converter=int, default=None),
                        queue_id = REQ(default=None), apply_markdown=True,
                        dont_block = REQ(default=False, converter=json_to_bool)):
     if queue_id is None:

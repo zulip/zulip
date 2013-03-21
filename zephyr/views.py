@@ -1417,7 +1417,20 @@ def api_events_register(request, user_profile,
 def events_register_backend(request, user_profile, apply_markdown=True,
                             event_types=POST(converter=json_to_list)):
     queue_id = request_event_queue(user_profile, apply_markdown)
-    if queue_id is not None:
-        return json_success({'queue_id': queue_id, 'last_event_id': 0})
+    if queue_id is None:
+        return json_error(msg="Could not allocate queue")
 
-    return json_error(msg="Tornado not available")
+    ret = {'queue_id': queue_id}
+    event_types = set(event_types)
+
+    if "message" in event_types:
+        messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
+        if messages:
+            ret['max_message_id'] = messages[0].id
+        else:
+            ret['max_message_id'] = -1
+    if "pointer" in event_types:
+        ret['pointer'] = user_profile.pointer
+
+    ret['last_event_id'] = -1
+    return json_success(ret)
