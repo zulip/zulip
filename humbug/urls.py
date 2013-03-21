@@ -4,6 +4,15 @@ from django.views.generic import TemplateView, RedirectView
 import os.path
 import zephyr.forms
 
+# NB: There are several other pieces of code which route requests by URL:
+#
+#   - runtornado.py has its own URL list for Tornado views.  See the
+#     invocation of web.Application in that file.
+#
+#   - The Nginx config knows which URLs to route to Django or Tornado.
+#
+#   - Likewise for the local dev server in tools/run-dev.py.
+
 urlpatterns = patterns('',
     url(r'^$', 'zephyr.views.home'),
     url(r'^accounts/login/openid/$', 'django_openid_auth.views.login_begin', name='openid-login'),
