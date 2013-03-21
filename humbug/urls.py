@@ -109,11 +109,40 @@ urlpatterns += patterns('zephyr.views',
 
     # This json format view used by the API accepts a username password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$',          'api_fetch_api_key'),
+
+    # JSON format views used by the redesigned API, accept basic auth username:password.
+    # GET returns messages, possibly filtered, POST sends a message
+    url(r'^api/v1/messages$', 'rest_dispatch',
+            {'GET':  'get_old_messages_backend',
+             'POST': 'send_message_backend'}),
+    url(r'^api/v1/streams$', 'rest_dispatch',
+            {'GET':  'get_public_streams_backend'}),
+    # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
+    url(r'^api/v1/streams/(?P<stream_name>.*)/members$', 'rest_dispatch',
+            {'GET': 'get_subscribers_backend'}),
+    url(r'^api/v1/streams/(?P<stream_name>.*)$', 'rest_dispatch',
+            {'HEAD': 'stream_exists_backend',
+             'GET': 'stream_exists_backend'}),
+    url(r'^api/v1/users$', 'rest_dispatch',
+            {'GET': 'get_members_backend'}),
+    url(r'^api/v1/users/me$', 'rest_dispatch',
+            {'GET': 'get_profile_backend'}),
+    url(r'^api/v1/users/me/enter-sends$', 'rest_dispatch',
+            {'POST': 'json_change_enter_sends'}),
+    url(r'^api/v1/users/me/pointer$', 'rest_dispatch',
+            {'GET': 'get_pointer_backend',
+             'POST': 'update_pointer_backend'}),
+    # GET lists your streams, POST bulk adds, PATCH bulk modifies/removes
+    url(r'^api/v1/users/me/subscriptions$', 'rest_dispatch',
+            {'GET': 'list_subscriptions_backend',
+             'POST': 'add_subscriptions_backend',
+             'PATCH': 'update_subscriptions_backend'}),
 )
 
 urlpatterns += patterns('zephyr.tornadoviews',
     # Tornado views
     url(r'^api/v1/get_messages$',           'api_get_messages'),
+    url(r'^api/v1/messages/latest$',        'rest_get_messages'),
     url(r'^json/get_updates$',              'json_get_updates'),
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$',                'notify'),

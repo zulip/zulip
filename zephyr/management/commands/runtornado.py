@@ -130,6 +130,7 @@ class Command(BaseCommand):
                 urls = (r"/json/get_updates",
                         r"/api/v1/get_messages",
                         r"/notify_tornado",
+                        r"/api/v1/messages/latest",
                         )
                 # Application is an instance of Django's standard wsgi handler.
                 application = web.Application([(url, AsyncDjangoHandler) for url in urls],
