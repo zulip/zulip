@@ -37,7 +37,7 @@ from zephyr.decorator import require_post, \
     get_user_profile_by_user_id
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
-from zephyr.lib.response import json_success, json_error
+from zephyr.lib.response import json_success, json_error, json_response
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key
 
@@ -1022,7 +1022,8 @@ def json_stream_exists(request, user_profile, stream=POST):
         result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
                                                            recipient=recipient,
                                                            active=True).exists()
-    return json_success(result)
+        return json_success(result) # results are ignored for HEAD requests
+    return json_response(data=result, status=404)
 
 def get_subscription_or_die(stream_name, user_profile):
     stream = get_stream(stream_name, user_profile.realm)

@@ -929,10 +929,13 @@ class SubscriptionAPITest(AuthedTestCase):
         """
         result = self.client.post("/json/subscriptions/exists",
                                   {"stream": stream})
-        self.assert_json_success(result)
         json = simplejson.loads(result.content)
         self.assertIn("exists", json)
         self.assertEqual(json["exists"], exists)
+        if exists:
+            self.assert_json_success(result)
+        else:
+            self.assertEquals(result.status_code, 404)
         if not subscribed is None:
             self.assertIn("subscribed", json)
             self.assertEqual(json["subscribed"], subscribed)

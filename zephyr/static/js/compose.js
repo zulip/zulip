@@ -365,16 +365,18 @@ exports.check_stream_existence = function (stream_name) {
         data: {'stream': stream_name},
         async: false,
         success: function (data) {
-            if (!data.exists) {
-                result = "does-not-exist";
-            } else if (data.subscribed) {
+            if (data.subscribed) {
                 result = "subscribed";
             } else {
                 result = "not-subscribed";
             }
         },
         error: function (xhr) {
-            result = "error";
+            if (xhr.status === 404) {
+                result = "does-not-exist";
+            } else {
+                result = "error";
+            }
         }
     });
     return result;
