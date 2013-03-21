@@ -34,7 +34,7 @@ from zephyr.decorator import require_post, \
     has_request_variables, POST, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
-    get_user_profile_by_user_id, authenticated_rest_api_view, \
+    get_user_profile_by_user_id, authenticated_rest_api_view
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
@@ -459,6 +459,9 @@ def home(request):
                                'show_invites': show_invites
                                },
                               context_instance=RequestContext(request))
+
+def get_pointer_backend(request, user_profile):
+    return json_success({'pointer': user_profile.pointer})
 
 @authenticated_api_view
 def api_update_pointer(request, user_profile):
