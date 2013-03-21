@@ -20,11 +20,6 @@ casper.on('remote.message', function (msg) {
 });
 */
 
-function un_narrow() {
-    casper.test.info('Un-narrowing');
-    common.keypress(27); // Esc
-}
-
 common.start_and_log_in();
 
 casper.then(function () {
@@ -93,66 +88,6 @@ common.send_many([
     { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
       content:   'personal D' }
 ]);
-
-common.wait_for_receive(function () {
-    casper.test.info('Narrowing to stream');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
-});
-
-casper.then(function () {
-    common.expected_messages('zfilt', [
-        'Verona > frontend test',
-        'Verona > other subject',
-        'Verona > frontend test'
-    ], [
-        '<p>test message A</p>',
-        '<p>test message B</p>',
-        '<p>test message C</p>',
-        '<p>test message D</p>'
-    ]);
-
-    un_narrow();
-});
-
-casper.then(function () {
-    common.expected_messages('zhome', [
-        'Verona > frontend test',
-        'You and Cordelia Lear, King Hamlet'
-    ], [
-        '<p>test message D</p>',
-        '<p>personal D</p>'
-    ]);
-
-    casper.test.info('Narrowing to subject');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\", subject \\\"frontend test\\\""]');
-});
-
-casper.then(function () {
-    common.expected_messages('zfilt', [
-        'Verona > frontend test'
-    ], [
-        '<p>test message A</p>',
-        '<p>test message B</p>',
-        '<p>test message D</p>'
-    ]);
-
-    un_narrow();
-});
-
-casper.then(function () {
-    casper.test.info('Narrowing to personals');
-    casper.click('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]');
-});
-
-casper.then(function () {
-    common.expected_messages('zfilt', [
-        'You and Cordelia Lear, King Hamlet'
-    ], [
-        '<p>personal A</p>',
-        '<p>personal B</p>',
-        '<p>personal D</p>'
-    ]);
-});
 
 common.then_log_out();
 
