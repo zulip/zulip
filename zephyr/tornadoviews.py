@@ -213,8 +213,11 @@ def get_events_backend(request, user_profile, handler,
                        queue_id = REQ(default=None), apply_markdown=True,
                        dont_block = REQ(default=False, converter=json_to_bool)):
     if queue_id is None:
-        client = allocate_client_descriptor(user_profile.id, apply_markdown)
-        queue_id = client.event_queue.id
+        if dont_block:
+            client = allocate_client_descriptor(user_profile.id, apply_markdown)
+            queue_id = client.event_queue.id
+        else:
+            return json_error("Missing 'queue_id' argument")
     else:
         if last_event_id is None:
             return json_error("Missing 'last_event_id' argument")
