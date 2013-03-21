@@ -24,12 +24,24 @@ account this way.
                     action="store_true",
                     default=False,
                     help='Acknowledgement that the user has already accepted the ToS.'),
+        make_option('--domain',
+                    dest='domain',
+                    type='str',
+                    help='The name of the existing realm to which to add the user.'),
         )
 
     def handle(self, *args, **options):
         if not options["tos"]:
             raise CommandError("""You must confirm that this user has accepted the
 Terms of Service by passing --this-user-has-accepted-the-tos.""")
+
+        if not options["domain"]:
+            raise CommandError("""Please specify a realm by passing --domain.""")
+
+        try:
+            realm = Realm.objects.get(domain=options["domain"])
+        except Realm.DoesNotExist:
+            raise CommandError("Realm does not exist.")
 
         try:
             email, full_name = args
@@ -50,11 +62,6 @@ parameters, or specify no parameters for interactive user creation.""")
                     except ValidationError:
                         print >> sys.stderr, "Invalid email address."
                 full_name = raw_input("Full name: ")
-
-        try:
-            realm = Realm.objects.get(domain=email.split('@')[-1])
-        except Realm.DoesNotExist:
-            raise CommandError("Realm does not exist.")
 
         try:
             notify_new_user(do_create_user(email, initial_password(email),
