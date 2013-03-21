@@ -278,7 +278,7 @@ class Message(models.Model):
                 # Update the database cache of the rendered content
                 self.rendered_content = rendered_content
                 self.rendered_content_version = bugdown.version
-                self.save()
+                self.save(update_fields=["rendered_content", "rendered_content_version"])
             obj['content'] = rendered_content
             obj['content_type'] = 'text/html'
         else:

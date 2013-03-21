@@ -66,7 +66,7 @@ def user_sessions(user):
 def do_deactivate(user_profile):
     user_profile.user.set_unusable_password()
     user_profile.user.is_active = False
-    user_profile.user.save()
+    user_profile.user.save(update_fields=["is_active", "password"])
 
     for session in user_sessions(user_profile.user):
         session.delete()
@@ -79,7 +79,7 @@ def do_deactivate(user_profile):
 def do_change_user_email(user, new_email):
     old_email = user.email
     user.email = new_email
-    user.save()
+    user.save(update_fields=["email"])
 
     log_event({'type': 'user_email_changed',
                'old_email': old_email,
@@ -385,7 +385,7 @@ def set_stream_color(user_profile, stream_name, color=None):
     if not color:
         color = pick_color(user_profile)
     stream_color.color = color
-    stream_color.save()
+    stream_color.save(update_fields=["color"])
 
 def do_add_subscription(user_profile, stream, no_log=False):
     recipient = get_recipient(Recipient.STREAM, stream.id)
@@ -396,7 +396,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
     if not subscription.active:
         did_subscribe = True
         subscription.active = True
-        subscription.save()
+        subscription.save(update_fields=["active"])
     if did_subscribe and not no_log:
         log_event({'type': 'subscription_added',
                    'user': user_profile.user.email,
@@ -414,7 +414,7 @@ def do_remove_subscription(user_profile, stream, no_log=False):
     subscription = maybe_sub[0]
     did_remove = subscription.active
     subscription.active = False
-    subscription.save()
+    subscription.save(update_fields=["active"])
     if did_remove and not no_log:
         log_event({'type': 'subscription_removed',
                    'user': user_profile.user.email,
@@ -433,7 +433,7 @@ def do_activate_user(user, log=True, join_date=timezone.now()):
     user.is_active = True
     user.set_password(initial_password(user.email))
     user.date_joined = join_date
-    user.save()
+    user.save(update_fields=["is_active", "date_joined", "password"])
 
     if log:
         domain = UserProfile.objects.get(user=user).realm.domain
@@ -444,7 +444,7 @@ def do_activate_user(user, log=True, join_date=timezone.now()):
 def do_change_password(user, password, log=True, commit=True):
     user.set_password(password)
     if commit:
-        user.save()
+        user.save(update_fields=["password"])
     if log:
         log_event({'type': 'user_change_password',
                    'user': user.email,
@@ -452,7 +452,7 @@ def do_change_password(user, password, log=True, commit=True):
 
 def do_change_full_name(user_profile, full_name, log=True):
     user_profile.full_name = full_name
-    user_profile.save()
+    user_profile.save(update_fields=["full_name"])
     if log:
         log_event({'type': 'user_change_full_name',
                    'user': user_profile.user.email,
@@ -471,7 +471,7 @@ def do_create_realm(domain, replay=False):
 
 def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications, log=True):
     user_profile.enable_desktop_notifications = enable_desktop_notifications
-    user_profile.save()
+    user_profile.save(update_fields=["enable_desktop_notifications"])
     if log:
         log_event({'type': 'enable_desktop_notifications_changed',
                    'user': user_profile.user.email,
@@ -479,7 +479,7 @@ def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifica
 
 def do_change_enter_sends(user_profile, enter_sends):
     user_profile.enter_sends = enter_sends
-    user_profile.save()
+    user_profile.save(update_fields=["enter_sends"])
 
 def set_default_streams(realm, stream_names):
     DefaultStream.objects.filter(realm=realm).delete()
@@ -506,7 +506,7 @@ def do_update_user_activity(user_profile, client, query, log_time):
                                             query = query)
     activity.count += 1
     activity.last_visit = log_time
-    activity.save()
+    activity.save(update_fields=["last_visit", "count"])
 
 def process_user_activity_event(event):
     user_profile = UserProfile.objects.get(id=event["user_profile_id"])
@@ -528,7 +528,7 @@ def do_update_user_presence(user_profile, client, log_time, status):
                                             client = client)
     presence.timestamp = log_time
     presence.status = status
-    presence.save()
+    presence.save(update_fields=["timestamp", "status"])
 
 def update_user_presence(user_profile, client, log_time, status):
     event={'type': 'user_presence',

@@ -461,7 +461,7 @@ def update_pointer_backend(request, user_profile,
         return json_success()
 
     user_profile.pointer = pointer
-    user_profile.save()
+    user_profile.save(update_fields=["pointer"])
 
     if request._client.name.lower() in ['android', 'iphone']:
         # TODO (leo)
@@ -1037,7 +1037,7 @@ def set_in_home_view(user_profile, stream_name, value):
     subscription = get_subscription_or_die(stream_name, user_profile)[0]
 
     subscription.in_home_view = value
-    subscription.save()
+    subscription.save(update_fields=["in_home_view"])
 
 class SubscriptionProperties(object):
     """
