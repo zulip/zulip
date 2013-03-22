@@ -83,6 +83,17 @@ class AuthedTestCase(TestCase):
         # Usernames are unique, even across Realms.
         return UserProfile.objects.get(user__email__iexact=email)
 
+    def get_streams(self, email):
+        """
+        Helper function to get the stream names for a user
+        """
+        user_profile = self.get_user_profile(email)
+        subs = Subscription.objects.filter(
+            user_profile    = user_profile,
+            active          = True,
+            recipient__type = Recipient.STREAM)
+        return [get_display_recipient(sub.recipient) for sub in subs]
+
     def send_message(self, sender_name, recipient_name, message_type,
                      content="test content", subject="test"):
         sender = self.get_user_profile(sender_name)
@@ -657,17 +668,6 @@ class SubscriptionAPITest(AuthedTestCase):
         self.realm = self.user_profile.realm
         self.streams = self.get_streams(self.test_email)
 
-    def get_streams(self, email):
-        """
-        Helper function to get the stream names for a user
-        """
-        user_profile = self.get_user_profile(email)
-        subs = Subscription.objects.filter(
-            user_profile    = user_profile,
-            active          = True,
-            recipient__type = Recipient.STREAM)
-        return [get_display_recipient(sub.recipient) for sub in subs]
-
     def make_random_stream_names(self, existing_stream_names, names_to_avoid):
         """
         Helper function to make up random stream names. It takes
@@ -747,6 +747,16 @@ class SubscriptionAPITest(AuthedTestCase):
             {"subscribed": {self.test_email: add_streams},
              "already_subscribed": {self.test_email: self.streams}},
             self.test_email, self.streams + add_streams)
+
+    def test_non_ascii_stream_subscription(self):
+        """
+        Subscribing to a stream name with non-ASCII characters succeeds.
+        """
+        self.helper_check_subs_before_and_after_add(
+            "/json/subscriptions/add", self.streams + [u"hümbüǵ"], {},
+            {"subscribed": {self.test_email: [u"hümbüǵ"]},
+             "already_subscribed": {self.test_email: self.streams}},
+            self.test_email, self.streams + [u"hümbüǵ"])
 
     def test_subscriptions_add_too_long(self):
         """
@@ -1301,6 +1311,24 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         self.assert_json_success(self.invite(external_address, ["Denmark"]))
         self.check_sent_emails([external_address])
+
+    def test_invite_with_non_ascii_streams(self):
+        """
+        Inviting someone to streams with non-ASCII characters succeeds.
+        """
+        self.login("hamlet@humbughq.com")
+        invitee = "alice-test@humbughq.com"
+
+        stream_name = u"hümbüǵ"
+        realm = Realm.objects.get(domain="humbughq.com")
+        stream, _ = create_stream_if_needed(realm, stream_name)
+
+        # Make sure we're subscribed before inviting someone.
+        do_add_subscription(
+            UserProfile.objects.get(user__email="hamlet@humbughq.com"),
+            stream, no_log=True)
+
+        self.assert_json_success(self.invite(invitee, [stream_name]))
 
 class ChangeSettingsTest(AuthedTestCase):
     fixtures = ['messages.json']
