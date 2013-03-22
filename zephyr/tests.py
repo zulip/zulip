@@ -1439,7 +1439,7 @@ class POSTRequestMock(object):
     method = "POST"
 
     def __init__(self, post_data, user, assert_callback=None):
-        self.POST = post_data
+        self.REQUEST = self.POST = post_data
         self.user = user
         self._tornado_handler = DummyHandler(assert_callback)
         self.session = DummySession()

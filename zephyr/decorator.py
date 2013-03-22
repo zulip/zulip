@@ -249,6 +249,11 @@ class POST(object):
         self.converter = converter
         self.default = default
 
+class REQ(POST):
+    # Like POST, but has_request_variables should check request.REQUEST
+    # instead of just request.POST
+    pass
+
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
 # argument to the function.
@@ -284,12 +289,12 @@ def has_request_variables(view_func):
             if value.post_var_name is None:
                 value.post_var_name = name
             post_params.append(value)
-        elif value == POST:
+        elif value in [POST, REQ]:
             # If the function definition does not actually
-            # instantiate a POST object but instead uses the POST
-            # class itself as a value, we instantiate it as a
+            # instantiate a POST/REQ object but instead uses the
+            # POST/REQ class itself as a value, we instantiate it as a
             # convenience
-            post_var = POST(name)
+            post_var = value(name)
             post_var.func_var_name = name
             post_params.append(post_var)
 
@@ -301,7 +306,10 @@ def has_request_variables(view_func):
 
             default_assigned = False
             try:
-                val = request.POST[param.post_var_name]
+                if isinstance(param, REQ):
+                    val = request.REQUEST[param.post_var_name]
+                else:
+                    val = request.POST[param.post_var_name]
             except KeyError:
                 if param.default is POST.NotSpecified:
                     raise RequestVariableMissingError(param.post_var_name)
