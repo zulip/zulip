@@ -11,6 +11,7 @@ from tornado import ioloop
 from zephyr.lib.debug import interactive_debug_listen
 from zephyr.lib.response import json_response
 from zephyr.lib.queue import TornadoQueueClient
+from zephyr import tornado_callbacks
 
 # A hack to keep track of how much time we spend working, versus sleeping in
 # the event loop.
@@ -124,11 +125,14 @@ class Command(BaseCommand):
             print "Quit the server with %s." % quit_command
 
             if settings.USING_RABBITMQ:
+                # Process notifications received via RabbitMQ
                 queue_client = TornadoQueueClient()
                 while not queue_client.ready():
                     step_tornado_ioloop()
 
-                # FIXME: Register consumer callbacks here
+                def process_notification(chan, method, props, data):
+                    tornado_callbacks.process_notification(data)
+                queue_client.register_json_consumer('notify_tornado', process_notification)
 
             try:
                 # Application is an instance of Django's standard wsgi handler.
