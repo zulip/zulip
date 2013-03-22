@@ -12,7 +12,8 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription,
 from zephyr.tornadoviews import json_get_updates, api_get_messages
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
 from zephyr.lib.initial_password import initial_password, initial_api_key
-from zephyr.lib.actions import do_send_message, gather_subscriptions
+from zephyr.lib.actions import do_send_message, gather_subscriptions, \
+    create_stream_if_needed, do_add_subscription
 from zephyr.lib.bugdown import convert, emoji_list
 
 import simplejson
@@ -82,7 +83,8 @@ class AuthedTestCase(TestCase):
         # Usernames are unique, even across Realms.
         return UserProfile.objects.get(user__email__iexact=email)
 
-    def send_message(self, sender_name, recipient_name, message_type):
+    def send_message(self, sender_name, recipient_name, message_type,
+                     content="test content", subject="test"):
         sender = self.get_user_profile(sender_name)
         if message_type == Recipient.PERSONAL:
             recipient = self.get_user_profile(recipient_name)
@@ -91,8 +93,10 @@ class AuthedTestCase(TestCase):
         recipient = Recipient.objects.get(type_id=recipient.id, type=message_type)
         pub_date = now()
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
-        do_send_message(Message(sender=sender, recipient=recipient, subject="test",
-                                pub_date=pub_date, sending_client=sending_client))
+        # Subject field is unused by PMs.
+        do_send_message(Message(sender=sender, recipient=recipient, subject=subject,
+                                pub_date=pub_date, sending_client=sending_client,
+                                content=content))
 
     def users_subscribed_to_stream(self, stream_name, realm_domain):
         realm = Realm.objects.get(domain=realm_domain)
@@ -279,24 +283,23 @@ class PersonalMessagesTest(AuthedTestCase):
         recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
         self.assertEqual(self.message_stream(user)[-1].recipient, recipient)
 
-    def test_personal(self):
+    def assert_personal(self, sender_email, receiver_email, content="test content"):
         """
-        If you send a personal, only you and the recipient see it.
+        Send a private message from `sender_email` to `receiver_email` and check
+        that only those two parties actually received the message.
         """
-        self.login("hamlet@humbughq.com")
+        sender = User.objects.get(email=sender_email)
+        receiver = User.objects.get(email=receiver_email)
 
-        old_sender = User.objects.filter(email="hamlet@humbughq.com")
-        old_sender_messages = len(self.message_stream(old_sender))
+        sender_messages = len(self.message_stream(sender))
+        receiver_messages = len(self.message_stream(receiver))
 
-        old_recipient = User.objects.filter(email="othello@humbughq.com")
-        old_recipient_messages = len(self.message_stream(old_recipient))
-
-        other_users = User.objects.filter(~Q(email="hamlet@humbughq.com") & ~Q(email="othello@humbughq.com"))
+        other_users = User.objects.filter(~Q(email=sender_email) & ~Q(email=receiver_email))
         old_other_messages = []
         for user in other_users:
             old_other_messages.append(len(self.message_stream(user)))
 
-        self.send_message("hamlet@humbughq.com", "othello@humbughq.com", Recipient.PERSONAL)
+        self.send_message(sender_email, receiver_email, Recipient.PERSONAL, content)
 
         # Users outside the conversation don't get the message.
         new_other_messages = []
@@ -306,26 +309,38 @@ class PersonalMessagesTest(AuthedTestCase):
         self.assertEqual(old_other_messages, new_other_messages)
 
         # The personal message is in the streams of both the sender and receiver.
-        self.assertEqual(len(self.message_stream(old_sender)),
-                         old_sender_messages + 1)
-        self.assertEqual(len(self.message_stream(old_recipient)),
-                         old_recipient_messages + 1)
+        self.assertEqual(len(self.message_stream(sender)),
+                         sender_messages + 1)
+        self.assertEqual(len(self.message_stream(receiver)),
+                         receiver_messages + 1)
 
-        sender = User.objects.get(email="hamlet@humbughq.com")
-        receiver = User.objects.get(email="othello@humbughq.com")
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         self.assertEqual(self.message_stream(sender)[-1].recipient, recipient)
         self.assertEqual(self.message_stream(receiver)[-1].recipient, recipient)
 
+    def test_personal(self):
+        """
+        If you send a personal, only you and the recipient see it.
+        """
+        self.login("hamlet@humbughq.com")
+        self.assert_personal("hamlet@humbughq.com", "othello@humbughq.com")
+
+    def test_non_ascii_personal(self):
+        """
+        Sending a PM containing non-ASCII characters succeeds.
+        """
+        self.login("hamlet@humbughq.com")
+        self.assert_personal("hamlet@humbughq.com", "othello@humbughq.com", u"hümbüǵ")
+
 class StreamMessagesTest(AuthedTestCase):
     fixtures = ['messages.json']
 
-    def test_message_to_stream(self):
+    def assert_stream_message(self, stream_name, subject="test subject",
+                              content="test content"):
         """
-        If you send a message to a stream, everyone subscribed to the stream
-        receives the messages.
+        Check that messages sent to a stream reach all subscribers to that stream.
         """
-        subscribers = self.users_subscribed_to_stream("Scotland", "humbughq.com")
+        subscribers = self.users_subscribed_to_stream(stream_name, "humbughq.com")
         old_subscriber_messages = []
         for subscriber in subscribers:
             old_subscriber_messages.append(len(self.message_stream(subscriber)))
@@ -337,18 +352,45 @@ class StreamMessagesTest(AuthedTestCase):
 
         a_subscriber_email = subscribers[0].email
         self.login(a_subscriber_email)
-        self.send_message(a_subscriber_email, "Scotland", Recipient.STREAM)
+        self.send_message(a_subscriber_email, stream_name, Recipient.STREAM,
+                          subject, content)
 
+        # Did all of the subscribers get the message?
         new_subscriber_messages = []
         for subscriber in subscribers:
            new_subscriber_messages.append(len(self.message_stream(subscriber)))
 
+        # Did non-subscribers not get the message?
         new_non_subscriber_messages = []
         for non_subscriber in non_subscribers:
             new_non_subscriber_messages.append(len(self.message_stream(non_subscriber)))
 
         self.assertEqual(old_non_subscriber_messages, new_non_subscriber_messages)
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
+
+    def test_message_to_stream(self):
+        """
+        If you send a message to a stream, everyone subscribed to the stream
+        receives the messages.
+        """
+        self.assert_stream_message("Scotland")
+
+    def test_non_ascii_stream_message(self):
+        """
+        Sending a stream message containing non-ASCII characters in the stream
+        name, subject, or message body succeeds.
+        """
+        self.login("hamlet@humbughq.com")
+
+        # Subscribe everyone to a stream with non-ASCII characters.
+        non_ascii_stream_name = u"hümbüǵ"
+        realm = Realm.objects.get(domain="humbughq.com")
+        stream, _ = create_stream_if_needed(realm, non_ascii_stream_name)
+        for user_profile in UserProfile.objects.filter(realm=realm):
+            do_add_subscription(user_profile, stream, no_log=True)
+
+        self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
+                                   content=u"hümbüǵ")
 
 class PointerTest(AuthedTestCase):
     fixtures = ['messages.json']
