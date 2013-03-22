@@ -36,7 +36,7 @@ from zephyr.decorator import require_post, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
     get_user_profile_by_user_id, authenticated_rest_api_view, \
-    process_patch_as_post
+    process_patch_as_post, REQ
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
@@ -502,7 +502,7 @@ def update_pointer_backend(request, user_profile,
 
 @authenticated_json_post_view
 def json_get_old_messages(request, user_profile):
-    return get_old_messages_backend(request, user_profile=user_profile,
+    return get_old_messages_backend(request, user_profile,
                                     apply_markdown=True)
 
 @authenticated_api_view
@@ -510,7 +510,7 @@ def json_get_old_messages(request, user_profile):
 def api_get_old_messages(request, user_profile,
                          apply_markdown=POST(default=False,
                                              converter=simplejson.loads)):
-    return get_old_messages_backend(request, user_profile=user_profile,
+    return get_old_messages_backend(request, user_profile,
                                     apply_markdown=apply_markdown)
 
 class BadNarrowOperator(Exception):
@@ -620,12 +620,13 @@ def get_public_stream(request, stream, realm):
     return stream
 
 @has_request_variables
-def get_old_messages_backend(request, anchor = POST(converter=int),
-                             num_before = POST(converter=to_non_negative_int),
-                             num_after = POST(converter=to_non_negative_int),
-                             narrow = POST('narrow', converter=narrow_parameter, default=None),
-                             stream = POST(default=None),
-                             user_profile=None, apply_markdown=True):
+def get_old_messages_backend(request, user_profile,
+                             anchor = REQ(converter=int),
+                             num_before = REQ(converter=to_non_negative_int),
+                             num_after = REQ(converter=to_non_negative_int),
+                             narrow = REQ('narrow', converter=narrow_parameter, default=None),
+                             stream = REQ(default=None),
+                             apply_markdown=True):
     if stream is not None:
         stream = get_public_stream(request, stream, user_profile.realm)
         recipient = get_recipient(Recipient.STREAM, stream.id)
