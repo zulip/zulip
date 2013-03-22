@@ -172,7 +172,8 @@ def setup_event_queue(io_loop):
 
     send_restart_events()
 
-# Called from Django
+# The following functions are called from Django
+
 def request_event_queue(user_profile, apply_markdown):
     if settings.TORNADO_SERVER:
         req = {'dont_block'    : 'true',
@@ -188,3 +189,16 @@ def request_event_queue(user_profile, apply_markdown):
         return resp.json['queue_id']
 
     return None
+
+def get_user_events(user_profile, queue_id, last_event_id):
+    if settings.TORNADO_SERVER:
+        resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
+                            auth=requests.auth.HTTPBasicAuth(user_profile.user.email,
+                                                             user_profile.api_key),
+                            params={'queue_id'     : queue_id,
+                                    'last_event_id': last_event_id,
+                                    'client'       : 'internal'})
+
+        resp.raise_for_status()
+
+        return resp.json['events']

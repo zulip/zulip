@@ -43,7 +43,7 @@ from zephyr.lib.response import json_success, json_error, json_response, json_me
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.unminify import SourceMap
-from zephyr.lib.event_queue import request_event_queue
+from zephyr.lib.event_queue import request_event_queue, get_user_events
 from zephyr import tornado_callbacks
 
 from confirmation.models import Confirmation
@@ -1423,7 +1423,11 @@ def events_register_backend(request, user_profile, apply_markdown=True,
     ret = {'queue_id': queue_id}
     event_types = set(event_types)
 
+    # Fetch initial data
     if "message" in event_types:
+        # The client should use get_old_messages() to fetch messages
+        # starting with the max_message_id.  They will get messages
+        # newer than that ID via get_events()
         messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
         if messages:
             ret['max_message_id'] = messages[0].id
@@ -1432,5 +1436,17 @@ def events_register_backend(request, user_profile, apply_markdown=True,
     if "pointer" in event_types:
         ret['pointer'] = user_profile.pointer
 
-    ret['last_event_id'] = -1
+    # Apply events that came in while we were fetching initial data
+    events = get_user_events(user_profile, queue_id, -1)
+    for event in events:
+        if event['type'] == "message":
+            ret['max_message_id'] = max(ret['max_message_id'], event['message']['id'])
+        elif event['type'] == "pointer":
+            ret['pointer'] = max(ret['pointer'], event['pointer'])
+
+    if events:
+        ret['last_event_id'] = events[-1:]['id']
+    else:
+        ret['last_event_id'] = -1
+
     return json_success(ret)
