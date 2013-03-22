@@ -3,7 +3,7 @@ from zephyr.models import UserActivity
 
 from zephyr.decorator import asynchronous, authenticated_api_view, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
-    has_request_variables, POST, to_non_negative_int, json_to_bool, \
+    has_request_variables, POST, to_non_negative_int, json_to_bool, json_to_list, \
     JsonableError, authenticated_rest_api_view, REQ
 
 from zephyr.lib.response import json_response, json_success, json_error
@@ -211,10 +211,12 @@ def rest_get_events(request, user_profile, handler,
 def get_events_backend(request, user_profile, handler,
                        last_event_id = REQ(converter=int, default=None),
                        queue_id = REQ(default=None), apply_markdown=True,
+                       event_types = REQ(default=None, converter=json_to_list),
                        dont_block = REQ(default=False, converter=json_to_bool)):
     if queue_id is None:
         if dont_block:
-            client = allocate_client_descriptor(user_profile.id, apply_markdown)
+            client = allocate_client_descriptor(user_profile.id, event_types,
+                                                apply_markdown)
             queue_id = client.event_queue.id
         else:
             return json_error("Missing 'queue_id' argument")

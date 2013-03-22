@@ -15,10 +15,11 @@ import signal
 IDLE_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
 
 class ClientDescriptor(object):
-    def __init__(self, user_profile_id, id, apply_markdown=True):
+    def __init__(self, user_profile_id, id, event_types=None, apply_markdown=True):
         self.user_profile_id = user_profile_id
         self.current_handler = None
         self.event_queue = EventQueue(id)
+        self.event_types = event_types
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
 
@@ -38,6 +39,11 @@ class ClientDescriptor(object):
                 return
             except socket.error:
                 pass
+
+    def accepts_event_type(self, type):
+        if self.event_types is None:
+            return True
+        return type in self.event_types
 
     def idle(self, now):
         self.check_connection()
@@ -87,11 +93,11 @@ user_clients = {}
 
 next_queue_id = 0
 
-def allocate_client_descriptor(user_profile_id, apply_markdown):
+def allocate_client_descriptor(user_profile_id, event_types, apply_markdown):
     global next_queue_id
     id = str(settings.SERVER_GENERATION) + ':' + str(next_queue_id)
     next_queue_id += 1
-    client = ClientDescriptor(user_profile_id, id, apply_markdown)
+    client = ClientDescriptor(user_profile_id, id, event_types, apply_markdown)
     clients[id] = client
     user_clients.setdefault(user_profile_id, []).append(client)
     return client
@@ -151,9 +157,10 @@ def load_event_queues():
                  % (len(clients), time.time() - start))
 
 def send_restart_events():
+    event = dict(type='restart', server_generation=settings.SERVER_GENERATION)
     for client in clients.itervalues():
-        event = dict(type='restart', server_generation=settings.SERVER_GENERATION)
-        client.add_event(event)
+        # All clients get restart events
+        client.add_event(event.copy())
 
 def setup_event_queue(io_loop):
     load_event_queues()
@@ -174,11 +181,13 @@ def setup_event_queue(io_loop):
 
 # The following functions are called from Django
 
-def request_event_queue(user_profile, apply_markdown):
+def request_event_queue(user_profile, apply_markdown, event_types=None):
     if settings.TORNADO_SERVER:
         req = {'dont_block'    : 'true',
                'apply_markdown': simplejson.dumps(apply_markdown),
                'client'        : 'internal'}
+        if event_types is not None:
+            req['event_types'] = simplejson.dumps(event_types)
         resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
                              auth=requests.auth.HTTPBasicAuth(user_profile.user.email,
                                                               user_profile.api_key),
@@ -197,6 +206,7 @@ def get_user_events(user_profile, queue_id, last_event_id):
                                                              user_profile.api_key),
                             params={'queue_id'     : queue_id,
                                     'last_event_id': last_event_id,
+                                    'dont_block'   : 'true',
                                     'client'       : 'internal'})
 
         resp.raise_for_status()

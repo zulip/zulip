@@ -1415,16 +1415,18 @@ def api_events_register(request, user_profile,
 
 @has_request_variables
 def events_register_backend(request, user_profile, apply_markdown=True,
-                            event_types=POST(converter=json_to_list)):
-    queue_id = request_event_queue(user_profile, apply_markdown)
+                            event_types=POST(converter=json_to_list, default=None)):
+    queue_id = request_event_queue(user_profile, apply_markdown, event_types)
     if queue_id is None:
         return json_error(msg="Could not allocate queue")
 
     ret = {'queue_id': queue_id}
-    event_types = set(event_types)
+    if event_types is not None:
+        event_types = set(event_types)
 
-    # Fetch initial data
-    if "message" in event_types:
+    # Fetch initial data.  When event_types is not specified, clients
+    # want all event types.
+    if event_types is None or "message" in event_types:
         # The client should use get_old_messages() to fetch messages
         # starting with the max_message_id.  They will get messages
         # newer than that ID via get_events()
@@ -1433,7 +1435,7 @@ def events_register_backend(request, user_profile, apply_markdown=True,
             ret['max_message_id'] = messages[0].id
         else:
             ret['max_message_id'] = -1
-    if "pointer" in event_types:
+    if event_types is None or "pointer" in event_types:
         ret['pointer'] = user_profile.pointer
 
     # Apply events that came in while we were fetching initial data

@@ -240,9 +240,10 @@ def update_pointer(user_profile_id, new_pointer):
                          new_pointer=new_pointer,
                          update_types=["pointer_update"])
 
+    event = dict(type='pointer', pointer=new_pointer)
     for client in user_clients.get(user_profile_id, []):
-        event = dict(type='pointer', pointer=new_pointer)
-        client.add_event(event)
+        if client.accepts_event_type(event['type']):
+            client.add_event(event.copy())
 
 def process_new_message(data):
     message = cache_get_message(data['message'])
@@ -251,9 +252,9 @@ def process_new_message(data):
         user_receive_message(user_profile_id, message)
 
         for client in user_clients.get(user_profile_id, []):
-            event = dict(type='message', message=message.to_dict(client.apply_markdown))
-            client.add_event(event)
-
+            if client.accepts_event_type('message'):
+                event = dict(type='message', message=message.to_dict(client.apply_markdown))
+                client.add_event(event)
 
     if 'stream_name' in data:
         stream_receive_message(data['realm_id'], data['stream_name'], message)
