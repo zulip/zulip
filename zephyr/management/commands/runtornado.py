@@ -105,7 +105,7 @@ class Command(BaseCommand):
                 if django.conf.settings.DEBUG:
                     ioloop.IOLoop.instance().set_blocking_log_threshold(5)
 
-                setup_event_queue(ioloop.IOLoop.instance())
+                setup_event_queue()
                 ioloop.IOLoop.instance().start()
             except KeyboardInterrupt:
                 sys.exit(0)

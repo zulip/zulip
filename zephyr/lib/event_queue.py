@@ -1,6 +1,5 @@
 from django.conf import settings
 from collections import deque
-from tornado.ioloop import PeriodicCallback
 import os
 import time
 import socket
@@ -11,6 +10,7 @@ import cPickle as pickle
 import atexit
 import sys
 import signal
+import tornado
 
 IDLE_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
 
@@ -162,7 +162,7 @@ def send_restart_events():
         # All clients get restart events
         client.add_event(event.copy())
 
-def setup_event_queue(io_loop):
+def setup_event_queue():
     load_event_queues()
     atexit.register(dump_event_queues)
     # Make sure we dump event queues even if we exit via signal
@@ -174,7 +174,9 @@ def setup_event_queue(io_loop):
         pass
 
     # Set up event queue garbage collection
-    pc = PeriodicCallback(gc_event_queues, EVENT_QUEUE_GC_FREQ_MSECS, io_loop)
+    ioloop = tornado.ioloop.IOLoop.instance()
+    pc = tornado.ioloop.PeriodicCallback(gc_event_queues,
+                                         EVENT_QUEUE_GC_FREQ_MSECS, ioloop)
     pc.start()
 
     send_restart_events()
