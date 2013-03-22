@@ -1,10 +1,5 @@
 var common = require('../common.js').common;
 
-function un_narrow() {
-    casper.test.info('Un-narrowing');
-    common.keypress(27); // Esc
-}
-
 common.start_and_log_in();
 
 // We could use the messages sent by 01-site.js, but we want to
@@ -25,6 +20,9 @@ common.send_many([
     { stream:  'Verona', subject: 'other subject',
       content: 'test message C' },
 
+    { stream:  'Venice', subject: 'frontend test',
+      content: 'other message' },
+
     { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
       content:   'personal A' },
 
@@ -38,7 +36,10 @@ common.send_many([
       content: 'test message D' },
 
     { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
-      content:   'personal D' }
+      content:   'personal D' },
+
+    { recipient: 'cordelia@humbughq.com',
+      content:   'personal E' }
 ]);
 
 
@@ -47,10 +48,12 @@ common.send_many([
 function expect_home() {
     common.expected_messages('zhome', [
         'Verona > frontend test',
-        'You and Cordelia Lear, King Hamlet'
+        'You and Cordelia Lear, King Hamlet',
+        'You and Cordelia Lear'
     ], [
         '<p>test message D</p>',
-        '<p>personal D</p>'
+        '<p>personal D</p>',
+        '<p>personal E</p>'
     ]);
 }
 
@@ -77,7 +80,20 @@ function expect_stream_subject() {
     ]);
 }
 
-function expect_pm() {
+function expect_subject() {
+    common.expected_messages('zfilt', [
+        'Verona > frontend test',
+        'Venice > frontend test',
+        'Verona > frontend test'
+    ], [
+        '<p>test message A</p>',
+        '<p>test message B</p>',
+        '<p>other message</p>',
+        '<p>test message D</p>'
+    ]);
+}
+
+function expect_huddle() {
     common.expected_messages('zfilt', [
         'You and Cordelia Lear, King Hamlet'
     ], [
@@ -87,11 +103,42 @@ function expect_pm() {
     ]);
 }
 
+function expect_1on1() {
+    common.expected_messages('zfilt', [
+        'You and Cordelia Lear'
+    ], [
+        '<p>personal C</p>',
+        '<p>personal E</p>'
+    ]);
+}
+
+function expect_all_pm() {
+    common.expected_messages('zfilt', [
+        'You and Cordelia Lear, King Hamlet',
+        'You and Cordelia Lear'
+    ], [
+        '<p>personal A</p>',
+        '<p>personal B</p>',
+        '<p>personal C</p>',
+        '<p>personal D</p>',
+        '<p>personal E</p>'
+    ]);
+}
+
+function un_narrow() {
+    casper.then(function () {
+        casper.test.info('Un-narrowing');
+        common.keypress(27); // Esc
+    });
+
+    casper.then(expect_home);
+}
+
 
 // Narrow by clicking links.
 
 common.wait_for_receive(function () {
-    casper.test.info('Narrowing to stream');
+    casper.test.info('Narrowing by clicking stream');
     casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
 });
 
@@ -102,22 +149,93 @@ casper.then(function () {
 
 casper.then(function () {
     expect_home();
-    casper.test.info('Narrowing to subject');
+    casper.test.info('Narrowing by clicking subject');
     casper.click('*[title="Narrow to stream \\\"Verona\\\", subject \\\"frontend test\\\""]');
 });
 
 casper.then(function () {
     expect_stream_subject();
-    un_narrow();
+
+    // This time, un-narrow by hitting the search 'x'
+    casper.test.info('Un-narrowing');
+    casper.click('#search_exit');
 });
 
 casper.then(function () {
     expect_home();
-    casper.test.info('Narrowing to personals');
+    casper.test.info('Narrowing by clicking personal');
     casper.click('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]');
 });
 
-casper.then(expect_pm);
+
+casper.then(function () {
+    expect_huddle();
+
+    // Un-narrow by clicking "Humbug"
+    casper.test.info('Un-narrowing');
+    casper.click('.brand');
+});
+
+
+// Narrow by typing in search strings or operators.
+
+// Put the specified string into the search box, then
+// select the menu item matching 'item'.
+function do_search(str, item) {
+    casper.then(function () {
+        casper.test.info('Searching ' + str + ', ' + item);
+
+        casper.evaluate(function (str, item) {
+            // Set the value and then send a bogus keyup event to trigger
+            // the typeahead.
+            $('#search_query')
+                .focus()
+                .val(str)
+                .trigger($.Event('keyup', { which: 0 }));
+
+            // You might think these steps should be split by casper.then,
+            // but apparently that's enough to make the typeahead close (??),
+            // but not the first time you use do_search.
+
+            // Trigger the typeahead.
+            // Reaching into the guts of Bootstrap Typeahead like this is not
+            // great, but I found it very hard to do it any other way.
+            var tah = $('#search_query').data().typeahead;
+            tah.mouseenter({
+                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0]
+            });
+            tah.select();
+        }, {str: str, item: item});
+    });
+}
+
+function search_and_check(str, item, check) {
+    do_search(str, item);
+
+    casper.then(check);
+    un_narrow();
+}
+
+casper.then(expect_home);
+
+// Test stream / recipient autocomplete in the search bar
+search_and_check('Verona',   'Narrow to stream',  expect_stream);
+search_and_check('Cordelia', 'Narrow to private', expect_1on1);
+
+// Test operators
+search_and_check('stream:verona',                       'Narrow', expect_stream);
+search_and_check('stream:verona subject:frontend+test', 'Narrow', expect_stream_subject);
+search_and_check('subject:frontend+test',               'Narrow', expect_subject);
+
+
+// Narrow by clicking the left sidebar.
+casper.then(function () {
+    casper.test.info('Narrowing with left sidebar');
+});
+casper.thenClick('#stream_filters [data-name="Verona"]  a', expect_stream);
+casper.thenClick('#global_filters [data-name="home"]    a', expect_home);
+casper.thenClick('#global_filters [data-name="private"] a', expect_all_pm);
+un_narrow();
 
 
 common.then_log_out();
