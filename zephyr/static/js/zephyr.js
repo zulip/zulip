@@ -680,10 +680,12 @@ function get_updates(options) {
             get_updates_timeout = setTimeout(get_updates, 0);
         },
         error: function (xhr, error_type, exn) {
-            // If we are old enough to have messages outside of the Tornado
-            // cache, immediately reload.
+            // If we are old enough to have messages outside of the
+            // Tornado cache or if we're old enough that our message
+            // queue has been garbage collected, immediately reload.
             if ((xhr.status === 400) &&
-                ($.parseJSON(xhr.responseText).msg.indexOf("too old") !== -1)) {
+                ($.parseJSON(xhr.responseText).msg.indexOf("too old") !== -1 ||
+                 $.parseJSON(xhr.responseText).msg.indexOf("Bad event queue id") !== -1)) {
                 reload.initiate({immediate: true});
             }
 
