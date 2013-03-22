@@ -69,7 +69,7 @@ def init_from_options(options):
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
                  verbose=False, retry_on_errors=True,
-                 site=None, client="Python API"):
+                 site=None, client="API: Python"):
         if None in (api_key, email):
             if config_file is None:
                 config_file = os.path.join(os.environ["HOME"], ".humbugrc")
@@ -96,10 +96,8 @@ class Client(object):
         self.retry_on_errors = retry_on_errors
         self.client_name = client
 
-    def do_api_query(self, orig_request, url, longpolling = False):
+    def do_api_query(self, orig_request, url, method="POST", longpolling = False):
         request = {}
-        request["email"] = self.email
-        request["api-key"] = self.api_key
         request["client"] = self.client_name
 
         for (key, val) in orig_request.iteritems():
@@ -139,9 +137,13 @@ class Client(object):
 
         while True:
             try:
-                res = requests.post(urlparse.urljoin(self.base_url, url),
-                                    data=query_state["request"],
-                                    verify=True, timeout=55)
+                res = requests.request(
+                        method,
+                        urlparse.urljoin(self.base_url, url),
+                        auth=requests.auth.HTTPBasicAuth(self.email,
+                                                         self.api_key),
+                        data=query_state["request"],
+                        verify=True, timeout=55)
 
                 # On 50x errors, try again after a short sleep
                 if str(res.status_code).startswith('5'):
@@ -186,12 +188,13 @@ class Client(object):
                     "status_code": res.status_code}
 
     @classmethod
-    def _register(cls, name, url=None, make_request=(lambda request={}: request), **query_kwargs):
+    def _register(cls, name, url=None, make_request=(lambda request={}: request),
+            method="POST", **query_kwargs):
         if url is None:
             url = name
         def call(self, *args, **kwargs):
             request = make_request(*args, **kwargs)
-            return self.do_api_query(request, API_VERSTRING + url, **query_kwargs)
+            return self.do_api_query(request, API_VERSTRING + url, method=method, **query_kwargs)
         call.func_name = name
         setattr(cls, name, call)
 
@@ -232,11 +235,14 @@ class Client(object):
 def _mk_subs(streams):
     return {'subscriptions': streams}
 
-Client._register('send_message', make_request=(lambda request: request))
-Client._register('get_messages', longpolling=True)
-Client._register('get_profile')
-Client._register('get_public_streams')
-Client._register('get_members')
-Client._register('list_subscriptions',   url='subscriptions/list')
-Client._register('add_subscriptions',    url='subscriptions/add',    make_request=_mk_subs)
-Client._register('remove_subscriptions', url='subscriptions/remove', make_request=_mk_subs)
+def _mk_del_subs(streams):
+    return {'delete': streams}
+
+Client._register('send_message', url='messages', make_request=(lambda request: request))
+Client._register('get_messages', method='GET', url='messages/latest', longpolling=True)
+Client._register('get_profile', method='GET', url='users/me')
+Client._register('get_public_streams', method='GET', url='streams')
+Client._register('get_members', method='GET', url='users')
+Client._register('list_subscriptions', method='GET', url='users/me/subscriptions')
+Client._register('add_subscriptions', url='users/me/subscriptions',    make_request=_mk_subs)
+Client._register('delete_subscriptions', method='PATCH', url='users/me/subscriptions', make_request=_mk_del_subs)
