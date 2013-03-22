@@ -127,12 +127,13 @@ class Command(BaseCommand):
                 queue_client.register_json_consumer('notify_tornado', process_notification)
 
             try:
+                urls = (r"/json/get_updates",
+                        r"/api/v1/get_messages",
+                        r"/notify_tornado",
+                        )
                 # Application is an instance of Django's standard wsgi handler.
-                application = web.Application([(r"/json/get_updates", AsyncDjangoHandler),
-                                               (r"/api/v1/get_messages", AsyncDjangoHandler),
-                                               (r"/notify_tornado", AsyncDjangoHandler),
-
-                                               ], debug=django.conf.settings.DEBUG,
+                application = web.Application([(url, AsyncDjangoHandler) for url in urls],
+                                                debug=django.conf.settings.DEBUG,
                                               # Disable Tornado's own request logging, since we have our own
                                               log_function=lambda x: None)
 
