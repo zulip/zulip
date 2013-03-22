@@ -3,9 +3,10 @@ from zephyr.models import UserActivity
 
 from zephyr.decorator import asynchronous, authenticated_api_view, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
-    has_request_variables, POST, to_non_negative_int, json_to_bool
+    has_request_variables, POST, to_non_negative_int, json_to_bool, \
+    JsonableError, authenticated_rest_api_view, REQ
 
-from zephyr.lib.response import json_success
+from zephyr.lib.response import json_success, json_error
 
 from zephyr.tornado_callbacks import \
     get_user_pointer, fetch_stream_messages, fetch_user_messages, \
@@ -35,12 +36,20 @@ def json_get_updates(request, user_profile, handler):
 
 @asynchronous
 @authenticated_api_view
+def api_get_messages(request, user_profile, handler):
+    return get_messages_backend(request, user_profile, handler)
+
 @has_request_variables
-def api_get_messages(request, user_profile, handler, client_id=POST(default=None),
-                     apply_markdown=POST(default=False, converter=json_to_bool)):
+def get_messages_backend(request, user_profile, handler, client_id=REQ(default=None),
+                     apply_markdown=REQ(default=False, converter=json_to_bool)):
     return get_updates_backend(request, user_profile, handler, client_id,
                                apply_markdown=apply_markdown,
                                client=request.client)
+
+@asynchronous
+@authenticated_rest_api_view
+def rest_get_messages(request, user_profile, handler):
+    return get_messages_backend(request, user_profile, handler)
 
 def format_updates_response(messages=[], apply_markdown=True,
                             user_profile=None, new_pointer=None,
@@ -115,13 +124,12 @@ def return_messages_immediately(user_profile, client_id, last,
 # just never receive any messages.
 @has_request_variables
 def get_updates_backend(request, user_profile, handler, client_id,
-                        last = POST(converter=to_non_negative_int, default=None),
-                        client_server_generation = POST(whence='server_generation', default=None,
+                        last = REQ(converter=to_non_negative_int, default=None),
+                        client_server_generation = REQ(whence='server_generation', default=None,
                                                         converter=int),
-                        client_pointer = POST(whence='pointer', converter=int, default=None),
-
-                        dont_block = POST(converter=json_to_bool, default=False),
-                        stream_name = POST(default=None), apply_markdown=True,
+                        client_pointer = REQ(whence='pointer', converter=int, default=None),
+                        dont_block = REQ(converter=json_to_bool, default=False),
+                        stream_name = REQ(default=None), apply_markdown=True,
                         **kwargs):
     resp = return_messages_immediately(user_profile, client_id, last,
                                        client_server_generation,
