@@ -27,7 +27,7 @@ status = 0
 max_count = 0
 warn_queues = []
 
-if not environ['USER'] in ['root', 'rabbitmq']:
+if 'USER' in environ and not environ['USER'] in ['root', 'rabbitmq']:
     print "This script must be run as the root or rabbitmq user"
 
 for line in output.split("\n"):
