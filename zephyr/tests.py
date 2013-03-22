@@ -783,28 +783,26 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_json_error(result,
                                "Invalid stream name (%s)." % (invalid_stream_name,))
 
-    def test_subscriptions_add_for_principal(self):
+    def assert_adding_subscriptions_for_principal(self, invitee, streams):
         """
         Calling /json/subscriptions/add on behalf of another principal (for
         whom you have permission to add subscriptions) should successfully add
         those subscriptions and send a message to the subscribee notifying
         them.
         """
-        other_email = "iago@humbughq.com"
-        other_profile = UserProfile.objects.get(user__email__iexact=other_email)
+        other_profile = UserProfile.objects.get(user__email__iexact=invitee)
+        current_streams = self.get_streams(invitee)
         self.assertIsInstance(other_profile, UserProfile)
-        current_streams = self.get_streams(other_email)
         self.assertNotEqual(len(current_streams), 0)  # necessary for full test coverage
-        add_streams = self.make_random_stream_names(current_streams, current_streams)
-        self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
-        streams_to_sub = add_streams[:1]  # just add one, to make the message easier to check
+        self.assertNotEqual(len(streams), 0)  # necessary for full test coverage
+        streams_to_sub = streams[:1]  # just add one, to make the message easier to check
         streams_to_sub.extend(current_streams)
         self.helper_check_subs_before_and_after_add(
             "/json/subscriptions/add", streams_to_sub,
-            {"principals": simplejson.dumps([other_email])},
-            {"subscribed": {other_email: add_streams[:1]},
-             "already_subscribed": {other_email: current_streams}},
-            other_email, streams_to_sub)
+            {"principals": simplejson.dumps([invitee])},
+            {"subscribed": {invitee: streams[:1]},
+             "already_subscribed": {invitee: current_streams}},
+            invitee, streams_to_sub)
         # verify that the user was sent a message informing them about the subscription
         msg = Message.objects.latest('id')
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
@@ -812,11 +810,27 @@ class SubscriptionAPITest(AuthedTestCase):
                 user__email__iexact="humbug+notifications@humbughq.com").id)
         expected_msg = ("Hi there!  We thought you'd like to know that %s just "
                         "subscribed you to the stream '%s'"
-                        % (self.user_profile.full_name, add_streams[0]))
+                        % (self.user_profile.full_name, streams[0]))
         self.assertEqual(msg.content, expected_msg)
         recipients = get_display_recipient(msg.recipient)
         self.assertEqual(len(recipients), 1)
-        self.assertEqual(recipients[0]['email'], other_email)
+        self.assertEqual(recipients[0]['email'], invitee)
+
+    def test_subscriptions_add_for_principal(self):
+        """
+        You can subscribe other people to streams.
+        """
+        invitee = "iago@humbughq.com"
+        current_streams = self.get_streams(invitee)
+        invite_streams = self.make_random_stream_names(current_streams, current_streams)
+        self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
+
+    def test_non_ascii_subscription_for_principal(self):
+        """
+        You can subscribe other people to streams even if they containing
+        non-ASCII characters.
+        """
+        self.assert_adding_subscriptions_for_principal("iago@humbughq.com", [u"hümbüǵ"])
 
     def test_subscription_add_invalid_principal(self):
         """
