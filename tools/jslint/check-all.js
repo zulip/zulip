@@ -33,7 +33,7 @@ var globals =
     + ' respond_to_message recenter_view'
     + ' scroll_to_selected disable_pointer_movement get_private_message_recipient'
     + ' load_old_messages'
-    + ' at_top_of_viewport at_bottom_of_viewport'
+    + ' at_top_of_viewport at_bottom_of_viewport within_viewport'
     + ' viewport'
     + ' load_more_messages reset_load_more_status have_scrolled_away_from_top'
     + ' home_unread_messages'

@@ -48,6 +48,15 @@ $(function () {
                     "full_name": "Humbug Feedback Bot"}]);
 });
 
+function within_viewport(message_row) {
+    // Returns true if a message is fully within the viewport.
+    var message_top = message_row.offset().top;
+    var message_bottom  = message_top + message_row.height();
+    var viewport_top = viewport.scrollTop();
+    var viewport_bottom = viewport_top + viewport.height();
+    return (message_top > viewport_top) && (message_bottom < viewport_bottom);
+}
+
 // Why do we look at the 'bottom' in above_view_threshold and the top
 // in below_view_threshold as opposed to vice versa?  Mostly to handle
 // the case of gigantic messages.  Imagine the case of a selected

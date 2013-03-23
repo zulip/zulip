@@ -362,6 +362,37 @@ MessageList.prototype = {
 
         // Re-add the fading of messages that is lost when we re-render.
         compose.update_faded_messages();
+
+        if (this !== current_msg_list) {
+            return;
+        }
+
+        // If we are near the bottom of our feed (the bottom is visible) and can
+        // scroll up without moving the pointer out of the viewport, do so, by
+        // up to the amount taken up by the new message.
+        var selected_row = current_msg_list.selected_row();
+        if (within_viewport(rows.last_visible()) && selected_row && (selected_row.length > 0)) {
+            var viewport_offset = viewport.scrollTop();
+            var new_messages_height = 0;
+
+            $.each(rendered_elems, function() {
+                // Sometimes there are non-DOM elements in rendered_elems; only
+                // try to get the heights of actual trs.
+                if ($(this).is("tr")) {
+                    new_messages_height += $(this).height();
+                }
+            });
+
+            var selected_row_offset = selected_row.offset().top;
+            var available_space_for_scroll = selected_row_offset - viewport_offset -
+                $("#floating_recipient_bar").height() - $("#searchbox_form").height();
+
+            suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
+            // viewport (which is window) doesn't have a scrollTop, so scroll
+            // the closest concept that does.
+            $("html, body").animate({scrollTop: viewport_offset +
+                        Math.min(new_messages_height, available_space_for_scroll)});
+        }
     },
 
     append: function MessageList_append(messages) {
