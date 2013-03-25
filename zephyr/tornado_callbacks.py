@@ -13,6 +13,7 @@ import requests
 import simplejson
 import subprocess
 import collections
+from django.db import connection
 
 class Callbacks(object):
     # A user received a message. The key is user_profile.id.
@@ -92,8 +93,19 @@ def initialize_user_messages():
     except Message.DoesNotExist:
         cache_minimum_id = 1
 
-    for um in UserMessage.objects.filter(message_id__gte=cache_minimum_id).order_by("message"):
-        add_user_message(um.user_profile_id, um.message_id)
+    # These next few lines implement the following Django ORM
+    # algorithm using raw SQL:
+    ## for um in UserMessage.objects.filter(message_id__gte=cache_minimum_id).order_by("message"):
+    ##     add_user_message(um.user_profile_id, um.message_id)
+    # We do this because marshalling the Django objects is very
+    # inefficient; total time consumed with the raw SQL is about
+    # 600ms, vs. 3000ms-5000ms if we go through the ORM.
+    cursor = connection.cursor()
+    cursor.execute("SELECT user_profile_id, message_id from zephyr_usermessage " +
+                   "where message_id >= %s order by message_id", [cache_minimum_id])
+    for row in cursor.fetchall():
+        (user_profile_id, message_id) = row
+        add_user_message(user_profile_id, message_id)
 
     streams = {}
     for stream in Stream.objects.select_related().all():
