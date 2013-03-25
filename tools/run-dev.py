@@ -42,6 +42,9 @@ proxy_host = 'localhost:%d' % (proxy_port,)
 
 os.chdir(path.join(path.dirname(__file__), '..'))
 
+# Clean up stale .pyc files etc.
+subprocess.check_call('./tools/clean-repo')
+
 # Set up a new process group, so that we can later kill run{server,tornado}
 # and all of the processes they spawn.
 os.setpgrp()
