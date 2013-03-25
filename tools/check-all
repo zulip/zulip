@@ -71,12 +71,15 @@ try:
         failed = True
 
     pyflakes = subprocess.Popen(['pyflakes'] + by_lang['.py'],
-        stdout = subprocess.PIPE)
+        stdout = subprocess.PIPE,
+        stderr = subprocess.PIPE)
 
-    for ln in pyflakes.stdout:
-        if options.full or not 'imported but unused' in ln:
-            sys.stdout.write(ln)
-            failed = True
+    # pyflakes writes some output (like syntax errors) to stderr. :/
+    for pipe in (pyflakes.stdout, pyflakes.stderr):
+        for ln in pipe:
+            if options.full or not 'imported but unused' in ln:
+                sys.stdout.write(ln)
+                failed = True
 
     sys.exit(1 if failed else 0)
 
