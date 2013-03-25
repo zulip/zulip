@@ -188,34 +188,19 @@ function make_script() {
   go2(stream_message, "narrowing", "Another valuable feature of Humbug is **narrowing**. Click on the word \"narrowing\" directly above this message, and tell me when you've done so."),
   go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
-  go2(stream_message, "narrowing", "Great! We're now only looking at messages on stream `" + my_tutorial_stream + "`, subject `narrowing`. You can tell because the background is grey, and the search bar at the top has a query in it. You can narrow on many different types of things, including:\n"
+  go2(stream_message, "narrowing", "Great! We're now only looking at messages on stream `" + my_tutorial_stream + "`, subject `narrowing`. You can tell because the background is grey, and the search bar at the top has a query in it. You can narrow on:\n"
    + "* A specific stream, by clicking on the stream name\n"
    + "* A specific stream-subject pair, by clicking on the subject name (like we just did)\n"
    + "* Private messages with a specific person\n\n"
    + "Press `Esc` to get out of this narrowed view, scroll down to the bottom, and tell me when you've done so.\n"),
   go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
-  go2(stream_message, "tutorial", "You've got a hang of the basics, so let's talk about some advanced features.\nThe first: code."),
-  go(sleep, 5000),
-  // Markdown
-  go2(stream_message, "tutorial", "Humbug makes it easy to send syntax-highlighted code blocks. Just surround the block in three `~`s and the extension for your programming language, and you get something pretty, like this:\n\n"
-    + "~~~~~ .py\n"
-    + "~~~ .py\n"
-    + "def foo(arg):\n"
-    + "    print 'Hello'\n"
-    + "~~~\n"
-    + "~~~~~"),
-  go(sleep, 7000),
-  go2(stream_message, "tutorial", "You can also do inline preformatted text by surrounding it in `` `s. Finally, there's also more formatting help that you can see by clicking the 'Formatting' link in the new message box."),
-  go(sleep, 6000),
-  go2(stream_message, "tutorial", "(Tell me when you're ready to continue.)"),
-  go2(wait_for_message, 300, any_message_to_me),
-  go(sleep, 1000),
-  go2(stream_message, "tutorial", "There are a bunch of other features I'd love to tell you about that we don't have time for, but look into these later:\n"
+  go2(stream_message, "tutorial", "Great, you've got the hang of the basics. There are a bunch of other features I'd love to tell you about that we don't have time for, but look into these later:\n"
     + "* Keyboard shortcuts (press `?` to see them)\n"
-    + "* Our [API](https://humbughq.com/api)\n"
-    + "* Our [integrations](https://humbughq.com/integrations) with popular services like GitHub, Jenkins, etc.\n"
-    + '* Alpha mobile apps for [Android](https://play.google.com/store/apps/details?id=com.humbughq.mobile) and (by request) [iPhone](mailto:support@humbughq.com?subject=Request+for+Humbug+iPhone+app&body=Hi+Humbug,+can+you+send+me+a+link+to+the+iPhone+app+alpha?+I+have+an+iPhone+__.)'),
+    + "* Message formatting, including pretty syntax-highlighting. Click on the 'Message formatting' link under the gear icon at the top right to learn more\n"
+    + "* Our [API](https://humbughq.com/api) and [integrations](https://humbughq.com/integrations) with popular services like GitHub, Jenkins, etc.\n"
+    + '* Alpha mobile apps for [Android](https://play.google.com/store/apps/details?id=com.humbughq.mobile) and (by request) [iPhone](mailto:support@humbughq.com?subject=Request+for+Humbug+iPhone+app&body=Hi+Humbug,+can+you+send+me+a+link+to+the+iPhone+app+alpha?+I+have+an+iPhone+__.)\n'
+    + "* Feedback! Found a bug or have a feature request? We want to hear from you. Click on the feedback tab under the gear icon to get in touch."),
   go(sleep, 4000),
   go2(stream_message, "tutorial", "(Tell me when you're ready to continue.)"),
   go2(wait_for_message, 300, any_message_to_me),
