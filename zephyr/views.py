@@ -387,7 +387,8 @@ def home(request):
 
     num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
 
-    # Brand new users get the tutorial
+    # Brand new users get the tutorial.
+    # Compute this here, before we set user_profile.pointer below.
     needs_tutorial = settings.TUTORIAL_ENABLED and user_profile.pointer == -1
 
     if user_profile.pointer == -1 and num_messages > 0:
@@ -414,9 +415,23 @@ def home(request):
               for profile in
               UserProfile.objects.select_related().filter(realm=user_profile.realm)]
 
-    streams = simplejson.encoder.JSONEncoderForHTML().encode(gather_subscriptions(user_profile))
-
-    js_bool = lambda x: 'true' if x else 'false'
+    # Pass parameters to the client-side JavaScript code.
+    # These end up in a global JavaScript Object named 'page_params'.
+    page_params = simplejson.encoder.JSONEncoderForHTML().encode(dict(
+        debug_mode            = settings.DEBUG,
+        poll_timeout          = settings.POLL_TIMEOUT,
+        have_initial_messages = num_messages > 0,
+        stream_list           = gather_subscriptions(user_profile),
+        people_list           = people,
+        initial_pointer       = user_profile.pointer,
+        fullname              = user_profile.full_name,
+        email                 = user_profile.user.email,
+        domain                = user_profile.realm.domain,
+        enter_sends           = user_profile.enter_sends,
+        needs_tutorial        = needs_tutorial,
+        desktop_notifications_enabled =
+            user_profile.enable_desktop_notifications,
+    ))
 
     try:
         isnt_mit(user_profile.user.email)
@@ -426,21 +441,11 @@ def home(request):
 
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
+                               'page_params' : page_params,
                                'email_hash'  : gravatar_hash(user_profile.user.email),
-                               'people'      : people,
-                               'streams'     : streams,
-                               'poll_timeout': settings.POLL_TIMEOUT,
-                               'debug'       : settings.DEBUG,
-                               'have_initial_messages':
-                                   js_bool(num_messages > 0),
-                               'desktop_notifications_enabled':
-                                   js_bool(user_profile.enable_desktop_notifications),
-                               'enter_sends':
-                                   js_bool(user_profile.enter_sends),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
-                               'show_invites': show_invites,
-                               'needs_tutorial': js_bool(needs_tutorial)
+                               'show_invites': show_invites
                                },
                               context_instance=RequestContext(request))
 

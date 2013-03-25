@@ -51,38 +51,13 @@
 {% compressed_js 'app_debug' %}
 {% endif %}
 
+{# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
 <script type="text/javascript">
-
 {% autoescape off %}
-var page_params = {
-
-    {# Not escaped, because it's guaranteed by the model to be an integer. #}
-    initial_pointer: {{ user_profile.pointer }},
-
-    poll_timeout: {{ poll_timeout }},
-
-    fullname: "{{ user_profile.full_name|escapejs }}",
-    email: "{{ user_profile.user.email|escapejs }}",
-    domain: "{{ user_profile.realm.domain|escapejs }}",
-    have_initial_messages: {{ have_initial_messages|escapejs }},
-    desktop_notifications_enabled: {{ desktop_notifications_enabled|escapejs }},
-    enter_sends: {{ enter_sends|escapejs }},
-    debug_mode: {% if debug %} true {% else %} false {% endif %},
-    needs_tutorial: {{ needs_tutorial|escapejs }},
-
-    {# We use JSONEncoderForHTML to generate "streams". #}
-    stream_list: {{ streams }},
-
-    people_list: [
-    {% for person in people %}
-        { 'email': "{{ person.email|escapejs }}",
-          'full_name': "{{ person.full_name|escapejs }}" },
-    {% endfor %}
-    ]
-};
+var page_params = {{ page_params }};
 {% endautoescape %}
-
 </script>
+
 {% endblock %}
 {% block content %}
 <div class="container-fluid">
