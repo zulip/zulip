@@ -86,7 +86,7 @@ BlueslipError.prototype = Error.prototype;
             return func.blueslip_wrapper;
         }
         var new_func = function blueslip_wrapper() {
-            if (debug_mode) {
+            if (page_params.debug_mode) {
                 return func.apply(this, arguments);
             } else {
                 try {
@@ -230,13 +230,13 @@ exports.info = function blueslip_info (msg) {
 
 exports.warn = function blueslip_warn (msg) {
     console.warn(msg);
-    if (debug_mode) {
+    if (page_params.debug_mode) {
         console.trace();
     }
 };
 
 exports.error = function blueslip_error (msg) {
-    if (debug_mode) {
+    if (page_params.debug_mode) {
         throw new BlueslipError(msg);
     } else {
         console.error(msg);
@@ -245,7 +245,7 @@ exports.error = function blueslip_error (msg) {
 };
 
 exports.fatal = function blueslip_fatal (msg) {
-    if (! debug_mode) {
+    if (! page_params.debug_mode) {
         report_error(msg, Error().stack, {show_ui_msg: true});
     }
 

@@ -95,8 +95,8 @@ function handle_keydown(e) {
             // want to change focus right away in the private_message_recipient box since it
             // takes the typeaheads a little time to open after the user finishes typing, which
             // can lead to the focus moving without the autocomplete having a chance to happen.
-            if ((domain === "humbughq.com" && nextFocus === "compose-send-button") ||
-                (domain !== "humbughq.com" && nextFocus)) {
+            if ((page_params.domain === "humbughq.com" && nextFocus === "compose-send-button") ||
+                (page_params.domain !== "humbughq.com" && nextFocus)) {
                 ui.focus_on(nextFocus);
                 nextFocus = false;
             }
@@ -106,7 +106,7 @@ function handle_keydown(e) {
             // (Unless shift is being held down, which we *do* want to insert a linebreak)
             if (e.target.id === "new_message_content"
                 && code === 13 && !e.shiftKey
-                && enter_sends) {
+                && page_params.enter_sends) {
                 e.preventDefault();
                 if ($("#compose-send-button").attr('disabled') !== "disabled") {
                     $("#compose-send-button").attr('disabled', 'disabled');
@@ -158,8 +158,8 @@ exports.initialize = function () {
 
     $("#enter_sends").click(function () {
         var send_button = $("#compose-send-button");
-        enter_sends = $("#enter_sends").is(":checked");
-        if (enter_sends) {
+        page_params.enter_sends = $("#enter_sends").is(":checked");
+        if (page_params.enter_sends) {
             send_button.fadeOut();
         } else {
             send_button.fadeIn();
@@ -168,11 +168,11 @@ exports.initialize = function () {
             dataType: 'json',
             url: '/json/change_enter_sends',
             type: 'POST',
-            data: {'enter_sends': enter_sends}
+            data: {'enter_sends': page_params.enter_sends}
         });
     });
-    $("#enter_sends").prop('checked', enter_sends);
-    if (enter_sends) $("#compose-send-button").hide();
+    $("#enter_sends").prop('checked', page_params.enter_sends);
+    if (page_params.enter_sends) $("#compose-send-button").hide();
 
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({

@@ -120,12 +120,12 @@ function wait_for_message(time_to_wait_sec, condition) {
 var script = [];
 
 function make_script() {
-    my_tutorial_stream = 'tutorial-' + email.split('@')[0];
+    my_tutorial_stream = 'tutorial-' + page_params.email.split('@')[0];
     my_tutorial_stream = my_tutorial_stream.substring(0, 30);
 
     // Try to guess at one of your main streams.
     // This is problematic because it might end up being 'commits' or something.
-    var main_stream_name = domain.split('.')[0];
+    var main_stream_name = page_params.domain.split('.')[0];
     var my_streams = subs.subscribed_streams();
 
     if (my_streams.length <= 2) {
@@ -145,7 +145,7 @@ function make_script() {
 
     script = [
   go(sleep, 1000), // The first message seems to sometimes get eaten in Chrome otherwise.
-  go2(stream_message, "tutorial", "Hello, " + fullname + "!"),
+  go2(stream_message, "tutorial", "Hello, " + page_params.fullname + "!"),
   go(sleep, 2000),
   go2(stream_message, "tutorial", "Welcome to Humbug!"),
   go(sleep, 2000),
@@ -291,7 +291,7 @@ exports.is_running = function () {
 exports.initialize = function () {
     make_script();
     // Global variable populated by the server code
-    if (needs_tutorial) {
+    if (page_params.needs_tutorial) {
         exports.start();
     }
 };

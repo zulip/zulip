@@ -57,10 +57,10 @@ exports.update_typeahead = function () {
     var streams = $.map(subs.subscribed_streams(), function(elt,idx) {
         return {action: 'stream', query: elt};
     });
-    var people = $.map(people_list, function(elt,idx) {
+    var people = $.map(page_params.people_list, function(elt,idx) {
         return {action: 'private_message', query: elt};
     });
-    var senders = $.map(people_list, function(elt,idx) {
+    var senders = $.map(page_params.people_list, function(elt,idx) {
         return {action: 'sender', query: elt};
     });
     var options = streams.concat(people).concat(senders);

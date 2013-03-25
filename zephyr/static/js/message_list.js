@@ -278,7 +278,7 @@ MessageList.prototype = {
 
             message.dom_id = table_name + message.id;
 
-            if (message.sender_email === email) {
+            if (message.sender_email === page_params.email) {
                 message.stamp = ui.get_gravatar_stamp();
             }
 

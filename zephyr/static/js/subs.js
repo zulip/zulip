@@ -80,11 +80,11 @@ exports.maybe_toggle_all_messages = function () {
 };
 
 function should_render_subscribers() {
-    return domain !== 'mit.edu';
+    return page_params.domain !== 'mit.edu';
 }
 
 function should_list_all_streams() {
-    return domain !== 'mit.edu';
+    return page_params.domain !== 'mit.edu';
 }
 
 function update_table_stream_color(table, stream_name, color) {
@@ -299,7 +299,7 @@ function mark_subscribed(stream_name, attrs) {
         var settings = settings_for_sub(sub);
         if (sub.render_subscribers && settings.hasClass('in')) {
             var members = settings.find(".subscriber_list_container ul");
-            add_to_member_list(members, fullname, email);
+            add_to_member_list(members, page_params.fullname, page_params.email);
         }
 
         // Display the swatch and subscription settings
@@ -525,12 +525,12 @@ function ajaxSubscribe(stream) {
             var res = $.parseJSON(xhr.responseText);
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
-                true_stream_name = res.already_subscribed[email][0];
+                true_stream_name = res.already_subscribed[page_params.email][0];
                 ui.report_success("Already subscribed to " + true_stream_name,
                                   $("#subscriptions-status"));
             } else {
                 // Display the canonical stream capitalization.
-                true_stream_name = res.subscribed[email][0];
+                true_stream_name = res.subscribed[page_params.email][0];
             }
             mark_subscribed(true_stream_name);
         },
@@ -592,7 +592,7 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
 exports.tutorial_subscribe_or_add_me_to = function (stream_name) {
     var stream_status = compose.check_stream_existence(stream_name);
     if (stream_status === 'does-not-exist') {
-        ajaxSubscribeForCreation(stream_name, [email], false);
+        ajaxSubscribeForCreation(stream_name, [page_params.email], false);
     } else {
         ajaxSubscribe(stream_name);
     }
@@ -615,9 +615,9 @@ function people_cmp(person1, person2) {
 
 function show_new_stream_modal() {
     var people_minus_you_and_maybe_humbuggers = [];
-    $.each(people_list, function (idx, person) {
-        if (person.email !== email &&
-               (domain === "humbughq.com" ||
+    $.each(page_params.people_list, function (idx, person) {
+        if (person.email !== page_params.email &&
+               (page_params.domain === "humbughq.com" ||
                    person.email.split('@')[1] !== "humbughq.com"
                )
            ) {
@@ -635,8 +635,8 @@ function show_new_stream_modal() {
 $(function () {
     var i;
     // Populate stream_info with data handed over to client-side template.
-    for (i = 0; i < stream_list.length; i++) {
-        create_sub(stream_list[i].name, stream_list[i]);
+    for (i = 0; i < page_params.stream_list.length; i++) {
+        create_sub(page_params.stream_list[i].name, page_params.stream_list[i]);
     }
 
     $("#add_new_subscription").on("submit", function (e) {
@@ -665,7 +665,7 @@ $(function () {
             principals.push($(this).val());
         });
         // You are always subscribed to streams you create.
-        principals.push(email);
+        principals.push(page_params.email);
         ajaxSubscribeForCreation(stream,
             principals,
             $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only"
@@ -723,7 +723,7 @@ $(function () {
                 if (data.subscribed.hasOwnProperty(principal)) {
                     error_elem.addClass("hide");
                     warning_elem.addClass("hide");
-                    if (principal === email) {
+                    if (principal === page_params.email) {
                         // mark_subscribed adds the user to the member list
                         mark_subscribed(stream);
                     } else {

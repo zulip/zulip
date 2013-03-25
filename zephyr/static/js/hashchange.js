@@ -57,7 +57,7 @@ function parse_narrow(hash) {
     if (current_msg_list.selected_id() !== -1) {
         new_selection = current_msg_list.selected_id();
     } else {
-        new_selection = initial_pointer;
+        new_selection = page_params.initial_pointer;
     }
     narrow.activate(operators, {
         then_select_id: new_selection,

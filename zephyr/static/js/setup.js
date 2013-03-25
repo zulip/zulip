@@ -5,7 +5,7 @@ var csrf_token;
 $(function () {
     // Display loading indicator.  This disappears after the first
     // get_updates completes.
-    if (have_initial_messages) {
+    if (page_params.have_initial_messages) {
         util.make_loading_indicator($('#page_loading_indicator'), 'Loading...');
     } else {
         util.show_first_run_message();

@@ -16,11 +16,11 @@ function browser_desktop_notifications_on () {
 }
 
 exports.initialize = function () {
-    names = fullname.toLowerCase().split(" ");
-    names.push(email.split("@")[0].toLowerCase());
+    names = page_params.fullname.toLowerCase().split(" ");
+    names.push(page_params.email.split("@")[0].toLowerCase());
     names.push("all");
     names.push("everyone");
-    names.push("<strong>" + fullname.toLowerCase() + "</strong>");
+    names.push("<strong>" + page_params.fullname.toLowerCase() + "</strong>");
 
     $(window).focus(function () {
         window_has_focus = true;
@@ -43,7 +43,7 @@ exports.initialize = function () {
     }
 
     $(document).click(function () {
-        if (!desktop_notifications_enabled || asked_permission_already) {
+        if (!page_params.desktop_notifications_enabled || asked_permission_already) {
             return;
         }
         if (window.webkitNotifications.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
@@ -59,7 +59,7 @@ exports.update_title_count = function () {
 
     var new_message_count = unread_in_current_view();
     document.title = (new_message_count ? ("(" + new_message_count + ") ") : "")
-        + domain + " - Humbug";
+        + page_params.domain + " - Humbug";
 
     // IE doesn't support PNG favicons, *shrug*
     if (! $.browser.msie) {
@@ -163,7 +163,7 @@ exports.speaking_at_me = function (message) {
     var found_match = false, indexof, after_name, after_atname;
     var punctuation = /[\.,-\/#!$%\^&\*;:{}=\-_`~()\+\?\[\]\s<>]/;
 
-    if (domain === "mit.edu") {
+    if (page_params.domain === "mit.edu") {
         return false;
     }
 
@@ -199,10 +199,10 @@ exports.received_messages = function (messages) {
     }
 
     $.each(messages, function (index, message) {
-        if (message.sender_email !== email && narrow.message_in_home(message)) {
+        if (message.sender_email !== page_params.email && narrow.message_in_home(message)) {
             title_needs_update = true;
 
-            if (desktop_notifications_enabled &&
+            if (page_params.desktop_notifications_enabled &&
                 browser_desktop_notifications_on() &&
                 (message.type === "private" ||
                 exports.speaking_at_me(message))) {

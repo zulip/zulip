@@ -6,9 +6,7 @@ var globals =
       ' $ jQuery Spinner Handlebars XDate'
 
     // index.html
-    + ' initial_pointer email stream_list people_list have_initial_messages'
-    + ' fullname desktop_notifications_enabled enter_sends domain poll_timeout'
-    + ' debug_mode needs_tutorial'
+    + ' page_params'
 
     // common.js
     + ' status_classes'

@@ -90,7 +90,7 @@ function focus_ping() {
                 age = now - presence.website.timestamp;
             }
 
-            if (email !== this_email) {
+            if (page_params.email !== this_email) {
                 var status = 'idle';
                 if (presence.website !== undefined
                     && presence.website.status === ACTIVE && age >= 0) {

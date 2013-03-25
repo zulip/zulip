@@ -74,7 +74,7 @@ exports.update_all_recipients = function (recipients) {
 
 exports.update_your_recipients = function (recipients) {
     $.each(recipients, function (idx, recipient_data) {
-        if (recipient_data.email !== email) {
+        if (recipient_data.email !== page_params.email) {
             add_to_known_recipients(recipient_data, true);
         }
     });

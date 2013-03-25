@@ -34,12 +34,12 @@ var server_furthest_read = -1;
 var pointer_update_in_flight = false;
 
 function add_person(person) {
-    people_list.push(person);
+    page_params.people_list.push(person);
     people_dict[person.email] = person;
 }
 
 $(function () {
-    $.each(people_list, function (idx, person) {
+    $.each(page_params.people_list, function (idx, person) {
         people_dict[person.email] = person;
     });
     // The special account feedback@humbughq.com is used for in-app
@@ -113,7 +113,7 @@ function get_private_message_recipient(message, attr) {
     var recipient, i;
     var other_recipients = $.grep(message.display_recipient,
                                   function (element, index) {
-                                      return element.email !== email;
+                                      return element.email !== page_params.email;
                                   });
     if (other_recipients.length === 0) {
         // private message with oneself
@@ -214,7 +214,7 @@ function message_unread(message) {
     var sent_by_human = ['website', 'iphone', 'android']
                             .indexOf(message.client.toLowerCase()) !== -1;
 
-    if (message.sender_email === email && sent_by_human) {
+    if (message.sender_email === page_params.email && sent_by_human) {
         return false;
     }
 
@@ -389,8 +389,8 @@ function send_pointer_update() {
 }
 
 $(function () {
-    furthest_read = initial_pointer;
-    server_furthest_read = initial_pointer;
+    furthest_read = page_params.initial_pointer;
+    server_furthest_read = page_params.initial_pointer;
 
     // We only send pointer updates when the user has been idle for a
     // short while to avoid hammering the server
@@ -449,7 +449,7 @@ function add_message_metadata(message, dummy) {
 
         involved_people = message.display_recipient;
 
-        if (message.sender_email === email) {
+        if (message.sender_email === page_params.email) {
             typeahead_helper.update_your_recipients(involved_people);
         } else {
             typeahead_helper.update_all_recipients(involved_people);
@@ -596,7 +596,7 @@ function get_updates(options) {
         url:      '/json/get_updates',
         data:     get_updates_params,
         dataType: 'json',
-        timeout:  poll_timeout,
+        timeout:  page_params.poll_timeout,
         success: function (data) {
             if (! data) {
                 // The server occasionally returns no data during a
@@ -769,7 +769,8 @@ $(function () {
         // We fall back to the closest selected id, as the user may have removed
         // a stream from the home before already
         if (home_msg_list.selected_id() === -1) {
-            home_msg_list.select_id(initial_pointer, {then_scroll: true, use_closest: true});
+            home_msg_list.select_id(page_params.initial_pointer,
+                {then_scroll: true, use_closest: true});
         }
 
         // catch the user up
@@ -801,9 +802,9 @@ $(function () {
                           }});
     }
 
-    if (have_initial_messages) {
+    if (page_params.have_initial_messages) {
         load_old_messages({
-            anchor: initial_pointer,
+            anchor: page_params.initial_pointer,
             num_before: 200,
             num_after: 200,
             msg_list: home_msg_list,
@@ -839,7 +840,7 @@ function load_more_messages(msg_list) {
     ui.show_loading_more_messages_indicator();
     load_more_enabled = false;
     if (msg_list.first() === undefined) {
-        oldest_message_id = initial_pointer;
+        oldest_message_id = page_params.initial_pointer;
     } else {
         oldest_message_id = msg_list.first().id;
     }
@@ -941,7 +942,7 @@ function fast_forward_pointer(btn) {
     $.ajax({
         type: 'POST',
         url: '/json/get_profile',
-        data: {email: email},
+        data: {email: page_params.email},
         dataType: 'json',
         success: function (data) {
             mark_all_as_read(function () {

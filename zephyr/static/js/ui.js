@@ -262,7 +262,7 @@ $(function () {
     $("img.gravatar-profile").bind('load', resizehandler);
 
     // We don't have a stream list at MIT.
-    if (domain === "mit.edu") {
+    if (page_params.domain === "mit.edu") {
         $("#stream_filters").remove();
         $("#stream_filters_sep").remove();
     }
@@ -727,7 +727,7 @@ $(function () {
             update_gravatars();
 
             if (result.enable_desktop_notifications !== undefined) {
-                desktop_notifications_enabled = result.enable_desktop_notifications;
+                page_params.desktop_notifications_enabled = result.enable_desktop_notifications;
             }
 
             settings_status.removeClass(status_classes)
@@ -789,7 +789,7 @@ $(function () {
     resizehandler();
     hack_for_floating_recipient_bar();
 
-    typeahead_helper.update_all_recipients(people_list);
+    typeahead_helper.update_all_recipients(page_params.people_list);
     composebox_typeahead.initialize();
     search.initialize();
     notifications.initialize();
@@ -984,7 +984,7 @@ exports.add_narrow_filter = function(name, type, uri) {
      * This will not be as much of an issue once we do prioritization of streams
      * in the list.
      */
-    if (domain === "mit.edu" && type === "stream") {
+    if (page_params.domain === "mit.edu" && type === "stream") {
         return false;
     }
 
@@ -1057,8 +1057,8 @@ exports.set_presence_list = function (users, presence_info) {
         $('#user_presences').append(entry);
     }
 
-    if (domain !== "mit.edu") {
-        add_entry(fullname, email, 'active');
+    if (page_params.domain !== "mit.edu") {
+        add_entry(page_params.fullname, page_params.email, 'active');
     }
 
     $.each(users, function (idx, email) {
