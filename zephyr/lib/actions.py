@@ -535,7 +535,7 @@ def do_update_user_presence(user_profile, client, log_time, status):
 
 if settings.USING_RABBITMQ or settings.TEST_SUITE:
     # RabbitMQ is required for idle and unread functionality
-    if settings.USING_RABBITMQ:
+    if settings.USING_RABBITMQ and not settings.RUNNING_INSIDE_TORNADO:
         actions_queue = SimpleQueueClient()
 
     def update_user_presence(user_profile, client, log_time, status):

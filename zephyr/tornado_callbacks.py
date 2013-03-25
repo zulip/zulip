@@ -269,7 +269,7 @@ def send_notification_http(data):
 def send_notification_rabbitmq(data):
     notification_queue.json_publish('notify_tornado', data)
 
-if settings.USING_RABBITMQ:
+if settings.USING_RABBITMQ and not settings.RUNNING_INSIDE_TORNADO:
     notification_queue = SimpleQueueClient()
     send_notification  = send_notification_rabbitmq
 else:
