@@ -4,6 +4,7 @@ import logging
 import simplejson
 import random
 import time
+import threading
 from collections import defaultdict
 
 # This simple queuing library doesn't expose much of the power of
@@ -168,3 +169,23 @@ class TornadoQueueClient(SimpleQueueClient):
         self.ensure_queue(queue_name,
             lambda: self.channel.basic_consume(wrapped_consumer, queue=queue_name,
                 consumer_tag=self._generate_ctag(queue_name)))
+
+if settings.RUNNING_INSIDE_TORNADO and settings.USING_RABBITMQ:
+    queue_client = TornadoQueueClient()
+else:
+    queue_client = SimpleQueueClient()
+
+# We using a simple lock to prevent multiple RabbitMQ messages being
+# sent to the SimpleQueueClient at the same time; this is a workaround
+# for an issue with the pika BlockingConnection where using
+# BlockingConnection for multiple queues causes the channel to
+# randomly close.
+queue_lock = threading.RLock()
+
+def queue_json_publish(queue_name, event, processor):
+    with queue_lock:
+        if settings.USING_RABBITMQ:
+            queue_client.json_publish(queue_name, event)
+        else:
+            processor(event)
+

@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.cache_helpers import cache_save_message
-from zephyr.lib.queue import SimpleQueueClient
+from zephyr.lib.queue import queue_json_publish
 from django.utils import timezone
 from zephyr.lib.create_user import create_user
 from zephyr.lib.bulk_create import batch_bulk_create
@@ -533,66 +533,52 @@ def do_update_user_presence(user_profile, client, log_time, status):
     presence.status = status
     presence.save()
 
-if settings.USING_RABBITMQ or settings.TEST_SUITE:
-    # RabbitMQ is required for idle and unread functionality
-    if settings.USING_RABBITMQ and not settings.RUNNING_INSIDE_TORNADO:
-        actions_queue = SimpleQueueClient()
+def update_user_presence(user_profile, client, log_time, status):
+    event={'type': 'user_presence',
+           'user_profile_id': user_profile.id,
+           'status': status,
+           'time': datetime_to_timestamp(log_time),
+           'client': client.name}
 
-    def update_user_presence(user_profile, client, log_time, status):
-        event={'type': 'user_presence',
-               'user_profile_id': user_profile.id,
-               'status': status,
-               'time': datetime_to_timestamp(log_time),
-               'client': client.name}
+    queue_json_publish("user_activity", event, process_user_presence_event)
 
-        if settings.USING_RABBITMQ:
-            actions_queue.json_publish("user_activity", event)
-        elif settings.TEST_SUITE:
-            process_user_presence_event(event)
+def update_message_flags(user_profile, operation, flag, messages, all):
+    rest_until = None
 
-    def update_message_flags(user_profile, operation, flag, messages, all):
-        rest_until = None
+    if all:
+        # Do the first 450 message updates in-process, as this is a
+        # bankruptcy request and the user is about to reload. We don't
+        # want them to see a bunch of unread messages while we go about
+        # doing the work
+        first_batch = 450
+        flagattr = getattr(UserMessage.flags, flag)
 
-        if all:
-            # Do the first 450 message updates in-process, as this is a
-            # bankruptcy request and the user is about to reload. We don't
-            # want them to see a bunch of unread messages while we go about
-            # doing the work
-            first_batch = 450
-            flagattr = getattr(UserMessage.flags, flag)
+        all_ums = UserMessage.objects.filter(user_profile=user_profile)
+        if operation == "add":
+            umessages = all_ums.filter(flags=~flagattr)
+        elif operation == "remove":
+            umessages = all_ums.filter(flags=flagattr)
 
-            all_ums = UserMessage.objects.filter(user_profile=user_profile)
-            if operation == "add":
-                umessages = all_ums.filter(flags=~flagattr)
-            elif operation == "remove":
-                umessages = all_ums.filter(flags=flagattr)
+        mids = [m.id for m in umessages.order_by('-id')[:first_batch]]
+        to_update = UserMessage.objects.filter(id__in=mids)
 
-            mids = [m.id for m in umessages.order_by('-id')[:first_batch]]
-            to_update = UserMessage.objects.filter(id__in=mids)
+        if operation == "add":
+            to_update.update(flags=F('flags').bitor(flagattr))
+        elif operation == "remove":
+            to_update.update(flags=F('flags').bitand(~flagattr))
 
-            if operation == "add":
-                to_update.update(flags=F('flags').bitor(flagattr))
-            elif operation == "remove":
-                to_update.update(flags=F('flags').bitand(~flagattr))
+        if len(mids) == 0:
+            return True
 
-            if len(mids) == 0:
-                return True
+        rest_until = mids[len(mids) - 1]
 
-            rest_until = mids[len(mids) - 1]
-
-        event = {'type':            'update_message',
-                 'user_profile_id': user_profile.id,
-                 'operation':       operation,
-                 'flag':            flag,
-                 'messages':        messages,
-                 'until_id':        rest_until}
-        if settings.USING_RABBITMQ:
-            actions_queue.json_publish("user_activity", event)
-        else:
-            return process_update_message_flags(event)
-else:
-    update_user_presence = lambda user_profile, client, log_time, status: None
-    update_message_flags = lambda user_profile, operation, flag, messages, all: None
+    event = {'type':            'update_message',
+             'user_profile_id': user_profile.id,
+             'operation':       operation,
+             'flag':            flag,
+             'messages':        messages,
+             'until_id':        rest_until}
+    queue_json_publish("user_activity", event, process_update_message_flags)
 
 def process_user_presence_event(event):
     user_profile = UserProfile.objects.get(id=event["user_profile_id"])

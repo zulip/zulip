@@ -10,8 +10,10 @@ import time
 from tornado import ioloop
 from zephyr.lib.debug import interactive_debug_listen
 from zephyr.lib.response import json_response
-from zephyr.lib.queue import TornadoQueueClient
 from zephyr import tornado_callbacks
+
+if settings.USING_RABBITMQ:
+    from zephyr.lib.queue import queue_client
 
 # A hack to keep track of how much time we spend working, versus sleeping in
 # the event loop.
@@ -120,7 +122,6 @@ class Command(BaseCommand):
 
             if settings.USING_RABBITMQ:
                 # Process notifications received via RabbitMQ
-                queue_client = TornadoQueueClient()
                 def process_notification(chan, method, props, data):
                     tornado_callbacks.process_notification(data)
                 queue_client.register_json_consumer('notify_tornado', process_notification)

@@ -7,7 +7,7 @@ from django.db import transaction, IntegrityError
 from django.conf import settings
 import simplejson
 from zephyr.lib.cache import cache_with_key
-from zephyr.lib.queue import SimpleQueueClient, TornadoQueueClient
+from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.timestamp import datetime_to_timestamp
 from zephyr.lib.cache import user_profile_by_email_cache_key, \
     user_profile_by_user_cache_key
@@ -31,32 +31,19 @@ def asynchronous(method):
         wrapper.csrf_exempt = True
     return wrapper
 
-if settings.USING_RABBITMQ:
-    # Don't try to publish messages to rabbitmq if we're not using
-    # it.  UserActivity updates aren't really important for most
-    # local development, so skipping publishing them here is
-    # reasonable.
-    #
-    # update_active_status also pushes to rabbitmq, and we don't
-    #  want to log it
-
-    if settings.RUNNING_INSIDE_TORNADO:
-        activity_queue = TornadoQueueClient()
-    else:
-        activity_queue = SimpleQueueClient()
-
-    def update_user_activity(request, user_profile, client):
-        if request.META["PATH_INFO"] == '/json/update_active_status':
-            return
-        event={'type': 'user_activity',
-               'query': request.META["PATH_INFO"],
-               'user_profile_id': user_profile.id,
-               'time': datetime_to_timestamp(now()),
-               'client': client.name}
-        activity_queue.json_publish("user_activity", event)
-else:
-   update_user_activity = lambda request, user_profile, client: None
-
+def update_user_activity(request, user_profile, client):
+    # update_active_status also pushes to rabbitmq, and it seems
+    # redundant to log that here as well.
+    if request.META["PATH_INFO"] == '/json/update_active_status':
+        return
+    event={'type': 'user_activity',
+           'query': request.META["PATH_INFO"],
+           'user_profile_id': user_profile.id,
+           'time': datetime_to_timestamp(now()),
+           'client': client.name}
+    # TODO: It's possible that this should call process_user_activity
+    # from zephyr.lib.actions for maximal consistency.
+    queue_json_publish("user_activity", event, lambda event: None)
 
 # I like the all-lowercase name better
 require_post = require_POST

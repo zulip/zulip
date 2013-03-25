@@ -4,7 +4,7 @@ from zephyr.models import Message, UserProfile, UserMessage, \
 
 from zephyr.decorator import JsonableError
 from zephyr.lib.cache_helpers import cache_get_message
-from zephyr.lib.queue import SimpleQueueClient
+from zephyr.lib.queue import queue_json_publish
 
 import os
 import sys
@@ -266,11 +266,5 @@ def send_notification_http(data):
         data   = simplejson.dumps(data),
         secret = settings.SHARED_SECRET))
 
-def send_notification_rabbitmq(data):
-    notification_queue.json_publish('notify_tornado', data)
-
-if settings.USING_RABBITMQ and not settings.RUNNING_INSIDE_TORNADO:
-    notification_queue = SimpleQueueClient()
-    send_notification  = send_notification_rabbitmq
-else:
-    send_notification  = send_notification_http
+def send_notification(data):
+    return queue_json_publish("notify_tornado", data, send_notification_http)
