@@ -162,7 +162,7 @@ function make_script() {
   go2(stream_message, "tutorial", "Give it a shot!\n**Reply to me again, and use Tab, then Enter to send it.**"),
   go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
-  go2(stream_message, "tutorial", "Nice work. In Humbug, time flows down. Your new messages will always appear at the very bottom of the screen, and we don't automatically scroll. We're always receiving messages for you -- even when you're logged out."),
+  go2(stream_message, "tutorial", "Nice work. In Humbug, time flows down and your new messages will always appear at the very bottom of the screen. We're always receiving messages for you -- even when you're logged out."),
   go(sleep, 6000),
   go2(stream_message, "tutorial", "By the way, right now, these messages are going to stream `" + my_tutorial_stream + "`.\n\nA stream is like a chatroom or mailing list; anyone on `" + my_tutorial_stream +"` can see and respond to these messages right now. (In this case, it's just us on this stream right now, so that no one distracts us.)"),
   go(sleep, 8000),
