@@ -398,7 +398,6 @@ exports.by_subject = function (target_id) {
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function (target_id) {
     var message = current_msg_list.get(target_id);
-    var new_narrow, emails;
     switch (message.type) {
     case 'private':
         exports.by('pm-with', message.reply_to, { then_select_id: target_id });
