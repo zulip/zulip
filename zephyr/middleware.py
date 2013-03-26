@@ -36,7 +36,11 @@ class LogRequests(object):
             optional_orig_delta = " (lp: %s)" % (format_timedelta(orig_time_delta),)
 
         # Get the amount of time spent doing database queries
-        query_time = sum(float(query.get('time', 0)) for query in connection.queries)
+        db_time_output = ""
+        if len(connection.queries) > 0:
+            query_time = sum(float(query.get('time', 0)) for query in connection.queries)
+            db_time_output = " (db: %s/%sq)" % (format_timedelta(query_time),
+                                                len(connection.queries))
 
         # Get the requestor's email address and client, if available.
         try:
@@ -48,11 +52,10 @@ class LogRequests(object):
         except Exception:
             client = "?"
 
-        logger.info('%-15s %-7s %3d %5s%s (db: %s/%sq) %s (%s via %s)' %
+        logger.info('%-15s %-7s %3d %5s%s%s %s (%s via %s)' %
                     (remote_ip, request.method, response.status_code,
                      format_timedelta(time_delta), optional_orig_delta,
-                     format_timedelta(query_time), len(connection.queries),
-                     request.get_full_path(), email, client))
+                     db_time_output, request.get_full_path(), email, client))
 
         # Log some additional data whenever we return certain 40x errors
         if 400 <= response.status_code < 500 and response.status_code not in [401, 404, 405]:
