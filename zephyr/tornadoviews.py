@@ -21,8 +21,6 @@ import time
 import sys
 import logging
 
-SERVER_GENERATION = int(time.time())
-
 @internal_notify_view
 def notify(request):
     process_notification(simplejson.loads(request.POST['data']))
@@ -55,7 +53,7 @@ def format_updates_response(messages=[], apply_markdown=True,
            "msg": "",
            'update_types': update_types}
     if client_server_generation is not None:
-        ret['server_generation'] = SERVER_GENERATION
+        ret['server_generation'] = settings.SERVER_GENERATION
     if new_pointer is not None:
         ret['new_pointer'] = new_pointer
 
@@ -71,7 +69,7 @@ def return_messages_immediately(user_profile, client_id, last,
         update_types.append("nonblocking_request")
 
     if (client_server_generation is not None and
-        client_server_generation != SERVER_GENERATION):
+        client_server_generation != settings.SERVER_GENERATION):
         update_types.append("client_reload")
 
     ptr = get_user_pointer(user_profile.id)

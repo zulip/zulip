@@ -2,8 +2,11 @@
 import os
 import platform
 import logging
+import time
 
 from zephyr.openid import openid_failure_handler
+
+SERVER_GENERATION = int(time.time())
 
 DEPLOYED = (('humbughq.com' in platform.node())
             or os.path.exists('/etc/humbug-server'))
