@@ -13,6 +13,10 @@ class LogRequests(object):
         request._time_started = time.time()
 
     def process_response(self, request, response):
+        def format_timedelta(timedelta):
+            if (timedelta >= 1):
+                return "%.1fs" % (timedelta)
+            return "%.0fms" % (timedelta * 1000,)
 
         # The reverse proxy might have sent us the real external IP
         remote_ip = request.META.get('HTTP_X_REAL_IP')
@@ -38,10 +42,11 @@ class LogRequests(object):
         except Exception:
             client = "?"
 
-        logger.info('%-15s %-7s %3d %.3fs (db: %.3fs/%sq) %s (%s via %s)'
-            % (remote_ip, request.method, response.status_code,
-               time_delta, query_time, len(connection.queries),
-               request.get_full_path(), email, client))
+        logger.info('%-15s %-7s %3d %5s (db: %s/%sq) %s (%s via %s)' %
+                    (remote_ip, request.method, response.status_code,
+                     format_timedelta(time_delta),
+                     format_timedelta(query_time), len(connection.queries),
+                     request.get_full_path(), email, client))
 
         # Log some additional data whenever we return certain 40x errors
         if 400 <= response.status_code < 500 and response.status_code not in [401, 404, 405]:
