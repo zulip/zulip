@@ -69,7 +69,7 @@ def init_from_options(options):
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
                  verbose=False, retry_on_errors=True,
-                 site=None, client="API"):
+                 site=None, client="Python API"):
         if None in (api_key, email):
             if config_file is None:
                 config_file = os.path.join(os.environ["HOME"], ".humbugrc")
