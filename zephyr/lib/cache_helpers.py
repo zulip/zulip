@@ -56,12 +56,13 @@ def populate_recipient_cache():
 
     djcache.set_many(items_for_memcached, timeout=3600*24*7)
 
-def fill_memcached_caches():
-    populate_user_cache()
-    logging.info("Succesfully populated user cache!")
-    populate_stream_cache()
-    logging.info("Succesfully populated stream cache!")
-    populate_recipient_cache()
-    logging.info("Succesfully populated recipient cache!")
-    populate_message_cache()
-    logging.info("Succesfully populated mesasge cache!")
+cache_fillers = {
+    'user': populate_user_cache,
+    'recipient': populate_recipient_cache,
+    'stream': populate_stream_cache,
+    'message': populate_message_cache,
+    }
+
+def fill_memcached_cache(cache):
+    cache_fillers[cache]()
+    logging.info("Succesfully populated %s cache!" % (cache,))
