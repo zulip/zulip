@@ -615,7 +615,7 @@ function get_updates(options) {
 
     get_updates_xhr = $.ajax({
         type:     'POST',
-        url:      '/json/get_updates',
+        url:      '/json/get_events',
         data:     get_updates_params,
         dataType: 'json',
         timeout:  page_params.poll_timeout,
@@ -637,12 +637,36 @@ function get_updates(options) {
                 reload.initiate();
             }
 
-            if (data.messages.length !== 0) {
+            if (get_updates_params.queue_id === undefined) {
+                get_updates_params.queue_id = data.queue_id;
+            }
+            var messages = [];
+            var new_pointer;
+
+            $.each(data.events, function (idx, event) {
+                if (get_updates_params.last_event_id === undefined) {
+                    get_updates_params.last_event_id = event.id;
+                } else {
+                    get_updates_params.last_event_id = Math.max(get_updates_params.last_event_id,
+                                                                event.id);
+                }
+
+                switch (event.type) {
+                case 'message':
+                    messages.push(event.message);
+                    break;
+                case 'pointer':
+                    new_pointer = event.new_pointer;
+                    break;
+                }
+            });
+
+            if (messages.length !== 0) {
                 // There is a known bug (#1062) in our backend
                 // whereby duplicate messages are delivered during a
                 // server update.  Once that bug is fixed, this
                 // should no longer be needed
-                var messages = deduplicate_messages(data.messages);
+                messages = deduplicate_messages(messages);
 
                 if (narrow.active()) {
                     add_messages(messages, narrowed_msg_list);
@@ -654,12 +678,12 @@ function get_updates(options) {
                 compose.update_faded_messages();
             }
 
-            if (data.new_pointer !== undefined
-                && data.new_pointer > furthest_read)
+            if (new_pointer !== undefined
+                && new_pointer > furthest_read)
             {
-                furthest_read = data.new_pointer;
-                server_furthest_read = data.new_pointer;
-                home_msg_list.select_id(data.new_pointer, {then_scroll: true, use_closest: true});
+                furthest_read = new_pointer;
+                server_furthest_read = new_pointer;
+                home_msg_list.select_id(new_pointer, {then_scroll: true, use_closest: true});
             }
 
             if ((home_msg_list.selected_id() === -1) && !home_msg_list.empty()) {
