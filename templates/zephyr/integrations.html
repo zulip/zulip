@@ -251,8 +251,8 @@ following, to the stream <code>commits</code> with a subject that matches the re
         the <code>Import SSL Certificates</code> field, enter <code>https://www.humbughq.com</code>. After clicking <code>Save Certificates</code>,
         follow the on-screen instructions and restart JIRA for it to recognize the proper certificates.
       <p><b>Humbug Integration</b></p>
-        Copy the folder <code>api/integrations/jira/org/</code> (from the tarball you downloaded above) to your JIRA <code>classes</code> folder.
-        For self-contained JIRA installations, this will be <code>atlassian-jira/WEB-INF/classes/org/humbug/jira/</code>, but this may be different in your deployment.</p>
+        Copy the folder <code>integrations/jira/org/</code> (from the tarball you downloaded above) to your JIRA <code>classes</code> folder.
+        For self-contained JIRA installations, this will be <code>atlassian-jira/WEB-INF/classes/</code>, but this may be different in your deployment.</p>
         Edit the constants at the top of <code>org/humbug/jira/HumbugListener.groovy</code>
         and fill them with the appropriate values:
 <div class="codehilite"><pre><span class="n">String</span> <span class="n">humbugEmail</span> <span class="o">=</span> <span class="s2">"jira-notifications@example.com"</span>
