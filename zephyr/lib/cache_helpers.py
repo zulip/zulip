@@ -8,6 +8,7 @@ from zephyr.lib.cache import cache_with_key, djcache, message_cache_key, \
     user_profile_by_email_cache_key, user_profile_by_user_cache_key, \
     user_by_id_cache_key, user_profile_by_id_cache_key
 import logging
+from django.db import connection
 
 MESSAGE_CACHE_SIZE = 25000
 
@@ -18,68 +19,52 @@ def cache_save_message(message):
 def cache_get_message(message_id):
     return Message.objects.select_related().get(id=message_id)
 
-# Called on Tornado startup to ensure our message cache isn't empty
-def populate_message_cache():
-    items_for_memcached = {}
-    BATCH_SIZE = 1000
-    count = 0
-    for m in Message.objects.select_related().all().order_by("-id")[0:MESSAGE_CACHE_SIZE]:
-        items_for_memcached[message_cache_key(m.id)] = (m,)
-        count += 1
-        if (count % BATCH_SIZE == 0):
-            djcache.set_many(items_for_memcached, timeout=3600*24)
-            items_for_memcached = {}
+def message_cache_items(items_for_memcached, message):
+    items_for_memcached[message_cache_key(message.id)] = (message,)
 
-    djcache.set_many(items_for_memcached, timeout=3600*24)
+def user_cache_items(items_for_memcached, user_profile):
+    items_for_memcached[user_profile_by_email_cache_key(user_profile.user.email)] = (user_profile,)
+    items_for_memcached[user_profile_by_user_cache_key(user_profile.user.id)] = (user_profile,)
+    items_for_memcached[user_by_id_cache_key(user_profile.user.id)] = (user_profile.user,)
+    items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
 
-# Fill our various caches of User/UserProfile objects used by Tornado
-def populate_user_cache():
-    items_for_memcached = {}
-    for user_profile in UserProfile.objects.select_related().all():
-        items_for_memcached[user_profile_by_email_cache_key(user_profile.user.email)] = (user_profile,)
-        items_for_memcached[user_profile_by_user_cache_key(user_profile.user.id)] = (user_profile,)
-        items_for_memcached[user_by_id_cache_key(user_profile.user.id)] = (user_profile.user,)
-        items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
+def stream_cache_items(items_for_memcached, stream):
+    items_for_memcached[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
 
-    djcache.set_many(items_for_memcached, timeout=3600*24*7)
+def client_cache_items(items_for_memcached, client):
+    items_for_memcached[get_client_cache_key(client.name)] = (client,)
 
-def populate_stream_cache():
-    items_for_memcached = {}
-    for stream in Stream.objects.select_related().all():
-        items_for_memcached[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
+def huddle_cache_items(items_for_memcached, huddle):
+    items_for_memcached[huddle_hash_cache_key(huddle.huddle_hash)] = (huddle,)
 
-    djcache.set_many(items_for_memcached, timeout=3600*24*7)
+def recipient_cache_items(items_for_memcached, recipient):
+    items_for_memcached[get_recipient_cache_key(recipient.type, recipient.type_id)] = (recipient,)
 
-def populate_client_cache():
-    items_for_memcached = {}
-    for client in Client.objects.select_related().all():
-        items_for_memcached[get_client_cache_key(client.name)] = (client,)
-
-    djcache.set_many(items_for_memcached, timeout=3600*24*7)
-
-def populate_huddle_cache():
-    items_for_memcached = {}
-    for huddle in Huddle.objects.select_related().all():
-        items_for_memcached[huddle_hash_cache_key(huddle.huddle_hash)] = (huddle,)
-
-    djcache.set_many(items_for_memcached, timeout=3600*24*7)
-
-def populate_recipient_cache():
-    items_for_memcached = {}
-    for recipient in Recipient.objects.select_related().all():
-        items_for_memcached[get_recipient_cache_key(recipient.type, recipient.type_id)] = (recipient,)
-
-    djcache.set_many(items_for_memcached, timeout=3600*24*7)
-
+# Format is (objects query, items filler function, timeout, batch size)
+#
+# The objects queries are put inside lambdas to prevent Django from
+# doing any setup for things we're unlikely to use (without the lambda
+# wrapper the below adds an extra 3ms or so to startup time for
+# anything importing this file).
 cache_fillers = {
-    'user': populate_user_cache,
-    'client': populate_client_cache,
-    'recipient': populate_recipient_cache,
-    'stream': populate_stream_cache,
-    'message': populate_message_cache,
-    'huddle': populate_huddle_cache,
+    'user': (lambda: UserProfile.objects.select_related().all(), user_cache_items, 3600*24*7, 10000),
+    'client': (lambda: Client.objects.select_related().all(), client_cache_items, 3600*24*7, 10000),
+    'recipient': (lambda: Recipient.objects.select_related().all(), recipient_cache_items, 3600*24*7, 10000),
+    'stream': (lambda: Stream.objects.select_related().all(), stream_cache_items, 3600*24*7, 10000),
+    'message': (lambda: Message.objects.select_related().all().order_by("-id")[0:MESSAGE_CACHE_SIZE],
+                message_cache_items, 3600 * 24, 1000),
+    'huddle': (lambda: Huddle.objects.select_related().all(), huddle_cache_items, 3600*24*7, 10000),
     }
 
 def fill_memcached_cache(cache):
-    cache_fillers[cache]()
+    items_for_memcached = {}
+    (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
+    count = 0
+    for obj in objects():
+        items_filler(items_for_memcached, obj)
+        count += 1
+        if (count % batch_size == 0):
+            djcache.set_many(items_for_memcached, timeout=3600*24)
+            items_for_memcached = {}
+    djcache.set_many(items_for_memcached, timeout=3600*24*7)
     logging.info("Succesfully populated %s cache!" % (cache,))
