@@ -6,7 +6,7 @@ from openid.consumer.consumer import SUCCESS
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.cache import user_by_id_cache_key
 
-@cache_with_key(user_by_id_cache_key)
+@cache_with_key(user_by_id_cache_key, timeout=3600*24*7)
 def get_user_by_id(user_id):
     try:
         return User.objects.select_related().get(id=user_id)

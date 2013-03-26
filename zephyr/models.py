@@ -20,7 +20,8 @@ from bitfield import BitField
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
 
-@cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id,))
+@cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id,),
+                timeout=3600*24*7)
 def get_display_recipient(recipient):
     """
     recipient: an instance of Recipient.
@@ -161,7 +162,7 @@ class Client(models.Model):
 def get_client_cache_key(name):
     return 'get_client:%s' % (make_safe_digest(name),)
 
-@cache_with_key(get_client_cache_key)
+@cache_with_key(get_client_cache_key, timeout=3600*24*7)
 @transaction.commit_on_success
 def get_client(name):
     try:
@@ -188,7 +189,7 @@ def get_stream_cache_key(stream_name, realm):
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
 # get_stream_backend takes either a realm id or a realm
-@cache_with_key(get_stream_cache_key)
+@cache_with_key(get_stream_cache_key, timeout=3600*24*7)
 def get_stream_backend(stream_name, realm):
     if isinstance(realm, Realm):
         realm_id = realm.id
@@ -207,7 +208,7 @@ def get_stream(stream_name, realm):
 def get_recipient_cache_key(type, type_id):
     return "get_recipient:%s:%s" % (type, type_id,)
 
-@cache_with_key(get_recipient_cache_key)
+@cache_with_key(get_recipient_cache_key, timeout=3600*24*7)
 def get_recipient(type, type_id):
     return Recipient.objects.get(type_id=type_id, type=type)
 
@@ -231,7 +232,8 @@ class Message(models.Model):
     def __str__(self):
         return self.__repr__()
 
-    @cache_with_key(lambda self, apply_markdown, rendered_content=None: 'message_dict:%d:%d' % (self.id, apply_markdown))
+    @cache_with_key(lambda self, apply_markdown, rendered_content=None: 'message_dict:%d:%d' % (self.id, apply_markdown),
+                    timeout=3600*24)
     def to_dict(self, apply_markdown, rendered_content=None):
         display_recipient = get_display_recipient(self.recipient)
         if self.recipient.type == Recipient.STREAM:
@@ -332,7 +334,7 @@ class Subscription(models.Model):
     def __str__(self):
         return self.__repr__()
 
-@cache_with_key(user_profile_by_id_cache_key)
+@cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
 def get_user_profile_by_id(uid):
     return UserProfile.objects.select_related().get(id=uid)
 
@@ -353,7 +355,7 @@ def get_huddle(id_list):
     huddle_hash = get_huddle_hash(id_list)
     return get_huddle_backend(huddle_hash, id_list)
 
-@cache_with_key(lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash))
+@cache_with_key(lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash), timeout=3600*24*7)
 def get_huddle_backend(huddle_hash, id_list):
     (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
     if created:

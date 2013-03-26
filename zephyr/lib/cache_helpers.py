@@ -15,7 +15,7 @@ MESSAGE_CACHE_SIZE = 25000
 def cache_save_message(message):
     djcache.set(message_cache_key(message.id), (message,), timeout=3600*24)
 
-@cache_with_key(message_cache_key)
+@cache_with_key(message_cache_key, timeout=3600*24)
 def cache_get_message(message_id):
     return Message.objects.select_related().get(id=message_id)
 
