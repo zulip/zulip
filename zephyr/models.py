@@ -158,7 +158,10 @@ class Recipient(models.Model):
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
 
-@cache_with_key(lambda name: 'get_client:%s' % (make_safe_digest(name),))
+def get_client_cache_key(name):
+    return 'get_client:%s' % (make_safe_digest(name),)
+
+@cache_with_key(get_client_cache_key)
 @transaction.commit_on_success
 def get_client(name):
     try:

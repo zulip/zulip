@@ -2,7 +2,7 @@
 # cannot import anything from zephyr.models or we'd have an import
 # loop
 from zephyr.models import Message, UserProfile, Stream, get_stream_cache_key, \
-    Recipient, get_recipient_cache_key
+    Recipient, get_recipient_cache_key, Client, get_client_cache_key
 from zephyr.lib.cache import cache_with_key, djcache, message_cache_key, \
     user_profile_by_email_cache_key, user_profile_by_user_cache_key, \
     user_by_id_cache_key, user_profile_by_id_cache_key
@@ -49,6 +49,13 @@ def populate_stream_cache():
 
     djcache.set_many(items_for_memcached, timeout=3600*24*7)
 
+def populate_client_cache():
+    items_for_memcached = {}
+    for client in Client.objects.select_related().all():
+        items_for_memcached[get_client_cache_key(client.name)] = (client,)
+
+    djcache.set_many(items_for_memcached, timeout=3600*24*7)
+
 def populate_recipient_cache():
     items_for_memcached = {}
     for recipient in Recipient.objects.select_related().all():
@@ -58,6 +65,7 @@ def populate_recipient_cache():
 
 cache_fillers = {
     'user': populate_user_cache,
+    'client': populate_client_cache,
     'recipient': populate_recipient_cache,
     'stream': populate_stream_cache,
     'message': populate_message_cache,
