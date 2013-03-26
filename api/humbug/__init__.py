@@ -33,7 +33,7 @@ from distutils.version import LooseVersion
 from ConfigParser import SafeConfigParser
 
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
