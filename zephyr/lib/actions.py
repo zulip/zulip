@@ -4,7 +4,8 @@ from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, valid_stream_name, \
     DefaultStream, StreamColor, UserPresence, MAX_SUBJECT_LENGTH, \
-    MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle
+    MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
+    get_user_profile_by_id
 from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.core.exceptions import ValidationError
@@ -129,10 +130,6 @@ def create_mit_user_if_needed(realm, email):
 def log_message(message):
     if not message.sending_client.name.startswith("test:"):
         log_event(message.to_log_dict())
-
-@cache_with_key(user_profile_by_id_cache_key)
-def get_user_profile_by_id(uid):
-    return UserProfile.objects.select_related().get(id=uid)
 
 def do_send_message(message, rendered_content=None, no_log=False,
                     stream=None):

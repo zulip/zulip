@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from zephyr.lib.cache import cache_with_key, update_user_profile_cache, \
-    update_user_cache
+    update_user_cache, user_profile_by_id_cache_key
 from zephyr.lib.initial_password import initial_api_key
 from zephyr.lib.utils import make_safe_digest
 import os
@@ -332,6 +332,10 @@ class Subscription(models.Model):
     def __str__(self):
         return self.__repr__()
 
+@cache_with_key(user_profile_by_id_cache_key)
+def get_user_profile_by_id(uid):
+    return UserProfile.objects.select_related().get(id=uid)
+
 class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.
@@ -353,12 +357,13 @@ def get_huddle(id_list):
 def get_huddle_backend(huddle_hash, id_list):
     (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
     if created:
-        recipient = Recipient.objects.create(type_id=huddle.id,
-                                             type=Recipient.HUDDLE)
-        # Add subscriptions
-        for uid in id_list:
-            Subscription.objects.create(recipient = recipient,
-                                        user_profile = UserProfile.objects.get(id=uid))
+        with transaction.commit_on_success():
+            recipient = Recipient.objects.create(type_id=huddle.id,
+                                                 type=Recipient.HUDDLE)
+            subs_to_create = [Subscription(recipient=recipient,
+                                           user_profile=get_user_profile_by_id(user_profile_id))
+                              for user_profile_id in id_list]
+            Subscription.objects.bulk_create(subs_to_create)
     return huddle
 
 # This function is used only by tests.

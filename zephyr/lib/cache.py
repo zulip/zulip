@@ -88,4 +88,3 @@ def update_user_cache(sender, **kwargs):
     items_for_memcached = {}
     items_for_memcached[user_by_id_cache_key(user.id)] = (user,)
     djcache.set_many(items_for_memcached)
-

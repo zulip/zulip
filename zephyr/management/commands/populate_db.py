@@ -5,9 +5,8 @@ from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, StreamColor, \
-    get_huddle_hash, clear_database, get_client
-from zephyr.lib.actions import get_user_profile_by_id, \
-    do_send_message, set_default_streams, do_activate_user
+    get_huddle_hash, clear_database, get_client, get_user_profile_by_id
+from zephyr.lib.actions import do_send_message, set_default_streams, do_activate_user
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction, connection
 from django.conf import settings
