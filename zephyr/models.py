@@ -342,8 +342,15 @@ def get_huddle_hash(id_list):
     hash_key = ",".join(str(x) for x in id_list)
     return make_safe_digest(hash_key)
 
+def huddle_hash_cache_key(huddle_hash):
+    return "huddle_by_hash:%s" % (huddle_hash,)
+
 def get_huddle(id_list):
     huddle_hash = get_huddle_hash(id_list)
+    return get_huddle_backend(huddle_hash, id_list)
+
+@cache_with_key(lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash))
+def get_huddle_backend(huddle_hash, id_list):
     (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
     if created:
         recipient = Recipient.objects.create(type_id=huddle.id,
