@@ -31,6 +31,15 @@ class humbug::app_frontend {
     mode => 644,
     source => "puppet:///modules/humbug/nginx/sites-available/humbug",
   }
+  file { "/etc/memcached.conf":
+    require => Package[memcached],
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/humbug/memcached.conf",
+  }
+  # TODO: I think we need to restart memcached after deploying this
 
   exec {"pip6":
     command  => "/usr/bin/pip install django-pipeline",
