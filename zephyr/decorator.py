@@ -31,7 +31,7 @@ def asynchronous(method):
         wrapper.csrf_exempt = True
     return wrapper
 
-def update_user_activity(request, user_profile, client):
+def update_user_activity(request, user_profile):
     # update_active_status also pushes to rabbitmq, and it seems
     # redundant to log that here as well.
     if request.META["PATH_INFO"] == '/json/update_active_status':
@@ -40,7 +40,7 @@ def update_user_activity(request, user_profile, client):
            'query': request.META["PATH_INFO"],
            'user_profile_id': user_profile.id,
            'time': datetime_to_timestamp(now()),
-           'client': client.name}
+           'client': request.client.name}
     # TODO: It's possible that this should call process_user_activity
     # from zephyr.lib.actions for maximal consistency.
     queue_json_publish("user_activity", event, lambda event: None)
@@ -75,7 +75,7 @@ def authenticated_api_view(view_func):
             return json_error("Invalid API key for user '%s'" % (email,))
         request._client = client
         request._email = email
-        update_user_activity(request, user_profile, client)
+        update_user_activity(request, user_profile)
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
@@ -85,7 +85,7 @@ def authenticate_log_and_execute_json(request, client, view_func, *args, **kwarg
     request._client = client
     user_profile = get_user_profile_by_user_id(request.user.id)
     request._email = user_profile.user.email
-    update_user_activity(request, user_profile, client)
+    update_user_activity(request, user_profile)
     return view_func(request, user_profile, *args, **kwargs)
 
 # Checks if the request is a POST request and that the user is logged
