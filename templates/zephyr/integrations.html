@@ -32,6 +32,7 @@
       <li><a href="#git">Git</a></li>
       <li><a href="#github">GitHub</a></li>
       <li><a href="#jenkins">Jenkins (or Hudson)</a></li>
+      <li><a href="#jira">Jira</a></li>
       <li><a href="#nagios">Nagios</a></li>
       {% comment %}
       <li><a href="#pivotal">Pivotal Tracker</a></li>
@@ -232,7 +233,43 @@ following, to the stream <code>commits</code> with a subject that matches the re
         <a href="#services">^ Back to top</a>
       </p>
     </div>
+{#--------------------------------------------------------------------#}
+   <div id="jira" class="integration">
+      <h4>JIRA</h4>
+      <p>First, download and install our <a href="/api">Python bindings and example scripts</a>.</p>
+      <p><b>Plugin Installation</b></p>
+      <p>The JIRA integration plugin requires two JIRA plugins. Please install
+        the following plugins using the Universal Plugin Manager in your JIRA
+        installation:</p>
+        <ul>
+          <li><a href="https://marketplace.atlassian.com/plugins/com.onresolve.jira.groovy.groovyrunner">Script Runner Plugin</a></li>
+          <li><a href="https://marketplace.atlassian.com/plugins/com.atlassian.jira.plugin.jirasslplugin">SSL Plugin</a></li>
+        </ul>
+      <p><b>SSL Setup</b></p>
+        As Humbug is using a StartCOM SSL certificate that is not recognized by default in the Java installation shipped with JIRA,
+        you will need to tell JIRA about the certificate. Navigate to <code>Administration > System > Configure SSL</code> and in
+        the <code>Import SSL Certificates</code> field, enter <code>https://www.humbughq.com</code>. After clicking <code>Save Certificates</code>,
+        follow the on-screen instructions and restart JIRA for it to recognize the proper certificates.
+      <p><b>Humbug Integration</b></p>
+        Copy the folder <code>api/integrations/jira/org/</code> (from the tarball you downloaded above) to your JIRA <code>classes</code> folder.
+        For self-contained JIRA installations, this will be <code>atlassian-jira/WEB-INF/classes/org/humbug/jira/</code>, but this may be different in your deployment.</p>
+        Edit the constants at the top of <code>org/humbug/jira/HumbugListener.groovy</code>
+        and fill them with the appropriate values:
+<div class="codehilite"><pre><span class="n">String</span> <span class="n">humbugEmail</span> <span class="o">=</span> <span class="s2">"jira-notifications@example.com"</span>
+<span class="n">String</span> <span class="n">humbugAPIKey</span> <span class="o">=</span> <span class="s2">"0123456789abcdef0123456789abcdef"</span>
+<span class="n">String</span> <span class="n">humbugStream</span> <span class="o">=</span> <span class="s2">"JIRA"</span>
+<span class="n">String</span> <span class="n">issueBaseUrl</span> <span class="o">=</span> <span class="s2">"https://jira.COMPANY.com/browse/"</span>
+</pre></div></p>
+      <p>In the Administrators page, navigate to <code>Plugins > Other > Script Listeners</code>. In the <code>Add Listener</code> section, click on
+        the <code>Custom Listener</code> option. Select the events you wish the Humbug integration to fire for, and the projects you wish Humbug to be notified for.
+        In the <code>Name of groovy class</code> field, enter <code>org.humbug.jira.HumbugListener</code>.
 
+      <p>Click <code>Add Listener</code>, and JIRA will now notify your Humbug of changes to your issues!</p>
+      <img class="screenshot" src="/static/images/integrations/jira/001.png">
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
 {#--------------------------------------------------------------------#}
     <div id="nagios" class="integration">
       <h4>Nagios</h4>
