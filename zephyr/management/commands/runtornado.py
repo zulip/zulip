@@ -87,6 +87,8 @@ class Command(BaseCommand):
                         r"/api/v1/get_messages",
                         r"/notify_tornado",
                         r"/api/v1/messages/latest",
+                        r"/json/get_events",
+                        r"/api/v1/events",
                         )
                 # Application is an instance of Django's standard wsgi handler.
                 application = web.Application([(url, AsyncDjangoHandler) for url in urls],

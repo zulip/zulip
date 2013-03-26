@@ -144,6 +144,8 @@ urlpatterns += patterns('zephyr.tornadoviews',
     url(r'^api/v1/get_messages$',           'api_get_messages'),
     url(r'^api/v1/messages/latest$',        'rest_get_messages'),
     url(r'^json/get_updates$',              'json_get_updates'),
+    url(r'^api/v1/events$',                 'rest_get_events'),
+    url(r'^json/get_events$',               'json_get_events'),
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$',                'notify'),
 )

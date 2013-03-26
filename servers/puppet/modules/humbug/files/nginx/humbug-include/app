@@ -14,7 +14,7 @@ location /static/ {
 }
 
 # Send longpoll requests to Tornado
-location ~ /json/get_updates|/api/v1/get_messages|/api/v1/messages/latest {
+location ~ /json/get_updates|/api/v1/get_messages|/api/v1/messages/latest|/json/get_events|/api/v1/events {
     proxy_pass       http://localhost:9993;
     proxy_redirect   off;
 
