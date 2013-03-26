@@ -209,6 +209,8 @@ def has_request_variables(view_func):
         num_default_params = len(view_func.func_defaults)
     default_param_names = view_func.func_code.co_varnames[num_params - num_default_params:]
     default_param_values = view_func.func_defaults
+    if default_param_values is None:
+        default_param_values = []
 
     post_params = []
 
