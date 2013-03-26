@@ -463,7 +463,7 @@ def update_pointer_backend(request, user_profile,
     user_profile.pointer = pointer
     user_profile.save(update_fields=["pointer"])
 
-    if request._client.name.lower() in ['android', 'iphone']:
+    if request.client.name.lower() in ['android', 'iphone']:
         # TODO (leo)
         # Until we handle the new read counts in the mobile apps natively,
         # this is a shim that will mark as read any messages up until the
@@ -1309,7 +1309,7 @@ def json_update_active_status(request, user_profile,
     else:
         raise JsonableError("Invalid presence status: %s" % (status,))
 
-    update_user_presence(user_profile, request._client, now(), status_val)
+    update_user_presence(user_profile, request.client, now(), status_val)
 
     ret = get_status_list(user_profile)
     if user_profile.realm.domain == "mit.edu":

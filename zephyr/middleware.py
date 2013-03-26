@@ -48,7 +48,7 @@ class LogRequests(object):
         except Exception:
             email = "unauth"
         try:
-            client = request._client.name
+            client = request.client.name
         except Exception:
             client = "?"
 

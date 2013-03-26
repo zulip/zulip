@@ -31,7 +31,7 @@ def notify(request):
 def json_get_updates(request, user_profile, handler):
     client_id = request.session.session_key
     return get_updates_backend(request, user_profile, handler, client_id,
-                               client=request._client, apply_markdown=True)
+                               client=request.client, apply_markdown=True)
 
 @asynchronous
 @authenticated_api_view
@@ -40,7 +40,7 @@ def api_get_messages(request, user_profile, handler, client_id=POST(default=None
                      apply_markdown=POST(default=False, converter=json_to_bool)):
     return get_updates_backend(request, user_profile, handler, client_id,
                                apply_markdown=apply_markdown,
-                               client=request._client)
+                               client=request.client)
 
 def format_updates_response(messages=[], apply_markdown=True,
                             user_profile=None, new_pointer=None,

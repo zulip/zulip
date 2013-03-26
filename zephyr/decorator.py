@@ -73,7 +73,7 @@ def authenticated_api_view(view_func):
             return json_error("Invalid user: %s" % (email,))
         if api_key != user_profile.api_key:
             return json_error("Invalid API key for user '%s'" % (email,))
-        request._client = client
+        request.client = client
         request._email = email
         update_user_activity(request, user_profile)
         return view_func(request, user_profile, *args, **kwargs)
@@ -82,7 +82,7 @@ def authenticated_api_view(view_func):
 def authenticate_log_and_execute_json(request, client, view_func, *args, **kwargs):
     if not request.user.is_authenticated():
         return json_error("Not logged in", status=401)
-    request._client = client
+    request.client = client
     user_profile = get_user_profile_by_user_id(request.user.id)
     request._email = user_profile.user.email
     update_user_activity(request, user_profile)
