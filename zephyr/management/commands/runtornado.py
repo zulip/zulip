@@ -262,6 +262,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                     try:
                         response = callback(request, *callback_args, **callback_kwargs)
                         if response is RespondAsynchronously:
+                            request._time_stopped = time.time()
                             return
                     except Exception, e:
                         # If the view raised an exception, run it through exception

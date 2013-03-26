@@ -26,8 +26,14 @@ class LogRequests(object):
         time_delta = -1
         # A time duration of -1 means the StartLogRequests middleware
         # didn't run for some reason
+        optional_orig_delta = ""
         if hasattr(request, '_time_started'):
             time_delta = time.time() - request._time_started
+        if hasattr(request, "_time_stopped"):
+            orig_time_delta = time_delta
+            time_delta = ((request._time_stopped - request._time_started) +
+                          (time.time() - request._time_restarted))
+            optional_orig_delta = " (lp: %s)" % (format_timedelta(orig_time_delta),)
 
         # Get the amount of time spent doing database queries
         query_time = sum(float(query.get('time', 0)) for query in connection.queries)
@@ -42,9 +48,9 @@ class LogRequests(object):
         except Exception:
             client = "?"
 
-        logger.info('%-15s %-7s %3d %5s (db: %s/%sq) %s (%s via %s)' %
+        logger.info('%-15s %-7s %3d %5s%s (db: %s/%sq) %s (%s via %s)' %
                     (remote_ip, request.method, response.status_code,
-                     format_timedelta(time_delta),
+                     format_timedelta(time_delta), optional_orig_delta,
                      format_timedelta(query_time), len(connection.queries),
                      request.get_full_path(), email, client))
 

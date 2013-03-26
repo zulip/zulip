@@ -145,6 +145,7 @@ def get_updates_backend(request, user_profile, handler, client_id,
     # response.
 
     def cb(**cb_kwargs):
+        request._time_restarted = time.time()
         if handler.request.connection.stream.closed():
             return
         try:
