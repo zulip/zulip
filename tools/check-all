@@ -26,6 +26,7 @@ zephyr/static/third
 confirmation
 zephyr/tests/frontend/casperjs
 zephyr/migrations
+node_modules
 """.split()
 
 exclude_files = """
