@@ -46,7 +46,7 @@ class Realm(models.Model):
     restricted_to_domain = models.BooleanField(default=True)
 
     def __repr__(self):
-        return "<Realm: %s %s>" % (self.domain, self.id)
+        return (u"<Realm: %s %s>" % (self.domain, self.id)).encode("utf-8")
     def __str__(self):
         return self.__repr__()
 
@@ -62,7 +62,7 @@ class UserProfile(models.Model):
     enter_sends = models.NullBooleanField(default=False)
 
     def __repr__(self):
-        return "<UserProfile: %s %s>" % (self.user.email, self.realm)
+        return (u"<UserProfile: %s %s>" % (self.user.email, self.realm)).encode("utf-8")
     def __str__(self):
         return self.__repr__()
 
@@ -108,7 +108,7 @@ class Stream(models.Model):
     invite_only = models.NullBooleanField(default=False)
 
     def __repr__(self):
-        return "<Stream: %s>" % (self.name,)
+        return (u"<Stream: %s>" % (self.name,)).encode("utf-8")
     def __str__(self):
         return self.__repr__()
 
@@ -153,7 +153,7 @@ class Recipient(models.Model):
 
     def __repr__(self):
         display_recipient = get_display_recipient(self)
-        return "<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)
+        return (u"<Recipient: %s (%d, %s)>" % (display_recipient, self.type_id, self.type)).encode("utf-8")
 
 class Client(models.Model):
     name = models.CharField(max_length=30, db_index=True, unique=True)
@@ -221,7 +221,7 @@ class Message(models.Model):
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.recipient)
-        return "<Message: %s / %s / %r>" % (display_recipient, self.subject, self.sender)
+        return (u"<Message: %s / %s / %r>" % (display_recipient, self.subject, self.sender)).encode("utf-8")
     def __str__(self):
         return self.__repr__()
 
@@ -306,7 +306,7 @@ class UserMessage(models.Model):
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.message.recipient)
-        return "<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.user.email, self.flags_dict())
+        return (u"<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.user.email, self.flags_dict())).encode("utf-8")
 
     def flags_dict(self):
         return dict(flags = [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set])
@@ -322,7 +322,7 @@ class Subscription(models.Model):
         unique_together = ("user_profile", "recipient")
 
     def __repr__(self):
-        return "<Subscription: %r -> %r>" % (self.user_profile, self.recipient)
+        return (u"<Subscription: %r -> %s>" % (self.user_profile, self.recipient)).encode("utf-8")
     def __str__(self):
         return self.__repr__()
 
