@@ -5,6 +5,7 @@ from zephyr.models import Message, UserProfile, UserMessage, \
 from zephyr.decorator import JsonableError
 from zephyr.lib.cache_helpers import cache_get_message
 from zephyr.lib.queue import queue_json_publish
+from zephyr.lib.event_queue import user_clients
 
 import os
 import sys
@@ -239,11 +240,20 @@ def update_pointer(user_profile_id, new_pointer):
                          new_pointer=new_pointer,
                          update_types=["pointer_update"])
 
+    for client in user_clients.get(user_profile_id, []):
+        event = dict(type='pointer', pointer=new_pointer)
+        client.add_event(event)
+
 def process_new_message(data):
     message = cache_get_message(data['message'])
 
     for user_profile_id in data['users']:
         user_receive_message(user_profile_id, message)
+
+        for client in user_clients.get(user_profile_id, []):
+            event = dict(type='message', message=message.to_dict(client.apply_markdown))
+            client.add_event(event)
+
 
     if 'stream_name' in data:
         stream_receive_message(data['realm_id'], data['stream_name'], message)

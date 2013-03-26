@@ -6,7 +6,7 @@ from zephyr.decorator import asynchronous, authenticated_api_view, \
     has_request_variables, POST, to_non_negative_int, json_to_bool, \
     JsonableError, authenticated_rest_api_view, REQ
 
-from zephyr.lib.response import json_success, json_error
+from zephyr.lib.response import json_response, json_success, json_error
 
 from zephyr.tornado_callbacks import \
     get_user_pointer, fetch_stream_messages, fetch_user_messages, \
@@ -14,6 +14,7 @@ from zephyr.tornado_callbacks import \
     add_pointer_update_callback, process_notification
 
 from zephyr.lib.cache_helpers import cache_get_message
+from zephyr.lib.event_queue import allocate_client_descriptor, clients
 
 import datetime
 import simplejson
@@ -189,6 +190,47 @@ def get_updates_backend(request, user_profile, handler, client_id,
         add_user_receive_callback(user_profile, handler.async_callback(cb))
     if client_pointer is not None:
         add_pointer_update_callback(user_profile, handler.async_callback(cb))
+
+    # runtornado recognizes this special return value.
+    return RespondAsynchronously
+
+@asynchronous
+@authenticated_json_post_view
+def json_get_events(request, user_profile, handler):
+    return get_events_backend(request, user_profile, handler)
+
+@asynchronous
+@authenticated_rest_api_view
+@has_request_variables
+def rest_get_events(request, user_profile, handler,
+                    apply_markdown=REQ(default=False, converter=json_to_bool)):
+    return get_events_backend(request, user_profile, handler,
+                              apply_markdown=apply_markdown)
+
+@has_request_variables
+def get_events_backend(request, user_profile, handler,
+                       last_event_id = REQ(converter=to_non_negative_int, default=None),
+                       queue_id = REQ(default=None), apply_markdown=True):
+    if queue_id is None:
+        client = allocate_client_descriptor(user_profile.id, apply_markdown)
+        queue_id = client.event_queue.id
+    else:
+        if last_event_id is None:
+            return json_error("Missing 'last_event_id' argument")
+        client = clients.get(queue_id)
+        if client is None:
+            return json_error("Bad event queue id: %s" % (queue_id,))
+        if user_profile.id != client.user_profile_id:
+            return json_error("You are not authorized to get events from this queue")
+        client.event_queue.prune(last_event_id)
+        client.disconnect_handler()
+
+    if not client.event_queue.empty():
+        return json_success({'events': client.event_queue.contents(),
+                             'queue_id': queue_id})
+
+    handler._request = request
+    client.connect_handler(handler)
 
     # runtornado recognizes this special return value.
     return RespondAsynchronously
