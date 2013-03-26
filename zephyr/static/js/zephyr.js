@@ -234,17 +234,24 @@ function message_unread(message) {
 function update_unread_counts() {
     home_unread_messages = 0;
 
+    function newer_than_pointer_count(msgids) {
+        var valid = $.grep(msgids, function (msgid) {
+            return all_msg_list.get(msgid).id > home_msg_list.selected_id();
+        });
+        return valid.length;
+    }
+
     $.each(unread_counts.stream, function(index, obj) {
         var count = Object.keys(obj).length;
         ui.set_count("stream", index, count);
         if (narrow.stream_in_home(index)) {
-            home_unread_messages += count;
+            home_unread_messages += newer_than_pointer_count(Object.keys(obj));
         }
     });
 
     var pm_count = 0;
     $.each(unread_counts["private"], function(index, obj) {
-        pm_count += Object.keys(obj).length;
+        pm_count += newer_than_pointer_count(Object.keys(obj));
     });
     ui.set_count("global", "private", pm_count);
     home_unread_messages += pm_count;
