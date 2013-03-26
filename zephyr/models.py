@@ -201,7 +201,10 @@ def get_stream(stream_name, realm):
     except Stream.DoesNotExist:
         return None
 
-@cache_with_key(lambda type, type_id: "get_recipient:%s:%s" % (type, type_id,))
+def get_recipient_cache_key(type, type_id):
+    return "get_recipient:%s:%s" % (type, type_id,)
+
+@cache_with_key(get_recipient_cache_key)
 def get_recipient(type, type_id):
     return Recipient.objects.get(type_id=type_id, type=type)
 

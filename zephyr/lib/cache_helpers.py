@@ -1,7 +1,8 @@
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zephyr.models or we'd have an import
 # loop
-from zephyr.models import Message, UserProfile, Stream, get_stream_cache_key
+from zephyr.models import Message, UserProfile, Stream, get_stream_cache_key, \
+    Recipient, get_recipient_cache_key
 from zephyr.lib.cache import cache_with_key, djcache, message_cache_key, \
     user_profile_by_email_cache_key, user_profile_by_user_cache_key, \
     user_by_id_cache_key, user_profile_by_id_cache_key
@@ -48,10 +49,19 @@ def populate_stream_cache():
 
     djcache.set_many(items_for_memcached, timeout=3600*24*7)
 
+def populate_recipient_cache():
+    items_for_memcached = {}
+    for recipient in Recipient.objects.select_related().all():
+        items_for_memcached[get_recipient_cache_key(recipient.type, recipient.type_id)] = (recipient,)
+
+    djcache.set_many(items_for_memcached, timeout=3600*24*7)
+
 def fill_memcached_caches():
     populate_user_cache()
     logging.info("Succesfully populated user cache!")
     populate_stream_cache()
     logging.info("Succesfully populated stream cache!")
+    populate_recipient_cache()
+    logging.info("Succesfully populated recipient cache!")
     populate_message_cache()
     logging.info("Succesfully populated mesasge cache!")
