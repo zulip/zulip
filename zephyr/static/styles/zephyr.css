@@ -1062,3 +1062,13 @@ table.floating_recipient {
     height: 48px;
     margin-right: .75em;
 }
+
+.star {
+    padding-left: 2px;
+    opacity: .4;
+}
+
+.star:hover {
+    cursor:  pointer;
+    opacity: 1;
+}

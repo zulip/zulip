@@ -65,6 +65,9 @@
             <span class="sender_name">{{sender_full_name}}</span>
         </span>
         {{/include_sender}}
+        <div class="message_right star">
+          <i class="{{#if starred}}icon-star{{else}}icon-star-empty{{/if}}" title="Star this message"></i>
+        </div>
         <div class="message_right actions_hover">
             {{! If include_sender is not set, we will never show this link anyway. }}
             {{#include_sender}}<span class="actions_link">&laquo; Info</span>{{/include_sender}}
