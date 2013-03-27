@@ -6,18 +6,6 @@ from zephyr.models import Realm, Stream, User, UserProfile, Huddle, \
     get_huddle_hash
 from zephyr.lib.create_user import create_user_base
 
-# batch_bulk_create should become obsolete with Django 1.5, when the
-# Django bulk_create method accepts a batch_size directly.
-def batch_bulk_create(cls, cls_list, batch_size=150):
-    if "sqlite" not in settings.DATABASES["default"]["ENGINE"]:
-        # We don't need a low batch size with mysql, but we do need
-        # one to avoid "MySQL Server has gone away" errors
-        batch_size = 10000
-    while len(cls_list) > 0:
-        current_batch = cls_list[0:batch_size]
-        cls.objects.bulk_create(current_batch)
-        cls_list = cls_list[batch_size:]
-
 def bulk_create_realms(realm_list):
     existing_realms = set(r.domain for r in Realm.objects.select_related().all())
 
@@ -26,7 +14,7 @@ def bulk_create_realms(realm_list):
         if domain not in existing_realms:
             realms_to_create.append(Realm(domain=domain))
             existing_realms.add(domain)
-    batch_bulk_create(Realm, realms_to_create)
+    Realm.objects.bulk_create(realms_to_create)
 
 def bulk_create_users(realms, users_raw):
     """
@@ -45,7 +33,7 @@ def bulk_create_users(realms, users_raw):
     for (email, full_name, short_name, active) in users:
         users_to_create.append(create_user_base(email, initial_password(email),
                                                 active=active))
-    batch_bulk_create(User, users_to_create, 30)
+    User.objects.bulk_create(users_to_create)
 
     users_by_email = {}
     for user in User.objects.all():
@@ -60,7 +48,7 @@ def bulk_create_users(realms, users_raw):
                               full_name=full_name, short_name=short_name)
         profile.api_key = initial_api_key(email)
         profiles_to_create.append(profile)
-    batch_bulk_create(UserProfile, profiles_to_create, 50)
+    UserProfile.objects.bulk_create(profiles_to_create)
 
     profiles_by_email = {}
     profiles_by_id = {}
@@ -72,7 +60,7 @@ def bulk_create_users(realms, users_raw):
     for (email, _, _, _) in users:
         recipients_to_create.append(Recipient(type_id=profiles_by_email[email].id,
                                               type=Recipient.PERSONAL))
-    batch_bulk_create(Recipient, recipients_to_create)
+    Recipient.objects.bulk_create(recipients_to_create)
 
     recipients_by_email = {}
     for recipient in Recipient.objects.filter(type=Recipient.PERSONAL):
@@ -83,7 +71,7 @@ def bulk_create_users(realms, users_raw):
         subscriptions_to_create.append(
             Subscription(user_profile_id=profiles_by_email[email].id,
                          recipient=recipients_by_email[email]))
-    batch_bulk_create(Subscription, subscriptions_to_create)
+    Subscription.objects.bulk_create(subscriptions_to_create)
 
 def bulk_create_streams(realms, stream_list):
     existing_streams = set((stream.realm.domain, stream.name.lower())
@@ -92,14 +80,14 @@ def bulk_create_streams(realms, stream_list):
     for (domain, name) in stream_list:
         if (domain, name.lower()) not in existing_streams:
             streams_to_create.append(Stream(realm=realms[domain], name=name))
-    batch_bulk_create(Stream, streams_to_create)
+    Stream.objects.bulk_create(streams_to_create)
 
     recipients_to_create = []
     for stream in Stream.objects.select_related().all():
         if (stream.realm.domain, stream.name.lower()) not in existing_streams:
             recipients_to_create.append(Recipient(type_id=stream.id,
                                                   type=Recipient.STREAM))
-    batch_bulk_create(Recipient, recipients_to_create)
+    Recipient.objects.bulk_create(recipients_to_create)
 
 def bulk_create_clients(client_list):
     existing_clients = set(client.name for client in Client.objects.select_related().all())
@@ -109,7 +97,7 @@ def bulk_create_clients(client_list):
         if name not in existing_clients:
             clients_to_create.append(Client(name=name))
             existing_clients.add(name)
-    batch_bulk_create(Client, clients_to_create)
+    Client.objects.bulk_create(clients_to_create)
 
 def bulk_create_huddles(users, huddle_user_list):
     huddles = {}
@@ -128,7 +116,7 @@ def bulk_create_huddles(users, huddle_user_list):
     huddles_to_create = []
     for (huddle_hash, _) in huddle_set:
         huddles_to_create.append(Huddle(huddle_hash=huddle_hash))
-    batch_bulk_create(Huddle, huddles_to_create)
+    Huddle.objects.bulk_create(huddles_to_create)
 
     for huddle in Huddle.objects.all():
         huddles[huddle.huddle_hash] = huddle
@@ -137,7 +125,7 @@ def bulk_create_huddles(users, huddle_user_list):
     recipients_to_create = []
     for (huddle_hash, _) in huddle_set:
         recipients_to_create.append(Recipient(type_id=huddles[huddle_hash].id, type=Recipient.HUDDLE))
-    batch_bulk_create(Recipient, recipients_to_create)
+    Recipient.objects.bulk_create(recipients_to_create)
 
     huddle_recipients = {}
     for recipient in Recipient.objects.filter(type=Recipient.HUDDLE):
@@ -148,4 +136,4 @@ def bulk_create_huddles(users, huddle_user_list):
         for user_id in huddle_user_ids:
             subscriptions_to_create.append(Subscription(active=True, user_profile_id=user_id,
                                                         recipient=huddle_recipients[huddle_hash]))
-    batch_bulk_create(Subscription, subscriptions_to_create)
+    Subscription.objects.bulk_create(subscriptions_to_create)

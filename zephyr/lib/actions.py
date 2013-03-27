@@ -16,7 +16,6 @@ from zephyr.lib.cache_helpers import cache_save_message
 from zephyr.lib.queue import queue_json_publish
 from django.utils import timezone
 from zephyr.lib.create_user import create_user
-from zephyr.lib.bulk_create import batch_bulk_create
 from zephyr.lib import bugdown
 from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key, \
     user_profile_by_email_cache_key
@@ -163,7 +162,7 @@ def do_send_message(message, rendered_content=None, no_log=False,
                                 ['website', 'iphone', 'android']
             if um.user_profile == message.sender and sent_by_human:
                 um.flags |= UserMessage.flags.read
-        batch_bulk_create(UserMessage, ums_to_create)
+        UserMessage.objects.bulk_create(ums_to_create)
 
     cache_save_message(message)
 

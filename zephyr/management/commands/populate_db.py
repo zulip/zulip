@@ -10,7 +10,7 @@ from zephyr.lib.actions import do_send_message, set_default_streams, do_activate
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction, connection
 from django.conf import settings
-from zephyr.lib.bulk_create import batch_bulk_create, bulk_create_realms, \
+from zephyr.lib.bulk_create import bulk_create_realms, \
     bulk_create_streams, bulk_create_users, bulk_create_huddles, \
     bulk_create_clients
 from zephyr.lib.timestamp import timestamp_to_datetime
@@ -139,7 +139,7 @@ class Command(BaseCommand):
                     r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
                     s = Subscription(recipient=r, user_profile=profile)
                     subscriptions_to_add.append(s)
-            batch_bulk_create(Subscription, subscriptions_to_add)
+            Subscription.objects.bulk_create(subscriptions_to_add)
         else:
             humbug_realm = Realm.objects.get(domain="humbughq.com")
             recipient_streams = [klass.type_id for klass in
@@ -219,7 +219,7 @@ class Command(BaseCommand):
                         # Subscribe to some streams.
                         s = Subscription(recipient=recipient, user_profile=profile)
                         subscriptions_to_add.append(s)
-                batch_bulk_create(Subscription, subscriptions_to_add)
+                Subscription.objects.bulk_create(subscriptions_to_add)
 
                 # These bots are not needed by the test suite
                 internal_humbug_users_nosubs = [
@@ -477,7 +477,7 @@ def restore_saved_messages():
         messages_to_create.append(message)
 
     print datetime.datetime.now(), "Importing messages, part 2..."
-    batch_bulk_create(Message, messages_to_create, batch_size=100)
+    Message.objects.bulk_create(messages_to_create)
     messages_to_create = []
 
     # Finally, create all the UserMessage objects
@@ -588,12 +588,12 @@ def restore_saved_messages():
 
         if len(user_messages_to_create) > 100000:
             tot_user_messages += len(user_messages_to_create)
-            batch_bulk_create(UserMessage, user_messages_to_create)
+            UserMessage.objects.bulk_create(user_messages_to_create)
             user_messages_to_create = []
 
     print datetime.datetime.now(), "Importing usermessages, part 2..."
     tot_user_messages += len(user_messages_to_create)
-    batch_bulk_create(UserMessage, user_messages_to_create)
+    UserMessage.objects.bulk_create(user_messages_to_create)
 
     print datetime.datetime.now(), "Finalizing subscriptions..."
     current_subs = {}
@@ -618,7 +618,7 @@ def restore_saved_messages():
                          user_profile_id=user_profile_id,
                          active=pending_subs[pending_sub])
         subscriptions_to_add.append(s)
-    batch_bulk_create(Subscription, subscriptions_to_add)
+    Subscription.objects.bulk_create(subscriptions_to_add)
     with transaction.commit_on_success():
         for (sub, active) in subscriptions_to_change:
             current_subs_obj[sub].active = active
@@ -639,7 +639,7 @@ def restore_saved_messages():
         subscription = subs[(user_profile.id, recipient.id)]
         colors_to_change.append(StreamColor(subscription=subscription,
                                             color=color))
-    batch_bulk_create(StreamColor, colors_to_change)
+    StreamColor.objects.bulk_create(colors_to_change)
 
     print datetime.datetime.now(), "Finished importing %s messages (%s usermessages)" % \
         (len(all_messages), tot_user_messages)
