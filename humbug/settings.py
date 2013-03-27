@@ -470,5 +470,11 @@ if DEPLOYED:
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-S3_KEY="xxxxxxxxxxxxxxxxxxxx"
-S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+if DEPLOYED:
+    S3_KEY="xxxxxxxxxxxxxxxxxxxx"
+    S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    S3_BUCKET="humbug-user-uploads"
+else:
+    S3_KEY="xxxxxxxxxxxxxxxxxxxx"
+    S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    S3_BUCKET="humbug-user-uploads-test"

@@ -1499,7 +1499,7 @@ class S3Test(AuthedTestCase):
         # clean up
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         for uri in self.test_uris:
-            key = Key(conn.get_bucket("humbug-user-uploads"))
+            key = Key(conn.get_bucket(settings.S3_BUCKET))
             key.name = urllib2.urlparse.urlparse(uri).path[1:]
             key.delete()
             self.test_uris.remove(uri)

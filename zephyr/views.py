@@ -1048,7 +1048,7 @@ def json_upload_file(request, user_profile):
 
     user_file = request.FILES.values()[0]
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    key = Key(conn.get_bucket("humbug-user-uploads"))
+    key = Key(conn.get_bucket(settings.S3_BUCKET))
     key.key = gen_s3_key(user_profile, user_file.name)
 
     # So for writing the file to S3, the file could either be stored in RAM
@@ -1062,7 +1062,7 @@ def json_upload_file(request, user_profile):
 
     key.set_metadata("user_profile_id", str(user_profile.id))
     key.set_contents_from_filename(user_file.temporary_file_path())
-    return json_success({'uri': "https://humbug-user-uploads.s3.amazonaws.com/" + key.key})
+    return json_success({'uri': "https://%s.s3.amazonaws.com/%s" % (settings.S3_BUCKET, key.key)})
 
 @has_request_variables
 def get_subscribers_backend(request, user_profile, stream_name=POST('stream')):
