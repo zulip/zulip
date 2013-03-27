@@ -277,8 +277,10 @@ PIPELINE_JS = {
 }
 
 PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yui.YUICompressor'
-PIPELINE_JS_COMPRESSOR  = 'pipeline.compressors.yui.YUICompressor'
 PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
+
+PIPELINE_JS_COMPRESSOR  = 'pipeline.compressors.closure.ClosureCompressor'
+PIPELINE_CLOSURE_BINARY = os.path.join(SITE_ROOT, '../tools/closure-compiler/run')
 
 # Disable stuffing the entire JavaScript codebase inside an anonymous function.
 # We need modules to be externally visible, so that methods can be called from
