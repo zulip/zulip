@@ -436,6 +436,47 @@ function show_actions_popover(element, id) {
     }
 }
 
+function change_message_star(message, starred) {
+    $.ajax({
+        type: 'POST',
+        url: '/json/update_message_flags',
+        data: {messages: JSON.stringify([message.id]),
+               op: starred ? 'add' : 'remove',
+               flag: 'starred'},
+        dataType: 'json'});
+}
+
+function toggle_star(row_id) {
+    // Update the message object pointed to by the various message
+    // lists.
+    var message = current_msg_list.get(row_id);
+    if (message.starred === true) {
+        message.starred = false;
+    } else {
+        message.starred = true;
+    }
+
+    // Avoid a full re-render, but update the star in each message
+    // table in which it is visible.
+    $.each([all_msg_list, home_msg_list, narrowed_msg_list], function () {
+        if (this === undefined) {
+            return;
+        }
+        var row = rows.get(row_id, this.table_name);
+        if (row === undefined) {
+            // The row may not exist, e.g. if you star a message in the all
+            // messages table from a stream that isn't in your home view.
+            return;
+        }
+        var favorite_image = row.find("i");
+        favorite_image.toggleClass("icon-star-empty");
+        favorite_image.toggleClass("icon-star");
+    });
+
+    // Save the star change.
+    change_message_star(message, message.starred);
+}
+
 exports.hide_actions_popover = function () {
     if (ui.actions_currently_popped()) {
         current_actions_popover_elem.popover("destroy");
@@ -848,6 +889,11 @@ $(function () {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         show_actions_popover(this, rows.id(row));
+    });
+
+    $("#main_div").on("click", ".star", function (e) {
+        e.stopPropagation();
+        toggle_star(rows.id($(this).closest(".message_row")));
     });
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {
