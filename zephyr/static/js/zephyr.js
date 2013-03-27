@@ -445,6 +445,9 @@ function add_message_metadata(message, dummy) {
 
     var involved_people;
 
+    message.flags = message.flags || [];
+    message.starred = message.flags.indexOf("starred") !== -1;
+
     switch (message.type) {
     case 'stream':
         message.is_stream = true;
