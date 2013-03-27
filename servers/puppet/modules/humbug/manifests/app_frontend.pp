@@ -56,4 +56,8 @@ class humbug::app_frontend {
   # /home/humbug/humbug/api/humbug/bots/check_send_receive.py symlink
 
   # TODO: Setup the API distribution directory at /srv/www/dist/api/.
+
+  # TODO: Ensure Django 1.5 is installed; this should be possible via
+  # the backports-sloppy mechanism or via backports once we upgrade to
+  # wheezy.
 }
