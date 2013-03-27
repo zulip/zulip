@@ -10,6 +10,7 @@ var blueslip = (function () {
 var exports = {};
 
 var reported_errors = {};
+var last_report_attempt = {};
 function report_error(msg, stack, opts) {
     opts = $.extend({}, {show_ui_msg: false}, opts);
 
@@ -17,10 +18,16 @@ function report_error(msg, stack, opts) {
         stack = 'No stacktrace available';
     }
 
-    var key = msg + stack;
-    if (reported_errors.hasOwnProperty(key)) {
+    var key = ':' + msg + stack;
+    if (reported_errors.hasOwnProperty(key)
+        || (last_report_attempt.hasOwnProperty(key)
+            // Only try to report a given error once every 5 minutes
+            && (Date.now() - last_report_attempt[key] <= 60 * 5 * 1000)))
+    {
         return;
     }
+
+    last_report_attempt[key] = Date.now();
 
     // TODO: If an exception gets thrown before we setup ajax calls
     // to include the CSRF token, our ajax call will fail.  The
