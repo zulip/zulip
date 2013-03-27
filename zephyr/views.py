@@ -1330,8 +1330,15 @@ def json_get_active_statuses(request, user_profile):
 @authenticated_json_post_view
 @has_request_variables
 def json_report_error(request, user_profile, message=POST, stacktrace=POST,
-                      user_agent=POST):
-    mail_admins("Browser error for %s" % (user_profile.user.email,),
-                "Message:\n%s\n\nStacktrace:\n%s\n\nUser agent:\n%s"
-                % (message, stacktrace, user_agent))
+                      ui_message=POST(converter=json_to_bool), user_agent=POST):
+    subject = "error for %s" % (user_profile.user.email,)
+    if ui_message:
+        subject = "User-visible browser " + subject
+    else:
+        subject = "Browser " + subject
+
+    mail_admins(subject,
+                "Message:\n%s\n\nStacktrace:\n%s\n\nUser agent:\n%s\n\n"
+                "User saw error in UI: %s"
+                % (message, stacktrace, user_agent, ui_message))
     return json_success()

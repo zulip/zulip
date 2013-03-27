@@ -38,6 +38,7 @@ function report_error(msg, stack, opts) {
         url:      '/json/report_error',
         dataType: 'json',
         data:     { message: msg, stacktrace: stack,
+                    ui_message: opts.show_ui_msg,
                     user_agent: window.navigator.userAgent},
         timeout:  3*1000,
         success:  function () {
