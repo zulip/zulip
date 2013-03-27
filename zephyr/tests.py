@@ -23,6 +23,7 @@ from django.conf import settings
 import re
 import sys
 import random
+import os
 
 def bail(msg):
     print '\nERROR: %s\n' % (msg,)
@@ -2389,6 +2390,80 @@ class StarTests(AuthedTestCase):
             ).order_by("id").reverse()[0]
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
+
+class JiraHookTests(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def fixture_data(self, action):
+        return open(os.path.join(os.path.dirname(__file__),
+                                 "fixtures/jira/jira_%s.json" % (action,))).read()
+
+    def send_jira_message(self, action):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+
+        stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), 'jira')
+        user_profile = UserProfile.objects.get(user__email=email)
+        do_add_subscription(user_profile, stream, no_log=True)
+
+        result = self.client.post("/api/v1/external/jira/%s/" % api_key, self.fixture_data(action),
+                                  content_type="application/json")
+        self.assert_json_success(result)
+
+        # Check the correct message was sent
+        msg = Message.objects.filter().order_by('-id')[0]
+        self.assertEqual(msg.sender.user.email, email)
+        self.assertEqual(get_display_recipient(msg.recipient), 'jira')
+
+        return msg
+
+    def test_created(self):
+        msg = self.send_jira_message('created')
+        self.assertEqual(msg.subject, "BUG-15: New bug with hook")
+        self.assertEqual(msg.content, """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
+
+> New bug with hook""")
+
+    def test_commented(self):
+        msg = self.send_jira_message('commented')
+        self.assertEqual(msg.subject, "BUG-15: New bug with hook")
+        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15):
+
+
+> Adding a comment. Oh, what a comment it is!""")
+
+    def test_deleted(self):
+        msg = self.send_jira_message('deleted')
+        self.assertEqual(msg.subject, "BUG-15: New bug with hook")
+        self.assertEqual(msg.content, "Leo Franchi **deleted** [BUG-15](http://lfranchi.com:8080/browse/BUG-15)!")
+
+    def test_reassigned(self):
+        msg = self.send_jira_message('reassigned')
+        self.assertEqual(msg.subject, "BUG-15: New bug with hook")
+        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15):
+
+* Changed assignee from **None** to **Leo Franchi**
+""")
+
+    def test_reopened(self):
+        msg = self.send_jira_message('reopened')
+        self.assertEqual(msg.subject, "BUG-7: More cowbell polease")
+        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-7](http://lfranchi.com:8080/browse/BUG-7):
+
+* Changed status from **Resolved** to **Reopened**
+
+> Re-opened yeah!""")
+
+    def test_resolved(self):
+        msg = self.send_jira_message('resolved')
+
+        self.assertEqual(msg.subject, "BUG-13: Refreshing the page loses the user's current posi...")
+        self.assertEqual(msg.content, """Leo Franchi **updated** [BUG-13](http://lfranchi.com:8080/browse/BUG-13):
+
+* Changed status from **Open** to **Resolved**
+* Changed assignee from **None** to **Leo Franchi**
+
+> Fixed it, finally!""")
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (

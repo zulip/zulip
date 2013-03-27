@@ -105,7 +105,6 @@ urlpatterns += patterns('zephyr.views',
     url(r'^api/v1/get_subscribers$',        'api_get_subscribers'),
     url(r'^api/v1/send_message$',           'api_send_message'),
     url(r'^api/v1/update_pointer$',         'api_update_pointer'),
-    url(r'^api/v1/external/github$',        'api_github_landing'),
     url(r'^api/v1/get_members$',            'api_get_members'),
 
     # This json format view used by the API accepts a username password/pair and returns an API key.
@@ -140,6 +139,10 @@ urlpatterns += patterns('zephyr.views',
              'PATCH': 'update_subscriptions_backend'}),
     url(r'^api/v1/register$',               'rest_dispatch',
             {'POST': 'events_register_backend'}),
+
+    # These are integration-specific web hook callbacks
+    url(r'^api/v1/external/github$',        'api_github_landing'),
+    url(r'^api/v1/external/jira/(\w+)/?$',  'api_jira_webhook'),
 )
 
 urlpatterns += patterns('zephyr.tornadoviews',

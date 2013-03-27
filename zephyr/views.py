@@ -1318,6 +1318,73 @@ def api_github_landing(request, user_profile, event=POST,
                                 forged=False, subject_name=subject,
                                 message_content=content)
 
+def api_jira_webhook(request, api_key):
+    payload = simplejson.loads(request.body)
+
+    try:
+        user_profile = UserProfile.objects.get(api_key=api_key)
+    except UserProfile.DoesNotExist:
+        import logging
+        logging.warning("Failed to find user with API key: %s" % api_key)
+
+    def get_in(payload, keys, default=''):
+        try:
+            for key in keys:
+                payload = payload[key]
+        except (AttributeError, KeyError):
+            return default
+        return payload
+
+    event = payload.get('webhookEvent')
+    author = get_in(payload, ['user', 'displayName'])
+    issueId = get_in(payload, ['issue', 'key'])
+    # Guess the URL as it is not specified in the payload
+    # We assume that there is a /browse/BUG-### page
+    # from the REST url of the issue itself
+    baseUrl = re.match("(.*)\/rest\/api/.*", get_in(payload, ['issue', 'self']))
+    if baseUrl and len(baseUrl.groups()):
+        issue = "[%s](%s/browse/%s)" % (issueId, baseUrl.group(1), issueId)
+    else:
+        issue = issueId
+    title = get_in(payload, ['issue', 'fields', 'summary'])
+    priority = get_in(payload, ['issue', 'fields', 'priority', 'name'])
+    assignee = get_in(payload, ['assignee', 'displayName'], 'no one')
+    subject = "%s: %s" % (issueId, title)
+
+    if event == 'jira:issue_created':
+        content = "%s **created** %s priority %s, assigned to **%s**:\n\n> %s" % \
+                  (author, issue, priority, assignee, title)
+    elif event == 'jira:issue_deleted':
+        content = "%s **deleted** %s!" % \
+                  (author, issue)
+    elif event == 'jira:issue_updated':
+        # Reassigned, commented, reopened, and resolved events are all bundled
+        # into this one 'updated' event type, so we try to extract the meaningful
+        # event that happened
+        content = "%s **updated** %s:\n\n" % (author, issue)
+        changelog = get_in(payload, ['changelog',])
+        comment = get_in(payload, ['comment', 'body'])
+
+        if changelog != '':
+            # Use the changelog to display the changes, whitelist types we accept
+            items = changelog.get('items')
+            for item in items:
+                field = item.get('field')
+                if field in ('status', 'assignee'):
+                    content += "* Changed %s from **%s** to **%s**\n" % (field, item.get('fromString'), item.get('toString'))
+
+        if comment != '':
+            content += "\n> %s" % (comment,)
+
+    if len(subject) > MAX_SUBJECT_LENGTH:
+        subject = subject[:57].rstrip() + '...'
+
+    ret = check_send_message(user_profile, get_client("API"), "stream", ["jira"], subject, content)
+    if ret is not None:
+        return json_error(ret)
+    return json_success()
+
+
 @cache_with_key(lambda user_profile: user_profile.realm_id, timeout=60)
 def get_status_list(requesting_user_profile):
     def presence_to_dict(presence):
