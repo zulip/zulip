@@ -279,8 +279,9 @@ PIPELINE_JS = {
 PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yui.YUICompressor'
 PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
 
-PIPELINE_JS_COMPRESSOR  = 'pipeline.compressors.closure.ClosureCompressor'
+PIPELINE_JS_COMPRESSOR  = 'zephyr.lib.minify.ClosureSourceMapCompressor'
 PIPELINE_CLOSURE_BINARY = os.path.join(SITE_ROOT, '../tools/closure-compiler/run')
+PIPELINE_CLOSURE_SOURCE_MAP_DIR = 'prod-static/source-map'
 
 # Disable stuffing the entire JavaScript codebase inside an anonymous function.
 # We need modules to be externally visible, so that methods can be called from

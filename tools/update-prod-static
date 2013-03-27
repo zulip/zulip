@@ -13,6 +13,8 @@ exec >update-prod-static.log
 # running app with PipelineCachedStorage unhappy.  So if you
 # remove a static file, you need to manually remove it from
 # prod-static/collected on the app servers.
+rm -rf prod-static/source-map
+mkdir -p prod-static/source-map
 ./manage.py collectstatic --noinput
 
 # Copy the files we want to expose
