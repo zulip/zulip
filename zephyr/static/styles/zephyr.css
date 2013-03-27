@@ -221,7 +221,7 @@ ul.filters .count {
 
 }
 
-ul.filters [data-name="home"] .icon-home {
+ul.filters .filter-icon {
     padding-right: 0.5em;
 }
 
