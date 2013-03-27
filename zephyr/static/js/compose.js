@@ -487,7 +487,14 @@ $(function () {
             $("#send-status").addClass("alert-info")
                              .show();
             $(".send-status-close").one('click', abort_xhr);
-            $("#error-msg").text("Uploading…");
+            $("#error-msg").html(
+                $("<p>").text("Uploading…")
+                        .after('<div class="progress progress-striped active">' +
+                               '<div class="bar" id="upload-bar" style="width: 00%;"></div>' +
+                               '</div>'));
+        },
+        progressUpdated: function (i, file, progress) {
+            $("#upload-bar").width(progress + "%");
         },
         error: function (err, file) {
             var msg;
