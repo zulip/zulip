@@ -172,7 +172,7 @@ class TornadoQueueClient(SimpleQueueClient):
 
 if settings.RUNNING_INSIDE_TORNADO and settings.USING_RABBITMQ:
     queue_client = TornadoQueueClient()
-else:
+elif settings.USING_RABBITMQ:
     queue_client = SimpleQueueClient()
 
 # We using a simple lock to prevent multiple RabbitMQ messages being
