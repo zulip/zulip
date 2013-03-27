@@ -478,6 +478,28 @@ $(function () {
                              .show();
             $("#error-msg").text("Uploading…");
         },
+        error: function (err, file) {
+            var msg;
+            $("#send-status").addClass("alert-error")
+                            .removeClass("alert-info");
+            $("#compose-send-button").removeAttr("disabled");
+            switch(err) {
+                case 'BrowserNotSupported':
+                    msg = "File upload is not yet available for your browser.";
+                    break;
+                case 'TooManyFiles':
+                    msg = "Unable to upload that many files at once.";
+                    break;
+                case 'FileTooLarge':
+                    // sanitizatio not needed as the file name is not potentially parsed as HTML, etc.
+                    msg = "\"" + file.name + "\" was too large; the maximum file size is 25MiB.";
+                    break;
+                default:
+                    msg = "An unknown error occured.";
+                    break;
+            }
+            $("#error-msg").text(msg);
+        },
         uploadFinished: function (i, file, response, time) {
             var textbox = $("#new_message_content");
             textbox.val(textbox.val() + " " + response.uri);
