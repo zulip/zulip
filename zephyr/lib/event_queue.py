@@ -104,6 +104,12 @@ user_clients = {}
 
 next_queue_id = 0
 
+def get_client_descriptor(queue_id):
+    return clients.get(queue_id)
+
+def get_client_descriptors_for_user(user_profile_id):
+    return user_clients.get(user_profile_id, [])
+
 def allocate_client_descriptor(user_profile_id, event_types, apply_markdown):
     global next_queue_id
     id = str(settings.SERVER_GENERATION) + ':' + str(next_queue_id)

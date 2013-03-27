@@ -14,7 +14,7 @@ from zephyr.tornado_callbacks import \
     add_pointer_update_callback, process_notification
 
 from zephyr.lib.cache_helpers import cache_get_message
-from zephyr.lib.event_queue import allocate_client_descriptor, clients
+from zephyr.lib.event_queue import allocate_client_descriptor, get_client_descriptor
 
 import datetime
 import simplejson
@@ -223,7 +223,7 @@ def get_events_backend(request, user_profile, handler,
     else:
         if last_event_id is None:
             return json_error("Missing 'last_event_id' argument")
-        client = clients.get(queue_id)
+        client = get_client_descriptor(queue_id)
         if client is None:
             return json_error("Bad event queue id: %s" % (queue_id,))
         if user_profile.id != client.user_profile_id:
