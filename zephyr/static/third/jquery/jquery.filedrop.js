@@ -68,7 +68,10 @@
 
   $.fn.filedrop = function(options) {
     var opts = $.extend({}, default_opts, options),
-        global_progress = [];
+        global_progress = []
+        // Humbug modification: keep a pointer to the object that the function
+        // was invoked on.
+        caller = this;
 
     this.on('drop', drop).on('dragstart', opts.dragStart).on('dragenter', dragEnter).on('dragover', dragOver).on('dragleave', dragLeave);
     $(document).on('drop', docDrop).on('dragenter', docEnter).on('dragover', docOver).on('dragleave', docLeave);
@@ -325,6 +328,9 @@
             builder,
             newName = rename(file.name),
             mime = file.type;
+        // Humbug modification: Shunt the XHR into the parent object so we
+        // can interrupt it later.
+        caller.data("filedrop_xhr", xhr);
 
         if (opts.withCredentials) {
           xhr.withCredentials = opts.withCredentials;
