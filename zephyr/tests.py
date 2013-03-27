@@ -109,6 +109,13 @@ class AuthedTestCase(TestCase):
                                 pub_date=pub_date, sending_client=sending_client,
                                 content=content))
 
+    def get_old_messages(self, anchor=1, num_before=1, num_after=1):
+        post_params = {"anchor": anchor, "num_before": num_before,
+                       "num_after": num_after}
+        result = self.client.post("/json/get_old_messages", dict(post_params))
+        data = simplejson.loads(result.content)
+        return data['messages']
+
     def users_subscribed_to_stream(self, stream_name, realm_domain):
         realm = Realm.objects.get(domain=realm_domain)
         stream = Stream.objects.get(name=stream_name, realm=realm)
@@ -2259,12 +2266,6 @@ class UserPresenceTests(AuthedTestCase):
 class UnreadCountTests(AuthedTestCase):
     fixtures = ['messages.json']
 
-    def get_old_messages(self):
-        post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
-        result = self.client.post("/json/get_old_messages", dict(post_params))
-        data = simplejson.loads(result.content)
-        return data['messages']
-
     def test_initial_counts(self):
         # All test users have a pointer at -1, so all messages are read
         for user in UserProfile.objects.all():
@@ -2335,6 +2336,57 @@ class UnreadCountTests(AuthedTestCase):
 
         for msg in self.get_old_messages():
             self.assertEqual(msg['flags'], [])
+
+class StarTests(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def change_star(self, messages, add=True):
+        return self.client.post("/json/update_message_flags",
+                                {"messages": simplejson.dumps(messages),
+                                 "op": "add" if add else "remove",
+                                 "flag": "starred"})
+
+    def test_change_star(self):
+        """
+        You can set a message as starred/un-starred through
+        /json/update_message_flags.
+        """
+        self.login("hamlet@humbughq.com")
+        message_ids = [1, 2]
+
+        # Star a few messages.
+        result = self.change_star(message_ids)
+        self.assert_json_success(result)
+
+        for msg in self.get_old_messages():
+            if msg['id'] in message_ids:
+                self.assertEqual(msg['flags'], ['starred'])
+            else:
+                self.assertEqual(msg['flags'], [])
+
+        result = self.change_star(message_ids, False)
+        self.assert_json_success(result)
+
+        # Remove the stars.
+        for msg in self.get_old_messages():
+            if msg['id'] in message_ids:
+                self.assertEqual(msg['flags'], [])
+
+    def test_new_message(self):
+        """
+        New messages aren't starred.
+        """
+        test_email = "hamlet@humbughq.com"
+        self.login(test_email)
+        content = "Test message for star"
+        self.send_message(test_email, "Verona", Recipient.STREAM,
+                          content=content)
+
+        sent_message = UserMessage.objects.filter(
+            user_profile=self.get_user_profile(test_email)
+            ).order_by("id").reverse()[0]
+        self.assertEqual(sent_message.message.content, content)
+        self.assertFalse(sent_message.flags.starred)
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (
