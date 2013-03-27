@@ -375,13 +375,25 @@ LOGGING = {
     },
     'loggers': {
         '': {
+            'handlers': ['console', 'file'],
+            'level':    'INFO',
+            'propagate': False,
+        },
+        'django': {
             'handlers': ['inapp', 'console', 'file', 'mail_admins'],
-            'level':    'INFO'
+            'level':    'INFO',
+            'propagate': False,
+        },
+        'humbug.requests': {
+            'handlers': ['console', 'file'],
+            'level':    'INFO',
+            'propagate': False,
         },
         ## Uncomment the following to get all database queries logged to the console
         # 'django.db': {
         #     'handlers': ['console'],
         #     'level': 'DEBUG',
+        #     'propagate': False,
         # },
     }
 }

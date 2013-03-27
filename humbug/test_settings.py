@@ -50,5 +50,4 @@ CACHES = {
         },
     } }
 
-requests_logger = logging.getLogger('humbug.requests')
-requests_logger.setLevel(logging.WARNING)
+LOGGING['loggers']['humbug.requests']['level'] = 'CRITICAL'
