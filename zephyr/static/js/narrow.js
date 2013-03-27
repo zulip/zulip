@@ -84,8 +84,11 @@ exports.describe = function (operators) {
         var operand = elem[1];
         switch (elem[0]) {
         case 'is':
-            if (operand === 'private-message')
+            if (operand === 'private-message') {
                 return 'Narrow to all private messages';
+            } else if (operand === 'starred') {
+                return 'Narrow to starred messages';
+            }
             break;
 
         case 'stream':
@@ -213,7 +216,12 @@ function build_filter(operators_mixed_case) {
                 if (operand === 'private-message') {
                     if (message.type !== 'private')
                         return false;
+                } else if (operand === 'starred') {
+                    if (!message.starred) {
+                        return false;
+                    }
                 }
+
                 break;
 
             case 'in':

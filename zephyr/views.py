@@ -542,6 +542,8 @@ class NarrowBuilder(object):
         if operand == 'private-message':
             return (Q(message__recipient__type=Recipient.PERSONAL) |
                     Q(message__recipient__type=Recipient.HUDDLE))
+        elif operand == 'starred':
+            return Q(flags=UserMessage.flags.starred)
         raise BadNarrowOperator("unknown 'is' operand " + operand)
 
     def by_stream(self, operand):
