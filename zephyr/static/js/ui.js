@@ -945,7 +945,8 @@ function sort_narrow_list() {
     var items = $('#stream_filters li').get();
     var parent = $('#stream_filters');
     items.sort(function(a,b){
-        return $(a).attr('data-name').localeCompare($(b).attr('data-name'));
+        return decodeURIComponent($(a).attr('data-name')).localeCompare(
+            decodeURIComponent($(b).attr('data-name')));
     });
 
     parent.empty();
