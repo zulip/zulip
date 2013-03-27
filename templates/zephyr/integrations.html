@@ -236,6 +236,20 @@ following, to the stream <code>commits</code> with a subject that matches the re
 {#--------------------------------------------------------------------#}
    <div id="jira" class="integration">
       <h4>JIRA</h4>
+      <h5>Webhook mechanism</h5>
+      If you are running JIRA version 5.2 or greater, or are using the hosted JIRA provided
+      by Atlassian, you can use the built in web-hook support to connect to Humbug. If you are not
+      using the Atlassian-hosted JIRA, you may also use the <a href="#jira-plugin">Jira Plugin</a>
+      mechanism that supports older versions of JIRA.
+      <p>In your JIRA administration control panel, go to the Webhooks page. If you are using the OnDemand
+        hosted JIRA, follow the instructions <a href="https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview">
+        on the Atlassian wiki</a> for locating the Webhook UI</a>.
+      </p>
+      <p>Give your new web hook a name, and for the URL provide <code>https://humbughq.com/api/v1/external/jira/API_KEY</code>
+        where <code>API_KEY</code> is the api key of the user you wish to post JIRA updates as.
+      </p>
+      <p>Updates from JIRA will be sent to the <code>jira</code> stream, and it must already exist.</p>
+      <h5 id="jira-plugin">Plugin mechanism</h5>
       <p>First, download and install our <a href="/api">Python bindings and example scripts</a>.</p>
       <p><b>Plugin Installation</b></p>
       <p>The JIRA integration plugin requires two JIRA plugins. Please install
