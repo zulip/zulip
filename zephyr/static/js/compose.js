@@ -211,8 +211,18 @@ exports.start = function (msg_type, opts) {
     $(document).trigger($.Event('compose_started.zephyr', opts));
 };
 
+function abort_xhr () {
+    $("#compose-send-button").removeAttr("disabled");
+    var xhr = $("#compose").data("filedrop_xhr");
+    if (xhr !== undefined) {
+        xhr.abort();
+        $("#compose").removeData("filedrop_xhr");
+    }
+}
+
 exports.cancel = function () {
     compose.hide();
+    abort_xhr();
     is_composing_message = false;
     $(document).trigger($.Event('compose_canceled.zephyr'));
 };
@@ -476,6 +486,7 @@ $(function () {
             $("#compose-send-button").attr("disabled", "");
             $("#send-status").addClass("alert-info")
                              .show();
+            $(".send-status-close").one('click', abort_xhr);
             $("#error-msg").text("Uploading…");
         },
         error: function (err, file) {
