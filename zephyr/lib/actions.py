@@ -68,7 +68,7 @@ def do_create_user(email, password, realm, full_name, short_name,
                                          full_name=user_profile.full_name)),
                   users=[up.id for up in
                          UserProfile.objects.select_related().filter(realm=user_profile.realm,
-                                                                     user__is_active=True)])
+                                                                     is_active=True)])
     tornado_callbacks.send_notification(notice)
     return user_profile
 
@@ -115,7 +115,7 @@ def do_deactivate(user_profile):
                                          full_name=user_profile.full_name)),
                   users=[up.id for up in
                          UserProfile.objects.select_related().filter(realm=user_profile.realm,
-                                                                     user__is_active=True)])
+                                                                     is_active=True)])
     tornado_callbacks.send_notification(notice)
 
 
@@ -203,7 +203,7 @@ def do_send_message(message, rendered_content=None, no_log=False,
         message.save()
         ums_to_create = [UserMessage(user_profile=user_profile, message=message)
                          for user_profile in recipients
-                         if user_profile.user.is_active]
+                         if user_profile.is_active]
         for um in ums_to_create:
             sent_by_human = message.sending_client.name.lower() in \
                                 ['website', 'iphone', 'android']
@@ -784,7 +784,7 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
                                'full_name' : profile.full_name}
                               for profile in
                               UserProfile.objects.select_related().filter(realm=user_profile.realm,
-                                                                          user__is_active=True)]
+                                                                          is_active=True)]
     if event_types is None or "subscription" in event_types:
         ret['subscriptions'] = gather_subscriptions(user_profile)
 

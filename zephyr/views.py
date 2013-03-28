@@ -120,7 +120,7 @@ def send_signup_message(sender, signups_stream, user_profile, internal=False):
                 user_profile.email,
                 internal_blurb,
                 UserProfile.objects.filter(realm=user_profile.realm,
-                                           user__is_active=True).count(),
+                                           is_active=True).count(),
                 )
             )
 

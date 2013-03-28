@@ -24,7 +24,7 @@ class Command(BaseCommand):
 
         for realm in realms:
             print realm.domain
-            user_profiles = UserProfile.objects.filter(realm=realm, user__is_active=True)
+            user_profiles = UserProfile.objects.filter(realm=realm, is_active=True)
             print "%d users" % (len(user_profiles),)
             print "%d streams" % (len(Stream.objects.filter(realm=realm)),)
 

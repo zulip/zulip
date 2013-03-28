@@ -582,7 +582,7 @@ def restore_saved_messages():
             recipient_user_ids.add(message.sender_id)
 
         for user_profile_id in recipient_user_ids:
-            if users_by_id[user_profile_id].user.is_active:
+            if users_by_id[user_profile_id].is_active:
                 um = UserMessage(user_profile_id=user_profile_id,
                                  message=message)
                 user_messages_to_create.append(um)

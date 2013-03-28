@@ -17,7 +17,7 @@ def is_unique(value):
 
 def is_inactive(value):
     try:
-        if get_user_profile_by_email(value).user.is_active:
+        if get_user_profile_by_email(value).is_active:
             raise ValidationError(u'%s is already active' % value)
     except UserProfile.DoesNotExist:
         pass
