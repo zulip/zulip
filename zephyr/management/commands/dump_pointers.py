@@ -7,13 +7,13 @@ import simplejson
 
 def dump():
     pointers = []
-    for u in UserProfile.objects.select_related("user__email").all():
+    for u in UserProfile.objects.all():
         pointer = u.pointer
         if pointer != -1:
             pub_date = Message.objects.get(id=pointer).pub_date
-            pointers.append((u.user.email, datetime_to_timestamp(pub_date)))
+            pointers.append((u.email, datetime_to_timestamp(pub_date)))
         else:
-            pointers.append((u.user.email, -1))
+            pointers.append((u.email, -1))
     file("dumped-pointers", "w").write(simplejson.dumps(pointers) + "\n")
 
 def restore(change):

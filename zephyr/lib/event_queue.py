@@ -225,7 +225,7 @@ def request_event_queue(user_profile, apply_markdown, event_types=None):
         if event_types is not None:
             req['event_types'] = simplejson.dumps(event_types)
         resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
-                             auth=requests.auth.HTTPBasicAuth(user_profile.user.email,
+                             auth=requests.auth.HTTPBasicAuth(user_profile.email,
                                                               user_profile.api_key),
                             params=req)
 
@@ -238,7 +238,7 @@ def request_event_queue(user_profile, apply_markdown, event_types=None):
 def get_user_events(user_profile, queue_id, last_event_id):
     if settings.TORNADO_SERVER:
         resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
-                            auth=requests.auth.HTTPBasicAuth(user_profile.user.email,
+                            auth=requests.auth.HTTPBasicAuth(user_profile.email,
                                                              user_profile.api_key),
                             params={'queue_id'     : queue_id,
                                     'last_event_id': last_event_id,

@@ -12,9 +12,9 @@ def update_mit_fullnames(change=False):
             # actually have an account (is_active) and thus have
             # presumably set their fullname how they like it.
             continue
-        computed_name = compute_mit_user_fullname(u.user.email)
+        computed_name = compute_mit_user_fullname(u.email)
         if u.full_name != computed_name:
-            print "%s: %s => %s" % (u.user.email, u.full_name, computed_name)
+            print "%s: %s => %s" % (u.email, u.full_name, computed_name)
             if change:
                 u.full_name = computed_name
                 u.save()

@@ -24,9 +24,9 @@ class Command(BaseCommand):
         user_profile = get_user_profile_by_email(args[0])
 
         print "Deactivating %s (%s) - %s" % (user_profile.full_name,
-                                             user_profile.user.email,
+                                             user_profile.email,
                                              user_profile.realm.domain)
-        print "%s has the following active sessions:" % (user_profile.user.email,)
+        print "%s has the following active sessions:" % (user_profile.email,)
         for session in user_sessions(user_profile.user):
             print session.expire_date, session.get_decoded()
         print ""

@@ -7,9 +7,9 @@ from zephyr.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 
 def dump():
     pointers = []
-    for activity in UserActivity.objects.select_related("user_profile__user__email",
+    for activity in UserActivity.objects.select_related("user_profile__email",
                                                         "client__name").all():
-        pointers.append((activity.user_profile.user.email, activity.client.name,
+        pointers.append((activity.user_profile.email, activity.client.name,
                          activity.query, activity.count,
                          datetime_to_timestamp(activity.last_visit)))
     file("dumped-activity", "w").write(simplejson.dumps(pointers) + "\n")

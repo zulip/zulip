@@ -55,10 +55,10 @@ class Command(BaseCommand):
             if not options["for_real"]:
                 for msg in msgs:
                     print "Adding read flag to msg: %s - %s/%s (own msg: %s)"   \
-                            % (user_profile.user.email,
+                            % (user_profile.email,
                                msg.message.id,
                                msg.id,
-                               msg.message.sender.user.email == user_profile.user.email)
+                               msg.message.sender.email == user_profile.email)
             else:
                 def do_update(batch):
                     with transaction.commit_on_success():

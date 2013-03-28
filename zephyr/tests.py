@@ -85,7 +85,7 @@ class AuthedTestCase(TestCase):
         """
         # Usernames are unique, even across Realms.
         # We use this rather than get_user_profile_by_email to circumvent memcached (I think?)
-        return UserProfile.objects.get(user__email__iexact=email)
+        return UserProfile.objects.get(email__iexact=email)
 
     def get_streams(self, email):
         """
@@ -317,8 +317,8 @@ class PersonalMessagesTest(AuthedTestCase):
         sender_messages = len(self.message_stream(sender))
         receiver_messages = len(self.message_stream(receiver))
 
-        other_user_profiles = UserProfile.objects.filter(~Q(user__email=sender_email) &
-                                                          ~Q(user__email=receiver_email))
+        other_user_profiles = UserProfile.objects.filter(~Q(email=sender_email) &
+                                                         ~Q(email=receiver_email))
         old_other_messages = []
         for user_profile in other_user_profiles:
             old_other_messages.append(len(self.message_stream(user_profile)))
@@ -375,7 +375,7 @@ class StreamMessagesTest(AuthedTestCase):
         for non_subscriber in non_subscribers:
             old_non_subscriber_messages.append(len(self.message_stream(non_subscriber)))
 
-        a_subscriber_email = subscribers[0].user.email
+        a_subscriber_email = subscribers[0].email
         self.login(a_subscriber_email)
         self.send_message(a_subscriber_email, stream_name, Recipient.STREAM,
                           subject, content)
@@ -1676,7 +1676,7 @@ class GetSubscribersTest(AuthedTestCase):
         """
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)
-        true_subscribers = [user_profile.user.email for user_profile in self.users_subscribed_to_stream(
+        true_subscribers = [user_profile.email for user_profile in self.users_subscribed_to_stream(
                 stream_name, domain)]
         self.assertItemsEqual(result["subscribers"], true_subscribers)
 
@@ -2297,7 +2297,7 @@ class UnreadCountTests(AuthedTestCase):
         self.assertEqual(last.content, "Test message for unset read bit")
         for um in UserMessage.objects.filter(message=last):
             self.assertEqual(um.message.content, content)
-            if um.user_profile.user.email != "hamlet@humbughq.com":
+            if um.user_profile.email != "hamlet@humbughq.com":
                 self.assertFalse(um.flags.read)
 
     def test_update_flags(self):
@@ -2407,7 +2407,7 @@ class JiraHookTests(AuthedTestCase):
         api_key = self.get_api_key(email)
 
         stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), 'jira')
-        user_profile = UserProfile.objects.get(user__email=email)
+        user_profile = self.get_user_profile(email)
         do_add_subscription(user_profile, stream, no_log=True)
 
         result = self.client.post("/api/v1/external/jira/%s/" % api_key, self.fixture_data(action),
@@ -2416,7 +2416,7 @@ class JiraHookTests(AuthedTestCase):
 
         # Check the correct message was sent
         msg = Message.objects.filter().order_by('-id')[0]
-        self.assertEqual(msg.sender.user.email, email)
+        self.assertEqual(msg.sender.email, email)
         self.assertEqual(get_display_recipient(msg.recipient), 'jira')
 
         return msg

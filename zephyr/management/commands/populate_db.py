@@ -252,7 +252,7 @@ def restore_saved_messages():
 
     stream_dict = {}
     user_set = set()
-    email_set = set([u.email for u in User.objects.all()])
+    email_set = set([u.email for u in UserProfile.objects.all()])
     realm_set = set()
     # Initial client_set is nonempty temporarily because we don't have
     # clients in logs at all right now -- later we can start with nothing.
@@ -401,10 +401,10 @@ def restore_saved_messages():
     users = {}
     users_by_id = {}
     for user_profile in UserProfile.objects.select_related().all():
-        users[user_profile.user.email] = user_profile
+        users[user_profile.email] = user_profile
         users_by_id[user_profile.id] = user_profile
     for recipient in Recipient.objects.filter(type=Recipient.PERSONAL):
-        user_recipients[users_by_id[recipient.type_id].user.email] = recipient
+        user_recipients[users_by_id[recipient.type_id].email] = recipient
 
     print datetime.datetime.now(), "Creating huddles..."
     bulk_create_huddles(users, huddle_user_set)

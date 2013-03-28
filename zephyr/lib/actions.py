@@ -64,7 +64,7 @@ def do_create_user(email, password, realm, full_name, short_name,
     user_profile = create_user(email, password, realm, full_name, short_name, active)
 
     notice = dict(event=dict(type="realm_user", op="add",
-                             person=dict(email=user_profile.user.email,
+                             person=dict(email=user_profile.email,
                                          full_name=user_profile.full_name)),
                   users=[up.id for up in
                          UserProfile.objects.select_related().filter(realm=user_profile.realm,
@@ -107,11 +107,11 @@ def do_deactivate(user_profile):
 
     log_event({'type': 'user_deactivated',
                'timestamp': time.time(),
-               'user': user_profile.user.email,
+               'user': user_profile.email,
                'domain': user_profile.realm.domain})
 
     notice = dict(event=dict(type="realm_user", op="remove",
-                             person=dict(email=user_profile.user.email,
+                             person=dict(email=user_profile.email,
                                          full_name=user_profile.full_name)),
                   users=[up.id for up in
                          UserProfile.objects.select_related().filter(realm=user_profile.realm,
@@ -120,7 +120,7 @@ def do_deactivate(user_profile):
 
 
 def do_change_user_email(user_profile, new_email):
-    old_email = user_profile.user.email
+    old_email = user_profile.email
 
     user_profile.email = new_email
     user_profile.save(update_fields=["email"])
@@ -449,7 +449,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
     if did_subscribe:
         if not no_log:
             log_event({'type': 'subscription_added',
-                       'user': user_profile.user.email,
+                       'user': user_profile.email,
                        'name': stream.name,
                        'domain': stream.realm.domain})
 
@@ -476,7 +476,7 @@ def do_remove_subscription(user_profile, stream, no_log=False):
     if did_remove:
         if not no_log:
             log_event({'type': 'subscription_removed',
-                       'user': user_profile.user.email,
+                       'user': user_profile.email,
                        'name': stream.name,
                        'domain': stream.realm.domain})
 
@@ -510,7 +510,7 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
     if log:
         domain = user_profile.realm.domain
         log_event({'type': 'user_activated',
-                   'user': user.email,
+                   'user': user_profile.email,
                    'domain': domain})
 
 def do_change_password(user_profile, password, log=True, commit=True,
@@ -528,15 +528,15 @@ def do_change_password(user_profile, password, log=True, commit=True,
         user_profile.save(update_fields=["password"])
     if log:
         log_event({'type': 'user_change_password',
-                   'user': user.email,
-                   'pwhash': user.password})
+                   'user': user_profile.email,
+                   'pwhash': user_profile.password})
 
 def do_change_full_name(user_profile, full_name, log=True):
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
     if log:
         log_event({'type': 'user_change_full_name',
-                   'user': user_profile.user.email,
+                   'user': user_profile.email,
                    'full_name': full_name})
 
 def do_create_realm(domain, replay=False):
@@ -555,7 +555,7 @@ def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifica
     user_profile.save(update_fields=["enable_desktop_notifications"])
     if log:
         log_event({'type': 'enable_desktop_notifications_changed',
-                   'user': user_profile.user.email,
+                   'user': user_profile.email,
                    'enable_desktop_notifications': enable_desktop_notifications})
 
 def do_change_enter_sends(user_profile, enter_sends):
@@ -702,7 +702,7 @@ def process_update_message_flags(event):
 
 def update_flags_externally(op, flag, user_profile, until_id):
     args = ['python', os.path.join(os.path.dirname(__file__), '../..', 'manage.py'),
-            'set_message_flags', '--for-real', '-o', op, '-f', flag, '-m', user_profile.user.email,
+            'set_message_flags', '--for-real', '-o', op, '-f', flag, '-m', user_profile.email,
             '-u', str(until_id)]
 
     subprocess.Popen(args, stdin=subprocess.PIPE, stdout=None, stderr=None)
@@ -780,7 +780,7 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
     if event_types is None or "pointer" in event_types:
         ret['pointer'] = user_profile.pointer
     if event_types is None or "realm_user" in event_types:
-        ret['realm_users'] = [{'email'     : profile.user.email,
+        ret['realm_users'] = [{'email'     : profile.email,
                                'full_name' : profile.full_name}
                               for profile in
                               UserProfile.objects.select_related().filter(realm=user_profile.realm,

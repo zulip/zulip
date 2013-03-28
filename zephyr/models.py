@@ -38,8 +38,8 @@ def get_display_recipient(recipient):
     # We don't really care what the ordering is, just that it's deterministic.
     user_profile_list = (UserProfile.objects.filter(subscription__recipient=recipient)
                                             .select_related()
-                                            .order_by('user__email'))
-    return [{'email': user_profile.user.email,
+                                            .order_by('email'))
+    return [{'email': user_profile.email,
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name} for user_profile in user_profile_list]
 
@@ -99,7 +99,7 @@ class UserProfile(AbstractBaseUser):
             return profile
 
     def __repr__(self):
-        return (u"<UserProfile: %s %s>" % (self.user.email, self.realm)).encode("utf-8")
+        return (u"<UserProfile: %s %s>" % (self.email, self.realm)).encode("utf-8")
     def __str__(self):
         return self.__repr__()
 
@@ -266,7 +266,7 @@ class Message(models.Model):
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between
                 # someone and his self, preserving ordering
-                recip = {'email': self.sender.user.email,
+                recip = {'email': self.sender.email,
                          'full_name': self.sender.full_name,
                          'short_name': self.sender.short_name};
                 if recip['email'] < display_recipient[0]['email']:
@@ -278,7 +278,7 @@ class Message(models.Model):
 
         obj = dict(
             id                = self.id,
-            sender_email      = self.sender.user.email,
+            sender_email      = self.sender.email,
             sender_full_name  = self.sender.full_name,
             sender_short_name = self.sender.short_name,
             type              = display_type,
@@ -286,7 +286,7 @@ class Message(models.Model):
             recipient_id      = self.recipient.id,
             subject           = self.subject,
             timestamp         = datetime_to_timestamp(self.pub_date),
-            gravatar_hash     = gravatar_hash(self.sender.user.email),
+            gravatar_hash     = gravatar_hash(self.sender.email),
             client            = self.sending_client.name)
 
         if apply_markdown and self.rendered_content_version is not None:
@@ -313,7 +313,7 @@ class Message(models.Model):
     def to_log_dict(self):
         return dict(
             id                = self.id,
-            sender_email      = self.sender.user.email,
+            sender_email      = self.sender.email,
             sender_full_name  = self.sender.full_name,
             sender_short_name = self.sender.short_name,
             sending_client    = self.sending_client.name,
@@ -342,7 +342,7 @@ class UserMessage(models.Model):
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.message.recipient)
-        return (u"<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.user.email, self.flags_dict())).encode("utf-8")
+        return (u"<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.email, self.flags_dict())).encode("utf-8")
 
     def flags_dict(self):
         return dict(flags = [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set])
@@ -368,7 +368,7 @@ def get_user_profile_by_id(uid):
 
 @cache_with_key(user_profile_by_email_cache_key, timeout=3600*24*7)
 def get_user_profile_by_email(email):
-    return UserProfile.objects.select_related().get(user__email__iexact=email)
+    return UserProfile.objects.select_related().get(email__iexact=email)
 
 class Huddle(models.Model):
     # TODO: We should consider whether using

@@ -59,7 +59,7 @@ def bulk_create_users(realms, users_raw):
     profiles_by_email = {}
     profiles_by_id = {}
     for profile in UserProfile.objects.select_related().all():
-        profiles_by_email[profile.user.email] = profile
+        profiles_by_email[profile.email] = profile
         profiles_by_id[profile.id] = profile
 
     recipients_to_create = []
@@ -70,7 +70,7 @@ def bulk_create_users(realms, users_raw):
 
     recipients_by_email = {}
     for recipient in Recipient.objects.filter(type=Recipient.PERSONAL):
-        recipients_by_email[profiles_by_id[recipient.type_id].user.email] = recipient
+        recipients_by_email[profiles_by_id[recipient.type_id].email] = recipient
 
     subscriptions_to_create = []
     for (email, _, _, _) in users:

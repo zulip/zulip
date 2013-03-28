@@ -51,4 +51,4 @@ class Command(BaseCommand):
                 did_subscribe = do_add_subscription(user_profile, stream)
                 print "%s %s to %s" % (
                     "Subscribed" if did_subscribe else "Already subscribed",
-                    user_profile.user.email, stream_name)
+                    user_profile.email, stream_name)

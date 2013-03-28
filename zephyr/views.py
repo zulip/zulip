@@ -117,7 +117,7 @@ def send_signup_message(sender, signups_stream, user_profile, internal=False):
             "stream", signups_stream, user_profile.realm.domain,
             "%s <`%s`> just signed up for Humbug!%s(total: **%i**)" % (
                 user_profile.full_name,
-                user_profile.user.email,
+                user_profile.email,
                 internal_blurb,
                 UserProfile.objects.filter(realm=user_profile.realm,
                                            user__is_active=True).count(),
@@ -224,10 +224,10 @@ def accounts_register(request):
                 if prereg_user.referred_by is not None:
                     # This is a cross-realm private message.
                     internal_send_message("humbug+signups@humbughq.com",
-                            "private", prereg_user.referred_by.user.email, user_profile.realm.domain,
+                            "private", prereg_user.referred_by.email, user_profile.realm.domain,
                             "%s <`%s`> accepted your invitation to join Humbug!" % (
                                 user_profile.full_name,
-                                user_profile.user.email,
+                                user_profile.email,
                                 )
                             )
 
@@ -242,7 +242,7 @@ def accounts_register(request):
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def accounts_accept_terms(request):
-    email = request.user.email
+    email = request.email
     company_name = email.split('@')[-1]
     if request.method == "POST":
         form = ToSForm(request.POST)
@@ -271,7 +271,7 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
     # Validation
     if settings.ALLOW_REGISTER == False:
         try:
-            isnt_mit(user_profile.user.email)
+            isnt_mit(user_profile.email)
         except ValidationError:
             return json_error("Invitations are not enabled for MIT at this time.")
 
@@ -427,7 +427,7 @@ def home(request):
         people_list           = register_ret['realm_users'],
         initial_pointer       = register_ret['pointer'],
         fullname              = user_profile.full_name,
-        email                 = user_profile.user.email,
+        email                 = user_profile.email,
         domain                = user_profile.realm.domain,
         enter_sends           = user_profile.enter_sends,
         needs_tutorial        = needs_tutorial,
@@ -439,7 +439,7 @@ def home(request):
     ))
 
     try:
-        isnt_mit(user_profile.user.email)
+        isnt_mit(user_profile.email)
         show_invites = True
     except ValidationError:
         show_invites = settings.ALLOW_REGISTER
@@ -447,7 +447,7 @@ def home(request):
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
                                'page_params' : page_params,
-                               'email_hash'  : gravatar_hash(user_profile.user.email),
+                               'email_hash'  : gravatar_hash(user_profile.email),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
                                'show_invites': show_invites
@@ -547,7 +547,7 @@ class NarrowBuilder(object):
         return Q(message__subject__iexact=operand)
 
     def by_sender(self, operand):
-        return Q(message__sender__user__email__iexact=operand)
+        return Q(message__sender__email__iexact=operand)
 
     def by_pm_with(self, operand):
         if ',' in operand:
@@ -562,7 +562,7 @@ class NarrowBuilder(object):
         else:
             # Personal message
             self_recipient = get_recipient(Recipient.PERSONAL, type_id=self.user_profile.id)
-            if operand == self.user_profile.user.email:
+            if operand == self.user_profile.email:
                 # Personals with self
                 return Q(message__recipient__type=Recipient.PERSONAL,
                          message__sender=self.user_profile, message__recipient=self_recipient)
@@ -762,13 +762,13 @@ def json_tutorial_send_message(request, user_profile,
         # can only send to you.
         internal_send_message(sender_name,
                               "private",
-                              user_profile.user.email,
+                              user_profile.email,
                               "",
                               message_content,
                               realm=user_profile.realm)
         return json_success()
     elif message_type_name == 'stream':
-        tutorial_stream_name = 'tutorial-%s' % user_profile.user.email.split('@')[0]
+        tutorial_stream_name = 'tutorial-%s' % user_profile.email.split('@')[0]
         tutorial_stream_name = tutorial_stream_name[:Stream.MAX_NAME_LENGTH]
         ## TODO: For open realms, we need to use the full name here,
         ## so that me@gmail.com and me@hotmail.com don't get the same stream.
@@ -942,15 +942,15 @@ def add_subscriptions_backend(request, user_profile,
         for subscriber in subscribers:
             did_subscribe = do_add_subscription(subscriber, stream)
             if did_subscribe:
-                result["subscribed"][subscriber.user.email].append(stream.name)
+                result["subscribed"][subscriber.email].append(stream.name)
             else:
-                result["already_subscribed"][subscriber.user.email].append(stream.name)
+                result["already_subscribed"][subscriber.email].append(stream.name)
         private_streams[stream.name] = stream.invite_only
 
     # Inform the user if someone else subscribed them to stuff
     if principals and result["subscribed"]:
         for email, subscriptions in result["subscribed"].iteritems():
-            if email == user_profile.user.email:
+            if email == user_profile.email:
                 # Don't send a Humbug if you invited yourself.
                 continue
 
@@ -984,7 +984,7 @@ def json_get_members(request, user_profile):
     return get_members_backend(request, user_profile)
 
 def get_members_backend(request, user_profile):
-    members = [(profile.full_name, profile.user.email) for profile in \
+    members = [(profile.full_name, profile.email) for profile in \
                    UserProfile.objects.select_related().filter(realm=user_profile.realm)]
     return json_success({'members': members})
 
@@ -1012,7 +1012,7 @@ def get_subscribers_backend(request, user_profile, stream_name=POST('stream')):
                                                 recipient__type_id=stream.id,
                                                 active=True).select_related()
 
-    return json_success({'subscribers': [subscription.user_profile.user.email
+    return json_success({'subscribers': [subscription.user_profile.email
                                          for subscription in subscriptions]})
 
 @authenticated_json_post_view
@@ -1027,7 +1027,7 @@ def json_change_settings(request, user_profile, full_name=POST,
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
             return json_error("New password must match confirmation password!")
-        if not authenticate(username=user_profile.user.email, password=old_password):
+        if not authenticate(username=user_profile.email, password=old_password):
             return json_error("Wrong password!")
         do_change_password(user_profile, new_password)
 
@@ -1111,7 +1111,7 @@ class SubscriptionProperties(object):
         color = self.request_property(request.POST, "color")
 
         set_stream_color(user_profile, stream_name, color)
-        log_subscription_property_change(user_profile.user.email, "stream_color",
+        log_subscription_property_change(user_profile.email, "stream_color",
                                          {"stream_name": stream_name, "color": color})
         return json_success()
 
@@ -1190,10 +1190,10 @@ class ActivityTable(object):
             for record in UserActivity.objects.filter(
                     query=url,
                     client__name__startswith=client_name).select_related():
-                row = self.rows.setdefault(record.user_profile.user.email, {})
+                row = self.rows.setdefault(record.user_profile.email, {})
                 row['realm'] = record.user_profile.realm.domain
                 row['full_name'] = record.user_profile.full_name
-                row['email'] = record.user_profile.user.email
+                row['email'] = record.user_profile.email
                 row[query_name + '_count'] = record.count
                 row[query_name + '_last' ] = record.last_visit
 
@@ -1399,7 +1399,7 @@ def get_status_list(requesting_user_profile):
         user_profile__realm=requesting_user_profile.realm).select_related(
         'user_profile', 'user_profile__user', 'client'):
 
-        user_statuses[presence.user_profile.user.email][presence.client.name] = \
+        user_statuses[presence.user_profile.email][presence.client.name] = \
             presence_to_dict(presence)
 
     return {'presences': user_statuses}
@@ -1445,7 +1445,7 @@ if not (settings.DEBUG or settings.TEST_SUITE):
 @has_request_variables
 def json_report_error(request, user_profile, message=POST, stacktrace=POST,
                       ui_message=POST(converter=json_to_bool), user_agent=POST):
-    subject = "error for %s" % (user_profile.user.email,)
+    subject = "error for %s" % (user_profile.email,)
     if ui_message:
         subject = "User-visible browser " + subject
     else:

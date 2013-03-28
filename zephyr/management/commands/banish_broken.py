@@ -9,11 +9,11 @@ def banish_busted_users(change=False):
         if (u.user.is_active or u.realm.domain != "mit.edu"):
             continue
         (banished_realm, _) = Realm.objects.get_or_create(domain="mit.deleted")
-        if "|mit.edu@mit.edu" in u.user.email.lower():
-            print u.user.email
+        if "|mit.edu@mit.edu" in u.email.lower():
+            print u.email
             if change:
                 u.realm = banished_realm
-                u.user.email = u.user.email.split("@")[0] + "@" + banished_realm.domain
+                u.email = u.email.split("@")[0] + "@" + banished_realm.domain
                 u.user.save()
                 u.save()
 

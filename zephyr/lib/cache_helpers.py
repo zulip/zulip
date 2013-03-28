@@ -23,7 +23,7 @@ def message_cache_items(items_for_memcached, message):
     items_for_memcached[message_cache_key(message.id)] = (message,)
 
 def user_cache_items(items_for_memcached, user_profile):
-    items_for_memcached[user_profile_by_email_cache_key(user_profile.user.email)] = (user_profile,)
+    items_for_memcached[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
     items_for_memcached[user_profile_by_user_cache_key(user_profile.user.id)] = (user_profile,)
     items_for_memcached[user_by_id_cache_key(user_profile.user.id)] = (user_profile.user,)
     items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)

@@ -7,7 +7,7 @@ import simplejson
 def dump():
     passwords = []
     for user_profile in UserProfile.objects.all():
-        passwords.append((user_profile.user.email, user_profile.password))
+        passwords.append((user_profile.email, user_profile.password))
     file("dumped-passwords", "w").write(simplejson.dumps(passwords) + "\n")
 
 def restore(change):

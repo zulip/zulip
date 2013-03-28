@@ -29,7 +29,7 @@ class Command(BaseCommand):
             print "%d streams" % (len(Stream.objects.filter(realm=realm)),)
 
             for user_profile in user_profiles:
-                print "%35s" % (user_profile.user.email,),
+                print "%35s" % (user_profile.email,),
                 for week in range(10):
                     print "%5d" % (self.messages_sent_by(user_profile, week)),
                 print ""

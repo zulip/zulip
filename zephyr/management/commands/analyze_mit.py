@@ -16,18 +16,18 @@ def compute_stats(log_level):
                                        recipient__type=Recipient.STREAM,
                                        pub_date__gt=one_week_ago)
     for bot_sender_start in ["imap.", "rcmd.", "sys."]:
-        mit_query = mit_query.exclude(sender__user__email__startswith=(bot_sender_start))
+        mit_query = mit_query.exclude(sender__email__startswith=(bot_sender_start))
     # Filtering for "/" covers tabbott/extra@ and all the daemon/foo bots.
-    mit_query = mit_query.exclude(sender__user__email__contains=("/"))
-    mit_query = mit_query.exclude(sender__user__email__contains=("aim.com"))
+    mit_query = mit_query.exclude(sender__email__contains=("/"))
+    mit_query = mit_query.exclude(sender__email__contains=("aim.com"))
     mit_query = mit_query.exclude(
-        sender__user__email__in=["rss@mit.edu", "bash@mit.edu", "apache@mit.edu",
-                                 "bitcoin@mit.edu", "lp@mit.edu", "clocks@mit.edu",
-                                 "root@mit.edu", "nagios@mit.edu",
-                                 "www-data|local-realm@mit.edu"])
+        sender__email__in=["rss@mit.edu", "bash@mit.edu", "apache@mit.edu",
+                           "bitcoin@mit.edu", "lp@mit.edu", "clocks@mit.edu",
+                           "root@mit.edu", "nagios@mit.edu",
+                           "www-data|local-realm@mit.edu"])
     user_counts = {}
-    for m in mit_query.select_related("sending_client", "sender", "sender__user"):
-        email = m.sender.user.email
+    for m in mit_query.select_related("sending_client", "sender"):
+        email = m.sender.email
         user_counts.setdefault(email, {})
         user_counts[email].setdefault(m.sending_client.name, 0)
         user_counts[email][m.sending_client.name] += 1

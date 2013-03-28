@@ -51,4 +51,4 @@ class Command(BaseCommand):
             did_remove = do_remove_subscription(user_profile, stream)
             print "%s %s from %s" % (
                 "Removed" if did_remove else "Couldn't remove",
-                user_profile.user.email, stream_name)
+                user_profile.email, stream_name)
