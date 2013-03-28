@@ -19,7 +19,8 @@ from zephyr.lib.create_user import create_user
 from zephyr.lib import bugdown
 from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key, \
     user_profile_by_email_cache_key
-from zephyr.decorator import get_user_profile_by_email, json_to_list
+from zephyr.decorator import get_user_profile_by_email, json_to_list, JsonableError
+from zephyr.lib.event_queue import request_event_queue, get_user_events
 
 from zephyr import tornado_callbacks
 
@@ -675,3 +676,41 @@ def gather_subscriptions(user_profile):
                        'color': StreamColor.DEFAULT_STREAM_COLOR})
 
     return sorted(result)
+
+def do_events_register(user_profile, apply_markdown=True, event_types=None):
+    queue_id = request_event_queue(user_profile, apply_markdown, event_types)
+    if queue_id is None:
+        raise JsonableError("Could not allocate event queue")
+
+    ret = {'queue_id': queue_id}
+    if event_types is not None:
+        event_types = set(event_types)
+
+    # Fetch initial data.  When event_types is not specified, clients
+    # want all event types.
+    if event_types is None or "message" in event_types:
+        # The client should use get_old_messages() to fetch messages
+        # starting with the max_message_id.  They will get messages
+        # newer than that ID via get_events()
+        messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
+        if messages:
+            ret['max_message_id'] = messages[0].id
+        else:
+            ret['max_message_id'] = -1
+    if event_types is None or "pointer" in event_types:
+        ret['pointer'] = user_profile.pointer
+
+    # Apply events that came in while we were fetching initial data
+    events = get_user_events(user_profile, queue_id, -1)
+    for event in events:
+        if event['type'] == "message":
+            ret['max_message_id'] = max(ret['max_message_id'], event['message']['id'])
+        elif event['type'] == "pointer":
+            ret['pointer'] = max(ret['pointer'], event['pointer'])
+
+    if events:
+        ret['last_event_id'] = events[-1:]['id']
+    else:
+        ret['last_event_id'] = -1
+
+    return ret

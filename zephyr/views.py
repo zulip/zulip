@@ -25,7 +25,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, set_stream_color, get_stream_colors, update_message_flags, \
-    recipient_for_emails, extract_recipients
+    recipient_for_emails, extract_recipients, do_events_register
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -43,7 +43,6 @@ from zephyr.lib.response import json_success, json_error, json_response, json_me
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.unminify import SourceMap
-from zephyr.lib.event_queue import request_event_queue, get_user_events
 from zephyr import tornado_callbacks
 
 from confirmation.models import Confirmation
@@ -1416,39 +1415,5 @@ def api_events_register(request, user_profile,
 @has_request_variables
 def events_register_backend(request, user_profile, apply_markdown=True,
                             event_types=POST(converter=json_to_list, default=None)):
-    queue_id = request_event_queue(user_profile, apply_markdown, event_types)
-    if queue_id is None:
-        return json_error(msg="Could not allocate queue")
-
-    ret = {'queue_id': queue_id}
-    if event_types is not None:
-        event_types = set(event_types)
-
-    # Fetch initial data.  When event_types is not specified, clients
-    # want all event types.
-    if event_types is None or "message" in event_types:
-        # The client should use get_old_messages() to fetch messages
-        # starting with the max_message_id.  They will get messages
-        # newer than that ID via get_events()
-        messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]
-        if messages:
-            ret['max_message_id'] = messages[0].id
-        else:
-            ret['max_message_id'] = -1
-    if event_types is None or "pointer" in event_types:
-        ret['pointer'] = user_profile.pointer
-
-    # Apply events that came in while we were fetching initial data
-    events = get_user_events(user_profile, queue_id, -1)
-    for event in events:
-        if event['type'] == "message":
-            ret['max_message_id'] = max(ret['max_message_id'], event['message']['id'])
-        elif event['type'] == "pointer":
-            ret['pointer'] = max(ret['pointer'], event['pointer'])
-
-    if events:
-        ret['last_event_id'] = events[-1:]['id']
-    else:
-        ret['last_event_id'] = -1
-
+    ret = do_events_register(user_profile, apply_markdown, event_types)
     return json_success(ret)
