@@ -421,14 +421,12 @@ OPENID_RENDER_FAILURE = openid_failure_handler
 
 EVENT_LOG_DIR = 'event_log'
 
-# Polling timeout for get_updates, in milliseconds.
+# Client-side polling timeout for get_events, in milliseconds.
 # We configure this here so that the client test suite can override it.
-# The default is 55 seconds, to deal with crappy home wireless routers that
-# kill "inactive" http connections.
-#POLL_TIMEOUT = 55 * 1000
-# As a stopgap to deal with increased load, increase the polling
-# timeout to 5 minutes.
-POLL_TIMEOUT = 5 * 60 * 1000
+# We already kill the connection server-side with heartbeat events,
+# but it's good to have a safety.  This value should be greater than
+# (HEARTBEAT_MIN_FREQ_SECS + 10)
+POLL_TIMEOUT = 90 * 1000
 
 # The new user tutorial is enabled by default, and disabled for
 # client tests.
