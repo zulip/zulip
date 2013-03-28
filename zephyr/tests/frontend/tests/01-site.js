@@ -62,7 +62,7 @@ var last_send_or_update = -1;
 
 // Update that variable whenever get_updates returns.
 casper.on('resource.received', function (resource) {
-    if (/\/json\/get_updates/.test(resource.url)) {
+    if (/\/json\/get_events/.test(resource.url)) {
         last_send_or_update = timestamp();
     }
 });
