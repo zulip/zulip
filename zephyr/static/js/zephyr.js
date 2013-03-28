@@ -358,17 +358,8 @@ function process_visible_unread_messages() {
 
     var visible_messages = candidates.filter(function (idx, message) {
         var row = $(message);
-        var row_top = row.offset().top;
-        var row_height = row.height();
-        var row_bottom = (row_top + row_height);
-        var entirely_within_view = row_top > top && row_bottom < bottom;
-
         // Mark very tall messages as read once we've gotten past them
-        if (row_height > height && row_top > top) {
-            return true;
-        }
-
-        return entirely_within_view;
+        return (row.height() > height && row.offset().top > top) || within_viewport(row);
     });
 
     var mark_as_read = $.map(visible_messages, function(msg) {
