@@ -2,8 +2,6 @@ var hotkeys = (function () {
 
 var exports = {};
 
-exports.in_scroll_caused_by_keypress = false;
-
 function wrap_directional_key_with_movement_direction(arrow_key_func) {
     if (arrow_key_func === rows.next_visible) {
         last_viewport_movement_direction = 1;
@@ -112,7 +110,6 @@ function process_hotkey(e) {
 
     if (directional_hotkeys_id.hasOwnProperty(code)) {
         var next_id = directional_hotkeys_id[code]();
-        exports.in_scroll_caused_by_keypress = true;
         current_msg_list.select_id(next_id, {then_scroll: true});
         return true;
     }
@@ -121,7 +118,6 @@ function process_hotkey(e) {
         next_row = wrap_directional_key_with_movement_direction(
             directional_hotkeys[code])(current_msg_list.selected_row());
         if (next_row.length !== 0) {
-            exports.in_scroll_caused_by_keypress = true;
             current_msg_list.select_id(rows.id(next_row), {then_scroll: true});
         }
         if ((next_row.length === 0) && (code === 40 || code === 106)) {

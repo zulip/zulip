@@ -562,7 +562,6 @@ $(function () {
             } else {
                 suppress_scroll_pointer_update = false;
             }
-            hotkeys.in_scroll_caused_by_keypress = false;
             exports.update_floating_recipient_bar();
             if (viewport.scrollTop() === 0 &&
                 have_scrolled_away_from_top) {
