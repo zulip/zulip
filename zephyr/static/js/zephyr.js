@@ -245,7 +245,10 @@ function update_unread_counts() {
         var count = Object.keys(obj).length;
         ui.set_count("stream", index, count);
         if (narrow.stream_in_home(index)) {
-            home_unread_messages += newer_than_pointer_count(Object.keys(obj));
+            var in_home_view = $.grep(Object.keys(obj), function (msgid) {
+                return home_msg_list.get(msgid) !== undefined;
+            });
+            home_unread_messages += newer_than_pointer_count(in_home_view);
         }
     });
 
