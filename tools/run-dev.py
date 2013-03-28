@@ -61,7 +61,8 @@ class Resource(resource.Resource):
     def getChild(self, name, request):
         request.requestHeaders.setRawHeaders('X-Forwarded-Host', [proxy_host])
 
-        if request.uri in ['/json/get_updates', '/api/v1/get_messages', '/api/v1/messages/latest']:
+        if request.uri in ['/json/get_updates', '/api/v1/get_messages'] or \
+            request.uri.startswith('/api/v1/messages/latest'):
             return proxy.ReverseProxyResource('localhost', tornado_port, '/'+name)
 
         return proxy.ReverseProxyResource('localhost', django_port, '/'+name)
