@@ -399,13 +399,14 @@ def home(request):
 
     user_profile = get_user_profile_by_user_id(request.user.id)
 
-    num_messages = UserMessage.objects.filter(user_profile=user_profile).count()
+    register_ret = do_events_register(user_profile, apply_markdown=True)
+    user_has_messages = (register_ret['max_message_id'] != -1)
 
     # Brand new users get the tutorial.
     # Compute this here, before we set user_profile.pointer below.
     needs_tutorial = settings.TUTORIAL_ENABLED and user_profile.pointer == -1
 
-    if user_profile.pointer == -1 and num_messages > 0:
+    if user_profile.pointer == -1 and user_has_messages:
         # Put the new user's pointer at the bottom
         #
         # This improves performance, because we limit backfilling of messages
@@ -413,10 +414,7 @@ def home(request):
         # organization is interested in recent messages more than the very
         # first messages on the system.
 
-        max_id = (UserMessage.objects.filter(user_profile=user_profile)
-                                     .order_by('message')
-                                     .reverse()[0]).message_id
-        user_profile.pointer = max_id
+        user_profile.pointer = register_ret['max_message_id']
         user_profile.last_pointer_updater = request.session.session_key
 
     # Populate personals autocomplete list based on everyone in your
@@ -434,10 +432,10 @@ def home(request):
     page_params = simplejson.encoder.JSONEncoderForHTML().encode(dict(
         debug_mode            = settings.DEBUG,
         poll_timeout          = settings.POLL_TIMEOUT,
-        have_initial_messages = num_messages > 0,
+        have_initial_messages = user_has_messages,
         stream_list           = gather_subscriptions(user_profile),
         people_list           = people,
-        initial_pointer       = user_profile.pointer,
+        initial_pointer       = register_ret['pointer'],
         fullname              = user_profile.full_name,
         email                 = user_profile.user.email,
         domain                = user_profile.realm.domain,
@@ -445,7 +443,9 @@ def home(request):
         needs_tutorial        = needs_tutorial,
         desktop_notifications_enabled =
             user_profile.enable_desktop_notifications,
-        event_queue_id        = request_event_queue(user_profile, True)
+        event_queue_id        = register_ret['queue_id'],
+        last_event_id         = register_ret['last_event_id'],
+        max_message_id        = register_ret['max_message_id']
     ))
 
     try:

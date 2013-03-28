@@ -11,8 +11,7 @@ var queued_flag_timer;
 var viewport = $(window);
 
 var get_updates_params = {
-    pointer: -1,
-    last_event_id: 0
+    pointer: -1
 };
 var get_updates_failures = 0;
 
@@ -604,7 +603,10 @@ function get_updates(options) {
 
     get_updates_params.pointer = furthest_read;
     get_updates_params.dont_block = options.dont_block || get_updates_failures > 0;
-    get_updates_params.queue_id = page_params.event_queue_id;
+    if (get_updates_params.queue_id === undefined) {
+        get_updates_params.queue_id = page_params.event_queue_id;
+        get_updates_params.last_event_id = page_params.last_event_id;
+    }
 
     get_updates_xhr = $.ajax({
         type:     'POST',
@@ -628,12 +630,8 @@ function get_updates(options) {
             var new_pointer;
 
             $.each(data.events, function (idx, event) {
-                if (get_updates_params.last_event_id === undefined) {
-                    get_updates_params.last_event_id = event.id;
-                } else {
-                    get_updates_params.last_event_id = Math.max(get_updates_params.last_event_id,
-                                                                event.id);
-                }
+                get_updates_params.last_event_id = Math.max(get_updates_params.last_event_id,
+                                                            event.id);
 
                 switch (event.type) {
                 case 'message':
