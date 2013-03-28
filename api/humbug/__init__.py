@@ -137,13 +137,18 @@ class Client(object):
 
         while True:
             try:
+                if method == "GET":
+                    kwarg = "params"
+                else:
+                    kwarg = "data"
+                kwargs = {kwarg: query_state["request"]}
                 res = requests.request(
                         method,
                         urlparse.urljoin(self.base_url, url),
                         auth=requests.auth.HTTPBasicAuth(self.email,
                                                          self.api_key),
-                        data=query_state["request"],
-                        verify=True, timeout=55)
+                        verify=True, timeout=55,
+                        **kwargs)
 
                 # On 50x errors, try again after a short sleep
                 if str(res.status_code).startswith('5'):
