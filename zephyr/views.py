@@ -323,15 +323,15 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
             continue
 
         # The logged in user is the referrer.
-        user = PreregistrationUser(email=email, referred_by=user_profile)
+        prereg_user = PreregistrationUser(email=email, referred_by=user_profile)
 
         # We save twice because you cannot associate a ManyToMany field
         # on an unsaved object.
-        user.save()
-        user.streams = streams
-        user.save()
+        prereg_user.save()
+        prereg_user.streams = streams
+        prereg_user.save()
 
-        new_prereg_users.append(user)
+        new_prereg_users.append(prereg_user)
 
     if errors:
         return json_error(data={'errors': errors},
@@ -374,11 +374,11 @@ def accounts_home(request):
         form = HomepageForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
-            user = PreregistrationUser()
-            user.email = email
-            user.save()
-            Confirmation.objects.send_confirmation(user, user.email)
-            return HttpResponseRedirect(reverse('send_confirm', kwargs={'email':user.email}))
+            prereg_user = PreregistrationUser()
+            prereg_user.email = email
+            prereg_user.save()
+            Confirmation.objects.send_confirmation(prereg_user, email)
+            return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
         try:
             email = request.POST['email']
             # Note: We don't check for uniqueness
