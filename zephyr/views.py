@@ -1377,7 +1377,8 @@ def json_get_active_statuses(request, user_profile):
     return json_success(get_status_list(user_profile))
 
 # Read the source map information for decoding JavaScript backtraces
-if not settings.DEBUG:
+js_source_map = None
+if not (settings.DEBUG or settings.TEST_SUITE):
     js_source_map = SourceMap(path.join(
         settings.SITE_ROOT, '../prod-static/source-map/app.js.map'))
 
@@ -1391,7 +1392,7 @@ def json_report_error(request, user_profile, message=POST, stacktrace=POST,
     else:
         subject = "Browser " + subject
 
-    if not settings.DEBUG:
+    if js_source_map:
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
     mail_admins(subject,
