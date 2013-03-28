@@ -42,6 +42,7 @@ from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key
+from zephyr.lib.unminify import SourceMap
 
 from zephyr import tornado_callbacks
 
@@ -55,6 +56,7 @@ import time
 import requests
 import os
 import base64
+from os import path
 from collections import defaultdict
 from zephyr.lib import bugdown
 
@@ -1374,6 +1376,10 @@ def json_update_active_status(request, user_profile,
 def json_get_active_statuses(request, user_profile):
     return json_success(get_status_list(user_profile))
 
+# Read the source map information for decoding JavaScript backtraces
+js_source_map = SourceMap(path.join(
+    settings.SITE_ROOT, '../prod-static/source-map/app.js.map'))
+
 @authenticated_json_post_view
 @has_request_variables
 def json_report_error(request, user_profile, message=POST, stacktrace=POST,
@@ -1383,6 +1389,8 @@ def json_report_error(request, user_profile, message=POST, stacktrace=POST,
         subject = "User-visible browser " + subject
     else:
         subject = "Browser " + subject
+
+    stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
     mail_admins(subject,
                 "Message:\n%s\n\nStacktrace:\n%s\n\nUser agent:\n%s\n\n"
