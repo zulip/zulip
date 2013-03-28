@@ -4,6 +4,16 @@ var exports = {};
 
 exports.in_scroll_caused_by_keypress = false;
 
+function wrap_directional_key_with_movement_direction(arrow_key_func) {
+    if (arrow_key_func === rows.next_visible) {
+        last_viewport_movement_direction = 1;
+    } else if (arrow_key_func === rows.prev_visible) {
+        last_viewport_movement_direction = -1;
+    }
+
+    return arrow_key_func;
+}
+
 var directional_hotkeys = {
     40:  rows.next_visible,  // down arrow
     106: rows.next_visible,  // 'j'
@@ -108,7 +118,8 @@ function process_hotkey(e) {
     }
 
     if (directional_hotkeys.hasOwnProperty(code)) {
-        next_row = directional_hotkeys[code](current_msg_list.selected_row());
+        next_row = wrap_directional_key_with_movement_direction(
+            directional_hotkeys[code])(current_msg_list.selected_row());
         if (next_row.length !== 0) {
             exports.in_scroll_caused_by_keypress = true;
             current_msg_list.select_id(rows.id(next_row), {then_scroll: true});

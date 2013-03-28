@@ -27,6 +27,9 @@ var disable_pointer_movement = false;
 // when Home is next clicked by the user
 var recenter_pointer_on_display = false;
 var suppress_scroll_pointer_update = false;
+// Includes both scroll and arrow events. Negative means scroll up,
+// positive means scroll down.
+var last_viewport_movement_direction = 1;
 
 var furthest_read = -1;
 var server_furthest_read = -1;
@@ -88,7 +91,21 @@ function recenter_view(message) {
 
     // If this logic changes, above_view_threshold andd
     // below_view_threshold must also change.
-    var selected_row_top = current_msg_list.selected_row().offset().top;
+    var selected_row = current_msg_list.selected_row();
+    var selected_row_top = selected_row.offset().top;
+
+    if ((above_view_threshold(message, true) &&
+         (last_viewport_movement_direction >= 0)) ||
+        (below_view_threshold(message) &&
+         (last_viewport_movement_direction <= 0))) {
+        // If the message you're trying to center on is already in view AND
+        // you're already trying to move in the direction of that message,
+        // don't try to recenter. This avoids disorienting jumps when the
+        // pointer has gotten itself outside the threshold (e.g. by
+        // autoscrolling).
+        return;
+    }
+
     if (above_view_threshold(message, true)) {
         // We specifically say useTop=true here, because suppose you're using
         // the arrow keys to arrow up and you've moved up to a huge message.

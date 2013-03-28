@@ -617,6 +617,7 @@ $(function () {
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
         move_pointer_at_page_top_and_bottom(delta);
+        last_viewport_movement_direction = delta;
     });
 
     $(window).mousewheel(function (e, delta) {
