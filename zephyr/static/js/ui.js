@@ -1011,11 +1011,12 @@ exports.get_count = function (type, name) {
 };
 
 exports.set_count = function (type, name, count) {
-    var count_span = exports.get_filter_li(type, name).find('.count');
+    var encoded = encodeURIComponent(name);
+    var count_span = exports.get_filter_li(type, encoded).find('.count');
     var value_span = count_span.find('.value');
 
     if (count === 0) {
-        return exports.clear_count(type, name);
+        return exports.clear_count(type, encoded);
     }
     count_span.show();
 
