@@ -33,6 +33,8 @@ try:
 except:
     bail('Test suite only runs correctly with --settings=humbug.test_settings')
 
+# Even though we don't use pygments directly in this file, we need
+# this import.
 try:
     import pygments
 except ImportError:
