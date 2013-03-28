@@ -988,7 +988,7 @@ $(function () {
 
     $('#stream_filters li').on('click', 'a', function (e) {
         var stream = $(e.target).parents('li').data('name');
-        narrow.by('stream', decodeURIComponent(stream), {select_first_unread: true});
+        narrow.by('stream', stream, {select_first_unread: true});
 
         e.preventDefault();
     });
@@ -998,8 +998,7 @@ function sort_narrow_list() {
     var items = $('#stream_filters li').get();
     var parent = $('#stream_filters');
     items.sort(function(a,b){
-        return decodeURIComponent($(a).attr('data-name')).localeCompare(
-            decodeURIComponent($(b).attr('data-name')));
+        return $(a).attr('data-name').localeCompare($(b).attr('data-name'));
     });
 
     parent.empty();
@@ -1047,7 +1046,7 @@ exports.add_narrow_filter = function(name, type, uri) {
     var swatch = $('<span/>').attr('id', "stream_sidebar_swatch_" + subs.stream_id(name))
                              .addClass('streamlist_swatch')
                              .css('background-color', subs.get_color(name)).html("&nbsp;");
-    list_item = $('<li>').attr('data-name', encodeURIComponent(name)).html(swatch);
+    list_item = $('<li>').attr('data-name', name).html(swatch);
     list_item.append($('<a>').attr('href', uri)
                      .addClass('subscription_name')
                      .text(name)
@@ -1064,12 +1063,11 @@ exports.get_count = function (type, name) {
 };
 
 exports.set_count = function (type, name, count) {
-    var encoded = encodeURIComponent(name);
-    var count_span = exports.get_filter_li(type, encoded).find('.count');
+    var count_span = exports.get_filter_li(type, name).find('.count');
     var value_span = count_span.find('.value');
 
     if (count === 0) {
-        return exports.clear_count(type, encoded);
+        return exports.clear_count(type, name);
     }
     count_span.show();
 
