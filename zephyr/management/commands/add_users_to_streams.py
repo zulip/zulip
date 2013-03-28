@@ -3,7 +3,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from zephyr.lib.actions import create_stream_if_needed, do_add_subscription
-from zephyr.models import Realm, User, UserProfile
+from zephyr.models import Realm, UserProfile, get_user_profile_by_email
 
 class Command(BaseCommand):
     help = """Add some or all users in a realm to a set of streams."""
@@ -43,8 +43,7 @@ class Command(BaseCommand):
             emails = set([email.strip() for email in options["users"].split(",")])
             user_profiles = []
             for email in emails:
-                user_profiles.append(UserProfile.objects.get(
-                        user=User.objects.get(email__iexact=email)))
+                user_profiles.append(get_user_profile_by_email(email))
 
         for stream_name in set(stream_names):
             for user_profile in user_profiles:

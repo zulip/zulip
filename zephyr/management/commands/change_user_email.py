@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from zephyr.lib.actions import do_change_user_email
-from zephyr.models import UserProfile
+from zephyr.models import UserProfile, get_user_profile_by_email
 
 class Command(BaseCommand):
     help = """Change the email address for a user.
@@ -15,7 +15,7 @@ Usage: python manage.py change_user_email <old email> <new email>"""
 
         old_email, new_email = args
         try:
-            user_profile = UserProfile.objects.get(user__email__iexact=old_email)
+            user_profile = get_user_profile_by_email(old_email)
         except UserProfile.DoesNotExist:
             print "Old e-mail doesn't exist in the system."
             exit(1)

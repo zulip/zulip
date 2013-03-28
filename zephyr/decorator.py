@@ -2,7 +2,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.http import QueryDict
 from django.http.multipartparser import MultiPartParser
-from zephyr.models import UserProfile, UserActivity, get_client
+from zephyr.models import UserProfile, UserActivity, get_client, \
+    get_user_profile_by_email
 from zephyr.lib.response import json_success, json_error, HttpResponseUnauthorized
 from django.utils.timezone import now
 from django.db import transaction, IntegrityError
@@ -55,10 +56,6 @@ require_post = require_POST
 @cache_with_key(user_profile_by_user_cache_key, timeout=3600*24*7)
 def get_user_profile_by_user_id(user_id):
     return UserProfile.objects.select_related().get(user_id=user_id)
-
-@cache_with_key(user_profile_by_email_cache_key, timeout=3600*24*7)
-def get_user_profile_by_email(email):
-    return UserProfile.objects.select_related().get(user__email__iexact=email)
 
 def process_client(request, user_profile):
     try:

@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
-from zephyr.models import UserProfile, Subscription, Recipient, Message, Stream
+from zephyr.models import Subscription, Recipient, Message, Stream, \
+    get_user_profile_by_email
 from django.db.models import Q
 
 import datetime
@@ -23,7 +24,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         possible_tutorial_streams = Stream.objects.filter(Q(name__startswith='tutorial-'))
 
-        tutorial_bot = UserProfile.objects.get(user__email="humbug+tutorial@humbughq.com")
+        tutorial_bot = get_user_profile_by_email("humbug+tutorial@humbughq.com")
 
         for stream in possible_tutorial_streams:
             recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)

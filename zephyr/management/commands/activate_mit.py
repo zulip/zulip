@@ -1,7 +1,7 @@
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from confirmation.models import Confirmation
-from zephyr.models import User, MitUser
+from zephyr.models import UserProfile, MitUser, get_user_profile_by_email
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -13,8 +13,8 @@ class Command(BaseCommand):
         for username in args:
             email = username + "@mit.edu"
             try:
-                User.objects.get(email=email)
-            except User.DoesNotExist:
+                get_user_profile_by_email(email)
+            except UserProfile.DoesNotExist:
                 print username + ": User does not exist in database"
                 continue
             mit_user, created = MitUser.objects.get_or_create(email=email)

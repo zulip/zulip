@@ -3,7 +3,8 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from zephyr.lib.actions import do_remove_subscription
-from zephyr.models import Realm, User, UserProfile, get_stream
+from zephyr.models import Realm, User, UserProfile, get_stream, \
+    get_user_profile_by_email
 
 class Command(BaseCommand):
     help = """Remove some or all users in a realm from a stream."""
@@ -44,8 +45,7 @@ class Command(BaseCommand):
             emails = set([email.strip() for email in options["users"].split(",")])
             user_profiles = []
             for email in emails:
-                user_profiles.append(UserProfile.objects.get(
-                        user=User.objects.get(email__iexact=email)))
+                user_profiles.append(get_user_profile_by_email(email))
 
         for user_profile in user_profiles:
             did_remove = do_remove_subscription(user_profile, stream)

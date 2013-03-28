@@ -5,7 +5,8 @@ from django.core.management.base import BaseCommand
 
 from zephyr.lib.actions import do_deactivate, user_sessions
 from zephyr.lib import utils
-from zephyr.models import UserMessage, UserProfile
+from zephyr.models import UserMessage, UserProfile, \
+    get_user_profile_by_email
 from django.db import transaction, models
 
 
@@ -43,7 +44,7 @@ class Command(BaseCommand):
                 exit(1)
             users = UserProfile.objects.filter(realm__domain=args[0])
         else:
-            users = [UserProfile.objects.get(user__email__iexact=args[0])]
+            users = [get_user_profile_by_email(args[0])]
 
 
         for user_profile in users:

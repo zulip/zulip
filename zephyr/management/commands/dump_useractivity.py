@@ -1,6 +1,7 @@
 from optparse import make_option
 from django.core.management.base import BaseCommand
-from zephyr.models import Realm, UserProfile, UserActivity, get_client
+from zephyr.models import Realm, UserActivity, get_client, \
+    get_user_profile_by_email
 import simplejson
 from zephyr.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 
@@ -15,7 +16,7 @@ def dump():
 
 def restore(change):
     for (email, client_name, query, count, timestamp) in simplejson.loads(file("dumped-activity").read()):
-        user_profile = UserProfile.objects.get(user__email__iexact=email)
+        user_profile = get_user_profile_by_email(email)
         client = get_client(client_name)
         last_visit = timestamp_to_datetime(timestamp)
         print "%s: activity for %s,%s" % (email, client_name, query)

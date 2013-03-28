@@ -15,7 +15,7 @@ import operator
 from django.utils     import timezone
 from django.db.models import Q
 from datetime         import datetime, timedelta
-from zephyr.models    import Realm, UserMessage, UserProfile
+from zephyr.models    import Realm, UserMessage, get_user_profile_by_email
 
 # Each domain has a maximum age for retained messages.
 #
@@ -44,7 +44,7 @@ def should_expunge_from_log(msg, now):
     user_email = msg['sender_email']
     domain = domain_cache.get(user_email)
     if not domain:
-        domain = UserProfile.objects.get(user__email__iexact=user_email).realm.domain
+        domain = get_user_profile_by_email(user_email).realm.domain
         domain_cache[user_email] = domain
 
     if domain not in max_age:

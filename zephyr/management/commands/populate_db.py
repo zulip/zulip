@@ -540,13 +540,13 @@ def restore_saved_messages():
             continue
         elif message_type == "user_change_full_name":
             # Just handle these the slow way
-            user_profile = UserProfile.objects.get(user__email__iexact=old_message["user"])
+            user_profile = users[old_message["user"]]
             user_profile.full_name = old_message["full_name"]
             user_profile.save()
             continue
         elif message_type == "enable_desktop_notifications_changed":
             # Just handle these the slow way
-            user_profile = UserProfile.objects.get(user__email__iexact=old_message["user"])
+            user_profile = users[old_message["user"]]
             user_profile.enable_desktop_notifications = (old_message["enable_desktop_notifications"] != "false")
             user_profile.save()
             continue

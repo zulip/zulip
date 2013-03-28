@@ -115,7 +115,7 @@ def compute_mit_user_fullname(email):
 @transaction.commit_on_success
 def create_mit_user_if_needed(realm, email):
     try:
-        return UserProfile.objects.get(user__email__iexact=email)
+        return get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
         try:
             # Forge a user for this person
@@ -126,7 +126,7 @@ def create_mit_user_if_needed(realm, email):
             # Unless we raced with another thread doing the same
             # thing, in which case we should get the user they made
             transaction.commit()
-            return UserProfile.objects.get(user__email__iexact=email)
+            return get_user_profile_by_email(email)
 
 def log_message(message):
     if not message.sending_client.name.startswith("test:"):

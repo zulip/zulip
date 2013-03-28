@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 
 from zephyr.lib.actions import do_deactivate, user_sessions
 from zephyr.lib import utils
-from zephyr.models import UserMessage, UserProfile
+from zephyr.models import UserMessage, get_user_profile_by_email
 from django.db import transaction, models
 
 
@@ -48,7 +48,7 @@ class Command(BaseCommand):
         all_until = options['all_until']
         email = options['email']
 
-        user_profile = UserProfile.objects.get(user__email=email)
+        user_profile = get_user_profile_by_email(email)
 
         if all_until:
             filt = models.Q(id__lte=all_until)

@@ -1,6 +1,7 @@
 from optparse import make_option
 from django.core.management.base import BaseCommand
-from zephyr.models import Realm, UserProfile, Message, UserMessage
+from zephyr.models import Realm, UserProfile, Message, UserMessage, \
+    get_user_profile_by_email
 from zephyr.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 import simplejson
 
@@ -18,7 +19,7 @@ def dump():
 def restore(change):
     for (email, timestamp) in simplejson.loads(file("dumped-pointers").read()):
         try:
-            u = UserProfile.objects.get(user__email__iexact=email)
+            u = get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:
             print "Skipping...", email
             continue

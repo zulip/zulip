@@ -1,10 +1,9 @@
 from optparse import make_option
 
-from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from zephyr.lib.actions import do_deactivate, user_sessions
-from zephyr.models import UserProfile
+from zephyr.models import UserProfile, get_user_profile_by_email
 
 class Command(BaseCommand):
     help = "Deactivate a user, including forcibly logging them out."
@@ -21,14 +20,14 @@ class Command(BaseCommand):
         if not args:
             print "Please specify an e-mail address."
             exit(1)
-        user = User.objects.get(email__iexact=args[0])
-        user_profile = UserProfile.objects.get(user=user)
 
-        sessions = user_sessions(user)
-        print "Deactivating %s (%s) - %s" % (user_profile.full_name, user.email,
+        user_profile = get_user_profile_by_email(args[0])
+
+        print "Deactivating %s (%s) - %s" % (user_profile.full_name,
+                                             user_profile.user.email,
                                              user_profile.realm.domain)
-        print "%s has the following active sessions:" % (user.email,)
-        for session in sessions:
+        print "%s has the following active sessions:" % (user_profile.user.email,)
+        for session in user_sessions(user_profile.user):
             print session.expire_date, session.get_decoded()
         print ""
 

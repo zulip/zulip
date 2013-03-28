@@ -2,7 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
 from zephyr.lib.cache import cache_with_key, update_user_profile_cache, \
-    update_user_cache, user_profile_by_id_cache_key
+    update_user_cache, user_profile_by_id_cache_key, \
+    user_profile_by_email_cache_key
 from zephyr.lib.initial_password import initial_api_key
 from zephyr.lib.utils import make_safe_digest
 import os
@@ -342,6 +343,10 @@ class Subscription(models.Model):
 @cache_with_key(user_profile_by_id_cache_key, timeout=3600*24*7)
 def get_user_profile_by_id(uid):
     return UserProfile.objects.select_related().get(id=uid)
+
+@cache_with_key(user_profile_by_email_cache_key, timeout=3600*24*7)
+def get_user_profile_by_email(email):
+    return UserProfile.objects.select_related().get(user__email__iexact=email)
 
 class Huddle(models.Model):
     # TODO: We should consider whether using
