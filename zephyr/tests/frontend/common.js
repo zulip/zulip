@@ -181,6 +181,11 @@ exports.expected_messages = function (table, headings, bodies) {
         'Got expected message bodies');
 };
 
+exports.un_narrow = function () {
+    casper.test.info('Un-narrowing');
+    common.keypress(27); // Esc
+};
+
 return exports;
 
 }());

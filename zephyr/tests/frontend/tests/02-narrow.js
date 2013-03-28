@@ -126,11 +126,7 @@ function expect_all_pm() {
 }
 
 function un_narrow() {
-    casper.then(function () {
-        casper.test.info('Un-narrowing');
-        common.keypress(27); // Esc
-    });
-
+    casper.then(common.un_narrow);
     casper.then(expect_home);
 }
 
