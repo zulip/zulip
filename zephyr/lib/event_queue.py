@@ -14,7 +14,12 @@ import tornado
 import random
 
 IDLE_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
-HEARTBEAT_MIN_FREQ_SECS = 50
+# The heartbeats effectively act as a server-side timeout for
+# get_events().  The actual timeout value is randomized for each
+# client connection based on the below value.  We ensure that the
+# maximum timeout value is 55 seconds, to deal with crappy home
+# wireless routers that kill "inactive" http connections.
+HEARTBEAT_MIN_FREQ_SECS = 45
 
 class ClientDescriptor(object):
     def __init__(self, user_profile_id, id, event_types=None, apply_markdown=True):
