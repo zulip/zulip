@@ -577,7 +577,14 @@ $(function () {
 
             var new_selected = current_msg_list.selected_id();
             if (scroll_start_message === undefined) {
-                blueslip.error("Got a scroll finish with no saved message from scroll start");
+                // blueslip.error("Got a scroll finish with no saved message from scroll start");
+                // This is being intermittently hit, and while not fatal or bothersome for the UI,
+                // it is something we want to trac down. To quiet emails, this is commented out
+                // for now.
+                // https://trac.humbughq.com/ticket/1138
+                //
+                // Make the block not empty to appease jslint
+                var ignored = true;
             } else if (new_selected > scroll_start_message) {
                 var mark_as_read = [];
                 $.each(message_range(current_msg_list, scroll_start_message, new_selected),
