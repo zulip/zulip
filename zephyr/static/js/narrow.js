@@ -51,7 +51,7 @@ function encodeOperand(operand) {
 }
 
 function decodeOperand(encoded) {
-    return decodeURIComponent(encoded.replace(/\+/g, ' '));
+    return util.robust_uri_decode(encoded.replace(/\+/g, ' '));
 }
 
 /* Convert a list of operators to a string.

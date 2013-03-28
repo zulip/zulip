@@ -202,5 +202,23 @@ exports.same_sender = function util_same_sender(a, b) {
             (a.sender_email === b.sender_email));
 };
 
+// Avoid URI decode errors by removing characters from the end
+// one by one until the decode succeeds.  This makes sense if
+// we are decoding input that the user is in the middle of
+// typing.
+exports.robust_uri_decode = function (str) {
+    var end = str.length;
+    while (end > 0) {
+        try {
+            return decodeURIComponent(str.substring(0, end));
+        } catch (e) {
+            if (!(e instanceof URIError))
+                throw e;
+            end--;
+        }
+    }
+    return '';
+};
+
 return exports;
 }());
