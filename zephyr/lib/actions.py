@@ -419,13 +419,15 @@ def get_subscription(stream_name, user_profile):
                                        recipient=recipient, active=True)
 
 def set_stream_color(user_profile, stream_name, color=None):
-    subscription = get_subscription(stream_name, user_profile)
-    stream_color, _ = StreamColor.objects.get_or_create(subscription=subscription[0])
     # TODO: sanitize color.
     if not color:
         color = pick_color(user_profile)
-    stream_color.color = color
-    stream_color.save(update_fields=["color"])
+    subscription = get_subscription(stream_name, user_profile)
+    stream_color, created = StreamColor.objects.get_or_create(subscription=subscription[0],
+                                                              defaults={'color': color})
+    if not created:
+        stream_color.color = color
+        stream_color.save(update_fields=["color"])
     return color
 
 def do_add_subscription(user_profile, stream, no_log=False):
