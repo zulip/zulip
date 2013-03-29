@@ -415,15 +415,18 @@ def pick_color(user_profile):
 def get_subscription(stream_name, user_profile):
     stream = get_stream(stream_name, user_profile.realm)
     recipient = get_recipient(Recipient.STREAM, stream.id)
-    return Subscription.objects.filter(user_profile=user_profile,
-                                       recipient=recipient, active=True)
+    return Subscription.objects.get(user_profile=user_profile,
+                                    recipient=recipient, active=True)
 
 def set_stream_color(user_profile, stream_name, color=None):
+    subscription = get_subscription(stream_name, user_profile)
+    return set_stream_color_backend(user_profile, subscription, color)
+
+def set_stream_color_backend(user_profile, subscription, color=None):
     # TODO: sanitize color.
     if not color:
         color = pick_color(user_profile)
-    subscription = get_subscription(stream_name, user_profile)
-    stream_color, created = StreamColor.objects.get_or_create(subscription=subscription[0],
+    stream_color, created = StreamColor.objects.get_or_create(subscription=subscription,
                                                               defaults={'color': color})
     if not created:
         stream_color.color = color
@@ -440,7 +443,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
         did_subscribe = True
         subscription.active = True
         subscription.save(update_fields=["active"])
-    color = set_stream_color(user_profile, stream.name)
+    color = set_stream_color_backend(user_profile, subscription)
     if did_subscribe:
         if not no_log:
             log_event({'type': 'subscription_added',
