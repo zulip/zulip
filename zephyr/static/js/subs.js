@@ -351,6 +351,15 @@ function mark_unsubscribed(stream_name) {
     typeahead_helper.update_autocomplete();
 }
 
+$(function () {
+    $(document).on('subscription_add.zephyr', function (e) {
+        mark_subscribed(e.subscription.name, e.subscription);
+    });
+    $(document).on('subscription_remove.zephyr', function (e) {
+        mark_unsubscribed(e.subscription.name);
+    });
+});
+
 exports.get_color = function (stream_name) {
     var sub = get_sub(stream_name);
     if (sub === undefined) {
@@ -532,7 +541,8 @@ function ajaxSubscribe(stream) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.subscribed[page_params.email][0];
             }
-            mark_subscribed(true_stream_name);
+            $(document).trigger($.Event('subscription_add.zephyr',
+                                        {subscription: {name: true_stream_name}}));
         },
         error: function (xhr) {
             ui.report_error("Error adding subscription", xhr, $("#subscriptions-status"));
@@ -555,7 +565,8 @@ function ajaxUnsubscribe(stream) {
             } else {
                 name = res.removed[0];
             }
-            mark_unsubscribed(name);
+            $(document).trigger($.Event('subscription_remove.zephyr',
+                                        {subscription: {name: name}}));
         },
         error: function (xhr) {
             ui.report_error("Error removing subscription", xhr, $("#subscriptions-status"));
@@ -578,7 +589,9 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
             $("#create_stream_name").val("");
             $("#subscriptions-status").hide();
             $('#stream-creation').modal("hide");
-            mark_subscribed(stream, {invite_only: invite_only});
+            $(document).trigger($.Event('subscription_add.zephyr',
+                                        {subscription: {name: stream,
+                                                        invite_only: invite_only}}));
         },
         error: function (xhr) {
             ui.report_error("Error creating stream", xhr, $("#subscriptions-status"));
