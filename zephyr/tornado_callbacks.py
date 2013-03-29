@@ -273,9 +273,10 @@ def process_notification(data):
 # different types and for compatibility with non-HTTP transports.
 
 def send_notification_http(data):
-    requests.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
-        data   = simplejson.dumps(data),
-        secret = settings.SHARED_SECRET))
+    if settings.TORNADO_SERVER:
+        requests.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
+                data   = simplejson.dumps(data),
+                secret = settings.SHARED_SECRET))
 
 def send_notification(data):
     return queue_json_publish("notify_tornado", data, send_notification_http)
