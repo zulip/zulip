@@ -537,12 +537,8 @@ function ajaxSubscribe(stream) {
                 true_stream_name = res.already_subscribed[page_params.email][0];
                 ui.report_success("Already subscribed to " + true_stream_name,
                                   $("#subscriptions-status"));
-            } else {
-                // Display the canonical stream capitalization.
-                true_stream_name = res.subscribed[page_params.email][0];
             }
-            $(document).trigger($.Event('subscription_add.zephyr',
-                                        {subscription: {name: true_stream_name}}));
+            // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
             ui.report_error("Error adding subscription", xhr, $("#subscriptions-status"));
@@ -560,13 +556,7 @@ function ajaxUnsubscribe(stream) {
         success: function (resp, statusText, xhr, form) {
             var name, res = $.parseJSON(xhr.responseText);
             $("#subscriptions-status").hide();
-            if (res.removed.length === 0) {
-                name = res.not_subscribed[0];
-            } else {
-                name = res.removed[0];
-            }
-            $(document).trigger($.Event('subscription_remove.zephyr',
-                                        {subscription: {name: name}}));
+            // The rest of the work is done via the unsubscribe event we will get
         },
         error: function (xhr) {
             ui.report_error("Error removing subscription", xhr, $("#subscriptions-status"));
@@ -589,9 +579,7 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
             $("#create_stream_name").val("");
             $("#subscriptions-status").hide();
             $('#stream-creation').modal("hide");
-            $(document).trigger($.Event('subscription_add.zephyr',
-                                        {subscription: {name: stream,
-                                                        invite_only: invite_only}}));
+            // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
             ui.report_error("Error creating stream", xhr, $("#subscriptions-status"));

@@ -675,6 +675,15 @@ function get_updates(options) {
                     }
                     typeahead_helper.autocomplete_needs_update(true);
                     break;
+                case 'subscription':
+                    if (event.op === 'add') {
+                        $(document).trigger($.Event('subscription_add.zephyr',
+                                                    {subscription: event.subscription}));
+                    } else if (event.op === 'remove') {
+                        $(document).trigger($.Event('subscription_remove.zephyr',
+                                                    {subscription: event.subscription}));
+                    }
+                    break;
                 }
             });
 
