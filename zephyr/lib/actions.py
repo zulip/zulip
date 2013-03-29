@@ -431,13 +431,16 @@ def set_stream_color_backend(user_profile, subscription, color=None):
     if not created:
         stream_color.color = color
         stream_color.save(update_fields=["color"])
+        subscription.color = color
+        subscription.save(update_fields=["color"])
     return color
 
 def do_add_subscription(user_profile, stream, no_log=False):
     recipient = get_recipient(Recipient.STREAM, stream.id)
+    color = pick_color(user_profile)
     (subscription, created) = Subscription.objects.get_or_create(
         user_profile=user_profile, recipient=recipient,
-        defaults={'active': True})
+        defaults={'active': True, 'color': color})
     did_subscribe = created
     if not subscription.active:
         did_subscribe = True

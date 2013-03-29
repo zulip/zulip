@@ -63,3 +63,5 @@ class Command(BaseCommand):
                     continue
 
                 StreamColor(subscription=subscription, color=color).save()
+                subscription.color = color
+                subscription.save(update_fields=["color"])

@@ -20,3 +20,5 @@ class Command(BaseCommand):
                 stream_color, _ = StreamColor.objects.get_or_create(subscription=sub)
                 stream_color.color = StreamColor.DEFAULT_STREAM_COLOR
                 stream_color.save()
+                sub.color = Subscription.DEFAULT_STREAM_COLOR
+                sub.save(update_fields=["color"])

@@ -324,6 +324,9 @@ class Subscription(models.Model):
     active = models.BooleanField(default=True)
     in_home_view = models.NullBooleanField(default=True)
 
+    DEFAULT_STREAM_COLOR = "#c2c2c2"
+    color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
+
     class Meta:
         unique_together = ("user_profile", "recipient")
 
