@@ -40,6 +40,17 @@ function add_person(person) {
     people_dict[person.email] = person;
 }
 
+function remove_person(person) {
+    var i;
+    for (i = 0; i < page_params.people_list.length; i++) {
+        if (page_params.people_list[i].email === person.email) {
+            page_params.people_list.splice(i, 1);
+            break;
+        }
+    }
+    delete people_dict[person.email];
+}
+
 $(function () {
     $.each(page_params.people_list, function (idx, person) {
         people_dict[person.email] = person;
@@ -654,8 +665,22 @@ function get_updates(options) {
                 case 'restart':
                     reload.initiate();
                     break;
+                case 'realm_user':
+                    if (event.op === 'add') {
+                        add_person(event.person);
+                        typeahead_helper.update_all_recipients([event.person]);
+                    } else if (event.op === 'remove') {
+                        remove_person(event.person);
+                        typeahead_helper.remove_recipient([event.person]);
+                    }
+                    typeahead_helper.autocomplete_needs_update(true);
+                    break;
                 }
             });
+
+            if (typeahead_helper.autocomplete_needs_update()) {
+                typeahead_helper.update_autocomplete();
+            }
 
             if (messages.length !== 0) {
                 // There is a known bug (#1062) in our backend

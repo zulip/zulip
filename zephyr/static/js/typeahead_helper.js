@@ -80,6 +80,15 @@ exports.update_your_recipients = function (recipients) {
     });
 };
 
+exports.remove_recipient = function (recipients) {
+    $.each(recipients, function (idx, recipient_data) {
+        var name_string = exports.render_person(recipient_data);
+        delete exports.private_message_mapped[name_string];
+        var arr = exports.private_message_typeahead_list;
+        arr.splice(arr.indexOf(name_string), 1);
+    });
+};
+
 function prefix_sort(query, objs, get_item) {
     // Based on Bootstrap typeahead's default sorter, but taking into
     // account case sensitivity on "begins with"
