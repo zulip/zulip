@@ -726,41 +726,25 @@ def do_finish_tutorial(user_profile):
             do_add_subscription(user_profile, stream)
 
 def gather_subscriptions(user_profile):
-    # This is a little awkward because the StreamColor table has foreign keys
-    # to Subscription, but not vice versa, and not all Subscriptions have a
-    # StreamColor.
-    #
-    # We could do this with a single OUTER JOIN query but Django's ORM does
-    # not provide a simple way to specify one.
-
-    # For now, don't display the subscription for your ability to receive personals.
-    subs = Subscription.objects.filter(
+    # For now, don't display subscriptions for private messages.
+    subs = Subscription.objects.select_related().filter(
         user_profile    = user_profile,
         active          = True,
         recipient__type = Recipient.STREAM)
-    with_color = StreamColor.objects.filter(subscription__in = subs).select_related()
-    no_color   = subs.exclude(id__in = with_color.values('subscription_id')).select_related()
 
-    stream_ids = [sc.subscription.recipient.type_id for sc in with_color] + \
-        [sub.recipient.type_id for sub in no_color]
+    stream_ids = [sub.recipient.type_id for sub in subs]
 
     stream_hash = {}
     for stream in Stream.objects.filter(id__in=stream_ids):
         stream_hash[stream.id] = (stream.name, stream.invite_only)
 
     result = []
-    for sc in with_color:
-        (stream_name, invite_only) = stream_hash[sc.subscription.recipient.type_id]
-        result.append({'name': stream_name,
-                       'in_home_view': sc.subscription.in_home_view,
-                       'invite_only': invite_only,
-                       'color': sc.color})
-    for sub in no_color:
+    for sub in subs:
         (stream_name, invite_only) = stream_hash[sub.recipient.type_id]
         result.append({'name': stream_name,
                        'in_home_view': sub.in_home_view,
                        'invite_only': invite_only,
-                       'color': StreamColor.DEFAULT_STREAM_COLOR})
+                       'color': sub.color})
 
     return sorted(result)
 
