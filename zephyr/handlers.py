@@ -20,8 +20,8 @@ def format_record(record):
         stack_trace = 'No stack trace available'
 
     try:
-        user = record.request.user
-        user_info = "%s (%s)" % (user.userprofile.full_name, user.email)
+        user_profile = record.request.user
+        user_info = "%s (%s)" % (user_profile.full_name, user_profile.email)
     except Exception:
         # Error was triggered by an anonymous user.
         user_info = "Anonymous user (not logged in)"

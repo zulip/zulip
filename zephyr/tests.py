@@ -228,8 +228,8 @@ class LoginTest(AuthedTestCase):
 
     def test_login(self):
         self.login("hamlet@humbughq.com")
-        user = User.objects.get(email='hamlet@humbughq.com')
-        self.assertEqual(self.client.session['_auth_user_id'], user.id)
+        user_profile = self.get_user_profile('hamlet@humbughq.com')
+        self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
     def test_login_bad_password(self):
         self.login("hamlet@humbughq.com", "wrongpassword")
@@ -237,8 +237,8 @@ class LoginTest(AuthedTestCase):
 
     def test_register(self):
         self.register("test", "test")
-        user = User.objects.get(email='test@humbughq.com')
-        self.assertEqual(self.client.session['_auth_user_id'], user.id)
+        user_profile = self.get_user_profile('test@humbughq.com')
+        self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
     def test_logout(self):
         self.login("hamlet@humbughq.com")
@@ -254,15 +254,15 @@ class LoginTest(AuthedTestCase):
 
         # Registering succeeds.
         self.register("test", password)
-        user = User.objects.get(email=email)
-        self.assertEqual(self.client.session['_auth_user_id'], user.id)
+        user_profile = self.get_user_profile(email)
+        self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
         self.client.post('/accounts/logout/')
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
         # Logging in succeeds.
         self.client.post('/accounts/logout/')
         self.login(email, password)
-        self.assertEqual(self.client.session['_auth_user_id'], user.id)
+        self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
 class PersonalMessagesTest(AuthedTestCase):
     fixtures = ['messages.json']
@@ -1392,8 +1392,8 @@ class ChangeSettingsTest(AuthedTestCase):
                 enable_desktop_notifications, False)
         self.client.post('/accounts/logout/')
         self.login("hamlet@humbughq.com", "foobar1")
-        user = User.objects.get(email='hamlet@humbughq.com')
-        self.assertEqual(self.client.session['_auth_user_id'], user.id)
+        user_profile = self.get_user_profile('hamlet@humbughq.com')
+        self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
     def test_missing_params(self):
         """
@@ -1452,9 +1452,9 @@ class DummySession(object):
 class POSTRequestMock(object):
     method = "POST"
 
-    def __init__(self, post_data, user, assert_callback=None):
+    def __init__(self, post_data, user_profile, assert_callback=None):
         self.REQUEST = self.POST = post_data
-        self.user = user
+        self.user = user_profile
         self._tornado_handler = DummyHandler(assert_callback)
         self.session = DummySession()
         self.META = {'PATH_INFO': 'test'}
@@ -1474,7 +1474,7 @@ class GetUpdatesTest(AuthedTestCase):
 
         post_data = {}
         post_data.update(extra_post_data)
-        request = POSTRequestMock(post_data, user_profile.user, callback)
+        request = POSTRequestMock(post_data, user_profile, callback)
         self.assertEqual(view_func(request), RespondAsynchronously)
 
     def test_json_get_updates(self):
@@ -1498,9 +1498,9 @@ class GetUpdatesTest(AuthedTestCase):
         Calling json_get_updates without any arguments should work
         """
         self.login("hamlet@humbughq.com")
-        user = User.objects.get(email="hamlet@humbughq.com")
+        user_profile = self.get_user_profile("hamlet@humbughq.com")
 
-        request = POSTRequestMock({}, user)
+        request = POSTRequestMock({}, user_profile)
         self.assertEqual(json_get_updates(request), RespondAsynchronously)
 
     def test_bad_input(self):
@@ -1508,9 +1508,9 @@ class GetUpdatesTest(AuthedTestCase):
         Specifying a bad value for 'pointer' should return an error
         """
         self.login("hamlet@humbughq.com")
-        user = User.objects.get(email="hamlet@humbughq.com")
+        user_profile = self.get_user_profile("hamlet@humbughq.com")
 
-        request = POSTRequestMock({'pointer': 'foo'}, user)
+        request = POSTRequestMock({'pointer': 'foo'}, user_profile)
         self.assertRaises(RequestVariableConversionError, json_get_updates, request)
 
 class GetProfileTest(AuthedTestCase):

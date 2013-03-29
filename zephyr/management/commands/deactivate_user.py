@@ -27,7 +27,7 @@ class Command(BaseCommand):
                                              user_profile.email,
                                              user_profile.realm.domain)
         print "%s has the following active sessions:" % (user_profile.email,)
-        for session in user_sessions(user_profile.user):
+        for session in user_sessions(user_profile):
             print session.expire_date, session.get_decoded()
         print ""
 

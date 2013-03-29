@@ -144,7 +144,7 @@ def authenticate_log_and_execute_json(request, client, view_func, *args, **kwarg
     if not request.user.is_authenticated():
         return json_error("Not logged in", status=401)
     request.client = client
-    user_profile = get_user_profile_by_user_id(request.user.id)
+    user_profile = request.user
     request._email = user_profile.email
     update_user_activity(request, user_profile)
     return view_func(request, user_profile, *args, **kwargs)

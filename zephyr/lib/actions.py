@@ -72,19 +72,20 @@ def do_create_user(email, password, realm, full_name, short_name,
     tornado_callbacks.send_notification(notice)
     return user_profile
 
-def user_sessions(user):
-    return [s for s in Session.objects.all() if s.get_decoded().get('_auth_user_id') == user.id]
+def user_sessions(user_profile):
+    return [s for s in Session.objects.all()
+            if s.get_decoded().get('_auth_user_id') == user_profile.id]
 
 def delete_session(session):
     return session_engine.SessionStore(session.session_key).delete()
 
 def delete_user_sessions(user_profile):
     for session in Session.objects.all():
-        if session.get_decoded().get('_auth_user_id') == user_profile.user.id:
+        if session.get_decoded().get('_auth_user_id') == user_profile.id:
             delete_session(session)
 
 def delete_realm_user_sessions(realm):
-    realm_user_ids = [u.user.id for u in
+    realm_user_ids = [user_profile.id for user_profile in
                       UserProfile.objects.filter(realm=realm)]
     for session in Session.objects.all():
         if session.get_decoded().get('_auth_user_id') in realm_user_ids:

@@ -1,17 +1,8 @@
-from django.contrib.auth.models import User
+from zephyr.models import UserProfile, get_user_profile_by_id, \
+    get_user_profile_by_email
 from django.conf import settings
 
 from openid.consumer.consumer import SUCCESS
-
-from zephyr.lib.cache import cache_with_key
-from zephyr.lib.cache import user_by_id_cache_key
-
-@cache_with_key(user_by_id_cache_key, timeout=3600*24*7)
-def get_user_by_id(user_id):
-    try:
-        return User.objects.select_related().get(id=user_id)
-    except User.DoesNotExist:
-        return None
 
 class EmailAuthBackend(object):
     """
@@ -30,19 +21,22 @@ class EmailAuthBackend(object):
             return None
 
         try:
-            user = User.objects.get(email__iexact=username)
-            if user.check_password(password):
-                return user
-        except User.DoesNotExist:
+            user_profile = UserProfile.objects.get(email__iexact=username)
+            if user_profile.check_password(password):
+                return user_profile
+        except UserProfile.DoesNotExist:
             return None
 
-    def get_user(self, user_id):
-        """ Get a User object from the user_id. """
-        return get_user_by_id(user_id)
+    def get_user(self, user_profile_id):
+        """ Get a UserProfile object from the user_profile_id. """
+        try:
+            return get_user_profile_by_id(user_profile_id)
+        except UserProfile.DoesNotExist:
+            return None
 
 # Adapted from http://djangosnippets.org/snippets/2183/ by user Hangya (September 1, 2010)
 
-class GoogleBackend:
+class GoogleBackend(object):
     def authenticate(self, openid_response):
         if openid_response is None:
             return None
@@ -52,15 +46,16 @@ class GoogleBackend:
         google_email = openid_response.getSigned('http://openid.net/srv/ax/1.0', 'value.email')
 
         try:
-            user = User.objects.get(email__iexact=google_email)
-        except User.DoesNotExist:
+            user_profile = get_user_profile_by_email(google_email)
+        except UserProfile.DoesNotExist:
             # create a new user, or send a message to admins, etc.
             return None
 
-        return user
+        return user_profile
 
-    def get_user(self, user_id):
+    def get_user(self, user_profile_id):
+        """ Get a UserProfile object from the user_profile_id. """
         try:
-            return User.objects.get(id=user_id)
-        except User.DoesNotExist:
+            return get_user_profile_by_id(user_profile_id)
+        except UserProfile.DoesNotExist:
             return None

@@ -206,8 +206,7 @@ def accounts_register(request):
 
             # FIXME: sanitize email addresses and fullname
             if mit_beta_user:
-                user = User.objects.get(email=email)
-                user_profile = user.userprofile
+                user_profile = get_user_profile_by_email(email)
                 do_activate_user(user_profile)
                 do_change_password(user_profile, password)
                 do_change_full_name(user_profile, full_name)
@@ -256,7 +255,7 @@ def accounts_accept_terms(request):
                          'browser': request.META['HTTP_USER_AGENT']}),
                         "humbug@humbughq.com",
                         ["all@humbughq.com"])
-            do_change_full_name(request.user.userprofile, full_name)
+            do_change_full_name(request.user, full_name)
             return redirect(home)
 
     else:
@@ -397,7 +396,7 @@ def home(request):
     # session alive.
     request.session.modified = True
 
-    user_profile = get_user_profile_by_user_id(request.user.id)
+    user_profile = request.user
 
     register_ret = do_events_register(user_profile, apply_markdown=True)
     user_has_messages = (register_ret['max_message_id'] != -1)
@@ -1165,17 +1164,17 @@ def json_subscription_property(request, user_profile):
 @require_post
 @has_request_variables
 def api_fetch_api_key(request, username=POST, password=POST):
-    user = authenticate(username=username, password=password)
-    if user is None:
+    user_profile = authenticate(username=username, password=password)
+    if user_profile is None:
         return json_error("Your username or password is incorrect.", status=403)
-    if not user.is_active:
+    if not user_profile.is_active:
         return json_error("Your account has been disabled.", status=403)
-    return json_success({"api_key": user.userprofile.api_key})
+    return json_success({"api_key": user_profile.api_key})
 
 @authenticated_json_post_view
 @has_request_variables
 def json_fetch_api_key(request, user_profile, password=POST):
-    if not request.user.check_password(password):
+    if not user_profile.check_password(password):
         return json_error("Your username or password is incorrect.")
     return json_success({"api_key": user_profile.api_key})
 
@@ -1211,7 +1210,7 @@ class ActivityTable(object):
         return sorted(self.rows.iteritems(), key=lambda (k,r): r['age'])
 
 def can_view_activity(request):
-    return request.user.userprofile.realm.domain == 'humbughq.com'
+    return request.user.realm.domain == 'humbughq.com'
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def get_activity(request):
