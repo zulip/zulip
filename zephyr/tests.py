@@ -126,10 +126,10 @@ class AuthedTestCase(TestCase):
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         subscriptions = Subscription.objects.filter(recipient=recipient)
 
-        return [subscription.user_profile.user for subscription in subscriptions]
+        return [subscription.user_profile for subscription in subscriptions]
 
-    def message_stream(self, user):
-        return filter_by_subscriptions(Message.objects.all(), user)
+    def message_stream(self, user_profile):
+        return filter_by_subscriptions(Message.objects.all(), user_profile)
 
     def assert_json_success(self, result):
         """
@@ -273,60 +273,62 @@ class PersonalMessagesTest(AuthedTestCase):
         personals.
         """
         self.register("test", "test")
-        user = User.objects.get(email='test@humbughq.com')
-        old_messages = self.message_stream(user)
+        user_profile = self.get_user_profile('test@humbughq.com')
+        old_messages = self.message_stream(user_profile)
         self.send_message("test@humbughq.com", "test@humbughq.com", Recipient.PERSONAL)
-        new_messages = self.message_stream(user)
+        new_messages = self.message_stream(user_profile)
         self.assertEqual(len(new_messages) - len(old_messages), 1)
 
-        recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
+        recipient = Recipient.objects.get(type_id=user_profile.id,
+                                          type=Recipient.PERSONAL)
         self.assertEqual(new_messages[-1].recipient, recipient)
 
     def test_personal_to_self(self):
         """
         If you send a personal to yourself, only you see it.
         """
-        old_users = list(User.objects.all())
+        old_user_profiles = list(UserProfile.objects.all())
         self.register("test1", "test1")
 
         old_messages = []
-        for user in old_users:
-            old_messages.append(len(self.message_stream(user)))
+        for user_profile in old_user_profiles:
+            old_messages.append(len(self.message_stream(user_profile)))
 
         self.send_message("test1@humbughq.com", "test1@humbughq.com", Recipient.PERSONAL)
 
         new_messages = []
-        for user in old_users:
-            new_messages.append(len(self.message_stream(user)))
+        for user_profile in old_user_profiles:
+            new_messages.append(len(self.message_stream(user_profile)))
 
         self.assertEqual(old_messages, new_messages)
 
-        user = User.objects.get(email="test1@humbughq.com")
-        recipient = Recipient.objects.get(type_id=user.id, type=Recipient.PERSONAL)
-        self.assertEqual(self.message_stream(user)[-1].recipient, recipient)
+        user_profile = self.get_user_profile("test1@humbughq.com")
+        recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
+        self.assertEqual(self.message_stream(user_profile)[-1].recipient, recipient)
 
     def assert_personal(self, sender_email, receiver_email, content="test content"):
         """
         Send a private message from `sender_email` to `receiver_email` and check
         that only those two parties actually received the message.
         """
-        sender = User.objects.get(email=sender_email)
-        receiver = User.objects.get(email=receiver_email)
+        sender = self.get_user_profile(sender_email)
+        receiver = self.get_user_profile(receiver_email)
 
         sender_messages = len(self.message_stream(sender))
         receiver_messages = len(self.message_stream(receiver))
 
-        other_users = User.objects.filter(~Q(email=sender_email) & ~Q(email=receiver_email))
+        other_user_profiles = UserProfile.objects.filter(~Q(user__email=sender_email) &
+                                                          ~Q(user__email=receiver_email))
         old_other_messages = []
-        for user in other_users:
-            old_other_messages.append(len(self.message_stream(user)))
+        for user_profile in other_user_profiles:
+            old_other_messages.append(len(self.message_stream(user_profile)))
 
         self.send_message(sender_email, receiver_email, Recipient.PERSONAL, content)
 
         # Users outside the conversation don't get the message.
         new_other_messages = []
-        for user in other_users:
-            new_other_messages.append(len(self.message_stream(user)))
+        for user_profile in other_user_profiles:
+            new_other_messages.append(len(self.message_stream(user_profile)))
 
         self.assertEqual(old_other_messages, new_other_messages)
 
@@ -367,12 +369,13 @@ class StreamMessagesTest(AuthedTestCase):
         for subscriber in subscribers:
             old_subscriber_messages.append(len(self.message_stream(subscriber)))
 
-        non_subscribers = [user for user in User.objects.all() if user not in subscribers]
+        non_subscribers = [user_profile for user_profile in UserProfile.objects.all()
+                           if user_profile not in subscribers]
         old_non_subscriber_messages = []
         for non_subscriber in non_subscribers:
             old_non_subscriber_messages.append(len(self.message_stream(non_subscriber)))
 
-        a_subscriber_email = subscribers[0].email
+        a_subscriber_email = subscribers[0].user.email
         self.login(a_subscriber_email)
         self.send_message(a_subscriber_email, stream_name, Recipient.STREAM,
                           subject, content)
@@ -1027,7 +1030,7 @@ class GetOldMessagesTest(AuthedTestCase):
         def dr_emails(dr):
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
-        personals = [m for m in self.message_stream(User.objects.get(email=me))
+        personals = [m for m in self.message_stream(self.get_user_profile(me))
             if m.recipient.type == Recipient.PERSONAL
             or m.recipient.type == Recipient.HUDDLE]
         if not personals:
@@ -1053,7 +1056,7 @@ class GetOldMessagesTest(AuthedTestCase):
         # We need to send a message here to ensure that we actually
         # have a stream message in this narrow view.
         self.send_message("hamlet@humbughq.com", "Scotland", Recipient.STREAM)
-        messages = self.message_stream(User.objects.get(email="hamlet@humbughq.com"))
+        messages = self.message_stream(self.get_user_profile("hamlet@humbughq.com"))
         stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
                                  messages)
         stream_name = get_display_recipient(stream_messages[0].recipient)
@@ -1460,18 +1463,18 @@ class GetUpdatesTest(AuthedTestCase):
     fixtures = ['messages.json']
 
     def common_test_get_updates(self, view_func, extra_post_data = {}):
-        user = User.objects.get(email="hamlet@humbughq.com")
+        user_profile = self.get_user_profile("hamlet@humbughq.com")
 
         def callback(response):
             correct_message_ids = [m.id for m in
-                filter_by_subscriptions(Message.objects.all(), user)]
+                filter_by_subscriptions(Message.objects.all(), user_profile)]
             for message in response['messages']:
                 self.assertGreater(message['id'], 1)
                 self.assertIn(message['id'], correct_message_ids)
 
         post_data = {}
         post_data.update(extra_post_data)
-        request = POSTRequestMock(post_data, user, callback)
+        request = POSTRequestMock(post_data, user_profile.user, callback)
         self.assertEqual(view_func(request), RespondAsynchronously)
 
     def test_json_get_updates(self):
@@ -1519,12 +1522,12 @@ class GetProfileTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def common_get_profile(self, email):
-        user = User.objects.get(email=email)
+        user_profile = self.get_user_profile(email)
 
         api_key = self.get_api_key(email)
         result = self.client.post("/api/v1/get_profile", {'email': email, 'api-key': api_key})
 
-        stream = self.message_stream(user)
+        stream = self.message_stream(user_profile)
         max_id = -1
         if len(stream) > 0:
             max_id = stream[-1].id
@@ -1673,7 +1676,7 @@ class GetSubscribersTest(AuthedTestCase):
         """
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)
-        true_subscribers = [user.email for user in self.users_subscribed_to_stream(
+        true_subscribers = [user_profile.user.email for user_profile in self.users_subscribed_to_stream(
                 stream_name, domain)]
         self.assertItemsEqual(result["subscribers"], true_subscribers)
 

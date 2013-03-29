@@ -380,8 +380,7 @@ def get_huddle_backend(huddle_hash, id_list):
 
 # This function is used only by tests.
 # We have faster implementations within the app itself.
-def filter_by_subscriptions(messages, user):
-    user_profile = UserProfile.objects.get(user=user)
+def filter_by_subscriptions(messages, user_profile):
     user_messages = []
     subscriptions = [sub.recipient for sub in
                      Subscription.objects.filter(user_profile=user_profile, active=True)]
