@@ -1999,6 +1999,12 @@ int x = 3
          ('http://j.mp/14Hwm3X',                       "<p>%s</p>",                         'http://j.mp/14Hwm3X'),
          ('http://localhost:9991/?show_debug=1',       "<p>%s</p>",                         'http://localhost:9991/?show_debug=1'),
          ('anyone before? (http://d.pr/i/FMXO)',       "<p>anyone before? (%s)</p>",        'http://d.pr/i/FMXO'),
+         ('(http://en.wikipedia.org/wiki/Each-way_(bet))',
+            '<p>(%s)</p>',                   'http://en.wikipedia.org/wiki/Each-way_(bet)'),
+         ('(http://en.wikipedia.org/wiki/Each-way_(bet)_(more_parens))',
+            '<p>(%s)</p>',                   'http://en.wikipedia.org/wiki/Each-way_(bet)_(more_parens)'),
+         ('http://en.wikipedia.org/wiki/Qt_(framework)', '<p>%s</p>', 'http://en.wikipedia.org/wiki/Qt_(framework)'),
+
          ('http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg',
             '<p>%s</p>', 'http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg'),
          # Changed to .mov from .png to avoid inline preview
@@ -2068,8 +2074,9 @@ NY-Haskell/events/108707682/?a=co1.1_grp&amp;rv=co1.1\">Haskell NYC Meetup</a></
                 ('[link](http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html)',
                  '<p><a href="http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html" target="_blank" title=\
 "http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html">link</a></p>'),
-                # ('[YOLO](http://en.wikipedia.org/wiki/YOLO_(motto)',
-                 # '')
+                ('[YOLO](http://en.wikipedia.org/wiki/YOLO_(motto))',
+                 '<p><a href="http://en.wikipedia.org/wiki/YOLO_(motto)" target="_blank" title="http://en.wikipedia.org/wiki/YOLO_(motto)"\
+>YOLO</a></p>')
                 )
 
         for input, output in urls:

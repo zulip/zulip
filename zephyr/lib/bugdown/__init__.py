@@ -414,7 +414,10 @@ class Bugdown(markdown.Extension):
         #
         # This rule must come after the built-in 'link' markdown linkifier to
         # avoid errors.
-        http_link_regex = r'\b(?P<url>https?://[^\s]+?)(?=[^\w/]*(\s|\Z))'
+        #
+        # We support up to 1 nested pair of paranthesis in a url
+        http_link_regex = r'\b(?P<url>https?://(?:(?:[^\s]+\([^\s)]+?\)[^\s]*?)|[^\s]+?))(?=[^\w/]*(\s|\Z))'
+
         md.inlinePatterns.add('http_autolink', HttpLink(http_link_regex), '>link')
 
         # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
