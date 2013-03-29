@@ -147,7 +147,7 @@ class Client(object):
                         urlparse.urljoin(self.base_url, url),
                         auth=requests.auth.HTTPBasicAuth(self.email,
                                                          self.api_key),
-                        verify=True, timeout=55,
+                        verify=True, timeout=90,
                         **kwargs)
 
                 # On 50x errors, try again after a short sleep
