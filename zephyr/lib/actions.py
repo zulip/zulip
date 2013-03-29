@@ -195,7 +195,7 @@ def do_send_message(message, rendered_content=None, no_log=False,
           message.recipient.type == Recipient.HUDDLE):
         recipients = [s.user_profile for
                       s in Subscription.objects.select_related(
-                "user_profile", "user_profile__user").filter(recipient=message.recipient, active=True)]
+                "user_profile").filter(recipient=message.recipient, active=True)]
     else:
         raise ValueError('Bad recipient type')
 
