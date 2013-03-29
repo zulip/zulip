@@ -363,13 +363,20 @@ MessageList.prototype = {
         // Re-add the fading of messages that is lost when we re-render.
         compose.update_faded_messages();
 
+        // If we are near the bottom of our feed (the bottom is visible) and can
+        // scroll up without moving the pointer out of the viewport, do so, by
+        // up to the amount taken up by the new message.
+
+        // Don't try to scroll if this isn't the visible message list.
         if (this !== current_msg_list) {
             return;
         }
 
-        // If we are near the bottom of our feed (the bottom is visible) and can
-        // scroll up without moving the pointer out of the viewport, do so, by
-        // up to the amount taken up by the new message.
+        // Don't try to scroll when composing.
+        if (compose.composing()) {
+            return;
+        }
+
         var selected_row = current_msg_list.selected_row();
         if (within_viewport(rows.last_visible()) && selected_row && (selected_row.length > 0)) {
             var viewport_offset = viewport.scrollTop();
