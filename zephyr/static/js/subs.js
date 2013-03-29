@@ -834,6 +834,30 @@ exports.set_all_users = function (e, val) {
     e.preventDefault();
 };
 
+function focus_on_narrowed_stream() {
+    var operators = narrow.operators();
+    if (!operators) {
+        return;
+    }
+    var stream_name = operators[0][1];
+    var sub = get_sub(stream_name);
+    if (sub !== undefined) {
+        // This stream is in the list, so focus on it.
+        $('html, body').animate({
+            scrollTop: settings_for_sub(sub).offset().top
+        });
+    } else {
+        // This stream doesn't exist, so prep for creating it.
+        $("#create_stream_name").val(stream_name);
+    }
+}
+
+exports.show_and_focus_on_narrow = function () {
+    $("#gear-menu a[href='#subscriptions']").one('shown',
+                                                 focus_on_narrowed_stream);
+    ui.change_tab_to("#subscriptions");
+};
+
 return exports;
 
 }());

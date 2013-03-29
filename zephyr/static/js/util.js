@@ -98,14 +98,6 @@ exports.destroy_first_run_message = function () {
     $('#first_run_message').remove();
 };
 
-exports.show_empty_narrow_message = function () {
-    $('#empty_narrow_message').show();
-};
-
-exports.hide_empty_narrow_message = function () {
-    $('#empty_narrow_message').hide();
-};
-
 // Takes a one-argument function.  Returns a variant of that
 // function which caches result values.
 //

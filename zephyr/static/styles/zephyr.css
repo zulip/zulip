@@ -1072,3 +1072,7 @@ table.floating_recipient {
     cursor:  pointer;
     opacity: 1;
 }
+
+.empty_feed_notice p {
+    text-align: center;
+}

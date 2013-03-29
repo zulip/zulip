@@ -428,7 +428,7 @@ exports.deactivate = function () {
     filter_function   = false;
     current_operators = false;
 
-    util.hide_empty_narrow_message();
+    exports.hide_empty_narrow_message();
 
     $("#main_div").removeClass('narrowed_view');
     $("#searchbox").removeClass('narrowed_view');
@@ -468,6 +468,42 @@ exports.restore_home_state = function() {
         exports.deactivate();
     }
     maybe_scroll_to_selected();
+};
+
+function pick_empty_narrow_banner() {
+    var default_banner = $('#empty_narrow_message');
+    if (!current_operators) {
+        return default_banner;
+    }
+
+    var first_operator = current_operators[0][0];
+    var first_operand = current_operators[0][1];
+
+    if (first_operator === "is") {
+        if (first_operand === "starred") {
+            // You have no starred messages.
+            return $("#empty_star_narrow_message");
+        } else if (first_operand === "private-message") {
+            // You have no private messages.
+            return $("#empty_narrow_private_message");
+        }
+    } else if ((first_operator === "stream") && !subs.have(first_operand)) {
+        // You are narrowed to a stream to which you aren't subscribed.
+        return $("#nonsubbed_stream_narrow_message");
+    } else if (first_operator === "search") {
+        // You are narrowed to empty search results.
+        return $("#empty_search_narrow_message");
+    }
+    return default_banner;
+}
+
+exports.show_empty_narrow_message = function () {
+    $(".empty_feed_notice").hide();
+    pick_empty_narrow_banner().show();
+};
+
+exports.hide_empty_narrow_message = function () {
+    $(".empty_feed_notice").hide();
 };
 
 return exports;

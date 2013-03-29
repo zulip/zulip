@@ -46,6 +46,23 @@
         <p>Why not <a href="#" onclick="compose.start('stream'); return false;">
             start the conversation</a>?</p>
       </div>
+      <div id="empty_narrow_private_message" class="empty_feed_notice">
+        <h4>You have no private messages yet!</h4>
+
+        <p>Why not <a href="#" onclick="compose.start('private'); return false;">
+            start the conversation</a>?</p>
+      </div>
+      <div id="nonsubbed_stream_narrow_message" class="empty_feed_notice">
+        <h4>You aren't subscribed to this stream!</h4>
+
+        <p>Want to <a href="#" onclick="subs.show_and_focus_on_narrow(); return false;">join it</a>?</p>
+      </div>
+      <div id="empty_star_narrow_message" class="empty_feed_notice">
+        <h4>You haven't starred anything yet!</h4>
+      </div>
+      <div id="empty_search_narrow_message" class="empty_feed_notice">
+        <h4>Nobody has talked about that yet!</h4>
+      </div>
       <table class="message_table focused_table" id="zhome">
         <tbody>
         </tbody>

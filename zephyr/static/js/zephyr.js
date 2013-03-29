@@ -577,7 +577,7 @@ function add_messages(messages, msg_list, opts) {
         // If adding some new messages to the message tables caused
         // our current narrow to no longer be empty, hide the empty
         // feed placeholder text.
-        util.hide_empty_narrow_message();
+        narrow.hide_empty_narrow_message();
         // And also select the newly arrived message.
         msg_list.select_id(msg_list.selected_id(), {then_scroll: true, use_closest: true});
     }
@@ -772,7 +772,7 @@ function load_old_messages(opts) {
             narrowed_msg_list.empty()) {
             // Even after trying to load more messages, we have no
             // messages to display in this narrow.
-            util.show_empty_narrow_message();
+            narrow.show_empty_narrow_message();
         }
 
         // If we're loading more messages into the home view, save them to
