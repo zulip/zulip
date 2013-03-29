@@ -147,14 +147,14 @@ class Command(BaseCommand):
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
         # Extract a list of all users
-        users = [user.id for user in User.objects.all()]
+        user_profiles = [user_profile.id for user_profile in UserProfile.objects.all()]
 
         # Create several initial huddles
         for i in xrange(options["num_huddles"]):
-            get_huddle(random.sample(users, random.randint(3, 4)))
+            get_huddle(random.sample(user_profiles, random.randint(3, 4)))
 
         # Create several initial pairs for personals
-        personals_pairs = [random.sample(users, 2)
+        personals_pairs = [random.sample(user_profiles, 2)
                            for i in xrange(options["num_personals"])]
 
         threads = options["threads"]
