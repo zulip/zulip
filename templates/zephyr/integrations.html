@@ -32,7 +32,8 @@
       <li><a href="#git">Git</a></li>
       <li><a href="#github">GitHub</a></li>
       <li><a href="#jenkins">Jenkins (or Hudson)</a></li>
-      <li><a href="#jira">Jira</a></li>
+      <li><a href="#jira">Jira (hosted or v5.2+)</a></li>
+      <li><a href="#jira-plugin">Jira (locally installed)</a></li>
       <li><a href="#nagios">Nagios</a></li>
       {% comment %}
       <li><a href="#pivotal">Pivotal Tracker</a></li>
@@ -242,19 +243,29 @@ following, to the stream <code>commits</code> with a subject that matches the re
       using the Atlassian-hosted JIRA, you may also use the <a href="#jira-plugin">Jira Plugin</a>
       mechanism that supports older versions of JIRA.
       <p>In your JIRA administration control panel, go to the Webhooks page. If you are using the OnDemand
-        hosted JIRA, follow the instructions <a href="https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview">
+        hosted JIRA, follow the instructions <a href="https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview#JIRAWebhooksOverview-WhereistheJIRAAdministrationUIforwebhooks?">
         on the Atlassian wiki</a> for locating the Webhook UI</a>.
       </p>
       <p>Give your new web hook a name, and for the URL provide <code>https://humbughq.com/api/v1/external/jira/API_KEY</code>
         where <code>API_KEY</code> is the api key of the user you wish to post JIRA updates as.
       </p>
-      <p>Updates from JIRA will be sent to the <code>jira</code> stream, and it must already exist.</p>
-      <h5 id="jira-plugin">Plugin mechanism</h5>
-      <p>First, download and install our <a href="/api">Python bindings and example scripts</a>.</p>
+
+      <p><b>Congratulations! You're done!</b><br />
+      Updates from JIRA will be sent to the <code>jira</code> stream, and it must already exist.</p>
+      <img class="screenshot" src="/static/images/integrations/jira/001.png">
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
+{#--------------------------------------------------------------------#}
+   <div id="jira-plugin" class="integration">
+      <h4>JIRA</h4>
+      <h5>Plugin mechanism</h5>
+      First, download and install our <a href="/api">Python bindings and example scripts</a>.
       <p><b>Plugin Installation</b></p>
-      <p>The JIRA integration plugin requires two JIRA plugins. Please install
+        The JIRA integration plugin requires two JIRA plugins. Please install
         the following plugins using the Universal Plugin Manager in your JIRA
-        installation:</p>
+        installation:
         <ul>
           <li><a href="https://marketplace.atlassian.com/plugins/com.onresolve.jira.groovy.groovyrunner">Script Runner Plugin</a></li>
           <li><a href="https://marketplace.atlassian.com/plugins/com.atlassian.jira.plugin.jirasslplugin">SSL Plugin</a></li>
@@ -279,6 +290,9 @@ following, to the stream <code>commits</code> with a subject that matches the re
         In the <code>Name of groovy class</code> field, enter <code>org.humbug.jira.HumbugListener</code>.
 
       <p>Click <code>Add Listener</code>, and JIRA will now notify your Humbug of changes to your issues!</p>
+
+      <p><b>Congratulations! You're done!</b><br />
+      Updates from JIRA will be sent to the stream you've configured, as below.</p>
       <img class="screenshot" src="/static/images/integrations/jira/001.png">
       <p>
         <a href="#services">^ Back to top</a>
