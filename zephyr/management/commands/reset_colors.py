@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
-from zephyr.models import StreamColor, Subscription, Recipient, \
-    get_user_profile_by_email
+from zephyr.models import Subscription, Recipient, get_user_profile_by_email
 
 class Command(BaseCommand):
     help = """Reset all colors for a person to the default grey"""
@@ -17,8 +16,5 @@ class Command(BaseCommand):
                                                recipient__type=Recipient.STREAM)
 
             for sub in subs:
-                stream_color, _ = StreamColor.objects.get_or_create(subscription=sub)
-                stream_color.color = StreamColor.DEFAULT_STREAM_COLOR
-                stream_color.save()
                 sub.color = Subscription.DEFAULT_STREAM_COLOR
                 sub.save(update_fields=["color"])

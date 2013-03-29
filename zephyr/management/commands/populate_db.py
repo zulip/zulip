@@ -3,7 +3,7 @@ from django.utils.timezone import utc, now
 
 from django.contrib.sites.models import Site
 from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
-    Subscription, Huddle, get_huddle, Realm, UserMessage, StreamColor, \
+    Subscription, Huddle, get_huddle, Realm, UserMessage, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id
 from zephyr.lib.actions import do_send_message, set_default_streams, \
     do_activate_user, do_change_password
@@ -628,18 +628,8 @@ def restore_saved_messages():
     for sub in Subscription.objects.all():
         subs[(sub.user_profile_id, sub.recipient_id)] = sub
 
-    colors_to_change = []
-    for key in pending_colors.keys():
-        (email, stream_name) = key
-        color = pending_colors[key]
-        user_profile = users[email]
-        domain = email.split("@")[1]
-        realm = realms[domain]
-        recipient = stream_recipients[(realm.id, stream_name)]
-        subscription = subs[(user_profile.id, recipient.id)]
-        colors_to_change.append(StreamColor(subscription=subscription,
-                                            color=color))
-    StreamColor.objects.bulk_create(colors_to_change)
+    # TODO: do restore of subscription colors -- we're currently not
+    # logging changes so there's little point in having the code :(
 
     print datetime.datetime.now(), "Finished importing %s messages (%s usermessages)" % \
         (len(all_messages), tot_user_messages)

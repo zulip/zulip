@@ -3,7 +3,7 @@ from django.contrib.sessions.models import Session
 from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, valid_stream_name, \
-    DefaultStream, StreamColor, UserPresence, MAX_SUBJECT_LENGTH, \
+    DefaultStream, UserPresence, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser
 from django.db import transaction, IntegrityError
@@ -420,19 +420,10 @@ def get_subscription(stream_name, user_profile):
 
 def set_stream_color(user_profile, stream_name, color=None):
     subscription = get_subscription(stream_name, user_profile)
-    return set_stream_color_backend(user_profile, subscription, color)
-
-def set_stream_color_backend(user_profile, subscription, color=None):
-    # TODO: sanitize color.
     if not color:
         color = pick_color(user_profile)
-    stream_color, created = StreamColor.objects.get_or_create(subscription=subscription,
-                                                              defaults={'color': color})
-    if not created:
-        stream_color.color = color
-        stream_color.save(update_fields=["color"])
-        subscription.color = color
-        subscription.save(update_fields=["color"])
+    subscription.color = color
+    subscription.save(update_fields=["color"])
     return color
 
 def do_add_subscription(user_profile, stream, no_log=False):
@@ -446,7 +437,6 @@ def do_add_subscription(user_profile, stream, no_log=False):
         did_subscribe = True
         subscription.active = True
         subscription.save(update_fields=["active"])
-    color = set_stream_color_backend(user_profile, subscription)
     if did_subscribe:
         if not no_log:
             log_event({'type': 'subscription_added',
@@ -458,7 +448,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
                                  subscription=dict(name=stream.name,
                                                    in_home_view=subscription.in_home_view,
                                                    invite_only=stream.invite_only,
-                                                   color=color)),
+                                                   color=subscription.color)),
                       users=[user_profile.id])
         tornado_callbacks.send_notification(notice)
 
