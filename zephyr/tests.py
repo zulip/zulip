@@ -2016,6 +2016,8 @@ int x = 3
             'http://web.archive.org/web/20120630032016/http://web.mit.edu/mitcard/idpolicies.html'),
          ('https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Humbug-062-subscriptions-page-3rd-ver.fw.png',
             '<p>%s</p>', 'https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Humbug-062-subscriptions-page-3rd-ver.fw.png'),
+         ('http://www.postgresql.org/message-id/14040.1364490185@sss.pgh.pa.us', '<p>%s</p>',
+            'http://www.postgresql.org/message-id/14040.1364490185@sss.pgh.pa.us'),
 
          # XSS sanitization; URL is rendered as plain text
          ('javascript:alert(\'hi\');.com',             "<p>javascript:alert('hi');.com</p>", ''),
@@ -2039,8 +2041,7 @@ int x = 3
             '<p>[foo](javascript:&lt;i&gt;"foo&amp;bar"&lt;/i&gt;)</p>', ''),
 
          # Emails
-         ('Sent to othello@humbughq.com',               "<p>Sent to %s</p>",                 'othello@humbughq.com'),
-         #('http://leo@foo.com/my/file',                 "<p>http://leo@foo.com/my/file</p>", ''), #broken for now
+         ('http://leo@foo.com/my/file',                 "<p>%s</p>",                         'http://leo@foo.com/my/file'),
 
          ('http://example.com/something?with,commas,in,url, but not at end',
                         "<p>%s, but not at end</p>",         'http://example.com/something?with,commas,in,url'),
@@ -2076,7 +2077,11 @@ NY-Haskell/events/108707682/?a=co1.1_grp&amp;rv=co1.1\">Haskell NYC Meetup</a></
 "http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html">link</a></p>'),
                 ('[YOLO](http://en.wikipedia.org/wiki/YOLO_(motto))',
                  '<p><a href="http://en.wikipedia.org/wiki/YOLO_(motto)" target="_blank" title="http://en.wikipedia.org/wiki/YOLO_(motto)"\
->YOLO</a></p>')
+>YOLO</a></p>'),
+                ('Sent to http_something_real@humbughq.com', '<p>Sent to <a href="mailto:http_something_real@humbughq.com" \
+title="mailto:http_something_real@humbughq.com">http_something_real@humbughq.com</a></p>'),
+                ('Sent to othello@humbughq.com', '<p>Sent to <a href="mailto:othello@humbughq.com" title="mailto:othello@humbughq.com">\
+othello@humbughq.com</a></p>')
                 )
 
         for input, output in urls:

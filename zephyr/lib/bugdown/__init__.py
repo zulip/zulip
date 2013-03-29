@@ -239,9 +239,10 @@ class Emoji(markdown.inlinepatterns.Pattern):
             return orig_syntax
         return make_emoji(name, orig_syntax)
 
-def fixup_link(link):
+def fixup_link(link, target_blank=True):
     """Set certain attributes we want on every link."""
-    link.set('target', '_blank')
+    if target_blank:
+        link.set('target', '_blank')
     link.set('title',  link.get('href'))
 
 
@@ -256,6 +257,11 @@ def sanitize_url(url):
     except ValueError:
         # Bad url - so bad it couldn't be parsed.
         return ''
+
+    # If there is no scheme or netloc and there is a '@' in the path,
+    # treat it as a mailto: and set the appropriate scheme
+    if scheme == '' and netloc == '' and '@' in path:
+        scheme = 'mailto'
 
     # Humbug modification: If scheme is not specified, assume http://
     # It's unlikely that users want relative links within humbughq.com.
@@ -287,23 +293,19 @@ def sanitize_url(url):
     # the colon check, which would also forbid a lot of legitimate URLs.
 
     # Url passes all tests. Return url as-is.
-    return urlparse.urlunparse(parts)
+    return urlparse.urlunparse((scheme, netloc, path, params, query, fragment))
 
 def url_to_a(url):
     a = markdown.util.etree.Element('a')
-    if '@' in url:
-        href = 'mailto:' + url
-    else:
-        href = url
 
-    href = sanitize_url(href)
+    href = sanitize_url(url)
     if href is None:
         # Rejected by sanitize_url; render it as plain text.
         return url
 
     a.set('href', href)
     a.text = url
-    fixup_link(a)
+    fixup_link(a, not 'mailto:' in href[:7])
     return a
 
 class AutoLink(markdown.inlinepatterns.Pattern):
