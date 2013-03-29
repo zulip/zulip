@@ -205,6 +205,15 @@ def setup_event_queue():
 
 # The following functions are called from Django
 
+# Workaround to support the Python-requests 1.0 transition of .json
+# from a property to a function
+requests_json_is_function = callable(requests.Response.json)
+def extract_json_response(resp):
+    if requests_json_is_function:
+        return resp.json()
+    else:
+        return resp.json
+
 def request_event_queue(user_profile, apply_markdown, event_types=None):
     if settings.TORNADO_SERVER:
         req = {'dont_block'    : 'true',
@@ -219,7 +228,7 @@ def request_event_queue(user_profile, apply_markdown, event_types=None):
 
         resp.raise_for_status()
 
-        return resp.json['queue_id']
+        return extract_json_response(resp)['queue_id']
 
     return None
 
@@ -235,4 +244,4 @@ def get_user_events(user_profile, queue_id, last_event_id):
 
         resp.raise_for_status()
 
-        return resp.json['events']
+        return extract_json_response(resp)['events']
