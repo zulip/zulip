@@ -259,8 +259,18 @@ def process_new_message(data):
     if 'stream_name' in data:
         stream_receive_message(data['realm_id'], data['stream_name'], message)
 
+def process_event(data):
+    event = data['event']
+    for user_profile_id in data['users']:
+        for client in get_client_descriptors_for_user(user_profile_id):
+            if client.accepts_event_type(event['type']):
+                client.add_event(event.copy())
+
 def process_notification(data):
-    if data['type'] == 'new_message':
+    if 'type' not in data:
+        # Generic event that doesn't need special handling
+        process_event(data)
+    elif data['type'] == 'new_message':
         process_new_message(data)
     elif data['type'] == 'pointer_update':
         update_pointer(data['user'], data['new_pointer'])

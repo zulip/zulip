@@ -417,16 +417,6 @@ def home(request):
         user_profile.pointer = register_ret['max_message_id']
         user_profile.last_pointer_updater = request.session.session_key
 
-    # Populate personals autocomplete list based on everyone in your
-    # realm.  Later we might want a 2-layer autocomplete, where we
-    # consider specially some sort of "buddy list" who e.g. you've
-    # talked to before, but for small organizations, the right list is
-    # everyone in your realm.
-    people = [{'email'     : profile.user.email,
-               'full_name' : profile.full_name}
-              for profile in
-              UserProfile.objects.select_related().filter(realm=user_profile.realm)]
-
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = simplejson.encoder.JSONEncoderForHTML().encode(dict(
@@ -434,7 +424,7 @@ def home(request):
         poll_timeout          = settings.POLL_TIMEOUT,
         have_initial_messages = user_has_messages,
         stream_list           = gather_subscriptions(user_profile),
-        people_list           = people,
+        people_list           = register_ret['realm_users'],
         initial_pointer       = register_ret['pointer'],
         fullname              = user_profile.full_name,
         email                 = user_profile.user.email,

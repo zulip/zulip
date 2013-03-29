@@ -59,7 +59,17 @@ def do_create_user(email, password, realm, full_name, short_name,
                'short_name': short_name,
                'user': email,
                'domain': realm.domain})
-    return create_user(email, password, realm, full_name, short_name, active)
+    user_profile = create_user(email, password, realm, full_name, short_name, active)
+
+    notice = dict(event=dict(type="realm_user", op="add",
+                             person=dict(email=user_profile.user.email,
+                                         full_name=user_profile.full_name)),
+                  users=[up.id for up in
+                         UserProfile.objects.select_related().filter(realm=user_profile.realm,
+                                                                     user__is_active=True)])
+    tornado_callbacks.send_notification(notice)
+    return user_profile
+
 
 def user_sessions(user):
     return [s for s in Session.objects.all() if s.get_decoded().get('_auth_user_id') == user.id]
@@ -76,6 +86,15 @@ def do_deactivate(user_profile):
                'timestamp': time.time(),
                'user': user_profile.user.email,
                'domain': user_profile.realm.domain})
+
+    notice = dict(event=dict(type="realm_user", op="remove",
+                             person=dict(email=user_profile.user.email,
+                                         full_name=user_profile.full_name)),
+                  users=[up.id for up in
+                         UserProfile.objects.select_related().filter(realm=user_profile.realm,
+                                                                     user__is_active=True)])
+    tornado_callbacks.send_notification(notice)
+
 
 def do_change_user_email(user_profile, new_email):
     old_email = user_profile.user.email
@@ -706,6 +725,12 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
             ret['max_message_id'] = -1
     if event_types is None or "pointer" in event_types:
         ret['pointer'] = user_profile.pointer
+    if event_types is None or "realm_user" in event_types:
+        ret['realm_users'] = [{'email'     : profile.user.email,
+                               'full_name' : profile.full_name}
+                              for profile in
+                              UserProfile.objects.select_related().filter(realm=user_profile.realm,
+                                                                          user__is_active=True)]
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
@@ -714,6 +739,13 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
             ret['max_message_id'] = max(ret['max_message_id'], event['message']['id'])
         elif event['type'] == "pointer":
             ret['pointer'] = max(ret['pointer'], event['pointer'])
+        elif event['type'] == "realm_user":
+            if event['op'] == "add":
+                ret['realm_users'].append(simplejson.loads(event['person']))
+            elif event['op'] == "remove":
+                person = simplejson.loads(event['person'])
+                ret['realm_users'] = filter(lambda p: p['email'] != person['email'],
+                                            ret['realm_users'])
 
     if events:
         ret['last_event_id'] = events[-1:]['id']
