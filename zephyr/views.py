@@ -423,7 +423,7 @@ def home(request):
         debug_mode            = settings.DEBUG,
         poll_timeout          = settings.POLL_TIMEOUT,
         have_initial_messages = user_has_messages,
-        stream_list           = gather_subscriptions(user_profile),
+        stream_list           = register_ret['subscriptions'],
         people_list           = register_ret['realm_users'],
         initial_pointer       = register_ret['pointer'],
         fullname              = user_profile.full_name,

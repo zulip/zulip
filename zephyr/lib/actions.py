@@ -406,6 +406,7 @@ def set_stream_color(user_profile, stream_name, color=None):
         color = pick_color(user_profile)
     stream_color.color = color
     stream_color.save(update_fields=["color"])
+    return color
 
 def do_add_subscription(user_profile, stream, no_log=False):
     recipient = get_recipient(Recipient.STREAM, stream.id)
@@ -417,12 +418,22 @@ def do_add_subscription(user_profile, stream, no_log=False):
         did_subscribe = True
         subscription.active = True
         subscription.save(update_fields=["active"])
-    if did_subscribe and not no_log:
-        log_event({'type': 'subscription_added',
-                   'user': user_profile.user.email,
-                   'name': stream.name,
-                   'domain': stream.realm.domain})
-    set_stream_color(user_profile, stream.name)
+    color = set_stream_color(user_profile, stream.name)
+    if did_subscribe:
+        if not no_log:
+            log_event({'type': 'subscription_added',
+                       'user': user_profile.user.email,
+                       'name': stream.name,
+                       'domain': stream.realm.domain})
+
+        notice = dict(event=dict(type="subscription", op="add",
+                                 subscription=dict(name=stream.name,
+                                                   in_home_view=subscription.in_home_view,
+                                                   invite_only=stream.invite_only,
+                                                   color=color)),
+                      users=[user_profile.id])
+        tornado_callbacks.send_notification(notice)
+
     return did_subscribe
 
 def do_remove_subscription(user_profile, stream, no_log=False):
@@ -435,11 +446,18 @@ def do_remove_subscription(user_profile, stream, no_log=False):
     did_remove = subscription.active
     subscription.active = False
     subscription.save(update_fields=["active"])
-    if did_remove and not no_log:
-        log_event({'type': 'subscription_removed',
-                   'user': user_profile.user.email,
-                   'name': stream.name,
-                   'domain': stream.realm.domain})
+    if did_remove:
+        if not no_log:
+            log_event({'type': 'subscription_removed',
+                       'user': user_profile.user.email,
+                       'name': stream.name,
+                       'domain': stream.realm.domain})
+
+        notice = dict(event=dict(type="subscription", op="remove",
+                                 subscription=dict(name=stream.name)),
+                      users=[user_profile.id])
+        tornado_callbacks.send_notification(notice)
+
     return did_remove
 
 def log_subscription_property_change(user_email, property, property_dict):
@@ -731,6 +749,8 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
                               for profile in
                               UserProfile.objects.select_related().filter(realm=user_profile.realm,
                                                                           user__is_active=True)]
+    if event_types is None or "subscription" in event_types:
+        ret['subscriptions'] = gather_subscriptions(user_profile)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
@@ -746,6 +766,13 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
                 person = simplejson.loads(event['person'])
                 ret['realm_users'] = filter(lambda p: p['email'] != person['email'],
                                             ret['realm_users'])
+        elif event['type'] == "subscription":
+            if event['op'] == "add":
+                ret['subscriptions'].append(simplejson.loads(event['subscription']))
+            elif event['op'] == "remove":
+                sub = simplejson.loads(event['subscription'])
+                ret['subscriptions'] = filter(lambda s: s['name'] != sub['name'],
+                                              ret['subscriptions'])
 
     if events:
         ret['last_event_id'] = events[-1:]['id']
