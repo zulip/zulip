@@ -6,7 +6,8 @@ from django.contrib.sites.models import Site
 from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, StreamColor, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id
-from zephyr.lib.actions import do_send_message, set_default_streams, do_activate_user
+from zephyr.lib.actions import do_send_message, set_default_streams, \
+    do_activate_user, do_change_password
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction, connection
 from django.conf import settings
@@ -532,11 +533,9 @@ def restore_saved_messages():
             continue
         elif message_type == "user_change_password":
             # Just handle these the slow way
-            # We can't use do_change_password, since we have the
-            # password hash rather than the password itself
-            user = User.objects.get(email=old_message["user"])
-            user.password = old_message["pwhash"]
-            user.save()
+            user_profile = users[old_message["user"]]
+            do_change_password(user_profile, old_message["pshash"], log=False,
+                               hashed_password=True)
             continue
         elif message_type == "user_change_full_name":
             # Just handle these the slow way

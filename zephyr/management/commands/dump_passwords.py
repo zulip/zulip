@@ -1,6 +1,7 @@
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from zephyr.models import UserProfile, get_user_profile_by_email
+from zephyr.lib.actions import do_change_password
 import simplejson
 
 def dump():
@@ -17,8 +18,8 @@ def restore(change):
             print "Skipping...", email
             continue
         if change:
-            user_profile.user.password = password
-            user_profile.user.save()
+            do_change_password(user_profile, password, log=False,
+                               hashed_password=True)
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (

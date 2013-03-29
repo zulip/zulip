@@ -443,9 +443,14 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
                    'user': user.email,
                    'domain': domain})
 
-def do_change_password(user_profile, password, log=True, commit=True):
+def do_change_password(user_profile, password, log=True, commit=True,
+                       hashed_password=False):
     user = user_profile.user
-    user.set_password(password)
+    if hashed_password:
+        # This is a hashed password, not the password itself.
+        user.password = password
+    else:
+        user.set_password(password)
     if commit:
         user.save(update_fields=["password"])
     if log:
