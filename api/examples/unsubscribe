@@ -29,7 +29,8 @@ usage = """unsubscribe --user=<email address> [options] --streams=<streams>
 
 Ensures the user is not subscribed to the listed streams.
 
-Example: unsubscribe --user=tabbott@humbughq.com --site=https://zephyr.humbughq.com
+Examples: unsubscribe --user=tabbott@humbughq.com --site=https://zephyr.humbughq.com --streams=foo
+          unsubscribe --user=tabbott@humbughq.com --site=https://zephyr.humbughq.com --streams='foo bar'
 """
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import humbug
