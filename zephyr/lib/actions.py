@@ -778,21 +778,21 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
             ret['pointer'] = max(ret['pointer'], event['pointer'])
         elif event['type'] == "realm_user":
             if event['op'] == "add":
-                ret['realm_users'].append(simplejson.loads(event['person']))
+                ret['realm_users'].append(event['person'])
             elif event['op'] == "remove":
-                person = simplejson.loads(event['person'])
+                person = event['person']
                 ret['realm_users'] = filter(lambda p: p['email'] != person['email'],
                                             ret['realm_users'])
         elif event['type'] == "subscription":
             if event['op'] == "add":
-                ret['subscriptions'].append(simplejson.loads(event['subscription']))
+                ret['subscriptions'].append(event['subscription'])
             elif event['op'] == "remove":
-                sub = simplejson.loads(event['subscription'])
+                sub = event['subscription']
                 ret['subscriptions'] = filter(lambda s: s['name'] != sub['name'],
                                               ret['subscriptions'])
 
     if events:
-        ret['last_event_id'] = events[-1:]['id']
+        ret['last_event_id'] = events[-1]['id']
     else:
         ret['last_event_id'] = -1
 
