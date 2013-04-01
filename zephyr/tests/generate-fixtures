@@ -1,7 +1,14 @@
-#!/bin/sh -e
+#!/bin/bash -e
+
+function migration_status {
+    ./manage.py migrate --list | sed 's/*/ /' > "$1"
+}
 
 if [ -e zephyr/tests/zephyrdb.test.pristine ]; then
-    if [ "$1" != "--force" ]; then
+    migration_status zephyr/fixtures/available-migrations
+    if [ -e zephyr/fixtures/migration-status ] &&
+        cmp -s zephyr/fixtures/available-migrations zephyr/fixtures/migration-status &&
+        [ "$1" != "--force" ]; then
         cp zephyr/tests/zephyrdb.test.pristine zephyr/tests/zephyrdb.test
         exit 0
     fi
@@ -17,6 +24,8 @@ rm -f zephyr/lib/time.pyc
 
 python manage.py syncdb --noinput --settings=humbug.test_settings
 python manage.py migrate --settings=humbug.test_settings --all
+migration_status "zephyr/fixtures/migration-status"
+
 # This next line can be simplified to "-n0" once we fix our app with 0 messages.
 python manage.py populate_db --settings=humbug.test_settings --test-suite -n2 \
     --threads=1 --huddles=0 --personals=0 --percent-huddles=0 --percent-personals=0
