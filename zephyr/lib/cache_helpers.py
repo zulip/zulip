@@ -5,8 +5,7 @@ from zephyr.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
     Huddle, huddle_hash_cache_key
 from zephyr.lib.cache import cache_with_key, djcache, message_cache_key, \
-    user_profile_by_email_cache_key, user_profile_by_user_cache_key, \
-    user_by_id_cache_key, user_profile_by_id_cache_key
+    user_profile_by_email_cache_key, user_profile_by_id_cache_key
 import logging
 from django.db import connection
 
@@ -24,8 +23,6 @@ def message_cache_items(items_for_memcached, message):
 
 def user_cache_items(items_for_memcached, user_profile):
     items_for_memcached[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
-    items_for_memcached[user_profile_by_user_cache_key(user_profile.user.id)] = (user_profile,)
-    items_for_memcached[user_by_id_cache_key(user_profile.user.id)] = (user_profile.user,)
     items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
 
 def stream_cache_items(items_for_memcached, stream):

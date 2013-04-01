@@ -1,39 +1,39 @@
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.auth.models import UserManager
 from django.utils import timezone
-from zephyr.models import UserProfile
+from zephyr.lib.initial_password import initial_api_key
+from zephyr.models import UserProfile, Recipient, Subscription
 import base64
 import hashlib
 
-# create_user_hack is the same as Django's User.objects.create_user,
+# create_user_profile is based on Django's User.objects.create_user,
 # except that we don't save to the database so it can used in
 # bulk_creates
-def create_user_hack(username, password, email, active):
+#
+# Only use this for bulk_create -- for normal usage one should use
+# create_user (below) which will also make the Subscription and
+# Recipient objects
+def create_user_profile(realm, email, password, active, full_name, short_name):
     now = timezone.now()
     email = UserManager.normalize_email(email)
-    user = User(username=username, email=email,
-                is_staff=False, is_active=active, is_superuser=False,
-                last_login=now, date_joined=now)
+    user_profile = UserProfile(email=email, is_staff=False, is_active=active,
+                               full_name=full_name, short_name=short_name,
+                               last_login=now, date_joined=now, realm=realm,
+                               pointer=-1)
 
     if active:
-        user.set_password(password)
+        user_profile.set_password(password)
     else:
-        user.set_unusable_password()
-    return user
-
-def create_user_base(email, password, active=True):
-    # NB: the result of Base32 + truncation is not a valid Base32 encoding.
-    # It's just a unique alphanumeric string.
-    # Use base32 instead of base64 so we don't have to worry about mixed case.
-    # Django imposes a limit of 30 characters on usernames.
-    email_hash = hashlib.sha256(settings.HASH_SALT + email).digest()
-    username = base64.b32encode(email_hash)[:30]
-    return create_user_hack(username, password, email, active)
+        user_profile.set_unusable_password()
+    user_profile.api_key = initial_api_key(email)
+    return user_profile
 
 def create_user(email, password, realm, full_name, short_name,
                 active=True):
-    user = create_user_base(email=email, password=password,
-                            active=active)
-    user.save()
-    return UserProfile.create(user, realm, full_name, short_name)
+    user_profile = create_user_profile(realm, email, password, active,
+                                       full_name, short_name)
+    user_profile.save()
+    recipient = Recipient.objects.create(type_id=user_profile.id,
+                                         type=Recipient.PERSONAL)
+    Subscription.objects.create(user_profile=user_profile, recipient=recipient)
+    return user_profile

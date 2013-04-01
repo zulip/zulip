@@ -13,9 +13,7 @@ from StringIO import StringIO
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.timestamp import datetime_to_timestamp
-from zephyr.lib.cache import user_profile_by_email_cache_key, \
-    user_profile_by_user_cache_key
-
+from zephyr.lib.cache import user_profile_by_email_cache_key
 from functools import wraps
 import base64
 
@@ -52,10 +50,6 @@ def update_user_activity(request, user_profile):
 
 # I like the all-lowercase name better
 require_post = require_POST
-
-@cache_with_key(user_profile_by_user_cache_key, timeout=3600*24*7)
-def get_user_profile_by_user_id(user_id):
-    return UserProfile.objects.select_related().get(user_id=user_id)
 
 def process_client(request, user_profile):
     try:

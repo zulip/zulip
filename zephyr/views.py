@@ -15,7 +15,7 @@ from django.core.mail import send_mail, mail_admins
 from django.db import transaction
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, get_huddle, Realm, UserMessage, \
-    PreregistrationUser, get_client, MitUser, User, UserActivity, \
+    PreregistrationUser, get_client, MitUser, UserActivity, \
     MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH, get_stream, UserPresence, \
     get_recipient, valid_stream_name
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
@@ -35,8 +35,7 @@ from zephyr.decorator import require_post, \
     has_request_variables, POST, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
-    get_user_profile_by_user_id, authenticated_rest_api_view, \
-    process_patch_as_post, REQ
+    authenticated_rest_api_view, process_patch_as_post, REQ
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed

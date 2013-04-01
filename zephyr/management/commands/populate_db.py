@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils.timezone import utc, now
 
-from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, StreamColor, \

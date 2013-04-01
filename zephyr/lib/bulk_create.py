@@ -1,10 +1,10 @@
 from django.conf import settings
 
 from zephyr.lib.initial_password import initial_password, initial_api_key
-from zephyr.models import Realm, Stream, User, UserProfile, Huddle, \
+from zephyr.models import Realm, Stream, UserProfile, Huddle, \
     Subscription, Recipient, Client, Message, \
     get_huddle_hash
-from zephyr.lib.create_user import create_user_base
+from zephyr.lib.create_user import create_user_profile
 
 def bulk_create_realms(realm_list):
     existing_realms = set(r.domain for r in Realm.objects.select_related().all())
@@ -18,41 +18,24 @@ def bulk_create_realms(realm_list):
 
 def bulk_create_users(realms, users_raw):
     """
-    Creates and saves a User with the given email.
+    Creates and saves a UserProfile with the given email.
     Has some code based off of UserManage.create_user, but doesn't .save()
     """
     users = []
-    existing_users = set(u.email for u in User.objects.all())
+    existing_users = set(u.email for u in UserProfile.objects.all())
     for (email, full_name, short_name, active) in users_raw:
         if email in existing_users:
             continue
         users.append((email, full_name, short_name, active))
         existing_users.add(email)
 
-    users_to_create = []
-    for (email, full_name, short_name, active) in users:
-        users_to_create.append(create_user_base(email, initial_password(email),
-                                                active=active))
-    User.objects.bulk_create(users_to_create)
-
-    users_by_email = {}
-    for user in User.objects.all():
-        users_by_email[user.email] = user
-
     # Now create user_profiles
     profiles_to_create = []
     for (email, full_name, short_name, active) in users:
-        user = users_by_email[email]
         domain = email.split('@')[1]
-        profile = UserProfile(user=user, pointer=-1,
-                              is_active=user.is_active,
-                              is_staff=user.is_staff,
-                              date_joined=user.date_joined,
-                              email=user.email,
-                              password=user.password,
-                              realm=realms[domain],
-                              full_name=full_name, short_name=short_name)
-        profile.api_key = initial_api_key(email)
+        profile = create_user_profile(realms[domain], email,
+                                      initial_password(email), active,
+                                      full_name, short_name)
         profiles_to_create.append(profile)
     UserProfile.objects.bulk_create(profiles_to_create)
 

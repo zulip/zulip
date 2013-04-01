@@ -100,10 +100,6 @@ def do_deactivate(user_profile):
     user_profile.set_unusable_password()
     user_profile.save(update_fields=["is_active", "password"])
 
-    user_profile.user.set_unusable_password()
-    user_profile.user.is_active = False
-    user_profile.user.save(update_fields=["is_active", "password"])
-
     delete_user_sessions(user_profile)
 
     log_event({'type': 'user_deactivated',
@@ -122,12 +118,8 @@ def do_deactivate(user_profile):
 
 def do_change_user_email(user_profile, new_email):
     old_email = user_profile.email
-
     user_profile.email = new_email
     user_profile.save(update_fields=["email"])
-
-    user_profile.user.email = new_email
-    user_profile.user.save(update_fields=["email"])
 
     log_event({'type': 'user_email_changed',
                'old_email': old_email,
@@ -496,17 +488,10 @@ def log_subscription_property_change(user_email, property, property_dict):
     log_event(event)
 
 def do_activate_user(user_profile, log=True, join_date=timezone.now()):
-    user = user_profile.user
-
     user_profile.is_active = True
     user_profile.set_password(initial_password(user_profile.email))
     user_profile.date_joined = join_date
     user_profile.save(update_fields=["is_active", "date_joined", "password"])
-
-    user.is_active = True
-    user.set_password(initial_password(user.email))
-    user.date_joined = join_date
-    user.save(update_fields=["is_active", "date_joined", "password"])
 
     if log:
         domain = user_profile.realm.domain
@@ -516,16 +501,12 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
 
 def do_change_password(user_profile, password, log=True, commit=True,
                        hashed_password=False):
-    user = user_profile.user
     if hashed_password:
         # This is a hashed password, not the password itself.
-        user.password = password
         user_profile.set_password(password)
     else:
-        user.set_password(password)
         user_profile.set_password(password)
     if commit:
-        user.save(update_fields=["password"])
         user_profile.save(update_fields=["password"])
     if log:
         log_event({'type': 'user_change_password',

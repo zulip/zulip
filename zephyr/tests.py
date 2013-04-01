@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.simple import DjangoTestSuiteRunner
 from django.utils.timezone import now

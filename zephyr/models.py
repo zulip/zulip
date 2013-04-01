@@ -1,10 +1,8 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User, AbstractBaseUser, UserManager
+from django.contrib.auth.models import AbstractBaseUser, UserManager
 from zephyr.lib.cache import cache_with_key, update_user_profile_cache, \
-    update_user_cache, user_profile_by_id_cache_key, \
-    user_profile_by_email_cache_key
-from zephyr.lib.initial_password import initial_api_key
+    user_profile_by_id_cache_key, user_profile_by_email_cache_key
 from zephyr.lib.utils import make_safe_digest
 import os
 from django.db import transaction, IntegrityError
@@ -60,12 +58,6 @@ class UserProfile(AbstractBaseUser):
     date_joined = models.DateTimeField(default=timezone.now)
     USERNAME_FIELD = 'email'
 
-    # User Legacy code: the object that goes with this UserProfile.
-    # Plan is to for a short time maintain them both in sync, then
-    # later we'll dump the old User field, and perhaps later than
-    # that, rename the surviving field to just User.
-    user = models.OneToOneField(User)
-
     # Our custom site-specific fields
     full_name = models.CharField(max_length=100)
     short_name = models.CharField(max_length=100)
@@ -78,26 +70,6 @@ class UserProfile(AbstractBaseUser):
 
     objects = UserManager()
 
-    @classmethod
-    def create(cls, user, realm, full_name, short_name):
-        """When creating a new user, make a profile for him or her."""
-        if not cls.objects.filter(user=user):
-            profile = cls(user=user, pointer=-1, realm=realm,
-                          # User Legacy code:
-                          is_active=user.is_active,
-                          is_staff=user.is_staff,
-                          date_joined=user.date_joined,
-                          email=user.email,
-                          password=user.password,
-                          # end User Legacy code
-                          full_name=full_name, short_name=short_name)
-            profile.api_key = initial_api_key(user.email)
-            profile.save()
-            # Auto-sub to the ability to receive personals.
-            recipient = Recipient.objects.create(type_id=profile.id, type=Recipient.PERSONAL)
-            Subscription.objects.create(user_profile=profile, recipient=recipient)
-            return profile
-
     def __repr__(self):
         return (u"<UserProfile: %s %s>" % (self.email, self.realm)).encode("utf-8")
     def __str__(self):
@@ -106,8 +78,6 @@ class UserProfile(AbstractBaseUser):
 # Make sure we flush the UserProfile object from our memcached
 # whenever we save it.
 post_save.connect(update_user_profile_cache, sender=UserProfile)
-# And the same for the User object
-post_save.connect(update_user_cache, sender=User)
 
 class PreregistrationUser(models.Model):
     email = models.EmailField()
@@ -417,7 +387,7 @@ def filter_by_subscriptions(messages, user_profile):
     return user_messages
 
 def clear_database():
-    for model in [Message, Stream, UserProfile, User, Recipient,
+    for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,
                   DefaultStream]:
         model.objects.all().delete()
