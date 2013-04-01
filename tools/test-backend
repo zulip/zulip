@@ -10,4 +10,4 @@ case "$1" in
 esac
 
 cd "$(dirname "$0")"/..
-./manage.py test "$target" --skip-generate --settings=humbug.test_settings "$@"
+./manage.py test "$target" --settings=humbug.test_settings "$@"
