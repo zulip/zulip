@@ -29,7 +29,7 @@ usage = """print-next-message --user=<email address> [options]
 
 Prints out the next message received by the user.
 
-Example: print-next-messages --user=tabbott@humbughq.com --site=https://zephyr.humbughq.com
+Example: print-next-messages --user=tabbott@humbughq.com
 """
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import humbug

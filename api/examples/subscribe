@@ -29,8 +29,8 @@ usage = """subscribe --user=<email address> [options] --streams=<streams>
 
 Ensures the user is subscribed to the listed streams.
 
-Examples: subscribe --user=tabbott@humbughq.com --site=https://zephyr.humbughq.com --streams=foo
-          subscribe --user=tabbott@humbughq.com --site=https://zephyr.humbughq.com --streams='foo bar'
+Examples: subscribe --user=tabbott@humbughq.com --streams=foo
+          subscribe --user=tabbott@humbughq.com --streams='foo bar'
 """
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import humbug

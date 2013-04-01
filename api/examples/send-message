@@ -30,7 +30,7 @@ usage = """send-message [options] <recipients>
 Sends a test message to the specified recipients.
 
 Example: send-message --sender=you@example.com --type=stream commits --subject="my subject" --message="test message"
-Example: send-message --sender=you@example.com --site=https://zephyr.humbughq.com user1@example.com user2@example.com
+Example: send-message --sender=you@example.com user1@example.com user2@example.com
 """
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('--api-key')
