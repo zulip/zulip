@@ -12,6 +12,7 @@ import sys
 import signal
 import tornado
 import random
+import zephyr.lib.stats as stats
 
 IDLE_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
 # The heartbeats effectively act as a server-side timeout for
@@ -147,6 +148,8 @@ def gc_event_queues():
                   + '  Now %d active queues')
                  % (len(to_remove), len(affected_users), time.time() - start,
                     len(clients)))
+    stats.update_stat('tornado.active_queues', len(clients))
+    stats.update_stat('tornado.active_users', len(user_clients))
 
 PERSISTENT_QUEUE_FILENAME = os.path.join(os.path.dirname(__file__),
                                          "..", "..", "event_queues.pickle")
