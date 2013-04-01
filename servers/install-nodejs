@@ -1,0 +1,20 @@
+#!/bin/sh -e
+
+# Build Node.js from source on one of our servers.
+
+if [ $(whoami) != root ]; then
+    echo 'Run this script as root.'
+    exit 1
+fi
+
+# Print commands as we run them.
+set -x
+
+cd /root
+
+git clone https://github.com/joyent/node.git
+cd node
+git checkout v0.10.2
+./configure
+nice make
+make install

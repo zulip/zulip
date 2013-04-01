@@ -100,4 +100,6 @@ cat <<EOF
 
  Done.
 
+ FIXME: Manually run servers/install-nodejs if necessary
+
 EOF
