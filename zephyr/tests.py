@@ -158,6 +158,9 @@ class AuthedTestCase(TestCase):
     def assert_json_error_contains(self, result, msg_substring):
         self.assertIn(msg_substring, self.get_json_error(result))
 
+    def fixture_jsondata(self, type, action):
+        return open(os.path.join(os.path.dirname(__file__),
+                                 "fixtures/%s/%s_%s.json" % (type, type, action,))).read()
 class PublicURLTest(TestCase):
     """
     Account creation URLs are accessible even when not logged in. Authenticated
@@ -2397,10 +2400,6 @@ class StarTests(AuthedTestCase):
 class JiraHookTests(AuthedTestCase):
     fixtures = ['messages.json']
 
-    def fixture_data(self, action):
-        return open(os.path.join(os.path.dirname(__file__),
-                                 "fixtures/jira/jira_%s.json" % (action,))).read()
-
     def send_jira_message(self, action):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
@@ -2409,7 +2408,7 @@ class JiraHookTests(AuthedTestCase):
         user_profile = self.get_user_profile(email)
         do_add_subscription(user_profile, stream, no_log=True)
 
-        result = self.client.post("/api/v1/external/jira/%s/" % api_key, self.fixture_data(action),
+        result = self.client.post("/api/v1/external/jira/%s/" % api_key, self.fixture_jsondata('jira', action),
                                   content_type="application/json")
         self.assert_json_success(result)
 
@@ -2467,6 +2466,66 @@ class JiraHookTests(AuthedTestCase):
 * Changed assignee from **None** to **Leo Franchi**
 
 > Fixed it, finally!""")
+
+class BeanstalkHookTests(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def http_auth(self, username, password):
+        import base64
+        credentials = base64.b64encode('%s:%s' % (username, password))
+        auth_string = 'Basic %s' % credentials
+        return auth_string
+
+    def send_beanstalk_message(self, action):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), 'commits')
+        user_profile = self.get_user_profile(email)
+        do_add_subscription(user_profile, stream, no_log=True)
+
+        result = self.client.post("/api/v1/external/beanstalk", self.fixture_jsondata('beanstalk', action),
+                                  content_type="application/json",
+                                  HTTP_AUTHORIZATION=self.http_auth(email, api_key))
+        self.assert_json_success(result)
+
+        # Check the correct message was sent
+        msg = Message.objects.filter().order_by('-id')[0]
+        self.assertEqual(msg.sender.user.email, email)
+        self.assertEqual(get_display_recipient(msg.recipient), 'commits')
+
+        return msg
+
+    def test_git_single(self):
+        msg = self.send_beanstalk_message('git_singlecommit')
+        self.assertEqual(msg.subject, "work-test")
+        self.assertEqual(msg.content, """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
+
+* [e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df): add some stuff
+""")
+
+    def test_git_multiple(self):
+        msg = self.send_beanstalk_message('git_multiple')
+        self.assertEqual(msg.subject, "work-test")
+        self.assertEqual(msg.content, """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
+
+* [edf529c](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/edf529c7): Added new file
+* [c2a191b](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/c2a191b9): Filled in new file with some stuff
+* [2009815](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/20098158): More work to fix some bugs
+""")
+
+    def test_svn_addremove(self):
+        msg = self.send_beanstalk_message('svn_addremove')
+        self.assertEqual(msg.subject, "svn r3")
+        self.assertEqual(msg.content, """Leo Franchi pushed [revision 3](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/3):
+
+> Removed a file and added another one!""")
+
+    def test_svn_changefile(self):
+        msg = self.send_beanstalk_message('svn_changefile')
+        self.assertEqual(msg.subject, "svn r2")
+        self.assertEqual(msg.content, """Leo Franchi pushed [revision 2](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/2):
+
+> Added some code""")
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (

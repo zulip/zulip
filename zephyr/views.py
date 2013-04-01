@@ -1236,12 +1236,43 @@ def get_activity(request):
             'iPhone':  ActivityTable('iPhone',        api_queries)
         }}, context_instance=RequestContext(request))
 
+def build_message_from_gitlog(user_profile, name, ref, commits, before, after, url, pusher):
+    short_ref = re.sub(r'^refs/heads/', '', ref)
+    subject = name
+
+    if re.match(r'^0+$', after):
+        content = "%s deleted branch %s" % (pusher,
+                                            short_ref)
+    elif len(commits) == 0:
+        content = ("%s [force pushed](%s) to branch %s.  Head is now %s"
+                   % (pusher,
+                      url,
+                      short_ref,
+                      after[:7]))
+    else:
+        content = ("%s [pushed](%s) to branch %s\n\n"
+                   % (pusher,
+                      url,
+                      short_ref))
+        num_commits = len(commits)
+        max_commits = 10
+        truncated_commits = commits[:max_commits]
+        for commit in truncated_commits:
+            short_id = commit['id'][:7]
+            (short_commit_msg, _, _) = commit['message'].partition("\n")
+            content += "* [%s](%s): %s\n" % (short_id, commit['url'],
+                                             short_commit_msg)
+        if (num_commits > max_commits):
+            content += ("\n[and %d more commits]"
+                        % (num_commits - max_commits,))
+
+    return (subject, content)
+
 @authenticated_api_view
 @has_request_variables
 def api_github_landing(request, user_profile, event=POST,
                        payload=POST(converter=json_to_dict)):
     # TODO: this should all be moved to an external bot
-
     repository = payload['repository']
 
     # CUSTOMER18 has requested not to get pull request notifications
@@ -1265,39 +1296,17 @@ def api_github_landing(request, user_profile, event=POST,
         if short_ref != 'master' and user_profile.realm.domain in ['customer18.invalid', 'humbughq.com']:
             return json_success()
 
-        subject = repository['name']
-        if re.match(r'^0+$', payload['after']):
-            content = "%s deleted branch %s" % (payload['pusher']['name'],
-                                                short_ref)
-        elif len(payload['commits']) == 0:
-            content = ("%s [force pushed](%s) to branch %s.  Head is now %s"
-                       % (payload['pusher']['name'],
-                          payload['compare'],
-                          short_ref,
-                          payload['after'][:7]))
-        else:
-            content = ("%s [pushed](%s) to branch %s\n\n"
-                       % (payload['pusher']['name'],
-                          payload['compare'],
-                          short_ref))
-            num_commits = len(payload['commits'])
-            max_commits = 10
-            truncated_commits = payload['commits'][:max_commits]
-            for commit in truncated_commits:
-                short_id = commit['id'][:7]
-                (short_commit_msg, _, _) = commit['message'].partition("\n")
-                content += "* [%s](%s): %s\n" % (short_id, commit['url'],
-                                                 short_commit_msg)
-            if (num_commits > max_commits):
-                content += ("\n[and %d more commits]"
-                            % (num_commits - max_commits,))
+        subject, content = build_message_from_gitlog(user_profile, repository['name'],
+                                                     payload['ref'], payload['commits'],
+                                                     payload['before'], payload['after'],
+                                                     payload['compare'],
+                                                     payload['pusher']['name'])
     else:
         # We don't handle other events even though we get notified
         # about them
         return json_success()
 
-    if len(subject) > MAX_SUBJECT_LENGTH:
-        subject = subject[:57].rstrip() + '...'
+    subject = elide_subject(subject)
 
     request.client = get_client("github_bot")
     return send_message_backend(request, user_profile,
@@ -1305,6 +1314,11 @@ def api_github_landing(request, user_profile, event=POST,
                                 message_to=["commits"],
                                 forged=False, subject_name=subject,
                                 message_content=content)
+
+def elide_subject(subject):
+    if len(subject) > MAX_SUBJECT_LENGTH:
+        subject = subject[:57].rstrip() + '...'
+    return subject
 
 def api_jira_webhook(request, api_key):
     payload = simplejson.loads(request.body)
@@ -1364,14 +1378,43 @@ def api_jira_webhook(request, api_key):
         if comment != '':
             content += "\n> %s" % (comment,)
 
-    if len(subject) > MAX_SUBJECT_LENGTH:
-        subject = subject[:57].rstrip() + '...'
+    subject = elide_subject(subject)
 
     ret = check_send_message(user_profile, get_client("API"), "stream", ["jira"], subject, content)
     if ret is not None:
         return json_error(ret)
     return json_success()
 
+@authenticated_rest_api_view
+def api_beanstalk_webhook(request, user_profile):
+    payload = simplejson.loads(request.body)
+
+    # Beanstalk supports both SVN and git repositories
+    # We distinguish between the two by checking for a
+    # 'uri' key that is only present for git repos
+    git_repo = 'uri' in payload
+    if git_repo:
+        # To get a linkable url,
+        subject, content = build_message_from_gitlog(user_profile, payload['repository']['name'],
+                                                     payload['ref'], payload['commits'],
+                                                     payload['before'], payload['after'],
+                                                     payload['repository']['url'],
+                                                     payload['pusher_name'])
+    else:
+        author = payload.get('author_full_name')
+        url = payload.get('changeset_url')
+        revision = payload.get('revision')
+        (short_commit_msg, _, _) = payload.get('message').partition("\n")
+
+        subject = "svn r%s" % (revision,)
+        content = "%s pushed [revision %s](%s):\n\n> %s" % (author, revision, url, short_commit_msg)
+
+    subject = elide_subject(subject)
+
+    ret = check_send_message(user_profile, get_client("API"), "stream", ["commits"], subject, content)
+    if ret is not None:
+        return json_error(ret)
+    return json_success()
 
 @cache_with_key(lambda user_profile: user_profile.realm_id, timeout=60)
 def get_status_list(requesting_user_profile):
