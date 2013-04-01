@@ -149,7 +149,7 @@ def gc_event_queues():
                     len(clients)))
 
 PERSISTENT_QUEUE_FILENAME = os.path.join(os.path.dirname(__file__),
-                                         "..", "event_queues.pickle")
+                                         "..", "..", "event_queues.pickle")
 
 def dump_event_queues():
     start = time.time()
