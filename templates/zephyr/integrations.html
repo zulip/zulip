@@ -28,6 +28,7 @@
 
     <h3 id="services">Services with integrations</h3>
     <ul>
+      <li><a href="#beanstalk">Beanstalk</a></li>
       <li><a href="#capistrano">Capistrano</a></li>
       <li><a href="#git">Git</a></li>
       <li><a href="#github">GitHub</a></li>
@@ -46,6 +47,23 @@
       {% endcomment %}
       <li>...and more coming soon! <a href="mailto:support@humbughq.com?subject=Integration+request">Email us</a> with requests!</li>
     </ul>
+    {#--------------------------------------------------------------------#}
+    <div id="beanstalk" class="integration">
+      <h4>Beanstalk</h4>
+     <p>Humbug supports both SVN and Git notifications from Beanstalk. In the beanstalk web application, go to the Setup page, and choose the Integrations tab.
+     Choose the <code>Webhooks</code> integration from the list presented. </p>
+
+     <p>In the URL field, enter <code>https://email:api_key@humbughq.com/api/v1/external/beanstalk</code>:</p>
+      <img class="screenshot" src="/static/images/integrations/beanstalk/001.png">
+
+      <p><b>Congratulations! You're done!</b><br /> Whenever you do a
+      deployment, you'll get an automated notification that looks like
+      this:</p>
+      <img class="screenshot" src="/static/images/integrations/beanstalk/002.png">
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
 {#--------------------------------------------------------------------#}
     <div id="capistrano" class="integration">
       <h4>Capistrano</h4>
