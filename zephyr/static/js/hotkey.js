@@ -2,26 +2,17 @@ var hotkeys = (function () {
 
 var exports = {};
 
-function wrap_directional_key_with_movement_direction(arrow_key_func) {
-    if (arrow_key_func === rows.next_visible) {
-        last_viewport_movement_direction = 1;
-    } else if (arrow_key_func === rows.prev_visible) {
-        last_viewport_movement_direction = -1;
-    }
-
-    return arrow_key_func;
-}
-
 var directional_hotkeys = {
-    40:  rows.next_visible,  // down arrow
-    106: rows.next_visible,  // 'j'
-    38:  rows.prev_visible,  // up arrow
-    107: rows.prev_visible,  // 'k'
-    36:  rows.first_visible  // Home
+    40:  {getrow: rows.next_visible, direction: 1},  // down arrow
+    106: {getrow: rows.next_visible, direction: 1}, // 'j'
+    38:  {getrow: rows.prev_visible, direction: -1}, // up arrow
+    107: {getrow: rows.prev_visible, direction: -1}, // 'k'
+    36:  {getrow: rows.first_visible, direction: -1}  // Home
 };
 
 var directional_hotkeys_id = {
-    35:  function () {return current_msg_list.last().id;}   // End
+    35:  {getid: function () {return current_msg_list.last().id;},
+          direction: 1} // End
 };
 
 var narrow_hotkeys = {
@@ -37,7 +28,7 @@ var narrow_hotkeys = {
 // Returns true if we handled it, false if the browser should.
 function process_hotkey(e) {
     var code = e.which;
-    var next_row;
+    var next_row, dirkey;
 
     // Disable hotkeys on settings page etc., and when a modal pop-up
     // is visible.
@@ -109,14 +100,17 @@ function process_hotkey(e) {
     }
 
     if (directional_hotkeys_id.hasOwnProperty(code)) {
-        var next_id = directional_hotkeys_id[code]();
+        dirkey = directional_hotkeys_id[code];
+        last_viewport_movement_direction = dirkey.direction;
+        var next_id = dirkey.getid();
         current_msg_list.select_id(next_id, {then_scroll: true});
         return true;
     }
 
     if (directional_hotkeys.hasOwnProperty(code)) {
-        next_row = wrap_directional_key_with_movement_direction(
-            directional_hotkeys[code])(current_msg_list.selected_row());
+        dirkey = directional_hotkeys[code];
+        last_viewport_movement_direction = dirkey.direction;
+        next_row = dirkey.getrow(current_msg_list.selected_row());
         if (next_row.length !== 0) {
             current_msg_list.select_id(rows.id(next_row), {then_scroll: true});
         }
