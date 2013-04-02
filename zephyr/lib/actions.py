@@ -83,7 +83,7 @@ def delete_user_sessions(user_profile):
         if session.get_decoded().get('_auth_user_id') == user_profile.user.id:
             delete_session(session)
 
-def delete_realm_sessions(realm):
+def delete_realm_user_sessions(realm):
     realm_user_ids = [u.user.id for u in
                       UserProfile.objects.filter(realm=realm)]
     for session in Session.objects.all():
