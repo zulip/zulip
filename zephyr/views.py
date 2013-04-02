@@ -1194,10 +1194,11 @@ class ActivityTable(object):
                 row[query_name + '_count'] = record.count
                 row[query_name + '_last' ] = record.last_visit
 
-        for query_name, url in queries:
+        for query_name, urls in queries:
             if 'pointer' in query_name:
                 self.has_pointer = True
-            do_url(query_name, url)
+            for url in urls:
+                do_url(query_name, url)
 
         for row in self.rows.values():
             # kind of a hack
@@ -1221,14 +1222,14 @@ def get_activity(request):
         return HttpResponseRedirect(reverse('zephyr.views.login_page'))
 
     web_queries = (
-        ("get_updates",    "/json/get_updates"),
-        ("send_message",   "/json/send_message"),
-        ("update_pointer", "/json/update_pointer"),
+        ("get_updates",    ["/json/get_updates"]),
+        ("send_message",   ["/json/send_message"]),
+        ("update_pointer", ["/json/update_pointer"]),
     )
 
     api_queries = (
-        ("get_updates",  "/api/v1/get_messages"),
-        ("send_message", "/api/v1/send_message"),
+        ("get_updates",  ["/api/v1/get_messages"]),
+        ("send_message", ["/api/v1/send_message"]),
     )
 
     return render_to_response('zephyr/activity.html',
