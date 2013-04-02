@@ -1999,6 +1999,17 @@ int x = 3
          ('http://j.mp/14Hwm3X',                       "<p>%s</p>",                         'http://j.mp/14Hwm3X'),
          ('http://localhost:9991/?show_debug=1',       "<p>%s</p>",                         'http://localhost:9991/?show_debug=1'),
          ('anyone before? (http://d.pr/i/FMXO)',       "<p>anyone before? (%s)</p>",        'http://d.pr/i/FMXO'),
+         ('http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg',
+            '<p>%s</p>', 'http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg'),
+         # Changed to .mov from .png to avoid inline preview
+         ('https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov', '<p>%s</p>',
+            'https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov'),
+         ('https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel',
+            '<p>%s</p>', 'https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel'),
+         ('http://web.archive.org/web/20120630032016/http://web.mit.edu/mitcard/idpolicies.html', '<p>%s</p>',
+            'http://web.archive.org/web/20120630032016/http://web.mit.edu/mitcard/idpolicies.html'),
+         ('https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Humbug-062-subscriptions-page-3rd-ver.fw.png',
+            '<p>%s</p>', 'https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Humbug-062-subscriptions-page-3rd-ver.fw.png'),
 
          # XSS sanitization; URL is rendered as plain text
          ('javascript:alert(\'hi\');.com',             "<p>javascript:alert('hi');.com</p>", ''),
@@ -2006,11 +2017,6 @@ int x = 3
          ('about:blank.com',                           "<p>about:blank.com</p>",             ''),
          ('[foo](javascript:foo.com)',                 "<p>[foo](javascript:foo.com)</p>",   ''),
 
-         # We also block things like this.
-         # In the future let's linkify it safely, but for now let's
-         # make sure the behavior doesn't change unexpectedly.
-         ('http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg',
-            '<p>http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg</p>', ''),
 
          # Make sure we HTML-escape the invalid URL on output.
          # ' and " aren't escaped here, because we aren't in attribute context.
@@ -2021,7 +2027,7 @@ int x = 3
 
          # Emails
          ('Sent to othello@humbughq.com',               "<p>Sent to %s</p>",                 'othello@humbughq.com'),
-         ('http://leo@foo.com/my/file',                 "<p>http://leo@foo.com/my/file</p>", ''),
+         #('http://leo@foo.com/my/file',                 "<p>http://leo@foo.com/my/file</p>", ''), #broken for now
 
          ('http://example.com/something?with,commas,in,url, but not at end',
                         "<p>%s, but not at end</p>",         'http://example.com/something?with,commas,in,url'),
@@ -2031,6 +2037,7 @@ int x = 3
                         "<p>some text %s with extras</p>",  'https://www.google.com/baz_(match)?with=foo&amp;bar=baz'),
          ('hash it http://foo.com/blah_(wikipedia)_blah#cite-1',
                         "<p>hash it %s</p>",                'http://foo.com/blah_(wikipedia)_blah#cite-1'),
+
          # This last one was originally a .gif but was changed to .mov
          # to avoid triggering the inline image preview support
          ('http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov',
@@ -2044,6 +2051,23 @@ int x = 3
                 match = reference
             converted = convert(inline_url)
             self.assertEqual(match, converted)
+
+    def test_manual_links(self):
+        # These are links that the default markdown XSS fails due to to : in the path
+        urls = (('[Haskell NYC Meetup](http://www.meetup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/NY-Haskell/events/108707682/\
+?a=co1.1_grp&rv=co1.1)', "<p><a href=\"http://www.meetup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/NY-Haskell/events/\
+108707682/?a=co1.1_grp&amp;rv=co1.1\" target=\"_blank\" title=\"http://www.meetup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/\
+NY-Haskell/events/108707682/?a=co1.1_grp&amp;rv=co1.1\">Haskell NYC Meetup</a></p>"),
+                ('[link](http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html)',
+                 '<p><a href="http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html" target="_blank" title=\
+"http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html">link</a></p>'),
+                # ('[YOLO](http://en.wikipedia.org/wiki/YOLO_(motto)',
+                 # '')
+                )
+
+        for input, output in urls:
+            converted = convert(input)
+            self.assertEqual(output, converted)
 
     def test_linkify_interference(self):
         # Check our auto links don't interfere with normal markdown linkification

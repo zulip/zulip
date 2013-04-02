@@ -263,16 +263,21 @@ def sanitize_url(url):
     if not scheme:
         return sanitize_url('http://' + url)
 
-    locless_schemes = ['', 'mailto', 'news']
+    locless_schemes = ['mailto', 'news']
     if netloc == '' and scheme not in locless_schemes:
         # This fails regardless of anything else.
         # Return immediately to save additional proccessing
         return None
 
-    for part in parts[2:]:
-        if ":" in part:
-            # Not a safe url
-            return None
+    # Upstream code scans path, parameters, and query for colon characters
+    # because
+    #
+    #    some aliases [for javascript:] will appear to urlparse() to have
+    #    no scheme. On top of that relative links (i.e.: "foo/bar.html")
+    #    have no scheme.
+    #
+    # We already converted an empty scheme to http:// above, so we skip
+    # the colon check, which would also forbid a lot of legitimate URLs.
 
     # Url passes all tests. Return url as-is.
     return urlparse.urlunparse(parts)
