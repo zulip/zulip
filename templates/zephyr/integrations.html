@@ -51,7 +51,8 @@
     <div id="beanstalk" class="integration">
       <h4>Beanstalk</h4>
      <p>Humbug supports both SVN and Git notifications from Beanstalk. In the beanstalk web application, go to the Setup page, and choose the Integrations tab.
-     Choose the <code>Webhooks</code> integration from the list presented. </p>
+     Choose the <code>Webhooks</code> integration from the list presented. Make sure to replace the <code>@</code> in your email address with <code>%40</code>,
+     as Beanstalk's website will incorrectly refuse to parse a username containing a <code>@</code>.</p>
 
      <p>In the URL field, enter <code>https://email:api_key@humbughq.com/api/v1/external/beanstalk</code>:</p>
       <img class="screenshot" src="/static/images/integrations/beanstalk/001.png">
