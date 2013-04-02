@@ -72,7 +72,7 @@ function unparse(operators) {
             // a colon are glued together to form a search term.
             parts.push(elem[1]);
         } else {
-            parts.push(elem[0] + ':' + encodeOperand(elem[1].toLowerCase()));
+            parts.push(elem[0] + ':' + encodeOperand(elem[1].toString().toLowerCase()));
         }
     });
     return parts.join(' ');
@@ -200,7 +200,7 @@ function build_filter(operators_mixed_case) {
     var operators = [];
     // We don't use $.map because it flattens returned arrays.
     $.each(operators_mixed_case, function (idx, operator) {
-        operators.push([operator[0], operator[1].toLowerCase()]);
+        operators.push([operator[0], operator[1].toString().toLowerCase()]);
     });
 
     // FIXME: This is probably pretty slow.
@@ -294,7 +294,7 @@ exports.activate = function (operators, opts) {
 
     var collapse_messages = true;
     $.each(operators, function (idx, operator) {
-        if (operator[0].toLowerCase() === 'search') {
+        if (operator[0].toString().toLowerCase() === 'search') {
             collapse_messages = false;
             return false;
         }
