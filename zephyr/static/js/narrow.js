@@ -485,7 +485,7 @@ function pick_empty_narrow_banner() {
             return $("#empty_star_narrow_message");
         } else if (first_operand === "private-message") {
             // You have no private messages.
-            return $("#empty_narrow_private_message");
+            return $("#empty_narrow_all_private_message");
         }
     } else if ((first_operator === "stream") && !subs.have(first_operand)) {
         // You are narrowed to a stream to which you aren't subscribed.
@@ -493,6 +493,13 @@ function pick_empty_narrow_banner() {
     } else if (first_operator === "search") {
         // You are narrowed to empty search results.
         return $("#empty_search_narrow_message");
+    } else if (first_operator === "pm-with") {
+        if (first_operand.indexOf(',') === -1) {
+            // You have no private messages with this person
+            return $("#empty_narrow_private_message");
+        } else {
+            return $("#empty_narrow_multi_private_message");
+        }
     }
     return default_banner;
 }
