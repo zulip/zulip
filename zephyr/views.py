@@ -1511,7 +1511,7 @@ def json_report_error(request, user_profile, message=POST, stacktrace=POST,
 def json_events_register(request, user_profile):
     return events_register_backend(request, user_profile)
 
-@authenticated_api_view
+# Does not need to be authenticated because it's called from rest_dispatch
 @has_request_variables
 def api_events_register(request, user_profile,
                         apply_markdown=POST(default=False, converter=json_to_bool)):

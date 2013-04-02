@@ -138,7 +138,7 @@ urlpatterns += patterns('zephyr.views',
              'POST': 'add_subscriptions_backend',
              'PATCH': 'update_subscriptions_backend'}),
     url(r'^api/v1/register$',               'rest_dispatch',
-            {'POST': 'events_register_backend'}),
+            {'POST': 'api_events_register'}),
 
     # These are integration-specific web hook callbacks
     url(r'^api/v1/external/github$',        'api_github_landing'),
