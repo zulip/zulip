@@ -1994,6 +1994,7 @@ int x = 3
          ('http://raven.io',                           "<p>%s</p>",                         'http://raven.io'),
          ('at https://humbughq.com/api. Check it!',    "<p>at %s. Check it!</p>",           'https://humbughq.com/api'),
          ('goo.gl/abc',                                "<p>%s</p>",                         'goo.gl/abc'),
+         ('I spent a year at ucl.ac.uk',               "<p>I spent a year at %s</p>",       'ucl.ac.uk'),
          ('http://d.pr/i/FMXO',                        "<p>%s</p>",                         'http://d.pr/i/FMXO'),
          ('http://fmota.eu/blog/test.html',            "<p>%s</p>",                         'http://fmota.eu/blog/test.html'),
          ('http://j.mp/14Hwm3X',                       "<p>%s</p>",                         'http://j.mp/14Hwm3X'),

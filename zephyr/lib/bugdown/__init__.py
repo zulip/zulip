@@ -22,6 +22,17 @@ from zephyr.lib.cache import cache_with_key
 # messages so that we can efficiently determine what needs to be re-rendered
 version = 1
 
+def list_of_tlds():
+    # HACK we manually blacklist .py
+    blacklist = ['PY\n', ]
+
+    # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+    tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')
+    tlds = [tld.lower().strip() for tld in open(tlds_file, 'r')
+                if not tld in blacklist and not tld[0].startswith('#')]
+    tlds.sort(key=len, reverse=True)
+    return tlds
+
 def walk_tree(root, processor, stop_after_first=False):
     results = []
     stack = [root]
@@ -432,8 +443,7 @@ class Bugdown(markdown.Extension):
         #
         # This rule must come after the http_autolink rule we add above to avoid double
         # linkifying.
-        tlds = '|'.join(['co.uk', 'com', 'co', 'biz', 'gd', 'org', 'net', 'ly', 'edu', 'mil',
-                         'gov', 'info', 'me', 'it', '.ca', 'tv', 'fm', 'io', 'gl'])
+        tlds = '|'.join(list_of_tlds())
         link_regex = r"\b(?P<url>[^\s]+\.(%s)(?:/[^\s()\":]*?|([^\s()\":]*\([^\s()\":]*\)[^\s()\":]*))?)(?=([:;\?\),\.\'\"]\Z|[:;\?\),\.\'\"]\s|\Z|\s))" % (tlds,)
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>http_autolink')
 
