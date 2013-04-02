@@ -42,6 +42,7 @@ from zephyr.lib.response import json_success, json_error, json_response, json_me
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.unminify import SourceMap
+from zephyr.lib.queue import queue_json_publish
 from zephyr import tornado_callbacks
 
 from confirmation.models import Confirmation
@@ -223,6 +224,17 @@ def accounts_register(request):
                             )
 
             notify_new_user(user_profile)
+            queue_json_publish(
+                    "signups",
+                    {
+                        'EMAIL': email,
+                        'merge_vars': {
+                            'NAME': full_name,
+                            'OPTIN_IP': request.META['REMOTE_ADDR'],
+                            'OPTIN_TIME': datetime.datetime.isoformat(datetime.datetime.now()),
+                        },
+                    },
+                    lambda event: None)
 
             login(request, authenticate(username=email, password=password))
             return HttpResponseRedirect(reverse('zephyr.views.home'))

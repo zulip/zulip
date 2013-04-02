@@ -426,6 +426,9 @@ OPENID_SSO_SERVER_URL = 'https://www.google.com/accounts/o8/id'
 OPENID_CREATE_USERS = True
 OPENID_RENDER_FAILURE = openid_failure_handler
 
+MAILCHIMP_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us4'
+HUMBUG_FRIENDS_LIST_ID = '84b2f3da6b'
+
 EVENT_LOG_DIR = 'event_log'
 
 # Client-side polling timeout for get_events, in milliseconds.
