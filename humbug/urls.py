@@ -131,7 +131,7 @@ urlpatterns += patterns('zephyr.views',
             {'POST': 'json_change_enter_sends'}),
     url(r'^api/v1/users/me/pointer$', 'rest_dispatch',
             {'GET': 'get_pointer_backend',
-             'POST': 'update_pointer_backend'}),
+             'PUT': 'update_pointer_backend'}),
     # GET lists your streams, POST bulk adds, PATCH bulk modifies/removes
     url(r'^api/v1/users/me/subscriptions$', 'rest_dispatch',
             {'GET': 'list_subscriptions_backend',

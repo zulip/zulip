@@ -465,6 +465,7 @@ def api_update_pointer(request, user_profile):
 def json_update_pointer(request, user_profile):
     return update_pointer_backend(request, user_profile)
 
+@process_as_post
 @has_request_variables
 def update_pointer_backend(request, user_profile,
                            pointer=POST(converter=to_non_negative_int)):
