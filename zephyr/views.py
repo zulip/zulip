@@ -55,6 +55,7 @@ import requests
 import os
 import base64
 from os import path
+from functools import wraps
 from collections import defaultdict
 from zephyr.lib import bugdown
 
@@ -1391,10 +1392,29 @@ def api_jira_webhook(request, api_key):
         return json_error(ret)
     return json_success()
 
-@authenticated_rest_api_view
-def api_beanstalk_webhook(request, user_profile):
-    payload = simplejson.loads(request.body)
+# Beanstalk's web hook UI rejects url with a @ in the username section of a url
+# So we ask the user to replace them with %40
+# We manually fix the username here before passing it along to @authenticated_rest_api_view
+def beanstalk_decoder(view_func):
+    @wraps(view_func)
+    def _wrapped_view_func(request, *args, **kwargs):
+        try:
+            auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()
+            if auth_type.lower() == "basic":
+                email, api_key = base64.b64decode(encoded_value).split(":")
+                email = email.replace('%40', '@')
+                request.META['HTTP_AUTHORIZATION'] = "Basic %s" % (base64.b64encode("%s:%s" % (email, api_key)))
+        except:
+            pass
 
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view_func
+
+@beanstalk_decoder
+@authenticated_rest_api_view
+@has_request_variables
+def api_beanstalk_webhook(request, user_profile, payload=POST(converter=json_to_dict)):
     # Beanstalk supports both SVN and git repositories
     # We distinguish between the two by checking for a
     # 'uri' key that is only present for git repos

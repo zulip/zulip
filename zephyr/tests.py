@@ -2529,10 +2529,10 @@ class BeanstalkHookTests(AuthedTestCase):
     def send_beanstalk_message(self, action):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
+        data = {'payload': self.fixture_jsondata('beanstalk', action)}
         return self.send_json_payload(email, "/api/v1/external/beanstalk",
-                                      self.fixture_jsondata('beanstalk', action),
+                                      data,
                                       stream_name="commits",
-                                      content_type="application/json",
                                       HTTP_AUTHORIZATION=self.http_auth(email, api_key))
 
     def test_git_single(self):
