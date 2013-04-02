@@ -82,11 +82,16 @@ exports.initialize = function () {
 
         }
     });
-};
 
-exports.set_all_streams = function (e, val) {
-    $('#streams_to_add :checkbox').attr('checked', val);
-    e.preventDefault();
+    $(document).on('click', '.invite_check_all_button', function (e) {
+        $('#streams_to_add :checkbox').attr('checked', true);
+        e.preventDefault();
+    });
+
+    $(document).on('click', '.invite_uncheck_all_button', function (e) {
+        $('#streams_to_add :checkbox').attr('checked', false);
+        e.preventDefault();
+    });
 };
 
 return exports;

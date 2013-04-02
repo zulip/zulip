@@ -359,6 +359,15 @@ $(function () {
     $(document).on('subscription_remove.zephyr', function (e) {
         mark_unsubscribed(e.subscription.name);
     });
+
+    $(document).on('click', '.subs_set_all_users', function (e) {
+        $('#people_to_add :checkbox').attr('checked', true);
+        e.preventDefault();
+    });
+    $(document).on('click', '.subs_unset_all_users', function (e) {
+        $('#people_to_add :checkbox').attr('checked', false);
+        e.preventDefault();
+    });
 });
 
 exports.get_color = function (stream_name) {
@@ -830,11 +839,6 @@ $(function () {
         });
     });
 });
-
-exports.set_all_users = function (e, val) {
-    $('#people_to_add :checkbox').attr('checked', val);
-    e.preventDefault();
-};
 
 function focus_on_narrowed_stream() {
     var operators = narrow.operators();

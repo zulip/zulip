@@ -11,7 +11,7 @@
   </div>
 
   <li>
-    <a onclick="respond_to_message();">
+    <a class="respond_button">
       <i class="icon-share-alt"></i>
       {{#if message.is_stream}}
       Reply to this subject on stream <b>{{message.display_recipient}}</b>
@@ -22,7 +22,7 @@
   </li>
   {{#unless message.is_private}}
   <li>
-    <a onclick="respond_to_message('personal');">
+    <a class="respond_personal_button">
       <i class="icon-user"></i> Reply to <b>{{message.sender_full_name}}</b> only
     </a>
   </li>
@@ -30,21 +30,21 @@
 
   {{#if message.is_stream}}
     <li>
-      <a onclick="ui.hide_actions_popover(); narrow.by_subject({{message.id}});">
+      <a class="popover_narrow_by_subject_button" data-msgid="{{message.id}}">
         <i class="icon-bullhorn"></i>
         Narrow to this subject on stream <b>{{message.display_recipient}}</b>
       </a>
     </li>
   {{else}}
     <li>
-      <a onclick="ui.hide_actions_popover(); narrow.by_recipient({{message.id}});">
+      <a class="popover_narrow_by_recipient_button" data-msgid="{{message.id}}">
         <i class="icon-user"></i>
         Narrow to this private message conversation
       </a>
     </li>
   {{/if}}
     <li>
-      <a onclick="ui.hide_actions_popover(); narrow.by('sender', '{{message.sender_email}}', {then_select_id: {{message.id}} });">
+      <a class="popover_narrow_by_sender_button" data-msgid="{{message.id}}" data-sender_email="{{message.sender_email}}">
         <i class="icon-user"></i>
         Narrow to messages sent by <b>{{message.sender_full_name}}</b>
       </a>
@@ -52,7 +52,7 @@
 
   {{#if narrowed}}
   <li>
-    <a onclick="ui.hide_actions_popover(); narrow.by_time_travel({{message.id}});">
+    <a class="popover_narrow_by_time_travel_button" data-msgid="{{message.id}}">
       <i class="icon-time"></i> Narrow to messages around this time
     </a>
   </li>

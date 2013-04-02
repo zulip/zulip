@@ -1033,7 +1033,3 @@ function fast_forward_pointer(btn) {
         }
     });
 }
-
-function logout() {
-    $('#logout_form').submit();
-}

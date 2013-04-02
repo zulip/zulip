@@ -841,10 +841,6 @@ $(function () {
     subs.maybe_toggle_all_messages();
     tutorial.initialize();
 
-    $("body").bind('click', function () {
-        ui.hide_actions_popover();
-    });
-
     $("#main_div").on("click", ".messagebox", function (e) {
         var target = $(e.target);
         if (target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar")) {
@@ -985,6 +981,101 @@ $(function () {
         compose.start('private', {private_message_recipient: email});
         e.preventDefault();
     });
+
+    $('#stream_filters li').on('click', 'a', function (e) {
+        var stream = $(e.target).parents('li').data('name');
+        narrow.by('stream', stream, {select_first_unread: true});
+
+        e.preventDefault();
+    });
+
+    $('#stream_filters li').on('click', 'a', function (e) {
+        var stream = $(e.target).parents('li').data('name');
+        narrow.by('stream', stream, {select_first_unread: true});
+
+        e.preventDefault();
+    });
+
+    $('.composebox-close').click(function (e) { compose.cancel(); });
+    $('.compose_stream_button').click(function (e) {
+        compose.set_mode('stream');
+        return false;
+    });
+    $('.compose_private_button').click(function (e) {
+        compose.set_mode('private');
+        return false;
+    });
+
+    $('.empty_feed_compose_stream').click(function (e) {
+        compose.start('stream');
+        return false;
+    });
+    $('.empty_feed_compose_private').click(function (e) {
+        compose.start('private');
+        return false;
+    });
+    $('.empty_feed_join').click(function (e) {
+        subs.show_and_focus_on_narrow();
+        return false;
+    });
+
+    $('.feedback_button').click(function (e) {
+        compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com' });
+    });
+    $('.logout_button').click(function (e) {
+        $('#logout_form').submit();
+    });
+    $('.restart_get_updates_button').click(function (e) {
+        restart_get_updates({dont_block: true});
+    });
+
+    $('#api_key_button').click(function (e) {
+        ui.show_api_key_box();
+    });
+    $('.change_gravatar_button').click(function (e) {
+        ui.wait_for_gravatar();
+    });
+    $('.declare_bankruptcy_button').click(function (e) {
+        fast_forward_pointer(this);
+    });
+
+    $('body').on('click', '.respond_button', function (e) {
+        respond_to_message();
+        ui.hide_actions_popover();
+    });
+    $('body').on('click', '.respond_personal_button', function (e) {
+        respond_to_message('personal');
+        ui.hide_actions_popover();
+    });
+    $('body').on('click', '.popover_narrow_by_subject_button', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        ui.hide_actions_popover();
+        narrow.by_subject(msgid);
+    });
+    $('body').on('click', '.popover_narrow_by_recipient_button', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        ui.hide_actions_popover();
+        narrow.by_recipient(msgid);
+    });
+    $('body').on('click', '.popover_narrow_by_sender_button', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        var sender_email = $(e.currentTarget).data('sender_email');
+        ui.hide_actions_popover();
+        narrow.by('sender', sender_email, {then_select_id: msgid});
+    });
+    $('body').on('click', '.popover_narrow_by_time_travel_button', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        ui.hide_actions_popover();
+        narrow.by_time_travel(msgid);
+    });
+
+    $("body").on('click', function (e) {
+        // Dismiss the popover if the user has clicked outside it
+        if ($('.popover-inner').has(e.target).length === 0) {
+            ui.hide_actions_popover();
+        }
+    });
+
 });
 
 function sort_narrow_list() {

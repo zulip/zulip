@@ -1,6 +1,6 @@
 {{! Client-side Mustache template for rendering users in the stream creation modal.}}
-<a href="#" onclick="subs.set_all_users(event, true);">Check all</a> |
-<a href="#" onclick="subs.set_all_users(event, false);">Uncheck all</a>
+<a href="#" class="subs_set_all_users">Check all</a> |
+<a href="#" class="subs_unset_all_users">Uncheck all</a>
 <div id="user-checkboxes">
   {{#each users}}
   <label class="checkbox">

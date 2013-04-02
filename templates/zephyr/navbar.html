@@ -26,12 +26,12 @@
             <ul class="nav" role="navigation">
               {# stuff that gets visible in skinny mode #}
               <li class="visible-phone" title="New stream message">
-                <a href="#" onclick="compose.set_mode('stream'); return false;">
+                <a href="#" class="compose_stream_button">
                   <i class="icon-bullhorn"></i>
                 </a>
               </li>
               <li class="visible-phone" title="New private message">
-                <a href="#" onclick="compose.set_mode('private'); return false;">
+                <a href="#" class="compose_private_button">
                   <i class="icon-user"></i>
                 </a>
               </li>
@@ -76,7 +76,7 @@
                   </li>
                   <li class="divider"></li>
                   <li title="Feedback">
-                    <a href="#feedback" onclick="compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com' });">
+                    <a href="#feedback" class="feedback_button">
                       <i class="icon-comment"></i> Feedback
                     </a>
                   </li>
@@ -89,7 +89,7 @@
                   {% endif %}
                   <li class="divider"></li>
                   <li title="Log out">
-                    <a href="#logout" onclick="logout();">
+                    <a href="#logout" class="logout_button">
                       <i class="icon-off"></i> Log out
                     </a>
                   </li>
@@ -109,15 +109,14 @@
       <div class="row-fluid">
         <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
           <strong>Can't receive messages</strong>
-          &mdash; retrying soon. <a class="cursor_pointer" onclick="restart_get_updates({dont_block: true});">Try now</a>.
+          &mdash; retrying soon. <a class="cursor_pointer restart_get_updates_button">Try now</a>.
         </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
           <strong>Messages you send are not being mirrored to MIT
           zephyr</strong> &mdash; Please check
           that <a href="/zephyr">you are running the Zephyr mirror
           script</a>. Once you've corrected this
-          issue, you can <a class="cursor_pointer"
-          onclick="restart_get_updates({dont_block: true});">click
+          issue, you can <a class="cursor_pointer restart_get_updates_button">click
           here</a> to update this alert.
         </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
