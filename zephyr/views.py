@@ -1222,13 +1222,13 @@ def get_activity(request):
         return HttpResponseRedirect(reverse('zephyr.views.login_page'))
 
     web_queries = (
-        ("get_updates",    ["/json/get_updates"]),
+        ("get_updates",    ["/json/get_updates", "/json/get_events"]),
         ("send_message",   ["/json/send_message"]),
         ("update_pointer", ["/json/update_pointer"]),
     )
 
     api_queries = (
-        ("get_updates",  ["/api/v1/get_messages"]),
+        ("get_updates",  ["/api/v1/get_messages", "/api/v1/messages/latest", "/api/v1/events"]),
         ("send_message", ["/api/v1/send_message"]),
     )
 
