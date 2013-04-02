@@ -10,6 +10,6 @@
             <small>(Just in case, take a look at your Spam folder.)</small></p>
             <form id="email_signup" action="/accounts/home/" method="post">
                 {% csrf_token %}
-                <input type="hidden" class="email" id="email" value="{{ params.email }}" name="email"/>&nbsp;
+                <input type="hidden" class="email" id="email" value="{{ email }}" name="email"/>&nbsp;
             </form>
 {% endblock %}
