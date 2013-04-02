@@ -1182,18 +1182,22 @@ class ActivityTable(object):
         self.default_tab = default_tab
         self.has_pointer = False
         self.rows = {}
-        for url, query_name in queries:
-            if 'pointer' in query_name:
-                self.has_pointer = True
+
+        def do_url(query_name, url):
             for record in UserActivity.objects.filter(
                     query=url,
                     client__name__startswith=client_name).select_related():
-                row = self.rows.setdefault(record.user_profile.email, {})
-                row['realm'] = record.user_profile.realm.domain
-                row['full_name'] = record.user_profile.full_name
-                row['email'] = record.user_profile.email
+                row = self.rows.setdefault(record.user_profile.email,
+                                           {'realm': record.user_profile.realm.domain,
+                                            'full_name': record.user_profile.full_name,
+                                            'email': record.user_profile.email})
                 row[query_name + '_count'] = record.count
                 row[query_name + '_last' ] = record.last_visit
+
+        for query_name, url in queries:
+            if 'pointer' in query_name:
+                self.has_pointer = True
+            do_url(query_name, url)
 
         for row in self.rows.values():
             # kind of a hack
@@ -1217,14 +1221,14 @@ def get_activity(request):
         return HttpResponseRedirect(reverse('zephyr.views.login_page'))
 
     web_queries = (
-        ("/json/get_updates",    "get_updates"),
-        ("/json/send_message",   "send_message"),
-        ("/json/update_pointer", "update_pointer"),
+        ("get_updates",    "/json/get_updates"),
+        ("send_message",   "/json/send_message"),
+        ("update_pointer", "/json/update_pointer"),
     )
 
     api_queries = (
-        ("/api/v1/get_messages",  "get_updates"),
-        ("/api/v1/send_message",  "send_message"),
+        ("get_updates",  "/api/v1/get_messages"),
+        ("send_message", "/api/v1/send_message"),
     )
 
     return render_to_response('zephyr/activity.html',
