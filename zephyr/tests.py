@@ -2014,9 +2014,16 @@ int x = 3
          # XSS sanitization; URL is rendered as plain text
          ('javascript:alert(\'hi\');.com',             "<p>javascript:alert('hi');.com</p>", ''),
          ('javascript:foo.com',                        "<p>javascript:foo.com</p>",          ''),
+         ('javascript://foo.com',                      "<p>javascript://foo.com</p>",        ''),
+         ('foobarscript://foo.com',                    "<p>foobarscript://foo.com</p>",      ''),
          ('about:blank.com',                           "<p>about:blank.com</p>",             ''),
          ('[foo](javascript:foo.com)',                 "<p>[foo](javascript:foo.com)</p>",   ''),
+         ('[foo](javascript://foo.com)',               "<p>[foo](javascript://foo.com)</p>", ''),
 
+         # Other weird URL schemes are also blocked
+         ('aim:addbuddy?screenname=foo',               "<p>aim:addbuddy?screenname=foo</p>", ''),
+         ('itms://itunes.com/apps/appname',            "<p>itms://itunes.com/apps/appname</p>", ''),
+         ('[foo](itms://itunes.com/apps/appname)',     "<p>[foo](itms://itunes.com/apps/appname)</p>", ''),
 
          # Make sure we HTML-escape the invalid URL on output.
          # ' and " aren't escaped here, because we aren't in attribute context.
@@ -2071,12 +2078,12 @@ NY-Haskell/events/108707682/?a=co1.1_grp&amp;rv=co1.1\">Haskell NYC Meetup</a></
 
     def test_linkify_interference(self):
         # Check our auto links don't interfere with normal markdown linkification
-        msg = 'link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](xxxx://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):\
+        msg = 'link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):\
 **xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx'
         converted = convert(msg)
 
-        self.assertEqual(converted, '<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href="xxxx://xxxxxxxxx:xxxx/\
-xxx/xxxxxx%xxxxxx/xx/" target="_blank" title="xxxx://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/">xxxxx #xx</a>:<strong>\
+        self.assertEqual(converted, '<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href="http://xxxxxxxxx:xxxx/\
+xxx/xxxxxx%xxxxxx/xx/" target="_blank" title="http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/">xxxxx #xx</a>:<strong>\
 xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxxxxxx<br>\n<code>xxxxxx</code>: xxxxx\
 <br>\n<code>xxxxxx</code>: xxxxx xxxxx</p>')
 

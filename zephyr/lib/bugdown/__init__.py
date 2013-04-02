@@ -269,6 +269,13 @@ def sanitize_url(url):
         # Return immediately to save additional proccessing
         return None
 
+    # Upstream code will accept a URL like javascript://foo because it
+    # appears to have a netloc.  Additionally there are plenty of other
+    # schemes that do weird things like launch external programs.  To be
+    # on the safe side, we whitelist the scheme.
+    if scheme not in ('http', 'https', 'ftp', 'mailto'):
+        return None
+
     # Upstream code scans path, parameters, and query for colon characters
     # because
     #
