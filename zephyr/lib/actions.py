@@ -9,6 +9,8 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
 from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.core.exceptions import ValidationError
+from django.utils.importlib import import_module
+session_engine = import_module(settings.SESSION_ENGINE)
 
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
@@ -70,9 +72,27 @@ def do_create_user(email, password, realm, full_name, short_name,
     tornado_callbacks.send_notification(notice)
     return user_profile
 
-
 def user_sessions(user):
     return [s for s in Session.objects.all() if s.get_decoded().get('_auth_user_id') == user.id]
+
+def delete_session(session):
+    return session_engine.SessionStore(session.session_key).delete()
+
+def delete_user_sessions(user_profile):
+    for session in Session.objects.all():
+        if session.get_decoded().get('_auth_user_id') == user_profile.user.id:
+            delete_session(session)
+
+def delete_realm_sessions(realm):
+    realm_user_ids = [u.user.id for u in
+                      UserProfile.objects.filter(realm=realm)]
+    for session in Session.objects.all():
+        if session.get_decoded().get('_auth_user_id') in realm_user_ids:
+            delete_session(session)
+
+def delete_all_user_sessions():
+    for session in Session.objects.all():
+        delete_session(session)
 
 def do_deactivate(user_profile):
     user_profile.is_active = False;
@@ -83,8 +103,7 @@ def do_deactivate(user_profile):
     user_profile.user.is_active = False
     user_profile.user.save(update_fields=["is_active", "password"])
 
-    for session in user_sessions(user_profile.user):
-        session.delete()
+    delete_user_sessions(user_profile)
 
     log_event({'type': 'user_deactivated',
                'timestamp': time.time(),

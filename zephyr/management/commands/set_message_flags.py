@@ -4,7 +4,7 @@ import sys
 
 from django.core.management.base import BaseCommand
 
-from zephyr.lib.actions import do_deactivate, user_sessions
+from zephyr.lib.actions import do_deactivate
 from zephyr.lib import utils
 from zephyr.models import UserMessage, get_user_profile_by_email
 from django.db import transaction, models
