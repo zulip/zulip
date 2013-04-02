@@ -161,6 +161,23 @@ class AuthedTestCase(TestCase):
     def fixture_jsondata(self, type, action):
         return open(os.path.join(os.path.dirname(__file__),
                                  "fixtures/%s/%s_%s.json" % (type, type, action,))).read()
+
+    def send_json_payload(self, email, url, payload, stream_name=None, **post_params):
+        if stream_name != None:
+            stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), stream_name)
+            user_profile = self.get_user_profile(email)
+            do_add_subscription(user_profile, stream, no_log=True)
+
+        result = self.client.post(url, payload, **post_params)
+        self.assert_json_success(result)
+
+        # Check the correct message was sent
+        msg = Message.objects.filter().order_by('-id')[0]
+        self.assertEqual(msg.sender.email, email)
+        self.assertEqual(get_display_recipient(msg.recipient), stream_name)
+
+        return msg
+
 class PublicURLTest(TestCase):
     """
     Account creation URLs are accessible even when not logged in. Authenticated
@@ -2403,21 +2420,10 @@ class JiraHookTests(AuthedTestCase):
     def send_jira_message(self, action):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
-
-        stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), 'jira')
-        user_profile = self.get_user_profile(email)
-        do_add_subscription(user_profile, stream, no_log=True)
-
-        result = self.client.post("/api/v1/external/jira/%s/" % api_key, self.fixture_jsondata('jira', action),
-                                  content_type="application/json")
-        self.assert_json_success(result)
-
-        # Check the correct message was sent
-        msg = Message.objects.filter().order_by('-id')[0]
-        self.assertEqual(msg.sender.email, email)
-        self.assertEqual(get_display_recipient(msg.recipient), 'jira')
-
-        return msg
+        return self.send_json_payload(email, "/api/v1/external/jira/%s/" % api_key,
+                                      self.fixture_jsondata('jira', action),
+                                      stream_name="jira",
+                                      content_type="application/json")
 
     def test_created(self):
         msg = self.send_jira_message('created')
@@ -2479,21 +2485,11 @@ class BeanstalkHookTests(AuthedTestCase):
     def send_beanstalk_message(self, action):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
-        stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), 'commits')
-        user_profile = self.get_user_profile(email)
-        do_add_subscription(user_profile, stream, no_log=True)
-
-        result = self.client.post("/api/v1/external/beanstalk", self.fixture_jsondata('beanstalk', action),
-                                  content_type="application/json",
-                                  HTTP_AUTHORIZATION=self.http_auth(email, api_key))
-        self.assert_json_success(result)
-
-        # Check the correct message was sent
-        msg = Message.objects.filter().order_by('-id')[0]
-        self.assertEqual(msg.sender.user.email, email)
-        self.assertEqual(get_display_recipient(msg.recipient), 'commits')
-
-        return msg
+        return self.send_json_payload(email, "/api/v1/external/beanstalk",
+                                      self.fixture_jsondata('beanstalk', action),
+                                      stream_name="commits",
+                                      content_type="application/json",
+                                      HTTP_AUTHORIZATION=self.http_auth(email, api_key))
 
     def test_git_single(self):
         msg = self.send_beanstalk_message('git_singlecommit')
@@ -2526,6 +2522,30 @@ class BeanstalkHookTests(AuthedTestCase):
         self.assertEqual(msg.content, """Leo Franchi pushed [revision 2](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/2):
 
 > Added some code""")
+
+class GithubHookTests(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def send_github_message(self, action):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        data = {'email': email,
+                'api-key': api_key,
+                'event': 'push',
+                'payload': self.fixture_jsondata('github', action)}
+        return self.send_json_payload(email, "/api/v1/external/github",
+                                      data,
+                                      stream_name="commits")
+
+    def test_sample_hook(self):
+        msg = self.send_github_message('sample')
+        self.assertEqual(msg.subject, "grit")
+        self.assertEqual(msg.content, """rtomayko [pushed](http://github.com/mojombo/grit/compare/4c8124f...a47fd41) to branch master
+
+* [06f63b4](http://github.com/mojombo/grit/commit/06f63b43050935962f84fe54473a7c5de7977325): stub git call for Grit#heads test f:15 Case#1
+* [5057e76](http://github.com/mojombo/grit/commit/5057e76a11abd02e83b7d3d3171c4b68d9c88480): clean up heads test f:2hrs
+* [a47fd41](http://github.com/mojombo/grit/commit/a47fd41f3aa4610ea527dcc1669dfdb9c15c5425): add more comments throughout
+""")
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (
