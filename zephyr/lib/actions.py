@@ -580,6 +580,15 @@ def process_user_activity_event(event):
     query = event["query"]
     return do_update_user_activity(user_profile, client, query, log_time)
 
+def send_presence_changed(user_profile, presence):
+    notice = dict(event=dict(type="presence", email=user_profile.email,
+                             presence=presence.to_dict()),
+                  users=[up.id for up in
+                         UserProfile.objects.select_related()
+                                            .filter(realm=user_profile.realm,
+                                                    is_active=True)])
+    tornado_callbacks.send_notification(notice)
+
 @transaction.commit_on_success
 def do_update_user_presence(user_profile, client, log_time, status):
     try:
@@ -591,9 +600,20 @@ def do_update_user_presence(user_profile, client, log_time, status):
         transaction.commit()
         presence = UserPresence.objects.get(user_profile = user_profile,
                                             client = client)
+        created = False
+
+    became_online = (status == UserPresence.ACTIVE and
+                     presence.status == UserPresence.IDLE)
+
     presence.timestamp = log_time
     presence.status = status
     presence.save(update_fields=["timestamp", "status"])
+
+    if created or became_online:
+        # Push event to all users in the realm so they see the new user
+        # appear in the presence list immediately, or the newly online
+        # user without delay
+        send_presence_changed(user_profile, presence)
 
 def update_user_presence(user_profile, client, log_time, status):
     event={'type': 'user_presence',
@@ -775,6 +795,12 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
                                                                           is_active=True)]
     if event_types is None or "subscription" in event_types:
         ret['subscriptions'] = gather_subscriptions(user_profile)
+    if event_types is None or "presence" in event_types:
+        presences = dict((presence.user_profile.email, presence.to_dict())
+                            for presence in UserPresence.objects.select_related()
+                                                                 .filter(user_profile__realm=user_profile.realm,
+                                                                         user_profile__is_active=True))
+        ret['presences'] = presences
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
@@ -797,6 +823,8 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
                 sub = event['subscription']
                 ret['subscriptions'] = filter(lambda s: s['name'] != sub['name'],
                                               ret['subscriptions'])
+        elif event['type'] == "presence":
+                ret['presences'][event['email']] = event['presence']
 
     if events:
         ret['last_event_id'] = events[-1]['id']

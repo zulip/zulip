@@ -59,6 +59,11 @@ $(function () {
     // feedback and should always show up as an autocomplete option.
     typeahead_helper.update_your_recipients([{"email": "feedback@humbughq.com",
                     "full_name": "Humbug Feedback Bot"}]);
+
+    $.each(page_params.initial_presences, function (email, presence) {
+        activity.set_user_status(email, presence.status);
+    });
+
 });
 
 function within_viewport(message_row) {
@@ -687,6 +692,9 @@ function get_updates(options) {
                         $(document).trigger($.Event('subscription_remove.zephyr',
                                                     {subscription: event.subscription}));
                     }
+                    break;
+                case 'presence':
+                    activity.set_user_status(event.email, event.presence.status);
                     break;
                 }
             });

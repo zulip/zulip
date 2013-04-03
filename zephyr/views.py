@@ -442,6 +442,7 @@ def home(request):
         stream_list           = register_ret['subscriptions'],
         people_list           = register_ret['realm_users'],
         initial_pointer       = register_ret['pointer'],
+        initial_presences     = register_ret['presences'],
         fullname              = user_profile.full_name,
         email                 = user_profile.email,
         domain                = user_profile.realm.domain,
@@ -1460,18 +1461,6 @@ def api_beanstalk_webhook(request, user_profile, payload=POST(converter=json_to_
 
 @cache_with_key(lambda user_profile: user_profile.realm_id, timeout=60)
 def get_status_list(requesting_user_profile):
-    def presence_to_dict(presence):
-        if presence.status == UserPresence.ACTIVE:
-            presence_val = 'active'
-        elif presence.status == UserPresence.IDLE:
-            presence_val = 'idle'
-        else:
-            raise JsonableError("Invalid presence value in db: %s" % (presence,))
-
-        return {'status'   : presence_val,
-                'timestamp': datetime_to_timestamp(presence.timestamp)}
-
-
     user_statuses = defaultdict(dict)
 
     # Return no status info for MIT
@@ -1482,8 +1471,7 @@ def get_status_list(requesting_user_profile):
         user_profile__realm=requesting_user_profile.realm).select_related(
         'user_profile', 'client'):
 
-        user_statuses[presence.user_profile.email][presence.client.name] = \
-            presence_to_dict(presence)
+        user_statuses[presence.user_profile.email][presence.client.name] = presence.to_dict()
 
     return {'presences': user_statuses}
 
@@ -1491,14 +1479,12 @@ def get_status_list(requesting_user_profile):
 @has_request_variables
 def json_update_active_status(request, user_profile,
                               status=POST):
-    if status == 'active':
-        status_val = UserPresence.ACTIVE
-    elif status == 'idle':
-        status_val = UserPresence.IDLE
-    else:
-        raise JsonableError("Invalid presence status: %s" % (status,))
 
-    update_user_presence(user_profile, request.client, now(), status_val)
+    status_val = UserPresence.status_from_string(status)
+    if status_val is None:
+        raise JsonableError("Invalid presence status: %s" % (status,))
+    else:
+        update_user_presence(user_profile, request.client, now(), status_val)
 
     ret = get_status_list(user_profile)
     if user_profile.realm.domain == "mit.edu":

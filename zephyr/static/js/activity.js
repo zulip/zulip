@@ -21,6 +21,8 @@ var IDLE = "idle";
 var has_focus = true;
 var ping_timer;
 
+var user_info = {};
+
 function sort_users(users, user_info) {
     // TODO sort by unread count first, once we support that
     users.sort(function (a, b) {
@@ -65,6 +67,11 @@ function focus_lost() {
 
 }
 
+function update_users() {
+    var users = sort_users(Object.keys(user_info), user_info);
+    ui.set_presence_list(users, user_info);
+}
+
 function focus_ping() {
     if (!has_focus) {
         return;
@@ -72,8 +79,7 @@ function focus_ping() {
 
     $.post('/json/update_active_status', {status: ACTIVE}, function (data) {
         var now = new Date().getTime() / 1000;
-        var user_info = {};
-        var users = [];
+        user_info = {};
 
         // Update Zephyr mirror activity warning
         if (data.zephyr_mirror_active === false) {
@@ -103,8 +109,7 @@ function focus_ping() {
                 user_info[this_email] = status;
             }
         });
-        users = sort_users(Object.keys(user_info), user_info);
-        ui.set_presence_list(users, user_info);
+        update_users();
     });
 }
 
@@ -125,8 +130,15 @@ exports.initialize = function () {
                 keepTracking: true});
 
     ping_timer = setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
+};
 
-    focus_ping();
+exports.set_user_status = function (user_email, status) {
+    if (user_email === page_params.email) {
+        return;
+    }
+
+    user_info[user_email] = status;
+    update_users();
 };
 
 return exports;

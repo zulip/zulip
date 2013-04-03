@@ -438,6 +438,26 @@ class UserPresence(models.Model):
     timestamp = models.DateTimeField('presence changed')
     status = models.PositiveSmallIntegerField(default=ACTIVE)
 
+    def to_dict(self):
+        if self.status == UserPresence.ACTIVE:
+            presence_val = 'active'
+        elif self.status == UserPresence.IDLE:
+            presence_val = 'idle'
+
+        return {'status'   : presence_val,
+                'timestamp': datetime_to_timestamp(self.timestamp)}
+
+    @staticmethod
+    def status_from_string(status):
+        if status == 'active':
+            status_val = UserPresence.ACTIVE
+        elif status == 'idle':
+            status_val = UserPresence.IDLE
+        else:
+            status_val = None
+
+        return status_val
+
     class Meta:
         unique_together = ("user_profile", "client")
 
