@@ -533,8 +533,9 @@ class BadNarrowOperator(Exception):
         return 'Invalid narrow operator: ' + self.desc
 
 class NarrowBuilder(object):
-    def __init__(self, user_profile):
+    def __init__(self, user_profile, prefix):
         self.user_profile = user_profile
+        self.prefix = prefix
 
     def __call__(self, query, operator, operand):
         # We have to be careful here because we're letting users call a method
@@ -548,10 +549,14 @@ class NarrowBuilder(object):
             raise BadNarrowOperator('unknown operator ' + operator)
         return query.filter(method(operand))
 
+    # Wrapper for Q() which adds self.prefix to all the keys
+    def pQ(self, **kwargs):
+        return Q(**dict((self.prefix + key, kwargs[key]) for key in kwargs.keys()))
+
     def by_is(self, operand):
         if operand == 'private-message':
-            return (Q(message__recipient__type=Recipient.PERSONAL) |
-                    Q(message__recipient__type=Recipient.HUDDLE))
+            return (self.pQ(recipient__type=Recipient.PERSONAL) |
+                    self.pQ(recipient__type=Recipient.HUDDLE))
         elif operand == 'starred':
             return Q(flags=UserMessage.flags.starred)
         raise BadNarrowOperator("unknown 'is' operand " + operand)
@@ -561,13 +566,13 @@ class NarrowBuilder(object):
         if stream is None:
             raise BadNarrowOperator('unknown stream ' + operand)
         recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
-        return Q(message__recipient=recipient)
+        return self.pQ(recipient=recipient)
 
     def by_subject(self, operand):
-        return Q(message__subject__iexact=operand)
+        return self.pQ(subject__iexact=operand)
 
     def by_sender(self, operand):
-        return Q(message__sender__email__iexact=operand)
+        return self.pQ(sender__email__iexact=operand)
 
     def by_pm_with(self, operand):
         if ',' in operand:
@@ -578,14 +583,14 @@ class NarrowBuilder(object):
                     self.user_profile, self.user_profile)
             except ValidationError:
                 raise BadNarrowOperator('unknown recipient ' + operand)
-            return Q(message__recipient=recipient)
+            return self.pQ(recipient=recipient)
         else:
             # Personal message
             self_recipient = get_recipient(Recipient.PERSONAL, type_id=self.user_profile.id)
             if operand == self.user_profile.email:
                 # Personals with self
-                return Q(message__recipient__type=Recipient.PERSONAL,
-                         message__sender=self.user_profile, message__recipient=self_recipient)
+                return self.pQ(recipient__type=Recipient.PERSONAL,
+                          sender=self.user_profile, recipient=self_recipient)
 
             # Personals with other user; include both directions.
             try:
@@ -594,8 +599,8 @@ class NarrowBuilder(object):
                 raise BadNarrowOperator('unknown user ' + operand)
 
             narrow_recipient = get_recipient(Recipient.PERSONAL, narrow_profile.id)
-            return ((Q(message__sender=narrow_profile) & Q(message__recipient=self_recipient)) |
-                    (Q(message__sender=self.user_profile) & Q(message__recipient=narrow_recipient)))
+            return ((self.pQ(sender=narrow_profile) & self.pQ(recipient=self_recipient)) |
+                    (self.pQ(sender=self.user_profile) & self.pQ(recipient=narrow_recipient)))
 
     def do_search(self, query, operand):
         if "postgres" in settings.DATABASES["default"]["ENGINE"]:
@@ -603,8 +608,8 @@ class NarrowBuilder(object):
             return query.extra(where=[sql], params=[operand])
         else:
             for word in operand.split():
-                query = query.filter(Q(message__content__icontains=word) |
-                                     Q(message__subject__icontains=word))
+                query = query.filter(self.pQ(content__icontains=word) |
+                                     self.pQ(subject__icontains=word))
             return query
 
 
@@ -642,32 +647,37 @@ def get_old_messages_backend(request, user_profile,
                              stream = REQ(default=None),
                              apply_markdown=True):
     if stream is not None:
+        prefix = "message__"
         stream = get_public_stream(request, stream, user_profile.realm)
         recipient = get_recipient(Recipient.STREAM, stream.id)
         query = UserMessage.objects.select_related('message').filter(message__recipient=recipient,
                                                                      user_profile=user_profile) \
                                                     .order_by('id')
     else:
+        prefix = "message__"
         query = UserMessage.objects.select_related().filter(user_profile=user_profile) \
                                                     .order_by('id')
 
     if narrow is not None:
-        build = NarrowBuilder(user_profile)
+        build = NarrowBuilder(user_profile, prefix)
         for operator, operand in narrow:
             query = build(query, operator, operand)
+
+    def add_prefix(**kwargs):
+        return dict((prefix + key, kwargs[key]) for key in kwargs.keys())
 
     # We add 1 to the number of messages requested to ensure that the
     # resulting list always contains the anchor message
     if num_before != 0 and num_after == 0:
         num_before += 1
-        messages = last_n(num_before, query.filter(message__id__lte=anchor))
+        messages = last_n(num_before, query.filter(**add_prefix(id__lte=anchor)))
     elif num_before == 0 and num_after != 0:
         num_after += 1
-        messages = query.filter(message__id__gte=anchor)[:num_after]
+        messages = query.filter(**add_prefix(id__gte=anchor))[:num_after]
     else:
         num_after += 1
-        messages = (last_n(num_before, query.filter(message__id__lt=anchor))
-                    + list(query.filter(message__id__gte=anchor)[:num_after]))
+        messages = (last_n(num_before, query.filter(**add_prefix(id__lt=anchor)))
+                    + list(query.filter(**add_prefix(id__gte=anchor))[:num_after]))
 
     message_list = [dict(umessage.message.to_dict(apply_markdown),
                          **umessage.flags_dict())
