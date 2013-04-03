@@ -3,6 +3,7 @@ var hashchange = (function () {
 var exports = {};
 
 var expected_hash = false;
+var changing_hash = false;
 
 // Some browsers zealously URI-decode the contents of
 // window.location.hash.  So we hide our URI-encoding
@@ -19,6 +20,9 @@ function decodeHashComponent(str) {
 }
 
 exports.changehash = function (newhash) {
+    if (changing_hash) {
+        return;
+    }
     expected_hash = newhash;
     // Some browsers reset scrollTop when changing the hash to "",
     // so we save and restore it.
@@ -32,6 +36,9 @@ exports.changehash = function (newhash) {
 };
 
 exports.save_narrow = function (operators) {
+    if (changing_hash) {
+        return;
+    }
     if (operators === undefined) {
         exports.changehash('#');
     } else {
@@ -60,7 +67,7 @@ function parse_narrow(hash) {
 }
 
 // Returns true if this function performed a narrow
-function hashchanged() {
+function do_hashchange() {
     // If window.location.hash changed because our app explicitly
     // changed it, then we don't need to do anything.
     // (This function only neds to jump into action if it changed
@@ -93,6 +100,13 @@ function hashchanged() {
             break;
     }
     return false;
+}
+
+function hashchanged() {
+    changing_hash = true;
+    var ret = do_hashchange();
+    changing_hash = false;
+    return ret;
 }
 
 exports.initialize = function () {
