@@ -628,15 +628,13 @@ def narrow_parameter(json):
             raise ValueError("element is not a string pair")
     return data
 
-def get_public_stream(request, stream, realm):
+def is_public_stream(request, stream, realm):
     if not valid_stream_name(stream):
         raise JsonableError("Invalid stream name")
     stream = get_stream(stream, realm)
     if stream is None:
-        raise JsonableError("Stream does not exist")
-    if not stream.is_public():
-        raise JsonableError("Stream is not public")
-    return stream
+        return False
+    return stream.is_public()
 
 @has_request_variables
 def get_old_messages_backend(request, user_profile,
@@ -646,13 +644,23 @@ def get_old_messages_backend(request, user_profile,
                              narrow = REQ('narrow', converter=narrow_parameter, default=None),
                              stream = REQ(default=None),
                              apply_markdown=True):
-    if stream is not None:
-        prefix = "message__"
-        stream = get_public_stream(request, stream, user_profile.realm)
-        recipient = get_recipient(Recipient.STREAM, stream.id)
-        query = UserMessage.objects.select_related('message').filter(message__recipient=recipient,
-                                                                     user_profile=user_profile) \
-                                                    .order_by('id')
+    include_history = False
+    if narrow is not None:
+        for operator, operand in narrow:
+            if operator == "stream":
+                if is_public_stream(request, operand, user_profile.realm):
+                    include_history = True
+        # Disable historical messages if the user is narrowing to show
+        # only starred messages (or anything else that's a property on
+        # the UserMessage table).  There cannot be historical messages
+        # in these cases anyway.
+        for operator, operand in narrow:
+            if operator == "is" and operand == "starred":
+                include_history = False
+
+    if include_history:
+        prefix = ""
+        query = Message.objects.select_related().order_by('id')
     else:
         prefix = "message__"
         query = UserMessage.objects.select_related().filter(user_profile=user_profile) \
@@ -679,9 +687,22 @@ def get_old_messages_backend(request, user_profile,
         messages = (last_n(num_before, query.filter(**add_prefix(id__lt=anchor)))
                     + list(query.filter(**add_prefix(id__gte=anchor))[:num_after]))
 
-    message_list = [dict(umessage.message.to_dict(apply_markdown),
-                         **umessage.flags_dict())
-                     for umessage in messages]
+    if include_history:
+        user_messages = {}
+        for user_message in UserMessage.objects.filter(user_profile=user_profile,
+                                                       message__in=messages):
+            user_messages[user_message.message_id] = user_message
+        message_list = []
+        for message in messages:
+            flags_dict = {'flags': ["read", "historical"]}
+            if message.id in user_messages:
+                flags_dict = user_messages[message.id].flags_dict()
+            message_list.append(dict(message.to_dict(apply_markdown),
+                                     **flags_dict))
+    else:
+        message_list = [dict(umessage.message.to_dict(apply_markdown),
+                             **umessage.flags_dict())
+                        for umessage in messages]
     ret = {'messages': message_list,
            "result": "success",
            "msg": ""}
