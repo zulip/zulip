@@ -10,7 +10,7 @@
         <br />
       </div>
       <div id="get_api_key_box">
-        <form action="/json/fetch_api_key" method="post" class="settings">{% csrf_token %}
+        <form action="/json/fetch_api_key" method="post">{% csrf_token %}
           <label for="password">Enter your password to get your API key</label>
           <input type="password" autocomplete="off" name="password" id="get_api_key_password" value="" /><br />
           <input type="submit" name="view_api_key" value="Get API Key" class="btn" />
@@ -31,7 +31,7 @@
       <br /><br />
       <div id="settings-change-box">
       <form action="/json/settings/change" method="post"
-            class="settings form-horizontal">{% csrf_token %}
+            class="form-horizontal">{% csrf_token %}
         <div class="control-group">
             <label for="full_name" class="control-label">Full name</label>
             <div class="controls">
