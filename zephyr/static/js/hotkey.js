@@ -101,9 +101,10 @@ function process_hotkey(e) {
 
     if (directional_hotkeys_id.hasOwnProperty(code)) {
         dirkey = directional_hotkeys_id[code];
-        last_viewport_movement_direction = dirkey.direction;
         var next_id = dirkey.getid();
-        current_msg_list.select_id(next_id, {then_scroll: true});
+        last_viewport_movement_direction = dirkey.direction;
+        current_msg_list.select_id(next_id, {then_scroll: true,
+                                             from_scroll: true});
         return true;
     }
 
@@ -112,7 +113,9 @@ function process_hotkey(e) {
         last_viewport_movement_direction = dirkey.direction;
         next_row = dirkey.getrow(current_msg_list.selected_row());
         if (next_row.length !== 0) {
-            current_msg_list.select_id(rows.id(next_row), {then_scroll: true});
+            current_msg_list.select_id(rows.id(next_row),
+                                       {then_scroll: true,
+                                        from_scroll: true});
         }
         if ((next_row.length === 0) && (code === 40 || code === 106)) {
             // At the last message, scroll to the bottom so we have

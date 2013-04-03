@@ -95,7 +95,7 @@ function below_view_threshold(message) {
     return message.offset().top > viewport.scrollTop() + viewport.height() * 2 / 3;
 }
 
-function recenter_view(message) {
+function recenter_view(message, from_scroll) {
     // Barnowl-style recentering: if the pointer is too high, center
     // in the middle of the screen. If the pointer is too low, center
     // on the 1/5-mark.
@@ -105,10 +105,11 @@ function recenter_view(message) {
     var selected_row = current_msg_list.selected_row();
     var selected_row_top = selected_row.offset().top;
 
-    if ((above_view_threshold(message, true) &&
-         (last_viewport_movement_direction >= 0)) ||
-        (below_view_threshold(message) &&
-         (last_viewport_movement_direction <= 0))) {
+    if (from_scroll !== undefined && from_scroll &&
+        ((above_view_threshold(message, true) &&
+          (last_viewport_movement_direction >= 0)) ||
+         (below_view_threshold(message) &&
+          (last_viewport_movement_direction <= 0)))) {
         // If the message you're trying to center on is already in view AND
         // you're already trying to move in the direction of that message,
         // don't try to recenter. This avoids disorienting jumps when the
@@ -985,7 +986,7 @@ function keep_pointer_in_view() {
     if (! adjust(above_view_threshold, at_top_of_viewport, rows.next_visible))
         adjust(below_view_threshold, at_bottom_of_viewport, rows.prev_visible);
 
-    current_msg_list.select_id(rows.id(next_row));
+    current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
 }
 
 // The idea here is when you've scrolled to the very

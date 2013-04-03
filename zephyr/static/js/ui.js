@@ -969,7 +969,7 @@ $(function () {
         row.addClass('selected_message');
 
         if (event.then_scroll) {
-            recenter_view(row);
+            recenter_view(row, event.from_scroll);
         }
     });
 
