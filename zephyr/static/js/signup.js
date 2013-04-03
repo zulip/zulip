@@ -18,7 +18,7 @@ $(function () {
         }
     });
 
-    $("#email_signup").validate({
+    $("#send_confirm").validate({
         errorElement: "p",
         errorClass: "validation-failed",
         errorPlacement: function (error, element) {

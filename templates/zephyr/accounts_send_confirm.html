@@ -8,7 +8,7 @@
 
             <p>Still no email? We can <a href="#" id="resend_email_link">resend it</a>.<br/>
             <small>(Just in case, take a look at your Spam folder.)</small></p>
-            <form id="email_signup" action="/accounts/home/" method="post">
+            <form id="resend_confirm" action="/accounts/home/" method="post">
                 {% csrf_token %}
                 <input type="hidden" class="email" id="email" value="{{ email }}" name="email"/>&nbsp;
             </form>
@@ -18,7 +18,9 @@
 {{ block.super }}
 <script type="text/javascript">
 $(function() {
-    $("#resend_email_link").click(function () { $('#email_signup').submit(); });
+    $("#resend_email_link").click(function () {
+        $('#resend_confirm').submit();
+    });
 });
 </script>
 {% endblock %}
