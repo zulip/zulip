@@ -1,21 +1,22 @@
 $(function () {
+    function highlight(class_to_add) {
+        // Set a class on the enclosing control group.
+        return function (element) {
+            $(element).closest('.control-group')
+                .removeClass('success error')
+                .addClass(class_to_add);
+        };
+    }
+
     $('#registration').validate({
         errorElement: "p",
         errorPlacement: function (error, element) {
-            error.appendTo(element.parent()).addClass('help-inline');
-            /* element is the invalid element. We want to access the control
-             * group, which is that element's parent's parent.
-             *
-             * Adding an error class colours the entire row red.
-             */
-            element.parent().parent().removeClass('success').addClass('error');
+            // NB: this is called at most once, when the error element
+            // is created.
+            error.insertAfter(element).addClass('help-inline');
         },
-        success: function (label) {
-            /* Similarly, see above comment.
-             * Adding a success class colours the entire row green.
-             */
-            label.parent().parent().removeClass('error').addClass('success');
-        }
+        highlight:   highlight('error'),
+        unhighlight: highlight('success')
     });
 
     $("#send_confirm").validate({
