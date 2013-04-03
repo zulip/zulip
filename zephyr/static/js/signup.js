@@ -20,7 +20,6 @@ $(function () {
 
     $("#send_confirm").validate({
         errorElement: "p",
-        errorClass: "validation-failed",
         errorPlacement: function (error, element) {
             /* element is the invalid element. We want to access the control
              * group, which is that element's parent's parent.
