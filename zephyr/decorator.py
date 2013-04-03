@@ -114,12 +114,12 @@ def authenticated_rest_api_view(view_func):
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
-def process_patch_as_post(view_func):
+def process_as_post(view_func):
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         # Adapted from django/http/__init__.py.
         # So by default Django doesn't populate request.POST for anything besides
-        # POST requests. We want this dict populated for PATCH, so we have to
+        # POST requests. We want this dict populated for PATCH/PUT, so we have to
         # do it ourselves.
         #
         # This will not be required in the future, a bug will be filed against

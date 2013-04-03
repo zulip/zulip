@@ -35,7 +35,7 @@ from zephyr.decorator import require_post, \
     has_request_variables, POST, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
-    authenticated_rest_api_view, process_patch_as_post, REQ
+    authenticated_rest_api_view, process_as_post, REQ
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
@@ -863,7 +863,7 @@ def json_list_subscriptions(request, user_profile):
 def list_subscriptions_backend(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)})
 
-@process_patch_as_post
+@process_as_post
 @transaction.commit_on_success
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,
