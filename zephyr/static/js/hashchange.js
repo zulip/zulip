@@ -53,14 +53,8 @@ function parse_narrow(hash) {
         var operand  = decodeHashComponent(hash[i+1] || '');
         operators.push([operator, operand]);
     }
-    var new_selection;
-    if (current_msg_list.selected_id() !== -1) {
-        new_selection = current_msg_list.selected_id();
-    } else {
-        new_selection = page_params.initial_pointer;
-    }
     narrow.activate(operators, {
-        then_select_id: new_selection,
+        select_first_unread: true,
         change_hash:    false  // already set
     });
 }
