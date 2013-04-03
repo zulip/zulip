@@ -854,7 +854,8 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertEqual(msg.sender_id,
                 self.get_user_profile("humbug+notifications@humbughq.com").id)
         expected_msg = ("Hi there!  We thought you'd like to know that %s just "
-                        "subscribed you to the stream '%s'"
+                        "subscribed you to the stream '%s'\nYou can see historical "
+                        "content on a non-invite-only stream by narrowing to it."
                         % (self.user_profile.full_name, streams[0]))
         self.assertEqual(msg.content, expected_msg)
         recipients = get_display_recipient(msg.recipient)

@@ -1029,6 +1029,7 @@ def add_subscriptions_backend(request, user_profile,
                     msg += "* %s%s\n" % (
                         stream,
                         " (**invite-only**)" if private_streams[stream] else "")
+            msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
             internal_send_message("humbug+notifications@humbughq.com",
                                   "private", email, "", msg)
 
