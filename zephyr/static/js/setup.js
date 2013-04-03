@@ -31,4 +31,7 @@ $(function () {
             window.location.replace('/accounts/login');
         }
     });
+
+    // zxcvbn.js is pretty big, and is only needed on password change, so load it asynchronously.
+    $.getScript('/static/third/zxcvbn/zxcvbn.js');
 });

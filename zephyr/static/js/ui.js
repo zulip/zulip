@@ -756,9 +756,41 @@ $(function () {
     // have it (and instead to scroll to a weird place.)
     $('#gear-menu a[href="#subscriptions"]').on('shown', subs.setup_page);
 
+    $('#new_password').on('change keyup', function () {
+        var pw_quality = password_quality($('#new_password').val());
+        if (pw_quality !== undefined)
+            $('#pw_strength').width(pw_quality[0]);
+    });
+
     var settings_status = $('#settings-status');
+
+    function settings_change_error(message) {
+        settings_status.removeClass(status_classes)
+            .addClass('alert-error')
+            .text(message).stop(true).fadeTo(0,1);
+    }
+
     $("#settings-change-box form").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
+        beforeSubmit: function (arr, form, options) {
+            // FIXME: Check that the two password fields match
+            // FIXME: Use the same jQuery validation plugin as the signup form?
+            var new_pw = $('#new_password').val();
+            if (new_pw !== '') {
+                var pw_quality = password_quality(new_pw);
+                if (pw_quality === undefined) {
+                    // zxcvbn.js didn't load, for whatever reason.
+                    settings_change_error(
+                        'An internal error occurred; try reloading the page. ' +
+                        'Sorry for the trouble!');
+                    return false;
+                } else if (!pw_quality[1]) {
+                    settings_change_error('New password is too weak');
+                    return false;
+                }
+            }
+            return true;
+        },
         success: function (resp, statusText, xhr, form) {
             var message = "Updated settings!";
             var result = $.parseJSON(xhr.responseText);
@@ -786,9 +818,7 @@ $(function () {
                 // a nice response.
                 response += ": " + $.parseJSON(xhr.responseText).msg;
             }
-            settings_status.removeClass(status_classes)
-                .addClass('alert-error')
-                .text(response).stop(true).fadeTo(0,1);
+            settings_change_error(response);
         },
         complete: function (xhr, statusText) {
             // Whether successful or not, clear the password boxes.

@@ -16,6 +16,10 @@ function autofocus(selector) {
 // This is in common.js because we want to use it from the signup page
 // and also from the in-app password change interface.
 function password_quality(password) {
+    // We load zxcvbn.js asynchronously, so the variable might not be set.
+    if (typeof zxcvbn === 'undefined')
+        return undefined;
+
     var result  = zxcvbn(password);
     var quality = Math.min(1, Math.log(1 + result.crack_time) / 22);
 

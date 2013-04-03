@@ -1076,3 +1076,9 @@ table.floating_recipient {
     margin-top:    2em;
     margin-bottom: 2em;
 }
+
+/* FIXME: Combine this rule with the one in portico.css somehow? */
+#pw_strength_outer {
+    /* Same width as a Bootstrap default text <input> with padding */
+    width: 220px;
+}
