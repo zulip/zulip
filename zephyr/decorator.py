@@ -124,11 +124,14 @@ def process_as_post(view_func):
         #
         # This will not be required in the future, a bug will be filed against
         # Django upstream.
-        if request.META.get('CONTENT_TYPE', '').startswith('multipart'):
-            request.POST = MultiPartParser(request.META, StringIO(request.body),
-                    [], request.encoding).parse()[0]
-        else:
-            request.POST = QueryDict(request.body, encoding=request.encoding)
+
+        if not request.POST:
+            # Only take action if POST is empty.
+            if request.META.get('CONTENT_TYPE', '').startswith('multipart'):
+                request.POST = MultiPartParser(request.META, StringIO(request.body),
+                        [], request.encoding).parse()[0]
+            else:
+                request.POST = QueryDict(request.body, encoding=request.encoding)
 
         return view_func(request, *args, **kwargs)
 
