@@ -30,50 +30,56 @@
       </div>
       <br /><br />
       <div id="settings-change-box">
-    <form action="/json/settings/change" method="post"
-    class="settings">{% csrf_token %}
-      <table>
-      <tr>
-        <td><label for="full_name">Full name: </label></td>
-        <td>
-          <input type="text" name="full_name" id="full_name"
-                 value="{{ user_profile.full_name }}" />
-        </td>
-      </tr>
-      <tr>
-        <td><label for="old_password">Old password: </label></td>
-        <td>
-          <input type="password" autocomplete="off"
-                 name="old_password" id="old_password" value="" />
-        </td>
-      </tr>
-      <tr>
-        <td><label for="new_password">New password: </label></td>
-        <td>
-          <input type="password" autocomplete="off"
-                 name="new_password" id="new_password" value="" />
-        </td>
-      </tr>
-      <tr>
-        <td><label for="confirm_password">Confirm password: </label></td>
-        <td><input type="password" autocomplete="off"
-                   name="confirm_password" id="confirm_password"
-                   value="" />
-        </td>
-      </tr>
-      </table>
-      <table>
-      <tr>
-        <td><label for="enable_desktop_notifications">Enable desktop notifications (Chrome only): &nbsp;</label></td>
-        <td><input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
+      <form action="/json/settings/change" method="post"
+            class="settings form-horizontal">{% csrf_token %}
+        <div class="control-group">
+            <label for="full_name" class="control-label">Full name</label>
+            <div class="controls">
+                <input type="text" name="full_name" id="full_name"
+                       value="{{ user_profile.full_name }}" />
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="old_password" class="control-label">Old password</label>
+            <div class="controls">
+                <input type="password" autocomplete="off"
+                       name="old_password" id="old_password" value="" />
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="new_password" class="control-label">New password</label>
+            <div class="controls">
+                <input type="password" autocomplete="off"
+                       name="new_password" id="new_password" value="" />
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="confirm_password" class="control-label">Confirm password</label>
+            <div class="controls">
+                <input type="password" autocomplete="off"
+                       name="confirm_password" id="confirm_password" value="" />
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="enable_desktop_notifications" class="control-label">
+                Desktop notifications (Chrome only)</label>
+            <div class="controls">
+                <input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
                    {% if user_profile.enable_desktop_notifications %}
                    checked="yes"
-                   {% endif %}
-             />
-         </td>
-      </tr>
-      </table>
-      <input type="submit" name="change_settings" value="Save changes" class="btn" />
+                   {% endif %} />
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
+            </div>
+        </div>
     </form>
     </div>
 
