@@ -75,6 +75,11 @@ var exceptions = {
 
     "Don't make functions within a loop." : function () {
         return true;
+    },
+
+    // We use typeof to test if a variable exists at all.
+    "Unexpected 'typeof'. Use '===' to compare directly with {a}.": function (error) {
+        return error.a === 'undefined';
     }
 };
 
