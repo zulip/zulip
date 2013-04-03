@@ -7,6 +7,11 @@ their email address.
 Form is validated both client-side using jquery-validate (see signup.js) and server-side.
 {% endcomment %}
 
+{% block customhead %}
+{{ block.super }}
+<script type="text/javascript" src="/static/third/zxcvbn/zxcvbn.js"></script>
+{% endblock %}
+
 {% block for_you %}for {% if company_name %} {{company_name}} {% else %} __________ {% endif %} {% endblock %}
 {% block portico_content %}
 
@@ -51,6 +56,14 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     <div class="alert alert-error">{{ error }}</div>
                 {% endfor %}
             {% endif %}
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">Password strength</label>
+        <div class="controls">
+            <div class="progress" id="pw_strength_outer">
+                <div class="bar"  id="pw_strength" style="width: 10%;"></div>
+            </div>
         </div>
     </div>
 

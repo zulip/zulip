@@ -108,3 +108,8 @@ img.screenshot{
 .integration p {
     margin-top: 2em;
 }
+
+#pw_strength_outer {
+    /* Same width as a Bootstrap default text <input> with padding */
+    width: 220px;
+}

@@ -3,13 +3,13 @@
 // Global variables, categorized by place of definition.
 var globals =
     // Third-party libraries
-      ' $ jQuery Spinner Handlebars XDate'
+      ' $ jQuery Spinner Handlebars XDate zxcvbn'
 
     // index.html
     + ' page_params'
 
     // common.js
-    + ' status_classes'
+    + ' status_classes password_quality'
 
     // setup.js
     + ' csrf_token'
