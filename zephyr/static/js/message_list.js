@@ -271,7 +271,8 @@ MessageList.prototype = {
         $.each(messages, function (index, message) {
             message.include_recipient = false;
             message.include_bookend   = false;
-            if (util.same_recipient(prev, message) && self.collapse_messages) {
+            if (util.same_recipient(prev, message) && self.collapse_messages &&
+               prev.historical === message.historical) {
                 current_group.push(message.id);
             } else {
                 if (current_group.length > 0)
@@ -281,6 +282,15 @@ MessageList.prototype = {
                 // Add a space to the table, but not for the first element.
                 message.include_recipient = true;
                 message.include_bookend   = (prev !== undefined);
+                message.subscribed = false;
+                message.unsubscribed = false;
+                if (message.include_bookend && message.historical !== prev.historical) {
+                    if (message.historical) {
+                        message.unsubscribed = message.display_recipient;
+                    } else {
+                        message.subscribed = message.display_recipient;
+                    }
+                }
             }
 
             message.include_sender = true;

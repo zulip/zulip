@@ -505,6 +505,8 @@ function add_message_metadata(message, dummy) {
     var involved_people;
 
     message.flags = message.flags || [];
+    message.historical = (message.flags !== undefined &&
+                          message.flags.indexOf('historical') !== -1);
     message.starred = message.flags.indexOf("starred") !== -1;
 
     switch (message.type) {
