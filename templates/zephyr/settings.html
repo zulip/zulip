@@ -2,33 +2,53 @@
 
 <div class="row-fluid">
   <div id="current_settings" class="span7">
-    <h1>Settings</h1>
-      <div id="API">
-      <label>API Key</label>
+      <h1>Settings</h1>
+
+      <hr class="settings_separator invisible">
+
       <div id="api_key_button_box">
-        <a href="#api-settings" id="api_key_button">(show)</a>
-        <br />
+          <a href="#api-settings" id="api_key_button">Show API key</a>
       </div>
       <div id="get_api_key_box">
-        <form action="/json/fetch_api_key" method="post">{% csrf_token %}
-          <label for="password">Enter your password to get your API key</label>
-          <input type="password" autocomplete="off" name="password" id="get_api_key_password" value="" /><br />
-          <input type="submit" name="view_api_key" value="Get API Key" class="btn" />
-        </form>
+          <p>Please re-enter your password to confirm your identity.</p>
+          <form action="/json/fetch_api_key" method="post" class="form-horizontal">{% csrf_token %}
+              <div class="control-group">
+                  <label for="password" class="control-label">Current password</label>
+                  <div class="controls">
+                      <input type="password" autocomplete="off"
+                             name="password" id="get_api_key_password" value="" />
+                  </div>
+              </div>
+              <div class="control-group">
+                  <div class="controls">
+                      <input type="submit" name="view_api_key" value="Get API key"
+                             class="btn btn-primary" />
+                  </div>
+              </div>
+          </form>
       </div>
       <div id="show_api_key_box">
-        <b><span id="api_key_value"></span></b>
+          <p>API key:</p>
+          <p><b><span id="api_key_value"></span></b></p>
       </div>
-      <br />
+
+      <hr class="settings_separator">
+
+      <div class="form-horizontal">
+          <div class="control-group">
+              <label class="control-label">Your avatar</label>
+              <div class="controls">
+                  <a href="https://en.gravatar.com/emails" target="_blank" class="change_gravatar_button">
+                      <p><img class="img-rounded gravatar-profile"
+                           src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=80" /></p>
+                      <p>Change at Gravatar.com</p>
+                  </a>
+              </div>
+          </div>
       </div>
-      <div id="Photo">
-        <label>Photo</label>
-        <img class="img-rounded gravatar-profile" src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=80"/>
-        <a href="https://en.gravatar.com/emails" target="_blank" class="change_gravatar_button">
-          (change at Gravatar.com)</a>
-        <br />
-      </div>
-      <br /><br />
+
+      <hr class="settings_separator">
+
       <div id="settings-change-box">
       <form action="/json/settings/change" method="post"
             class="form-horizontal">{% csrf_token %}
