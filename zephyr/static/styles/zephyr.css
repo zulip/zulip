@@ -1071,3 +1071,8 @@ table.floating_recipient {
 .empty_feed_notice p {
     text-align: center;
 }
+
+.settings_separator {
+    margin-top:    2em;
+    margin-bottom: 2em;
+}
