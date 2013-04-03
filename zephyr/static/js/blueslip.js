@@ -84,40 +84,40 @@ function BlueslipError() {
 
 BlueslipError.prototype = Error.prototype;
 
+exports.wrap_function = function blueslip_wrap_function(func) {
+    if (func.blueslip_wrapper !== undefined) {
+        func.blueslip_wrapper_refcnt++;
+        return func.blueslip_wrapper;
+    }
+    var new_func = function blueslip_wrapper() {
+        if (page_params.debug_mode) {
+            return func.apply(this, arguments);
+        } else {
+            try {
+                return func.apply(this, arguments);
+            } catch (ex) {
+                // Treat exceptions like a call to fatal()
+                var message = ex.message;
+                if (ex.hasOwnProperty('fileName')) {
+                    message += " at " + ex.fileName;
+                    if (ex.hasOwnProperty('lineNumber')) {
+                        message += ":" + ex.lineNumber;
+                    }
+                }
+                report_error(message, ex.stack, {show_ui_msg: true});
+                throw ex;
+            }
+        }
+    };
+    func.blueslip_wrapper = new_func;
+    func.blueslip_wrapper_refcnt = 1;
+    return new_func;
+};
+
 // Catch all exceptions from jQuery event handlers, $(document).ready
 // functions, and ajax success/failure continuations and funnel them
 // through blueslip.
 (function() {
-    function wrap_callback(func) {
-        if (func.blueslip_wrapper !== undefined) {
-            func.blueslip_wrapper_refcnt++;
-            return func.blueslip_wrapper;
-        }
-        var new_func = function blueslip_wrapper() {
-            if (page_params.debug_mode) {
-                return func.apply(this, arguments);
-            } else {
-                try {
-                    return func.apply(this, arguments);
-                } catch (ex) {
-                    // Treat exceptions like a call to fatal()
-                    var message = ex.message;
-                    if (ex.hasOwnProperty('fileName')) {
-                        message += " at " + ex.fileName;
-                        if (ex.hasOwnProperty('lineNumber')) {
-                            message += ":" + ex.lineNumber;
-                        }
-                    }
-                    report_error(message, ex.stack, {show_ui_msg: true});
-                    throw ex;
-                }
-            }
-        };
-        func.blueslip_wrapper = new_func;
-        func.blueslip_wrapper_refcnt = 1;
-        return new_func;
-    }
-
     // This reference counting scheme can't break all the circular
     // references we create because users can remove jQuery event
     // handlers without referencing the particular handler they want
@@ -135,7 +135,7 @@ BlueslipError.prototype = Error.prototype;
     $.ajaxPrefilter(function (options) {
         $.each(['success', 'error', 'complete'], function (idx, cb_name) {
             if (options[cb_name] !== undefined) {
-                options[cb_name] = wrap_callback(options[cb_name]);
+                options[cb_name] = exports.wrap_function(options[cb_name]);
             }
         });
     });
@@ -182,7 +182,7 @@ BlueslipError.prototype = Error.prototype;
             }
             /*jslint eqeq: false */
 
-            return orig_on.call(this, types, selector, data, wrap_callback(fn), one);
+            return orig_on.call(this, types, selector, data, exports.wrap_function(fn), one);
         };
 
         $.fn.off = function (types, selector, fn) {
@@ -223,7 +223,7 @@ BlueslipError.prototype = Error.prototype;
         };
 
         $.fn.ready = function blueslip_jquery_ready_wrapper(func) {
-            return orig_ready.call(this, wrap_callback(func));
+            return orig_ready.call(this, exports.wrap_function(func));
         };
     }
 }());
