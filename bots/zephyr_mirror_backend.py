@@ -258,6 +258,7 @@ def maybe_restart_mirroring_script():
                 time.sleep(1)
 
 def process_loop(log):
+    restart_check_count = 0
     sleep_count = 0
     sleep_time = 0.1
     while True:
@@ -276,8 +277,13 @@ def process_loop(log):
 
         try:
             maybe_restart_mirroring_script()
+            if restart_check_count > 0:
+                logging.info("Stopped getting errors checking whether restart is required.")
+                restart_check_count = 0
         except Exception:
-            logger.exception("Error checking whether restart is required:")
+            if restart_check_count < 5:
+                logger.exception("Error checking whether restart is required:")
+                restart_check_count += 1
 
         time.sleep(sleep_time)
         sleep_count += sleep_time
