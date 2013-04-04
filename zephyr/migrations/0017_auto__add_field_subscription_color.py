@@ -3,7 +3,7 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
-
+from django.conf import settings
 
 class Migration(SchemaMigration):
 
@@ -12,7 +12,8 @@ class Migration(SchemaMigration):
         db.add_column(u'zephyr_subscription', 'color',
                       self.gf('django.db.models.fields.CharField')(default='#c2c2c2', max_length=10),
                       keep_default=False)
-        db.execute("ALTER TABLE zephyr_subscription ALTER COLUMN color SET DEFAULT '#c2c2c2'")
+        if "postgres" in settings.DATABASES["default"]["ENGINE"]:
+            db.execute("ALTER TABLE zephyr_subscription ALTER COLUMN color SET DEFAULT '#c2c2c2'")
 
 
     def backwards(self, orm):
