@@ -30,7 +30,7 @@ migration_status "zephyr/fixtures/migration-status"
 python manage.py populate_db --settings=humbug.test_settings --test-suite -n2 \
     --threads=1 --huddles=0 --personals=0 --percent-huddles=0 --percent-personals=0
 python manage.py dumpdata  --settings=humbug.test_settings \
-    auth.User zephyr.UserProfile zephyr.Stream zephyr.Recipient \
+    zephyr.UserProfile zephyr.Stream zephyr.Recipient \
     zephyr.Subscription zephyr.Message zephyr.Huddle zephyr.Realm \
     zephyr.UserMessage zephyr.Client \
     zephyr.DefaultStream > zephyr/fixtures/messages.json

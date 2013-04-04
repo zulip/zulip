@@ -158,6 +158,7 @@ MIDDLEWARE_CLASSES = (
 
 AUTHENTICATION_BACKENDS = ('humbug.backends.EmailAuthBackend',
                            'humbug.backends.GoogleBackend')
+AUTH_USER_MODEL = "zephyr.UserProfile"
 
 TEST_RUNNER = 'zephyr.tests.Runner'
 
