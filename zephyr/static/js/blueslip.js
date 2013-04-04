@@ -97,7 +97,12 @@ exports.wrap_function = function blueslip_wrap_function(func) {
         try {
             return func.apply(this, arguments);
         } catch (ex) {
-            // Treat exceptions like a call to fatal()
+            // Treat exceptions like a call to fatal() if they
+            // weren't generated from fatal()
+            if (ex instanceof BlueslipError) {
+                throw ex;
+            }
+
             var message = ex.message;
             if (ex.hasOwnProperty('fileName')) {
                 message += " at " + ex.fileName;
