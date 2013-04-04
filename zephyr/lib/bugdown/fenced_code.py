@@ -82,9 +82,15 @@ class FencedCodeExtension(markdown.Extension):
         """ Add FencedBlockPreprocessor to the Markdown instance. """
         md.registerExtension(self)
 
+        # Newer versions of Python-Markdown (starting at 2.3?) have
+        # a normalize_whitespace preprocessor that needs to go first.
+        position = ('>normalize_whitespace'
+            if 'normalize_whitespace' in md.preprocessors
+            else '_begin')
+
         md.preprocessors.add('fenced_code_block',
                                  FencedBlockPreprocessor(md),
-                                 "_begin")
+                                 position)
 
 
 class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
