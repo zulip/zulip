@@ -25,7 +25,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, set_stream_color, get_stream_colors, update_message_flags, \
-    recipient_for_emails, extract_recipients, do_events_register
+    recipient_for_emails, extract_recipients, do_events_register, do_finish_tutorial
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -212,14 +212,6 @@ def accounts_register(request):
                 do_change_full_name(user_profile, full_name)
             else:
                 user_profile = do_create_user(email, password, realm, full_name, short_name)
-                # We want to add the default subs list iff there were no subs
-                # specified when the user was invited.
-                streams = prereg_user.streams.all()
-                if len(streams) == 0:
-                    add_default_subs(user_profile)
-                else:
-                    for stream in streams:
-                        do_add_subscription(user_profile, stream)
                 if prereg_user.referred_by is not None:
                     # This is a cross-realm private message.
                     internal_send_message("humbug+signups@humbughq.com",
@@ -401,9 +393,21 @@ def home(request):
     register_ret = do_events_register(user_profile, apply_markdown=True)
     user_has_messages = (register_ret['max_message_id'] != -1)
 
-    # Brand new users get the tutorial.
-    # Compute this here, before we set user_profile.pointer below.
-    needs_tutorial = settings.TUTORIAL_ENABLED and user_profile.pointer == -1
+    # Brand new users get the tutorial
+    needs_tutorial = settings.TUTORIAL_ENABLED and \
+        user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
+
+    # If the user has previously started (but not completed) the tutorial,
+    # finish it for her and subscribe her to the default streams
+    if user_profile.tutorial_status == UserProfile.TUTORIAL_STARTED:
+        tutorial_stream = user_profile.tutorial_stream_name()
+        try:
+            stream = Stream.objects.get(realm=user_profile.realm, name=tutorial_stream)
+            do_remove_subscription(user_profile, stream)
+        except Stream.DoesNotExist:
+            pass
+
+        do_finish_tutorial(user_profile)
 
     if user_profile.pointer == -1 and user_has_messages:
         # Put the new user's pointer at the bottom
@@ -769,8 +773,7 @@ def json_tutorial_send_message(request, user_profile,
                               realm=user_profile.realm)
         return json_success()
     elif message_type_name == 'stream':
-        tutorial_stream_name = 'tutorial-%s' % user_profile.email.split('@')[0]
-        tutorial_stream_name = tutorial_stream_name[:Stream.MAX_NAME_LENGTH]
+        tutorial_stream_name = user_profile.tutorial_stream_name()
         ## TODO: For open realms, we need to use the full name here,
         ## so that me@gmail.com and me@hotmail.com don't get the same stream.
         internal_send_message(sender_name,
@@ -781,6 +784,18 @@ def json_tutorial_send_message(request, user_profile,
                               realm=user_profile.realm)
         return json_success()
     return json_error('Bad data passed in to tutorial_send_message')
+
+
+@authenticated_json_post_view
+@has_request_variables
+def json_tutorial_status(request, user_profile, status=POST('status')):
+    if status == 'started':
+        user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED
+        user_profile.save()
+    elif status == 'finished':
+        do_finish_tutorial(user_profile)
+
+    return json_success()
 
 # We do not @require_login for send_message_backend, since it is used
 # both from the API and the web service.  Code calling

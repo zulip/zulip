@@ -1167,6 +1167,10 @@ exports.remove_narrow_filter = function (name, type) {
     exports.get_filter_li(type, name).remove();
 };
 
+exports.remove_all_narrow_filters = function () {
+    $("#stream_filters").children().remove();
+};
+
 var presence_descriptions = {
     active: ' is active',
     away:   ' was recently active',

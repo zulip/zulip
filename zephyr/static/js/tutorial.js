@@ -240,6 +240,13 @@ exports.start = function () {
     tutorial_running = true;
     add_to_tutorial_stream();
     run_tutorial(0);
+
+    $.ajax({
+      type:     'POST',
+      url:      '/json/tutorial_status',
+      data:     {status: 'started'}
+    });
+
 };
 
 // This technique is not actually that awesome, because it's pretty
@@ -256,6 +263,17 @@ exports.stop = function () {
     if (tutorial_running) {
         subs.tutorial_unsubscribe_me_from(my_tutorial_stream);
         tutorial_running = false;
+
+        $.ajax({
+            type:     'POST',
+            url:      '/json/tutorial_status',
+            data:     {status: 'finished'},
+            success: function () {
+              // We need to reload the streams list so the sidebar is populated
+              // with the new streams
+              subs.reload_subscriptions({clear_first: true});
+            }
+        });
     }
 };
 

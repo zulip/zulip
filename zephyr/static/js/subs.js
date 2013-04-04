@@ -438,29 +438,66 @@ exports.get_invite_only = function (stream_name) {
     return sub.invite_only;
 };
 
+function populate_subscriptions(subs) {
+    var sub_rows = [];
+    subs.sort(function (a, b) {
+        return a.name.localeCompare(b.name);
+    });
+    subs.forEach(function (elem) {
+        var stream_name = elem.name;
+        var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
+                                           invite_only: elem.invite_only, subscribed: true});
+        add_sub(stream_name, sub);
+        sub_rows.push(sub);
+    });
+
+    return sub_rows;
+}
+
+exports.reload_subscriptions = function (opts) {
+    var on_success;
+    opts = $.extend({}, {clear_first: false, custom_callbacks: false}, opts);
+
+    if (! opts.custom_callbacks) {
+        on_success = function (data) {
+                         if (data) {
+                             populate_subscriptions(data.subscriptions);
+                         }
+                     };
+    }
+
+    if (opts.clear_first) {
+        stream_info = [];
+        ui.remove_all_narrow_filters();
+    }
+
+    return $.ajax({
+                    type:     'POST',
+                    url:      '/json/subscriptions/list',
+                    dataType: 'json',
+                    timeout:  10*1000,
+                    success: on_success
+    });
+};
+
 exports.setup_page = function () {
     util.make_loading_indicator($('#subs_page_loading_indicator'));
 
-    var our_subs;
-    var all_streams;
+    function populate_and_fill(stream_data, subscription_data) {
+        var all_streams = [];
+        var our_subs = [];
 
-    function maybe_populate_subscriptions() {
-        // We only execute if both asynchronous queries have returned
-        if (our_subs === undefined || all_streams === undefined) {
-            return;
+        /* arguments are [ "success", statusText, jqXHR ] */
+        if (stream_data.length > 2 && stream_data[2]) {
+            var stream_response = JSON.parse(stream_data[2].responseText);
+            all_streams = stream_response.streams;
+        }
+        if (subscription_data.length > 2 && subscription_data[2]) {
+            var subs_response = JSON.parse(subscription_data[2].responseText);
+            our_subs = subs_response.subscriptions;
         }
 
-        var sub_rows = [];
-        our_subs.sort(function (a, b) {
-            return a.name.localeCompare(b.name);
-        });
-        our_subs.forEach(function (elem) {
-            var stream_name = elem.name;
-            var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
-                                               invite_only: elem.invite_only, subscribed: true});
-            add_sub(stream_name, sub);
-            sub_rows.push(sub);
-        });
+        var sub_rows = populate_subscriptions(our_subs);
 
         all_streams.sort();
         all_streams.forEach(function (stream) {
@@ -480,46 +517,35 @@ exports.setup_page = function () {
         $('#create_stream_name').focus().select();
     }
 
+    function failed_listing(xhr, error) {
+        util.destroy_loading_indicator($('#subs_page_loading_indicator'));
+        ui.report_error("Error listing streams or subscriptions", xhr, $("#subscriptions-status"));
+    }
+
+    var requests = [];
     if (should_list_all_streams()) {
         // This query must go first to prevent a race when we are not
         // listing all streams
-        $.ajax({
+        var req = $.ajax({
             type:     'POST',
             url:      '/json/get_public_streams',
             dataType: 'json',
-            timeout:  10*1000,
-            success: function (data) {
-                if (data) {
-                    all_streams = data.streams;
-                    maybe_populate_subscriptions();
-                }
-            },
-            error: function (xhr) {
-                util.destroy_loading_indicator($('#subs_page_loading_indicator'));
-                ui.report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
-            }
+            timeout:  10*1000
         });
+        requests.push(req);
     } else {
-        all_streams = [];
+        // Handing an object to $.when() means that it counts as a 'success' with the
+        // object delivered directly to the callback
+        requests.push({streams: []});
         $('#create_stream_button').val("Subscribe");
     }
 
-    $.ajax({
-        type:     'POST',
-        url:      '/json/subscriptions/list',
-        dataType: 'json',
-        timeout:  10*1000,
-        success: function (data) {
-            if (data) {
-                our_subs = data.subscriptions;
-                maybe_populate_subscriptions();
-            }
-        },
-        error: function (xhr) {
-            util.destroy_loading_indicator($('#subs_page_loading_indicator'));
-            ui.report_error("Error listing subscriptions", xhr, $("#subscriptions-status"));
-        }
-    });
+    requests.push(exports.reload_subscriptions({custom_callbacks: true}));
+
+    // Trigger finished callback when:
+    // * Both AJAX requests are finished, if we sent themm both
+    // * Just one AJAX is finished if should_list_all_streams() is false
+    $.when.apply(this, requests).then(populate_and_fill, failed_listing);
 };
 
 exports.have = function (stream_name) {

@@ -5,7 +5,7 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, valid_stream_name, \
     DefaultStream, StreamColor, UserPresence, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
-    get_user_profile_by_id
+    get_user_profile_by_id, PreregistrationUser
 from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.core.exceptions import ValidationError
@@ -707,6 +707,23 @@ def subscribed_to_stream(user_profile, stream):
         return False
     except Subscription.DoesNotExist:
         return False
+
+def do_finish_tutorial(user_profile):
+    user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
+    user_profile.save()
+
+    # We want to add the default subs list iff there were no subs
+    try:
+        prereg_user = PreregistrationUser.objects.get(email=user_profile.email)
+    except PreregistrationUser.DoesNotExist:
+        return
+
+    streams = prereg_user.streams.all()
+    if len(streams) == 0:
+        add_default_subs(user_profile)
+    else:
+        for stream in streams:
+            do_add_subscription(user_profile, stream)
 
 def gather_subscriptions(user_profile):
     # This is a little awkward because the StreamColor table has foreign keys

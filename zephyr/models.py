@@ -69,6 +69,19 @@ class UserProfile(AbstractBaseUser):
     enable_desktop_notifications = models.BooleanField(default=True)
     enter_sends = models.NullBooleanField(default=False)
 
+    TUTORIAL_WAITING  = 'W'
+    TUTORIAL_STARTED  = 'S'
+    TUTORIAL_FINISHED = 'F'
+    TUTORIAL_STATES   = ((TUTORIAL_WAITING,  "Waiting"),
+                         (TUTORIAL_STARTED,  "Started"),
+                         (TUTORIAL_FINISHED, "Finished"))
+
+    tutorial_status = models.CharField(default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1)
+
+    def tutorial_stream_name(self):
+        return "tutorial-%s" % \
+                    (self.email.split('@')[0],)[:Stream.MAX_NAME_LENGTH]
+
     objects = UserManager()
 
     def __repr__(self):
