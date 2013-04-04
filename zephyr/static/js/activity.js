@@ -72,6 +72,24 @@ function update_users() {
     ui.set_presence_list(users, user_info);
 }
 
+function status_from_timestamp(time_now, presence) {
+    if (presence.website === undefined) {
+        return 'idle';
+    }
+
+    var age = time_now - presence.website.timestamp;
+
+    var status = 'idle';
+    if (presence.website.status === ACTIVE && age >= 0) {
+        if (age < AWAY_THRESHOLD_SECS) {
+            status = 'active';
+        } else if (age < IDLE_THRESHOLD_SECS) {
+            status = 'away';
+        }
+    }
+    return status;
+}
+
 function focus_ping() {
     if (!has_focus) {
         return;
@@ -90,23 +108,8 @@ function focus_ping() {
 
         // Ping returns the active peer list
         $.each(data.presences, function (this_email, presence) {
-            var age = -1;
-
-            if (presence.website !== undefined && presence.website.timestamp !== undefined) {
-                age = now - presence.website.timestamp;
-            }
-
             if (page_params.email !== this_email) {
-                var status = 'idle';
-                if (presence.website !== undefined
-                    && presence.website.status === ACTIVE && age >= 0) {
-                    if (age < AWAY_THRESHOLD_SECS) {
-                        status = 'active';
-                    } else if (age < IDLE_THRESHOLD_SECS) {
-                        status = 'away';
-                    }
-                }
-                user_info[this_email] = status;
+                user_info[this_email] = status_from_timestamp(now, presence);
             }
         });
         update_users();
@@ -130,14 +133,17 @@ exports.initialize = function () {
                 keepTracking: true});
 
     ping_timer = setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
+
+    focus_ping();
 };
 
-exports.set_user_status = function (user_email, status) {
+exports.set_user_status = function (user_email, presence) {
     if (user_email === page_params.email) {
         return;
     }
+    var now = new Date().getTime() / 1000;
+    user_info[user_email] = status_from_timestamp(now, presence);
 
-    user_info[user_email] = status;
     update_users();
 };
 

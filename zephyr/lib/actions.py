@@ -23,7 +23,7 @@ from django.utils import timezone
 from zephyr.lib.create_user import create_user
 from zephyr.lib import bugdown
 from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key, \
-    user_profile_by_email_cache_key
+    user_profile_by_email_cache_key, status_dict_cache_key
 from zephyr.decorator import get_user_profile_by_email, json_to_list, JsonableError
 from zephyr.lib.event_queue import request_event_queue, get_user_events
 
@@ -38,6 +38,7 @@ import datetime
 import os
 import platform
 import logging
+from collections import defaultdict
 from os import path
 
 # Store an event in the log for re-importing messages
@@ -581,8 +582,9 @@ def process_user_activity_event(event):
     return do_update_user_activity(user_profile, client, query, log_time)
 
 def send_presence_changed(user_profile, presence):
+    presence_dict = presence.to_dict()
     notice = dict(event=dict(type="presence", email=user_profile.email,
-                             presence=presence.to_dict()),
+                             presence={presence_dict['client']: presence.to_dict()}),
                   users=[up.id for up in
                          UserProfile.objects.select_related()
                                             .filter(realm=user_profile.realm,
@@ -602,8 +604,9 @@ def do_update_user_presence(user_profile, client, log_time, status):
                                             client = client)
         created = False
 
-    became_online = (status == UserPresence.ACTIVE and
-                     presence.status == UserPresence.IDLE)
+    stale_status = (log_time - presence.timestamp) > datetime.timedelta(minutes=10)
+    was_idle = presence.status == UserPresence.IDLE
+    became_online = (status == UserPresence.ACTIVE) and (stale_status or was_idle)
 
     presence.timestamp = log_time
     presence.status = status
@@ -765,6 +768,21 @@ def gather_subscriptions(user_profile):
 
     return sorted(result)
 
+@cache_with_key(status_dict_cache_key, timeout=60)
+def get_status_dict(requesting_user_profile):
+    user_statuses = defaultdict(dict)
+
+    # Return no status info for MIT
+    if requesting_user_profile.realm.domain == 'mit.edu':
+        return user_statuses
+
+    for presence in UserPresence.objects.filter(user_profile__realm=requesting_user_profile.realm) \
+                                        .select_related('user_profile', 'client'):
+        user_statuses[presence.user_profile.email][presence.client.name] = presence.to_dict()
+
+    return user_statuses
+
+
 def do_events_register(user_profile, apply_markdown=True, event_types=None):
     queue_id = request_event_queue(user_profile, apply_markdown, event_types)
     if queue_id is None:
@@ -796,11 +814,7 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
     if event_types is None or "subscription" in event_types:
         ret['subscriptions'] = gather_subscriptions(user_profile)
     if event_types is None or "presence" in event_types:
-        presences = dict((presence.user_profile.email, presence.to_dict())
-                            for presence in UserPresence.objects.select_related()
-                                                                 .filter(user_profile__realm=user_profile.realm,
-                                                                         user_profile__is_active=True))
-        ret['presences'] = presences
+        ret['presences'] = get_status_dict(user_profile)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
@@ -824,7 +838,7 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
                 ret['subscriptions'] = filter(lambda s: s['name'] != sub['name'],
                                               ret['subscriptions'])
         elif event['type'] == "presence":
-                ret['presences'][event['email']] = event['presence']
+                ret['presences'][event['email']][event['presence']['client']] = event['presence']
 
     if events:
         ret['last_event_id'] = events[-1]['id']

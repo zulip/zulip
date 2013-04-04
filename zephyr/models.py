@@ -2,7 +2,8 @@ from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager
 from zephyr.lib.cache import cache_with_key, update_user_profile_cache, \
-    user_profile_by_id_cache_key, user_profile_by_email_cache_key
+    user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
+    update_user_presence_cache
 from zephyr.lib.utils import make_safe_digest
 import os
 from django.db import transaction, IntegrityError
@@ -444,7 +445,8 @@ class UserPresence(models.Model):
         elif self.status == UserPresence.IDLE:
             presence_val = 'idle'
 
-        return {'status'   : presence_val,
+        return {'client'   : self.client.name,
+                'status'   : presence_val,
                 'timestamp': datetime_to_timestamp(self.timestamp)}
 
     @staticmethod
@@ -460,6 +462,10 @@ class UserPresence(models.Model):
 
     class Meta:
         unique_together = ("user_profile", "client")
+
+# Flush the cached user status_dict whenever a user's presence
+# changes
+post_save.connect(update_user_presence_cache, sender=UserPresence)
 
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm)
