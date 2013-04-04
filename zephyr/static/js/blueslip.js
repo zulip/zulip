@@ -37,8 +37,10 @@ function report_error(msg, stack, opts) {
         type:     'POST',
         url:      '/json/report_error',
         dataType: 'json',
-        data:     { message: msg, stacktrace: stack,
+        data:     { message: msg,
+                    stacktrace: stack,
                     ui_message: opts.show_ui_msg,
+                    more_info: JSON.stringify(opts.more_info),
                     user_agent: window.navigator.userAgent},
         timeout:  3*1000,
         success:  function () {
@@ -78,8 +80,12 @@ function report_error(msg, stack, opts) {
     });
 }
 
-function BlueslipError() {
-    return Error.apply(this, arguments);
+function BlueslipError(msg, more_info) {
+    var self = Error.call(this, msg);
+    if (more_info !== undefined) {
+        self.more_info = more_info;
+    }
+    return self;
 }
 
 BlueslipError.prototype = Error.prototype;
@@ -233,36 +239,49 @@ exports.wrap_function = function blueslip_wrap_function(func) {
     }
 }());
 
-exports.log = function blueslip_log (msg) {
+exports.log = function blueslip_log (msg, more_info) {
     console.log(msg);
+    if (more_info !== undefined) {
+        console.log("Additional information: ", more_info);
+    }
 };
 
-exports.info = function blueslip_info (msg) {
+exports.info = function blueslip_info (msg, more_info) {
     console.info(msg);
+    if (more_info !== undefined) {
+        console.info("Additional information: ", more_info);
+    }
 };
 
-exports.warn = function blueslip_warn (msg) {
+exports.warn = function blueslip_warn (msg, more_info) {
     console.warn(msg);
     if (page_params.debug_mode) {
         console.trace();
     }
+    if (more_info !== undefined) {
+        console.warn("Additional information: ", more_info);
+    }
 };
 
-exports.error = function blueslip_error (msg) {
+exports.error = function blueslip_error (msg, more_info) {
     if (page_params.debug_mode) {
-        throw new BlueslipError(msg);
+        throw new BlueslipError(msg, more_info);
     } else {
         console.error(msg);
-        report_error(msg, Error().stack);
+        if (more_info !== undefined) {
+            console.error("Additional information: ", more_info);
+        }
+        report_error(msg, Error().stack, {more_info: more_info});
     }
 };
 
-exports.fatal = function blueslip_fatal (msg) {
+exports.fatal = function blueslip_fatal (msg, more_info) {
     if (! page_params.debug_mode) {
-        report_error(msg, Error().stack, {show_ui_msg: true});
+        report_error(msg, Error().stack, {show_ui_msg: true,
+                                          more_info: more_info});
     }
 
-    throw new BlueslipError(msg);
+    throw new BlueslipError(msg, more_info);
 };
 
 return exports;

@@ -1527,7 +1527,8 @@ if not (settings.DEBUG or settings.TEST_SUITE):
 @authenticated_json_post_view
 @has_request_variables
 def json_report_error(request, user_profile, message=POST, stacktrace=POST,
-                      ui_message=POST(converter=json_to_bool), user_agent=POST):
+                      ui_message=POST(converter=json_to_bool), user_agent=POST,
+                      more_info=POST(converter=json_to_dict, default=None)):
     subject = "error for %s" % (user_profile.email,)
     if ui_message:
         subject = "User-visible browser " + subject
@@ -1537,10 +1538,16 @@ def json_report_error(request, user_profile, message=POST, stacktrace=POST,
     if js_source_map:
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
-    mail_admins(subject,
-                "Message:\n%s\n\nStacktrace:\n%s\n\nUser agent:\n%s\n\n"
-                "User saw error in UI: %s"
-                % (message, stacktrace, user_agent, ui_message))
+    body = ("Message:\n%s\n\nStacktrace:\n%s\n\nUser agent:\n%s\n\n"
+            "User saw error in UI: %s"
+            % (message, stacktrace, user_agent, ui_message))
+
+    if more_info is not None:
+        body += "\n\nAdditional information:"
+        for (key, value) in more_info.iteritems():
+            body += "\n  %s: %s" % (key, value)
+
+    mail_admins(subject, body)
     return json_success()
 
 @authenticated_json_post_view
