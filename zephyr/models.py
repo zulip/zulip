@@ -51,8 +51,9 @@ class Realm(models.Model):
         return self.__repr__()
 
 class UserProfile(AbstractBaseUser):
-    # Fields from models.AbstractUser minus last_name and first_name, which we don't use
-    email = models.EmailField(blank=True)
+    # Fields from models.AbstractUser minus last_name and first_name,
+    # which we don't use; email is modified to make it indexed and unique.
+    email = models.EmailField(blank=False, db_index=True, unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
