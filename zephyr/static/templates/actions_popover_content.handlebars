@@ -7,6 +7,9 @@
 
     <li>{{message.full_date_str}}</li>
     <li>{{message.full_time_str}}</li>
+    {{#if message.historical}}
+    <li class="small">(Message sent when you were not subscribed)</li>
+    {{/if}}
     <hr />
   </div>
 

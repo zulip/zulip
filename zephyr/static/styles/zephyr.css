@@ -388,6 +388,10 @@ td.pointer {
     font-size: 90%;
 }
 
+.small {
+    font-size: 80%;
+}
+
 .actions_hovered .message_time {
     color:           #0088CC;
     text-decoration: underline;
