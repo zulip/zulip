@@ -162,9 +162,9 @@ function make_script() {
   go(sleep, 1000),
   go2(stream_message, "tutorial", "Nice work. In Humbug, time flows down and your new messages will always appear at the very bottom of the screen. We're always receiving messages for you—even when you're logged out."),
   go(sleep, 6000),
-  go2(stream_message, "tutorial", "By the way, right now, these messages are going to stream `" + my_tutorial_stream + "`.\n\nA stream is like a chatroom or mailing list; anyone on `" + my_tutorial_stream +"` can see and respond to these messages. (In this case, it's just us on this stream right now, so that no one distracts us)"),
+  go2(stream_message, "tutorial", "By the way, right now, these messages are going to stream `" + my_tutorial_stream + "`.\n\nA stream is like a chatroom or mailing list; anyone on `" + my_tutorial_stream +"` can see and respond to these messages. (In this case, it's just us on this stream right now, so that no one distracts us.)"),
   go(sleep, 8000),
-  go2(stream_message, "tutorial", "Every stream message has a subject associated with it. (In this case, `tutorial`). "
+  go2(stream_message, "tutorial", "Every stream message has a subject associated with it. (In this case, `tutorial`.) "
       + "The subject should be **one or two words** describing the topic of the message.\n\nGood subjects: `lunch`, `website redesign` or `Bug #4567`.\n"),
   go(sleep, 10000),
   go2(stream_message, "tutorial", "Subjects sound like a tiny idea, but they are really powerful. They make it easy to keep track of multiple conversations and to easily skim what you care about and ignore what you don't.\n\n**Send me a reply** when you're ready to continue."),
