@@ -232,7 +232,7 @@ class Command(BaseCommand):
 
             # Mark all messages as read
             with transaction.commit_on_success():
-                UserMessage.objects.all().update(flags=0)
+                UserMessage.objects.all().update(flags=UserMessage.flags.read)
 
             self.stdout.write("Successfully populated test database.\n")
         if options["replay_old_messages"]:
