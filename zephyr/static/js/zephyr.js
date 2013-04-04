@@ -536,7 +536,10 @@ function add_messages_helper(messages, msg_list, predicate) {
             } else if (msg.id > msg_list.last().id) {
                 bottom_messages.push(msg);
             } else {
-                blueslip.error("Attempting to insert a message in the middle of the msg_list");
+                blueslip.error("Attempting to insert a message in the middle of the msg_list",
+                               {table: msg_list.table_name, first_id: msg_list.first().id,
+                                last_id: msg_list.last().id, new_id: msg.id,
+                                msg_list_size: msg_list.all().length});
                 bottom_messages.push(msg);
             }
         });
