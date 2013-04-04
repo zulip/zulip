@@ -92,21 +92,21 @@ exports.wrap_function = function blueslip_wrap_function(func) {
     var new_func = function blueslip_wrapper() {
         if (page_params.debug_mode) {
             return func.apply(this, arguments);
-        } else {
-            try {
-                return func.apply(this, arguments);
-            } catch (ex) {
-                // Treat exceptions like a call to fatal()
-                var message = ex.message;
-                if (ex.hasOwnProperty('fileName')) {
-                    message += " at " + ex.fileName;
-                    if (ex.hasOwnProperty('lineNumber')) {
-                        message += ":" + ex.lineNumber;
-                    }
+        }
+
+        try {
+            return func.apply(this, arguments);
+        } catch (ex) {
+            // Treat exceptions like a call to fatal()
+            var message = ex.message;
+            if (ex.hasOwnProperty('fileName')) {
+                message += " at " + ex.fileName;
+                if (ex.hasOwnProperty('lineNumber')) {
+                    message += ":" + ex.lineNumber;
                 }
-                report_error(message, ex.stack, {show_ui_msg: true});
-                throw ex;
             }
+            report_error(message, ex.stack, {show_ui_msg: true});
+            throw ex;
         }
     };
     func.blueslip_wrapper = new_func;
