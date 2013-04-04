@@ -13,7 +13,7 @@ exports.render = function (name, arg) {
         // templates and serve JavaScript which will have already
         // populated Handlebars.templates.
         $.ajax({
-            url:     '/static/templates/'+name+'.handlebars',
+            url:     '/static/templates/'+name+'.handlebars?' + new Date().getTime(),
             async:   false,
             success: function (data) {
                 Handlebars.templates[name] = Handlebars.compile(data);
