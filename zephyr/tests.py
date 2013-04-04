@@ -1789,7 +1789,6 @@ speak</span><span class="p">(</span><span class="bp">self</span><span class="p">
 def func():
     x = 1
 
-
     y = 2
 
     z = 3
