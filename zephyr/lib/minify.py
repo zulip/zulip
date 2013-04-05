@@ -26,6 +26,6 @@ class ClosureSourceMapCompressor(SubProcessCompressor):
         source_map = path.join(
             settings.PIPELINE_CLOSURE_SOURCE_MAP_DIR, source_map_name)
 
-        command = '%s --create_source_map %s' % (
+        command = '%s --language_in ECMASCRIPT5 --create_source_map %s' % (
             settings.PIPELINE_CLOSURE_BINARY, source_map)
         return self.execute_command(command, js)
