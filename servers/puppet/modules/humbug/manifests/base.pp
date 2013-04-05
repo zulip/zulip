@@ -4,7 +4,7 @@ class humbug::base {
                 "openssh-server", "python-pip", "puppet-el",
                 "iptables-persistent", "nagios-plugins-basic", "munin-node",
                 "munin-plugins-extra", "postgresql-client-9.1",
-		"debian-goodies", ]
+		"debian-goodies", "moreutils", ]
   package { $packages: ensure => "installed" }
 
 
