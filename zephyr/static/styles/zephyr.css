@@ -473,7 +473,7 @@ blockquote p {
     margin-right: 0px;
 }
 
-#tab-enter-message {
+#below-compose-content {
     display: table-row;
     font-size: 80%;
     white-space: nowrap;
@@ -1115,4 +1115,12 @@ li.expanded_subject {
 .sub-unsub-message {
     text-align: center;
     padding-bottom: 10px; /* same as .bookend */
+}
+
+#restore-draft {
+    visibility: hidden;
+}
+
+#restore-draft:hover {
+    cursor:  pointer;
 }

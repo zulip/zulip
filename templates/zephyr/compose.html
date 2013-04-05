@@ -48,11 +48,14 @@
                     <input type="submit" value="Send" id="compose-send-button" class="btn btn-primary send_message" tabindex="150"/>
                   </div>
                 </div>
-                <div id="tab-enter-message">
-                  <span id="sending-indicator">Sending...</span>
-                  <label class="pull-right">Press Enter to send&nbsp;
-                    <input type="checkbox" id="enter_sends" name="enter_sends" value="ender_sends" />
-                  </label>
+                <div id="below-compose-content">
+                  <span id="restore-draft" onclick="compose.restore_message();">Restore last draft?</span>
+                  <span id="tab-enter-message">
+                    <span id="sending-indicator">Sending...</span>
+                    <label class="pull-right inline">Press Enter to send&nbsp;
+                      <input type="checkbox" id="enter_sends" name="enter_sends" value="ender_sends" />
+                    </label>
+                  </span>
                 </div>
               </td>
             </tr>
