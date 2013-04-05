@@ -1,3 +1,8 @@
+// zephyr/lib/minify.py will look for this comment in order to tell when it's
+// producing app.js:
+//
+// MINIFY-FILE-ID: zephyr.js
+
 var all_msg_list = new MessageList();
 var home_msg_list = new MessageList('zhome', new narrow.Filter([["in", "home"]]));
 var narrowed_msg_list;

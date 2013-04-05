@@ -12,13 +12,11 @@ class ClosureSourceMapCompressor(SubProcessCompressor):
         # easily get either the input file names or the output file
         # name.  So we just pick a unique arbitrary name.  This is
         # okay because we can figure out from the source map file
-        # contents which JavaScript files it corresponds to.
+        # contents which JavaScript files it corresponds to.  But we
+        # use a special comment to identify app.js, so that automatic
+        # source mapping works.
 
-        # As a hack to make things easier, assume that any large input
-        # corresponds to app.js.  This is like 60 times bigger than
-        # any other input file, at present.
-
-        if len(js) > 100000:
+        if 'MINIFY-FILE-ID: zephyr.js' in js:
             source_map_name = 'app.js.map'
         else:
             source_map_name = sha1(js).hexdigest() + '.map'
