@@ -6,7 +6,7 @@
 
 {% block customhead %}
 {{ block.super }}
-<script type="text/javascript" src="/static/third/sorttable/sorttable.js"></script>
+{% compressed_js  'third_activity' %}
 {% compressed_css 'activity' %}
 {% endblock %}
 

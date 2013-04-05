@@ -574,7 +574,6 @@ def home(request):
                               {'user_profile': user_profile,
                                'page_params' : page_params,
                                'email_hash'  : gravatar_hash(user_profile.email),
-                               'full_handlebars': not settings.PIPELINE,
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
                                'show_invites': show_invites

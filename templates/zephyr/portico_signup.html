@@ -6,6 +6,6 @@
 
 {% block customhead %}
     {{ block.super }}
-    <script type="text/javascript" src="/static/third/jquery-validate/jquery.validate.min.js"></script>
+    {% compressed_js 'third_signup' %}
     {% compressed_js 'signup' %}
 {% endblock %}

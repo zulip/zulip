@@ -10,8 +10,8 @@ hence the name.
 {% endcomment %}
 
     {% block customhead %}
+    {% compressed_css 'third_portico' %}
     {% compressed_css 'portico' %}
-    <link href="/static/third/zocial/zocial.css" rel="stylesheet" />
     {% endblock %}
 
 {% block content %}

@@ -252,6 +252,25 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'min/app.css'
     },
+    'third_common': {
+        'source_filenames': (
+            'third/bootstrap/css/bootstrap.css',
+            'third/bootstrap/css/bootstrap-responsive.css',
+        ),
+        'output_filename': 'min/third_common.css'
+    },
+    'third_portico': {
+        'source_filenames': (
+            'third/zocial/zocial.css',
+        ),
+        'output_filename': 'min/third_portico.css'
+    },
+    'third_app': {
+        'source_filenames': (
+            'third/spectrum/spectrum.css',
+        ),
+        'output_filename': 'min/third_app.css'
+    },
 }
 
 PIPELINE_JS = {
@@ -314,6 +333,45 @@ PIPELINE_JS = {
     'blueslip': {
         'source_filenames': ('js/blueslip.js',),
         'output_filename':  'min/blueslip.js'
+    },
+    'third_common': {
+        'source_filenames': (
+            'third/jquery/jquery-1.7.2.js',
+            'third/bootstrap/js/bootstrap.js',
+        ),
+        'output_filename': 'min/third_common.js'
+    },
+    'third_signup': {
+        'source_filenames': (
+            'third/jquery-validate/jquery.validate.js',
+        ),
+        'output_filename': 'min/third_signup.js'
+    },
+    'third_activity': {
+        'source_filenames': (
+            'third/sorttable/sorttable.js',
+        ),
+        'output_filename': 'min/third_activity.js'
+    },
+    'third_app': {
+        'source_filenames': (
+            'third/jquery-validate/jquery.validate.js',
+            'third/jquery-form/jquery.form.js',
+            'third/jquery-highlight/jquery.highlight.js',
+            'third/jquery-filedrop/jquery.filedrop.js',
+            'third/jquery-caret/jquery.caret.1.02.js',
+            'third/xdate/xdate.dev.js',
+            'third/spin/spin.js',
+            'third/jquery-mousewheel/jquery.mousewheel.js',
+            'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
+            'third/jquery-idle/jquery.idle.js',
+            'third/jquery-autosize/jquery.autosize.js',
+            'third/spectrum/spectrum.js',
+            ('third/handlebars/handlebars.runtime.js'
+                if PIPELINE
+                else 'third/handlebars/handlebars.js'),
+        ),
+        'output_filename': 'min/third_app.js'
     },
 }
 

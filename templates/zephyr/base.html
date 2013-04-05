@@ -15,9 +15,6 @@
     <!--[if lt IE 9]>
       <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-    <link href="/static/third/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/third/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-    <link href='https://fonts.googleapis.com/css?family=Droid+Sans:400,700' rel='stylesheet' type='text/css'>
     <link href="/static/favicon.ico?v=2" rel="shortcut icon">
 
     {# mixpanel #}
@@ -65,7 +62,9 @@ mixpanel.init("{{ mixpanel_token }}", {verbose: true});
     </script>
 
     {# We need to import jQuery before Bootstrap #}
-    <script src="/static/third/jquery/jquery-1.7.2.min.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Droid+Sans:400,700' rel='stylesheet' type='text/css'>
+    {% compressed_css 'third_common' %}
+    {% compressed_js  'third_common' %}
     {% block page_params %}
     {# blueslip needs page_params.debug_mode.  Set it to false by default. #}
     <script type="text/javascript">
@@ -73,8 +72,7 @@ mixpanel.init("{{ mixpanel_token }}", {verbose: true});
     </script>
     {% endblock %}
     {% compressed_js 'blueslip' %}
-    <script src="/static/third/bootstrap/js/bootstrap.min.js"></script>
-    {% compressed_js 'common' %}
+    {% compressed_js  'common' %}
     {% block customhead %}
     {% endblock %}
 </head>
