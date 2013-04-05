@@ -519,6 +519,9 @@ $(function () {
             $("#error-msg").text(msg);
         },
         uploadFinished: function (i, file, response, time) {
+            if (response.uri === undefined) {
+                return;
+            }
             var textbox = $("#new_message_content");
             textbox.val(textbox.val() + " " + response.uri);
             $("#new_message_content").trigger("autosize");
