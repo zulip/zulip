@@ -1,7 +1,7 @@
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-from django.db.models import Count
+from django.db.models import Count, Q
 from zephyr.models import Realm, Stream, UserProfile, Subscription, \
     Message, Recipient
 
@@ -23,7 +23,7 @@ class Command(BaseCommand):
         realm = Realm.objects.get(domain=options["domain"])
         user_profiles = UserProfile.objects.filter(realm=realm)
         users_who_need_colors = filter(lambda profile: Subscription.objects.filter(
-                user_profile=profile, color__ne=Subscription.DEFAULT_STREAM_COLOR).count() == 0, user_profiles)
+                user_profile=profile).filter(~Q(color=Subscription.DEFAULT_STREAM_COLOR)).count() == 0, user_profiles)
 
         # Hand-selected colors from the current swatch options,
         # providing reasonable contrast for 1 - 7 streams.

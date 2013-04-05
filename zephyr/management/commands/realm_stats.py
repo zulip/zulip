@@ -2,6 +2,7 @@ import datetime
 import pytz
 
 from django.core.management.base import BaseCommand
+from django.db.models import Q
 from zephyr.models import UserProfile, Realm, Stream, Message, Recipient, UserActivity, \
     Subscription
 
@@ -81,8 +82,8 @@ class Command(BaseCommand):
 
             colorizers = 0
             for profile in active_users:
-                if Subscription.objects.filter(user_profile=profile,
-                                               color__ne=Subscription.DEFAULT_STREAM_COLOR).count() > 0:
+                if Subscription.objects.filter(user_profile=profile).filter(
+                    ~Q(color=Subscription.DEFAULT_STREAM_COLOR)).count() > 0:
                     colorizers += 1
             self.report_percentage(colorizers, num_active,
                                    "active users have colorized streams")
