@@ -548,9 +548,9 @@ def set_default_streams(realm, stream_names):
         stream, _ = create_stream_if_needed(realm, stream_name)
         DefaultStream.objects.create(stream=stream, realm=realm)
 
-def add_default_subs(user_profile):
-    for default in DefaultStream.objects.filter(realm=user_profile.realm):
-        do_add_subscription(user_profile, default.stream)
+def get_default_subs(user_profile):
+    return [default.stream for default in
+            DefaultStream.objects.filter(realm=user_profile.realm)]
 
 @transaction.commit_on_success
 def do_update_user_activity(user_profile, client, query, log_time):
@@ -710,10 +710,9 @@ def do_finish_tutorial(user_profile):
 
     streams = prereg_user.streams.all()
     if len(streams) == 0:
-        add_default_subs(user_profile)
-    else:
-        for stream in streams:
-            do_add_subscription(user_profile, stream)
+        streams = get_default_subs(user_profile)
+    for stream in streams:
+        do_add_subscription(user_profile, stream)
 
 def gather_subscriptions(user_profile):
     # For now, don't display subscriptions for private messages.

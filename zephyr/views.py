@@ -22,7 +22,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, \
-    do_activate_user, add_default_subs, do_create_user, check_send_message, \
+    do_activate_user, do_create_user, check_send_message, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, set_stream_color, get_stream_colors, update_message_flags, \
