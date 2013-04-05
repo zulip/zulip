@@ -522,8 +522,10 @@ $(function () {
             if (response.uri === undefined) {
                 return;
             }
-            var textbox = $("#new_message_content");
-            textbox.val(textbox.val() + " " + response.uri);
+            var textbox = $("#new_message_content"),
+                split_uri = response.uri.split("/"),
+                filename = split_uri[split_uri.length - 1];
+            textbox.val(textbox.val() + "[" + filename + "](" + response.uri + ")" + " ");
             $("#new_message_content").trigger("autosize");
             $("#compose-send-button").removeAttr("disabled");
             $("#send-status").removeClass("alert-info")
