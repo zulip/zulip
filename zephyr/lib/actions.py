@@ -705,10 +705,13 @@ def do_finish_tutorial(user_profile):
     # We want to add the default subs list iff there were no subs
     try:
         prereg_user = PreregistrationUser.objects.get(email=user_profile.email)
+        streams = prereg_user.streams.all()
     except PreregistrationUser.DoesNotExist:
-        return
+        # If the user signed up via a mechanism other than
+        # PreregistrationUser (e.g. Google Apps connect or MitUser),
+        # just give them the default streams.
+        streams = []
 
-    streams = prereg_user.streams.all()
     if len(streams) == 0:
         streams = get_default_subs(user_profile)
     for stream in streams:
