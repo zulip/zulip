@@ -3,6 +3,7 @@ var compose = (function () {
 var exports = {};
 var is_composing_message = false;
 var faded_to;
+var message_snapshot;
 
 function show(tabname, focus_area) {
     if (tabname === "stream") {
@@ -202,6 +203,10 @@ exports.start = function (msg_type, opts) {
         show('private', $("#" + (focus_area || 'private_message_recipient')));
     }
 
+    if (message_snapshot !== undefined) {
+        $('#restore-draft').css('visibility', 'visible');
+    }
+
     if (opts.replying_to_message !== undefined) {
         do_fade(opts.replying_to_message, msg_type);
     }
@@ -244,6 +249,36 @@ function create_message_object() {
     return message;
 }
 
+exports.snapshot_message = function(message) {
+    if (!exports.composing() || (exports.message_content() === "")) {
+        // If you aren't in the middle of composing the body of a
+        // message, don't try to snapshot.
+        return;
+    }
+
+    if (message !== undefined) {
+        message_snapshot = $.extend({}, message);
+    } else {
+        // Save what we can.
+        message_snapshot = create_message_object();
+    }
+};
+
+function clear_message_snapshot() {
+    $("#restore-draft").css("visibility", "hidden");
+    message_snapshot = undefined;
+}
+
+exports.restore_message = function() {
+    if (!message_snapshot) {
+        return;
+    }
+    var snapshot_copy = $.extend({}, message_snapshot);
+    clear_message_snapshot();
+    exports.unfade_messages(true);
+    compose.start(snapshot_copy.type, snapshot_copy);
+};
+
 function compose_error(error_text, bad_input) {
     $('#send-status').removeClass(status_classes)
                .addClass('alert-error')
@@ -260,6 +295,7 @@ function send_message() {
     var send_status = $('#send-status');
 
     var request = create_message_object();
+    exports.snapshot_message(request);
 
     if (tutorial.is_running()) {
         tutorial.message_was_sent(request);
@@ -281,6 +317,7 @@ function send_message() {
             send_status.hide();
             is_composing_message = false;
             compose.hide();
+            clear_message_snapshot();
             $("#compose-send-button").removeAttr('disabled');
             $("#sending-indicator").hide();
         },
@@ -322,6 +359,7 @@ $(function () {
 });
 
 exports.hide = function () {
+    exports.snapshot_message();
     $('.message_comp').find('input, textarea, button').blur();
     $('.message_comp').slideUp(100,
                               function() { $('#compose').css({visibility: "hidden"});});

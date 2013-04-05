@@ -172,6 +172,10 @@ function get_private_message_recipient(message, attr) {
 
 function respond_to_message(reply_type) {
     var message, msg_type;
+    // Before initiating a reply to a message, if there's an
+    // in-progress composition, snapshot it.
+    compose.snapshot_message();
+
     message = current_msg_list.selected_message();
 
     if (message === undefined) {
