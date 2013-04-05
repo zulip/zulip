@@ -6,6 +6,11 @@ from django.db.models import Q
 from zephyr.models import UserProfile, Realm, Stream, Message, Recipient, UserActivity, \
     Subscription
 
+MOBILE_CLIENT_LIST = ["Android", "iPhone"]
+HUMAN_CLIENT_LIST = MOBILE_CLIENT_LIST + ["website"]
+
+human_messages = Message.objects.filter(sending_client__name__in=HUMAN_CLIENT_LIST)
+
 class Command(BaseCommand):
     help = "Generate statistics on realm activity."
 
@@ -20,21 +25,32 @@ class Command(BaseCommand):
 
     def messages_sent_by(self, user, days_ago):
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
-        return Message.objects.filter(sender=user, pub_date__gt=sent_time_cutoff).count()
+        return human_messages.filter(sender=user, pub_date__gt=sent_time_cutoff).count()
+
+    def total_messages(self, realm, days_ago):
+        sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
+        return Message.objects.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).count()
+
+    def human_messages(self, realm, days_ago):
+        sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
+        return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).count()
+
+    def api_messages(self, realm, days_ago):
+        return (self.total_messages(realm, days_ago) - self.human_messages(realm, days_ago))
 
     def stream_messages(self, realm, days_ago):
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
-        return Message.objects.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff,
-                                      recipient__type=Recipient.STREAM).count()
+        return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff,
+                                     recipient__type=Recipient.STREAM).count()
 
     def private_messages(self, realm, days_ago):
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
-        return Message.objects.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).exclude(
+        return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).exclude(
             recipient__type=Recipient.STREAM).exclude(recipient__type=Recipient.HUDDLE).count()
 
     def group_private_messages(self, realm, days_ago):
         sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
-        return Message.objects.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).exclude(
+        return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).exclude(
             recipient__type=Recipient.STREAM).exclude(recipient__type=Recipient.PERSONAL).count()
 
     def report_percentage(self, numerator, denominator, text):
@@ -73,6 +89,7 @@ class Command(BaseCommand):
 
                 print "%d stream messages" % (self.stream_messages(realm, days_ago),)
                 print "%d one-on-one private messages" % (self.private_messages(realm, days_ago),)
+                print "%d messages sent via the API" % (self.api_messages(realm, days_ago),)
                 print "%d group private messages" % (self.group_private_messages(realm, days_ago),)
 
             num_notifications_enabled = len(filter(lambda x: x.enable_desktop_notifications == True,
@@ -92,8 +109,8 @@ class Command(BaseCommand):
             self.report_percentage(num_enter_sends, num_active,
                                    "active users have enter-sends")
 
-            all_message_count = Message.objects.filter(sender__realm=realm).count()
-            multi_paragraph_message_count = Message.objects.filter(
+            all_message_count = human_messages.filter(sender__realm=realm).count()
+            multi_paragraph_message_count = human_messages.filter(
                 sender__realm=realm, content__contains="\n\n").count()
             self.report_percentage(multi_paragraph_message_count, all_message_count,
                                    "all messages are multi-paragraph")
