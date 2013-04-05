@@ -1,0 +1,2 @@
+#!/bin/sh -x
+while true; do python manage.py subscribe_new_users; sleep 1; done
