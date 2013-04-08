@@ -1082,3 +1082,8 @@ table.floating_recipient {
     /* Same width as a Bootstrap default text <input> with padding */
     width: 220px;
 }
+
+/* Override padding-top on form labels when they label only text */
+.form-horizontal .label_for_text {
+    padding-top: 0;
+}
