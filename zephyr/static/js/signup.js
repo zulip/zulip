@@ -3,9 +3,7 @@ $(function () {
     // some of the jQuery selectors below will return empty lists.
 
     $.validator.addMethod('password', function (value, element) {
-        var result = password_quality(value);
-        $('#pw_strength').width(result[0]);
-        return result[1];
+        return password_quality(value, $('#pw_strength .bar'));
     }, 'Password is weak.');
 
     function highlight(class_to_add) {

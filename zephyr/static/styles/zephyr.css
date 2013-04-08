@@ -1078,7 +1078,7 @@ table.floating_recipient {
 }
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */
-#pw_strength_outer {
+#pw_strength {
     /* Same width as a Bootstrap default text <input> with padding */
     width: 220px;
 }

@@ -758,9 +758,7 @@ $(function () {
     });
 
     $('#new_password').on('change keyup', function () {
-        var pw_quality = password_quality($('#new_password').val());
-        if (pw_quality !== undefined)
-            $('#pw_strength').width(pw_quality[0]);
+        password_quality($('#new_password').val(), $('#pw_strength .bar'));
     });
 
     var settings_status = $('#settings-status');
@@ -781,14 +779,14 @@ $(function () {
             // FIXME: Use the same jQuery validation plugin as the signup form?
             var new_pw = $('#new_password').val();
             if (new_pw !== '') {
-                var pw_quality = password_quality(new_pw);
-                if (pw_quality === undefined) {
+                var password_ok = password_quality(new_pw);
+                if (password_ok === undefined) {
                     // zxcvbn.js didn't load, for whatever reason.
                     settings_change_error(
                         'An internal error occurred; try reloading the page. ' +
                         'Sorry for the trouble!');
                     return false;
-                } else if (!pw_quality[1]) {
+                } else if (!password_ok) {
                     settings_change_error('New password is too weak');
                     return false;
                 }

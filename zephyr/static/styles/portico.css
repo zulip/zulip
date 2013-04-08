@@ -109,7 +109,7 @@ img.screenshot{
     margin-top: 2em;
 }
 
-#pw_strength_outer {
+#pw_strength {
     /* Same width as a Bootstrap default text <input> with padding */
     width: 220px;
 }
