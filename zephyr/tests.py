@@ -609,25 +609,25 @@ class SubscriptionPropertiesTest(AuthedTestCase):
     def test_get_stream_color(self):
         """
         A GET request to
-        /json/subscriptions/property?property=color returns a
-        list of (stream, color) pairs, both of which are strings.
+        /json/subscriptions/property?property=color+stream_name=foo returns
+        the color for stream foo.
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
+        subs = gather_subscriptions(self.get_user_profile(test_email))
         result = self.client.get("/json/subscriptions/property",
-                                  {"property": "color"})
+                                  {"property": "color",
+                                   "stream_name": subs[0]['name']})
 
         self.assert_json_success(result)
         json = simplejson.loads(result.content)
-        self.assertIn("stream_colors", json)
 
-        subs = gather_subscriptions(self.get_user_profile(test_email))
-        for stream, color in json["stream_colors"]:
-            self.assertIsInstance(color,  basestring)
-            self.assertIsInstance(stream, basestring)
-            self.assertIn({'name': stream, 'in_home_view': True, 'color': color, 'invite_only': False}, subs)
-            subs.remove({'name': stream, 'in_home_view': True, 'color': color, 'invite_only': False})
-        self.assertFalse(subs)
+        self.assertIn("stream_name", json)
+        self.assertIn("value", json)
+        self.assertIsInstance(json["stream_name"], basestring)
+        self.assertIsInstance(json["value"],  basestring)
+        self.assertEqual(json["stream_name"], subs[0]["name"])
+        self.assertEqual(json["value"], subs[0]["color"])
 
     def test_set_stream_color(self):
         """
@@ -651,10 +651,13 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         self.assert_json_success(result)
 
         new_subs = gather_subscriptions(self.get_user_profile(test_email))
-        self.assertIn({'name': stream_name, 'in_home_view': True, 'color': new_color, 'invite_only': invite_only}, new_subs)
+        sub = {'name': stream_name, 'in_home_view': True, 'color': new_color,
+               'invite_only': invite_only}
+        self.assertIn(sub, new_subs)
 
-        old_subs.remove({'name': stream_name, 'in_home_view': True, 'color': old_color, 'invite_only': invite_only})
-        new_subs.remove({'name': stream_name, 'in_home_view': True, 'color': new_color, 'invite_only': invite_only})
+        new_subs.remove(sub)
+        sub['color'] = old_color
+        old_subs.remove(sub)
         self.assertEqual(old_subs, new_subs)
 
     def test_set_color_missing_stream_name(self):
@@ -675,9 +678,10 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
+        subs = gather_subscriptions(self.get_user_profile(test_email))
         result = self.client.post("/json/subscriptions/property",
                                   {"property": "color",
-                                   "stream_name": "test"})
+                                   "stream_name": subs[0]["name"]})
 
         self.assert_json_error(result, "Missing 'value' argument")
 
@@ -685,12 +689,15 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         Trying to set an invalid property returns a JSON error.
         """
-        self.login("hamlet@humbughq.com")
+        test_email = "hamlet@humbughq.com"
+        self.login(test_email)
+        subs = gather_subscriptions(self.get_user_profile(test_email))
         result = self.client.post("/json/subscriptions/property",
-                                  {"property": "bad"})
+                                  {"property": "bad",
+                                   "stream_name": subs[0]["name"]})
 
         self.assert_json_error(result,
-                               "Unknown property or invalid verb for bad")
+                               "Unknown subscription property: bad")
 
 class SubscriptionAPITest(AuthedTestCase):
     fixtures = ['messages.json']

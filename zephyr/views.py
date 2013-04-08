@@ -1141,91 +1141,33 @@ def get_subscription_or_die(stream_name, user_profile):
 
     return subscription
 
-def set_in_home_view(user_profile, stream_name, value):
-    subscription = get_subscription_or_die(stream_name, user_profile)[0]
-
-    subscription.in_home_view = value
-    subscription.save(update_fields=["in_home_view"])
-
-class SubscriptionProperties(object):
-    """
-    A class for managing GET and POST requests for subscription properties. The
-    name for a request handler is <request type>_<property name>.
-
-    Requests must have already been authenticated before being processed here.
-
-    Requests that set or change subscription properties should typically log the
-    change through log_event.
-    """
-
-    def __call__(self, request, user_profile, property):
-        property_method = getattr(self, "%s_%s" % (request.method.lower(), property), None)
-        if not property_method:
-            return json_error("Unknown property or invalid verb for %s" % (property,))
-
-        return property_method(request, user_profile)
-
-    def request_property(self, request_dict, property):
-        try:
-            return request_dict[property].strip()
-        except KeyError:
-            raise RequestVariableMissingError(property)
-
-    def get_color(self, request, user_profile):
-        return json_success({"stream_colors": get_stream_colors(user_profile)})
-
-    def post_color(self, request, user_profile):
-        stream_name = self.request_property(request.POST, "stream_name")
-        color = self.request_property(request.POST, "value")
-
-        set_stream_color(user_profile, stream_name, color)
-        log_subscription_property_change(user_profile.email, stream_name,
-                                         "color", color)
-        return json_success()
-
-    def post_in_home_view(self, request, user_profile):
-        stream_name = self.request_property(request.POST, "stream_name")
-        value = self.request_property(request.POST, "value").lower()
-
-        if value == "true":
-            value = True
-        elif value == "false":
-            value = False
-        else:
-            raise JsonableError("Invalid value for `in_home_view`.")
-
-        set_in_home_view(user_profile, stream_name, value)
-
-        return json_success()
-
-subscription_properties = SubscriptionProperties()
-
-def make_property_call(request, query_dict, user_profile):
-    try:
-        property = query_dict["property"].strip()
-    except KeyError:
-        return json_error("Missing property")
-
-    return subscription_properties(request, user_profile, property.lower())
-
-def make_get_property_call(request, user_profile):
-    return make_property_call(request, request.GET, user_profile)
-
-def make_post_property_call(request, user_profile):
-    return make_property_call(request, request.POST, user_profile)
-
 @authenticated_json_view
-def json_subscription_property(request, user_profile):
+@has_request_variables
+def json_subscription_property(request, user_profile, stream_name=REQ,
+                               property=REQ):
     """
     This is the entry point to accessing or changing subscription
-    properties. Authentication happens here.
-
-    Add a handler for a new subscription property in SubscriptionProperties.
+    properties.
     """
+    property_converters = dict(color=lambda x: x,
+                               in_home_view=json_to_bool)
+    if property not in property_converters:
+        return json_error("Unknown subscription property: %s" % (property,))
+
+    sub = get_subscription_or_die(stream_name, user_profile)[0]
     if request.method == "GET":
-        return make_get_property_call(request, user_profile)
+        return json_success({'stream_name': stream_name,
+                             'value': getattr(sub, property)})
     elif request.method == "POST":
-        return make_post_property_call(request, user_profile)
+        @has_request_variables
+        def do_set_property(request,
+                            value=POST(converter=property_converters[property])):
+            setattr(sub, property, value)
+            sub.save(update_fields=[property])
+            log_subscription_property_change(user_profile.email, stream_name,
+                                             property, value)
+        do_set_property(request)
+        return json_success()
     else:
         return json_error("Invalid verb")
 
