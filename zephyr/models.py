@@ -340,6 +340,7 @@ class Subscription(models.Model):
 
     DEFAULT_STREAM_COLOR = "#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
+    notifications = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ("user_profile", "recipient")
