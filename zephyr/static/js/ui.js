@@ -756,6 +756,12 @@ $(function () {
     // have it (and instead to scroll to a weird place.)
     $('#gear-menu a[href="#subscriptions"]').on('shown', subs.setup_page);
 
+    $('#pw_change_link').on('click', function (e) {
+        e.preventDefault();
+        $('#pw_change_link').hide();
+        $('#pw_change_controls').show();
+    });
+
     $('#new_password').on('change keyup', function () {
         var pw_quality = password_quality($('#new_password').val());
         if (pw_quality !== undefined)

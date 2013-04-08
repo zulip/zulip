@@ -68,37 +68,47 @@
             </div>
         </div>
 
-        <div class="control-group">
-            <label for="old_password" class="control-label">Old password</label>
-            <div class="controls">
-                <input type="password" autocomplete="off"
-                       name="old_password" id="old_password" value="" />
-            </div>
+        <div class="control-group" id="pw_change_link">
+            <label class="control-label">
+                <a href="#settings">Change password</a>
+            </label>
         </div>
 
-        <div class="control-group">
-            <label for="new_password" class="control-label">New password</label>
-            <div class="controls">
-                <input type="password" autocomplete="off"
-                       name="new_password" id="new_password" value="" />
-            </div>
-        </div>
+        <div id="pw_change_controls">
 
-        <div class="control-group">
-            <label class="control-label">Password strength</label>
-            <div class="controls">
-                <div class="progress" id="pw_strength_outer">
-                    <div class="bar"  id="pw_strength" style="width: 10%;"></div>
+            <div class="control-group">
+                <label for="old_password" class="control-label">Old password</label>
+                <div class="controls">
+                    <input type="password" autocomplete="off"
+                           name="old_password" id="old_password" value="" />
                 </div>
             </div>
-        </div>
 
-        <div class="control-group">
-            <label for="confirm_password" class="control-label">Confirm password</label>
-            <div class="controls">
-                <input type="password" autocomplete="off"
-                       name="confirm_password" id="confirm_password" value="" />
+            <div class="control-group">
+                <label for="new_password" class="control-label">New password</label>
+                <div class="controls">
+                    <input type="password" autocomplete="off"
+                           name="new_password" id="new_password" value="" />
+                </div>
             </div>
+
+            <div class="control-group">
+                <label class="control-label">Password strength</label>
+                <div class="controls">
+                    <div class="progress" id="pw_strength_outer">
+                        <div class="bar"  id="pw_strength" style="width: 10%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="confirm_password" class="control-label">Confirm password</label>
+                <div class="controls">
+                    <input type="password" autocomplete="off"
+                           name="confirm_password" id="confirm_password" value="" />
+                </div>
+            </div>
+
         </div>
 
         <div class="control-group">

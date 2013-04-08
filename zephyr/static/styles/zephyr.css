@@ -1087,3 +1087,7 @@ table.floating_recipient {
 .form-horizontal .label_for_text {
     padding-top: 0;
 }
+
+#pw_change_controls {
+    display: none;
+}
