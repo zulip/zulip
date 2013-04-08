@@ -478,11 +478,12 @@ def do_remove_subscription(user_profile, stream, no_log=False):
 
     return did_remove
 
-def log_subscription_property_change(user_email, property, property_dict):
+def log_subscription_property_change(user_email, stream_name, property, value):
     event = {'type': 'subscription_property',
              'property': property,
-             'user': user_email}
-    event.update(property_dict)
+             'user': user_email,
+             'stream_name': stream_name,
+             'value': value}
     log_event(event)
 
 def do_activate_user(user_profile, log=True, join_date=timezone.now()):

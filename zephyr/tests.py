@@ -606,16 +606,16 @@ class MessagePOSTTest(AuthedTestCase):
 class SubscriptionPropertiesTest(AuthedTestCase):
     fixtures = ['messages.json']
 
-    def test_get_stream_colors(self):
+    def test_get_stream_color(self):
         """
         A GET request to
-        /json/subscriptions/property?property=stream_colors returns a
+        /json/subscriptions/property?property=color returns a
         list of (stream, color) pairs, both of which are strings.
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
         result = self.client.get("/json/subscriptions/property",
-                                  {"property": "stream_colors"})
+                                  {"property": "color"})
 
         self.assert_json_success(result)
         json = simplejson.loads(result.content)
@@ -644,9 +644,9 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         invite_only = sub['invite_only']
         new_color = "#ffffff" # TODO: ensure that this is different from old_color
         result = self.client.post("/json/subscriptions/property",
-                                  {"property": "stream_colors",
+                                  {"property": "color",
                                    "stream_name": stream_name,
-                                   "color": "#ffffff"})
+                                   "value": "#ffffff"})
 
         self.assert_json_success(result)
 
@@ -659,27 +659,27 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
     def test_set_color_missing_stream_name(self):
         """
-        Updating the stream_colors property requires a stream_name.
+        Updating the color property requires a stream_name.
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
         result = self.client.post("/json/subscriptions/property",
-                                  {"property": "stream_colors",
-                                   "color": "#ffffff"})
+                                  {"property": "color",
+                                   "value": "#ffffff"})
 
         self.assert_json_error(result, "Missing 'stream_name' argument")
 
     def test_set_color_missing_color(self):
         """
-        Updating the stream_colors property requires a color.
+        Updating the color property requires a color.
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
         result = self.client.post("/json/subscriptions/property",
-                                  {"property": "stream_colors",
+                                  {"property": "color",
                                    "stream_name": "test"})
 
-        self.assert_json_error(result, "Missing 'color' argument")
+        self.assert_json_error(result, "Missing 'value' argument")
 
     def test_set_invalid_property(self):
         """

@@ -554,9 +554,10 @@ def restore_saved_messages():
             continue
         elif message_type == "subscription_property":
             property_name = old_message.get("property")
-            if property_name == "stream_color":
+            if property_name == "stream_color" or property_name == "color":
+                color = old_message.get("color", old_message["value"])
                 pending_colors[(old_message["user"],
-                                old_message["stream_name"].lower())] = old_message["color"]
+                                old_message["stream_name"].lower())] = color
             else:
                 raise RuntimeError("Unknown property %s" % (property_name,))
             continue

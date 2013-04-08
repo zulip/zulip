@@ -1171,21 +1171,21 @@ class SubscriptionProperties(object):
         except KeyError:
             raise RequestVariableMissingError(property)
 
-    def get_stream_colors(self, request, user_profile):
+    def get_color(self, request, user_profile):
         return json_success({"stream_colors": get_stream_colors(user_profile)})
 
-    def post_stream_colors(self, request, user_profile):
+    def post_color(self, request, user_profile):
         stream_name = self.request_property(request.POST, "stream_name")
-        color = self.request_property(request.POST, "color")
+        color = self.request_property(request.POST, "value")
 
         set_stream_color(user_profile, stream_name, color)
-        log_subscription_property_change(user_profile.email, "stream_color",
-                                         {"stream_name": stream_name, "color": color})
+        log_subscription_property_change(user_profile.email, stream_name,
+                                         "color", color)
         return json_success()
 
     def post_in_home_view(self, request, user_profile):
         stream_name = self.request_property(request.POST, "stream_name")
-        value = self.request_property(request.POST, "in_home_view").lower()
+        value = self.request_property(request.POST, "value").lower()
 
         if value == "true":
             value = True

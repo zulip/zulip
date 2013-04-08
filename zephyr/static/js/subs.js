@@ -186,7 +186,7 @@ function stream_home_view_clicked(e) {
         data: {
             "property": "in_home_view",
             "stream_name": stream,
-            "in_home_view": in_home_view
+            "value": in_home_view
         },
         timeout:  10*1000
     });
@@ -200,9 +200,9 @@ function set_color(stream_name, color) {
         url:      '/json/subscriptions/property',
         dataType: 'json',
         data: {
-            "property": "stream_colors",
+            "property": "color",
             "stream_name": stream_name,
-            "color": color
+            "value": color
         },
         timeout:  10*1000
     });
