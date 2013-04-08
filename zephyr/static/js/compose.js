@@ -143,7 +143,7 @@ function do_fade(reply_message, fade_type) {
         type: fade_type
     };
     if (fade_type === "stream") {
-        faded_to.recipient_id = reply_message.recipient_id;
+        faded_to.display_recipient = reply_message.display_recipient;
         faded_to.subject = reply_message.subject;
     } else {
         faded_to.reply_to = reply_message.reply_to;
