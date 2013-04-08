@@ -1,5 +1,5 @@
 /**
- * @preserve XDate v0.8
+ * XDate v0.8
  * Docs & Licensing: http://arshaw.com/xdate/
  */
 
