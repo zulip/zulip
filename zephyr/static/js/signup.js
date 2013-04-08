@@ -3,7 +3,7 @@ $(function () {
     // some of the jQuery selectors below will return empty lists.
 
     $.validator.addMethod('password', function (value, element) {
-        return password_quality(value, $('#pw_strength .bar'));
+        return password_quality(value);
     }, 'Password is weak.');
 
     function highlight(class_to_add) {
@@ -29,10 +29,10 @@ $(function () {
         unhighlight: highlight('success')
     });
 
-    $('#id_password').keyup(function () {
-        // Start validating the password field as soon as the user
-        // starts typing, not waiting for the first blur.
-        $('#registration').validate().element('#id_password');
+    $('#id_password').on('change keyup', function () {
+        // Update the password strength bar even if we aren't validating
+        // the field yet.
+        password_quality($('#id_password').val(), $('#pw_strength .bar'));
     });
 
     $("#send_confirm").validate({
