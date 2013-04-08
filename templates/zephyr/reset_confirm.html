@@ -1,5 +1,10 @@
 {% extends "zephyr/portico_signup.html" %}
 
+{% block customhead %}
+{{ block.super }}
+<script type="text/javascript" src="/static/third/zxcvbn/zxcvbn.js"></script>
+{% endblock %}
+
 {% block portico_content %}
 
 <div class="pitch">
@@ -8,7 +13,7 @@
 </div>
 
 {% if validlink %}
-    <form method="post" class="form-horizontal" action="">
+    <form method="post" id="password_reset" class="form-horizontal" action="">
     {% csrf_token %}
         <div class="control-group">
             <label for="id_new_password1" class="control-label">Password</label>
@@ -21,6 +26,14 @@
                         <div class="alert alert-error">{{ error }}</div>
                     {% endfor %}
                 {% endif %}
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Password strength</label>
+            <div class="controls">
+                <div class="progress" id="pw_strength">
+                    <div class="bar bar-danger" style="width: 10%;"></div>
+                </div>
             </div>
         </div>
         <div class="control-group">

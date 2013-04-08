@@ -15,9 +15,10 @@ $(function () {
         };
     }
 
-    $('#registration').validate({
+    $('#registration, #password_reset').validate({
         rules: {
-            password: 'password_strength',
+            password:      'password_strength',
+            new_password1: 'password_strength'
         },
         errorElement: "p",
         errorPlacement: function (error, element) {
@@ -29,10 +30,10 @@ $(function () {
         unhighlight: highlight('success')
     });
 
-    $('#id_password').on('change keyup', function () {
+    $('#id_password, #id_new_password1').on('change keyup', function () {
         // Update the password strength bar even if we aren't validating
         // the field yet.
-        password_quality($('#id_password').val(), $('#pw_strength .bar'));
+        password_quality($(this).val(), $('#pw_strength .bar'));
     });
 
     $("#send_confirm").validate({
