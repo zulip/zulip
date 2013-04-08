@@ -765,6 +765,9 @@ $(function () {
     var settings_status = $('#settings-status');
 
     function settings_change_error(message) {
+        // Scroll to the top so the error message is visible.
+        // We would scroll anyway if we end up submitting the form.
+        viewport.scrollTop(0);
         settings_status.removeClass(status_classes)
             .addClass('alert-error')
             .text(message).stop(true).fadeTo(0,1);
