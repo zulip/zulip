@@ -148,24 +148,11 @@ function set_stream_property(stream_name, property, value) {
 }
 
 function stream_home_view_clicked(e) {
-    var in_home_view, cb;
-    if (e.target.type === "checkbox") {
-        in_home_view = e.target.checked;
-    } else {
-        cb = $(e.target).closest('.sub_setting_show_in_home').children('.sub_setting_show_in_home_cb')[0];
-        in_home_view = !cb.checked;
-        $(cb).prop("checked", in_home_view);
-    }
-
     var sub_row = $(e.target).closest('.subscription_row');
     var stream = sub_row.find('.subscription_name').text();
 
-    if (in_home_view === undefined) {
-        return;
-    }
-
     var sub = get_sub(stream);
-    sub.in_home_view = in_home_view;
+    sub.in_home_view = ! sub.in_home_view;
 
     setTimeout(function () {
         home_msg_list.clear({clear_selected_id: false});
@@ -192,7 +179,7 @@ function stream_home_view_clicked(e) {
     }, 0);
 
     exports.maybe_toggle_all_messages();
-    set_stream_property(stream, 'in_home_view', in_home_view);
+    set_stream_property(stream, 'in_home_view', sub.in_home_view);
 }
 
 function set_color(stream_name, color) {
@@ -738,7 +725,15 @@ $(function () {
 
     });
 
-    $("#subscriptions_table").on("click", ".sub_setting_show_in_home", stream_home_view_clicked);
+    $("#subscriptions_table").on("click", ".sub_setting_checkbox", function (e) {
+        var control = $(e.target).closest('.sub_setting_checkbox').find('.sub_setting_control');
+        // A hack.  Don't change the state of the checkbox if we
+        // clicked on the checkbox itself.
+        if (control[0] !== e.target) {
+            control.prop("checked", ! control.prop("checked"));
+        }
+    });
+    $("#subscriptions_table").on("click", "#sub_setting_in_home_view", stream_home_view_clicked);
 
     if (! should_render_subscribers()) {
         return;
