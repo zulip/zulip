@@ -2,7 +2,7 @@ $(function () {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
 
-    $.validator.addMethod('password', function (value, element) {
+    $.validator.addMethod('password_strength', function (value, element) {
         return password_quality(value);
     }, 'Password is weak.');
 
@@ -17,7 +17,7 @@ $(function () {
 
     $('#registration').validate({
         rules: {
-            id_password: 'password'
+            password: 'password_strength',
         },
         errorElement: "p",
         errorPlacement: function (error, element) {
