@@ -397,11 +397,6 @@ function hack_for_floating_recipient_bar() {
     floating_recipient.offset(offset);
 }
 
-exports.show_api_key_box = function () {
-    $("#get_api_key_box").show();
-    $("#api_key_button_box").hide();
-};
-
 var current_actions_popover_elem;
 function show_actions_popover(element, id) {
     var last_popover_elem = current_actions_popover_elem;
@@ -1069,7 +1064,8 @@ $(function () {
     });
 
     $('#api_key_button').click(function (e) {
-        ui.show_api_key_box();
+        $("#get_api_key_box").show();
+        $("#api_key_button_box").hide();
     });
     $('.change_gravatar_button').click(function (e) {
         ui.wait_for_gravatar();
