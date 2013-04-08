@@ -133,6 +133,20 @@ function update_stream_color(stream_name, color, opts) {
     update_stream_sidebar_swatch_color(stream_name, color);
 }
 
+function set_stream_property(stream_name, property, value) {
+    $.ajax({
+        type:     'POST',
+        url:      '/json/subscriptions/property',
+        dataType: 'json',
+        data: {
+            "property": property,
+            "stream_name": stream_name,
+            "value": value
+        },
+        timeout:  10*1000
+    });
+}
+
 function stream_home_view_clicked(e) {
     var in_home_view, cb;
     if (e.target.type === "checkbox") {
@@ -178,34 +192,12 @@ function stream_home_view_clicked(e) {
     }, 0);
 
     exports.maybe_toggle_all_messages();
-
-    $.ajax({
-        type:     'POST',
-        url:      '/json/subscriptions/property',
-        dataType: 'json',
-        data: {
-            "property": "in_home_view",
-            "stream_name": stream,
-            "value": in_home_view
-        },
-        timeout:  10*1000
-    });
+    set_stream_property(stream, 'in_home_view', in_home_view);
 }
 
 function set_color(stream_name, color) {
     update_stream_color(stream_name, color, {update_historical: true});
-
-    $.ajax({
-        type:     'POST',
-        url:      '/json/subscriptions/property',
-        dataType: 'json',
-        data: {
-            "property": "color",
-            "stream_name": stream_name,
-            "value": color
-        },
-        timeout:  10*1000
-    });
+    set_stream_property(stream_name, 'color', color);
 }
 
 var colorpicker_options = {
