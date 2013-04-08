@@ -22,7 +22,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, \
-    do_activate_user, do_create_user, check_send_message, \
+    do_send_confirmation_email, do_activate_user, do_create_user, check_send_message, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, set_stream_color, get_stream_colors, update_message_flags, \
@@ -352,10 +352,9 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
     # If we encounter an exception at any point before now, there are no unwanted side-effects,
     # since it is totally fine to have duplicate PreregistrationUsers
     for user in new_prereg_users:
-        Confirmation.objects.send_confirmation(user, user.email,
-                additional_context={'referrer': user_profile},
-                subject_template_path='confirmation/invite_email_subject.txt',
-                body_template_path='confirmation/invite_email_body.txt')
+        event = {"email": user.email, "referrer_email": user_profile.email}
+        queue_json_publish("invites", event,
+                           lambda event: do_send_confirmation_email(user, user_profile))
 
     if skipped:
         return json_error(data={'errors': skipped},

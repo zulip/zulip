@@ -358,6 +358,11 @@ def get_user_profile_by_id(uid):
 def get_user_profile_by_email(email):
     return UserProfile.objects.select_related().get(email__iexact=email)
 
+def get_prereg_user_by_email(email):
+    # A user can be invited many times, so only return the result of the latest
+    # invite.
+    return PreregistrationUser.objects.filter(email__iexact=email).latest("invited_at")
+
 class Huddle(models.Model):
     # TODO: We should consider whether using
     # CommaSeparatedIntegerField would be better.

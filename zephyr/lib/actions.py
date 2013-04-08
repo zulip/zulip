@@ -10,6 +10,9 @@ from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.core.exceptions import ValidationError
 from django.utils.importlib import import_module
+
+from confirmation.models import Confirmation
+
 session_engine = import_module(settings.SESSION_ENGINE)
 
 from zephyr.lib.initial_password import initial_password
@@ -801,3 +804,15 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
         ret['last_event_id'] = -1
 
     return ret
+
+def do_send_confirmation_email(invitee, referrer):
+    """
+    Send the confirmation/welcome e-mail to an invited user.
+
+    `invitee` is a PreregistrationUser.
+    `referrer` is a UserProfile.
+    """
+    Confirmation.objects.send_confirmation(
+        invitee, invitee.email, additional_context={'referrer': referrer},
+        subject_template_path='confirmation/invite_email_subject.txt',
+        body_template_path='confirmation/invite_email_body.txt')
