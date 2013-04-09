@@ -2,7 +2,7 @@ var hashchange = (function () {
 
 var exports = {};
 
-var expected_hash = false;
+var expected_hash;
 var changing_hash = false;
 
 // Some browsers zealously URI-decode the contents of
@@ -73,7 +73,13 @@ function do_hashchange() {
     // changed it, then we don't need to do anything.
     // (This function only neds to jump into action if it changed
     // because e.g. the back button was pressed by the user)
-    if (window.location.hash === expected_hash) {
+    //
+    // The second case is for handling the fact that some browsers
+    // automatically convert '#' to '' when you change the hash to '#'.
+    if (window.location.hash === expected_hash ||
+        (expected_hash !== undefined &&
+         window.location.hash.replace(/^#/, '') === '' &&
+         expected_hash.replace(/^#/, '') === '')) {
         return false;
     }
 
