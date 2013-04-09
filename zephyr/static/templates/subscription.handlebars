@@ -30,6 +30,10 @@
             <input class="sub_setting_control" type="checkbox" {{#if in_home_view}}checked{{/if}} />
             Include in home view</div>
           </li>
+          <li><div id="sub_setting_notifications" class="sub_setting_checkbox">
+            <input class="sub_setting_control" type="checkbox" {{#if notifications}}checked{{/if}} />
+            Show desktop notifications for traffic on this stream
+          </li>
           <li><span class="sub_setting_control"><input class="colorpicker" type="text" value="{{color}}" /></span>
             Stream color
           </li>

@@ -652,7 +652,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
         new_subs = gather_subscriptions(self.get_user_profile(test_email))
         sub = {'name': stream_name, 'in_home_view': True, 'color': new_color,
-               'invite_only': invite_only}
+               'invite_only': invite_only, 'notifications': False}
         self.assertIn(sub, new_subs)
 
         new_subs.remove(sub)

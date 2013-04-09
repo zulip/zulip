@@ -182,6 +182,15 @@ function stream_home_view_clicked(e) {
     set_stream_property(stream, 'in_home_view', sub.in_home_view);
 }
 
+function stream_notifications_clicked(e) {
+    var sub_row = $(e.target).closest('.subscription_row');
+    var stream = sub_row.find('.subscription_name').text();
+
+    var sub = get_sub(stream);
+    sub.notifications = ! sub.notifications;
+    set_stream_property(stream, 'notifications', sub.notifications);
+}
+
 function set_color(stream_name, color) {
     update_stream_color(stream_name, color, {update_historical: true});
     set_stream_property(stream_name, 'color', color);
@@ -214,7 +223,8 @@ function create_sub(stream_name, attrs) {
 
     sub = $.extend({}, {name: stream_name, color: pick_color(), id: next_sub_id++,
                         render_subscribers: should_render_subscribers(),
-                        subscribed: true, in_home_view: true, invite_only: false}, attrs);
+                        subscribed: true, in_home_view: true, invite_only: false,
+                        notifications: false}, attrs);
 
     add_sub(stream_name, sub);
     if (sub.subscribed) {
@@ -417,6 +427,14 @@ exports.get_invite_only = function (stream_name) {
     return sub.invite_only;
 };
 
+exports.receives_notifications = function (stream_name) {
+    var sub = get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.notifications;
+};
+
 function populate_subscriptions(subs) {
     var sub_rows = [];
     subs.sort(function (a, b) {
@@ -425,7 +443,8 @@ function populate_subscriptions(subs) {
     subs.forEach(function (elem) {
         var stream_name = elem.name;
         var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
-                                           invite_only: elem.invite_only, subscribed: true});
+                                           invite_only: elem.invite_only,
+                                           notifications: elem.notifications, subscribed: true});
         add_sub(stream_name, sub);
         sub_rows.push(sub);
     });
@@ -734,6 +753,7 @@ $(function () {
         }
     });
     $("#subscriptions_table").on("click", "#sub_setting_in_home_view", stream_home_view_clicked);
+    $("#subscriptions_table").on("click", "#sub_setting_notifications", stream_notifications_clicked);
 
     if (! should_render_subscribers()) {
         return;

@@ -191,6 +191,15 @@ exports.speaking_at_me = function (message) {
     return found_match;
 };
 
+function should_show_notification(message) {
+    return page_params.desktop_notifications_enabled &&
+        browser_desktop_notifications_on() &&
+        (message.type === "private" ||
+         exports.speaking_at_me(message) ||
+         (message.type === "stream" &&
+          subs.receives_notifications(message.display_recipient)));
+}
+
 exports.received_messages = function (messages) {
     var i, title_needs_update = false;
     if (window_has_focus) {
@@ -201,10 +210,7 @@ exports.received_messages = function (messages) {
         if (message.sender_email !== page_params.email && narrow.message_in_home(message)) {
             title_needs_update = true;
 
-            if (page_params.desktop_notifications_enabled &&
-                browser_desktop_notifications_on() &&
-                (message.type === "private" ||
-                exports.speaking_at_me(message))) {
+            if (should_show_notification(message)) {
                 process_desktop_notification(message);
             }
         }

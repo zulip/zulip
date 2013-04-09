@@ -737,7 +737,8 @@ def gather_subscriptions(user_profile):
         result.append({'name': stream_name,
                        'in_home_view': sub.in_home_view,
                        'invite_only': invite_only,
-                       'color': sub.color})
+                       'color': sub.color,
+                       'notifications': sub.notifications})
 
     return sorted(result)
 
