@@ -277,6 +277,21 @@ def accounts_accept_terms(request):
         { 'form': form, 'company_name': company_name, 'email': email },
         context_instance=RequestContext(request))
 
+def api_docs(request):
+    raw_calls = open('templates/zephyr/api_content.json', 'r').read()
+    calls = simplejson.loads(raw_calls)
+    langs = set()
+    for call in calls:
+        for example_type in ('request', 'response'):
+            for lang in call.get('example_' + example_type, []):
+                langs.add(lang)
+    return render_to_response(
+            'zephyr/api.html', {
+                'content': calls,
+                'langs': langs,
+                },
+        context_instance=RequestContext(request))
+
 @authenticated_json_post_view
 @has_request_variables
 def json_invite_users(request, user_profile, invitee_emails=POST):

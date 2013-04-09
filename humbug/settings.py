@@ -243,6 +243,10 @@ PIPELINE_JS = {
         'source_filenames': ('js/signup.js',),
         'output_filename':  'min/signup.js'
     },
+    'api': {
+        'source_filenames': ('js/api.js',),
+        'output_filename':  'min/api.js'
+    },
     'app_debug': {
         'source_filenames': ('js/debug.js',),
         'output_filename':  'min/app_debug.js'

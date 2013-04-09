@@ -113,3 +113,27 @@ img.screenshot{
     /* Same width as a Bootstrap default text <input> with padding */
     width: 220px;
 }
+
+.def:before {
+    content:" - "
+}
+
+.api-details {
+    margin-left: 2em;
+}
+
+.api-details ul {
+    list-style-type:none
+}
+
+.api-details dd {
+    margin-bottom: 1em;
+}
+
+.python {
+    display: none;
+}
+
+.commandline {
+    display: none;
+}
