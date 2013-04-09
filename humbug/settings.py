@@ -331,6 +331,11 @@ CACHES['database'] = {
             },
         }
 
+if DEPLOYED:
+    SERVER_LOG_PATH = "/home/humbug/logs/server.log"
+else:
+    SERVER_LOG_PATH = "server.log"
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -367,10 +372,13 @@ LOGGING = {
             'formatter': 'default'
         },
         'file': {
-            'level':     'DEBUG',
-            'class':     'logging.FileHandler',
-            'formatter': 'default',
-            'filename':  'server.log'
+            'level':       'DEBUG',
+            'class':       'logging.handlers.TimedRotatingFileHandler',
+            'formatter':   'default',
+            'filename':    SERVER_LOG_PATH,
+            'when':        'D',
+            'interval':    7,
+            'backupCount': 100000000,
         },
         # Django has some hardcoded code to add the
         # require_debug_false filter to the mail_admins handler if no
