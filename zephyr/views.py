@@ -225,6 +225,12 @@ def accounts_register(request):
                                 user_profile.email,
                                 )
                             )
+            # Mark any other PreregistrationUsers that are STATUS_ACTIVE as inactive
+            # so we can find the PreregistrationUser that we are actually working
+            # with here
+            PreregistrationUser.objects.filter(email=email)             \
+                                       .exclude(id=prereg_user.id)      \
+                                       .update(status=0)
 
             notify_new_user(user_profile)
             queue_json_publish(

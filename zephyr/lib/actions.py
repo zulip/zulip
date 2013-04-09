@@ -27,6 +27,8 @@ from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key, \
 from zephyr.decorator import get_user_profile_by_email, json_to_list, JsonableError
 from zephyr.lib.event_queue import request_event_queue, get_user_events
 
+import confirmation.settings
+
 from zephyr import tornado_callbacks
 
 import subprocess
@@ -731,9 +733,11 @@ def do_finish_tutorial(user_profile):
 
     # We want to add the default subs list iff there were no subs
     try:
-        prereg_user = PreregistrationUser.objects.get(email=user_profile.email)
+        prereg_user = PreregistrationUser.objects.filter(email=user_profile.email,
+                                                         status=confirmation.settings.STATUS_ACTIVE) \
+                                                 .order_by('-id')[0]
         streams = prereg_user.streams.all()
-    except PreregistrationUser.DoesNotExist:
+    except IndexError:
         # If the user signed up via a mechanism other than
         # PreregistrationUser (e.g. Google Apps connect or MitUser),
         # just give them the default streams.
