@@ -4,8 +4,11 @@ import sys
 import subprocess
 import pylibmc
 import traceback
-
+import logging
 from humbug_tools import check_output
+
+logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",
+                    level=logging.INFO)
 
 # Color codes
 OKBLUE = '\033[94m'
@@ -23,6 +26,14 @@ if len(sys.argv) > 1:
 subprocess.check_call(["git", "fetch"], stdout=open('/dev/null', 'w'))
 subprocess.check_call(["git", "reset", "--hard", refname], stdout=open('/dev/null', 'w'))
 
+# Delete all .pyc files to avoid old module files hanging around
+subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/dev/null', 'w'))
+
+# Update static files
+logging.info("Updating static files")
+subprocess.check_call(["./tools/update-prod-static"])
+
+logging.info("Restarting server...")
 subprocess.check_call(["./tools/restart-server"])
 
 if newrev == '0000000000000000000000000000000000000000':

@@ -18,16 +18,6 @@ ENDC = '\033[0m'
 
 os.chdir("/home/humbug/humbug")
 
-#subprocess.check_call(["python", "manage.py", "syncdb"], stdout=open('/dev/null', 'w'))
-
-# Delete all .pyc files to avoid old module files hanging around
-logging.info("Starting restart process")
-subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/dev/null', 'w'))
-
-# Update static files
-logging.info("Updating static files")
-subprocess.check_call(["./tools/update-prod-static"])
-
 # Restart the FastCGI process, which is running in a shell loop in screen.
 # TODO: real daemonization
 logging.info("Killing daemons")
