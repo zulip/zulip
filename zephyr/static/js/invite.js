@@ -36,8 +36,10 @@ exports.initialize = function () {
 
     $('#submit-invitation').button();
     $('#invite-user').on('show', prepare_form_to_be_shown);
-    invitee_emails.focus();
-    invitee_emails.autosize();
+    $('#invite-user').on('shown', function () {
+        invitee_emails.focus().autosize();
+    });
+
     $("#invite_user_form").ajaxForm({
         dataType: 'json',
         beforeSubmit: function(arr, $form, options) {
