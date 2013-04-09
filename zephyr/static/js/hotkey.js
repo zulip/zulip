@@ -100,6 +100,9 @@ function process_hotkey(e) {
     }
 
     if (directional_hotkeys_id.hasOwnProperty(code)) {
+        if (current_msg_list.empty()) {
+            return false;
+        }
         dirkey = directional_hotkeys_id[code];
         var next_id = dirkey.getid();
         last_viewport_movement_direction = dirkey.direction;
@@ -109,6 +112,9 @@ function process_hotkey(e) {
     }
 
     if (directional_hotkeys.hasOwnProperty(code)) {
+        if (current_msg_list.empty()) {
+            return false;
+        }
         dirkey = directional_hotkeys[code];
         last_viewport_movement_direction = dirkey.direction;
         next_row = dirkey.getrow(current_msg_list.selected_row());
@@ -129,6 +135,9 @@ function process_hotkey(e) {
     }
 
     if (narrow_hotkeys.hasOwnProperty(code)) {
+        if (current_msg_list.empty()) {
+            return false;
+        }
         narrow_hotkeys[code](current_msg_list.selected_id());
         return true;
     }
