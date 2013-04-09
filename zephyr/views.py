@@ -15,9 +15,9 @@ from django.core.mail import send_mail, mail_admins
 from django.db import transaction
 from django.template.defaultfilters import slugify
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
-    Recipient, get_huddle, Realm, UserMessage, \
+    Recipient, Realm, UserMessage, \
     PreregistrationUser, get_client, MitUser, UserActivity, \
-    MAX_SUBJECT_LENGTH, MAX_MESSAGE_LENGTH, get_stream, UserPresence, \
+    MAX_SUBJECT_LENGTH, get_stream, UserPresence, \
     get_recipient, valid_stream_name
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
@@ -40,7 +40,7 @@ from zephyr.decorator import require_post, \
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
-from zephyr.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
+from zephyr.lib.timestamp import datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.unminify import SourceMap
 from zephyr.lib.queue import queue_json_publish
@@ -52,14 +52,11 @@ import datetime
 import simplejson
 import re
 import urllib
-import time
-import requests
 import os
 import base64
 from os import path
 from functools import wraps
 from collections import defaultdict
-from zephyr.lib import bugdown
 
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
