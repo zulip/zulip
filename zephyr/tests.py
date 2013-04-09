@@ -2396,11 +2396,11 @@ class UnreadCountTests(AuthedTestCase):
         # All test users have a pointer at -1, so all messages are read
         for user in UserProfile.objects.all():
             for message in UserMessage.objects.filter(user_profile=user):
-                self.assertFalse(message.flags.read)
+                self.assertTrue(message.flags.read)
 
         self.login('hamlet@humbughq.com')
         for msg in self.get_old_messages():
-            self.assertEqual(msg['flags'], [])
+            self.assertEqual(msg['flags'], ['read'])
 
     def test_new_message(self):
         # Sending a new message results in unread UserMessages being created
@@ -2486,9 +2486,9 @@ class StarTests(AuthedTestCase):
 
         for msg in self.get_old_messages():
             if msg['id'] in message_ids:
-                self.assertEqual(msg['flags'], ['starred'])
+                self.assertEqual(msg['flags'], ['read', 'starred'])
             else:
-                self.assertEqual(msg['flags'], [])
+                self.assertEqual(msg['flags'], ['read'])
 
         result = self.change_star(message_ids, False)
         self.assert_json_success(result)
@@ -2496,7 +2496,7 @@ class StarTests(AuthedTestCase):
         # Remove the stars.
         for msg in self.get_old_messages():
             if msg['id'] in message_ids:
-                self.assertEqual(msg['flags'], [])
+                self.assertEqual(msg['flags'], ['read'])
 
     def test_new_message(self):
         """
