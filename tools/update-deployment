@@ -6,6 +6,7 @@ import pylibmc
 import traceback
 import logging
 from humbug_tools import check_output
+import datetime
 
 logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",
                     level=logging.INFO)
@@ -33,8 +34,15 @@ subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/
 logging.info("Updating static files")
 subprocess.check_call(["./tools/update-prod-static"])
 
+subprocess.check_call(["mkdir", '-p', '/home/humbug/humbug-deployments'])
+timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+deploy_path = "/home/humbug/humbug-deployments/%s" % (timestamp,)
+subprocess.check_call(["cp", '-a', '/home/humbug/humbug', deploy_path])
+subprocess.check_call(["ln", '-nsf', deploy_path, "/home/humbug/humbug-deployments/current"])
+
 logging.info("Restarting server...")
-subprocess.check_call(["./tools/restart-server"])
+subprocess.check_call(["/home/humbug/humbug-deployments/current/tools/restart-server"])
+
 
 if newrev == '0000000000000000000000000000000000000000':
     # 0000000000000000000000000000000000000000 means we're deleting the ref

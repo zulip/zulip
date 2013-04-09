@@ -9,7 +9,7 @@ error_page 502 503 504 /static/html/5xx.html;
 
 # Serve static files directly
 location /static/ {
-    alias /home/humbug/humbug/prod-static/serve/;
+    alias /home/humbug/humbug-deployments/current/prod-static/serve/;
     error_page 404 /static/html/404.html;
 }
 
@@ -30,6 +30,6 @@ location ~ /json/get_updates|/api/v1/get_messages|/api/v1/messages/latest|/json/
 # Send everything else to Django via FastCGI
 location / {
     include fastcgi_params;
-    fastcgi_pass unix:/home/humbug/humbug/fastcgi-socket;
+    fastcgi_pass unix:/home/humbug/humbug-deployments/current/fastcgi-socket;
     fastcgi_split_path_info ^()(.*)$;
 }

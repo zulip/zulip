@@ -16,7 +16,7 @@ WARNING = '\033[93m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
 
-os.chdir("/home/humbug/humbug")
+os.chdir("/home/humbug/humbug-deployments/current")
 
 # Restart the FastCGI process, which is running in a shell loop in screen.
 # TODO: real daemonization
