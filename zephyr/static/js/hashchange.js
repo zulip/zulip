@@ -23,6 +23,7 @@ exports.changehash = function (newhash) {
     if (changing_hash) {
         return;
     }
+    $(document).trigger($.Event('hashchange'));
     expected_hash = newhash;
     // Some browsers reset scrollTop when changing the hash to "",
     // so we save and restore it.
@@ -104,6 +105,7 @@ function do_hashchange() {
 
 function hashchanged() {
     changing_hash = true;
+    $(document).trigger($.Event('hashchange.zephyr'));
     var ret = do_hashchange();
     changing_hash = false;
     return ret;
