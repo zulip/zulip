@@ -3,7 +3,7 @@
 The Humbug API Python bindings require the following Python libraries:
 
 * simplejson
-* requests (version >= 0.12)
+* requests (version >= 0.12.1)
 
 
 #### Installing
