@@ -142,7 +142,10 @@ def gc_event_queues():
     for user_id in affected_users:
         new_client_list = filter(lambda c: c.event_queue.id not in to_remove,
                                 user_clients[user_id])
-        user_clients[user_id] = new_client_list
+        if len(new_client_list) == 0:
+            del user_clients[user_id]
+        else:
+            user_clients[user_id] = new_client_list
 
     logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.'
                   + '  Now %d active queues')
