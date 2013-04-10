@@ -19,13 +19,18 @@ function password_quality(password, bar) {
     if (typeof zxcvbn === 'undefined')
         return undefined;
 
-    var result     = zxcvbn(password);
-    var acceptable = result.crack_time >= 1e5;
-    var quality;
+    // Consider the password acceptable if it's at least 6 characters.
+    var acceptable = password.length >= 6;
 
     if (bar !== undefined) {
         // Compute a quality score in [0,1].
-        quality = Math.min(1, Math.log(1 + result.crack_time) / 22);
+        var result  = zxcvbn(password);
+        var quality = Math.min(1, Math.log(1 + result.crack_time) / 22);
+
+        // Even if zxcvbn loves your short password, the bar should be filled
+        // at most 1/3 of the way, because we won't accept it.
+        if (!acceptable)
+            quality = Math.min(quality, 0.33);
 
         // Display the password quality score on a progress bar
         // which bottoms out at 10% so there's always something
