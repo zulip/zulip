@@ -1,0 +1,7 @@
+<ul class='expanded_subjects {{#if hidden}}hidden{{/if}}' data-stream='{{stream}}'>
+    {{#each subjects}}
+    <li class='expanded_subject' data-name='{{subject}}'>
+        <a href='#narrow/stream/{{../stream}}/subject/{{subject}}'>{{subject}}</a>
+    </li>
+    {{/each}}
+</ul>

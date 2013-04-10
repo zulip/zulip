@@ -371,14 +371,31 @@ exports.activate = function (operators, opts) {
     compose.update_recipient_on_narrow();
     compose.update_faded_messages();
 
-    $("ul.filters li").removeClass('active-filter');
+    $("ul.filters li").removeClass('active-filter active-subject-filter');
+    $("ul.expanded_subjects").addClass('hidden');
+
+    function expand_stream(stream) {
+        var filter_li = ui.get_filter_li('stream', operators[0][1]);
+        $('ul.expanded_subjects', filter_li).removeClass('hidden');
+
+        return filter_li;
+    }
+
     if (operators.length === 1) {
         if (operators[0][0] === 'in' && operators[0][1] === 'all') {
             $("#global_filters li[data-name='all']").addClass('active-filter');
         } else if (operators[0][0] === "stream") {
-            ui.get_filter_li('stream', operators[0][1]).addClass('active-filter');
+            var filter_li = expand_stream(operators[0][0]);
+            filter_li.addClass('active-filter');
         } else if (operators[0][0] === "is" && operators[0][1] === "private-message") {
             $("#global_filters li[data-name='private']").addClass('active-filter');
+        }
+    } else if (operators.length === 2) {
+        if (operators[0][0] === 'stream' &&
+            operators[1][0] === 'subject') {
+            expand_stream(operators[0][0]);
+            ui.get_subject_filter_li(operators[0][1], operators[1][1])
+                .addClass('active-subject-filter');
         }
     }
 };
@@ -448,7 +465,8 @@ exports.deactivate = function () {
 
     hashchange.save_narrow();
 
-    $("ul.filters li").removeClass('active-filter');
+    $("ul.filters li").removeClass('active-filter active-subject-filter');
+    $("ul.expanded_subjects").addClass('hidden');
     $("#global_filters li[data-name='home']").addClass('active-filter');
 
     // This really shouldn't be necessary since the act of unnarrowing

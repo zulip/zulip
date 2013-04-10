@@ -4,6 +4,7 @@ var narrowed_msg_list;
 var current_msg_list = home_msg_list;
 var subject_dict = {};
 var people_dict = {};
+var recent_subjects = {};
 
 var queued_mark_as_read = [];
 var queued_flag_timer;
@@ -462,6 +463,40 @@ function case_insensitive_find(term, array) {
     }).length !== 0;
 }
 
+var update_recent_subjects = $.debounce(100, ui.update_recent_subjects);
+
+function process_message_for_recent_subjects(message) {
+    var current_timestamp = 0;
+
+    if (! recent_subjects.hasOwnProperty(message.display_recipient)) {
+        recent_subjects[message.display_recipient] = [];
+    } else {
+        recent_subjects[message.display_recipient] =
+            $.grep(recent_subjects[message.display_recipient], function (item) {
+                if (item.subject === message.subject) {
+                    current_timestamp = item.timestamp;
+                }
+
+                return item.subject !== message.subject;
+            });
+    }
+
+    var recents = recent_subjects[message.display_recipient];
+    if (recents.length >= 5 && message.timestamp > recents[4].timestamp) {
+        recents = recents.slice(0, recents.length - 1);
+    }
+
+    recents.push({subject: message.subject,
+                  timestamp: Math.max(message.timestamp, current_timestamp)});
+
+    recents.sort(function (a, b) {
+        return a.timestamp < b.timestamp;
+    });
+
+    recent_subjects[message.display_recipient] = recents;
+    update_recent_subjects();
+}
+
 function add_message_metadata(message, dummy) {
     if (all_msg_list.get(message.id)) {
         return all_msg_list.get(message.id);
@@ -486,6 +521,8 @@ function add_message_metadata(message, dummy) {
             // the subject box's source is a function
         }
         message.reply_to = message.sender_email;
+
+        process_message_for_recent_subjects(message);
 
         involved_people = [{'full_name': message.sender_full_name,
                             'email': message.sender_email}];

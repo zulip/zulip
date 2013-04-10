@@ -206,7 +206,7 @@ ul.filters hr {
     margin-bottom: 10px;
 }
 
-li.active-filter {
+li.active-filter, li.active-subject-filter {
     font-weight: bold;
 }
 
@@ -1043,6 +1043,15 @@ table.floating_recipient {
     width: 1em;
     height: 1em;
     vertical-align: middle;
+}
+
+ul.expanded_subjects {
+    list-style-type: none;
+    font-weight: normal;
+}
+
+li.expanded_subject {
+    margin-left: .3em;
 }
 
 .twitter-tweet {

@@ -1014,18 +1014,31 @@ $(function () {
         e.preventDefault();
     });
 
-    $('#stream_filters li').on('click', 'a', function (e) {
+    $('#stream_filters li').on('click', 'a.subscription_name', function (e) {
         var stream = $(e.target).parents('li').data('name');
         narrow.by('stream', stream, {select_first_unread: true});
 
         e.preventDefault();
     });
 
-    $('#stream_filters li').on('click', 'a', function (e) {
-        var stream = $(e.target).parents('li').data('name');
-        narrow.by('stream', stream, {select_first_unread: true});
+    $('#stream_filters').on('click', '.expanded_subject a', function (e) {
+        var stream = $(e.target).parents('ul').data('stream');
+        var subject = $(e.target).parents('li').data('name');
+
+        narrow.activate([['stream',  stream],
+                         ['subject', subject]],
+                        {select_first_unread: true});
 
         e.preventDefault();
+    });
+
+    $('#stream_filters').on('click', '.streamlist_expand', function (e) {
+        var stream_li = $(e.target).parents('li');
+        var stream = stream_li.data('name');
+
+        $('ul.expanded_subjects', stream_li).toggleClass('hidden');
+
+        return false;
     });
 
     $('.composebox-close').click(function (e) { compose.cancel(); });
@@ -1112,7 +1125,7 @@ $(function () {
 });
 
 function sort_narrow_list() {
-    var items = $('#stream_filters li').get();
+    var items = $('#stream_filters > li').get();
     var parent = $('#stream_filters');
     items.sort(function(a,b){
         return $(a).attr('data-name').localeCompare($(b).attr('data-name'));
@@ -1125,16 +1138,25 @@ function sort_narrow_list() {
     });
 }
 
-exports.get_filter_li = function(type, name) {
+function iterate_to_find(selector, data_name, context) {
     var retval = $();
-    $("#" + type + "_filters li").each(function (idx, elem) {
+    $(selector, context).each(function (idx, elem) {
         var jelem = $(elem);
-        if (jelem.attr('data-name') === name) {
+        if (jelem.attr('data-name') === data_name) {
             retval = jelem;
             return false;
         }
     });
     return retval;
+}
+
+exports.get_filter_li = function(type, name) {
+    return iterate_to_find("#" + type + "_filters > li", name);
+};
+
+exports.get_subject_filter_li = function(stream, subject) {
+    var stream_li = exports.get_filter_li('stream', stream);
+    return iterate_to_find(".expanded_subjects li", subject, stream_li);
 };
 
 exports.add_narrow_filter = function(name, type, uri) {
@@ -1287,6 +1309,59 @@ exports.restore_compose_cursor = function () {
     $('#new_message_content')
         .focus()
         .caret(saved_compose_cursor, saved_compose_cursor);
+};
+
+exports.update_recent_subjects = function () {
+    function same(arr1, arr2) {
+        var i = 0;
+
+        if (arr1.length !== arr2.length) return false;
+        for (i = 0; i < arr1.length; i++) {
+            if (arr2[i] !== arr1[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    $("#stream_filters > li").each(function (idx, elem) {
+        var stream = $(elem).data('name');
+        var expander = $('.streamlist_expand', elem);
+        var subjects = recent_subjects[stream] || [];
+        var subject_names = $.map(subjects, function (elem, idx) {
+            return elem.subject;
+            });
+
+        expander.toggleClass('hidden', subjects.length === 0);
+
+        var currently_shown = $('ul.expanded_subjects li', elem).map(function(idx, elem) {
+            return $(elem).text().trim();
+        });
+
+        if (!same(currently_shown, subject_names)) {
+            var subject_list = $("ul.expanded_subjects", elem);
+
+            var was_hidden = subject_list.length === 0 || subject_list.hasClass('hidden');
+            // If this is the first subject in current narrow, show it regardless
+            var operators = narrow.operators();
+            if (subject_list.length === 0 && operators.length > 0 && operators[0][0] === 'stream') {
+                was_hidden = operators[0][1] !== stream;
+            }
+            var active_subject = $("ul.expanded_subjects li.active-subject-filter").text().trim();
+
+            subject_list.remove();
+
+            if (subjects.length > 0) {
+                $(elem).append(templates.render('sidebar_subject_list',
+                                                {subjects: subjects,
+                                                 stream: stream,
+                                                 hidden: was_hidden}));
+                if (active_subject !== '') {
+                    exports.get_subject_filter_li(stream, active_subject).addClass('active-subject-filter');
+                }
+            }
+        }
+    });
 };
 
 return exports;
