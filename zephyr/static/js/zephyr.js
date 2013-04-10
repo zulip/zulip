@@ -802,7 +802,6 @@ function get_updates(options) {
 
 function load_old_messages(opts) {
     opts = $.extend({}, {
-        for_narrow: false,
         cont_will_add_messages: false
     }, opts);
 
@@ -810,7 +809,7 @@ function load_old_messages(opts) {
                 num_before: opts.num_before,
                 num_after: opts.num_after};
 
-    if (opts.for_narrow && narrow.active())
+    if (opts.msg_list.narrowed && narrow.active())
         data.narrow = JSON.stringify(narrow.public_operators());
 
     function process_result(messages) {
@@ -845,7 +844,7 @@ function load_old_messages(opts) {
         data:     data,
         dataType: 'json',
         success: function (data) {
-            if (opts.for_narrow && opts.msg_list !== current_msg_list) {
+            if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
                 // We unnarrowed before receiving new messages so
                 // don't bother processing the newly arrived messages.
                 return;
@@ -862,7 +861,7 @@ function load_old_messages(opts) {
             process_result(data.messages);
         },
         error: function (xhr, error_type, exn) {
-            if (opts.for_narrow && opts.msg_list !== current_msg_list) {
+            if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
                 // We unnarrowed before getting an error so don't
                 // bother trying again or doing further processing.
                 return;
@@ -980,8 +979,7 @@ function load_more_messages(msg_list) {
             if (messages.length === batch_size + 1) {
                 load_more_enabled = true;
             }
-        },
-        for_narrow: narrow.active()
+        }
     });
 }
 

@@ -13,6 +13,10 @@ function MessageList(table_name, opts) {
     if (this.table_name) {
         this._clear_table();
     }
+    this.narrowed = false;
+    if (this.table_name === "zfilt") {
+        this.narrowed = true;
+    }
     return this;
 }
 

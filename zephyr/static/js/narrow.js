@@ -333,7 +333,6 @@ exports.activate = function (operators, opts) {
             cont: function (messages) {
                 maybe_select_closest();
             },
-            for_narrow: true,
             cont_will_add_messages: false
         });
     }
