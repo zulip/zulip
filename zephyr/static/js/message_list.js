@@ -76,6 +76,7 @@ MessageList.prototype = {
     _clear_rendering_state: function MessageList__clear_rendering_state() {
         this._message_groups = [];
         this._clear_table();
+        this.last_message_historical = false;
     },
 
     clear: function  MessageList_clear(opts) {
@@ -245,6 +246,11 @@ MessageList.prototype = {
         var current_group = [];
         var new_message_groups = [];
 
+        if (where === "bottom") {
+            // Remove the trailing bookend; it'll be re-added after we do our rendering
+            this.clear_trailing_bookend();
+        }
+
         if (where === 'top' && this.collapse_messages && this._message_groups.length > 0) {
             // Delete the current top message group, and add it back in with these
             // messages, in order to collapse properly.
@@ -319,6 +325,7 @@ MessageList.prototype = {
 
             messages_to_render.push(message);
             prev = message;
+            self.last_message_historical = message.historical;
         });
 
         if (messages_to_render.length === 0) {
@@ -370,6 +377,8 @@ MessageList.prototype = {
             table.find('.ztable_layout_row').after(rendered_elems);
         } else {
             table.append(rendered_elems);
+
+            this.update_trailing_bookend();
 
             // XXX: This is absolutely awful.  There is a firefox bug
             // where when table rows as DOM elements are appended (as
@@ -427,6 +436,43 @@ MessageList.prototype = {
             $("html, body").animate({scrollTop: viewport_offset +
                                      Math.min(new_messages_height, available_space_for_scroll)},
                                     {"queue": "autoscroll"});
+        }
+    },
+
+    clear_trailing_bookend: function MessageList_clear_trailing_bookend() {
+        var trailing_bookend = rows.get_table(this.table_name).find('#trailing_bookend');
+        trailing_bookend.remove();
+    },
+
+    // Maintains a trailing bookend element explaining any changes in
+    // your subscribed/unsubscribed status at the bottom of the
+    // message list.
+    update_trailing_bookend: function MessageList_update_trailing_bookend() {
+        this.clear_trailing_bookend();
+        if (!this.narrowed) {
+            return;
+        }
+        var stream = narrow.stream();
+        if (stream === undefined) {
+            return;
+        }
+        var trailing_bookend_content, subscribed = subs.have(stream);
+        if (subscribed) {
+            if (this.last_message_historical) {
+                trailing_bookend_content = "--- Subscribed to stream " + stream + " ---";
+            }
+        } else {
+            if (!this.last_message_historical) {
+                trailing_bookend_content = "--- Unsubscribed from stream " + stream + " ---";
+            } else {
+                trailing_bookend_content = "--- Not subscribed to stream " + stream + " ---";
+            }
+        }
+        if (trailing_bookend_content !== undefined) {
+            var rendered_trailing_bookend = $(templates.render('trailing_bookend', {
+                trailing_bookend: trailing_bookend_content
+            }));
+            rows.get_table(this.table_name).append(rendered_trailing_bookend);
         }
     },
 

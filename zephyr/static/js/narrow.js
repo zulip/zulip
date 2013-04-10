@@ -276,6 +276,16 @@ function build_filter(operators_mixed_case) {
     };
 }
 
+exports.stream = function () {
+    var j;
+    for (j = 0; j < current_operators.length; j++) {
+        if (current_operators[j][0] === "stream") {
+            return current_operators[j][1];
+        }
+    }
+    return undefined;
+};
+
 exports.activate = function (operators, opts) {
     opts = $.extend({}, {
         then_select_id: home_msg_list.selected_id(),
