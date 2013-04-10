@@ -591,7 +591,7 @@ function add_messages_helper(messages, msg_list, predicate) {
     return top_messages.length > 0;
 }
 
-function add_messages(messages, msg_list, opts) {
+function add_messages(messages, msg_list) {
     var prepended = false;
     if (!messages)
         return;
@@ -827,7 +827,7 @@ function load_old_messages(opts) {
         // the all_msg_list as well, as the home_msg_list is reconstructed
         // from all_msg_list.
         if (opts.msg_list === home_msg_list) {
-            add_messages(messages, all_msg_list, {append_to_table: false});
+            add_messages(messages, all_msg_list);
         }
 
         if (messages.length !== 0 && !opts.cont_will_add_messages) {

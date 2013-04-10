@@ -162,7 +162,7 @@ function stream_home_view_clicked(e) {
         var saved_ypos = window.scrollY;
 
         // Recreate the home_msg_list with the newly filtered all_msg_list
-        add_messages(all_msg_list.all(), home_msg_list, {append_to_table: true, update_unread_counts: false});
+        add_messages(all_msg_list.all(), home_msg_list);
 
         // Ensure we're still at the same scroll position
         window.scrollTo(0, saved_ypos);
