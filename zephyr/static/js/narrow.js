@@ -283,6 +283,15 @@ exports.activate = function (operators, opts) {
         change_hash: true
     }, opts);
 
+    if (opts.then_select_id === -1) {
+        // If we're loading the page via a narrowed URL, we may not
+        // have setup the home view yet.  In that case, use the
+        // initial pointer.  We can remove this code if we later move
+        // to a model where home_msg_list.selected_id() is always
+        // initialized early.
+        opts.then_select_id = page_params.initial_pointer;
+    }
+
     // Unfade the home view before we switch tables.
     compose.unfade_messages();
 
