@@ -558,6 +558,7 @@ function add_message_metadata(message, dummy) {
 function add_messages_helper(messages, msg_list, predicate) {
     var top_messages = [];
     var bottom_messages = [];
+    var interior_messages = [];
 
     // If we're initially populating the list, save the messages in
     // bottom_messages regardless
@@ -577,15 +578,15 @@ function add_messages_helper(messages, msg_list, predicate) {
             } else if (msg.id > msg_list.last().id) {
                 bottom_messages.push(msg);
             } else {
-                blueslip.error("Attempting to insert a message in the middle of the msg_list",
-                               {table: msg_list.table_name, first_id: msg_list.first().id,
-                                last_id: msg_list.last().id, new_id: msg.id,
-                                msg_list_size: msg_list.all().length});
-                bottom_messages.push(msg);
+                interior_messages.push(msg);
             }
         });
     }
 
+    if (interior_messages.length > 0) {
+        msg_list.add_and_rerender(top_messages.concat(interior_messages).concat(bottom_messages));
+        return true;
+    }
     msg_list.prepend(top_messages);
     msg_list.append(bottom_messages);
     return top_messages.length > 0;

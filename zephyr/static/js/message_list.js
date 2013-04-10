@@ -73,13 +73,17 @@ MessageList.prototype = {
         rows.get_table(this.table_name).children().detach();
     },
 
+    _clear_rendering_state: function MessageList__clear_rendering_state() {
+        this._message_groups = [];
+        this._clear_table();
+    },
+
     clear: function  MessageList_clear(opts) {
         opts = $.extend({}, {clear_selected_id: true}, opts);
 
         this._items = [];
         this._hash = {};
-        this._message_groups = [];
-        this._clear_table();
+        this._clear_rendering_state();
 
         if (opts.clear_selected_id) {
             this._selected_id = -1;
@@ -157,14 +161,29 @@ MessageList.prototype = {
     // trigger a re-render
     _RENDER_THRESHOLD: 50,
 
+    _update_render_window: function MessageList__update_render_window(selected_idx, check_for_changed) {
+        var new_start = Math.max(selected_idx - this._RENDER_WINDOW_SIZE / 2, 0);
+        if (check_for_changed && new_start === this._render_win_start) {
+            return false;
+        }
+
+        this._render_win_start = new_start;
+        this._render_win_end = Math.min(this._render_win_start + this._RENDER_WINDOW_SIZE,
+                                        this._items.length);
+        return true;
+    },
+
+    _selected_idx: function MessageList__selected_idx() {
+        return util.lower_bound(this._items, this._selected_id,
+                                function (a, b) { return a.id < b; });
+    },
+
     _maybe_rerender: function MessageList__maybe_rerender() {
         if (this.table_name === undefined) {
             return false;
         }
 
-        var selected_idx = util.lower_bound(this._items, this._selected_id,
-                                            function (a, b) { return a.id < b; });
-        var new_start;
+        var selected_idx = this._selected_idx();
 
         // We rerender under the following conditions:
         // * The selected message is within this._RENDER_THRESHOLD messages
@@ -183,14 +202,9 @@ MessageList.prototype = {
             return false;
         }
 
-        new_start = Math.max(selected_idx - this._RENDER_WINDOW_SIZE / 2, 0);
-        if (new_start === this._render_win_start) {
+        if (!this._update_render_window(selected_idx, true)) {
             return false;
         }
-
-        this._render_win_start = new_start;
-        this._render_win_end = Math.min(this._render_win_start + this._RENDER_WINDOW_SIZE,
-                                        this._items.length);
 
         // scrolltop_offset is the number of pixels between the top of the
         // viewable window and the newly selected message
@@ -431,6 +445,22 @@ MessageList.prototype = {
 
         this._render_win_start += messages.length;
         this._render_win_end += messages.length;
+    },
+
+    add_and_rerender: function MessageList_interior(messages) {
+        // To add messages that might be in the interior of our
+        // existing messages list, we just add the new messages and
+        // then rerender the whole thing.
+        this._items = messages.concat(this._items);
+        this._items.sort(function(a, b) {return a.id - b.id;});
+        this._add_to_hash(messages);
+
+        this._clear_rendering_state();
+
+        this._update_render_window(this._selected_idx(), false);
+
+        this._render(this._items.slice(this._render_win_start,
+                                       this._render_win_end), 'bottom');
     },
 
     all: function MessageList_all() {
