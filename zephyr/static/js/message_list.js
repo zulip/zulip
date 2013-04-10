@@ -203,8 +203,7 @@ MessageList.prototype = {
 
         this._clear_table();
         this._render(this._items.slice(this._render_win_start,
-                                       this._render_win_end),
-                     'bottom', true);
+                                       this._render_win_end), 'bottom');
 
         // If we could see the newly selected message, scroll the
         // window such that the newly selected message is at the
