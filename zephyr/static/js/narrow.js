@@ -333,18 +333,19 @@ exports.activate = function (operators, opts) {
         add_messages(all_msg_list.all(), narrowed_msg_list);
     }
 
-    if (narrowed_msg_list.empty()) {
-        load_old_messages({
-            anchor: then_select_id,
-            num_before: 200,
-            num_after: 200,
-            msg_list: narrowed_msg_list,
-            cont: function (messages) {
+    var defer_selecting_closest = narrowed_msg_list.empty();
+    load_old_messages({
+        anchor: then_select_id,
+        num_before: 200,
+        num_after: 200,
+        msg_list: narrowed_msg_list,
+        cont: function (messages) {
+            if (defer_selecting_closest) {
                 maybe_select_closest();
-            },
-            cont_will_add_messages: false
-        });
-    }
+            }
+        },
+        cont_will_add_messages: false
+    });
 
     // Show the new set of messages.
     $("#main_div").addClass("narrowed_view");
@@ -353,7 +354,9 @@ exports.activate = function (operators, opts) {
     $("#zfilt").css("opacity", 0).animate({opacity: 1});
 
     reset_load_more_status();
-    maybe_select_closest();
+    if (! defer_selecting_closest) {
+        maybe_select_closest();
+    }
 
     function extract_search_terms(operators) {
         var i = 0;

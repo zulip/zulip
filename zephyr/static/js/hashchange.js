@@ -121,9 +121,7 @@ exports.initialize = function () {
     // jQuery doesn't have a hashchange event, so we manually wrap
     // our event handler
     window.onhashchange = blueslip.wrap_function(hashchanged);
-    if (hashchanged()) {
-        load_more_messages(current_msg_list);
-    }
+    hashchanged();
 };
 
 return exports;
