@@ -642,7 +642,6 @@ def get_old_messages_backend(request, user_profile,
                              num_before = REQ(converter=to_non_negative_int),
                              num_after = REQ(converter=to_non_negative_int),
                              narrow = REQ('narrow', converter=narrow_parameter, default=None),
-                             stream = REQ(default=None),
                              apply_markdown=True):
     include_history = False
     if narrow is not None:
