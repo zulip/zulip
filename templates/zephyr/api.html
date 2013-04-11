@@ -93,6 +93,9 @@ to pull out the resulting HTML :)
 
 <span class="k">print</span> <span class="n">client</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">stream_message</span><span class="p">)</span>
 <span class="k">print</span> <span class="n">client</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">private_message</span><span class="p">)</span>
+
+<span class="c"># Print each message the user receives</span>
+<span class="n">client</span><span class="o">.</span><span class="n">call_on_each_message</span><span class="p">(</span><span class="k">lambda</span> <span class="n">msg</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="o">+</span> <span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">))</span>
 </pre></div>
       </div>
 
