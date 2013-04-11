@@ -687,10 +687,9 @@ def get_old_messages_backend(request, user_profile,
                     + list(query.filter(**add_prefix(id__gte=anchor))[:num_after]))
 
     if include_history:
-        user_messages = {}
-        for user_message in UserMessage.objects.filter(user_profile=user_profile,
-                                                       message__in=messages):
-            user_messages[user_message.message_id] = user_message
+        user_messages = dict((user_message.message_id, user_message) for user_message in
+                             UserMessage.objects.filter(user_profile=user_profile,
+                                                        message__in=messages))
         message_list = []
         for message in messages:
             flags_dict = {'flags': ["read", "historical"]}
