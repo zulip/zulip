@@ -64,7 +64,7 @@ urlpatterns = patterns('',
     url(r'^apps$', TemplateView.as_view(template_name='zephyr/apps.html')),
 
     # Job postings
-    url(r'^jobs$', TemplateView.as_view(template_name='zephyr/jobs/lead-designer.html')),
+    url(r'^jobs$', TemplateView.as_view(template_name='zephyr/jobs/index.html')),
     url(r'^jobs/lead-designer$', TemplateView.as_view(template_name='zephyr/jobs/lead-designer.html')),
 
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
