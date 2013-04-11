@@ -122,7 +122,8 @@ class Stream(models.Model):
         return self.__repr__()
 
     def is_public(self):
-        return self.realm.domain in ["humbughq.com"]
+        return (self.realm.domain in ["humbughq.com"] and
+                not self.invite_only)
 
     class Meta:
         unique_together = ("name", "realm")
