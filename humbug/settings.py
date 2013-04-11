@@ -333,8 +333,12 @@ CACHES['database'] = {
 
 if DEPLOYED:
     SERVER_LOG_PATH = "/home/humbug/logs/server.log"
+    EVENT_LOG_DIR = '/home/humbug/logs/event_log'
+    STATS_DIR = '/home/humbug/stats'
 else:
+    EVENT_LOG_DIR = 'event_log'
     SERVER_LOG_PATH = "server.log"
+    STATS_DIR = 'stats'
 
 LOGGING = {
     'version': 1,
@@ -436,8 +440,6 @@ OPENID_RENDER_FAILURE = openid_failure_handler
 
 MAILCHIMP_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us4'
 HUMBUG_FRIENDS_LIST_ID = '84b2f3da6b'
-
-EVENT_LOG_DIR = 'event_log'
 
 # Client-side polling timeout for get_events, in milliseconds.
 # We configure this here so that the client test suite can override it.

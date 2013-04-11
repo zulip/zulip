@@ -1,15 +1,14 @@
+from django.conf import settings
 import os
 import logging
 
-STATS_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "stats")
-
 def update_stat(name, value):
     try:
-        os.mkdir(STATS_DIR)
+        os.mkdir(settings.STATS_DIR)
     except OSError:
         pass
 
-    base_filename = os.path.join(STATS_DIR, name)
+    base_filename = os.path.join(settings.STATS_DIR, name)
     tmp_filename = base_filename + ".new"
 
     try:
