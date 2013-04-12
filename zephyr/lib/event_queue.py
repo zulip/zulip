@@ -154,16 +154,13 @@ def gc_event_queues():
     stats.update_stat('tornado.active_queues', len(clients))
     stats.update_stat('tornado.active_users', len(user_clients))
 
-PERSISTENT_QUEUE_FILENAME = os.path.join(os.path.dirname(__file__),
-                                         "..", "..", "event_queues.pickle")
-
 def dump_event_queues():
     start = time.time()
     # Remove unpickle-able attributes
     for client in clients.itervalues():
         client.prepare_for_pickling()
 
-    with file(PERSISTENT_QUEUE_FILENAME, "w") as stored_queues:
+    with file(settings.PERSISTENT_QUEUE_FILENAME, "w") as stored_queues:
         pickle.dump(clients, stored_queues)
 
     logging.info('Tornado dumped %d event queues in %.3fs'
@@ -173,7 +170,7 @@ def load_event_queues():
     global clients
     start = time.time()
     try:
-        with file(PERSISTENT_QUEUE_FILENAME, "r") as stored_queues:
+        with file(settings.PERSISTENT_QUEUE_FILENAME, "r") as stored_queues:
             clients = pickle.load(stored_queues)
     except (IOError, EOFError):
         pass
@@ -197,7 +194,7 @@ def setup_event_queue():
     signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
 
     try:
-        os.remove(PERSISTENT_QUEUE_FILENAME)
+        os.remove(settings.PERSISTENT_QUEUE_FILENAME)
     except OSError:
         pass
 
