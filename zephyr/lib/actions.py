@@ -776,7 +776,8 @@ def get_status_dict(requesting_user_profile):
     if requesting_user_profile.realm.domain == 'mit.edu':
         return user_statuses
 
-    for presence in UserPresence.objects.filter(user_profile__realm=requesting_user_profile.realm) \
+    for presence in UserPresence.objects.filter(user_profile__realm=requesting_user_profile.realm,
+                                                user_profile__is_active=True) \
                                         .select_related('user_profile', 'client'):
         user_statuses[presence.user_profile.email][presence.client.name] = presence.to_dict()
 
