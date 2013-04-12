@@ -117,26 +117,56 @@ function wait_for_message(time_to_wait_sec, condition) {
     });
 }
 
+function pick_hello_stream() {
+    // Try to guess at one of your main streams. Ideally it's your
+    // company name, but do our best and try to avoid streams mostly
+    // used for alerts.
+
+    var company_name = page_params.domain.split('.')[0].toLowerCase();
+    var my_streams = subs.subscribed_streams();
+    var hello_stream;
+
+    $.each(my_streams, function (idx, stream_name) {
+        var lowered = stream_name.toLowerCase();
+        if (lowered === company_name) {
+            // The best case is that your company name is your stream name.
+            hello_stream = stream_name;
+            return false;
+        } else {
+            // See if you're subbed to a stream that is probably
+            // pretty good for saying hello.
+            if ($.inArray(lowered, ["social", "office"]) !== -1) {
+                hello_stream = stream_name;
+                return false;
+            }
+        }
+    });
+    if (hello_stream === undefined) {
+        // Try to avoid alert/notification streams if possible.
+        var alert_streams = ["commits", "jenkins", "nagios", "support", "builds"];
+        $.each(my_streams, function (idx, stream_name) {
+            if ($.inArray(stream_name.toLowerCase(), alert_streams) === -1) {
+                hello_stream = stream_name;
+                return false;
+            }
+        });
+    }
+
+    if (hello_stream === undefined) {
+        // Give up and pick the first stream.
+        hello_stream = my_streams[0];
+    }
+
+    return hello_stream;
+}
+
 var script = [];
 
 function make_script() {
+    var hello_stream = pick_hello_stream();
+
     my_tutorial_stream = 'tutorial-' + page_params.email.split('@')[0];
     my_tutorial_stream = my_tutorial_stream.substring(0, 30);
-
-    // Try to guess at one of your main streams.
-    // This is problematic because it might end up being 'commits' or something.
-    var main_stream_name = page_params.domain.split('.')[0];
-    var my_streams = subs.subscribed_streams();
-
-    if (my_streams.length <= 2) {
-      // What?? Add some more examples, I guess.
-      if ($.inArray('social', my_streams) === -1) my_streams.push('social');
-      if ($.inArray('commits', my_streams) === -1) my_streams.push('commits');
-      if ($.inArray('jenkins', my_streams) === -1) my_streams.push('jenkins');
-    }
-    if ($.inArray(main_stream_name, my_streams) === -1) {
-      main_stream_name = my_streams[0];
-    }
 
     script = [
   go(sleep, 1000), // The first message seems to sometimes get eaten in Chrome otherwise.
@@ -196,7 +226,7 @@ function make_script() {
       + "Some things you can do from here:\n"
       + "* Send a private message to someone by clicking their name in the right sidebar\n"
       + "* Send a new stream message, or reply to an existing one\n"
-      + "(One suggestion: A message to stream `" + main_stream_name +"` with subject `humbug` to let everyone know you're here!)\n"),
+      + "(One suggestion: A message to stream `" + hello_stream +"` with subject `humbug` to let everyone know you're here!)\n"),
   function () { exports.stop(); }
     ];
 }
