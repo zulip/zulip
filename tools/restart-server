@@ -23,7 +23,7 @@ os.chdir("/home/humbug/humbug-deployments/current")
 logging.info("Killing daemons")
 for cmd in ('runfcgi', 'runtornado', "process_user_activity", "subscribe_new_users", "send_confirmation_emails"):
     try:
-        subprocess.check_call(["pkill", "-f", "python manage.py " + cmd])
+        subprocess.check_call(["pkill", "-f", "manage.py " + cmd])
     except subprocess.CalledProcessError:
         print "%sCould not kill %s; is it running?%s" % (WARNING, cmd, ENDC)
 
