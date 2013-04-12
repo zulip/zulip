@@ -248,12 +248,18 @@ def update_pointer(user_profile_id, new_pointer):
 def process_new_message(data):
     message = cache_get_message(data['message'])
 
+    message_dict_markdown = message.to_dict(True)
+    message_dict_no_markdown = message.to_dict(False)
     for user_profile_id in data['users']:
         user_receive_message(user_profile_id, message)
 
         for client in get_client_descriptors_for_user(user_profile_id):
             if client.accepts_event_type('message'):
-                event = dict(type='message', message=message.to_dict(client.apply_markdown))
+                if client.apply_markdown:
+                    message_dict = message_dict_markdown
+                else:
+                    message_dict = message_dict_no_markdown
+                event = dict(type='message', message=message_dict)
                 client.add_event(event)
 
     if 'stream_name' in data:
