@@ -567,7 +567,7 @@ function ajaxSubscribe(stream) {
     // Subscribe yourself to a single stream.
     var true_stream_name;
 
-    $.ajax({
+    return $.ajax({
         type: "POST",
         url: "/json/subscriptions/add",
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
@@ -611,7 +611,7 @@ function ajaxUnsubscribe(stream) {
 
 function ajaxSubscribeForCreation(stream, principals, invite_only) {
     // Subscribe yourself and possible other people to a new stream.
-    $.ajax({
+    return $.ajax({
         type: "POST",
         url: "/json/subscriptions/add",
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
@@ -637,9 +637,9 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
 exports.tutorial_subscribe_or_add_me_to = function (stream_name) {
     var stream_status = compose.check_stream_existence(stream_name);
     if (stream_status === 'does-not-exist') {
-        ajaxSubscribeForCreation(stream_name, [page_params.email], false);
+        return ajaxSubscribeForCreation(stream_name, [page_params.email], false);
     } else {
-        ajaxSubscribe(stream_name);
+        return ajaxSubscribe(stream_name);
     }
 };
 
