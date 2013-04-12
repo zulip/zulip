@@ -467,6 +467,7 @@ var update_recent_subjects = $.debounce(100, ui.update_recent_subjects);
 
 function process_message_for_recent_subjects(message) {
     var current_timestamp = 0;
+    var max_subjects = 5;
 
     if (! recent_subjects.hasOwnProperty(message.display_recipient)) {
         recent_subjects[message.display_recipient] = [];
@@ -482,16 +483,14 @@ function process_message_for_recent_subjects(message) {
     }
 
     var recents = recent_subjects[message.display_recipient];
-    if (recents.length >= 5 && message.timestamp > recents[4].timestamp) {
-        recents = recents.slice(0, recents.length - 1);
-    }
-
     recents.push({subject: message.subject,
                   timestamp: Math.max(message.timestamp, current_timestamp)});
 
     recents.sort(function (a, b) {
         return b.timestamp - a.timestamp;
     });
+
+    recents = recents.slice(0, max_subjects);
 
     recent_subjects[message.display_recipient] = recents;
     update_recent_subjects();
