@@ -137,11 +137,6 @@ function make_script() {
     if ($.inArray(main_stream_name, my_streams) === -1) {
       main_stream_name = my_streams[0];
     }
-    // Special hack for CUSTOMER18 -- if there's a stream named customer18stream1, well, then
-    // that's definitely the one to pick
-    if ($.inArray('customer18stream1', my_streams) !== -1) {
-        main_stream_name = 'customer18stream1';
-    }
 
     script = [
   go(sleep, 1000), // The first message seems to sometimes get eaten in Chrome otherwise.
