@@ -1108,3 +1108,8 @@ li.expanded_subject {
 #pw_change_controls {
     display: none;
 }
+
+/* The regular icon-star is not aligned correctly with respect to icon-home */
+.humbug-icon-star {
+    background-position: -121px 0 !important;
+}
