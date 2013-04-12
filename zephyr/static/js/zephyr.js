@@ -490,7 +490,7 @@ function process_message_for_recent_subjects(message) {
                   timestamp: Math.max(message.timestamp, current_timestamp)});
 
     recents.sort(function (a, b) {
-        return a.timestamp < b.timestamp;
+        return b.timestamp - a.timestamp;
     });
 
     recent_subjects[message.display_recipient] = recents;
