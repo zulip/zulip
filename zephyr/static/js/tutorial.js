@@ -61,7 +61,8 @@ function any_message_to_me(message) {
 
 var received_messages = [];
 exports.message_was_sent = function(message) {
-    var trimmed_content = message.content.trim().toLowerCase();
+    // Don't let casing or stray punctuation get in the way.
+    var trimmed_content = message.content.substring(0, 4).toLowerCase();
     if (any_message_to_me(message) &&
         (trimmed_content === 'exit' || trimmed_content === 'stop')) {
         sleep(1000).then(function () {
