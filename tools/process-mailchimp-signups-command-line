@@ -1,2 +1,2 @@
 #!/bin/sh -x
-while true; do python manage.py subscribe_new_users; sleep 1; done
+while true; do python /home/humbug/humbug-deployments/current/manage.py subscribe_new_users; sleep 1; done
