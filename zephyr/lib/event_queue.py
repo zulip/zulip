@@ -14,7 +14,7 @@ import tornado
 import random
 import zephyr.lib.stats as stats
 
-IDLE_EVENT_QUEUE_TIMEOUT_SECS = 60 * 10
+IDLE_EVENT_QUEUE_TIMEOUT_SECS = 7 * 24 * 60 * 60
 # The heartbeats effectively act as a server-side timeout for
 # get_events().  The actual timeout value is randomized for each
 # client connection based on the below value.  We ensure that the
@@ -125,7 +125,7 @@ def allocate_client_descriptor(user_profile_id, event_types, apply_markdown):
     user_clients.setdefault(user_profile_id, []).append(client)
     return client
 
-EVENT_QUEUE_GC_FREQ_MSECS = 1000 * 60 * 5
+EVENT_QUEUE_GC_FREQ_MSECS = 1000 * 60 * 60
 
 def gc_event_queues():
     start = time.time()
