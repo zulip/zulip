@@ -226,12 +226,6 @@ function run_tutorial(stepNumber) {
     }
 }
 
-function add_to_tutorial_stream() {
-    if ($.inArray(my_tutorial_stream, subs.subscribed_streams()) === -1) {
-        subs.tutorial_subscribe_or_add_me_to(my_tutorial_stream);
-    }
-}
-
 function set_tutorial_status(status, callback) {
     $.ajax({
       type:     'POST',
@@ -241,15 +235,35 @@ function set_tutorial_status(status, callback) {
     });
 }
 
+function start_tutorial() {
+    tutorial_running = true;
+    run_tutorial(0);
+    set_tutorial_status("started");
+}
+
+function end_tutorial() {
+    subs.tutorial_unsubscribe_me_from(my_tutorial_stream);
+    tutorial_running = false;
+    set_tutorial_status("finished", function () {
+        // We need to reload the streams list so the sidebar is populated
+        // with the new streams
+        subs.reload_subscriptions({clear_first: true})
+            .fail(function () {
+                blueslip.error("Unable to load subs after tutorial.");
+            });
+    });
+}
+
 exports.start = function () {
     if (tutorial_running) {
         // Not more than one of these at once!
         return;
     }
-    tutorial_running = true;
-    add_to_tutorial_stream();
-    run_tutorial(0);
-    set_tutorial_status("started");
+
+    if ($.inArray(my_tutorial_stream, subs.subscribed_streams()) === -1) {
+        subs.tutorial_subscribe_or_add_me_to(my_tutorial_stream)
+            .then(start_tutorial, end_tutorial);
+    }
 };
 
 // This technique is not actually that awesome, because it's pretty
@@ -264,13 +278,7 @@ exports.start = function () {
 // the tutorial if you still need it.
 exports.stop = function () {
     if (tutorial_running) {
-        subs.tutorial_unsubscribe_me_from(my_tutorial_stream);
-        tutorial_running = false;
-        set_tutorial_status("finished", function () {
-            // We need to reload the streams list so the sidebar is populated
-            // with the new streams
-            subs.reload_subscriptions({clear_first: true});
-        });
+        end_tutorial();
     }
 };
 
