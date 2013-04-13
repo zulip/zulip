@@ -67,12 +67,13 @@ exports.message_was_sent = function(message) {
         (trimmed_content === 'exit' || trimmed_content === 'stop')) {
         sleep(1000).then(function () {
             var text = "OK, cool, we'll stop the tutorial here. If you have any questions, you can always email support@humbughq.com!";
+            var deferred;
             if (pm_to_me(message)) {
-                pm(text);
+                deferred = pm(text);
             } else {
-                stream_message(message.subject, text);
+                deferred = stream_message(message.subject, text);
             }
-            exports.stop();
+            deferred.always(exports.stop);
         });
         return;
     }
