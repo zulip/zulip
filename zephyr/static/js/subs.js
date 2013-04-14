@@ -474,7 +474,7 @@ exports.reload_subscriptions = function (opts) {
     }
 
     if (opts.clear_first) {
-        stream_info = [];
+        stream_info = {};
         ui.remove_all_narrow_filters();
     }
 
