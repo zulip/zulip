@@ -309,7 +309,7 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
             continue
 
         if user_profile.realm.restricted_to_domain and \
-                email.split('@', 1)[-1] != user_profile.realm.domain:
+                email.split('@', 1)[-1].lower() != user_profile.realm.domain.lower():
             errors.append((email, "Outside your domain."))
             continue
 
