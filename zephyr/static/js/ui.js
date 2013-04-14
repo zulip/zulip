@@ -466,6 +466,8 @@ function toggle_star(row_id) {
         var favorite_image = row.find("i");
         favorite_image.toggleClass("icon-star-empty");
         favorite_image.toggleClass("icon-star");
+        var title_state = message.starred ? "Unstar" : "Star";
+        favorite_image.attr("title", title_state + " this message");
     });
 
     // Save the star change.
