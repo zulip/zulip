@@ -454,7 +454,6 @@ function populate_subscriptions(subs) {
         var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
                                            invite_only: elem.invite_only,
                                            notifications: elem.notifications, subscribed: true});
-        add_sub(stream_name, sub);
         sub_rows.push(sub);
     });
 
@@ -512,7 +511,6 @@ exports.setup_page = function () {
                 return;
             }
             var sub = create_sub(stream, {subscribed: false});
-            add_sub(stream, sub);
             sub_rows.push(sub);
         });
 
