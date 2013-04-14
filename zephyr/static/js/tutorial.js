@@ -147,7 +147,8 @@ function pick_hello_stream() {
         // Try to avoid alert/notification streams if possible.
         var alert_streams = ["commits", "jenkins", "nagios", "support", "builds"];
         $.each(my_streams, function (idx, stream_name) {
-            if ($.inArray(stream_name.toLowerCase(), alert_streams) === -1) {
+            if (($.inArray(stream_name.toLowerCase(), alert_streams) === -1) &&
+                (stream_name.substring(0, 9) !== "tutorial-")) {
                 hello_stream = stream_name;
                 return false;
             }
