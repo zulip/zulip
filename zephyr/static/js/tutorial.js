@@ -166,8 +166,6 @@ function pick_hello_stream() {
 var script = [];
 
 function make_script() {
-    var hello_stream = pick_hello_stream();
-
     my_tutorial_stream = 'tutorial-' + page_params.email.split('@')[0];
     my_tutorial_stream = my_tutorial_stream.substring(0, 30);
 
@@ -225,12 +223,13 @@ function make_script() {
   go(sleep, 4000),
   // Have them go talk to people
   go2(stream_message, "tutorial", ":white_check_mark: **Congratulations! The tutorial is now complete** :tada:\n"
-      + "Since you're done, we've removed you from the `" + my_tutorial_stream + "` stream.\n\n"
-      + "Some things you can do from here:\n"
-      + "* Send a private message to someone by clicking their name in the right sidebar\n"
-      + "* Send a new stream message, or reply to an existing one\n"
-      + "(One suggestion: A message to stream `" + hello_stream +"` with subject `humbug` to let everyone know you're here!)\n"),
-  function () { exports.stop(); }
+      + "Since you're done, I'll remove you from the `" + my_tutorial_stream + "` stream and add your real streams on the left."),
+  // We need to load our actual subscriptions before we can recommend a stream to say hello on.
+  go(sleep, 1000),
+  go(set_tutorial_status, "finished"),
+  go(subs.reload_subscriptions, {clear_first: true}),
+  go(send_action_message),
+  go(end_tutorial, true)
     ];
 }
 
@@ -238,7 +237,7 @@ var tutorial_running = false;
 
 function run_tutorial(stepNumber) {
     if (stepNumber >= script.length) {
-        exports.stop();
+        return;
     }
 
     if (!tutorial_running) {
@@ -255,7 +254,7 @@ function run_tutorial(stepNumber) {
 }
 
 function set_tutorial_status(status, callback) {
-    $.ajax({
+    return $.ajax({
       type:     'POST',
       url:      '/json/tutorial_status',
       data:     {status: status},
@@ -269,9 +268,7 @@ function start_tutorial() {
     set_tutorial_status("started");
 }
 
-function end_tutorial() {
-    subs.tutorial_unsubscribe_me_from(my_tutorial_stream);
-    tutorial_running = false;
+function load_real_subs() {
     set_tutorial_status("finished", function () {
         // We need to reload the streams list so the sidebar is populated
         // with the new streams
@@ -280,6 +277,14 @@ function end_tutorial() {
                 blueslip.error("Unable to load subs after tutorial.");
             });
     });
+}
+
+function end_tutorial(dont_load_subs) {
+    tutorial_running = false;
+    subs.tutorial_unsubscribe_me_from(my_tutorial_stream);
+    if (dont_load_subs !== true) {
+        load_real_subs();
+    }
 }
 
 exports.start = function () {
@@ -293,6 +298,19 @@ exports.start = function () {
             .then(start_tutorial, end_tutorial);
     }
 };
+
+function send_action_message() {
+    if (subs.subscribed_streams().length > 0) {
+        var hello_stream = pick_hello_stream();
+        return stream_message("tutorial", "Say hello on stream `" +
+                              hello_stream + "` to let everyone know you're here!");
+    } else {
+        // Something went wrong, but still try to give them something to do.
+        blueslip.error("Unable to load subs after tutorial.");
+        return stream_message("tutorial", "How about adding some streams on your " +
+                              "streams page and then saying hello!");
+    }
+}
 
 // This technique is not actually that awesome, because it's pretty
 // race-y. Let's say I start() and then stop() and then start() again;
