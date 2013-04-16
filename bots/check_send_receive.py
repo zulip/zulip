@@ -87,20 +87,29 @@ def get_humbug(recipient, max_message_id):
         report("CRITICAL", "Error receiving Humbugs, args were: %s, %s" % (max_message_id, result))
     return result['messages']
 
-# hamlet and othello are default users
-sender = "hamlet@humbughq.com"
-recipient = "othello@humbughq.com"
+if options.site == "staging.humbughq.com":
+    # hamlet and othello are default users on staging
+    sender = "hamlet@humbughq.com"
+    sender_key = "dfe1c934d555f4b9538d0d4cfd3069c2"
+    recipient = "othello@humbughq.com"
+    recipient_key = "4e5d97591bec64bf57d2698ffbb563e3"
+else:
+    # cordelia and iago are default users on prod
+    sender = "iago@humbughq.com"
+    sender_key = "d43b53c27a8106195b46781abc67901a"
+    recipient = "cordelia@humbughq.com"
+    recipient_key = "24cf18de98d5c31da9c6c79f0cbec195"
 
 humbug_sender = humbug.Client(
     email=sender,
-    api_key="dfe1c934d555f4b9538d0d4cfd3069c2",
+    api_key=sender_key,
     verbose=True,
     client="test: Humbug API",
     site=options.site)
 
 humbug_recipient = humbug.Client(
     email=recipient,
-    api_key="4e5d97591bec64bf57d2698ffbb563e3",
+    api_key=recipient_key,
     verbose=True,
     client="test: Humbug API",
     site=options.site)
