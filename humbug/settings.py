@@ -181,6 +181,29 @@ INSTALLED_APPS = (
     'zephyr',
 )
 
+LOCAL_STATSD = (False)
+USING_STATSD = DEPLOYED or LOCAL_STATSD
+
+if USING_STATSD:
+    if LOCAL_STATSD:
+        STATSD_HOST = 'localhost'
+    else:
+        STATSD_HOST = '10.244.161.187'
+
+    INSTALLED_APPS = ('django_statsd',) + INSTALLED_APPS
+    STATSD_PORT = 8125
+    STATSD_CLIENT = 'django_statsd.clients.normal'
+
+    STATSD_PATCHES = [
+            'django_statsd.patches.cache',
+    ]
+
+    if STAGING_DEPLOYED:
+        STATSD_PREFIX = 'staging'
+    elif DEPLOYED:
+        STATSD_PREFIX = 'app'
+    else:
+        STATSD_PREFIX = 'user'
 
 # Static files and minification
 
