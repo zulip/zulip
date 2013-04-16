@@ -1,0 +1,55 @@
+WSGISocketPrefix /usr/lib/apache2/modules/
+
+<VirtualHost *:80>
+    ServerName graphite.humbughq.com
+    Redirect permanent / https://graphite.humbughq.com/
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName graphite.humbughq.com
+
+    SSLEngine on
+    SSLCertificateFile /etc/apache2/certs/humbug-self-signed.crt
+    SSLCertificateKeyFile /etc/apache2/certs/humbug-self-signed.key
+
+    Header add Strict-Transport-Security "max-age=15768000"
+    Header add X-Frame-Options DENY
+
+    <Location "/">
+        AuthType Digest
+        AuthName "wiki"
+        AuthDigestProvider file
+        AuthUserFile /etc/apache2/users/wiki
+        Require valid-user
+    </Location>
+
+    # Graphite specific setup
+    DocumentRoot "/opt/graphite/webapp"
+    WSGIDaemonProcess graphite processes=5 threads=5 display-name='%{GROUP}' inactivity-timeout=120
+    WSGIProcessGroup graphite
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIImportScript /opt/graphite/conf/graphite.wsgi process-group=graphite application-group=%{GLOBAL}
+
+    WSGIScriptAlias / /opt/graphite/conf/graphite.wsgi
+
+    Alias /content/ /opt/graphite/webapp/content/
+    <Location "/content/">
+        SetHandler None
+    </Location>
+
+    Alias /media/ "/usr/lib/pymodules/python2.6/django/contrib/admin/media/"
+    <Location "/media/">
+            SetHandler None
+    </Location>
+
+    <Directory /opt/graphite/conf/>
+            Order deny,allow
+            Allow from all
+    </Directory>
+
+    ErrorLog /var/log/apache2/error.log
+    LogLevel warn
+
+    CustomLog /var/log/apache2/access.log combined
+    ServerSignature On
+</VirtualHost>
