@@ -1,0 +1,35 @@
+#!/bin/bash -ex
+
+cd /home/tabbott/humbug-backups
+log="$(pwd)"/log
+
+# Redirect output to a log file, with timestamps.
+# Save original stderr as fd 3.
+exec 3>&2 > >(ts >> "$log") 2>&1
+
+# On error, print the log file to original stderr, so I get mail.
+function handle_error {
+    echo 'Error occurred while running backup' >&3
+    tail "$log" >&3
+    exit 1
+}
+trap handle_error ERR
+
+cd wikidata
+git pull
+
+function commit {
+    git commit --allow-empty -a -m '[AUTO] backup'
+    git repack -da
+}
+
+cd ../message_logs
+for h in staging.humbughq.com app.humbughq.com; do
+    rsync -v humbug@$h:logs/event_log/events.* .
+done
+git add events.*
+commit
+
+cd ../trac
+rsync -v humbug@trac.humbughq.com:trac/db/trac.db .
+commit
