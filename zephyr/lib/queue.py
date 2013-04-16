@@ -151,8 +151,13 @@ class TornadoQueueClient(SimpleQueueClient):
             callback()
 
         if queue_name not in self.queues:
-            self.channel.queue_declare(queue=queue_name, durable=True,
-                callback=finish)
+            # If we're not connected yet, send this message
+            # once we have created the channel
+            if not self.ready():
+                self._on_open_cbs.append(lambda: self.ensure_queue(queue_name, callback))
+                return
+
+            self.channel.queue_declare(queue=queue_name, durable=True, callback=finish)
         else:
             callback()
 
