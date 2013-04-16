@@ -76,13 +76,16 @@ def report(state, time, msg=None):
         print "%s: send time was %s" % (state, time)
     exit(states[state])
 
-def send_humbug(sender, message, nagios):
+def send_humbug(sender, message):
     result = sender.send_message(message)
-    if result["result"] != "success" and nagios:
+    if result["result"] != "success" and options.nagios:
         report("CRITICAL", "Error sending Humbug, args were: %s, %s" % (message, result))
 
 def get_humbug(recipient, max_message_id):
-    return recipient.get_messages({'last': str(max_message_id)})['messages']
+    result = recipient.get_messages({'last': str(max_message_id)})
+    if result['result'] != "success" and options.nagios:
+        report("CRITICAL", "Error receiving Humbugs, args were: %s, %s" % (max_message_id, result))
+    return result['messages']
 
 # hamlet and othello are default users
 sender = "hamlet@humbughq.com"
@@ -112,7 +115,7 @@ send_humbug(humbug_sender, {
     "content": msg_to_send,
     "subject": "time to send",
     "to": recipient,
-    }, options.nagios)
+    })
 
 msg_content = []
 
