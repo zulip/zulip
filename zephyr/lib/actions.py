@@ -24,8 +24,10 @@ from zephyr.lib.create_user import create_user
 from zephyr.lib import bugdown
 from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key, \
     user_profile_by_email_cache_key, status_dict_cache_key
-from zephyr.decorator import get_user_profile_by_email, json_to_list, JsonableError
+from zephyr.decorator import get_user_profile_by_email, json_to_list, JsonableError, \
+     statsd_increment
 from zephyr.lib.event_queue import request_event_queue, get_user_events
+from zephyr.lib.utils import log_statsd_event, statsd
 
 import confirmation.settings
 
@@ -559,6 +561,7 @@ def get_default_subs(user_profile):
     return [default.stream for default in
             DefaultStream.objects.filter(realm=user_profile.realm)]
 
+@statsd_increment('user_activity')
 @transaction.commit_on_success
 def do_update_user_activity(user_profile, client, query, log_time):
     try:
@@ -593,6 +596,7 @@ def send_presence_changed(user_profile, presence):
                                                     is_active=True)])
     tornado_callbacks.send_notification(notice)
 
+@statsd_increment('user_presence')
 @transaction.commit_on_success
 def do_update_user_presence(user_profile, client, log_time, status):
     try:
@@ -633,6 +637,8 @@ def update_message_flags(user_profile, operation, flag, messages, all):
     rest_until = None
 
     if all:
+        log_statsd_event('bankruptcy')
+
         # Do the first 450 message updates in-process, as this is a
         # bankruptcy request and the user is about to reload. We don't
         # want them to see a bunch of unread messages while we go about
@@ -706,6 +712,8 @@ def process_update_message_flags(event):
         msgs.update(flags=F('flags').bitor(flagattr))
     elif op == 'remove':
         msgs.update(flags=F('flags').bitand(~flagattr))
+
+    statsd.incr("flags.%s.%s" % (flag, op), len(msgs))
 
     return True
 

@@ -5,6 +5,8 @@ from django.core.cache import get_cache
 
 from utils import make_safe_digest
 
+from zephyr.lib.utils import statsd, statsd_key
+
 def cache_with_key(keyfunc, cache_name=None, timeout=None):
     """Decorator which applies Django caching to a function.
 
@@ -23,6 +25,11 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None):
 
             key = keyfunc(*args, **kwargs)
             val = cache_backend.get(key)
+
+            if val is not None:
+                statsd.incr("cache.%s.hit" % (statsd_key(key),))
+            else:
+                statsd.incr("cache.%s.miss" % (statsd_key(key),))
 
             # Values are singleton tuples so that we can distinguish
             # a result of None from a missing key.

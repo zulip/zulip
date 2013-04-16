@@ -8,6 +8,8 @@ import threading
 import atexit
 from collections import defaultdict
 
+from zephyr.lib.utils import statsd
+
 # This simple queuing library doesn't expose much of the power of
 # rabbitmq/pika's queuing system; its purpose is to just provide an
 # interface for external files to put things into queues and take them
@@ -67,12 +69,16 @@ class SimpleQueueClient(object):
         callback()
 
     def publish(self, queue_name, body):
-        self.ensure_queue(queue_name,
-            lambda: self.channel.basic_publish(
-                exchange='',
-                routing_key=queue_name,
-                properties=pika.BasicProperties(delivery_mode=2),
-                body=body))
+        def do_publish():
+            self.channel.basic_publish(
+                            exchange='',
+                            routing_key=queue_name,
+                            properties=pika.BasicProperties(delivery_mode=2),
+                            body=body)
+
+            statsd.incr("rabbitmq.publish.%s" % (queue_name,))
+
+        self.ensure_queue(queue_name, do_publish)
 
     def json_publish(self, queue_name, body):
         try:

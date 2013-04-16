@@ -2,6 +2,7 @@ from django.conf import settings
 from decorator import RequestVariableMissingError, RequestVariableConversionError
 from zephyr.lib.response import json_error
 from django.db import connection
+from zephyr.lib.utils import statsd
 
 import logging
 import time
@@ -13,10 +14,20 @@ class LogRequests(object):
         request._time_started = time.time()
 
     def process_response(self, request, response):
+        def timedelta_ms(timedelta):
+            return timedelta * 1000
+
         def format_timedelta(timedelta):
             if (timedelta >= 1):
                 return "%.1fs" % (timedelta)
-            return "%.0fms" % (timedelta * 1000,)
+            return "%.0fms" % (timedelta_ms(timedelta),)
+
+        # For statsd timer name
+        if request.get_full_path() == '/':
+            statsd_path = 'webreq'
+        else:
+            statsd_path = "webreq.%s" % (request.get_full_path()[1:].replace('/', '.'),)
+
 
         # The reverse proxy might have sent us the real external IP
         remote_ip = request.META.get('HTTP_X_REAL_IP')
@@ -42,6 +53,11 @@ class LogRequests(object):
             db_time_output = " (db: %s/%sq)" % (format_timedelta(query_time),
                                                 len(connection.queries))
 
+            # Log ms, db ms, and num queries to statsd
+            statsd.timing("%s.dbtime" % (statsd_path,), timedelta_ms(time_delta))
+            statsd.incr("%s.dbq" % (statsd_path, ), len(connection.queries))
+            statsd.timing("%s.total" % (statsd_path,), timedelta_ms(time_delta))
+
         # Get the requestor's email address and client, if available.
         try:
             email = request._email
@@ -63,6 +79,7 @@ class LogRequests(object):
             if len(content) > 100:
                 content = "[content more than 100 characters]"
             logger.info('status=%3d, data=%s, uid=%s' % (response.status_code, content, email))
+
         return response
 
 class JsonErrorHandler(object):

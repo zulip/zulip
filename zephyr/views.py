@@ -45,9 +45,11 @@ from zephyr.lib.timestamp import datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.unminify import SourceMap
 from zephyr.lib.queue import queue_json_publish
+from zephyr.lib.utils import statsd
 from zephyr import tornado_callbacks
 
 from confirmation.models import Confirmation
+
 
 import datetime
 import simplejson
@@ -129,6 +131,7 @@ def send_signup_message(sender, signups_stream, user_profile, internal=False):
             )
 
 def notify_new_user(user_profile, internal=False):
+    statsd.gauge('users.signup', 1, delta=True)
     send_signup_message("humbug+signups@humbughq.com", "signups", user_profile, internal)
 
 class PrincipalError(JsonableError):
@@ -477,6 +480,8 @@ def home(request):
         max_message_id        = register_ret['max_message_id']
     ))
 
+    statsd.incr('views.home')
+
     try:
         isnt_mit(user_profile.email)
         show_invites = True
@@ -722,6 +727,8 @@ def get_old_messages_backend(request, user_profile,
         message_list = [dict(umessage.message.to_dict(apply_markdown),
                              **umessage.flags_dict())
                         for umessage in messages]
+
+    statsd.incr('loaded_old_messages', len(message_list))
     ret = {'messages': message_list,
            "result": "success",
            "msg": ""}
