@@ -14,8 +14,10 @@ from zephyr.lib.cache import cache_with_key
 from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.timestamp import datetime_to_timestamp
 from zephyr.lib.cache import user_profile_by_email_cache_key
+from zephyr.lib.utils import statsd
 from functools import wraps
 import base64
+
 
 class _RespondAsynchronously(object):
     pass
@@ -342,3 +344,16 @@ def json_to_list(json):
 
 def json_to_bool(json):
     return json_to_foo(json, bool)
+
+def statsd_increment(counter, val=1):
+    """Increments a statsd counter on completion of the
+    decorated function.
+
+    Pass the name of the counter to this decorator-returning function."""
+    def wrapper(func):
+        @wraps(func)
+        def wrapped_func(*args, **kwargs):
+            func(*args, **kwargs)
+            statsd.incr(counter, val)
+        return wrapped_func
+    return wrapper
