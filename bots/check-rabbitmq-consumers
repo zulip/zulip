@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+
+import sys
+import subprocess
+import time
+import optparse
+from collections import defaultdict
+
+from os import path, environ
+
+sys.path.append(path.join(path.dirname(__file__), '../tools'))
+from humbug_tools import check_output
+
+states = {
+    0: "OK",
+    1: "WARNING",
+    2: "CRITICAL",
+    3: "UNKNOWN"
+}
+
+if 'USER' in environ and not environ['USER'] in ['root', 'rabbitmq']:
+    print "This script must be run as the root or rabbitmq user"
+
+
+usage = """Usage: check-rabbitmq-consumers --queue=[queue-name] --min-threshold=[min-threshold]"""
+
+parser = optparse.OptionParser(usage=usage)
+parser.add_option('--queue',
+                  dest='queue_name',
+                  default="notify_tornado",
+                  action='store')
+parser.add_option('--min-threshold',
+                  dest='min_count',
+                  type="int",
+                  default=1,
+                  action='store')
+
+(options, args) = parser.parse_args()
+
+output = check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'], shell=False)
+
+consumers = defaultdict(int)
+
+for line in output.split('\n'):
+    parts = line.split('\t')
+    if len(parts) and parts[0] == options.queue_name:
+        consumers[parts[0]] += 1
+
+
+now = int(time.time())
+
+if consumers[options.queue_name] < options.min_count:
+    status = 2
+else:
+    status = 0
+
+print("%s|%s|%s|queue %s has %s consumers, needs %s" % (
+            now, status, states[status], options.queue_name,
+            consumers[options.queue_name], options.min_count))

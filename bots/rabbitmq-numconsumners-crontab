@@ -1,0 +1,1 @@
+* * * * * /home/humbug/humbug/bots/check-rabbitmq-consumers &> /var/run/nagios/check-rabbitmq-consumers-tmp; mv /var/run/nagios/check-rabbitmq-consumers-tmp /var/run/nagios/check-rabbitmq-consumers
