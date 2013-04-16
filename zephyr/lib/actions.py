@@ -612,7 +612,7 @@ def do_update_user_presence(user_profile, client, log_time, status):
     presence.status = status
     presence.save(update_fields=["timestamp", "status"])
 
-    if created or became_online:
+    if not user_profile.realm.domain == "mit.edu" and (created or became_online):
         # Push event to all users in the realm so they see the new user
         # appear in the presence list immediately, or the newly online
         # user without delay
