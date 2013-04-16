@@ -37,8 +37,7 @@ except:
     traceback.print_exc()
 
 logging.info("Refilling memcached caches")
-subprocess.check_call(["python", os.path.join(os.path.dirname(__file__), "..", "manage.py"),
-                       "fill_memcached_caches"])
+subprocess.check_call(["python", "./manage.py", "fill_memcached_caches"])
 
 logging.info("Done!")
 print OKGREEN + "Application restarted successfully!" + ENDC
