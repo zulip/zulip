@@ -839,7 +839,7 @@ def do_events_register(user_profile, apply_markdown=True, event_types=None):
                 ret['subscriptions'] = filter(lambda s: s['name'] != sub['name'],
                                               ret['subscriptions'])
         elif event['type'] == "presence":
-                ret['presences'][event['email']][event['presence']['client']] = event['presence']
+                ret['presences'][event['email']] = event['presence']
 
     if events:
         ret['last_event_id'] = events[-1]['id']
