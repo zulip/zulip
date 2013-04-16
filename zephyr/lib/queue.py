@@ -5,6 +5,7 @@ import simplejson
 import random
 import time
 import threading
+import atexit
 from collections import defaultdict
 
 # This simple queuing library doesn't expose much of the power of
@@ -45,6 +46,10 @@ class SimpleQueueClient(object):
                                                         consumer,
                                                         queue=queue,
                                                         consumer_tag=self._generate_ctag(queue)))
+
+    def close(self):
+        if self.connection:
+            self.connection.close()
 
     def ready(self):
         return self.channel is not None
@@ -179,6 +184,10 @@ if settings.RUNNING_INSIDE_TORNADO and settings.USING_RABBITMQ:
     queue_client = TornadoQueueClient()
 elif settings.USING_RABBITMQ:
     queue_client = SimpleQueueClient()
+
+def setup_tornado_rabbitmq():
+    # When tornado is shut down, disconnect cleanly from rabbitmq
+    atexit.register(lambda: queue_client.close())
 
 # We using a simple lock to prevent multiple RabbitMQ messages being
 # sent to the SimpleQueueClient at the same time; this is a workaround

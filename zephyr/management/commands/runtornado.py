@@ -20,6 +20,7 @@ from zephyr.lib.debug import interactive_debug_listen
 from zephyr.lib.response import json_response
 from zephyr import tornado_callbacks
 from zephyr.lib.event_queue import setup_event_queue
+from zephyr.lib.queue import setup_tornado_rabbitmq
 
 if settings.USING_RABBITMQ:
     from zephyr.lib.queue import queue_client
@@ -106,6 +107,7 @@ class Command(BaseCommand):
                     ioloop.IOLoop.instance().set_blocking_log_threshold(5)
 
                 setup_event_queue()
+                setup_tornado_rabbitmq()
                 ioloop.IOLoop.instance().start()
             except KeyboardInterrupt:
                 sys.exit(0)
