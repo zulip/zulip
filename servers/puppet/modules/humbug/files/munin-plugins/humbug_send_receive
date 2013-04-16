@@ -1,2 +1,7 @@
 #!/bin/sh
-/home/humbug/humbug/bots/check_send_receive.py --munin $1
+if [ "$(hostname)" = "staging.humbughq.com" ]; then
+    site="https://staging.humbughq.com"
+else
+    site="https://humbughq.com"
+fi
+/home/humbug/humbug/bots/check_send_receive.py --munin $1 --site="$site"
