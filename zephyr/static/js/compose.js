@@ -227,6 +227,23 @@ exports.cancel = function () {
     $(document).trigger($.Event('compose_canceled.zephyr'));
 };
 
+function create_message_object() {
+    var message = {client: 'website',
+                   type: compose.composing(),
+                   subject: compose.subject(),
+                   stream: compose.stream_name(),
+                   private_message_recipient: compose.recipient(),
+                   content: compose.message_content()};
+
+    if (message.type === "private") {
+        // TODO: this should be collapsed with the code in composebox_typeahead.js
+        message.to = compose.recipient().split(/\s*[,;]\s*/);
+    } else {
+        message.to = compose.stream_name();
+    }
+    return message;
+}
+
 function compose_error(error_text, bad_input) {
     $('#send-status').removeClass(status_classes)
                .addClass('alert-error')
@@ -242,27 +259,16 @@ var send_options;
 function send_message() {
     var send_status = $('#send-status');
 
-    // TODO: this should be collapsed with the code in composebox_typeahead.js
-    var recipients = compose.recipient().split(/\s*[,;]\s*/);
-
-    var request = {client: 'website',
-                   type:        compose.composing(),
-                   subject:     compose.subject(),
-                   content:     compose.message_content()};
-    if (request.type === "private") {
-        request.to = JSON.stringify(recipients);
-    } else {
-        request.to = JSON.stringify([compose.stream_name()]);
-    }
+    var request = create_message_object();
 
     if (tutorial.is_running()) {
-        // We make a new copy of the request object for the tutorial so that we
-        // don't mess up the request we're actually sending to the server
-        var tutorial_copy_of_message = $.extend({}, request, {to: compose.stream_name()});
-        if (request.type === "private") {
-            $.extend(tutorial_copy_of_message, {to: recipients});
-        }
-        tutorial.message_was_sent(tutorial_copy_of_message);
+        tutorial.message_was_sent(request);
+    }
+
+    if (request.type === "private") {
+        request.to = JSON.stringify(request.to);
+    } else {
+        request.to = JSON.stringify([request.to]);
     }
 
     $.ajax({

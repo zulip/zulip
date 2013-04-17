@@ -53,7 +53,7 @@ function stream_to_me(message) {
 }
 
 function pm_to_me(message) {
-    return message.type === 'private' && message.to[0] === 'humbug+tutorial@humbughq.com';
+    return message.type === 'private' && message.to === 'humbug+tutorial@humbughq.com';
 }
 
 function any_message_to_me(message) {
