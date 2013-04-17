@@ -63,7 +63,7 @@ $(function () {
     compose.start(vars.msg_type, {stream: vars.stream,
                                   subject: vars.subject,
                                   private_message_recipient: vars.recipient,
-                                  message: vars.msg});
+                                  content: vars.msg});
     if (send_now) {
         compose.finish();
     }

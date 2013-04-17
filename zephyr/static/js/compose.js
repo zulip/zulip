@@ -183,8 +183,8 @@ exports.start = function (msg_type, opts) {
     compose.recipient(opts.private_message_recipient);
     // If the user opens the compose box, types some text, and then clicks on a
     // different stream/subject, we want to keep the text in the compose box
-    if (opts.message !== undefined) {
-        compose.message_content(opts.message);
+    if (opts.content !== undefined) {
+        compose.message_content(opts.content);
     }
 
     ui.change_tab_to("#home");
