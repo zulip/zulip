@@ -103,6 +103,19 @@ class SimpleQueueClient(object):
     def stop_consuming(self):
         self.channel.stop_consuming()
 
+# Patch pika.adapters.TornadoConnection so that a socket error doesn't
+# throw an exception and disconnect the tornado process from the rabbitmq
+# queue. Instead, just re-connect as usual
+class ExceptionFreeTornadoConnection(pika.adapters.TornadoConnection):
+    def _adapter_disconnect(self):
+        try:
+            super(ExceptionFreeTornadoConnection, self)._adapter_disconnect()
+        except (pika.exceptions.ProbableAuthenticationError,
+                pika.exceptions.ProbableAccessDeniedError) as e:
+            logging.warning("Caught exception '%r' in ExceptionFreeTornadoConnection when \
+calling _adapter_disconnect, ignoring" % (e,))
+
+
 class TornadoQueueClient(SimpleQueueClient):
     # Based on:
     # https://pika.readthedocs.org/en/0.9.8/examples/asynchronous_consumer_example.html
@@ -112,7 +125,7 @@ class TornadoQueueClient(SimpleQueueClient):
         self._on_open_cbs = []
         if on_open_cb:
             self._on_open_cbs.append(on_open_cb)
-        self.connection = pika.adapters.TornadoConnection(
+        self.connection = ExceptionFreeTornadoConnection(
             self._get_parameters(),
             on_open_callback = self._on_open,
             stop_ioloop_on_close = False)
