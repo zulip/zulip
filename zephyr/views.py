@@ -277,7 +277,7 @@ def accounts_accept_terms(request):
         { 'form': form, 'company_name': company_name, 'email': email },
         context_instance=RequestContext(request))
 
-def api_docs(request):
+def api_endpoint_docs(request):
     raw_calls = open('templates/zephyr/api_content.json', 'r').read()
     calls = simplejson.loads(raw_calls)
     langs = set()
@@ -286,7 +286,7 @@ def api_docs(request):
             for lang in call.get('example_' + example_type, []):
                 langs.add(lang)
     return render_to_response(
-            'zephyr/api.html', {
+            'zephyr/api_endpoints.html', {
                 'content': calls,
                 'langs': langs,
                 },
