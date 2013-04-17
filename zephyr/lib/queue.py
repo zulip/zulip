@@ -116,6 +116,7 @@ class TornadoQueueClient(SimpleQueueClient):
             self._get_parameters(),
             on_open_callback = self._on_open,
             stop_ioloop_on_close = False)
+        self.connection.add_on_close_callback(self._on_connection_closed)
 
     def _reconnect(self, on_open_cb = None):
         self.connection = None
@@ -124,7 +125,6 @@ class TornadoQueueClient(SimpleQueueClient):
         self._connect(on_open_cb)
 
     def _on_open(self, connection):
-        self.connection.add_on_close_callback(self._on_connection_closed)
         self.connection.channel(
             on_open_callback = self._on_channel_open)
 
