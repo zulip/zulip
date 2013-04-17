@@ -9,5 +9,5 @@
 # Maximum total size of shared memory in pages (normally 4096 bytes)
 #kernel.shmall = 2097152
 
-kernel.shmall = 1703936
-kernel.shmmax = 6979321856
+kernel.shmall = 6553600
+kernel.shmmax = 26843545600

@@ -554,18 +554,22 @@ default_text_search_config = 'pg_catalog.english'
 #------------------------------------------------------------------------------
 
 #custom_variable_classes = ''		# list of custom variable class names
-maintenance_work_mem = 448MB # pgtune wizard 2012-12-12
-checkpoint_completion_target = 0.7 # pgtune wizard 2012-12-12
-effective_cache_size = 5632MB # pgtune wizard 2012-12-12
-work_mem = 36MB # pgtune wizard 2012-12-12
-wal_buffers = 4MB # pgtune wizard 2012-12-12
-checkpoint_segments = 8 # pgtune wizard 2012-12-12
-shared_buffers = 1792MB # pgtune wizard 2012-12-12
-max_connections = 200 # pgtune wizard 2012-12-12
+maintenance_work_mem = 1GB # pgtune wizard 2013-04-12
+checkpoint_completion_target = 0.7 # pgtune wizard 2013-04-12
+effective_cache_size = 22GB # pgtune wizard 2013-04-12
+work_mem = 160MB # pgtune wizard 2013-04-12
+wal_buffers = 4MB # pgtune wizard 2013-04-12
+checkpoint_segments = 8 # pgtune wizard 2013-04-12
+shared_buffers = 7680MB # pgtune wizard 2013-04-12
+max_connections = 200 # pgtune wizard 2013-04-12
 
 timezone = 'UTC'
-# EBS supposedly has very similar sequential and random access performance
-random_page_cost = 1.1
+# From http://www.databasesoup.com/2012/05/random-page-cost-revisited.html
+# This needs actual measurement, as bonnie++ random seek latency is
+# actually a read/write test
+random_page_cost = 2.0
+
+effective_io_concurrency = 2 # As suggested by Postgres manual, set to number of disks in RAID
 listen_addresses = '*'
 
 log_destination = 'stderr'
@@ -582,7 +586,7 @@ log_autovacuum_min_duration = 100
 
 # Master replication settings (ignored on standby)
 wal_level = hot_standby
-max_wal_senders = 2
+max_wal_senders = 5
 archive_mode = on
 archive_command = 'cp -f %p /var/lib/postgresql/9.1/main/archive/%f </dev/null'
 
