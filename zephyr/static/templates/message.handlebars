@@ -16,14 +16,14 @@
 {{#with this}}
 {{#include_bookend}}
 <tr class="bookend_tr"><td/>
-<td /><td class="bookend">
+<td /><td class="bookend{{#if subscribed}} sub-unsub-message{{/if}}{{#if unsubscribed}} sub-unsub-message{{/if}}">
 {{#if subscribed}}
-<center>--- Subscribed to stream {{subscribed}} ---</center>
+<span>--- Subscribed to stream {{subscribed}} ---</span>
 {{/if}}
 {{#if unsubscribed}}
-<center>--- Unsubscribed from stream {{unsubscribed}} ---</center>
+<span>--- Unsubscribed from stream {{unsubscribed}} ---</span>
 {{/if}}
-<span class="tiny"><p></p></span></td>
+</td>
 </tr>
 {{/include_bookend}}
 

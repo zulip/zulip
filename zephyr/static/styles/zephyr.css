@@ -392,10 +392,6 @@ td.pointer {
     font-size: 80%;
 }
 
-.tiny {
-    font-size: 20%;
-}
-
 .actions_hovered .message_time {
     color:           #0088CC;
     text-decoration: underline;
@@ -1112,4 +1108,9 @@ li.expanded_subject {
 /* The regular icon-star is not aligned correctly with respect to icon-home */
 .humbug-icon-star {
     background-position: -121px 0 !important;
+}
+
+.sub-unsub-message {
+    text-align: center;
+    padding-bottom: 10px; /* same as .bookend */
 }
