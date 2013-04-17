@@ -4,12 +4,17 @@ class humbug::postgres-master {
   $master_packages = [ "xfsprogs", "mdadm", ]
   package { $master_packages: ensure => "installed" }
 
+  # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
   file { '/etc/sysctl.d/30-postgresql-shm.conf':
+    ensure => absent,
+  }
+
+  file { '/etc/sysctl.d/40-postgresql.conf':
     ensure => file,
     owner  => 'root',
     group  => 'root',
     mode   => 644,
-    source   => 'puppet:///modules/humbug/postgresql/30-postgresql-shm.conf.master',
+    source   => 'puppet:///modules/humbug/postgresql/40-postgresql.conf.master',
   }
 
   file { "/etc/postgresql/9.1/main/postgresql.conf":

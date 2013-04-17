@@ -14,8 +14,8 @@ class humbug::postgres-common {
   }
 
   exec { "sysctl_p":
-    command   => "/sbin/sysctl -p /etc/sysctl.d/30-postgresql-shm.conf",
-    subscribe => File['/etc/sysctl.d/30-postgresql-shm.conf'],
+    command   => "/sbin/sysctl -p /etc/sysctl.d/40-postgresql.conf",
+    subscribe => File['/etc/sysctl.d/40-postgresql.conf'],
     refreshonly => true,
   }
 
