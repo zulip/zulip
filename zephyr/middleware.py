@@ -5,6 +5,7 @@ from zephyr.decorator import RequestVariableMissingError, RequestVariableConvers
 from zephyr.lib.response import json_error
 from django.db import connection
 from zephyr.lib.utils import statsd
+from zephyr.lib.cache import get_memcached_time, get_memcached_requests
 
 import logging
 import time
@@ -13,13 +14,19 @@ logger = logging.getLogger('humbug.requests')
 
 def async_request_stop(request):
     request._time_stopped = time.time()
+    request._memcached_time_stopped = get_memcached_time()
+    request._memcached_requests_stopped = get_memcached_requests()
 
 def async_request_restart(request):
     request._time_restarted = time.time()
+    request._memcached_time_restarted = get_memcached_time()
+    request._memcached_requests_restarted = get_memcached_requests()
 
 class LogRequests(object):
     def process_request(self, request):
         request._time_started = time.time()
+        request._memcached_time_start = get_memcached_time()
+        request._memcached_requests_start = get_memcached_requests()
 
     def process_response(self, request, response):
         def timedelta_ms(timedelta):
@@ -53,6 +60,20 @@ class LogRequests(object):
             time_delta = ((request._time_stopped - request._time_started) +
                           (time.time() - request._time_restarted))
             optional_orig_delta = " (lp: %s)" % (format_timedelta(orig_time_delta),)
+        memcached_output = ""
+        if hasattr(request, '_memcached_time_start'):
+            memcached_time_delta = get_memcached_time() - request._memcached_time_start
+            memcached_count_delta = get_memcached_requests() - request._memcached_requests_start
+            if hasattr(request, "_memcached_requests_stopped"):
+                # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
+                memcached_time_delta += (request._memcached_time_stopped -
+                                         request._memcached_time_restarted)
+                memcached_count_delta += (request._memcached_requests_stopped -
+                                          request._memcached_requests_restarted)
+
+            if (memcached_time_delta > 0.005):
+                memcached_output = " (mem: %s/%s)" % (format_timedelta(memcached_time_delta),
+                                                      memcached_count_delta)
 
         # Get the amount of time spent doing database queries
         db_time_output = ""
@@ -76,9 +97,10 @@ class LogRequests(object):
         except Exception:
             client = "?"
 
-        logger.info('%-15s %-7s %3d %5s%s%s %s (%s via %s)' %
+        logger.info('%-15s %-7s %3d %5s%s%s%s %s (%s via %s)' %
                     (remote_ip, request.method, response.status_code,
                      format_timedelta(time_delta), optional_orig_delta,
+                     memcached_output,
                      db_time_output, request.get_full_path(), email, client))
 
         # Log some additional data whenever we return certain 40x errors

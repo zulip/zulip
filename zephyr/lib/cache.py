@@ -6,6 +6,17 @@ from django.core.cache import cache as djcache
 from django.core.cache import get_cache
 
 from zephyr.lib.utils import statsd, statsd_key, make_safe_digest
+import time
+
+memcached_total_time = 0
+memcached_total_requests = 0
+
+def get_memcached_time():
+    return memcached_total_time
+
+def get_memcached_requests():
+    return memcached_total_requests
+
 
 def cache_with_key(keyfunc, cache_name=None, timeout=None):
     """Decorator which applies Django caching to a function.
@@ -18,13 +29,19 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None):
     def decorator(func):
         @wraps(func)
         def func_with_caching(*args, **kwargs):
+            global memcached_total_time
+            global memcached_total_requests
+            memcached_start = time.time()
             if cache_name is None:
                 cache_backend = djcache
             else:
                 cache_backend = get_cache(cache_name)
 
             key = keyfunc(*args, **kwargs)
+
             val = cache_backend.get(key)
+            memcached_total_requests += 1
+            memcached_total_time += (time.time() - memcached_start)
 
             if val is not None:
                 statsd.incr("cache.%s.hit" % (statsd_key(key),))
@@ -37,7 +54,13 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None):
                 return val[0]
 
             val = func(*args, **kwargs)
+
+            memcached_start = time.time()
+
             cache_backend.set(key, (val,), timeout=timeout)
+            memcached_total_requests += 1
+            memcached_total_time += (time.time() - memcached_start)
+
             return val
 
         return func_with_caching
