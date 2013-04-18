@@ -192,7 +192,7 @@ exports.message_in_home = function (message) {
         return true;
     }
 
-    return exports.stream_in_home(message.display_recipient);
+    return exports.stream_in_home(message.stream);
 };
 
 // Build a filter function from a list of operators.
@@ -235,7 +235,7 @@ function build_filter(operators_mixed_case) {
 
             case 'stream':
                 if ((message.type !== 'stream') ||
-                    (message.display_recipient.toLowerCase() !== operand))
+                    (message.stream.toLowerCase() !== operand))
                     return false;
                 break;
 
@@ -436,7 +436,7 @@ exports.by_subject = function (target_id) {
         return;
     }
     exports.activate([
-            ['stream',  original.display_recipient],
+            ['stream',  original.stream],
             ['subject', original.subject]
         ], { then_select_id: target_id });
 };
@@ -450,7 +450,7 @@ exports.by_recipient = function (target_id) {
         break;
 
     case 'stream':
-        exports.by('stream', message.display_recipient, { then_select_id: target_id });
+        exports.by('stream', message.stream, { then_select_id: target_id });
         break;
     }
 };

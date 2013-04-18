@@ -292,9 +292,9 @@ MessageList.prototype = {
                 message.unsubscribed = false;
                 if (message.include_bookend && message.historical !== prev.historical) {
                     if (message.historical) {
-                        message.unsubscribed = message.display_recipient;
+                        message.unsubscribed = message.stream;
                     } else {
-                        message.subscribed = message.display_recipient;
+                        message.subscribed = message.stream;
                     }
                 }
             }
@@ -316,9 +316,9 @@ MessageList.prototype = {
             }
 
             if (message.is_stream) {
-                message.background_color = subs.get_color(message.display_recipient);
+                message.background_color = subs.get_color(message.stream);
                 message.color_class = subs.get_color_class(message.background_color);
-                message.invite_only = subs.get_invite_only(message.display_recipient);
+                message.invite_only = subs.get_invite_only(message.stream);
             }
 
             message.contains_mention = notifications.speaking_at_me(message);

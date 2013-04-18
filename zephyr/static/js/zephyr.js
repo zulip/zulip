@@ -181,7 +181,7 @@ function respond_to_message(reply_type) {
     var stream = '';
     var subject = '';
     if (message.type === "stream") {
-        stream = message.display_recipient;
+        stream = message.stream;
         subject = message.subject;
     }
 
@@ -320,7 +320,7 @@ function mark_all_as_read(cont) {
 function unread_hashkey(message) {
     var hashkey;
     if (message.type === 'stream') {
-        hashkey = message.display_recipient;
+        hashkey = message.stream;
     } else {
         hashkey = message.display_reply_to;
     }
@@ -469,11 +469,11 @@ function process_message_for_recent_subjects(message) {
     var current_timestamp = 0;
     var max_subjects = 5;
 
-    if (! recent_subjects.hasOwnProperty(message.display_recipient)) {
-        recent_subjects[message.display_recipient] = [];
+    if (! recent_subjects.hasOwnProperty(message.stream)) {
+        recent_subjects[message.stream] = [];
     } else {
-        recent_subjects[message.display_recipient] =
-            $.grep(recent_subjects[message.display_recipient], function (item) {
+        recent_subjects[message.stream] =
+            $.grep(recent_subjects[message.stream], function (item) {
                 if (item.subject === message.subject) {
                     current_timestamp = item.timestamp;
                 }
@@ -482,7 +482,7 @@ function process_message_for_recent_subjects(message) {
             });
     }
 
-    var recents = recent_subjects[message.display_recipient];
+    var recents = recent_subjects[message.stream];
     recents.push({subject: message.subject,
                   timestamp: Math.max(message.timestamp, current_timestamp)});
 
@@ -492,7 +492,7 @@ function process_message_for_recent_subjects(message) {
 
     recents = recents.slice(0, max_subjects);
 
-    recent_subjects[message.display_recipient] = recents;
+    recent_subjects[message.stream] = recents;
     update_recent_subjects();
 }
 
@@ -512,12 +512,13 @@ function add_message_metadata(message, dummy) {
     switch (message.type) {
     case 'stream':
         message.is_stream = true;
-        if (! subject_dict.hasOwnProperty(message.display_recipient)) {
-            subject_dict[message.display_recipient] = [];
+        message.stream = message.display_recipient;
+        if (! subject_dict.hasOwnProperty(message.stream)) {
+            subject_dict[message.stream] = [];
         }
-        if (! case_insensitive_find(message.subject, subject_dict[message.display_recipient])) {
-            subject_dict[message.display_recipient].push(message.subject);
-            subject_dict[message.display_recipient].sort();
+        if (! case_insensitive_find(message.subject, subject_dict[message.stream])) {
+            subject_dict[message.stream].push(message.subject);
+            subject_dict[message.stream].sort();
             // We don't need to update the autocomplete after this because
             // the subject box's source is a function
         }

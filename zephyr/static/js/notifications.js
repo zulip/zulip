@@ -103,7 +103,7 @@ function process_desktop_notification(message) {
         other_recipients = other_recipients.replace(message.sender_full_name + ", ", "");
     } else {
         key = message.sender_full_name + " to " +
-              message.display_recipient + " > " + message.subject;
+              message.stream + " > " + message.subject;
     }
 
     if (content.length > 150) {
@@ -138,7 +138,7 @@ function process_desktop_notification(message) {
         title += " (to you and " + other_recipients + ")";
     }
     if (message.type === "stream") {
-        title += " (to " + message.display_recipient + " > " + message.subject + ")";
+        title += " (to " + message.stream + " > " + message.subject + ")";
     }
 
     notice_memory[key] = {
@@ -197,7 +197,7 @@ function should_show_notification(message) {
         (message.type === "private" ||
          exports.speaking_at_me(message) ||
          (message.type === "stream" &&
-          subs.receives_notifications(message.display_recipient)));
+          subs.receives_notifications(message.stream)));
 }
 
 exports.received_messages = function (messages) {

@@ -167,7 +167,7 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
 
 exports.same_stream_and_subject = function util_same_stream_and_subject(a, b) {
     // Streams and subjects are case-insensitive.
-    return ((a.display_recipient.toLowerCase() === b.display_recipient.toLowerCase()) &&
+    return ((a.stream.toLowerCase() === b.stream.toLowerCase()) &&
             (a.subject.toLowerCase() === b.subject.toLowerCase()));
 };
 
