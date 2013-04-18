@@ -1,2 +1,2 @@
 #!/bin/sh -x
-while true; do python /home/humbug/humbug-deployments/current/manage.py runtornado localhost:9993; sleep 1; done
+while true; do python /home/humbug/humbug-deployments/current/manage.py runtornado localhost:9993; sleep 0.1; done
