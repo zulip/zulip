@@ -40,8 +40,8 @@
       <li><a href="#jira">Jira (hosted or v5.2+)</a></li>
       <li><a href="#jira-plugin">Jira (locally installed)</a></li>
       <li><a href="#nagios">Nagios</a></li>
-      {% comment %}
       <li><a href="#pivotal">Pivotal Tracker</a></li>
+      {% comment %}
       <li><a href="#svn">Subversion</a></li>
       {% endcomment %}
       <li><a href="#trac">Trac</a></li>
@@ -368,7 +368,25 @@ key=NAGIOS_API_KEY
         <a href="#services">^ Back to top</a>
       </p>
     </div>
+{#--------------------------------------------------------------------#}
+    <div id="pivotal" class="integration">
+      <h4>Pivotal Tracker</h4>
+     <p>Humbug supports Pivotal Tracker integration and can notify you of changes to the stories in your Pivotal Tracker project. In the Settings page
+      for your project, choose the Integrations tab. Scroll down to the <code>Activity Web Hook</code> section, and enter the following url:</p>
 
+      <p><code>https://humbughq.com/api/v1/external/pivotal?api_key=abcdefgh&stream=pivotal</code></p>
+
+      <p>where <code>api_key</code> is the API key of the user you
+      want updates to be sent as, and <code>stream</code> is the stream name you want the notifications sent to, and the stream must already exist.</p>
+
+      <img class="screenshot" src="/static/images/integrations/pivotal/001.png">
+
+      <p><b>Congratulations! You're done!</b><br /> When you make changes in Pivotal Tracker they will be reflected in Humbug:
+      <img class="screenshot" src="/static/images/integrations/pivotal/002.png">
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
 {#--------------------------------------------------------------------#}
     <div id="trac" class="integration">
       <h4>Trac</h4>
