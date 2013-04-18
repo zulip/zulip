@@ -5,6 +5,7 @@ import subprocess
 import pylibmc
 import traceback
 import logging
+import time
 
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
                     level=logging.INFO)
@@ -17,6 +18,9 @@ FAIL = '\033[91m'
 ENDC = '\033[0m'
 
 os.chdir("/home/humbug/humbug-deployments/current")
+
+# Send a statsd event on restarting the server
+subprocess.check_call(["python", "./manage.py", "send_stats", "gauge", "events.server_restart", str(int(time.time()))])
 
 # Restart the FastCGI process, which is running in a shell loop in screen.
 # TODO: real daemonization
