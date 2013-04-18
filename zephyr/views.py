@@ -684,7 +684,7 @@ def get_old_messages_backend(request, user_profile,
     else:
         prefix = "message__"
         query = UserMessage.objects.select_related().filter(user_profile=user_profile) \
-                                                    .order_by('id')
+                                                    .order_by('message')
 
     if narrow is not None:
         build = NarrowBuilder(user_profile, prefix)
