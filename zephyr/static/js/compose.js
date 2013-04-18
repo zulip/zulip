@@ -243,6 +243,7 @@ function create_message_object() {
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
         message.to = compose.recipient().split(/\s*[,;]\s*/);
+        message.reply_to = compose.recipient();
     } else {
         message.to = compose.stream_name();
     }
@@ -274,6 +275,14 @@ exports.restore_message = function() {
         return;
     }
     var snapshot_copy = $.extend({}, message_snapshot);
+    if ((snapshot_copy.type === "stream" &&
+         snapshot_copy.stream.length > 0 &&
+         snapshot_copy.subject.length > 0) ||
+        (snapshot_copy.type === "private" &&
+         snapshot_copy.reply_to.length > 0)) {
+        snapshot_copy = $.extend({replying_to_message: snapshot_copy},
+                                 snapshot_copy);
+    }
     clear_message_snapshot();
     exports.unfade_messages(true);
     compose.start(snapshot_copy.type, snapshot_copy);
