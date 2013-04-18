@@ -182,38 +182,30 @@ following, to the stream <code>commits</code> with a subject that matches the re
     <div id="jenkins" class="integration">
       <h4>Jenkins (or Hudson)</h4>
 
-      <p>Install the "Humbug" plugin by going to <code>Manage Jenkins
+      <p><strong>Install the plugin</strong><br />
+      Install the "Humbug" plugin by going to <code>Manage Jenkins
       > Manage Plugins > Available</code>, typing in "Humbug", and
       clicking "Install without restart".</p>
 
       <img src="/static/images/integrations/jenkins/001.png">
 
-      <p>Once the plugin is installed, configure it by going
-      to <code>Manage Jenkins > Configure System</code>.</p>
-
-      <img src="/static/images/integrations/jenkins/002.png">
-
-      <p>Scroll to the section labeled "Humbug Notification Settings",
-      and specify your bot's email address, API key, and where you'd
-      like your notification messages to go (we recommend the
-      stream <code>jenkins</code>).</p>
-
-      <p>The other two options you might want to adjust are "Smart
-      Notification" (do you want a message after every single build,
-      or only after a status change?), and "Jenkins URL"&mdash;the URL to
-      your instance of Jenkins, so that we can link you to specific
-      build reports.</p>
+      <p><strong>Configure the plugin</strong><br /> Once the plugin
+      is installed, configure it by going to <code>Manage Jenkins >
+      Configure System</code>. Scroll to the section labeled "Humbug
+      Notification Settings", and specify your bot's email address,
+      API key, where you'd like your notification messages to go (we
+      recommend the stream <code>jenkins</code>), and whether you'd
+      like a notification on every build, or only when the build fails
+      (Smart Notification).</p>
 
       <img src="/static/images/integrations/jenkins/003.png">
 
-      <p>Once you've done that, it's time to configure one of your
+      <p><strong>Configure a post-build action for your project</strong><br />
+      Once you've done that, it's time to configure one of your
       projects to use the Humbug notification plugin. From your
-      project page, click "Configure" on the left sidebar:</p>
-
-      <img src="/static/images/integrations/jenkins/004.png">
-
-      <p>Then, scroll to the bottom until you find the section labeled
-      "Post-build Actions". Click the dropdown and select "Humbug
+      project page, click "Configure" on the left sidebar. Scroll to
+      the bottom until you find the section labeled "Post-build
+      Actions". Click the dropdown and select "Humbug
       Notification". It should look as below. Then click "Save".</p>
 
       <img src="/static/images/integrations/jenkins/005.png">
@@ -225,16 +217,13 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <img class="screenshot" src="/static/images/integrations/jenkins/006.png">
       <img class="screenshot" src="/static/images/integrations/jenkins/007.png">
 
-      <p><b>Troubleshooting</b></p>
-      <p>If you don't see the Humbug option in the list, confirm that
-      the plugin was successfully installed by going to <code>Manage
-      Jenkins &gt; Manage Plugins &gt; Installed</code> and confirming that
-      "Humbug Plugin" appears in the list. If it does not, the
-      plugin was not successfully installed. Make sure that you have
-      the <a href="https://wiki.jenkins-ci.org/display/JENKINS/Maven+2+Project+Plugin">Maven
-      plugin</a> installed and try again, or
-      email <a href="mailto:support@humbughq.com">support@humbughq.com</a>
-      for help.</p>
+      <p><b>Troubleshooting</b><br />
+        <ul>
+          <li>Did you set up a post-build action for your project?</li>
+          <li>Does the stream you picked (e.g. <code>jenkins</code>) already exist? If not, add yourself to it and try again.</li>
+          <li>Are your access key and email address correct? Test them using <a href="/api">our curl API</a>.
+          <li>Still stuck? Email <a href="mailto:support@humbughq.com?subject=Jenkins">support@humbughq.com</a>.</li>
+      </p>
 
       <p>
         <a href="#services">^ Back to top</a>
