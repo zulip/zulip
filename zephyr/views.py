@@ -65,6 +65,8 @@ from collections import defaultdict
 from boto.s3.key import Key
 from boto.s3.connection import S3Connection
 
+from defusedxml.ElementTree import fromstring as xml_fromstring
+
 def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=False):
     """Converts plaintext stream names to a list of Streams, validating input in the process
 
@@ -1464,6 +1466,80 @@ def api_jira_webhook(request, api_key):
     subject = elide_subject(subject)
 
     ret = check_send_message(user_profile, get_client("API"), "stream", ["jira"], subject, content)
+    if ret is not None:
+        return json_error(ret)
+    return json_success()
+
+@csrf_exempt
+def api_pivotal_webhook(request):
+    try:
+        api_key = request.GET['api_key']
+        stream = request.GET['stream']
+    except (AttributeError, KeyError):
+        return json_error("Missing api_key or stream parameter.")
+
+    try:
+        user_profile = UserProfile.objects.get(api_key=api_key)
+    except UserProfile.DoesNotExist:
+        return json_error("Failed to find user with API key: %s" % (api_key,))
+
+    payload = xml_fromstring(request.body)
+
+    def get_text(attrs):
+        start = payload
+        try:
+            for attr in attrs:
+                start = start.find(attr)
+            return start.text
+        except AttributeError:
+            return ""
+
+    try:
+        event_type = payload.find('event_type').text
+        description = payload.find('description').text
+        project_id = payload.find('project_id').text
+        story_id = get_text(['stories', 'story', 'id'])
+        # Ugh, the URL in the XML data is not a clickable url that works for the user
+        # so we try to build one that the user can actually click on
+        url = "https://www.pivotaltracker.com/s/projects/%s/stories/%s" % (project_id, story_id)
+
+        # Pivotal doesn't tell us the name of the story, but it's usually in the
+        # description in quotes as the first quoted string
+        name_re = re.compile(r'[^"]+"([^"]+)".*')
+        match = name_re.match(description)
+        if match and len(match.groups()):
+            name = match.group(1)
+        else:
+            name = "Story changed" # Failed for an unknown reason, show something
+        more_info = " [(view)](%s)" % (url,)
+
+        if event_type == 'story_update':
+            subject = name
+            content = description + more_info
+        elif event_type == 'note_create':
+            subject = "Comment added"
+            content = description +  more_info
+        elif event_type == 'story_create':
+            issue_desc = get_text(['stories', 'story', 'description'])
+            issue_type = get_text(['stories', 'story', 'story_type'])
+            issue_status = get_text(['stories', 'story', 'current_state'])
+            estimate = get_text(['stories', 'story', 'estimate'])
+            if estimate != '':
+                estimate = " worth %s story points" % (estimate,)
+            subject = name
+            content = "%s (%s %s%s):\n\n> %s\n\n%s" % (description,
+                                                       issue_status,
+                                                       issue_type,
+                                                       estimate,
+                                                       issue_desc,
+                                                       more_info)
+
+    except AttributeError:
+        return json_error("Failed to extract data from Pivotal XML response")
+
+    subject = elide_subject(subject)
+
+    ret = check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
     if ret is not None:
         return json_error(ret)
     return json_success()
