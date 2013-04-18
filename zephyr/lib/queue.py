@@ -112,7 +112,8 @@ class ExceptionFreeTornadoConnection(pika.adapters.TornadoConnection):
         try:
             super(ExceptionFreeTornadoConnection, self)._adapter_disconnect()
         except (pika.exceptions.ProbableAuthenticationError,
-                pika.exceptions.ProbableAccessDeniedError) as e:
+                pika.exceptions.ProbableAccessDeniedError,
+                pika.exceptions.IncompatibleProtocolError) as e:
             logging.warning("Caught exception '%r' in ExceptionFreeTornadoConnection when \
 calling _adapter_disconnect, ignoring" % (e,))
 
