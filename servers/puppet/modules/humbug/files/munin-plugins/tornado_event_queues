@@ -58,5 +58,5 @@ fi
 # real work - i.e. display the data. Almost always this will be
 # "value" subfield for every data field.
 
-echo "active_queues.value $(cat /home/humbug/humbug/stats/tornado.active_queues)"
-echo "active_users.value $(cat /home/humbug/humbug/stats/tornado.active_users)"
+echo "active_queues.value $(cat /home/humbug/stats/tornado.active_queues)"
+echo "active_users.value $(cat /home/humbug/stats/tornado.active_users)"
