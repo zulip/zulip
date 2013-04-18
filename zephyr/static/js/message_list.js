@@ -401,9 +401,18 @@ MessageList.prototype = {
 
             var content = $(elem).find(".message_content")[0];
             if (content !== undefined) {
-                if( content.offsetHeight < content.scrollHeight ||
-                    content.offsetWidth < content.scrollWidth) {
+                // We've limited the height of all elements in CSS.
+                // If offsetHeight < scrollHeight, then our CSS height limit has taken
+                // effect and we should show an expander button.
+                // If offsetHeight is only slightly smaller than scrollHeight, then we
+                // would only be collapsing by a small amount, which can be annoying.
+                // Instead of showing an expander button, just expand that element instead
+                // of keeping it collapsed.  (This also solves a bug seen on some Mac
+                // systems where offsetHeight == scrollHeight-1 for no apparent reason).
+                if (content.offsetHeight+50 < content.scrollHeight) {
                     $(elem).find(".message_expander").show();
+                } else if (content.offsetHeight < content.scrollHeight) {
+                    $(content).addClass("expanded");
                 }
             }
         });
