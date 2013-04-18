@@ -163,9 +163,9 @@ class AuthedTestCase(TestCase):
     def assert_json_error_contains(self, result, msg_substring):
         self.assertIn(msg_substring, self.get_json_error(result))
 
-    def fixture_jsondata(self, type, action):
+    def fixture_data(self, type, action, file_type='json'):
         return open(os.path.join(os.path.dirname(__file__),
-                                 "fixtures/%s/%s_%s.json" % (type, type, action,))).read()
+                                 "fixtures/%s/%s_%s.%s" % (type, type, action,file_type))).read()
 
     def send_json_payload(self, email, url, payload, stream_name=None, **post_params):
         if stream_name != None:
@@ -2529,7 +2529,7 @@ class JiraHookTests(AuthedTestCase):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
         return self.send_json_payload(email, "/api/v1/external/jira/%s/" % api_key,
-                                      self.fixture_jsondata('jira', action),
+                                      self.fixture_data('jira', action),
                                       stream_name="jira",
                                       content_type="application/json")
 
@@ -2593,7 +2593,7 @@ class BeanstalkHookTests(AuthedTestCase):
     def send_beanstalk_message(self, action):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
-        data = {'payload': self.fixture_jsondata('beanstalk', action)}
+        data = {'payload': self.fixture_data('beanstalk', action)}
         return self.send_json_payload(email, "/api/v1/external/beanstalk",
                                       data,
                                       stream_name="commits",
@@ -2640,7 +2640,7 @@ class GithubHookTests(AuthedTestCase):
         data = {'email': email,
                 'api-key': api_key,
                 'event': 'push',
-                'payload': self.fixture_jsondata('github', action)}
+                'payload': self.fixture_data('github', action)}
         return self.send_json_payload(email, "/api/v1/external/github",
                                       data,
                                       stream_name="commits")
@@ -2654,6 +2654,80 @@ class GithubHookTests(AuthedTestCase):
 * [5057e76](http://github.com/mojombo/grit/commit/5057e76a11abd02e83b7d3d3171c4b68d9c88480): clean up heads test f:2hrs
 * [a47fd41](http://github.com/mojombo/grit/commit/a47fd41f3aa4610ea527dcc1669dfdb9c15c5425): add more comments throughout
 """)
+
+class PivotalHookTests(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def send_pivotal_message(self, name):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        return self.send_json_payload(email, "/api/v1/external/pivotal?api_key=%s&stream=%s" % (api_key,"pivotal"),
+                                      self.fixture_data('pivotal', name, file_type='xml'),
+                                      stream_name="pivotal",
+                                      content_type="application/xml")
+
+    def test_accepted(self):
+        msg = self.send_pivotal_message('accepted')
+        self.assertEqual(msg.subject, 'My new Feature story')
+        self.assertEqual(msg.content, 'Leo Franchi accepted "My new Feature story" \
+[(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)')
+
+    def test_commented(self):
+        msg = self.send_pivotal_message('commented')
+        self.assertEqual(msg.subject, 'Comment added')
+        self.assertEqual(msg.content, 'Leo Franchi added comment: "FIX THIS NOW" \
+[(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)')
+
+    def test_created(self):
+        msg = self.send_pivotal_message('created')
+        self.assertEqual(msg.subject, 'My new Feature story')
+        self.assertEqual(msg.content, 'Leo Franchi added "My new Feature story" \
+(unscheduled feature):\n\n> This is my long description\n\n \
+[(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)')
+
+    def test_delivered(self):
+        msg = self.send_pivotal_message('delivered')
+        self.assertEqual(msg.subject, 'Another new story')
+        self.assertEqual(msg.content, 'Leo Franchi delivered "Another new story" \
+[(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48278289)')
+
+    def test_finished(self):
+        msg = self.send_pivotal_message('finished')
+        self.assertEqual(msg.subject, 'Another new story')
+        self.assertEqual(msg.content, 'Leo Franchi finished "Another new story" \
+[(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48278289)')
+
+    def test_moved(self):
+        msg = self.send_pivotal_message('moved')
+        self.assertEqual(msg.subject, 'My new Feature story')
+        self.assertEqual(msg.content, 'Leo Franchi edited "My new Feature story" \
+[(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)')
+
+    def test_rejected(self):
+        msg = self.send_pivotal_message('rejected')
+        self.assertEqual(msg.subject, 'Another new story')
+        self.assertEqual(msg.content, 'Leo Franchi rejected "Another new story" with comments: \
+"Not good enough, sorry" [(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48278289)')
+
+    def test_started(self):
+        msg = self.send_pivotal_message('started')
+        self.assertEqual(msg.subject, 'Another new story')
+        self.assertEqual(msg.content, 'Leo Franchi started "Another new story" \
+[(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48278289)')
+
+    def test_created_estimate(self):
+        msg = self.send_pivotal_message('created_estimate')
+        self.assertEqual(msg.subject, 'Another new story')
+        self.assertEqual(msg.content, 'Leo Franchi added "Another new story" \
+(unscheduled feature worth 2 story points):\n\n> Some loong description\n\n \
+[(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48278289)')
+
+    def test_type_changed(self):
+        msg = self.send_pivotal_message('type_changed')
+        self.assertEqual(msg.subject, 'My new Feature story')
+        self.assertEqual(msg.content, 'Leo Franchi edited "My new Feature story" \
+[(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)')
+
 
 class Runner(DjangoTestSuiteRunner):
     option_list = (

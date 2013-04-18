@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<activity>
+    <id type="integer">346174097</id>
+    <version type="integer">16</version>
+    <event_type>story_create</event_type>
+    <occurred_at type="datetime">2013/04/17 20:28:52 UTC</occurred_at>
+    <author>Leo Franchi</author>
+    <project_id type="integer">807213</project_id>
+    <description>Leo Franchi added &quot;Another new story&quot;</description>
+    <stories type="array">
+        <story>
+            <id type="integer">48278289</id>
+            <url>http://www.pivotaltracker.com/services/v3/projects/807213/stories/48278289</url>
+            <name>Another new story</name>
+            <story_type>feature</story_type>
+            <description>Some loong description</description>
+            <estimate type="integer">2</estimate>
+            <current_state>unscheduled</current_state>
+            <requested_by>Leo Franchi</requested_by>
+        </story>
+    </stories>
+</activity>
