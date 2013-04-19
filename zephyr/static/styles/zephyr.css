@@ -450,10 +450,6 @@ table.focused_table {
     display: none;
     text-align: center;
     color: #0088CC;
-
-    /* to match .message_content */
-    margin-left: 5px;
-    margin-right: 35px;
 }
 
 .message_length_controller:hover {
