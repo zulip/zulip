@@ -57,7 +57,7 @@ import re
 import urllib
 import os
 import base64
-from mimetypes import guess_type
+from mimetypes import guess_type, guess_extension
 from os import path
 from functools import wraps
 from collections import defaultdict
@@ -1109,7 +1109,14 @@ def json_upload_file(request, user_profile):
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     key = Key(conn.get_bucket(settings.S3_BUCKET))
 
-    key.key = gen_s3_key(user_profile, user_file.name)
+    uploaded_file_name = user_file.name
+    content_type = request.GET.get('mimetype')
+    if content_type is None:
+        content_type = guess_type(uploaded_file_name)[0]
+    else:
+        uploaded_file_name = uploaded_file_name + guess_extension(content_type)
+
+    key.key = gen_s3_key(user_profile, uploaded_file_name)
 
     # So for writing the file to S3, the file could either be stored in RAM
     # (if it is less than 2.5MiB or so) or an actual temporary file on disk.
@@ -1121,7 +1128,6 @@ def json_upload_file(request, user_profile):
     # you to boto would be a pain.
 
     key.set_metadata("user_profile_id", str(user_profile.id))
-    content_type = guess_type(user_file.name)[0]
     if content_type:
         headers = {'Content-Type': content_type}
     else:
