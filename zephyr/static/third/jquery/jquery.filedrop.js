@@ -76,6 +76,8 @@
         caller = this;
 
     this.on('drop', drop).on('dragstart', opts.dragStart).on('dragenter', dragEnter).on('dragover', dragOver).on('dragleave', dragLeave);
+    this.on('paste', paste);
+
     $(document).on('drop', docDrop).on('dragenter', docEnter).on('dragover', docOver).on('dragleave', docLeave);
 
     $('#' + opts.fallback_id).change(function(e) {
@@ -105,6 +107,38 @@
       upload();
       e.preventDefault();
       return false;
+    }
+
+    function paste(event) {
+      // Take the first image pasted in the clipboard
+      var match_re = /image.*/;
+      var item;
+      $.each(event.originalEvent.clipboardData.items, function (idx, this_event) {
+        if (this_event.type.match(match_re)) {
+          item = this_event;
+          return false;
+        }
+      });
+
+      if (item === undefined) {
+        return;
+      }
+
+      // Call the user callback to initialize the drop event
+      if( opts.drop.call(this, event) === false ) return false;
+
+      // Read the data of the drop in as binary data, and send it to the server
+      var data = item.getAsFile();
+      var reader = new FileReader();
+      reader.onload = function(event) {
+          function finished_callback(serverResponse, timeDiff, xhr) {
+            return opts.uploadFinished(-1, undefined, serverResponse, timeDiff, xhr);
+          }
+
+          var url_params = "?mimetype=" + encodeURIComponent(data.type);
+          do_xhr("pasted_image", event.target.result, data.type, {}, url_params, finished_callback, function () {});
+      };
+      reader.readAsBinaryString(data);
     }
 
     function getBuilder(filename, filedata, mime, boundary) {
