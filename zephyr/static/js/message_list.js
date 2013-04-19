@@ -409,7 +409,7 @@ MessageList.prototype = {
                 // Instead of showing an expander button, just expand that element instead
                 // of keeping it collapsed.  (This also solves a bug seen on some Mac
                 // systems where offsetHeight == scrollHeight-1 for no apparent reason).
-                if (content.offsetHeight + 250 < content.scrollHeight) {
+                if (content.offsetHeight+50 < content.scrollHeight) {
                     $(elem).find(".message_expander").show();
                 } else if (content.offsetHeight < content.scrollHeight) {
                     $(content).addClass("expanded");
