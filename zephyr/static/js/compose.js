@@ -526,7 +526,13 @@ $(function () {
             var textbox = $("#new_message_content"),
                 split_uri = response.uri.split("/"),
                 filename = split_uri[split_uri.length - 1];
-            textbox.val(textbox.val() + "[" + filename + "](" + response.uri + ")" + " ");
+            if (i === -1) {
+                // This is a paste, so there's no filename. Show the image directly
+                textbox.val(textbox.val() + "[pasted image](" + response.uri + ") ");
+            } else {
+                // This is a dropped file, so make the filename a link to the image
+                textbox.val(textbox.val() + "[" + filename + "](" + response.uri + ")" + " ");
+            }
             $("#new_message_content").trigger("autosize");
             $("#compose-send-button").removeAttr("disabled");
             $("#send-status").removeClass("alert-info")
