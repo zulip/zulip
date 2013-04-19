@@ -89,9 +89,20 @@
 
     function drop(e) {
       var i;
+
+      function has_type(dom_stringlist, type) {
+        var j;
+        for (j = 0; j < dom_stringlist.length; j++) {
+          if (dom_stringlist[j] === type) {
+            return true;
+          }
+        }
+        return false;
+      }
+
       for (i = 0; i < opts.raw_droppable.length; i++) {
         var type = opts.raw_droppable[i];
-        if (e.dataTransfer.types.indexOf(type) > -1) {
+        if (has_type(e.dataTransfer.types, type)) {
           opts.rawDrop(e.dataTransfer.getData(type));
           return false;
         }
