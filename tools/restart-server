@@ -20,7 +20,7 @@ ENDC = '\033[0m'
 os.chdir("/home/humbug/humbug-deployments/current")
 
 # Send a statsd event on restarting the server
-subprocess.check_call(["python", "./manage.py", "send_stats", "gauge", "events.server_restart", str(int(time.time()))])
+subprocess.check_call(["python", "./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
 
 # Restart the FastCGI process, which is running in a shell loop in screen.
 # TODO: real daemonization

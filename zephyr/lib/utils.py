@@ -88,4 +88,4 @@ def log_statsd_event(name):
     you can use the drawAsInfinite() command
     """
     event_name = "events.%s" % (name,)
-    statsd.gauge(event_name, int(time()))
+    statsd.incr(event_name, int(time()))
