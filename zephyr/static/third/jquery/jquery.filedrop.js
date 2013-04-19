@@ -191,6 +191,82 @@
       opts.globalProgressUpdated(Math.round(total / global_progress.length));
     }
 
+    function do_xhr(filename, filedata, mime, upload_args, extra_url_args, finished_callback, on_error) {
+      var xhr                   = new XMLHttpRequest(),
+          start_time            = new Date().getTime(),
+          global_progress_index = global_progress.length,
+          boundary              = '------multipartformboundary' + (new Date()).getTime(),
+          upload                = xhr.upload;
+
+      // Humbug modification: Shunt the XHR into the parent object so we
+      // can interrupt it later.
+      caller.data("filedrop_xhr", xhr);
+
+      if (opts.withCredentials) {
+        xhr.withCredentials = opts.withCredentials;
+      }
+
+      var builder = builder = getBuilder(filename, filedata, mime, boundary);
+
+      upload = $.extend(upload, upload_args);
+      upload.downloadStartTime = start_time;
+      upload.currentStart = start_time;
+      upload.currentProgress = 0;
+      upload.global_progress_index = global_progress_index;
+      upload.startData = 0;
+      upload.addEventListener("progress", progress, false);
+
+      // Allow url to be a method
+      if (jQuery.isFunction(opts.url)) {
+        xhr.open("POST", opts.url() + extra_url_args, true);
+      } else {
+        xhr.open("POST", opts.url + extra_url_args, true);
+      }
+
+      xhr.setRequestHeader('content-type', 'multipart/form-data; boundary=' + boundary);
+
+      // Add headers
+      $.each(opts.headers, function(k, v) {
+        xhr.setRequestHeader(k, v);
+      });
+
+      xhr.sendAsBinary(builder);
+
+      global_progress[global_progress_index] = 0;
+      globalProgress();
+
+      xhr.onload = function() {
+        var serverResponse = null;
+
+        if (xhr.responseText) {
+          try {
+            serverResponse = jQuery.parseJSON(xhr.responseText);
+          }
+          catch (e) {
+            serverResponse = xhr.responseText;
+          }
+        }
+
+        var now = new Date().getTime(),
+            timeDiff = now - start_time,
+            result = finished_callback(serverResponse, timeDiff, xhr);
+
+          // Make sure the global progress is updated
+          global_progress[global_progress_index] = 100;
+          globalProgress();
+
+          if (result === false) {
+            stop_loop = true;
+          }
+
+        // Pass any errors to the error option
+        if (xhr.status < 200 || xhr.status > 299) {
+          on_error(xhr.statusText, xhr.status);
+        }
+      };
+
+    }
+
     // Respond to an upload
     function upload() {
       stop_loop = false;
@@ -296,7 +372,7 @@
             reader.onloadend = !opts.beforeSend ? send : function (e) {
               opts.beforeSend(files[fileIndex], fileIndex, function () { send(e); });
             };
-            
+
             reader.readAsBinaryString(files[fileIndex]);
 
           } else {
@@ -329,104 +405,47 @@
           e.target.index = getIndexBySize(e.total);
         }
 
-        var xhr = new XMLHttpRequest(),
-            upload = xhr.upload,
-            file = files[e.target.index],
-            index = e.target.index,
-            start_time = new Date().getTime(),
-            boundary = '------multipartformboundary' + (new Date()).getTime(),
-            global_progress_index = global_progress.length,
-            builder,
-            newName = rename(file.name),
-            mime = file.type;
-        // Humbug modification: Shunt the XHR into the parent object so we
-        // can interrupt it later.
-        caller.data("filedrop_xhr", xhr);
+        var file = files[e.target.index],
+            index = e.target.index;
 
-        if (opts.withCredentials) {
-          xhr.withCredentials = opts.withCredentials;
-        }
+        function finished_callback(serverResponse, timeDiff, xhr) {
+          filesDone++;
+          var result = opts.uploadFinished(index, file, serverResponse, timeDiff, xhr);
 
-        if (typeof newName === "string") {
-          builder = getBuilder(newName, e.target.result, mime, boundary);
-        } else {
-          builder = getBuilder(file.name, e.target.result, mime, boundary);
-        }
-
-        upload.index = index;
-        upload.file = file;
-        upload.downloadStartTime = start_time;
-        upload.currentStart = start_time;
-        upload.currentProgress = 0;
-        upload.global_progress_index = global_progress_index;
-        upload.startData = 0;
-        upload.addEventListener("progress", progress, false);
-
-		// Allow url to be a method
-		if (jQuery.isFunction(opts.url)) {
-	        xhr.open("POST", opts.url(), true);
-	    } else {
-	    	xhr.open("POST", opts.url, true);
-	    }
-	    
-        xhr.setRequestHeader('content-type', 'multipart/form-data; boundary=' + boundary);
-
-        // Add headers
-        $.each(opts.headers, function(k, v) {
-          xhr.setRequestHeader(k, v);
-        });
-
-        xhr.sendAsBinary(builder);
-
-        global_progress[global_progress_index] = 0;
-        globalProgress();
-
-        opts.uploadStarted(index, file, files_count);
-
-        xhr.onload = function() {
-            var serverResponse = null;
-
-            if (xhr.responseText) {
-              try {
-                serverResponse = jQuery.parseJSON(xhr.responseText);
-              }
-              catch (e) {
-                serverResponse = xhr.responseText;
-              }
-            }
-
-            var now = new Date().getTime(),
-                timeDiff = now - start_time,
-                result = opts.uploadFinished(index, file, serverResponse, timeDiff, xhr);
-            filesDone++;
-
-            // Remove from processing queue
-            processingQueue.forEach(function(value, key) {
-              if (value === fileIndex) {
-                processingQueue.splice(key, 1);
-              }
-            });
-
-            // Add to donequeue
-            doneQueue.push(fileIndex);
-
-            // Make sure the global progress is updated
-            global_progress[global_progress_index] = 100;
-            globalProgress();
-
-            if (filesDone === (files_count - filesRejected)) {
-              afterAll();
-            }
-            if (result === false) {
-              stop_loop = true;
-            }
-          
-
-          // Pass any errors to the error option
-          if (xhr.status < 200 || xhr.status > 299) {
-            opts.error(xhr.statusText, file, fileIndex, xhr.status);
+          if (filesDone === (files_count - filesRejected)) {
+            afterAll();
           }
-        };
+
+          // Remove from processing queue
+          processingQueue.forEach(function(value, key) {
+            if (value === fileIndex) {
+              processingQueue.splice(key, 1);
+            }
+          });
+
+          // Add to donequeue
+          doneQueue.push(fileIndex);
+
+          return result;
+        }
+
+        function on_error(status_text, status) {
+          opts.error(status_text, file, fileIndex, status);
+        }
+
+        var fileName,
+            fileData = e.target.result;
+        if (typeof newName === "string") {
+          fileName = newName;
+        } else {
+          fileName = file.name;
+        }
+
+        var extra_opts = { file: files[e.target.index],
+                           index: e.target.index };
+
+        do_xhr(fileName, fileData, file.type, extra_opts, "", finished_callback, on_error);
+
       };
 
       // Initiate the processing loop
