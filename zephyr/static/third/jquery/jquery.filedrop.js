@@ -35,6 +35,7 @@
       refresh: 1000,
       paramname: 'userfile',
       allowedfiletypes:[],
+      raw_droppable:[],
       maxfiles: 25,           // Ignored if queuefiles is set > 0
       maxfilesize: 1,         // MB file size limit
       queuefiles: 0,          // Max files before queueing (for large volume uploads)
@@ -42,6 +43,7 @@
       data: {},
       headers: {},
       drop: empty,
+      rawDrop: empty,
       dragStart: empty,
       dragEnter: empty,
       dragOver: empty,
@@ -84,6 +86,15 @@
     });
 
     function drop(e) {
+      var i;
+      for (i = 0; i < opts.raw_droppable.length; i++) {
+        var type = opts.raw_droppable[i];
+        if (e.dataTransfer.types.indexOf(type) > -1) {
+          opts.rawDrop(e.dataTransfer.getData(type));
+          return false;
+        }
+      }
+
       if( opts.drop.call(this, e) === false ) return false;
       files = e.dataTransfer.files;
       if (files === null || files === undefined || files.length === 0) {

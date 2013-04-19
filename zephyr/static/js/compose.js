@@ -482,6 +482,7 @@ $(function () {
             // the token isn't automatically included in filedrop's post
             csrfmiddlewaretoken: csrf_token
         },
+        raw_droppable: ['text/uri-list', 'text/plain'],
         drop: function (i, file, len) {
             $("#compose-send-button").attr("disabled", "");
             $("#send-status").addClass("alert-info")
@@ -530,6 +531,10 @@ $(function () {
             $("#compose-send-button").removeAttr("disabled");
             $("#send-status").removeClass("alert-info")
                              .hide();
+        },
+        rawDrop: function (contents) {
+            var textbox = $("#new_message_content");
+            textbox.val(textbox.val() + contents);
         }
     });
 });
