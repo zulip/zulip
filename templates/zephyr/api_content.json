@@ -27,7 +27,7 @@
     }, 
     {
         "endpoint": "POST /v1/messages", 
-        "example_response": "<div class=\"codehilite\"><pre><span class=\"p\">{</span><span class=\"s2\">\"id\"</span><span class=\"o\">:</span> <span class=\"mi\">102346</span><span class=\"p\">}</span>\n</pre></div>", 
+        "example_response": "<div class=\"codehilite\"><pre><span class=\"p\">{</span><span class=\"s2\">\"msg\"</span><span class=\"o\">:</span> <span class=\"s2\">\"\"</span><span class=\"p\">,</span> <span class=\"s2\">\"result\"</span><span class=\"o\">:</span> <span class=\"s2\">\"success\"</span><span class=\"p\">}</span>\n</pre></div>", 
         "returns": [
             [
                 "id", 
