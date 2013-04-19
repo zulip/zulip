@@ -72,11 +72,7 @@ to pull out the resulting HTML :)
 <div class="codehilite"><pre><span class="c">#!/usr/bin/env python</span>
 
 <span class="kn">import</span> <span class="nn">humbug</span>
-<span class="n">client</span> <span class="o">=</span> <span class="n">humbug</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span>
-<span class="c">    # These options are only necessary if you didn't make a .humbugrc</span>
-<span class="c">    # api_key=YOUR_API_KEY,</span>
-<span class="c">    # email=YOUR_EMAIL_ADDRESS,</span>
-    <span class="n">verbose</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">humbug</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="p">)</span>
 
 <span class="n">stream_message</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s">"type"</span><span class="p">:</span> <span class="s">"stream"</span><span class="p">,</span>
