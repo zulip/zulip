@@ -245,6 +245,7 @@ PIPELINE_CSS = {
         'source_filenames': (
             'styles/portico.css',
             'styles/pygments.css',
+            'styles/fonts.css',
         ),
         'output_filename': 'min/portico.css'
     },
@@ -252,6 +253,7 @@ PIPELINE_CSS = {
         'source_filenames': (
             'styles/zephyr.css',
             'styles/pygments.css',
+            'styles/fonts.css',
         ),
         'output_filename': 'min/app.css'
     },

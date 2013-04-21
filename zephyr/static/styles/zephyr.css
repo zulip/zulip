@@ -1072,8 +1072,10 @@ li.expanded_subject {
 }
 
 .star {
-    padding-left: 2px;
-    opacity: .4;
+    padding-left: 5px;
+    opacity: .7;
+    font-size: 16px;
+    color: #2c8211;
 }
 
 .star:hover {
