@@ -434,8 +434,7 @@ MessageList.prototype = {
             // viewport (which is window) doesn't have a scrollTop, so scroll
             // the closest concept that does.
             $("html, body").animate({scrollTop: viewport_offset +
-                                     Math.min(new_messages_height, available_space_for_scroll)},
-                                    {"queue": "autoscroll"});
+                                     Math.min(new_messages_height, available_space_for_scroll)});
         }
     },
 
@@ -525,7 +524,8 @@ MessageList.prototype = {
 };
 
 $(document).on('message_selected.zephyr hashchange.zephyr mousewheel', function (event) {
-    $("html, body").stop({"queue": "autoscroll"});
+    // TODO: Figure out how to limit this animation stop to just the autoscroll
+    $("html, body").stop();
 });
 }());
 /*jslint nomen: false */
