@@ -133,8 +133,8 @@ def send_signup_message(sender, signups_stream, user_profile, internal=False):
             )
 
 def notify_new_user(user_profile, internal=False):
-    statsd.gauge('users.signup', 1, delta=True)
     send_signup_message("humbug+signups@humbughq.com", "signups", user_profile, internal)
+    statsd.gauge("users.signups.%s" % (user_profile.realm.domain.replace('.', '_')), 1, delta=True)
 
 class PrincipalError(JsonableError):
     def __init__(self, principal):
