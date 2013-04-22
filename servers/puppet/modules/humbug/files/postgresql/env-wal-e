@@ -1,0 +1,5 @@
+#!/bin/sh
+export AWS_ACCESS_KEY_ID=xxxxxxxxxxxxxxxxxxxx
+export AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+export WALE_S3_PREFIX=s3://humbug-postgres
+exec /usr/local/bin/wal-e "$@"
