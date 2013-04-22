@@ -88,7 +88,6 @@
     });
 
     function drop(e) {
-      var i;
 
       function has_type(dom_stringlist, type) {
         var j;
@@ -100,11 +99,14 @@
         return false;
       }
 
-      for (i = 0; i < opts.raw_droppable.length; i++) {
-        var type = opts.raw_droppable[i];
-        if (has_type(e.dataTransfer.types, type)) {
-          opts.rawDrop(e.dataTransfer.getData(type));
-          return false;
+      if (e.dataTransfer.files.length === 0) {
+        var i;
+        for (i = 0; i < opts.raw_droppable.length; i++) {
+          var type = opts.raw_droppable[i];
+          if (has_type(e.dataTransfer.types, type)) {
+            opts.rawDrop(e.dataTransfer.getData(type));
+            return false;
+          }
         }
       }
 
@@ -121,6 +123,11 @@
     }
 
     function paste(event) {
+      if (event.originalEvent.clipboardData === undefined ||
+          event.originalEvent.clipboardData.items === undefined) {
+        return;
+      }
+
       // Take the first image pasted in the clipboard
       var match_re = /image.*/;
       var item;
