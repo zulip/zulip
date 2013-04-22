@@ -48,6 +48,8 @@ function stream_message(subject, message) {
 // populated later -- should be e.g. tutorial-wdaher
 var my_tutorial_stream;
 
+var tutorial_running = false;
+
 function stream_to_me(message) {
     return message.type === 'stream' && message.to === my_tutorial_stream;
 }
@@ -87,6 +89,10 @@ function wait_for_message(time_to_wait_sec, condition) {
     return $.Deferred(function (deferred) {
         var numCalls = 0;
         var intervalId = setInterval(function () {
+            if (!tutorial_running) {
+                clearInterval(intervalId);
+                deferred.fail();
+            }
             numCalls += 1;
             if (numCalls > time_to_wait_sec * (1000 / POLL_INTERVAL_MS)) {
                 clearInterval(intervalId);
@@ -163,8 +169,6 @@ function pick_hello_stream() {
 
     return hello_stream;
 }
-
-var tutorial_running = false;
 
 function run_tutorial(stepNumber) {
     if (stepNumber >= script.length) {
