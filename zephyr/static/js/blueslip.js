@@ -81,14 +81,22 @@ function report_error(msg, stack, opts) {
 }
 
 function BlueslipError(msg, more_info) {
-    var self = Error.call(this, msg);
+    // One can't subclass Error normally so we have to play games
+    // with setting __proto__
+    var self = new Error(msg);
+    self.name = "BlueslipError";
+
+    // Indirect access to __proto__ keeps jslint quiet
+    var proto = '__proto__';
+    self[proto] = BlueslipError.prototype;
+
     if (more_info !== undefined) {
         self.more_info = more_info;
     }
     return self;
 }
 
-BlueslipError.prototype = Error.prototype;
+BlueslipError.prototype = Object.create(Error.prototype);
 
 exports.wrap_function = function blueslip_wrap_function(func) {
     if (func.blueslip_wrapper !== undefined) {
