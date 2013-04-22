@@ -1056,6 +1056,9 @@ ul.expanded_subjects {
 
 li.expanded_subject {
     margin-left: .3em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .twitter-tweet {
