@@ -232,6 +232,9 @@ def get_recipient(type, type_id):
 def linebreak(string):
     return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
 
+def to_dict_cache_key(message, apply_markdown, rendered_content=None):
+    return 'message_dict:%d:%d' % (message.id, apply_markdown)
+
 class Message(models.Model):
     sender = models.ForeignKey(UserProfile)
     recipient = models.ForeignKey(Recipient)
@@ -248,8 +251,7 @@ class Message(models.Model):
     def __str__(self):
         return self.__repr__()
 
-    @cache_with_key(lambda self, apply_markdown, rendered_content=None: 'message_dict:%d:%d' % (self.id, apply_markdown),
-                    timeout=3600*24)
+    @cache_with_key(to_dict_cache_key, timeout=3600*24)
     def to_dict(self, apply_markdown, rendered_content=None):
         display_recipient = get_display_recipient(self.recipient)
         if self.recipient.type == Recipient.STREAM:

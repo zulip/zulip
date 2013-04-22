@@ -67,6 +67,13 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None):
 
     return decorator
 
+def cache_get_many(keys, cache_name=None):
+    if cache_name is None:
+        cache_backend = djcache
+    else:
+        cache_backend = get_cache(cache_name)
+    return cache_backend.get_many(keys)
+
 def cache(func):
     """Decorator which applies Django caching to a function.
 

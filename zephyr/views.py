@@ -20,7 +20,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, \
     PreregistrationUser, get_client, MitUser, UserActivity, \
     MAX_SUBJECT_LENGTH, get_stream, UserPresence, \
-    get_recipient, valid_stream_name
+    get_recipient, valid_stream_name, to_dict_cache_key
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, \
@@ -44,7 +44,7 @@ from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zephyr.lib.timestamp import datetime_to_timestamp
-from zephyr.lib.cache import cache_with_key
+from zephyr.lib.cache import cache_with_key, cache_get_many
 from zephyr.lib.unminify import SourceMap
 from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.utils import statsd
@@ -707,30 +707,47 @@ def get_old_messages_backend(request, user_profile,
     # resulting list always contains the anchor message
     if num_before != 0 and num_after == 0:
         num_before += 1
-        messages = last_n(num_before, query.filter(**add_prefix(id__lte=anchor)))
+        query_result = last_n(num_before, query.filter(**add_prefix(id__lte=anchor)))
     elif num_before == 0 and num_after != 0:
         num_after += 1
-        messages = query.filter(**add_prefix(id__gte=anchor))[:num_after]
+        query_result = query.filter(**add_prefix(id__gte=anchor))[:num_after]
     else:
         num_after += 1
-        messages = (last_n(num_before, query.filter(**add_prefix(id__lt=anchor)))
+        query_result = (last_n(num_before, query.filter(**add_prefix(id__lt=anchor)))
                     + list(query.filter(**add_prefix(id__gte=anchor))[:num_after]))
 
+    # The following is a little messy, but ensures that the code paths
+    # are similar regardless of the value of include_history.  The
+    # 'user_messages' dictionary maps each message to the user's
+    # UserMessage object for that message, which we will attach to the
+    # rendered message dict before returning it.  We attempt to
+    # bulk-fetch rendered message dicts from memcached using the
+    # 'messages' list.
     if include_history:
         user_messages = dict((user_message.message_id, user_message) for user_message in
                              UserMessage.objects.filter(user_profile=user_profile,
-                                                        message__in=messages))
-        message_list = []
-        for message in messages:
-            flags_dict = {'flags': ["read", "historical"]}
-            if message.id in user_messages:
-                flags_dict = user_messages[message.id].flags_dict()
-            message_list.append(dict(message.to_dict(apply_markdown),
-                                     **flags_dict))
+                                                        message__in=query_result))
+        messages = query_result
     else:
-        message_list = [dict(umessage.message.to_dict(apply_markdown),
-                             **umessage.flags_dict())
-                        for umessage in messages]
+        user_messages = dict((user_message.message_id, user_message)
+                             for user_message in query_result)
+        messages = [user_message.message for user_message in query_result]
+
+    bulk_messages = cache_get_many([to_dict_cache_key(message, apply_markdown)
+                                    for message in messages])
+    message_list = []
+    for message in messages:
+        if include_history:
+            flags_dict = {'flags': ["read", "historical"]}
+        if message.id in user_messages:
+            flags_dict = user_messages[message.id].flags_dict()
+
+        data = bulk_messages.get(to_dict_cache_key(message, apply_markdown))
+        if data is None:
+            elt = message.to_dict(apply_markdown)
+        else:
+            elt = data[0]
+        message_list.append(dict(elt, **flags_dict))
 
     statsd.incr('loaded_old_messages', len(message_list))
     ret = {'messages': message_list,
