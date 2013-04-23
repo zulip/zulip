@@ -22,7 +22,22 @@ function MessageList(table_name, opts) {
 
 function process_collapsing(index, elem) {
     var content = $(elem).find(".message_content")[0];
-    if (content !== undefined) {
+    var message = current_msg_list.get(rows.id($(elem)));
+    if (content !== undefined && message !== undefined) {
+        // If message.expanded is defined, then the user has manually
+        // specified whether this message should be expanded or collapsed.
+        if (message.expanded === true) {
+            $(content).addClass("expanded");
+            $(elem).find(".message_collapser").show();
+            $(elem).find(".message_expander").hide();
+            return;
+        } else if (message.expanded == false) {
+            $(content).removeClass("expanded");
+            $(elem).find(".message_expander").show();
+            $(elem).find(".message_collapser").hide();
+            return;
+        }
+
         // We've limited the height of all elements in CSS.
         // If offsetHeight < scrollHeight, then our CSS height limit has taken
         // effect and we should show an expander button.
@@ -31,7 +46,9 @@ function process_collapsing(index, elem) {
         // Instead of showing an expander button, just expand that element instead
         // of keeping it collapsed.  (This also solves a bug seen on some Mac
         // systems where offsetHeight == scrollHeight-1 for no apparent reason).
-        if (content.offsetHeight + 250 < content.scrollHeight) {
+        if (content.offsetHeight === 0 && content.scrollHeight === 0) {
+            return;
+        } else if (content.offsetHeight + 250 < content.scrollHeight) {
             $(elem).find(".message_expander").show();
         } else if (content.offsetHeight < content.scrollHeight) {
             $(content).addClass("expanded");

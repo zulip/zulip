@@ -936,6 +936,7 @@ $(function () {
 
     $("#home").on("click", ".message_expander", function (e) {
         var row = $(this).closest(".message_row");
+        current_msg_list.get(rows.id(row)).expanded = true;
         row.find(".message_content").addClass("expanded");
         $(this).hide();
         row.find(".message_collapser").show();
@@ -943,6 +944,7 @@ $(function () {
 
     $("#home").on("click", ".message_collapser", function (e) {
         var row = $(this).closest(".message_row");
+        current_msg_list.get(rows.id(row)).expanded = false;
         row.find(".message_content").removeClass("expanded");
         $(this).hide();
         row.find(".message_expander").show();
