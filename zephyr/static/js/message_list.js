@@ -31,7 +31,7 @@ function process_collapsing(index, elem) {
             $(elem).find(".message_collapser").show();
             $(elem).find(".message_expander").hide();
             return;
-        } else if (message.expanded == false) {
+        } else if (message.expanded === false) {
             $(content).removeClass("expanded");
             $(elem).find(".message_expander").show();
             $(elem).find(".message_collapser").hide();
