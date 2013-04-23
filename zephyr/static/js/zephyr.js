@@ -907,16 +907,18 @@ $(function () {
         }
 
         // catch the user up
-        if (messages.length !== 1) {
+        if (messages.length !== 0) {
             var latest_id = messages[messages.length-1].id;
-            load_old_messages({
-                anchor: latest_id,
-                num_before: 0,
-                num_after: 400,
-                msg_list: home_msg_list,
-                cont: load_more
-            });
-            return;
+            if (latest_id < page_params.max_message_id) {
+                load_old_messages({
+                    anchor: latest_id,
+                    num_before: 0,
+                    num_after: 400,
+                    msg_list: home_msg_list,
+                    cont: load_more
+                });
+                return;
+            }
         }
         // now start subscribing to updates
         get_updates();
