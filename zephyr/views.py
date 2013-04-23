@@ -734,7 +734,10 @@ def get_old_messages_backend(request, user_profile,
         query = UserMessage.objects.select_related().filter(user_profile=user_profile) \
                                                     .order_by('message')
 
+    num_extra_messages = 1
+
     if narrow is not None:
+        num_extra_messages = 0
         build = NarrowBuilder(user_profile, prefix)
         for operator, operand in narrow:
             query = build(query, operator, operand)
@@ -742,16 +745,18 @@ def get_old_messages_backend(request, user_profile,
     def add_prefix(**kwargs):
         return dict((prefix + key, kwargs[key]) for key in kwargs.keys())
 
-    # We add 1 to the number of messages requested to ensure that the
-    # resulting list always contains the anchor message
+    # We add 1 to the number of messages requested if no narrow was
+    # specified to ensure that the resulting list always contains the
+    # anchor message.  If a narrow was specified, the anchor message
+    # might not match the narrow anyway.
     if num_before != 0 and num_after == 0:
-        num_before += 1
+        num_before += num_extra_messages
         query_result = last_n(num_before, query.filter(**add_prefix(id__lte=anchor)))
     elif num_before == 0 and num_after != 0:
-        num_after += 1
+        num_after += num_extra_messages
         query_result = query.filter(**add_prefix(id__gte=anchor))[:num_after]
     else:
-        num_after += 1
+        num_after += num_extra_messages
         query_result = (last_n(num_before, query.filter(**add_prefix(id__lt=anchor)))
                     + list(query.filter(**add_prefix(id__gte=anchor))[:num_after]))
 

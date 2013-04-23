@@ -986,7 +986,7 @@ function load_more_messages(msg_list) {
         msg_list: msg_list,
         cont: function (messages) {
             ui.hide_loading_more_messages_indicator();
-            if (messages.length === batch_size + 1) {
+            if (messages.length >= batch_size) {
                 load_more_enabled = true;
             }
         }
