@@ -523,7 +523,7 @@ MessageList.prototype = {
     }
 };
 
-$(document).on('message_selected.zephyr hashchange.zephyr mousewheel', function (event) {
+$(document).on('message_selected.zephyr hashchange.zephyr mousewheel mousemove', function (event) {
     // TODO: Figure out how to limit this animation stop to just the autoscroll
     $("html, body").stop();
 });
