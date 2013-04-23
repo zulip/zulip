@@ -20,6 +20,25 @@ function MessageList(table_name, opts) {
     return this;
 }
 
+function process_collapsing(index, elem) {
+    var content = $(elem).find(".message_content")[0];
+    if (content !== undefined) {
+        // We've limited the height of all elements in CSS.
+        // If offsetHeight < scrollHeight, then our CSS height limit has taken
+        // effect and we should show an expander button.
+        // If offsetHeight is only slightly smaller than scrollHeight, then we
+        // would only be collapsing by a small amount, which can be annoying.
+        // Instead of showing an expander button, just expand that element instead
+        // of keeping it collapsed.  (This also solves a bug seen on some Mac
+        // systems where offsetHeight == scrollHeight-1 for no apparent reason).
+        if (content.offsetHeight + 250 < content.scrollHeight) {
+            $(elem).find(".message_expander").show();
+        } else if (content.offsetHeight < content.scrollHeight) {
+            $(content).addClass("expanded");
+        }
+    }
+}
+
 (function () {
 
 function add_display_time(message, prev) {
@@ -396,26 +415,7 @@ MessageList.prototype = {
                               }});
         }
 
-        $.each(rendered_elems, function (index, elem) {
-            var row = $(elem);
-
-            var content = $(elem).find(".message_content")[0];
-            if (content !== undefined) {
-                // We've limited the height of all elements in CSS.
-                // If offsetHeight < scrollHeight, then our CSS height limit has taken
-                // effect and we should show an expander button.
-                // If offsetHeight is only slightly smaller than scrollHeight, then we
-                // would only be collapsing by a small amount, which can be annoying.
-                // Instead of showing an expander button, just expand that element instead
-                // of keeping it collapsed.  (This also solves a bug seen on some Mac
-                // systems where offsetHeight == scrollHeight-1 for no apparent reason).
-                if (content.offsetHeight + 250 < content.scrollHeight) {
-                    $(elem).find(".message_expander").show();
-                } else if (content.offsetHeight < content.scrollHeight) {
-                    $(content).addClass("expanded");
-                }
-            }
-        });
+        $.each(rendered_elems, process_collapsing);
 
         // Re-add the fading of messages that is lost when we re-render.
         compose.update_faded_messages();
@@ -547,6 +547,9 @@ MessageList.prototype = {
 $(document).on('message_selected.zephyr hashchange.zephyr mousewheel mousemove', function (event) {
     // TODO: Figure out how to limit this animation stop to just the autoscroll
     $("html, body").stop();
+});
+$(document).on('hashchange.zephyr', function (event) {
+    $("tr.message_row").each(process_collapsing);
 });
 }());
 /*jslint nomen: false */
