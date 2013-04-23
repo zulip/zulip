@@ -83,6 +83,8 @@ function do_hashchange() {
         return false;
     }
 
+    $(document).trigger($.Event('hashchange.zephyr'));
+
     // NB: In Firefox, window.location.hash is URI-decoded.
     // Even if the URL bar says #%41%42%43%44, the value here will
     // be #ABCD.
@@ -111,7 +113,6 @@ function do_hashchange() {
 
 function hashchanged() {
     changing_hash = true;
-    $(document).trigger($.Event('hashchange.zephyr'));
     var ret = do_hashchange();
     changing_hash = false;
     return ret;
