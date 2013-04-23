@@ -15,7 +15,7 @@ from django.conf import settings
 from zephyr.lib.avatar  import gravatar_hash
 from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
-from zephyr.lib.timeout import timeout
+from zephyr.lib.timeout import timeout, TimeoutExpired
 from zephyr.lib.cache import cache_with_key
 
 # Format version of the bugdown rendering; stored along with rendered
@@ -136,7 +136,17 @@ def fetch_tweet_data(tweet_id):
                               access_token_key = 'xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
                               access_token_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
         try:
-            res = api.GetStatus(tweet_id).AsDict()
+            # Sometimes Twitter hangs on responses.  Timing out here
+            # will cause the Tweet to go through as-is with no inline
+            # preview, rather than having the message be rejected
+            # entirely. This timeout needs to be less than our overall
+            # formatting timeout.
+            res = timeout(3, api.GetStatus, tweet_id).AsDict()
+        except TimeoutExpired as e:
+            # We'd like to try again later and not cache the bad result,
+            # so we need to re-raise the exception (just as though
+            # we were being rate-limited)
+            raise
         except twitter.TwitterError as e:
             t = e.args[0]
             if len(t) == 1 and ('code' in t[0]) and (t[0]['code'] == 34):
