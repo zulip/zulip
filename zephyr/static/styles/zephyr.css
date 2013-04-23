@@ -221,8 +221,8 @@ ul.filters .count {
 
 }
 
-ul.filters .filter-icon {
-    padding-right: 0.5em;
+ul.filters i {
+    padding-right: 0.25em;
 }
 
 .message_list {
@@ -1110,9 +1110,9 @@ li.expanded_subject {
     display: none;
 }
 
-/* The regular icon-star is not aligned correctly with respect to icon-home */
 .humbug-icon-star {
     background-position: -121px 0 !important;
+    padding-right: 0.09em !important; /* Alignment hack to line up with other icons */
 }
 
 .sub-unsub-message {
