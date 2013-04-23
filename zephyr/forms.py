@@ -46,6 +46,8 @@ class ToSForm(forms.Form):
     terms = forms.BooleanField(required=True)
 
 class HomepageForm(forms.Form):
+    # This form is sort of important, because it determines whether users
+    # can register for our product. Be careful when modifying the validators.
     if settings.ALLOW_REGISTER:
         email = forms.EmailField()
     else:
