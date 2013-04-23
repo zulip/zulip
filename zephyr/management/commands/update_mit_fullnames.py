@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from optparse import make_option
 from django.core.management.base import BaseCommand
 

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from django.core.management.base import BaseCommand
 from zephyr.retention_policy     import get_UserMessages_to_expunge
 from zephyr.models               import Message

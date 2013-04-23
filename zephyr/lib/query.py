@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 def last_n(n, query_set):
     """Get the last n results from a Django QuerySet, in a semi-efficient way.
        Returns a list."""

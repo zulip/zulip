@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from django.conf import settings
 settings.RUNNING_INSIDE_TORNADO = True
 # We must call zephyr.lib.tornado_ioloop_logging.instrument_tornado_ioloop

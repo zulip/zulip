@@ -9,6 +9,7 @@ rather than iterating through messages one by one.
 The code in this module does not actually remove anything; it just identifies
 which items should be kept or removed.
 """
+from __future__ import absolute_import
 
 import operator
 

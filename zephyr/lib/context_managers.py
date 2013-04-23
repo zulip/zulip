@@ -2,6 +2,8 @@
 Context managers, i.e. things you can use with the 'with' statement.
 """
 
+from __future__ import absolute_import
+
 import fcntl
 from os import path
 from contextlib import contextmanager

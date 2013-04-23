@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 # Defer importing until later to avoid circular imports
 
 def openid_failure_handler(request, message, status=403, template_name=None, exception=None):

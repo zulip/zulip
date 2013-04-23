@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import simplejson
 from postmonkey import PostMonkey
 from django.core.management.base import BaseCommand

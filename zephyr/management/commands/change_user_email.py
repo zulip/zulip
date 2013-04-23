@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from django.core.management.base import BaseCommand
 
 from zephyr.lib.actions import do_change_user_email

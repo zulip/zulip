@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from django.core.management.base import BaseCommand
 from zephyr.lib.initial_password import initial_password, initial_api_key
 

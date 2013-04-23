@@ -1,5 +1,7 @@
+from __future__ import absolute_import
+
 import hashlib
-from utils import make_safe_digest
+from zephyr.lib.utils import make_safe_digest
 
 def gravatar_hash(email):
     """Compute the Gravatar hash for an email address."""

@@ -1,11 +1,11 @@
+from __future__ import absolute_import
+
 from functools import wraps
 
 from django.core.cache import cache as djcache
 from django.core.cache import get_cache
 
-from utils import make_safe_digest
-
-from zephyr.lib.utils import statsd, statsd_key
+from zephyr.lib.utils import statsd, statsd_key, make_safe_digest
 
 def cache_with_key(keyfunc, cache_name=None, timeout=None):
     """Decorator which applies Django caching to a function.

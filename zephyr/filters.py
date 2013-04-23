@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from django.views.debug import SafeExceptionReporterFilter
 from django.http import build_request_repr
 

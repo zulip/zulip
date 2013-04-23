@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zephyr.models or we'd have an import
 # loop

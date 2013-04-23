@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import datetime
 import calendar
 from django.utils.timezone import utc

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from django.core.management.base import BaseCommand
 from zephyr.models import Subscription, Recipient, Message, Stream, \
     get_user_profile_by_email

@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from django.core.management.base import NoArgsCommand
 from zephyr.models import clear_database
 

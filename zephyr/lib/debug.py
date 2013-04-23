@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import code
 import traceback
 import signal
