@@ -11,6 +11,12 @@ import time
 
 logger = logging.getLogger('humbug.requests')
 
+def async_request_stop(request):
+    request._time_stopped = time.time()
+
+def async_request_restart(request):
+    request._time_restarted = time.time()
+
 class LogRequests(object):
     def process_request(self, request):
         request._time_started = time.time()

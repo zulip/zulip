@@ -9,7 +9,7 @@ from zephyr.decorator import asynchronous, authenticated_api_view, \
     JsonableError, authenticated_rest_api_view, REQ
 
 from zephyr.lib.response import json_response, json_success, json_error
-
+from zephyr.middleware import async_request_restart
 from zephyr.tornado_callbacks import \
     get_user_pointer, fetch_stream_messages, fetch_user_messages, \
     add_stream_receive_callback, add_user_receive_callback, \
@@ -155,7 +155,7 @@ def get_updates_backend(request, user_profile, handler, client_id,
     # response.
 
     def cb(**cb_kwargs):
-        request._time_restarted = time.time()
+        async_request_restart(request)
         if handler.request.connection.stream.closed():
             return
         try:

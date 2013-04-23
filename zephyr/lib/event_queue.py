@@ -15,6 +15,7 @@ import signal
 import tornado
 import random
 import zephyr.lib.stats as stats
+from zephyr.middleware import async_request_restart
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
@@ -44,7 +45,7 @@ class ClientDescriptor(object):
 
     def add_event(self, event):
         if self.current_handler is not None:
-            self.current_handler._request._time_restarted = time.time()
+            async_request_restart(self.current_handler._request)
 
         self.event_queue.push(event)
         if self.current_handler is not None:

@@ -23,6 +23,7 @@ from zephyr.lib.response import json_response
 from zephyr import tornado_callbacks
 from zephyr.lib.event_queue import setup_event_queue
 from zephyr.lib.queue import setup_tornado_rabbitmq
+from zephyr.middleware import async_request_stop
 
 if settings.USING_RABBITMQ:
     from zephyr.lib.queue import queue_client
@@ -227,7 +228,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                     try:
                         response = callback(request, *callback_args, **callback_kwargs)
                         if response is RespondAsynchronously:
-                            request._time_stopped = time.time()
+                            async_request_stop(request)
                             return
                     except Exception, e:
                         # If the view raised an exception, run it through exception
