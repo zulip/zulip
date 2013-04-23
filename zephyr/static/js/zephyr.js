@@ -419,6 +419,17 @@ function process_visible_unread_messages() {
     }
 }
 
+function mark_read_between(msg_list, start_id, end_id) {
+    var mark_as_read = [];
+    $.each(message_range(msg_list, start_id, end_id),
+        function (idx, msg) {
+            if (message_unread(msg)) {
+                mark_as_read.push(msg);
+            }
+    });
+    process_read_messages(mark_as_read);
+}
+
 function send_pointer_update() {
     if (!pointer_update_in_flight &&
         furthest_read > server_furthest_read) {

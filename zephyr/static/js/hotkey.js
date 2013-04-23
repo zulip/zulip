@@ -105,9 +105,13 @@ function process_hotkey(e) {
         }
         dirkey = directional_hotkeys_id[code];
         var next_id = dirkey.getid();
+        var prev_id = current_msg_list.selected_id();
         last_viewport_movement_direction = dirkey.direction;
         current_msg_list.select_id(next_id, {then_scroll: true,
                                              from_scroll: true});
+        if (prev_id !== -1 && next_id !== -1) {
+            mark_read_between(current_msg_list, prev_id, next_id);
+        }
         return true;
     }
 
