@@ -269,6 +269,8 @@ exports.is_running = function () {
 
 function make_script() {
     my_tutorial_stream = 'tutorial-' + page_params.email.split('@')[0];
+    // If you change this, you need to change the corresponding
+    // client-computed version in models.py on the server.
     my_tutorial_stream = my_tutorial_stream.substring(0, 30);
 
     script = [

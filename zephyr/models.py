@@ -82,8 +82,11 @@ class UserProfile(AbstractBaseUser):
     tutorial_status = models.CharField(default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1)
 
     def tutorial_stream_name(self):
-        return "tutorial-%s" % \
-                    (self.email.split('@')[0],)[:Stream.MAX_NAME_LENGTH]
+        # If you change this, you need to change the corresponding
+        # client-computed version of it in tutorial.js
+        long_name = "tutorial-%s" % (self.email.split('@')[0],)
+        short_name = long_name[:Stream.MAX_NAME_LENGTH]
+        return short_name
 
     objects = UserManager()
 
@@ -113,6 +116,8 @@ class MitUser(models.Model):
     status = models.IntegerField(default=0)
 
 class Stream(models.Model):
+    # If you change this, you also need to change the
+    # corresponding value in tutorial.js
     MAX_NAME_LENGTH = 30
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True)
