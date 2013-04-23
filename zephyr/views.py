@@ -33,6 +33,9 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
+from django_openid_auth.views import default_render_failure, login_complete, parse_openid_response
+from openid.consumer.consumer import SUCCESS as openid_SUCCESS
+from openid.extensions import ax
 
 from zephyr.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
@@ -256,12 +259,17 @@ def accounts_register(request):
             return HttpResponseRedirect(reverse('zephyr.views.home'))
 
     return render_to_response('zephyr/register.html',
-        { 'form': form, 'company_name': domain, 'email': email, 'key': key },
+            {'form': form,
+             'company_name': domain,
+             'email': email,
+             'key': key,
+             'gafyd_name': request.POST.get('gafyd_name', False),
+            },
         context_instance=RequestContext(request))
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def accounts_accept_terms(request):
-    email = request.email
+    email = request.user.email
     company_name = email.split('@')[-1]
     if request.method == "POST":
         form = ToSForm(request.POST)
@@ -389,6 +397,33 @@ def json_invite_users(request, user_profile, invitee_emails=POST):
 so we didn't send them an invitation. We did send invitations to everyone else!")
     else:
         return json_success()
+
+def handle_openid_errors(request, issue, openid_response=None):
+    if issue == "Unknown user":
+        if openid_response is not None and openid_response.status == openid_SUCCESS:
+            ax_response = ax.FetchResponse.fromSuccessResponse(openid_response)
+            google_email = openid_response.getSigned('http://openid.net/srv/ax/1.0', 'value.email')
+            full_name = " ".join((
+                    ax_response.get('http://axschema.org/namePerson/first')[0],
+                    ax_response.get('http://axschema.org/namePerson/last')[0]))
+            form = HomepageForm({'email': google_email})
+            request.verified_email = None
+            if form.is_valid():
+                # Construct a PreregistrationUser object and send the user over to
+                # the confirmation view.
+                prereg_user = PreregistrationUser()
+                prereg_user.email = google_email
+                prereg_user.save()
+                return redirect("".join((
+                    Confirmation.objects.get_link_for_object(prereg_user),
+                    '?gafyd_name=',
+                    urllib.quote_plus(full_name))))
+            else:
+                return render_to_response('zephyr/accounts_home.html', {'form': form})
+    return default_render_failure(request, issue)
+
+def process_openid_login(request):
+    return login_complete(request, render_failure=handle_openid_errors)
 
 def login_page(request, **kwargs):
     template_response = django_login_page(request, **kwargs)

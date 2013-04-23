@@ -36,7 +36,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         <label for="id_full_name" class="control-label">Full name</label>
         <div class="controls">
             <input id="id_full_name" class="required" type="text" name="full_name"
-                   value="{% if form.full_name.value %}{{ form.full_name.value }}{% endif %}"
+                   value="{% if form.full_name.value %}{{ form.full_name.value }}{% else %}{{ gafyd_name }}{% endif %}"
                    maxlength="100" />
             {% if form.full_name.errors %}
                 {% for error in form.full_name.errors %}
@@ -51,6 +51,10 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <input id="id_password" class="required" type="password" name="password"
                    value="{% if form.password.value %}{{ form.password.value }}{% endif %}"
                    maxlength="100" />
+            {% if gafyd_name %}
+            <span class="help-inline">This is used for mobile applications and other tools that don't support Google Apps authentication.</span>
+            <input type="hidden" value="{{ gafyd_name }}" name="gafyd_name"/>
+            {% endif %}
             {% if form.password.errors %}
                 {% for error in form.password.errors %}
                     <div class="alert alert-error">{{ error }}</div>
