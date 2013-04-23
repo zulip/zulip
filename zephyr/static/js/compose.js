@@ -307,6 +307,9 @@ function send_message() {
     exports.snapshot_message(request);
 
     if (tutorial.is_running()) {
+        // We want the un-json-encoded version of the request.to, so
+        // we need to get it before the JSON stringify below messes it
+        // up.
         tutorial.message_was_sent(request);
     }
 

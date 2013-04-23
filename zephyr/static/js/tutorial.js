@@ -55,7 +55,7 @@ function stream_to_me(message) {
 }
 
 function pm_to_me(message) {
-    return message.type === 'private' && message.to === 'humbug+tutorial@humbughq.com';
+    return message.type === 'private' && message.to[0] === 'humbug+tutorial@humbughq.com';
 }
 
 function any_message_to_me(message) {
@@ -63,7 +63,12 @@ function any_message_to_me(message) {
 }
 
 var received_messages = [];
-exports.message_was_sent = function(message) {
+exports.message_was_sent = function(request) {
+    // We copy our version of the message in case someone in compose.js
+    // modifies it later -- this is important!
+    // (right after this code is called, the "to" field is JSON stringified,
+    // which messes up the code below)
+    var message = $.extend({}, request, {});
     // Don't let casing or stray punctuation get in the way.
     var trimmed_content = message.content.substring(0, 4).toLowerCase();
     if (any_message_to_me(message) &&
