@@ -532,6 +532,7 @@ $(function () {
     $("#new_message_content").autosize();
     $("#compose").filedrop({
         url: "json/upload_file",
+        fallback_id: "file_input",
         paramname: "file",
         maxfilesize: 25,
         data: {

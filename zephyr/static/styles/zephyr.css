@@ -66,6 +66,17 @@ li, .table th, .table td {
     font-size: 140%;
 }
 
+/* Classes for hiding and showing controls */
+
+.notdisplayed {
+    display: none !important;
+}
+
+.notvisible {
+    visibility: hidden !important;
+    width: 0px !important;
+    height: 0px !important;
+}
 
 /* Inline and block code */
 
@@ -498,6 +509,7 @@ blockquote p {
     display: table-row;
     font-size: 80%;
     white-space: nowrap;
+    padding-top: 6px;
 }
 
 .messagebox p {
@@ -1147,4 +1159,20 @@ li.expanded_subject {
 
 #restore-draft:hover {
     cursor:  pointer;
+}
+
+#compose a.message-control-button {
+    display: inline-block;
+    color: #777;
+    text-decoration: none;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    margin-right: 5px;
+    border-radius: 2px;
+    text-align: center;
+}
+
+#compose a.message-control-button:hover {
+    color: #000;
 }

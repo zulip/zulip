@@ -271,3 +271,4 @@ ul.icons li [class*=" icon-vector-"] {
     readers do not read off random characters that represent icons */
 .icon-vector-star:before                 { content: "\f005"; }
 .icon-vector-star-empty:before           { content: "\f006"; }
+.icon-vector-paper-clip:before           { content: "\f0c6"; }

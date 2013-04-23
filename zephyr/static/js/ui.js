@@ -970,6 +970,23 @@ $(function () {
         }
     });
 
+    // Run a feature test and decide whether to display
+    // the "Attach files" button
+
+    if (window.XMLHttpRequest && (new XMLHttpRequest()).upload) {
+        $("#compose #attach_files").removeClass("notdisplayed");
+    }
+
+    // Event bindings for "Compose" pane
+
+    // Click event binding for "Attach files" button
+    // Triggers a click on a hidden file input field
+
+    $("#compose").on("click", "#attach_files", function (e) {
+        e.preventDefault();
+        $("#compose #file_input").trigger("click");
+    } );
+
     $("#subscriptions_table").on("mouseover", ".subscription_header", function (e) {
         $(this).addClass("active");
     });
