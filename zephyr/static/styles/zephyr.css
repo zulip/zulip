@@ -176,15 +176,19 @@ a:hover code {
 }
 
 #user_presences {
-    /* Pad so the bullets are visible */
-    padding-left: 20px;
-
+    list-style-position: inside; /* Draw the bullets inside our box */
     margin-top:  1em;
     margin-left: 0;
     overflow-y:  hidden;
 }
 #user_presences:hover {
     overflow-y: auto;
+}
+
+#user_presences li {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 #user_presences li.user_active {
