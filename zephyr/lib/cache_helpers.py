@@ -23,6 +23,10 @@ def cache_save_message(message):
 def cache_get_message(message_id):
     return Message.objects.select_related().get(id=message_id)
 
+def message_fetch_objects():
+    max_id = Message.objects.only('id').order_by("-id")[0].id
+    return Message.objects.select_related().filter(id__gt=max_id - MESSAGE_CACHE_SIZE)
+
 def message_cache_items(items_for_memcached, message):
     items_for_memcached[message_cache_key(message.id)] = (message,)
 
@@ -58,8 +62,7 @@ cache_fillers = {
     'client': (lambda: Client.objects.select_related().all(), client_cache_items, 3600*24*7, 10000),
     'recipient': (lambda: Recipient.objects.select_related().all(), recipient_cache_items, 3600*24*7, 10000),
     'stream': (lambda: Stream.objects.select_related().all(), stream_cache_items, 3600*24*7, 10000),
-    'message': (lambda: Message.objects.select_related().all().order_by("-id")[0:MESSAGE_CACHE_SIZE],
-                message_cache_items, 3600 * 24, 1000),
+    'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
     'huddle': (lambda: Huddle.objects.select_related().all(), huddle_cache_items, 3600*24*7, 10000),
     'session': (lambda: Session.objects.all(), session_cache_items, 3600*24*7, 10000),
     }
