@@ -415,7 +415,9 @@ def handle_openid_errors(request, issue, openid_response=None):
                 prereg_user.email = google_email
                 prereg_user.save()
                 return redirect("".join((
-                    Confirmation.objects.get_link_for_object(prereg_user),
+                    "/",
+                    # Split this so we only get the part after the /
+                    Confirmation.objects.get_link_for_object(prereg_user).split("/", 3)[3],
                     '?gafyd_name=',
                     urllib.quote_plus(full_name))))
             else:
