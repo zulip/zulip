@@ -1748,3 +1748,21 @@ def events_register_backend(request, user_profile, apply_markdown=True,
                             event_types=POST(converter=json_to_list, default=None)):
     ret = do_events_register(user_profile, apply_markdown, event_types)
     return json_success(ret)
+
+@authenticated_json_post_view
+def json_messages_in_narrow(request, user_profile):
+    return messages_in_narrow_backend(request, user_profile)
+
+@has_request_variables
+def messages_in_narrow_backend(request, user_profile, msg_ids = REQ(converter=json_to_list),
+                               narrow = REQ(converter=narrow_parameter)):
+    # Note that this function will only work on messages the user
+    # actually received
+
+    query = UserMessage.objects.select_related("message") \
+                               .filter(user_profile=user_profile, message__id__in=msg_ids)
+    build = NarrowBuilder(user_profile, "message__")
+    for operator, operand in narrow:
+        query = build(query, operator, operand)
+
+    return json_success({"msg_ids": [msg.message.id for msg in query.iterator()]})
