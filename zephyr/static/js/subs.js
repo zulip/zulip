@@ -277,19 +277,18 @@ function mark_subscribed(stream_name, attrs) {
         set_color(stream_name, pick_color());
         // This will do nothing on MIT
         ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + encodeURIComponent(stream_name));
+        var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
             button.text("Unsubscribe").removeClass("btn-primary");
+            // Add the user to the member list if they're currently
+            // viewing the members of this stream
+            if (sub.render_subscribers && settings.hasClass('in')) {
+                var members = settings.find(".subscriber_list_container ul");
+                add_to_member_list(members, page_params.fullname, page_params.email);
+            }
         } else {
             add_sub_to_table(sub);
-        }
-
-        // Add the user to the member list if they're currently
-        // viewing the members of this stream
-        var settings = settings_for_sub(sub);
-        if (sub.render_subscribers && settings.hasClass('in')) {
-            var members = settings.find(".subscriber_list_container ul");
-            add_to_member_list(members, page_params.fullname, page_params.email);
         }
 
         // Display the swatch and subscription settings
