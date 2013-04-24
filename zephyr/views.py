@@ -521,6 +521,7 @@ def update_pointer_backend(request, user_profile,
     if pointer <= user_profile.pointer:
         return json_success()
 
+    prev_pointer = user_profile.pointer
     user_profile.pointer = pointer
     user_profile.save(update_fields=["pointer"])
 
@@ -530,6 +531,7 @@ def update_pointer_backend(request, user_profile,
         # this is a shim that will mark as read any messages up until the
         # pointer move
         UserMessage.objects.filter(user_profile=user_profile,
+                                   message__id__gt=prev_pointer,
                                    message__id__lte=pointer,
                                    flags=~UserMessage.flags.read)        \
                            .update(flags=F('flags').bitor(UserMessage.flags.read))
