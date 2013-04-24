@@ -49,15 +49,13 @@
                   </div>
                 </div>
                 <div id="below-compose-content">
-                  <input type="file" id="file_input" class="notvisible" multiple />
+                  <input type="file" id="file_input" class="notvisible pull-left" multiple />
                   <a class="message-control-button icon-vector-paper-clip notdisplayed" id="attach_files" href="#" title="Attach files"></a>
-                  <span id="restore-draft" onclick="compose.restore_message();">Restore last draft?</span>
-                  <span id="tab-enter-message">
-                    <span id="sending-indicator">Sending...</span>
-                    <label class="pull-right inline">Press Enter to send&nbsp;
-                      <input type="checkbox" id="enter_sends" name="enter_sends" value="ender_sends" />
-                    </label>
-                  </span>
+                  <a id="restore-draft" onclick="compose.restore_message();">Restore last draft?</a>
+                  <span id="sending-indicator">Sending...</span>
+                  <label class="pull-right inline">Press Enter to send&nbsp;
+                    <input type="checkbox" id="enter_sends" name="enter_sends" value="ender_sends" />
+                  </label>
                 </div>
               </td>
             </tr>

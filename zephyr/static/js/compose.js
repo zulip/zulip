@@ -204,7 +204,7 @@ exports.start = function (msg_type, opts) {
     }
 
     if (message_snapshot !== undefined) {
-        $('#restore-draft').css('visibility', 'visible');
+        $('#restore-draft').show();
     }
 
     if (opts.replying_to_message !== undefined) {
@@ -266,7 +266,7 @@ exports.snapshot_message = function(message) {
 };
 
 function clear_message_snapshot() {
-    $("#restore-draft").css("visibility", "hidden");
+    $("#restore-draft").hide();
     message_snapshot = undefined;
 }
 

@@ -1158,7 +1158,9 @@ li.expanded_subject {
 }
 
 #restore-draft {
-    visibility: hidden;
+    float: left;
+    display: none;
+    margin-right: 1em;
 }
 
 #restore-draft:hover {
@@ -1175,6 +1177,7 @@ li.expanded_subject {
     margin-right: 5px;
     border-radius: 2px;
     text-align: center;
+    float: left;
 }
 
 #compose a.message-control-button:hover {
