@@ -2,39 +2,144 @@ var narrow = (function () {
 
 var exports = {};
 
-var filter_function   = false;
-var current_operators = false;
+function Filter(operators) {
+    this._operators = operators;
+}
 
-exports.active = function () {
-    // Cast to bool
-    return !!filter_function;
-};
+Filter.prototype = {
+    predicate: function Filter_predicate() {
+        if (this._predicate === undefined) {
+            this._predicate = this._build_predicate(this._operators);
+        }
+        return this._predicate;
+    },
 
-exports.predicate = function () {
-    if (filter_function) {
-        return filter_function;
-    } else {
-        return function () { return true; };
+    operators: function Filter_operators() {
+        return this._operators;
+    },
+
+    public_operators: function Filter_public_operators() {
+        var safe_to_return;
+        safe_to_return = [];
+        $.each(this._operators, function (index, value) {
+            // Currently just filter out the "in" keyword.
+            if (value[0] !== "in") {
+                safe_to_return.push(value);
+            }
+        });
+        if (safe_to_return.length !== 0) {
+            return safe_to_return;
+        }
+    },
+
+    // Build a filter function from a list of operators.
+    _build_predicate: function Filter__build_predicate(operators_mixed_case) {
+        var operators = [];
+        // We don't use $.map because it flattens returned arrays.
+        $.each(operators_mixed_case, function (idx, operator) {
+            operators.push([operator[0], operator[1].toString().toLowerCase()]);
+        });
+
+        // FIXME: This is probably pretty slow.
+        // We could turn it into something more like a compiler:
+        // build JavaScript code in a string and then eval() it.
+
+        return function (message) {
+            var operand, i;
+            for (i = 0; i < operators.length; i++) {
+                operand = operators[i][1];
+                switch (operators[i][0]) {
+                case 'is':
+                    if (operand === 'private-message') {
+                        if (message.type !== 'private')
+                            return false;
+                    } else if (operand === 'starred') {
+                        if (!message.starred) {
+                            return false;
+                        }
+                    }
+
+                    break;
+
+                case 'in':
+                    if (operand === 'home') {
+                        return exports.in_home(message);
+                    }
+                    else if (operand === 'all') {
+                        return true;
+                    }
+                    break;
+
+                case 'stream':
+                    if ((message.type !== 'stream') ||
+                        (message.stream.toLowerCase() !== operand))
+                        return false;
+                    break;
+
+                case 'subject':
+                    if ((message.type !== 'stream') ||
+                        (message.subject.toLowerCase() !== operand))
+                        return false;
+                    break;
+
+                case 'sender':
+                    if ((message.sender_email.toLowerCase() !== operand))
+                        return false;
+                    break;
+
+                case 'pm-with':
+                    if ((message.type !== 'private') ||
+                        message.reply_to.toLowerCase() !== operand.split(',').sort().join(','))
+                        return false;
+                    break;
+
+                case 'search':
+                    var words = operand.trim().split(/\s+/);
+                    var j;
+                    for (j = 0; j < words.length; ++j) {
+                        if (message.content.toLowerCase().indexOf(words[j]) === -1) {
+                            if ((message.type !== 'stream') ||
+                                (message.subject.toLowerCase().indexOf(words[j]) === -1)) {
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+
+            // All filters passed.
+            return true;
+        };
     }
 };
 
+var current_filter;
+
+exports.active = function () {
+    return current_filter !== undefined;
+};
+
+exports.predicate = function () {
+    if (current_filter === undefined) {
+        return function () { return true; };
+    }
+    return current_filter.predicate();
+};
+
 exports.operators = function () {
-    return current_operators;
+    if (current_filter === undefined) {
+        return false;
+    }
+    return current_filter.operators();
 };
 
 /* Operators we should send to the server. */
 exports.public_operators = function () {
-    var safe_to_return;
-    safe_to_return = [];
-    $.each(current_operators, function (index, value) {
-        // Currently just filter out the "in" keyword.
-        if (value[0] !== "in") {
-            safe_to_return.push(value);
-        }
-    });
-    if (safe_to_return.length !== 0) {
-        return safe_to_return;
+    if (current_filter === undefined) {
+        return undefined;
     }
+    return current_filter.public_operators();
 };
 
 /* We use a variant of URI encoding which looks reasonably
@@ -195,89 +300,12 @@ exports.message_in_home = function (message) {
     return exports.stream_in_home(message.stream);
 };
 
-// Build a filter function from a list of operators.
-function build_filter(operators_mixed_case) {
-    var operators = [];
-    // We don't use $.map because it flattens returned arrays.
-    $.each(operators_mixed_case, function (idx, operator) {
-        operators.push([operator[0], operator[1].toString().toLowerCase()]);
-    });
-
-    // FIXME: This is probably pretty slow.
-    // We could turn it into something more like a compiler:
-    // build JavaScript code in a string and then eval() it.
-
-    return function (message) {
-        var operand, i;
-        for (i = 0; i < operators.length; i++) {
-            operand = operators[i][1];
-            switch (operators[i][0]) {
-            case 'is':
-                if (operand === 'private-message') {
-                    if (message.type !== 'private')
-                        return false;
-                } else if (operand === 'starred') {
-                    if (!message.starred) {
-                        return false;
-                    }
-                }
-
-                break;
-
-            case 'in':
-                if (operand === 'home') {
-                    return exports.in_home(message);
-                }
-                else if (operand === 'all') {
-                    return true;
-                }
-                break;
-
-            case 'stream':
-                if ((message.type !== 'stream') ||
-                    (message.stream.toLowerCase() !== operand))
-                    return false;
-                break;
-
-            case 'subject':
-                if ((message.type !== 'stream') ||
-                    (message.subject.toLowerCase() !== operand))
-                    return false;
-                break;
-
-            case 'sender':
-                if ((message.sender_email.toLowerCase() !== operand))
-                    return false;
-                break;
-
-            case 'pm-with':
-                if ((message.type !== 'private') ||
-                    message.reply_to.toLowerCase() !== operand.split(',').sort().join(','))
-                    return false;
-                break;
-
-            case 'search':
-                var words = operand.trim().split(/\s+/);
-                var j;
-                for (j = 0; j < words.length; ++j) {
-                    if (message.content.toLowerCase().indexOf(words[j]) === -1) {
-                        if ((message.type !== 'stream') ||
-                            (message.subject.toLowerCase().indexOf(words[j]) === -1)) {
-                            return false;
-                        }
-                    }
-                }
-                break;
-            }
-        }
-
-        // All filters passed.
-        return true;
-    };
-}
-
 exports.stream = function () {
+    if (current_filter === undefined) {
+        return undefined;
+    }
     var j;
+    var current_operators = current_filter.operators();
     for (j = 0; j < current_operators.length; j++) {
         if (current_operators[j][0] === "stream") {
             return current_operators[j][1];
@@ -308,8 +336,7 @@ exports.activate = function (operators, opts) {
     var was_narrowed = exports.active();
     var then_select_id  = opts.then_select_id;
 
-    filter_function   = build_filter(operators);
-    current_operators = operators;
+    current_filter = new Filter(operators);
 
     var collapse_messages = true;
     $.each(operators, function (idx, operator) {
@@ -460,11 +487,11 @@ exports.by_time_travel = function (target_id) {
 };
 
 exports.deactivate = function () {
-    if (!filter_function) {
+    if (current_filter === undefined) {
         return;
     }
-    filter_function   = false;
-    current_operators = false;
+
+    current_filter = undefined;
 
     exports.hide_empty_narrow_message();
 
@@ -511,12 +538,12 @@ exports.restore_home_state = function() {
 
 function pick_empty_narrow_banner() {
     var default_banner = $('#empty_narrow_message');
-    if (!current_operators) {
+    if (current_filter === undefined) {
         return default_banner;
     }
 
-    var first_operator = current_operators[0][0];
-    var first_operand = current_operators[0][1];
+    var first_operator = current_filter.operators()[0][0];
+    var first_operand = current_filter.operators()[0][1];
 
     if (first_operator === "is") {
         if (first_operand === "starred") {
