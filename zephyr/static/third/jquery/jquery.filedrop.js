@@ -128,6 +128,18 @@
         return;
       }
 
+      // Check if any of the items are strings, and if they are,
+      // then return, since we want the default browser behavior
+      // to deal with those.
+
+      var itemsLength = event.originalEvent.clipboardData.items.length;
+
+      for (var i = 0; i <  itemsLength; i++) {
+        if (event.originalEvent.clipboardData.items[i].kind === "string") {
+          return;
+        }
+      }
+
       // Take the first image pasted in the clipboard
       var match_re = /image.*/;
       var item;
