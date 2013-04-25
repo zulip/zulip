@@ -69,7 +69,7 @@ $(document).bind('copy', function (e) {
     var i, range, ranges = [], startc, endc, initial_end_tr, start_id, end_id, row, message;
     var start_data, end_data;
     var skip_same_td_check = false;
-    var div = $('<div>'), p  = $('<p>'), content;
+    var div = $('<div>'), content;
     for (i = 0; i < selection.rangeCount; i++) {
         range = selection.getRangeAt(i);
         ranges.push(range);
@@ -116,24 +116,20 @@ $(document).bind('copy', function (e) {
         row = rows.get(start_id, current_msg_list.table_name);
         for (0 /* for linter */; rows.id(row) <= end_id; row = rows.next_visible(row)) {
             if (row.prev().hasClass("recipient_row")) {
-                div.append(p);
-                p = $('<p>');
                 content = $('<div>').text(row.prev().children(".right_part").text()
                                             .replace(/\s+/g, " ")
                                             .replace(/^\s/, "").replace(/\s$/, ""));
-                p.html(p.html() + "<b>" + content.text() + "</b>" + "<br>");
+                div.append($('<p>').append($('<strong>').text(content.text())));
             }
 
             message = current_msg_list.get(rows.id(row));
 
-            content = $('<div>').text(message.sender_full_name + ": " +
-                                $('<div/>').html(message.content).text()
-                                .replace("\n", "<br>"));
-            p.html(p.html() + content.text());
-            p.html(p.html() + "<br>");
+            var message_firstp = $(message.content).slice(0, 1);
+            message_firstp.prepend(message.sender_full_name + ": ");
+            div.append(message_firstp);
+            div.append($(message.content).slice(1));
         }
     }
-    div.append(p);
 
     // Select div so that the browser will copy it
     // instead of copying the original selection
