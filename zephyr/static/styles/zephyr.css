@@ -75,7 +75,11 @@ li, .table th, .table td {
 .notvisible {
     visibility: hidden !important;
     width: 0px !important;
+    min-width: 0px !important;
+    min-height: 0px !important;
     height: 0px !important;
+    overflow: hidden !important;
+    position: absolute !important;
 }
 
 /* Inline and block code */
