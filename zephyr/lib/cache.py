@@ -74,6 +74,13 @@ def cache_get_many(keys, cache_name=None):
         cache_backend = get_cache(cache_name)
     return cache_backend.get_many(keys)
 
+def cache_set_many(items, cache_name=None):
+    if cache_name is None:
+        cache_backend = djcache
+    else:
+        cache_backend = get_cache(cache_name)
+    return cache_backend.set_many(items)
+
 def cache(func):
     """Decorator which applies Django caching to a function.
 

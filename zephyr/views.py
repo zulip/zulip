@@ -47,7 +47,7 @@ from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zephyr.lib.timestamp import datetime_to_timestamp
-from zephyr.lib.cache import cache_with_key, cache_get_many
+from zephyr.lib.cache import cache_with_key, cache_get_many, cache_set_many
 from zephyr.lib.unminify import SourceMap
 from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.utils import statsd
@@ -774,18 +774,23 @@ def get_old_messages_backend(request, user_profile,
 
     bulk_messages = cache_get_many([to_dict_cache_key(message, apply_markdown)
                                     for message in messages])
+    items_for_memcached = {}
+    for message in messages:
+        key = to_dict_cache_key(message, apply_markdown)
+        if bulk_messages.get(key) is None:
+            elt = message.to_dict_uncached(apply_markdown)
+            items_for_memcached[key] = (elt,)
+            bulk_messages[key] = (elt,)
+    if len(items_for_memcached) > 0:
+        cache_set_many(items_for_memcached)
+
     message_list = []
     for message in messages:
         if include_history:
             flags_dict = {'flags': ["read", "historical"]}
         if message.id in user_messages:
             flags_dict = user_messages[message.id].flags_dict()
-
-        data = bulk_messages.get(to_dict_cache_key(message, apply_markdown))
-        if data is None:
-            elt = message.to_dict(apply_markdown)
-        else:
-            elt = data[0]
+        elt = bulk_messages.get(to_dict_cache_key(message, apply_markdown))[0]
         message_list.append(dict(elt, **flags_dict))
 
     statsd.incr('loaded_old_messages', len(message_list))

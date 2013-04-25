@@ -253,6 +253,9 @@ class Message(models.Model):
 
     @cache_with_key(to_dict_cache_key, timeout=3600*24)
     def to_dict(self, apply_markdown, rendered_content=None):
+        return self.to_dict_uncached(apply_markdown, rendered_content)
+
+    def to_dict_uncached(self, apply_markdown, rendered_content=None):
         display_recipient = get_display_recipient(self.recipient)
         if self.recipient.type == Recipient.STREAM:
             display_type = "stream"
