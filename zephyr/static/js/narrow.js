@@ -69,7 +69,7 @@ Filter.prototype = {
 
                 case 'in':
                     if (operand === 'home') {
-                        return exports.in_home(message);
+                        return exports.message_in_home(message);
                     }
                     else if (operand === 'all') {
                         return true;
