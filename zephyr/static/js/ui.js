@@ -146,7 +146,7 @@ $(document).bind('copy', function (e) {
         $.each(ranges, function (index, range) {
             selection.addRange(range);
         });
-        $('body').remove('#copytempdiv');
+        $('#copytempdiv').remove();
     },0);
 });
 
