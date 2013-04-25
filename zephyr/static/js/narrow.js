@@ -3,13 +3,13 @@ var narrow = (function () {
 var exports = {};
 
 function Filter(operators) {
-    this._operators = operators;
+    this._operators = this._canonicalize_operators(operators);
 }
 
 Filter.prototype = {
     predicate: function Filter_predicate() {
         if (this._predicate === undefined) {
-            this._predicate = this._build_predicate(this._operators);
+            this._predicate = this._build_predicate();
         }
         return this._predicate;
     },
@@ -32,13 +32,19 @@ Filter.prototype = {
         }
     },
 
-    // Build a filter function from a list of operators.
-    _build_predicate: function Filter__build_predicate(operators_mixed_case) {
-        var operators = [];
+    _canonicalize_operators: function Filter__canonicalize_operators(operators_mixed_case) {
+        var new_operators = [];
         // We don't use $.map because it flattens returned arrays.
         $.each(operators_mixed_case, function (idx, operator) {
-            operators.push([operator[0], operator[1].toString().toLowerCase()]);
+            // We may want to consider allowing mixed-case operators at some point
+            new_operators.push([operator[0], operator[1].toString().toLowerCase()]);
         });
+        return new_operators;
+    },
+
+    // Build a filter function from a list of operators.
+    _build_predicate: function Filter__build_predicate() {
+        var operators = this._operators;
 
         // FIXME: This is probably pretty slow.
         // We could turn it into something more like a compiler:
