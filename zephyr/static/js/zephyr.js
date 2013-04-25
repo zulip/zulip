@@ -608,18 +608,7 @@ function add_messages(messages, msg_list) {
     util.destroy_first_run_message();
     messages = $.map(messages, add_message_metadata);
 
-    var predicate;
-    if (msg_list === home_msg_list) {
-        predicate = narrow.message_in_home;
-    } else if (msg_list === narrowed_msg_list) {
-        predicate = narrow.predicate();
-    } else if (msg_list === all_msg_list) {
-        predicate = function () { return true; };
-    } else {
-        blueslip.fatal("Adding message to a list that is not known");
-    }
-
-    if (add_messages_helper(messages, msg_list, predicate)) {
+    if (add_messages_helper(messages, msg_list, msg_list.filter.predicate())) {
         prepended = true;
     }
 

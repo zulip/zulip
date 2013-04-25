@@ -138,7 +138,7 @@ exports.filter = function () {
 };
 
 exports.predicate = function () {
-    if (current_filter === undefined || ! current_filter.can_apply_locally()) {
+    if (current_filter === undefined) {
         return function () { return true; };
     }
     return current_filter.predicate();
