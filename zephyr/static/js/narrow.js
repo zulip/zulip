@@ -3,7 +3,11 @@ var narrow = (function () {
 var exports = {};
 
 function Filter(operators) {
-    this._operators = this._canonicalize_operators(operators);
+    if (operators === undefined) {
+        this._operators = [];
+    } else {
+        this._operators = this._canonicalize_operators(operators);
+    }
 }
 
 Filter.prototype = {
@@ -55,6 +59,10 @@ Filter.prototype = {
     // Build a filter function from a list of operators.
     _build_predicate: function Filter__build_predicate() {
         var operators = this._operators;
+
+        if (! this.can_apply_locally()) {
+            return function () { return true; };
+        }
 
         // FIXME: This is probably pretty slow.
         // We could turn it into something more like a compiler:
@@ -116,6 +124,8 @@ Filter.prototype = {
         };
     }
 };
+
+exports.Filter = Filter;
 
 var current_filter;
 
@@ -353,7 +363,8 @@ exports.activate = function (operators, opts) {
         }
     });
 
-    narrowed_msg_list = new MessageList('zfilt', {collapse_messages: collapse_messages});
+    narrowed_msg_list = new MessageList('zfilt', current_filter,
+                                        {collapse_messages: collapse_messages});
     current_msg_list = narrowed_msg_list;
 
     function maybe_select_closest() {

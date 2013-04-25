@@ -1,5 +1,5 @@
 var all_msg_list = new MessageList();
-var home_msg_list = new MessageList('zhome');
+var home_msg_list = new MessageList('zhome', new narrow.Filter([["in", "home"]]));
 var narrowed_msg_list;
 var current_msg_list = home_msg_list;
 var subject_dict = {};

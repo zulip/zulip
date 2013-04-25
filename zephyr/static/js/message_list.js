@@ -1,9 +1,10 @@
 /*jslint nomen: true */
-function MessageList(table_name, opts) {
+function MessageList(table_name, filter, opts) {
     $.extend(this, {collapse_messages: true}, opts);
     this._items = [];
     this._hash = {};
     this.table_name = table_name;
+    this.filter = filter;
     this._selected_id = -1;
     this._message_groups = [];
     // Half-open interval of the indices that define the current render window
@@ -12,6 +13,9 @@ function MessageList(table_name, opts) {
 
     if (this.table_name) {
         this._clear_table();
+    }
+    if (this.filter === undefined) {
+        this.filter = new narrow.Filter();
     }
     this.narrowed = false;
     if (this.table_name === "zfilt") {
