@@ -22,9 +22,20 @@ from bitfield import BitField
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
 
+# Doing 1000 memcached requests to get_display_recipient is quite slow,
+# so add a local cache as well as the memcached cache.
+recipient_cache = {}
+def get_display_recipient(recipient):
+    if settings.TEST_SUITE:
+        # The test suite expects all caching to be turned off
+        return get_display_recipient_memcached(recipient)
+    if recipient.id not in recipient_cache:
+        recipient_cache[recipient.id] = get_display_recipient_memcached(recipient)
+    return recipient_cache[recipient.id]
+
 @cache_with_key(lambda self: 'display_recipient_dict:%d' % (self.id,),
                 timeout=3600*24*7)
-def get_display_recipient(recipient):
+def get_display_recipient_memcached(recipient):
     """
     recipient: an instance of Recipient.
 
