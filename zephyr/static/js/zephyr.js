@@ -670,6 +670,46 @@ function deduplicate_messages(messages) {
     });
 }
 
+function maybe_add_narrowed_messages(messages, msg_list) {
+    var ids = [];
+    $.each(messages, function (idx, elem) {
+        ids.push(elem.id);
+    });
+
+    $.ajax({
+        type:     'POST',
+        url:      '/json/messages_in_narrow',
+        data:     {msg_ids: JSON.stringify(ids),
+                   narrow:  JSON.stringify(narrow.public_operators())},
+        dataType: 'json',
+        timeout:  5000,
+        success: function (data) {
+            if (msg_list !== current_msg_list) {
+                // We unnarrowed in the mean time
+                return;
+            }
+
+            messages = $.grep(messages, function (elem) {
+                return ($.inArray(elem.id, data.msg_ids) !== -1);
+            });
+
+            add_messages(messages, msg_list);
+            process_visible_unread_messages();
+            compose.update_faded_messages();
+        },
+        error: function (xhr) {
+            // We might want to be more clever here
+            $('#connection-error').show();
+            setTimeout(function () {
+                if (msg_list === current_msg_list) {
+                    // Don't actually try again if we unnarrowed
+                    // while waiting
+                    maybe_add_narrowed_messages(messages, msg_list);
+                }
+            }, 5000);
+        }});
+}
+
 var get_updates_xhr;
 var get_updates_timeout;
 function get_updates(options) {
@@ -755,7 +795,11 @@ function get_updates(options) {
                 messages = deduplicate_messages(messages);
 
                 if (narrow.active()) {
-                    add_messages(messages, narrowed_msg_list);
+                    if (narrow.filter().can_apply_locally()) {
+                        add_messages(messages, narrowed_msg_list);
+                    } else {
+                        maybe_add_narrowed_messages(messages, narrowed_msg_list);
+                    }
                 }
                 add_messages(messages, all_msg_list);
                 add_messages(messages, home_msg_list);

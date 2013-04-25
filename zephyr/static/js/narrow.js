@@ -32,6 +32,16 @@ Filter.prototype = {
         }
     },
 
+    can_apply_locally: function Filter_can_apply_locally() {
+        var retval = true;
+        $.each(this._operators, function (idx, elem) {
+            if (elem[0] === "search") {
+                retval = false;
+                return false;
+            }});
+        return retval;
+    },
+
     _canonicalize_operators: function Filter__canonicalize_operators(operators_mixed_case) {
         var new_operators = [];
         // We don't use $.map because it flattens returned arrays.
@@ -98,19 +108,6 @@ Filter.prototype = {
                         message.reply_to.toLowerCase() !== operand.split(',').sort().join(','))
                         return false;
                     break;
-
-                case 'search':
-                    var words = operand.trim().split(/\s+/);
-                    var j;
-                    for (j = 0; j < words.length; ++j) {
-                        if (message.content.toLowerCase().indexOf(words[j]) === -1) {
-                            if ((message.type !== 'stream') ||
-                                (message.subject.toLowerCase().indexOf(words[j]) === -1)) {
-                                return false;
-                            }
-                        }
-                    }
-                    break;
                 }
             }
 
@@ -126,8 +123,12 @@ exports.active = function () {
     return current_filter !== undefined;
 };
 
+exports.filter = function () {
+    return current_filter;
+};
+
 exports.predicate = function () {
-    if (current_filter === undefined) {
+    if (current_filter === undefined || ! current_filter.can_apply_locally()) {
         return function () { return true; };
     }
     return current_filter.predicate();
@@ -371,8 +372,9 @@ exports.activate = function (operators, opts) {
     }
 
     // Don't bother populating a message list when it won't contain
-    // the message we want anyway
-    if (all_msg_list.get(then_select_id) !== undefined) {
+    // the message we want anyway or if the filter can't be applied
+    // locally.
+    if (all_msg_list.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
         add_messages(all_msg_list.all(), narrowed_msg_list);
     }
 
