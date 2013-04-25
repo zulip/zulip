@@ -13,8 +13,9 @@ from django.utils.importlib import import_module
 from django.contrib.sessions.models import Session
 import logging
 from django.db import connection
+from django.db.models import Q
 
-MESSAGE_CACHE_SIZE = 25000
+MESSAGE_CACHE_SIZE = 75000
 
 def cache_save_message(message):
     djcache.set(message_cache_key(message.id), (message,), timeout=3600*24)
@@ -25,7 +26,8 @@ def cache_get_message(message_id):
 
 def message_fetch_objects():
     max_id = Message.objects.only('id').order_by("-id")[0].id
-    return Message.objects.select_related().filter(id__gt=max_id - MESSAGE_CACHE_SIZE)
+    return Message.objects.select_related().filter(~Q(sender__email='tabbott/extra@mit.edu'),
+                                                    id__gt=max_id - MESSAGE_CACHE_SIZE)
 
 def message_cache_items(items_for_memcached, message):
     items_for_memcached[message_cache_key(message.id)] = (message,)
