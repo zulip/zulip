@@ -23,6 +23,9 @@
 -A INPUT -p tcp --dport  443 -j ACCEPT
 -A INPUT -p tcp --dport 5432 -j ACCEPT
 
+# Accept incoming UDP traffic on port 8125 (statsd)
+-A INPUT -p udp --dport 8125 -j ACCEPT
+
 # Drop everything else
 -A INPUT   -j LOGDROP
 -A FORWARD -j LOGDROP
