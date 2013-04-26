@@ -3,7 +3,7 @@ class humbug::postgres-common {
 
   $postgres_packages = [ "postgresql-9.1", "pgtune", "python-boto",
                          "python-argparse", "python-gevent/squeeze-backports",
-                         "lzop", "pv"]
+                         "lzop", "pv", "hunspell-en-us"]
   package { $postgres_packages: ensure => "installed" }
 
   exec {"pip_wal-e":

@@ -499,7 +499,7 @@ lc_numeric = 'en_US.UTF-8'			# locale for number formatting
 lc_time = 'en_US.UTF-8'				# locale for time formatting
 
 # default configuration for text search
-default_text_search_config = 'pg_catalog.english'
+#default_text_search_config = 'pg_catalog.english'
 
 # - Other Defaults -
 
@@ -564,6 +564,7 @@ shared_buffers = 7680MB # pgtune wizard 2013-04-12
 max_connections = 200 # pgtune wizard 2013-04-12
 
 timezone = 'UTC'
+default_text_search_config = 'humbug.english_us_search'
 # From http://www.databasesoup.com/2012/05/random-page-cost-revisited.html
 # This needs actual measurement, as bonnie++ random seek latency is
 # actually a read/write test

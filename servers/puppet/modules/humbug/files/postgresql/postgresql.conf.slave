@@ -499,7 +499,7 @@ lc_numeric = 'en_US.UTF-8'			# locale for number formatting
 lc_time = 'en_US.UTF-8'				# locale for time formatting
 
 # default configuration for text search
-default_text_search_config = 'pg_catalog.english'
+#default_text_search_config = 'pg_catalog.english'
 
 # - Other Defaults -
 
@@ -564,6 +564,7 @@ shared_buffers = 1792MB # pgtune wizard 2012-12-12
 max_connections = 200 # pgtune wizard 2012-12-12
 
 timezone = 'UTC'
+default_text_search_config = 'humbug.english_us_search'
 # EBS supposedly has very similar sequential and random access performance
 random_page_cost = 1.1
 listen_addresses = '*'
