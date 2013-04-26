@@ -673,7 +673,7 @@ class NarrowBuilder(object):
 
     def do_search(self, query, operand):
         if "postgres" in settings.DATABASES["default"]["ENGINE"]:
-            sql = "search_tsvector @@ plainto_tsquery('pg_catalog.english', %s)"
+            sql = "search_tsvector @@ plainto_tsquery('humbug.english_us_search', %s)"
             return query.extra(where=[sql], params=[operand])
         else:
             for word in operand.split():
