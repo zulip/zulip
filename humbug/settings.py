@@ -188,7 +188,7 @@ if USING_STATSD:
     if LOCAL_STATSD:
         STATSD_HOST = 'localhost'
     else:
-        STATSD_HOST = '10.244.161.187'
+        STATSD_HOST = '10.252.2.167'
 
     INSTALLED_APPS = ('django_statsd',) + INSTALLED_APPS
     STATSD_PORT = 8125
