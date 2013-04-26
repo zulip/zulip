@@ -803,6 +803,10 @@ table.floating_recipient {
     height: 100px;
 }
 
+.message_inline_image img {
+    height: 100%;
+}
+
 .actions_popover a {
     cursor: pointer;
 }

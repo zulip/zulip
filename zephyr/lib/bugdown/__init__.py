@@ -99,13 +99,14 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
     def run(self, root):
         image_urls = self.find_images(root)
         for (url, link) in image_urls:
-            a = markdown.util.etree.SubElement(root, "a")
+            div = markdown.util.etree.SubElement(root, "div")
+            div.set("class", "message_inline_image");
+            a = markdown.util.etree.SubElement(div, "a")
             a.set("href", link)
             a.set("target", "_blank")
             a.set("title", link)
             img = markdown.util.etree.SubElement(a, "img")
             img.set("src", url)
-            img.set("class", "message_inline_image")
 
         return root
 
