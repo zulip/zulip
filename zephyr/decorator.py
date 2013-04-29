@@ -114,6 +114,7 @@ def authenticated_rest_api_view(view_func):
             resp = HttpResponseUnauthorized("humbug")
             resp.content = e.error
             return resp
+        request._email = email
         process_client(request, user_profile)
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
