@@ -18,6 +18,9 @@ from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
 from zephyr.lib.timeout import timeout, TimeoutExpired
 from zephyr.lib.cache import cache_with_key
+from embedly import Embedly
+
+embedly_client = Embedly(settings.EMBEDLY_KEY)
 
 # Format version of the bugdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
@@ -62,6 +65,39 @@ def add_a(root, url, link, height=None):
     img = markdown.util.etree.SubElement(a, "img")
     img.set("src", url)
 
+
+class EmbedlyProcessor(markdown.treeprocessors.Treeprocessor):
+    def run(self, root):
+        # Get all URLs from the blob
+        urls = walk_tree(root, lambda e: e.get("href") if e.tag == "a" else None)
+        for link in urls:
+            if not embedly_client.is_supported(link):
+                continue
+            try:
+                oembed_data = embedly_client.oembed(link, maxwidth=500)
+            except:
+                # we put this in its own try-except because it requires external
+                # connectivity. if embedly flakes out, we don't want to not-render
+                # the entire message; we just want to not show the embedly preview.
+                logging.warning(traceback.format_exc())
+                break
+            if oembed_data["type"] in ("link"):
+                continue
+            elif oembed_data["type"] in ("video", "rich") and "script" not in oembed_data["html"]:
+                placeholder = self.markdown.htmlStash.store(oembed_data["html"], safe=True)
+                el = markdown.util.etree.SubElement(root, "p")
+                el.text = placeholder
+            else:
+                try:
+                    add_a(root,
+                          oembed_data["thumbnail_url"],
+                          link,
+                          height=oembed_data["thumbnail_height"])
+                except KeyError:
+                    # We didn't have a thumbnail, so let's just bail and keep on going...
+                    continue
+            self.markdown.processed_hrefs.append(link)
+        return root
 
 class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url):
@@ -111,6 +147,8 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
     def run(self, root):
         image_urls = self.find_images(root)
         for (url, link) in image_urls:
+            if link in self.markdown.processed_hrefs:
+                continue
             add_a(root, url, link)
 
         return root
@@ -467,6 +505,9 @@ class Bugdown(markdown.Extension):
                                  BugdownUListPreprocessor(md),
                                  "_begin")
 
+        md.processed_hrefs = []
+        if not settings.DEPLOYED or settings.STAGING_DEPLOYED:
+            md.treeprocessors.add("embedly_processor", EmbedlyProcessor(md), "_end")
         md.treeprocessors.add("inline_images", InlineImagePreviewProcessor(md), "_end")
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
 

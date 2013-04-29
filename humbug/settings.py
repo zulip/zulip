@@ -513,6 +513,8 @@ if DEPLOYED:
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
+EMBEDLY_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
 if DEPLOYED:
     S3_KEY="xxxxxxxxxxxxxxxxxxxx"
     S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

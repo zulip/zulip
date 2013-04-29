@@ -2067,11 +2067,11 @@ int x = 3
          ('at https://humbughq.com/api. Check it!',    "<p>at %s. Check it!</p>",           'https://humbughq.com/api'),
          ('goo.gl/abc',                                "<p>%s</p>",                         'goo.gl/abc'),
          ('I spent a year at ucl.ac.uk',               "<p>I spent a year at %s</p>",       'ucl.ac.uk'),
-         ('http://d.pr/i/FMXO',                        "<p>%s</p>",                         'http://d.pr/i/FMXO'),
+         ('http://a.cc/i/FMXO',                        "<p>%s</p>",                         'http://a.cc/i/FMXO'),
          ('http://fmota.eu/blog/test.html',            "<p>%s</p>",                         'http://fmota.eu/blog/test.html'),
          ('http://j.mp/14Hwm3X',                       "<p>%s</p>",                         'http://j.mp/14Hwm3X'),
          ('http://localhost:9991/?show_debug=1',       "<p>%s</p>",                         'http://localhost:9991/?show_debug=1'),
-         ('anyone before? (http://d.pr/i/FMXO)',       "<p>anyone before? (%s)</p>",        'http://d.pr/i/FMXO'),
+         ('anyone before? (http://a.cc/i/FMXO)',       "<p>anyone before? (%s)</p>",        'http://a.cc/i/FMXO'),
          ('(http://en.wikipedia.org/wiki/Each-way_(bet))',
             '<p>(%s)</p>',                   'http://en.wikipedia.org/wiki/Each-way_(bet)'),
          ('(http://en.wikipedia.org/wiki/Each-way_(bet)_(more_parens))',
@@ -2189,7 +2189,7 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
         msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
         converted = convert(msg)
 
-        self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="message_inline_image"><a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="http://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
+        self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<iframe width="500" height="281" src="http://www.youtube.com/embed/hx1mjT73xYE?feature=oembed" frameborder="0" allowfullscreen></iframe>')
 
     def test_inline_dropbox(self):
         msg = 'Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG'
