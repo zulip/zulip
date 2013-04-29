@@ -383,7 +383,8 @@ MessageList.prototype = {
 
         var rendered_elems = $(templates.render('message', {
             messages: messages_to_render,
-            include_layout_row: (table.find('tr:first').length === 0)
+            include_layout_row: (table.find('tr:first').length === 0),
+            use_match_properties: this.filter.is_search()
         }));
 
         $.each(rendered_elems, function (index, elem) {
@@ -394,10 +395,6 @@ MessageList.prototype = {
             var id = rows.id(row);
             if (ids_where_next_is_same_sender[id]) {
                 row.find('.messagebox').addClass("next_is_same_sender");
-            }
-            if (self === narrowed_msg_list) {
-                // If narrowed, we may need to highlight the message
-                search.maybe_highlight_message(row);
             }
         });
 

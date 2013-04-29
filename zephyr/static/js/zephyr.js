@@ -501,8 +501,15 @@ function process_message_for_recent_subjects(message) {
 }
 
 function add_message_metadata(message, dummy) {
-    if (all_msg_list.get(message.id)) {
-        return all_msg_list.get(message.id);
+    var cached_msg = all_msg_list.get(message.id);
+    if (cached_msg !== undefined) {
+        // Copy the match subject and content over if they exist on
+        // the new message
+        if (message.match_subject !== undefined) {
+            cached_msg.match_subject = message.match_subject;
+            cached_msg.match_content = message.match_content;
+        }
+        return cached_msg;
     }
     get_updates_params.last = Math.max(get_updates_params.last || 0, message.id);
 

@@ -268,35 +268,6 @@ function match_on_visible_text(row, search_term) {
               .text().toLowerCase().indexOf(search_term) !== -1;
 }
 
-exports.update_highlighting = function(search_term) {
-    if (current_search_term !== undefined) {
-        exports.clear_highlighting();
-    }
-    current_search_term = search_term;
-    if (search_term === undefined) {
-        return;
-    }
-
-    var focused_table = $('table.focused_table');
-    focused_table.find('.message_row').each(function (index, row) {
-        row = $(row);
-        exports.maybe_highlight_message(row);
-    });
-};
-
-exports.maybe_highlight_message = function(row) {
-    row.find('.message_content').highlight(current_search_term);
-    if (current_msg_list.get(rows.id(row)).type === "stream") {
-        row = row.prev('.recipient_row');
-        row.find('.message_label_clickable').highlight(current_search_term);
-    }
-};
-
-exports.clear_highlighting = function () {
-    current_search_term = undefined;
-    return $(".message_content .message_label_clickable").removeHighlight();
-};
-
 exports.focus_search = function () {
     // The search bar is not focused yet, but will be.
     update_buttons_with_focus(true);

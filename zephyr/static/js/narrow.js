@@ -36,14 +36,18 @@ Filter.prototype = {
         }
     },
 
-    can_apply_locally: function Filter_can_apply_locally() {
-        var retval = true;
+    is_search: function Filter_is_search() {
+        var retval = false;
         $.each(this._operators, function (idx, elem) {
             if (elem[0] === "search") {
-                retval = false;
+                retval = true;
                 return false;
             }});
         return retval;
+    },
+
+    can_apply_locally: function Filter_can_apply_locally() {
+        return ! this.is_search();
     },
 
     _canonicalize_operators: function Filter__canonicalize_operators(operators_mixed_case) {
@@ -424,7 +428,6 @@ exports.activate = function (operators, opts) {
         }
         return undefined;
     }
-    search.update_highlighting(extract_search_terms(operators));
 
     // Put the narrow operators in the URL fragment.
     // Disabled when the URL fragment was the source
@@ -527,8 +530,6 @@ exports.deactivate = function () {
     // We fall back to the closest selected id, if the user has removed a stream from the home
     // view since leaving it the old selected id might no longer be there
     home_msg_list.select_id(home_msg_list.selected_id(), {then_scroll: true, use_closest: true});
-
-    search.clear_highlighting();
 
     hashchange.save_narrow();
 
