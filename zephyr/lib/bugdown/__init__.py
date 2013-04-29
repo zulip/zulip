@@ -175,11 +175,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
             return None
 
-        tweet_id_match = re.match(r'^/.*?/status/(\d{18})$', parsed_url.path)
+        tweet_id_match = re.match(r'^/.*?/status(es)?/(?P<tweetid>\d{18})$', parsed_url.path)
         if not tweet_id_match:
             return None
 
-        tweet_id = tweet_id_match.groups()[0]
+        tweet_id = tweet_id_match.group("tweetid")
         try:
             res = fetch_tweet_data(tweet_id)
             if res is None:
