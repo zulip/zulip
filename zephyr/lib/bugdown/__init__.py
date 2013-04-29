@@ -52,6 +52,17 @@ def walk_tree(root, processor, stop_after_first=False):
 
     return results
 
+def add_a(root, url, link, height=None):
+    div = markdown.util.etree.SubElement(root, "div")
+    div.set("class", "message_inline_image");
+    a = markdown.util.etree.SubElement(div, "a")
+    a.set("href", link)
+    a.set("target", "_blank")
+    a.set("title", link)
+    img = markdown.util.etree.SubElement(a, "img")
+    img.set("src", url)
+
+
 class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url):
         parsed_url = urlparse.urlparse(url)
@@ -100,14 +111,7 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
     def run(self, root):
         image_urls = self.find_images(root)
         for (url, link) in image_urls:
-            div = markdown.util.etree.SubElement(root, "div")
-            div.set("class", "message_inline_image");
-            a = markdown.util.etree.SubElement(div, "a")
-            a.set("href", link)
-            a.set("target", "_blank")
-            a.set("title", link)
-            img = markdown.util.etree.SubElement(a, "img")
-            img.set("src", url)
+            add_a(root, url, link)
 
         return root
 
