@@ -673,8 +673,20 @@ class NarrowBuilder(object):
 
     def do_search(self, query, operand):
         if "postgres" in settings.DATABASES["default"]["ENGINE"]:
-            sql = "search_tsvector @@ plainto_tsquery('humbug.english_us_search', %s)"
-            return query.extra(where=[sql], params=[operand])
+            tsquery = "plainto_tsquery('humbug.english_us_search', %s)"
+            where = "search_tsvector @@ " + tsquery
+            match_content = "ts_headline('humbug.english_us_search', rendered_content, " \
+                + tsquery + ", 'StartSel=\"<span class=\"\"highlight\"\">\", StopSel=</span>, " \
+                "HighlightAll=TRUE')"
+            # We HTML-escape the subject in Postgres to avoid doing a server round-trip
+            match_subject = "ts_headline('humbug.english_us_search', escape_html(subject), " \
+                + tsquery + ", 'StartSel=\"<span class=\"\"highlight\"\">\", StopSel=</span>, " \
+                "HighlightAll=TRUE')"
+
+            return query.extra(select={'match_content': match_content,
+                                       'match_subject': match_subject},
+                               where=[where],
+                               select_params=[operand, operand], params=[operand])
         else:
             for word in operand.split():
                 query = query.filter(self.pQ(content__icontains=word) |
@@ -735,11 +747,14 @@ def get_old_messages_backend(request, user_profile,
                                                     .order_by('message')
 
     num_extra_messages = 1
+    is_search = False
 
     if narrow is not None:
         num_extra_messages = 0
         build = NarrowBuilder(user_profile, prefix)
         for operator, operand in narrow:
+            if operator == 'search':
+                is_search = True
             query = build(query, operator, operand)
 
     def add_prefix(**kwargs):
@@ -767,15 +782,26 @@ def get_old_messages_backend(request, user_profile,
     # rendered message dict before returning it.  We attempt to
     # bulk-fetch rendered message dicts from memcached using the
     # 'messages' list.
+    search_fields = dict()
+    messages = []
     if include_history:
         user_messages = dict((user_message.message_id, user_message) for user_message in
                              UserMessage.objects.filter(user_profile=user_profile,
                                                         message__in=query_result))
-        messages = query_result
+        for message in query_result:
+            messages.append(message)
+            if is_search:
+                search_fields[message.id] = dict([('match_subject', message.match_subject),
+                                                  ('match_content', message.match_content)])
     else:
         user_messages = dict((user_message.message_id, user_message)
                              for user_message in query_result)
-        messages = [user_message.message for user_message in query_result]
+        for user_message in query_result:
+            messages.append(user_message.message)
+            if is_search:
+                search_fields[user_message.message.id] = \
+                    dict([('match_subject', user_message.match_subject),
+                          ('match_content', user_message.match_content)])
 
     bulk_messages = cache_get_many([to_dict_cache_key(message, apply_markdown)
                                     for message in messages])
@@ -796,7 +822,10 @@ def get_old_messages_backend(request, user_profile,
         if message.id in user_messages:
             flags_dict = user_messages[message.id].flags_dict()
         elt = bulk_messages.get(to_dict_cache_key(message, apply_markdown))[0]
-        message_list.append(dict(elt, **flags_dict))
+        msg_dict = dict(elt)
+        msg_dict.update(flags_dict)
+        msg_dict.update(search_fields.get(elt['id'], {}))
+        message_list.append(msg_dict)
 
     statsd.incr('loaded_old_messages', len(message_list))
     ret = {'messages': message_list,
