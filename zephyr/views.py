@@ -1512,6 +1512,11 @@ def api_jira_webhook(request, api_key):
     payload = simplejson.loads(request.body)
 
     try:
+        stream = request.GET['stream']
+    except (AttributeError, KeyError):
+        stream = 'jira'
+
+    try:
         user_profile = UserProfile.objects.get(api_key=api_key)
     except UserProfile.DoesNotExist:
         import logging
@@ -1568,7 +1573,7 @@ def api_jira_webhook(request, api_key):
 
     subject = elide_subject(subject)
 
-    ret = check_send_message(user_profile, get_client("API"), "stream", ["jira"], subject, content)
+    ret = check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
     if ret is not None:
         return json_error(ret)
     return json_success()

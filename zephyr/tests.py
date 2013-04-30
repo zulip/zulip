@@ -2534,6 +2534,20 @@ class JiraHookTests(AuthedTestCase):
                                       stream_name="jira",
                                       content_type="application/json")
 
+    def test_custom_stream(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        action = 'created'
+        url = "/api/v1/external/jira/%s/?stream=jira_custom" % api_key
+        msg = self.send_json_payload(email, url,
+                                     self.fixture_data('jira', action),
+                                     stream_name="jira_custom",
+                                     content_type="application/json")
+        self.assertEqual(msg.subject, "BUG-15: New bug with hook")
+        self.assertEqual(msg.content, """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
+
+> New bug with hook""")
+
     def test_created(self):
         msg = self.send_jira_message('created')
         self.assertEqual(msg.subject, "BUG-15: New bug with hook")
