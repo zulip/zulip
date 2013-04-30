@@ -2529,7 +2529,9 @@ class JiraHookTests(AuthedTestCase):
     def send_jira_message(self, action):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
-        return self.send_json_payload(email, "/api/v1/external/jira/%s/" % api_key,
+        url = "/api/v1/external/jira?api_key=%s" % api_key
+        return self.send_json_payload(email,
+                                      url,
                                       self.fixture_data('jira', action),
                                       stream_name="jira",
                                       content_type="application/json")
@@ -2538,7 +2540,7 @@ class JiraHookTests(AuthedTestCase):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
         action = 'created'
-        url = "/api/v1/external/jira/%s/?stream=jira_custom" % api_key
+        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % api_key
         msg = self.send_json_payload(email, url,
                                      self.fixture_data('jira', action),
                                      stream_name="jira_custom",

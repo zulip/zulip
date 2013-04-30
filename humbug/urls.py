@@ -147,7 +147,7 @@ urlpatterns += patterns('zephyr.views',
 
     # These are integration-specific web hook callbacks
     url(r'^api/v1/external/github$',        'api_github_landing'),
-    url(r'^api/v1/external/jira/(\w+)/?$',  'api_jira_webhook'),
+    url(r'^api/v1/external/jira$',          'api_jira_webhook'),
     url(r'^api/v1/external/beanstalk$',     'api_beanstalk_webhook'),
     url(r'^api/v1/external/pivotal$',       'api_pivotal_webhook'),
 )

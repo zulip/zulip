@@ -1509,7 +1509,12 @@ def elide_subject(subject):
     return subject
 
 @csrf_exempt
-def api_jira_webhook(request, api_key):
+def api_jira_webhook(request):
+    try:
+        api_key = request.GET['api_key']
+    except (AttributeError, KeyError):
+        return json_error("Missing api_key parameter.")
+
     payload = simplejson.loads(request.body)
 
     try:
