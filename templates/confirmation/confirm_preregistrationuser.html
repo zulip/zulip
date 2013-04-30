@@ -12,7 +12,7 @@ post to another view which executes in our code to produce the desired form.
     {% csrf_token %}
     <input type="hidden" value="{{ key }}" name="key"/>
     <input type="hidden" value="1" name="from_confirmation"/>
-    <input type="hidden" value="{{ gafyd_name }}" name="gafyd_name"/>
+    <input type="hidden" value="{% if gafyd_name %}{{ gafyd_name }}{% endif %}" name="gafyd_name"/>
 </form>
 
 <script type="text/javascript">

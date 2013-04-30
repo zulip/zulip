@@ -36,7 +36,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         <label for="id_full_name" class="control-label">Full name</label>
         <div class="controls">
             <input id="id_full_name" class="required" type="text" name="full_name"
-                   value="{% if form.full_name.value %}{{ form.full_name.value }}{% else %}{{ gafyd_name }}{% endif %}"
+                   value="{% if form.full_name.value %}{{ form.full_name.value }}{% elif gafyd_name %}{{ gafyd_name }}{% endif %}"
                    maxlength="100" />
             {% if form.full_name.errors %}
                 {% for error in form.full_name.errors %}
