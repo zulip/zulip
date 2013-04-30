@@ -71,7 +71,7 @@ class EmbedlyProcessor(markdown.treeprocessors.Treeprocessor):
         # Get all URLs from the blob
         urls = walk_tree(root, lambda e: e.get("href") if e.tag == "a" else None)
         for link in urls:
-            if not embedly_client.is_supported(link):
+            if not embedly_client.is_supported(link) or get_tweet_id(link):
                 continue
             try:
                 oembed_data = embedly_client.oembed(link, maxwidth=500)
@@ -213,17 +213,24 @@ def fetch_tweet_data(tweet_id):
                 return None
     return res
 
+def get_tweet_id(url):
+    parsed_url = urlparse.urlparse(url)
+    if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
+        return False
+
+    tweet_id_match = re.match(r'^/.*?/status(es)?/(?P<tweetid>\d{18})$', parsed_url.path)
+    if not tweet_id_match:
+        return False
+    return tweet_id_match.group("tweetid")
+
+
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def twitter_link(self, url):
-        parsed_url = urlparse.urlparse(url)
-        if not (parsed_url.netloc == 'twitter.com' or parsed_url.netloc.endswith('.twitter.com')):
+        tweet_id = get_tweet_id(url)
+
+        if not tweet_id:
             return None
 
-        tweet_id_match = re.match(r'^/.*?/status(es)?/(?P<tweetid>\d{18})$', parsed_url.path)
-        if not tweet_id_match:
-            return None
-
-        tweet_id = tweet_id_match.group("tweetid")
         try:
             res = fetch_tweet_data(tweet_id)
             if res is None:
