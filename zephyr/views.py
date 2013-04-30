@@ -1720,9 +1720,16 @@ def json_update_active_status(request, user_profile,
     ret = get_status_list(user_profile)
     if user_profile.realm.domain == "mit.edu":
         try:
-            activity = UserActivity.objects.get(user_profile = user_profile,
-                                                query="/api/v1/get_messages",
-                                                client__name="zephyr_mirror")
+            # We renamed /api/v1/get_messages to /api/v1/events
+            try:
+                activity = UserActivity.objects.get(user_profile = user_profile,
+                                                    query="/api/v1/events",
+                                                    client__name="zephyr_mirror")
+            except UserActivity.DoesNotExist:
+                activity = UserActivity.objects.get(user_profile = user_profile,
+                                                    query="/api/v1/get_messages",
+                                                    client__name="zephyr_mirror")
+
             ret['zephyr_mirror_active'] = \
                 (activity.last_visit.replace(tzinfo=None) >
                  datetime.datetime.utcnow() - datetime.timedelta(minutes=5))
