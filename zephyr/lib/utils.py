@@ -5,13 +5,15 @@ import hashlib
 from time import sleep, time
 from django.conf import settings
 
-def statsd_key(val):
+def statsd_key(val, clean_periods=False):
     if not isinstance(val, str):
         val = str(val)
 
     if ':' in val:
         val = val.split(':')[0]
     val = val.replace('-', "_")
+    if clean_periods:
+        val = val.replace('.', '_')
 
     return val
 
