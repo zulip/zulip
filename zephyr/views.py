@@ -1508,6 +1508,7 @@ def elide_subject(subject):
         subject = subject[:57].rstrip() + '...'
     return subject
 
+@csrf_exempt
 def api_jira_webhook(request, api_key):
     payload = simplejson.loads(request.body)
 
