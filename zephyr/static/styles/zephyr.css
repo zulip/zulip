@@ -1187,3 +1187,7 @@ li.expanded_subject {
 #compose a.message-control-button:hover {
     color: #000;
 }
+
+#stream_filters .inactive_stream {
+    opacity: .5;
+}

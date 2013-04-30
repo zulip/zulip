@@ -1157,16 +1157,36 @@ $(function () {
 });
 
 function sort_narrow_list() {
+    var sort_recent = (subs.subscribed_streams().length > 40);
     var items = $('#stream_filters > li').get();
     var parent = $('#stream_filters');
     items.sort(function(a,b){
-        return $(a).attr('data-name').localeCompare($(b).attr('data-name'));
+        var a_stream_name = $(a).attr('data-name');
+        var b_stream_name = $(b).attr('data-name');
+        if (sort_recent) {
+            if (recent_subjects[b_stream_name] !== undefined &&
+                recent_subjects[a_stream_name] === undefined) {
+                return 1;
+            } else if (recent_subjects[b_stream_name] === undefined &&
+                       recent_subjects[a_stream_name] !== undefined) {
+                return -1;
+            }
+        }
+        return a_stream_name.localeCompare(b_stream_name);
     });
 
     parent.empty();
 
     $.each(items, function(i, li){
-          parent.append(li);
+        var stream_name = $(li).attr('data-name');
+        if (sort_recent) {
+            if (recent_subjects[stream_name] === undefined) {
+                $(li).addClass("inactive_stream");
+            } else {
+                $(li).removeClass("inactive_stream");
+            }
+        }
+        parent.append(li);
     });
 }
 
@@ -1394,6 +1414,8 @@ exports.update_recent_subjects = function () {
             }
         }
     });
+    // Resort the narrow list based on which streams have messages
+    sort_narrow_list();
 };
 
 return exports;
