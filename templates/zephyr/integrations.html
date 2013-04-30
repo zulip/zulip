@@ -233,7 +233,7 @@ following, to the stream <code>commits</code> with a subject that matches the re
    <div id="jira" class="integration">
       <h4>JIRA</h4>
       <h5>Webhook mechanism</h5>
-      If you are running JIRA version 5.2 or greater, or are using the hosted JIRA provided
+      If you are running JIRA version 5.2 or greater, or if you are using the hosted JIRA provided
       by Atlassian, you can use the built in web-hook support to connect to Humbug. If you are not
       using the Atlassian-hosted JIRA, you may also use the <a href="#jira-plugin">Jira Plugin</a>
       mechanism that supports older versions of JIRA.
@@ -241,12 +241,19 @@ following, to the stream <code>commits</code> with a subject that matches the re
         hosted JIRA, follow the instructions <a href="https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview#JIRAWebhooksOverview-WhereistheJIRAAdministrationUIforwebhooks?">
         on the Atlassian wiki</a> for locating the Webhook UI</a>.
       </p>
-      <p>Give your new web hook a name, and for the URL provide <code>https://humbughq.com/api/v1/external/jira/API_KEY</code>
-        where <code>API_KEY</code> is the api key of the user you wish to post JIRA updates as.
+      <p>Give your new web hook a name, and for the URL provide the following:</p>
+      <p>
+      <code>https://humbughq.com/api/v1/external/jira?api_key=abcdefgh&stream=jira</code>
       </p>
 
+      <p>where <code>api_key</code> is the API key of the user you
+      want updates to be sent as, and <code>stream</code> is the stream name you want the notifications sent to.
+
+      <p>Next, go back to Humbug and set up a stream called "jira," if it does not already exist.
+      (If you prefer your JIRA notifications to go to a stream other than "jira," then change the URL above to match it.)</p>
+
       <p><b>Congratulations! You're done!</b><br />
-      Updates from JIRA will be sent to the <code>jira</code> stream, and it must already exist.</p>
+      Updates from JIRA will be sent to the Humbug stream you specified in the JIRA web-hook.
       <img class="screenshot" src="/static/images/integrations/jira/001.png">
       <p>
         <a href="#services">^ Back to top</a>
