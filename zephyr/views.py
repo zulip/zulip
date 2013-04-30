@@ -1525,8 +1525,7 @@ def api_jira_webhook(request):
     try:
         user_profile = UserProfile.objects.get(api_key=api_key)
     except UserProfile.DoesNotExist:
-        import logging
-        logging.warning("Failed to find user with API key: %s" % api_key)
+        return json_error("Failed to find user with API key: %s" % (api_key,))
 
     def get_in(payload, keys, default=''):
         try:
