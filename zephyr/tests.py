@@ -168,11 +168,14 @@ class AuthedTestCase(TestCase):
         return open(os.path.join(os.path.dirname(__file__),
                                  "fixtures/%s/%s_%s.%s" % (type, type, action,file_type))).read()
 
+    def subscribe_to_stream(self, email, stream_name):
+        stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), stream_name)
+        user_profile = self.get_user_profile(email)
+        do_add_subscription(user_profile, stream, no_log=True)
+
     def send_json_payload(self, email, url, payload, stream_name=None, **post_params):
         if stream_name != None:
-            stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), stream_name)
-            user_profile = self.get_user_profile(email)
-            do_add_subscription(user_profile, stream, no_log=True)
+            self.subscribe_to_stream(email, stream_name)
 
         result = self.client.post(url, payload, **post_params)
         self.assert_json_success(result)
@@ -2658,6 +2661,48 @@ class GithubHookTests(AuthedTestCase):
 * [5057e76](http://github.com/mojombo/grit/commit/5057e76a11abd02e83b7d3d3171c4b68d9c88480): clean up heads test f:2hrs
 * [a47fd41](http://github.com/mojombo/grit/commit/a47fd41f3aa4610ea527dcc1669dfdb9c15c5425): add more comments throughout
 """)
+
+    def test_spam_branch_is_ignored(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        stream = 'commits'
+        data = {'email': email,
+                'api-key': api_key,
+                'branches': 'dev,staging',
+                'stream': stream,
+                'event': 'push',
+                'payload': self.fixture_data('github', 'sample')}
+        url = '/api/v1/external/github'
+
+        # We subscribe to the stream in this test, even though
+        # it won't get written, to avoid failing for the wrong
+        # reason.
+        self.subscribe_to_stream(email, stream)
+        
+        prior_count = len(Message.objects.filter())
+
+        result = self.client.post(url, data)
+        self.assert_json_success(result)
+
+        after_count = len(Message.objects.filter())
+        self.assertEqual(prior_count, after_count)
+
+
+    def test_user_specified_branches(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        stream = 'my_commits'
+        data = {'email': email,
+                'api-key': api_key,
+                'stream': stream,
+                'branches': 'master,staging',
+                'event': 'push',
+                'payload': self.fixture_data('github', 'sample')}
+        msg = self.send_json_payload(email, "/api/v1/external/github",
+                                     data,
+                                     stream_name=stream)
+        self.assertEqual(msg.subject, "grit")
+        self.assert_content(msg)
 
     def test_user_specified_stream(self):
         # Around May 2013 the github webhook started to specify the stream.

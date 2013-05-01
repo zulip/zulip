@@ -1460,6 +1460,7 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
 @has_request_variables
 def api_github_landing(request, user_profile, event=POST,
                        payload=POST(converter=json_to_dict),
+                       branches=POST(default=''),
                        stream=POST(default='commits')):
     # TODO: this should all be moved to an external bot
     repository = payload['repository']
@@ -1484,6 +1485,13 @@ def api_github_landing(request, user_profile, event=POST,
         # option of which branches to notify on.
         if short_ref != 'master' and user_profile.realm.domain in ['customer18.invalid', 'humbughq.com']:
             return json_success()
+
+        if branches:
+            # If we are given a whitelist of branches, then we silently ignore
+            # any push notification on a branch that is not in our whitelist.
+            if short_ref not in re.split('[\s,;|]+', branches):
+                return json_success()
+        
 
         subject, content = build_message_from_gitlog(user_profile, repository['name'],
                                                      payload['ref'], payload['commits'],
