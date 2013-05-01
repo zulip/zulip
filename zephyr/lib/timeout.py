@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import sys
 import time
 import ctypes
 import threading
@@ -31,7 +32,7 @@ def timeout(timeout, func, *args, **kwargs):
         def __init__(self):
             threading.Thread.__init__(self)
             self.result = None
-            self.exn    = None
+            self.exc_info = None
 
             # Don't block the whole program from exiting
             # if this is the only thread left.
@@ -40,8 +41,8 @@ def timeout(timeout, func, *args, **kwargs):
         def run(self):
             try:
                 self.result = func(*args, **kwargs)
-            except BaseException, e:
-                self.exn = e
+            except BaseException:
+                self.exc_info = sys.exc_info()
 
         def raise_async_timeout(self):
             # Called from another thread.
@@ -75,6 +76,8 @@ def timeout(timeout, func, *args, **kwargs):
                 break
         raise TimeoutExpired
 
-    if thread.exn:
-        raise thread.exn
+    if thread.exc_info:
+        # Raise the original stack trace so our error messages are more useful.
+        # from http://stackoverflow.com/a/4785766/90777
+        raise thread.exc_info[0], thread.exc_info[1], thread.exc_info[2]
     return thread.result
