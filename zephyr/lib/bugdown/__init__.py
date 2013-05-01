@@ -6,9 +6,12 @@ import re
 import os.path
 import glob
 import urllib2
+import itertools
 import simplejson
 import twitter
 import platform
+
+from hashlib import sha1
 
 from django.core import mail
 from django.conf import settings
@@ -17,7 +20,7 @@ from zephyr.lib.avatar  import gravatar_hash
 from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
 from zephyr.lib.timeout import timeout, TimeoutExpired
-from zephyr.lib.cache import cache_with_key
+from zephyr.lib.cache import cache_with_key, cache_get_many, cache_set_many
 from embedly import Embedly
 
 embedly_client = Embedly(settings.EMBEDLY_KEY)
@@ -66,21 +69,66 @@ def add_a(root, url, link, height=None):
     img.set("src", url)
 
 
+def mygrouper(n, iterable):
+    # Adapted from http://stackoverflow.com/a/1625013/90777
+    args = [iter(iterable)] * n
+    return ([e for e in t if e != None] for t in itertools.izip_longest(*args))
+
+def hash_embedly_url(link):
+    return 'embedly:' + sha1(link).hexdigest()
+
 class EmbedlyProcessor(markdown.treeprocessors.Treeprocessor):
     def run(self, root):
         # Get all URLs from the blob
-        urls = walk_tree(root, lambda e: e.get("href") if e.tag == "a" else None)
-        for link in urls:
+        found_urls = walk_tree(root, lambda e: e.get("href") if e.tag == "a" else None)
+
+        supported_urls = []
+        for link in found_urls:
+            # Don't waste our quota with unsupported links or links otherwise
+            # handled by our Twitter integration
             if not embedly_client.is_supported(link) or get_tweet_id(link):
                 continue
+            supported_urls.append(link)
+
+        if not supported_urls:
+            return root
+
+        # We want this to be able to easily reverse the hashing later
+        keys_to_links = dict((hash_embedly_url(link), link) for link in supported_urls)
+        cache_hits = cache_get_many(keys_to_links.keys(), cache_name="database")
+
+        # Construct a dict of url => oembed_data pairs
+        oembeds = dict((keys_to_links[key], cache_hits[key]) for key in cache_hits)
+
+        to_process = [url for url in supported_urls if not url in oembeds]
+        to_cache = {}
+
+        for links in mygrouper(10, to_process):
             try:
-                oembed_data = embedly_client.oembed(link, maxwidth=500)
+                responses = embedly_client.oembed(links, maxwidth=500)
             except:
-                # we put this in its own try-except because it requires external
-                # connectivity. if embedly flakes out, we don't want to not-render
+                # We put this in its own try-except because it requires external
+                # connectivity. If embedly flakes out, we don't want to not-render
                 # the entire message; we just want to not show the embedly preview.
                 logging.warning(traceback.format_exc())
-                break
+                return root
+            for oembed_data in responses:
+                # Don't cache permanent errors
+                if oembed_data["type"] == "error" and \
+                        oembed_data["error_code"] in (500, 501, 503):
+                    continue
+                # Convert to dict because otherwise pickling won't work.
+                to_cache[oembed_data["original_url"]] = dict(oembed_data)
+
+        # Cache the newly collected data to the database
+        cache_set_many(dict((hash_embedly_url(link), to_cache[link]) for link in to_cache),
+                       cache_name="database")
+        oembeds.update(to_cache)
+
+        # Now let's process the URLs in order
+        for link in supported_urls:
+            oembed_data = oembeds[link]
+
             if oembed_data["type"] in ("link"):
                 continue
             elif oembed_data["type"] in ("video", "rich") and "script" not in oembed_data["html"]:
