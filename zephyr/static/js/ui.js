@@ -1190,6 +1190,9 @@ function iterate_to_find(selector, data_name, context) {
 }
 
 exports.get_filter_li = function(type, name) {
+    if (type === 'stream') {
+        return $("#stream_sidebar_" + subs.stream_id(name));
+    }
     return iterate_to_find("#" + type + "_filters > li", name);
 };
 
@@ -1213,6 +1216,10 @@ exports.add_narrow_filter = function(name, type, uri) {
                              .addClass('streamlist_swatch')
                              .css('background-color', subs.get_color(name)).html("&nbsp;");
     list_item = $('<li>').attr('data-name', name).html(swatch);
+    if (type === 'stream') {
+        list_item.attr('id', "stream_sidebar_" + subs.stream_id(name));
+    }
+
     list_item.append($('<a>').attr('href', uri)
                      .addClass('subscription_name')
                      .text(name)
