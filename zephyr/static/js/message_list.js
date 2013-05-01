@@ -397,7 +397,7 @@ MessageList.prototype = {
                               }});
         }
 
-        $.each(rendered_elems, ui.process_collapsing);
+        $.each(rendered_elems, ui.process_condensing);
 
         // Re-add the fading of messages that is lost when we re-render.
         compose.update_faded_messages();

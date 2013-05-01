@@ -919,16 +919,16 @@ $(function () {
 
     $("#home").on("click", ".message_expander", function (e) {
         var row = $(this).closest(".message_row");
-        current_msg_list.get(rows.id(row)).expanded = true;
-        row.find(".message_content").addClass("expanded");
+        current_msg_list.get(rows.id(row)).condensed = false;
+        row.find(".message_content").removeClass("condensed");
         $(this).hide();
-        row.find(".message_collapser").show();
+        row.find(".message_condenser").show();
     });
 
-    $("#home").on("click", ".message_collapser", function (e) {
+    $("#home").on("click", ".message_condenser", function (e) {
         var row = $(this).closest(".message_row");
-        current_msg_list.get(rows.id(row)).expanded = false;
-        row.find(".message_content").removeClass("expanded");
+        current_msg_list.get(rows.id(row)).condensed = true;
+        row.find(".message_content").addClass("condensed");
         $(this).hide();
         row.find(".message_expander").show();
     });
@@ -1338,38 +1338,28 @@ exports.restore_compose_cursor = function () {
         .caret(saved_compose_cursor, saved_compose_cursor);
 };
 
-exports.process_collapsing = function (index, elem) {
-    var content = $(elem).find(".message_content")[0];
+exports.process_condensing = function (index, elem) {
+    var content = $(elem).find(".message_content");
     var message = current_msg_list.get(rows.id($(elem)));
     if (content !== undefined && message !== undefined) {
-        // If message.expanded is defined, then the user has manually
-        // specified whether this message should be expanded or collapsed.
-        if (message.expanded === true) {
-            $(content).addClass("expanded");
-            $(elem).find(".message_collapser").show();
-            $(elem).find(".message_expander").hide();
-            return;
-        } else if (message.expanded === false) {
-            $(content).removeClass("expanded");
+        // If message.condensed is defined, then the user has manually
+        // specified whether this message should be expanded or condensed.
+        if (message.condensed === true) {
+            content.addClass("condensed");
             $(elem).find(".message_expander").show();
-            $(elem).find(".message_collapser").hide();
+            $(elem).find(".message_condenser").hide();
+            return;
+        } else if (message.condensed === false) {
+            content.removeClass("condensed");
+            $(elem).find(".message_condenser").show();
+            $(elem).find(".message_expander").hide();
             return;
         }
 
-        // We've limited the height of all elements in CSS.
-        // If offsetHeight < scrollHeight, then our CSS height limit has taken
-        // effect and we should show an expander button.
-        // If offsetHeight is only slightly smaller than scrollHeight, then we
-        // would only be collapsing by a small amount, which can be annoying.
-        // Instead of showing an expander button, just expand that element instead
-        // of keeping it collapsed.  (This also solves a bug seen on some Mac
-        // systems where offsetHeight == scrollHeight-1 for no apparent reason).
-        if (content.offsetHeight === 0 && content.scrollHeight === 0) {
-            return;
-        } else if (content.offsetHeight + 250 < content.scrollHeight) {
+        // Collapse the message if it takes up more than a certain % of the screen
+        if (content.height() > (viewport.height() * 0.65 ) ) {
+            content.addClass("condensed");
             $(elem).find(".message_expander").show();
-        } else if (content.offsetHeight < content.scrollHeight) {
-            $(content).addClass("expanded");
         }
     }
 };

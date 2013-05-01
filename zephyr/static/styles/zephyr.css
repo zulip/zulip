@@ -451,9 +451,6 @@ table.focused_table {
 .message_content {
     margin-left: 5px;
     margin-right: 35px; /* size of the timestamp */
-    line-height: 1.5em;
-    max-height: 9.0em;
-    overflow: hidden;
 }
 @media (max-width: 480px) {
     .message_content {
@@ -461,8 +458,9 @@ table.focused_table {
     }
 }
 
-.message_content.expanded {
-    max-height: none;
+.message_content.condensed {
+    max-height: 8.5em;
+    overflow: hidden;
 }
 
 .message_length_controller {
