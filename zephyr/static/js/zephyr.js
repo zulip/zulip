@@ -696,11 +696,16 @@ function maybe_add_narrowed_messages(messages, msg_list) {
                 return;
             }
 
-            messages = $.grep(messages, function (elem) {
-                return ($.inArray(elem.id, data.msg_ids) !== -1);
+            var new_messages = [];
+            $.each(messages, function (idx, elem) {
+                if (data.messages.hasOwnProperty(elem.id)) {
+                    elem.match_subject = data.messages[elem.id].match_subject;
+                    elem.match_content = data.messages[elem.id].match_content;
+                    new_messages.push(elem);
+                }
             });
 
-            add_messages(messages, msg_list);
+            add_messages(new_messages, msg_list);
             process_visible_unread_messages();
             compose.update_faded_messages();
         },

@@ -1824,4 +1824,7 @@ def messages_in_narrow_backend(request, user_profile, msg_ids = REQ(converter=js
     for operator, operand in narrow:
         query = build(query, operator, operand)
 
-    return json_success({"msg_ids": [msg.message.id for msg in query.iterator()]})
+    return json_success({"messages": dict((msg.message.id,
+                                           {'match_subject': msg.match_subject,
+                                            'match_content': msg.match_content})
+                                          for msg in query.iterator())})
