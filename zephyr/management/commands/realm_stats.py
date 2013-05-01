@@ -4,7 +4,7 @@ import datetime
 import pytz
 
 from django.core.management.base import BaseCommand
-from django.db.models import Q, Count
+from django.db.models import Count
 from zephyr.models import UserProfile, Realm, Stream, Message, Recipient, UserActivity, \
     Subscription
 
@@ -105,14 +105,6 @@ class Command(BaseCommand):
                                                    active_users))
             self.report_percentage(num_notifications_enabled, num_active,
                                    "active users have desktop notifications enabled")
-
-            colorizers = 0
-            for profile in active_users:
-                if Subscription.objects.filter(user_profile=profile).filter(
-                    ~Q(color=Subscription.DEFAULT_STREAM_COLOR)).count() > 0:
-                    colorizers += 1
-            self.report_percentage(colorizers, num_active,
-                                   "active users have colorized streams")
 
             num_enter_sends = len(filter(lambda x: x.enter_sends, active_users))
             self.report_percentage(num_enter_sends, num_active,
