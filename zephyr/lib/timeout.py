@@ -65,7 +65,7 @@ def timeout(timeout, func, *args, **kwargs):
 
     if thread.isAlive():
         # Gamely try to kill the thread, following the dodgy approach from
-        # http://stackoverflow.com/questions/323972/is-there-any-way-to-kill-a-thread-in-python
+        # http://stackoverflow.com/a/325528/90777
         #
         # We need to retry, because an async exception received while the
         # thread is in a system call is simply ignored.
