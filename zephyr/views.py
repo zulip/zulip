@@ -1459,7 +1459,8 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
 @authenticated_api_view
 @has_request_variables
 def api_github_landing(request, user_profile, event=POST,
-                       payload=POST(converter=json_to_dict)):
+                       payload=POST(converter=json_to_dict),
+                       stream=POST(default='commits')):
     # TODO: this should all be moved to an external bot
     repository = payload['repository']
 
@@ -1499,7 +1500,7 @@ def api_github_landing(request, user_profile, event=POST,
     request.client = get_client("github_bot")
     return send_message_backend(request, user_profile,
                                 message_type_name="stream",
-                                message_to=["commits"],
+                                message_to=[stream],
                                 forged=False, subject_name=subject,
                                 message_content=content)
 

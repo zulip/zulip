@@ -2651,26 +2651,43 @@ class BeanstalkHookTests(AuthedTestCase):
 class GithubHookTests(AuthedTestCase):
     fixtures = ['messages.json']
 
-    def send_github_message(self, action):
-        email = "hamlet@humbughq.com"
-        api_key = self.get_api_key(email)
-        data = {'email': email,
-                'api-key': api_key,
-                'event': 'push',
-                'payload': self.fixture_data('github', action)}
-        return self.send_json_payload(email, "/api/v1/external/github",
-                                      data,
-                                      stream_name="commits")
-
-    def test_sample_hook(self):
-        msg = self.send_github_message('sample')
-        self.assertEqual(msg.subject, "grit")
+    def assert_content(self, msg):
         self.assertEqual(msg.content, """rtomayko [pushed](http://github.com/mojombo/grit/compare/4c8124f...a47fd41) to branch master
 
 * [06f63b4](http://github.com/mojombo/grit/commit/06f63b43050935962f84fe54473a7c5de7977325): stub git call for Grit#heads test f:15 Case#1
 * [5057e76](http://github.com/mojombo/grit/commit/5057e76a11abd02e83b7d3d3171c4b68d9c88480): clean up heads test f:2hrs
 * [a47fd41](http://github.com/mojombo/grit/commit/a47fd41f3aa4610ea527dcc1669dfdb9c15c5425): add more comments throughout
 """)
+
+    def test_user_specified_stream(self):
+        # Around May 2013 the github webhook started to specify the stream.
+        # Before then, the stream was hard coded to "commits".
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        stream = 'my_commits'
+        data = {'email': email,
+                'api-key': api_key,
+                'stream': stream,
+                'event': 'push',
+                'payload': self.fixture_data('github', 'sample')}
+        msg = self.send_json_payload(email, "/api/v1/external/github",
+                                     data,
+                                     stream_name=stream)
+        self.assertEqual(msg.subject, "grit")
+        self.assert_content(msg)
+
+    def test_legacy_hook(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        data = {'email': email,
+                'api-key': api_key,
+                'event': 'push',
+                'payload': self.fixture_data('github', 'sample')}
+        msg = self.send_json_payload(email, "/api/v1/external/github",
+                                     data,
+                                     stream_name="commits")
+        self.assertEqual(msg.subject, "grit")
+        self.assert_content(msg)
 
 class PivotalHookTests(AuthedTestCase):
     fixtures = ['messages.json']
