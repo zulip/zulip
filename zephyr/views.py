@@ -1756,6 +1756,7 @@ if not (settings.DEBUG or settings.TEST_SUITE):
 @has_request_variables
 def json_report_error(request, user_profile, message=POST, stacktrace=POST,
                       ui_message=POST(converter=json_to_bool), user_agent=POST,
+                      href=POST,
                       more_info=POST(converter=json_to_dict, default=None)):
     subject = "error for %s" % (user_profile.email,)
     if ui_message:
@@ -1766,9 +1767,9 @@ def json_report_error(request, user_profile, message=POST, stacktrace=POST,
     if js_source_map:
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
-    body = ("Message:\n%s\n\nStacktrace:\n%s\n\nUser agent:\n%s\n\n"
+    body = ("Message:\n%s\n\nStacktrace:\n%s\n\nUser agent: %s\nhref: %s\n"
             "User saw error in UI: %s"
-            % (message, stacktrace, user_agent, ui_message))
+            % (message, stacktrace, user_agent, href, ui_message))
 
     if more_info is not None:
         body += "\n\nAdditional information:"

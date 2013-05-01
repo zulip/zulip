@@ -41,6 +41,7 @@ function report_error(msg, stack, opts) {
                     stacktrace: stack,
                     ui_message: opts.show_ui_msg,
                     more_info: JSON.stringify(opts.more_info),
+                    href: window.location.href,
                     user_agent: window.navigator.userAgent},
         timeout:  3*1000,
         success:  function () {
