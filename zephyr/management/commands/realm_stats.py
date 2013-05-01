@@ -21,6 +21,7 @@ class Command(BaseCommand):
         activity_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=7)
         return [activity.user_profile for activity in \
                     UserActivity.objects.filter(user_profile__realm=realm,
+                                                user_profile__is_active=True,
                                                 last_visit__gt=activity_cutoff,
                                                 query="/json/update_pointer",
                                                 client__name="website")]
@@ -75,7 +76,7 @@ class Command(BaseCommand):
         for realm in realms:
             print realm.domain
 
-            user_profiles = UserProfile.objects.filter(realm=realm)
+            user_profiles = UserProfile.objects.filter(realm=realm, is_active=True)
             active_users = self.active_users(realm)
             num_active = len(active_users)
 
