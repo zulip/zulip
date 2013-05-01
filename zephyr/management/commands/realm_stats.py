@@ -4,7 +4,7 @@ import datetime
 import pytz
 
 from django.core.management.base import BaseCommand
-from django.db.models import Q
+from django.db.models import Q, Count
 from zephyr.models import UserProfile, Realm, Stream, Message, Recipient, UserActivity, \
     Subscription
 
@@ -80,7 +80,13 @@ class Command(BaseCommand):
             num_active = len(active_users)
 
             print "%d active users (%d total)" % (num_active, len(user_profiles))
-            print "%d streams" % (Stream.objects.filter(realm=realm).count(),)
+            streams = Stream.objects.filter(realm=realm).extra(
+                tables=['zephyr_subscription', 'zephyr_recipient'],
+                where=['zephyr_subscription.recipient_id = zephyr_recipient.id',
+                       'zephyr_recipient.type = 2',
+                       'zephyr_recipient.type_id = zephyr_stream.id',
+                       'zephyr_subscription.active = true']).annotate(count=Count("name"))
+            print "%d streams" % (streams.count(),)
 
             for days_ago in (1, 7, 30):
                 print "In last %d days, users sent:" % (days_ago,)
