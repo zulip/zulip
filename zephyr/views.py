@@ -1461,9 +1461,12 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
 def api_github_landing(request, user_profile, event=POST,
                        payload=POST(converter=json_to_dict),
                        branches=POST(default=''),
-                       stream=POST(default='commits')):
+                       stream=POST(default='')):
     # TODO: this should all be moved to an external bot
     repository = payload['repository']
+
+    if not stream:
+        stream = 'commits'
 
     # CUSTOMER18 has requested not to get pull request notifications
     if event == 'pull_request' and user_profile.realm.domain not in ['customer18.invalid', 'humbughq.com']:
