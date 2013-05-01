@@ -6,7 +6,7 @@ import pytz
 from django.core.management.base import BaseCommand
 from django.db.models import Count
 from zephyr.models import UserProfile, Realm, Stream, Message, Recipient, UserActivity, \
-    Subscription
+    Subscription, UserMessage
 
 MOBILE_CLIENT_LIST = ["Android", "iPhone"]
 HUMAN_CLIENT_LIST = MOBILE_CLIENT_LIST + ["website"]
@@ -115,4 +115,34 @@ class Command(BaseCommand):
                 sender__realm=realm, content__contains="\n\n").count()
             self.report_percentage(multi_paragraph_message_count, all_message_count,
                                    "all messages are multi-paragraph")
+
+            # Starred messages
+            starrers = UserMessage.objects.filter(user_profile__in=user_profiles,
+                                                  flags=UserMessage.flags.starred).values(
+                "user_profile").annotate(count=Count("user_profile"))
+            print "%d users have starred %d messages" % (
+                len(starrers), sum([elt["count"] for elt in starrers]))
+
+            active_user_subs = Subscription.objects.filter(
+                user_profile__in=user_profiles, active=True)
+
+            # Streams not in home view
+            non_home_view = active_user_subs.filter(in_home_view=False).values(
+                "user_profile").annotate(count=Count("user_profile"))
+            print "%d users have %d streams not in home view" % (
+                len(non_home_view), sum([elt["count"] for elt in non_home_view]))
+
+            # Code block markup
+            markup_messages = human_messages.filter(
+                sender__realm=realm, content__contains="~~~").values(
+                "sender").annotate(count=Count("sender"))
+            print "%d users have used code block markup on %s messages" % (
+                len(markup_messages), sum([elt["count"] for elt in markup_messages]))
+
+            # Notifications for stream messages
+            notifications = active_user_subs.filter(notifications=True).values(
+                "user_profile").annotate(count=Count("user_profile"))
+            print "%d users receive desktop notifications for %d streams" % (
+                len(notifications), sum([elt["count"] for elt in notifications]))
+
             print ""
