@@ -83,7 +83,7 @@ class LogRequests(object):
                                                 len(connection.queries))
 
             # Log ms, db ms, and num queries to statsd
-            statsd.timing("%s.dbtime" % (statsd_path,), timedelta_ms(time_delta))
+            statsd.timing("%s.dbtime" % (statsd_path,), timedelta_ms(query_time))
             statsd.incr("%s.dbq" % (statsd_path, ), len(connection.queries))
             statsd.timing("%s.total" % (statsd_path,), timedelta_ms(time_delta))
 
