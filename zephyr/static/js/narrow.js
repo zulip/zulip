@@ -413,6 +413,13 @@ exports.activate = function (operators, opts) {
     $("#zhome").removeClass("focused_table");
     $("#zfilt").css("opacity", 0).animate({opacity: 1});
 
+    // Deal with message condensing/uncondensing.
+    // In principle, this code causes us to scroll around because divs
+    // above us could change size -- which is problematic, because it
+    // could cause us to lose our position. But doing this here, right
+    // after showing the table, seems to cause us to win the race.
+    $("tr.message_row").each(ui.process_collapsing);
+
     reset_load_more_status();
     if (! defer_selecting_closest) {
         maybe_select_closest();

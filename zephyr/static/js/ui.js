@@ -1345,6 +1345,42 @@ exports.restore_compose_cursor = function () {
         .caret(saved_compose_cursor, saved_compose_cursor);
 };
 
+exports.process_collapsing = function (index, elem) {
+    var content = $(elem).find(".message_content")[0];
+    var message = current_msg_list.get(rows.id($(elem)));
+    if (content !== undefined && message !== undefined) {
+        // If message.expanded is defined, then the user has manually
+        // specified whether this message should be expanded or collapsed.
+        if (message.expanded === true) {
+            $(content).addClass("expanded");
+            $(elem).find(".message_collapser").show();
+            $(elem).find(".message_expander").hide();
+            return;
+        } else if (message.expanded === false) {
+            $(content).removeClass("expanded");
+            $(elem).find(".message_expander").show();
+            $(elem).find(".message_collapser").hide();
+            return;
+        }
+
+        // We've limited the height of all elements in CSS.
+        // If offsetHeight < scrollHeight, then our CSS height limit has taken
+        // effect and we should show an expander button.
+        // If offsetHeight is only slightly smaller than scrollHeight, then we
+        // would only be collapsing by a small amount, which can be annoying.
+        // Instead of showing an expander button, just expand that element instead
+        // of keeping it collapsed.  (This also solves a bug seen on some Mac
+        // systems where offsetHeight == scrollHeight-1 for no apparent reason).
+        if (content.offsetHeight === 0 && content.scrollHeight === 0) {
+            return;
+        } else if (content.offsetHeight + 250 < content.scrollHeight) {
+            $(elem).find(".message_expander").show();
+        } else if (content.offsetHeight < content.scrollHeight) {
+            $(content).addClass("expanded");
+        }
+    }
+};
+
 exports.update_recent_subjects = function () {
     function same(arr1, arr2) {
         var i = 0;
