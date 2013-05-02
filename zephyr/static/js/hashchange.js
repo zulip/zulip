@@ -57,14 +57,21 @@ function parse_narrow(hash) {
     for (i=1; i<hash.length; i+=2) {
         // We don't construct URLs with an odd number of components,
         // but the user might write one.
-        var operator = decodeHashComponent(hash[i]);
-        var operand  = decodeHashComponent(hash[i+1] || '');
-        operators.push([operator, operand]);
+        try {
+            var operator = decodeHashComponent(hash[i]);
+            var operand  = decodeHashComponent(hash[i+1] || '');
+            operators.push([operator, operand]);
+        } catch (err) {
+            return undefined;
+        }
     }
-    narrow.activate(operators, {
-        select_first_unread: true,
-        change_hash:    false  // already set
-    });
+    return operators;
+}
+
+function activate_home_tab() {
+    ui.change_tab_to("#home");
+    narrow.deactivate();
+    ui.update_floating_recipient_bar();
 }
 
 // Returns true if this function performed a narrow
@@ -92,14 +99,23 @@ function do_hashchange() {
     switch (hash[0]) {
         case "#narrow":
             ui.change_tab_to("#home");
-            parse_narrow(hash);
+            var operators = parse_narrow(hash);
+            if (operators === undefined) {
+                // If the narrow URL didn't parse, clear
+                // window.location.hash and send them to the home tab
+                window.location.hash = '';
+                activate_home_tab();
+                return false;
+            }
+            narrow.activate(operators, {
+                select_first_unread: true,
+                change_hash:    false  // already set
+            });
             ui.update_floating_recipient_bar();
             return true;
         case "":
         case "#":
-            ui.change_tab_to("#home");
-            narrow.deactivate();
-            ui.update_floating_recipient_bar();
+            activate_home_tab();
             break;
         case "#subscriptions":
             ui.change_tab_to("#subscriptions");
