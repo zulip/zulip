@@ -1224,3 +1224,42 @@ li.expanded_subject {
 #stream_filters .inactive_stream {
     opacity: .5;
 }
+
+#bots_table {
+    table-layout: fixed;
+    width: 100%;
+    font-size: 90%;
+}
+
+#bots_table td {
+    overflow: hidden;
+}
+
+#create_bot_name {
+    width: 80%;
+}
+
+#create_bot_short_name {
+    width: 40%;
+}
+
+.bot_name_header {
+    width: 12em;
+}
+
+.bot_api_key_header {
+    width: 18em;
+}
+
+.api_key {
+    font-family: monospace;
+    font-size: 85%;
+}
+
+.create_bot_control {
+    vertical-align: middle;
+}
+
+#create_bot_row input {
+    margin: 0;
+}

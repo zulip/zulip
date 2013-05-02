@@ -304,6 +304,7 @@ PIPELINE_JS = {
             'js/timerender.js',
             'js/tutorial.js',
             'js/templates.js',
+            'js/settings.js'
         ],
         'output_filename': 'min/app.js'
     },

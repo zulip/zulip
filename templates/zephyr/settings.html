@@ -153,6 +153,36 @@
 
     <hr class="settings_separator" />
 
+    <h2>Your bots</h2>
+    <form id="create_bot_form">
+    <div id="bot_table_error" class="alert alert-error hide"></div>
+      <table class="table table-condensed table-striped" id="bots_table">
+        <tbody>
+          <tr>
+            <th class="bot_name_header">Name</th><th>Username</th><th class="bot_api_key_header">API key</th>
+          </tr>
+          <tr id="create_bot_row">
+            <td>
+              <div class="create_bot_control">
+                <input type="text" name="bot_name" id="create_bot_name" class="required"
+                       maxlength=100 placeholder="Bot name" value="" />
+              </div>
+              <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
+            <td>
+              <div class="create_bot_control">
+                <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
+                       placeholder="Bot username" value="" />-bot@{{ user_profile.realm.domain }}
+              </div>
+              <div><label for="create_bot_short_name" generated="true" class="text-error"></label></div>
+            <td><input type="submit" class="btn btn-primary"
+                       id="create_bot_button" value="Create Bot" />
+          </tr>
+        </tbody>
+    </form>
+    </table>
+
+    <hr class="settings_separator" />
+
   </div>
 
   <div class="span7">
