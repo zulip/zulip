@@ -226,10 +226,13 @@ function create_sub(stream_name, attrs) {
         return sub;
     }
 
-    sub = $.extend({}, {name: stream_name, color: pick_color(), id: next_sub_id++,
+    sub = $.extend({}, {name: stream_name, id: next_sub_id++,
                         render_subscribers: should_render_subscribers(),
                         subscribed: true, in_home_view: true, invite_only: false,
                         notifications: false}, attrs);
+    if (sub.color === undefined) {
+        sub.color = pick_color();
+    }
     mark_color_used(sub.color);
 
     add_sub(stream_name, sub);
