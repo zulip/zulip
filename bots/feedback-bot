@@ -46,10 +46,16 @@ staging_client = humbug.Client(
 def forward_message(message):
     if message["type"] != "private" or len(message["display_recipient"]) != 2:
         return
+    if "sender_domain" in message:
+        subject = "feedback: %s (%s)" % (message["sender_email"], message["sender_domain"])
+    else:
+        subject = "feedback from %s" % message["sender_email"],
+    if len(subject) > 60:
+        subject = subject[:57].rstrip() + "..."
     forwarded_message = {
         "type": "stream",
         "to": "support",
-        "subject": "feedback from %s" % message["sender_email"],
+        "subject": subject,
         "content": message["content"],
         }
     staging_client.send_message(forwarded_message)
