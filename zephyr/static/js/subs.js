@@ -18,6 +18,9 @@ var stream_assignment_colors = ["#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
                                 "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
                                 "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"];
 
+// Clone stream_assignement_colors
+var available_colors = stream_assignment_colors.slice(0);
+
 var next_sub_id = 0;
 
 function add_sub(stream_name, sub) {
@@ -32,21 +35,23 @@ function get_sub(stream_name) {
 exports.color_classes = 'dark_background';
 
 function pick_color() {
-    var my_streams = exports.subscribed_streams();
-    var used_colors = my_streams.map(function (stream_name) {
-        return exports.get_color(stream_name);
-    });
-
-    var available_colors = stream_assignment_colors.filter(function (color) {
-        return ($.inArray(color, used_colors) === -1);
-    });
-
     if (available_colors.length === 0) {
         // We've used all the palette colors, so start re-using them.
-        return stream_assignment_colors[my_streams.length % stream_assignment_colors.length];
+        return stream_assignment_colors[exports.subscribed_streams().length
+                                        % stream_assignment_colors.length];
     }
 
     return available_colors[0];
+}
+
+function mark_color_used(color) {
+    var i;
+    for (i = 0; i < available_colors.length; ++i) {
+        if (available_colors[i] === color) {
+            available_colors.splice(i, 1);
+            return;
+        }
+    }
 }
 
 exports.subscribed_streams = function () {
@@ -225,6 +230,7 @@ function create_sub(stream_name, attrs) {
                         render_subscribers: should_render_subscribers(),
                         subscribed: true, in_home_view: true, invite_only: false,
                         notifications: false}, attrs);
+    mark_color_used(sub.color);
 
     add_sub(stream_name, sub);
     if (sub.subscribed) {
@@ -274,6 +280,7 @@ function mark_subscribed(stream_name, attrs) {
         // Add yourself to an existing stream.
         sub.subscribed = true;
         set_color(stream_name, pick_color());
+        mark_color_used(sub.color);
         // This will do nothing on MIT
         ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + encodeURIComponent(stream_name));
         var settings = settings_for_sub(sub);
