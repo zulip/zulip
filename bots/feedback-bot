@@ -7,20 +7,20 @@ sys.path.append(path.join(path.dirname(__file__), '..'))
 import humbug
 
 class StreamLogger(object):
-   """
-   Give a file-like interface to a logger instance.
-   """
-   def __init__(self, logger, log_level=logging.INFO):
-      self.logger = logger
-      self.log_level = log_level
-      self.buffer = ""
+    """
+    Give a file-like interface to a logger instance.
+    """
+    def __init__(self, logger, log_level=logging.INFO):
+        self.logger = logger
+        self.log_level = log_level
+        self.buffer = ""
 
-   def write(self, message):
-       self.buffer += message
+    def write(self, message):
+        self.buffer += message
 
-       if message[-1] == "\n":
-           self.logger.log(self.log_level, self.buffer.rstrip())
-           self.buffer = ""
+        if message[-1] == "\n":
+            self.logger.log(self.log_level, self.buffer.rstrip())
+            self.buffer = ""
 
 logging.basicConfig(filename="/var/log/humbug/feedback-bot.log",
                     level=logging.DEBUG, format="%(asctime)s %(levelname)s\t%(message)s")
