@@ -572,7 +572,7 @@ $(function () {
                 //
                 // Make the block not empty to appease jslint
                 var ignored = true;
-            } else if (new_selected > scroll_start_message) {
+            } else if (scroll_start_message !== -1 && new_selected > scroll_start_message) {
                 mark_read_between(current_msg_list, scroll_start_message, new_selected);
             }
             scroll_start_message = undefined;
