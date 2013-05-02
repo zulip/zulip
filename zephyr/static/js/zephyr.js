@@ -478,8 +478,6 @@ function case_insensitive_find(term, array) {
     }).length !== 0;
 }
 
-var update_recent_subjects = $.debounce(100, ui.update_recent_subjects);
-
 function process_message_for_recent_subjects(message) {
     var current_timestamp = 0;
     var max_subjects = 5;
@@ -508,7 +506,6 @@ function process_message_for_recent_subjects(message) {
     recents = recents.slice(0, max_subjects);
 
     recent_subjects[message.stream] = recents;
-    update_recent_subjects();
 }
 
 function add_message_metadata(message, dummy) {
@@ -818,6 +815,7 @@ function get_updates(options) {
                 process_visible_unread_messages();
                 notifications.received_messages(messages);
                 compose.update_faded_messages();
+                ui.update_recent_subjects();
             }
 
             if (new_pointer !== undefined
@@ -896,6 +894,8 @@ function load_old_messages(opts) {
         if (messages.length !== 0 && !opts.cont_will_add_messages) {
             add_messages(messages, opts.msg_list);
         }
+
+        ui.update_recent_subjects();
 
         if (opts.cont !== undefined) {
             opts.cont(messages);
