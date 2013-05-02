@@ -245,8 +245,11 @@ def get_recipient(type, type_id):
 def linebreak(string):
     return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
 
+def to_dict_cache_key_id(message_id, apply_markdown, rendered_content=None):
+    return 'message_dict:%d:%d' % (message_id, apply_markdown)
+
 def to_dict_cache_key(message, apply_markdown, rendered_content=None):
-    return 'message_dict:%d:%d' % (message.id, apply_markdown)
+    return to_dict_cache_key_id(message.id, apply_markdown, rendered_content=None)
 
 class Message(models.Model):
     sender = models.ForeignKey(UserProfile)

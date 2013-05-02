@@ -20,7 +20,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, \
     PreregistrationUser, get_client, MitUser, UserActivity, \
     MAX_SUBJECT_LENGTH, get_stream, UserPresence, \
-    get_recipient, valid_stream_name, to_dict_cache_key
+    get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, \
@@ -740,11 +740,20 @@ def get_old_messages_backend(request, user_profile,
 
     if include_history:
         prefix = ""
-        query = Message.objects.select_related().order_by('id')
+        query = Message.objects.only("id").order_by('id')
     else:
         prefix = "message__"
-        query = UserMessage.objects.select_related().filter(user_profile=user_profile) \
-                                                    .order_by('message')
+        # Conceptually this query should be
+        #   UserMessage.objects.filter(user_profile=user_profile).order_by('message')
+        #
+        # However, our do_search code above requires that there be a
+        # unique 'rendered_content' row in the query, so we need to
+        # somehow get the 'message' table into the query without
+        # actually fetching all the rows from the message table (since
+        # doing so would cause Django to consume a lot of resources
+        # rendering them).  The following achieves these objectives.
+        query = UserMessage.objects.select_related("message").only("flags", "id", "message__id") \
+            .filter(user_profile=user_profile).order_by('message')
 
     num_extra_messages = 1
     is_search = False
@@ -783,13 +792,13 @@ def get_old_messages_backend(request, user_profile,
     # bulk-fetch rendered message dicts from memcached using the
     # 'messages' list.
     search_fields = dict()
-    messages = []
+    message_ids = []
     if include_history:
         user_messages = dict((user_message.message_id, user_message) for user_message in
                              UserMessage.objects.filter(user_profile=user_profile,
                                                         message__in=query_result))
         for message in query_result:
-            messages.append(message)
+            message_ids.append(message.id)
             if is_search:
                 search_fields[message.id] = dict([('match_subject', message.match_subject),
                                                   ('match_content', message.match_content)])
@@ -797,31 +806,37 @@ def get_old_messages_backend(request, user_profile,
         user_messages = dict((user_message.message_id, user_message)
                              for user_message in query_result)
         for user_message in query_result:
-            messages.append(user_message.message)
+            message_ids.append(user_message.message_id)
             if is_search:
-                search_fields[user_message.message.id] = \
+                search_fields[user_message.message_id] = \
                     dict([('match_subject', user_message.match_subject),
                           ('match_content', user_message.match_content)])
 
-    bulk_messages = cache_get_many([to_dict_cache_key(message, apply_markdown)
-                                    for message in messages])
-    items_for_memcached = {}
-    for message in messages:
-        key = to_dict_cache_key(message, apply_markdown)
-        if bulk_messages.get(key) is None:
-            elt = message.to_dict_uncached(apply_markdown)
-            items_for_memcached[key] = (elt,)
-            bulk_messages[key] = (elt,)
-    if len(items_for_memcached) > 0:
-        cache_set_many(items_for_memcached)
+    bulk_messages = cache_get_many([to_dict_cache_key_id(message_id, apply_markdown)
+                                    for message_id in message_ids])
+
+    needed_ids = [message_id for message_id in message_ids if
+                  to_dict_cache_key_id(message_id, apply_markdown) not in bulk_messages]
+    if len(needed_ids) > 0:
+        full_messages = Message.objects.select_related().filter(id__in=needed_ids)
+
+        items_for_memcached = {}
+        for message in full_messages:
+            key = to_dict_cache_key(message, apply_markdown)
+            if bulk_messages.get(key) is None:
+                elt = message.to_dict_uncached(apply_markdown)
+                items_for_memcached[key] = (elt,)
+                bulk_messages[key] = (elt,)
+        if len(items_for_memcached) > 0:
+            cache_set_many(items_for_memcached)
 
     message_list = []
-    for message in messages:
+    for message_id in message_ids:
         if include_history:
             flags_dict = {'flags': ["read", "historical"]}
-        if message.id in user_messages:
-            flags_dict = user_messages[message.id].flags_dict()
-        elt = bulk_messages.get(to_dict_cache_key(message, apply_markdown))[0]
+        if message_id in user_messages:
+            flags_dict = user_messages[message_id].flags_dict()
+        elt = bulk_messages.get(to_dict_cache_key_id(message_id, apply_markdown))[0]
         msg_dict = dict(elt)
         msg_dict.update(flags_dict)
         msg_dict.update(search_fields.get(elt['id'], {}))
