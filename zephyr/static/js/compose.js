@@ -56,12 +56,22 @@ function show(tabname, focus_area) {
     notifications_bar.maybe_disable();
 }
 
+function update_lock_icon_for_stream(stream_name) {
+    var icon = $("#compose-lock-icon");
+    if (subs.get_invite_only(stream_name)) {
+        icon.show();
+    } else {
+        icon.hide();
+    }
+}
+
 // In an attempt to decrease mixing, make the composebox's
 // stream bar look like what you're replying to.
 // (In particular, if there's a color associated with it,
 //  have that color be reflected here too.)
 exports.decorate_stream_bar = function (stream_name) {
     var color = subs.get_color(stream_name);
+    update_lock_icon_for_stream(stream_name);
     $("#stream-message .message_header_stream")
         .css('background-color', color)
         .removeClass(subs.color_classes)
