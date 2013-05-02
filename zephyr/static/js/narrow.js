@@ -452,7 +452,7 @@ exports.activate = function (operators, opts) {
     $("ul.expanded_subjects").addClass('hidden');
 
     function expand_stream(stream) {
-        var filter_li = ui.get_filter_li('stream', operators[0][1]);
+        var filter_li = ui.get_filter_li('stream', stream);
         $('ul.expanded_subjects', filter_li).removeClass('hidden');
 
         return filter_li;
@@ -462,7 +462,7 @@ exports.activate = function (operators, opts) {
         if (operators[0][0] === 'in' && operators[0][1] === 'all') {
             $("#global_filters li[data-name='all']").addClass('active-filter');
         } else if (operators[0][0] === "stream") {
-            var filter_li = expand_stream(operators[0][0]);
+            var filter_li = expand_stream(operators[0][1]);
             filter_li.addClass('active-filter');
         } else if (operators[0][0] === "is" && operators[0][1] === "private-message") {
             $("#global_filters li[data-name='private']").addClass('active-filter');
@@ -470,7 +470,7 @@ exports.activate = function (operators, opts) {
     } else if (operators.length === 2) {
         if (operators[0][0] === 'stream' &&
             operators[1][0] === 'subject') {
-            expand_stream(operators[0][0]);
+            expand_stream(operators[0][1]);
             ui.get_subject_filter_li(operators[0][1], operators[1][1])
                 .addClass('active-subject-filter');
         }
