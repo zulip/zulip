@@ -306,6 +306,7 @@ function mark_subscribed(stream_name, attrs) {
     // Update unread counts as the new stream in sidebar might
     // need its unread counts re-calculated
     process_loaded_for_unread(all_msg_list.all());
+    ui.sort_narrow_list();
 
     typeahead_helper.update_autocomplete();
 }
@@ -455,6 +456,7 @@ function populate_subscriptions(subs) {
         sub_rows.push(sub);
     });
 
+    ui.sort_narrow_list();
     return sub_rows;
 }
 
@@ -676,9 +678,7 @@ function show_new_stream_modal() {
 $(function () {
     var i;
     // Populate stream_info with data handed over to client-side template.
-    for (i = 0; i < page_params.stream_list.length; i++) {
-        create_sub(page_params.stream_list[i].name, page_params.stream_list[i]);
-    }
+    populate_subscriptions(page_params.stream_list);
 
     $("#add_new_subscription").on("submit", function (e) {
         e.preventDefault();

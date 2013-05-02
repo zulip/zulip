@@ -1143,7 +1143,7 @@ $(function () {
 
 });
 
-function sort_narrow_list() {
+exports.sort_narrow_list = function () {
     var sort_recent = (subs.subscribed_streams().length > 40);
     var items = $('#stream_filters > li').get();
     var parent = $('#stream_filters');
@@ -1175,7 +1175,7 @@ function sort_narrow_list() {
         }
         parent.append(li);
     });
-}
+};
 
 function iterate_to_find(selector, data_name, context) {
     var retval = $();
@@ -1221,7 +1221,6 @@ exports.add_narrow_filter = function(name, type, uri) {
         list_item.append("<i class='icon-lock'/>");
     }
     $("#" + type + "_filters").append(list_item);
-    sort_narrow_list();
 };
 
 exports.get_count = function (type, name) {
@@ -1416,7 +1415,7 @@ exports.update_recent_subjects = function () {
         }
     });
     // Resort the narrow list based on which streams have messages
-    sort_narrow_list();
+    exports.sort_narrow_list();
 };
 
 return exports;
