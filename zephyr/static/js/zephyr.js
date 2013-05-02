@@ -475,6 +475,15 @@ $(function () {
         {
             furthest_read = event.id;
         }
+
+        if (event.previously_selected !== -1) {
+            // Mark messages between old pointer and new pointer as read
+            if (event.id < event.previously_selected) {
+                mark_read_between(event.msg_list, event.id, event.previously_selected);
+            } else {
+                mark_read_between(event.msg_list, event.previously_selected, event.id);
+            }
+        }
     });
 });
 

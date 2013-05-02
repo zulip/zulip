@@ -100,7 +100,9 @@ MessageList.prototype = {
     },
 
     select_id: function MessageList_select_id(id, opts) {
-        opts = $.extend({then_scroll: false, use_closest: false}, opts, {id: id, msg_list: this});
+        opts = $.extend({then_scroll: false, use_closest: false}, opts, {id: id,
+                                                                         msg_list: this,
+                                                                         previously_selected: this._selected_id});
         id = parseInt(id, 10);
         if (isNaN(id)) {
             blueslip.fatal("Bad message id");
