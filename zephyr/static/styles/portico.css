@@ -137,3 +137,9 @@ img.screenshot{
 .commandline {
     display: none;
 }
+
+@media print {
+    #portico-area {
+        margin-left: 1.5em;
+    }
+}
