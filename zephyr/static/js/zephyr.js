@@ -225,15 +225,22 @@ function send_queued_flags() {
         return;
     }
 
+    function on_success(data, status, jqXHR) {
+        if (data ===  undefined || data.messages === undefined) return;
+
+        queued_mark_as_read = $.grep(queued_mark_as_read, function (message, idx) {
+            return data.messages.indexOf(message) === -1;
+        });
+    }
+
     $.ajax({
         type:     'POST',
         url:      '/json/update_message_flags',
         data:     {messages: JSON.stringify(queued_mark_as_read),
                    op:       'add',
                    flag:     'read'},
-        dataType: 'json'});
-
-    queued_mark_as_read = [];
+        dataType: 'json',
+        success:  on_success});
 }
 
 var unread_counts = {'stream': {}, 'private': {}};

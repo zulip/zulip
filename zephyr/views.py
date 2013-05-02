@@ -878,6 +878,7 @@ def json_update_flags(request, user_profile, messages=POST('messages', converter
                                             all=POST('all', converter=json_to_bool, default=False)):
     update_message_flags(user_profile, operation, flag, messages, all)
     return json_success({'result': 'success',
+                         'messages': messages,
                          'msg': ''})
 
 @authenticated_api_view
