@@ -228,7 +228,6 @@ function create_sub(stream_name, attrs) {
 
     add_sub(stream_name, sub);
     if (sub.subscribed) {
-        // This will do nothing on MIT
         ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + encodeURIComponent(stream_name));
     }
     return sub;
