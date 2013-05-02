@@ -237,7 +237,7 @@ function create_sub(stream_name, attrs) {
 
     add_sub(stream_name, sub);
     if (sub.subscribed) {
-        ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + hashchange.encodeHashComponent(stream_name));
+        ui.add_narrow_filter(stream_name, "stream");
     }
     return sub;
 }
@@ -285,7 +285,7 @@ function mark_subscribed(stream_name, attrs) {
         set_color(stream_name, pick_color());
         mark_color_used(sub.color);
         // This will do nothing on MIT
-        ui.add_narrow_filter(stream_name, "stream", "#narrow/stream/" + hashchange.encodeHashComponent(stream_name));
+        ui.add_narrow_filter(stream_name, "stream");
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {

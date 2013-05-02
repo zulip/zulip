@@ -1200,7 +1200,8 @@ exports.get_subject_filter_li = function(stream, subject) {
     return iterate_to_find(".expanded_subjects li", subject, stream_li);
 };
 
-exports.add_narrow_filter = function(name, type, uri) {
+exports.add_narrow_filter = function(name, type) {
+    var uri = "#narrow/stream/" + hashchange.encodeHashComponent(name);
     var list_item;
 
     if (exports.get_filter_li(type, name).length) {
