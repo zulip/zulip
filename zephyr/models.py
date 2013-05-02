@@ -52,6 +52,7 @@ def get_display_recipient_memcached(recipient):
                                             .select_related()
                                             .order_by('email'))
     return [{'email': user_profile.email,
+             'domain': user_profile.realm.domain,
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name} for user_profile in user_profile_list]
 
@@ -277,6 +278,7 @@ class Message(models.Model):
                 # add the sender in if this isn't a message between
                 # someone and his self, preserving ordering
                 recip = {'email': self.sender.email,
+                         'domain': self.sender.realm.domain,
                          'full_name': self.sender.full_name,
                          'short_name': self.sender.short_name};
                 if recip['email'] < display_recipient[0]['email']:
@@ -291,6 +293,7 @@ class Message(models.Model):
             sender_email      = self.sender.email,
             sender_full_name  = self.sender.full_name,
             sender_short_name = self.sender.short_name,
+            sender_domain     = self.sender.realm.domain,
             type              = display_type,
             display_recipient = display_recipient,
             recipient_id      = self.recipient.id,
@@ -324,6 +327,7 @@ class Message(models.Model):
         return dict(
             id                = self.id,
             sender_email      = self.sender.email,
+            sender_domain     = self.sender.realm.domain,
             sender_full_name  = self.sender.full_name,
             sender_short_name = self.sender.short_name,
             sending_client    = self.sending_client.name,
