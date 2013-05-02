@@ -30,8 +30,8 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     update_user_presence, set_stream_color, get_stream_colors, update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, do_finish_tutorial, \
     get_status_dict, do_change_enable_offline_email_notifications
-from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
-    is_inactive, isnt_mit
+from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
+    is_unique, is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
 from django_openid_auth.views import default_render_failure, login_complete, parse_openid_response
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
@@ -1864,3 +1864,31 @@ def messages_in_narrow_backend(request, user_profile, msg_ids = REQ(converter=js
                                            {'match_subject': msg.match_subject,
                                             'match_content': msg.match_content})
                                           for msg in query.iterator())})
+
+@authenticated_json_post_view
+@has_request_variables
+def json_create_bot(request, user_profile, full_name=REQ, short_name=REQ):
+    short_name += "-bot"
+    email = short_name + "@" + user_profile.realm.domain
+    form = CreateBotForm({'full_name': full_name, 'email': email})
+    if not form.is_valid():
+        # We validate client-side as well
+        return json_error('Bad name or username')
+
+    try:
+        get_user_profile_by_email(email)
+        return json_error("Username already in use")
+    except UserProfile.DoesNotExist:
+        pass
+
+    bot_profile = do_create_user(email, '', user_profile.realm, full_name,
+                                 short_name, True, True, user_profile)
+    return json_success({'api_key': bot_profile.api_key})
+
+@authenticated_json_post_view
+def json_get_bots(request, user_profile):
+    bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
+                                              bot_owner=user_profile)
+    return json_success({'bots': [{'username': bp.email, 'full_name': bp.full_name,
+                                   'api_key': bp.api_key}
+                                  for bp in bot_profiles]})

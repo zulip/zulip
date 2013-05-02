@@ -59,3 +59,7 @@ class LoggingSetPasswordForm(SetPasswordForm):
         do_change_password(self.user, self.cleaned_data['new_password1'],
                            log=True, commit=commit)
         return self.user
+
+class CreateBotForm(forms.Form):
+    full_name = forms.CharField(max_length=100)
+    email = forms.EmailField()
