@@ -150,10 +150,6 @@ function email_from_identity(identity) {
     return exports.private_message_mapped[identity].email;
 }
 
-exports.sort_streams = function (items) {
-    return exports.sorter(this.query, items, identity);
-};
-
 exports.sort_subjects = function (items) {
     return exports.sorter(this.query, items, identity);
 };

@@ -179,9 +179,14 @@ exports.initialize = function () {
         source: function (query, process) {
             return subs.subscribed_streams();
         },
-        items: 2,
+        items: 3,
         highlighter: composebox_typeahead_highlighter,
-        sorter: typeahead_helper.sort_streams
+        matcher: function (item) {
+            // The matcher for "stream" is strictly prefix-based,
+            // because we want to avoid mixing up streams.
+            var q = this.query.trim().toLowerCase();
+            return (item.toLowerCase().indexOf(q) == 0);
+        }
     });
 
     $( "#subject" ).typeahead({
