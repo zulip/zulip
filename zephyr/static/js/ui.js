@@ -1034,15 +1034,15 @@ $(function () {
     });
 
     $('#stream_filters li').on('click', 'a.subscription_name', function (e) {
-        var stream = $(e.target).parents('li').data('name');
+        var stream = $(e.target).parents('li').attr('data-name');
         narrow.by('stream', stream, {select_first_unread: true});
 
         e.preventDefault();
     });
 
     $('#stream_filters').on('click', '.expanded_subject a', function (e) {
-        var stream = $(e.target).parents('ul').data('stream');
-        var subject = $(e.target).parents('li').data('name');
+        var stream = $(e.target).parents('ul').attr('data-stream');
+        var subject = $(e.target).parents('li').attr('data-name');
 
         narrow.activate([['stream',  stream],
                          ['subject', subject]],
@@ -1053,7 +1053,6 @@ $(function () {
 
     $('#stream_filters').on('click', '.streamlist_expand', function (e) {
         var stream_li = $(e.target).parents('li');
-        var stream = stream_li.data('name');
 
         $('ul.expanded_subjects', stream_li).toggleClass('hidden');
 
@@ -1384,7 +1383,7 @@ exports.update_recent_subjects = function () {
     }
 
     $("#stream_filters > li").each(function (idx, elem) {
-        var stream = $(elem).data('name');
+        var stream = $(elem).attr('data-name');
         var expander = $('.streamlist_expand', elem);
         var subjects = recent_subjects[stream] || [];
         var subject_names = $.map(subjects, function (elem, idx) {
