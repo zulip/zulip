@@ -627,7 +627,9 @@ function add_messages(messages, msg_list) {
         prepended = true;
     }
 
-    process_loaded_for_unread(messages);
+    if (msg_list === all_msg_list) {
+        process_loaded_for_unread(messages);
+    }
 
     if ((msg_list === narrowed_msg_list) && !msg_list.empty() &&
         (msg_list.selected_id() === -1)) {
