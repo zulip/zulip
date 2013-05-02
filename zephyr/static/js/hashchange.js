@@ -9,11 +9,11 @@ var changing_hash = false;
 // window.location.hash.  So we hide our URI-encoding
 // by replacing % with . (like MediaWiki).
 
-function encodeHashComponent(str) {
+exports.encodeHashComponent = function(str) {
     return encodeURIComponent(str)
         .replace(/\./g, '%2E')
         .replace(/%/g,  '.');
-}
+};
 
 function decodeHashComponent(str) {
     return decodeURIComponent(str.replace(/\./g, '%'));
@@ -45,8 +45,8 @@ exports.save_narrow = function (operators) {
     } else {
         var new_hash = '#narrow';
         $.each(operators, function (idx, elem) {
-            new_hash += '/' + encodeHashComponent(elem[0])
-                      + '/' + encodeHashComponent(elem[1]);
+            new_hash += '/' + hashchange.encodeHashComponent(elem[0])
+                      + '/' + hashchange.encodeHashComponent(elem[1]);
         });
         exports.changehash(new_hash);
     }
