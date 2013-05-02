@@ -462,15 +462,18 @@ exports.activate = function (operators, opts) {
         if (operators[0][0] === 'in' && operators[0][1] === 'all') {
             $("#global_filters li[data-name='all']").addClass('active-filter');
         } else if (operators[0][0] === "stream") {
-            var filter_li = expand_stream(operators[0][1]);
-            filter_li.addClass('active-filter');
+            if (subs.have(operators[0][1])) {
+                expand_stream(operators[0][1]).addClass('active-filter');
+            }
         } else if (operators[0][0] === "is" && operators[0][1] === "private-message") {
             $("#global_filters li[data-name='private']").addClass('active-filter');
         }
     } else if (operators.length === 2) {
         if (operators[0][0] === 'stream' &&
             operators[1][0] === 'subject') {
-            expand_stream(operators[0][1]);
+            if (subs.have(operators[0][1])) {
+                expand_stream(operators[0][1]).addClass('active-filter');
+            }
             ui.get_subject_filter_li(operators[0][1], operators[1][1])
                 .addClass('active-subject-filter');
         }
