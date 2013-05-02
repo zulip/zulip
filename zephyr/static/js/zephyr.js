@@ -206,18 +206,18 @@ function respond_to_message(reply_type) {
                              'replying_to_message': message});
 }
 
+// Returns messages from the given message list in the specified range, inclusive
 function message_range(msg_list, start, end) {
-    // Returns messages from the given message list in the specified range, inclusive
-    var result = [];
-    var i;
-
-    for (i = start; i <= end; i++) {
-        if (msg_list.get(i) !== undefined) {
-            result.push(msg_list.get(i));
-        }
+    if (start === -1) {
+        blueslip.error("message_range given a start of -1");
     }
 
-    return result;
+    var all = msg_list.all();
+    var compare = function (a, b) { return a.id < b; };
+
+    var start_idx = util.lower_bound(all, start, compare);
+    var end_idx   = util.lower_bound(all, end,   compare);
+    return all.slice(start_idx, end_idx + 1);
 }
 
 function send_queued_flags() {
