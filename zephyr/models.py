@@ -71,7 +71,10 @@ class UserProfile(AbstractBaseUser):
     email = models.EmailField(blank=False, db_index=True, unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    is_bot = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
+    bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)
+
     USERNAME_FIELD = 'email'
 
     # Our custom site-specific fields

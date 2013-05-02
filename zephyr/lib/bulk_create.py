@@ -36,8 +36,8 @@ def bulk_create_users(realms, users_raw):
     for (email, full_name, short_name, active) in users:
         domain = email.split('@')[1]
         profile = create_user_profile(realms[domain], email,
-                                      initial_password(email), active,
-                                      full_name, short_name)
+                                      initial_password(email), active, False,
+                                      full_name, short_name, None)
         profiles_to_create.append(profile)
     UserProfile.objects.bulk_create(profiles_to_create)
 

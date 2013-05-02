@@ -15,25 +15,26 @@ import hashlib
 # Only use this for bulk_create -- for normal usage one should use
 # create_user (below) which will also make the Subscription and
 # Recipient objects
-def create_user_profile(realm, email, password, active, full_name, short_name):
+def create_user_profile(realm, email, password, active, bot, full_name, short_name, bot_owner):
     now = timezone.now()
     email = UserManager.normalize_email(email)
     user_profile = UserProfile(email=email, is_staff=False, is_active=active,
                                full_name=full_name, short_name=short_name,
                                last_login=now, date_joined=now, realm=realm,
-                               pointer=-1)
+                               pointer=-1, is_bot=bot, bot_owner=bot_owner)
 
-    if active:
-        user_profile.set_password(password)
-    else:
+    if bot or not active:
         user_profile.set_unusable_password()
+    else:
+        user_profile.set_password(password)
+
     user_profile.api_key = initial_api_key(email)
     return user_profile
 
 def create_user(email, password, realm, full_name, short_name,
-                active=True):
-    user_profile = create_user_profile(realm, email, password, active,
-                                       full_name, short_name)
+                active=True, bot=False, bot_owner=None):
+    user_profile = create_user_profile(realm, email, password, active, bot,
+                                       full_name, short_name, bot_owner)
     user_profile.save()
     recipient = Recipient.objects.create(type_id=user_profile.id,
                                          type=Recipient.PERSONAL)
