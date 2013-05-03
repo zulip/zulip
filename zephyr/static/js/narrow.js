@@ -473,9 +473,9 @@ exports.activate = function (operators, opts) {
             operators[1][0] === 'subject') {
             if (subs.have(operators[0][1])) {
                 expand_stream(operators[0][1]).addClass('active-filter');
+                ui.get_subject_filter_li(operators[0][1], operators[1][1])
+                    .addClass('active-subject-filter');
             }
-            ui.get_subject_filter_li(operators[0][1], operators[1][1])
-                .addClass('active-subject-filter');
         }
     }
 };
