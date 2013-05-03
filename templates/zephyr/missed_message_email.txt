@@ -1,0 +1,20 @@
+{% comment %}
+Mail sent to user when she was not logged in and received a PM
+{% endcomment %}
+
+Hello {{ name }},
+
+While you were away you received {{ messages|length }} new message{{ messages|pluralize }}!
+
+{% for message in messages %}
+{{ message.sender }}
+---
+{{ message.content }}
+{% endfor %}
+
+Click here to log in to Humbug and view your new messages:
+
+{{ url }}
+
+Cheers,
+The Humbug Team

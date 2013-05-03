@@ -1,0 +1,22 @@
+{% comment %}
+Mail sent to user when she was not logged in and received a PM
+{% endcomment %}
+
+Hello {{ name }},
+
+<p>
+While you were away you received {{ messages|length }} new message{{ messages|pluralize }}!
+</p>
+
+<div id='messages'>
+{% for message in messages %}
+<div id='message_subject'>{{ message.sender }}:</div>
+<div id='message_content'>{{ message.rendered_content|safe }}</div>
+{% endfor %}
+</div>
+
+<p><a href="{{ url }}">Click here to log in to Humbug and view your new messages.</a></p>
+
+<p>Cheers,
+<br>
+The Humbug Team</p>

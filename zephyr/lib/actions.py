@@ -12,6 +12,8 @@ from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.core.exceptions import ValidationError
 from django.utils.importlib import import_module
+from django.template import loader
+from django.core.mail import EmailMultiAlternatives
 
 from confirmation.models import Confirmation
 
@@ -884,3 +886,56 @@ def do_send_confirmation_email(invitee, referrer):
         invitee, invitee.email, additional_context={'referrer': referrer},
         subject_template_path='confirmation/invite_email_subject.txt',
         body_template_path='confirmation/invite_email_body.txt')
+
+def do_send_missedmessage_email(user_profile, missed_messages):
+    """
+    Send a reminder email to a user if she's missed some PMs by being offline
+
+    `user_profile` is the user to send the reminder to
+    `missed_messages` is a list of Message objects to remind about
+    """
+
+    messages_to_render = [{'sender': message.sender.full_name,
+                           'subject': message.subject,
+                           'content': message.content,
+                           'rendered_content': message.rendered_content}
+                            for message in missed_messages]
+
+    template_payload = {'name': user_profile.full_name,
+                        'messages': messages_to_render,
+                        'url': 'https://www.humbughq.com'}
+
+    senders = set(m.sender.full_name for m in missed_messages)
+    sender_str = ", ".join(senders)
+
+    subject = "Missed Humbug PM%s from %s" % ('s' if len(senders) > 1 else '', sender_str)
+
+    text_content = loader.render_to_string('zephyr/missed_message_email.txt', template_payload)
+    html_content = loader.render_to_string('zephyr/missed_message_email_html.txt', template_payload)
+
+    msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [user_profile.email])
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()
+
+    user_profile.last_reminder = datetime.datetime.now()
+    user_profile.save(update_fields=['last_reminder'])
+
+    statsd.incr('missed_message_reminders')
+
+def handle_missedmessage_emails(user_profile_id, missed_email_events):
+    message_ids = [event.get('message_id') for event in missed_email_events]
+    timestamp = timestamp_to_datetime(event.get('timestamp'))
+
+    try:
+        user_profile = UserProfile.objects.get(id=user_profile_id)
+        messages = Message.objects.filter(id__in=message_ids, usermessage__flags=~UserMessage.flags.read)
+    except (UserProfile.DoesNotExist, Message.DoesNotExist) as e:
+        import logging
+        logging.warning("Failed to send missed message email, failed to look up: %s %s %e" % \
+            (user_profile_id, message_ids, e))
+
+    if len(messages) == 0 or timestamp - user_profile.last_reminder < datetime.timedelta(days=1):
+        # Don't spam the user, if we've sent an email in the last day
+        return
+
+    do_send_missedmessage_email(user_profile, messages)
