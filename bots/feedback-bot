@@ -3,7 +3,7 @@ import sys
 from os import path
 import logging
 
-sys.path.append(path.join(path.dirname(__file__), '..'))
+sys.path.append(path.join(path.dirname(__file__), '../api'))
 import humbug
 
 class StreamLogger(object):
