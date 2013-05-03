@@ -21,8 +21,8 @@ class Command(BaseCommand):
 
         users = UserPresence.objects.select_related().filter(timestamp__gt=cutoff)
 
-        # Calculate 2hrs, 12hrs, 1day, 2 business days (TODO business days), 1 week bucket of stats
-        hour_buckets = [2, 12, 24, 48, 168]
+        # Calculate 10min, 2hrs, 12hrs, 1day, 2 business days (TODO business days), 1 week bucket of stats
+        hour_buckets = [0.16, 2, 12, 24, 48, 168]
         user_info = defaultdict(dict)
 
         for last_presence in users:
@@ -41,5 +41,5 @@ class Command(BaseCommand):
             print("Realm %s" % realm)
             for hr, users in sorted(buckets.items()):
                 print("\tUsers for %s: %s" % (hr, len(users)))
-                statsd.gauge("users.active.%s.%shr" %  (statsd_key(realm, True), hr), len(users))
+                statsd.gauge("users.active.%s.%shr" %  (statsd_key(realm, True), statsd_key(hr, True)), len(users))
 
