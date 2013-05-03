@@ -25,7 +25,7 @@ mkdir -p prod-static/source-map
 # Copy the files we want to expose
 rm -rf prod-static/serve-new
 mkdir -p prod-static/serve-new
-cp -r prod-static/collected/{favicon.ico,robots.txt,html,images,third,min} prod-static/serve-new/
+cp -r prod-static/collected/{favicon.ico,robots.txt,html,images,third,min,audio} prod-static/serve-new/
 
 # Sync the new directory to the one nginx actually serves.
 # Hopefully this doesn't race too badly for clients loading
