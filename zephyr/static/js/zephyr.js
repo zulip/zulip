@@ -826,6 +826,9 @@ function get_updates(options) {
                 // should no longer be needed
                 messages = deduplicate_messages(messages);
 
+                add_messages(messages, all_msg_list);
+                add_messages(messages, home_msg_list);
+
                 if (narrow.active()) {
                     if (narrow.filter().can_apply_locally()) {
                         add_messages(messages, narrowed_msg_list);
@@ -833,8 +836,7 @@ function get_updates(options) {
                         maybe_add_narrowed_messages(messages, narrowed_msg_list);
                     }
                 }
-                add_messages(messages, all_msg_list);
-                add_messages(messages, home_msg_list);
+
                 process_visible_unread_messages();
                 notifications.received_messages(messages);
                 compose.update_faded_messages();
