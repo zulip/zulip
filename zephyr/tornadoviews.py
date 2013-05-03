@@ -218,7 +218,7 @@ def get_events_backend(request, user_profile, handler,
     if queue_id is None:
         if dont_block:
             client = allocate_client_descriptor(user_profile.id, event_types,
-                                                apply_markdown)
+                                                request.client, apply_markdown)
             queue_id = client.event_queue.id
         else:
             return json_error("Missing 'queue_id' argument")

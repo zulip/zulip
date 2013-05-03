@@ -256,7 +256,10 @@ def process_new_message(data):
         user_receive_message(user_profile_id, message)
 
         for client in get_client_descriptors_for_user(user_profile_id):
-            if client.accepts_event_type('message'):
+            # The below prevents (Zephyr) mirroring loops.
+            if client.accepts_event_type('message') and not \
+                    ('mirror' in message.sending_client.name and
+                     message.sending_client == client.client_type):
                 if client.apply_markdown:
                     message_dict = message_dict_markdown
                 else:

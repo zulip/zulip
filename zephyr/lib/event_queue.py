@@ -16,6 +16,7 @@ import tornado
 import random
 import zephyr.lib.stats as stats
 from zephyr.middleware import async_request_restart
+from zephyr.models import get_client
 
 # The idle timeout used to be a week, but we found that in that
 # situation, queues from dead browser sessions would grow quite large
@@ -30,13 +31,15 @@ EVENT_QUEUE_GC_FREQ_MSECS = 1000 * 60 * 5
 HEARTBEAT_MIN_FREQ_SECS = 45
 
 class ClientDescriptor(object):
-    def __init__(self, user_profile_id, id, event_types=None, apply_markdown=True):
+    def __init__(self, user_profile_id, id, event_types, client_type,
+                 apply_markdown=True):
         self.user_profile_id = user_profile_id
         self.current_handler = None
         self.event_queue = EventQueue(id)
         self.event_types = event_types
         self.last_connection_time = time.time()
         self.apply_markdown = apply_markdown
+        self.client_type = client_type
         self._timeout_handle = None
 
     def prepare_for_pickling(self):
@@ -123,11 +126,13 @@ def get_client_descriptor(queue_id):
 def get_client_descriptors_for_user(user_profile_id):
     return user_clients.get(user_profile_id, [])
 
-def allocate_client_descriptor(user_profile_id, event_types, apply_markdown):
+def allocate_client_descriptor(user_profile_id, event_types, client_type,
+                               apply_markdown):
     global next_queue_id
     id = str(settings.SERVER_GENERATION) + ':' + str(next_queue_id)
     next_queue_id += 1
-    client = ClientDescriptor(user_profile_id, id, event_types, apply_markdown)
+    client = ClientDescriptor(user_profile_id, id, event_types, client_type,
+                              apply_markdown)
     clients[id] = client
     user_clients.setdefault(user_profile_id, []).append(client)
     return client
@@ -181,6 +186,10 @@ def load_event_queues():
         pass
 
     for client in clients.itervalues():
+        # The following client_type block can be dropped once we've
+        # cleared out all our old event queues
+        if not hasattr(client, 'client_type'):
+            client.client_type = get_client("website")
         user_clients.setdefault(client.user_profile_id, []).append(client)
 
     logging.info('Tornado loaded %d event queues in %.3fs'
