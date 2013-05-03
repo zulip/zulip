@@ -54,15 +54,30 @@ function render_object(obj) {
 }
 
 exports.update_typeahead = function () {
-    var streams = $.map(subs.subscribed_streams(), function(elt,idx) {
+    var stream_names = subs.subscribed_streams().slice(0);
+    stream_names.sort();
+
+    var streams = $.map(stream_names, function(elt,idx) {
         return {action: 'stream', query: elt};
     });
-    var people = $.map(page_params.people_list, function(elt,idx) {
+
+    var people_names = page_params.people_list.slice(0);
+    people_names.sort(function (person1, person2) {
+        if (person1.full_name < person2.full_name)
+            return -1;
+        else if (person1.full_name === person2.full_name)
+            return 0;
+        else
+            return 1;
+    });
+
+    var people = $.map(people_names, function(elt,idx) {
         return {action: 'private_message', query: elt};
     });
-    var senders = $.map(page_params.people_list, function(elt,idx) {
+    var senders = $.map(people_names, function(elt,idx) {
         return {action: 'sender', query: elt};
     });
+
     var options = streams.concat(people).concat(senders);
     // The first slot is reserved for "search for x".
     // (this is updated in the source function for our typeahead as well)
@@ -131,11 +146,10 @@ function searchbox_sorter(items) {
         if (!objs)
             return;
         // Get the first object in sorted order.
-        var obj = typeahead_helper.sorter(query, objs,
+        var objs = typeahead_helper.sorter(query, objs,
                 (action === 'private_message' || action === 'sender') ? get_person : get_query)
-            .shift();
-        if (obj)
-            result.push(render_object(obj));
+
+        result = result.concat($.map(objs.slice(0, 5), render_object));
     });
 
     return result;
@@ -174,7 +188,7 @@ exports.initialize = function () {
 
             return labels;
         },
-        items: 4,
+        items: 30,
         highlighter: function (item) {
             var query = this.query;
             var parts = render_object_in_parts(mapped[item]);
