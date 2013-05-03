@@ -478,6 +478,9 @@ exports.activate = function (operators, opts) {
             }
         }
     }
+
+    $(document).trigger($.Event('narrow_activated.zephyr', {msg_list: narrowed_msg_list,
+                                                            filter: current_filter}));
 };
 
 // Activate narrowing with a single operator.
@@ -553,6 +556,8 @@ exports.deactivate = function () {
     // seems to be some sort of order-of-events issue that causes
     // the scrolling not to happen, so this is my hack for now.
     scroll_to_selected();
+
+    $(document).trigger($.Event('narrow_deactivated.zephyr', {msg_list: current_msg_list}));
 };
 
 exports.restore_home_state = function() {
