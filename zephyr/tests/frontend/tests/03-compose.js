@@ -13,20 +13,20 @@ casper.then(function () {
     casper.click('#left_bar_compose_stream_button_big');
     casper.test.assertVisible('#stream', 'Switching from PM compose to stream compose');
 
-    // Test closing the compose box
-    casper.click('.composebox-close');
+    // Test "closing" the compose box
+    casper.click('body');
 });
 
-casper.waitWhileVisible('#compose');
+casper.waitWhileVisible('#stream');
 casper.then(function () {
-    casper.test.assertNotVisible('#compose', 'Close stream compose box');
+    casper.test.assertNotVisible('#stream', 'Close stream compose box');
     casper.click('#left_bar_compose_private_button_big');
-    casper.click('.composebox-close');
+    casper.click('body');
 });
 
-casper.waitWhileVisible('#compose');
+casper.waitWhileVisible('#private-message');
 casper.then(function () {
-    casper.test.assertNotVisible('#compose', 'Close PM compose box');
+    casper.test.assertNotVisible('#private-message', 'Close PM compose box');
 });
 
 common.then_log_out();

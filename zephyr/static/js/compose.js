@@ -213,10 +213,6 @@ exports.start = function (msg_type, opts) {
         show('private', $("#" + (focus_area || 'private_message_recipient')));
     }
 
-    if (message_snapshot !== undefined) {
-        $('#restore-draft').show();
-    }
-
     if (opts.replying_to_message !== undefined) {
         do_fade(opts.replying_to_message, msg_type);
     }
@@ -239,6 +235,10 @@ exports.cancel = function () {
     compose.hide();
     abort_xhr();
     is_composing_message = false;
+    compose.clear();
+    if (message_snapshot !== undefined) {
+        $('#restore-draft').show();
+    }
     $(document).trigger($.Event('compose_canceled.zephyr'));
 };
 
@@ -383,8 +383,8 @@ $(function () {
 exports.hide = function () {
     exports.snapshot_message();
     $('.message_comp').find('input, textarea, button').blur();
-    $('.message_comp').slideUp(100,
-                              function() { $('#compose').css({visibility: "hidden"});});
+    $('#stream-message').hide();
+    $('#private-message').hide();
     notifications_bar.enable();
     exports.unfade_messages(true);
 };
@@ -540,6 +540,15 @@ exports.validate = function () {
 
 $(function () {
     $("#new_message_content").autosize();
+
+    $("#new_message_content").click(function (e) {
+        // If we click in the composebox, start up a new message
+        if (!compose.composing()) {
+            respond_to_message();
+            e.stopPropagation();
+        }
+    });
+
     $("#compose").filedrop({
         url: "json/upload_file",
         fallback_id: "file_input",

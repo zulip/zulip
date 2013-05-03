@@ -265,7 +265,6 @@ ul.filters i {
 }
 
 .message_comp {
-    display: none;
     border: 1px solid #EEE;
     background-color: white;
     padding: 8px 20px 8px 10px;
@@ -503,6 +502,7 @@ blockquote p {
     /* normally 5px 14px; pull in the right and bottom a bit */
     padding-right: 5px;
     padding-bottom: 0px;
+    border-top-width: 1px;
     cursor: default;
 }
 
@@ -559,7 +559,6 @@ img.inline_profile_picture {
 }
 
 #compose {
-    visibility: hidden;
     position: fixed;
     bottom: 0px;
     background: white;
@@ -584,19 +583,10 @@ img.inline_profile_picture {
     float:       right;
 }
 
-.composebox-close {
-    padding: 5px;
-    padding-top: 8px; /* = message_comp padding_top */
-}
-
 .send-status-close:hover {
     cursor:  pointer;
     opacity: .4;
     filter:  alpha(opacity=40);
-}
-
-.compose_table #private-message {
-    display: none;
 }
 
 .home-error-bar {
@@ -1072,6 +1062,7 @@ table.floating_recipient {
 
 #stream-message, #private-message {
     border: 1px solid grey;
+    display: none;
 }
 
 .emoji {

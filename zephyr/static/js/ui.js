@@ -866,6 +866,7 @@ $(function () {
             var row = $(this).closest(".message_row");
             current_msg_list.select_id(rows.id(row));
             respond_to_message();
+            e.stopPropagation();
         }
         mouse_moved = false;
         clicking = false;
@@ -1018,7 +1019,16 @@ $(function () {
     $('#user_presences').on('click', 'a', function (e) {
         var email = $(e.target).attr('data-email');
         compose.start('private', {private_message_recipient: email});
+        // The preventDefault is necessary so that clicking the
+        // link doesn't jump us to the top of the page.
         e.preventDefault();
+        // The stopPropagation is necessary so that we don't
+        // see the following sequence of events:
+        // 1. This click "opens" the composebox
+        // 2. This event propagates to the body, which says "oh, hey, the
+        //    composebox is open and you clicked out of it, you must want to
+        //    stop composing!"
+        e.stopPropagation();
     });
 
     $('#stream_filters li').on('click', 'a.subscription_name', function (e) {
@@ -1126,6 +1136,19 @@ $(function () {
         if ($('.popover-inner').has(e.target).length === 0) {
             ui.hide_actions_popover();
         }
+
+        // Unfocus our compose area if we click out of it.
+        if (compose.composing()) {
+            compose.cancel();
+        }
+    });
+
+    $("#compose").click(function (e) {
+        // Don't let clicks in the compose area count as
+        // "unfocusing" our compose -- in other words, e.g.
+        // clicking "Press enter to send" should not
+        // trigger the composebox-closing code above.
+        e.stopPropagation();
     });
 
     // side-bar-related handlers

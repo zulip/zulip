@@ -93,7 +93,7 @@ exports.send_message = function (type, params) {
         casper.click('#left_bar_compose_' + type + '_button_big');
         casper.fill('form[action^="/json/send_message"]', params);
         casper.click('#compose-send-button');
-        casper.waitWhileVisible('#compose', function () {
+        casper.waitWhileVisible('#stream,#private-message', function () {
             last_send_or_update = timestamp();
         });
     });
