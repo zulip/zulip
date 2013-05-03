@@ -6,6 +6,7 @@ var notice_memory = {};
 var window_has_focus = true;
 var asked_permission_already = false;
 var names;
+var supports_sound;
 
 function browser_desktop_notifications_on () {
     return (window.webkitNotifications &&
@@ -51,6 +52,22 @@ exports.initialize = function () {
             asked_permission_already = true;
         }
     });
+    var audio = $("<audio>");
+    if (audio[0].canPlayType === undefined) {
+        supports_sound = false;
+    } else {
+        supports_sound = true;
+        $("#notifications-area").append(audio);
+        if (audio[0].canPlayType('audio/ogg; codecs="vorbis"')) {
+            audio.append($("<source>").attr("type", "audio/ogg")
+                                      .attr("loop", "yes")
+                                      .attr("src", "/static/audio/humbug.ogg"));
+        } else {
+            audio.append($("<source>").attr("type", "audio/mpeg")
+                                      .attr("loop", "yes")
+                                      .attr("src", "/static/audio/humbug.mp3"));
+        }
+    }
 };
 
 exports.update_title_count = function () {
@@ -212,6 +229,9 @@ exports.received_messages = function (messages) {
 
             if (should_show_notification(message)) {
                 process_desktop_notification(message);
+                if (supports_sound) {
+                    $("#notifications-area").find("audio")[0].play();
+                }
             }
         }
     });
