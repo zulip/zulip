@@ -82,6 +82,7 @@ class UserProfile(AbstractBaseUser):
     realm = models.ForeignKey(Realm)
     api_key = models.CharField(max_length=32)
     enable_desktop_notifications = models.BooleanField(default=True)
+    enable_sounds = models.BooleanField(default=True)
     enter_sends = models.NullBooleanField(default=False)
 
     TUTORIAL_WAITING  = 'W'

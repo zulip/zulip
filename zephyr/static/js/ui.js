@@ -772,6 +772,9 @@ $(function () {
             if (result.enable_desktop_notifications !== undefined) {
                 page_params.desktop_notifications_enabled = result.enable_desktop_notifications;
             }
+            if (result.enable_sounds !== undefined) {
+                page_params.sounds_enabled = result.enable_sounds;
+            }
 
             settings_status.removeClass(status_classes)
                 .addClass('alert-success')

@@ -550,6 +550,11 @@ def restore_saved_messages():
             user_profile.enable_desktop_notifications = (old_message["enable_desktop_notifications"] != "false")
             user_profile.save()
             continue
+        elif message_type == "enable_sounds_changed":
+            user_profile = users[old_message["user"]]
+            user_profile.enable_sounds = (old_message["enable_sounds"] != "false")
+            user_profile.save()
+            continue
         elif message_type == "default_streams":
             set_default_streams(Realm.objects.get(domain=old_message["domain"]),
                                 old_message["streams"])

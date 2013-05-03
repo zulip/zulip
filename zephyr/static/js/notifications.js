@@ -208,13 +208,18 @@ exports.speaking_at_me = function (message) {
     return found_match;
 };
 
+function message_is_notifiable(message) {
+    // based purely on message contents, can we notify the user about the message?
+    return (message.type === "private" ||
+            exports.speaking_at_me(message) ||
+           (message.type === "stream" &&
+            subs.receives_notifications(message.stream)));
+}
+
 function should_show_notification(message) {
     return page_params.desktop_notifications_enabled &&
         browser_desktop_notifications_on() &&
-        (message.type === "private" ||
-         exports.speaking_at_me(message) ||
-         (message.type === "stream" &&
-          subs.receives_notifications(message.stream)));
+        message_is_notifiable(message);
 }
 
 exports.received_messages = function (messages) {
@@ -229,9 +234,9 @@ exports.received_messages = function (messages) {
 
             if (should_show_notification(message)) {
                 process_desktop_notification(message);
-                if (supports_sound) {
-                    $("#notifications-area").find("audio")[0].play();
-                }
+            }
+            if (supports_sound && page_params.sounds_enabled && message_is_notifiable(message)) {
+                $("#notifications-area").find("audio")[0].play();
             }
         }
     });

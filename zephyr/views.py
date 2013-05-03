@@ -23,7 +23,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
-    do_change_enable_desktop_notifications, do_change_enter_sends, \
+    do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
     do_send_confirmation_email, do_activate_user, do_create_user, check_send_message, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
@@ -516,6 +516,8 @@ def home(request):
         needs_tutorial        = needs_tutorial,
         desktop_notifications_enabled =
             user_profile.enable_desktop_notifications,
+        sounds_enabled =
+            user_profile.enable_sounds,
         event_queue_id        = register_ret['queue_id'],
         last_event_id         = register_ret['last_event_id'],
         max_message_id        = register_ret['max_message_id']
@@ -1277,6 +1279,8 @@ def json_change_settings(request, user_profile, full_name=POST,
                          # enable_desktop_notification needs to default to False
                          # because browsers POST nothing for an unchecked checkbox
                          enable_desktop_notifications=POST(converter=lambda x: x == "on",
+                                                           default=False),
+                         enable_sounds=POST(converter=lambda x: x == "on",
                                                            default=False)):
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
@@ -1293,6 +1297,10 @@ def json_change_settings(request, user_profile, full_name=POST,
     if user_profile.enable_desktop_notifications != enable_desktop_notifications:
         do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications)
         result['enable_desktop_notifications'] = enable_desktop_notifications
+
+    if user_profile.enable_sounds != enable_sounds:
+        do_change_enable_sounds(user_profile, enable_sounds)
+        result['enable_sounds'] = enable_sounds
 
     return json_success(result)
 

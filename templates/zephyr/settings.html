@@ -121,6 +121,16 @@
                    {% endif %} />
             </div>
         </div>
+        <div class="control-group">
+            <label for="enable_sounds" class="control-label">
+                Audible notifications for messages</label>
+            <div class="controls">
+                <input type="checkbox" name="enable_sounds" id="enable_sounds"
+                   {% if user_profile.enable_sounds %}
+                   checked="yes"
+                   {% endif %} />
+            </div>
+        </div>
 
         <div class="control-group">
             <div class="controls">

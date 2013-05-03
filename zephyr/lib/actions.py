@@ -549,6 +549,14 @@ def do_change_enable_desktop_notifications(user_profile, enable_desktop_notifica
                    'user': user_profile.email,
                    'enable_desktop_notifications': enable_desktop_notifications})
 
+def do_change_enable_sounds(user_profile, enable_sounds, log=True):
+    user_profile.enable_sounds = enable_sounds
+    user_profile.save(update_fields=["enable_sounds"])
+    if log:
+        log_event({'type': 'enable_sounds_changed',
+                   'user': user_profile.email,
+                   'enable_sounds': enable_sounds})
+
 def do_change_enter_sends(user_profile, enter_sends):
     user_profile.enter_sends = enter_sends
     user_profile.save(update_fields=["enter_sends"])
