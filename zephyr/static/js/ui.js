@@ -1143,7 +1143,7 @@ exports.sort_narrow_list = function () {
                 return -1;
             }
         }
-        return a_stream_name.localeCompare(b_stream_name);
+        return util.strcmp(a_stream_name, b_stream_name);
     });
 
     parent.empty();

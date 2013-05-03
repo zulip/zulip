@@ -459,7 +459,7 @@ exports.receives_notifications = function (stream_name) {
 function populate_subscriptions(subs) {
     var sub_rows = [];
     subs.sort(function (a, b) {
-        return a.name.localeCompare(b.name);
+        return util.strcmp(a.name, b.name);
     });
     subs.forEach(function (elem) {
         var stream_name = elem.name;
@@ -660,13 +660,13 @@ exports.tutorial_unsubscribe_me_from = function (stream_name) {
 
 function people_cmp(person1, person2) {
     // Compares objects of the form used in people_list.
-    var name_cmp = person1.full_name.localeCompare(person2.full_name);
+    var name_cmp = util.strcmp(person1.full_name, person2.full_name);
     if (name_cmp < 0) {
         return -1;
     } else if (name_cmp > 0) {
         return 1;
     }
-    return person1.email.localeCompare(person2.email);
+    return util.strcmp(person1.email, person2.email);
 }
 
 function show_new_stream_modal() {

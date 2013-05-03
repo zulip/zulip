@@ -211,5 +211,21 @@ exports.robust_uri_decode = function (str) {
     return '';
 };
 
+// If we can, use a locale-aware sorter.  However, if the browser
+// doesn't support the ECMAScript Internationalization API
+// Specification, do a dumb string comparison because
+// String.localeCompare is really slow.
+exports.strcmp = (function () {
+    try {
+        var collator = new Intl.Collator();
+        return collator.compare;
+    } catch (e) {
+    }
+
+    return function util_strcmp (a, b) {
+        return (a < b ? -1 : (a > b ? 1 : 0));
+    };
+}());
+
 return exports;
 }());

@@ -47,7 +47,7 @@ function sort_users(users, user_info) {
         if (people_dict[b] !== undefined) {
             full_name_b = people_dict[b].full_name;
         }
-        return full_name_a.localeCompare(full_name_b);
+        return util.strcmp(full_name_a, full_name_b);
     });
 
     return users;
