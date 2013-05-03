@@ -1115,6 +1115,44 @@ $(function () {
         }
     });
 
+    // side-bar-related handlers
+    $(document).on('narrow_activated.zephyr', function (event) {
+        $("ul.filters li").removeClass('active-filter active-subject-filter');
+        $("ul.expanded_subjects").addClass('hidden');
+
+        // TODO: handle confused filters like "in:all stream:foo"
+        var op_in = event.filter.operands('in');
+        if (op_in.length !== 0) {
+            if (['all', 'home'].indexOf(op_in[0]) !== -1) {
+                $("#global_filters li[data-name='" + op_in[0] + "']").addClass('active-filter');
+            }
+        }
+        var op_is = event.filter.operands('is');
+        if (op_is.length !== 0) {
+            if (['private-message', 'starred'].indexOf(op_is[0]) !== -1) {
+                $("#global_filters li[data-name='" + op_is[0] + "']").addClass('active-filter');
+            }
+        }
+        var op_stream = event.filter.operands('stream');
+        if (op_stream.length !== 0 && subs.have(op_stream[0])) {
+            var stream_li = exports.get_filter_li('stream', op_stream[0]);
+            $('ul.expanded_subjects', stream_li).removeClass('hidden');
+            var op_subject = event.filter.operands('subject');
+            if (op_subject.length !== 0) {
+                exports.get_subject_filter_li(op_stream[0], op_subject[0])
+                       .addClass('active-subject-filter');
+            } else {
+                stream_li.addClass('active-filter');
+            }
+        }
+    });
+
+    $(document).on('narrow_deactivated.zephyr', function (event) {
+        $("ul.filters li").removeClass('active-filter active-subject-filter');
+        $("ul.expanded_subjects").addClass('hidden');
+        $("#global_filters li[data-name='home']").addClass('active-filter');
+    });
+
     // initialize other stuff
     typeahead_helper.update_all_recipients(page_params.people_list);
     composebox_typeahead.initialize();

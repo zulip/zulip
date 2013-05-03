@@ -36,6 +36,16 @@ Filter.prototype = {
         }
     },
 
+    operands: function Filter_get_operands(operator) {
+        var result = [];
+        $.each(this._operators, function (idx, elem) {
+            if (elem[0] === operator) {
+                result.push(elem[1]);
+            }
+        });
+        return result;
+    },
+
     is_search: function Filter_is_search() {
         var retval = false;
         $.each(this._operators, function (idx, elem) {
@@ -448,37 +458,6 @@ exports.activate = function (operators, opts) {
     compose.update_recipient_on_narrow();
     compose.update_faded_messages();
 
-    $("ul.filters li").removeClass('active-filter active-subject-filter');
-    $("ul.expanded_subjects").addClass('hidden');
-
-    function expand_stream(stream) {
-        var filter_li = ui.get_filter_li('stream', stream);
-        $('ul.expanded_subjects', filter_li).removeClass('hidden');
-
-        return filter_li;
-    }
-
-    if (operators.length === 1) {
-        if (operators[0][0] === 'in' && operators[0][1] === 'all') {
-            $("#global_filters li[data-name='all']").addClass('active-filter');
-        } else if (operators[0][0] === "stream") {
-            if (subs.have(operators[0][1])) {
-                expand_stream(operators[0][1]).addClass('active-filter');
-            }
-        } else if (operators[0][0] === "is" && operators[0][1] === "private-message") {
-            $("#global_filters li[data-name='private']").addClass('active-filter');
-        }
-    } else if (operators.length === 2) {
-        if (operators[0][0] === 'stream' &&
-            operators[1][0] === 'subject') {
-            if (subs.have(operators[0][1])) {
-                expand_stream(operators[0][1]).addClass('active-filter');
-                ui.get_subject_filter_li(operators[0][1], operators[1][1])
-                    .addClass('active-subject-filter');
-            }
-        }
-    }
-
     $(document).trigger($.Event('narrow_activated.zephyr', {msg_list: narrowed_msg_list,
                                                             filter: current_filter}));
 };
@@ -545,10 +524,6 @@ exports.deactivate = function () {
     home_msg_list.select_id(home_msg_list.selected_id(), {then_scroll: true, use_closest: true});
 
     hashchange.save_narrow();
-
-    $("ul.filters li").removeClass('active-filter active-subject-filter');
-    $("ul.expanded_subjects").addClass('hidden');
-    $("#global_filters li[data-name='home']").addClass('active-filter');
 
     // This really shouldn't be necessary since the act of unnarrowing
     // fires a "message_selected.zephyr" event that in principle goes

@@ -230,7 +230,7 @@ casper.then(function () {
 });
 casper.thenClick('#stream_filters [data-name="Verona"]  a', expect_stream);
 casper.thenClick('#global_filters [data-name="home"]    a', expect_home);
-casper.thenClick('#global_filters [data-name="private"] a', expect_all_pm);
+casper.thenClick('#global_filters [data-name="private-message"] a', expect_all_pm);
 un_narrow();
 
 
