@@ -833,16 +833,6 @@ $(function () {
     resizehandler();
     hack_for_floating_recipient_bar();
 
-    typeahead_helper.update_all_recipients(page_params.people_list);
-    composebox_typeahead.initialize();
-    search.initialize();
-    notifications.initialize();
-    hashchange.initialize();
-    invite.initialize();
-    activity.initialize();
-    subs.maybe_toggle_all_messages();
-    tutorial.initialize();
-
     $("#main_div").on("click", ".messagebox", function (e) {
         var target = $(e.target);
         if (target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
@@ -1125,6 +1115,16 @@ $(function () {
         }
     });
 
+    // initialize other stuff
+    typeahead_helper.update_all_recipients(page_params.people_list);
+    composebox_typeahead.initialize();
+    search.initialize();
+    notifications.initialize();
+    hashchange.initialize();
+    invite.initialize();
+    activity.initialize();
+    subs.maybe_toggle_all_messages();
+    tutorial.initialize();
 });
 
 exports.sort_narrow_list = function () {
