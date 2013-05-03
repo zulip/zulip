@@ -503,11 +503,12 @@ function process_message_for_recent_subjects(message) {
     } else {
         recent_subjects[message.stream] =
             $.grep(recent_subjects[message.stream], function (item) {
-                if (item.subject === message.subject) {
+                var is_duplicate = (item.subject.toLowerCase() === message.subject.toLowerCase());
+                if (is_duplicate) {
                     current_timestamp = item.timestamp;
                 }
 
-                return item.subject !== message.subject;
+                return !is_duplicate;
             });
     }
 
