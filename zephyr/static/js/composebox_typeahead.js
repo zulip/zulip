@@ -185,7 +185,7 @@ exports.initialize = function () {
             // The matcher for "stream" is strictly prefix-based,
             // because we want to avoid mixing up streams.
             var q = this.query.trim().toLowerCase();
-            return (item.toLowerCase().indexOf(q) == 0);
+            return (item.toLowerCase().indexOf(q) === 0);
         }
     });
 
