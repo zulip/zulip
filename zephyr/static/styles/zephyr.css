@@ -1263,3 +1263,18 @@ li.expanded_subject {
 #create_bot_row input {
     margin: 0;
 }
+
+#onboarding-header {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
+#onboarding-checklist {
+    font-size: 14px;
+    border: 1px solid #ddd;
+    background-color: #F7F7F7;
+    padding: 10px;
+}
+#onboarding {
+    display: none;
+}
