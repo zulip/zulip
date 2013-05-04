@@ -143,3 +143,8 @@ img.screenshot{
         margin-left: 1.5em;
     }
 }
+
+.feature-list div {
+    padding-bottom: 2.5em;
+    height: 6em;
+}

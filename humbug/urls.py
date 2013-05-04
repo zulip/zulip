@@ -57,6 +57,7 @@ urlpatterns = patterns('',
     # "About Humbug" information
     url(r'^what-is-humbug$', TemplateView.as_view(template_name='zephyr/what-is-humbug.html')),
     url(r'^new-user$', TemplateView.as_view(template_name='zephyr/new-user.html')),
+    url(r'^features$', TemplateView.as_view(template_name='zephyr/features.html')),
 
     # API and integrations documentation
     url(r'^api$', TemplateView.as_view(template_name='zephyr/api.html')),
