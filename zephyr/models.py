@@ -142,8 +142,11 @@ class Stream(models.Model):
         return self.__repr__()
 
     def is_public(self):
-        return (self.realm.domain in
-                ["humbughq.com"]
+        # For every realm except for legacy realms on prod (aka those
+        # older than realm id 68 with some exceptions), we enable
+        # historical messages for all streams that are not invite-only.
+        return ((not settings.DEPLOYED or self.realm.domain in
+                 ["humbughq.com"] or self.realm.id > 68)
                 and not self.invite_only)
 
     class Meta:
