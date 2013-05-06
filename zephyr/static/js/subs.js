@@ -288,7 +288,6 @@ function mark_subscribed(stream_name, attrs) {
         sub.subscribed = true;
         set_color(stream_name, pick_color());
         mark_color_used(sub.color);
-        // This will do nothing on MIT
         ui.add_narrow_filter(stream_name, "stream");
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
