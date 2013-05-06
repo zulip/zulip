@@ -43,6 +43,34 @@ exports.highlight_with_escaping = function (query, item) {
     return result;
 };
 
+exports.highlight_with_escaping_and_regex = function (regex, item) {
+    var pieces = item.split(regex);
+    var result = "";
+    $.each(pieces, function(idx, piece) {
+        if (piece.match(regex)) {
+            result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
+        } else {
+            result += Handlebars.Utils.escapeExpression(piece);
+        }
+    });
+    return result;
+};
+
+exports.highlight_query_in_phrase = function (query, phrase) {
+    var i;
+    query = query.toLowerCase();
+    query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+    var regex = new RegExp('(^' + query + ')', 'ig');
+
+    var result = ""; 
+    var parts = phrase.split(' ');
+    for (i = 0; i < parts.length; i++) {
+        if (i > 0) result += " ";
+        result += exports.highlight_with_escaping_and_regex(regex, parts[i]);
+    }
+    return result;
+};
+
 exports.private_message_typeahead_list = [];
 exports.private_message_mapped = {};
 

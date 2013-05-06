@@ -211,9 +211,19 @@ exports.initialize = function () {
         items: 20,
         highlighter: function (item) {
             var query = this.query;
-            var parts = render_object_in_parts(mapped[item]);
-            return Handlebars.Utils.escapeExpression(
-                parts.prefix + " " + parts.query + " " + parts.suffix);
+            var obj = mapped[item];
+
+            if (obj.action === 'private_message') {
+                var prefix = 'Narrow to private messages with';
+                var hilite = typeahead_helper.highlight_query_in_phrase;
+                var person = obj.query;
+                var name = hilite(query, person.full_name) + " <" + hilite(query, person.email) + ">";
+                return prefix + ' ' + name;
+            }
+
+            var parts = render_object_in_parts(obj);
+            parts.query = Handlebars.Utils.escapeExpression(parts.query);
+            return parts.prefix + " " + parts.query + " " + parts.suffix;
         },
         matcher: function (item) {
             var obj = mapped[item];
