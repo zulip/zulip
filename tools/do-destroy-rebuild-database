@@ -2,7 +2,7 @@
 
 echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | python manage.py dbshell
 
-python manage.py syncdb --noinput --settings=humbug.setup_hack_settings
+python manage.py syncdb --noinput
 python manage.py migrate
 python manage.py createcachetable third_party_api_results
 python manage.py populate_db --replay-old-messages -n0

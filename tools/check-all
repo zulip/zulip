@@ -31,7 +31,6 @@ node_modules
 
 exclude_files = """
 humbug/test_settings.py
-humbug/setup_hack_settings.py
 tools/jslint/jslint.js
 """.split()
 
