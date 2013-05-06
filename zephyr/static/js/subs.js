@@ -242,7 +242,7 @@ function create_sub(stream_name, attrs) {
     add_sub(stream_name, sub);
     $(document).trigger($.Event('sub_obj_created.zephyr', {sub: sub}));
     if (sub.subscribed) {
-        ui.add_narrow_filter(stream_name, "stream");
+        stream_list.add_narrow_filter(stream_name, "stream");
     }
     return sub;
 }
@@ -289,7 +289,7 @@ function mark_subscribed(stream_name, attrs) {
         sub.subscribed = true;
         set_color(stream_name, pick_color());
         mark_color_used(sub.color);
-        ui.add_narrow_filter(stream_name, "stream");
+        stream_list.add_narrow_filter(stream_name, "stream");
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
@@ -320,7 +320,7 @@ function mark_subscribed(stream_name, attrs) {
     // Update unread counts as the new stream in sidebar might
     // need its unread counts re-calculated
     process_loaded_for_unread(all_msg_list.all());
-    ui.sort_narrow_list();
+    stream_list.sort_narrow_list();
 
     typeahead_helper.update_autocomplete();
 
@@ -334,7 +334,7 @@ function mark_unsubscribed(stream_name) {
         // We don't know about this stream
         return;
     } else if (sub.subscribed) {
-        ui.remove_narrow_filter(stream_name, 'stream');
+        stream_list.remove_narrow_filter(stream_name, 'stream');
         sub.subscribed = false;
         button_for_sub(sub).text("Subscribe").addClass("btn-primary");
         var settings = settings_for_sub(sub);
@@ -473,7 +473,7 @@ function populate_subscriptions(subs) {
         sub_rows.push(sub);
     });
 
-    ui.sort_narrow_list();
+    stream_list.sort_narrow_list();
     return sub_rows;
 }
 
@@ -491,7 +491,7 @@ exports.reload_subscriptions = function (opts) {
 
     if (opts.clear_first) {
         stream_info = {};
-        ui.remove_all_narrow_filters();
+        stream_list.remove_all_narrow_filters();
     }
 
     return $.ajax({

@@ -298,7 +298,7 @@ function update_unread_counts() {
         }
 
         var count = Object.keys(obj).length;
-        ui.set_count("stream", index, count);
+        stream_list.set_count("stream", index, count);
         if (narrow.stream_in_home(index)) {
             home_unread_messages += newer_than_pointer_count(only_in_home_view(Object.keys(obj)));
         }
@@ -308,7 +308,7 @@ function update_unread_counts() {
     $.each(unread_counts["private"], function(index, obj) {
         pm_count += newer_than_pointer_count(only_in_home_view(Object.keys(obj)));
     });
-    ui.set_count("global", "private", pm_count);
+    stream_list.set_count("global", "private", pm_count);
     home_unread_messages += pm_count;
 
 }
@@ -840,7 +840,7 @@ function get_updates(options) {
                 process_visible_unread_messages();
                 notifications.received_messages(messages);
                 compose.update_faded_messages();
-                ui.update_streams_sidebar();
+                stream_list.update_streams_sidebar();
             }
 
             if (new_pointer !== undefined
@@ -920,7 +920,7 @@ function load_old_messages(opts) {
             add_messages(messages, opts.msg_list);
         }
 
-        ui.update_streams_sidebar();
+        stream_list.update_streams_sidebar();
 
         if (opts.cont !== undefined) {
             opts.cont(messages);
