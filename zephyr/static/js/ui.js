@@ -1419,7 +1419,9 @@ exports.update_streams_sidebar = function () {
         if (op_subject.length !== 0) {
             subject = op_subject[0];
         }
-        rebuild_recent_subjects(op_stream[0], subject);
+        if (subs.have(op_stream[0])) {
+            rebuild_recent_subjects(op_stream[0], subject);
+        }
     }
 };
 
