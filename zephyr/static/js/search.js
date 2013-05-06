@@ -20,6 +20,13 @@ function get_person(obj) {
     return typeahead_helper.render_person(obj.query);
 }
 
+function stream_matches_query(stream_name, q) {
+    // We are pretty strict when it comes to matching stream names, but we could
+    // loosen this up a bit, by allowing the query to be a prefix of the 2nd/3rd
+    // words in the subjects.
+    return (stream_name.toLowerCase().indexOf(q.toLowerCase()) === 0);
+}
+
 function render_object_in_parts(obj) {
     // N.B. action is *not* escaped by the caller
     switch (obj.action) {
@@ -54,22 +61,14 @@ function render_object(obj) {
 }
 
 exports.update_typeahead = function () {
-    var stream_names = subs.subscribed_streams().slice(0);
+    var stream_names = subs.subscribed_streams();
     stream_names.sort();
 
     var streams = $.map(stream_names, function(elt,idx) {
         return {action: 'stream', query: elt};
     });
 
-    var people_names = page_params.people_list.slice(0);
-    people_names.sort(function (person1, person2) {
-        if (person1.full_name < person2.full_name)
-            return -1;
-        else if (person1.full_name === person2.full_name)
-            return 0;
-        else
-            return 1;
-    });
+    var people_names = page_params.people_list;
 
     var people = $.map(people_names, function(elt,idx) {
         return {action: 'private_message', query: elt};
@@ -146,10 +145,16 @@ function searchbox_sorter(items) {
         if (!objs)
             return;
         // Get the first object in sorted order.
-        var objs = typeahead_helper.sorter(query, objs,
-                (action === 'private_message' || action === 'sender') ? get_person : get_query)
+        if (action === 'private_message' || action === 'sender') {
+            objs.sort(function (x, y) {
+                return typeahead_helper.compare_by_pms(get_person(x), get_person(y));
+            });
+        } else if (action !== 'stream') {
+            // streams are already sorted
+            objs = typeahead_helper.sorter(query, objs, get_query);
+        }
 
-        result = result.concat($.map(objs.slice(0, 5), render_object));
+        result = result.concat($.map(objs.slice(0, 4), render_object));
     });
 
     return result;
@@ -188,7 +193,7 @@ exports.initialize = function () {
 
             return labels;
         },
-        items: 30,
+        items: 20,
         highlighter: function (item) {
             var query = this.query;
             var parts = render_object_in_parts(mapped[item]);
@@ -202,6 +207,9 @@ exports.initialize = function () {
             var obj = mapped[item];
             if (obj.disabled)
                 return false;
+            if (obj.action === 'stream') {
+                return stream_matches_query(obj.query, this.query);
+            }
             var actual_search_term = obj.query;
             if (obj.action === 'private_message' || obj.action === "sender") {
                 actual_search_term = obj.query.full_name + ' <' + obj.query.email + '>';

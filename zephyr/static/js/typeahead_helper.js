@@ -131,7 +131,15 @@ exports.compare_by_pms = function(user_a, user_b) {
     } else if (x_count < y_count) {
         return 1;
     }
-    return 0;
+
+    // We use alpha sort as a tiebreaker, which might be helpful for
+    // new users.
+    if (user_a < user_b)
+        return -1;
+    else if (user_a === user_b)
+        return 0;
+    else
+        return 1;
 };
 
 exports.sort_by_pms = function(objs) {
