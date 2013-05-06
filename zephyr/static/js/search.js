@@ -21,10 +21,15 @@ function get_person(obj) {
 }
 
 function stream_matches_query(stream_name, q) {
-    // We are pretty strict when it comes to matching stream names, but we could
-    // loosen this up a bit, by allowing the query to be a prefix of the 2nd/3rd
-    // words in the subjects.
-    return (stream_name.toLowerCase().indexOf(q.toLowerCase()) === 0);
+    // match "tes" to "test" and "stream test" but not "hostess"
+    var i;
+    var parts = stream_name.split(' ');
+    for (i = 0; i < parts.length; i++) {
+        if (parts[i].toLowerCase().indexOf(q.toLowerCase()) === 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function render_object_in_parts(obj) {
