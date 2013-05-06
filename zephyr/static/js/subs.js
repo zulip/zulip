@@ -111,6 +111,10 @@ function update_table_stream_color(table, stream_name, color) {
 
 exports.stream_id = function(stream_name) {
     var sub = get_sub(stream_name);
+    if (sub === undefined) {
+        blueslip.error("Tried to get subs.stream_id for a stream user is not subscribed to!");
+        return 0;
+    }
     return parseInt(sub.id, 10);
 };
 
@@ -324,12 +328,11 @@ function mark_subscribed(stream_name, attrs) {
 function mark_unsubscribed(stream_name) {
     var sub = get_sub(stream_name);
 
-    ui.remove_narrow_filter(stream_name, 'stream');
-
     if (sub === undefined) {
         // We don't know about this stream
         return;
     } else if (sub.subscribed) {
+        ui.remove_narrow_filter(stream_name, 'stream');
         sub.subscribed = false;
         button_for_sub(sub).text("Subscribe").addClass("btn-primary");
         var settings = settings_for_sub(sub);
