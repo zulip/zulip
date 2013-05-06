@@ -840,7 +840,7 @@ function get_updates(options) {
                 process_visible_unread_messages();
                 notifications.received_messages(messages);
                 compose.update_faded_messages();
-                ui.update_recent_subjects();
+                ui.update_streams_sidebar();
             }
 
             if (new_pointer !== undefined
@@ -920,7 +920,7 @@ function load_old_messages(opts) {
             add_messages(messages, opts.msg_list);
         }
 
-        ui.update_recent_subjects();
+        ui.update_streams_sidebar();
 
         if (opts.cont !== undefined) {
             opts.cont(messages);

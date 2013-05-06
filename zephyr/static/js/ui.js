@@ -533,6 +533,19 @@ exports.hide_loading_more_messages_indicator = function () {
     }
 };
 
+function rebuild_recent_subjects(stream, subject) {
+    $('.expanded_subjects').remove();
+    var stream_li = exports.get_filter_li('stream', stream);
+    var subjects = recent_subjects[stream] || [];
+
+    stream_li.append(templates.render('sidebar_subject_list',
+                                      {subjects: subjects,
+                                       stream: stream}));
+    if (subject !== undefined) {
+        exports.get_subject_filter_li(stream, subject).addClass('active-subject-filter');
+    }
+}
+
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
@@ -1118,7 +1131,6 @@ $(function () {
     // side-bar-related handlers
     $(document).on('narrow_activated.zephyr', function (event) {
         $("ul.filters li").removeClass('active-filter active-subject-filter');
-        $("ul.expanded_subjects").addClass('hidden');
 
         // TODO: handle confused filters like "in:all stream:foo"
         var op_in = event.filter.operands('in');
@@ -1136,20 +1148,20 @@ $(function () {
         var op_stream = event.filter.operands('stream');
         if (op_stream.length !== 0 && subs.have(op_stream[0])) {
             var stream_li = exports.get_filter_li('stream', op_stream[0]);
-            $('ul.expanded_subjects', stream_li).removeClass('hidden');
             var op_subject = event.filter.operands('subject');
+            var subject;
             if (op_subject.length !== 0) {
-                exports.get_subject_filter_li(op_stream[0], op_subject[0])
-                       .addClass('active-subject-filter');
+                subject = op_subject[0];
             } else {
                 stream_li.addClass('active-filter');
             }
+            rebuild_recent_subjects(op_stream[0], subject);
         }
     });
 
     $(document).on('narrow_deactivated.zephyr', function (event) {
         $("ul.filters li").removeClass('active-filter active-subject-filter');
-        $("ul.expanded_subjects").addClass('hidden');
+        $("ul.expanded_subjects").remove();
         $("#global_filters li[data-name='home']").addClass('active-filter');
     });
 
@@ -1393,59 +1405,22 @@ exports.process_condensing = function (index, elem) {
     }
 };
 
-exports.update_recent_subjects = function () {
-    function same(arr1, arr2) {
-        var i = 0;
+exports.update_streams_sidebar = function () {
+    exports.sort_narrow_list();
 
-        if (arr1.length !== arr2.length) return false;
-        for (i = 0; i < arr1.length; i++) {
-            if (arr2[i] !== arr1[i]) {
-                return false;
-            }
-        }
-        return true;
+    if (! narrow.active()) {
+        return;
     }
 
-    $("#stream_filters > li").each(function (idx, elem) {
-        var stream = $(elem).attr('data-name');
-        var expander = $('.streamlist_expand', elem);
-        var subjects = recent_subjects[stream] || [];
-        var subject_names = $.map(subjects, function (elem, idx) {
-            return elem.subject;
-            });
-
-        expander.toggleClass('hidden', subjects.length === 0);
-
-        var currently_shown = $('ul.expanded_subjects li', elem).map(function(idx, elem) {
-            return $(elem).text().trim();
-        });
-
-        if (!same(currently_shown, subject_names)) {
-            var subject_list = $("ul.expanded_subjects", elem);
-
-            var was_hidden = subject_list.length === 0 || subject_list.hasClass('hidden');
-            // If this is the first subject in current narrow, show it regardless
-            var operators = narrow.operators();
-            if (subject_list.length === 0 && operators.length > 0 && operators[0][0] === 'stream') {
-                was_hidden = operators[0][1] !== stream;
-            }
-            var active_subject = $("ul.expanded_subjects li.active-subject-filter").text().trim();
-
-            subject_list.remove();
-
-            if (subjects.length > 0) {
-                $(elem).append(templates.render('sidebar_subject_list',
-                                                {subjects: subjects,
-                                                 stream: stream,
-                                                 hidden: was_hidden}));
-                if (active_subject !== '') {
-                    exports.get_subject_filter_li(stream, active_subject).addClass('active-subject-filter');
-                }
-            }
+    var op_stream = narrow.filter().operands('stream');
+    var op_subject = narrow.filter().operands('subject');
+    var subject;
+    if (op_stream.length !== 0) {
+        if (op_subject.length !== 0) {
+            subject = op_subject[0];
         }
-    });
-    // Resort the narrow list based on which streams have messages
-    exports.sort_narrow_list();
+        rebuild_recent_subjects(op_stream[0], subject);
+    }
 };
 
 return exports;
