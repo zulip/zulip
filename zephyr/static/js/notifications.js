@@ -75,8 +75,14 @@ exports.update_title_count = function () {
     var n;
 
     var new_message_count = unread_in_current_view();
-    document.title = (new_message_count ? ("(" + new_message_count + ") ") : "")
+    var new_title = (new_message_count ? ("(" + new_message_count + ") ") : "")
         + page_params.domain + " - Humbug";
+
+    if (document.title === new_title) {
+        return;
+    }
+
+    document.title = new_title;
 
     // IE doesn't support PNG favicons, *shrug*
     if (! $.browser.msie) {
