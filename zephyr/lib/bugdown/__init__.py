@@ -8,6 +8,7 @@ import glob
 import urllib2
 import simplejson
 import twitter
+import platform
 
 from django.core import mail
 from django.conf import settings
@@ -505,7 +506,7 @@ def convert(md):
         # Output error to log as well as sending a humbug and email
         logging.getLogger('').error('Exception in Markdown parser: %sInput (sanitized) was: %s'
             % (traceback.format_exc(), cleaned))
-        subject = "Markdown parser failure"
+        subject = "Markdown parser failure on %s" % (platform.node(),)
         internal_send_message("humbug+errors@humbughq.com", "stream",
                 "devel", subject, "Markdown parser failed, message sent to devel@")
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
