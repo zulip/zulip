@@ -293,6 +293,10 @@ function update_unread_counts() {
     }
 
     $.each(unread_counts.stream, function(index, obj) {
+        if (! subs.have(index)) {
+            return true;
+        }
+
         var count = Object.keys(obj).length;
         ui.set_count("stream", index, count);
         if (narrow.stream_in_home(index)) {
