@@ -240,6 +240,7 @@ function create_sub(stream_name, attrs) {
     mark_color_used(sub.color);
 
     add_sub(stream_name, sub);
+    $(document).trigger($.Event('sub_obj_created.zephyr', {sub: sub}));
     if (sub.subscribed) {
         ui.add_narrow_filter(stream_name, "stream");
     }
@@ -322,6 +323,8 @@ function mark_subscribed(stream_name, attrs) {
     ui.sort_narrow_list();
 
     typeahead_helper.update_autocomplete();
+
+    $(document).trigger($.Event('subscription_add_done.zephyr', {sub: sub}));
 }
 
 function mark_unsubscribed(stream_name) {
@@ -359,6 +362,8 @@ function mark_unsubscribed(stream_name) {
     }
 
     typeahead_helper.update_autocomplete();
+
+    $(document).trigger($.Event('subscription_remove_done.zephyr', {sub: sub}));
 }
 
 $(function () {
