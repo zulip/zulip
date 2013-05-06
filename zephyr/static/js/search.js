@@ -20,16 +20,26 @@ function get_person(obj) {
     return typeahead_helper.render_person(obj.query);
 }
 
-function stream_matches_query(stream_name, q) {
+function phrase_match(phrase, q) {
     // match "tes" to "test" and "stream test" but not "hostess"
     var i;
-    var parts = stream_name.split(' ');
+    q = q.toLowerCase();
+
+    var parts = phrase.split(' ');
     for (i = 0; i < parts.length; i++) {
-        if (parts[i].toLowerCase().indexOf(q.toLowerCase()) === 0) {
+        if (parts[i].toLowerCase().indexOf(q) === 0) {
             return true;
         }
     }
     return false;
+}
+
+function person_matches_query(person, q) {
+    return phrase_match(person.full_name, q) || phrase_match(person.email, q);
+}
+
+function stream_matches_query(stream_name, q) {
+    return phrase_match(stream_name, q);
 }
 
 function render_object_in_parts(obj) {
@@ -202,11 +212,8 @@ exports.initialize = function () {
         highlighter: function (item) {
             var query = this.query;
             var parts = render_object_in_parts(mapped[item]);
-            // We provide action, not the user, so this should
-            // be fine from a not-needing-escaping perspective.
-            return parts.prefix + " " +
-                typeahead_helper.highlight_with_escaping(query, parts.query)
-                + " " + parts.suffix;
+            return Handlebars.Utils.escapeExpression(
+                parts.prefix + " " + parts.query + " " + parts.suffix);
         },
         matcher: function (item) {
             var obj = mapped[item];
@@ -215,10 +222,10 @@ exports.initialize = function () {
             if (obj.action === 'stream') {
                 return stream_matches_query(obj.query, this.query);
             }
-            var actual_search_term = obj.query;
             if (obj.action === 'private_message' || obj.action === "sender") {
-                actual_search_term = obj.query.full_name + ' <' + obj.query.email + '>';
+                return person_matches_query(obj.query, this.query);
             }
+            var actual_search_term = obj.query;
             // Case-insensitive (from Bootstrap's default matcher).
             return (actual_search_term.toLowerCase().indexOf(this.query.toLowerCase()) !== -1);
         },
