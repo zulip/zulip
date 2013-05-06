@@ -79,7 +79,10 @@ try:
     # pyflakes writes some output (like syntax errors) to stderr. :/
     for pipe in (pyflakes.stdout, pyflakes.stderr):
         for ln in pipe:
-            if options.full or not 'imported but unused' in ln:
+            if options.full or not \
+                    ('imported but unused' in ln or
+                     ("zephyr_mirror_backend.py:" in ln and
+                      "redefinition of unused 'simplejson' from line" in ln)):
                 sys.stdout.write(ln)
                 failed = True
 
