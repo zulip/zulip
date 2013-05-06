@@ -3,37 +3,43 @@ var stream_list = (function () {
 var exports = {};
 
 exports.sort_narrow_list = function () {
-    var sort_recent = (subs.subscribed_streams().length > 40);
-    var items = $('#stream_filters > li').get();
-    var parent = $('#stream_filters');
-    items.sort(function(a,b){
-        var a_stream_name = $(a).attr('data-name');
-        var b_stream_name = $(b).attr('data-name');
+    var streams = subs.subscribed_streams();
+    if (streams.length === 0) {
+        return;
+    }
+
+    var sort_recent = (streams.length > 40);
+
+    streams.sort(function(a, b) {
         if (sort_recent) {
-            if (recent_subjects[b_stream_name] !== undefined &&
-                recent_subjects[a_stream_name] === undefined) {
+            if (recent_subjects[b] !== undefined &&
+                recent_subjects[a] === undefined) {
                 return 1;
-            } else if (recent_subjects[b_stream_name] === undefined &&
-                       recent_subjects[a_stream_name] !== undefined) {
+            } else if (recent_subjects[b] === undefined &&
+                       recent_subjects[a] !== undefined) {
                 return -1;
             }
         }
-        return util.strcmp(a_stream_name, b_stream_name);
+        return util.strcmp(a, b);
     });
 
+    var parent = $('#stream_filters');
     parent.empty();
 
-    $.each(items, function(i, li){
-        var stream_name = $(li).attr('data-name');
+    var elems = [];
+    $.each(streams, function(i, stream) {
+        // TODO: we should export the sub objects better
+        var li = $(subs.have(stream).sidebar_li);
         if (sort_recent) {
-            if (recent_subjects[stream_name] === undefined) {
-                $(li).addClass("inactive_stream");
+            if (recent_subjects[stream] === undefined) {
+                li.addClass('inactive_stream');
             } else {
-                $(li).removeClass("inactive_stream");
+                li.removeClass('inactive_stream');
             }
         }
-        parent.append(li);
+        elems.push(li.get(0));
     });
+    $(elems).appendTo(parent);
 };
 
 function iterate_to_find(selector, data_name, context) {
@@ -88,6 +94,7 @@ function add_narrow_filter(name, type) {
         list_item.append("<i class='icon-lock'/>");
     }
     $("#" + type + "_filters").append(list_item);
+    return list_item;
 }
 
 exports.get_count = function (type, name) {
@@ -192,13 +199,19 @@ $(function () {
     $(document).on('sub_obj_created.zephyr', function (event) {
         if (event.sub.subscribed) {
             var stream_name = event.sub.name;
-            add_narrow_filter(stream_name, "stream");
+            var li = add_narrow_filter(stream_name, "stream");
+            if (li) {
+                event.sub.sidebar_li = li;
+            }
         }
     });
 
     $(document).on('subscription_add_done.zephyr', function (event) {
         var stream_name = event.sub.name;
-        add_narrow_filter(stream_name, "stream");
+        var li = add_narrow_filter(stream_name, "stream");
+        if (li) {
+            event.sub.sidebar_li = li;
+        }
         exports.sort_narrow_list();
     });
 
