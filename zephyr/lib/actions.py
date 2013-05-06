@@ -599,6 +599,7 @@ def process_user_activity_event(event):
 def send_presence_changed(user_profile, presence):
     presence_dict = presence.to_dict()
     notice = dict(event=dict(type="presence", email=user_profile.email,
+                             server_timestamp=time.time(),
                              presence={presence_dict['client']: presence.to_dict()}),
                   users=[up.id for up in
                          UserProfile.objects.select_related()

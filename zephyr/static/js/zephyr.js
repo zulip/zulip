@@ -62,7 +62,7 @@ $(function () {
                     "full_name": "Humbug Feedback Bot"}]);
 
     $.each(page_params.initial_presences, function (email, presence) {
-        activity.set_user_status(email, presence);
+        activity.set_user_status(email, presence, page_params.initial_servertime);
     });
 
 });
@@ -806,7 +806,7 @@ function get_updates(options) {
                     }
                     break;
                 case 'presence':
-                    activity.set_user_status(event.email, event.presence);
+                    activity.set_user_status(event.email, event.presence, event.server_timestamp);
                     break;
                 }
             });

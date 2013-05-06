@@ -72,12 +72,12 @@ function update_users() {
     ui.set_presence_list(users, user_info);
 }
 
-function status_from_timestamp(time_now, presence) {
+function status_from_timestamp(baseline_time, presence) {
     if (presence.website === undefined) {
         return 'idle';
     }
 
-    var age = time_now - presence.website.timestamp;
+    var age = baseline_time - presence.website.timestamp;
 
     var status = 'idle';
     if (presence.website.status === ACTIVE && age >= 0) {
@@ -96,7 +96,6 @@ function focus_ping() {
     }
 
     $.post('/json/update_active_status', {status: ACTIVE}, function (data) {
-        var now = new Date().getTime() / 1000;
         user_info = {};
 
         // Update Zephyr mirror activity warning
@@ -109,7 +108,7 @@ function focus_ping() {
         // Ping returns the active peer list
         $.each(data.presences, function (this_email, presence) {
             if (page_params.email !== this_email) {
-                user_info[this_email] = status_from_timestamp(now, presence);
+                user_info[this_email] = status_from_timestamp(data.server_timestamp, presence);
             }
         });
         update_users();
@@ -137,12 +136,11 @@ exports.initialize = function () {
     focus_ping();
 };
 
-exports.set_user_status = function (user_email, presence) {
+exports.set_user_status = function (user_email, presence, server_time) {
     if (user_email === page_params.email) {
         return;
     }
-    var now = new Date().getTime() / 1000;
-    user_info[user_email] = status_from_timestamp(now, presence);
+    user_info[user_email] = status_from_timestamp(server_time, presence);
 
     update_users();
 };

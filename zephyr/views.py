@@ -62,6 +62,7 @@ import re
 import urllib
 import os
 import base64
+import time
 from mimetypes import guess_type, guess_extension
 from os import path
 from functools import wraps
@@ -509,6 +510,7 @@ def home(request):
         people_list           = register_ret['realm_users'],
         initial_pointer       = register_ret['pointer'],
         initial_presences     = register_ret['presences'],
+        initial_servertime    = time.time(), # Used for calculating relative presence age
         fullname              = user_profile.full_name,
         email                 = user_profile.email,
         domain                = user_profile.realm.domain,
@@ -1744,7 +1746,8 @@ def api_beanstalk_webhook(request, user_profile, payload=POST(converter=json_to_
     return json_success()
 
 def get_status_list(requesting_user_profile):
-    return {'presences': get_status_dict(requesting_user_profile)}
+    return {'presences': get_status_dict(requesting_user_profile),
+            'server_timestamp': time.time()}
 
 @authenticated_json_post_view
 @has_request_variables
