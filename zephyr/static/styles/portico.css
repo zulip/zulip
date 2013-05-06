@@ -11,8 +11,8 @@ li {
     font-family: Helvetica;
     font-size: 100px;
     font-weight: bold;
-    padding-top: 50px;
-    padding-bottom: 60px;
+    margin-top: 50px;
+    margin-bottom: 60px;
 }
 
 .lead {
