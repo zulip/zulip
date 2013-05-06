@@ -48,23 +48,23 @@ function iterate_to_find(selector, data_name, context) {
     return retval;
 }
 
-exports.get_filter_li = function(type, name) {
+function get_filter_li(type, name) {
     if (type === 'stream') {
         return $("#stream_sidebar_" + subs.stream_id(name));
     }
     return iterate_to_find("#" + type + "_filters > li", name);
-};
+}
 
-exports.get_subject_filter_li = function(stream, subject) {
-    var stream_li = exports.get_filter_li('stream', stream);
+function get_subject_filter_li(stream, subject) {
+    var stream_li = get_filter_li('stream', stream);
     return iterate_to_find(".expanded_subjects li", subject, stream_li);
-};
+}
 
-exports.add_narrow_filter = function(name, type) {
+function add_narrow_filter(name, type) {
     var uri = "#narrow/stream/" + hashchange.encodeHashComponent(name);
     var list_item;
 
-    if (exports.get_filter_li(type, name).length) {
+    if (get_filter_li(type, name).length) {
         // already exists
         return false;
     }
@@ -88,14 +88,14 @@ exports.add_narrow_filter = function(name, type) {
         list_item.append("<i class='icon-lock'/>");
     }
     $("#" + type + "_filters").append(list_item);
-};
+}
 
 exports.get_count = function (type, name) {
-    return exports.get_filter_li(type, name).find('.count .value').text();
+    return get_filter_li(type, name).find('.count .value').text();
 };
 
 exports.set_count = function (type, name, count) {
-    var count_span = exports.get_filter_li(type, name).find('.count');
+    var count_span = get_filter_li(type, name).find('.count');
     var value_span = count_span.find('.value');
 
     if (count === 0) {
@@ -107,12 +107,12 @@ exports.set_count = function (type, name, count) {
 };
 
 exports.clear_count = function (type, name) {
-    exports.get_filter_li(type, name).find('.count').hide()
-                                                    .find('.value').text('');
+    get_filter_li(type, name).find('.count').hide()
+                                            .find('.value').text('');
 };
 
 exports.remove_narrow_filter = function (name, type) {
-    exports.get_filter_li(type, name).remove();
+    get_filter_li(type, name).remove();
 };
 
 exports.remove_all_narrow_filters = function () {
@@ -121,14 +121,14 @@ exports.remove_all_narrow_filters = function () {
 
 function rebuild_recent_subjects(stream, subject) {
     $('.expanded_subjects').remove();
-    var stream_li = exports.get_filter_li('stream', stream);
+    var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects[stream] || [];
 
     stream_li.append(templates.render('sidebar_subject_list',
                                       {subjects: subjects,
                                        stream: stream}));
     if (subject !== undefined) {
-        exports.get_subject_filter_li(stream, subject).addClass('active-subject-filter');
+        get_subject_filter_li(stream, subject).addClass('active-subject-filter');
     }
 }
 
@@ -171,7 +171,7 @@ $(function () {
         }
         var op_stream = event.filter.operands('stream');
         if (op_stream.length !== 0 && subs.have(op_stream[0])) {
-            var stream_li = exports.get_filter_li('stream', op_stream[0]);
+            var stream_li = get_filter_li('stream', op_stream[0]);
             var op_subject = event.filter.operands('subject');
             var subject;
             if (op_subject.length !== 0) {
@@ -192,13 +192,13 @@ $(function () {
     $(document).on('sub_obj_created.zephyr', function (event) {
         if (event.sub.subscribed) {
             var stream_name = event.sub.name;
-            exports.add_narrow_filter(stream_name, "stream");
+            add_narrow_filter(stream_name, "stream");
         }
     });
 
     $(document).on('subscription_add_done.zephyr', function (event) {
         var stream_name = event.sub.name;
-        exports.add_narrow_filter(stream_name, "stream");
+        add_narrow_filter(stream_name, "stream");
         exports.sort_narrow_list();
     });
 
