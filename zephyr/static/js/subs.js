@@ -241,9 +241,6 @@ function create_sub(stream_name, attrs) {
 
     add_sub(stream_name, sub);
     $(document).trigger($.Event('sub_obj_created.zephyr', {sub: sub}));
-    if (sub.subscribed) {
-        stream_list.add_narrow_filter(stream_name, "stream");
-    }
     return sub;
 }
 
@@ -289,7 +286,6 @@ function mark_subscribed(stream_name, attrs) {
         sub.subscribed = true;
         set_color(stream_name, pick_color());
         mark_color_used(sub.color);
-        stream_list.add_narrow_filter(stream_name, "stream");
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
@@ -320,7 +316,6 @@ function mark_subscribed(stream_name, attrs) {
     // Update unread counts as the new stream in sidebar might
     // need its unread counts re-calculated
     process_loaded_for_unread(all_msg_list.all());
-    stream_list.sort_narrow_list();
 
     typeahead_helper.update_autocomplete();
 

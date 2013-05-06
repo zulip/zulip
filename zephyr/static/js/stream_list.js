@@ -188,6 +188,24 @@ $(function () {
         $("ul.expanded_subjects").remove();
         $("#global_filters li[data-name='home']").addClass('active-filter');
     });
+
+    $(document).on('sub_obj_created.zephyr', function (event) {
+        if (event.sub.subscribed) {
+            var stream_name = event.sub.name;
+            exports.add_narrow_filter(stream_name, "stream");
+        }
+    });
+
+    $(document).on('subscription_add_done.zephyr', function (event) {
+        var stream_name = event.sub.name;
+        exports.add_narrow_filter(stream_name, "stream");
+        exports.sort_narrow_list();
+    });
+
+    $(document).on('subscription_remove_done.zephyr', function (event) {
+        var stream_name = event.sub.name;
+        exports.remove_narrow_filter(stream_name, 'stream');
+    });
 });
 
 return exports;
