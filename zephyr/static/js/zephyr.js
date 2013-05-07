@@ -67,10 +67,10 @@ $(function () {
 
 });
 
-function within_viewport(message_row) {
+function within_viewport(row_offset, row_height) {
     // Returns true if a message is fully within the viewport.
-    var message_top = message_row.offset().top;
-    var message_bottom  = message_top + message_row.height();
+    var message_top = row_offset.top;
+    var message_bottom  = message_top + row_height;
     var viewport_top = viewport.scrollTop();
     var viewport_bottom = viewport_top + viewport.height();
     return (message_top > viewport_top) && (message_bottom < viewport_bottom);
@@ -408,8 +408,10 @@ function process_visible_unread_messages() {
 
     var visible_messages = candidates.filter(function (idx, message) {
         var row = $(message);
+        var row_offset = row.offset();
+        var row_height = row.height();
         // Mark very tall messages as read once we've gotten past them
-        return (row.height() > height && row.offset().top > top) || within_viewport(row);
+        return (row_height > height && row_offset.top > top) || within_viewport(row_offset, row_height);
     });
 
     var mark_as_read = $.map(visible_messages, function(msg) {

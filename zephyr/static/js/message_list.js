@@ -419,7 +419,10 @@ MessageList.prototype = {
         }
 
         var selected_row = current_msg_list.selected_row();
-        if (within_viewport(rows.last_visible()) && selected_row && (selected_row.length > 0)) {
+        var last_visible = rows.last_visible();
+        if (within_viewport(last_visible.offset(), last_visible.height())
+            && selected_row && (selected_row.length > 0))
+        {
             var viewport_offset = viewport.scrollTop();
             var new_messages_height = 0;
 
