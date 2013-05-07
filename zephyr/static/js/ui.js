@@ -1104,31 +1104,37 @@ $(function () {
     $('body').on('click', '.respond_button', function (e) {
         respond_to_message();
         ui.hide_actions_popover();
+        e.stopPropagation();
     });
     $('body').on('click', '.respond_personal_button', function (e) {
         respond_to_message('personal');
         ui.hide_actions_popover();
+        e.stopPropagation();
     });
     $('body').on('click', '.popover_narrow_by_subject_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         ui.hide_actions_popover();
         narrow.by_subject(msgid);
+        e.stopPropagation();
     });
     $('body').on('click', '.popover_narrow_by_recipient_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         ui.hide_actions_popover();
         narrow.by_recipient(msgid);
+        e.stopPropagation();
     });
     $('body').on('click', '.popover_narrow_by_sender_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         var sender_email = $(e.currentTarget).data('sender_email');
         ui.hide_actions_popover();
         narrow.by('sender', sender_email, {then_select_id: msgid});
+        e.stopPropagation();
     });
     $('body').on('click', '.popover_narrow_by_time_travel_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         ui.hide_actions_popover();
         narrow.by_time_travel(msgid);
+        e.stopPropagation();
     });
 
     $("body").on('click', function (e) {

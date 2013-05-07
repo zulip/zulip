@@ -391,6 +391,7 @@ exports.hide = function () {
 
 exports.clear = function () {
     $("#compose").find('input[type=text], textarea').val('');
+    $("#new_message_content").trigger('autosize');
 };
 
 // Set the mode of a compose already in progress.
