@@ -192,7 +192,7 @@ exports.update_button_visibility = function () {
 
 function highlight_person(query, person) {
     var hilite = typeahead_helper.highlight_query_in_phrase;
-    return hilite(query, person.full_name) + " <" + hilite(query, person.email) + ">";
+    return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
 }
 
 exports.initialize = function () {
