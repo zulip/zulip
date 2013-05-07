@@ -11,6 +11,8 @@ import simplejson
 import twitter
 import platform
 
+import httplib2
+
 from hashlib import sha1
 
 from django.core import mail
@@ -106,10 +108,15 @@ class EmbedlyProcessor(markdown.treeprocessors.Treeprocessor):
         for links in mygrouper(10, to_process):
             try:
                 responses = embedly_client.oembed(links, maxwidth=250)
-            except:
+            except httplib2.socket.timeout:
                 # We put this in its own try-except because it requires external
                 # connectivity. If embedly flakes out, we don't want to not-render
                 # the entire message; we just want to not show the embedly preview.
+                logging.warning("Embedly Embed timeout for URLs: %s" % (" ".join(links)))
+                logging.warning(traceback.format_exc())
+                return root
+            except Exception:
+                # If things break for any other reason, don't make things sad.
                 logging.warning(traceback.format_exc())
                 return root
             for oembed_data in responses:
