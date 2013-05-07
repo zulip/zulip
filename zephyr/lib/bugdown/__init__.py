@@ -23,7 +23,7 @@ from zephyr.lib.timeout import timeout, TimeoutExpired
 from zephyr.lib.cache import cache_with_key, cache_get_many, cache_set_many
 from embedly import Embedly
 
-embedly_client = Embedly(settings.EMBEDLY_KEY)
+embedly_client = Embedly(settings.EMBEDLY_KEY, timeout=2.5)
 
 # Format version of the bugdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
