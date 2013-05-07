@@ -220,6 +220,7 @@ exports.initialize = function () {
             var prefix;
             var person;
             var name;
+            var stream;
 
             if (obj.action === 'private_message') {
                 prefix = 'Narrow to private messages with';
@@ -233,6 +234,13 @@ exports.initialize = function () {
                 person = obj.query;
                 name = highlight_person(query, person);
                 return prefix + ' ' + name;
+            }
+
+            if (obj.action === 'stream') {
+                prefix = 'Narrow to stream';
+                stream = obj.query;
+                stream = typeahead_helper.highlight_query_in_phrase(query, stream);
+                return prefix + ' ' + stream;
             }
 
             var parts = render_object_in_parts(obj);
