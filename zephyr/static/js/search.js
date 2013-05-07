@@ -193,6 +193,11 @@ exports.update_button_visibility = function () {
     update_buttons_with_focus($('#search_query').is(':focus'));
 };
 
+function highlight_person(query, person) {
+    var hilite = typeahead_helper.highlight_query_in_phrase;
+    return hilite(query, person.full_name) + " <" + hilite(query, person.email) + ">";
+}
+
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
@@ -212,12 +217,21 @@ exports.initialize = function () {
         highlighter: function (item) {
             var query = this.query;
             var obj = mapped[item];
+            var prefix;
+            var person;
+            var name;
 
             if (obj.action === 'private_message') {
-                var prefix = 'Narrow to private messages with';
-                var hilite = typeahead_helper.highlight_query_in_phrase;
-                var person = obj.query;
-                var name = hilite(query, person.full_name) + " <" + hilite(query, person.email) + ">";
+                prefix = 'Narrow to private messages with';
+                person = obj.query;
+                name = highlight_person(query, person);
+                return prefix + ' ' + name;
+            }
+
+            if (obj.action === 'sender') {
+                prefix = 'Narrow to messages sent by';
+                person = obj.query;
+                name = highlight_person(query, person);
                 return prefix + ' ' + name;
             }
 
