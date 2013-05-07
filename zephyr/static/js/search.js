@@ -111,9 +111,6 @@ function narrow_or_search_for_term(item) {
     var obj = mapped[item];
     ui.change_tab_to('#home');
     switch (obj.action) {
-    case 'search':
-        return obj.query;
-
     case 'stream':
         narrow.by('stream', obj.query);
         // It's sort of annoying that this is not in a position to
@@ -155,7 +152,7 @@ function searchbox_sorter(items) {
     });
 
     var query = this.query;
-    $.each(['operators', 'stream', 'private_message', 'sender', 'search'], function (idx, action) {
+    $.each(['operators', 'private_message', 'sender', 'stream'], function (idx, action) {
         var objs = objects_by_action[action];
         if (!objs)
             return;
