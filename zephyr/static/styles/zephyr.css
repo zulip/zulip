@@ -581,6 +581,7 @@ img.inline_profile_picture {
     width: 90%;
     padding: 8px 14px 8px 14px;
     line-height: 20px;
+    display: none;
 }
 
 /* Like .alert .close */

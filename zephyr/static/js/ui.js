@@ -1057,7 +1057,6 @@ $(function () {
         return false;
     });
 
-    $('.composebox-close').click(function (e) { compose.cancel(); });
     $('.compose_stream_button').click(function (e) {
         compose.set_mode('stream');
         return false;
@@ -1144,7 +1143,7 @@ $(function () {
         }
 
         // Unfocus our compose area if we click out of it.
-        if (compose.composing()) {
+        if (compose.composing() && !$(e.target).is("a")) {
             compose.cancel();
         }
     });
@@ -1154,7 +1153,10 @@ $(function () {
         // "unfocusing" our compose -- in other words, e.g.
         // clicking "Press enter to send" should not
         // trigger the composebox-closing code above.
-        e.stopPropagation();
+        // But do allow our formatting link.
+        if (!$(e.target).is("a")) {
+            e.stopPropagation();
+        }
     });
 
     // side-bar-related handlers

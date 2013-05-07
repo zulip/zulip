@@ -232,10 +232,10 @@ function abort_xhr () {
 }
 
 exports.cancel = function () {
+    compose.clear();
     compose.hide();
     abort_xhr();
     is_composing_message = false;
-    compose.clear();
     if (message_snapshot !== undefined) {
         $('#restore-draft').show();
     }
@@ -381,7 +381,6 @@ $(function () {
 });
 
 exports.hide = function () {
-    exports.snapshot_message();
     $('.message_comp').find('input, textarea, button').blur();
     $('#stream-message').hide();
     $('#private-message').hide();
@@ -390,8 +389,10 @@ exports.hide = function () {
 };
 
 exports.clear = function () {
+    exports.snapshot_message();
     $("#compose").find('input[type=text], textarea').val('');
     $("#new_message_content").trigger('autosize');
+    $("#send-status").hide(0);
 };
 
 // Set the mode of a compose already in progress.
@@ -603,6 +604,11 @@ $(function () {
             var textbox = $("#new_message_content"),
                 split_uri = response.uri.split("/"),
                 filename = split_uri[split_uri.length - 1];
+            // Urgh, yet another hack to make sure we're "composing"
+            // when text gets added into the composebox.
+            if (!compose.composing()) {
+                respond_to_message();
+            }
             if (i === -1) {
                 // This is a paste, so there's no filename. Show the image directly
                 textbox.val(textbox.val() + "[pasted image](" + response.uri + ") ");
@@ -617,6 +623,9 @@ $(function () {
         },
         rawDrop: function (contents) {
             var textbox = $("#new_message_content");
+            if (!compose.composing()) {
+                respond_to_message();
+            }
             textbox.val(textbox.val() + contents);
         }
     });
