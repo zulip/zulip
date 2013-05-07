@@ -281,6 +281,7 @@ PIPELINE_JS = {
             'js/blueslip.js',
             'js/util.js',
             'js/setup.js',
+            'js/viewport.js',
             'js/rows.js',
             'js/stream_list.js',
             'js/narrow.js',

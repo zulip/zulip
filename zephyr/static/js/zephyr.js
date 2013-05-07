@@ -9,8 +9,6 @@ var recent_subjects = {};
 var queued_mark_as_read = [];
 var queued_flag_timer;
 
-var viewport = $(window);
-
 var get_updates_params = {
     pointer: -1
 };
