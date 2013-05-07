@@ -2,6 +2,7 @@ var stream_list = (function () {
 
 var exports = {};
 
+var previous_sort_order;
 exports.sort_narrow_list = function () {
     var streams = subs.subscribed_streams();
     if (streams.length === 0) {
@@ -22,6 +23,13 @@ exports.sort_narrow_list = function () {
         }
         return util.strcmp(a, b);
     });
+
+    if (previous_sort_order !== undefined
+        && util.array_compare(previous_sort_order, streams)) {
+        return;
+    }
+
+    previous_sort_order = streams;
 
     var parent = $('#stream_filters');
     parent.empty();

@@ -227,5 +227,18 @@ exports.strcmp = (function () {
     };
 }());
 
+exports.array_compare = function util_array_compare(a, b) {
+    if (a.length !== b.length) {
+        return false;
+    }
+    var i;
+    for (i = 0; i < a.length; ++i) {
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+    return true;
+};
+
 return exports;
 }());
