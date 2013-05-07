@@ -1,6 +1,11 @@
 body {
-    font-family: 'Droid Sans', Helvetica, Arial, sans-serif;
+    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     overflow-y: scroll;
+}
+
+input, button, select, textarea {
+    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    line-height: normal;
 }
 
 .container-fluid {
@@ -17,7 +22,7 @@ body {
 }
 
 textarea, input {
-    font-family: 'Droid Sans', Helvetica, Arial, sans-serif;
+    font-family: 'Humbug', Helvetica, Arial, sans-serif;
 }
 
 
@@ -56,6 +61,7 @@ li, .table th, .table td {
     font-size:  inherit;
     height:     auto;
     min-height: 2.2em;
+    line-height: 100%;
 }
 
 .btn-large {
@@ -64,6 +70,7 @@ li, .table th, .table td {
 
 .navbar .brand {
     font-size: 140%;
+    font-weight: 300;
 }
 
 /* Classes for hiding and showing controls */
@@ -152,7 +159,7 @@ a:hover code {
     white-space: nowrap;
 }
 .my_email {
-    color: grey;
+    font-weight: 300;
 }
 
 
@@ -162,6 +169,9 @@ a:hover code {
 
 .new_message_button {
     padding-top: 1em;
+}
+
+.compose_private_button, .compose_stream_button {
 }
 
 .bottom_sidebar {
@@ -402,7 +412,7 @@ td.pointer {
 }
 
 .message_time {
-    color: gray;
+    font-weight: 300;
     font-size: 90%;
 }
 
@@ -450,6 +460,7 @@ table.focused_table {
 .message_content {
     margin-left: 5px;
     margin-right: 35px; /* size of the timestamp */
+    line-height: 17px;
 }
 @media (max-width: 480px) {
     .message_content {
@@ -728,6 +739,7 @@ input.recipient_box {
 }
 
 #searchbox .search_button {
+    height: 30px;
     text-align: center;
     padding: 4px 10px 4px 10px;
 }
@@ -1081,11 +1093,15 @@ table.floating_recipient {
     width: 1em;
     height: 1em;
     vertical-align: middle;
+    border-radius: 1em;
+   -moz-box-shadow:     1px 1px 5px #333 inset;
+   -webkit-box-shadow:  1px 1px 5px #333 inset;
+    box-shadow:         1px 1px 5px #333 inset;
 }
 
 ul.expanded_subjects {
     list-style-type: none;
-    font-weight: normal;
+    font-weight: 300;
 }
 
 li.expanded_subject {
@@ -1179,6 +1195,10 @@ li.expanded_subject {
 
 #compose a.message-control-button:hover {
     color: #000;
+}
+
+#stream_filters {
+    font-weight: 300;
 }
 
 #stream_filters .inactive_stream {
