@@ -470,7 +470,8 @@ def home(request):
 
     user_profile = request.user
 
-    register_ret = do_events_register(user_profile, apply_markdown=True)
+    register_ret = do_events_register(user_profile, get_client("website"),
+                                      apply_markdown=True)
     user_has_messages = (register_ret['max_message_id'] != -1)
 
     # Brand new users get the tutorial
@@ -1832,7 +1833,8 @@ def api_events_register(request, user_profile,
 @has_request_variables
 def events_register_backend(request, user_profile, apply_markdown=True,
                             event_types=POST(converter=json_to_list, default=None)):
-    ret = do_events_register(user_profile, apply_markdown, event_types)
+    ret = do_events_register(user_profile, request.client, apply_markdown,
+                             event_types)
     return json_success(ret)
 
 @authenticated_json_post_view

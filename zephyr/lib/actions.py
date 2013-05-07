@@ -807,8 +807,10 @@ def get_status_dict(requesting_user_profile):
     return user_statuses
 
 
-def do_events_register(user_profile, apply_markdown=True, event_types=None):
-    queue_id = request_event_queue(user_profile, apply_markdown, event_types)
+def do_events_register(user_profile, user_client, apply_markdown=True,
+                       event_types=None):
+    queue_id = request_event_queue(user_profile, user_client, apply_markdown,
+                                   event_types)
     if queue_id is None:
         raise JsonableError("Could not allocate event queue")
 

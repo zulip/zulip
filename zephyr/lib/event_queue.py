@@ -231,11 +231,13 @@ def extract_json_response(resp):
     else:
         return resp.json
 
-def request_event_queue(user_profile, apply_markdown, event_types=None):
+def request_event_queue(user_profile, user_client, apply_markdown,
+                        event_types=None):
     if settings.TORNADO_SERVER:
         req = {'dont_block'    : 'true',
                'apply_markdown': simplejson.dumps(apply_markdown),
-               'client'        : 'internal'}
+               'client'        : 'internal',
+               'user_client'   : user_client.name}
         if event_types is not None:
             req['event_types'] = simplejson.dumps(event_types)
         resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
