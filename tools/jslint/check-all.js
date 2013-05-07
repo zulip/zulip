@@ -42,7 +42,7 @@ var globals =
     + ' maybe_scroll_to_selected recenter_pointer_on_display suppress_scroll_pointer_update'
     + ' process_visible_unread_messages message_range message_in_table process_loaded_for_unread'
     + ' mark_all_as_read message_unread process_read_messages unread_in_current_view'
-    + ' fast_forward_pointer recent_subjects'
+    + ' fast_forward_pointer recent_subjects unread_subjects'
     ;
 
 

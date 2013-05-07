@@ -1,7 +1,12 @@
 <ul class='expanded_subjects' data-stream='{{stream}}'>
     {{#each subjects}}
     <li class='expanded_subject' data-name='{{subject}}'>
-        <a href='#narrow/stream/{{../stream}}/subject/{{subject}}'>{{subject}}</a>
+        <a href='#narrow/stream/{{../stream}}/subject/{{subject}}'>
+          {{subject}}
+          {{#if has_unread}}
+            <span class="subject_count">(<span class="value">{{unread}}</span>)</span>
+          {{/if}}
+        </a>
     </li>
     {{/each}}
 </ul>

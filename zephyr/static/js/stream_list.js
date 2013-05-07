@@ -109,16 +109,35 @@ exports.get_count = function (type, name) {
     return get_filter_li(type, name).find('.count .value').text();
 };
 
+function set_count_internal(count_span, value_span, count, clear_func) {
+    if (count === 0) {
+        return clear_func();
+    }
+
+    count_span.show();
+
+    value_span.text(count);
+}
+
 exports.set_count = function (type, name, count) {
     var count_span = get_filter_li(type, name).find('.count');
     var value_span = count_span.find('.value');
 
-    if (count === 0) {
-        return exports.clear_count(type, name);
-    }
-    count_span.show();
+    set_count_internal(count_span, value_span, count, function () { return exports.clear_count(type, name); });
+};
 
-    value_span.text(count);
+exports.set_subject_count = function (stream, subject, count) {
+    var count_span = get_subject_filter_li(stream, subject).find('.subject_count');
+    var value_span = count_span.find('.value');
+
+    if (count_span.length === 0 || value_span.length === 0) {
+        return;
+    }
+
+    set_count_internal(count_span, value_span, count, function () {
+        get_subject_filter_li(stream, subject).find('.subject_count').hide()
+                                                                             .find('.value').text('');
+    });
 };
 
 exports.clear_count = function (type, name) {
@@ -138,6 +157,16 @@ function rebuild_recent_subjects(stream, subject) {
     $('.expanded_subjects').remove();
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects[stream] || [];
+    $.each(subjects, function (idx, subject_obj) {
+        var unread = 0;
+        if (unread_subjects[stream] !== undefined &&
+            unread_subjects[stream][subject_obj.subject] !== undefined) {
+            unread = Object.keys(unread_subjects[stream][subject_obj.subject]).length;
+        }
+
+        subject_obj.unread = unread;
+        subject_obj.has_unread = unread !== 0;
+    });
 
     stream_li.append(templates.render('sidebar_subject_list',
                                       {subjects: subjects,

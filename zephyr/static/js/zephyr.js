@@ -242,6 +242,7 @@ function send_queued_flags() {
 }
 
 var unread_counts = {'stream': {}, 'private': {}};
+var unread_subjects = {};
 var home_unread_messages = 0;
 
 function unread_in_current_view() {
@@ -290,16 +291,23 @@ function update_unread_counts() {
         });
     }
 
-    $.each(unread_counts.stream, function(index, obj) {
-        if (! subs.have(index)) {
+    $.each(unread_counts.stream, function(stream, msgs) {
+        if (! subs.have(stream)) {
             return true;
         }
 
-        var count = Object.keys(obj).length;
-        stream_list.set_count("stream", index, count);
-        if (narrow.stream_in_home(index)) {
-            home_unread_messages += newer_than_pointer_count(only_in_home_view(Object.keys(obj)));
+        var count = Object.keys(msgs).length;
+        stream_list.set_count("stream", stream, count);
+        if (narrow.stream_in_home(stream)) {
+            home_unread_messages += newer_than_pointer_count(only_in_home_view(Object.keys(msgs)));
         }
+
+        if (unread_subjects[stream] !== undefined) {
+            $.each(unread_subjects[stream], function (subject, msgs) {
+                stream_list.set_subject_count(stream, subject, Object.keys(msgs).length);
+            });
+        }
+
     });
 
     var pm_count = 0;
@@ -342,6 +350,15 @@ function unread_hashkey(message) {
         unread_counts[message.type][hashkey] = {};
     }
 
+    if (message.type === 'stream') {
+        if (unread_subjects[hashkey] === undefined) {
+            unread_subjects[hashkey] = {};
+        }
+        if (unread_subjects[hashkey][message.subject] === undefined) {
+            unread_subjects[hashkey][message.subject] = {};
+        }
+    }
+
     return hashkey;
 }
 
@@ -354,6 +371,10 @@ function process_loaded_for_unread(messages) {
 
         var hashkey = unread_hashkey(message);
         unread_counts[message.type][hashkey][message.id] = true;
+
+        if (message.type === 'stream') {
+            unread_subjects[hashkey][message.subject][message.id] = true;
+        }
     });
 
     update_unread_counts();
@@ -370,6 +391,9 @@ function process_read_messages(messages) {
         processed.push(message.id);
 
         delete unread_counts[message.type][hashkey][message.id];
+        if (message.type === 'stream') {
+            delete unread_subjects[message.stream][message.subject][message.id];
+        }
     });
 
     if (processed.length > 0) {
