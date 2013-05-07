@@ -38,6 +38,7 @@ import logging
 import hashlib
 import tempfile
 import random
+import select
 
 class CountingBackoff(object):
     def __init__(self, maximum_retries=10):
@@ -262,9 +263,9 @@ def maybe_restart_mirroring_script():
 
 def process_loop(log):
     restart_check_count = 0
-    sleep_count = 0
-    sleep_time = 0.1
+    last_check_time = time.time()
     while True:
+        select.select([zephyr._z.getFD()], [], [], 15)
         try:
             notice = zephyr.receive(block=False)
         except Exception:
@@ -278,22 +279,19 @@ def process_loop(log):
                 logger.exception("Error relaying zephyr:")
                 time.sleep(2)
 
-        try:
-            maybe_restart_mirroring_script()
-            if restart_check_count > 0:
-                logging.info("Stopped getting errors checking whether restart is required.")
-                restart_check_count = 0
-        except Exception:
-            if restart_check_count < 5:
-                logger.exception("Error checking whether restart is required:")
-                restart_check_count += 1
+        if time.time() - last_check_time > 15:
+            last_check_time = time.time()
+            try:
+                maybe_restart_mirroring_script()
+                if restart_check_count > 0:
+                    logging.info("Stopped getting errors checking whether restart is required.")
+                    restart_check_count = 0
+            except Exception:
+                if restart_check_count < 5:
+                    logger.exception("Error checking whether restart is required:")
+                    restart_check_count += 1
 
-        time.sleep(sleep_time)
-        sleep_count += sleep_time
-        if sleep_count > 15:
-            sleep_count = 0
             if options.forward_class_messages:
-                # Ask the Humbug server about any new classes to subscribe to
                 try:
                     update_subscriptions()
                 except Exception:
