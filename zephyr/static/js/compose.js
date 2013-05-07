@@ -591,6 +591,9 @@ $(function () {
                     // sanitizatio not needed as the file name is not potentially parsed as HTML, etc.
                     msg = "\"" + file.name + "\" was too large; the maximum file size is 25MiB.";
                     break;
+                case 'REQUEST ENTITY TOO LARGE':
+                    msg = "Sorry, the file was too large.";
+                    break;
                 default:
                     msg = "An unknown error occured.";
                     break;
