@@ -230,7 +230,8 @@ elif settings.USING_RABBITMQ:
 
 def setup_tornado_rabbitmq():
     # When tornado is shut down, disconnect cleanly from rabbitmq
-    atexit.register(lambda: queue_client.close())
+    if settings.USING_RABBITMQ:
+        atexit.register(lambda: queue_client.close())
 
 # We using a simple lock to prevent multiple RabbitMQ messages being
 # sent to the SimpleQueueClient at the same time; this is a workaround
