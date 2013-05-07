@@ -1101,7 +1101,7 @@ table.floating_recipient {
 
 ul.expanded_subjects {
     list-style-type: none;
-    font-weight: 300;
+    font-weight: normal;
 }
 
 li.expanded_subject {
@@ -1198,7 +1198,7 @@ li.expanded_subject {
 }
 
 #stream_filters {
-    font-weight: 300;
+    font-weight: normal;
 }
 
 #stream_filters .inactive_stream {
