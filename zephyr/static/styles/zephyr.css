@@ -1006,9 +1006,9 @@ table.floating_recipient {
     }
 }
 
-#settings-dropdown .glyphicons {
-    margin-right: -10px;
-    margin-bottom: 5px;
+#settings-dropdown {
+    padding: 5px;
+    font-size: 175%;
 }
 
 #notifications-area {

@@ -431,3 +431,4 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-edit:before                 { content: "\f044"; }
 .icon-vector-bullhorn:before             { content: "\f0a1"; }
 .icon-vector-list:before                 { content: "\f03a"; }
+.icon-vector-cog:before                  { content: "\f013"; }
