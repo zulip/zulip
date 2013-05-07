@@ -559,6 +559,14 @@ def do_change_enable_sounds(user_profile, enable_sounds, log=True):
                    'user': user_profile.email,
                    'enable_sounds': enable_sounds})
 
+def do_change_enable_offline_email_notifications(user_profile, offline_email_notifications, log=True):
+    user_profile.enable_offline_email_notifications = offline_email_notifications
+    user_profile.save(update_fields=["enable_offline_email_notifications"])
+    if log:
+        log_event({'type': 'enable_offline_email_notifications_changed',
+                   'user': user_profile.email,
+                   'enable_offline_email_notifications': offline_email_notifications})
+
 def do_change_enter_sends(user_profile, enter_sends):
     user_profile.enter_sends = enter_sends
     user_profile.save(update_fields=["enter_sends"])
@@ -887,6 +895,7 @@ def do_send_confirmation_email(invitee, referrer):
         subject_template_path='confirmation/invite_email_subject.txt',
         body_template_path='confirmation/invite_email_body.txt')
 
+@statsd_increment("missed_message_reminders")
 def do_send_missedmessage_email(user_profile, missed_messages):
     """
     Send a reminder email to a user if she's missed some PMs by being offline
@@ -920,19 +929,12 @@ def do_send_missedmessage_email(user_profile, missed_messages):
     user_profile.last_reminder = datetime.datetime.now()
     user_profile.save(update_fields=['last_reminder'])
 
-    statsd.incr('missed_message_reminders')
-
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
     message_ids = [event.get('message_id') for event in missed_email_events]
     timestamp = timestamp_to_datetime(event.get('timestamp'))
 
-    try:
-        user_profile = UserProfile.objects.get(id=user_profile_id)
-        messages = Message.objects.filter(id__in=message_ids, usermessage__flags=~UserMessage.flags.read)
-    except (UserProfile.DoesNotExist, Message.DoesNotExist) as e:
-        import logging
-        logging.warning("Failed to send missed message email, failed to look up: %s %s %e" % \
-            (user_profile_id, message_ids, e))
+    user_profile = UserProfile.objects.get(id=user_profile_id)
+    messages = Message.objects.filter(id__in=message_ids, usermessage__flags=~UserMessage.flags.read)
 
     if len(messages) == 0 or timestamp - user_profile.last_reminder < datetime.timedelta(days=1):
         # Don't spam the user, if we've sent an email in the last day

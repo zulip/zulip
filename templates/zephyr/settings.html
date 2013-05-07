@@ -133,6 +133,17 @@
         </div>
 
         <div class="control-group">
+            <label for="enable_offline_email_notifications" class="control-label">
+                Notify on receiving PMs when offline</label>
+            <div class="controls">
+                <input type="checkbox" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
+                   {% if user_profile.enable_offline_email_notifications %}
+                   checked="yes"
+                   {% endif %} />
+            </div>
+        </div>
+
+        <div class="control-group">
             <div class="controls">
                 <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
             </div>

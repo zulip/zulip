@@ -553,6 +553,9 @@ def restore_saved_messages():
         elif message_type == "enable_sounds_changed":
             user_profile = users[old_message["user"]]
             user_profile.enable_sounds = (old_message["enable_sounds"] != "false")
+        elif message_type == "enable_offline_email_notifications_changed":
+            user_profile = users[old_message["user"]]
+            user_profile.enable_offline_email_notifications = (old_message["enable_offline_email_notifications"] != "false")
             user_profile.save()
             continue
         elif message_type == "default_streams":

@@ -29,7 +29,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, set_stream_color, get_stream_colors, update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, do_finish_tutorial, \
-    get_status_dict
+    get_status_dict, do_change_enable_offline_email_notifications
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, is_unique, \
     is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -521,6 +521,8 @@ def home(request):
             user_profile.enable_desktop_notifications,
         sounds_enabled =
             user_profile.enable_sounds,
+        enable_offline_email_notifications =
+            user_profile.enable_offline_email_notifications,
         event_queue_id        = register_ret['queue_id'],
         last_event_id         = register_ret['last_event_id'],
         max_message_id        = register_ret['max_message_id']
@@ -1283,8 +1285,9 @@ def json_change_settings(request, user_profile, full_name=POST,
                          # because browsers POST nothing for an unchecked checkbox
                          enable_desktop_notifications=POST(converter=lambda x: x == "on",
                                                            default=False),
-                         enable_sounds=POST(converter=lambda x: x == "on",
-                                                           default=False)):
+                         enable_sounds=POST(converter=lambda x: x == "on"),
+                         enable_offline_email_notifications=POST(converter=lambda x: x == "on",
+                                                                 default=False)):
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
             return json_error("New password must match confirmation password!")
@@ -1304,6 +1307,10 @@ def json_change_settings(request, user_profile, full_name=POST,
     if user_profile.enable_sounds != enable_sounds:
         do_change_enable_sounds(user_profile, enable_sounds)
         result['enable_sounds'] = enable_sounds
+
+    if user_profile.enable_offline_email_notifications != enable_offline_email_notifications:
+        do_change_enable_offline_email_notifications(user_profile, enable_offline_email_notifications)
+        result['enable_offline_email_notifications'] = enable_offline_email_notifications
 
     return json_success(result)
 
@@ -1521,7 +1528,7 @@ def api_github_landing(request, user_profile, event=POST,
             # any push notification on a branch that is not in our whitelist.
             if short_ref not in re.split('[\s,;|]+', branches):
                 return json_success()
-        
+
 
         subject, content = build_message_from_gitlog(user_profile, repository['name'],
                                                      payload['ref'], payload['commits'],

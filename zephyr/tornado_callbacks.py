@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from zephyr.models import Message, UserProfile, UserMessage, \
-    Recipient, Stream, get_stream
+    Recipient, Stream, get_stream, get_user_profile_by_id
 
 from zephyr.decorator import JsonableError
 from zephyr.lib.cache_helpers import cache_get_message
@@ -11,6 +11,7 @@ from zephyr.lib.event_queue import get_client_descriptors_for_user
 
 import os
 import sys
+import time
 import logging
 import requests
 import simplejson
@@ -266,6 +267,23 @@ def process_new_message(data):
                     message_dict = message_dict_no_markdown
                 event = dict(type='message', message=message_dict)
                 client.add_event(event)
+
+        # If the recipient was offline and the message was a single or group PM,
+        # potentially notify more immediately
+        if message.recipient.type in (Recipient.PERSONAL, Recipient.HUDDLE) and \
+            user_profile_id != message.sender.id and \
+            len(get_client_descriptors_for_user(user_profile_id)) == 0:
+
+            user_profile = get_user_profile_by_id(user_profile_id)
+
+            if user_profile.enable_offline_email_notifications:
+                event = {"user_profile_id": user_profile_id,
+                         "message_id": message.id,
+                         "timestamp": time.time()}
+
+                # We require RabbitMQ to do this, as we can't call the email handler
+                # from the Tornado process. So if there's no rabbitmq support do nothing
+                queue_json_publish("missedmessage_emails", event, lambda event: None)
 
     if 'stream_name' in data:
         stream_receive_message(data['realm_id'], data['stream_name'], message)

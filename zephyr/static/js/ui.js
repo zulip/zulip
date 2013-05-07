@@ -776,6 +776,10 @@ $(function () {
                 page_params.sounds_enabled = result.enable_sounds;
             }
 
+            if (result.enable_offline_email_notifications !== undefined) {
+                page_params.enable_offline_email_notifications = result.enable_offline_email_notifications;
+            }
+
             settings_status.removeClass(status_classes)
                 .addClass('alert-success')
                 .text(message).stop(true).fadeTo(0,1);
