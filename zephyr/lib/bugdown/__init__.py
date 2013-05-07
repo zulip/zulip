@@ -105,7 +105,7 @@ class EmbedlyProcessor(markdown.treeprocessors.Treeprocessor):
 
         for links in mygrouper(10, to_process):
             try:
-                responses = embedly_client.oembed(links, maxwidth=500)
+                responses = embedly_client.oembed(links, maxwidth=250)
             except:
                 # We put this in its own try-except because it requires external
                 # connectivity. If embedly flakes out, we don't want to not-render
