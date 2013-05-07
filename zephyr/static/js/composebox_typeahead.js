@@ -180,7 +180,10 @@ exports.initialize = function () {
             return subs.subscribed_streams();
         },
         items: 3,
-        highlighter: composebox_typeahead_highlighter,
+        highlighter: function (item) {
+            var query = this.query;
+            return typeahead_helper.highlight_query_in_phrase(query, item);
+        },
         matcher: function (item) {
             // The matcher for "stream" is strictly prefix-based,
             // because we want to avoid mixing up streams.
