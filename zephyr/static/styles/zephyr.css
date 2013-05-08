@@ -185,6 +185,7 @@ a:hover code {
     margin: 10px 10px 0;
     padding: 10px 0 10px 0;
 }
+
 #stream_filters:hover {
     overflow-y: auto;
 }
@@ -905,6 +906,10 @@ table.floating_recipient {
 .subscription_name {
     padding-left: 0.5em;
     vertical-align: middle;
+    display: inline-block;
+    line-height: 14px;
+    padding-top: 4px;
+    height: 16px;
 }
 
 .subscription_settings {
