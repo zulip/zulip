@@ -473,6 +473,10 @@ table.focused_table {
     max-height: 8.5em;
     overflow: hidden;
 }
+.message_content.collapsed {
+    max-height: 0em;
+    overflow: hidden;
+}
 
 .message_length_controller {
     display: none;

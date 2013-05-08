@@ -509,6 +509,16 @@ function show_actions_popover(element, id) {
     }
 }
 
+function change_message_collapse(message, collapsed) {
+    $.ajax({
+        type: 'POST',
+        url: '/json/update_message_flags',
+        data: {messages: JSON.stringify([message.id]),
+               op: collapsed ? 'add' : 'remove',
+               flag: 'collapsed'},
+        dataType: 'json'});
+}
+
 function change_message_star(message, starred) {
     $.ajax({
         type: 'POST',
@@ -620,6 +630,68 @@ exports.hide_loading_more_messages_indicator = function () {
         loading_more_messages_indicator_showing = false;
     }
 };
+
+function could_be_condensed(content) {
+    return content.height() > (viewport.height() * 0.65);
+}
+
+function show_more_link(row) {
+    row.find(".message_condenser").hide();
+    row.find(".message_expander").show();
+}
+
+function show_condense_link(row) {
+    row.find(".message_expander").hide();
+    row.find(".message_condenser").show();
+}
+
+function condense(row) {
+    var content = row.find(".message_content");
+    content.addClass("condensed");
+    show_more_link(row);
+}
+
+function uncondense(row) {
+    var content = row.find(".message_content");
+    content.removeClass("condensed");
+    show_condense_link(row);
+}
+
+function uncollapse(row) {
+    // Uncollapse a message, restoring the condensed message [More] or
+    // [Condense] link if necessary.
+    var message = current_msg_list.get(rows.id(row));
+    var content = row.find(".message_content");
+    message.collapsed = false;
+    content.removeClass("collapsed");
+    change_message_collapse(message, false);
+
+    if (message.condensed === true) {
+        // This message was condensed by the user, so re-show the
+        // [More] link.
+        condense(row);
+    } else if (message.condensed === false) {
+        // This message was un-condensed by the user, so re-show the
+        // [Condense] link.
+        uncondense(row);
+    } else if (content.hasClass("could-be-condensed")) {
+        // By default, condense a long message.
+        condense(row);
+    } else {
+        // This was a short message, no more need for a [More] link.
+        row.find(".message_expander").hide();
+    }
+}
+
+function collapse(row) {
+    // Collapse a message, hiding the condensed message [More] or
+    // [Condense] link if necessary.
+    var message = current_msg_list.get(rows.id(row));
+    message.collapsed = true;
+    change_message_collapse(message, true);
+    row.find(".message_content").addClass("collapsed");
+    show_more_link(row);
+}
 
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
@@ -986,19 +1058,27 @@ $(function () {
     });
 
     $("#home").on("click", ".message_expander", function (e) {
+        // Expanding a message can mean either uncollapsing or
+        // uncondensing it.
         var row = $(this).closest(".message_row");
-        current_msg_list.get(rows.id(row)).condensed = false;
-        row.find(".message_content").removeClass("condensed");
-        $(this).hide();
-        row.find(".message_condenser").show();
+        var message = current_msg_list.get(rows.id(row));
+        var content = row.find(".message_content");
+        if (message.collapsed) {
+            // Uncollapse.
+            uncollapse(row);
+        } else if (content.hasClass("could-be-condensed")) {
+            // Uncondense (show the full long message).
+            message.condensed = false;
+            content.removeClass("condensed");
+            $(this).hide();
+            row.find(".message_condenser").show();
+        }
     });
 
     $("#home").on("click", ".message_condenser", function (e) {
         var row = $(this).closest(".message_row");
         current_msg_list.get(rows.id(row)).condensed = true;
-        row.find(".message_content").addClass("condensed");
-        $(this).hide();
-        row.find(".message_expander").show();
+        condense(row);
     });
 
     $("#home").on("click", ".narrows_by_recipient", function (e) {
@@ -1220,6 +1300,21 @@ $(function () {
         narrow.by_time_travel(msgid);
         e.stopPropagation();
     });
+    $('body').on('click', '.popover_toggle_collapse', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        var row = rows.get(msgid, current_msg_list.table_name);
+        var message = current_msg_list.get(rows.id(row));
+
+        ui.hide_actions_popover();
+
+        if (message.collapsed) {
+            uncollapse(row);
+        } else {
+            collapse(row);
+        }
+
+        e.stopPropagation();
+    });
 
     $("body").on('click', function (e) {
         // Dismiss the popover if the user has clicked outside it
@@ -1347,23 +1442,28 @@ exports.process_condensing = function (index, elem) {
     var content = $(elem).find(".message_content");
     var message = current_msg_list.get(rows.id($(elem)));
     if (content !== undefined && message !== undefined) {
+        if (could_be_condensed(content)) {
+            // All long messages are flagged as such.
+            content.addClass("could-be-condensed");
+        }
+
         // If message.condensed is defined, then the user has manually
         // specified whether this message should be expanded or condensed.
         if (message.condensed === true) {
-            content.addClass("condensed");
-            $(elem).find(".message_expander").show();
-            $(elem).find(".message_condenser").hide();
+            condense($(elem));
             return;
         } else if (message.condensed === false) {
-            content.removeClass("condensed");
-            $(elem).find(".message_condenser").show();
-            $(elem).find(".message_expander").hide();
+            uncondense($(elem));
             return;
+        } else if (could_be_condensed(content)) {
+            // By default, condense a long message.
+            condense($(elem));
         }
 
-        // Collapse the message if it takes up more than a certain % of the screen
-        if (content.height() > (viewport.height() * 0.65 ) ) {
-            content.addClass("condensed");
+        // Completely hide the message and replace it with a [More]
+        // link if the user has collapsed it.
+        if (message.collapsed) {
+            content.addClass("collapsed");
             $(elem).find(".message_expander").show();
         }
     }
