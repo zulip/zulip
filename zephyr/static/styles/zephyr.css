@@ -1278,3 +1278,19 @@ li.expanded_subject {
 #onboarding {
     display: none;
 }
+
+.onboarding_success {
+    font-size: 40px;
+    color: #00CC00;
+    text-align: center;
+}
+
+.sticky-popover-inner {
+    max-width: 300px;
+}
+.sticky-popover-inner p {
+    padding-bottom: 5px;
+}
+#sticky_done {
+    text-align: center;
+}

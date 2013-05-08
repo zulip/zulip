@@ -526,7 +526,8 @@ def home(request):
             user_profile.enable_offline_email_notifications,
         event_queue_id        = register_ret['queue_id'],
         last_event_id         = register_ret['last_event_id'],
-        max_message_id        = register_ret['max_message_id']
+        max_message_id        = register_ret['max_message_id'],
+        onboarding_steps      = simplejson.loads(user_profile.onboarding_steps)
     ))
 
     statsd.incr('views.home')
