@@ -2,9 +2,15 @@ from settings import *
 import os
 import logging
 
-DATABASES["default"] = {"NAME": "zephyr/tests/zephyrdb.test",
-                        "ENGINE": "django.db.backends.sqlite3",
-                        "OPTIONS": { "timeout": 20, },}
+DATABASES["default"] = {"NAME": "humbug_test",
+                        "USER": "humbug_test",
+                        "PASSWORD": "xxxxxxxxxxxx",
+                        "HOST": "localhost",
+                        "SCHEMA": "humbug",
+                        "ENGINE": "django.db.backends.postgresql_psycopg2",
+                        "TEST_NAME": "django_humbug_tests",
+                        "OPTIONS": { },}
+
 
 if "TORNADO_SERVER" in os.environ:
     TORNADO_SERVER = os.environ["TORNADO_SERVER"]

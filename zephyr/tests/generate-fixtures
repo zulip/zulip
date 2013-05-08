@@ -4,24 +4,30 @@ function migration_status {
     ./manage.py migrate --list | sed 's/*/ /' > "$1"
 }
 
-if [ -e zephyr/tests/zephyrdb.test.pristine ]; then
+template_grep_error_code=$(echo "SELECT 1 from pg_database WHERE datname='humbug_test_template';" | python manage.py dbshell --settings=humbug.test_settings | grep -q "1 row"; echo $?)
+
+if [ $template_grep_error_code == "0" ]; then
     migration_status zephyr/fixtures/available-migrations
     if [ -e zephyr/fixtures/migration-status ] &&
         cmp -s zephyr/fixtures/available-migrations zephyr/fixtures/migration-status &&
         [ "$1" != "--force" ]; then
-        cp zephyr/tests/zephyrdb.test.pristine zephyr/tests/zephyrdb.test
+            psql -h localhost postgres humbug_test << EOF
+DROP DATABASE humbug_test;
+CREATE DATABASE humbug_test TEMPLATE humbug_test_template;
+COMMIT;
+EOF
         exit 0
     fi
 fi
 
 mkdir -p zephyr/fixtures
-rm -f zephyr/tests/zephyrdb.test
-rm -f zephyr/tests/zephyrdb.test.pristine
 
 # Remove time.pyc to try to prevent it from screwing people importing
 # time from inside zephyr.lib.  We can drop this hack after a bit.
 rm -f zephyr/lib/time.pyc
 
+
+echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | python manage.py dbshell --settings=humbug.test_settings
 python manage.py syncdb --noinput --settings=humbug.test_settings
 python manage.py migrate --settings=humbug.test_settings --all
 migration_status "zephyr/fixtures/migration-status"
@@ -35,4 +41,9 @@ python manage.py dumpdata  --settings=humbug.test_settings \
     zephyr.UserMessage zephyr.Client \
     zephyr.DefaultStream > zephyr/fixtures/messages.json
 
-cp zephyr/tests/zephyrdb.test zephyr/tests/zephyrdb.test.pristine
+# create pristine template database, for fast fixture restoration after tests are run.
+psql -h localhost postgres humbug_test << EOF
+DROP DATABASE humbug_test_template;
+CREATE DATABASE humbug_test_template TEMPLATE humbug_test;
+COMMIT;
+EOF

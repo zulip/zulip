@@ -81,6 +81,10 @@ casper.then(function () {
     scroll_to(200);
     scroll_to(300);
     scroll_to(400);
+    scroll_to(500);
+    scroll_to(600);
+    scroll_to(700);
+    scroll_to(800);
     var sidebar_end = get_sidebar_num();
     casper.test.assert(sidebar_end < sidebar_initial, "Unread count in sidebar decreases after scrolling");
 

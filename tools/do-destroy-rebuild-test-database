@@ -1,0 +1,5 @@
+#!/bin/sh -xe
+
+# This is a really simple wrapper script, pretty much for documenting clarity
+`dirname $0`/../zephyr/tests/generate-fixtures --force
+

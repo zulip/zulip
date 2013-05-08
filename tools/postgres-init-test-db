@@ -1,0 +1,4 @@
+#/bin/sh -xe
+
+$(dirname $0)/postgres-init-db humbug_test xxxxxxxxxxxx humbug_test humbug,public
+

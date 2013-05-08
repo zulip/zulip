@@ -2824,13 +2824,7 @@ class PivotalHookTests(AuthedTestCase):
 
 
 class Runner(DjangoTestSuiteRunner):
-    option_list = (
-        optparse.make_option('--skip-generate',
-            dest='generate', default=True, action='store_false',
-            help='Skip generating test fixtures')
-    ,)
+    option_list = ()
 
-    def __init__(self, generate, *args, **kwargs):
-        if generate:
-            subprocess.check_call("zephyr/tests/generate-fixtures");
+    def __init__(self, *args, **kwargs):
         DjangoTestSuiteRunner.__init__(self, *args, **kwargs)

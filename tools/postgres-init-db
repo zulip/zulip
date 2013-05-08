@@ -1,17 +1,39 @@
 #/bin/sh -xe
 
-PASSWORD=xxxxxxxxxxxx
+if [[ $# == 0 ]]; then
+    USERNAME=humbug
+    PASSWORD=xxxxxxxxxxxx
+    DBNAME=humbug
+    SEARCH_PATH="$USERNAME",public
+elif [[ $# == 4 ]]; then
+    USERNAME=$1
+    PASSWORD=$2
+    DBNAME=$3
+    SEARCH_PATH=$4
+else
+    echo "Usage Instructions"
+    echo "Run with either no arguments (sets up devel db for local deploy--humbug with user humbug)"
+    echo "or specify <db-username> <password> <db-name> <user-schema-search-path>"
+    exit
+fi
 
 sudo -u postgres psql << EOF
+CREATE USER $USERNAME WITH PASSWORD '$PASSWORD';
+ALTER USER $USERNAME CREATEDB;
+ALTER ROLE $USERNAME SET search_path TO $SEARCH_PATH;
+EOF
+
+umask go-rw
+echo "*:*:*:$USERNAME:$PASSWORD" >> ~/.pgpass
+chmod go-rw ~/.pgpass
+
+psql -h localhost postgres $USERNAME <<EOF
+CREATE DATABASE $DBNAME;
+EOF
+
+sudo -u postgres psql $DBNAME << EOF
 DROP SCHEMA public CASCADE;
-CREATE DATABASE humbug;
-CREATE USER humbug WITH PASSWORD '$PASSWORD';
-GRANT ALL ON DATABASE humbug TO humbug;
-ALTER USER humbug CREATEDB;
 EOF
 
 echo "Database created"
 
-umask go-rw
-echo "*:*:*:humbug:$PASSWORD" >> ~/.pgpass
-chmod go-rw ~/.pgpass

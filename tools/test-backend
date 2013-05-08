@@ -10,4 +10,5 @@ case "$1" in
 esac
 
 cd "$(dirname "$0")"/..
+./zephyr/tests/generate-fixtures
 ./manage.py test "$target" --settings=humbug.test_settings "$@"
