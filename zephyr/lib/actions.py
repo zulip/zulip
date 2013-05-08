@@ -355,6 +355,12 @@ def check_send_message(sender, client, message_type_name, message_to,
         if stream is None:
             return "Stream does not exist"
         recipient = get_recipient(Recipient.STREAM, stream.id)
+
+        if (stream.invite_only
+            and ((not sender.is_bot and not subscribed_to_stream(sender, stream))
+                 or (sender.is_bot and not (subscribed_to_stream(sender.bot_owner, stream)
+                                            or subscribed_to_stream(sender, stream))))):
+            return "Not authorized to send to stream '%s'" % (stream.name,)
     elif message_type_name == 'private':
         not_forged_zephyr_mirror = client and client.name == "zephyr_mirror" and not forged
         try:
