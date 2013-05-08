@@ -772,6 +772,14 @@ def do_update_onboarding_steps(user_profile, steps):
     user_profile.onboarding_steps = simplejson.dumps(steps)
     user_profile.save()
 
+    log_event({'type': 'update_onboarding',
+               'user': user_profile.email,
+               'steps': steps})
+
+    notice = dict(event=dict(type="onboarding_steps", steps=steps),
+                  users=[user_profile.id])
+    tornado_callbacks.send_notification(notice)
+
 def do_finish_tutorial(user_profile):
     user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
     user_profile.save()
@@ -863,6 +871,9 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                               for profile in
                               UserProfile.objects.select_related().filter(realm=user_profile.realm,
                                                                           is_active=True)]
+    if event_types is None or "onboarding_steps" in event_types:
+        ret['onboarding_steps'] = [{'email' : profile.email,
+                                    'steps' : profile.onboarding_steps}]
     if event_types is None or "subscription" in event_types:
         ret['subscriptions'] = gather_subscriptions(user_profile)
     if event_types is None or "presence" in event_types:
@@ -875,6 +886,8 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
             ret['max_message_id'] = max(ret['max_message_id'], event['message']['id'])
         elif event['type'] == "pointer":
             ret['pointer'] = max(ret['pointer'], event['pointer'])
+        elif event['type'] == "onboarding_steps":
+            ret['onboarding_steps'] = event['steps']
         elif event['type'] == "realm_user":
             if event['op'] == "add":
                 ret['realm_users'].append(event['person'])

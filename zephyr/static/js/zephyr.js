@@ -810,6 +810,9 @@ function get_updates(options) {
                 case 'restart':
                     reload.initiate();
                     break;
+                case 'onboarding_steps':
+                    onboarding.set_step_info(event.steps);
+                    break;
                 case 'realm_user':
                     if (event.op === 'add') {
                         add_person(event.person);
