@@ -9,6 +9,8 @@ import base64
 import hashlib
 import simplejson
 
+# The ordered list of onboarding steps we want new users to complete. If the
+# steps are changed here, they must also be changed in onboarding.js.
 onboarding_steps = ["sent_stream_message", "sent_private_message", "made_app_sticky"]
 
 def create_onboarding_steps_blob():

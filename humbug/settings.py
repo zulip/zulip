@@ -294,6 +294,7 @@ PIPELINE_JS = {
             'js/hashchange.js',
             'js/invite.js',
             'js/message_list.js',
+            'js/onboarding.js',
             'js/zephyr.js',
             'js/activity.js',
             'js/colorspace.js',
