@@ -1023,6 +1023,9 @@ $(function () {
     });
 
     $('#stream_filters li').on('click', 'a.subscription_name', function (e) {
+        if (exports.home_tab_obscured()) {
+            ui.change_tab_to('#home');
+        }
         var stream = $(e.target).parents('li').attr('data-name');
         narrow.by('stream', stream, {select_first_unread: true});
 
@@ -1030,6 +1033,9 @@ $(function () {
     });
 
     $('#stream_filters').on('click', '.expanded_subject a', function (e) {
+        if (exports.home_tab_obscured()) {
+            ui.change_tab_to('#home');
+        }
         var stream = $(e.target).parents('ul').attr('data-stream');
         var subject = $(e.target).parents('li').attr('data-name');
 
