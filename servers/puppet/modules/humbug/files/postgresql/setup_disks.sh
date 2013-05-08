@@ -15,4 +15,9 @@ mount /srv
 pg_ctlcluster 9.1 main stop
 mv /var/lib/postgresql /srv
 ln -s /srv/postgresql/ /var/lib
+
+mv /tmp /srv
+mkdir /tmp
+mount --bind /srv/tmp /tmp
+echo "/srv/tmp   /tmp  bind   defaults,bind 0 0" >> /etc/fstab
 pg_ctlcluster 9.1 main start
