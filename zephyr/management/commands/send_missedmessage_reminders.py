@@ -19,6 +19,7 @@ class Command(BaseCommand):
             by_recipient = defaultdict(list)
 
             for event in missed_events:
+                print "Received missed message event: %s" % (event,)
                 by_recipient[event['user_profile_id']].append(event)
 
             for user_profile_id, events in by_recipient.items():
