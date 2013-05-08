@@ -222,12 +222,6 @@ function message_is_notifiable(message) {
             subs.receives_notifications(message.stream)));
 }
 
-function should_show_notification(message) {
-    return page_params.desktop_notifications_enabled &&
-        browser_desktop_notifications_on() &&
-        message_is_notifiable(message);
-}
-
 exports.received_messages = function (messages) {
     var i, title_needs_update = false;
     if (window_has_focus) {
@@ -235,13 +229,18 @@ exports.received_messages = function (messages) {
     }
 
     $.each(messages, function (index, message) {
-        if (message.sender_email !== page_params.email && narrow.message_in_home(message)) {
+        if (message.sender_email !== page_params.email &&
+            narrow.message_in_home(message)) {
             title_needs_update = true;
 
-            if (should_show_notification(message)) {
+            if (!message_is_notifiable(message)) {
+                return;
+            }
+            if (page_params.desktop_notifications_enabled &&
+                browser_desktop_notifications_on()) {
                 process_desktop_notification(message);
             }
-            if (supports_sound && page_params.sounds_enabled && message_is_notifiable(message)) {
+            if (page_params.sounds_enabled && supports_sound) {
                 $("#notifications-area").find("audio")[0].play();
             }
         }
