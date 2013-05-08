@@ -351,6 +351,11 @@ function send_message() {
             send_status.hide();
             is_composing_message = false;
             compose.hide();
+            if (request.type === "private") {
+                onboarding.mark_checklist_step("sent_private_message");
+            } else {
+                onboarding.mark_checklist_step("sent_stream_message");
+            }
             clear_message_snapshot();
             $("#compose-send-button").removeAttr('disabled');
             $("#sending-indicator").hide();
