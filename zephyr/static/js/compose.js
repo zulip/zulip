@@ -5,6 +5,17 @@ var is_composing_message = false;
 var faded_to;
 var message_snapshot;
 
+// This function resets an input type="file".  Pass in the
+// jquery object.
+function clear_out_file_list(jq_file_list) {
+    var clone_for_ie_sake = jq_file_list.clone(true);
+    jq_file_list.replaceWith(clone_for_ie_sake);
+
+    // Hack explanation:
+    // IE won't let you do this (untested, but so says StackOverflow):
+    //    $("#file_input").val("");
+}
+
 function show(tabname, focus_area) {
     if (tabname === "stream") {
         $('#private-message').hide();
@@ -623,6 +634,12 @@ $(function () {
             $("#compose-send-button").removeAttr("disabled");
             $("#send-status").removeClass("alert-info")
                              .hide();
+
+            // In order to upload the same file twice in a row, we need to clear out
+            // the #file_input element, so that the next time we use the file dialog,
+            // an actual change event is fired.  This is extracted to a function
+            // to abstract away some IE hacks.
+            clear_out_file_list($("#file_input"));
         },
         rawDrop: function (contents) {
             var textbox = $("#new_message_content");
