@@ -768,6 +768,10 @@ def subscribed_to_stream(user_profile, stream):
     except Subscription.DoesNotExist:
         return False
 
+def do_update_onboarding_steps(user_profile, steps):
+    user_profile.onboarding_steps = simplejson.dumps(steps)
+    user_profile.save()
+
 def do_finish_tutorial(user_profile):
     user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
     user_profile.save()
