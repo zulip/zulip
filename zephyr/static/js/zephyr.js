@@ -385,6 +385,8 @@ function process_read_messages(messages) {
     update_unread_counts();
 }
 
+// If we ever materially change the algorithm for this function, we
+// may need to update notifications.received_messages as well.
 function process_visible_unread_messages() {
     // For any messages visible on the screen, make sure they have been marked
     // as unread.
@@ -837,6 +839,9 @@ function get_updates(options) {
                     }
                 }
 
+                // notifications.received_messages uses values set by
+                // process_visible_unread_messages and thus must
+                // be called after it
                 process_visible_unread_messages();
                 notifications.received_messages(messages);
                 compose.update_faded_messages();
