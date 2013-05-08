@@ -912,7 +912,7 @@ def do_send_missedmessage_email(user_profile, missed_messages):
 
     template_payload = {'name': user_profile.full_name,
                         'messages': messages_to_render,
-                        'url': 'https://www.humbughq.com'}
+                        'url': 'https://humbughq.com'}
 
     senders = set(m.sender.full_name for m in missed_messages)
     sender_str = ", ".join(senders)
