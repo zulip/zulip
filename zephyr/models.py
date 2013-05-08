@@ -18,6 +18,7 @@ from zephyr.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import post_save
 
 from bitfield import BitField
+import simplejson
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
@@ -98,6 +99,11 @@ class UserProfile(AbstractBaseUser):
                          (TUTORIAL_FINISHED, "Finished"))
 
     tutorial_status = models.CharField(default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1)
+    # Contains serialized JSON of the form:
+    #    [("step 1", true), ("step 2", false)]
+    # where the second element of each tuple is if the step has been
+    # completed.
+    onboarding_steps = models.TextField(default=simplejson.dumps([]))
 
     def tutorial_stream_name(self):
         # If you change this, you need to change the corresponding
