@@ -1404,13 +1404,17 @@ class ChangeSettingsTest(AuthedTestCase):
         post_params = {"full_name": "Foo Bar",
                   "old_password": initial_password("hamlet@humbughq.com"),
                   "new_password": "foobar1", "confirm_password": "foobar1",
-                  "enable_desktop_notifications": ""}
+                  "enable_desktop_notifications": "",
+                  "enable_offline_email_notifications": "",
+                  "enable_sounds": ""}
         post_params.update(modified_params)
         return self.client.post("/json/settings/change", dict(post_params))
 
     def check_well_formed_change_settings_response(self, result):
         self.assertIn("full_name", result)
         self.assertIn("enable_desktop_notifications", result)
+        self.assertIn("enable_sounds", result)
+        self.assertIn("enable_offline_email_notifications", result)
 
     def test_successful_change_settings(self):
         """
