@@ -590,7 +590,7 @@ log_autovacuum_min_duration = 100
 wal_level = hot_standby
 max_wal_senders = 5
 archive_mode = on
-archive_command = 'cp -f %p /var/lib/postgresql/9.1/main/archive/%f </dev/null'
+archive_command = '/usr/local/bin/env-wal-e wal-push %p'
 
 # Standby replication settings (ignored on master)
 hot_standby = on
