@@ -225,6 +225,7 @@ function end_tutorial(dont_load_subs) {
     if (dont_load_subs !== true) {
         load_real_subs();
     }
+    onboarding.initialize();
 }
 
 exports.start = function () {
