@@ -5,7 +5,7 @@ from zephyr.models import UserActivity, get_client
 
 from zephyr.decorator import asynchronous, authenticated_api_view, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
-    has_request_variables, POST, to_non_negative_int, json_to_bool, json_to_list, \
+    has_request_variables, to_non_negative_int, json_to_bool, json_to_list, \
     JsonableError, authenticated_rest_api_view, REQ
 
 from zephyr.lib.response import json_response, json_success, json_error

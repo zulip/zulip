@@ -81,7 +81,7 @@ def authenticated_api_view(view_func):
     @require_post
     @has_request_variables
     @wraps(view_func)
-    def _wrapped_view_func(request, email=POST, api_key=POST('api-key'),
+    def _wrapped_view_func(request, email=REQ, api_key=REQ('api-key'),
                            *args, **kwargs):
         user_profile = validate_api_key(email, api_key)
         request._email = email
@@ -159,7 +159,7 @@ def authenticated_json_post_view(view_func):
     @has_request_variables
     @wraps(view_func)
     def _wrapped_view_func(request,
-                           client=POST(default=get_client("website"), converter=get_client),
+                           client=REQ(default=get_client("website"), converter=get_client),
                            *args, **kwargs):
         return authenticate_log_and_execute_json(request, client, view_func, *args, **kwargs)
     return _wrapped_view_func
@@ -221,7 +221,7 @@ class RequestVariableConversionError(JsonableError):
         return "Bad value for '%s': %s" % (self.var_name, self.bad_value)
 
 # Used in conjunction with @has_request_variables, below
-class POST(object):
+class REQ(object):
     # NotSpecified is a sentinel value for determining whether a
     # default value was specified for a request variable.  We can't
     # use None because that could be a valid, user-specified default
@@ -248,19 +248,14 @@ class POST(object):
         self.converter = converter
         self.default = default
 
-class REQ(POST):
-    # Like POST, but has_request_variables should check request.REQUEST
-    # instead of just request.POST
-    pass
-
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
 # argument to the function.
 #
 # To use, assign a function parameter a default value that is an
-# instance of the POST class.  That paramter will then be
-# automatically populated from the HTTP request.  The request object
-# must be the first argument to the decorated function.
+# instance of the REQ class.  That paramter will then be automatically
+# populated from the HTTP request.  The request object must be the
+# first argument to the decorated function.
 #
 # This should generally be the innermost (syntactically bottommost)
 # decorator applied to a view, since other decorators won't preserve
@@ -283,16 +278,15 @@ def has_request_variables(view_func):
     post_params = []
 
     for (name, value) in zip(default_param_names, default_param_values):
-        if isinstance(value, POST):
+        if isinstance(value, REQ):
             value.func_var_name = name
             if value.post_var_name is None:
                 value.post_var_name = name
             post_params.append(value)
-        elif value in [POST, REQ]:
-            # If the function definition does not actually
-            # instantiate a POST/REQ object but instead uses the
-            # POST/REQ class itself as a value, we instantiate it as a
-            # convenience
+        elif value == REQ:
+            # If the function definition does not actually instantiate
+            # a REQ object but instead uses the REQ class itself as a
+            # value, we instantiate it as a convenience
             post_var = value(name)
             post_var.func_var_name = name
             post_params.append(post_var)
@@ -305,12 +299,9 @@ def has_request_variables(view_func):
 
             default_assigned = False
             try:
-                if isinstance(param, REQ):
-                    val = request.REQUEST[param.post_var_name]
-                else:
-                    val = request.POST[param.post_var_name]
+                val = request.REQUEST[param.post_var_name]
             except KeyError:
-                if param.default is POST.NotSpecified:
+                if param.default is REQ.NotSpecified:
                     raise RequestVariableMissingError(param.post_var_name)
                 val = param.default
                 default_assigned = True

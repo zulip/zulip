@@ -39,7 +39,7 @@ from openid.extensions import ax
 
 from zephyr.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
-    has_request_variables, POST, authenticated_json_view, \
+    has_request_variables, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
     authenticated_rest_api_view, process_as_post, REQ
@@ -310,7 +310,7 @@ def api_endpoint_docs(request):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_invite_users(request, user_profile, invitee_emails=POST):
+def json_invite_users(request, user_profile, invitee_emails=REQ):
     # Validation
     if settings.ALLOW_REGISTER == False:
         try:
@@ -561,7 +561,7 @@ def json_update_pointer(request, user_profile):
 @process_as_post
 @has_request_variables
 def update_pointer_backend(request, user_profile,
-                           pointer=POST(converter=to_non_negative_int)):
+                           pointer=REQ(converter=to_non_negative_int)):
     if pointer <= user_profile.pointer:
         return json_success()
 
@@ -596,8 +596,8 @@ def json_get_old_messages(request, user_profile):
 @authenticated_api_view
 @has_request_variables
 def api_get_old_messages(request, user_profile,
-                         apply_markdown=POST(default=False,
-                                             converter=simplejson.loads)):
+                         apply_markdown=REQ(default=False,
+                                            converter=simplejson.loads)):
     return get_old_messages_backend(request, user_profile,
                                     apply_markdown=apply_markdown)
 
@@ -879,10 +879,9 @@ def get_profile_backend(request, user_profile):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_update_flags(request, user_profile, messages=POST('messages', converter=json_to_list),
-                                            operation=POST('op'),
-                                            flag=POST('flag'),
-                                            all=POST('all', converter=json_to_bool, default=False)):
+def json_update_flags(request, user_profile, messages=REQ('messages', converter=json_to_list),
+                      operation=REQ('op'), flag=REQ('flag'),
+                      all=REQ('all', converter=json_to_bool, default=False)):
     update_message_flags(user_profile, operation, flag, messages, all)
     return json_success({'result': 'success',
                          'messages': messages,
@@ -898,7 +897,8 @@ def json_send_message(request, user_profile):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_change_enter_sends(request, user_profile, enter_sends=POST('enter_sends', json_to_bool)):
+def json_change_enter_sends(request, user_profile,
+                            enter_sends=REQ('enter_sends', json_to_bool)):
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()
 
@@ -946,9 +946,9 @@ def create_mirrored_message_users(request, user_profile, recipients):
 @authenticated_json_post_view
 @has_request_variables
 def json_tutorial_send_message(request, user_profile,
-                               message_type_name = POST('type'),
-                               subject_name = POST('subject', lambda x: x.strip(), None),
-                               message_content=POST('content')):
+                               message_type_name = REQ('type'),
+                               subject_name = REQ('subject', lambda x: x.strip(), None),
+                               message_content = REQ('content')):
     """
     This function, used by the onboarding tutorial, causes the
     Tutorial Bot to send you the message you pass in here.
@@ -982,7 +982,7 @@ def json_tutorial_send_message(request, user_profile,
 
 @authenticated_json_post_view
 @has_request_variables
-def json_tutorial_status(request, user_profile, status=POST('status')):
+def json_tutorial_status(request, user_profile, status=REQ('status')):
     if status == 'started':
         user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED
         user_profile.save()
@@ -997,11 +997,11 @@ def json_tutorial_status(request, user_profile, status=POST('status')):
 # the user is logged in.
 @has_request_variables
 def send_message_backend(request, user_profile,
-                         message_type_name = POST('type'),
-                         message_to = POST('to', converter=extract_recipients),
-                         forged = POST(default=False),
-                         subject_name = POST('subject', lambda x: x.strip(), None),
-                         message_content = POST('content')):
+                         message_type_name = REQ('type'),
+                         message_to = REQ('to', converter=extract_recipients),
+                         forged = REQ(default=False),
+                         subject_name = REQ('subject', lambda x: x.strip(), None),
+                         message_content = REQ('content')):
     client = request.client
     is_super_user = is_super_user_api(request)
     if forged and not is_super_user:
@@ -1077,8 +1077,8 @@ def list_subscriptions_backend(request, user_profile):
 @transaction.commit_on_success
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,
-        delete=POST(converter=json_to_list, default=[]),
-        add=POST(converter=json_to_list, default=[])):
+                                 delete=REQ(converter=json_to_list, default=[]),
+                                 add=REQ(converter=json_to_list, default=[])):
     if not add and not delete:
         return json_error('Nothing to do. Specify at least one of "add" or "delete".')
 
@@ -1101,7 +1101,7 @@ def json_remove_subscriptions(request, user_profile):
 
 @has_request_variables
 def remove_subscriptions_backend(request, user_profile,
-                                 streams_raw = POST("subscriptions", json_to_list)):
+                                 streams_raw = REQ("subscriptions", json_to_list)):
 
     streams = list_to_streams(streams_raw, user_profile)
 
@@ -1125,9 +1125,9 @@ def json_add_subscriptions(request, user_profile):
 
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
-                              streams_raw = POST('subscriptions', json_to_list),
-                              invite_only = POST('invite_only', json_to_bool, default=False),
-                              principals = POST('principals', json_to_list, default=None),):
+                              streams_raw = REQ('subscriptions', json_to_list),
+                              invite_only = REQ('invite_only', json_to_bool, default=False),
+                              principals = REQ('principals', json_to_list, default=None),):
 
     stream_names = []
     for stream_name in streams_raw:
@@ -1258,7 +1258,7 @@ def json_upload_file(request, user_profile):
     return json_success({'uri': "https://%s.s3.amazonaws.com/%s" % (settings.S3_BUCKET, key.key)})
 
 @has_request_variables
-def get_subscribers_backend(request, user_profile, stream_name=POST('stream')):
+def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
     if user_profile.realm.domain == "mit.edu":
         return json_error("You cannot get subscribers in this realm")
 
@@ -1278,16 +1278,16 @@ def get_subscribers_backend(request, user_profile, stream_name=POST('stream')):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_change_settings(request, user_profile, full_name=POST,
-                         old_password=POST, new_password=POST,
-                         confirm_password=POST,
+def json_change_settings(request, user_profile, full_name=REQ,
+                         old_password=REQ, new_password=REQ,
+                         confirm_password=REQ,
                          # enable_desktop_notification needs to default to False
                          # because browsers POST nothing for an unchecked checkbox
-                         enable_desktop_notifications=POST(converter=lambda x: x == "on",
-                                                           default=False),
-                         enable_sounds=POST(converter=lambda x: x == "on"),
-                         enable_offline_email_notifications=POST(converter=lambda x: x == "on",
-                                                                 default=False)):
+                         enable_desktop_notifications=REQ(converter=lambda x: x == "on",
+                                                          default=False),
+                         enable_sounds=REQ(converter=lambda x: x == "on"),
+                         enable_offline_email_notifications=REQ(converter=lambda x: x == "on",
+                                                                default=False)):
     if new_password != "" or confirm_password != "":
         if new_password != confirm_password:
             return json_error("New password must match confirmation password!")
@@ -1316,7 +1316,7 @@ def json_change_settings(request, user_profile, full_name=POST,
 
 @authenticated_json_post_view
 @has_request_variables
-def json_stream_exists(request, user_profile, stream=POST):
+def json_stream_exists(request, user_profile, stream=REQ):
     return stream_exists_backend(request, user_profile, stream)
 
 def stream_exists_backend(request, user_profile, stream_name):
@@ -1366,7 +1366,7 @@ def json_subscription_property(request, user_profile, stream_name=REQ,
     elif request.method == "POST":
         @has_request_variables
         def do_set_property(request,
-                            value=POST(converter=property_converters[property])):
+                            value=REQ(converter=property_converters[property])):
             setattr(sub, property, value)
             sub.save(update_fields=[property])
             log_subscription_property_change(user_profile.email, stream_name,
@@ -1379,7 +1379,7 @@ def json_subscription_property(request, user_profile, stream_name=REQ,
 @csrf_exempt
 @require_post
 @has_request_variables
-def api_fetch_api_key(request, username=POST, password=POST):
+def api_fetch_api_key(request, username=REQ, password=REQ):
     user_profile = authenticate(username=username, password=password)
     if user_profile is None:
         return json_error("Your username or password is incorrect.", status=403)
@@ -1389,7 +1389,7 @@ def api_fetch_api_key(request, username=POST, password=POST):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_fetch_api_key(request, user_profile, password=POST):
+def json_fetch_api_key(request, user_profile, password=REQ):
     if not user_profile.check_password(password):
         return json_error("Your username or password is incorrect.")
     return json_success({"api_key": user_profile.api_key})
@@ -1492,10 +1492,10 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
 
 @authenticated_api_view
 @has_request_variables
-def api_github_landing(request, user_profile, event=POST,
-                       payload=POST(converter=json_to_dict),
-                       branches=POST(default=''),
-                       stream=POST(default='')):
+def api_github_landing(request, user_profile, event=REQ,
+                       payload=REQ(converter=json_to_dict),
+                       branches=REQ(default=''),
+                       stream=REQ(default='')):
     # TODO: this should all be moved to an external bot
     repository = payload['repository']
 
@@ -1725,7 +1725,8 @@ def beanstalk_decoder(view_func):
 @beanstalk_decoder
 @authenticated_rest_api_view
 @has_request_variables
-def api_beanstalk_webhook(request, user_profile, payload=POST(converter=json_to_dict)):
+def api_beanstalk_webhook(request, user_profile,
+                          payload=REQ(converter=json_to_dict)):
     # Beanstalk supports both SVN and git repositories
     # We distinguish between the two by checking for a
     # 'uri' key that is only present for git repos
@@ -1759,9 +1760,7 @@ def get_status_list(requesting_user_profile):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_update_active_status(request, user_profile,
-                              status=POST):
-
+def json_update_active_status(request, user_profile, status=REQ):
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError("Invalid presence status: %s" % (status,))
@@ -1801,10 +1800,10 @@ if not (settings.DEBUG or settings.TEST_SUITE):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_report_error(request, user_profile, message=POST, stacktrace=POST,
-                      ui_message=POST(converter=json_to_bool), user_agent=POST,
-                      href=POST,
-                      more_info=POST(converter=json_to_dict, default=None)):
+def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
+                      ui_message=REQ(converter=json_to_bool), user_agent=REQ,
+                      href=REQ,
+                      more_info=REQ(converter=json_to_dict, default=None)):
     subject = "error for %s" % (user_profile.email,)
     if ui_message:
         subject = "User-visible browser " + subject
@@ -1833,13 +1832,13 @@ def json_events_register(request, user_profile):
 # Does not need to be authenticated because it's called from rest_dispatch
 @has_request_variables
 def api_events_register(request, user_profile,
-                        apply_markdown=POST(default=False, converter=json_to_bool)):
+                        apply_markdown=REQ(default=False, converter=json_to_bool)):
     return events_register_backend(request, user_profile,
                                    apply_markdown=apply_markdown)
 
 @has_request_variables
 def events_register_backend(request, user_profile, apply_markdown=True,
-                            event_types=POST(converter=json_to_list, default=None)):
+                            event_types=REQ(converter=json_to_list, default=None)):
     ret = do_events_register(user_profile, request.client, apply_markdown,
                              event_types)
     return json_success(ret)
