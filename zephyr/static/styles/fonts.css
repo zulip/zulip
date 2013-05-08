@@ -157,10 +157,11 @@
 
 @font-face {
   font-family: 'FontAwesome';
-  src: url('../third/fontawesome/fontawesome-webfont.eot?v=3.0.1');
-  src: url('../third/fontawesome/fontawesome-webfont.eot?#iefix&v=3.0.1') format('embedded-opentype'),
-    url('../third/fontawesome/fontawesome-webfont.woff?v=3.0.1') format('woff'),
-    url('../third/fontawesome/fontawesome-webfont.ttf?v=3.0.1') format('truetype');
+  src: url('../third/fontawesome/fontawesome2-webfont.eot?v=3.0.1');
+  src: url('../third/fontawesome/fontawesome2-webfont.eot?#iefix&v=3.0.1') format('embedded-opentype'),
+       url('../third/fontawesome/fontawesome2-webfont.woff?v=3.0.1') format('woff'),
+       url('../third/fontawesome/fontawesome2-webfont.ttf?v=3.0.1') format('truetype'),
+       url('../third/fontawesome/fontawesome2-webfont.svg#FontAwesome') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -288,6 +289,9 @@ ul.icons li [class*=" icon-vector-"] {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
+}
+.icon-vector-small {
+  font-size: 0.8em;
 }
 .icon-vector-2x {
   font-size: 2em;
@@ -435,3 +439,4 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-check:before                { content: "\f046"; }
 .icon-vector-check-empty:before          { content: "\f096"; }
 .icon-vector-comment:before              { content: "\f075"; }
+.icon-vector-narrow:before               { content: "\f01f"; }
