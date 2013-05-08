@@ -211,7 +211,7 @@ def rest_get_events(request, user_profile, handler,
 
 @has_request_variables
 def get_events_backend(request, user_profile, handler,
-                       user_client = POST(converter=get_client, default=None),
+                       user_client = REQ(converter=get_client, default=None),
                        last_event_id = REQ(converter=int, default=None),
                        queue_id = REQ(default=None), apply_markdown=True,
                        event_types = REQ(default=None, converter=json_to_list),
