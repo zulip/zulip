@@ -100,31 +100,33 @@ class EmbedlyProcessor(markdown.treeprocessors.Treeprocessor):
         to_process = [url for url in supported_urls if not url in oembeds]
         to_cache = {}
 
-        try:
-            responses = embedly_client.oembed(to_process, maxwidth=250)
-        except httplib2.socket.timeout:
-            # We put this in its own try-except because it requires external
-            # connectivity. If embedly flakes out, we don't want to not-render
-            # the entire message; we just want to not show the embedly preview.
-            logging.warning("Embedly Embed timeout for URLs: %s" % (" ".join(to_process)))
-            logging.warning(traceback.format_exc())
-            return root
-        except Exception:
-            # If things break for any other reason, don't make things sad.
-            logging.warning(traceback.format_exc())
-            return root
-        for oembed_data in responses:
-            # Don't cache permanent errors
-            if oembed_data["type"] == "error" and \
-                    oembed_data["error_code"] in (500, 501, 503):
-                continue
-            # Convert to dict because otherwise pickling won't work.
-            to_cache[oembed_data["original_url"]] = dict(oembed_data)
+        if to_process:
+            # Don't touch embed.ly if we have everything cached.
+            try:
+                responses = embedly_client.oembed(to_process, maxwidth=250)
+            except httplib2.socket.timeout:
+                # We put this in its own try-except because it requires external
+                # connectivity. If embedly flakes out, we don't want to not-render
+                # the entire message; we just want to not show the embedly preview.
+                logging.warning("Embedly Embed timeout for URLs: %s" % (" ".join(to_process)))
+                logging.warning(traceback.format_exc())
+                return root
+            except Exception:
+                # If things break for any other reason, don't make things sad.
+                logging.warning(traceback.format_exc())
+                return root
+            for oembed_data in responses:
+                # Don't cache permanent errors
+                if oembed_data["type"] == "error" and \
+                        oembed_data["error_code"] in (500, 501, 503):
+                    continue
+                # Convert to dict because otherwise pickling won't work.
+                to_cache[oembed_data["original_url"]] = dict(oembed_data)
 
-        # Cache the newly collected data to the database
-        cache_set_many(dict((hash_embedly_url(link), to_cache[link]) for link in to_cache),
-                       cache_name="database")
-        oembeds.update(to_cache)
+            # Cache the newly collected data to the database
+            cache_set_many(dict((hash_embedly_url(link), to_cache[link]) for link in to_cache),
+                           cache_name="database")
+            oembeds.update(to_cache)
 
         # Now let's process the URLs in order
         for link in supported_urls:
