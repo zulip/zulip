@@ -29,7 +29,8 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, set_stream_color, get_stream_colors, update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, do_finish_tutorial, \
-    get_status_dict, do_change_enable_offline_email_notifications
+    get_status_dict, do_change_enable_offline_email_notifications, \
+    do_update_onboarding_steps
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_unique, is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -900,6 +901,14 @@ def json_send_message(request, user_profile):
 def json_change_enter_sends(request, user_profile,
                             enter_sends=REQ('enter_sends', json_to_bool)):
     do_change_enter_sends(user_profile, enter_sends)
+    return json_success()
+
+@authenticated_json_post_view
+@has_request_variables
+def json_update_onboarding_steps(request, user_profile,
+                                 onboarding_steps=REQ(converter=json_to_list,
+                                                      default=[])):
+    do_update_onboarding_steps(user_profile, onboarding_steps)
     return json_success()
 
 # Currently tabbott/extra@mit.edu is our only superuser.  TODO: Make
