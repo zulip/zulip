@@ -46,6 +46,7 @@ exports.message_viewport_info = function () {
 
     res.top_hidden_height =
         $("#top_navbar").height()
+        + $("#tab_bar").height()
         + $(".message_header").height();
 
     res.bottom_hidden_height =
@@ -74,6 +75,7 @@ function effective_page_size() {
     var page_size =
         viewport.height()
         - $("#top_navbar").height()
+        - $("#tab_bar").height()
         - message_header_height
         - $("#compose").height();
 
@@ -323,7 +325,7 @@ function get_new_heights() {
 
     res.main_div_min_height =
         viewport.height()
-        - $("#top_navbar").height(); 
+        - $("#top_navbar").height();
 
     res.bottom_sidebar_height =
         viewport.height()
@@ -350,6 +352,8 @@ function get_new_heights() {
 function resizehandler(e) {
     var composebox = $("#compose");
     var floating_recipient_bar = $("#floating_recipient_bar");
+    var tab_bar = $("#tab_bar");
+    var tab_bar_under = $("#tab_bar_underpadding");
     var desired_width;
     if (exports.home_tab_obscured() === 'other_tab') {
         desired_width = $("div.tab-pane.active").outerWidth();
@@ -358,6 +362,8 @@ function resizehandler(e) {
     }
     composebox.width(desired_width);
     floating_recipient_bar.width(desired_width);
+    tab_bar.width(desired_width);
+    tab_bar_under.width(desired_width);
 
     var h = get_new_heights();
 
@@ -1177,7 +1183,8 @@ $(function () {
 
     $("#stream").on('blur', function () { compose.decorate_stream_bar(this.value); });
 
-    $("li[data-name='home']").on('click', function () {
+    // Capture both the left-sidebar Home click and the tab breadcrumb Home
+    $(document).on('click', "li[data-name='home']", function () {
         ui.change_tab_to('#home');
         narrow.deactivate();
         // We need to maybe scroll to the selected message

@@ -287,6 +287,7 @@ ul.filters li.out_of_home_view {
 }
 
 .message_area_padder {
+    margin-top: 10px;
     padding-left: 10px;
     padding-right: 20px;
     /* This is needed for the floating recipient bar
@@ -726,6 +727,88 @@ input.recipient_box {
     width: 99%;
 }
 
+#tab_bar {
+    position: fixed;
+    top: 41px;
+    background-color: #FFFFFF;
+    z-index: 2;
+
+    padding-top: 10px;
+}
+
+#tab_list {
+    list-style: none;
+    height: 20px;
+
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 5px;
+
+    border-bottom: 3px solid #7dcbff;
+}
+
+#tab_list li {
+    list-style-type: none;
+    display: block;
+    float: left;
+
+    font-weight: 600;
+
+    margin: 0px 0px 0px 5px;
+    padding: 0px 5px 0px 5px;
+
+    height: 20px;
+}
+
+#tab_list li.narrow_spacer {
+    margin: 0px 0px 0px 5px;
+    padding: 0px 0px 0px 0px;
+}
+
+#tab_list a {
+    text-decoration: none;
+    color: inherit;
+}
+
+#tab_list .inactive {
+    background-color: #DDDDDD;
+}
+
+#tab_list .private_message {
+    background-color: #444;
+}
+
+#tab_list li.active {
+    background-color: #DDDDDD;
+
+    height: 22px;
+
+    border-top-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-color: #7dcbff;
+
+    border-style: solid;
+
+}
+
+#tab_list .root {
+    background-color: #7dcbff;
+}
+
+.colorize_tab_outline {
+    border-color: #7dcbff;
+}
+
+#tab_bar_underpadding {
+    position: fixed;
+    z-index: 10;
+
+    top: 74px;
+    background-color: #FFF;
+
+    height: 6px;
+}
+
 #navbar-buttons {
     display: table-cell;
     white-space: nowrap;
@@ -790,7 +873,7 @@ input.recipient_box {
     position: fixed;
     /* .message_list max-width */
     text-decoration: none;
-    top: 41px; /* should really be the same as the height of navbar-spacer */
+    top: 70px; /* should really be the same as the height of navbar-spacer + height of the tab bar*/
     visibility: hidden; /* so that we pass clicks through to underneath us */
     /* If zhome has opacity on it, it suddenly starts getting drawn on top
        of top_statusbar -- unless we specify a z-index.  */

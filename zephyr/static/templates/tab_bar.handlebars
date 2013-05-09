@@ -1,0 +1,15 @@
+<ul id="tab_list" class="colorize_tab_outline">
+{{#each tabs}}
+  <li class="{{active}} {{cls}}"  {{#if data}}data-name="{{data}}"{{/if}}>
+    {{#if icon}}
+      >
+    {{/if}}
+    {{! Most tabs are links, but some are not since we don't have a narrow for them (e.g. Search) }}
+    {{#if hash}}
+      <a href="{{hash}}">{{title}}</a>
+    {{else}}
+      {{title}}
+    {{/if}}
+  </li>
+{{/each}}
+</ul>

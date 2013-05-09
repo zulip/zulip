@@ -18,7 +18,7 @@ var globals =
     + ' compose rows hotkeys narrow reload notifications_bar search subs'
     + ' composebox_typeahead typeahead_helper notifications hashchange'
     + ' invite ui util activity timerender MessageList blueslip stream_list'
-    + ' onboarding'
+    + ' onboarding tab_bar'
 
     // colorspace.js
     + ' colorspace'

@@ -36,20 +36,29 @@ exports.changehash = function (newhash) {
     }
 };
 
+// Encodes an operator list into the
+// corresponding hash: the # component
+// of the narrow URL
+exports.operators_to_hash = function (operators) {
+    var hash = '#';
+
+    if (operators !== undefined) {
+        hash = '#narrow';
+        $.each(operators, function (idx, elem) {
+            hash += '/' + hashchange.encodeHashComponent(elem[0])
+                  + '/' + hashchange.encodeHashComponent(elem[1]);
+        });
+    }
+
+    return hash;
+};
+
 exports.save_narrow = function (operators) {
     if (changing_hash) {
         return;
     }
-    if (operators === undefined) {
-        exports.changehash('#');
-    } else {
-        var new_hash = '#narrow';
-        $.each(operators, function (idx, elem) {
-            new_hash += '/' + hashchange.encodeHashComponent(elem[0])
-                      + '/' + hashchange.encodeHashComponent(elem[1]);
-        });
-        exports.changehash(new_hash);
-    }
+    var new_hash = exports.operators_to_hash(operators);
+    exports.changehash(new_hash);
 };
 
 function parse_narrow(hash) {

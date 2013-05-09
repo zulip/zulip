@@ -74,8 +74,10 @@ function get_subject_filter_li(stream, subject) {
     return iterate_to_find(".expanded_subjects li", subject, stream_li);
 }
 
+// Adds the sidebar stream name that, when clicked,
+// narrows to that stream
 function add_narrow_filter(name, type) {
-    var uri = "#narrow/stream/" + hashchange.encodeHashComponent(name);
+    var uri = narrow.by_stream_uri(name);
     var list_item;
 
     if (get_filter_li(type, name).length) {

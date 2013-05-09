@@ -589,6 +589,15 @@ exports.hide_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
 };
 
+exports.by_stream_uri = function (stream) {
+    return "#narrow/stream/" + hashchange.encodeHashComponent(stream);
+};
+
+exports.by_stream_subject_uri = function (stream, subject) {
+    return "#narrow/stream/" + hashchange.encodeHashComponent(stream) +
+           "/subject/" + hashchange.encodeHashComponent(subject);
+};
+
 return exports;
 
 }());
