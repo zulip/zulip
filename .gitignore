@@ -8,3 +8,8 @@
 /prod-static
 *.sw[po]
 .DS_Store
+event_queues.pickle
+stats/
+zephyr/fixtures/available-migrations
+zephyr/fixtures/migration-status
+zephyr/fixtures/test_data1.json
