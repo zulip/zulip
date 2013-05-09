@@ -284,7 +284,7 @@ def process_loop(log):
             try:
                 maybe_restart_mirroring_script()
                 if restart_check_count > 0:
-                    logging.info("Stopped getting errors checking whether restart is required.")
+                    logger.info("Stopped getting errors checking whether restart is required.")
                     restart_check_count = 0
             except Exception:
                 if restart_check_count < 5:
