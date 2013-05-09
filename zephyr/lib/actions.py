@@ -934,7 +934,9 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     timestamp = timestamp_to_datetime(event.get('timestamp'))
 
     user_profile = UserProfile.objects.get(id=user_profile_id)
-    messages = Message.objects.filter(id__in=message_ids, usermessage__flags=~UserMessage.flags.read)
+    messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
+                                                                message__id__in=message_ids,
+                                                                flags=~UserMessage.flags.read)]
 
     if len(messages) == 0 or timestamp - user_profile.last_reminder < datetime.timedelta(days=1):
         # Don't spam the user, if we've sent an email in the last day
