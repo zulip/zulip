@@ -1,2 +1,2 @@
 #!/bin/sh -x
-while true; do python /home/humbug/humbug-deployments/current/manage.py runfcgi socket=/home/humbug/humbug-deployments/current/fastcgi-socket outlog=/home/humbug/logs/app.out errlog=/humbug/humbug/logs/app.err daemonize=False; sleep 0.2; done
+while true; do python /home/humbug/humbug-deployments/current/manage.py runfcgi socket=/home/humbug/humbug-deployments/current/fastcgi-socket outlog=/home/humbug/logs/app.out errlog=/humbug/humbug/logs/app.err daemonize=False maxchildren=20; sleep 0.2; done
