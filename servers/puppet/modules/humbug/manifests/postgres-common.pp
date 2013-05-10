@@ -30,6 +30,17 @@ class humbug::postgres-common {
     require => File["/usr/local/bin/env-wal-e"],
   }
 
+  cron { "pg_backup_and_purge":
+    command => "/usr/local/bin/pg_backup_and_purge.py",
+    ensure => present,
+    environment => "PATH=/usr/bin:/usr/local/bin",
+    hour => 5,
+    minute => 0,
+    target => "postgres",
+    user => "postgres",
+    require => [ File["/usr/local/bin/pg_backup_and_purge.py"], Package["postgresql-9.1", "python-dateutil"] ]
+  }
+
   file { "/etc/postgresql/9.1/main/pg_hba.conf":
     require => Package["postgresql-9.1"],
     ensure => file,
