@@ -25,7 +25,7 @@ subprocess.check_call(["python", "./manage.py", "send_stats", "incr", "events.se
 # Restart the FastCGI process, which is running in a shell loop in screen.
 # TODO: real daemonization
 logging.info("Killing daemons")
-for cmd in ('runfcgi', 'runtornado', "process_user_activity", "subscribe_new_users", "send_confirmation_emails"):
+for cmd in ('runfcgi', 'runtornado', "process_user_activity", "subscribe_new_users", "send_confirmation_emails", "send_missedmessage_reminders"):
     try:
         subprocess.check_call(["pkill", "-f", "manage.py " + cmd])
     except subprocess.CalledProcessError:
