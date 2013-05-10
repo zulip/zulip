@@ -518,6 +518,11 @@ blockquote p {
     cursor: default;
 }
 
+#enter-sends-label {
+    margin-bottom: 0px;
+    margin-top: 2px;
+}
+
 #send_message_form .message_content {
     display: table-row;
     margin-right: 0px;
