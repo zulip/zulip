@@ -415,10 +415,13 @@ def internal_send_message(sender_email, recipient_type_name, recipients,
     if ret is not None:
         logging.error("Error sending internal message by %s: %s" % (sender_email, ret))
 
-def get_stream_colors(user_profile):
-    return [(sub["name"], sub["color"]) for sub in gather_subscriptions(user_profile)]
-
 def pick_color(user_profile):
+    subs = Subscription.objects.filter(user_profile=user_profile,
+                                       active=True,
+                                       recipient__type=Recipient.STREAM)
+    return pick_color_helper(user_profile, subs)
+
+def pick_color_helper(user_profile, subs):
     # These colors are shared with the palette in subs.js.
     stream_assignment_colors = [
         "#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
@@ -427,7 +430,7 @@ def pick_color(user_profile):
         "#ee7e4a", "#a6dcbf", "#95a5fd", "#53a063",
         "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
         "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
-    used_colors = [elt[1] for elt in get_stream_colors(user_profile) if elt[1]]
+    used_colors = [sub.color for sub in subs if sub.active]
     available_colors = filter(lambda x: x not in used_colors,
                               stream_assignment_colors)
 
@@ -450,6 +453,62 @@ def set_stream_color(user_profile, stream_name, color=None):
     subscription.save(update_fields=["color"])
     return color
 
+def notify_new_subscription(user_profile, stream, subscription, no_log=False):
+    if not no_log:
+        log_event({'type': 'subscription_added',
+                   'user': user_profile.email,
+                   'name': stream.name,
+                   'domain': stream.realm.domain})
+
+    notice = dict(event=dict(type="subscription", op="add",
+                             subscription=dict(name=stream.name,
+                                               in_home_view=subscription.in_home_view,
+                                               invite_only=stream.invite_only,
+                                               color=subscription.color)),
+                  users=[user_profile.id])
+    tornado_callbacks.send_notification(notice)
+
+# This function assumes that the users are known to not be subscribers
+# of the stream (e.g. because the stream was created by this same query)
+def bulk_add_subscriptions(stream, users):
+    recipient = get_recipient(Recipient.STREAM, stream.id)
+    all_subs = Subscription.objects.filter(user_profile__in=users,
+                                           recipient__type=Recipient.STREAM)
+
+    subs_by_user = defaultdict(list)
+    for sub in all_subs:
+        subs_by_user[sub.user_profile_id].append(sub)
+
+    already_subscribed = []
+    subs_to_activate = []
+    users_needing_new_subs = []
+    for user_profile in users:
+        needs_new_sub = True
+        for sub in subs_by_user[user_profile.id]:
+            if sub.recipient_id == recipient.id:
+                needs_new_sub = False
+                if sub.active:
+                    already_subscribed.append(user_profile)
+                else:
+                    subs_to_activate.append(sub)
+        if needs_new_sub:
+            users_needing_new_subs.append(user_profile)
+
+    subs_to_add = []
+    for user_profile in users_needing_new_subs:
+        color = pick_color_helper(user_profile, subs_by_user[user_profile.id])
+        subs_to_add.append(Subscription(user_profile=user_profile,
+                                        active=True, color=color,
+                                        recipient=recipient))
+    Subscription.objects.bulk_create(subs_to_add)
+    Subscription.objects.filter(id__in=[s.id for s in subs_to_activate]).update(active=True)
+
+    for sub in subs_to_add + subs_to_activate:
+        notify_new_subscription(sub.user_profile, stream, sub)
+    return (users_needing_new_subs + [sub.user_profile for sub in subs_to_activate],
+            already_subscribed)
+
+# When changing this, also change bulk_add_subscriptions
 def do_add_subscription(user_profile, stream, no_log=False):
     recipient = get_recipient(Recipient.STREAM, stream.id)
     color = pick_color(user_profile)
@@ -462,20 +521,7 @@ def do_add_subscription(user_profile, stream, no_log=False):
         subscription.active = True
         subscription.save(update_fields=["active"])
     if did_subscribe:
-        if not no_log:
-            log_event({'type': 'subscription_added',
-                       'user': user_profile.email,
-                       'name': stream.name,
-                       'domain': stream.realm.domain})
-
-        notice = dict(event=dict(type="subscription", op="add",
-                                 subscription=dict(name=stream.name,
-                                                   in_home_view=subscription.in_home_view,
-                                                   invite_only=stream.invite_only,
-                                                   color=subscription.color)),
-                      users=[user_profile.id])
-        tornado_callbacks.send_notification(notice)
-
+        notify_new_subscription(user_profile, stream, subscription, no_log)
     return did_subscribe
 
 def do_remove_subscription(user_profile, stream, no_log=False):

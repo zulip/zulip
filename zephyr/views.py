@@ -27,7 +27,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_send_confirmation_email, do_activate_user, do_create_user, check_send_message, \
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
-    update_user_presence, set_stream_color, get_stream_colors, update_message_flags, \
+    update_user_presence, bulk_add_subscriptions, update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, do_finish_tutorial, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_update_onboarding_steps
@@ -1175,12 +1175,11 @@ def add_subscriptions_backend(request, user_profile,
 
     result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
     for stream in streams:
-        for subscriber in subscribers:
-            did_subscribe = do_add_subscription(subscriber, stream)
-            if did_subscribe:
-                result["subscribed"][subscriber.email].append(stream.name)
-            else:
-                result["already_subscribed"][subscriber.email].append(stream.name)
+        (subscribed, already_subscribed) = bulk_add_subscriptions(stream, subscribers)
+        for subscriber in subscribed:
+            result["subscribed"][subscriber.email].append(stream.name)
+        for subscriber in already_subscribed:
+            result["already_subscribed"][subscriber.email].append(stream.name)
         private_streams[stream.name] = stream.invite_only
 
     # Inform the user if someone else subscribed them to stuff
