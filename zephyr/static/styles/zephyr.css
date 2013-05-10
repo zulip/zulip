@@ -523,6 +523,10 @@ blockquote p {
     margin-right: 0px;
 }
 
+#compose-send-button {
+    height: 31px; /* Same as height of compose textarea. */
+}
+
 #below-compose-content {
     display: table-row;
     font-size: 80%;
@@ -618,7 +622,7 @@ img.inline_profile_picture {
 textarea.new_message_textarea {
     display: table-cell;
     width: 99%;
-    min-height: 3em;
+    height: 1.5em;
     max-height: 11em;
     margin-bottom: 0px;
     resize: none;
@@ -639,10 +643,15 @@ input.recipient_box {
     width: 72%;
 }
 
+#left-of-compose {
+    vertical-align: top;
+    padding-top: 3px;
+}
+
 #send_controls {
     display: table-cell;
     vertical-align: bottom;
-    padding-left: 21px;
+    padding-left: 15px;
     /* jQuery's slideDown() animation seems to compute the target height by
        drawing these elements in an (offscreen) context where they would reflow
        onto multiple lines.  We need to prevent that in order to avoid an
@@ -652,10 +661,6 @@ input.recipient_box {
        button doesn't get smushed as the textarea expands; clearly the
        button is taking up more than the 1% width specified below. */
     width: 1%;
-}
-
-.compose_help_text {
-    font-size: 90%;
 }
 
 #navbar-spacer {
@@ -1187,7 +1192,7 @@ li.expanded_subject {
 }
 
 #compose a.message-control-button {
-    display: inline-block;
+    display: block;
     color: #777;
     text-decoration: none;
     font-size: 14px;
@@ -1196,7 +1201,7 @@ li.expanded_subject {
     margin-right: 5px;
     border-radius: 2px;
     text-align: center;
-    float: left;
+    float: right;
 }
 
 #compose a.message-control-button:hover {

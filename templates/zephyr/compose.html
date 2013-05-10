@@ -38,21 +38,26 @@
               </td>
             </tr>
             <tr>
-              <td class="message_picture"></td>
+              <td id="left-of-compose">
+                <div>
+                  <input type="file" id="file_input" class="notvisible pull-left" multiple />
+                  <a class="message-control-button icon-vector-paper-clip notdisplayed"
+                     id="attach_files" href="#" title="Attach files"></a><br />
+                  <a class="message-control-button icon-vector-font"
+                     href="#markdown-help" title="Formatting" data-toggle="modal"></a>
+                </div>
+              </td>
               <td class="pointer"></td>
               <td class="messagebox">
+
                 <div class="message_content">
                   <textarea class="new_message_textarea" name="content" id="new_message_content"
                             value="" placeholder="Compose your message here..." tabindex="140" maxlength="10000"></textarea>
                   <div id="send_controls">
-                    <a class="compose_help_text" href="#markdown-help" data-toggle="modal" tabindex="160">Formatting</a>
-                    <br />
                     <input type="submit" value="Send" id="compose-send-button" class="btn btn-primary send_message" tabindex="150"/>
                   </div>
                 </div>
                 <div id="below-compose-content">
-                  <input type="file" id="file_input" class="notvisible pull-left" multiple />
-                  <a class="message-control-button icon-vector-paper-clip notdisplayed" id="attach_files" href="#" title="Attach files"></a>
                   <a id="restore-draft" onclick="compose.restore_message();">Restore last draft?</a>
                   <span id="sending-indicator">Sending...</span>
                   <label class="pull-right inline">Press Enter to send&nbsp;
