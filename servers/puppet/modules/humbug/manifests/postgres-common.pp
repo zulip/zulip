@@ -3,7 +3,7 @@ class humbug::postgres-common {
 
   $postgres_packages = [ "postgresql-9.1", "pgtune", "python-boto",
                          "python-argparse", "python-gevent",
-                         "lzop", "pv", "hunspell-en-us"]
+                         "lzop", "pv", "hunspell-en-us", "python-dateutil"]
   package { $postgres_packages: ensure => "installed" }
 
   exec {"pip_wal-e":
@@ -19,6 +19,15 @@ class humbug::postgres-common {
     group => "postgres",
     mode => 750,
     source => "puppet:///modules/humbug/postgresql/env-wal-e",
+  }
+
+  file { "/usr/local/bin/pg_backup_and_purge.py":
+    ensure => file,
+    owner => "root",
+    group => "postgres",
+    mode => 754,
+    source => "puppet:///modules/humbug/postgresql/pg_backup_and_purge.py",
+    require => File["/usr/local/bin/env-wal-e"],
   }
 
   file { "/etc/postgresql/9.1/main/pg_hba.conf":
