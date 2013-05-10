@@ -30,7 +30,8 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     update_user_presence, bulk_add_subscriptions, update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, do_finish_tutorial, \
     get_status_dict, do_change_enable_offline_email_notifications, \
-    do_update_onboarding_steps, do_update_message
+    do_update_onboarding_steps, do_update_message, internal_prep_message, \
+    do_send_messages
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_unique, is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -1227,8 +1228,10 @@ def add_subscriptions_backend(request, user_profile,
             result["already_subscribed"][subscriber.email].append(stream.name)
         private_streams[stream.name] = stream.invite_only
 
+
     # Inform the user if someone else subscribed them to stuff
     if principals and result["subscribed"]:
+        notifications = []
         for email, subscriptions in result["subscribed"].iteritems():
             if email == user_profile.email:
                 # Don't send a Humbug if you invited yourself.
@@ -1249,8 +1252,9 @@ def add_subscriptions_backend(request, user_profile,
                         stream,
                         " (**invite-only**)" if private_streams[stream] else "")
             msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
-            internal_send_message("humbug+notifications@humbughq.com",
-                                  "private", email, "", msg)
+            notifications.append(internal_prep_message("humbug+notifications@humbughq.com",
+                                                       "private", email, "", msg))
+        do_send_messages(notifications)
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
