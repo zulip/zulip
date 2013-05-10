@@ -226,7 +226,7 @@ function get_new_heights() {
 
     res.main_div_min_height =
         viewport.height()
-        - $("top_navbar").height(); 
+        - $("#top_navbar").height(); 
 
     res.bottom_sidebar_height =
         viewport.height()
