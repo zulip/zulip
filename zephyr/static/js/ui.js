@@ -509,24 +509,22 @@ function show_actions_popover(element, id) {
     }
 }
 
-function change_message_collapse(message, collapsed) {
+function update_message_flag(message, flag_name, set_flag) {
     $.ajax({
         type: 'POST',
         url: '/json/update_message_flags',
         data: {messages: JSON.stringify([message.id]),
-               op: collapsed ? 'add' : 'remove',
-               flag: 'collapsed'},
+               op: set_flag ? 'add' : 'remove',
+               flag: flag_name},
         dataType: 'json'});
 }
 
+function change_message_collapse(message, collapsed) {
+    update_message_flag(message, "collapsed", collapsed);
+}
+
 function change_message_star(message, starred) {
-    $.ajax({
-        type: 'POST',
-        url: '/json/update_message_flags',
-        data: {messages: JSON.stringify([message.id]),
-               op: starred ? 'add' : 'remove',
-               flag: 'starred'},
-        dataType: 'json'});
+    update_message_flag(message, "starred", starred);
 }
 
 function toggle_star(row_id) {
