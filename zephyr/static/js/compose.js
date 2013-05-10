@@ -223,6 +223,7 @@ exports.start = function (msg_type, opts) {
     } else {
         show('private', $("#" + (focus_area || 'private_message_recipient')));
     }
+    $(".new_message_textarea").css("min-height", "3em");
 
     if (opts.replying_to_message !== undefined) {
         do_fade(opts.replying_to_message, msg_type);
@@ -395,6 +396,7 @@ exports.hide = function () {
     $('.message_comp').find('input, textarea, button').blur();
     $('#stream-message').hide();
     $('#private-message').hide();
+    $(".new_message_textarea").css("min-height", "");
     notifications_bar.enable();
     exports.unfade_messages(true);
 };
