@@ -1167,8 +1167,10 @@ $(function () {
             ui.hide_actions_popover();
         }
 
-        // Unfocus our compose area if we click out of it.
-        if (compose.composing() && !$(e.target).is("a")) {
+        // Unfocus our compose area if we click out of it. Don't let exits out
+        // of modals trigger cancelling.
+        if (compose.composing() && !$(e.target).is("a") &&
+            ($(e.target).closest(".modal").length === 0)) {
             compose.cancel();
         }
     });
