@@ -1285,7 +1285,8 @@ def json_change_settings(request, user_profile, full_name=REQ,
                          # because browsers POST nothing for an unchecked checkbox
                          enable_desktop_notifications=REQ(converter=lambda x: x == "on",
                                                           default=False),
-                         enable_sounds=REQ(converter=lambda x: x == "on"),
+                         enable_sounds=REQ(converter=lambda x: x == "on",
+                                                          default=False),
                          enable_offline_email_notifications=REQ(converter=lambda x: x == "on",
                                                                 default=False)):
     if new_password != "" or confirm_password != "":
