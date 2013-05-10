@@ -218,6 +218,38 @@ function need_skinny_mode() {
     }
 }
 
+function get_new_heights() {
+    var res = {};
+
+    res.bottom_whitespace_height =
+        viewport.height() * 0.4;
+
+    res.main_div_min_height =
+        viewport.height()
+        - $("top_navbar").height(); 
+
+    res.bottom_sidebar_height =
+        viewport.height()
+        - $("#top_navbar").height()
+        - $(".upper_sidebar").height()
+        - 40;
+
+    res.right_sidebar_height =
+        viewport.height()
+        - $("#top_navbar").height()
+        - $("#notifications-area").height()
+        - 14  // margin for right sidebar
+        - 10; // padding on notifications bar
+
+    res.stream_filters_max_height =
+        res.bottom_sidebar_height * 0.75;
+
+    res.user_presences_max_height =
+        res.right_sidebar_height * 0.90;
+
+    return res;
+}
+
 function resizehandler(e) {
     var composebox = $("#compose");
     var floating_recipient_bar = $("#floating_recipient_bar");
@@ -230,18 +262,14 @@ function resizehandler(e) {
     composebox.width(desired_width);
     floating_recipient_bar.width(desired_width);
 
-    $("#bottom_whitespace").height(viewport.height() * 0.4);
-    $("#main_div").css('min-height', viewport.height() - $("#top_navbar").height());
+    var h = get_new_heights();
 
-    /* total viewport - height of navbar - height of upper sidebar - padding*/
-    var bottom_sidebar_height = viewport.height() - $("#top_navbar").height() - $(".upper_sidebar").height() - 40;
-    $(".bottom_sidebar").height(bottom_sidebar_height);
-    /* viewport - navbar - notifications area - margin on the right-sidebar - padding on the notifications-bar */
-    var right_sidebar_height = viewport.height() - $("#top_navbar").height() - $("#notifications-area").height() - 14 - 10;
-    $("#right-sidebar").height(right_sidebar_height);
-
-    $("#stream_filters").css('max-height', bottom_sidebar_height * 0.75);
-    $("#user_presences").css('max-height', right_sidebar_height * 0.90);
+    $("#bottom_whitespace").height(h.bottom_whitespace_height);
+    $("#main_div").css('min-height', h.main_div_min_height);
+    $(".bottom_sidebar").height(h.bottom_sidebar_height);
+    $("#right-sidebar").height(h.right_sidebar_height);
+    $("#stream_filters").css('max-height', h.stream_filters_max_height);
+    $("#user_presences").css('max-height', h.user_presences_max_height);
 
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
