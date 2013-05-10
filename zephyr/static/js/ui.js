@@ -32,6 +32,66 @@ exports.focus_on = function (field_id) {
     $("#" + field_id).focus();
 };
 
+function effective_page_size() {
+    // This function returns the height of the viewable portion of the
+    // message pane, so it starts with the viewport height and
+    // subtracts out fixed elements like the compose box and nav
+    // bar that sit in a fixed position on top of it.
+
+    var message_header_height = $(".message_header").height();
+
+    var page_size =
+        viewport.height()
+        - $("#top_navbar").height()
+        - message_header_height
+        - $("#compose").height();
+
+    return page_size;
+}
+
+function amount_to_paginate() {
+    // Some day we might have separate versions of this function
+    // for Page Up vs. Page Down, but for now it's the same
+    // strategy in either direction.
+    var page_size = effective_page_size();
+
+    // We don't want to page up a full page, because Humbug users
+    // are especially worried about missing messages, so we want
+    // a little bit of the old page to stay on the screen.  The
+    // value chosen here is roughly 2 or 3 lines of text, but there
+    // is nothing sacred about it, and somebody more anal than me
+    // might wish to tie this to the size of some particular DOM
+    // element.
+    var overlap_amount = 55;
+
+    var delta = page_size - overlap_amount;
+
+    // If the user has shrunk their browser a whole lot, pagination
+    // is not going to be very pleasant, but we can at least
+    // ensure they go in the right direction.
+    if (delta < 1) delta = 1;
+
+    return delta;
+}
+
+exports.page_up_the_right_amount = function () {
+    // This function's job is to scroll up the right amount,
+    // after the user hits Page Up.  We do this ourselves
+    // because we can't rely on the browser to account for certain
+    // page elements, like the compose box, that sit in fixed
+    // positions above the message pane.  For other scrolling
+    // related adjustements, try to make those happen in the
+    // scroll handlers, not here.
+    var delta = amount_to_paginate();
+    viewport.scrollTop(viewport.scrollTop() - delta);
+};
+
+exports.page_down_the_right_amount = function () {
+    // see also: page_up_the_right_amount
+    var delta = amount_to_paginate();
+    viewport.scrollTop(viewport.scrollTop() + delta);
+};
+
 function find_boundary_tr(initial_tr, iterate_row) {
     var j, skip_same_td_check = false;
     var tr = initial_tr;

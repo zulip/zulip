@@ -154,13 +154,19 @@ function process_hotkey(e) {
         if (at_top_of_viewport() && !current_msg_list.empty()) {
             current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
         }
-        return false; // We want the browser to actually page up and down
+        else {
+            ui.page_up_the_right_amount();
+        }
+        return true;
     case 32: // Spacebar
     case 34: // Page Down
         if (at_bottom_of_viewport() && !current_msg_list.empty()) {
             current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
         }
-        return false;
+        else {
+            ui.page_down_the_right_amount();
+        }
+        return true;
     case 27: // Esc: close actions popup, cancel compose, clear a find, or un-narrow
         if (ui.actions_currently_popped()) {
             ui.hide_actions_popover();
