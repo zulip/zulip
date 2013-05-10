@@ -38,7 +38,7 @@ def report(state, short_msg, too_old=None):
 
 now = datetime.datetime.utcnow()
 
-all_users = UserActivity.objects.filter(query="/api/v1/get_messages",
+all_users = UserActivity.objects.filter(query="/api/v1/events",
                                         client__name="zephyr_mirror")
 new_inactive_users = [user for user in all_users if user.last_visit.replace(tzinfo=None) < \
                           now - datetime.timedelta(minutes=10)]
