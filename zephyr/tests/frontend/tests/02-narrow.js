@@ -47,7 +47,7 @@ common.send_many([
 
 function expect_home() {
     common.expected_messages('zhome', [
-        'Verona > frontend test',
+        'Verona frontend test',
         'You and Cordelia Lear, King Hamlet',
         'You and Cordelia Lear'
     ], [
@@ -59,9 +59,9 @@ function expect_home() {
 
 function expect_stream() {
     common.expected_messages('zfilt', [
-        'Verona > frontend test',
-        'Verona > other subject',
-        'Verona > frontend test'
+        'Verona frontend test',
+        'Verona other subject',
+        'Verona frontend test'
     ], [
         '<p>test message A</p>',
         '<p>test message B</p>',
@@ -72,7 +72,7 @@ function expect_stream() {
 
 function expect_stream_subject() {
     common.expected_messages('zfilt', [
-        'Verona > frontend test'
+        'Verona frontend test'
     ], [
         '<p>test message A</p>',
         '<p>test message B</p>',
@@ -82,9 +82,9 @@ function expect_stream_subject() {
 
 function expect_subject() {
     common.expected_messages('zfilt', [
-        'Verona > frontend test',
-        'Venice > frontend test',
-        'Verona > frontend test'
+        'Verona frontend test',
+        'Venice frontend test',
+        'Verona frontend test'
     ], [
         '<p>test message A</p>',
         '<p>test message B</p>',

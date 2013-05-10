@@ -592,7 +592,7 @@ function toggle_star(row_id) {
             // messages table from a stream that isn't in your home view.
             return;
         }
-        var favorite_image = row.find("i");
+        var favorite_image = row.find(".message_star");
         favorite_image.toggleClass("icon-vector-star-empty");
         favorite_image.toggleClass("icon-vector-star");
         var title_state = message.starred ? "Unstar" : "Star";

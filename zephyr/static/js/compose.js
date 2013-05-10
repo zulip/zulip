@@ -90,7 +90,7 @@ exports.decorate_stream_bar = function (stream_name) {
 };
 
 function messages_to_fade() {
-    var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .messagebox");
+    var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row");
     var i, elts_to_fade = [];
     var different_recipient = false;
     // Note: The below algorithm relies on the fact that all_elts is
@@ -117,7 +117,7 @@ exports.unfade_messages = function (clear_state) {
     }
 
     var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
-    rows.get_table(current_msg_list.table_name).find(".recipient_row, .messagebox").removeClass(fade_class);
+    rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row").removeClass(fade_class);
     if (clear_state === true) {
         faded_to = undefined;
     }

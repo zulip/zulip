@@ -289,7 +289,7 @@ ul.filters li.out_of_home_view {
 .message_area_padder {
     margin-top: 10px;
     padding-left: 10px;
-    padding-right: 20px;
+    padding-right: 10px;
     /* This is needed for the floating recipient bar
      in Firefox only, for some reason; otherwise it gets
      a scrollbar */
@@ -314,23 +314,25 @@ ul.filters li.out_of_home_view {
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
+    background-color: #fff;
 }
 
-.selected_message .messagebox {
-    background-color: #F7F7F7;
+.selected_message .messagebox, .selected_message .message_data {
+    background-color: #FAFFC7;
 }
 
-.selected_message .messagebox.private-message {
-    background-color: #FEFFCC;
+.selected_message.private-message .message_data, .selected_message .messagebox.private-message {
+    background-color: #e1ffb2;
 }
 
 .selected_message .messagebox.mention {
     background-color: #FFE0DC;
 }
 
-.selected_message .pointer {
+.selected_message .pointer, .selected_message.private-message .pointer {
     background-color: #08c;
 }
+
 .window_blurred .selected_message .pointer {
     background-color: #9bc;
 }
@@ -350,43 +352,40 @@ td.pointer {
     border-left-color: #BBB;
 }
 
-.message_picture {
+.message_data {
     vertical-align: top;
     text-align: right;
-    padding-right: 7px;
-    padding-top: 5px;
+    padding: 7px 5px 0px 5px;
+    background-color: #fff;
 }
 
 .ztable_layout_row {
     visibility: collapse;
 }
-.ztable_col1 {    /* sender's gravatar */
-    width: 46px;
-}
-@media (max-width: 480px) {
-    .ztable_col1 {
-        width: 0px;
-    }
-}
-.ztable_col2 {    /* pointer */
+
+.ztable_col1 {    /* pointer */
     width: 2px;
 }
-.ztable_col3 {    /* subjectname */
+
+.ztable_col2 {  /* sender's gravatar  and date */
+    width: 50px;
 }
 
-.recipient_row {
-    border: 1px solid grey;
+.ztable_col3 {    /* subjectname */
 }
 
 .message_header {
     vertical-align: middle;
     text-align:     left;
+
     /* We can overflow-y if the font size gets big */
     overflow:       hidden;
     text-overflow:  ellipsis;
     white-space:    nowrap;
-    font-weight:    bold;
-    padding-left:   14px;
+    font-weight:    600;
+    line-height:    14px;
+    padding-top:    4px;
+    padding-left:   5px;
 }
 
 .message_header_stream {
@@ -397,28 +396,42 @@ td.pointer {
     background-color: #444;
 }
 
-.messagebox.private-message {
-    border-width: 0px 1px 1px 1px;
-    background-color: #feffe0;
+.private-message .messagebox, .private-message .message_data, .private-message .pointer {
+    background-color: #E2FFDE;
 }
 
 .messagebox.mention {
     background-color: #FFE4E0;
 }
 
+.selected_message .messagebox.mention {
+    background-color: #FEE4B3;
+}
+
+.message_sender {
+    line-height: 15px;
+    vertical-align: top;
+}
+
 .sender_name {
     color: #333;
-    font-weight: bold;
+    display: inline-block;
+    font-weight: 600;
+    line-height: 14px;
+}
+
+.actions_hover {
+    line-height: 0px;
 }
 
 .actions_hovered .sender_name {
-    color:           #0088CC;
+    color: #0088CC;
     text-decoration: underline;
 }
 
 .message_label_clickable:hover {
     cursor: pointer;
-    color:  #08C;
+    color: #08C;
 }
 
 /* Brighten text because of the dark background */
@@ -440,8 +453,10 @@ td.pointer {
 }
 
 .message_time {
+    display: inline-block;
     font-weight: 300;
-    font-size: 90%;
+    font-size: 80%;
+    line-height: 100%;
 }
 
 .small {
@@ -486,8 +501,6 @@ table.focused_table {
 }
 
 .message_content {
-    margin-left: 5px;
-    margin-right: 35px; /* size of the timestamp */
     line-height: 17px;
 }
 @media (max-width: 480px) {
@@ -529,10 +542,8 @@ blockquote p {
 }
 
 .messagebox {
-    padding: 5px 14px;
-    background-color: white;
-    border: 1px solid gray;
-    border-width: 0px 1px 1px 1px;
+    padding: 5px 10px 5px 5px;
+    background-color: #fff;
     word-wrap: break-word;
     cursor: pointer;
 }
@@ -578,8 +589,12 @@ blockquote p {
     padding-top: 10px;
 }
 
-.prev_is_same_sender {
+.prev_is_same_sender.messagebox {
     padding-top: 0px;
+}
+
+.prev_is_same_sender.message_data {
+    padding-top: 5px;
 }
 
 .next_is_same_sender {
@@ -587,27 +602,31 @@ blockquote p {
     padding-bottom: 0px;
 }
 
-img.profile_picture {
+.profile_picture {
     display: block;
     float: right;
     margin-top: 5px;
-    max-height: 30px;
-    width:  30px;
-    height: 30px;
+    max-height: 15px;
+    width:  15px;
+    height: 15px;
     cursor: pointer;
+    border-radius: 30px;
+   -moz-box-shadow:     1px 1px 1px #777 inset;
+   -webkit-box-shadow:  1px 1px 1px #777 inset;
+    box-shadow:         1px 1px 1px #777 inset;
+    background-size: 15px 15px; 
 }
-@media (max-width: 480px) {
-    img.profile_picture {
-        display: none;
-    }
-}
-img.inline_profile_picture {
-    display: none;
-}
-@media (max-width: 480px) {
-    img.inline_profile_picture {
-        display: inline;
-    }
+
+.inline_profile_picture {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    background-size: 15px 15px;
+   -moz-box-shadow:     1px 1px 1px #777 inset;
+   -webkit-box-shadow:  1px 1px 1px #777 inset;
+    box-shadow:         1px 1px 1px #777 inset;
+    border-radius: 15px;
+    vertical-align: middle;
 }
 
 #compose {
@@ -918,12 +937,6 @@ table.floating_recipient {
     line-height: 38px;
 }
 
-.message_body_gravatar {
-    margin-bottom: 2px;
-    width:  20px;
-    height: 20px;
-}
-
 .message_inline_image {
     margin-bottom: 5px;
     margin-left: 5px;
@@ -1194,14 +1207,10 @@ table.floating_recipient {
 }
 
 .message_reply_fade {
-    /* If we change the message_list background, we must change this */
-    border-color: aliceblue;
     opacity: .4;
 }
 
 .message_reply_fade_narrowed {
-    /* If we change the narrowed_view background, we must change this */
-    border-color: #DDD;
     opacity: .4;
 }
 
@@ -1258,10 +1267,24 @@ li.expanded_subject {
 }
 
 .star {
+    display: inline-block;
     padding-left: 5px;
     opacity: .7;
     font-size: 16px;
     color: #2c8211;
+}
+
+.info {
+    display: inline-block;
+    padding-left: 2px;
+    opacity: .7;
+    font-size: 16px;
+    color: #ccc;
+}
+
+.info:hover {
+    cursor: pointer;
+    opacity: 1;
 }
 
 .star:hover {

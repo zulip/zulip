@@ -30,11 +30,7 @@
 {{#include_recipient}}
 {{#if is_stream}}
 <tr zid="{{id}}" class="recipient_row">
-    <td colspan="2"
-        class="message_header message_header_stream left_part {{color_class}}"
-        style="background-color: {{background_color}};">
-    </td>
-    <td class="message_header message_header_stream right_part {{color_class}}"
+    <td colspan="3" class="message_header message_header_stream right_part {{color_class}}"
         style="background-color: {{background_color}};">
       {{#if invite_only}}<i class="icon-lock" title="This is an invite-only stream"></i>{{/if}}
       <span class="message_label_clickable narrows_by_recipient stream_label"
@@ -46,10 +42,7 @@
 </tr>
 {{else}}
 <tr zid="{{id}}" class="recipient_row">
-    <td colspan="2"
-        class="message_header message_header_private_message left_part dark_background">
-    </td>
-    <td class="message_header message_header_private_message right_part dark_background">
+    <td colspan="3" class="message_header message_header_private_message right_part dark_background">
         <span class="message_label_clickable narrows_by_recipient"
                title="Narrow to your private messages with {{display_reply_to}}">
         You and {{display_reply_to}}</span>
@@ -59,30 +52,30 @@
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}"
     class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}">
-    <td class="message_picture">
-    {{#include_sender}}
-        <img class="img-rounded profile_picture actions_hover"
-             src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30?stamp={{stamp}}"/>
-    {{/include_sender}}
-    </td>
     <td class="pointer"><p></p></td>
+    <td class="message_data{{^include_sender}} prev_is_same_sender{{/include_sender}}">
+        <div class="actions_hover">
+            <span class="message_time">{{{timestr}}}</span>
+        </div>
+        <div class="message_controls">
+          <div class="star">
+            <i class="message_star {{#if starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}}"
+               title="{{#if starred}}Unstar{{else}}Star{{/if}} this message"></i>
+          </div>
+          <div class="info actions_hover">
+            <i class="icon-vector-info-sign"></i>
+          </div>
+        </div>
+    </td>
     <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}{{#contains_mention}} mention{{/contains_mention}}">
         <div class="message_top_line">
         {{#include_sender}}
         <span class="message_sender actions_hover">
-            <img class="inline_profile_picture message_body_gravatar img-rounded" src="https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30?stamp={{stamp}}"/>
+            <div class="inline_profile_picture"
+                 style="background-image: url('https://secure.gravatar.com/avatar/{{gravatar_hash}}?d=identicon&s=30?stamp={{stamp}}');"/>
             <span class="sender_name">{{sender_full_name}}</span>
         </span>
         {{/include_sender}}
-        <div class="message_right star">
-          <i class="{{#if starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}}"
-             title="{{#if starred}}Unstar{{else}}Star{{/if}} this message"></i>
-        </div>
-        <div class="message_right actions_hover">
-            {{! If include_sender is not set, we will never show this link anyway. }}
-            {{#include_sender}}<span class="actions_link">&laquo; Info</span>{{/include_sender}}
-            <span class="message_time">{{{timestr}}}</span>
-        </div>
         </div>
         <div class="message_content">{{#if ../../use_match_properties}}{{{match_content}}}{{else}}{{{content}}}{{/if}}</div>
         <div class="message_expander message_length_controller" title="See the rest of this message">[More...]</div>

@@ -21,7 +21,7 @@ casper.then(function () {
 
     msg.headings.forEach(function (heading) {
         casper.test.assertMatch(common.normalize_spaces(heading),
-            /(^You and )|( > )/,
+            /(^You and )|( )/,
             'Heading is well-formed');
     });
 
@@ -57,8 +57,8 @@ common.send_many([
 
 common.wait_for_receive(function () {
     common.expected_messages('zhome', [
-        'Verona > frontend test',
-        'Verona > other subject',
+        'Verona frontend test',
+        'Verona other subject',
         'You and Cordelia Lear, King Hamlet',
         'You and Cordelia Lear'
     ], [

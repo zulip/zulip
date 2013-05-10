@@ -53,13 +53,13 @@ function render_now(time) {
 
         // "\xa0" is U+00A0 NO-BREAK SPACE.
         // Can't use &nbsp; as that represents the literal string "&nbsp;".
-        return [day_string + "\xa0" + time.toString("HH:mm"),
+        return [day_string + " " + time.toString("HH:mm"),
                 start_of_other_day.addDays(expire_days)
                 .toString("yyyy-MM-dd")];
     } else {
         // For now, if we get a message from tomorrow, we don't bother
         // rewriting the timestamp when it gets to be tomorrow.
-        return [time.toString("MMM dd") + "\xa0\xa0" + time.toString("HH:mm"),
+        return [time.toString("MMM\xa0dd") + " " + time.toString("HH:mm"),
                 undefined];
     }
 }

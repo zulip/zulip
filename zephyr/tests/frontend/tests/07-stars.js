@@ -41,7 +41,7 @@ casper.then(function() {
 
 casper.then(function() {
     // You can narrow to your starred messages.
-    common.expected_messages('zfilt', ['Verona > stars'], ['<p>test star</p>']);
+    common.expected_messages('zfilt', ['Verona stars'], ['<p>test star</p>']);
     common.un_narrow();
 });
 
