@@ -29,7 +29,7 @@ def memcached_stats_finish():
     memcached_total_requests += 1
     memcached_total_time += (time.time() - memcached_time_start)
 
-def cache_with_key(keyfunc, cache_name=None, timeout=None):
+def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None):
     """Decorator which applies Django caching to a function.
 
        Decorator argument is a function which computes a cache key
@@ -51,10 +51,17 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None):
             val = cache_backend.get(key)
             memcached_stats_finish()
 
-            if val is not None:
-                statsd.incr("cache.%s.hit" % (statsd_key(key),))
+            extra = ""
+            if cache_name == 'database':
+                extra = ".dbcache"
+
+            if with_statsd_key is not None:
+                metric_key = with_statsd_key
             else:
-                statsd.incr("cache.%s.miss" % (statsd_key(key),))
+                metric_key = statsd_key(key)
+
+            status = "hit" if val is not None else "miss"
+            statsd.incr("cache%s.%s.%s" % (extra, metric_key, status))
 
             # Values are singleton tuples so that we can distinguish
             # a result of None from a missing key.

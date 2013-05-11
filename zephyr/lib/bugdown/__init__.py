@@ -202,7 +202,7 @@ class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
 
         return root
 
-@cache_with_key(lambda tweet_id: tweet_id, cache_name="database")
+@cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id):
     if settings.TEST_SUITE:
         import testing_mocks
