@@ -853,8 +853,13 @@ function get_updates(options) {
                 // should no longer be needed
                 messages = deduplicate_messages(messages);
 
-                add_messages(messages, all_msg_list);
+                // Our unread counts infrastructure (which runs when
+                // we add messages to all_msg_list) expects
+                // add_messages to have already been called since
+                // update_unread_counts checks whether message are in
+                // the home view.
                 add_messages(messages, home_msg_list);
+                add_messages(messages, all_msg_list);
 
                 if (narrow.active()) {
                     if (narrow.filter().can_apply_locally()) {
