@@ -7,6 +7,7 @@ import traceback
 import logging
 from humbug_tools import check_output
 import datetime
+import shutil
 
 logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",
                     level=logging.INFO)
@@ -18,11 +19,23 @@ WARNING = '\033[93m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
 
+LOCK_DIR = "/home/humbug/humbug-deployments/lock"
+
 os.chdir("/home/humbug/humbug")
 if len(sys.argv) > 1:
     oldrev = sys.argv[1]
     newrev = sys.argv[2]
     refname = sys.argv[3]
+
+subprocess.check_call(["mkdir", '-p', '/home/humbug/humbug-deployments'])
+
+try:
+    os.mkdir(LOCK_DIR)
+except OSError:
+    print FAIL + "Deployment already in progress.  Please run\n" \
+               + "  update-deployment %s %s %s\n" % (oldrev, newrev, refname) \
+               + "manually when the current deployment finishes." + ENDC
+    sys.exit(1)
 
 subprocess.check_call(["git", "fetch"], stdout=open('/dev/null', 'w'))
 subprocess.check_call(["git", "reset", "--hard", refname], stdout=open('/dev/null', 'w'))
@@ -34,7 +47,6 @@ subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/
 logging.info("Updating static files")
 subprocess.check_call(["./tools/update-prod-static"])
 
-subprocess.check_call(["mkdir", '-p', '/home/humbug/humbug-deployments'])
 timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 deploy_path = "/home/humbug/humbug-deployments/%s" % (timestamp,)
 subprocess.check_call(["cp", '-a', '/home/humbug/humbug', deploy_path])
@@ -54,3 +66,5 @@ if '[schema]' in commits:
     print
     print FAIL + "Schema change detected!  Please make the appropriate changes manually." + ENDC
     print
+
+shutil.rmtree(LOCK_DIR)
