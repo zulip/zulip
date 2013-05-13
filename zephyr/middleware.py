@@ -75,6 +75,9 @@ class LogRequests(object):
                 memcached_output = " (mem: %s/%s)" % (format_timedelta(memcached_time_delta),
                                                       memcached_count_delta)
 
+            statsd.timing("%s.memcached.time" % (statsd_path,), timedelta_ms(memcached_time_delta))
+            statsd.timing("%s.memcached.querycount" % (statsd_path,), memcached_count_delta)
+
         # Get the amount of time spent doing database queries
         db_time_output = ""
         if len(connection.queries) > 0:
