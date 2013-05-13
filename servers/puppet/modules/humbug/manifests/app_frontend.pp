@@ -47,7 +47,7 @@ class humbug::app_frontend {
   }
   # TODO: I think we need to restart memcached after deploying this
 
-  exec {"pip6":
+  exec {"pip-django-pipeline":
     command  => "/usr/bin/pip install django-pipeline",
     creates  => "/usr/local/lib/python2.6/dist-packages/pipeline",
     require  => Package['python-pip'],
