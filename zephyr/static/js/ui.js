@@ -173,8 +173,10 @@ $(document).bind('copy', function (e) {
         }
 
         // Construct a div for what we want to copy (div)
-        row = rows.get(start_id, current_msg_list.table_name);
-        for (0 /* for linter */; rows.id(row) <= end_id; row = rows.next_visible(row)) {
+        for (row = rows.get(start_id, current_msg_list.table_name);
+             rows.id(row) <= end_id;
+             row = rows.next_visible(row))
+        {
             if (row.prev().hasClass("recipient_row")) {
                 content = $('<div>').text(row.prev().children(".right_part").text()
                                             .replace(/\s+/g, " ")
