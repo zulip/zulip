@@ -38,10 +38,10 @@ class LogRequests(object):
             return "%.0fms" % (timedelta_ms(timedelta),)
 
         # For statsd timer name
-        if request.get_full_path() == '/':
+        if request.path == '/':
             statsd_path = 'webreq'
         else:
-            statsd_path = "webreq.%s" % (request.get_full_path()[1:].replace('/', '.'),)
+            statsd_path = "webreq.%s" % (request.path[1:].replace('/', '.'),)
 
 
         # The reverse proxy might have sent us the real external IP
