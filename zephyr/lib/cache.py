@@ -90,13 +90,13 @@ def cache_get_many(keys, cache_name=None):
     memcached_stats_finish()
     return ret
 
-def cache_set_many(items, cache_name=None):
+def cache_set_many(items, cache_name=None, timeout=None):
     memcached_stats_start()
     if cache_name is None:
         cache_backend = djcache
     else:
         cache_backend = get_cache(cache_name)
-    ret = cache_backend.set_many(items)
+    ret = cache_backend.set_many(items, timeout=timeout)
     memcached_stats_finish()
     return ret
 

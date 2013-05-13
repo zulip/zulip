@@ -8,7 +8,8 @@ from zephyr.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
     Huddle, huddle_hash_cache_key
 from zephyr.lib.cache import cache_with_key, djcache, message_cache_key, \
-    user_profile_by_email_cache_key, user_profile_by_id_cache_key
+    user_profile_by_email_cache_key, user_profile_by_id_cache_key, \
+    get_memcached_time, get_memcached_requests, cache_set_many
 from django.utils.importlib import import_module
 from django.contrib.sessions.models import Session
 import logging
@@ -70,6 +71,8 @@ cache_fillers = {
     }
 
 def fill_memcached_cache(cache):
+    memcached_time_start = get_memcached_time()
+    memcached_requests_start = get_memcached_requests()
     items_for_memcached = {}
     (objects, items_filler, timeout, batch_size) = cache_fillers[cache]
     count = 0
@@ -77,7 +80,9 @@ def fill_memcached_cache(cache):
         items_filler(items_for_memcached, obj)
         count += 1
         if (count % batch_size == 0):
-            djcache.set_many(items_for_memcached, timeout=3600*24)
+            cache_set_many(items_for_memcached, timeout=3600*24)
             items_for_memcached = {}
-    djcache.set_many(items_for_memcached, timeout=3600*24*7)
-    logging.info("Succesfully populated %s cache!" % (cache,))
+    cache_set_many(items_for_memcached, timeout=3600*24*7)
+    logging.info("Succesfully populated %s cache!  Consumed %s memcached queries (%s time)" % \
+                     (cache, get_memcached_requests() - memcached_requests_start,
+                      round(get_memcached_time() - memcached_time_start, 2)))
