@@ -276,7 +276,8 @@ def process_new_message(data):
 
             user_profile = get_user_profile_by_id(user_profile_id)
 
-            if user_profile.enable_offline_email_notifications:
+            if user_profile.enable_offline_email_notifications and \
+                not user_profile.is_bot:
                 event = {"user_profile_id": user_profile_id,
                          "message_id": message.id,
                          "timestamp": time.time()}
