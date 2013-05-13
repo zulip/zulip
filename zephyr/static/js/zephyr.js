@@ -305,7 +305,7 @@ function update_unread_counts() {
 
     var pm_count = 0;
     $.each(unread_counts["private"], function(index, obj) {
-        pm_count += only_in_home_view(Object.keys(obj)).length;
+        pm_count += Object.keys(obj).length;
     });
     stream_list.set_count("global", "private-message", pm_count);
     home_unread_messages += pm_count;
