@@ -255,6 +255,8 @@ $(function () {
     $(document).on('subscription_remove_done.zephyr', function (event) {
         var stream_name = event.sub.name;
         exports.remove_narrow_filter(stream_name, 'stream');
+        // We need to make sure we resort if the removed sub gets added again
+        previous_sort_order = undefined;
     });
 });
 
