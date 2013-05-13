@@ -278,13 +278,6 @@ function message_unread(message) {
 function update_unread_counts() {
     home_unread_messages = 0;
 
-    function newer_than_pointer_count(msgids) {
-        var valid = $.grep(msgids, function (msgid) {
-            return all_msg_list.get(msgid).id > home_msg_list.selected_id();
-        });
-        return valid.length;
-    }
-
     function only_in_home_view(msgids) {
         return $.grep(msgids, function (msgid) {
             return home_msg_list.get(msgid) !== undefined;
@@ -299,7 +292,7 @@ function update_unread_counts() {
         var count = Object.keys(msgs).length;
         stream_list.set_count("stream", stream, count);
         if (narrow.stream_in_home(stream)) {
-            home_unread_messages += newer_than_pointer_count(only_in_home_view(Object.keys(msgs)));
+            home_unread_messages += only_in_home_view(Object.keys(msgs)).length;
         }
 
         if (unread_subjects[stream] !== undefined) {
@@ -312,7 +305,7 @@ function update_unread_counts() {
 
     var pm_count = 0;
     $.each(unread_counts["private"], function(index, obj) {
-        pm_count += newer_than_pointer_count(only_in_home_view(Object.keys(obj)));
+        pm_count += only_in_home_view(Object.keys(obj)).length;
     });
     stream_list.set_count("global", "private-message", pm_count);
     home_unread_messages += pm_count;
