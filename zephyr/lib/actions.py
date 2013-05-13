@@ -7,7 +7,7 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, valid_stream_name, \
     DefaultStream, UserPresence, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
-    get_user_profile_by_id, PreregistrationUser
+    get_user_profile_by_id, PreregistrationUser, get_display_recipient
 from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.core.exceptions import ValidationError
@@ -924,17 +924,34 @@ def do_send_missedmessage_email(user_profile, missed_messages):
 
     template_payload = {'name': user_profile.full_name,
                         'messages': messages_to_render,
-                        'url': 'https://humbughq.com'}
+                        'url': 'https://humbughq.com',
+                        'reply_warning': False}
 
     senders = set(m.sender.full_name for m in missed_messages)
     sender_str = ", ".join(senders)
 
+    headers = {}
+    # If we have one huddle, set a reply-to to all of the members
+    # of the huddle except the user herself
+    disp_recipients = [", ".join(recipient['email']
+                            for recipient in get_display_recipient(msg.recipient)
+                                if recipient['email'] != user_profile.email)
+                             for msg in missed_messages]
+    if all(msg.recipient.type == Recipient.HUDDLE for msg in missed_messages) and len(set(disp_recipients)) == 1:
+        headers['Reply-To'] = disp_recipients[0]
+    elif len(senders) == 1:
+        headers['Reply-To'] = missed_messages[0].sender.email
+    else:
+        template_payload['reply_warning'] = True
+
     subject = "Missed Humbug PM%s from %s" % ('s' if len(senders) > 1 else '', sender_str)
+    from_email = "%s (via Humbug) <noreply@humbughq.com>" % (sender_str)
 
     text_content = loader.render_to_string('zephyr/missed_message_email.txt', template_payload)
     html_content = loader.render_to_string('zephyr/missed_message_email_html.txt', template_payload)
 
-    msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [user_profile.email])
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [user_profile.email],
+                                 headers = headers)
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 

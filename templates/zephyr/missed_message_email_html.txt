@@ -17,6 +17,10 @@ While you were away you received {{ messages|length }} new message{{ messages|pl
 
 <p><a href="{{ url }}">Click here to log in to Humbug and view your new messages.</a></p>
 
+{% if reply_warning %}
+<p>Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Humbug and send your replies there.</p>
+{% endif %}
+
 <p>Cheers,
 <br>
 The Humbug Team</p>
