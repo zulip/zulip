@@ -194,10 +194,6 @@ if USING_STATSD:
     STATSD_PORT = 8125
     STATSD_CLIENT = 'django_statsd.clients.normal'
 
-    STATSD_PATCHES = [
-            'django_statsd.patches.cache',
-    ]
-
     if STAGING_DEPLOYED:
         STATSD_PREFIX = 'staging'
     elif DEPLOYED:
