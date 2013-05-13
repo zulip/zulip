@@ -309,7 +309,7 @@ function update_unread_counts() {
     });
     stream_list.set_count("global", "private-message", pm_count);
     home_unread_messages += pm_count;
-
+    stream_list.set_count("global", "home", home_unread_messages);
 }
 
 function mark_all_as_read(cont) {
