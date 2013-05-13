@@ -1294,3 +1294,8 @@ li.expanded_subject {
 #sticky_done {
     text-align: center;
 }
+
+#feedback_section {
+    text-align: center;
+    padding-bottom: 10px;
+}

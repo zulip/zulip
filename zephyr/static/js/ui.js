@@ -1242,8 +1242,16 @@ $(function () {
         return false;
     });
 
-    $('.feedback_button').click(function (e) {
+    // Keep these 2 feedback bot triggers separate because they have to
+    // propagate the event differently.
+    $('.feedback').click(function (e) {
         compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com' });
+
+    });
+    $('#feedback_button').click(function (e) {
+        e.stopPropagation();
+        compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com' });
+
     });
     $('.logout_button').click(function (e) {
         $('#logout_form').submit();

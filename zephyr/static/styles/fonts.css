@@ -434,3 +434,4 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-cog:before                  { content: "\f013"; }
 .icon-vector-check:before                { content: "\f046"; }
 .icon-vector-check-empty:before          { content: "\f096"; }
+.icon-vector-comment:before              { content: "\f075"; }
