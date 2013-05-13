@@ -662,14 +662,9 @@ function add_messages(messages, msg_list) {
 
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
-    messages = $.map(messages, add_message_metadata);
 
     if (add_messages_helper(messages, msg_list, msg_list.filter.predicate())) {
         prepended = true;
-    }
-
-    if (msg_list === all_msg_list) {
-        process_loaded_for_unread(messages);
     }
 
     if ((msg_list === narrowed_msg_list) && !msg_list.empty() &&
@@ -745,6 +740,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
                 }
             });
 
+            new_messages = $.map(new_messages, add_message_metadata);
             add_messages(new_messages, msg_list);
             process_visible_unread_messages();
             compose.update_faded_messages();
@@ -848,13 +844,13 @@ function get_updates(options) {
                 // server update.  Once that bug is fixed, this
                 // should no longer be needed
                 messages = deduplicate_messages(messages);
+                messages = $.map(messages, add_message_metadata);
 
-                // Our unread counts infrastructure (which runs when
-                // we add messages to all_msg_list) expects
-                // add_messages to have already been called since
-                // update_unread_counts checks whether message are in
-                // the home view.
+                // You must add add messages to home_msg_list BEFORE
+                // calling process_loaded_for_unread.
                 add_messages(messages, home_msg_list);
+                process_loaded_for_unread(messages);
+
                 add_messages(messages, all_msg_list);
 
                 if (narrow.active()) {
@@ -940,10 +936,13 @@ function load_old_messages(opts) {
             narrow.show_empty_narrow_message();
         }
 
+        messages = $.map(messages, add_message_metadata);
+
         // If we're loading more messages into the home view, save them to
         // the all_msg_list as well, as the home_msg_list is reconstructed
         // from all_msg_list.
         if (opts.msg_list === home_msg_list) {
+            process_loaded_for_unread(messages);
             add_messages(messages, all_msg_list);
         }
 
