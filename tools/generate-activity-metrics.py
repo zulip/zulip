@@ -67,7 +67,7 @@ def parse_data(data, today):
             print "\nUsers active in %s span:\n" % (metric['target'].split('.')[-1],)
 
             best_today = best_during_day(metric['datapoints'], today)
-            for i in xrange(1, 7):
+            for i in xrange(1, 100):
                 day = today - timedelta(days=i)
                 week = today - timedelta(weeks=i*7)
                 # Ignore weekends
