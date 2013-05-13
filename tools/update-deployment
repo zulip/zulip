@@ -27,7 +27,9 @@ if len(sys.argv) > 1:
     newrev = sys.argv[2]
     refname = sys.argv[3]
 
-subprocess.check_call(["mkdir", '-p', '/home/humbug/humbug-deployments'])
+subprocess.check_call(["mkdir", '-p',
+                       '/home/humbug/humbug-deployments',
+                       '/home/humbug/logs'])
 
 try:
     os.mkdir(LOCK_DIR)
