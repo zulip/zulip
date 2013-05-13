@@ -699,6 +699,16 @@ class NarrowBuilder(object):
                 + tsquery + ", 'StartSel=\"<span class=\"\"highlight\"\">\", StopSel=</span>, " \
                 "HighlightAll=TRUE')"
 
+            # Do quoted string matching.  We really want phrase
+            # search here so we can ignore punctuation and do
+            # stemming, but there isn't a standard phrase search
+            # mechanism in Postgres
+            for term in re.findall('"[^"]+"|\S+', operand):
+                if term[0] == '"' and term[-1] == '"':
+                    term = term[1:-1]
+                    query = query.filter(self.pQ(content__icontains=term) |
+                                         self.pQ(subject__icontains=term))
+
             return query.extra(select={'match_content': match_content,
                                        'match_subject': match_subject},
                                where=[where],
