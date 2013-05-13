@@ -4,12 +4,13 @@
 #
 import os, sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import optparse
 from itertools import dropwhile, takewhile
 from datetime import timedelta, datetime
 from zephyr.lib.timestamp import datetime_to_timestamp
+import requests
 
 # This is the slightly-cleaned up JSON api version of https://graphiti.humbughq.com/graphs/945c7aafc2d
 #
@@ -19,8 +20,16 @@ target=stats.gauges.staging.users.active.all.168hr&target=stats.gauges.staging.u
 target=stats.gauges.staging.users.active.all.2hr&target=stats.gauges.staging.users.active.all.48hr&\
 target=stats.gauges.staging.users.active.all.0_16hr&format=json"
 
+# Workaround to support the Python-requests 1.0 transition of .json
+# from a property to a function
+requests_json_is_function = callable(requests.Response.json)
+def extract_json_response(resp):
+    if requests_json_is_function:
+        return resp.json()
+    else:
+        return resp.json
+
 def get_data(url, username, pw):
-    import requests
     from requests.auth import HTTPDigestAuth
 
     res = requests.get(url, auth=HTTPDigestAuth(username, pw), verify=False)
@@ -29,7 +38,7 @@ def get_data(url, username, pw):
         print "Failed to fetch data url: %s" % (res.error,)
         return []
 
-    return res.json
+    return extract_json_response(res)
 
 def noon_of(day=datetime.now()):
     return datetime(year=day.year, month=day.month, day=day.day, hour=12)
