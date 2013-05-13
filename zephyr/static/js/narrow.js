@@ -290,19 +290,19 @@ exports.set_compose_defaults = function (opts) {
 exports.parse = function (str) {
     var operators   = [];
     var search_term = [];
-    $.each(str.split(/ +/), function (idx, token) {
+    $.each(str.match(/"[^"]+"|\S+/g), function (idx, token) {
         var parts, operator;
         if (token.length === 0)
             return;
         parts = token.split(':');
-        if (parts.length > 1) {
+        if (token[0] === '"' || parts.length === 1) {
+            // Looks like a normal search term.
+            search_term.push(token);
+        } else {
             // Looks like an operator.
             // FIXME: Should we skip unknown operator names here?
             operator = parts.shift();
             operators.push([operator, decodeOperand(parts.join(':'))]);
-        } else {
-            // Looks like a normal search term.
-            search_term.push(token);
         }
     });
     // NB: Callers of 'parse' can assume that the 'search' operator is last.
