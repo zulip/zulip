@@ -196,6 +196,27 @@ exports.update_streams_sidebar = function () {
     }
 };
 
+exports.update_dom_with_unread_counts = function (counts) {
+    // counts is just a data object that gets calculated elsewhere
+    // Our job is to update some DOM elements.
+
+    // counts.stream_count maps streams to counts
+    $.each(counts.stream_count, function(stream, count) {
+        exports.set_count("stream", stream, count);
+    });
+
+    // counts.subject_count maps streams to hashes of subjects to counts
+    $.each(counts.subject_count, function(stream, subject_hash) {
+        $.each(subject_hash, function(subject, count) {
+            exports.set_subject_count(stream, subject, count);
+        });
+    });
+
+    // integer counts
+    exports.set_count("global", "private-message", counts.private_message_count);
+    exports.set_count("global", "home", counts.home_unread_messages);
+};
+
 $(function () {
     $(document).on('narrow_activated.zephyr', function (event) {
         $("ul.filters li").removeClass('active-filter active-subject-filter');

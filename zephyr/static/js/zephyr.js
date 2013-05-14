@@ -275,8 +275,16 @@ function message_unread(message) {
            message.flags.indexOf('read') === -1;
 }
 
-function update_unread_counts() {
-    home_unread_messages = 0;
+function get_unread_counts() {
+    var res = {};
+    
+    // Return a data structure with various counts.  This function should be
+    // pretty cheap, even if you don't care about all the counts, and you
+    // should strive to keep it free of side effects on globals or DOM.
+    res.private_message_count = 0;
+    res.home_unread_messages = 0;
+    res.stream_count = {};  // hash by stream -> count
+    res.subject_count = {}; // hash of hashes (stream, then subject -> count)
 
     function only_in_home_view(msgids) {
         return $.grep(msgids, function (msgid) {
@@ -290,14 +298,16 @@ function update_unread_counts() {
         }
 
         var count = Object.keys(msgs).length;
-        stream_list.set_count("stream", stream, count);
+        res.stream_count[stream]= count;
+
         if (narrow.stream_in_home(stream)) {
-            home_unread_messages += only_in_home_view(Object.keys(msgs)).length;
+            res.home_unread_messages += only_in_home_view(Object.keys(msgs)).length;
         }
 
         if (unread_subjects[stream] !== undefined) {
+            res.subject_count[stream] = {};
             $.each(unread_subjects[stream], function (subject, msgs) {
-                stream_list.set_subject_count(stream, subject, Object.keys(msgs).length);
+                res.subject_count[stream][subject] = Object.keys(msgs).length;
             });
         }
 
@@ -307,9 +317,24 @@ function update_unread_counts() {
     $.each(unread_counts["private"], function(index, obj) {
         pm_count += Object.keys(obj).length;
     });
-    stream_list.set_count("global", "private-message", pm_count);
-    home_unread_messages += pm_count;
-    stream_list.set_count("global", "home", home_unread_messages);
+    res.private_message_count = pm_count;
+    res.home_unread_messages += pm_count;
+
+    return res;
+}
+
+function update_unread_counts() {
+    // Pure computation:
+    var res = get_unread_counts();
+
+    // Side effects from here down:
+
+    // TODO: deprecate this global.
+    home_unread_messages = res.home_unread_messages;
+
+    // This updates some DOM elements directly, so try to
+    // avoid excessive calls to this.
+    stream_list.update_dom_with_unread_counts(res); 
 }
 
 function mark_all_as_read(cont) {
