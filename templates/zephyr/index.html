@@ -29,18 +29,18 @@
 <script type="text/javascript" src="/static/third/handlebars/handlebars.runtime.js"></script>
 {% endif %}
 
-{% compressed_js 'app' %}
-
-{% if debug %}
-{% compressed_js 'app_debug' %}
-{% endif %}
-
 {# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
 <script type="text/javascript">
 {% autoescape off %}
 var page_params = {{ page_params }};
 {% endautoescape %}
 </script>
+
+{% compressed_js 'app' %}
+
+{% if debug %}
+{% compressed_js 'app_debug' %}
+{% endif %}
 
 {% endblock %}
 {% block content %}
