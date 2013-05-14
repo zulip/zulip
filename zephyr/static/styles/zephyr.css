@@ -8,6 +8,10 @@ input, button, select, textarea {
     line-height: normal;
 }
 
+blockquote p {
+    font-weight: normal;
+}
+
 .container-fluid {
     max-width: 1200px;
     margin: 0px auto;
