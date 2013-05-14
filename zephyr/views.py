@@ -251,6 +251,7 @@ def accounts_register(request):
                         'EMAIL': email,
                         'merge_vars': {
                             'NAME': full_name,
+                            'REALM': domain,
                             'OPTIN_IP': request.META['REMOTE_ADDR'],
                             'OPTIN_TIME': datetime.datetime.isoformat(datetime.datetime.now()),
                         },
