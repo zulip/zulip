@@ -84,7 +84,8 @@ def authenticated_api_view(view_func):
     def _wrapped_view_func(request, email=REQ, api_key=REQ('api-key'),
                            *args, **kwargs):
         user_profile = validate_api_key(email, api_key)
-        request._email = email
+        request.user = user_profile
+        request._email = user_profile.email
         process_client(request, user_profile)
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
@@ -114,7 +115,8 @@ def authenticated_rest_api_view(view_func):
             resp = HttpResponseUnauthorized("humbug")
             resp.content = e.error
             return resp
-        request._email = email
+        request.user = user_profile
+        request._email = user_profile.email
         process_client(request, user_profile)
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
