@@ -197,6 +197,10 @@ a:hover code {
     overflow-y: auto;
 }
 
+#stream_filters li:hover {
+    background-color: lightgrey;
+}
+
 #user_presences {
     list-style-position: inside; /* Draw the bullets inside our box */
     margin-top:  1em;
@@ -260,6 +264,17 @@ ul.filters .count {
 
 ul.filters i {
     padding-right: 0.25em;
+}
+
+ul.filters .arrow {
+    margin-right: 5em;
+    font-size: 1em;
+    display: none;
+}
+
+ul.filters li:hover .arrow {
+    display: inline;
+    cursor: pointer;
 }
 
 .message_list {

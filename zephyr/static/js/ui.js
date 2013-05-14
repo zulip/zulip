@@ -693,6 +693,20 @@ function collapse(row) {
     show_more_link(row);
 }
 
+var current_sidebar_elem;
+var sidebar_popup_shown_this_click = false;
+
+exports.hide_sidebar_popover = function () {
+    if (ui.sidebar_currently_popped()) {
+        current_sidebar_elem.popover("destroy");
+        current_sidebar_elem = undefined;
+    }
+};
+
+exports.sidebar_currently_popped = function () {
+    return current_sidebar_elem !== undefined;
+};
+
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
@@ -1200,6 +1214,23 @@ $(function () {
         e.preventDefault();
     });
 
+    $('#stream_filters').on('click', 'span.arrow', function (e) {
+        var last_sidebar_elem = current_sidebar_elem;
+        ui.hide_sidebar_popover();
+        sidebar_popup_shown_this_click = true;
+
+        var stream = $(e.target).parents('li').attr('data-name');
+
+        var ypos = $(e.target).offset().top - viewport.scrollTop();
+        $(e.target).popover({
+            content:   templates.render('sidebar_stream_actions', {'stream': subs.have(stream)}),
+            trigger:   "manual"
+        });
+        $(e.target).popover("show");
+        current_sidebar_elem = $(e.target);
+        e.preventDefault();
+    });
+
     $('#stream_filters').on('click', '.expanded_subject a', function (e) {
         if (exports.home_tab_obscured()) {
             ui.change_tab_to('#home');
@@ -1324,10 +1355,36 @@ $(function () {
         e.stopPropagation();
     });
 
+
+    $('body').on('click', '.toggle_home', function (e) {
+        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        ui.hide_sidebar_popover();
+        subs.toggle_home(stream);
+        e.stopPropagation();
+    });
+
+    $('body').on('click', '.narrow_to_stream', function (e) {
+        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        ui.hide_sidebar_popover();
+        narrow.by('stream', stream, {select_first_unread: true});
+        e.stopPropagation();
+    });
+
+    $('body').on('click', '.compose_to_stream', function (e) {
+        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        ui.hide_sidebar_popover();
+        compose.start('stream', {"stream": stream});
+        e.stopPropagation();
+    });
+
     $("body").on('click', function (e) {
         // Dismiss the popover if the user has clicked outside it
         if ($('.popover-inner').has(e.target).length === 0) {
             ui.hide_actions_popover();
+            if (sidebar_popup_shown_this_click === false ) {
+                ui.hide_sidebar_popover();
+            }
+            sidebar_popup_shown_this_click = false;
         }
 
         // Unfocus our compose area if we click out of it. Don't let exits out

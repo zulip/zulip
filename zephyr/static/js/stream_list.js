@@ -89,7 +89,9 @@ function add_narrow_filter(name, type) {
     var swatch = $('<span/>').attr('id', "stream_sidebar_swatch_" + subs.stream_id(name))
                              .addClass('streamlist_swatch')
                              .css('background-color', subs.get_color(name)).html("&nbsp;");
-    list_item = $('<li>').attr('data-name', name).html(swatch);
+    list_item = $('<li>').attr('data-name', name)
+                         .addClass("narrow-filter")
+                         .html(swatch);
     if (type === 'stream') {
         list_item.attr('id', "stream_sidebar_" + subs.stream_id(name));
     }
@@ -97,7 +99,8 @@ function add_narrow_filter(name, type) {
     list_item.append($('<a>').attr('href', uri)
                      .addClass('subscription_name')
                      .text(name)
-                     .append('<span class="count">(<span class="value"></span>)</span>'));
+                     .append('<span class="count">(<span class="value"></span>)</span>'))
+             .append('<span class="arrow pull-right">▽</span>');
     if (type === "stream" && subs.have(name).invite_only) {
         list_item.append("<i class='icon-lock'/>");
     }
