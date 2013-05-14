@@ -30,7 +30,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     update_user_presence, bulk_add_subscriptions, update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, do_finish_tutorial, \
     get_status_dict, do_change_enable_offline_email_notifications, \
-    do_update_onboarding_steps
+    do_update_onboarding_steps, do_update_message
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_unique, is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -1032,6 +1032,20 @@ def json_tutorial_status(request, user_profile, status=REQ('status')):
     elif status == 'finished':
         do_finish_tutorial(user_profile)
 
+    return json_success()
+
+@authenticated_json_post_view
+def json_update_message(request, user_profile):
+    return update_message_backend(request, user_profile)
+
+@has_request_variables
+def update_message_backend(request, user_profile,
+                           message_id=REQ(converter=to_non_negative_int),
+                           subject=REQ(default=None),
+                           content=REQ(default=None)):
+    if subject is None and content is None:
+        return json_error("Nothing to change")
+    do_update_message(user_profile, message_id, subject, content)
     return json_success()
 
 # We do not @require_login for send_message_backend, since it is used

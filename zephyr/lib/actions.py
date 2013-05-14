@@ -7,7 +7,8 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, valid_stream_name, \
     DefaultStream, UserPresence, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
-    get_user_profile_by_id, PreregistrationUser, get_display_recipient
+    get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
+    to_dict_cache_key
 from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.core.exceptions import ValidationError
@@ -27,7 +28,7 @@ from django.utils import timezone
 from zephyr.lib.create_user import create_user
 from zephyr.lib import bugdown
 from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key, \
-    user_profile_by_email_cache_key, status_dict_cache_key
+    user_profile_by_email_cache_key, status_dict_cache_key, cache_set_many
 from zephyr.decorator import get_user_profile_by_email, json_to_list, JsonableError, \
      statsd_increment
 from zephyr.lib.event_queue import request_event_queue, get_user_events
@@ -826,6 +827,57 @@ def do_update_onboarding_steps(user_profile, steps):
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
 
+def do_update_message(user_profile, message_id, subject, content):
+    try:
+        message = Message.objects.select_related().get(id=message_id)
+    except Message.DoesNotExist:
+        raise JsonableError("Unknown message id")
+
+    event = {'type': 'update_message',
+             'sender': user_profile.email,
+             'message_id': message_id}
+
+    if message.sender != user_profile:
+        raise JsonableError("Message was not sent by you")
+
+    if content is not None:
+        rendered_content = bugdown.convert(content)
+        if rendered_content is None:
+            raise JsonableError("We were unable to render your updated message")
+
+        event['orig_content'] = message.content
+        event['orig_rendered_content'] = message.rendered_content
+        message.content = content
+        message.rendered_content = rendered_content
+        message.rendered_content_version = bugdown.version
+        event["content"] = content
+        event["rendered_content"] = rendered_content
+
+    if subject is not None:
+        event["orig_subject"] = message.subject
+        message.subject = subject
+        event["subject"] = subject
+
+    log_event(event)
+    message.save(update_fields=["subject", "content", "rendered_content",
+                                "rendered_content_version"])
+
+    # Update the message as stored in both the (deprecated) message
+    # cache (for shunting the message over to Tornado in the old
+    # get_messages API) and also the to_dict caches.
+    cache_save_message(message)
+    items_for_memcached = {}
+    items_for_memcached[to_dict_cache_key(message, True)] = \
+        (message.to_dict_uncached(apply_markdown=True,
+                                  rendered_content=message.rendered_content),)
+    items_for_memcached[to_dict_cache_key(message, False)] = \
+        (message.to_dict_uncached(apply_markdown=False),)
+    cache_set_many(items_for_memcached)
+
+    recipients = [um.user_profile_id for um in UserMessage.objects.filter(message=message_id)]
+    notice = dict(event=event, users=recipients)
+    tornado_callbacks.send_notification(notice)
+
 def do_finish_tutorial(user_profile):
     user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
     user_profile.save()
@@ -950,6 +1002,11 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                                               ret['subscriptions'])
         elif event['type'] == "presence":
                 ret['presences'][event['email']] = event['presence']
+        elif event['type'] == "update_message":
+            # The client will get the updated message directly
+            pass
+        else:
+            raise ValueError("Unexpected event type %s" % (event['type'],))
 
     if events:
         ret['last_event_id'] = events[-1]['id']

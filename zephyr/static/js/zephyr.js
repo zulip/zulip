@@ -545,9 +545,10 @@ function case_insensitive_find(term, array) {
     }).length !== 0;
 }
 
-function process_message_for_recent_subjects(message) {
+function process_message_for_recent_subjects(message, remove_message) {
     var current_timestamp = 0;
     var max_subjects = 5;
+    var count = 0;
 
     if (! recent_subjects.hasOwnProperty(message.stream)) {
         recent_subjects[message.stream] = [];
@@ -557,6 +558,7 @@ function process_message_for_recent_subjects(message) {
                 var is_duplicate = (item.subject.toLowerCase() === message.subject.toLowerCase());
                 if (is_duplicate) {
                     current_timestamp = item.timestamp;
+                    count = item.count;
                 }
 
                 return !is_duplicate;
@@ -564,8 +566,18 @@ function process_message_for_recent_subjects(message) {
     }
 
     var recents = recent_subjects[message.stream];
-    recents.push({subject: message.subject,
-                  timestamp: Math.max(message.timestamp, current_timestamp)});
+
+    if (remove_message !== undefined) {
+        count = count - 1;
+    } else {
+        count = count + 1;
+    }
+
+    if (count !== 0) {
+        recents.push({subject: message.subject,
+                      count: count,
+                      timestamp: Math.max(message.timestamp, current_timestamp)});
+    }
 
     recents.sort(function (a, b) {
         return b.timestamp - a.timestamp;
@@ -788,6 +800,54 @@ function maybe_add_narrowed_messages(messages, msg_list) {
         }});
 }
 
+function update_message_unread_subjects(msg, event) {
+    if (event.subject !== undefined &&
+        unread_subjects[msg.stream] !== undefined &&
+        unread_subjects[msg.stream][msg.subject] !== undefined &&
+        unread_subjects[msg.stream][msg.subject][msg.id]) {
+        // Move the unread subject count to the new subject
+        delete unread_subjects[msg.stream][msg.subject][msg.id];
+        if (unread_subjects[msg.stream][msg.subject].length === 0) {
+            delete unread_subjects[msg.stream][msg.subject];
+        }
+        if (unread_subjects[msg.stream][event.subject] === undefined) {
+            unread_subjects[msg.stream][event.subject] = {};
+        }
+        unread_subjects[msg.stream][event.subject][msg.id] = true;
+    }
+}
+
+function update_messages(events) {
+    $.each(events, function (idx, event) {
+        var msg = all_msg_list.get(event.message_id);
+        if (event.rendered_content !== undefined) {
+            msg.content = event.rendered_content;
+        }
+
+        if (event.subject !== undefined) {
+            // Remove the recent subjects entry for the old subject;
+            // must be called before we update msg.subject
+            process_message_for_recent_subjects(msg, true);
+            // Update the unread counts; again, this must be called
+            // before we update msg.subject
+            update_message_unread_subjects(msg, event);
+
+            msg.subject = event.subject;
+            // Add the recent subjects entry for the new subject; must
+            // be called after we update msg.subject
+            process_message_for_recent_subjects(msg);
+        }
+    });
+
+    home_msg_list.rerender();
+    if (current_msg_list === narrowed_msg_list) {
+        narrowed_msg_list.rerender();
+    }
+    compose.update_faded_messages();
+    update_unread_counts();
+    stream_list.update_streams_sidebar();
+}
+
 var get_updates_xhr;
 var get_updates_timeout;
 function get_updates(options) {
@@ -820,6 +880,7 @@ function get_updates(options) {
             $('#connection-error').hide();
 
             var messages = [];
+            var messages_to_update = [];
             var new_pointer;
 
             $.each(data.events, function (idx, event) {
@@ -838,6 +899,9 @@ function get_updates(options) {
                     break;
                 case 'onboarding_steps':
                     onboarding.set_step_info(event.steps);
+                    break;
+                case 'update_message':
+                    messages_to_update.push(event);
                     break;
                 case 'realm_user':
                     if (event.op === 'add') {
@@ -910,6 +974,10 @@ function get_updates(options) {
 
             if ((home_msg_list.selected_id() === -1) && !home_msg_list.empty()) {
                 home_msg_list.select_id(home_msg_list.first().id, {then_scroll: false});
+            }
+
+            if (messages_to_update.length !== 0) {
+                update_messages(messages_to_update);
             }
 
             get_updates_timeout = setTimeout(get_updates, 0);

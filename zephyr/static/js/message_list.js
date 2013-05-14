@@ -213,6 +213,11 @@ MessageList.prototype = {
             return false;
         }
 
+        this._rerender_preserving_scrolltop();
+        return true;
+    },
+
+    _rerender_preserving_scrolltop: function MessageList__rerender_preserving_scrolltop() {
         // scrolltop_offset is the number of pixels between the top of the
         // viewable window and the newly selected message
         var scrolltop_offset;
@@ -233,8 +238,6 @@ MessageList.prototype = {
         if (selected_in_view) {
             viewport.scrollTop(rows.get(this._selected_id, this.table_name).offset().top + scrolltop_offset);
         }
-
-        return true;
     },
 
     _render: function MessageList__render(messages, where) {
@@ -505,7 +508,7 @@ MessageList.prototype = {
         this._render_win_end += messages.length;
     },
 
-    add_and_rerender: function MessageList_interior(messages) {
+    add_and_rerender: function MessageList_add_and_rerender(messages) {
         // To add messages that might be in the interior of our
         // existing messages list, we just add the new messages and
         // then rerender the whole thing.
@@ -519,6 +522,15 @@ MessageList.prototype = {
 
         this._render(this._items.slice(this._render_win_start,
                                        this._render_win_end), 'bottom');
+    },
+
+    rerender: function MessageList_rerender() {
+        // We need to clear the rendering state, rather than just
+        // doing _clear_table, since we want to potentially recollapse
+        // things.
+        this._clear_rendering_state();
+        this._rerender_preserving_scrolltop();
+        this.select_id(this._selected_id);
     },
 
     all: function MessageList_all() {
