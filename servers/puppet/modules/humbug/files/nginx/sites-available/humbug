@@ -24,7 +24,24 @@ server {
     ssl_certificate /etc/ssl/certs/zephyr.humbughq.com.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
-    server_name humbughq.com zephyr.humbughq.com;
+    server_name zephyr.humbughq.com;
+
+    # Avoid clickjacking attacks
+    add_header X-Frame-Options DENY;
+
+    include /etc/nginx/humbug-include/app;
+}
+
+
+server {
+    listen 443;
+
+    ssl on;
+
+    ssl_certificate /etc/ssl/certs/www.humbughq.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
+
+    server_name humbughq.com www.humbughq.com;
 
     # Avoid clickjacking attacks
     add_header X-Frame-Options DENY;
