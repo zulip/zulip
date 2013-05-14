@@ -440,3 +440,5 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-check-empty:before          { content: "\f096"; }
 .icon-vector-comment:before              { content: "\f075"; }
 .icon-vector-narrow:before               { content: "\f01f"; }
+.icon-vector-minus-sign:before           { content: "\f056"; }
+.icon-vector-plus-sign:before            { content: "\f055"; }
