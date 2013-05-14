@@ -171,8 +171,8 @@ def principal_to_user_profile(agent, principal):
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 
-@authenticated_rest_api_view
-def rest_dispatch(request, user_profile, **kwargs):
+@csrf_exempt
+def rest_dispatch(request, **kwargs):
     supported_methods = {}
     # duplicate kwargs so we can mutate the original as we go
     for arg in list(kwargs):
@@ -180,7 +180,14 @@ def rest_dispatch(request, user_profile, **kwargs):
             supported_methods[arg] = kwargs[arg]
             del kwargs[arg]
     if request.method in supported_methods.keys():
-        return globals()[supported_methods[request.method]](request, user_profile, **kwargs)
+        target_function = globals()[supported_methods[request.method]]
+        target_function = authenticated_rest_api_view(target_function)
+        if request.method not in ["GET", "POST"]:
+            # process_as_post needs to be the outer decorator, because
+            # otherwise we might access and thus cache a value for
+            # request.REQUEST.
+            target_function = process_as_post(target_function)
+        return target_function(request, **kwargs)
     return json_method_not_allowed(supported_methods.keys())
 
 @require_post
@@ -561,7 +568,6 @@ def api_update_pointer(request, user_profile):
 def json_update_pointer(request, user_profile):
     return update_pointer_backend(request, user_profile)
 
-@process_as_post
 @has_request_variables
 def update_pointer_backend(request, user_profile,
                            pointer=REQ(converter=to_non_negative_int)):
@@ -1084,7 +1090,6 @@ def json_list_subscriptions(request, user_profile):
 def list_subscriptions_backend(request, user_profile):
     return json_success({"subscriptions": gather_subscriptions(user_profile)})
 
-@process_as_post
 @transaction.commit_on_success
 @has_request_variables
 def update_subscriptions_backend(request, user_profile,

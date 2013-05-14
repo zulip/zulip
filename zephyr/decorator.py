@@ -91,7 +91,6 @@ def authenticated_api_view(view_func):
     return _wrapped_view_func
 
 def authenticated_rest_api_view(view_func):
-    @csrf_exempt
     @wraps(view_func)
     def _wrapped_view_func(request, *args, **kwargs):
         # First try block attempts to get the credentials we need to do authentication
