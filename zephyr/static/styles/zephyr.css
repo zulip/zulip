@@ -1435,3 +1435,7 @@ li.expanded_subject {
     text-align: center;
     padding-bottom: 10px;
 }
+
+.message_edit {
+    display: none;
+}

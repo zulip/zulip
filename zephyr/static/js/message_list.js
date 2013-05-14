@@ -402,6 +402,14 @@ MessageList.prototype = {
                               }});
         }
 
+        $.each(rendered_elems, function(idx, elem) {
+            var row = $(elem);
+            if (! row.hasClass('message_row')) {
+                return;
+            }
+            var id = rows.id(row);
+            message_edit.maybe_show_edit(row, id);
+        });
         $.each(rendered_elems, ui.process_condensing);
 
         // Re-add the fading of messages that is lost when we re-render.
@@ -522,6 +530,17 @@ MessageList.prototype = {
 
         this._render(this._items.slice(this._render_win_start,
                                        this._render_win_end), 'bottom');
+    },
+
+    show_edit_message: function MessageList_show_edit_message(row, edit_obj) {
+        row.find(".message_edit_form").empty().append(edit_obj.form);
+        row.find(".message_content").hide();
+        row.find(".message_edit").show();
+    },
+
+    hide_edit_message: function MessageList_hide_edit_message(row) {
+        row.find(".message_content").show();
+        row.find(".message_edit").hide();
     },
 
     rerender: function MessageList_rerender() {

@@ -535,8 +535,11 @@ function show_actions_popover(element, id) {
         timerender.set_full_datetime(current_msg_list.get(id),
                                      elt.closest(".message_row").find(".message_time"));
 
+        var message = current_msg_list.get(id);
+        var can_edit = message.sender_email.toLowerCase() === page_params.email.toLowerCase();
         var args = {
-            message:  current_msg_list.get(id),
+            message:  message,
+            can_edit_message: can_edit,
             narrowed: narrow.active()
         };
 
@@ -1055,7 +1058,7 @@ $(function () {
     $("#main_div").on("click", ".messagebox", function (e) {
         var target = $(e.target);
         if (target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
-            target.is("div.message_length_controller")) {
+            target.is("div.message_length_controller") || target.is("textarea") || target.is("input")) {
             // If this click came from a hyperlink, don't trigger the
             // reply action.  The simple way of doing this is simply
             // to call e.stopPropagation() from within the link's
@@ -1394,6 +1397,23 @@ $(function () {
             collapse(row);
         }
 
+        e.stopPropagation();
+    });
+    $('body').on('click', '.popover_edit_message', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        var row = rows.get(msgid, current_msg_list.table_name);
+        ui.hide_actions_popover();
+        message_edit.start(row);
+        e.stopPropagation();
+    });
+    $("body").on("click", ".message_edit_save", function (e) {
+        var row = $(this).closest(".message_row");
+        message_edit.save(row);
+        e.stopPropagation();
+    });
+    $("body").on("click", ".message_edit_cancel", function (e) {
+        var row = $(this).closest(".message_row");
+        message_edit.cancel(row);
         e.stopPropagation();
     });
 

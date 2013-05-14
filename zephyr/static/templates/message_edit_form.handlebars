@@ -1,0 +1,8 @@
+{{! Client-side Mustache template for rendering the trailing bookend.}}
+
+<form>
+{{#if is_stream}}
+    <span>Subject: <input type="text" value={{subject}} class="message_edit_subject"></input></span><br />
+{{/if}}
+    <span>Content: <textarea class="message_edit_content">{{content}}</textarea></span>
+</form>

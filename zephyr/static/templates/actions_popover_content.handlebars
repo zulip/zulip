@@ -61,6 +61,14 @@
   </li>
   {{/if}}
 
+  {{#if can_edit_message}}
+  <li>
+    <a class="popover_edit_message" data-msgid="{{message.id}}">
+      <i class="icon-pencil"></i> Edit this message
+    </a>
+  </li>
+  {{/if}}
+
   <li>
     <a class="popover_toggle_collapse" data-msgid="{{message.id}}">
       <i class="{{#if message.collapsed}}icon-plus{{else}}icon-minus{{/if}}"></i>

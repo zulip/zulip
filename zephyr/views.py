@@ -1038,6 +1038,20 @@ def json_tutorial_status(request, user_profile, status=REQ('status')):
 def json_update_message(request, user_profile):
     return update_message_backend(request, user_profile)
 
+@authenticated_json_post_view
+@has_request_variables
+def json_fetch_raw_message(request, user_profile,
+                           message_id=REQ(converter=to_non_negative_int)):
+    try:
+        message = Message.objects.get(id=message_id)
+    except Message.DoesNotExist:
+        return json_error("No such message")
+
+    if message.sender != user_profile:
+        return json_error("Message was not sent by you")
+
+    return json_success({"raw_content": message.content})
+
 @has_request_variables
 def update_message_backend(request, user_profile,
                            message_id=REQ(converter=to_non_negative_int),
