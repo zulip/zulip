@@ -159,8 +159,11 @@ function set_stream_property(stream_name, property, value) {
 function stream_home_view_clicked(e) {
     var sub_row = $(e.target).closest('.subscription_row');
     var stream = sub_row.find('.subscription_name').text();
+    subs.toggle_home(stream);
+}
 
-    var sub = get_sub(stream);
+exports.toggle_home = function (stream_name) {
+    var sub = get_sub(stream_name);
     sub.in_home_view = ! sub.in_home_view;
 
     setTimeout(function () {
@@ -188,8 +191,8 @@ function stream_home_view_clicked(e) {
     }, 0);
 
     exports.maybe_toggle_all_messages();
-    set_stream_property(stream, 'in_home_view', sub.in_home_view);
-}
+    set_stream_property(stream_name, 'in_home_view', sub.in_home_view);
+};
 
 function stream_notifications_clicked(e) {
     var sub_row = $(e.target).closest('.subscription_row');
