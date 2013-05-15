@@ -94,6 +94,9 @@ function add_narrow_filter(name, type) {
                          .html(swatch);
     if (type === 'stream') {
         list_item.attr('id', "stream_sidebar_" + subs.stream_id(name));
+        if (subs.have(name).in_home_view === false) {
+            list_item.addClass("out_of_home_view");
+        }
     }
 
     list_item.append($('<a>').attr('href', uri)

@@ -277,6 +277,10 @@ ul.filters li:hover .arrow {
     cursor: pointer;
 }
 
+ul.filters li.out_of_home_view {
+    opacity: 0.25;
+}
+
 .message_list {
     /* If we change this color, we must change message_reply_fade */
     background-color: aliceblue;
