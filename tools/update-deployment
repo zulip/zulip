@@ -55,6 +55,8 @@ subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, 
 logging.info("Restarting server...")
 subprocess.check_call([os.path.join(DEPLOYMENTS_DIR, "current/tools/restart-server")])
 
+logging.info("Deployment complete")
+shutil.rmtree(LOCK_DIR)
 
 if newrev == '0000000000000000000000000000000000000000':
     # 0000000000000000000000000000000000000000 means we're deleting the ref
@@ -67,4 +69,4 @@ if '[schema]' in commits:
     print FAIL + "Schema change detected!  Please make the appropriate changes manually." + ENDC
     print
 
-shutil.rmtree(LOCK_DIR)
+subprocess.check_call(["./tools/purge-deployments"])
