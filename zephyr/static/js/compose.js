@@ -564,7 +564,7 @@ $(function () {
     $("#new_message_content").click(function (e) {
         // If we click in the composebox, start up a new message
         if (!compose.composing()) {
-            respond_to_message();
+            compose.set_mode('stream');
             e.stopPropagation();
         }
     });
@@ -628,7 +628,7 @@ $(function () {
             // Urgh, yet another hack to make sure we're "composing"
             // when text gets added into the composebox.
             if (!compose.composing()) {
-                respond_to_message();
+                compose.set_mode('stream');
             }
             if (i === -1) {
                 // This is a paste, so there's no filename. Show the image directly
@@ -651,7 +651,7 @@ $(function () {
         rawDrop: function (contents) {
             var textbox = $("#new_message_content");
             if (!compose.composing()) {
-                respond_to_message();
+                compose.set_mode('stream');
             }
             textbox.val(textbox.val() + contents);
         }

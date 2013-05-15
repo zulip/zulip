@@ -89,8 +89,16 @@ exports.enable_page_console = function () {
 };
 
 exports.send_message = function (type, params) {
-    casper.waitForSelector('#left_bar_compose_' + type + '_button_big', function () {
-        casper.click('#left_bar_compose_' + type + '_button_big');
+    casper.waitForSelector('#new_message_content', function () {
+        if(type === "stream") {
+            casper.page.sendEvent('keypress', "c");
+        }
+        else if (type === "private") {
+            casper.page.sendEvent('keypress', "C");
+        }
+        else {
+            casper.test.assertTrue(false, "send_message got valid message type");
+        }
         casper.fill('form[action^="/json/send_message"]', params);
         casper.click('#compose-send-button');
         casper.waitWhileVisible('#stream,#private-message', function () {

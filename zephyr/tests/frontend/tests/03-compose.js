@@ -5,12 +5,14 @@ common.start_and_log_in();
 casper.then(function () {
     // TODO: test correct events have fired
     // Test opening the compose box from the left side buttons
-    casper.click('#left_bar_compose_stream_button_big');
+    casper.page.sendEvent('keypress', "c");
     casper.test.assertVisible('#compose', 'Compose box appears after clicking side stream button');
     casper.test.assertVisible('#stream', 'Stream input box visible');
-    casper.click('#left_bar_compose_private_button_big');
+    casper.click('body');
+    casper.page.sendEvent('keypress', "C");
     casper.test.assertVisible('#private_message_recipient', 'Switching from stream compose to PM compose');
-    casper.click('#left_bar_compose_stream_button_big');
+    casper.click('body');
+    casper.page.sendEvent('keypress', 'c');
     casper.test.assertVisible('#stream', 'Switching from PM compose to stream compose');
 
     // Test "closing" the compose box
@@ -20,7 +22,7 @@ casper.then(function () {
 casper.waitWhileVisible('#stream');
 casper.then(function () {
     casper.test.assertNotVisible('#stream', 'Close stream compose box');
-    casper.click('#left_bar_compose_private_button_big');
+    casper.page.sendEvent('keypress', "C");
     casper.click('body');
 });
 
