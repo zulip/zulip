@@ -1578,6 +1578,9 @@ def api_jira_webhook(request):
     except (AttributeError, KeyError):
         return json_error("Missing api_key parameter.")
 
+    if request.body == '':
+        return json_error("No XML POST data!")
+
     payload = simplejson.loads(request.body)
 
     try:
