@@ -19,7 +19,8 @@ WARNING = '\033[93m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
 
-LOCK_DIR = "/home/humbug/humbug-deployments/lock"
+DEPLOYMENTS_DIR = "/home/humbug/humbug-deployments"
+LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
 
 os.chdir("/home/humbug/humbug")
 if len(sys.argv) > 1:
@@ -28,7 +29,7 @@ if len(sys.argv) > 1:
     refname = sys.argv[3]
 
 subprocess.check_call(["mkdir", '-p',
-                       '/home/humbug/humbug-deployments',
+                       DEPLOYMENTS_DIR,
                        '/home/humbug/logs'])
 
 try:
@@ -50,12 +51,12 @@ logging.info("Updating static files")
 subprocess.check_call(["./tools/update-prod-static"])
 
 timestamp = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-deploy_path = "/home/humbug/humbug-deployments/%s" % (timestamp,)
+deploy_path = os.path.join(DEPLOYMENTS_DIR, timestamp)
 subprocess.check_call(["cp", '-a', '/home/humbug/humbug', deploy_path])
-subprocess.check_call(["ln", '-nsf', deploy_path, "/home/humbug/humbug-deployments/current"])
+subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "current")])
 
 logging.info("Restarting server...")
-subprocess.check_call(["/home/humbug/humbug-deployments/current/tools/restart-server"])
+subprocess.check_call([os.path.join(DEPLOYMENTS_DIR, "current/tools/restart-server")])
 
 
 if newrev == '0000000000000000000000000000000000000000':
