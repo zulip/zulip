@@ -9,7 +9,6 @@ import time
 
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
                     level=logging.INFO)
-
 # Color codes
 OKBLUE = '\033[94m'
 OKGREEN = '\033[92m'
@@ -22,14 +21,9 @@ os.chdir("/home/humbug/humbug-deployments/current")
 # Send a statsd event on restarting the server
 subprocess.check_call(["python", "./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
 
-# Restart the FastCGI process, which is running in a shell loop in screen.
-# TODO: real daemonization
+# Restart the FastCGI and related processes via supervisorctl
 logging.info("Killing daemons")
-for cmd in ('runfcgi', 'runtornado', "process_user_activity", "subscribe_new_users", "send_confirmation_emails", "send_missedmessage_reminders"):
-    try:
-        subprocess.check_call(["pkill", "-f", "manage.py " + cmd])
-    except subprocess.CalledProcessError:
-        print "%sCould not kill %s; is it running?%s" % (WARNING, cmd, ENDC)
+subprocess.check_call(["supervisorctl", "restart", "humbug:*"])
 
 logging.info("Flushing memcached")
 try:

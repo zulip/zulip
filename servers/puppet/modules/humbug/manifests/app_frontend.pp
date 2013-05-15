@@ -5,7 +5,7 @@ class humbug::app_frontend {
   $web_packages = [ "nginx", "memcached", "python-pylibmc", "python-tornado", "python-django",
                     "python-pygments", "python-flup", "ipython", "python-psycopg2",
                     "yui-compressor", "python-django-auth-openid", "django-statsd-mozilla",
-                    "build-essential", "libssl-dev", ]
+                    "build-essential", "libssl-dev", "supervisor", "python-boto", "python-defusedxml"]
   package { $web_packages: ensure => "installed" }
 
   # This next block can go away once we upgrade to Wheezy, which won't
@@ -45,12 +45,33 @@ class humbug::app_frontend {
     mode => 644,
     source => "puppet:///modules/humbug/memcached.conf",
   }
+  file { "/etc/supervisor/conf.d/humbug.conf":
+    require => Package[supervisor],
+    ensure => file,
+    owner => "root",
+    group => "root",
+    mode => 644,
+    source => "puppet:///modules/humbug/supervisor/conf.d/humbug.conf",
+  }
+  file { "/var/log/humbug":
+    ensure => directory,
+    owner => "root",
+    group => "root",
+    mode => 755,
+  }
+
   # TODO: I think we need to restart memcached after deploying this
 
   exec {"pip-django-pipeline":
     command  => "/usr/bin/pip install django-pipeline",
     creates  => "/usr/local/lib/python2.6/dist-packages/pipeline",
     require  => Package['python-pip'],
+  }
+  exec {"humbug-server":
+    command => "/etc/init.d/supervisor restart",
+    require => [File["/etc/supervisor/conf.d/humbug.conf"],
+                File["/var/log/humbug"],
+                Exec["pip-django-pipeline"],]
   }
 
   # TODO: Add /usr/lib/nagios/plugins/check_send_receive_time ->
