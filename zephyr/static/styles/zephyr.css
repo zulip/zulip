@@ -321,8 +321,16 @@ td.pointer {
     background-color: #FAFFC7;
 }
 
-.selected_message.private-message .message_data, .selected_message .messagebox.private-message {
+.selected_message.private-message .message_data, .selected_message .messagebox.private-message,
+.new_private_messages {
     background-color: #e1ffb2;
+}
+
+.new_private_messages, .new_private_messages_fadeout {
+    -webkit-transition: all 3s ease-in-out;
+    -moz-transition: all 3s ease-in-out;
+    -o-transition: all 3s ease-in-out;
+    transition: all 3s ease-in-out;
 }
 
 .selected_message .messagebox.mention {

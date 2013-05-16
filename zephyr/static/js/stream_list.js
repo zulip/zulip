@@ -2,7 +2,9 @@ var stream_list = (function () {
 
 var exports = {};
 
+var last_private_message_count = 0;
 var previous_sort_order;
+
 exports.sort_narrow_list = function () {
     var streams = subs.subscribed_streams();
     if (streams.length === 0) {
@@ -196,6 +198,27 @@ exports.update_streams_sidebar = function () {
     }
 };
 
+function do_new_private_messages_animation() {
+    var li = get_filter_li("global", "private-message");
+    li.addClass("new_private_messages");
+    function mid_animation() {
+        li.removeClass("new_private_messages");
+        li.addClass("new_private_messages_fadeout");
+    }
+    function end_animation() {
+        li.removeClass("new_private_messages_fadeout");
+    }
+    setTimeout(mid_animation, 3000);
+    setTimeout(end_animation, 6000);
+}
+
+function animate_private_message_changes(new_private_message_count) {
+    if (new_private_message_count > last_private_message_count) {
+        do_new_private_messages_animation();
+    }
+    last_private_message_count = new_private_message_count;
+}
+
 exports.update_dom_with_unread_counts = function (counts) {
     // counts is just a data object that gets calculated elsewhere
     // Our job is to update some DOM elements.
@@ -215,6 +238,12 @@ exports.update_dom_with_unread_counts = function (counts) {
     // integer counts
     exports.set_count("global", "private-message", counts.private_message_count);
     exports.set_count("global", "home", counts.home_unread_messages);
+
+    // For now increases in private messages get special treatment in terms of 
+    // animating the left pane.  It is unlikely that we will generalize this,
+    // since Starred messages are user-initiated and Home messages would be too
+    // spammy.
+    animate_private_message_changes(counts.private_message_count);
 };
 
 $(function () {
