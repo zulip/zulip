@@ -252,6 +252,7 @@ $(function () {
             }
             rebuild_recent_subjects(op_stream[0], subject);
         }
+        process_visible_unread_messages();
     });
 
     $(document).on('narrow_deactivated.zephyr', function (event) {
