@@ -572,8 +572,9 @@ function process_message_for_recent_subjects(message) {
     recent_subjects[message.stream] = recents;
 }
 
+var msg_metadata_cache = {};
 function add_message_metadata(message, dummy) {
-    var cached_msg = all_msg_list.get(message.id);
+    var cached_msg = msg_metadata_cache[message.id];
     if (cached_msg !== undefined) {
         // Copy the match subject and content over if they exist on
         // the new message
@@ -639,6 +640,7 @@ function add_message_metadata(message, dummy) {
         }
     });
 
+    msg_metadata_cache[message.id] = message;
     return message;
 }
 
