@@ -14,7 +14,11 @@ import sys
 sys.path.append('/home/humbug/humbug/')
 from bots.cron_file_helper import nagios_from_file
 
-RESULTS_FILE = "/var/run/nagios/check-rabbitmq-consumers"
+if len(sys.argv) < 2:
+    print "Please pass the name of the consumer file to check"
+    exit(1)
+
+RESULTS_FILE = "/var/run/nagios/check-rabbitmq-consumers-%s" % (sys.argv[1])
 
 ret, result = nagios_from_file(RESULTS_FILE)
 
