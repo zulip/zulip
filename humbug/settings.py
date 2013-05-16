@@ -25,7 +25,7 @@ else:
     ALLOWED_HOSTS = ['localhost']
 
 ADMINS = (
-    ('Devel', 'devel@humbughq.com'),
+    ('Humbug Error Reports', 'errors@humbughq.com'),
 )
 
 MANAGERS = ADMINS
