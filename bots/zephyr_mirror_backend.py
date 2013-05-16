@@ -925,7 +925,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
 
     # Kill all zephyr_mirror processes other than this one and its parent.
     if not options.test_mode:
-        pgrep_query = "/usr/bin/python.*zephyr_mirror"
+        pgrep_query = "python.*zephyr_mirror"
         if options.shard is not None:
             pgrep_query = "%s.*--shard=%s" % (pgrep_query, options.shard)
         proc = subprocess.Popen(['pgrep', '-U', os.environ["USER"], "-f", pgrep_query],
