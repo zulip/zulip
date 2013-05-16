@@ -76,7 +76,10 @@ var update_table = {};
 
 // The day that elements are currently up-to-date with respect to.
 // Represented as an XDate with hour, minute, second, millisecond 0.
-var last_updated = set_to_start_of_day(now());
+var last_updated;
+$(function () {
+       last_updated = set_to_start_of_day(now());
+});
 
 function maybe_add_update_table_entry(update_date, id, time) {
     if (update_date === undefined)

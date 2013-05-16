@@ -155,7 +155,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
     return [rows.id(tr), skip_same_td_check];
 }
 
-$(document).bind('copy', function (e) {
+function copy_handler(e) {
     var selection = window.getSelection();
     var i, range, ranges = [], startc, endc, initial_end_tr, start_id, end_id, row, message;
     var start_data, end_data;
@@ -241,6 +241,10 @@ $(document).bind('copy', function (e) {
         });
         $('#copytempdiv').remove();
     },0);
+}
+
+$(function () {
+    $(document).bind('copy', copy_handler);
 });
 
 /* We use 'visibility' rather than 'display' and jQuery's show() / hide(),
