@@ -106,6 +106,9 @@ pre {
        when body is the default 14 px */
     font-size: 0.929em;
     line-height: inherit;
+    white-space: pre;
+    overflow-x: auto;
+    word-wrap: normal;
 }
 
 pre code {
