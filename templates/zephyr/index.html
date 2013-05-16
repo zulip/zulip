@@ -5,6 +5,15 @@
 
 {% load compressed %}
 
+{% block page_params %}
+{# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
+<script type="text/javascript">
+{% autoescape off %}
+var page_params = {{ page_params }};
+{% endautoescape %}
+</script>
+{% endblock %}
+
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -29,13 +38,6 @@
 {% else %}
 <script type="text/javascript" src="/static/third/handlebars/handlebars.runtime.js"></script>
 {% endif %}
-
-{# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
-<script type="text/javascript">
-{% autoescape off %}
-var page_params = {{ page_params }};
-{% endautoescape %}
-</script>
 
 {% compressed_js 'app' %}
 

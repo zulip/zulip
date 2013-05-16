@@ -274,7 +274,6 @@ PIPELINE_JS = {
     },
     'app': {
         'source_filenames': [
-            'js/blueslip.js',
             'js/util.js',
             'js/setup.js',
             'js/viewport.js',
@@ -304,6 +303,10 @@ PIPELINE_JS = {
             'js/settings.js'
         ],
         'output_filename': 'min/app.js'
+    },
+    'blueslip': {
+        'source_filenames': ('js/blueslip.js',),
+        'output_filename':  'min/blueslip.js'
     },
 }
 

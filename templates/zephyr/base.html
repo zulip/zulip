@@ -21,6 +21,13 @@
     <link href="/static/favicon.ico?v=2" rel="shortcut icon">
     {# We need to import jQuery before Bootstrap #}
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    {% block page_params %}
+    {# blueslip needs page_params.debug_mode.  Set it to false by default. #}
+    <script type="text/javascript">
+    var page_params = {debug_mode: false};
+    </script>
+    {% endblock %}
+    {% compressed_js 'blueslip' %}
     <script src="/static/third/bootstrap/js/bootstrap.min.js"></script>
     {% compressed_js 'common' %}
     {% block customhead %}
