@@ -1,0 +1,28 @@
+#!/usr/bin/python
+import os
+import logging
+import datetime
+import shutil
+from humbug_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT
+
+logging.basicConfig(format="%(asctime)s purge-deployments: %(message)s",
+                    level=logging.INFO)
+
+one_week_ago = datetime.datetime.now() - datetime.timedelta(days=7)
+to_purge = []
+for filename in os.listdir(DEPLOYMENTS_DIR):
+    try:
+        date = datetime.datetime.strptime(filename, TIMESTAMP_FORMAT)
+        if date < one_week_ago:
+            to_purge.append(filename)
+    except ValueError:
+        pass
+
+if to_purge:
+    to_purge.sort()
+    logging.info("Purging the following old deployments directories: %s" % (", ".join(to_purge),))
+    for filename in to_purge:
+        shutil.rmtree(os.path.join(DEPLOYMENTS_DIR, filename))
+        logging.info("Finished %s" % (filename))
+else:
+    logging.info("No old deployment directories to purge")
