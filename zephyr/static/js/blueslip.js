@@ -46,7 +46,7 @@ function report_error(msg, stack, opts) {
         timeout:  3*1000,
         success:  function () {
             reported_errors[key] = true;
-            if (opts.show_ui_msg) {
+            if (opts.show_ui_msg && ui !== undefined) {
                 // There are a few races here (and below in the error
                 // callback):
                 // 1) The ui module or something it requires might
@@ -54,8 +54,10 @@ function report_error(msg, stack, opts) {
                 // 2) The DOM might not be ready yet and so fetching
                 //    the #home-error div might fail.
 
-                // There's not much we can do about (1) and we can't
-                // solve (2) by using $(document).ready() because the
+                // For (1) we just don't show the message if the ui
+                // hasn't been loaded yet.  The user will probably
+                // get another error once it does.  We can't solve
+                // (2) by using $(document).ready() because the
                 // callback never gets called (I think what's going
                 // on here is if the exception was raised by a
                 // function that was called as a result of the DOM
@@ -72,7 +74,7 @@ function report_error(msg, stack, opts) {
             }
         },
         error: function () {
-            if (opts.show_ui_msg) {
+            if (opts.show_ui_msg && ui !== undefined) {
                 ui.report_message("Oops.  It seems something has gone wrong. " +
                                   "Please try reloading the page.",
                                   $("#home-error"), "alert-error");
