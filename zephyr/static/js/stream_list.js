@@ -115,21 +115,21 @@ exports.get_count = function (type, name) {
     return get_filter_li(type, name).find('.count .value').text();
 };
 
-function set_count_internal(count_span, value_span, count, clear_func) {
+function update_count_in_dom(count_span, value_span, count) {
     if (count === 0) {
-        return clear_func();
+        count_span.hide();
+        value_span.text('');
+        return;
     }
 
     count_span.show();
-
     value_span.text(count);
 }
 
 exports.set_count = function (type, name, count) {
     var count_span = get_filter_li(type, name).find('.count');
     var value_span = count_span.find('.value');
-
-    set_count_internal(count_span, value_span, count, function () { return exports.clear_count(type, name); });
+    update_count_in_dom(count_span, value_span, count);
 };
 
 exports.set_subject_count = function (stream, subject, count) {
@@ -140,15 +140,7 @@ exports.set_subject_count = function (stream, subject, count) {
         return;
     }
 
-    set_count_internal(count_span, value_span, count, function () {
-        get_subject_filter_li(stream, subject).find('.subject_count').hide()
-                                                                             .find('.value').text('');
-    });
-};
-
-exports.clear_count = function (type, name) {
-    get_filter_li(type, name).find('.count').hide()
-                                            .find('.value').text('');
+    update_count_in_dom(count_span, value_span, count);
 };
 
 exports.remove_narrow_filter = function (name, type) {
