@@ -188,6 +188,7 @@ function respond_to_message(opts) {
                              'private_message_recipient': pm_recipient,
                              'replying_to_message': message,
                              'trigger': opts.trigger});
+
 }
 
 // Returns messages from the given message list in the specified range, inclusive
@@ -310,7 +311,7 @@ function process_read_messages(messages) {
 
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
-function process_visible_unread_messages() {
+function process_visible_unread_messages(update_cursor) {
     // For any messages visible on the screen, make sure they have been marked
     // as unread.
     if (! notifications.window_has_focus()) {
@@ -335,6 +336,22 @@ function process_visible_unread_messages() {
         // Mark very tall messages as read once we've gotten past them
         return (row_height > height && row_offset.top > top) || within_viewport(row_offset, row_height);
     });
+
+    if (update_cursor) {
+        //save the state of respond_to_cursor, and reapply it every time we move the cursor
+        var probably_from_sent_message = respond_to_cursor;
+        $.map(visible_messages, function(msg) {
+            if ((current_msg_list.get(rows.id($(msg))).sender_email === page_params.email) &&
+                (current_msg_list.selected_message().id < rows.id($(msg)))) {
+                // every time we move the cursor, we set respond_to_cursor to false. This should only
+                // happen if the user initiated the cursor move, not us, so we reset it when processing
+                // these messages
+                current_msg_list.select_id(rows.id($(msg)), {then_scroll: true,
+                                                             from_scroll: true});
+                respond_to_cursor = probably_from_sent_message;
+            }
+        });
+    }
 
     var mark_as_read = $.map(visible_messages, function(msg) {
         var message = current_msg_list.get(rows.id($(msg)));
@@ -396,6 +413,7 @@ $(function () {
                       keepTracking: true});
 
     $(document).on('message_selected.zephyr', function (event) {
+
         // Narrowing is a temporary view on top of the home view and
         // doesn't affect your pointer in the home view.
         if (event.msg_list === home_msg_list
@@ -853,7 +871,16 @@ function get_updates(options) {
                 // notifications.received_messages uses values set by
                 // process_visible_unread_messages and thus must
                 // be called after it
-                process_visible_unread_messages();
+                var i;
+                var update_cursor = false;
+                // check if we need to update the cursor, and do so if needed.
+                for (i = 0; i < messages.length; i++) {
+                    if (messages[i].sender_email === page_params.email && narrow.narrowed_by_reply()) {
+                        update_cursor = true;
+                    }
+                }
+
+                process_visible_unread_messages(update_cursor);
                 notifications.received_messages(messages);
                 compose.update_faded_messages();
                 stream_list.update_streams_sidebar();

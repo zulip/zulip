@@ -357,8 +357,11 @@ function send_message() {
             $("#compose-send-button").removeAttr('disabled');
             $("#sending-indicator").hide();
             send_status.hide();
-            if (respond_to_cursor) {
+            if (respond_to_cursor && narrow.narrowed_by_reply()) {
                 respond_to_message({trigger: 'autorespond'});
+            }
+            else {
+                respond_to_cursor = false;
             }
         },
         error: function (xhr, error_type) {

@@ -628,6 +628,20 @@ exports.narrowed_to_pms = function () {
     return false;
 };
 
+// We auto-reply under certain conditions, namely when you're narrowed
+// to a PM (or huddle), and when you're narrowed to some stream/subject pair
+exports.narrowed_by_reply = function () {
+    if (narrow.filter() === undefined) {
+        return false;
+    }
+    var operators = narrow.filter().operators();
+        return ((operators.length === 1 &&
+                 operators[0][0] === "pm-with") ||
+                (operators.length === 2 &&
+                 operators[0][0] === "stream" &&
+                 operators[1][0] === "subject"));
+};
+
 return exports;
 
 }());
