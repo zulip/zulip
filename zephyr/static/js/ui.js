@@ -32,6 +32,37 @@ exports.focus_on = function (field_id) {
     $("#" + field_id).focus();
 };
 
+exports.message_viewport_info = function () {
+    // see also: effective_page_size()
+    // Return a structure that tells us details of the viewport
+    // accounting for fixed elements like the top navbar.
+    //
+    // The message_header is NOT considered to be part of the visible
+    // message pane, which should make sense for callers, who will
+    // generally be concerned about whether actual message content is
+    // visible.
+
+    var res = {};
+
+    res.top_hidden_height =
+        $("#top_navbar").height()
+        + $(".message_header").height();
+
+    res.bottom_hidden_height =
+        $("#compose").height();
+
+    res.visible_height =
+        viewport.height()
+        - res.top_hidden_height
+        - res.bottom_hidden_height;
+
+    res.visible_top =
+        viewport.scrollTop()
+        + res.top_hidden_height;
+
+    return res;
+};
+
 function effective_page_size() {
     // This function returns the height of the viewable portion of the
     // message pane, so it starts with the viewport height and

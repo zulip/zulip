@@ -437,10 +437,9 @@ function process_visible_unread_messages() {
     }
 
     var selected = current_msg_list.selected_message();
-    var top = viewport.scrollTop();
-    var height = viewport.height();
-    var bottom = top + height;
-    var middle = top + (height / 2);
+    var vp = ui.message_viewport_info();
+    var top = vp.visible_top;
+    var height = vp.visible_height;
 
     // Being simplistic about this, the smallest message is 30 px high.
     var selected_row = rows.get(current_msg_list.selected_id(), current_msg_list.table_name);
