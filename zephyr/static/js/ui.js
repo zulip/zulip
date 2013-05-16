@@ -1085,6 +1085,7 @@ $(function () {
             // Was a click (not a click-and-drag).
             var row = $(this).closest(".message_row");
             current_msg_list.select_id(rows.id(row));
+            respond_to_cursor = true;
             respond_to_message({trigger: 'message click'});
             e.stopPropagation();
         }

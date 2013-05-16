@@ -239,6 +239,7 @@ exports.cancel = function () {
         $('#restore-draft').show();
     }
     $(document).trigger($.Event('compose_canceled.zephyr'));
+    respond_to_cursor = false;
 };
 
 exports.empty_subject_placeholder = function() {
@@ -355,6 +356,10 @@ function send_message() {
             clear_message_snapshot();
             $("#compose-send-button").removeAttr('disabled');
             $("#sending-indicator").hide();
+            send_status.hide();
+            if (respond_to_cursor) {
+                respond_to_message({trigger: 'autorespond'});
+            }
         },
         error: function (xhr, error_type) {
             if (error_type !== 'timeout' && reload.is_pending()) {
@@ -369,10 +374,10 @@ function send_message() {
                 response += ": " + $.parseJSON(xhr.responseText).msg;
             }
             compose_error(response, $('#new_message_content'));
+            send_status.hide();
         }
     });
 
-    send_status.hide();
 }
 
 exports.finish = function () {

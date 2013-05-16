@@ -45,6 +45,7 @@ var globals =
     + ' mark_all_as_read message_unread process_read_messages unread_in_current_view'
     + ' fast_forward_pointer recent_subjects unread_subjects'
     + ' add_message_metadata'
+    + ' respond_to_cursor'
     ;
 
 

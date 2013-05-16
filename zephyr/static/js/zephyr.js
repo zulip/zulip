@@ -9,6 +9,8 @@ var recent_subjects = {};
 var queued_mark_as_read = [];
 var queued_flag_timer;
 
+var respond_to_cursor = false;
+
 var get_updates_params = {
     pointer: -1
 };
@@ -417,6 +419,11 @@ $(function () {
             && event.id > furthest_read)
         {
             furthest_read = event.id;
+        }
+
+        // If we move the pointer, we don't want to respond to what's at the pointer
+        if (event.previously_selected !== event.id) {
+            respond_to_cursor = false;
         }
 
         if (event.previously_selected !== -1) {
