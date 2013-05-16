@@ -59,6 +59,14 @@ urlpatterns = patterns('',
     url(r'^new-user$', TemplateView.as_view(template_name='zephyr/new-user.html')),
     url(r'^features$', TemplateView.as_view(template_name='zephyr/features.html')),
 
+    # Landing page and signup form
+    url(r'^hello$', TemplateView.as_view(template_name='zephyr/hello.html'),
+                                         name='landing-page'),
+    url(r'^signup$', TemplateView.as_view(template_name='zephyr/signup.html'),
+                                         name='signup'),
+
+
+
     # API and integrations documentation
     url(r'^api$', TemplateView.as_view(template_name='zephyr/api.html')),
     url(r'^api/endpoints$', 'zephyr.views.api_endpoint_docs'),

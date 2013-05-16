@@ -1,3 +1,17 @@
+.container-fluid {
+    padding: 0px;
+}
+
+.navbar {
+    margin-bottom: 0px;
+}
+
+.navbar-inner {
+    border-radius: 0px;
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+}
+
 body {
     font-family: 'Humbug', Helvetica, Arial, sans-serif;
     line-height: 150%;
@@ -147,4 +161,66 @@ img.screenshot{
 .feature-list div {
     padding-bottom: 2.5em;
     height: 6em;
+}
+
+.main-headline {
+    text-align: center;
+}
+
+.landing-page {
+    padding: 2em 0em;
+}
+
+.landing-page-bottom {
+    padding-bottom: 2em;
+}
+
+.landing-page h1 {
+    font-weight: 600;
+}
+
+.landing-page h2,h3,h4,h5 {
+    font-weight: lighter;
+}
+
+.landing-page p {
+    font-size: 120%;
+}
+
+.laptop-image {
+    width: 787px;
+    height: 414px;
+    background-image: url('/static/images/landing-page/laptop.png');
+    background-size: contain;
+}
+
+.laptop-screen {
+    position: relative;
+    top: 32px;
+    width: 507px;
+}
+
+.platform-icon {
+    width: 33%
+}
+
+.spotlighted-feature {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.main-signup-button {
+    margin-top: 2em;
+    margin-bottom: 2.5em;
+}
+
+.shaded-background {
+    background-color: #ededed;
+}
+
+.darker-background {
+    background-color: #474747;
+    color: white;
 }
