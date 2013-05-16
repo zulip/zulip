@@ -611,7 +611,7 @@ def convert(md):
             % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
         internal_send_message("humbug+errors@humbughq.com", "stream",
-                "devel", subject, "Markdown parser failed, message sent to devel@")
+                "errors", subject, "Markdown parser failed, email sent with details.")
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)
