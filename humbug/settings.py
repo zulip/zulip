@@ -490,14 +490,13 @@ POLL_TIMEOUT = 90 * 1000
 # client tests.
 TUTORIAL_ENABLED = True
 
+HOME_NOT_LOGGED_IN = '/login'
 if DEPLOYED:
     ALLOW_REGISTER = False
     FULL_NAVBAR    = False
-    HOME_NOT_LOGGED_IN = '/accounts/login'
 else:
     ALLOW_REGISTER = True
     FULL_NAVBAR    = True
-    HOME_NOT_LOGGED_IN = '/accounts/home'
 
 # For testing, you may want to have emails be printed to the console.
 if not DEPLOYED:

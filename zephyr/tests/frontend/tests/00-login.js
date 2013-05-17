@@ -5,8 +5,7 @@ casper.start('http://localhost:9981/', common.initialize_casper);
 
 casper.then(function () {
     casper.test.assertHttpStatus(302);
-    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/accounts\/home/, 'Redirected to /accounts/home');
-    casper.click('a[href^="/accounts/login"]');
+    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/login/, 'Redirected to /login');
 });
 
 common.then_log_in();
