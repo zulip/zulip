@@ -35,8 +35,6 @@ exports.initialize = function () {
         process_visible_unread_messages();
     }).blur(function () {
         window_has_focus = false;
-    }).mouseover(function () {
-        exports.update_title_count();
     });
 
     if (!window.webkitNotifications) {
@@ -223,12 +221,11 @@ function message_is_notifiable(message) {
 }
 
 exports.received_messages = function (messages) {
-    var i, title_needs_update = false;
+    var i;
 
     $.each(messages, function (index, message) {
         if (message.sender_email !== page_params.email &&
             narrow.message_in_home(message)) {
-            title_needs_update = !window_has_focus;
 
             // We send notifications for messages which the user has
             // configured as notifiable, as long as they haven't been
@@ -247,10 +244,6 @@ exports.received_messages = function (messages) {
             }
         }
     });
-
-    if (title_needs_update) {
-        exports.update_title_count();
-    }
 };
 
 return exports;
