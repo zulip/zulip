@@ -59,6 +59,31 @@ exports.message_viewport_info = function () {
     return res;
 };
 
+function pointer_distance_from_top() {
+    var res = exports.message_viewport_info();
+    var selected_row = current_msg_list.selected_row();
+    var selected_row_offset = selected_row.offset().top;
+    var delta = selected_row_offset - res.visible_top;
+    delta -= 20; // padding
+
+    if (delta < 0) delta = 0;
+
+    return delta;
+}
+    
+function pointer_distance_to_bottom() {
+    var res = exports.message_viewport_info();
+    var selected_row = current_msg_list.selected_row();
+    var selected_row_bottom = selected_row.offset().top + selected_row.height();
+    var visible_bottom = res.visible_top + res.visible_height;
+    var delta = visible_bottom - selected_row_bottom;
+    delta -= 5; // padding
+
+    if (delta < 0) delta = 0;
+
+    return delta;
+}
+
 function amount_to_paginate() {
     // Some day we might have separate versions of this function
     // for Page Up vs. Page Down, but for now it's the same
@@ -101,6 +126,18 @@ exports.page_down_the_right_amount = function () {
     // see also: page_up_the_right_amount
     var delta = amount_to_paginate();
     viewport.scrollTop(viewport.scrollTop() + delta);
+};
+
+exports.anchor_to_top = function () {
+    var delta = pointer_distance_from_top();
+    suppress_scroll_pointer_update = true;
+    viewport.scrollTop(viewport.scrollTop() + delta);
+};
+
+exports.anchor_to_bottom = function () {
+    var delta = pointer_distance_to_bottom();
+    suppress_scroll_pointer_update = true;
+    viewport.scrollTop(viewport.scrollTop() - delta);
 };
 
 function find_boundary_tr(initial_tr, iterate_row) {
