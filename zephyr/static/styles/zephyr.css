@@ -855,6 +855,10 @@ table.floating_recipient {
     cursor: pointer;
 }
 
+.actions_popover i {
+    color: black;
+}
+
 .popover {
     width: auto;
 }
