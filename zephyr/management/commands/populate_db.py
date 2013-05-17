@@ -572,10 +572,17 @@ def restore_saved_messages():
                 color = old_message.get("color", old_message.get("value"))
                 pending_colors[(old_message["user"],
                                 old_message["stream_name"].lower())] = color
+            elif property_name == "in_home_view":
+                # TODO: Handle this
+                continue
             else:
                 raise RuntimeError("Unknown property %s" % (property_name,))
             continue
         elif message_type == "realm_created":
+            # No action required
+            continue
+        elif message_type in ["user_email_changed", "update_onboarding", "update_message"]:
+            # TODO: Handle these
             continue
         if message_type not in ["stream", "huddle", "personal"]:
             raise RuntimeError("Unexpected message type %s" % (message_type,))
