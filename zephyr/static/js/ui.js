@@ -1250,7 +1250,49 @@ $(function () {
             content:   templates.render('sidebar_stream_actions', {'stream': subs.have(stream)}),
             trigger:   "manual"
         });
+
+        // This little function is a workaround for the fact that
+        // Bootstrap popovers don't properly handle being resized --
+        // so after resizing our popover to add in the spectrum color
+        // picker, we need to adjust its height accordingly.
+        function update_spectrum(popover, update_func) {
+            var initial_height = popover[0].offsetHeight;
+
+            var colorpicker = popover.find('.colorpicker-container').find('.colorpicker');
+            update_func(colorpicker);
+            var after_height = popover[0].offsetHeight;
+
+            var popover_root = popover.closest(".popover");
+            var current_top_px = parseFloat(popover_root.css('top').replace('px', ''));
+            var height_delta = - (after_height - initial_height) * 0.5;
+
+            popover_root.css('top', (current_top_px + height_delta) + "px");
+        }
+
         $(e.target).popover("show");
+        var popover = $('.streams_popover[data-id=' + subs.have(stream).id + ']');
+        update_spectrum(popover, function(colorpicker) {
+            colorpicker.spectrum(subs.sidebar_popover_colorpicker_options);
+        });
+
+        $('.streams_popover').on('click', '.custom_color', function (e) {
+            update_spectrum($(e.target).closest('.streams_popover'), function(colorpicker) {
+                colorpicker.spectrum("destroy");
+                colorpicker.spectrum(subs.sidebar_popover_colorpicker_options_full);
+                // In theory this should clean up the old color picker,
+                // but this seems a bit flaky -- the new colorpicker
+                // doesn't fire until you click a button, but the buttons
+                // have been hidden.  We work around this by just manually
+                // fixing it up here.
+                colorpicker.parent().find('.sp-container').removeClass('sp-buttons-disabled');
+                $(e.target).hide();
+            });
+
+            $('.streams_popover').on('click', 'a.sp-cancel', function (e) {
+                ui.hide_sidebar_popover();
+            });
+        });
+
         current_sidebar_elem = $(e.target);
         e.preventDefault();
     });

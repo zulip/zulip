@@ -1,5 +1,5 @@
 {{! Contents of the "message actions" popup }}
-<ul class="nav nav-list actions_popover" data-name="{{ stream.name }}">
+<ul class="nav nav-list streams_popover" data-id="{{ stream.id }}">
   <li>
     <a class="narrow_to_stream">
       <i class="icon-vector-bullhorn"></i>
@@ -22,6 +22,10 @@
       <i class="icon-vector-edit"></i>
       Compose a new message on this stream.
     </a>
+  </li>
+  <li>
+    <span class="colorpicker-container"><input stream_name="{{stream.name}}" class="colorpicker" type="text" value="{{stream.color}}" /></span>
+    <a class="custom_color">Choose custom color</a>
   </li>
 
 </ul>

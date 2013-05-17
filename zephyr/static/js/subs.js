@@ -214,22 +214,43 @@ function set_color(stream_name, color) {
     set_stream_property(stream_name, 'color', color);
 }
 
-var colorpicker_options = {
+var stream_color_palette = [
+    ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
+    ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
+    ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
+    ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
+];
+
+function picker_do_change_color (color) {
+    var stream_name = $(this).attr('stream_name');
+    var hex_color = color.toHexString();
+    set_color(stream_name, hex_color);
+}
+
+exports.sidebar_popover_colorpicker_options = {
+    clickoutFiresChange: true,
+    showPaletteOnly: true,
+    showPalette: true,
+    flat: true,
+    palette: stream_color_palette,
+    change: picker_do_change_color
+};
+
+exports.sidebar_popover_colorpicker_options_full = {
     clickoutFiresChange: true,
     showPalette: true,
-    palette: [
-        ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
-        ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
-        ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
-        ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
-    ],
-    change: function (color) {
-        // TODO: Kind of a hack.
-        var sub_row = $(this).closest('.subscription_row');
-        var stream_name = sub_row.find('.subscription_name').text();
-        var hex_color = color.toHexString();
-        set_color(stream_name, hex_color);
-    }
+    flat: true,
+    cancelText: "",
+    chooseText: "choose",
+    palette: stream_color_palette,
+    change: picker_do_change_color
+};
+
+var subscriptions_table_colorpicker_options = {
+    clickoutFiresChange: true,
+    showPalette: true,
+    palette: stream_color_palette,
+    change: picker_do_change_color
 };
 
 function create_sub(stream_name, attrs) {
@@ -751,7 +772,7 @@ $(function () {
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
         var subrow = $(e.target).closest('.subscription_row');
         var colorpicker = subrow.find('.colorpicker');
-        colorpicker.spectrum(colorpicker_options);
+        colorpicker.spectrum(subscriptions_table_colorpicker_options);
 
         // To figure out the worst case for an expanded row's height, we do some math:
         // .subscriber_list_container max-height,

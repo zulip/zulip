@@ -34,7 +34,10 @@
             <input class="sub_setting_control" type="checkbox" {{#if notifications}}checked{{/if}} />
             Show desktop notifications for traffic on this stream
           </li>
-          <li><span class="sub_setting_control"><input class="colorpicker" type="text" value="{{color}}" /></span>
+          <li>
+            <span class="sub_setting_control">
+              <input stream_name="{{name}}" class="colorpicker" type="text" value="{{color}}" />
+            </span>
             Stream color
           </li>
         </ul>

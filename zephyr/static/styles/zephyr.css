@@ -1090,6 +1090,21 @@ table.floating_recipient {
     margin: 0 30px 5px 20px;
 }
 
+.streams_popover .sp-container {
+    background: white;
+    cursor: pointer;
+    border: none;
+}
+
+.streams_popover .sp-palette-container {
+    border-right: none;
+}
+
+.streams_popover .colorpicker-container {
+    display: inline-block;
+    margin-right: 10px;
+}
+
 .sub_setting_control {
     display: inline-block;
     margin-right: 10px;
