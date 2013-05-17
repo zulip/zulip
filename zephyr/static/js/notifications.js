@@ -17,12 +17,6 @@ function browser_desktop_notifications_on () {
 }
 
 exports.initialize = function () {
-    names = page_params.fullname.toLowerCase().split(" ");
-    names.push(page_params.email.split("@")[0].toLowerCase());
-    names.push("all");
-    names.push("everyone");
-    names.push("<strong>" + page_params.fullname.toLowerCase() + "</strong>");
-
     $(window).focus(function () {
         window_has_focus = true;
         exports.update_title_count();
@@ -179,37 +173,10 @@ function process_desktop_notification(message) {
 }
 
 exports.speaking_at_me = function (message) {
-    var content_lc = message.content.toLowerCase();
-    var found_match = false, indexof, after_name, after_atname;
-    var punctuation = /[\.,-\/#!$%\^&\*;:{}=\-_`~()\+\?\[\]\s<>]/;
-
-    if (page_params.domain === "mit.edu") {
+    if (message === undefined || message.flags === undefined) {
         return false;
     }
-
-    $.each(names, function (index, name) {
-        indexof = content_lc.indexOf(name.toLowerCase());
-        if (indexof === -1) {
-            // If there is no match, we don't need after_name
-            after_name = undefined;
-        } else if (indexof + name.length >= content_lc.length) {
-            // If the @name is at the end of the string, that's OK,
-            // so we set after_name to " " so that the code below
-            // will identify a match
-            after_name = " ";
-        } else {
-            after_name = content_lc.charAt(indexof + name.length);
-        }
-        if ((indexof === 0 &&
-             after_name.match(punctuation) !== null) ||
-            (indexof > 0 && content_lc.charAt(indexof-1) === "@" &&
-             after_name.match(punctuation) !== null)) {
-                found_match = true;
-                return false;
-        }
-    });
-
-    return found_match;
+    return message.flags.indexOf('mentioned') > -1;
 };
 
 function message_is_notifiable(message) {
