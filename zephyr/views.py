@@ -501,6 +501,12 @@ def home(request):
                                       apply_markdown=True)
     user_has_messages = (register_ret['max_message_id'] != -1)
 
+    # Reset our don't-spam-users-with-email counter since the
+    # user has since logged in
+    if not user_profile.last_reminder is None:
+        user_profile.last_reminder = None
+        user_profile.save()
+
     # Brand new users get the tutorial
     needs_tutorial = settings.TUTORIAL_ENABLED and \
         user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING

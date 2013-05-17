@@ -91,6 +91,9 @@ class UserProfile(AbstractBaseUser):
     enable_offline_email_notifications = models.BooleanField(default=True)
     last_reminder = models.DateTimeField(default=timezone.now, null=True)
 
+    # Hours to wait before sending another email to a user
+    EMAIL_REMINDER_WAITPERIOD = 24
+
     TUTORIAL_WAITING  = 'W'
     TUTORIAL_STARTED  = 'S'
     TUTORIAL_FINISHED = 'F'
