@@ -301,6 +301,9 @@ def restore_saved_messages():
             old_message["user"] = fix_email(old_message["user"])
         elif message_type == "subscription_property":
             old_message["user"] = fix_email(old_message["user"])
+        elif message_type == "user_email_changed":
+            old_message["old_email"] = fix_email(old_message["old_email"])
+            old_message["new_email"] = fix_email(old_message["new_email"])
         elif message_type.startswith("user_"):
             old_message["user"] = fix_email(old_message["user"])
         elif message_type.startswith("enable_"):
