@@ -5,6 +5,30 @@ var exports = {};
 var unread_counts = {'stream': {}, 'private': {}};
 var unread_subjects = {};
 
+function unread_hashkey(message) {
+    var hashkey;
+    if (message.type === 'stream') {
+        hashkey = message.stream;
+    } else {
+        hashkey = message.display_reply_to;
+    }
+
+    if (unread_counts[message.type][hashkey] === undefined) {
+        unread_counts[message.type][hashkey] = {};
+    }
+
+    if (message.type === 'stream') {
+        if (unread_subjects[hashkey] === undefined) {
+            unread_subjects[hashkey] = {};
+        }
+        if (unread_subjects[hashkey][message.subject] === undefined) {
+            unread_subjects[hashkey][message.subject] = {};
+        }
+    }
+
+    return hashkey;
+}
+
 exports.message_unread = function (message) {
     // This is the only halfway interesting function in this module.
     // Everything else is just slinging hashes around.
@@ -64,30 +88,6 @@ exports.process_read_message = function (message) {
         delete unread_subjects[message.stream][message.subject][message.id];
     }
 };
-
-function unread_hashkey(message) {
-    var hashkey;
-    if (message.type === 'stream') {
-        hashkey = message.stream;
-    } else {
-        hashkey = message.display_reply_to;
-    }
-
-    if (unread_counts[message.type][hashkey] === undefined) {
-        unread_counts[message.type][hashkey] = {};
-    }
-
-    if (message.type === 'stream') {
-        if (unread_subjects[hashkey] === undefined) {
-            unread_subjects[hashkey] = {};
-        }
-        if (unread_subjects[hashkey][message.subject] === undefined) {
-            unread_subjects[hashkey][message.subject] = {};
-        }
-    }
-
-    return hashkey;
-}
 
 exports.declare_bankruptcy = function () {
     unread_counts = {'stream': {}, 'private': {}};
