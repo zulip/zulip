@@ -1,10 +1,67 @@
 {% extends "zephyr/portico.html" %}
+{% load compressed %}
 
-{% block portico_content %}
+{% block customhead %}
+    {% compressed_css 'portico' %}
+    <script type="text/javascript" src="/static/third/jquery/jquery.form.js"></script>
+    {% compressed_js 'landing-page' %}
+{% endblock %}
 
-<div class="container">
-  <div class="row">
+{% block inner_content %}
+<div class="row-fluid shaded-background landing-page">
+  <div class="span12 main-headline">
+    <h1>Sign up now!</h1>
+    <h4>Humbug is currently in closed beta, but we're constantly
+      adding new beta customer sites.</h4>
   </div>
 </div>
 
+<div class="row-fluid shaded-background landing-page-bottom">
+  <div class="span6 offset3" id="envelope-holder">
+    <div id="success" class="alert alert-success alert-block">
+      <h4>Success!</h4>
+      Thank you for your interest. We'll be in touch soon.
+      While you wait, check out some of our <a href="/features">features</a>!
+    </div>
+
+    <div id="error" class="alert alert-error alert-block">
+      <h4>Ruh-roh!</h4>
+      Hmmm, something went wrong. Please send email to <a href="mailto:support@humbughq.com">support@humbughq.com</a>.
+    </div>
+
+    <div id="error-missing-email" class="alert alert-error alert-block">
+      <h4>Your email is required!</h4>
+      How else would we be able to reach you?
+    </div>
+
+    <div class="postal-envelope">
+      <div class="postal-stripes"></div>
+      <span class="par-avion">PAR COURRIER ELECTRONIQUE</span>
+      <form method="post" class="letter-form" id="beta-user-form" action="{% url 'beta-signup-submission' %}">
+        {% csrf_token %}
+        <p>Hi Humbugs,</p>
+
+        <p>My name is <input class="input-medium" type="text"
+        id="name" name="name" placeholder="Wolfgang A. Mozart" />, and
+        you can email me at <input class="input-large" type="email"
+        id="email" name="email"
+        placeholder="w.a.mozart@magicflute.com" />.
+
+
+        <p>I work at <input class="input-medium" type="text"
+          name="company" id="company" placeholder="Salzburg Court" />,
+          and I was hoping to give Humbug a try! There are
+          about <input class="input-mini" type="text" id="count"
+          name="count" placeholder="10" /> of us, and we currently use
+          <input class="input-small" type="text" id="product"
+          name="product" placeholder="IRC" /> for chat.</p>
+
+        <p>I'm looking forward to it!</p>
+
+        <button type="submit" id="beta-signup" class="btn btn-large btn-info">Sign up</button>
+      </form>
+      <div class="postal-stripes"></div>
+    </div>
+  </div>
+</div>
 {% endblock %}

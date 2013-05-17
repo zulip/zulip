@@ -224,3 +224,53 @@ img.screenshot{
     background-color: #474747;
     color: white;
 }
+
+.postal-envelope {
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.postal-stripes {
+    padding: 0px;
+    margin: 0px;
+    height: 10px;
+    background-image: repeating-linear-gradient(-60deg, #fff, #fff 10px, #62a0cf 10px, #62a0cf 20px, #fff 20px, #fff 30px, #d66468 30px, #d66468 40px );
+}
+
+.par-avion {
+    font-size: 80%;
+    float: right;
+    margin-right: 1em;
+}
+
+.letter-form {
+    font-size: 110%;
+    padding-top: 2em;
+    padding-left: 4em;
+    padding-right: 4em;
+}
+
+.letter-form input {
+    border: 0px;
+    border-bottom: 1px dashed grey;
+    box-shadow: none;
+    padding-bottom: 0px;
+    transition: border linear 0.2s;
+
+}
+
+@media (max-width: 767px) {
+    /* This is a hack and I'm not 100% sure why it's necessary,
+       but otherwise when we resize the form to be pretty narrow,
+       this gets crushed */
+    #envelope-holder {
+        margin-left: 0px;
+    }
+}
+
+.alert {
+    display: none;
+}

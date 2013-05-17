@@ -260,6 +260,10 @@ PIPELINE_JS = {
         'source_filenames': ('js/common.js',),
         'output_filename':  'min/common.js'
     },
+    'landing-page': {
+        'source_filenames': ('js/landing-page.js',),
+        'output_filename':  'min/landing-page.js'
+    },
     'signup': {
         'source_filenames': ('js/signup.js',),
         'output_filename':  'min/signup.js'

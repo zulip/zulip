@@ -191,6 +191,21 @@ def rest_dispatch(request, **kwargs):
     return json_method_not_allowed(supported_methods.keys())
 
 @require_post
+@has_request_variables
+def beta_signup_submission(request, name=REQ, email=REQ,
+                           company=REQ, count=REQ, product=REQ):
+    content = """Name: %s
+Email: %s
+Company: %s
+# users: %s
+Currently using: %s""" % (name, email, company, count, product,)
+    subject = "Interest in Humbug: %s" % company
+    from_email = '"%s" via Web <humbug+signups@humbughq.com>' % (name,)
+    to_email = '"Humbug Signups" <humbug+signups@humbughq.com>'
+    send_mail(subject, content, from_email, [to_email])
+    return json_success()
+
+@require_post
 def accounts_register(request):
     key = request.POST['key']
     confirmation = Confirmation.objects.get(confirmation_key=key)
