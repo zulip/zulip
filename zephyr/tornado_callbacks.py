@@ -270,10 +270,10 @@ def process_new_message(data):
     elif type(first) == int:
         user_ids = data['users']
 
-
     for user_profile_id in user_ids:
         user_receive_message(user_profile_id, message)
 
+        flags = user_flags.get(user_profile_id, [])
         for client in get_client_descriptors_for_user(user_profile_id):
             # The below prevents (Zephyr) mirroring loops.
             if client.accepts_event_type('message') and not \
@@ -283,7 +283,7 @@ def process_new_message(data):
                     message_dict = message_dict_markdown
                 else:
                     message_dict = message_dict_no_markdown
-                event = dict(type='message', message=message_dict)
+                event = dict(type='message', message=message_dict, flags=flags)
                 client.add_event(event)
 
         # If the recipient was offline and the message was a single or group PM,

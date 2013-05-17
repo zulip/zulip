@@ -273,6 +273,7 @@ def do_send_messages(messages):
             raise ValueError('Bad recipient type')
 
     # Save the message receipts in the database
+    user_message_flags = defaultdict(dict)
     with transaction.commit_on_success():
         Message.objects.bulk_create([message['message'] for message in messages])
         ums = []
@@ -288,6 +289,7 @@ def do_send_messages(messages):
                     um.flags |= UserMessage.flags.read
                 if wildcard or um.user_profile in mentioned:
                     um.flags |= UserMessage.flags.mentioned
+                user_message_flags[message['message'].id][um.user_profile] = um.flags_dict().get('flags')
             ums.extend(ums_to_create)
         UserMessage.objects.bulk_create(ums)
 
@@ -302,10 +304,11 @@ def do_send_messages(messages):
             # doesn't have to.
             message['message'].to_dict(apply_markdown=True, rendered_content=message['rendered_content'])
             message['message'].to_dict(apply_markdown=False)
+            user_flags = user_message_flags.get(message['message'].id, {})
             data = dict(
                 type     = 'new_message',
                 message  = message['message'].id,
-                users    = [user.id for user in message['recipients']])
+                users    = [{'id': user.id, 'flags': user_flags.get(user, [])} for user in message['recipients']])
             if message['message'].recipient.type == Recipient.STREAM:
                 # Note: This is where authorization for single-stream
                 # get_updates happens! We only attach stream data to the

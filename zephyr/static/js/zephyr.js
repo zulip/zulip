@@ -792,7 +792,9 @@ function get_updates(options) {
 
                 switch (event.type) {
                 case 'message':
-                    messages.push(event.message);
+                    var msg = event.message;
+                    msg.flags = event.flags;
+                    messages.push(msg);
                     break;
                 case 'pointer':
                     new_pointer = event.pointer;
