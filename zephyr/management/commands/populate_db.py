@@ -539,7 +539,7 @@ def restore_saved_messages():
         elif message_type == "user_change_password":
             # Just handle these the slow way
             user_profile = users[old_message["user"]]
-            do_change_password(user_profile, old_message["pshash"], log=False,
+            do_change_password(user_profile, old_message["pwhash"], log=False,
                                hashed_password=True)
             continue
         elif message_type == "user_change_full_name":
