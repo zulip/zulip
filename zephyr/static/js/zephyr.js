@@ -243,91 +243,25 @@ function send_queued_flags() {
         success:  on_success});
 }
 
-var unread_counts = {'stream': {}, 'private': {}};
-var unread_subjects = {};
 var home_unread_messages = 0;
 
 function unread_in_current_view() {
-    var unread = 0;
+    var num_unread = 0;
     if (!narrow.active()) {
-        unread = home_unread_messages;
+        num_unread = home_unread_messages;
     } else {
         $.each(current_msg_list.all(), function (idx, msg) {
-            if (message_unread(msg) && msg.id > current_msg_list.selected_id()) {
-                unread += 1;
+            if (unread.message_unread(msg) && msg.id > current_msg_list.selected_id()) {
+                num_unread += 1;
             }
         });
     }
-    return unread;
-}
-
-function message_unread(message) {
-    if (message === undefined) {
-        return false;
-    }
-
-    var sent_by_human = ['website', 'iphone', 'android']
-                            .indexOf(message.client.toLowerCase()) !== -1;
-
-    if (message.sender_email === page_params.email && sent_by_human) {
-        return false;
-    }
-
-    return message.flags === undefined ||
-           message.flags.indexOf('read') === -1;
-}
-
-function get_unread_counts() {
-    var res = {};
-    
-    // Return a data structure with various counts.  This function should be
-    // pretty cheap, even if you don't care about all the counts, and you
-    // should strive to keep it free of side effects on globals or DOM.
-    res.private_message_count = 0;
-    res.home_unread_messages = 0;
-    res.stream_count = {};  // hash by stream -> count
-    res.subject_count = {}; // hash of hashes (stream, then subject -> count)
-
-    function only_in_home_view(msgids) {
-        return $.grep(msgids, function (msgid) {
-            return home_msg_list.get(msgid) !== undefined;
-        });
-    }
-
-    $.each(unread_counts.stream, function(stream, msgs) {
-        if (! subs.have(stream)) {
-            return true;
-        }
-
-        var count = Object.keys(msgs).length;
-        res.stream_count[stream]= count;
-
-        if (narrow.stream_in_home(stream)) {
-            res.home_unread_messages += only_in_home_view(Object.keys(msgs)).length;
-        }
-
-        if (unread_subjects[stream] !== undefined) {
-            res.subject_count[stream] = {};
-            $.each(unread_subjects[stream], function (subject, msgs) {
-                res.subject_count[stream][subject] = Object.keys(msgs).length;
-            });
-        }
-
-    });
-
-    var pm_count = 0;
-    $.each(unread_counts["private"], function(index, obj) {
-        pm_count += Object.keys(obj).length;
-    });
-    res.private_message_count = pm_count;
-    res.home_unread_messages += pm_count;
-
-    return res;
+    return num_unread;
 }
 
 function update_unread_counts() {
     // Pure computation:
-    var res = get_unread_counts();
+    var res = unread.get_counts();
 
     // Side effects from here down:
 
@@ -346,7 +280,7 @@ function mark_all_as_read(cont) {
         msg.flags = msg.flags || [];
         msg.flags.push('read');
     });
-    unread_counts = {'stream': {}, 'private': {}};
+    unread.declare_bankruptcy();
     update_unread_counts();
 
     $.ajax({
@@ -360,45 +294,8 @@ function mark_all_as_read(cont) {
         success:  cont});
 }
 
-function unread_hashkey(message) {
-    var hashkey;
-    if (message.type === 'stream') {
-        hashkey = message.stream;
-    } else {
-        hashkey = message.display_reply_to;
-    }
-
-    if (unread_counts[message.type][hashkey] === undefined) {
-        unread_counts[message.type][hashkey] = {};
-    }
-
-    if (message.type === 'stream') {
-        if (unread_subjects[hashkey] === undefined) {
-            unread_subjects[hashkey] = {};
-        }
-        if (unread_subjects[hashkey][message.subject] === undefined) {
-            unread_subjects[hashkey][message.subject] = {};
-        }
-    }
-
-    return hashkey;
-}
-
 function process_loaded_for_unread(messages) {
-    $.each(messages, function (idx, message) {
-        var unread = message_unread(message);
-        if (!unread) {
-            return;
-        }
-
-        var hashkey = unread_hashkey(message);
-        unread_counts[message.type][hashkey][message.id] = true;
-
-        if (message.type === 'stream') {
-            unread_subjects[hashkey][message.subject][message.id] = true;
-        }
-    });
-
+    unread.process_loaded_messages(messages);
     update_unread_counts();
 }
 
@@ -406,16 +303,12 @@ function process_loaded_for_unread(messages) {
 function process_read_messages(messages) {
     var processed = [];
     $.each(messages, function (idx, message) {
-        var hashkey = unread_hashkey(message);
 
         message.flags = message.flags || [];
         message.flags.push('read');
         processed.push(message.id);
+        unread.process_read_message(message);
 
-        delete unread_counts[message.type][hashkey][message.id];
-        if (message.type === 'stream') {
-            delete unread_subjects[message.stream][message.subject][message.id];
-        }
     });
 
     if (processed.length > 0) {
@@ -461,14 +354,14 @@ function process_visible_unread_messages() {
 
     var mark_as_read = $.map(visible_messages, function(msg) {
         var message = current_msg_list.get(rows.id($(msg)));
-        if (! message_unread(message)) {
+        if (! unread.message_unread(message)) {
             return undefined;
         } else {
             return message;
         }
     });
 
-    if (message_unread(selected)) {
+    if (unread.message_unread(selected)) {
         mark_as_read.push(selected);
     }
 
@@ -481,7 +374,7 @@ function mark_read_between(msg_list, start_id, end_id) {
     var mark_as_read = [];
     $.each(message_range(msg_list, start_id, end_id),
         function (idx, msg) {
-            if (message_unread(msg)) {
+            if (unread.message_unread(msg)) {
                 mark_as_read.push(msg);
             }
     });
@@ -800,23 +693,6 @@ function maybe_add_narrowed_messages(messages, msg_list) {
         }});
 }
 
-function update_message_unread_subjects(msg, event) {
-    if (event.subject !== undefined &&
-        unread_subjects[msg.stream] !== undefined &&
-        unread_subjects[msg.stream][msg.subject] !== undefined &&
-        unread_subjects[msg.stream][msg.subject][msg.id]) {
-        // Move the unread subject count to the new subject
-        delete unread_subjects[msg.stream][msg.subject][msg.id];
-        if (unread_subjects[msg.stream][msg.subject].length === 0) {
-            delete unread_subjects[msg.stream][msg.subject];
-        }
-        if (unread_subjects[msg.stream][event.subject] === undefined) {
-            unread_subjects[msg.stream][event.subject] = {};
-        }
-        unread_subjects[msg.stream][event.subject][msg.id] = true;
-    }
-}
-
 function update_messages(events) {
     $.each(events, function (idx, event) {
         var msg = all_msg_list.get(event.message_id);
@@ -830,7 +706,7 @@ function update_messages(events) {
             process_message_for_recent_subjects(msg, true);
             // Update the unread counts; again, this must be called
             // before we update msg.subject
-            update_message_unread_subjects(msg, event);
+            unread.update_unread_subjects(msg, event);
 
             msg.subject = event.subject;
             // Add the recent subjects entry for the new subject; must

@@ -386,7 +386,7 @@ exports.activate = function (operators, opts) {
             if (opts.select_first_unread) {
                 then_select_id = narrowed_msg_list.last().id;
                 $.each(narrowed_msg_list.all(), function (idx, msg) {
-                    if (message_unread(msg)) {
+                    if (unread.message_unread(msg)) {
                         then_select_id = msg.id;
                         return false;
                     }

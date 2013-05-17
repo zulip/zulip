@@ -282,6 +282,7 @@ PIPELINE_JS = {
             'js/setup.js',
             'js/viewport.js',
             'js/rows.js',
+            'js/unread.js',
             'js/stream_list.js',
             'js/narrow.js',
             'js/reload.js',

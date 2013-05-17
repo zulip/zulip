@@ -17,7 +17,7 @@ var globals =
     // Modules, defined in their respective files.
     + ' compose rows hotkeys narrow reload notifications_bar search subs'
     + ' composebox_typeahead typeahead_helper notifications hashchange'
-    + ' invite ui util activity timerender MessageList blueslip stream_list'
+    + ' invite ui util activity timerender MessageList blueslip unread stream_list'
     + ' onboarding message_edit tab_bar'
 
     // colorspace.js

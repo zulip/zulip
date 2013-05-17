@@ -160,15 +160,11 @@ function rebuild_recent_subjects(stream, subject) {
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects[stream] || [];
     $.each(subjects, function (idx, subject_obj) {
-        var unread = 0;
-        if (unread_subjects[stream] !== undefined &&
-            unread_subjects[stream][subject_obj.subject] !== undefined) {
-            unread = Object.keys(unread_subjects[stream][subject_obj.subject]).length;
-        }
-
-        subject_obj.unread = unread;
-        subject_obj.has_unread = unread !== 0;
+        var num_unread = unread.num_unread_for_subject(stream, subject_obj.subject);
+        subject_obj.unread = num_unread;
+        subject_obj.has_unread = num_unread !== 0;
     });
+
 
     stream_li.append(templates.render('sidebar_subject_list',
                                       {subjects: subjects,

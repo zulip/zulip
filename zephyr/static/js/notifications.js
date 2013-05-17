@@ -232,7 +232,7 @@ exports.received_messages = function (messages) {
             // marked as read by process_visible_unread_messages
             // (which occurs if the message arrived onscreen while the
             // window had focus).
-            if (!(message_is_notifiable(message) && message_unread(message))) {
+            if (!(message_is_notifiable(message) && unread.message_unread(message))) {
                 return;
             }
             if (page_params.desktop_notifications_enabled &&
