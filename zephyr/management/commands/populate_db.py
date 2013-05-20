@@ -572,7 +572,7 @@ def restore_saved_messages():
                 color = old_message.get("color", old_message.get("value"))
                 pending_colors[(old_message["user"],
                                 old_message["stream_name"].lower())] = color
-            elif property_name == "in_home_view":
+            elif property_name in ["in_home_view", "notifications"]:
                 # TODO: Handle this
                 continue
             else:
