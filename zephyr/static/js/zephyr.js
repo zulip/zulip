@@ -66,11 +66,13 @@ $(function () {
 });
 
 function within_viewport(row_offset, row_height) {
-    // Returns true if a message is fully within the viewport.
+    // Returns true if a message is fully within the effectively visible 
+    // part of the viewport.
     var message_top = row_offset.top;
     var message_bottom  = message_top + row_height;
-    var viewport_top = viewport.scrollTop();
-    var viewport_bottom = viewport_top + viewport.height();
+    var info = ui.message_viewport_info();
+    var viewport_top = info.visible_top;
+    var viewport_bottom = viewport_top + info.visible_height;
     return (message_top > viewport_top) && (message_bottom < viewport_bottom);
 }
 
