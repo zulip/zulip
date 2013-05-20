@@ -33,7 +33,6 @@ exports.focus_on = function (field_id) {
 };
 
 exports.message_viewport_info = function () {
-    // see also: effective_page_size()
     // Return a structure that tells us details of the viewport
     // accounting for fixed elements like the top navbar.
     //
@@ -44,49 +43,28 @@ exports.message_viewport_info = function () {
 
     var res = {};
 
-    res.top_hidden_height =
-        $("#top_navbar").height()
-        + $("#tab_bar").height()
-        + $(".message_header").height();
-
-    res.bottom_hidden_height =
-        $("#compose").height();
-
-    res.visible_height =
-        viewport.height()
-        - res.top_hidden_height
-        - res.bottom_hidden_height;
+    var element_just_above_us = $("#tab_bar_underpadding");
 
     res.visible_top =
-        viewport.scrollTop()
-        + res.top_hidden_height;
+        element_just_above_us.offset().top
+        + element_just_above_us.height()
+        + $(".message_header").height();
 
+    var element_just_below_us = $("#compose");
+
+    res.visible_height =
+        element_just_below_us.offset().top
+        - res.visible_top;
+        
     return res;
 };
-
-function effective_page_size() {
-    // This function returns the height of the viewable portion of the
-    // message pane, so it starts with the viewport height and
-    // subtracts out fixed elements like the compose box and nav
-    // bar that sit in a fixed position on top of it.
-
-    var message_header_height = $(".message_header").height();
-
-    var page_size =
-        viewport.height()
-        - $("#top_navbar").height()
-        - $("#tab_bar").height()
-        - message_header_height
-        - $("#compose").height();
-
-    return page_size;
-}
 
 function amount_to_paginate() {
     // Some day we might have separate versions of this function
     // for Page Up vs. Page Down, but for now it's the same
     // strategy in either direction.
-    var page_size = effective_page_size();
+    var info = exports.message_viewport_info();
+    var page_size = info.visible_height;
 
     // We don't want to page up a full page, because Humbug users
     // are especially worried about missing messages, so we want
