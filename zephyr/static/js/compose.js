@@ -183,7 +183,8 @@ exports.start = function (msg_type, opts) {
         message_type:     msg_type,
         stream:           '',
         subject:          '',
-        private_message_recipient: ''
+        private_message_recipient: '',
+        trigger:          'unknown'
     };
 
     // Set default parameters based on the current narrowed view.

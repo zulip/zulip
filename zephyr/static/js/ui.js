@@ -1052,7 +1052,7 @@ $(function () {
             // Was a click (not a click-and-drag).
             var row = $(this).closest(".message_row");
             current_msg_list.select_id(rows.id(row));
-            respond_to_message();
+            respond_to_message({trigger: 'message click'});
             e.stopPropagation();
         }
         mouse_moved = false;
@@ -1214,7 +1214,8 @@ $(function () {
 
     $('#user_presences').on('click', 'a', function (e) {
         var email = $(e.target).attr('data-email');
-        compose.start('private', {private_message_recipient: email});
+        compose.start('private', {private_message_recipient: email,
+                                  trigger: 'presence list'});
         // The preventDefault is necessary so that clicking the
         // link doesn't jump us to the top of the page.
         e.preventDefault();
@@ -1286,11 +1287,11 @@ $(function () {
     });
 
     $('.empty_feed_compose_stream').click(function (e) {
-        compose.start('stream');
+        compose.start('stream', {trigger: 'empty feed message'});
         return false;
     });
     $('.empty_feed_compose_private').click(function (e) {
-        compose.start('private');
+        compose.start('private', {trigger: 'empty feed message'});
         return false;
     });
     $('.empty_feed_join').click(function (e) {
@@ -1301,12 +1302,14 @@ $(function () {
     // Keep these 2 feedback bot triggers separate because they have to
     // propagate the event differently.
     $('.feedback').click(function (e) {
-        compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com' });
+        compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com',
+                                   trigger: 'feedback menu item' });
 
     });
     $('#feedback_button').click(function (e) {
         e.stopPropagation();
-        compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com' });
+        compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com',
+                                   trigger: 'feedback button' });
 
     });
     $('.logout_button').click(function (e) {
@@ -1328,12 +1331,12 @@ $(function () {
     });
 
     $('body').on('click', '.respond_button', function (e) {
-        respond_to_message();
+        respond_to_message({trigger: 'popover respond'});
         ui.hide_actions_popover();
         e.stopPropagation();
     });
     $('body').on('click', '.respond_personal_button', function (e) {
-        respond_to_message('personal');
+        respond_to_message({reply_type: 'personal', trigger: 'popover respond pm'});
         ui.hide_actions_popover();
         e.stopPropagation();
     });
@@ -1419,7 +1422,7 @@ $(function () {
     $('body').on('click', '.compose_to_stream', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         ui.hide_sidebar_popover();
-        compose.start('stream', {"stream": stream});
+        compose.start('stream', {"stream": stream, trigger: 'sidebar stream actions'});
         e.stopPropagation();
     });
 

@@ -183,13 +183,13 @@ function process_hotkey(e) {
         compose.set_mode('private');
         return true;
     case  13: // Enter: respond to message (unless we need to do something else)
-        respond_to_message();
+        respond_to_message({trigger: 'hotkey enter'});
         return true;
     case 114: // 'r': respond to message
-        respond_to_message();
+        respond_to_message({trigger: 'hotkey'});
         return true;
     case 82: // 'R': respond to author
-        respond_to_message("personal");
+        respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
         return true;
     case 47: // '/': initiate search
         search.initiate_search();

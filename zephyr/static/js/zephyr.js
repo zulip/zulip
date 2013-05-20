@@ -170,7 +170,7 @@ function get_private_message_recipient(message, attr) {
     return recipient;
 }
 
-function respond_to_message(reply_type) {
+function respond_to_message(opts) {
     var message, msg_type;
     // Before initiating a reply to a message, if there's an
     // in-progress composition, snapshot it.
@@ -190,20 +190,21 @@ function respond_to_message(reply_type) {
     }
 
     var pm_recipient = message.reply_to;
-    if (reply_type === "personal" && message.type === "private") {
+    if (opts.reply_type === "personal" && message.type === "private") {
         // reply_to for private messages is everyone involved, so for
         // personals replies we need to set the the private message
         // recipient to just the sender
         pm_recipient = message.sender_email;
     }
-    if (reply_type === 'personal' || message.type === 'private') {
+    if (opts.reply_type === 'personal' || message.type === 'private') {
         msg_type = 'private';
     } else {
         msg_type = message.type;
     }
     compose.start(msg_type, {'stream': stream, 'subject': subject,
                              'private_message_recipient': pm_recipient,
-                             'replying_to_message': message});
+                             'replying_to_message': message,
+                             'trigger': opts.trigger});
 }
 
 // Returns messages from the given message list in the specified range, inclusive
