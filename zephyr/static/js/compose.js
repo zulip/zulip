@@ -4,6 +4,7 @@ var exports = {};
 var is_composing_message = false;
 var faded_to;
 var message_snapshot;
+var empty_subject_placeholder = "(no subject)";
 
 // This function resets an input type="file".  Pass in the
 // jquery object.
@@ -254,10 +255,19 @@ exports.cancel = function () {
     $(document).trigger($.Event('compose_canceled.zephyr'));
 };
 
+exports.empty_subject_placeholder = function() {
+    return empty_subject_placeholder;
+};
+
 function create_message_object() {
+    // Subjects are optional, and we provide a placeholder if one isn't given.
+    var subject = compose.subject();
+    if (subject === "") {
+        subject = compose.empty_subject_placeholder();
+    }
     var message = {client: 'website',
                    type: compose.composing(),
-                   subject: compose.subject(),
+                   subject: subject,
                    stream: compose.stream_name(),
                    private_message_recipient: compose.recipient(),
                    content: compose.message_content()};
@@ -497,11 +507,6 @@ function validate_stream_message() {
     var stream_name = exports.stream_name();
     if (stream_name === "") {
         compose_error("Please specify a stream", $("#stream"));
-        return false;
-    }
-
-    if (exports.subject() === "") {
-        compose_error("Please specify a subject", $("#subject"));
         return false;
     }
 
