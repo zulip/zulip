@@ -413,11 +413,6 @@ MessageList.prototype = {
             return;
         }
 
-        // Don't try to scroll when composing.
-        if (compose.composing()) {
-            return;
-        }
-
         var selected_row = current_msg_list.selected_row();
         var last_visible = rows.last_visible();
         if (selected_row && (selected_row.length > 0)) {
