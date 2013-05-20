@@ -442,6 +442,15 @@ td.pointer {
     color: #08C;
 }
 
+.edit_subject {
+    opacity: .7;
+}
+
+.edit_subject:hover {
+    cursor: pointer;
+    opacity: 1.0;
+}
+
 /* Brighten text because of the dark background */
 .dark_background {
     color: white;

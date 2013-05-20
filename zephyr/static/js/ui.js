@@ -1399,6 +1399,12 @@ $(function () {
 
         e.stopPropagation();
     });
+    $('body').on('click', '.edit_subject', function (e) {
+        var row = rows.get(rows.id($(this).closest(".recipient_row")),
+                           current_msg_list.table_name);
+        message_edit.start(row);
+        e.stopPropagation();
+    });
     $('body').on('click', '.popover_edit_message', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         var row = rows.get(msgid, current_msg_list.table_name);

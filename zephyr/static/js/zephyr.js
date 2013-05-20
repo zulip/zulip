@@ -522,6 +522,12 @@ function add_message_metadata(message, dummy) {
 
         involved_people = [{'full_name': message.sender_full_name,
                             'email': message.sender_email}];
+
+        if (message.subject === compose.empty_subject_placeholder()) {
+            message.empty_subject = true;
+        } else {
+            message.empty_subject = false;
+        }
         break;
 
     case 'private':
@@ -709,6 +715,11 @@ function update_messages(events) {
             unread.update_unread_subjects(msg, event);
 
             msg.subject = event.subject;
+            if (msg.subject === compose.empty_subject_placeholder()) {
+                msg.empty_subject = true;
+            } else {
+                msg.empty_subject = false;
+            }
             // Add the recent subjects entry for the new subject; must
             // be called after we update msg.subject
             process_message_for_recent_subjects(msg);
