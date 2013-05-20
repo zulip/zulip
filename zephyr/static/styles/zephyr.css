@@ -700,7 +700,7 @@ input.recipient_box {
     width: 20%;
 }
 #subject.recipient_box {
-    width: 30%;
+    width: 15%;
 }
 #private_message_recipient.recipient_box {
     width: 72%;
