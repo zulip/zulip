@@ -436,7 +436,7 @@ MessageList.prototype = {
 
             var selected_row_offset = selected_row.offset().top;
             var available_space_for_scroll = selected_row_offset - viewport_offset -
-                $("#floating_recipient_bar").height() - $("#searchbox_form").height() - $("#compose").height();
+                $("#floating_recipient_bar").height() - $("#searchbox_form").height();
 
             suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
             // viewport (which is window) doesn't have a scrollTop, so scroll
