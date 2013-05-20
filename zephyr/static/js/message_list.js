@@ -430,6 +430,10 @@ MessageList.prototype = {
             var viewport_offset = viewport.scrollTop();
             var new_messages_height = 0;
 
+            // TODO: This scrolling strategy won't always get the last element on to
+            // the page.  The future plan is that we aggressively just figure
+            // out how much it takes to get the last element on to the page, rather
+            // than adding up the height of new messages.  Talk to Steve.
             $.each(rendered_elems, function() {
                 // Sometimes there are non-DOM elements in rendered_elems; only
                 // try to get the heights of actual trs.
@@ -439,15 +443,16 @@ MessageList.prototype = {
             });
 
             var selected_row_offset = selected_row.offset().top;
-            var available_space_for_scroll = selected_row_offset - viewport_offset -
-                $("#floating_recipient_bar").height() - $("#searchbox_form").height();
+            var info = ui.message_viewport_info();
+            var available_space_for_scroll = selected_row_offset - info.visible_top;
+            var amount_we_want_to_scroll = new_messages_height;
 
             if (available_space_for_scroll > 0) {
+                var scroll_amount = Math.min(available_space_for_scroll, amount_we_want_to_scroll);
                 suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
                 // viewport (which is window) doesn't have a scrollTop, so scroll
                 // the closest concept that does.
-                $("html, body").animate({scrollTop: viewport_offset +
-                                         Math.min(new_messages_height, available_space_for_scroll)});
+                $("html, body").animate({scrollTop: viewport_offset + scroll_amount});
             }
         }
     },
