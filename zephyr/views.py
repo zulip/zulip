@@ -64,6 +64,7 @@ import urllib
 import os
 import base64
 import time
+import logging
 from mimetypes import guess_type, guess_extension
 from os import path
 from functools import wraps
@@ -1665,6 +1666,10 @@ def api_jira_webhook(request):
 
         if comment != '':
             content += "\n> %s" % (comment,)
+    else:
+        # Unknown event type
+        logging.warning("Got JIRA event type we don't understand: %s" % (event,))
+        return json_error("Unknown JIRA event type")
 
     subject = elide_subject(subject)
 

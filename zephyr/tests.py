@@ -2543,6 +2543,17 @@ class JiraHookTests(AuthedTestCase):
                                       stream_name="jira",
                                       content_type="application/json")
 
+    def test_unknown(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        url = "/api/v1/external/jira?api_key=%s" % api_key
+
+        result = self.client.post(url, self.fixture_data('jira', 'unknown'),
+                                  stream_name="jira",
+                                  content_type="application/json")
+
+        self.assert_json_error(result, 'Unknown JIRA event type')
+
     def test_custom_stream(self):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
