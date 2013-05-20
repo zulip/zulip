@@ -1767,7 +1767,6 @@ def beanstalk_decoder(view_func):
     return _wrapped_view_func
 
 @beanstalk_decoder
-@authenticated_rest_api_view
 @has_request_variables
 def api_beanstalk_webhook(request, user_profile,
                           payload=REQ(converter=json_to_dict)):
