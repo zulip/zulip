@@ -5,15 +5,27 @@ Mail sent to user when she was not logged in and received a PM or @-mention
 Hello {{ name }},
 
 <p>
-While you were away you received {{ messages|length }} new message{{ messages|pluralize }}{% if mention %} in which you were mentioned{%endif %}!
+While you were away you received {{ message_count }} new message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{%endif %}!
 </p>
 
 <div id='messages'>
-{% for message in messages %}
-<div id='message_subject'>{{ message.sender }}:</div>
-<div id='message_content'>{{ message.rendered_content|safe }}</div>
+{% for recipient_block in messages %}
+    <div class='recipient_block'>
+        <div class='recipient_header'>{{ recipient_block.header }}</div>
+        <div class='message_content'>
+        {% for sender_block in recipient_block.senders %}
+            {% if sender_block.sender %} <div class="message_sender">{{ sender_block.sender }}</div>{% endif %}
+            {% for message_block in sender_block.content %}
+                <div class='message_content_block'>
+                    {{ message_block.html|safe }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+        </div>
+    </div>
 {% endfor %}
 </div>
+
 
 <p><a href="{{ url }}">Click here to log in to Humbug and view your new messages.</a></p>
 

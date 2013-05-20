@@ -6,11 +6,16 @@ Hello {{ name }},
 
 While you were away you received {{ messages|length }} new message{{ messages|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
 
-{% for message in messages %}
-{{ message.sender }}
----
-{{ message.content }}
+
+{% for recipient_block in messages %}
+    {{ recipient_block.header|safe }}
+    {% for sender_block in recipient_block.senders %}
+        {% if sender_block.sender %}{{ sender_block.sender }}{% endif %}{% for message_block in sender_block.content %}
+                {{ message_block.plain }}
+        {% endfor %}
+    {% endfor %}
 {% endfor %}
+
 
 Click here to log in to Humbug and view your new messages:
 

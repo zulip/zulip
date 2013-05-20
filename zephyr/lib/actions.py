@@ -1148,6 +1148,86 @@ def do_send_confirmation_email(invitee, referrer):
         subject_template_path='confirmation/invite_email_subject.txt',
         body_template_path='confirmation/invite_email_body.txt')
 
+def build_message_list(user_profile, messages):
+    """
+    Builds the message list object for the missed message email template.
+    The messages are collapsed into per-recipient and per-sender blocks, like
+    our web interface
+    """
+    messages_to_render = []
+
+    def sender_string(message):
+        sender = ''
+        if message.recipient.type in (Recipient.STREAM, Recipient.HUDDLE):
+            sender = message.sender.full_name
+        return sender
+
+    def build_message_payload(message):
+        return {'plain': message.content,
+                'html': message.rendered_content}
+
+    def build_sender_payload(message):
+        sender = sender_string(message)
+        return {'sender': sender,
+                'content': [build_message_payload(message)]}
+
+    def message_header(user_profile, message):
+        disp_recipient = get_display_recipient(message.recipient)
+        if message.recipient.type == Recipient.PERSONAL:
+            header = "You and %s" % (message.sender.full_name)
+        elif message.recipient.type == Recipient.HUDDLE:
+            other_recipients = [r['full_name'] for r in disp_recipient
+                                    if r['email'] != user_profile.email]
+            header = "You and %s" % (", ".join(other_recipients),)
+        else:
+            header = "%s > %s" % (disp_recipient, message.subject)
+        return header
+
+    # # Collapse message list to
+    # [
+    #    {
+    #       "header":"xxx",
+    #       "senders":[
+    #          {
+    #             "sender":"sender_name",
+    #             "content":[
+    #                {
+    #                   "plain":"content",
+    #                   "html":"htmlcontent"
+    #                }
+    #                {
+    #                   "plain":"content",
+    #                   "html":"htmlcontent"
+    #                }
+    #             ]
+    #          }
+    #       ]
+    #    },
+    # ]
+
+    for message in messages:
+        header = message_header(user_profile, message)
+
+        # If we want to collapse into the previous recipient block
+        if len(messages_to_render) > 0 and messages_to_render[-1]['header'] == header:
+            sender = sender_string(message)
+            sender_block = messages_to_render[-1]['senders']
+
+            # Same message sender, collapse again
+            if sender_block[-1]['sender'] == sender:
+                sender_block[-1]['content'].append(build_message_payload(message))
+            else:
+                # Start a new sender block
+                sender_block.append(build_sender_payload(message))
+        else:
+            # New recipient and sender block
+            recipient_block = {'header': header,
+                               'senders': [build_sender_payload(message)]}
+
+            messages_to_render.append(recipient_block)
+
+    return messages_to_render
+
 @statsd_increment("missed_message_reminders")
 def do_send_missedmessage_email(user_profile, missed_messages):
     """
@@ -1156,15 +1236,9 @@ def do_send_missedmessage_email(user_profile, missed_messages):
     `user_profile` is the user to send the reminder to
     `missed_messages` is a list of Message objects to remind about
     """
-
-    messages_to_render = [{'sender': message.sender.full_name,
-                           'subject': message.subject,
-                           'content': message.content,
-                           'rendered_content': message.rendered_content}
-                            for message in missed_messages]
-
     template_payload = {'name': user_profile.full_name,
-                        'messages': messages_to_render,
+                        'messages': build_message_list(user_profile, missed_messages),
+                        'message_count': len(missed_messages),
                         'url': 'https://humbughq.com',
                         'reply_warning': False}
 
