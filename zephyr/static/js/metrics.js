@@ -27,5 +27,16 @@ $.each(methods, function (idx, method) {
 $.each(people_methods, function (idx, method) {
     wrap_method(method, exports.people, mixpanel.people);
 });
+
+// This should probably move elsewhere
+$(function () {
+    $(document).on('compose_started.zephyr', function (event) {
+        metrics.track('compose started', {user: page_params.email,
+                                          realm: page_params.domain,
+                                          type: event.message_type,
+                                          trigger: event.trigger});
+    });
+});
+
 return exports;
 }());
