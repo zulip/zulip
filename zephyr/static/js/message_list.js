@@ -420,9 +420,7 @@ MessageList.prototype = {
 
         var selected_row = current_msg_list.selected_row();
         var last_visible = rows.last_visible();
-        if (within_viewport(last_visible.offset(), last_visible.height())
-            && selected_row && (selected_row.length > 0))
-        {
+        if (selected_row && (selected_row.length > 0)) {
             var viewport_offset = viewport.scrollTop();
             var new_messages_height = 0;
 
@@ -438,11 +436,13 @@ MessageList.prototype = {
             var available_space_for_scroll = selected_row_offset - viewport_offset -
                 $("#floating_recipient_bar").height() - $("#searchbox_form").height();
 
-            suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
-            // viewport (which is window) doesn't have a scrollTop, so scroll
-            // the closest concept that does.
-            $("html, body").animate({scrollTop: viewport_offset +
-                                     Math.min(new_messages_height, available_space_for_scroll)});
+            if (available_space_for_scroll > 0) {
+                suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
+                // viewport (which is window) doesn't have a scrollTop, so scroll
+                // the closest concept that does.
+                $("html, body").animate({scrollTop: viewport_offset +
+                                         Math.min(new_messages_height, available_space_for_scroll)});
+            }
         }
     },
 
