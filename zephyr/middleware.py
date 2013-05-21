@@ -6,6 +6,7 @@ from zephyr.lib.response import json_error
 from django.db import connection
 from zephyr.lib.utils import statsd
 from zephyr.lib.cache import get_memcached_time, get_memcached_requests
+from zephyr.lib.bugdown import get_bugdown_time, get_bugdown_requests
 
 import logging
 import time
@@ -16,17 +17,23 @@ def async_request_stop(request):
     request._time_stopped = time.time()
     request._memcached_time_stopped = get_memcached_time()
     request._memcached_requests_stopped = get_memcached_requests()
+    request._bugdown_time_stopped = get_bugdown_time()
+    request._bugdown_requests_stopped = get_bugdown_requests()
 
 def async_request_restart(request):
     request._time_restarted = time.time()
     request._memcached_time_restarted = get_memcached_time()
     request._memcached_requests_restarted = get_memcached_requests()
+    request._bugdown_time_restarted = get_bugdown_time()
+    request._bugdown_requests_restarted = get_bugdown_requests()
 
 class LogRequests(object):
     def process_request(self, request):
         request._time_started = time.time()
         request._memcached_time_start = get_memcached_time()
         request._memcached_requests_start = get_memcached_requests()
+        request._bugdown_time_start = get_bugdown_time()
+        request._bugdown_requests_start = get_bugdown_requests()
 
     def process_response(self, request, response):
         def timedelta_ms(timedelta):
@@ -78,6 +85,21 @@ class LogRequests(object):
             statsd.timing("%s.memcached.time" % (statsd_path,), timedelta_ms(memcached_time_delta))
             statsd.incr("%s.memcached.querycount" % (statsd_path,), memcached_count_delta)
 
+        bugdown_output = ""
+        if hasattr(request, '_bugdown_time_start'):
+            bugdown_time_delta = get_bugdown_time() - request._bugdown_time_start
+            bugdown_count_delta = get_bugdown_requests() - request._bugdown_requests_start
+            if hasattr(request, "_bugdown_requests_stopped"):
+                # (now - restarted) + (stopped - start) = (now - start) + (stopped - restarted)
+                bugdown_time_delta += (request._bugdown_time_stopped -
+                                       request._bugdown_time_restarted)
+                bugdown_count_delta += (request._bugdown_requests_stopped -
+                                        request._bugdown_requests_restarted)
+
+            if (bugdown_time_delta > 0.005):
+                bugdown_output = " (md: %s/%s)" % (format_timedelta(bugdown_time_delta),
+                                                   bugdown_count_delta)
+
         # Get the amount of time spent doing database queries
         db_time_output = ""
         if len(connection.queries) > 0:
@@ -100,10 +122,10 @@ class LogRequests(object):
         except Exception:
             client = "?"
 
-        logger.info('%-15s %-7s %3d %5s%s%s%s %s (%s via %s)' %
+        logger.info('%-15s %-7s %3d %5s%s%s%s%s %s (%s via %s)' %
                     (remote_ip, request.method, response.status_code,
                      format_timedelta(time_delta), optional_orig_delta,
-                     memcached_output,
+                     memcached_output, bugdown_output,
                      db_time_output, request.get_full_path(), email, client))
 
         # Log some additional data whenever we return certain 40x errors

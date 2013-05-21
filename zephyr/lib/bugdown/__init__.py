@@ -10,6 +10,7 @@ import itertools
 import simplejson
 import twitter
 import platform
+import time
 
 import httplib2
 
@@ -563,7 +564,7 @@ _privacy_re = re.compile(r'\w', flags=re.UNICODE)
 def _sanitize_for_log(md):
     return repr(_privacy_re.sub('x', md))
 
-def convert(md):
+def do_convert(md):
     """Convert Markdown to HTML, with Humbug-specific settings and hacks."""
 
     # Reset the parser; otherwise it will get slower over time.
@@ -590,3 +591,31 @@ def convert(md):
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)
         return None
+
+
+bugdown_time_start = 0
+bugdown_total_time = 0
+bugdown_total_requests = 0
+
+def get_bugdown_time():
+    return bugdown_total_time
+
+def get_bugdown_requests():
+    return bugdown_total_requests
+
+def bugdown_stats_start():
+    global bugdown_time_start
+    bugdown_time_start = time.time()
+
+def bugdown_stats_finish():
+    global bugdown_total_time
+    global bugdown_total_requests
+    global bugdown_time_start
+    bugdown_total_requests += 1
+    bugdown_total_time += (time.time() - bugdown_time_start)
+
+def convert(md):
+    bugdown_stats_start()
+    ret = do_convert(md)
+    bugdown_stats_finish()
+    return ret
