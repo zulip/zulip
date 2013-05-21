@@ -8,15 +8,15 @@ Hello {{ name }},
 While you were away you received {{ message_count }} new message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{%endif %}!
 </p>
 
-<div id='messages'>
+<div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: scroll;">
 {% for recipient_block in messages %}
-    <div class='recipient_block'>
-        <div class='recipient_header'>{{ recipient_block.header }}</div>
-        <div class='message_content'>
+    <div class='recipient_block' style="border: 1px solid black;margin-bottom: 4px;">
+        <div class='recipient_header' style="background-color: #9ecaff;border-bottom: 1px solid black;font-weight: bold;padding: 2px">{{ recipient_block.header }}</div>
+        <div class='message_content' style="margin-left: 1px;margin-right: 2px;">
         {% for sender_block in recipient_block.senders %}
-            {% if sender_block.sender %} <div class="message_sender">{{ sender_block.sender }}</div>{% endif %}
+            {% if sender_block.sender %} <div class="message_sender" style="font-weight: bold;padding-top: 1px;">{{ sender_block.sender }}</div>{% endif %}
             {% for message_block in sender_block.content %}
-                <div class='message_content_block'>
+                <div class='message_content_block' style="padding-left: 6px;font-weight: normal;">
                     {{ message_block.html|safe }}
                 </div>
             {% endfor %}
