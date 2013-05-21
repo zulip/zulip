@@ -18,39 +18,45 @@ hence the name.
 <div class="container-fluid">
   <div class="navbar navbar-inverse">
     <div class="navbar-inner">
-      <a class="brand" href="/">Humbug</a>
-      <ul class="nav pull-right">
-        <li><a href="/accounts/login/?next=/">Log in</a></li>
-        {# TODO: Can we make this more buttony? #}
-        <li><a href="{% url 'signup' %}">Sign up</a></li>
-      </ul>
+      <div class="content">
+        <a class="brand" href="/">Humbug</a>
+        <ul class="nav pull-right">
+          <li><a href="/accounts/login/?next=/">Log in</a></li>
+          {# TODO: Can we make this more buttony? #}
+          <li><a href="{% url 'signup' %}">Sign up</a></li>
+        </ul>
+      </div>
     </div>
   </div>
 
   {# This lets people override things if they don't want a giant "Humbug" #}
   {% block inner_content %}
   <div class="row-fluid">
-    <div id="portico-area" class="offset2 span10">
-      <div class="title">
-        <a class="title" href="/">Humbug</a>
-        <span class="for_you">{% block for_you %}{% endblock %}</span>
+    <div class="content">
+      <div id="portico-area" class="offset2 span10">
+        <div class="title">
+          <a class="title" href="/">Humbug</a>
+          <span class="for_you">{% block for_you %}{% endblock %}</span>
+        </div>
+        {% block portico_content %}
+        {% endblock %}
       </div>
-      {% block portico_content %}
-      {% endblock %}
     </div>
   </div>
   {% endblock %}
 
   <div class="navbar">
-    <ul class="nav pull-right">
-      <li><span class="navbar-text">Humbug © 2013</span></li>
-      <li><span class="navbar-text little-bullet">·</span></li>
-      <li><a href="/terms">Legal</a></li>
-      <li><span class="navbar-text">·</span></li>
-      <li><a href="/accounts/login/?next=/">Log in</a></li>
-      <li><span class="navbar-text">·</span></li>
-      <li><a href="{% url 'signup' %}">Sign up</a></li>
-    </ul>
+    <div class="content">
+      <ul class="nav pull-right">
+        <li><span class="navbar-text">Humbug © 2013</span></li>
+        <li><span class="navbar-text little-bullet">·</span></li>
+        <li><a href="/terms">Legal</a></li>
+        <li><span class="navbar-text">·</span></li>
+        <li><a href="/accounts/login/?next=/">Log in</a></li>
+        <li><span class="navbar-text">·</span></li>
+        <li><a href="{% url 'signup' %}">Sign up</a></li>
+      </ul>
+    </div>
   </div>
 </div>
 {% endblock %}
