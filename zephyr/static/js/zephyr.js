@@ -523,10 +523,13 @@ function add_message_metadata(message, dummy) {
         involved_people = [{'full_name': message.sender_full_name,
                             'email': message.sender_email}];
 
-        if (message.subject === compose.empty_subject_placeholder()) {
-            message.empty_subject = true;
+        if ((message.subject === compose.empty_subject_placeholder()) &&
+            (message.sender_email === page_params.email)) {
+            // You can only edit messages you sent, so only show the edit hint
+            // for empty subjects on messages you sent.
+            message.your_empty_subject = true;
         } else {
-            message.empty_subject = false;
+            message.your_empty_subject = false;
         }
         break;
 
@@ -716,9 +719,9 @@ function update_messages(events) {
 
             msg.subject = event.subject;
             if (msg.subject === compose.empty_subject_placeholder()) {
-                msg.empty_subject = true;
+                msg.your_empty_subject = true;
             } else {
-                msg.empty_subject = false;
+                msg.your_empty_subject = false;
             }
             // Add the recent subjects entry for the new subject; must
             // be called after we update msg.subject
