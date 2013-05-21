@@ -36,6 +36,11 @@ $(function () {
                                           type: event.message_type,
                                           trigger: event.trigger});
     });
+    $(document).on('narrow_activated.zephyr', function (event) {
+        metrics.track('narrow activated', {user: page_params.email,
+                                           realm: page_params.domain,
+                                           trigger: event.trigger});
+    });
 });
 
 return exports;
