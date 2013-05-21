@@ -21,9 +21,13 @@ os.chdir("/home/humbug/humbug-deployments/current")
 # Send a statsd event on restarting the server
 subprocess.check_call(["python", "./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
 
-# Restart the FastCGI and related processes via supervisorctl
+# Restart the FastCGI and related processes via supervisorctl.  We
+# minimize downtime by restarting Django and Tornado separately from
+# the other worker processes.
 logging.info("Killing daemons")
-subprocess.check_call(["supervisorctl", "restart", "humbug:*"])
+subprocess.check_call(["supervisorctl", "stop",    "humbug-workers:*"])
+subprocess.check_call(["supervisorctl", "restart", "humbug-web:*"])
+subprocess.check_call(["supervisorctl", "start",   "humbug-workers:*"])
 
 logging.info("Flushing memcached")
 try:
