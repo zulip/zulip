@@ -73,137 +73,6 @@ def add_a(root, url, link, height=None):
 def hash_embedly_url(link):
     return 'embedly:' + sha1(link).hexdigest()
 
-class EmbedlyProcessor(markdown.treeprocessors.Treeprocessor):
-    def run(self, root):
-        # Get all URLs from the blob
-        found_urls = walk_tree(root, lambda e: e.get("href") if e.tag == "a" else None)
-
-        supported_urls = []
-        for link in found_urls:
-            # Don't waste our quota with unsupported links or links otherwise
-            # handled by our Twitter integration
-            if not embedly_client.is_supported(link) or get_tweet_id(link):
-                continue
-            supported_urls.append(link)
-
-        if not supported_urls or len(supported_urls) > 5:
-            # Either zero urls or too many urls.
-            return root
-
-        # We want this to be able to easily reverse the hashing later
-        keys_to_links = dict((hash_embedly_url(link), link) for link in supported_urls)
-        cache_hits = cache_get_many(keys_to_links.keys(), cache_name="database")
-
-        # Construct a dict of url => oembed_data pairs
-        oembeds = dict((keys_to_links[key], cache_hits[key]) for key in cache_hits)
-
-        to_process = [url for url in supported_urls if not url in oembeds]
-        to_cache = {}
-
-        if to_process:
-            # Don't touch embed.ly if we have everything cached.
-            try:
-                responses = embedly_client.oembed(to_process, maxwidth=250)
-            except httplib2.socket.timeout:
-                # We put this in its own try-except because it requires external
-                # connectivity. If embedly flakes out, we don't want to not-render
-                # the entire message; we just want to not show the embedly preview.
-                logging.warning("Embedly Embed timeout for URLs: %s" % (" ".join(to_process)))
-                logging.warning(traceback.format_exc())
-                return root
-            except Exception:
-                # If things break for any other reason, don't make things sad.
-                logging.warning(traceback.format_exc())
-                return root
-            for oembed_data in responses:
-                # Don't cache permanent errors
-                if oembed_data["type"] == "error" and \
-                        oembed_data["error_code"] in (500, 501, 503):
-                    continue
-                # Convert to dict because otherwise pickling won't work.
-                to_cache[oembed_data["original_url"]] = dict(oembed_data)
-
-            # Cache the newly collected data to the database
-            cache_set_many(dict((hash_embedly_url(link), to_cache[link]) for link in to_cache),
-                           cache_name="database")
-            oembeds.update(to_cache)
-
-        # Now let's process the URLs in order
-        for link in supported_urls:
-            oembed_data = oembeds[link]
-
-            if oembed_data["type"] in ("link"):
-                continue
-            elif oembed_data["type"] in ("video", "rich") and "script" not in oembed_data["html"]:
-                placeholder = self.markdown.htmlStash.store(oembed_data["html"], safe=True)
-                el = markdown.util.etree.SubElement(root, "p")
-                el.text = placeholder
-            else:
-                try:
-                    add_a(root,
-                          oembed_data["thumbnail_url"],
-                          link,
-                          height=oembed_data["thumbnail_height"])
-                except KeyError:
-                    # We didn't have a thumbnail, so let's just bail and keep on going...
-                    continue
-            self.markdown.processed_hrefs.append(link)
-        return root
-
-class InlineImagePreviewProcessor(markdown.treeprocessors.Treeprocessor):
-    def is_image(self, url):
-        parsed_url = urlparse.urlparse(url)
-        # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
-        for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
-            if parsed_url.path.lower().endswith(ext):
-                return True
-        return False
-
-    def dropbox_image(self, url):
-        if not self.is_image(url):
-            return None
-        parsed_url = urlparse.urlparse(url)
-        if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')) \
-                and (parsed_url.path.startswith('/s/') or parsed_url.path.startswith('/sh/')):
-            return "%s?dl=1" % (url,)
-        return None
-
-    def youtube_image(self, url):
-        # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
-        # If it matches, match.group(2) is the video id.
-        youtube_re = r'^((?:https?://)?(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=)))?([0-9A-Za-z_-]+)(?(1).+)?$'
-        match = re.match(youtube_re, url)
-        if match is None:
-            return None
-        return "http://i.ytimg.com/vi/%s/default.jpg" % (match.group(2),)
-
-    # Search the tree for <a> tags and read their href values
-    def find_images(self, root):
-        def process_image_links(element):
-            if element.tag != "a":
-                return None
-
-            url = element.get("href")
-            youtube = self.youtube_image(url)
-            if youtube is not None:
-                return (youtube, url)
-            dropbox = self.dropbox_image(url)
-            if dropbox is not None:
-                return (dropbox, url)
-            if self.is_image(url):
-                return (url, url)
-
-        return walk_tree(root, process_image_links)
-
-    def run(self, root):
-        image_urls = self.find_images(root)
-        for (url, link) in image_urls:
-            if link in self.markdown.processed_hrefs:
-                continue
-            add_a(root, url, link)
-
-        return root
-
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id):
     if settings.TEST_SUITE:
@@ -276,6 +145,32 @@ def get_tweet_id(url):
 
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
+    def is_image(self, url):
+        parsed_url = urlparse.urlparse(url)
+        # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
+        for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
+            if parsed_url.path.lower().endswith(ext):
+                return True
+        return False
+
+    def dropbox_image(self, url):
+        if not self.is_image(url):
+            return None
+        parsed_url = urlparse.urlparse(url)
+        if (parsed_url.netloc == 'dropbox.com' or parsed_url.netloc.endswith('.dropbox.com')) \
+                and (parsed_url.path.startswith('/s/') or parsed_url.path.startswith('/sh/')):
+            return "%s?dl=1" % (url,)
+        return None
+
+    def youtube_image(self, url):
+        # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
+        # If it matches, match.group(2) is the video id.
+        youtube_re = r'^((?:https?://)?(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=)))?([0-9A-Za-z_-]+)(?(1).+)?$'
+        match = re.match(youtube_re, url)
+        if match is None:
+            return None
+        return "http://i.ytimg.com/vi/%s/default.jpg" % (match.group(2),)
+
     def twitter_link(self, url):
         tweet_id = get_tweet_id(url)
 
@@ -306,7 +201,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             span = markdown.util.etree.SubElement(tweet, 'span')
             span.text = "- %s (@%s)" % (user['name'], user['screen_name'])
 
-            return ('twitter', tweet)
+            return tweet
         except:
             # We put this in its own try-except because it requires external
             # connectivity. If Twitter flakes out, we don't want to not-render
@@ -314,24 +209,107 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             logging.warning(traceback.format_exc())
             return None
 
-    # Search the tree for <a> tags and read their href values
-    def find_interesting_links(self, root):
-        def process_interesting_links(element):
-            if element.tag != "a":
-                return None
+    def do_embedly(self, root, supported_urls):
+        if settings.DEPLOYED and not settings.STAGING_DEPLOYED:
+            return
 
-            url = element.get("href")
-            return self.twitter_link(url)
+        # We want this to be able to easily reverse the hashing later
+        keys_to_links = dict((hash_embedly_url(link), link) for link in supported_urls)
+        cache_hits = cache_get_many(keys_to_links.keys(), cache_name="database")
 
-        return walk_tree(root, process_interesting_links, stop_after_first=True)
+        # Construct a dict of url => oembed_data pairs
+        oembeds = dict((keys_to_links[key], cache_hits[key]) for key in cache_hits)
+
+        to_process = [url for url in supported_urls if not url in oembeds]
+        to_cache = {}
+
+        if to_process:
+            # Don't touch embed.ly if we have everything cached.
+            try:
+                responses = embedly_client.oembed(to_process, maxwidth=250)
+            except httplib2.socket.timeout:
+                # We put this in its own try-except because it requires external
+                # connectivity. If embedly flakes out, we don't want to not-render
+                # the entire message; we just want to not show the embedly preview.
+                logging.warning("Embedly Embed timeout for URLs: %s" % (" ".join(to_process)))
+                logging.warning(traceback.format_exc())
+                return root
+            except Exception:
+                # If things break for any other reason, don't make things sad.
+                logging.warning(traceback.format_exc())
+                return root
+            for oembed_data in responses:
+                # Don't cache permanent errors
+                if oembed_data["type"] == "error" and \
+                        oembed_data["error_code"] in (500, 501, 503):
+                    continue
+                # Convert to dict because otherwise pickling won't work.
+                to_cache[oembed_data["original_url"]] = dict(oembed_data)
+
+            # Cache the newly collected data to the database
+            cache_set_many(dict((hash_embedly_url(link), to_cache[link]) for link in to_cache),
+                           cache_name="database")
+            oembeds.update(to_cache)
+
+        # Now let's process the URLs in order
+        for link in supported_urls:
+            oembed_data = oembeds[link]
+
+            if oembed_data["type"] in ("link"):
+                continue
+            elif oembed_data["type"] in ("video", "rich") and "script" not in oembed_data["html"]:
+                placeholder = self.markdown.htmlStash.store(oembed_data["html"], safe=True)
+                el = markdown.util.etree.SubElement(root, "p")
+                el.text = placeholder
+            else:
+                try:
+                    add_a(root,
+                          oembed_data["thumbnail_url"],
+                          link,
+                          height=oembed_data["thumbnail_height"])
+                except KeyError:
+                    # We didn't have a thumbnail, so let's just bail and keep on going...
+                    continue
+        return root
 
     def run(self, root):
-        interesting_links = self.find_interesting_links(root)
-        for (service_name, data) in interesting_links:
-            div = markdown.util.etree.SubElement(root, "div")
-            div.set("class", "inline-preview-%s" % service_name)
-            div.insert(0, data)
-        return root
+        # Get all URLs from the blob
+        found_urls = walk_tree(root, lambda e: e.get("href") if e.tag == "a" else None)
+
+        # If there are more than 5 URLs in the message, don't do inline previews
+        if len(found_urls) == 0 or len(found_urls) > 5:
+            return
+
+        rendered_tweet = False
+        embedly_urls = []
+        for url in found_urls:
+            dropbox = self.dropbox_image(url)
+            if dropbox is not None:
+                add_a(root, dropbox, url)
+                continue
+            if self.is_image(url):
+                add_a(root, url, url)
+                continue
+            if get_tweet_id(url):
+                if rendered_tweet:
+                    # Only render at most one tweet per message
+                    continue
+                rendered_tweet = True
+                div = markdown.util.etree.SubElement(root, "div")
+                div.set("class", "inline-preview-twitter")
+                div.insert(0, self.twitter_link(url))
+                continue
+            if embedly_client.is_supported(url):
+                embedly_urls.append(url)
+                continue
+            # NOTE: The youtube code below is inactive at least on
+            # staging because embedy.ly is currently handling those
+            youtube = self.youtube_image(url)
+            if youtube is not None:
+                add_a(root, youtube, url)
+                continue
+
+        self.do_embedly(root, embedly_urls)
 
 class Gravatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
@@ -563,10 +541,6 @@ class Bugdown(markdown.Extension):
                                  BugdownUListPreprocessor(md),
                                  "_begin")
 
-        md.processed_hrefs = []
-        if not settings.DEPLOYED or settings.STAGING_DEPLOYED:
-            md.treeprocessors.add("embedly_processor", EmbedlyProcessor(md), "_end")
-        md.treeprocessors.add("inline_images", InlineImagePreviewProcessor(md), "_end")
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
 
 _md_engine = markdown.Markdown(
