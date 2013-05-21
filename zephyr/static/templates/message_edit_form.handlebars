@@ -1,8 +1,24 @@
 {{! Client-side Mustache template for rendering the trailing bookend.}}
 
-<form>
+<form id="message_edit_form" class="form-horizontal">
 {{#if is_stream}}
-    <span>Subject: <input type="text" value="{{subject}}" class="message_edit_subject"></input></span><br />
+    <div class="control-group">
+        <label class="control-label edit-control-label" for="message_edit_subject">Subject</label>
+        <div class="controls edit-controls">
+          <input type="text" value="{{subject}}" class="message_edit_subject" id="message_edit_subject">
+        </div>
+    </div>
 {{/if}}
-    <span>Content: <textarea class="message_edit_content">{{content}}</textarea></span>
+    <div class="control-group">
+        <label class="control-label edit-control-label" for="message_edit_content">Content</label>
+        <div class="controls edit-controls">
+            <textarea class="message_edit_content" id="message_edit_content">{{content}}</textarea>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls edit-controls">
+            <a class="message_edit_save btn btn-primary btn-small">Save</a>
+            <a class="message_edit_cancel btn btn-small">Cancel</a>
+        </div>
+    </div>
 </form>

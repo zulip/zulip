@@ -1455,3 +1455,16 @@ li.expanded_subject {
 .message_edit {
     display: none;
 }
+
+/* Reduce some of the heavy padding from Bootstrap. */
+#message_edit_form .edit-control-label {
+    width: auto;
+    float: left;
+}
+#message_edit_form .edit-controls {
+    margin-left: 50px;
+}
+#message_edit_form textarea {
+    width: 90%;
+    min-width: 206px;
+}
