@@ -415,46 +415,78 @@ MessageList.prototype = {
         // Re-add the fading of messages that is lost when we re-render.
         compose.update_faded_messages();
 
+        if (this === current_msg_list) {
+            this._maybe_autoscroll(rendered_elems);
+        }
+    },
+
+    _maybe_autoscroll: function MessageList__maybe_autoscroll(rendered_elems) {
+
         // If we are near the bottom of our feed (the bottom is visible) and can
         // scroll up without moving the pointer out of the viewport, do so, by
         // up to the amount taken up by the new message.
 
-        // Don't try to scroll if this isn't the visible message list.
-        if (this !== current_msg_list) {
+        var selected_row = current_msg_list.selected_row();
+        var last_visible = rows.last_visible();
+
+        // Make sure we have a selected row and last visible row. (defensive)
+        if (!(selected_row && (selected_row.length > 0) && last_visible)) {
             return;
         }
 
-        var selected_row = current_msg_list.selected_row();
-        var last_visible = rows.last_visible();
-        if (selected_row && (selected_row.length > 0)) {
-            var viewport_offset = viewport.scrollTop();
-            var new_messages_height = 0;
+        var selected_row_offset = selected_row.offset().top;
+        var info = ui.message_viewport_info();
+        var available_space_for_scroll = selected_row_offset - info.visible_top;
 
-            // TODO: This scrolling strategy won't always get the last element on to
-            // the page.  The future plan is that we aggressively just figure
-            // out how much it takes to get the last element on to the page, rather
-            // than adding up the height of new messages.  Talk to Steve.
-            $.each(rendered_elems, function() {
-                // Sometimes there are non-DOM elements in rendered_elems; only
-                // try to get the heights of actual trs.
-                if ($(this).is("tr")) {
-                    new_messages_height += $(this).height();
-                }
-            });
-
-            var selected_row_offset = selected_row.offset().top;
-            var info = ui.message_viewport_info();
-            var available_space_for_scroll = selected_row_offset - info.visible_top;
-            var amount_we_want_to_scroll = new_messages_height;
-
-            if (available_space_for_scroll > 0) {
-                var scroll_amount = Math.min(available_space_for_scroll, amount_we_want_to_scroll);
-                suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
-                // viewport (which is window) doesn't have a scrollTop, so scroll
-                // the closest concept that does.
-                $("html, body").animate({scrollTop: viewport_offset + scroll_amount});
-            }
+        // Don't scroll if we can't move the pointer up.
+        if (available_space_for_scroll <= 0) {
+            return;
         }
+
+        var new_messages_height = 0;
+        $.each(rendered_elems, function() {
+            // Sometimes there are non-DOM elements in rendered_elems; only
+            // try to get the heights of actual trs.
+            if ($(this).is("tr")) {
+                new_messages_height += $(this).height();
+            }
+        });
+
+        if (new_messages_height <= 0) {
+            return;
+        }
+
+        // This next decision is fairly debatable.  For a big message that
+        // would push the pointer off the screen, we do a partial autoscroll,
+        // which has the following implications:
+        //    a) user sees scrolling (good)
+        //    b) user's pointer stays on screen (good)
+        //    c) scroll amount isn't really tied to size of new messages (bad)
+        //    d) all the bad things about scrolling for users who want messages
+        //       to stay on the screen
+        var scroll_amount = new_messages_height;
+
+        if (scroll_amount > available_space_for_scroll) {
+            scroll_amount = available_space_for_scroll;
+        }
+
+        // Let's work our way back to whether the user was already dealing
+        // with messages off the screen, in which case we shouldn't autoscroll.
+        var bottom_last_visible = last_visible.offset().top + last_visible.height();
+        var bottom_old_last_visible = bottom_last_visible - new_messages_height;
+        var bottom_viewport = info.visible_top + info.visible_height;
+
+        // Exit if the user was already past the bottom.
+        if (bottom_old_last_visible > bottom_viewport) {
+            return;
+        }
+
+        // Ok, we are finally ready to actually scroll.
+        suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
+        var viewport_offset = viewport.scrollTop();
+        // viewport (which is window) doesn't have a scrollTop, so scroll
+        // the closest concept that does.
+        $("html, body").animate({scrollTop: viewport_offset + scroll_amount});
     },
 
     clear_trailing_bookend: function MessageList_clear_trailing_bookend() {
