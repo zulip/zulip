@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpResponse, HttpResponseNotAllowed
+import django.shortcuts
 import simplejson
 
 class HttpResponseUnauthorized(HttpResponse):
@@ -28,3 +29,6 @@ def json_success(data={}):
 
 def json_error(msg, data={}, status=400):
     return json_response(res_type="error", msg=msg, data=data, status=status)
+
+def render_to_response(template, *args, **kwargs):
+    return django.shortcuts.render_to_response(template, *args, **kwargs)

@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 from django.template import RequestContext, loader
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
@@ -46,7 +46,8 @@ from zephyr.decorator import require_post, \
     authenticated_rest_api_view, process_as_post, REQ
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
-from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
+from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed, \
+    render_to_response
 from zephyr.lib.timestamp import datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key, cache_get_many, cache_set_many
 from zephyr.lib.unminify import SourceMap

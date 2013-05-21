@@ -5,12 +5,11 @@
 __revision__ = '$Id: views.py 21 2008-12-05 09:21:03Z jarek.zgoda $'
 
 
-from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.conf import settings
 
 from confirmation.models import Confirmation
-
+from zephyr.lib.response import render_to_response
 
 def confirm(request, confirmation_key):
     confirmation_key = confirmation_key.lower()
