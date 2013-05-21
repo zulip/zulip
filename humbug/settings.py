@@ -526,7 +526,11 @@ if DEPLOYED:
     S3_KEY="xxxxxxxxxxxxxxxxxxxx"
     S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     S3_BUCKET="humbug-user-uploads"
+
+    MIXPANEL_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 else:
     S3_KEY="xxxxxxxxxxxxxxxxxxxx"
     S3_SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     S3_BUCKET="humbug-user-uploads-test"
+
+    MIXPANEL_TOKEN="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
