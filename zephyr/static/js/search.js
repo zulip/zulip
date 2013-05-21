@@ -112,7 +112,7 @@ function narrow_or_search_for_term(item) {
     ui.change_tab_to('#home');
     switch (obj.action) {
     case 'stream':
-        narrow.by('stream', obj.query);
+        narrow.by('stream', obj.query, {trigger: 'search'});
         // It's sort of annoying that this is not in a position to
         // blur the search box, because it means that Esc won't
         // unnarrow, it'll leave the searchbox.
@@ -123,17 +123,17 @@ function narrow_or_search_for_term(item) {
         return search_query_box.val();
 
     case 'private_message':
-        narrow.by('pm-with', obj.query.email);
+        narrow.by('pm-with', obj.query.email, {trigger: 'search'});
         search_query_box.blur();
         return search_query_box.val();
 
     case 'sender':
-        narrow.by('sender', obj.query.email);
+        narrow.by('sender', obj.query.email, {trigger: 'search'});
         search_query_box.blur();
         return search_query_box.val();
 
     case 'operators':
-        narrow.activate(obj.operators);
+        narrow.activate(obj.operators, {trigger: 'search'});
         search_query_box.blur();
         return search_query_box.val();
     }

@@ -1121,9 +1121,9 @@ $(function () {
         var nearest = current_msg_list.get(rows.id($(this).closest(".recipient_row")));
         var selected = current_msg_list.selected_message();
         if (util.same_recipient(nearest, selected)) {
-            narrow.by_recipient(selected.id);
+            narrow.by_recipient(selected.id, {trigger: 'message header'});
         } else {
-            narrow.by_recipient(nearest.id);
+            narrow.by_recipient(nearest.id, {trigger: 'message header'});
         }
     });
 
@@ -1131,9 +1131,9 @@ $(function () {
         var nearest = current_msg_list.get(rows.id($(this).closest(".recipient_row")));
         var selected = current_msg_list.selected_message();
         if (util.same_recipient(nearest, selected)) {
-            narrow.by_subject(selected.id);
+            narrow.by_subject(selected.id, {trigger: 'message header'});
         } else {
-            narrow.by_subject(nearest.id);
+            narrow.by_subject(nearest.id, {trigger: 'message header'});
         }
     });
 
@@ -1233,7 +1233,7 @@ $(function () {
             ui.change_tab_to('#home');
         }
         var stream = $(e.target).parents('li').attr('data-name');
-        narrow.by('stream', stream, {select_first_unread: true});
+        narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar'});
 
         e.preventDefault();
     });
@@ -1264,7 +1264,7 @@ $(function () {
 
         narrow.activate([['stream',  stream],
                          ['subject', subject]],
-                        {select_first_unread: true});
+                        {select_first_unread: true, trigger: 'sidebar'});
 
         e.preventDefault();
     });
@@ -1343,26 +1343,26 @@ $(function () {
     $('body').on('click', '.popover_narrow_by_subject_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         ui.hide_actions_popover();
-        narrow.by_subject(msgid);
+        narrow.by_subject(msgid, {trigger: 'popover'});
         e.stopPropagation();
     });
     $('body').on('click', '.popover_narrow_by_recipient_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         ui.hide_actions_popover();
-        narrow.by_recipient(msgid);
+        narrow.by_recipient(msgid, {trigger: 'popover'});
         e.stopPropagation();
     });
     $('body').on('click', '.popover_narrow_by_sender_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         var sender_email = $(e.currentTarget).data('sender_email');
         ui.hide_actions_popover();
-        narrow.by('sender', sender_email, {then_select_id: msgid});
+        narrow.by('sender', sender_email, {then_select_id: msgid, trigger: 'popover'});
         e.stopPropagation();
     });
     $('body').on('click', '.popover_narrow_by_time_travel_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         ui.hide_actions_popover();
-        narrow.by_time_travel(msgid);
+        narrow.by_time_travel(msgid, {trigger: 'popover'});
         e.stopPropagation();
     });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
@@ -1415,7 +1415,7 @@ $(function () {
     $('body').on('click', '.narrow_to_stream', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         ui.hide_sidebar_popover();
-        narrow.by('stream', stream, {select_first_unread: true});
+        narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar popover'});
         e.stopPropagation();
     });
 

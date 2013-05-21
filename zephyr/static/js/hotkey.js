@@ -18,8 +18,8 @@ var directional_hotkeys_id = {
 var narrow_hotkeys = {
     115: narrow.by_recipient,           // 's'
     83:  narrow.by_subject,             // 'S'
-    118: function () {                  // 'v'
-        narrow.by('is', 'private-message');
+    118: function (target, opts) {      // 'v'
+        narrow.by('is', 'private-message', opts);
     }
 };
 
@@ -138,7 +138,7 @@ function process_hotkey(e) {
         if (current_msg_list.empty()) {
             return false;
         }
-        narrow_hotkeys[code](current_msg_list.selected_id());
+        narrow_hotkeys[code](current_msg_list.selected_id(), {trigger: 'hotkey'});
         return true;
     }
 

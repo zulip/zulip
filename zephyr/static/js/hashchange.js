@@ -118,7 +118,8 @@ function do_hashchange() {
             }
             narrow.activate(operators, {
                 select_first_unread: true,
-                change_hash:    false  // already set
+                change_hash:    false,  // already set
+                trigger: 'hash change'
             });
             ui.update_floating_recipient_bar();
             return true;

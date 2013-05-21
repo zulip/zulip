@@ -349,7 +349,8 @@ exports.activate = function (operators, opts) {
     opts = $.extend({}, {
         then_select_id: home_msg_list.selected_id(),
         select_first_unread: false,
-        change_hash: true
+        change_hash: true,
+        trigger: 'unknown'
     }, opts);
 
     if (opts.then_select_id === -1) {
@@ -459,7 +460,8 @@ exports.activate = function (operators, opts) {
     compose.update_faded_messages();
 
     $(document).trigger($.Event('narrow_activated.zephyr', {msg_list: narrowed_msg_list,
-                                                            filter: current_filter}));
+                                                            filter: current_filter,
+                                                            trigger: opts.trigger}));
 };
 
 // Activate narrowing with a single operator.
@@ -468,36 +470,39 @@ exports.by = function (operator, operand, opts) {
     exports.activate([[operator, operand]], opts);
 };
 
-exports.by_subject = function (target_id) {
+exports.by_subject = function (target_id, opts) {
     var original = current_msg_list.get(target_id);
     if (original.type !== 'stream') {
         // Only stream messages have subjects, but the
         // user wants us to narrow in some way.
-        exports.by_recipient(target_id);
+        exports.by_recipient(target_id, opts);
         return;
     }
+    opts = $.extend({}, {then_select_id: target_id}, opts);
     exports.activate([
             ['stream',  original.stream],
             ['subject', original.subject]
-        ], { then_select_id: target_id });
+        ], opts);
 };
 
 // Called for the 'narrow by stream' hotkey.
-exports.by_recipient = function (target_id) {
+exports.by_recipient = function (target_id, opts) {
+    opts = $.extend({}, {then_select_id: target_id}, opts);
     var message = current_msg_list.get(target_id);
     switch (message.type) {
     case 'private':
-        exports.by('pm-with', message.reply_to, { then_select_id: target_id });
+        exports.by('pm-with', message.reply_to, opts);
         break;
 
     case 'stream':
-        exports.by('stream', message.stream, { then_select_id: target_id });
+        exports.by('stream', message.stream, opts);
         break;
     }
 };
 
-exports.by_time_travel = function (target_id) {
-    narrow.activate([], { then_select_id: target_id });
+exports.by_time_travel = function (target_id, opts) {
+    opts = $.extend({}, {then_select_id: target_id}, opts);
+    narrow.activate([], opts);
 };
 
 exports.deactivate = function () {
