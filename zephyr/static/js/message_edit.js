@@ -14,22 +14,21 @@ exports.save = function (row) {
     if (new_content !== message.raw_content) {
         request.content = new_content;
     }
-    if (request.subject === undefined &&
-        request.content === undefined) {
-        // If they didn't change anything, just cancel it.
-        return message_edit.cancel(row);
-    }
-    $.ajax({
-        type: 'POST',
-        url: '/json/update_message',
-        data: request,
-        dataType: 'json',
-        success: function (data) {
-            if (msg_list === current_msg_list) {
-                message_edit.cancel(row);
+    if ((request.subject !== undefined) ||
+        (request.content !== undefined)) {
+        $.ajax({
+            type: 'POST',
+            url: '/json/update_message',
+            data: request,
+            dataType: 'json',
+            success: function (data) {
+                if (msg_list === current_msg_list) {
+                    message_edit.cancel(row);
+                }
             }
-        }
-    });
+        });
+    }
+    message_edit.cancel(row);
     // The message will automatically get replaced when it arrives.
 };
 
