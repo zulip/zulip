@@ -9,14 +9,14 @@
   <td class="ztable_col1" />
   <td class="ztable_col2" />
   <td class="ztable_col3" />
+  <td class="ztable_col4" />
 </tr>
 {{/include_layout_row}}
 
 {{#each messages}}
 {{#with this}}
 {{#include_bookend}}
-<tr class="bookend_tr"><td/>
-<td /><td class="bookend{{#if subscribed}} sub-unsub-message{{/if}}{{#if unsubscribed}} sub-unsub-message{{/if}}">
+<tr class="bookend_tr"><td colspan="4" class="bookend{{#if subscribed}} sub-unsub-message{{/if}}{{#if unsubscribed}} sub-unsub-message{{/if}}">
 {{#if subscribed}}
 <span>--- Subscribed to stream {{subscribed}} ---</span>
 {{/if}}
@@ -30,7 +30,7 @@
 {{#include_recipient}}
 {{#if is_stream}}
 <tr zid="{{id}}" class="recipient_row">
-    <td colspan="3" class="message_header message_header_stream right_part {{color_class}}"
+    <td colspan="4" class="message_header message_header_stream right_part {{color_class}}"
         style="background-color: {{background_color}};">
       {{#if invite_only}}<i class="icon-lock" title="This is an invite-only stream"></i>{{/if}}
       <span class="message_label_clickable narrows_by_recipient stream_label"
@@ -43,7 +43,7 @@
 </tr>
 {{else}}
 <tr zid="{{id}}" class="recipient_row">
-    <td colspan="3" class="message_header message_header_private_message right_part dark_background">
+    <td colspan="4" class="message_header message_header_private_message right_part dark_background">
         <span class="message_label_clickable narrows_by_recipient"
                title="Narrow to your private messages with {{display_reply_to}}">
         You and {{display_reply_to}}</span>
@@ -52,23 +52,9 @@
 {{/if}}
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}"
-    class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}">
+    class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}">
     <td class="pointer"><p></p></td>
-    <td class="message_data{{^include_sender}} prev_is_same_sender{{/include_sender}}">
-        <div class="actions_hover">
-            <span class="message_time">{{{timestr}}}</span>
-        </div>
-        <div class="message_controls">
-          <div class="star">
-            <i class="message_star {{#if starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}}"
-               title="{{#if starred}}Unstar{{else}}Star{{/if}} this message"></i>
-          </div>
-          <div class="info actions_hover">
-            <i class="icon-vector-info-sign"></i>
-          </div>
-        </div>
-    </td>
-    <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}{{#contains_mention}} mention{{/contains_mention}}">
+        <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
         <div class="message_top_line">
         {{#include_sender}}
         <span class="message_sender actions_hover">
@@ -85,13 +71,27 @@
         <div class="message_expander message_length_controller" title="See the rest of this message">[More...]</div>
         <div class="message_condenser message_length_controller" title="Make this message take up less space on the screen">[Condense this message]</div>
     </td>
+    <td class="message_data{{^include_sender}} prev_is_same_sender{{/include_sender}}">
+        <div class="actions_hover">
+            <span class="message_time">{{{timestr}}}</span>
+        </div>
+        <div class="message_controls">
+          <div class="star">
+            <span class="message_star {{#if starred}}icon-vector-star{{else}}icon-vector-star empty-star{{/if}}"
+               title="{{#if starred}}Unstar{{else}}Star{{/if}} this message"></i>
+          </div>
+          <div class="info actions_hover">
+            <i class="icon-vector-info-sign"></i>
+          </div>
+        </div>
+    </td>
+    <td class="pointer"><p></p></td>
 </tr>
 {{/with}}
 {{/each}}
 
 {{#if trailing_bookend}}
-<tr id="trailing_bookend" class="bookend_tr"><td/>
-<td /><td class="bookend">
+<tr id="trailing_bookend" class="bookend_tr"><td colspan="4" class="bookend">
 <center>{{trailing_bookend}}</center>
 <span class="tiny"><p></p></span></td>
 </tr>

@@ -241,9 +241,6 @@ function message_unhover() {
 
 function message_hover(message_row) {
     message_unhover();
-    while (!message_row.hasClass('include-sender')) {
-        message_row = message_row.prev();
-    }
     message_row.addClass('message_hovered');
     current_message_hover = message_row;
 }
@@ -574,8 +571,7 @@ function toggle_star(row_id) {
             return;
         }
         var favorite_image = row.find(".message_star");
-        favorite_image.toggleClass("icon-vector-star-empty");
-        favorite_image.toggleClass("icon-vector-star");
+        favorite_image.toggleClass("empty-star");
         var title_state = message.starred ? "Unstar" : "Star";
         favorite_image.attr("title", title_state + " this message");
     });
@@ -1061,24 +1057,22 @@ $(function () {
 
     $("#main_div").on("mousedown", ".messagebox", mousedown);
     $("#main_div").on("mousemove", ".messagebox", mousemove);
-    $("#main_div").on("mouseover", ".messagebox", function (e) {
-        var row = $(this).closest(".message_row");
+    $("#main_div").on("mouseover", ".message_row", function (e) {
+        var row = $(this);
         message_hover(row);
     });
 
-    $("#main_div").on("mouseout", ".messagebox", function (e) {
+    $("#main_div").on("mouseout", ".message_row", function (e) {
         message_unhover();
     });
 
     $("#main_div").on("mouseover", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
-        message_hover(row);
         row.addClass("actions_hovered");
     });
 
     $("#main_div").on("mouseout", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
-        message_unhover();
         row.removeClass("actions_hovered");
     });
 

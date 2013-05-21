@@ -2,7 +2,7 @@ var common = require('../common.js').common;
 
 function star_count() {
     return casper.evaluate(function () {
-        return $("#zhome .icon-vector-star").length;
+        return $("#zhome .icon-vector-star:not(.empty-star)").length;
     });
 }
 

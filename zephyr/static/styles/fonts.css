@@ -155,13 +155,15 @@
 
 }
 
+
+
 @font-face {
   font-family: 'FontAwesome';
-  src: url('../third/fontawesome/fontawesome2-webfont.eot?v=3.0.1');
-  src: url('../third/fontawesome/fontawesome2-webfont.eot?#iefix&v=3.0.1') format('embedded-opentype'),
-       url('../third/fontawesome/fontawesome2-webfont.woff?v=3.0.1') format('woff'),
-       url('../third/fontawesome/fontawesome2-webfont.ttf?v=3.0.1') format('truetype'),
-       url('../third/fontawesome/fontawesome2-webfont.svg#FontAwesome') format('svg');
+  src: url('../third/fontawesome/fontawesome3-webfont.eot?v=3.0.1');
+  src: url('../third/fontawesome/fontawesome3-webfont.eot?#iefix&v=3.0.1') format('embedded-opentype'),
+       url('../third/fontawesome/fontawesome3-webfont.woff?v=3.0.1') format('woff'),
+       url('../third/fontawesome/fontawesome3-webfont.ttf?v=3.0.1') format('truetype'),
+       url('../third/fontawesome/fontawesome3-webfont.svg#FontAwesome') format('svg');
   font-weight: normal;
   font-style: normal;
 }
