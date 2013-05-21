@@ -64,7 +64,6 @@ li, .table th, .table td {
 .btn {
     font-size:  inherit;
     height:     auto;
-    min-height: 2.2em;
     line-height: 100%;
 }
 
