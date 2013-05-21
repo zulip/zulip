@@ -836,6 +836,7 @@ def do_update_message(user_profile, message_id, subject, content):
     event = {'type': 'update_message',
              'sender': user_profile.email,
              'message_id': message_id}
+    edit_history_event = {}
 
     if message.sender != user_profile:
         raise JsonableError("Message was not sent by you")
@@ -852,15 +853,28 @@ def do_update_message(user_profile, message_id, subject, content):
         message.rendered_content_version = bugdown.version
         event["content"] = content
         event["rendered_content"] = rendered_content
+        edit_history_event["prev_content"] = event['orig_content']
 
     if subject is not None:
         event["orig_subject"] = message.subject
         message.subject = subject
         event["subject"] = subject
+        edit_history_event["prev_subject"] = event['orig_subject']
+
+    message.last_edit_time = timezone.now()
+    event['edit_timestamp'] = datetime_to_timestamp(message.last_edit_time)
+    edit_history_event['timestamp'] = event['edit_timestamp']
+    if message.edit_history is not None:
+        edit_history = simplejson.loads(message.edit_history)
+        edit_history.insert(0, edit_history_event)
+    else:
+        edit_history = [edit_history_event]
+    message.edit_history = simplejson.dumps(edit_history)
 
     log_event(event)
     message.save(update_fields=["subject", "content", "rendered_content",
-                                "rendered_content_version"])
+                                "rendered_content_version", "last_edit_time",
+                                "edit_history"])
 
     # Update the message as stored in both the (deprecated) message
     # cache (for shunting the message over to Tornado in the old

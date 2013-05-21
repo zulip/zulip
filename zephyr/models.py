@@ -275,6 +275,8 @@ class Message(models.Model):
     rendered_content_version = models.IntegerField(null=True)
     pub_date = models.DateTimeField('date published', db_index=True)
     sending_client = models.ForeignKey(Client)
+    last_edit_time = models.DateTimeField(null=True)
+    edit_history = models.TextField(null=True)
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.recipient)
@@ -320,6 +322,9 @@ class Message(models.Model):
             gravatar_hash     = gravatar_hash(self.sender.email),
             client            = self.sending_client.name)
 
+        if self.last_edit_time != None:
+            obj['last_edit_timestamp'] = datetime_to_timestamp(self.last_edit_time)
+            obj['edit_history'] = simplejson.loads(self.edit_history)
         if apply_markdown and self.rendered_content_version is not None:
             obj['content'] = self.rendered_content
             obj['content_type'] = 'text/html'

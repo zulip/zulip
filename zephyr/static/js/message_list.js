@@ -317,6 +317,12 @@ MessageList.prototype = {
             }
 
             add_display_time(message, prev);
+            if (message.last_edit_timestamp !== undefined &&
+                message.last_edit_timestr === undefined) {
+                // Add or update the last_edit_timestr
+                var last_edit_time = new XDate(message.last_edit_timestamp * 1000);
+                message.last_edit_timestr = (timerender.render_time(last_edit_time))[0].outerHTML;
+            }
 
             message.dom_id = table_name + message.id;
 

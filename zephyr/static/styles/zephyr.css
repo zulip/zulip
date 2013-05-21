@@ -1527,3 +1527,8 @@ li.expanded_subject {
     width: 90%;
     min-width: 206px;
 }
+
+.message_edit_notice {
+    font-size: 11px;
+}
+

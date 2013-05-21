@@ -70,6 +70,9 @@
         </div>
         <div class="message_expander message_length_controller" title="See the rest of this message">[More...]</div>
         <div class="message_condenser message_length_controller" title="Make this message take up less space on the screen">[Condense this message]</div>
+        {{#if last_edit_timestr}}
+        <div class="message_edit_notice">Last edited: {{{last_edit_timestr}}}</div>
+        {{/if}}
     </td>
     <td class="message_data{{^include_sender}} prev_is_same_sender{{/include_sender}}">
         <div class="actions_hover">

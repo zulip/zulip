@@ -737,6 +737,9 @@ function update_messages(events) {
         if (current_msg_list.get(event.message_id)) {
             message_edit.end(rows.get(event.message_id, current_msg_list.table_name));
         }
+
+        msg.last_edit_timestamp = event.edit_timestamp;
+        delete msg.last_edit_timestr;
     });
 
     home_msg_list.rerender();
