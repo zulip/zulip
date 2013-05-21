@@ -76,7 +76,7 @@ def git_commit_range(oldrev, newrev):
     for ln in subprocess.check_output(log_cmd).splitlines():
         email, subject = ln.split(None, 1)
         if len(subject) > 60:
-            subject = subject[:58].rstrip() + '...'
+            subject = subject[:57].rstrip() + '...'
         commits += '!gravatar(%s) %s\n' % (email, subject)
     return commits
 

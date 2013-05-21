@@ -34,6 +34,8 @@ else:
     thing = 'service'
     msg['subject'] = 'service %s on %s' % (opts.service, opts.host)
 
+if len(msg['subject']) > 60:
+    msg['subject'] = msg['subject'][0:57].rstrip() + "..."
 # e.g. **PROBLEM**: service is CRITICAL
 msg['content'] = '**%s**: %s is %s' % (opts.type, thing, opts.state)
 
