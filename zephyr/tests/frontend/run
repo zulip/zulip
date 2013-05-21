@@ -1,16 +1,35 @@
 #!/usr/bin/env python
 import subprocess
 import requests
+import optparse
 import time
 import sys
 import os
 from os import path
 import glob
 
+#
+# In order to use remote casperjs debugging, pass the --remote-debug flag
+# This will start a remote debugging session listening on port 7777
+#
+# See https://wiki.humbughq.com/Testing%20the%20app for more information
+# on how to use remote debugging
+#
+
 os.environ["TORNADO_SERVER"] = "http://localhost:9983"
 
+parser = optparse.OptionParser(r"""
+
+%prog --remote-debug file1 file2 file3""")
+
+parser.add_option('--remote-debug',
+                  help='Whether or not to enable remote debugging on port 7777',
+                  action="store_true",
+                  default=False)
+(options, args) = parser.parse_args()
+
 test_files = []
-for file in sys.argv[1:]:
+for file in args:
     if not os.path.exists(file):
         file = path.join(path.dirname(__file__), 'tests', file)
     test_files.append(path.abspath(file))
@@ -51,7 +70,11 @@ try:
         time.sleep(0.1)
     sys.stdout.write('\n')
 
-    cmd = 'zephyr/tests/frontend/casperjs/bin/casperjs test '
+    remote_debug = ""
+    if options.remote_debug:
+        remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
+    cmd = "zephyr/tests/frontend/casperjs/bin/casperjs %s test " % (remote_debug,)
+
     if test_files:
         cmd += ' '.join(test_files)
     else:
