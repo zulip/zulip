@@ -6,6 +6,7 @@ var common = require('../common.js').common;
 // standalone
 // Silence jslint errors about the "process_visible_unread_messages" global
 /*global process_visible_unread_messages: true */
+/*global keep_pointer_in_view: true */
 
 function send_with_content(content) {
     common.send_message('stream', {
@@ -16,7 +17,7 @@ function send_with_content(content) {
 }
 
 // Iago
-common.start_and_log_in(undefined, {width: 1280, height: 350});
+common.start_and_log_in(undefined, {width: 1280, height: 600});
 casper.then(function () {
     send_with_content('Iago unread test 0');
 });
@@ -63,28 +64,35 @@ send_with_content('Othello unread test 5');
 
 casper.then(function () {
     function get_sidebar() { return casper.evaluate(function () { return $("a[href='#narrow/stream/Venice']").text(); }); }
-    function get_sidebar_num() { return parseInt(get_sidebar().match(/\w+\((\d+)\)/)[1], 10); }
+    function get_sidebar_num() {
+        var match = get_sidebar().match(/\w+\((\d+)\)/);
+        if (match) {
+           return parseInt(match[1], 10);
+        } else {
+           return 0;
+        }
+    }
+
     function send_key(key) { casper.page.sendEvent('keypress', key); casper.wait(50); }
+
     function scroll_to(ypos) {
         // Changing the scroll position in phantomjs doesn't seem to trigger on-scroll
         // handlers, so unread messages are not handled
         casper.page.scrollPosition = {top: ypos, left: 0};
-        casper.evaluate(function () { process_visible_unread_messages(); });
+        casper.evaluate(function () { keep_pointer_in_view();
+                                      process_visible_unread_messages(); });
     }
+    var i = 0;
     scroll_to(0);
 
     // Due to font size and height variance across platforms, we are restricted from checking specific
     // unread counts as they might not be consistent. However, we do know that after scrolling
     // down more messages should be marked as read
     var sidebar_initial = get_sidebar_num();
-    scroll_to(100);
-    scroll_to(200);
-    scroll_to(300);
-    scroll_to(400);
-    scroll_to(500);
-    scroll_to(600);
-    scroll_to(700);
-    scroll_to(800);
+    for(i = 0; i < 1500; i += 100) {
+        scroll_to(i);
+    }
+
     var sidebar_end = get_sidebar_num();
     casper.test.assert(sidebar_end < sidebar_initial, "Unread count in sidebar decreases after scrolling");
 
