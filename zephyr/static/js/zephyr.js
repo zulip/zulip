@@ -728,6 +728,10 @@ function update_messages(events) {
             // be called after we update msg.subject
             process_message_for_recent_subjects(msg);
         }
+
+        if (current_msg_list.get(event.message_id)) {
+            message_edit.cancel(rows.get(event.message_id, current_msg_list.table_name));
+        }
     });
 
     home_msg_list.rerender();
