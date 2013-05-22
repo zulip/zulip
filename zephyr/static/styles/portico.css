@@ -273,6 +273,7 @@ img.screenshot{
     padding: 0px;
     margin: 0px;
     height: 10px;
+    background-image: -webkit-repeating-linear-gradient(-60deg, #fff, #fff 10px, #62a0cf 10px, #62a0cf 20px, #fff 20px, #fff 30px, #d66468 30px, #d66468 40px );
     background-image: repeating-linear-gradient(-60deg, #fff, #fff 10px, #62a0cf 10px, #62a0cf 20px, #fff 20px, #fff 30px, #d66468 30px, #d66468 40px );
 }
 
