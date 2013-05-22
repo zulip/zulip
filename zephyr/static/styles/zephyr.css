@@ -1037,7 +1037,7 @@ table.floating_recipient {
 
 .subscription_table_elem {
     padding: 2px;
-    line-height: 30px;
+    line-height: 25px;
 }
 
 .subscription_header.active {
