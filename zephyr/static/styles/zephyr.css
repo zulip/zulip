@@ -630,7 +630,7 @@ blockquote p {
    -moz-box-shadow:     1px 1px 1px #777 inset;
    -webkit-box-shadow:  1px 1px 1px #777 inset;
     box-shadow:         1px 1px 1px #777 inset;
-    background-size: 15px 15px; 
+    background-size: 15px 15px;
 }
 
 .inline_profile_picture {
@@ -1225,7 +1225,7 @@ table.floating_recipient {
 }
 
 .empty_feed_notice {
-    padding: 1em 4em;
+    padding: 3em 4em;
     display: none;
 }
 
