@@ -46,8 +46,22 @@ $(function () {
                       });
     });
     $(document).on('narrow_activated.zephyr', function (event) {
+        var operators = event.filter.operators();
+        var stream_operands = event.filter.operands('stream');
+        var subject_operands = event.filter.operands('subject');
+        var reported_operators;
+        if (operators.length === 1) {
+            reported_operators = operators[0][0];
+        } else if (operators.length === 2
+                   && stream_operands.length !== 0 && subject_operands.length !== 0) {
+            reported_operators = 'stream and subject';
+        } else {
+            reported_operators = 'multiple';
+        }
+
         metrics.track('narrow activated', {user: page_params.email,
                                            realm: page_params.domain,
+                                           operators: reported_operators,
                                            trigger: event.trigger},
                       function (arg) {
                           if (arg !== undefined && arg.status !== 1) {
