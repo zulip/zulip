@@ -711,18 +711,18 @@ function collapse(row) {
     show_more_link(row);
 }
 
-var current_sidebar_elem;
-var sidebar_popup_shown_this_click = false;
+var current_stream_sidebar_elem;
+var stream_sidebar_popup_shown_this_click = false;
 
-exports.hide_sidebar_popover = function () {
-    if (ui.sidebar_currently_popped()) {
-        current_sidebar_elem.popover("destroy");
-        current_sidebar_elem = undefined;
+exports.hide_stream_sidebar_popover = function () {
+    if (ui.stream_sidebar_currently_popped()) {
+        current_stream_sidebar_elem.popover("destroy");
+        current_stream_sidebar_elem = undefined;
     }
 };
 
-exports.sidebar_currently_popped = function () {
-    return current_sidebar_elem !== undefined;
+exports.stream_sidebar_currently_popped = function () {
+    return current_stream_sidebar_elem !== undefined;
 };
 
 $(function () {
@@ -1239,9 +1239,9 @@ $(function () {
     });
 
     $('#stream_filters').on('click', 'span.arrow', function (e) {
-        var last_sidebar_elem = current_sidebar_elem;
-        ui.hide_sidebar_popover();
-        sidebar_popup_shown_this_click = true;
+        var last_sidebar_elem = current_stream_sidebar_elem;
+        ui.hide_stream_sidebar_popover();
+        stream_sidebar_popup_shown_this_click = true;
 
         var stream = $(e.target).parents('li').attr('data-name');
 
@@ -1289,11 +1289,11 @@ $(function () {
             });
 
             $('.streams_popover').on('click', 'a.sp-cancel', function (e) {
-                ui.hide_sidebar_popover();
+                ui.hide_stream_sidebar_popover();
             });
         });
 
-        current_sidebar_elem = $(e.target);
+        current_stream_sidebar_elem = $(e.target);
         e.preventDefault();
     });
 
@@ -1449,21 +1449,21 @@ $(function () {
 
     $('body').on('click', '.toggle_home', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
-        ui.hide_sidebar_popover();
+        ui.hide_stream_sidebar_popover();
         subs.toggle_home(stream);
         e.stopPropagation();
     });
 
     $('body').on('click', '.narrow_to_stream', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
-        ui.hide_sidebar_popover();
+        ui.hide_stream_sidebar_popover();
         narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar popover'});
         e.stopPropagation();
     });
 
     $('body').on('click', '.compose_to_stream', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
-        ui.hide_sidebar_popover();
+        ui.hide_stream_sidebar_popover();
         compose.start('stream', {"stream": stream, trigger: 'sidebar stream actions'});
         e.stopPropagation();
     });
@@ -1472,10 +1472,10 @@ $(function () {
         // Dismiss the popover if the user has clicked outside it
         if ($('.popover-inner').has(e.target).length === 0) {
             ui.hide_actions_popover();
-            if (sidebar_popup_shown_this_click === false ) {
-                ui.hide_sidebar_popover();
+            if (stream_sidebar_popup_shown_this_click === false ) {
+                ui.hide_stream_sidebar_popover();
             }
-            sidebar_popup_shown_this_click = false;
+            stream_sidebar_popup_shown_this_click = false;
         }
 
         // Unfocus our compose area if we click out of it. Don't let exits out
