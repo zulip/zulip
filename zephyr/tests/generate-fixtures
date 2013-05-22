@@ -14,7 +14,6 @@ if [ $template_grep_error_code == "0" ]; then
             psql -h localhost postgres humbug_test << EOF
 DROP DATABASE humbug_test;
 CREATE DATABASE humbug_test TEMPLATE humbug_test_template;
-COMMIT;
 EOF
         exit 0
     fi
@@ -45,5 +44,4 @@ python manage.py dumpdata  --settings=humbug.test_settings \
 psql -h localhost postgres humbug_test << EOF
 DROP DATABASE humbug_test_template;
 CREATE DATABASE humbug_test_template TEMPLATE humbug_test;
-COMMIT;
 EOF
