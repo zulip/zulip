@@ -1,5 +1,12 @@
 #/bin/sh -xe
 
+ROOT_POSTGRES="sudo -u postgres psql"
+DEFAULT_DB=""
+if [ "$(uname)" = "Darwin" ]; then
+   ROOT_POSTGRES="psql"
+   DEFAULT_DB="postgres"
+fi
+
 if [[ $# == 0 ]]; then
     USERNAME=humbug
     PASSWORD=xxxxxxxxxxxx
@@ -17,7 +24,8 @@ else
     exit
 fi
 
-sudo -u postgres psql << EOF
+
+$ROOT_POSTGRES $DEFAULT_DB << EOF
 CREATE USER $USERNAME WITH PASSWORD '$PASSWORD';
 ALTER USER $USERNAME CREATEDB;
 ALTER ROLE $USERNAME SET search_path TO $SEARCH_PATH;
@@ -28,10 +36,13 @@ echo "*:*:*:$USERNAME:$PASSWORD" >> ~/.pgpass
 chmod go-rw ~/.pgpass
 
 psql -h localhost postgres $USERNAME <<EOF
+DROP DATABASE IF EXISTS $DBNAME;
 CREATE DATABASE $DBNAME;
 EOF
 
-sudo -u postgres psql $DBNAME << EOF
+DEFAULT_DB=$DBNAME
+
+$ROOT_POSTGRES $DEFAULT_DB << EOF
 DROP SCHEMA public CASCADE;
 EOF
 
