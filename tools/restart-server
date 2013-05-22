@@ -26,7 +26,9 @@ subprocess.check_call(["python", "./manage.py", "send_stats", "incr", "events.se
 # the other worker processes.
 logging.info("Killing daemons")
 subprocess.check_call(["supervisorctl", "stop",    "humbug-workers:*"])
-subprocess.check_call(["supervisorctl", "restart", "humbug-web:*"])
+subprocess.check_call(["supervisorctl", "stop",    "humbug-django"])
+subprocess.check_call(["supervisorctl", "restart", "humbug-tornado"])
+subprocess.check_call(["supervisorctl", "start",   "humbug-django"])
 subprocess.check_call(["supervisorctl", "start",   "humbug-workers:*"])
 
 logging.info("Flushing memcached")
