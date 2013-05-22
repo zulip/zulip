@@ -12,20 +12,24 @@ var methods = ["disable", "track", "track_pageview", "track_links", "track_forms
 var people_methods = ["set", "set_once", "increment", "append", "track_charge",
                       "clear_charges", "delete_user"];
 
-function wrap_method(name, source_container, target_container) {
+function wrap_method(name, source_container, target_container_func) {
     source_container[name] = function metrics_wrapper () {
         if (enable_metrics()) {
+            // We must reference mixpanel indirectly here because
+            // mixpanel loads asynchronously with stub methods and
+            // replaces its methods when it fully loads
+            var target_container = target_container_func();
             return target_container[name].apply(target_container, arguments);
         }
     };
 }
 
 $.each(methods, function (idx, method) {
-    wrap_method(method, exports, mixpanel);
+    wrap_method(method, exports, function () { return mixpanel; });
 });
 
 $.each(people_methods, function (idx, method) {
-    wrap_method(method, exports.people, mixpanel.people);
+    wrap_method(method, exports.people, function () { return mixpanel.people; });
 });
 
 // This should probably move elsewhere
