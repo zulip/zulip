@@ -97,6 +97,10 @@ function colorize_tab_bar() {
     var stream_tab = $('#tab_list .stream');
     if (stream_tab.length > 0) {
         var stream_name = stream_tab.data('name');
+        if (stream_name === undefined) {
+            return;
+        }
+
         var stream_color = subs.get_color(stream_name);
 
         if (!stream_tab.hasClass('active')) {
