@@ -1523,14 +1523,14 @@ exports.set_presence_list = function (users, presence_info) {
     $('#user_presences').empty();
 
     function add_entry(name, email, type) {
-        var entry = $('<li>')
-            .append($('<a>').attr({href: '#', 'data-email': email})
-                            .text(name))
-            .addClass('user_' + type)
-            .attr('title', name + presence_descriptions[type]);
+        var args = {name: name,
+                    type: type,
+                    type_desc: presence_descriptions[type],
+                    email: email};
         if (email === this.email) {
-            entry.addClass('my_fullname');
+            args.my_fullname = true;
         }
+        var entry = templates.render('user_presence_row', args);
         $('#user_presences').append(entry);
     }
 
