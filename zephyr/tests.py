@@ -2141,9 +2141,9 @@ int x = 3
 
     def test_manual_links(self):
         # These are links that the default markdown XSS fails due to to : in the path
-        urls = (('[Haskell NYC Meetup](http://www.meetup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/NY-Haskell/events/108707682/\
-?a=co1.1_grp&rv=co1.1)', "<p><a href=\"http://www.meetup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/NY-Haskell/events/\
-108707682/?a=co1.1_grp&amp;rv=co1.1\" target=\"_blank\" title=\"http://www.meetup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/\
+        urls = (('[Haskell NYC Meetup](http://www.meetsup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/NY-Haskell/events/108707682/\
+?a=co1.1_grp&rv=co1.1)', "<p><a href=\"http://www.meetsup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/NY-Haskell/events/\
+108707682/?a=co1.1_grp&amp;rv=co1.1\" target=\"_blank\" title=\"http://www.meetsup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/\
 NY-Haskell/events/108707682/?a=co1.1_grp&amp;rv=co1.1\">Haskell NYC Meetup</a></p>"),
                 ('[link](http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html)',
                  '<p><a href="http://htmlpreview.github.com/?https://github.com/becdot/jsset/index.html" target="_blank" title=\
@@ -2693,7 +2693,7 @@ class GithubHookTests(AuthedTestCase):
         # it won't get written, to avoid failing for the wrong
         # reason.
         self.subscribe_to_stream(email, stream)
-        
+
         prior_count = len(Message.objects.filter())
 
         result = self.client.post(url, data)
