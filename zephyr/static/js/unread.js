@@ -8,7 +8,7 @@ var unread_subjects = {};
 function unread_hashkey(message) {
     var hashkey;
     if (message.type === 'stream') {
-        hashkey = message.stream;
+        hashkey = subs.canonicalized_name(message.stream);
     } else {
         hashkey = message.display_reply_to;
     }
@@ -18,11 +18,12 @@ function unread_hashkey(message) {
     }
 
     if (message.type === 'stream') {
+        var canon_subject = subs.canonicalized_name(message.subject);
         if (unread_subjects[hashkey] === undefined) {
             unread_subjects[hashkey] = {};
         }
-        if (unread_subjects[hashkey][message.subject] === undefined) {
-            unread_subjects[hashkey][message.subject] = {};
+        if (unread_subjects[hashkey][canon_subject] === undefined) {
+            unread_subjects[hashkey][canon_subject] = {};
         }
     }
 
@@ -49,19 +50,23 @@ exports.message_unread = function (message) {
 };
 
 exports.update_unread_subjects = function (msg, event) {
+    var canon_stream = subs.canonicalized_name(msg.stream);
+    var canon_subject = subs.canonicalized_name(msg.subject);
+
     if (event.subject !== undefined &&
-        unread_subjects[msg.stream] !== undefined &&
-        unread_subjects[msg.stream][msg.subject] !== undefined &&
-        unread_subjects[msg.stream][msg.subject][msg.id]) {
+        unread_subjects[canon_stream] !== undefined &&
+        unread_subjects[canon_stream][canon_subject] !== undefined &&
+        unread_subjects[canon_stream][canon_subject][msg.id]) {
+        var new_canon_subject = subs.canonicalized_name(event.subject);
         // Move the unread subject count to the new subject
-        delete unread_subjects[msg.stream][msg.subject][msg.id];
-        if (unread_subjects[msg.stream][msg.subject].length === 0) {
-            delete unread_subjects[msg.stream][msg.subject];
+        delete unread_subjects[canon_stream][canon_subject][msg.id];
+        if (unread_subjects[canon_stream][canon_subject].length === 0) {
+            delete unread_subjects[canon_stream][canon_subject];
         }
-        if (unread_subjects[msg.stream][event.subject] === undefined) {
-            unread_subjects[msg.stream][event.subject] = {};
+        if (unread_subjects[canon_stream][new_canon_subject] === undefined) {
+            unread_subjects[canon_stream][new_canon_subject] = {};
         }
-        unread_subjects[msg.stream][event.subject][msg.id] = true;
+        unread_subjects[canon_stream][new_canon_subject][msg.id] = true;
     }
 };
 
@@ -76,7 +81,8 @@ exports.process_loaded_messages = function (messages) {
         unread_counts[message.type][hashkey][message.id] = true;
 
         if (message.type === 'stream') {
-            unread_subjects[hashkey][message.subject][message.id] = true;
+            var canon_subject = subs.canonicalized_name(message.subject);
+            unread_subjects[hashkey][canon_subject][message.id] = true;
         }
     });
 };
@@ -85,7 +91,9 @@ exports.process_read_message = function (message) {
     var hashkey = unread_hashkey(message);
     delete unread_counts[message.type][hashkey][message.id];
     if (message.type === 'stream') {
-        delete unread_subjects[message.stream][message.subject][message.id];
+        var canon_stream = subs.canonicalized_name(message.stream);
+        var canon_subject = subs.canonicalized_name(message.subject);
+        delete unread_subjects[canon_stream][canon_subject][message.id];
     }
 };
 
@@ -95,7 +103,7 @@ exports.declare_bankruptcy = function () {
 
 exports.get_counts = function () {
     var res = {};
-    
+
     // Return a data structure with various counts.  This function should be
     // pretty cheap, even if you don't care about all the counts, and you
     // should strive to keep it free of side effects on globals or DOM.

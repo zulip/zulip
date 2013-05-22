@@ -159,18 +159,23 @@ function rebuild_recent_subjects(stream, subject) {
     $('.expanded_subjects').remove();
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects[stream] || [];
+    var active_orig_subject = subject;
     $.each(subjects, function (idx, subject_obj) {
-        var num_unread = unread.num_unread_for_subject(stream, subject_obj.subject);
+        var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
         subject_obj.unread = num_unread;
         subject_obj.has_unread = num_unread !== 0;
+
+        if (subject === subject_obj.canon_subject) {
+            active_orig_subject = subject_obj.subject;
+        }
     });
 
 
     stream_li.append(templates.render('sidebar_subject_list',
                                       {subjects: subjects,
                                        stream: stream}));
-    if (subject !== undefined) {
-        get_subject_filter_li(stream, subject).addClass('active-subject-filter');
+    if (active_orig_subject !== undefined) {
+        get_subject_filter_li(stream, active_orig_subject).addClass('active-subject-filter');
     }
 }
 
@@ -235,7 +240,7 @@ exports.update_dom_with_unread_counts = function (counts) {
     exports.set_count("global", "private-message", counts.private_message_count);
     exports.set_count("global", "home", counts.home_unread_messages);
 
-    // For now increases in private messages get special treatment in terms of 
+    // For now increases in private messages get special treatment in terms of
     // animating the left pane.  It is unlikely that we will generalize this,
     // since Starred messages are user-initiated and Home messages would be too
     // spammy.

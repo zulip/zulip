@@ -66,7 +66,7 @@ $(function () {
 });
 
 function within_viewport(row_offset, row_height) {
-    // Returns true if a message is fully within the effectively visible 
+    // Returns true if a message is fully within the effectively visible
     // part of the viewport.
     var message_top = row_offset.top;
     var message_bottom  = message_top + row_height;
@@ -271,7 +271,7 @@ function update_unread_counts() {
 
     // This updates some DOM elements directly, so try to
     // avoid excessive calls to this.
-    stream_list.update_dom_with_unread_counts(res); 
+    stream_list.update_dom_with_unread_counts(res);
 
     notifications.update_title_count();
 }
