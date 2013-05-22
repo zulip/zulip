@@ -7,7 +7,9 @@ from zephyr.models import Message, UserProfile, UserMessage, \
 from zephyr.decorator import JsonableError
 from zephyr.lib.cache_helpers import cache_get_message
 from zephyr.lib.queue import queue_json_publish
-from zephyr.lib.event_queue import get_client_descriptors_for_user
+from zephyr.lib.timestamp import timestamp_to_datetime
+from zephyr.lib.event_queue import get_client_descriptors_for_user, \
+    add_client_gc_hook, IDLE_EVENT_QUEUE_TIMEOUT_SECS
 
 import os
 import sys
@@ -248,6 +250,41 @@ def update_pointer(user_profile_id, new_pointer):
         if client.accepts_event_type(event['type']):
             client.add_event(event.copy())
 
+
+def receives_offline_notifications(user_profile_id):
+    user_profile = get_user_profile_by_id(user_profile_id)
+    return (user_profile.enable_offline_email_notifications and
+            not user_profile.is_bot)
+
+def build_offline_notification_event(user_profile_id, message_id):
+    return {"user_profile_id": user_profile_id,
+            "message_id": message_id,
+            "timestamp": time.time()}
+
+def missedmessage_hook(user_profile_id, queue, last_for_client):
+    # Only process missedmessage hook when the last queue for a
+    # client has been garbage collected
+    if not last_for_client:
+        return
+
+    # If a user has gone offline but has unread messages
+    # received in the idle time, send them a missed
+    # message email
+    if not receives_offline_notifications(user_profile_id):
+        return
+
+    message_ids = []
+    for event in queue.event_queue.contents():
+        if not event['type'] == 'message' or not event['flags']:
+            continue
+
+        if 'mentioned' in event['flags'] and not 'read' in event['flags']:
+            message_ids.append(event['message']['id'])
+
+    for msg_id in message_ids:
+        event = build_offline_notification_event(user_profile_id, msg_id)
+        queue_json_publish("missedmessage_emails", event, lambda event: None)
+
 def process_new_message(data):
     message = cache_get_message(data['message'])
 
@@ -293,13 +330,8 @@ def process_new_message(data):
         mentioned = 'mentioned' in flags
         idle = len(get_client_descriptors_for_user(user_profile_id)) == 0
         if (received_pm or mentioned) and idle:
-            user_profile = get_user_profile_by_id(user_profile_id)
-
-            if user_profile.enable_offline_email_notifications and \
-                not user_profile.is_bot:
-                event = {"user_profile_id": user_profile_id,
-                         "message_id": message.id,
-                         "timestamp": time.time()}
+            if receives_offline_notifications(user_profile_id):
+                event = build_offline_notification_event(user_profile_id, message.id)
 
                 # We require RabbitMQ to do this, as we can't call the email handler
                 # from the Tornado process. So if there's no rabbitmq support do nothing

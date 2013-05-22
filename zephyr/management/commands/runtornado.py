@@ -21,7 +21,7 @@ from tornado import ioloop
 from zephyr.lib.debug import interactive_debug_listen
 from zephyr.lib.response import json_response
 from zephyr import tornado_callbacks
-from zephyr.lib.event_queue import setup_event_queue
+from zephyr.lib.event_queue import setup_event_queue, add_client_gc_hook
 from zephyr.lib.queue import setup_tornado_rabbitmq
 from zephyr.middleware import async_request_stop
 
@@ -110,6 +110,7 @@ class Command(BaseCommand):
                     ioloop.IOLoop.instance().set_blocking_log_threshold(5)
 
                 setup_event_queue()
+                add_client_gc_hook(tornado_callbacks.missedmessage_hook)
                 setup_tornado_rabbitmq()
                 ioloop.IOLoop.instance().start()
             except KeyboardInterrupt:

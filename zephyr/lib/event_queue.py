@@ -118,7 +118,17 @@ clients = {}
 # maps user id to list of client descriptors
 user_clients = {}
 
+# list of registered gc hooks.
+# each one will be called with a user profile id, queue, and bool
+# last_for_client that is true if this is the last queue pertaining
+# to this user_profile_id
+# that is about to be deleted
+gc_hooks = []
+
 next_queue_id = 0
+
+def add_client_gc_hook(hook):
+    gc_hooks.append(hook)
 
 def get_client_descriptor(queue_id):
     return clients.get(queue_id)
@@ -146,9 +156,6 @@ def gc_event_queues():
             to_remove.add(id)
             affected_users.add(client.user_profile_id)
 
-    for id in to_remove:
-        del clients[id]
-
     for user_id in affected_users:
         new_client_list = filter(lambda c: c.event_queue.id not in to_remove,
                                 user_clients[user_id])
@@ -156,6 +163,11 @@ def gc_event_queues():
             del user_clients[user_id]
         else:
             user_clients[user_id] = new_client_list
+
+    for id in to_remove:
+        for cb in gc_hooks:
+            cb(clients[id].user_profile_id, clients[id], clients[id].user_profile_id not in user_clients)
+        del clients[id]
 
     logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.'
                   + '  Now %d active queues')
