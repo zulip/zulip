@@ -1442,7 +1442,7 @@ $(function () {
     });
     $("body").on("click", ".message_edit_cancel", function (e) {
         var row = $(this).closest(".message_row");
-        message_edit.cancel(row);
+        message_edit.end(row);
         e.stopPropagation();
     });
 

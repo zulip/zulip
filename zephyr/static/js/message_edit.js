@@ -17,7 +17,7 @@ exports.save = function (row) {
     if (request.subject === undefined &&
         request.content === undefined) {
         // If they didn't change anything, just cancel it.
-        return message_edit.cancel(row);
+        return message_edit.end(row);
     }
     $.ajax({
         type: 'POST',
@@ -26,7 +26,7 @@ exports.save = function (row) {
         dataType: 'json',
         success: function (data) {
             if (msg_list === current_msg_list) {
-                message_edit.cancel(row);
+                message_edit.end(row);
             }
         }
     });
@@ -64,7 +64,7 @@ exports.start = function (row) {
     });
 };
 
-exports.cancel = function (row) {
+exports.end = function (row) {
     var message = current_msg_list.get(rows.id(row));
     delete currently_editing_messages[message.id];
     current_msg_list.hide_edit_message(row);

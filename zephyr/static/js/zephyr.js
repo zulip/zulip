@@ -730,7 +730,7 @@ function update_messages(events) {
         }
 
         if (current_msg_list.get(event.message_id)) {
-            message_edit.cancel(rows.get(event.message_id, current_msg_list.table_name));
+            message_edit.end(rows.get(event.message_id, current_msg_list.table_name));
         }
     });
 
