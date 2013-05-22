@@ -34,12 +34,22 @@ $(function () {
         metrics.track('compose started', {user: page_params.email,
                                           realm: page_params.domain,
                                           type: event.message_type,
-                                          trigger: event.trigger});
+                                          trigger: event.trigger},
+                      function (arg) {
+                          if (arg !== undefined && arg.status !== 1) {
+                              blueslip.warn(arg);
+                          }
+                      });
     });
     $(document).on('narrow_activated.zephyr', function (event) {
         metrics.track('narrow activated', {user: page_params.email,
                                            realm: page_params.domain,
-                                           trigger: event.trigger});
+                                           trigger: event.trigger},
+                      function (arg) {
+                          if (arg !== undefined && arg.status !== 1) {
+                              blueslip.warn(arg);
+                          }
+                      });
     });
 });
 
