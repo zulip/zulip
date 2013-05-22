@@ -242,6 +242,33 @@ img.screenshot{
     -moz-border-radius: 5px;
 }
 
+.stamp {
+    background-image: url('/static/images/landing-page/signup/canceled-stamp.png');
+    width: 210px;
+    height: 90px;
+    opacity: 0.6;
+    margin-right: 1em;
+}
+
+.stamp .date {
+    position: relative;
+    float: left;
+    top: 45px;
+    left: 20px;
+    font-size: 10px;
+    line-height: 10px;
+    color: #715128;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.stamp img {
+    height: 6em;
+    padding-right: 1em;
+
+}
+
 .postal-stripes {
     padding: 0px;
     margin: 0px;

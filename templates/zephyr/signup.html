@@ -39,9 +39,13 @@
 
       <div class="postal-envelope">
         <div class="postal-stripes"></div>
+        <div class="stamp pull-right">
+          <div class="date">{% now "b j" %}<br />{% now "Y" %}</div>
+        </div>
         <span class="par-avion">PAR COURRIER ELECTRONIQUE</span>
         <form method="post" class="letter-form" id="beta-user-form" action="{% url 'beta-signup-submission' %}">
           {% csrf_token %}
+          <p>&nbsp;</p>
           <p>Hi Humbugs,</p>
 
           <p>My name is <input class="input-medium" type="text"
