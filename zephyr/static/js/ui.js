@@ -1447,13 +1447,6 @@ $(function () {
         narrow.by_recipient(msgid, {trigger: 'popover'});
         e.stopPropagation();
     });
-    $('body').on('click', '.popover_narrow_by_sender_button', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
-        var sender_email = $(e.currentTarget).data('sender_email');
-        ui.hide_actions_popover();
-        narrow.by('sender', sender_email, {then_select_id: msgid, trigger: 'popover'});
-        e.stopPropagation();
-    });
     $('body').on('click', '.popover_narrow_by_time_travel_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         ui.hide_actions_popover();
