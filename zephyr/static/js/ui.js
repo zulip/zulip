@@ -1247,7 +1247,7 @@ $(function () {
 
         var ypos = $(e.target).offset().top - viewport.scrollTop();
         $(e.target).popover({
-            content:   templates.render('sidebar_stream_actions', {'stream': subs.have(stream)}),
+            content:   templates.render('stream_sidebar_actions', {'stream': subs.have(stream)}),
             trigger:   "manual"
         });
 
