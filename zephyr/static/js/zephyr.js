@@ -443,13 +443,15 @@ function process_message_for_recent_subjects(message, remove_message) {
     var current_timestamp = 0;
     var max_subjects = 5;
     var count = 0;
+    var canon_stream = subs.canonicalized_name(message.stream);
+    var canon_subject = subs.canonicalized_name(message.subject);
 
-    if (! recent_subjects.hasOwnProperty(message.stream)) {
-        recent_subjects[message.stream] = [];
+    if (! recent_subjects.hasOwnProperty(canon_stream)) {
+        recent_subjects[canon_stream] = [];
     } else {
-        recent_subjects[message.stream] =
-            $.grep(recent_subjects[message.stream], function (item) {
-                var is_duplicate = (item.subject.toLowerCase() === message.subject.toLowerCase());
+        recent_subjects[canon_stream] =
+            $.grep(recent_subjects[canon_stream], function (item) {
+                var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
                 if (is_duplicate) {
                     current_timestamp = item.timestamp;
                     count = item.count;
@@ -459,7 +461,7 @@ function process_message_for_recent_subjects(message, remove_message) {
             });
     }
 
-    var recents = recent_subjects[message.stream];
+    var recents = recent_subjects[canon_stream];
 
     if (remove_message !== undefined) {
         count = count - 1;
@@ -469,6 +471,7 @@ function process_message_for_recent_subjects(message, remove_message) {
 
     if (count !== 0) {
         recents.push({subject: message.subject,
+                      canon_subject: canon_subject,
                       count: count,
                       timestamp: Math.max(message.timestamp, current_timestamp)});
     }
@@ -479,7 +482,7 @@ function process_message_for_recent_subjects(message, remove_message) {
 
     recents = recents.slice(0, max_subjects);
 
-    recent_subjects[message.stream] = recents;
+    recent_subjects[canon_stream] = recents;
 }
 
 var msg_metadata_cache = {};

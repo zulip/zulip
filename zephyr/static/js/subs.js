@@ -118,6 +118,10 @@ exports.stream_id = function(stream_name) {
     return parseInt(sub.id, 10);
 };
 
+exports.canonicalized_name = function (stream_name) {
+   return stream_name.toString().toLowerCase();
+};
+
 function update_stream_sidebar_swatch_color(stream_name, color) {
     var id = exports.stream_id(stream_name);
     $("#stream_sidebar_swatch_" + id).css('background-color', color);

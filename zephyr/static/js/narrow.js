@@ -65,7 +65,7 @@ Filter.prototype = {
         // We don't use $.map because it flattens returned arrays.
         $.each(operators_mixed_case, function (idx, operator) {
             // We may want to consider allowing mixed-case operators at some point
-            new_operators.push([operator[0], operator[1].toString().toLowerCase()]);
+            new_operators.push([operator[0], subs.canonicalized_name(operator[1])]);
         });
         return new_operators;
     },
