@@ -1,10 +1,10 @@
 {% comment %}
-Mail sent to user when she was not logged in and received a PM
+Mail sent to user when she was not logged in and received a PM or @-mention
 {% endcomment %}
 
 Hello {{ name }},
 
-While you were away you received {{ messages|length }} new message{{ messages|pluralize }}!
+While you were away you received {{ messages|length }} new message{{ messages|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
 
 {% for message in messages %}
 {{ message.sender }}

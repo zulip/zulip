@@ -1172,17 +1172,24 @@ def do_send_missedmessage_email(user_profile, missed_messages):
     sender_str = ", ".join(senders)
 
     headers = {}
-    # If we have one huddle, set a reply-to to all of the members
-    # of the huddle except the user herself
-    disp_recipients = [", ".join(recipient['email']
-                            for recipient in get_display_recipient(msg.recipient)
-                                if recipient['email'] != user_profile.email)
-                             for msg in missed_messages]
-    if all(msg.recipient.type == Recipient.HUDDLE for msg in missed_messages) and len(set(disp_recipients)) == 1:
-        headers['Reply-To'] = disp_recipients[0]
-    elif len(senders) == 1:
-        headers['Reply-To'] = missed_messages[0].sender.email
+    if all(msg.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL)
+            for msg in missed_messages):
+        # If we have one huddle, set a reply-to to all of the members
+        # of the huddle except the user herself
+        disp_recipients = [", ".join(recipient['email']
+                                for recipient in get_display_recipient(msg.recipient)
+                                    if recipient['email'] != user_profile.email)
+                                 for msg in missed_messages]
+        if all(msg.recipient.type == Recipient.HUDDLE for msg in missed_messages) and \
+            len(set(disp_recipients)) == 1:
+            headers['Reply-To'] = disp_recipients[0]
+        elif len(senders) == 1:
+            headers['Reply-To'] = missed_messages[0].sender.email
+        else:
+            template_payload['reply_warning'] = True
     else:
+        # There are some @-mentions mixed in with personals
+        template_payload['mention'] = True
         template_payload['reply_warning'] = True
 
     subject = "Missed Humbug PM%s from %s" % ('s' if len(senders) > 1 else '', sender_str)

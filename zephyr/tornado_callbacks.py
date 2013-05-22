@@ -286,12 +286,13 @@ def process_new_message(data):
                 event = dict(type='message', message=message_dict, flags=flags)
                 client.add_event(event)
 
-        # If the recipient was offline and the message was a single or group PM,
-        # potentially notify more immediately
-        if message.recipient.type in (Recipient.PERSONAL, Recipient.HUDDLE) and \
-            user_profile_id != message.sender.id and \
-            len(get_client_descriptors_for_user(user_profile_id)) == 0:
-
+        # If the recipient was offline and the message was a single or group PM to him
+        # or she was @-notified potentially notify more immediately
+        received_pm = message.recipient.type in (Recipient.PERSONAL, Recipient.HUDDLE) and \
+                        user_profile_id != message.sender.id
+        mentioned = 'mentioned' in flags
+        idle = len(get_client_descriptors_for_user(user_profile_id)) == 0
+        if (received_pm or mentioned) and idle:
             user_profile = get_user_profile_by_id(user_profile_id)
 
             if user_profile.enable_offline_email_notifications and \
