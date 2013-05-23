@@ -6,6 +6,15 @@ class humbug::base {
                 "munin-plugins-extra" ]
   package { $packages: ensure => "installed" }
 
+
+  apt::key {"E5FB045CA79AA8FC25FDE9F3B4F81D07A529EF65":
+    source  =>  "http://apt.humbughq.com/ops.asc",
+  }
+  apt::sources_list {"humbug":
+    ensure  => present,
+    content => 'deb http://apt.humbughq.com/ops wheezy main',
+  }
+
   # FIXME: Stop using pip since it is insecure
   exec {"pip":
     command  => "/usr/bin/pip install django-jstemplate",
