@@ -45,7 +45,7 @@ class Command(BaseCommand):
 
         # Also do stats for how many users have been reading the app.
         users_reading = UserActivity.objects.select_related().filter(query="/json/update_message_flags")
-        user_info = {}
+        user_info = defaultdict(dict)
         for activity in users_reading:
             for bucket in hour_buckets:
                 if not bucket in user_info[activity.user_profile.realm.domain]:
