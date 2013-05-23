@@ -1695,6 +1695,10 @@ def api_jira_webhook(request):
 
         if comment != '':
             content += "\n> %s" % (comment,)
+    elif 'transition' in payload:
+        from_status = get_in(payload, ['transition', 'from_status'])
+        to_status = get_in(payload, ['transition', 'to_status'])
+        content = "%s **transitioned** %s from %s to %s" % (author, issue, from_status, to_status)
     else:
         # Unknown event type
         if not settings.TEST_SUITE:

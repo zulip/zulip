@@ -2616,6 +2616,30 @@ class JiraHookTests(AuthedTestCase):
 
 > Fixed it, finally!""")
 
+    def test_workflow_postfuncion(self):
+        msg = self.send_jira_message('postfunction_hook')
+
+        self.assertEqual(msg.subject, "TEST-5: PostTest")
+        self.assertEqual(msg.content, """Leo Franchi [Administrator] **transitioned** [TEST-5](https://lfranchi-test.atlassian.net/browse/TEST-5) from Resolved to Reopened""")
+
+    def test_workflow_postfunction(self):
+        msg = self.send_jira_message('postfunction_hook')
+
+        self.assertEqual(msg.subject, "TEST-5: PostTest")
+        self.assertEqual(msg.content, """Leo Franchi [Administrator] **transitioned** [TEST-5](https://lfranchi-test.atlassian.net/browse/TEST-5) from Resolved to Reopened""")
+
+    def test_workflow_postfunction_started(self):
+        msg = self.send_jira_message('postfunction_started')
+
+        self.assertEqual(msg.subject, "TEST-7: Gluttony of Post Functions")
+        self.assertEqual(msg.content, """Leo Franchi [Administrator] **transitioned** [TEST-7](https://lfranchi-test.atlassian.net/browse/TEST-7) from Open to Underway""")
+
+    def test_workflow_postfunction_resolved(self):
+        msg = self.send_jira_message('postfunction_resolved')
+
+        self.assertEqual(msg.subject, "TEST-7: Gluttony of Post Functions")
+        self.assertEqual(msg.content, """Leo Franchi [Administrator] **transitioned** [TEST-7](https://lfranchi-test.atlassian.net/browse/TEST-7) from Open to Resolved""")
+
 class BeanstalkHookTests(AuthedTestCase):
     fixtures = ['messages.json']
 
