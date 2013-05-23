@@ -262,6 +262,10 @@ li.hidden-filter {
     display: none;
 }
 
+ul.filters {
+    margin-left: 9px;
+}
+
 ul.filters .count {
     margin-left: 0.5em;
     display: none;
@@ -327,13 +331,21 @@ td.pointer {
     background-color: #FAFFC7;
 }
 
+.selected_message .inline_profile_picture {
+    border-color: #AAA;
+}
+
+.selected_message.private-message .inline_profile_picture {
+    border-color: #AAA;
+}
+
 .selected_message .info {
     visibility: visible;
 }
 
 .selected_message.private-message .message_data, .selected_message.private-message .messagebox,
 .new_private_messages {
-    background-color: #FAFFC7;
+    background-color: #bedbd2;
 }
 
 .new_private_messages, .new_private_messages_fadeout {
@@ -343,12 +355,12 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.selected_message .pointer {
-    background-color: #08c;
+.selected_message .pointer, .selected_message.mention .pointer {
+    background-color: #1f2170;
 }
 
 .private-message.selected_message .pointer {
-    background-color: #444;
+    background-color: #1f2170;
 }
 
 /*
@@ -372,23 +384,45 @@ td.pointer {
     border-left-color: #BBB;
 }
 
+.message_time {
+    position: absolute;
+    right: -38px;
+    top: 7px;
+    display: inline-block;
+    font-weight: normal;
+    font-size: 75%;
+    line-height: 100%;
+    color: #999;
+}
+
+.message_hovered .message_time, .selected_message .message_time {
+    right: -23px;
+}
+
 .message_controls {
-    position: relative;
-    top: -2px;
+    display: inline-block;
+    position: absolute;
+    top: 2px;
+    right: -58px;
 }
 
 .message_data {
     vertical-align: top;
     text-align: left;
-    padding: 5px 5px 0px 5px;
+    padding: 0px;
     background-color: #fff;
+    position: relative;
+}
+
+.include-sender .message_time {
+    top: 7px;
 }
 
 .ztable_layout_row {
     visibility: collapse;
 }
 
-.ztable_col1 {    /* pointer */
+.ztable_col1, .ztable_comp_col1 {    /* pointer */
     width: 2px;
 }
 
@@ -396,11 +430,18 @@ td.pointer {
 }
 
 .ztable_col3 {  /* sender's gravatar  and date */
-    width: 50px;
+    width: 0px;
 }
 
 .ztable_col4 {
     width: 2px;
+}
+
+.ztable_comp_col2 {
+    width: 60px;
+}
+
+.ztable_comp_col3 {
 }
 
 .message_header {
@@ -433,7 +474,7 @@ td.pointer {
 }
 
 .selected_message.mention .messagebox, .selected_message.mention .message_data {
-    background-color: #FAFFC7;
+    background-color: #fae991;
 }
 
 .selected_message.private-message.mention .messagebox, .selected_message.private-message.mention .message_data {
@@ -451,11 +492,6 @@ td.pointer {
     display: inline-block;
     font-weight: bold;
     line-height: 5px;
-}
-
-.actions_hover {
-    line-height: 0px;
-    display: inline-block;
 }
 
 .actions_hovered .sender_name {
@@ -490,20 +526,11 @@ td.pointer {
 }
 
 .message_top_line {
-    /* Move the float out of the way of the contents */
-    margin-bottom: 1px;
+    position: relative;
 }
 
 .message-right {
     float: right;
-}
-
-.message_time {
-    display: inline-block;
-    font-weight: normal;
-    font-size: 75%;
-    line-height: 100%;
-    color: #999;
 }
 
 .small {
@@ -513,17 +540,6 @@ td.pointer {
 .actions_hovered .message_time {
     color: #0088CC;
     cursor: pointer;
-}
-
-.actions_link {
-    font-size:    90%;
-    color:        #0088CC;
-    margin-right: 6px;
-    visibility:   hidden;
-}
-
-.message_hovered .actions_link {
-    visibility: visible;
 }
 
 .message_hovered .info {
@@ -598,7 +614,7 @@ blockquote p {
 }
 
 .messagebox {
-    padding: 5px;
+    padding: 3px 60px 0px 5px;
     background-color: #fff;
     word-wrap: break-word;
     cursor: pointer;
@@ -689,6 +705,10 @@ blockquote p {
     vertical-align: middle;
     position: relative;
     left: -1px;
+}
+
+.private-message .inline_profile_picture {
+    border-color: #FFF;
 }
 
 #compose {
@@ -970,7 +990,7 @@ table.floating_recipient {
 .narrowed_view {
     /* If we change this color, also change
        message_reply_fade_narrowed */
-    background-color: #DDD;
+    background-color: #EEE;
 }
 
 #bottom_whitespace {

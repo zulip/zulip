@@ -53,7 +53,7 @@
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}"
     class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}">
-    <td class="pointer"><p></p></td>
+        <td class="pointer"><p></p></td>
         <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
         <div class="message_top_line">
         {{#include_sender}}
@@ -63,6 +63,16 @@
             <span class="sender_name">{{sender_full_name}}</span>
         </span>
         {{/include_sender}}
+        <span class="message_time actions_hover">{{{timestr}}}</span>
+        <div class="message_controls">
+          <div class="info actions_hover">
+            <i class="icon-vector-info-sign"></i>
+          </div>
+          <div class="star">
+            <span class="message_star {{#if starred}}icon-vector-star{{else}}icon-vector-star empty-star{{/if}}"
+               title="{{#if starred}}Unstar{{else}}Star{{/if}} this message"></i>
+          </div>
+        </div>
         </div>
         <div class="message_content">{{#if ../../use_match_properties}}{{{match_content}}}{{else}}{{{content}}}{{/if}}</div>
         <div class="message_edit">
@@ -75,18 +85,6 @@
         {{/if}}
     </td>
     <td class="message_data{{^include_sender}} prev_is_same_sender{{/include_sender}}">
-        <div class="actions_hover">
-            <span class="message_time">{{{timestr}}}</span>
-        </div>
-        <div class="message_controls">
-          <div class="star">
-            <span class="message_star {{#if starred}}icon-vector-star{{else}}icon-vector-star empty-star{{/if}}"
-               title="{{#if starred}}Unstar{{else}}Star{{/if}} this message"></i>
-          </div>
-          <div class="info actions_hover">
-            <i class="icon-vector-info-sign"></i>
-          </div>
-        </div>
     </td>
     <td class="pointer"><p></p></td>
 </tr>
