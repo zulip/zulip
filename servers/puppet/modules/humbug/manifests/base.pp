@@ -82,6 +82,8 @@ class humbug::base {
   file { '/root/.ssh/authorized_keys':
     ensure     => file,
     mode       => 600,
+    owner      => "root",
+    group      => "root",
     source     => 'puppet:///modules/humbug/root_authorized_keys',
   }
 
