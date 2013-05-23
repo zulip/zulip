@@ -58,7 +58,7 @@ class humbug::app_frontend {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/supervisor/conf.d/humbug.conf",
+    source => "puppet:///modules/humbug/supervisord/conf.d/humbug.conf",
   }
   file { "/var/log/humbug":
     ensure => directory,
