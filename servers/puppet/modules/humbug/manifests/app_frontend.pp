@@ -44,6 +44,13 @@ class humbug::app_frontend {
     mode => 644,
     source => "puppet:///modules/humbug/nginx/sites-available/humbug",
   }
+
+
+  file { '/etc/nginx/sites-enabled/humbug':
+    ensure => 'link',
+    target => '/etc/nginx/sites-available/humbug',
+  }
+
   file { "/etc/memcached.conf":
     require => Package[memcached],
     ensure => file,
