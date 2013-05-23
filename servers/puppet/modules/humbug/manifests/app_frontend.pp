@@ -4,8 +4,15 @@ class humbug::app_frontend {
 
   $web_packages = [ "nginx", "memcached", "python-pylibmc", "python-tornado", "python-django",
                     "python-pygments", "python-flup", "ipython", "python-psycopg2",
-                    "yui-compressor", "python-django-auth-openid", "django-statsd-mozilla",
-                    "build-essential", "libssl-dev", "supervisor", "python-boto", "python-defusedxml"]
+                    "yui-compressor", "python-django-auth-openid",
+		    "python-django-statsd-mozilla",
+                    "build-essential", "libssl-dev", "supervisor",
+		    "python-boto", "python-defusedxml", "python-twitter",
+		    "python-twisted", "python-markdown", "python-requests",
+		    "python-django-south", "python-mock", "python-pika",
+		    "python-django-pipeline", "hunspell-en-us",
+		    "python-django-bitfield", "python-embedly",
+		    "python-postmonkey", "python-django-jstemplate"]
   package { $web_packages: ensure => "installed" }
 
   # This next block can go away once we upgrade to Wheezy, which won't
