@@ -2,7 +2,7 @@ class humbug::postgres-common {
   class { 'humbug::base': }
 
   $postgres_packages = [ "postgresql-9.1", "pgtune", "python-boto",
-                         "python-argparse", "python-gevent/squeeze-backports",
+                         "python-argparse", "python-gevent",
                          "lzop", "pv", "hunspell-en-us"]
   package { $postgres_packages: ensure => "installed" }
 
@@ -10,7 +10,7 @@ class humbug::postgres-common {
     command  => "/usr/bin/pip install git+git://github.com/zbenjamin/wal-e.git#egg=wal-e",
     creates  => "/usr/local/bin/wal-e",
     require  => Package['python-pip', 'python-boto', 'python-argparse',
-                        'python-gevent/squeeze-backports', 'lzop', 'pv'],
+                        'python-gevent', 'lzop', 'pv'],
   }
 
   file { "/usr/local/bin/env-wal-e":
