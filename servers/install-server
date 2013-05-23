@@ -73,6 +73,7 @@ scp -i "$amazon_key_file" "$humbug_cert_file" root@"$server":/root/humbug/certs/
 ssh "$server" -t -i "$amazon_key_file" -lroot <<EOF
 cp -a /root/humbug/certs/ /etc/ssl/
 cp -a /root/humbug/servers/puppet/modules/humbug/files/puppet.conf /etc/puppet/
+userdel admin
 puppet apply -e 'class {"humbug": machinetype => "$type"}'
 cp -a /root/humbug /home/humbug/humbug
 chown -R humbug:humbug /home/humbug/humbug
