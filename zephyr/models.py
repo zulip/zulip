@@ -89,7 +89,7 @@ class UserProfile(AbstractBaseUser):
     enable_sounds = models.BooleanField(default=True)
     enter_sends = models.NullBooleanField(default=False)
     enable_offline_email_notifications = models.BooleanField(default=True)
-    last_reminder = models.DateTimeField(default=timezone.now)
+    last_reminder = models.DateTimeField(default=timezone.now, null=True)
 
     TUTORIAL_WAITING  = 'W'
     TUTORIAL_STARTED  = 'S'

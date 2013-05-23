@@ -1215,7 +1215,8 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
                                                                 message__id__in=message_ids,
                                                                 flags=~UserMessage.flags.read)]
 
-    if len(messages) == 0 or timestamp - user_profile.last_reminder < datetime.timedelta(days=1):
+    if len(messages) == 0 or (user_profile.last_reminder and
+                              timestamp - user_profile.last_reminder < datetime.timedelta(days=1)):
         # Don't spam the user, if we've sent an email in the last day
         return
 
