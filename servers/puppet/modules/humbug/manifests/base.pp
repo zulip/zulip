@@ -15,38 +15,6 @@ class humbug::base {
     content => 'deb http://apt.humbughq.com/ops wheezy main',
   }
 
-  # FIXME: Stop using pip since it is insecure
-  exec {"pip":
-    command  => "/usr/bin/pip install django-jstemplate",
-    creates  => "/usr/local/lib/python2.6/dist-packages/jstemplate",
-    require  => Package['python-pip'],
-  }
-  exec {"pip2":
-    command  => "/usr/bin/pip install markdown",
-    creates  => "/usr/local/lib/python2.6/dist-packages/markdown",
-    require  => Package['python-pip'],
-  }
-  exec {"pip3":
-    command  => "/usr/bin/pip install requests",
-    creates  => "/usr/local/lib/python2.6/dist-packages/requests",
-    require  => Package['python-pip'],
-  }
-  exec {"pip4":
-    command  => "/usr/bin/pip install pika",
-    creates  => "/usr/local/lib/python2.6/dist-packages/pika",
-    require  => Package['python-pip'],
-  }
-  exec {"pip5":
-    command  => "/usr/bin/pip install South",
-    creates  => "/usr/local/lib/python2.6/dist-packages/south",
-    require  => Package['python-pip'],
-  }
-  exec {"pip6":
-    command  => "/usr/bin/pip install django-bitfield",
-    creates  => "/usr/local/lib/python2.6/dist-packages/bitfield",
-    require  => Package['python-pip'],
-  }
-
   group { 'humbug':
     ensure     => present,
     gid        => '1000',
