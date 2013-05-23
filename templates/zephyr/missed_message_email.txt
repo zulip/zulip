@@ -27,3 +27,7 @@ Please do not reply to this automated message. To respond to the missed messages
 
 Cheers,
 The Humbug Team
+
+Note: click here to open your Humbug Settings page and disable future email notifications:
+
+https://humbughq.com/#settings
