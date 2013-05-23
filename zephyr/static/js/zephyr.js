@@ -556,9 +556,11 @@ function add_message_metadata(message, dummy) {
     $.each(involved_people, function (idx, person) {
         // Do the hasOwnProperty() call via the prototype to avoid problems
         // with keys like "hasOwnProperty"
-        if (!typeahead_helper.known_to_typeahead(person) && people_dict[person.email] === undefined) {
+        if (people_dict[person.email] === undefined) {
             add_person(person);
-            typeahead_helper.autocomplete_needs_update(true);
+            if (!typeahead_helper.known_to_typeahead(person)) {
+                typeahead_helper.autocomplete_needs_update(true);
+            }
         }
     });
 
