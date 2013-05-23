@@ -848,12 +848,14 @@ def do_update_message(user_profile, message_id, subject, content):
 
         event['orig_content'] = message.content
         event['orig_rendered_content'] = message.rendered_content
+        edit_history_event["prev_content"] = message.content
+        edit_history_event["prev_rendered_content"] = message.rendered_content
+        edit_history_event["prev_rendered_content_version"] = message.rendered_content_version
         message.content = content
         message.rendered_content = rendered_content
         message.rendered_content_version = bugdown.version
         event["content"] = content
         event["rendered_content"] = rendered_content
-        edit_history_event["prev_content"] = event['orig_content']
 
     if subject is not None:
         event["orig_subject"] = message.subject
