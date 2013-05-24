@@ -20,7 +20,7 @@ if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
 if DEPLOYED:
     # The IP addresses are for app.humbughq.com and staging.humbughq.com
-    ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.245.10.122', '54.245.120.64']
+    ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.245.120.64']
 else:
     ALLOWED_HOSTS = ['localhost']
 
