@@ -200,9 +200,6 @@ def mentioned_in_message(message):
     #
     # TODO(leo) There is a minor regression in that we no longer
     # match just-first-names or just-last-names
-    if message.recipient.type != Recipient.STREAM:
-        return (False, set())
-
     wildcards = ['all', 'everyone']
 
     potential_mentions = find_mentions_re.findall(message.content)
