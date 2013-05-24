@@ -211,7 +211,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
 
     def do_embedly(self, root, supported_urls):
-        if settings.DEPLOYED and not settings.STAGING_DEPLOYED:
+        # embed.ly support disabled on prod/staging until it can be
+        # properly debugged.
+        #
+        # We're not deleting the code for now, since we expect to
+        # restore it and want to be able to update it along with
+        # future refactorings rather than keeping it as a separate
+        # branch.
+        if settings.DEPLOYED:
             return
 
         # We want this to be able to easily reverse the hashing later
