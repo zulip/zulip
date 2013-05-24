@@ -14,7 +14,7 @@ import sys
 import signal
 import tornado
 import random
-import zephyr.lib.stats as stats
+from zephyr.lib.utils import statsd
 from zephyr.middleware import async_request_restart
 from zephyr.models import get_client
 
@@ -173,8 +173,8 @@ def gc_event_queues():
                   + '  Now %d active queues')
                  % (len(to_remove), len(affected_users), time.time() - start,
                     len(clients)))
-    stats.update_stat('tornado.active_queues', len(clients))
-    stats.update_stat('tornado.active_users', len(user_clients))
+    statsd.gauge('tornado.active_queues', len(clients))
+    statsd.gauge('tornado.active_users', len(user_clients))
 
 def dump_event_queues():
     start = time.time()
