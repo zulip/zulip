@@ -1245,6 +1245,7 @@ $(function () {
 
     $('#user_presences').on('click', 'a', function (e) {
         var email = $(e.target).attr('data-email');
+        narrow.by('pm-with', email, {trigger: 'presence list'});
         compose.start('private', {private_message_recipient: email,
                                   trigger: 'presence list'});
         // The preventDefault is necessary so that clicking the
