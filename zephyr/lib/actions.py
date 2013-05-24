@@ -10,7 +10,7 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     to_dict_cache_key
 from django.db import transaction, IntegrityError
-from django.db.models import F
+from django.db.models import F, Q
 from django.core.exceptions import ValidationError
 from django.utils.importlib import import_module
 from django.template import loader
@@ -190,6 +190,47 @@ def log_message(message):
     if not message.sending_client.name.startswith("test:"):
         log_event(message.to_log_dict())
 
+# Match multi-word string between @** ** or match any one-word
+# sequences after @
+find_mentions_re = re.compile(r'\B@(?:\*\*([^\*]+)\*\*)|@(\w+)')
+
+def mentioned_in_message(message):
+    # Determine what, if any, users are mentioned with an @-notification
+    # in this message
+    #
+    # TODO(leo) There is a minor regression in that we no longer
+    # match just-first-names or just-last-names
+    if message.recipient.type != Recipient.STREAM:
+        return (False, set())
+
+    wildcards = ['all', 'everyone']
+
+    potential_mentions = find_mentions_re.findall(message.content)
+    # Either the first or the second group matched something, take the
+    # one that did (find_all returns a list with each item containing all groups)
+    potential_mentions = map(lambda elem: elem[0] or elem[1], potential_mentions)
+
+    users = set()
+    for mention in potential_mentions:
+        if mention in wildcards:
+            return (True, set())
+
+        attempts = [Q(full_name__iexact=mention), Q(short_name__iexact=mention)]
+        found = False
+        for attempt in attempts:
+            try:
+                user = UserProfile.objects.get(attempt, realm=message.sender.realm)
+                users.add(user)
+                found = True
+                break
+            except UserProfile.DoesNotExist:
+                continue
+
+        if found:
+            continue
+
+    return (False, users)
+
 # Helper function. Defaults here are overriden by those set in do_send_messages
 def do_send_message(message, rendered_content = None, no_log = False, stream = None):
     do_send_messages([{'message': message,
@@ -240,10 +281,13 @@ def do_send_messages(messages):
                              for user_profile in message['recipients']
                              if user_profile.is_active]
             for um in ums_to_create:
+                wildcard, mentioned = mentioned_in_message(message['message'])
                 sent_by_human = message['message'].sending_client.name.lower() in \
                                     ['website', 'iphone', 'android']
                 if um.user_profile == message['message'].sender and sent_by_human:
                     um.flags |= UserMessage.flags.read
+                if wildcard or um.user_profile in mentioned:
+                    um.flags |= UserMessage.flags.mentioned
             ums.extend(ums_to_create)
         UserMessage.objects.bulk_create(ums)
 
