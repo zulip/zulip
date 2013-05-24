@@ -328,7 +328,7 @@ td.pointer {
 }
 
 .selected_message .messagebox, .selected_message .message_data {
-    background-color: #FAFFC7;
+    background-color: #f7f7f7;
 }
 
 .selected_message .inline_profile_picture {
@@ -345,7 +345,7 @@ td.pointer {
 
 .selected_message.private-message .message_data, .selected_message.private-message .messagebox,
 .new_private_messages {
-    background-color: #bedbd2;
+    background-color: #feffcc;
 }
 
 .new_private_messages, .new_private_messages_fadeout {
@@ -466,19 +466,19 @@ td.pointer {
 }
 
 .private-message .messagebox, .private-message .message_data, .private-message .pointer {
-    background-color: #C2DBFF;
+    background-color: #FEFFE0;
 }
 
 .mention .messagebox, .mention .message_data, .mention .pointer {
-    background-color: #FFE9BA;
+    background-color: #FFE4E0;
 }
 
 .selected_message.mention .messagebox, .selected_message.mention .message_data {
-    background-color: #fae991;
+    background-color: #FFE0DC;
 }
 
 .selected_message.private-message.mention .messagebox, .selected_message.private-message.mention .message_data {
-    background-color: #FAFFC7;
+    background-color: #FFE0DC;
 }
 
 .message_sender {
