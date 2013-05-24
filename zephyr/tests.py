@@ -1089,8 +1089,13 @@ class GetOldMessagesTest(AuthedTestCase):
         messages for that stream.
         """
         self.login("hamlet@humbughq.com")
-        # We need to send a message here to ensure that we actually
-        # have a stream message in this narrow view.
+        # We need to susbcribe to a stream and then send a message to
+        # it to ensure that we actually have a stream message in this
+        # narrow view.
+        realm = Realm.objects.get(domain="humbughq.com")
+        stream, _ = create_stream_if_needed(realm, "Scotland")
+        do_add_subscription(self.get_user_profile("hamlet@humbughq.com"),
+                            stream, no_log=True)
         self.send_message("hamlet@humbughq.com", "Scotland", Recipient.STREAM)
         messages = self.message_stream(self.get_user_profile("hamlet@humbughq.com"))
         stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
