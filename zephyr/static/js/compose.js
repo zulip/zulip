@@ -555,7 +555,11 @@ $(function () {
     $("#new_message_content").click(function (e) {
         // If we click in the composebox, start up a new message
         if (!compose.composing()) {
-            compose.set_mode('stream');
+            if (narrow.narrowed_to_pms()) {
+                compose.set_mode('private');
+            } else {
+                compose.set_mode('stream');
+            }
             e.stopPropagation();
         }
     });

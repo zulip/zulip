@@ -603,6 +603,19 @@ exports.by_stream_subject_uri = function (stream, subject) {
            "/subject/" + hashchange.encodeHashComponent(subject);
 };
 
+exports.narrowed_to_pms = function () {
+    // Are we narrowed to PMs: all PMs or PMs with particular people.
+    var operators = narrow.operators();
+    if (!operators) {
+        return false;
+    }
+    if ((operators[0][0] === "pm-with") ||
+        ((operators[0][0] === "is") && (operators[0][1] === "private-message"))) {
+        return true;
+    }
+    return false;
+};
+
 return exports;
 
 }());
