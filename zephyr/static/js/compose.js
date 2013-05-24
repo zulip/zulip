@@ -44,22 +44,7 @@ function show(tabname, focus_area) {
         var cover = selected_row.offset().top + selected_row.height()
             - $("#compose").offset().top;
         if (cover > 0) {
-            disable_pointer_movement = true;
-            // We use $('html, body') because you can't animate window.scrollTop
-            // on Chrome (http://bugs.jquery.com/ticket/10419).
-            $('html, body').animate({
-                scrollTop: viewport.scrollTop() + cover + 5
-            }, {
-                complete: function () {
-                    // The complete callback is actually called before the
-                    // scrolling has completed, so we try to let scrolling
-                    // finish before allowing pointer movements again or the
-                    // pointer may still move.
-                    setTimeout(function () {
-                        disable_pointer_movement = false;
-                    }, 50);
-                }
-            });
+            viewport.user_initiated_animate_scroll(cover+5);
         }
     });
     focus_area.focus();

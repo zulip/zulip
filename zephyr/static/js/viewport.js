@@ -4,6 +4,7 @@ var exports = {};
 var jwindow;
 var height;
 var width;
+var in_stoppable_autoscroll = false;
 
 exports.scrollTop = function viewport_scrollTop () {
     return jwindow.scrollTop.apply(jwindow, arguments);
@@ -29,6 +30,46 @@ exports.width = function viewport_width() {
         width = jwindow.width();
     }
     return width;
+};
+
+
+exports.stop_auto_scrolling = function() {
+    if (in_stoppable_autoscroll) {
+        $("html, body").stop();
+    }
+};
+
+exports.system_initiated_animate_scroll = function (scroll_amount) {
+    suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
+    var viewport_offset = exports.scrollTop();
+    in_stoppable_autoscroll = true; 
+    $("html, body").animate({
+        scrollTop: viewport_offset + scroll_amount,
+        always: function () {
+            in_stoppable_autoscroll = false;
+        }
+    });
+};
+
+exports.user_initiated_animate_scroll = function (scroll_amount) {
+    disable_pointer_movement = true;
+    in_stoppable_autoscroll = false; // defensive
+
+    // We use $('html, body') because you can't animate window.scrollTop
+    // on Chrome (http://bugs.jquery.com/ticket/10419).
+    $('html, body').animate({
+        scrollTop: viewport.scrollTop() + scroll_amount
+    }, {
+        complete: function () {
+            // The complete callback is actually called before the
+            // scrolling has completed, so we try to let scrolling
+            // finish before allowing pointer movements again or the
+            // pointer may still move.
+            setTimeout(function () {
+                disable_pointer_movement = false;
+            }, 50);
+        }
+    });
 };
 
 $(function () {

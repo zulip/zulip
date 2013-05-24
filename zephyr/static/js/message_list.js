@@ -488,11 +488,7 @@ MessageList.prototype = {
         }
 
         // Ok, we are finally ready to actually scroll.
-        suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
-        var viewport_offset = viewport.scrollTop();
-        // viewport (which is window) doesn't have a scrollTop, so scroll
-        // the closest concept that does.
-        $("html, body").animate({scrollTop: viewport_offset + scroll_amount});
+        viewport.system_initiated_animate_scroll(scroll_amount);
     },
 
     clear_trailing_bookend: function MessageList_clear_trailing_bookend() {
@@ -601,8 +597,7 @@ MessageList.prototype = {
 };
 
 $(document).on('message_selected.zephyr hashchange.zephyr mousewheel mousemove', function (event) {
-    // TODO: Figure out how to limit this animation stop to just the autoscroll
-    $("html, body").stop();
+    viewport.stop_auto_scrolling();
 });
 }());
 /*jslint nomen: false */
