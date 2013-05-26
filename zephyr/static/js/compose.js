@@ -47,8 +47,7 @@ function show(tabname, focus_area) {
             viewport.user_initiated_animate_scroll(cover+5);
         }
     });
-    focus_area.focus();
-    focus_area.select();
+    focus_area.focus().select();
     // Disable the notifications bar if it overlaps with the composebox
     notifications_bar.maybe_disable();
 }
@@ -556,9 +555,9 @@ $(function () {
         // If we click in the composebox, start up a new message
         if (!compose.composing()) {
             if (narrow.narrowed_to_pms()) {
-                compose.set_mode('private');
+                compose.start('private');
             } else {
-                compose.set_mode('stream');
+                compose.start('stream');
             }
             e.stopPropagation();
         }
