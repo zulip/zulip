@@ -32,4 +32,7 @@ location / {
     include fastcgi_params;
     fastcgi_pass unix:/home/humbug/humbug-deployments/fastcgi-socket;
     fastcgi_split_path_info ^()(.*)$;
+    # Second number set to `getconf PAGESIZE`
+    fastcgi_buffers 1024 4k;
+    fastcgi_max_temp_file_size 0;
 }
