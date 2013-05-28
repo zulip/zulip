@@ -66,8 +66,10 @@ exports.start = function (row) {
 
 exports.end = function (row) {
     var message = current_msg_list.get(rows.id(row));
-    delete currently_editing_messages[message.id];
-    current_msg_list.hide_edit_message(row);
+    if (currently_editing_messages[message.id] !== undefined) {
+        delete currently_editing_messages[message.id];
+        current_msg_list.hide_edit_message(row);
+    }
 };
 
 exports.maybe_show_edit = function(row, id) {
