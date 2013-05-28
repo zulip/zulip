@@ -6,6 +6,18 @@ var height;
 var width;
 var in_stoppable_autoscroll = false;
 
+exports.at_top = function () {
+    return (jwindow.scrollTop() <= 0);
+};
+
+exports.at_bottom = function () {
+    // outerHeight(true): Include margin
+    var bottom = jwindow.scrollTop() + jwindow.height();
+    var window_size = $(document).height();
+
+    return bottom >= window_size;
+};
+
 exports.scrollTop = function viewport_scrollTop () {
     return jwindow.scrollTop.apply(jwindow, arguments);
 };

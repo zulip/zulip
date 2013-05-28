@@ -151,7 +151,7 @@ function process_hotkey(e) {
 
     switch (code) {
     case 33: // Page Up
-        if (at_top_of_viewport() && !current_msg_list.empty()) {
+        if (viewport.at_top() && !current_msg_list.empty()) {
             current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
         }
         else {
@@ -160,7 +160,7 @@ function process_hotkey(e) {
         return true;
     case 32: // Spacebar
     case 34: // Page Down
-        if (at_bottom_of_viewport() && !current_msg_list.empty()) {
+        if (viewport.at_bottom() && !current_msg_list.empty()) {
             current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
         }
         else {

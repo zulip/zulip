@@ -1120,15 +1120,6 @@ setInterval(function () {
     watchdog_time = new_time;
 }, 5000);
 
-function at_top_of_viewport() {
-    return (viewport.scrollTop() === 0);
-}
-
-function at_bottom_of_viewport() {
-    // outerHeight(true): Include margin
-    return (viewport.scrollTop() + viewport.height() >= $("#main_div").outerHeight(true));
-}
-
 function keep_pointer_in_view() {
     var candidate;
     var next_row = current_msg_list.selected_row();
@@ -1152,8 +1143,8 @@ function keep_pointer_in_view() {
         return true;
     }
 
-    if (! adjust(above_view_threshold, at_top_of_viewport, rows.next_visible))
-        adjust(below_view_threshold, at_bottom_of_viewport, rows.prev_visible);
+    if (! adjust(above_view_threshold, viewport.at_top, rows.next_visible))
+        adjust(below_view_threshold, viewport.at_bottom, rows.prev_visible);
 
     current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
 }
@@ -1164,7 +1155,7 @@ function keep_pointer_in_view() {
 // the scrollwheel, the selection should advance until
 // I'm at the very top or the very bottom of the page.
 function move_pointer_at_page_top_and_bottom(delta) {
-    if (delta !== 0 && (at_top_of_viewport() || at_bottom_of_viewport())) {
+    if (delta !== 0 && (viewport.at_top() || viewport.at_bottom())) {
         var next_row = current_msg_list.selected_row();
         if (delta > 0) {
             // Scrolling up (want older messages)
