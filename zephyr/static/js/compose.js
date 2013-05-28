@@ -32,22 +32,24 @@ function show(tabname, focus_area) {
     $("#send-status").removeClass(status_classes).hide();
     $('#compose').css({visibility: "visible"});
     $("#new_message_content").trigger("autosize");
-    $('.message_comp').slideDown(100, function () {
-        // If the compose box is obscuring the currently selected message,
-        // scroll up until the message is no longer occluded.
-        if (current_msg_list.selected_id() === -1) {
-            // If there's no selected message, there's no need to
-            // scroll the compose box to avoid it.
-            return;
-        }
-        var selected_row = current_msg_list.selected_row();
-        var cover = selected_row.offset().top + selected_row.height()
-            - $("#compose").offset().top;
-        if (cover > 0) {
-            viewport.user_initiated_animate_scroll(cover+5);
-        }
-    });
+    $(".new_message_textarea").css("min-height", "3em");
+
+    // If the compose box is obscuring the currently selected message,
+    // scroll up until the message is no longer occluded.
+    if (current_msg_list.selected_id() === -1) {
+        // If there's no selected message, there's no need to
+        // scroll the compose box to avoid it.
+        return;
+    }
+    var selected_row = current_msg_list.selected_row();
+    var cover = selected_row.offset().top + selected_row.height()
+        - $("#compose").offset().top;
+    if (cover > 0) {
+        viewport.user_initiated_animate_scroll(cover+5);
+    }
+
     focus_area.focus().select();
+
     // Disable the notifications bar if it overlaps with the composebox
     notifications_bar.maybe_disable();
 }
@@ -209,7 +211,6 @@ exports.start = function (msg_type, opts) {
     } else {
         show('private', $("#" + (focus_area || 'private_message_recipient')));
     }
-    $(".new_message_textarea").css("min-height", "3em");
 
     if (opts.replying_to_message !== undefined) {
         do_fade(opts.replying_to_message, msg_type);
