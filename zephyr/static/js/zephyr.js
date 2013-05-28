@@ -20,8 +20,6 @@ var load_more_enabled = true;
 // not load_more_messages().
 var have_scrolled_away_from_top = true;
 
-var disable_pointer_movement = false;
-
 // Toggles re-centering the pointer in the window
 // when Home is next clicked by the user
 var recenter_pointer_on_display = false;
@@ -1123,10 +1121,6 @@ setInterval(function () {
 function keep_pointer_in_view() {
     var candidate;
     var next_row = current_msg_list.selected_row();
-
-    if (disable_pointer_movement) {
-        return;
-    }
 
     if (next_row.length === 0)
         return;
