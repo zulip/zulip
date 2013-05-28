@@ -6,7 +6,7 @@ function add_bot_row(name, email, api_key) {
     var row = $('<tr></tr>').append($('<td>').text(name),
                                     $('<td>').text(email),
                                     $('<td class="api_key">').text(api_key));
-    $('#create_bot_row').after(row);
+    $('#create_bot_row').before(row);
 }
 
 function is_local_part(value, element) {
