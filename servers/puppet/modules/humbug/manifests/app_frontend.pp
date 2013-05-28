@@ -15,11 +15,6 @@ class humbug::app_frontend {
 		    "python-postmonkey", "python-django-jstemplate"]
   package { $web_packages: ensure => "installed" }
 
-  # This next block can go away once we upgrade to Wheezy, which won't
-  # have Python 2.5 at all.
-  $web_nopackages = [ "python2.5", "python2.5-minimal" ]
-  package { $web_nopackages: ensure => "absent" }
-
   file { "/etc/nginx/nginx.conf":
     require => Package[nginx],
     ensure => file,
