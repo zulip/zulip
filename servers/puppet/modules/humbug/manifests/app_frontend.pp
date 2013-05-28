@@ -31,21 +31,6 @@ class humbug::app_frontend {
     mode => 644,
     source => "puppet:///modules/humbug/nginx/humbug-include/",
   }
-  file { "/etc/nginx/sites-available/humbug":
-    require => Package[nginx],
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/humbug/nginx/sites-available/humbug",
-  }
-
-
-  file { '/etc/nginx/sites-enabled/humbug':
-    ensure => 'link',
-    target => '/etc/nginx/sites-available/humbug',
-  }
-
   file { "/etc/memcached.conf":
     require => Package[memcached],
     ensure => file,
@@ -91,8 +76,6 @@ class humbug::app_frontend {
 
   # TODO: Add /usr/lib/nagios/plugins/check_send_receive_time ->
   # /home/humbug/humbug-deployments/current/api/humbug/bots/check_send_receive.py symlink
-
-  # TODO: Setup the API distribution directory at /srv/www/dist/api/.
 
   # TODO: Ensure Django 1.5 is installed; this should be possible via
   # the backports-sloppy mechanism or via backports once we upgrade to
