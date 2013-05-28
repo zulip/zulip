@@ -21,9 +21,9 @@
         </div>
 
         <div class="control-group" id="pw_change_link">
-            <label class="control-label">
-                <a>Change password</a>
-            </label>
+          <div class="controls">
+            <button class="btn change_password_button" data-dismiss="modal" aria-hidden="true">Change Password</button>
+            </div>
         </div>
 
         <div id="pw_change_controls">
@@ -73,6 +73,13 @@
                       <p>Change at Gravatar.com</p>
                   </a>
               </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="controls">
+            <input type="submit" name="change_settings"
+                   value="Save changes" class="btn btn-big btn-primary" />
           </div>
         </div>
 
@@ -157,13 +164,9 @@
         its own name and API key using the above section.  But if you
         want to write a bot that can e.g. read your own private
         messages, you should use your personal API key.</p>
-          <div class="control-group">
-              <label class="control-label label_for_text">Your
-              personal API key</label>
-              <div class="controls">
-                  <a id="api_key_button">(show)</a>
-              </div>
-          </div>
+        <div class="controls">
+          <button class="btn" id="api_key_button">Show your API key</button>
+        </div>
       </div>
       <div id="get_api_key_box">
           <p>Please re-enter your password to confirm your identity.</p>
