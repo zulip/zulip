@@ -573,7 +573,7 @@ table.focused_table {
 
 .message_content {
     margin-top: 3px;
-    line-height: 17px;
+    line-height: 18px;
 }
 @media (max-width: 480px) {
     .message_content {
@@ -614,7 +614,7 @@ blockquote p {
 }
 
 .messagebox {
-    padding: 3px 60px 0px 5px;
+    padding: 7px 60px 0px 7px;
     background-color: #fff;
     word-wrap: break-word;
     cursor: pointer;
@@ -622,7 +622,7 @@ blockquote p {
 }
 
 .messagebox p {
-    margin-bottom: 0px;
+    margin-bottom: 6px;
 }
 
 .messagebox blockquote {
@@ -697,18 +697,14 @@ blockquote p {
 
 .inline_profile_picture {
     display: inline-block;
-    width: 17px;
-    height: 17px;
-    background-size: 17px 17px;
-    border-radius: 17px;
+    width: 20px;
+    height: 20px;
+    background-size: 20px 20px;
+    border-radius: 20px;
     border: 1px solid #CCC;
     vertical-align: middle;
     position: relative;
     left: -1px;
-}
-
-.private-message .inline_profile_picture {
-    border-color: #FFF;
 }
 
 #compose {
