@@ -63,15 +63,13 @@ mixpanel.init("{{ mixpanel_token }}", {verbose: true});
 
     {# We need to import jQuery before Bootstrap #}
     <link href='https://fonts.googleapis.com/css?family=Droid+Sans:400,700' rel='stylesheet' type='text/css'>
-    {% compressed_css 'third_common' %}
-    {% compressed_js  'third_common' %}
+    {% compressed_css 'common' %}
     {% block page_params %}
     {# blueslip needs page_params.debug_mode.  Set it to false by default. #}
     <script type="text/javascript">
     var page_params = {debug_mode: false};
     </script>
     {% endblock %}
-    {% compressed_js 'blueslip' %}
     {% compressed_js  'common' %}
     {% block customhead %}
     {% endblock %}
