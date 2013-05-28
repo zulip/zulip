@@ -471,3 +471,4 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-pencil:before               { content: "\f040"; }
 .icon-vector-eraser:before               { content: "\f12d"; }
 .icon-vector-envelope:before             { content: "\f003"; }
+.icon-vector-tag:before                  { content: "\f02b"; }

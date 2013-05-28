@@ -260,7 +260,7 @@ $(function () {
         }
         var op_is = event.filter.operands('is');
         if (op_is.length !== 0) {
-            if (['private-message', 'starred'].indexOf(op_is[0]) !== -1) {
+            if (['private-message', 'starred', 'mentioned'].indexOf(op_is[0]) !== -1) {
                 $("#global_filters li[data-name='" + op_is[0] + "']").addClass('active-filter');
             }
         }

@@ -55,6 +55,8 @@ function make_tab_data() {
 
         } else if (operator === 'is' && operand === 'starred') {
             tabs.push(make_tab("Starred", hashed));
+        } else if (operator === 'is' && operand === 'mentioned') {
+            tabs.push(make_tab("Mentions", hashed));
         } else if (operator === 'sender') {
             var sender = people_dict[operand].full_name;
             tabs.push(make_tab("Sent by " + sender, hashed));
