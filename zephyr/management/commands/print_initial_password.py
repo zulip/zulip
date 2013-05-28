@@ -1,7 +1,8 @@
 from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
-from zephyr.lib.initial_password import initial_password, initial_api_key
+from zephyr.lib.initial_password import initial_password
+from zephyr.models import get_user_profile_by_email
 
 class Command(BaseCommand):
     help = "Print the initial password and API key for accounts as created by populate_db"
@@ -14,4 +15,4 @@ class Command(BaseCommand):
             if '@' not in email:
                 print 'ERROR: %s does not look like an email address' % (email,)
                 continue
-            print self.fmt % (email, initial_password(email), initial_api_key(email))
+            print self.fmt % (email, initial_password(email), get_user_profile_by_email(email).api_key)

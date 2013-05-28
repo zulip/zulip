@@ -123,9 +123,8 @@ if DEPLOYED:
 # cookie will slow down some attackers.
 CSRF_COOKIE_PATH = '/;HttpOnly'
 
-# Used just for generating initial passwords and API keys.
+# Used just for generating initial passwords (only used in testing environments).
 INITIAL_PASSWORD_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-INITIAL_API_KEY_SALT  = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 # A shared secret, used to authenticate different parts of the app to each other.
 # FIXME: store this password more securely

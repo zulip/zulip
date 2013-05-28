@@ -11,7 +11,7 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription,
     PreregistrationUser, UserMessage
 from zephyr.tornadoviews import json_get_updates, api_get_messages
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
-from zephyr.lib.initial_password import initial_password, initial_api_key
+from zephyr.lib.initial_password import initial_password
 from zephyr.lib.actions import do_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription
 from zephyr.lib.bugdown import convert, emoji_list
@@ -81,7 +81,7 @@ class AuthedTestCase(TestCase):
                                  'terms': True})
 
     def get_api_key(self, email):
-        return initial_api_key(email)
+        return self.get_user_profile(email).api_key
 
     def get_user_profile(self, email):
         """

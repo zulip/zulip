@@ -3,11 +3,11 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.contrib.auth.models import UserManager
 from django.utils import timezone
-from zephyr.lib.initial_password import initial_api_key
 from zephyr.models import UserProfile, Recipient, Subscription
 import base64
 import hashlib
 import simplejson
+import random
 
 # The ordered list of onboarding steps we want new users to complete. If the
 # steps are changed here, they must also be changed in onboarding.js.
@@ -37,7 +37,8 @@ def create_user_profile(realm, email, password, active, bot, full_name, short_na
     else:
         user_profile.set_password(password)
 
-    user_profile.api_key = initial_api_key(email)
+    # Generate a new, random API key
+    user_profile.api_key = base64.b64encode(hashlib.sha256( str(random.getrandbits(256))).digest())[0:32]
     return user_profile
 
 def create_user(email, password, realm, full_name, short_name,

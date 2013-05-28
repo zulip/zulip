@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.conf import settings
 
-from zephyr.lib.initial_password import initial_password, initial_api_key
+from zephyr.lib.initial_password import initial_password
 from zephyr.models import Realm, Stream, UserProfile, Huddle, \
     Subscription, Recipient, Client, Message, \
     get_huddle_hash
