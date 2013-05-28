@@ -4,6 +4,11 @@
 
 cd "$(dirname "$0")"/..
 
+if ! which sponge >/dev/null; then
+    echo 'Install the moreutils package.' >&2
+    exit 1
+fi
+
 # Redirect output to a log file (most recent run only)
 exec >update-prod-static.log
 
@@ -26,6 +31,11 @@ mkdir -p prod-static/source-map
 rm -rf prod-static/serve-new
 mkdir -p prod-static/serve-new
 cp -r prod-static/collected/{favicon.ico,robots.txt,html,images,third,min,audio} prod-static/serve-new/
+
+# Prepend the third-party code notice to JavaScript and CSS files.
+for f in prod-static/serve-new/min/*.{js,css}; do
+    cat zephyr/static/header.txt $f | sponge $f
+done
 
 # Sync the new directory to the one nginx actually serves.
 # Hopefully this doesn't race too badly for clients loading

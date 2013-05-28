@@ -1,0 +1,9 @@
+/*
+  Some of the software provided in this file may be offered under an open source
+  license. If some of the software in this file is offered under an open source
+  license, information about that license will appear in this file.
+
+  All other software provided in this file is
+  Copyright (c) 2012-2013 Humbug, Inc. and is provided under the license
+  described in the Humbug Terms of Service: https://humbughq.com/terms
+ */
