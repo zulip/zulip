@@ -9,54 +9,6 @@
 
       <div class="alert" id="settings-status"></div>
 
-      <div class="form-horizontal" id="api_key_button_box">
-          <div class="control-group">
-              <label class="control-label label_for_text">API key</label>
-              <div class="controls">
-                  <a href="#settings" id="api_key_button">(show)</a>
-              </div>
-          </div>
-      </div>
-      <div id="get_api_key_box">
-          <p>Please re-enter your password to confirm your identity.</p>
-          <form action="/json/fetch_api_key" method="post" class="form-horizontal">{% csrf_token %}
-              <div class="control-group">
-                  <label for="password" class="control-label">Current password</label>
-                  <div class="controls">
-                      <input type="password" autocomplete="off"
-                             name="password" id="get_api_key_password" value="" />
-                  </div>
-              </div>
-              <div class="control-group">
-                  <div class="controls">
-                      <input type="submit" name="view_api_key" value="Get API key"
-                             class="btn btn-primary" />
-                  </div>
-              </div>
-          </form>
-      </div>
-      <div id="show_api_key_box">
-          <p>API key:</p>
-          <p><b><span id="api_key_value"></span></b></p>
-      </div>
-
-      <hr class="settings_separator">
-
-      <div class="form-horizontal">
-          <div class="control-group">
-              <label class="control-label">Your picture</label>
-              <div class="controls">
-                  <a href="https://en.gravatar.com/emails" target="_blank" class="change_gravatar_button">
-                      <p><img class="img-rounded gravatar-profile"
-                           src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=60" /></p>
-                      <p>Change at Gravatar.com</p>
-                  </a>
-              </div>
-          </div>
-      </div>
-
-      <hr class="settings_separator">
-
       <div id="settings-change-box">
       <form action="/json/settings/change" method="post"
             class="form-horizontal">{% csrf_token %}
@@ -110,6 +62,22 @@
             </div>
 
         </div>
+
+        <div class="form-horizontal">
+          <div class="control-group">
+              <label class="control-label">Your picture</label>
+              <div class="controls">
+                  <a href="https://en.gravatar.com/emails" target="_blank" class="change_gravatar_button">
+                      <p><img class="img-rounded gravatar-profile"
+                           src="https://secure.gravatar.com/avatar/{{ email_hash }}?d=identicon&s=60" /></p>
+                      <p>Change at Gravatar.com</p>
+                  </a>
+              </div>
+          </div>
+        </div>
+
+      <hr class="settings_separator">
+      <h2>Notification settings</h2>
 
         <div class="control-group">
             <label for="enable_desktop_notifications" class="control-label">
@@ -182,6 +150,44 @@
     </table>
 
     <hr class="settings_separator" />
+
+      <div class="form-horizontal" id="api_key_button_box">
+        <p class="small">For most bots using the API, you'll want to give each bot
+        its own name and API key using the above section.  But if you
+        want to write a bot that can e.g. read your own private
+        messages, you should use your personal API key.</p>
+          <div class="control-group">
+              <label class="control-label label_for_text">Your
+              personal API key</label>
+              <div class="controls">
+                  <a href="#settings" id="api_key_button">(show)</a>
+              </div>
+          </div>
+      </div>
+      <div id="get_api_key_box">
+          <p>Please re-enter your password to confirm your identity.</p>
+          <form action="/json/fetch_api_key" method="post" class="form-horizontal">{% csrf_token %}
+              <div class="control-group">
+                  <label for="password" class="control-label">Current password</label>
+                  <div class="controls">
+                      <input type="password" autocomplete="off"
+                             name="password" id="get_api_key_password" value="" />
+                  </div>
+              </div>
+              <div class="control-group">
+                  <div class="controls">
+                      <input type="submit" name="view_api_key" value="Get API key"
+                             class="btn btn-primary" />
+                  </div>
+              </div>
+          </form>
+      </div>
+      <div id="show_api_key_box">
+          <p>Your API key:</p>
+          <p><b><span id="api_key_value"></span></b></p>
+      </div>
+
+      <hr class="settings_separator">
 
   </div>
 
