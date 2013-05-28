@@ -1558,3 +1558,12 @@ li.expanded_subject {
     margin: 2px 2px 2px 0px;
     border: 1px solid #000;
 }
+
+#notification-settings .control-group {
+    margin-bottom: 5px;
+}
+
+#notification-settings .control-label {
+    width: 280px;
+    text-align: left;
+}
