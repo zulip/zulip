@@ -1467,15 +1467,15 @@ li.expanded_subject {
 }
 
 #create_bot_name {
-    width: 80%;
+    width: 85%;
 }
 
 #create_bot_short_name {
-    width: 40%;
+    width: 35%;
 }
 
 .bot_name_header {
-    width: 12em;
+    width: 8em;
 }
 
 .bot_api_key_header {
