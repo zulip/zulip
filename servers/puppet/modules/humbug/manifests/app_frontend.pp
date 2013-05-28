@@ -59,6 +59,12 @@ class humbug::app_frontend {
     group => "root",
     mode => 755,
   }
+  file { "/home/humbug/tornado":
+    ensure => directory,
+    owner => "humbug",
+    group => "humbug",
+    mode => 755,
+  }
 
   # TODO: I think we need to restart memcached after deploying this
 
