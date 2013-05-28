@@ -19,7 +19,6 @@ WARNING = '\033[93m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
 
-os.chdir("/home/humbug/humbug")
 if len(sys.argv) > 1:
     oldrev = sys.argv[1]
     newrev = sys.argv[2]
@@ -37,8 +36,13 @@ except OSError:
                + "manually when the current deployment finishes." + ENDC
     sys.exit(1)
 
-subprocess.check_call(["git", "fetch"], stdout=open('/dev/null', 'w'))
-subprocess.check_call(["git", "reset", "--hard", refname], stdout=open('/dev/null', 'w'))
+timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
+deploy_path = os.path.join(DEPLOYMENTS_DIR, timestamp)
+
+subprocess.check_call(["git", "clone", "-q", "-b", refname,
+                       "humbug@git.humbughq.com:/srv/git/humbug.git",
+                       deploy_path], stdout=open('/dev/null', 'w'))
+os.chdir(deploy_path)
 
 # Delete all .pyc files to avoid old module files hanging around
 subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/dev/null', 'w'))
@@ -47,13 +51,10 @@ subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/
 logging.info("Updating static files")
 subprocess.check_call(["./tools/update-prod-static"])
 
-timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
-deploy_path = os.path.join(DEPLOYMENTS_DIR, timestamp)
-subprocess.check_call(["cp", '-a', '/home/humbug/humbug', deploy_path])
 subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "current")])
 
 logging.info("Restarting server...")
-subprocess.check_call([os.path.join(DEPLOYMENTS_DIR, "current/tools/restart-server")])
+subprocess.check_call(["./tools/restart-server"])
 
 logging.info("Deployment complete")
 shutil.rmtree(LOCK_DIR)
