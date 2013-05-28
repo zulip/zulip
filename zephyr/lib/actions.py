@@ -218,13 +218,11 @@ def mentioned_in_message(message):
         attempts = [Q(full_name__iexact=mention), Q(short_name__iexact=mention)]
         found = False
         for attempt in attempts:
-            try:
-                user = UserProfile.objects.get(attempt, realm=message.sender.realm)
+            ups = UserProfile.objects.filter(attempt, realm=message.sender.realm)
+            for user in ups:
                 users.add(user)
-                found = True
-                break
-            except UserProfile.DoesNotExist:
-                continue
+            found = len(ups) > 0
+            break
 
         if found:
             continue
