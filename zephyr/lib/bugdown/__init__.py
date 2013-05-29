@@ -302,10 +302,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 if rendered_tweet:
                     # Only render at most one tweet per message
                     continue
+                twitter_data = self.twitter_link(url)
+                if twitter_data is None:
+                    # This link is not actually a tweet known to twitter
+                    continue
                 rendered_tweet = True
                 div = markdown.util.etree.SubElement(root, "div")
                 div.set("class", "inline-preview-twitter")
-                div.insert(0, self.twitter_link(url))
+                div.insert(0, twitter_data)
                 continue
             if embedly_client.is_supported(url):
                 embedly_urls.append(url)

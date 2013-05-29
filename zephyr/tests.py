@@ -2239,6 +2239,11 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
         converted = convert(msg)
         self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/2879779692873154569'))
 
+        # id too large (i.e. tweet doesn't exist)
+        msg = 'http://www.twitter.com/wdaher/status/999999999999999999'
+        converted = convert(msg)
+        self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/999999999999999999'))
+
         msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
         converted = convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://www.twitter.com/wdaher/status/287977969287315456'),

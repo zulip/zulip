@@ -2,6 +2,8 @@
 import simplejson
 
 def twitter(tweet_id):
+    if tweet_id not in ["112652479837110273", "287977969287315456", "287977969287315457"]:
+        return None
     return simplejson.loads("""{
   "coordinates": null,
   "created_at": "Sat Sep 10 22:23:38 +0000 2011",
