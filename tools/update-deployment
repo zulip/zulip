@@ -39,6 +39,7 @@ except OSError:
 timestamp = datetime.datetime.now().strftime(TIMESTAMP_FORMAT)
 deploy_path = os.path.join(DEPLOYMENTS_DIR, timestamp)
 
+logging.info("Cloning the repository")
 subprocess.check_call(["git", "clone", "-q", "-b", refname,
                        "humbug@git.humbughq.com:/srv/git/humbug.git",
                        deploy_path], stdout=open('/dev/null', 'w'))
