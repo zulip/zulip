@@ -51,4 +51,4 @@ for ln in sys.stdin:
 
         if deployments[refname]:
             server, branch = deployments[refname]
-            update_deployment(server, oldrev, newrev, "origin/" + branch)
+            update_deployment(server, oldrev, newrev, branch)
