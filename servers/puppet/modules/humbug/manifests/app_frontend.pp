@@ -71,16 +71,10 @@ class humbug::app_frontend {
 
   # TODO: I think we need to restart memcached after deploying this
 
-  exec {"pip-django-pipeline":
-    command  => "/usr/bin/pip install django-pipeline",
-    creates  => "/usr/local/lib/python2.6/dist-packages/pipeline",
-    require  => Package['python-pip'],
-  }
   exec {"humbug-server":
     command => "/etc/init.d/supervisor restart",
     require => [File["/etc/supervisor/conf.d/humbug.conf"],
-                File["/var/log/humbug"],
-                Exec["pip-django-pipeline"],]
+                File["/var/log/humbug"],]
   }
 
   # TODO: Add /usr/lib/nagios/plugins/check_send_receive_time ->
