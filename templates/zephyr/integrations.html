@@ -48,9 +48,7 @@
       <li><a href="#jira-plugin">Jira (locally installed)</a></li>
       <li><a href="#nagios">Nagios</a></li>
       <li><a href="#pivotal">Pivotal Tracker</a></li>
-      {% comment %}
       <li><a href="#svn">Subversion</a></li>
-      {% endcomment %}
       <li><a href="#trac">Trac</a></li>
       {% comment %}
       <li><a href="#trello">Trello</a></li>
@@ -386,6 +384,44 @@ key=NAGIOS_API_KEY
 
       <p><b>Congratulations! You're done!</b><br /> When you make changes in Pivotal Tracker they will be reflected in Humbug:
       <img class="screenshot" src="/static/images/integrations/pivotal/002.png">
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
+{#--------------------------------------------------------------------#}
+    <div id="svn" class="integration">
+      <h4>Subversion</h4>
+
+      <p>It is easy to send Humbugs on SVN commits, by configuring a post-commit
+      hook. To do this:</p>
+
+      <ol>
+        <li>Download and install our <a href="/api">Python bindings</a> on the
+        server where the SVN repository lives.</li>
+        <li>Install <code>pysvn</code>. On Linux, you can install
+        the <code>python-svn</code> package. On other platforms, you can install
+        a binary or from source following
+        the <a href="http://pysvn.tigris.org/project_downloads.html">instructions
+        on the pysvn website</a>.</li>
+        <li>Copy <code>integrations/svn/humbug_svn_config.py</code>
+        and <code>integrations/svn/post-commit</code> from the API bindings
+        directory to the <code>hooks</code> subdirectory of your SVN
+        repository.</li>
+        <li>Open <code>humbug_svn_config.py</code> in your favorite editor and
+        change the <code>HUMBUG_USER</code> and <code>HUMBUG_API_KEY</code>
+        variables at the top of the file to the credentials for the bot you'd
+        like to use for this integration.</li>
+        <li>The default stream used by this post-commit hook
+        is <code>commits</code>; if you'd prefer a different stream, change it
+        now in <code>humbug_svn_config.py</code>. Make sure that everyone
+        interested in getting these post-commit Humbugs is subscribed to that
+        stream!</li>
+      </ol>
+
+      <p><b>Congratulations! You're done!</b><br /> When you commit to this SVN
+      repository, the team can see these updates in real time in Humbug:</p>
+
+      <img class="screenshot" src="/static/images/integrations/svn/001.png">
       <p>
         <a href="#services">^ Back to top</a>
       </p>
