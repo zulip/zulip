@@ -92,7 +92,7 @@ class humbug::base {
     mode       => 644,
   }
   file { "/usr/lib/nagios/plugins/":
-    require => Package[nagios],
+    require => Package[nagios-plugins-basic],
     recurse => true,
     purge => false,
     owner => "root",
