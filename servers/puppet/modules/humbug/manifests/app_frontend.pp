@@ -77,10 +77,3 @@ class humbug::app_frontend {
                 File["/var/log/humbug"],]
   }
 
-  # TODO: Add /usr/lib/nagios/plugins/check_send_receive_time ->
-  # /home/humbug/humbug-deployments/current/api/humbug/bots/check_send_receive.py symlink
-
-  # TODO: Ensure Django 1.5 is installed; this should be possible via
-  # the backports-sloppy mechanism or via backports once we upgrade to
-  # wheezy.
-}
