@@ -12,8 +12,8 @@ import os
 import sys
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "humbug.settings"
-sys.path.append('/home/humbug/humbug')
-sys.path.append('/home/humbug/humbug/zephyr')
+sys.path.append('/home/humbug/humbug-deployments/current')
+sys.path.append('/home/humbug/humbug-deployments/current/zephyr')
 
 from zephyr.models import UserActivity
 

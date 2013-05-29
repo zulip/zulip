@@ -95,7 +95,7 @@ class humbug::app_frontend {
   }
 
   # TODO: Add /usr/lib/nagios/plugins/check_send_receive_time ->
-  # /home/humbug/humbug/api/humbug/bots/check_send_receive.py symlink
+  # /home/humbug/humbug-deployments/current/api/humbug/bots/check_send_receive.py symlink
 
   # TODO: Setup the API distribution directory at /srv/www/dist/api/.
 

@@ -33,7 +33,7 @@ import subprocess
 
 def update_deployment(server, oldrev, newrev, refname):
     subprocess.check_call(["ssh", server, "--", "env", "-u", "GIT_DIR",
-                           "/home/humbug/humbug/tools/update-deployment",
+                           "/home/humbug/humbug-deployments/current/tools/update-deployment",
                            oldrev, newrev, refname])
 
 deployments = {

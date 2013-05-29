@@ -12,7 +12,7 @@ It is run by cron and can be found at bots/rabbitmq-queuesize-crontab
 
 import sys
 
-sys.path.append('/home/humbug/humbug/')
+sys.path.append('/home/humbug/humbug-deployments/current')
 from bots.cron_file_helper import nagios_from_file
 
 RESULTS_FILE = "/var/run/nagios/check-rabbitmq-results"

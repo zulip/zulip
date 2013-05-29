@@ -11,7 +11,7 @@ It is run by cron and can be found at bots/rabbitmq-numconsumers-crontab
 
 import sys
 
-sys.path.append('/home/humbug/humbug/')
+sys.path.append('/home/humbug/humbug-deployments/current')
 from bots.cron_file_helper import nagios_from_file
 
 if len(sys.argv) < 2:

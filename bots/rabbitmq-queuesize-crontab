@@ -22,4 +22,4 @@
 # m h  dom mon dow   command
 SHELL=/bin/bash
 
-* * * * * /home/humbug/humbug/bots/check-rabbitmq-queue &> /var/run/nagios/check-rabbitmq-results-tmp; mv /var/run/nagios/check-rabbitmq-results-tmp /var/run/nagios/check-rabbitmq-results
+* * * * * /home/humbug/humbug-deployments/current/bots/check-rabbitmq-queue &> /var/run/nagios/check-rabbitmq-results-tmp; mv /var/run/nagios/check-rabbitmq-results-tmp /var/run/nagios/check-rabbitmq-results

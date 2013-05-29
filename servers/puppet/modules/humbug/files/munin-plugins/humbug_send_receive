@@ -4,4 +4,4 @@ if [ "$(hostname)" = "staging.humbughq.com" ]; then
 else
     site="https://humbughq.com"
 fi
-/home/humbug/humbug/bots/check_send_receive.py --munin $1 --site="$site"
+/home/humbug/humbug-deployments/current/bots/check_send_receive.py --munin $1 --site="$site"
