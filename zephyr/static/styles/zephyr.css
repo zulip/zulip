@@ -1563,3 +1563,10 @@ li.expanded_subject {
     width: 280px;
     text-align: left;
 }
+
+#pin_info_question {
+    padding-left: 3px;
+}
+#pin_info_question:hover {
+    cursor:  pointer;
+}
