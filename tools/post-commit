@@ -1,0 +1,9 @@
+#!/bin/bash
+AUTHOR=$(git log -1 HEAD | grep ^Author | sed 's/Author: //')
+if ! $(echo "$AUTHOR" | grep humbughq.com >/dev/null); then
+   echo -e "\e[0;91m  Invalid non-Humbug commit author: $AUTHOR\e[0m"
+fi
+COMMITTER=$(git log -1 HEAD --pretty=fuller | grep ^Commit: | sed 's/Author: //')
+if ! $(echo "$COMMITTER" | grep humbughq.com >/dev/null); then
+   echo -e "\e[0;91m  Invalid non-Humbug committer: $COMMITTER\e[0m"
+fi
