@@ -328,7 +328,7 @@ function make_script() {
     + "* Keyboard shortcuts (press `?` to see them)\n"
     + "* Message formatting, including pretty syntax-highlighting. Click on the 'Message formatting' link under the gear icon at the top right to learn more\n"
     + "* Our [API](https://humbughq.com/api) and [integrations](https://humbughq.com/integrations)\n"
-    + '* Alpha mobile apps for [Android](https://play.google.com/store/apps/details?id=com.humbughq.mobile) and [iPhone](mailto:support@humbughq.com?subject=Request+for+Humbug+iPhone+app&body=Hi+Humbug,+can+you+send+me+a+link+to+the+iPhone+app+alpha?+I+have+an+iPhone+__.)\n'
+    + '* Alpha mobile apps for [Android](https://play.google.com/store/apps/details?id=com.humbughq.mobile) and [iPhone](mailto:support@humbughq.com?subject=Request%20for%20Humbug%20iPhone%20app&body=Hi%20Humbug,%20can%20you%20send%20me%20a%20link%20to%20the%20iPhone%20app%20alpha?%20I%20have%20an%20iPhone%20__.)\n'
     + "* Feedback! Found a bug or have a feature request? We want to hear from you. Click on the feedback tab under the gear icon to get in touch."),
   go(sleep, 4000),
   // Have them go talk to people
