@@ -199,13 +199,6 @@ function process_hotkey(e) {
     case 63: // '?': Show keyboard shortcuts page
         $('#keyboard-shortcuts').modal('show');
         return true;
-
-    case 116: // 't'
-        ui.anchor_to_top();
-        return true;
-    case 98: // 'b'
-        ui.anchor_to_bottom();
-        return true;
     }
 
     return false;
