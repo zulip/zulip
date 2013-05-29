@@ -59,7 +59,7 @@ sendreceive.warning 3
 sendreceive.critical 5"""
         sys.exit(0)
 
-sys.path.append('/home/humbug/humbug/api')
+sys.path.append('/home/humbug/humbug-deployments/current/api')
 import humbug
 
 states = {
