@@ -149,6 +149,7 @@ MIDDLEWARE_CLASSES = (
     # Our logging middleware should be the first middleware item.
     'zephyr.middleware.LogRequests',
     'zephyr.middleware.JsonErrorHandler',
+    'zephyr.middleware.RateLimitMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -199,6 +200,14 @@ if USING_STATSD:
         STATSD_PREFIX = 'app'
     else:
         STATSD_PREFIX = 'user'
+
+RATE_LIMITING = True
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+
+RATE_LIMITING_RULES = [
+    (60, 100),     # 100 requests max every minute
+    ]
 
 # Static files and minification
 

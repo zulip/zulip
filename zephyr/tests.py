@@ -14,6 +14,7 @@ from zephyr.decorator import RespondAsynchronously, RequestVariableConversionErr
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.actions import do_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription
+from zephyr.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zephyr.lib.bugdown import convert, emoji_list
 
 import simplejson
@@ -2856,6 +2857,61 @@ class PivotalHookTests(AuthedTestCase):
         self.assertEqual(msg.content, 'Leo Franchi edited "My new Feature story" \
 [(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)')
 
+class RateLimitTests(AuthedTestCase):
+    fixtures = ['messages.json']
+
+    def setUp(self):
+        settings.RATE_LIMITING = True
+        add_ratelimit_rule(1, 5)
+
+
+    def tearDown(self):
+        settings.RATE_LIMITING = False
+        remove_ratelimit_rule(1, 5)
+
+    def send_api_message(self, email, api_key, content):
+        return self.client.post("/api/v1/send_message", {"type": "stream",
+                                                                   "to": "Verona",
+                                                                   "client": "test suite",
+                                                                   "content": content,
+                                                                   "subject": "Test subject",
+                                                                   "email": email,
+                                                                   "api-key": api_key})
+    def test_headers(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        result = self.send_api_message(email, api_key, "some stuff")
+        self.assertTrue('X-RateLimit-Remaining' in result)
+        self.assertTrue('X-RateLimit-Limit' in result)
+        self.assertTrue('X-RateLimit-Reset' in result)
+
+    def test_ratelimit_decrease(self):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        result = self.send_api_message(email, api_key, "some stuff")
+        limit = int(result['X-RateLimit-Remaining'])
+
+        result = self.send_api_message(email, api_key, "some stuff 2")
+        newlimit = int(result['X-RateLimit-Remaining'])
+        self.assertEqual(limit, newlimit + 1)
+
+    def test_hit_ratelimits(self):
+        email = "cordelia@humbughq.com"
+        api_key = self.get_api_key(email)
+        for i in range(10):
+            result = self.send_api_message(email, api_key, "some stuff %s" % (i,))
+
+        self.assertEqual(result.status_code, 403)
+        json = simplejson.loads(result.content)
+        self.assertEqual(json.get("result"), "error")
+        self.assertIn("API usage exceeded rate limit, try again in", json.get("msg"))
+
+        # Sleep 5 seconds and succeed again
+        import time
+        time.sleep(1)
+        result = self.send_api_message(email, api_key, "Good message")
+
+        self.assert_json_success(result)
 
 class Runner(DjangoTestSuiteRunner):
     option_list = ()

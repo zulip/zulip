@@ -7,6 +7,7 @@ from django.db import connection
 from zephyr.lib.utils import statsd
 from zephyr.lib.cache import get_memcached_time, get_memcached_requests
 from zephyr.lib.bugdown import get_bugdown_time, get_bugdown_requests
+from zephyr.exceptions import RateLimited
 
 import logging
 import time
@@ -168,3 +169,23 @@ CursorWrapper.execute = cursor_execute
 def cursor_executemany(self, sql, params=()):
     return wrapper_execute(self, self.cursor.executemany, sql, params)
 CursorWrapper.executemany = cursor_executemany
+
+class RateLimitMiddleware(object):
+    def process_response(self, request, response):
+        if not settings.RATE_LIMITING:
+            return response
+
+        from zephyr.lib.rate_limiter import max_api_calls
+        # Add X-RateLimit-*** headers
+        if hasattr(request, '_ratelimit_applied_limits'):
+            response['X-RateLimit-Limit'] = max_api_calls(request.user)
+            if hasattr(request, '_ratelimit_secs_to_freedom'):
+                response['X-RateLimit-Reset'] = int(time.time() + request._ratelimit_secs_to_freedom)
+            if hasattr(request, '_ratelimit_remaining'):
+                response['X-RateLimit-Remaining'] = request._ratelimit_remaining
+        return response
+
+    def process_exception(self, request, exception):
+        if type(exception) == RateLimited:
+            resp = json_error("API usage exceeded rate limit, try again in %s secs" % (request._ratelimit_secs_to_freedom,), status=403)
+            return resp

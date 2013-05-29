@@ -17,9 +17,12 @@ from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.timestamp import datetime_to_timestamp
 from zephyr.lib.cache import user_profile_by_email_cache_key
 from zephyr.lib.utils import statsd
+from zephyr.exceptions import RateLimited
+from zephyr.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
+     api_calls_left
 from functools import wraps
 import base64
-
+import logging
 
 class _RespondAsynchronously(object):
     pass
@@ -87,7 +90,9 @@ def authenticated_api_view(view_func):
         request.user = user_profile
         request._email = user_profile.email
         process_client(request, user_profile)
-        return view_func(request, user_profile, *args, **kwargs)
+        # Apply rate limiting
+        limited_func = rate_limit()(view_func)
+        return limited_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
 def authenticated_rest_api_view(view_func):
@@ -117,7 +122,9 @@ def authenticated_rest_api_view(view_func):
         request.user = user_profile
         request._email = user_profile.email
         process_client(request, user_profile)
-        return view_func(request, user_profile, *args, **kwargs)
+        # Apply rate limiting
+        limited_func = rate_limit()(view_func)
+        return limited_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func
 
 def process_as_post(view_func):
@@ -348,7 +355,60 @@ def statsd_increment(counter, val=1):
     def wrapper(func):
         @wraps(func)
         def wrapped_func(*args, **kwargs):
-            func(*args, **kwargs)
+            ret = func(*args, **kwargs)
             statsd.incr(counter, val)
+            return ret
+        return wrapped_func
+    return wrapper
+
+def rate_limit(domain='all'):
+    """Rate-limits a view. Takes an optional 'domain' param if you wish to rate limit different
+    types of API calls independently.
+
+    Returns a decorator"""
+    def wrapper(func):
+        @wraps(func)
+        def wrapped_func(request, *args, **kwargs):
+            # Don't rate limit requests from Django that come from our own servers,
+            # and don't rate-limit dev instances
+            no_limits = False
+            if request.client and request.client.name.lower() == 'internal' and \
+               (request.META['REMOTE_ADDR'] in ['::1', '127.0.0.1'] or settings.DEBUG):
+                no_limits = True
+
+            if no_limits:
+                return func(request, *args, **kwargs)
+
+            try:
+                user = request.user
+            except:
+                user = None
+
+            # Rate-limiting data is stored in redis
+            # We also only support rate-limiting authenticated
+            # views right now.
+            # TODO(leo) - implement per-IP non-authed rate limiting
+            if not settings.RATE_LIMITING or not user:
+                if not user:
+                    logging.error("Requested rate-limiting on %s but user is not authenticated!" % \
+                                     func.__name__)
+                return func(request, *args, **kwargs)
+
+            ratelimited, time = is_ratelimited(user, domain)
+            request._ratelimit_applied_limits = True
+            request._ratelimit_secs_to_freedom = time
+            request._ratelimit_over_limit = ratelimited
+            # Abort this request if the user is over her rate limits
+            if ratelimited:
+                statsd.incr("ratelimiter.limited.%s" % user.id)
+                raise RateLimited()
+
+            incr_ratelimit(user, domain)
+            calls_remaining, time_reset = api_calls_left(user, domain)
+
+            request._ratelimit_remaining = calls_remaining
+            request._ratelimit_secs_to_freedom = time_reset
+
+            return func(request, *args, **kwargs)
         return wrapped_func
     return wrapper

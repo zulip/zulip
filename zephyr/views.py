@@ -44,7 +44,7 @@ from zephyr.decorator import require_post, \
     has_request_variables, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
-    authenticated_rest_api_view, process_as_post, REQ
+    authenticated_rest_api_view, process_as_post, REQ, rate_limit
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import gravatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed, \

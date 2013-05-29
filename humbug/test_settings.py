@@ -28,7 +28,7 @@ EVENT_LOG_DIR = '/tmp/humbug-test-event-log'
 EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 
 TEST_SUITE = True
-
+RATE_LIMITING = False
 # Don't use rabbitmq from the test suite -- the user_profile_ids for
 # any generated queue elements won't match those being used by the
 # real app.
