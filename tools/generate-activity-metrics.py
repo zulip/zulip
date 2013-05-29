@@ -10,15 +10,8 @@ import optparse
 from itertools import dropwhile, takewhile
 from datetime import timedelta, datetime
 from zephyr.lib.timestamp import datetime_to_timestamp
+from zephyr.lib.utils import statsd_key
 import requests
-
-# This is the slightly-cleaned up JSON api version of https://graphiti.humbughq.com/graphs/945c7aafc2d
-#
-# Fetches 1 month worth of data
-DATA_URL="https://graphite.humbughq.com/render/?from=-28d&target=stats.gauges.staging.users.active.all.12hr&\
-target=stats.gauges.staging.users.active.all.168hr&target=stats.gauges.staging.users.active.all.24hr&\
-target=stats.gauges.staging.users.active.all.2hr&target=stats.gauges.staging.users.active.all.48hr&\
-target=stats.gauges.staging.users.active.all.0_16hr&format=json"
 
 # Workaround to support the Python-requests 1.0 transition of .json
 # from a property to a function
@@ -67,9 +60,7 @@ def percent_diff(prev, cur):
 def parse_data(data, today):
     for metric in data:
         # print "Got %s with data points %s" % (metric['target'], len(metric['datapoints']))
-        if metric['target'] in ('stats.gauges.staging.users.active.all.2hr',
-                                'stats.gauges.staging.users.active.all.0_16hr',
-                                'stats.gauges.staging.users.active.all.12hr'):
+        if metric['target'] in statsd_targets:
             # Calculate % between peak 2hr and 10min across each day and week
             metric['datapoints'].sort(key=lambda p: p[1])
 
@@ -111,7 +102,9 @@ parser.add_option('--start-from',
                   help='What day to consider as \'today\' when calculating stats as a Unix timestamp',
                   metavar='STARTDATE',
                   default='today')
-
+parser.add_option('--realm',
+                  help='Which realm to query',
+                  default='all')
 
 if __name__ == '__main__':
     (options, args) = parser.parse_args()
@@ -124,6 +117,16 @@ if __name__ == '__main__':
         startfrom = noon_of(day=datetime.fromtimestamp(int(options.start_from)))
         print "Using baseline of today as %s" % (startfrom,)
 
+    realm_key = statsd_key(options.realm, True)
+    buckets = ["12hr", "2hr", "0_16hr"]
+
+    # This is the slightly-cleaned up JSON api version of https://graphiti.humbughq.com/graphs/945c7aafc2d
+    #
+    # Fetches 1 month worth of data
+    DATA_URL="https://graphite.humbughq.com/render/?from=-28d&format=json"
+    statsd_targets = ["stats.gauges.staging.users.active.%s.%s" % (realm_key, bucket) for bucket in buckets]
+    for target in statsd_targets:
+        DATA_URL += "&target=%s" % (target,)
 
     data = get_data(DATA_URL, options.user, options.password)
 
