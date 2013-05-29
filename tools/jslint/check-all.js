@@ -35,7 +35,7 @@ var globals =
     + ' subject_dict people_dict'
     + ' keep_pointer_in_view move_pointer_at_page_top_and_bottom'
     + ' respond_to_message recenter_view last_viewport_movement_direction'
-    + ' scroll_to_selected disable_pointer_movement get_private_message_recipient'
+    + ' scroll_to_selected get_private_message_recipient'
     + ' load_old_messages'
     + ' at_top_of_viewport at_bottom_of_viewport within_viewport'
     + ' viewport restart_get_updates'
