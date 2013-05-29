@@ -19,9 +19,7 @@ server {
 
     ssl on;
 
-    # The zephyr.humbughq.com cert uses the app.humbughq.com key.
-    # It's good for https://humbughq.com too.
-    ssl_certificate /etc/ssl/certs/zephyr.humbughq.com.combined-chain.crt;
+    ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
     server_name zephyr.humbughq.com;
@@ -38,7 +36,7 @@ server {
 
     ssl on;
 
-    ssl_certificate /etc/ssl/certs/www.humbughq.com.combined-chain.crt;
+    ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
     server_name humbughq.com www.humbughq.com;
@@ -51,6 +49,20 @@ server {
         autoindex on;
         alias /srv/www/dist/;
     }
+
+    include /etc/nginx/humbug-include/app;
+}
+
+server {
+    listen 443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
+
+    server_name api.humbughq.com;
+
+    rewrite ^/.* /api/ break;
 
     include /etc/nginx/humbug-include/app;
 }
