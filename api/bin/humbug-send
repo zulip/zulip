@@ -58,6 +58,9 @@ def main(argv=None):
 
     Examples: %prog --stream denmark --subject castle -m "Something is rotten in the state of Denmark."
               %prog hamlet@example.com cordelia@example.com -m "Conscience doth make cowards of us all."
+
+    These examples assume you have a proper '~/.humbugrc'. You may also set your credentials with the
+    '--user' and '--api-key' arguments.
     """
 
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))

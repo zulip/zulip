@@ -30,7 +30,12 @@ file is as follows:
     key=<api key from the web interface>
     email=<your email address>
 
-You can obtain your Humbug API key from the Humbug settings page.
+Alternatively, you may explicitly use "--user" and "--api-key" in our
+examples, which is especially useful if you are running several bots
+which share a home directory.
+
+You can obtain your Humbug API key, create bots, and manage bots all
+from your Humbug [settings page](https://humbughq.com/#settings).
 
 A typical simple bot sending API messages will look as follows:
 
@@ -38,7 +43,7 @@ At the top of the file:
 
     # Make sure the Humbug API distribution's root directory is in sys.path, then:
     import humbug
-    humbug_client = humbug.Client(email="your_email@example.com")
+    humbug_client = humbug.Client(email="your-bot@example.com")
 
 When you want to send a message:
 
@@ -68,4 +73,11 @@ You can use the included `humbug-send` script to send messages via the
 API directly from existing scripts.
 
     humbug-send hamlet@example.com cordelia@example.com -m \
+        "Conscience doth make cowards of us all."
+
+Alternatively, if you don't want to use your ~/.humbugrc file:
+
+    humbug-send --user shakespeare-bot@example.com \
+        --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
+        hamlet@example.com cordelia@example.com -m \
         "Conscience doth make cowards of us all."

@@ -23,7 +23,7 @@
 # See humbug_trac.py for installation and configuration instructions
 
 # Change these constants to configure the plugin:
-HUMBUG_USER = "trac@example.com"
+HUMBUG_USER = "trac-bot@example.com"
 HUMBUG_API_KEY = "0123456789abcdef0123456789abcdef"
 STREAM_FOR_NOTIFICATIONS = "trac"
 TRAC_BASE_TICKET_URL = "https://trac.example.com/ticket"

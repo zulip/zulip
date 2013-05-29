@@ -18,7 +18,7 @@ def write_config(config, since_id):
 
 parser = optparse.OptionParser(r"""
 
-%prog --user foo@humbughq.com --search="@nprnews,quantum physics"
+%prog --user foo@humbughq.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --search="@nprnews,quantum physics"
 
 Send Twitter search results to a Humbug stream.
 
@@ -63,19 +63,9 @@ Make sure to go the application you created and click "create my
 access token" as well. Fill in the values displayed.
 """)
 
-parser.add_option('--user',
-                  help='Humbug user email address',
-                  metavar='EMAIL')
-parser.add_option('--api-key',
-                  help='API key for that user [default: read ~/.humbugrc]')
 parser.add_option('--search',
                   dest='search_terms',
                   help='Terms to search on',
-                  action='store')
-parser.add_option('--site',
-                  dest='site',
-                  default="https://humbughq.com",
-                  help=optparse.SUPPRESS_HELP,
                   action='store')
 parser.add_option('--stream',
                   dest='stream',
@@ -87,6 +77,7 @@ parser.add_option('--limit-tweets',
                   type='int',
                   help='Maximum number of tweets to send at once')
 
+parser.add_option_group(humbug.generate_option_group(parser))
 (opts, args) = parser.parse_args()
 
 if not opts.search_terms:

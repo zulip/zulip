@@ -20,9 +20,9 @@ import org.apache.commons.httpclient.NameValuePair
 class HumbugListener extends AbstractIssueEventListener {
     Logger LOGGER = Logger.getLogger(HumbugListener.class.getName());
 
-    // Your humbug account's email address
+    // The email address of one of the bots you created on your Humbug settings page.
     String humbugEmail = ""
-    // Your humbug API key
+    // That bot's API key.
     String humbugAPIKey = ""
 
     // What stream to send messages to. Must already exist.

@@ -1,4 +1,4 @@
 ; Save this file as ~/.humbugrc
 [api]
-key=<api key from the web interface>
-email=<your email address>
+key=<your bot's api key from the web interface>
+email=<your bot's email address>

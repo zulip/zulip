@@ -25,7 +25,8 @@ To use this script:
 1. Create an RSS feed file containing 1 feed URL per line (default feed
    file location: ~/.cache/humbug-rss/rss-feeds)
 2. Subscribe to the stream that will receive RSS updates (default stream: rss)
-3. Test the script by running it manually, like this:
+3. create a ~/.humbugrc, or specify user and api-key with command line arguments
+4. Test the script by running it manually, like this:
 
 /usr/local/share/humbug/demos/rss-bot
 
@@ -40,14 +41,6 @@ stream every 5 minutes is:
 */5 * * * * /usr/local/share/humbug/demos/rss-bot"""
 
 parser = optparse.OptionParser(usage)
-parser.add_option('--email',
-                  dest='email',
-                  help='The email address for your Humbug account.',
-                  metavar='EMAIL')
-parser.add_option('--api-key',
-                  dest='api_key',
-                  help='API key for that user [default: read ~/.humbug-api-key]',
-                  action='store')
 parser.add_option('--stream',
                   dest='stream',
                   help='The stream to which to send RSS messages.',
@@ -63,11 +56,7 @@ parser.add_option('--feed-file',
                   help='The file containing a list of RSS feed URLs to follow, one URL per line',
                   default=os.path.join(RSS_DATA_DIR, "rss-feeds"),
                   action='store')
-parser.add_option('--site',
-                  dest='site',
-                  default="https://humbughq.com",
-                  help=optparse.SUPPRESS_HELP,
-                  action='store')
+parser.add_option_group(humbug.generate_option_group(parser))
 (opts, args) = parser.parse_args()
 
 def mkdir_p(path):

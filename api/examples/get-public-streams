@@ -25,11 +25,13 @@ import sys
 from os import path
 import optparse
 
-usage = """get-public-streams --user=<email address> [options]
+usage = """get-public-streams --user=<bot's email address> --api-key=<bot's api key> [options]
 
 Prints out all the public streams in the realm.
 
-Example: get-public-streams --user=tabbott@humbughq.com
+Example: get-public-streams --user=othello-bot@example.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
+
+You can omit --user and --api-key arguments if you have a properly set up ~/.humbugrc
 """
 
 sys.path.append(path.join(path.dirname(__file__), '..'))

@@ -23,7 +23,7 @@
 
 
 # Change these values to configure authentication for the plugin
-HUMBUG_USER = "svn@example.com"
+HUMBUG_USER = "svn-bot@example.com"
 HUMBUG_API_KEY = "0123456789abcdef0123456789abcdef"
 
 # commit_notice_destination() lets you customize where commit notices

@@ -33,7 +33,7 @@ from distutils.version import LooseVersion
 from ConfigParser import SafeConfigParser
 
 
-__version__ = "0.1.8"
+__version__ = "0.1.9"
 
 # Check that we have a recent enough version
 # Older versions don't provide the 'json' attribute on responses.
@@ -52,10 +52,10 @@ def generate_option_group(parser):
                      action='store')
     group.add_option('--user',
                      dest='email',
-                     help='Email address of the calling user.')
+                     help='Email address of the calling bot or user.')
     group.add_option('--config-file',
                      action='store',
-                     help='Location of an ini file containing the above information.')
+                     help='Location of an ini file containing the\nabove information. (default ~/.humbugrc)')
     group.add_option('-v', '--verbose',
                      action='store_true',
                      help='Provide detailed output.')

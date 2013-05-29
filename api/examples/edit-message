@@ -25,25 +25,29 @@ import sys
 from os import path
 import optparse
 
-usage = """edit-message [options] --message=<msg_id> --content=<new content> --subject=<new subject>
+usage = """edit-message [options] --message=<msg_id> --subject=<new subject> --content=<new content> --user=<sender's email address> --api-key=<sender's api key>
 
-Edits a message
+Edits a message that you sent
 
-Example: edit-message --message="348135" --subject="my subject" --message="test message"
+Example: edit-message --message-id="348135" --subject="my subject" --content="test message" --user=othello-bot@example.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
+
+You can omit --user and --api-key arguments if you have a properly set up ~/.humbugrc
 """
-parser = optparse.OptionParser(usage=usage)
-parser.add_option('--subject', default="")
-parser.add_option('--message', default="")
-parser.add_option('--site',   default='https://humbughq.com')
-parser.add_option('--content',   default="")
-(options, args) = parser.parse_args()
 
 sys.path.insert(0, path.join(path.dirname(__file__), '..'))
 import humbug
-client = humbug.Client(site=options.site)
+
+parser = optparse.OptionParser(usage=usage)
+parser.add_option('--message-id', default="")
+parser.add_option('--subject', default="")
+parser.add_option('--content',   default="")
+parser.add_option_group(humbug.generate_option_group(parser))
+(options, args) = parser.parse_args()
+
+client = humbug.init_from_options(options)
 
 message_data = {
-    "message_id": options.message,
+    "message_id": options.message_id,
 }
 if options.subject != "":
     message_data["subject"] = options.subject

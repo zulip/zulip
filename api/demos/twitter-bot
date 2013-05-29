@@ -16,7 +16,7 @@ def write_config(config, since_id, user):
 
 parser = optparse.OptionParser(r"""
 
-%prog --user foo@humbughq.com --twitter-id twitter_handle
+%prog --user foo@example.com --api-key 0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --twitter-id twitter_handle
 
     Slurp tweets on your timeline into a specific humbug stream.
 
@@ -44,17 +44,8 @@ parser = optparse.OptionParser(r"""
     Depends on: twitter-python
 """)
 
-parser.add_option('--user',
-    help='Humbug user email address',
-    metavar='EMAIL')
-parser.add_option('--api-key',
-    help='API key for that user [default: read ~/.humbugrc]')
 parser.add_option('--twitter-id',
     help='Twitter username to poll for new tweets from"',
-    metavar='URL')
-parser.add_option('--site',
-    default="https://humbughq.com",
-    help='Humbug site [default: https://humbughq.com]',
     metavar='URL')
 parser.add_option('--stream',
     help='Default humbug stream to write tweets to')
@@ -63,6 +54,7 @@ parser.add_option('--limit-tweets',
     type='int',
     help='Maximum number of tweets to push at once')
 
+parser.add_option_group(humbug.generate_option_group(parser))
 (options, args) = parser.parse_args()
 
 if not options.twitter_id:

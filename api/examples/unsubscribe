@@ -25,12 +25,14 @@ import sys
 from os import path
 import optparse
 
-usage = """unsubscribe --user=<email address> [options] --streams=<streams>
+usage = """unsubscribe  --user=<bot's email address> --api-key=<bot's api key> [options] --streams=<streams>
 
 Ensures the user is not subscribed to the listed streams.
 
-Examples: unsubscribe --user=tabbott@humbughq.com --streams=foo
-          unsubscribe --user=tabbott@humbughq.com --streams='foo bar'
+Examples: unsubscribe --user=tabbott@humbughq.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --streams=foo
+          unsubscribe --user=tabbott@humbughq.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --streams='foo bar'
+
+You can omit --user and --api-key arguments if you have a properly set up ~/.humbugrc
 """
 sys.path.append(path.join(path.dirname(__file__), '..'))
 import humbug

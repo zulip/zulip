@@ -13,8 +13,8 @@
 
     <p>We have a <a href="/api/endpoints">well-documented API</a> that allows you to build custom integrations, in addition to our <a href="/integrations">existing integrations</a>. For ease-of-use, we've created a Python module that you can drop in to a project to start interacting with our API.</p>
     <br/>
-    <a href="https://humbughq.com/dist/api/python-humbug_0.1.8.tar.gz" class="btn btn-large btn-primary btn-block" type="button"><i class="icon-download icon-white"></i> Download Python bindings and examples</a>
-    <span class="pull-right muted">Version 0.1.8</span>
+    <a href="https://humbughq.com/dist/api/python-humbug_0.1.9.tar.gz" class="btn btn-large btn-primary btn-block" type="button"><i class="icon-download icon-white"></i> Download Python bindings and examples</a>
+    <span class="pull-right muted">Version 0.1.9</span>
 
     <p>&nbsp;</p>
 
@@ -26,12 +26,16 @@
     <p>You can create bots on your <a href="/#settings" target="_blank">settings page</a>.
     Once you have a bot, you can use its email and API key to send messages.</p>
 
-    <p>Create a bot:<img class="screenshot" src="/static/images/api/create-bot.png" /></p>
+    <p>Create a bot:
+    <img class="screenshot" src="/static/images/api/create-bot.png" /></p>
 
-    <p>Look for the bot's email and API key:<img class="screenshot" src="/static/images/api/bot-key.png" /></p>
+    <p>Look for the bot's email and API key:
+    <img class="screenshot" src="/static/images/api/bot-key.png" /></p>
 
-    <p>If you prefer to send messages as your own user, you can find your API key also on your <a href="/#settings" target="_blank">settings page</a>.</p>
-    <p>When using our python bindings, you must specify the user and API key. Alterantively, if you don't, it will look for these credentials in <code>~/.humbugrc</code>, which you can create as follows:</p>
+    <p>If you prefer to send messages as your own user, you can also find your API key on your <a href="/#settings" target="_blank">settings page</a>.</p>
+    <p>When using our python bindings, you may either specify the user
+    and API key for each Client object that you initialize, or let the binding look for
+    them in your <code>~/.humbugrc</code>, which you can create as follows:</p>
 <div class="codehilite"><pre><span class="k">[api]</span>
 <span class="na">key</span><span class="o">=</span><span class="s">BOT_API_KEY</span>
 <span class="na">email</span><span class="o">=</span><span class="s">BOT_EMAIL_ADDRESS</span>

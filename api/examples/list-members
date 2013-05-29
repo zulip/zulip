@@ -25,9 +25,11 @@ import sys
 from os import path
 import optparse
 
-usage = """list-members [options]
+usage = """list-members --user=<bot's email address> --api-key=<bot's api key> [options]
 
 List the names and e-mail addresses of the people in your realm.
+
+You can omit --user and --api-key arguments if you have a properly set up ~/.humbugrc
 """
 
 sys.path.append(path.join(path.dirname(__file__), '..'))
