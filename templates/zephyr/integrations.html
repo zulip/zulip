@@ -22,14 +22,19 @@
     for thee! (Or for a team member of yours, I guess.)</p>
 
     <h3>Getting started</h3>
+    <p>Many of these integrations are available in
+    our <a href="/api">API bindinds</a>. You may either send messages as
+    yourself or use a bot which you can create. Both options are managed at your
+    <a href="/#settings" target="_blank">settings page</a>.</p>
 
-    <p>First, for most integrations you'll need
-    to <a href="/api">download and install our API bindings</a> on the
-    machine where the service runs.</p>
+    <p>Create a bot:
+    <img class="screenshot" src="/static/images/api/create-bot.png" /></p>
 
-    <p>Next, please <a href="/#settings">visit your settings page and
-    create a Humbug bot</a> for the integration you are setting
-    up. Each bot gets its own name and API key.</p>
+    <p>Look for the bot's email and API key:
+    <img class="screenshot" src="/static/images/api/bot-key.png" /></p>
+
+    <p>You might want to take this moment to ensure that this bot's
+    email address exists on your company's email server.</p>
 
     <p>Then, follow the integration instructions below for the service
     you are interested in. It's as easy as that! If you run into any
@@ -60,10 +65,10 @@
     <div id="beanstalk" class="integration">
       <h4>Beanstalk</h4>
      <p>Humbug supports both SVN and Git notifications from Beanstalk. In the beanstalk web application, go to the Setup page, and choose the Integrations tab.
-     Choose the <code>Webhooks</code> integration from the list presented. Make sure to replace the <code>@</code> in your email address with <code>%40</code>,
+     Choose the <code>Webhooks</code> integration from the list presented. Make sure to replace the <code>@</code> in the bot's email address with <code>%40</code>,
      as Beanstalk's website will incorrectly refuse to parse a username containing a <code>@</code>.</p>
 
-     <p>In the URL field, enter <code>https://email:api_key@humbughq.com/api/v1/external/beanstalk</code>:</p>
+     <p>In the URL field, enter <code>https://bot_email:bot_api_key@humbughq.com/api/v1/external/beanstalk</code>:</p>
       <img class="screenshot" src="/static/images/integrations/beanstalk/001.png">
 
       <p><b>Congratulations! You're done!</b><br /> Whenever you do a
@@ -89,17 +94,19 @@
 <span class="n">namespace</span> <span class="ss">:notify</span> <span class="k">do</span>
   <span class="n">desc</span> <span class="s2">"Post a message to Humbug that we've deployed"</span>
   <span class="n">task</span> <span class="ss">:humbug</span> <span class="k">do</span>
-    <span class="c1"># this will post to Humbug as the user defined in ~/.humbugrc</span>
-    <span class="n">run_locally</span> <span class="s2">"echo ':beers: I just deployed to </span><span class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="s2">! :beers:' | humbug-send --stream commits --subject deployments || true"</span>
+    <span class="c1"># this will post to Humbug as the user defined in
+    # ~/.humbugrc if you omit --user and --api-key</span>
+    <span class="n">run_locally</span> <span class="s2">"echo ':beers: I just deployed to </span><span class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="s2">! :beers:' | humbug-send \
+    --user capistrano-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
+    --stream commits --subject deployments || true"</span>
   <span class="k">end</span>
 <span class="k">end</span>
 </pre></div>
 
       <p>Some notes:</p>
       <ul>
-        <li>Make sure you've created a
-      filled-out <code>~/.humbugrc</code> on your Capistrano
-      machine.</li>
+        <li>If you prefer to not use <code>--user</code> and <code>--api-key</code> above, you can fill out <code>~/.humbugrc</code> on your Capistrano
+      machine. For instructions on how to write that file, see <a href="/api">the API page</a>.</li>
         <li>You may need to change the <code>deploy</code> above to
         another step of your deployment process, if you'd like the
         notification to fire at a different time.</li>
@@ -127,7 +134,7 @@
       specify the email address and API key for your Git bot:</p>
 
 
-<div class="codehilite"><pre><span class="n">HUMBUG_USER</span> <span class="o">=</span> <span class="s">"git@example.com"</span>
+<div class="codehilite"><pre><span class="n">HUMBUG_USER</span> <span class="o">=</span> <span class="s">"git-bot@example.com"</span>
 <span class="n">HUMBUG_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span></pre></div>
 
       <p>You can also specify which pushes will result in
@@ -287,7 +294,7 @@ following, to the stream <code>commits</code> with a subject that matches the re
         For self-contained JIRA installations, this will be <code>atlassian-jira/WEB-INF/classes/</code>, but this may be different in your deployment.</p>
         Edit the constants at the top of <code>org/humbug/jira/HumbugListener.groovy</code>
         and fill them with the appropriate values:
-<div class="codehilite"><pre><span class="n">String</span> <span class="n">humbugEmail</span> <span class="o">=</span> <span class="s2">"jira-notifications@example.com"</span>
+<div class="codehilite"><pre><span class="n">String</span> <span class="n">humbugEmail</span> <span class="o">=</span> <span class="s2">"jira-notifications-bot@example.com"</span>
 <span class="n">String</span> <span class="n">humbugAPIKey</span> <span class="o">=</span> <span class="s2">"0123456789abcdef0123456789abcdef"</span>
 <span class="n">String</span> <span class="n">humbugStream</span> <span class="o">=</span> <span class="s2">"JIRA"</span>
 <span class="n">String</span> <span class="n">issueBaseUrl</span> <span class="o">=</span> <span class="s2">"https://jira.COMPANY.com/browse/"</span>
@@ -318,8 +325,8 @@ following, to the stream <code>commits</code> with a subject that matches the re
       server:</p>
 
 <div class="codehilite"><pre>[api]
-email=NAGIOS_EMAIL_ADDRESS
-key=NAGIOS_API_KEY
+email=NAGIOS_BOT_EMAIL_ADDRESS
+key=NAGIOS_BOT_API_KEY
 </pre></div>
 
       <p>Copy <code>integrations/nagios/humbug_nagios.cfg</code>
@@ -438,7 +445,7 @@ key=NAGIOS_API_KEY
       notification messages to go (by default,
       stream <code>trac</code>):</p>
 
-<div class="codehilite"><pre><span class="n">HUMBUG_USER</span> <span class="o">=</span> <span class="s">"trac-notifications@example.com"</span>
+<div class="codehilite"><pre><span class="n">HUMBUG_USER</span> <span class="o">=</span> <span class="s">"trac-notifications-bot@example.com"</span>
 <span class="n">HUMBUG_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
 <span class="n">STREAM_FOR_NOTIFICATIONS</span> <span class="o">=</span> <span class="s">"trac"</span>
 <span class="n">TRAC_BASE_TICKET_URL</span> <span class="o">=</span> <span class="s">"https://trac.example.com/ticket"</span></pre></div>

@@ -20,16 +20,21 @@
 
     <h3>Installation instructions</h3>
     <p>This package uses distutils, so you can just run <code>python setup.py install</code> after downloading.</p>
+    <p>&nbsp;</p>
 
-    <p>You can find your API key and allocate new API keys for
-    bots/integrations that you run on your <a href="/#settings"
-    target="_blank">settings page</a>.
-    Create <code>~/.humbugrc</code> and add the following text to
-    it:</p>
+    <h3>API Keys</h3>
+    <p>You can create bots on your <a href="/#settings" target="_blank">settings page</a>.
+    Once you have a bot, you can use its email and API key to send messages.</p>
 
+    <p>Create a bot:<img class="screenshot" src="/static/images/api/create-bot.png" /></p>
+
+    <p>Look for the bot's email and API key:<img class="screenshot" src="/static/images/api/bot-key.png" /></p>
+
+    <p>If you prefer to send messages as your own user, you can find your API key also on your <a href="/#settings" target="_blank">settings page</a>.</p>
+    <p>When using our python bindings, you must specify the user and API key. Alterantively, if you don't, it will look for these credentials in <code>~/.humbugrc</code>, which you can create as follows:</p>
 <div class="codehilite"><pre><span class="k">[api]</span>
-<span class="na">key</span><span class="o">=</span><span class="s">API_KEY</span>
-<span class="na">email</span><span class="o">=</span><span class="s">EMAIL_ADDRESS</span>
+<span class="na">key</span><span class="o">=</span><span class="s">BOT_API_KEY</span>
+<span class="na">email</span><span class="o">=</span><span class="s">BOT_EMAIL_ADDRESS</span>
 </pre></div>
 
     <p><strong>Don't want to make it yourself?</strong> Humbug <a href="/integrations">already integrates with lots of services</a>.</p>
@@ -56,7 +61,7 @@ to pull out the resulting HTML :)
 
 <h4>Stream message</h4>
 <div class="codehilite"><pre>curl https://humbughq.com/api/v1/messages <span class="se">\</span>
-    -u YOUR_EMAIL:YOUR_API_KEY <span class="se">\</span>
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY <span class="se">\</span>
     -d <span class="s2">"type=stream"</span> <span class="se">\</span>
     -d <span class="s2">"to=Denmark"</span> <span class="se">\</span>
     -d <span class="s2">"subject=Castle"</span> <span class="se">\</span>
@@ -65,7 +70,7 @@ to pull out the resulting HTML :)
 
 <h4>Private message</h4>
 <div class="codehilite"><pre>curl https://humbughq.com/api/v1/messages <span class="se">\</span>
-    -u YOUR_EMAIL:YOUR_API_KEY <span class="se">\</span>
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY <span class="se">\</span>
     -d <span class="s2">"type=private"</span> <span class="se">\</span>
     -d <span class="s2">"to=wdaher@humbughq.com"</span> <span class="se">\</span>
     -d <span class="s2">"content=I come not, friends, to steal away your hearts."</span>
@@ -77,7 +82,9 @@ to pull out the resulting HTML :)
 <div class="codehilite"><pre><span class="c">#!/usr/bin/env python</span>
 
 <span class="kn">import</span> <span class="nn">humbug</span>
-<span class="n">client</span> <span class="o">=</span> <span class="n">humbug</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="p">)</span>
+<span class="c"># Keyword arguments 'email' and 'api_key' are optional if you are using ~/.humbugrc</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">humbug</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="p">email</span><span class="o">=</span><span class="s">"othello-bot@example.com"</span><span class="p">,</span>
+                       <span class="n">api_key</span><span class="o">=</span><span class="s">"a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5"</span><span class="p">)</span>
 
 <span class="n">stream_message</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s">"type"</span><span class="p">:</span> <span class="s">"stream"</span><span class="p">,</span>
@@ -105,15 +112,19 @@ to pull out the resulting HTML :)
         <p>You can use <code>humbug-send</code> (found in <code>bin/</code> in the tarball) to easily send Humbugs from the command-line, providing the message to be sent on STDIN.
 
 <h4>Stream message</h4>
-<div class="codehilite"><pre>humbug-send --stream Denmark --subject Castle</span></pre></div>
+<div class="codehilite"><pre>humbug-send --stream Denmark --subject Castle \
+--user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5</span></pre></div>
 
 <h4>Private message</h4>
-<div class="codehilite"><pre>humbug-send wdaher@humbughq.com</span>
+<div class="codehilite"><pre>humbug-send wdaher@humbughq.com --user othello-bot@example.com \
+--api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5</span>
 </pre></div>
 
 <h4>Passing in the message on the command-line</h4>
 <p>If you'd like, you can also provide the message on the command-line with the <code>-m</code> flag, as follows:</p>
-<div class="codehilite"><pre>humbug-send --stream Denmark --subject Castle -m <span class="s2">"Something is rotten in the state of Denmark."</span>
+<div class="codehilite"><pre>humbug-send --stream Denmark --subject Castle \
+-m <span class="s2">"Something is rotten in the state of Denmark."</span> \
+--user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 </pre></div>
 
       </div>
