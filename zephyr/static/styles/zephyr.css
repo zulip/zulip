@@ -1512,14 +1512,17 @@ li.expanded_subject {
     text-align: center;
 }
 
+#sticky-popover h1 {
+    text-align: center;
+}
+.done-button {
+    text-align: center;
+}
 .sticky-popover-inner {
     max-width: 300px;
 }
 .sticky-popover-inner p {
     padding-bottom: 5px;
-}
-#sticky_done {
-    text-align: center;
 }
 
 #feedback_section {
