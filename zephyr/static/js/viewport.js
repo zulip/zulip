@@ -15,7 +15,11 @@ exports.at_bottom = function () {
     var bottom = jwindow.scrollTop() + jwindow.height();
     var window_size = $(document).height();
 
-    return bottom >= window_size;
+    // We only know within a pixel or two if we're
+    // exactly at the bottom, due to browser quirkiness,
+    // and we err on the side of saying that we are at
+    // the bottom.
+    return bottom + 2 >= window_size;
 };
 
 exports.scrollTop = function viewport_scrollTop () {
