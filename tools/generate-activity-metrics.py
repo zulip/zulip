@@ -79,9 +79,9 @@ def parse_data(data, today):
         # Calculate % between peak 2hr and 10min across each day and week
         metric['datapoints'].sort(key=lambda p: p[1])
 
-        print "\nUsers active in %s span:\n" % (metric['target'].split('.')[-1],)
-
         best_today = best_during_day(metric['datapoints'], today)
+        print "Today, 0 days ago:\t\t(%.01f users)" % (best_today,)
+
         for i in xrange(1, 100):
             day = today - timedelta(days=i)
             week = today - timedelta(weeks=i*7)
@@ -90,9 +90,8 @@ def parse_data(data, today):
                 best = best_during_day(metric['datapoints'], day)
 
                 if best is not None:
-                    print "Change between today and last %s, %s days ago:\t%.02f%%\t\t(%.01f to %.01f users)" \
-                             % (day.strftime("%A"), i, percent_diff(best, best_today), best, best_today)
-
+                    print "Last %s, %s days ago:\t(%.01f users)\t\t%.02f%%" \
+                        % (day.strftime("%A"), i, best, percent_diff(best, best_today))
             best = best_during_day(metric['datapoints'], week)
             if best is not None:
                 print "Weekly %% change from %s weeks ago today:\t\t%.02f" \
