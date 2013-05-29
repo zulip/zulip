@@ -31,6 +31,15 @@ class humbug::app_frontend {
     mode => 644,
     source => "puppet:///modules/humbug/nginx/humbug-include/",
   }
+  file { "/usr/lib/nagios/plugins/":
+    require => Package[nagios],
+    recurse => true,
+    purge => false,
+    owner => "root",
+    group => "root",
+    mode => 644,
+    source => "puppet:///modules/humbug/nagios_plugins/",
+  }
   file { "/etc/memcached.conf":
     require => Package[memcached],
     ensure => file,

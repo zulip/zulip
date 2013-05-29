@@ -90,7 +90,15 @@ class humbug::base {
     group      => 'root',
     mode       => 644,
   }
-
+  file { "/usr/lib/nagios/plugins/":
+    require => Package[nagios],
+    recurse => true,
+    purge => false,
+    owner => "root",
+    group => "root",
+    mode => 644,
+    source => "puppet:///modules/humbug/nagios_plugins/",
+  }
   service { 'ssh':
     ensure     => running,
     subscribe  => File['/etc/ssh/sshd_config'],
