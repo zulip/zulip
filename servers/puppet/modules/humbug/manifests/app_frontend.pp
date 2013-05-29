@@ -76,4 +76,4 @@ class humbug::app_frontend {
     require => [File["/etc/supervisor/conf.d/humbug.conf"],
                 File["/var/log/humbug"],]
   }
-
+}
