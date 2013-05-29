@@ -1191,6 +1191,10 @@ $(function () {
         if (current_msg_list !== event.msg_list) {
             return;
         }
+        if (event.id === -1) {
+            // If the message list is empty, don't do anything
+            return;
+        }
         var row = rows.get(event.id, event.msg_list.table_name);
         $('.selected_message').removeClass('selected_message');
         row.addClass('selected_message');
