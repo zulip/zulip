@@ -217,6 +217,14 @@ a:hover code {
     overflow-y: auto;
 }
 
+#user_presences li:hover {
+    background-color: lightgrey;
+}
+
+#user_presences .user_sidebar_entry:hover {
+    cursor: pointer;
+}
+
 #user_presences li {
     overflow: hidden;
     white-space: nowrap;
@@ -233,6 +241,18 @@ a:hover code {
 
 #user_presences li.user_idle {
     list-style-image: url(/static/images/presence/user-idle.png);
+}
+
+#user_presences .arrow {
+    font-size: 1em;
+    width: 2em;
+}
+#user_presences .arrow-real {
+    display: none;
+}
+#user_presences li:hover .arrow-real {
+    display: inline;
+    cursor: pointer;
 }
 
 #user_presences a {

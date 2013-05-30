@@ -712,13 +712,26 @@ function collapse(row) {
 }
 
 var current_stream_sidebar_elem;
+var current_user_sidebar_elem;
 var stream_sidebar_popup_shown_this_click = false;
+var user_sidebar_popup_shown_this_click = false;
 
 exports.hide_stream_sidebar_popover = function () {
     if (ui.stream_sidebar_currently_popped()) {
         current_stream_sidebar_elem.popover("destroy");
         current_stream_sidebar_elem = undefined;
     }
+};
+
+exports.hide_user_sidebar_popover = function () {
+    if (ui.user_sidebar_currently_popped()) {
+        current_user_sidebar_elem.popover("destroy");
+        current_user_sidebar_elem = undefined;
+    }
+};
+
+exports.user_sidebar_currently_popped = function () {
+    return current_user_sidebar_elem !== undefined;
 };
 
 exports.stream_sidebar_currently_popped = function () {
@@ -1238,6 +1251,46 @@ $(function () {
         e.preventDefault();
     });
 
+    $('body').on('click', '.user_sidebar_entry', function (e) {
+        var last_sidebar_elem = current_user_sidebar_elem;
+        ui.hide_user_sidebar_popover();
+        user_sidebar_popup_shown_this_click = true;
+
+        var email = $(e.target).find('a').attr('data-email');
+        var name = $(e.target).find('a').text();
+
+        $(e.target).popover({
+            content:   templates.render('user_sidebar_actions', {'email': email,
+                                                                 'name': name}),
+            placement: "left",
+            trigger:   "manual"
+        });
+        $(e.target).popover("show");
+        current_user_sidebar_elem = $(e.target);
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
+        var email = $(e.target).parents('ul').attr('data-email');
+        ui.hide_user_sidebar_popover();
+        narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar popover'});
+        e.stopPropagation();
+    });
+
+    $('body').on('click', '.user_popover .narrow_to_messages_sent', function (e) {
+        var email = $(e.target).parents('ul').attr('data-email');
+        ui.hide_user_sidebar_popover();
+        narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
+        e.stopPropagation();
+    });
+
+    $('body').on('click', '.user_popover .compose_private_message', function (e) {
+        var email = $(e.target).parents('ul').attr('data-email');
+        ui.hide_user_sidebar_popover();
+        compose.start('private', {"private_message_recipient": email, trigger: 'sidebar user actions'});
+        e.stopPropagation();
+    });
+
     $('#stream_filters').on('click', 'span.arrow', function (e) {
         var last_sidebar_elem = current_stream_sidebar_elem;
         ui.hide_stream_sidebar_popover();
@@ -1475,7 +1528,11 @@ $(function () {
             if (stream_sidebar_popup_shown_this_click === false ) {
                 ui.hide_stream_sidebar_popover();
             }
+            if (user_sidebar_popup_shown_this_click === false ) {
+                ui.hide_user_sidebar_popover();
+            }
             stream_sidebar_popup_shown_this_click = false;
+            user_sidebar_popup_shown_this_click = false;
         }
 
         // Unfocus our compose area if we click out of it. Don't let exits out
