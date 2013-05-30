@@ -119,6 +119,9 @@ parser.add_option('--start-from',
 parser.add_option('--realm',
                   help='Which realm to query',
                   default='all')
+parser.add_option('--bucket',
+                  help='Which bucket to query',
+                  default='12hr')
 
 if __name__ == '__main__':
     (options, args) = parser.parse_args()
@@ -132,7 +135,7 @@ if __name__ == '__main__':
         print "Using baseline of today as %s" % (startfrom,)
 
     realm_key = statsd_key(options.realm, True)
-    buckets = ["12hr", "2hr", "0_16hr"]
+    buckets = [options.bucket]
 
     # This is the slightly-cleaned up JSON api version of https://graphiti.humbughq.com/graphs/945c7aafc2d
     #
