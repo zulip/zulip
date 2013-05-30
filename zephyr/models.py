@@ -90,6 +90,7 @@ class UserProfile(AbstractBaseUser):
     enter_sends = models.NullBooleanField(default=False)
     enable_offline_email_notifications = models.BooleanField(default=True)
     last_reminder = models.DateTimeField(default=timezone.now, null=True)
+    rate_limits = models.CharField(default="", max_length=100) # comma-separated list of range:max pairs
 
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
