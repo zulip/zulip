@@ -64,7 +64,7 @@ class humbug::app_frontend {
 
   exec {"humbug-server":
     command => "/etc/init.d/supervisor restart",
-    require => [File["/etc/supervisor/conf.d/humbug.conf"],
-                File["/var/log/humbug"],]
+    require => File["/var/log/humbug"],
+    subscribe => File["/etc/supervisor/conf.d/humbug.conf"],
   }
 }
