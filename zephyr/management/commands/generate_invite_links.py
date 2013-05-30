@@ -25,6 +25,7 @@ class Command(BaseCommand):
             return
 
         for email in args:
-            prereg_user, created = PreregistrationUser.objects.get_or_create(email=email)
+            prereg_user = PreregistrationUser(email=email)
+            prereg_user.save()
             print email + ": " + Confirmation.objects.get_link_for_object(prereg_user)
 
