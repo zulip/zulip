@@ -11,4 +11,6 @@ esac
 
 cd "$(dirname "$0")"/..
 ./zephyr/tests/generate-fixtures
-./manage.py test "$target" --settings=humbug.test_settings "$@"
+# "-u" uses unbuffered IO, which is important when wrapping it in
+# something like subprocess (as tools/review does)
+/usr/bin/env python -u ./manage.py test "$target" --settings=humbug.test_settings "$@"

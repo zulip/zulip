@@ -22,6 +22,9 @@ CC_EMAIL = 'code-review@humbughq.com'
 ## DOMAIN: Reviewers without an '@' will be assumed to be localparts here.
 DOMAIN = 'humbughq.com'
 
+## TEST_SCRIPT: Test file to run; path relative to root of the working tree, or absolute.
+TEST_SCRIPT = "tools/test-all"
+
 ##### END CONFIG #####
 ## But you might want to change behavior below.
 
@@ -34,15 +37,22 @@ import tempfile
 import git
 import shlex
 import codecs
+import fcntl
 from StringIO import StringIO
 from email.message import Message
 from email.header import Header
+from shutil import rmtree, copyfile, copytree
+from tempfile import NamedTemporaryFile
+from time import sleep
+from signal import SIGINT, SIGTERM
+from errno import EAGAIN
 
 usage = """
 %%prog -r <reviewer> [-r <another-reviewer>] [-s <summary>] [-m <message>] [options] {<since>|<revision-range>}
 
-Send a patch series for review.  Sends mail to the reviewer,
-CC %s, identifying the commits to be reviewed.
+Send a patch series for review, after optionally successfully running test-all.
+Runs tests in /tmp by default, and thus you can continue to work in your own working tree.
+Sends mail to the reviewer, CC %s, identifying the commits to be reviewed.
 
 Name a range of commits, or name a single commit (e.g., 'HEAD^' or
 'origin/master') to identify all commits on HEAD since that commit.
@@ -83,6 +93,11 @@ def parse_options(args):
                     help='extent and methods of testing employed')
   parser.add_option('-e', '--edit', action='store_true', dest='edit',
                     help='spawn $EDITOR and edit review request')
+  parser.add_option('-T', '--run-tests', action='store_true', dest='run_tests',
+                    help='run test before sending the review')
+  parser.add_option('--testing-tmp-directory', type='unicode', dest="tmp_dir", default="/tmp",
+                    help="specify different temp directory for testing (default /tmp)")
+
   options, args = parser.parse_args(args)
   if not options.reviewers:
     parser.error('reviewer required')
@@ -287,6 +302,85 @@ def edit(repo, opts, revs, headers):
     pass
   return msg
 
+def clone_to_tmp(repo, tmp_path, test_existence_only=False):
+  print "Cloning into", tmp_path
+  assert not os.path.exists(tmp_path), \
+    'Path ' + tmp_path + ' exists. Either another test is running there ' \
+    'or it was left there so that you could view the testing log. If you are sure ' \
+    'another test is not running there, remove this directory before proceeding.'
+  if test_existence_only:
+      return
+  clone = repo.clone(tmp_path)
+  clone.git.checkout(repo.commit().hexsha)
+  return clone
+
+def cleanup_tmp(cloned_repo):
+  print "Cleaning up..."
+  assert os.path.exists(cloned_repo.working_tree_dir), "could not find " + cloned_repo.working_tree_dir
+  rmtree(cloned_repo.working_tree_dir)
+  return
+
+def run_test_script(repo, tmp_path):
+  # Copy over relevant files to $tmp_dir/humbug_test.git
+  working_dir = os.getcwd()
+  clone = clone_to_tmp(repo, tmp_path)
+  for filename in ['zephyr/fixtures/available-migrations',
+                   'zephyr/fixtures/migration-status',
+                   'zephyr/fixtures/messages.json',
+                   'event_queues.pickle']:
+    if os.path.isfile(filename):
+      copyfile(filename, clone.working_tree_dir + "/" + filename)
+  for directory in ['event_log', 'stats']:
+    if os.path.isdir(directory):
+      copytree(directory, clone.working_tree_dir + "/" + directory)
+
+  # Go to $tmp_path and run TEST_SCRIPT
+  os.chdir(clone.working_tree_dir)
+  os.environ["PWD"] = os.getcwd()
+  log = open("test.log", 'w')
+  log_path = os.getcwd() + "/" + log.name
+  print "Testing [log=%s] ..." % log_path
+  try:
+    proc = subprocess.Popen(TEST_SCRIPT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=sys.stdin)
+    # Set the proc.stdout.read() to be non-blocking
+    fcntl.fcntl(proc.stdout, fcntl.F_SETFL, os.O_NONBLOCK)
+    while proc.poll() is None:
+      try:
+        buf = proc.stdout.read(1024)
+        if buf != "":
+          sys.stdout.write(buf)
+          sys.stdout.flush()
+          log.write(buf)
+          log.flush()
+      except IOError as e:
+        #ignore EAGAIN errors caused by non-blocking prod.stdout
+        if e.errno != EAGAIN:
+          raise e
+        else:
+          continue
+      sleep(.5)
+  except KeyboardInterrupt as e:
+    print "\nkilling tests..."
+    print "You may find the testing log in", log_path
+    proc.send_signal(SIGINT)
+    sleep(2)
+    proc.send_signal(SIGTERM)
+    proc.wait()
+    buf = proc.stdout.read()
+    log.write(buf)
+    sys.stdout.write(buf)
+    raise e
+  buf = proc.stdout.read()
+  sys.stdout.write(buf)
+  log.write(buf)
+  if proc.returncode!=0:
+    print TEST_SCRIPT, "exited with status code", proc.returncode
+    print "You may find the testing log in", log_path
+  else:
+    os.chdir(working_dir)
+    os.environ["PWD"] = os.getcwd()
+    cleanup_tmp(clone)
+  return proc.returncode
 
 def main(args):
   opts, args = parse_options(args)
@@ -296,6 +390,14 @@ def main(args):
     print >>sys.stderr, '%s: no revisions specified' % os.path.basename(args[0])
     return 2
 
+  # Attempt to catch permissions/invalid paths early for tmp_dir
+  if opts.run_tests:
+    tmp_path = opts.tmp_dir + "/humbug_test.git"
+    clone_to_tmp(repo, tmp_path, test_existence_only=True)
+    os.mkdir(tmp_path)
+    os.rmdir(tmp_path)
+
+  # Also pushes the branch to your remote
   headers = make_header(repo, opts, revs)
   if opts.edit:
     msg = edit(repo, opts, revs, headers)
@@ -315,6 +417,20 @@ def main(args):
       (template.getvalue() + "\n" + commitmsg.getvalue()).encode('utf-8'),
       'utf-8')
 
+  # Run TEST_SCRIPT on HEAD, if desired.
+  if opts.run_tests:
+    testing_status_code = None
+    try:
+      testing_status_code = run_test_script(repo, tmp_path)
+      if testing_status_code != 0:
+        sys.exit(testing_status_code)
+    finally:
+      if testing_status_code != 0:
+        commit_message_path = opts.tmp_dir + "/commit.msg"
+        open(commit_message_path, 'w').write(msg.get_payload(decode=True))
+        print "You may find your commit message at", commit_message_path
+
+  print "Processing review message..."
   # Send or print the message, as appropriate.
   if opts.stdout:
     for (key, value) in msg.items():
