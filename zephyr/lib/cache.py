@@ -4,9 +4,16 @@ from functools import wraps
 
 from django.core.cache import cache as djcache
 from django.core.cache import get_cache
+from django.conf import settings
 
 from zephyr.lib.utils import statsd, statsd_key, make_safe_digest
 import time
+import base64
+import random
+import sys
+import os
+import os.path
+import hashlib
 
 memcached_time_start = 0
 memcached_total_time = 0
@@ -29,6 +36,33 @@ def memcached_stats_finish():
     memcached_total_requests += 1
     memcached_total_time += (time.time() - memcached_time_start)
 
+def get_or_create_key_prefix():
+    filename = os.path.join(settings.SITE_ROOT, "..", "memcached_prefix")
+    try:
+        fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0444)
+        prefix = base64.b16encode(hashlib.sha256(str(random.getrandbits(256))).digest())[:32].lower() + ':'
+        # This does close the underlying file
+        with os.fdopen(fd, 'w') as f:
+            f.write(prefix + "\n")
+    except OSError:
+        # The file already exists
+        tries = 1
+        while tries < 10:
+            with file(filename, 'r') as f:
+                prefix = f.readline()[:-1]
+            if len(prefix) == 33:
+                break
+            tries += 1
+            prefix = ''
+            time.sleep(0.5)
+
+    if not prefix:
+        sys.exit("Could not read memcache key prefix file")
+
+    return prefix
+
+KEY_PREFIX = get_or_create_key_prefix()
+
 def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None):
     """Decorator which applies Django caching to a function.
 
@@ -40,7 +74,7 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
     def decorator(func):
         @wraps(func)
         def func_with_caching(*args, **kwargs):
-            key = keyfunc(*args, **kwargs)
+            key = KEY_PREFIX + keyfunc(*args, **kwargs)
 
             memcached_stats_start()
             if cache_name is None:
@@ -91,6 +125,7 @@ def cache_set(key, val, cache_name=None, timeout=None):
     return ret
 
 def cache_get_many(keys, cache_name=None):
+    keys = [KEY_PREFIX + key for key in keys]
     memcached_stats_start()
     if cache_name is None:
         cache_backend = djcache
@@ -101,6 +136,10 @@ def cache_get_many(keys, cache_name=None):
     return ret
 
 def cache_set_many(items, cache_name=None, timeout=None):
+    new_items = {}
+    for key in items:
+        new_items[KEY_PREFIX + key] = items[key]
+    items = new_items
     memcached_stats_start()
     if cache_name is None:
         cache_backend = djcache
@@ -152,4 +191,4 @@ def status_dict_cache_key(user_profile):
 
 def update_user_presence_cache(sender, **kwargs):
     user_profile = kwargs['instance'].user_profile
-    djcache.delete(status_dict_cache_key(user_profile))
+    djcache.delete(KEY_PREFIX + status_dict_cache_key(user_profile))
