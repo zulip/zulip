@@ -32,9 +32,15 @@ import sys
 import subprocess
 
 def update_deployment(server, oldrev, newrev, refname):
-    subprocess.check_call(["ssh", server, "--", "env", "-u", "GIT_DIR",
-                           "/home/humbug/humbug-deployments/current/tools/update-deployment",
-                           oldrev, newrev, refname])
+    return subprocess.call(["ssh", server, "--", "env", "-u", "GIT_DIR",
+                            "/home/humbug/humbug-deployments/current/tools/update-deployment",
+                            oldrev, newrev, refname])
+
+def send_deployment_finished_humbug(branch, message):
+    subprocess.check_call(["/home/humbug/humbug/api/bin/humbug-send", "--user=humbug+commits@humbughq.com",
+                           "--api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "--stream=commits",
+                           "--site=https://staging.humbughq.com",
+                           u"--subject=deploy \u21D2 %s" % (branch,), "--message=%s" % (message,)])
 
 deployments = {
     'refs/heads/prod': ('humbughq.com', 'prod'),
@@ -51,4 +57,8 @@ for ln in sys.stdin:
 
         if deployments[refname]:
             server, branch = deployments[refname]
-            update_deployment(server, oldrev, newrev, branch)
+            ret = update_deployment(server, oldrev, newrev, branch)
+            if ret == 0:
+                send_deployment_finished_humbug(branch, "deployment finished successfully!")
+            else:
+                send_deployment_finished_humbug(branch, "deployment failed!")
