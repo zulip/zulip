@@ -79,38 +79,18 @@ function get_subject_filter_li(stream, subject) {
 // Adds the sidebar stream name that, when clicked,
 // narrows to that stream
 function add_narrow_filter(name, type) {
-    var uri = narrow.by_stream_uri(name);
-    var list_item;
-
     if (get_filter_li(type, name).length) {
         // already exists
         return false;
     }
 
-    // For some reason, even though the span is inline-block, if it is empty it
-    // takes up no space and you don't see the background color. Thus, add a
-    // &nbsp; to get the inline-block behavior we want.
-    var swatch = $('<span/>').attr('id', "stream_sidebar_swatch_" + subs.stream_id(name))
-                             .addClass('streamlist_swatch')
-                             .css('background-color', subs.get_color(name)).html("&nbsp;");
-    list_item = $('<li>').attr('data-name', name)
-                         .addClass("narrow-filter")
-                         .html(swatch);
-    if (type === 'stream') {
-        list_item.attr('id', "stream_sidebar_" + subs.stream_id(name));
-        if (subs.have(name).in_home_view === false) {
-            list_item.addClass("out_of_home_view");
-        }
-    }
-
-    list_item.append($('<a>').attr('href', uri)
-                     .addClass('subscription_name')
-                     .text(name)
-                     .append('<span class="count">(<span class="value"></span>)</span>'))
-             .append('<span class="arrow pull-right">▽</span>');
-    if (type === "stream" && subs.have(name).invite_only) {
-        list_item.append("<i class='icon-lock'/>");
-    }
+    var args = {name: name,
+                id: subs.stream_id(name),
+                uri: narrow.by_stream_uri(name),
+                not_in_home_view: (subs.have(name).in_home_view === false),
+                invite_only: subs.have(name).invite_only,
+                color: subs.get_color(name)};
+    var list_item = templates.render('stream_sidebar_row', args);
     $("#" + type + "_filters").append(list_item);
     return list_item;
 }

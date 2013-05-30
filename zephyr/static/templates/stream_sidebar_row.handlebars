@@ -1,0 +1,21 @@
+{{! Stream sidebar rows }}
+
+<li data-name="{{name}}" class="narrow-filter{{#if not_in_home_view}} out_of_home_view{{/if}}"
+    id="stream_sidebar_{{id}}">
+
+    {{! For some reason, even though the span is inline-block, if it is empty it
+      takes up no space and you don't see the background color. Thus, add a
+      &nbsp; to get the inline-block behavior we want. }}
+
+    <span id="stream_sidebar_swatch_{{id}}" class="streamlist_swatch"
+     style="background-color: {{color}}">&nbsp;</span>
+
+    <a href="{{uri}}" class="subscription_name">{{name}}<span class="count">(<span class="value"></span>)</span></a>
+
+    <span class="arrow pull-right">▽</span>
+
+    {{#if invite_only}}
+    <i class="icon-lock"></i>
+    {{/if}}
+
+</li>
