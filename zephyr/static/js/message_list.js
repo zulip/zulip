@@ -596,7 +596,11 @@ MessageList.prototype = {
     }
 };
 
-$(document).on('message_selected.zephyr hashchange.zephyr mousewheel mousemove', function (event) {
+// We stop autoscrolling when the user is clearly in the middle of
+// doing something.  Be careful, though, if you try to capture
+// mousemove, then you will have to contend with the autoscroll
+// itself generating mousemove events.
+$(document).on('message_selected.zephyr hashchange.zephyr mousewheel', function (event) {
     viewport.stop_auto_scrolling();
 });
 }());
