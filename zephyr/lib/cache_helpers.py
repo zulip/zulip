@@ -7,7 +7,7 @@ from django.conf import settings
 from zephyr.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
     Huddle, huddle_hash_cache_key
-from zephyr.lib.cache import cache_with_key, djcache, message_cache_key, \
+from zephyr.lib.cache import cache_with_key, cache_set, message_cache_key, \
     user_profile_by_email_cache_key, user_profile_by_id_cache_key, \
     get_memcached_time, get_memcached_requests, cache_set_many
 from django.utils.importlib import import_module
@@ -18,7 +18,7 @@ from django.db.models import Q
 MESSAGE_CACHE_SIZE = 75000
 
 def cache_save_message(message):
-    djcache.set(message_cache_key(message.id), (message,), timeout=3600*24)
+    cache_set(message_cache_key(message.id), message, timeout=3600*24)
 
 @cache_with_key(message_cache_key, timeout=3600*24)
 def cache_get_message(message_id):

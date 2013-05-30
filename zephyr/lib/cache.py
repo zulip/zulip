@@ -80,6 +80,16 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
 
     return decorator
 
+def cache_set(key, val, cache_name=None, timeout=None):
+    memcached_stats_start()
+    if cache_name is None:
+        cache_backend = djcache
+    else:
+        cache_backend = get_cache(cache_name)
+    ret = cache_backend.set(key, (val,), timeout=timeout)
+    memcached_stats_finish()
+    return ret
+
 def cache_get_many(keys, cache_name=None):
     memcached_stats_start()
     if cache_name is None:
@@ -135,7 +145,7 @@ def update_user_profile_cache(sender, **kwargs):
     items_for_memcached = {}
     items_for_memcached[user_profile_by_email_cache_key(user_profile.email)] = (user_profile,)
     items_for_memcached[user_profile_by_id_cache_key(user_profile.id)] = (user_profile,)
-    djcache.set_many(items_for_memcached)
+    cache_set_many(items_for_memcached)
 
 def status_dict_cache_key(user_profile):
     return "status_dict:%d" % (user_profile.realm_id,)
