@@ -22,6 +22,22 @@ def extract_json_response(resp):
     else:
         return resp.json
 
+def get_data_url(buckets, realm):
+    realm_key = statsd_key(realm, True)
+
+    # This is the slightly-cleaned up JSON api version of https://graphiti.humbughq.com/graphs/945c7aafc2d
+    #
+    # Fetches 1 month worth of data
+    DATA_URL="https://graphite.humbughq.com/render/?from=-28d&format=json"
+    for bucket in buckets:
+        if realm != 'all':
+            statsd_target = "stats.gauges.staging.users.active.%s.%s" % (realm_key, bucket)
+            DATA_URL += "&target=%s" % (statsd_target,)
+        else:
+            # all means adding up all realms, but exclude the .all. metrics since that would double things
+            DATA_URL += "&target=sum(exclude(stats.gauges.staging.users.active.*.%s, 'all'))" % (bucket,)
+    return DATA_URL
+
 def get_data(url, username, pw):
     from requests.auth import HTTPDigestAuth
 
@@ -60,28 +76,27 @@ def percent_diff(prev, cur):
 def parse_data(data, today):
     for metric in data:
         # print "Got %s with data points %s" % (metric['target'], len(metric['datapoints']))
-        if metric['target'] in statsd_targets:
-            # Calculate % between peak 2hr and 10min across each day and week
-            metric['datapoints'].sort(key=lambda p: p[1])
+        # Calculate % between peak 2hr and 10min across each day and week
+        metric['datapoints'].sort(key=lambda p: p[1])
 
-            print "\nUsers active in %s span:\n" % (metric['target'].split('.')[-1],)
+        print "\nUsers active in %s span:\n" % (metric['target'].split('.')[-1],)
 
-            best_today = best_during_day(metric['datapoints'], today)
-            for i in xrange(1, 100):
-                day = today - timedelta(days=i)
-                week = today - timedelta(weeks=i*7)
-                # Ignore weekends
-                if day.weekday() not in [5, 6]:
-                    best = best_during_day(metric['datapoints'], day)
+        best_today = best_during_day(metric['datapoints'], today)
+        for i in xrange(1, 100):
+            day = today - timedelta(days=i)
+            week = today - timedelta(weeks=i*7)
+            # Ignore weekends
+            if day.weekday() not in [5, 6]:
+                best = best_during_day(metric['datapoints'], day)
 
-                    if best is not None:
-                        print "Change between today and last %s, %s days ago:\t%.02f%%\t\t(%.01f to %.01f users)" \
-                                 % (day.strftime("%A"), i, percent_diff(best, best_today), best, best_today)
-
-                best = best_during_day(metric['datapoints'], week)
                 if best is not None:
-                    print "Weekly %% change from %s weeks ago today:\t\t%.02f" \
-                            % (i, percent_diff(best, best_today))
+                    print "Change between today and last %s, %s days ago:\t%.02f%%\t\t(%.01f to %.01f users)" \
+                             % (day.strftime("%A"), i, percent_diff(best, best_today), best, best_today)
+
+            best = best_during_day(metric['datapoints'], week)
+            if best is not None:
+                print "Weekly %% change from %s weeks ago today:\t\t%.02f" \
+                        % (i, percent_diff(best, best_today))
 
 
 
@@ -123,11 +138,7 @@ if __name__ == '__main__':
     # This is the slightly-cleaned up JSON api version of https://graphiti.humbughq.com/graphs/945c7aafc2d
     #
     # Fetches 1 month worth of data
-    DATA_URL="https://graphite.humbughq.com/render/?from=-28d&format=json"
-    statsd_targets = ["stats.gauges.staging.users.active.%s.%s" % (realm_key, bucket) for bucket in buckets]
-    for target in statsd_targets:
-        DATA_URL += "&target=%s" % (target,)
-
+    DATA_URL = get_data_url(buckets, options.realm)
     data = get_data(DATA_URL, options.user, options.password)
 
 
