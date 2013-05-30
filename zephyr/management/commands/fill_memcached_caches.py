@@ -16,6 +16,5 @@ class Command(BaseCommand):
             return fill_memcached_cache(options["cache"])
 
         for cache in cache_fillers.keys():
-            subprocess.Popen(["python", os.path.join(os.path.dirname(__file__), "../../..", "manage.py"),
-                              "fill_memcached_caches", "--cache", cache])
+            fill_memcached_cache(cache)
 

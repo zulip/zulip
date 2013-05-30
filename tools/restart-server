@@ -16,6 +16,9 @@ os.chdir("/home/humbug/humbug-deployments/current")
 # Send a statsd event on restarting the server
 subprocess.check_call(["python", "./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
 
+logging.info("Filling memcached caches")
+subprocess.check_call(["python", "./manage.py", "fill_memcached_caches"])
+
 # Restart the FastCGI and related processes via supervisorctl.  We
 # minimize downtime by restarting Django and Tornado separately from
 # the other worker processes.
@@ -25,18 +28,6 @@ subprocess.check_call(["supervisorctl", "stop",    "humbug-django"])
 subprocess.check_call(["supervisorctl", "restart", "humbug-tornado"])
 subprocess.check_call(["supervisorctl", "start",   "humbug-django"])
 subprocess.check_call(["supervisorctl", "start",   "humbug-workers:*"])
-
-logging.info("Flushing memcached")
-try:
-    if not pylibmc.Client(['127.0.0.1']).flush_all():
-        print "%sflush_all returned False%s" % (WARNING, ENDC)
-    # There doesn't seem to be a method to close a pylibmc Client object.
-except:
-    print "%sCould not flush cache:%s" % (WARNING, ENDC)
-    traceback.print_exc()
-
-logging.info("Refilling memcached caches")
-subprocess.check_call(["python", "./manage.py", "fill_memcached_caches"])
 
 logging.info("Done!")
 print OKGREEN + "Application restarted successfully!" + ENDC
