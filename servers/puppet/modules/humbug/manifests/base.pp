@@ -97,7 +97,7 @@ class humbug::base {
     purge => false,
     owner => "root",
     group => "root",
-    mode => 644,
+    mode => 755,
     source => "puppet:///modules/humbug/nagios_plugins/",
   }
   service { 'ssh':
