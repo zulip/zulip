@@ -8,6 +8,7 @@ import base64
 import hashlib
 import simplejson
 import random
+import string
 
 # The ordered list of onboarding steps we want new users to complete. If the
 # steps are changed here, they must also be changed in onboarding.js.
@@ -37,8 +38,12 @@ def create_user_profile(realm, email, password, active, bot, full_name, short_na
     else:
         user_profile.set_password(password)
 
+    # select 2 random ascii letters or numbers to fill out our base 64 "encoding"
+    randchars = random.choice(string.ascii_letters + string.digits) + \
+        random.choice(string.ascii_letters + string.digits)
     # Generate a new, random API key
-    user_profile.api_key = base64.b64encode(hashlib.sha256( str(random.getrandbits(256))).digest())[0:32]
+    user_profile.api_key = base64.b64encode(hashlib.sha256(str(random.getrandbits(256))).digest(),
+                                   randchars)[0:32]
     return user_profile
 
 def create_user(email, password, realm, full_name, short_name,
