@@ -296,7 +296,11 @@ exports.set_compose_defaults = function (opts) {
 exports.parse = function (str) {
     var operators   = [];
     var search_term = [];
-    $.each(str.match(/"[^"]+"|\S+/g), function (idx, token) {
+    var matches = str.match(/"[^"]+"|\S+/g);
+    if (matches === null) {
+        return operators;
+    }
+    $.each(matches, function (idx, token) {
         var parts, operator;
         if (token.length === 0)
             return;

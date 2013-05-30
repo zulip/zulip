@@ -203,12 +203,16 @@ exports.initialize = function () {
 
             // Add an entry for narrow by operators.
             var operators = narrow.parse(query);
-            var obj = {action: 'operators', query: query, operators: operators};
-            var label = render_object(obj);
-            mapped[label] = obj;
-            labels.unshift(label);
+            if (operators.length !== 0) {
+                var obj = {action: 'operators', query: query, operators: operators};
+                var label = render_object(obj);
+                mapped[label] = obj;
+                labels.unshift(label);
 
-            return labels;
+                return labels;
+            } else {
+                return [];
+            }
         },
         items: 20,
         highlighter: function (item) {
@@ -283,7 +287,7 @@ exports.initialize = function () {
             // operators.  (The reason the other actions don't call
             // this codepath is that they first all blur the box to
             // indicate that they've done what they need to do)
-            if (search_query_box.val()) {
+            if (search_query_box.val().trim()) {
                 narrow.activate(narrow.parse(search_query_box.val()));
             }
             search_query_box.blur();
