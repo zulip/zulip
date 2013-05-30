@@ -81,64 +81,42 @@ function within_viewport(row_offset, row_height) {
     return (message_top > viewport_top) && (message_bottom < viewport_bottom);
 }
 
-// Why do we look at the 'bottom' in above_view_threshold and the top
-// in below_view_threshold as opposed to vice versa?  Mostly to handle
-// the case of gigantic messages.  Imagine the case of a selected
-// message that's so big that it takes up an two entire screens. The
-// selector shouldn't move away from it until after the *bottom* of
-// the message has gone too high up on the screen.  (Otherwise we'd
-// move the pointer right after part of the first screenful.)
-function above_view_threshold(message, useTop) {
-    // Barnowl-style thresholds: the bottom of the pointer is never
-    // above the 1/5 mark.
-    // (if useTop = true, we look at the top of the pointer instead)
-    var position = message.offset().top;
-    if (!useTop) {
-        // outerHeight(true): Include margin
-        position += message.outerHeight(true);
-    }
-    return position < viewport.scrollTop() + viewport.height() / 5;
-}
-
-function below_view_threshold(message) {
-    // Barnowl-style thresholds: the top of the pointer is never below
-    // the 2/3-mark.
-    return message.offset().top > viewport.scrollTop() + viewport.height() * 2 / 3;
-}
-
 function recenter_view(message, from_scroll) {
     // Barnowl-style recentering: if the pointer is too high, center
     // in the middle of the screen. If the pointer is too low, center
     // on the 1/5-mark.
 
-    // If this logic changes, above_view_threshold andd
-    // below_view_threshold must also change.
-    var selected_row = current_msg_list.selected_row();
-    var selected_row_top = selected_row.offset().top;
+    var viewport_info = ui.message_viewport_info();
+    var top_threshold =
+        viewport_info.visible_top +
+        (1/5 * viewport_info.visible_height);
 
-    if (from_scroll !== undefined && from_scroll &&
-        ((above_view_threshold(message, true) &&
-          (last_viewport_movement_direction >= 0)) ||
-         (below_view_threshold(message) &&
-          (last_viewport_movement_direction <= 0)))) {
+    var bottom_threshold =
+        viewport_info.visible_top +
+        (2/3 * viewport_info.visible_height);
+
+    var message_top = message.offset().top;
+    var is_above = message_top < top_threshold;
+    var is_below = message_top > bottom_threshold;
+
+    if (from_scroll) {
         // If the message you're trying to center on is already in view AND
         // you're already trying to move in the direction of that message,
         // don't try to recenter. This avoids disorienting jumps when the
         // pointer has gotten itself outside the threshold (e.g. by
         // autoscrolling).
-        return;
+        if (is_above && last_viewport_movement_direction >= 0) {
+            return;
+        }
+        if (is_below && last_viewport_movement_direction <= 0) {
+            return;
+        }
     }
 
-    if (above_view_threshold(message, true)) {
-        // We specifically say useTop=true here, because suppose you're using
-        // the arrow keys to arrow up and you've moved up to a huge message.
-        // The message is so big that the bottom part of makes it not
-        // "above the view threshold". But since we're using the arrow keys
-        // to get here, the reason we selected this message is because
-        // we want to read it; so here we care about the top part.
-        viewport.scrollTop(selected_row_top - viewport.height() / 2);
-    } else if (below_view_threshold(message)) {
-        viewport.scrollTop(selected_row_top - viewport.height() / 5);
+    if (is_above) {
+        viewport.set_message_position(message_top, viewport_info, 1/2);
+    } else if (is_below) {
+        viewport.set_message_position(message_top, viewport_info, 1/5);
     }
 }
 
@@ -1138,6 +1116,19 @@ function keep_pointer_in_view() {
 
     if (next_row.length === 0)
         return;
+
+    var info = ui.message_viewport_info();
+    var top_threshold = info.visible_top + (1/5 * info.visible_height);
+    var bottom_threshold = info.visible_top + (2/3 * info.visible_height);
+
+    function above_view_threshold() {
+        var bottom_offset = next_row.offset().top + next_row.outerHeight(true);
+        return bottom_offset < top_threshold;
+    }
+
+    function below_view_threshold() {
+        return next_row.offset().top > bottom_threshold;
+    }
 
     function adjust(past_threshold, at_end, advance) {
         if (!past_threshold(next_row) || at_end())

@@ -22,6 +22,26 @@ exports.at_bottom = function () {
     return bottom + 2 >= window_size;
 };
 
+exports.set_message_position = function (message_top, viewport_info, ratio) {
+    // message_top = offset of the top of a message that you are positioning
+    // viewport_info = result of calling ui.message_viewport_info
+    // ratio = fraction indicating how far down the screen the msg should be
+
+    var hidden_top =
+        viewport_info.visible_top
+        - jwindow.scrollTop();
+
+    var message_offset =
+        viewport_info.visible_height * ratio
+        + hidden_top;
+
+    var new_scroll_top =
+        message_top
+        - message_offset;
+
+    jwindow.scrollTop(new_scroll_top);
+};
+
 exports.scrollTop = function viewport_scrollTop () {
     return jwindow.scrollTop.apply(jwindow, arguments);
 };
