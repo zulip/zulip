@@ -2,7 +2,11 @@ var unread = (function () {
 
 var exports = {};
 
-var unread_counts = {'stream': {}, 'private': {}};
+var unread_counts = {
+    'stream': {},
+    'private': {}
+};
+var unread_mentioned = {};
 var unread_subjects = {};
 
 function unread_hashkey(message) {
@@ -84,6 +88,10 @@ exports.process_loaded_messages = function (messages) {
             var canon_subject = subs.canonicalized_name(message.subject);
             unread_subjects[hashkey][canon_subject][message.id] = true;
         }
+
+        if (message.mentioned) {
+            unread_mentioned[message.id] = true;
+        }
     });
 };
 
@@ -95,6 +103,7 @@ exports.process_read_message = function (message) {
         var canon_subject = subs.canonicalized_name(message.subject);
         delete unread_subjects[canon_stream][canon_subject][message.id];
     }
+    delete unread_mentioned[message.id];
 };
 
 exports.declare_bankruptcy = function () {
@@ -109,6 +118,7 @@ exports.get_counts = function () {
     // should strive to keep it free of side effects on globals or DOM.
     res.private_message_count = 0;
     res.home_unread_messages = 0;
+    res.mentioned_message_count = Object.keys(unread_mentioned).length;
     res.stream_count = {};  // hash by stream -> count
     res.subject_count = {}; // hash of hashes (stream, then subject -> count)
 

@@ -238,6 +238,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     // integer counts
     exports.set_count("global", "private-message", counts.private_message_count);
+    exports.set_count("global", "mentioned-message", counts.mentioned_message_count);
     exports.set_count("global", "home", counts.home_unread_messages);
 
     // For now increases in private messages get special treatment in terms of
