@@ -71,31 +71,51 @@ def best_during_day(data, day):
 def percent_diff(prev, cur):
     if prev is None or cur is None:
         return None
-    return  ((cur - prev) / prev) * 100
+    if cur == 0 and prev == 0:
+        return ""
+    if prev == 0:
+        return "NaN"
+    return "%.02f%%" % (((cur - prev) / prev) * 100,)
 
 def parse_data(data, today):
+    def print_results(all_days, days, compare_with_last=False):
+        first_data_point = True
+        best_last_time = 0
+        for i in all_days:
+            day = today - timedelta(days=i)
+            # Ignore weekends
+            if day.weekday() in days:
+                best = best_during_day(metric['datapoints'], day)
+                if best is None:
+                    continue
+
+                if not compare_with_last:
+                    percent = percent_diff(best, best_today)
+                else:
+                    if first_data_point:
+                        percent = ""
+                        first_data_point = False
+                    else:
+                        percent = percent_diff(best_last_time, best)
+
+                if best is not None:
+                    print "Last %s, %s %s ago:\t%.01f\t\t%s" \
+                        % (day.strftime("%A"), i, "days", best, percent)
+                best_last_time = best
+
     for metric in data:
         # print "Got %s with data points %s" % (metric['target'], len(metric['datapoints']))
         # Calculate % between peak 2hr and 10min across each day and week
         metric['datapoints'].sort(key=lambda p: p[1])
 
         best_today = best_during_day(metric['datapoints'], today)
-        print "Today, 0 days ago:\t\t(%.01f users)" % (best_today,)
+        print "Date\t\t\t\tUsers\t\tChange from then to today"
+        print "Today, 0 days ago:\t\t%.01f" % (best_today,)
+        print_results(xrange(1, 1000), [0, 1, 2, 3, 4, 7])
 
-        for i in xrange(1, 100):
-            day = today - timedelta(days=i)
-            week = today - timedelta(weeks=i*7)
-            # Ignore weekends
-            if day.weekday() not in [5, 6]:
-                best = best_during_day(metric['datapoints'], day)
-
-                if best is not None:
-                    print "Last %s, %s days ago:\t(%.01f users)\t\t%.02f%%" \
-                        % (day.strftime("%A"), i, best, percent_diff(best, best_today))
-            best = best_during_day(metric['datapoints'], week)
-            if best is not None:
-                print "Weekly %% change from %s weeks ago today:\t\t%.02f" \
-                        % (i, percent_diff(best, best_today))
+        print "\n\nWeekly Wednesday results"
+        print "Date\t\t\t\tUsers\t\tDelta from previous week"
+        print_results(reversed(xrange(1, 1000)), [2], True)
 
 
 
