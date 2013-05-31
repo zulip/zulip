@@ -926,7 +926,7 @@ $(function () {
 
 function focus_on_narrowed_stream() {
     var operators = narrow.operators();
-    if (!operators) {
+    if (operators.length === 0) {
         return;
     }
     var stream_name = operators[0][1];

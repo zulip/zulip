@@ -164,7 +164,7 @@ exports.predicate = function () {
 
 exports.operators = function () {
     if (current_filter === undefined) {
-        return false;
+        return [];
     }
     return current_filter.operators();
 };
@@ -618,7 +618,7 @@ exports.by_stream_subject_uri = function (stream, subject) {
 exports.narrowed_to_pms = function () {
     // Are we narrowed to PMs: all PMs or PMs with particular people.
     var operators = narrow.operators();
-    if (!operators) {
+    if (operators.length === 0) {
         return false;
     }
     if ((operators[0][0] === "pm-with") ||
