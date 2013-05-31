@@ -17,6 +17,6 @@ class humbug::bots {
     owner   => 'root',
     group   => 'root',
     mode    => 640,
-    source  => "puppet:///modules/humbug/supervisor/conf.d/feedback-bot.conf",
+    source  => "puppet:///modules/humbug/supervisord/conf.d/feedback-bot.conf",
   }
 }
