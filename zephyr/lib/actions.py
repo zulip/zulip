@@ -282,7 +282,9 @@ def do_send_messages(messages):
                                     ['website', 'iphone', 'android']
                 if um.user_profile == message['message'].sender and sent_by_human:
                     um.flags |= UserMessage.flags.read
-                if wildcard or um.user_profile in mentioned:
+                if wildcard:
+                    um.flags |= UserMessage.flags.wildcard_mentioned
+                if um.user_profile in mentioned:
                     um.flags |= UserMessage.flags.mentioned
                 user_message_flags[message['message'].id][um.user_profile] = um.flags_dict().get('flags')
             ums.extend(ums_to_create)

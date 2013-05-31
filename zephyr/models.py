@@ -375,7 +375,7 @@ class UserMessage(models.Model):
     # since this table will be an unpleasant one to do schema changes
     # on later
     archived = models.BooleanField()
-    flags = BitField(flags=['read', 'starred', 'collapsed', 'mentioned'], default=0)
+    flags = BitField(flags=['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned'], default=0)
 
     class Meta:
         unique_together = ("user_profile", "message")

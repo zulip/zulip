@@ -515,7 +515,8 @@ function add_message_metadata(message, dummy) {
     message.historical = (message.flags !== undefined &&
                           message.flags.indexOf('historical') !== -1);
     message.starred = message.flags.indexOf("starred") !== -1;
-    message.mentioned = message.flags.indexOf("mentioned") !== -1;
+    message.mentioned = message.flags.indexOf("mentioned") !== -1 ||
+                        message.flags.indexOf("wildcard_mentioned") !== -1;
     message.collapsed = message.flags.indexOf("collapsed") !== -1;
 
     switch (message.type) {

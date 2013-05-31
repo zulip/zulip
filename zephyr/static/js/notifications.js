@@ -173,10 +173,11 @@ function process_desktop_notification(message) {
 }
 
 exports.speaking_at_me = function (message) {
-    if (message === undefined || message.flags === undefined) {
+    if (message === undefined) {
         return false;
     }
-    return message.flags.indexOf('mentioned') > -1;
+
+    return message.mentioned;
 };
 
 function message_is_notifiable(message) {
