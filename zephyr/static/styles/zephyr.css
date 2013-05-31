@@ -972,6 +972,18 @@ input.recipient_box {
     background-color: #FCEA81;
 }
 
+.highlight_text_inserted {
+    background-color: #81C3FC;
+}
+
+.highlight_text_deleted {
+    background-color: #FC8181;
+}
+
+.highlight_text_replaced {
+    background-color: #D581FC;
+}
+
 #search_arrows {
     width: 99%;
     margin-bottom: 5px;

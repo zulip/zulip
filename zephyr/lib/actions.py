@@ -33,6 +33,7 @@ from zephyr.decorator import get_user_profile_by_email, json_to_list, JsonableEr
      statsd_increment
 from zephyr.lib.event_queue import request_event_queue, get_user_events
 from zephyr.lib.utils import log_statsd_event, statsd
+from zephyr.lib.html_diff import highlight_html_differences
 
 import confirmation.settings
 
@@ -950,10 +951,18 @@ def do_update_message(user_profile, message_id, subject, content):
     if message.sender != user_profile:
         raise JsonableError("Message was not sent by you")
 
+    if message.edit_history is not None:
+        edit_history = simplejson.loads(message.edit_history)
+        first_rendered_content = edit_history[-1]['prev_rendered_content']
+    else:
+        first_rendered_content = message.rendered_content
+
     if content is not None:
         rendered_content = bugdown.convert(content)
         if rendered_content is None:
             raise JsonableError("We were unable to render your updated message")
+
+        rendered_content = highlight_html_differences(first_rendered_content, rendered_content)
 
         event['orig_content'] = message.content
         event['orig_rendered_content'] = message.rendered_content
@@ -976,7 +985,6 @@ def do_update_message(user_profile, message_id, subject, content):
     event['edit_timestamp'] = datetime_to_timestamp(message.last_edit_time)
     edit_history_event['timestamp'] = event['edit_timestamp']
     if message.edit_history is not None:
-        edit_history = simplejson.loads(message.edit_history)
         edit_history.insert(0, edit_history_event)
     else:
         edit_history = [edit_history_event]
