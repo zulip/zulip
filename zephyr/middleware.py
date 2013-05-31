@@ -100,6 +100,9 @@ class LogRequests(object):
                 bugdown_output = " (md: %s/%s)" % (format_timedelta(bugdown_time_delta),
                                                    bugdown_count_delta)
 
+                statsd.timing("%s.markdown.time" % (statsd_path,), timedelta_ms(bugdown_time_delta))
+                statsd.incr("%s.markdown.count" % (statsd_path,), bugdown_count_delta)
+
         # Get the amount of time spent doing database queries
         db_time_output = ""
         if len(connection.queries) > 0:
