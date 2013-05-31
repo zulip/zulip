@@ -8,7 +8,7 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     DefaultStream, UserPresence, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    to_dict_cache_key
+    to_dict_cache_key, get_realm
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.core.exceptions import ValidationError
@@ -694,9 +694,11 @@ def do_change_full_name(user_profile, full_name, log=True):
                    'full_name': full_name})
 
 def do_create_realm(domain, restricted_to_domain=True):
-    realm, created = Realm.objects.get_or_create(
-        domain=domain, restricted_to_domain=restricted_to_domain)
+    realm = get_realm(domain)
+    created = not realm
     if created:
+        realm = Realm(domain=domain, restricted_to_domain=restricted_to_domain)
+        realm.save()
         # Log the event
         log_event({"type": "realm_created",
                    "domain": domain,

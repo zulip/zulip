@@ -449,6 +449,12 @@ def get_huddle_backend(huddle_hash, id_list):
             Subscription.objects.bulk_create(subs_to_create)
     return huddle
 
+def get_realm(domain):
+    try:
+        return Realm.objects.get(domain__iexact=domain.strip())
+    except Realm.DoesNotExist:
+        return None
+
 # This function is used only by tests.
 # We have faster implementations within the app itself.
 def filter_by_subscriptions(messages, user_profile):
