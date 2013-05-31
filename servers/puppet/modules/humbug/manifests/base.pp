@@ -8,7 +8,7 @@ class humbug::base {
   package { $packages: ensure => "installed" }
 
 
-  apt::key {"E5FB045CA79AA8FC25FDE9F3B4F81D07A529EF65":
+  apt::key {"A529EF65":
     source  =>  "http://apt.humbughq.com/ops.asc",
   }
   apt::sources_list {"humbug":
