@@ -1,4 +1,4 @@
-import difflib
+from diff_match_patch import diff_match_patch
 import platform
 import logging
 
@@ -66,22 +66,39 @@ def verify_html(html):
     return True
 
 def highlight_html_differences(s1, s2):
-    sm = difflib.SequenceMatcher(lambda c: c in " \t\v\n", s1, s2, autojunk=False)
+    differ = diff_match_patch()
+    ops = differ.diff_main(s1, s2)
+    differ.diff_cleanupSemantic(ops)
     retval = ''
     in_tag = False
 
-    for op, i1, i2, j1, j2 in sm.get_opcodes():
-        if op == 'replace':
-            chunks, in_tag = chunkize(s2[j1:j2], in_tag)
+    idx = 0
+    while idx < len(ops):
+        op, text = ops[idx]
+        next_op = None
+        if idx != len(ops) - 1:
+            next_op, next_text = ops[idx + 1]
+        if op == diff_match_patch.DIFF_DELETE and next_op == diff_match_patch.DIFF_INSERT:
+            # Replace operation
+            chunks, in_tag = chunkize(next_text, in_tag)
             retval += highlight_chunks(chunks, highlight_replaced)
-        elif op == 'delete':
+            idx += 1
+        elif op == diff_match_patch.DIFF_INSERT and next_op == diff_match_patch.DIFF_DELETE:
+            # Replace operation
+            # I have no idea whether diff_match_patch generates inserts followed
+            # by deletes, but it doesn't hurt to handle them
+            chunks, in_tag = chunkize(text, in_tag)
+            retval += highlight_chunks(chunks, highlight_replaced)
+            idx += 1
+        elif op == diff_match_patch.DIFF_DELETE:
             retval += highlight_deleted('&nbsp;')
-        elif op == 'insert':
-            chunks, in_tag = chunkize(s2[j1:j2], in_tag)
+        elif op == diff_match_patch.DIFF_INSERT:
+            chunks, in_tag = chunkize(text, in_tag)
             retval += highlight_chunks(chunks, highlight_inserted)
-        elif op == 'equal':
-            chunks, in_tag = chunkize(s2[j1:j2], in_tag)
-            retval += s2[j1:j2]
+        elif op == diff_match_patch.DIFF_EQUAL:
+            chunks, in_tag = chunkize(text, in_tag)
+            retval += text
+        idx += 1
 
     if not verify_html(retval):
         from zephyr.lib.actions import internal_send_message
