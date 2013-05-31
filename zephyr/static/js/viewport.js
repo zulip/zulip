@@ -78,7 +78,7 @@ exports.stop_auto_scrolling = function() {
 exports.system_initiated_animate_scroll = function (scroll_amount) {
     suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
     var viewport_offset = exports.scrollTop();
-    in_stoppable_autoscroll = true; 
+    in_stoppable_autoscroll = true;
     $("html, body").animate({
         scrollTop: viewport_offset + scroll_amount,
         always: function () {

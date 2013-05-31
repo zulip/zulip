@@ -62,7 +62,7 @@ exports.highlight_query_in_phrase = function (query, phrase) {
     query = query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
     var regex = new RegExp('(^' + query + ')', 'ig');
 
-    var result = ""; 
+    var result = "";
     var parts = phrase.split(' ');
     for (i = 0; i < parts.length; i++) {
         if (i > 0) result += " ";

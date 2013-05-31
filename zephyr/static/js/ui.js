@@ -55,7 +55,7 @@ exports.message_viewport_info = function () {
     res.visible_height =
         element_just_below_us.offset().top
         - res.visible_top;
-        
+
     return res;
 };
 
