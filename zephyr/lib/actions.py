@@ -693,9 +693,9 @@ def do_change_full_name(user_profile, full_name, log=True):
                    'user': user_profile.email,
                    'full_name': full_name})
 
-def do_create_realm(domain, replay=False):
+def do_create_realm(domain):
     realm, created = Realm.objects.get_or_create(domain=domain)
-    if created and not replay:
+    if created:
         # Log the event
         log_event({"type": "realm_created",
                    "domain": domain})
