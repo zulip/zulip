@@ -363,12 +363,15 @@ td.pointer {
     visibility: visible;
 }
 
-.selected_message.private-message .message_data, .selected_message.private-message .messagebox,
-.new_private_messages {
+.selected_message.private-message .message_data, .selected_message.private-message .messagebox {
     background-color: #feffcc;
 }
 
-.new_private_messages, .new_private_messages_fadeout {
+.new_messages {
+    background-color: lightblue;
+}
+
+.new_messages, .new_messages_fadeout {
     -webkit-transition: all 3s ease-in-out;
     -moz-transition: all 3s ease-in-out;
     -o-transition: all 3s ease-in-out;

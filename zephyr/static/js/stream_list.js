@@ -3,6 +3,7 @@ var stream_list = (function () {
 var exports = {};
 
 var last_private_message_count = 0;
+var last_mention_count = 0;
 var previous_sort_order;
 
 exports.sort_narrow_list = function () {
@@ -179,15 +180,15 @@ exports.update_streams_sidebar = function () {
     }
 };
 
-function do_new_private_messages_animation() {
-    var li = get_filter_li("global", "private-message");
-    li.addClass("new_private_messages");
+function do_new_messages_animation(message_type) {
+    var li = get_filter_li("global", message_type);
+    li.addClass("new_messages");
     function mid_animation() {
-        li.removeClass("new_private_messages");
-        li.addClass("new_private_messages_fadeout");
+        li.removeClass("new_messages");
+        li.addClass("new_messages_fadeout");
     }
     function end_animation() {
-        li.removeClass("new_private_messages_fadeout");
+        li.removeClass("new_messages_fadeout");
     }
     setTimeout(mid_animation, 3000);
     setTimeout(end_animation, 6000);
@@ -195,9 +196,16 @@ function do_new_private_messages_animation() {
 
 function animate_private_message_changes(new_private_message_count) {
     if (new_private_message_count > last_private_message_count) {
-        do_new_private_messages_animation();
+        do_new_messages_animation('private-message');
     }
     last_private_message_count = new_private_message_count;
+}
+
+function animate_mention_changes(new_mention_count) {
+    if (new_mention_count > last_mention_count) {
+        do_new_messages_animation('mentioned-message');
+    }
+    last_mention_count = new_mention_count;
 }
 
 exports.update_dom_with_unread_counts = function (counts) {
@@ -221,11 +229,8 @@ exports.update_dom_with_unread_counts = function (counts) {
     exports.set_count("global", "mentioned-message", counts.mentioned_message_count);
     exports.set_count("global", "home", counts.home_unread_messages);
 
-    // For now increases in private messages get special treatment in terms of
-    // animating the left pane.  It is unlikely that we will generalize this,
-    // since Starred messages are user-initiated and Home messages would be too
-    // spammy.
     animate_private_message_changes(counts.private_message_count);
+    animate_mention_changes(counts.mentioned_message_count);
 };
 
 $(function () {
