@@ -11,5 +11,19 @@ class humbug::trac {
                 ],
     ensure => present,
   }
-  #TODO: Need to install our trac config
+  file { "/home/humbug/trac/conf/trac.ini":
+    owner  => "humbug",
+    group  => "humbug",
+    source => "puppet:///modules/humbug/trac.ini",
+    require => User['humbug'],
+  }
+  file { '/home/humbug/trac/plugins/humbug_trac.py':
+    ensure => 'link',
+    target => '/home/humbug/humbug/api/integrations/trac/humbug_trac.py',
+  }
+  file { '/home/humbug/trac/plugins/humbug_trac_config.py':
+    ensure => 'link',
+    target => '/home/humbug/humbug/bots/humbug_trac_config.py',
+  }
+  # TODO: Add downloading and installing trac at /home/humbug/trac
 }
