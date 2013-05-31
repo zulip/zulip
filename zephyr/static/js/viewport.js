@@ -39,6 +39,7 @@ exports.set_message_position = function (message_top, viewport_info, ratio) {
         message_top
         - message_offset;
 
+    suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
     jwindow.scrollTop(new_scroll_top);
 };
 
