@@ -27,7 +27,7 @@ from zephyr.lib.queue import queue_json_publish
 from django.utils import timezone
 from zephyr.lib.create_user import create_user
 from zephyr.lib import bugdown
-from zephyr.lib.cache import cache_with_key, user_profile_by_id_cache_key, \
+from zephyr.lib.cache import cache_with_key, \
     user_profile_by_email_cache_key, status_dict_cache_key, cache_set_many
 from zephyr.decorator import get_user_profile_by_email, json_to_list, JsonableError, \
      statsd_increment

@@ -1,11 +1,8 @@
 from __future__ import absolute_import
 
-from django.conf import settings
-
 from zephyr.lib.initial_password import initial_password
 from zephyr.models import Realm, Stream, UserProfile, Huddle, \
-    Subscription, Recipient, Client, Message, \
-    get_huddle_hash
+    Subscription, Recipient, Client, get_huddle_hash
 from zephyr.lib.create_user import create_user_profile
 
 def bulk_create_realms(realm_list):

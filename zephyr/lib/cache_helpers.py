@@ -13,7 +13,6 @@ from zephyr.lib.cache import cache_with_key, djcache, message_cache_key, \
 from django.utils.importlib import import_module
 from django.contrib.sessions.models import Session
 import logging
-from django.db import connection
 from django.db.models import Q
 
 MESSAGE_CACHE_SIZE = 75000
