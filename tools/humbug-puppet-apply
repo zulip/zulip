@@ -1,0 +1,3 @@
+#!/bin/sh
+
+puppet apply -e "class {'humbug': machinetype => '$(cat /etc/humbug-machinetype)'}"
