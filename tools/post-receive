@@ -59,6 +59,6 @@ for ln in sys.stdin:
             server, branch = deployments[refname]
             ret = update_deployment(server, oldrev, newrev, branch)
             if ret == 0:
-                send_deployment_finished_humbug(branch, "deployment finished successfully!")
+                send_deployment_finished_humbug(branch, "deployment of `%s` finished successfully!" % (newrev[:12],))
             else:
-                send_deployment_finished_humbug(branch, "deployment failed!")
+                send_deployment_finished_humbug(branch, "deployment of `%s` failed!" % (newrev[:12],))
