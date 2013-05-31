@@ -693,12 +693,14 @@ def do_change_full_name(user_profile, full_name, log=True):
                    'user': user_profile.email,
                    'full_name': full_name})
 
-def do_create_realm(domain):
-    realm, created = Realm.objects.get_or_create(domain=domain)
+def do_create_realm(domain, restricted_to_domain=True):
+    realm, created = Realm.objects.get_or_create(
+        domain=domain, restricted_to_domain=restricted_to_domain)
     if created:
         # Log the event
         log_event({"type": "realm_created",
-                   "domain": domain})
+                   "domain": domain,
+                   "restricted_to_domain": restricted_to_domain})
 
         internal_send_message("humbug+signups@humbughq.com", "stream",
                               "signups", domain, "Signups enabled.")
