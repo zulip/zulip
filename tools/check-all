@@ -55,8 +55,11 @@ for filepath in git_files:
 
     by_lang[exn].append(filepath)
 
+def has_trailing_whitespace(fn):
+    return any(re.search('\s+$', line.strip('\n')) for line in open(fn))
 
-# Invoke the appropriate lint checker for each language
+# Invoke the appropriate lint checker for each language,
+# and also check files for extra whitespace.
 
 try:
     failed = False
@@ -70,6 +73,11 @@ try:
             + by_lang['.js'])
     except subprocess.CalledProcessError:
         failed = True
+
+    for fn in by_lang['.js'] + by_lang['.py']:
+        if has_trailing_whitespace(fn):
+            sys.stdout.write('Fix whitespace in %s\n' % fn)
+            failed = True
 
     pyflakes = subprocess.Popen(['pyflakes'] + by_lang['.py'],
         stdout = subprocess.PIPE,
