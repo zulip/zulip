@@ -13,7 +13,9 @@ function browser_desktop_notifications_on () {
             // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
             $.browser.webkit &&
             // 0 is PERMISSION_ALLOWED
-            window.webkitNotifications.checkPermission() === 0);
+            window.webkitNotifications.checkPermission() === 0) ||
+        // window.bridge is the desktop client
+        (window.bridge !== undefined);
 }
 
 exports.initialize = function () {
@@ -132,7 +134,7 @@ function process_desktop_notification(message) {
         content += " [...]";
     }
 
-    if (notice_memory[key] !== undefined) {
+    if (window.bridge === undefined && notice_memory[key] !== undefined) {
         msg_count = notice_memory[key].msg_count + 1;
         title = msg_count + " messages from " + title;
         notification_object = notice_memory[key].obj;
@@ -156,20 +158,25 @@ function process_desktop_notification(message) {
         title += " (to " + message.stream + " > " + message.subject + ")";
     }
 
-    notice_memory[key] = {
-        obj: window.webkitNotifications.createNotification(
-                gravatar_url(message), title, content),
-        msg_count: msg_count
-    };
-    notification_object = notice_memory[key].obj;
-    notification_object.onclick = function () {
-        notification_object.cancel();
-        window.focus();
-    };
-    notification_object.onclose = function () {
-        delete notice_memory[key];
-    };
-    notification_object.show();
+    if (window.bridge === undefined) {
+        notice_memory[key] = {
+            obj: window.webkitNotifications.createNotification(
+                    gravatar_url(message), title, content),
+            msg_count: msg_count
+        };
+        notification_object = notice_memory[key].obj;
+        notification_object.onclick = function () {
+            notification_object.cancel();
+            window.focus();
+        };
+        notification_object.onclose = function () {
+            delete notice_memory[key];
+        };
+        notification_object.show();
+    } else {
+        // Shunt the message along to the desktop client
+        window.bridge.notify({title: title, content: content});
+    }
 }
 
 exports.speaking_at_me = function (message) {
