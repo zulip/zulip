@@ -11,8 +11,17 @@ class humbug::nagios {
                 ],
     ensure => present,
   }
-  #TODO: Need to install our Nagios config
-  #
+
+  file { "/etc/nagios3/":
+    recurse => true,
+    purge => false,
+    require => Package[nagios3],
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/humbug/nagios3/",
+  }
+
   # Also need to run this sequence to enable commands to set the
   # permissions for using the Nagios commands feature
   #
@@ -22,9 +31,9 @@ class humbug::nagios {
   # /etc/init.d/nagios3 start
   #
   #
-
   # TODO: Install our API
-  # TODO: Install humbug_nagios.cfg from our API.
-  # TODO: Install pagerduty_nagios.pl from http://www.pagerduty.com/docs/nagios-integration-guide/
-  # TODO: Install the pagerduty_nagios cron job as well (pagerduty config is already in puppet)
+  # TODO: Install the pagerduty_nagios cron job (pagerduty config is already in puppet)
+
+  # TODO: Add munin configuration
+  # TODO: Actually restart Nagios when files change
 }
