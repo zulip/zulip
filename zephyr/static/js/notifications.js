@@ -94,6 +94,12 @@ exports.update_title_count = function () {
             util.set_favicon('/static/favicon.ico?v=2');
         }
     }
+
+    if (window.bridge !== undefined) {
+        // We don't use 'n' because we want the exact count. The bridge handles
+        // which icon to show.
+        window.bridge.updateCount(new_message_count);
+    }
 };
 
 exports.window_has_focus = function () {
