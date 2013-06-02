@@ -570,6 +570,12 @@ def home(request):
     except ValidationError:
         show_invites = settings.ALLOW_REGISTER
 
+    # For the CUSTOMER4 student realm, only let instructors (who have
+    # @customer4.invalid addresses) invite new users.
+    if ((user_profile.realm.domain == "users.customer4.invalid") and
+        (not user_profile.email.lower().endswith("@customer4.invalid"))):
+        show_invites = False
+
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
                                'page_params' : page_params,
