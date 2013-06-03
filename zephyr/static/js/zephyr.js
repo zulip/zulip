@@ -82,9 +82,9 @@ function within_viewport(row_offset, row_height) {
 }
 
 function recenter_view(message, from_scroll) {
-    // Barnowl-style recentering: if the pointer is too high, center
-    // in the middle of the screen. If the pointer is too low, center
-    // on the 1/5-mark.
+    // Barnowl-style recentering: if the pointer is too high, move it to
+    // the 4/5 marks. If the pointer is too low, move it to the 1/5 mark.
+    // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
 
     var viewport_info = ui.message_viewport_info();
     var top_threshold =
@@ -93,7 +93,7 @@ function recenter_view(message, from_scroll) {
 
     var bottom_threshold =
         viewport_info.visible_top +
-        (2/3 * viewport_info.visible_height);
+        (4/5 * viewport_info.visible_height);
 
     var message_top = message.offset().top;
     var is_above = message_top < top_threshold;
@@ -114,7 +114,7 @@ function recenter_view(message, from_scroll) {
     }
 
     if (is_above) {
-        viewport.set_message_position(message_top, viewport_info, 1/2);
+        viewport.set_message_position(message_top, viewport_info, 4/5);
     } else if (is_below) {
         viewport.set_message_position(message_top, viewport_info, 1/5);
     }
@@ -1138,6 +1138,7 @@ setInterval(function () {
 }, 5000);
 
 function keep_pointer_in_view() {
+    // See recenter_view() for related logic to keep the pointer onscreen.
     var candidate;
     var next_row = current_msg_list.selected_row();
 
@@ -1146,7 +1147,7 @@ function keep_pointer_in_view() {
 
     var info = ui.message_viewport_info();
     var top_threshold = info.visible_top + (1/5 * info.visible_height);
-    var bottom_threshold = info.visible_top + (2/3 * info.visible_height);
+    var bottom_threshold = info.visible_top + (4/5 * info.visible_height);
 
     function above_view_threshold() {
         var bottom_offset = next_row.offset().top + next_row.outerHeight(true);
