@@ -8,7 +8,7 @@ class humbug::app_frontend {
                     "python-django-statsd-mozilla",
                     "build-essential", "libssl-dev", "supervisor",
                     "python-boto", "python-defusedxml", "python-twitter",
-                    "python-twisted", "python-markdown", "python-requests",
+                    "python-twisted", "python-markdown",
                     "python-django-south", "python-mock", "python-pika",
                     "python-django-pipeline", "hunspell-en-us",
                     "python-django-bitfield", "python-embedly",
