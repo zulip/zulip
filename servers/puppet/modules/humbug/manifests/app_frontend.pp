@@ -5,14 +5,15 @@ class humbug::app_frontend {
   $web_packages = [ "nginx", "memcached", "python-pylibmc", "python-tornado", "python-django",
                     "python-pygments", "python-flup", "ipython", "python-psycopg2",
                     "yui-compressor", "python-django-auth-openid",
-		    "python-django-statsd-mozilla",
+        "python-django-statsd-mozilla",
                     "build-essential", "libssl-dev", "supervisor",
-		    "python-boto", "python-defusedxml", "python-twitter",
-		    "python-twisted", "python-markdown", "python-requests",
-		    "python-django-south", "python-mock", "python-pika",
-		    "python-django-pipeline", "hunspell-en-us",
-		    "python-django-bitfield", "python-embedly",
-		    "python-postmonkey", "python-django-jstemplate"]
+        "python-boto", "python-defusedxml", "python-twitter",
+        "python-twisted", "python-markdown", "python-requests",
+        "python-django-south", "python-mock", "python-pika",
+        "python-django-pipeline", "hunspell-en-us",
+        "python-django-bitfield", "python-embedly",
+        "python-postmonkey", "python-django-jstemplate",
+        "redis-server", "python-redis"]
   package { $web_packages: ensure => "installed" }
 
   file { "/etc/nginx/nginx.conf":
@@ -58,6 +59,18 @@ class humbug::app_frontend {
     owner => "humbug",
     group => "humbug",
     mode => 755,
+  }
+  file { "/etc/redis/redis.conf":
+    require => Package[redis-server],
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/humbug/redis/redis.conf",
+  }
+  service { 'redis-server':
+    ensure     => running,
+    subscribe  => File['/etc/redis/redis.conf'],
   }
 
   # TODO: I think we need to restart memcached after deploying this
