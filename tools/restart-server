@@ -6,12 +6,13 @@ import pylibmc
 import traceback
 import logging
 import time
-from humbug_tools import ENDC, WARNING, OKGREEN
+from humbug_tools import ENDC, WARNING, OKGREEN, DEPLOYMENTS_DIR
 
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
                     level=logging.INFO)
 
-os.chdir("/home/humbug/humbug-deployments/current")
+deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
+os.chdir(deploy_path)
 
 # Send a statsd event on restarting the server
 subprocess.check_call(["python", "./manage.py", "send_stats", "incr", "events.server_restart", str(int(time.time()))])
@@ -26,6 +27,9 @@ logging.info("Killing daemons")
 subprocess.check_call(["supervisorctl", "stop",    "humbug-workers:*"])
 subprocess.check_call(["supervisorctl", "stop",    "humbug-django"])
 subprocess.check_call(["supervisorctl", "restart", "humbug-tornado"])
+
+subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "current")])
+
 subprocess.check_call(["supervisorctl", "start",   "humbug-django"])
 subprocess.check_call(["supervisorctl", "start",   "humbug-workers:*"])
 

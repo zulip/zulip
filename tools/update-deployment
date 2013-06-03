@@ -45,8 +45,6 @@ subprocess.check_call(["find", ".", "-name", "*.pyc", "-delete"], stdout=open('/
 logging.info("Updating static files")
 subprocess.check_call(["./tools/update-prod-static"])
 
-subprocess.check_call(["ln", '-nsf', deploy_path, os.path.join(DEPLOYMENTS_DIR, "current")])
-
 logging.info("Restarting server...")
 subprocess.check_call(["./tools/restart-server"])
 
