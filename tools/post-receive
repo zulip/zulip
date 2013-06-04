@@ -30,6 +30,7 @@
 
 import sys
 import subprocess
+from humbug_tools import check_output, ENDC, FAIL
 
 def update_deployment(server, oldrev, newrev, refname):
     return subprocess.call(["ssh", server, "--", "env", "-u", "GIT_DIR",
@@ -62,3 +63,14 @@ for ln in sys.stdin:
                 send_deployment_finished_humbug(branch, "deployment of `%s` finished successfully!" % (newrev[:12],))
             else:
                 send_deployment_finished_humbug(branch, "deployment of `%s` failed!" % (newrev[:12],))
+
+            if newrev == '0000000000000000000000000000000000000000':
+                # 0000000000000000000000000000000000000000 means we're deleting the ref
+                commits = ''
+            else:
+                commits = check_output(["git", "log", "%s..%s" % (oldrev, newrev)])
+
+            if '[schema]' in commits:
+                print
+                print FAIL + "Schema change detected!  Please make the appropriate changes manually." + ENDC
+                print

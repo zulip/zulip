@@ -5,7 +5,7 @@ import subprocess
 import pylibmc
 import traceback
 import logging
-from humbug_tools import check_output, DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, ENDC
+from humbug_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, ENDC
 import datetime
 import shutil
 
@@ -52,16 +52,5 @@ subprocess.check_call(["./tools/restart-server"])
 
 logging.info("Deployment complete")
 shutil.rmtree(LOCK_DIR)
-
-if newrev == '0000000000000000000000000000000000000000':
-    # 0000000000000000000000000000000000000000 means we're deleting the ref
-    commits = ''
-else:
-    commits = check_output(["git", "log", "%s..%s" % (oldrev, newrev)])
-
-if '[schema]' in commits:
-    print
-    print FAIL + "Schema change detected!  Please make the appropriate changes manually." + ENDC
-    print
 
 subprocess.check_call(["./tools/purge-deployments"])
