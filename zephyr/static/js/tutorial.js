@@ -287,8 +287,7 @@ function make_script() {
   go(sleep, 2000),
   go2(stream_message, "tutorial",'At any time, you can stop this tutorial by replying to me with the word "exit".'),
   go(sleep, 3000),
-  go2(stream_message, "tutorial", "Why don't you **reply to this message and say hello?** "
-    + "(Click on this message to reply.)"),
+  go2(stream_message, "tutorial", "Why don't you **click on this message to start a reply** and say hello?"),
   go2(wait_for_message, 300, any_message_to_me),
   go(sleep, 1000),
   go2(stream_message, "tutorial",'Great, thanks! After you\'ve typed your reply, you can send it by clicking "Send", but you can also send from the keyboard by pressing `Tab` and then `Enter`.'),
