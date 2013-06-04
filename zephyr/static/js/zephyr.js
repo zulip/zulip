@@ -83,21 +83,18 @@ function within_viewport(row_offset, row_height) {
 
 function recenter_view(message, from_scroll) {
     // Barnowl-style recentering: if the pointer is too high, move it to
-    // the 4/5 marks. If the pointer is too low, move it to the 1/5 mark.
+    // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
     // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
 
     var viewport_info = ui.message_viewport_info();
-    var top_threshold =
-        viewport_info.visible_top +
-        (1/5 * viewport_info.visible_height);
+    var top_threshold = viewport_info.visible_top;
 
-    var bottom_threshold =
-        viewport_info.visible_top +
-        (4/5 * viewport_info.visible_height);
+    var bottom_threshold = viewport_info.visible_top + viewport_info.visible_height;
 
     var message_top = message.offset().top;
+    var message_bottom = message_top + message.outerHeight(true);
     var is_above = message_top < top_threshold;
-    var is_below = message_top > bottom_threshold;
+    var is_below = message_bottom > bottom_threshold;
 
     if (from_scroll) {
         // If the message you're trying to center on is already in view AND
@@ -114,9 +111,9 @@ function recenter_view(message, from_scroll) {
     }
 
     if (is_above) {
-        viewport.set_message_position(message_top, viewport_info, 4/5);
+        viewport.set_message_position(message_top, viewport_info, 1/2);
     } else if (is_below) {
-        viewport.set_message_position(message_top, viewport_info, 1/5);
+        viewport.set_message_position(message_top, viewport_info, 1/7);
     }
 }
 
@@ -1144,6 +1141,11 @@ setInterval(function () {
 
 function keep_pointer_in_view() {
     // See recenter_view() for related logic to keep the pointer onscreen.
+    // This function mostly comes into place for mouse scrollers, and it
+    // keeps the pointer in view.  For people who purely scroll with the
+    // mouse, the pointer is kind of meaningless to them, but keyboard
+    // users will occasionally do big mouse scrolls, so this gives them
+    // a pointer reasonably close to the middle of the screen.
     var candidate;
     var next_row = current_msg_list.selected_row();
 
@@ -1151,8 +1153,8 @@ function keep_pointer_in_view() {
         return;
 
     var info = ui.message_viewport_info();
-    var top_threshold = info.visible_top + (1/5 * info.visible_height);
-    var bottom_threshold = info.visible_top + (4/5 * info.visible_height);
+    var top_threshold = info.visible_top + (1/10 * info.visible_height);
+    var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
 
     function above_view_threshold() {
         var bottom_offset = next_row.offset().top + next_row.outerHeight(true);
