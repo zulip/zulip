@@ -109,7 +109,8 @@ MessageList.prototype = {
         }
         if (this.get(id) === undefined) {
             if (!opts.use_closest) {
-                blueslip.error("Selected message id not in MessageList");
+                blueslip.error("Selected message id not in MessageList",
+                               {table_name: this.table_name, id: id});
             }
             id = this.closest_id(id);
             opts.id = id;
