@@ -589,7 +589,9 @@ MessageList.prototype = {
         // things.
         this._clear_rendering_state();
         this._rerender_preserving_scrolltop();
-        this.select_id(this._selected_id);
+        if (this._selected_id !== -1) {
+            this.select_id(this._selected_id);
+        }
     },
 
     all: function MessageList_all() {
