@@ -719,6 +719,10 @@ function maybe_add_narrowed_messages(messages, msg_list) {
 function update_messages(events) {
     $.each(events, function (idx, event) {
         var msg = all_msg_list.get(event.message_id);
+        if (msg === undefined) {
+            return;
+        }
+
         if (event.rendered_content !== undefined) {
             msg.content = event.rendered_content;
         }
