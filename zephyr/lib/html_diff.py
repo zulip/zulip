@@ -36,7 +36,7 @@ def chunkize(text, in_tag):
     if start != idx:
         chunks.append(('tag' if in_tag else 'text', text[start:idx]))
     return chunks, in_tag
-    
+
 def highlight_chunks(chunks, highlight_func):
     retval = ''
     for type, text in chunks:
