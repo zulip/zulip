@@ -6,15 +6,10 @@ import pylibmc
 import traceback
 import logging
 import time
+from humbug_tools import ENDC, WARNING, OKGREEN
 
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
                     level=logging.INFO)
-# Color codes
-OKBLUE = '\033[94m'
-OKGREEN = '\033[92m'
-WARNING = '\033[93m'
-FAIL = '\033[91m'
-ENDC = '\033[0m'
 
 os.chdir("/home/humbug/humbug-deployments/current")
 

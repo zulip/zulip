@@ -5,19 +5,12 @@ import subprocess
 import pylibmc
 import traceback
 import logging
-from humbug_tools import check_output, DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT
+from humbug_tools import check_output, DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, ENDC
 import datetime
 import shutil
 
 logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",
                     level=logging.INFO)
-
-# Color codes
-OKBLUE = '\033[94m'
-OKGREEN = '\033[92m'
-WARNING = '\033[93m'
-FAIL = '\033[91m'
-ENDC = '\033[0m'
 
 if len(sys.argv) > 1:
     oldrev = sys.argv[1]
