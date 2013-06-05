@@ -15,7 +15,7 @@ from zephyr.lib.initial_password import initial_password
 from zephyr.lib.actions import do_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription
 from zephyr.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
-from zephyr.lib.bugdown import convert, emoji_list
+from zephyr.lib import bugdown
 
 import simplejson
 import subprocess
@@ -1838,10 +1838,12 @@ class GetSubscribersTest(AuthedTestCase):
         self.assert_json_error(result,
                                "Unable to retrieve subscribers for invite-only stream")
 
-class BugdownTest(TestCase):
+def bugdown_convert(text):
+    return bugdown.convert(text)
 
+class BugdownTest(TestCase):
     def common_bugdown_test(self, text, expected):
-        converted = convert(text)
+        converted = bugdown_convert(text)
         self.assertEqual(converted, expected)
 
     def test_codeblock_hilite(self):
@@ -2142,7 +2144,7 @@ int x = 3
                 match = replaced(reference, url, phrase=inline_url)
             except TypeError:
                 match = reference
-            converted = convert(inline_url)
+            converted = bugdown_convert(inline_url)
             self.assertEqual(match, converted)
 
     def test_manual_links(self):
@@ -2164,14 +2166,14 @@ othello@humbughq.com</a></p>')
                 )
 
         for input, output in urls:
-            converted = convert(input)
+            converted = bugdown_convert(input)
             self.assertEqual(output, converted)
 
     def test_linkify_interference(self):
         # Check our auto links don't interfere with normal markdown linkification
         msg = 'link: xx, x xxxxx xx xxxx xx\n\n[xxxxx #xx](http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/):\
 **xxxxxxx**\n\nxxxxxxx xxxxx xxxx xxxxx:\n`xxxxxx`: xxxxxxx\n`xxxxxx`: xxxxx\n`xxxxxx`: xxxxx xxxxx'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>link: xx, x xxxxx xx xxxx xx</p>\n<p><a href="http://xxxxxxxxx:xxxx/\
 xxx/xxxxxx%xxxxxx/xx/" target="_blank" title="http://xxxxxxxxx:xxxx/xxx/xxxxxx%xxxxxx/xx/">xxxxx #xx</a>:<strong>\
@@ -2180,38 +2182,38 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
 
     def test_inline_image(self):
         msg = 'Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Google logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>')
 
         # If thre are two images, both should be previewed.
         msg = 'Google logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boringGoogle logo today: https://www.google.com/images/srpr/logo4w.png\nKinda boring'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Google logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boringGoogle logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div><div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>')
 
 
     def test_inline_youtube(self):
         msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<iframe width="250" height="141" src="http://www.youtube.com/embed/hx1mjT73xYE?feature=oembed" frameborder="0" allowfullscreen></iframe>')
 
     def test_inline_dropbox(self):
         msg = 'Look at how hilarious our old office was: https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Look at how hilarious our old office was: <a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG" target="_blank" title="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG">https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG" target="_blank" title="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG"><img src="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG?dl=1"></a></div>')
 
         msg = 'Look at my hilarious drawing: https://www.dropbox.com/sh/inlugx9d25r314h/JYwv59v4Jv/credit_card_rushmore.jpg'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Look at my hilarious drawing: <a href="https://www.dropbox.com/sh/inlugx9d25r314h/JYwv59v4Jv/credit_card_rushmore.jpg" target="_blank" title="https://www.dropbox.com/sh/inlugx9d25r314h/JYwv59v4Jv/credit_card_rushmore.jpg">https://www.dropbox.com/sh/inlugx9d25r314h/JYwv59v4Jv/credit_card_rushmore.jpg</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/sh/inlugx9d25r314h/JYwv59v4Jv/credit_card_rushmore.jpg" target="_blank" title="https://www.dropbox.com/sh/inlugx9d25r314h/JYwv59v4Jv/credit_card_rushmore.jpg"><img src="https://www.dropbox.com/sh/inlugx9d25r314h/JYwv59v4Jv/credit_card_rushmore.jpg?dl=1"></a></div>')
 
 
         # Make sure we're not overzealous in our conversion:
         msg = 'Look at the new dropbox logo: https://www.dropbox.com/static/images/home_logo.png'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Look at the new dropbox logo: <a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png">https://www.dropbox.com/static/images/home_logo.png</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/static/images/home_logo.png" target="_blank" title="https://www.dropbox.com/static/images/home_logo.png"><img src="https://www.dropbox.com/static/images/home_logo.png"></a></div>')
 
@@ -2224,45 +2226,45 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
             return """<div class="inline-preview-twitter"><div class="twitter-tweet"><a href="%s" target="_blank"><img class="twitter-avatar" src="https://si0.twimg.com/profile_images/1380912173/Screen_shot_2011-06-03_at_7.35.36_PM_normal.png"></a><p>@twitter meets @seepicturely at #tcdisrupt cc.@boscomonkey @episod http://t.co/6J2EgYM</p><span>- Eoin McMillan  (@imeoin)</span></div></div>""" % (url, )
 
         msg = 'http://www.twitter.com'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com'))
 
         msg = 'http://www.twitter.com/wdaher/'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/'))
 
         msg = 'http://www.twitter.com/wdaher/status/3'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/3'))
 
         # id too long
         msg = 'http://www.twitter.com/wdaher/status/2879779692873154569'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/2879779692873154569'))
 
         # id too large (i.e. tweet doesn't exist)
         msg = 'http://www.twitter.com/wdaher/status/999999999999999999'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>' % make_link('http://www.twitter.com/wdaher/status/999999999999999999'))
 
         msg = 'http://www.twitter.com/wdaher/status/287977969287315456'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://www.twitter.com/wdaher/status/287977969287315456'),
                                                        make_inline_twitter_preview('http://www.twitter.com/wdaher/status/287977969287315456')))
 
         msg = 'https://www.twitter.com/wdaher/status/287977969287315456'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('https://www.twitter.com/wdaher/status/287977969287315456'),
                                                        make_inline_twitter_preview('https://www.twitter.com/wdaher/status/287977969287315456')))
 
         msg = 'http://twitter.com/wdaher/status/287977969287315456'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315456'),
                                                        make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456')))
 
         # Only one should get converted
         msg = 'http://twitter.com/wdaher/status/287977969287315456 http://twitter.com/wdaher/status/287977969287315457'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>%s %s</p>\n%s' % (make_link('http://twitter.com/wdaher/status/287977969287315456'),
                                                           make_link('http://twitter.com/wdaher/status/287977969287315457'),
                                                           make_inline_twitter_preview('http://twitter.com/wdaher/status/287977969287315456')))
@@ -2283,29 +2285,29 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
                        ]
 
         # Check every single emoji
-        for img in emoji_list:
+        for img in bugdown.emoji_list:
             emoji_text = ":%s:" % img
             test_cases.append((emoji_text, emoji_img(emoji_text)))
 
         for input, expected in test_cases:
-            self.assertEqual(convert(input), '<p>%s</p>' % expected)
+            self.assertEqual(bugdown_convert(input), '<p>%s</p>' % expected)
 
         # Comprehensive test of a bunch of things together
         msg = 'test :smile: again :poop:\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:'
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p>test ' + emoji_img(':smile:') + ' again ' + emoji_img(':poop:') + '<br>\n'
                                   + ':) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>')
 
 
     def test_multiline_strong(self):
         msg = "Welcome to **the jungle**"
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Welcome to <strong>the jungle</strong></p>')
 
         msg = """You can check out **any time you'd like
 But you can never leave**"""
-        converted = convert(msg)
+        converted = bugdown_convert(msg)
         self.assertEqual(converted, "<p>You can check out **any time you'd like<br>\nBut you can never leave**</p>")
 
 class UserPresenceTests(AuthedTestCase):
