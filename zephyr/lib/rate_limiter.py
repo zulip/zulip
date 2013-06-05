@@ -14,8 +14,6 @@ from itertools import izip
 
 client = redis.StrictRedis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=0)
 rules = settings.RATE_LIMITING_RULES
-highest_ttl = rules[-1][0]
-
 def _rules_for_user(user):
     if user.rate_limits != "":
         return [[int(l) for l in limit.split(':')] for limit in user.rate_limits.split(',')]
@@ -35,14 +33,10 @@ def max_api_window(user):
 
 def add_ratelimit_rule(range_seconds, num_requests):
     "Add a rate-limiting rule to the ratelimiter"
-    global highest_ttl, rules
+    global rules
 
     rules.append((range_seconds, num_requests))
     rules.sort(cmp=lambda x, y: x[0] < y[0])
-
-    # We can expire a client's list once we have no more rules
-    # that might need checking
-    highest_ttl = max(highest_ttl, range_seconds)
 
 def remove_ratelimit_rule(range_seconds, num_requests):
     global rules
@@ -176,10 +170,6 @@ def incr_ratelimit(user, domain='all'):
                 # Trim our list to the oldest rule we have
                 pipe.ltrim(list_key, 0, max_api_calls(user) - 1)
 
-                # Set the TTL for our keys as well
-                pipe.expire(list_key, highest_ttl)
-                pipe.expire(set_key, highest_ttl)
-
                 # Add our new value to the sorted set that we keep
                 # We need to put the score and val both as timestamp,
                 # as we sort by score but remove by value
@@ -188,6 +178,11 @@ def incr_ratelimit(user, domain='all'):
                 # Remove the trimmed value from our sorted set, if there was one
                 if last_val is not None:
                     pipe.zrem(set_key, last_val)
+
+                # Set the TTL for our keys as well
+                api_window = max_api_window(user)
+                pipe.expire(list_key, api_window)
+                pipe.expire(set_key, api_window)
 
                 pipe.execute()
 
