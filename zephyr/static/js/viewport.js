@@ -22,17 +22,33 @@ exports.at_bottom = function () {
     return bottom + 2 >= window_size;
 };
 
-exports.set_message_position = function (message_top, viewport_info, ratio) {
+exports.set_message_position = function (message_top, message_height, viewport_info, ratio) {
     // message_top = offset of the top of a message that you are positioning
+    // message_height = height of the message that you are positioning
     // viewport_info = result of calling ui.message_viewport_info
     // ratio = fraction indicating how far down the screen the msg should be
+
+    var how_far_down_in_visible_page = viewport_info.visible_height * ratio;
+
+    // special case: keep large messages fully on the screen
+    if (how_far_down_in_visible_page + message_height > viewport_info.visible_height) {
+        how_far_down_in_visible_page = viewport_info.visible_height - message_height;
+
+        // Next handle truly gigantic messages.  We just say that the top of the
+        // message goes to the top of the viewing area.  Realistically, gigantic
+        // messages should either be condensed, socially frowned upon, or scrolled
+        // with the mouse.
+        if (how_far_down_in_visible_page < 0) {
+            how_far_down_in_visible_page = 0;
+        }
+    }
 
     var hidden_top =
         viewport_info.visible_top
         - jwindow.scrollTop();
 
     var message_offset =
-        viewport_info.visible_height * ratio
+        how_far_down_in_visible_page
         + hidden_top;
 
     var new_scroll_top =

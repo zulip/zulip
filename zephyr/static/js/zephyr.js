@@ -92,7 +92,9 @@ function recenter_view(message, from_scroll) {
     var bottom_threshold = viewport_info.visible_top + viewport_info.visible_height;
 
     var message_top = message.offset().top;
-    var message_bottom = message_top + message.outerHeight(true);
+    var message_height = message.outerHeight(true);
+    var message_bottom = message_top + message_height;
+
     var is_above = message_top < top_threshold;
     var is_below = message_bottom > bottom_threshold;
 
@@ -111,9 +113,9 @@ function recenter_view(message, from_scroll) {
     }
 
     if (is_above) {
-        viewport.set_message_position(message_top, viewport_info, 1/2);
+        viewport.set_message_position(message_top, message_height, viewport_info, 1/2);
     } else if (is_below) {
-        viewport.set_message_position(message_top, viewport_info, 1/7);
+        viewport.set_message_position(message_top, message_height, viewport_info, 1/7);
     }
 }
 
