@@ -48,19 +48,19 @@ urlpatterns = patterns('',
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
 
     # Portico-styled page used to provide email confirmation of terms acceptance.
-    url(r'^accounts/accept_terms', 'zephyr.views.accounts_accept_terms'),
+    url(r'^accounts/accept_terms/$', 'zephyr.views.accounts_accept_terms'),
 
     # Terms of service and privacy policy
-    url(r'^terms$',   TemplateView.as_view(template_name='zephyr/terms.html')),
-    url(r'^privacy$', TemplateView.as_view(template_name='zephyr/privacy.html')),
+    url(r'^terms/$',   TemplateView.as_view(template_name='zephyr/terms.html')),
+    url(r'^privacy/$', TemplateView.as_view(template_name='zephyr/privacy.html')),
 
     # "About Humbug" information
-    url(r'^what-is-humbug$', TemplateView.as_view(template_name='zephyr/what-is-humbug.html')),
-    url(r'^new-user$', TemplateView.as_view(template_name='zephyr/new-user.html')),
-    url(r'^features$', TemplateView.as_view(template_name='zephyr/features.html')),
+    url(r'^what-is-humbug/$', TemplateView.as_view(template_name='zephyr/what-is-humbug.html')),
+    url(r'^new-user/$', TemplateView.as_view(template_name='zephyr/new-user.html')),
+    url(r'^features/$', TemplateView.as_view(template_name='zephyr/features.html')),
 
     # Landing page, signup form, and nice register URL
-    url(r'^hello$', TemplateView.as_view(template_name='zephyr/hello.html'),
+    url(r'^hello/$', TemplateView.as_view(template_name='zephyr/hello.html'),
                                          name='landing-page'),
     url(r'^signup/$', TemplateView.as_view(template_name='zephyr/signup.html'),
                                          name='signup'),
@@ -69,15 +69,15 @@ urlpatterns = patterns('',
     url(r'^login/$',  'zephyr.views.login_page', {'template_name': 'zephyr/login.html'}),
 
     # API and integrations documentation
-    url(r'^api$', TemplateView.as_view(template_name='zephyr/api.html')),
-    url(r'^api/endpoints$', 'zephyr.views.api_endpoint_docs'),
-    url(r'^integrations$', TemplateView.as_view(template_name='zephyr/integrations.html')),
-    url(r'^zephyr$', TemplateView.as_view(template_name='zephyr/zephyr.html')),
+    url(r'^api/$', TemplateView.as_view(template_name='zephyr/api.html')),
+    url(r'^api/endpoints/$', 'zephyr.views.api_endpoint_docs'),
+    url(r'^integrations/$', TemplateView.as_view(template_name='zephyr/integrations.html')),
+    url(r'^zephyr/$', TemplateView.as_view(template_name='zephyr/zephyr.html')),
     url(r'^apps$', TemplateView.as_view(template_name='zephyr/apps.html')),
 
     # Job postings
-    url(r'^jobs$', TemplateView.as_view(template_name='zephyr/jobs/index.html')),
-    url(r'^jobs/lead-designer$', TemplateView.as_view(template_name='zephyr/jobs/lead-designer.html')),
+    url(r'^jobs/$', TemplateView.as_view(template_name='zephyr/jobs/index.html')),
+    url(r'^jobs/lead-designer/$', TemplateView.as_view(template_name='zephyr/jobs/lead-designer.html')),
 
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
 )
