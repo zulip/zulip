@@ -973,15 +973,15 @@ input.recipient_box {
 }
 
 .highlight_text_inserted {
-    background-color: #81C3FC;
+    background-color: #E6EDFF;
 }
 
 .highlight_text_deleted {
-    background-color: #FC8181;
+    background-color: #FFE6E6;
 }
 
 .highlight_text_replaced {
-    background-color: #D581FC;
+    background-color: #F5E6FF;
 }
 
 #search_arrows {
