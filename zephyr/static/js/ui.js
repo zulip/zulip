@@ -355,8 +355,15 @@ function resizehandler(e) {
     if (current_msg_list.selected_id() !== -1) {
         scroll_to_selected();
     }
-    // When the screen resizes, it may cause some messages to go off the screen
-    notifications_bar.update();
+
+    // When the screen resizes, it can make it so that messages are
+    // now on the page, so we need to update the notifications bar.
+    // We may want to do more here in terms of updating unread counts,
+    // but it's possible that resize events can happen as part of
+    // screen resolution changes, so we might want to wait for a more
+    // intentional action to say that the user has "read" a message.
+    var res = unread.get_counts();
+    notifications_bar.update(res.unread_in_current_view);
 }
 
 $(function () {
@@ -763,10 +770,9 @@ $(function () {
                 have_scrolled_away_from_top = true;
             }
             // When the window scrolls, it may cause some messages to
-            // enter the screen and become read
-            notifications_bar.update();
-            notifications.update_title_count();
-
+            // enter the screen and become read.  Calling
+            // process_visible_unread_messages will update necessary
+            // data structures and DOM elements.
             setTimeout(process_visible_unread_messages, 0);
         }
     }

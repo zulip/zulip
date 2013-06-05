@@ -271,36 +271,16 @@ function send_queued_flags() {
         success:  on_success});
 }
 
-var home_unread_messages = 0;
-
-function unread_in_current_view() {
-    var num_unread = 0;
-    if (!narrow.active()) {
-        num_unread = home_unread_messages;
-    } else {
-        $.each(current_msg_list.all(), function (idx, msg) {
-            if (unread.message_unread(msg) && msg.id > current_msg_list.selected_id()) {
-                num_unread += 1;
-            }
-        });
-    }
-    return num_unread;
-}
-
 function update_unread_counts() {
     // Pure computation:
     var res = unread.get_counts();
 
     // Side effects from here down:
-
-    // TODO: deprecate this global.
-    home_unread_messages = res.home_unread_messages;
-
     // This updates some DOM elements directly, so try to
     // avoid excessive calls to this.
     stream_list.update_dom_with_unread_counts(res);
-
-    notifications.update_title_count();
+    notifications.update_title_count(res.unread_in_current_view);
+    notifications_bar.update(res.unread_in_current_view);
 }
 
 function mark_all_as_read(cont) {
@@ -696,8 +676,8 @@ function add_messages(messages, msg_list) {
         typeahead_helper.update_autocomplete();
     }
 
-    // If the new messages are off the screen, show a notification
-    notifications_bar.update();
+    // There are some other common tasks that happen when adding messages, but these
+    // happen higher up in the stack, notably logic related to unread counts.
 }
 
 function deduplicate_messages(messages) {

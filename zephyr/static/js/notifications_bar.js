@@ -28,10 +28,10 @@ function hide() {
 
 // If there's a custom message, or if the last message is off the bottom of the
 // screen, then show the notifications bar.
-exports.update = function () {
+exports.update = function (num_unread) {
     if (rows.last_visible().offset() !== null // otherwise the next line will error
         && rows.last_visible().offset().top + rows.last_visible().height() > viewport.scrollTop() + viewport.height() - $("#compose").height()
-        && unread_in_current_view() > 0)
+        && num_unread > 0)
         show();
     else
         hide();

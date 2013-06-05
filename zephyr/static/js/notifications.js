@@ -21,13 +21,13 @@ function browser_desktop_notifications_on () {
 exports.initialize = function () {
     $(window).focus(function () {
         window_has_focus = true;
-        exports.update_title_count();
 
         $.each(notice_memory, function (index, notice_mem_entry) {
            notice_mem_entry.obj.cancel();
         });
 
-
+        // Update many places on the DOM to reflect unread
+        // counts.
         process_visible_unread_messages();
     }).blur(function () {
         window_has_focus = false;
@@ -64,11 +64,10 @@ exports.initialize = function () {
     }
 };
 
-exports.update_title_count = function () {
+exports.update_title_count = function (new_message_count) {
     // Update window title and favicon to reflect unread messages in current view
     var n;
 
-    var new_message_count = unread_in_current_view();
     var new_title = (new_message_count ? ("(" + new_message_count + ") ") : "")
         + page_params.domain + " - Humbug";
 
