@@ -30,9 +30,9 @@ class Command(BaseCommand):
             user = None
         max_calls = max_api_calls(user=user)
 
-        age = client.ttl(key)
-        if age == '-1':
-            logging.error("Found key with age of -1, will never expire: %s" % (key,))
+        age = int(client.ttl(key))
+        if age < 0:
+            logging.error("Found key with age of %s, will never expire: %s" % (age, key,))
 
         count = count_func()
         if count > max_calls:
