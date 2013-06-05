@@ -81,6 +81,50 @@ function within_viewport(row_offset, row_height) {
     return (message_top > viewport_top) && (message_bottom < viewport_bottom);
 }
 
+function keep_pointer_in_view() {
+    // See recenter_view() for related logic to keep the pointer onscreen.
+    // This function mostly comes into place for mouse scrollers, and it
+    // keeps the pointer in view.  For people who purely scroll with the
+    // mouse, the pointer is kind of meaningless to them, but keyboard
+    // users will occasionally do big mouse scrolls, so this gives them
+    // a pointer reasonably close to the middle of the screen.
+    var candidate;
+    var next_row = current_msg_list.selected_row();
+
+    if (next_row.length === 0)
+        return;
+
+    var info = ui.message_viewport_info();
+    var top_threshold = info.visible_top + (1/10 * info.visible_height);
+    var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
+
+    function above_view_threshold() {
+        var bottom_offset = next_row.offset().top + next_row.outerHeight(true);
+        return bottom_offset < top_threshold;
+    }
+
+    function below_view_threshold() {
+        return next_row.offset().top > bottom_threshold;
+    }
+
+    function adjust(past_threshold, at_end, advance) {
+        if (!past_threshold(next_row) || at_end())
+            return false;  // try other side
+        while (past_threshold(next_row)) {
+            candidate = advance(next_row);
+            if (candidate.length === 0)
+                break;
+            next_row = candidate;
+        }
+        return true;
+    }
+
+    if (! adjust(above_view_threshold, viewport.at_top, rows.next_visible))
+        adjust(below_view_threshold, viewport.at_bottom, rows.prev_visible);
+
+    current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
+}
+
 function recenter_view(message, from_scroll) {
     // Barnowl-style recentering: if the pointer is too high, move it to
     // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
@@ -1140,50 +1184,6 @@ setInterval(function () {
     }
     watchdog_time = new_time;
 }, 5000);
-
-function keep_pointer_in_view() {
-    // See recenter_view() for related logic to keep the pointer onscreen.
-    // This function mostly comes into place for mouse scrollers, and it
-    // keeps the pointer in view.  For people who purely scroll with the
-    // mouse, the pointer is kind of meaningless to them, but keyboard
-    // users will occasionally do big mouse scrolls, so this gives them
-    // a pointer reasonably close to the middle of the screen.
-    var candidate;
-    var next_row = current_msg_list.selected_row();
-
-    if (next_row.length === 0)
-        return;
-
-    var info = ui.message_viewport_info();
-    var top_threshold = info.visible_top + (1/10 * info.visible_height);
-    var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
-
-    function above_view_threshold() {
-        var bottom_offset = next_row.offset().top + next_row.outerHeight(true);
-        return bottom_offset < top_threshold;
-    }
-
-    function below_view_threshold() {
-        return next_row.offset().top > bottom_threshold;
-    }
-
-    function adjust(past_threshold, at_end, advance) {
-        if (!past_threshold(next_row) || at_end())
-            return false;  // try other side
-        while (past_threshold(next_row)) {
-            candidate = advance(next_row);
-            if (candidate.length === 0)
-                break;
-            next_row = candidate;
-        }
-        return true;
-    }
-
-    if (! adjust(above_view_threshold, viewport.at_top, rows.next_visible))
-        adjust(below_view_threshold, viewport.at_bottom, rows.prev_visible);
-
-    current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
-}
 
 // The idea here is when you've scrolled to the very
 // bottom of the page, e.g., the scroll handler isn't
