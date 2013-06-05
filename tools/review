@@ -198,7 +198,7 @@ def write_template(target, repo, opts):
   if opts.message:
     print >>target, opts.message
     print >>target
-  print >>target, 'Testing:',
+  print >>target, 'Testing:'
   if opts.testing:
     print >>target, opts.testing
   else:
