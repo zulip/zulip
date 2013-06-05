@@ -12,6 +12,10 @@ blockquote p {
     font-weight: normal;
 }
 
+a {
+    cursor: pointer;
+}
+
 .container-fluid {
     max-width: 1200px;
     margin: 0px auto;
@@ -830,10 +834,6 @@ input.recipient_box {
     height: 40px;
 }
 
-.brand {
-    cursor: pointer;
-}
-
 #navbar-middle {
     display: table-row;
 }
@@ -1064,14 +1064,6 @@ table.floating_recipient {
     height: 100%;
 }
 
-.actions_popover a {
-    cursor: pointer;
-}
-
-.actions_popover i {
-    color: black;
-}
-
 .popover {
     width: auto;
 }
@@ -1104,10 +1096,6 @@ table.floating_recipient {
 .hotkeys_table .hotkey {
     text-align: right;
     font-weight: bold;
-}
-
-.cursor_pointer {
-    cursor: pointer;
 }
 
 #loading_more_messages_indicator {
