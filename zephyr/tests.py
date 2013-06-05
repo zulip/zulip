@@ -1839,7 +1839,7 @@ class GetSubscribersTest(AuthedTestCase):
                                "Unable to retrieve subscribers for invite-only stream")
 
 def bugdown_convert(text):
-    return bugdown.convert(text)
+    return bugdown.convert(text, "humbughq.com")
 
 class BugdownTest(TestCase):
     def common_bugdown_test(self, text, expected):
@@ -2309,6 +2309,12 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
 But you can never leave**"""
         converted = bugdown_convert(msg)
         self.assertEqual(converted, "<p>You can check out **any time you'd like<br>\nBut you can never leave**</p>")
+
+    def test_realm_patterns(self):
+        msg = "We should fix trac #224 and Trac #115, but not Ztrac #124 or trac #1124Z today."
+        converted = bugdown_convert(msg)
+
+        self.assertEqual(converted, '<p>We should fix <a href="https://trac.humbughq.com/ticket/224" target="_blank" title="https://trac.humbughq.com/ticket/224">trac #224</a> and <a href="https://trac.humbughq.com/ticket/115" target="_blank" title="https://trac.humbughq.com/ticket/115">Trac #115</a>, but not Ztrac #124 or trac #1124Z today.</p>')
 
 class UserPresenceTests(AuthedTestCase):
     fixtures = ['messages.json']

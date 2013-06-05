@@ -455,7 +455,7 @@ def check_message(sender, client, message_type_name, message_to,
     else:
         return "Invalid message type"
 
-    rendered_content = bugdown.convert(message_content)
+    rendered_content = bugdown.convert(message_content, sender.realm.domain)
     if rendered_content is None:
         return "We were unable to render your message"
 
@@ -958,7 +958,7 @@ def do_update_message(user_profile, message_id, subject, content):
         first_rendered_content = message.rendered_content
 
     if content is not None:
-        rendered_content = bugdown.convert(content)
+        rendered_content = bugdown.convert(content, message.sender.realm.domain)
         if rendered_content is None:
             raise JsonableError("We were unable to render your updated message")
 

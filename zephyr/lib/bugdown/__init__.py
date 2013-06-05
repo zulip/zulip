@@ -408,16 +408,18 @@ def sanitize_url(url):
     # Url passes all tests. Return url as-is.
     return urlparse.urlunparse((scheme, netloc, path, params, query, fragment))
 
-def url_to_a(url):
+def url_to_a(url, text = None):
     a = markdown.util.etree.Element('a')
 
     href = sanitize_url(url)
     if href is None:
         # Rejected by sanitize_url; render it as plain text.
         return url
+    if text is None:
+        text = url
 
     a.set('href', href)
-    a.text = url
+    a.text = text
     fixup_link(a, not 'mailto:' in href[:7])
     return a
 
@@ -500,6 +502,19 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         fixup_link(el)
         return el
 
+# Given a regular expression pattern, linkifies groups that match it
+# using the provided format string to construct the URL.
+class RealmFilterPattern(markdown.inlinepatterns.Pattern):
+    """ Applied a given realm filter to the input """
+    def __init__(self, source_pattern, format_string, markdown_instance=None):
+        self.pattern = r'\b(?P<name>' + source_pattern + ')(?!\w)'
+        self.format_string = format_string
+        markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
+
+    def handleMatch(self, m):
+        return url_to_a(self.format_string % m.groupdict(),
+                        m.group("name"))
+
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         del md.preprocessors['reference']
@@ -535,6 +550,10 @@ class Bugdown(markdown.Extension):
 
         md.inlinePatterns.add('http_autolink', HttpLink(http_link_regex), '>link')
 
+        for (pattern, format_string) in self.getConfig("realm_filters"):
+            md.inlinePatterns.add('realm_filters/%s' % (pattern,),
+                                  RealmFilterPattern(pattern, format_string), '_begin')
+
         # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
         #
         # We detect a url by checking for the TLD, and building around it.
@@ -555,15 +574,31 @@ class Bugdown(markdown.Extension):
 
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
 
-_md_engine = markdown.Markdown(
-    safe_mode     = 'escape',
-    output_format = 'html',
-    extensions    = ['nl2br',
-        codehilite.makeExtension(configs=[
-            ('force_linenos', False),
-            ('guess_lang',    False)]),
-        fenced_code.makeExtension(),
-        Bugdown()])
+
+md_engines = {}
+
+def make_md_engine(key, opts):
+    md_engines[key] = markdown.Markdown(
+        safe_mode     = 'escape',
+        output_format = 'html',
+        extensions    = ['nl2br',
+                         codehilite.makeExtension(configs=[
+                    ('force_linenos', False),
+                    ('guess_lang',    False)]),
+                         fenced_code.makeExtension(),
+                         Bugdown(opts)])
+
+realm_filters = {
+    "default": [],
+    "humbughq.com": [
+        ("[tT]rac #(?P<id>[0-9]{1,8})", "https://trac.humbughq.com/ticket/%(id)s"),
+        ],
+    }
+
+for realm in realm_filters.keys():
+    # Because of how the Markdown config API works, this has confusing
+    # large number of layers of dicts/arrays :(
+    make_md_engine(realm, {"realm_filters": [realm_filters[realm], "Realm-specific filters for %s" % (realm,)]})
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
@@ -575,9 +610,13 @@ _privacy_re = re.compile(r'\w', flags=re.UNICODE)
 def _sanitize_for_log(md):
     return repr(_privacy_re.sub('x', md))
 
-def do_convert(md):
+def do_convert(md, realm):
     """Convert Markdown to HTML, with Humbug-specific settings and hacks."""
 
+    if realm in md_engines:
+        _md_engine = md_engines[realm]
+    else:
+        _md_engine = md_engines["default"]
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
 
@@ -625,8 +664,8 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(md):
+def convert(md, realm):
     bugdown_stats_start()
-    ret = do_convert(md)
+    ret = do_convert(md, realm)
     bugdown_stats_finish()
     return ret

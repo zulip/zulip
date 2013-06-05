@@ -334,7 +334,7 @@ class Message(models.Model):
             obj['content_type'] = 'text/html'
         elif apply_markdown:
             if rendered_content is None:
-                rendered_content = bugdown.convert(self.content)
+                rendered_content = bugdown.convert(self.content, self.sender.realm.domain)
                 if rendered_content is None:
                     rendered_content = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
 
