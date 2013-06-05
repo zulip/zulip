@@ -3,6 +3,7 @@ import os
 import platform
 import logging
 import time
+import re
 
 from zephyr.openid import openid_failure_handler
 
@@ -11,6 +12,7 @@ SERVER_GENERATION = int(time.time())
 DEPLOYED = (('humbughq.com' in platform.node())
             or os.path.exists('/etc/humbug-server'))
 STAGING_DEPLOYED = (platform.node() == 'staging.humbughq.com')
+TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
 
 DEBUG = not DEPLOYED
 TEMPLATE_DEBUG = DEBUG
@@ -18,9 +20,12 @@ TEST_SUITE = False
 
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
-if DEPLOYED:
+if DEPLOYED and not TESTING_DEPLOYED:
     # The IP addresses are for app.humbughq.com and staging.humbughq.com
     ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.245.120.64']
+elif TESTING_DEPLOYED:
+    # Allow any hosts for our test instances, to reduce 500 spam
+    ALLOWED_HOSTS = ['*']
 else:
     ALLOWED_HOSTS = ['localhost']
 
@@ -182,7 +187,7 @@ INSTALLED_APPS = (
 )
 
 LOCAL_STATSD = (False)
-USING_STATSD = DEPLOYED or LOCAL_STATSD
+USING_STATSD = (DEPLOYED and not TESTING_DEPLOYED) or LOCAL_STATSD
 
 if USING_STATSD:
     if LOCAL_STATSD:

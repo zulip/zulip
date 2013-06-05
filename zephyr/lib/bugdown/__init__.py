@@ -80,7 +80,7 @@ def fetch_tweet_data(tweet_id):
         import testing_mocks
         res = testing_mocks.twitter(tweet_id)
     else:
-        if settings.STAGING_DEPLOYED:
+        if settings.STAGING_DEPLOYED or settings.TESTING_DEPLOYED:
             # Application: "Humbug HQ"
             api = twitter.Api(consumer_key = 'xxxxxxxxxxxxxxxxxxxxxx',
                               consumer_secret = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
