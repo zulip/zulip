@@ -14,7 +14,7 @@ function unread_hashkey(message) {
     if (message.type === 'stream') {
         hashkey = subs.canonicalized_name(message.stream);
     } else {
-        hashkey = message.display_reply_to;
+        hashkey = message.reply_to;
     }
 
     if (unread_counts[message.type][hashkey] === undefined) {
@@ -121,6 +121,7 @@ exports.get_counts = function () {
     res.mentioned_message_count = Object.keys(unread_mentioned).length;
     res.stream_count = {};  // hash by stream -> count
     res.subject_count = {}; // hash of hashes (stream, then subject -> count)
+    res.pm_count = {}; // Hash by email -> count
 
     function only_in_home_view(msgids) {
         return $.grep(msgids, function (msgid) {
@@ -134,7 +135,7 @@ exports.get_counts = function () {
         }
 
         var count = Object.keys(msgs).length;
-        res.stream_count[stream]= count;
+        res.stream_count[stream] = count;
 
         if (narrow.stream_in_home(stream)) {
             res.home_unread_messages += only_in_home_view(Object.keys(msgs)).length;
@@ -151,7 +152,9 @@ exports.get_counts = function () {
 
     var pm_count = 0;
     $.each(unread_counts["private"], function(index, obj) {
-        pm_count += Object.keys(obj).length;
+        var count = Object.keys(obj).length;
+        res.pm_count[index] = count;
+        pm_count += count;
     });
     res.private_message_count = pm_count;
     res.home_unread_messages += pm_count;

@@ -65,9 +65,13 @@ function iterate_to_find(selector, data_name, context) {
     return retval;
 }
 
+// TODO: Now that the unread count functions support the user sidebar
+// as well, we probably should consider moving them to a different file.
 function get_filter_li(type, name) {
     if (type === 'stream') {
         return $("#stream_sidebar_" + subs.stream_id(name));
+    } else if (type === "private") {
+        return $(".user_sidebar_entry > a[data-email='" + name + "']");
     }
     return iterate_to_find("#" + type + "_filters > li", name);
 }
@@ -222,6 +226,11 @@ exports.update_dom_with_unread_counts = function (counts) {
         $.each(subject_hash, function(subject, count) {
             exports.set_subject_count(stream, subject, count);
         });
+    });
+
+    // counts.pm_count maps people to counts
+    $.each(counts.pm_count, function(person, count) {
+        exports.set_count("private", person, count);
     });
 
     // integer counts

@@ -231,6 +231,10 @@ a:hover code {
     text-overflow: ellipsis;
 }
 
+.user_sidebar_entry .count {
+    display: none;
+}
+
 #user_presences li.user_active {
     list-style-image: url(/static/images/presence/user-active.png);
 }
