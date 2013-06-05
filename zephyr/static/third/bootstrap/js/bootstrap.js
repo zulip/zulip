@@ -1815,6 +1815,7 @@
     this.$menu = $(this.options.menu).appendTo('body')
     this.source = this.options.source
     this.shown = false
+    this.dropup = this.options.dropup
     this.listen()
   }
 
@@ -1839,9 +1840,14 @@
         height: this.$element[0].offsetHeight
       })
 
+      var top_pos = pos.top + pos.height
+      if (this.dropup) {
+        top_pos = pos.top - this.$menu.outerHeight()
+      }
+
       this.$menu.css({
-        top: pos.top + pos.height
-      , left: pos.left
+        top: top_pos
+       , left: pos.left
       })
 
       this.$menu.show()
@@ -2069,6 +2075,7 @@
   , item: '<li><a href="#"></a></li>'
   , minLength: 1
   , stopAdvance: false
+  , dropup: false
   }
 
   $.fn.typeahead.Constructor = Typeahead

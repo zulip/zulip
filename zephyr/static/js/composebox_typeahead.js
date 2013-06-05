@@ -207,7 +207,8 @@ exports.initialize = function () {
 
     $( "#private_message_recipient" ).typeahead({
         source: typeahead_helper.private_message_typeahead_list,
-        items: 2,
+        items: 5,
+        dropup: true,
         highlighter: composebox_typeahead_highlighter,
         matcher: function (item) {
             var current_recipient = get_last_recipient_in_pm(this.query);
@@ -235,8 +236,9 @@ exports.initialize = function () {
 
     $( "#new_message_content" ).typeahead({
         source: typeahead_helper.private_message_typeahead_list,
-        items: 2,
+        items: 5,
         highlighter: composebox_typeahead_highlighter,
+        dropup: true,
         matcher: function (item) {
             var query = exports.split_at_cursor(this.query)[0];
 
