@@ -962,7 +962,9 @@ def do_update_message(user_profile, message_id, subject, content):
         if rendered_content is None:
             raise JsonableError("We were unable to render your updated message")
 
-        rendered_content = highlight_html_differences(first_rendered_content, rendered_content)
+        if not settings.DEPLOYED or settings.STAGING_DEPLOYED:
+            # Don't highlight message edit diffs on prod
+            rendered_content = highlight_html_differences(first_rendered_content, rendered_content)
 
         event['orig_content'] = message.content
         event['orig_rendered_content'] = message.rendered_content
