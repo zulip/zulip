@@ -49,6 +49,10 @@ exports.at_bottom = function () {
     return bottom + 2 >= window_size;
 };
 
+exports.is_below_visible_bottom = function (offset) {
+    return offset > viewport.scrollTop() + viewport.height() - $("#compose").height();
+};
+
 exports.set_message_position = function (message_top, message_height, viewport_info, ratio) {
     // message_top = offset of the top of a message that you are positioning
     // message_height = height of the message that you are positioning
