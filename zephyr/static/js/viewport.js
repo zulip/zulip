@@ -10,6 +10,33 @@ exports.at_top = function () {
     return (jwindow.scrollTop() <= 0);
 };
 
+exports.message_viewport_info = function () {
+    // Return a structure that tells us details of the viewport
+    // accounting for fixed elements like the top navbar.
+    //
+    // The message_header is NOT considered to be part of the visible
+    // message pane, which should make sense for callers, who will
+    // generally be concerned about whether actual message content is
+    // visible.
+
+    var res = {};
+
+    var element_just_above_us = $("#tab_bar_underpadding");
+
+    res.visible_top =
+        element_just_above_us.offset().top
+        + element_just_above_us.height()
+        + $(".message_header").height();
+
+    var element_just_below_us = $("#compose");
+
+    res.visible_height =
+        element_just_below_us.offset().top
+        - res.visible_top;
+
+    return res;
+};
+
 exports.at_bottom = function () {
     // outerHeight(true): Include margin
     var bottom = jwindow.scrollTop() + jwindow.height();
@@ -25,7 +52,7 @@ exports.at_bottom = function () {
 exports.set_message_position = function (message_top, message_height, viewport_info, ratio) {
     // message_top = offset of the top of a message that you are positioning
     // message_height = height of the message that you are positioning
-    // viewport_info = result of calling ui.message_viewport_info
+    // viewport_info = result of calling viewport.message_viewport_info
     // ratio = fraction indicating how far down the screen the msg should be
 
     var how_far_down_in_visible_page = viewport_info.visible_height * ratio;

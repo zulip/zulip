@@ -442,7 +442,7 @@ MessageList.prototype = {
         }
 
         var selected_row_offset = selected_row.offset().top;
-        var info = ui.message_viewport_info();
+        var info = viewport.message_viewport_info();
         var available_space_for_scroll = selected_row_offset - info.visible_top;
 
         // Don't scroll if we can't move the pointer up.

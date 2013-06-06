@@ -75,7 +75,7 @@ function within_viewport(row_offset, row_height) {
     // part of the viewport.
     var message_top = row_offset.top;
     var message_bottom  = message_top + row_height;
-    var info = ui.message_viewport_info();
+    var info = viewport.message_viewport_info();
     var viewport_top = info.visible_top;
     var viewport_bottom = viewport_top + info.visible_height;
     return (message_top > viewport_top) && (message_bottom < viewport_bottom);
@@ -94,7 +94,7 @@ function keep_pointer_in_view() {
     if (next_row.length === 0)
         return;
 
-    var info = ui.message_viewport_info();
+    var info = viewport.message_viewport_info();
     var top_threshold = info.visible_top + (1/10 * info.visible_height);
     var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
 
@@ -130,7 +130,7 @@ function recenter_view(message, from_scroll) {
     // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
     // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
 
-    var viewport_info = ui.message_viewport_info();
+    var viewport_info = viewport.message_viewport_info();
     var top_threshold = viewport_info.visible_top;
 
     var bottom_threshold = viewport_info.visible_top + viewport_info.visible_height;
@@ -342,7 +342,7 @@ function process_visible_unread_messages(update_cursor) {
     }
 
     var selected = current_msg_list.selected_message();
-    var vp = ui.message_viewport_info();
+    var vp = viewport.message_viewport_info();
     var top = vp.visible_top;
     var height = vp.visible_height;
 

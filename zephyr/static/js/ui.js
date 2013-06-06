@@ -32,38 +32,11 @@ exports.focus_on = function (field_id) {
     $("#" + field_id).focus();
 };
 
-exports.message_viewport_info = function () {
-    // Return a structure that tells us details of the viewport
-    // accounting for fixed elements like the top navbar.
-    //
-    // The message_header is NOT considered to be part of the visible
-    // message pane, which should make sense for callers, who will
-    // generally be concerned about whether actual message content is
-    // visible.
-
-    var res = {};
-
-    var element_just_above_us = $("#tab_bar_underpadding");
-
-    res.visible_top =
-        element_just_above_us.offset().top
-        + element_just_above_us.height()
-        + $(".message_header").height();
-
-    var element_just_below_us = $("#compose");
-
-    res.visible_height =
-        element_just_below_us.offset().top
-        - res.visible_top;
-
-    return res;
-};
-
 function amount_to_paginate() {
     // Some day we might have separate versions of this function
     // for Page Up vs. Page Down, but for now it's the same
     // strategy in either direction.
-    var info = exports.message_viewport_info();
+    var info = viewport.message_viewport_info();
     var page_size = info.visible_height;
 
     // We don't want to page up a full page, because Humbug users
