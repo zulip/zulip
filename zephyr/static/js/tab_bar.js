@@ -108,6 +108,7 @@ function colorize_tab_bar() {
         if (stream_name === undefined) {
             return;
         }
+        stream_name = stream_name.toString();
 
         var stream_color = subs.get_color(stream_name);
 
