@@ -76,8 +76,9 @@ class humbug::app_frontend {
 
   # TODO: I think we need to restart memcached after deploying this
 
-  exec {"humbug-server":
-    command => "/etc/init.d/supervisor restart",
+  # Supervisor is what actually runs the app
+  service { "supervisor":
+    ensure => running,
     require => File["/var/log/humbug"],
     subscribe => File["/etc/supervisor/conf.d/humbug.conf"],
   }
