@@ -361,6 +361,26 @@ def statsd_increment(counter, val=1):
         return wrapped_func
     return wrapper
 
+def rate_limit_user(request, user, domain):
+    """Returns whether or not a user was rate limited. Will raise a RateLimited exception
+    if the user has been rate limited, otherwise returns and modifies request to contain
+    the rate limit information"""
+
+    ratelimited, time = is_ratelimited(user, domain)
+    request._ratelimit_applied_limits = True
+    request._ratelimit_secs_to_freedom = time
+    request._ratelimit_over_limit = ratelimited
+    # Abort this request if the user is over her rate limits
+    if ratelimited:
+        statsd.incr("ratelimiter.limited.%s" % user.id)
+        raise RateLimited()
+
+    incr_ratelimit(user, domain)
+    calls_remaining, time_reset = api_calls_left(user, domain)
+
+    request._ratelimit_remaining = calls_remaining
+    request._ratelimit_secs_to_freedom = time_reset
+
 def rate_limit(domain='all'):
     """Rate-limits a view. Takes an optional 'domain' param if you wish to rate limit different
     types of API calls independently.
@@ -394,20 +414,7 @@ def rate_limit(domain='all'):
                                      func.__name__)
                 return func(request, *args, **kwargs)
 
-            ratelimited, time = is_ratelimited(user, domain)
-            request._ratelimit_applied_limits = True
-            request._ratelimit_secs_to_freedom = time
-            request._ratelimit_over_limit = ratelimited
-            # Abort this request if the user is over her rate limits
-            if ratelimited:
-                statsd.incr("ratelimiter.limited.%s" % user.id)
-                raise RateLimited()
-
-            incr_ratelimit(user, domain)
-            calls_remaining, time_reset = api_calls_left(user, domain)
-
-            request._ratelimit_remaining = calls_remaining
-            request._ratelimit_secs_to_freedom = time_reset
+            rate_limit_user(request, user, domain)
 
             return func(request, *args, **kwargs)
         return wrapped_func
