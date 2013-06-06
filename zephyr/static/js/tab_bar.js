@@ -75,7 +75,7 @@ function make_tab_data() {
             operand = ops[1][1];
             hashed = hashchange.operators_to_hash(ops.slice(0, 2));
 
-            if (operator === 'subject') {
+            if (operator === 'subject' && ops[0][0] === 'stream') {
                 // Colorize text of stream name properly
                 var stream = ops[0][1];
                 tabs[tabs.length - 1].cls += ' ' + subs.get_color_class(subs.get_color(stream));
