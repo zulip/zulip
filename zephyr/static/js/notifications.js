@@ -47,7 +47,9 @@ exports.initialize = function () {
         }
     });
     var audio = $("<audio>");
-    if (audio[0].canPlayType === undefined) {
+    if (window.bridge !== undefined) {
+        supports_sound = true;
+    } else if (audio[0].canPlayType === undefined) {
         supports_sound = false;
     } else {
         supports_sound = true;
@@ -220,7 +222,11 @@ exports.received_messages = function (messages) {
                 process_desktop_notification(message);
             }
             if (page_params.sounds_enabled && supports_sound) {
-                $("#notifications-area").find("audio")[0].play();
+                if (window.bridge !== undefined) {
+                    window.bridge.bell();
+                } else {
+                    $("#notifications-area").find("audio")[0].play();
+                }
             }
         }
     });
