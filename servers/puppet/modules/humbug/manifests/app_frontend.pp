@@ -73,8 +73,10 @@ class humbug::app_frontend {
     ensure     => running,
     subscribe  => File['/etc/redis/redis.conf'],
   }
-
-  # TODO: I think we need to restart memcached after deploying this
+  service { 'memcached':
+    ensure     => running,
+    subscribe  => File['/etc/memcached.conf'],
+  }
 
   # Supervisor is what actually runs the app
   service { "supervisor":
