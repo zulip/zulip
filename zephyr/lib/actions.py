@@ -951,11 +951,17 @@ def do_update_message(user_profile, message_id, subject, content):
     if message.sender != user_profile:
         raise JsonableError("Message was not sent by you")
 
+    # Set first_rendered_content to be the oldest version of the
+    # rendered content recorded; which is the current version if the
+    # content hasn't been edited before.  Note that because one could
+    # have edited just the subject, not every edit history event
+    # contains a prev_rendered_content element.
+    first_rendered_content = message.rendered_content
     if message.edit_history is not None:
         edit_history = simplejson.loads(message.edit_history)
-        first_rendered_content = edit_history[-1]['prev_rendered_content']
-    else:
-        first_rendered_content = message.rendered_content
+        for old_edit_history_event in edit_history:
+            if 'prev_rendered_content' in old_edit_history_event:
+                first_rendered_content = old_edit_history_event['prev_rendered_content']
 
     if content is not None:
         rendered_content = bugdown.convert(content, message.sender.realm.domain)
