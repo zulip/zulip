@@ -1236,7 +1236,7 @@ $(function () {
         user_sidebar_popup_shown_this_click = true;
 
         var email = $(e.target).find('a').attr('data-email');
-        var name = $(e.target).find('a').text();
+        var name = $(e.target).find('a').attr('data-name');
 
         $(e.target).popover({
             content:   templates.render('user_sidebar_actions', {'email': email,
