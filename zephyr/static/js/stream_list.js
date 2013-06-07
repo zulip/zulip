@@ -144,6 +144,9 @@ exports.remove_all_narrow_filters = function () {
 };
 
 function rebuild_recent_subjects(stream, subject) {
+    // TODO: Call rebuild_recent_subjects less, not on every new
+    // message.
+    $('.expanded_subjects').remove();
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects[stream] || [];
     var active_orig_subject = subject;
