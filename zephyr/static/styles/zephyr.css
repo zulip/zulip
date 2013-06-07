@@ -1600,3 +1600,7 @@ li.expanded_subject {
 #pin_info_question:hover {
     cursor:  pointer;
 }
+
+.zero_count {
+    display: none;
+}

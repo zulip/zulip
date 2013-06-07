@@ -3,9 +3,9 @@
     <li class='expanded_subject' data-name='{{subject}}'>
         <a href='#narrow/stream/{{../stream}}/subject/{{subject}}'>
           {{subject}}
-          {{#if has_unread}}
-            <span class="subject_count">(<span class="value">{{unread}}</span>)</span>
-          {{/if}}
+          <span class="subject_count {{#if is_zero}}zero_count{{/if}}">
+              (<span class="value">{{unread}}</span>)
+          </span>
         </a>
     </li>
     {{/each}}

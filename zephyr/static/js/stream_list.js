@@ -131,6 +131,7 @@ exports.set_subject_count = function (stream, subject, count) {
         return;
     }
 
+    count_span.removeClass("zero_count");
     update_count_in_dom(count_span, value_span, count);
 };
 
@@ -150,7 +151,7 @@ function rebuild_recent_subjects(stream, subject) {
     $.each(subjects, function (idx, subject_obj) {
         var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
         subject_obj.unread = num_unread;
-        subject_obj.has_unread = num_unread !== 0;
+        subject_obj.is_zero = num_unread === 0;
 
         if (subject === subject_obj.canon_subject) {
             active_orig_subject = subject_obj.subject;
@@ -161,6 +162,7 @@ function rebuild_recent_subjects(stream, subject) {
     stream_li.append(templates.render('sidebar_subject_list',
                                       {subjects: subjects,
                                        stream: stream}));
+
     if (active_orig_subject !== undefined) {
         get_subject_filter_li(stream, active_orig_subject).addClass('active-subject-filter');
     }
