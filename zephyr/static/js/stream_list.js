@@ -144,7 +144,6 @@ exports.remove_all_narrow_filters = function () {
 };
 
 function rebuild_recent_subjects(stream, subject) {
-    $('.expanded_subjects').remove();
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects[stream] || [];
     var active_orig_subject = subject;
@@ -249,6 +248,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 $(function () {
     $(document).on('narrow_activated.zephyr', function (event) {
         $("ul.filters li").removeClass('active-filter active-subject-filter');
+        $('.expanded_subjects').remove();
 
         // TODO: handle confused filters like "in:all stream:foo"
         var op_in = event.filter.operands('in');
