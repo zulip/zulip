@@ -10,6 +10,11 @@ var directional_hotkeys = {
     36:  {getrow: rows.first_visible, direction: -1}  // Home
 };
 
+var arrow_keys = {
+    40:  {getrow: rows.next_visible, direction: 1},  // down arrow
+    38:  {getrow: rows.prev_visible, direction: -1}  // up arrow
+};
+
 var directional_hotkeys_id = {
     35:  {getid: function () {return current_msg_list.last().id;},
           direction: 1} // End
@@ -83,8 +88,16 @@ function process_hotkey(e) {
             compose.unfade_messages(true);
             return false;
         }
-        // Let the browser handle the key normally.
-        return false;
+
+        if (arrow_keys.hasOwnProperty(code)
+            && compose.composing()
+            && compose.message_content() === "") {
+                compose.cancel();
+                // don't return, as we still want it to be picked up by the code below
+        } else {
+            // Let the browser handle the key normally.
+            return false;
+        }
     }
 
     // If we're on a button or a link and have pressed enter, let the
@@ -178,9 +191,11 @@ function process_hotkey(e) {
         return true;
     case 99: // 'c': compose
         compose.set_mode('stream');
+        respond_to_sent_message = true;
         return true;
     case 67: // 'C': compose private message
         compose.set_mode('private');
+        respond_to_sent_message = true;
         return true;
     case  13: // Enter: respond to message (unless we need to do something else)
         respond_to_cursor = true;

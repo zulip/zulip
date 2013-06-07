@@ -15,6 +15,7 @@ var queued_mark_as_read = [];
 var queued_flag_timer;
 
 var respond_to_cursor = false;
+var respond_to_sent_message = false;
 
 var get_updates_params = {
     pointer: -1

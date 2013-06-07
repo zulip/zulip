@@ -240,6 +240,7 @@ exports.cancel = function () {
     }
     $(document).trigger($.Event('compose_canceled.zephyr'));
     respond_to_cursor = false;
+    respond_to_sent_message = false;
 };
 
 exports.empty_subject_placeholder = function() {
@@ -357,11 +358,16 @@ function send_message() {
             $("#compose-send-button").removeAttr('disabled');
             $("#sending-indicator").hide();
             send_status.hide();
-            if (respond_to_cursor && narrow.narrowed_by_reply()) {
+            if (respond_to_cursor) {
                 respond_to_message({trigger: 'autorespond'});
             }
             else {
                 respond_to_cursor = false;
+            }
+            if (respond_to_sent_message) {
+                var new_msg = $.extend({replying_to_message: request}, request);
+                new_msg.content = "";
+                compose.start(new_msg.type, new_msg);
             }
         },
         error: function (xhr, error_type) {
@@ -563,6 +569,7 @@ $(function () {
     $("#new_message_content").click(function (e) {
         // If we click in the composebox, start up a new message
         if (!compose.composing()) {
+            respond_to_sent_message = true;
             if (narrow.narrowed_to_pms()) {
                 compose.start('private');
             } else {
@@ -631,6 +638,7 @@ $(function () {
             // Urgh, yet another hack to make sure we're "composing"
             // when text gets added into the composebox.
             if (!compose.composing()) {
+                respond_to_sent_message = true;
                 compose.set_mode('stream');
             }
             if (i === -1) {
@@ -654,6 +662,7 @@ $(function () {
         rawDrop: function (contents) {
             var textbox = $("#new_message_content");
             if (!compose.composing()) {
+                respond_to_sent_message = true;
                 compose.set_mode('stream');
             }
             textbox.val(textbox.val() + contents);
