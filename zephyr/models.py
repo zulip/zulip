@@ -95,6 +95,16 @@ class UserProfile(AbstractBaseUser):
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
 
+    AVATAR_FROM_GRAVATAR = 'G'
+    AVATAR_FROM_USER = 'U'
+    AVATAR_FROM_SYSTEM = 'S'
+    AVATAR_SOURCES = (
+            (AVATAR_FROM_GRAVATAR, 'Hosted by Gravatar'),
+            (AVATAR_FROM_USER, 'Uploaded by user'),
+            (AVATAR_FROM_SYSTEM, 'System generated'),
+    )
+    avatar_source = models.CharField(default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1)
+
     TUTORIAL_WAITING  = 'W'
     TUTORIAL_STARTED  = 'S'
     TUTORIAL_FINISHED = 'F'
