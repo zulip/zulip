@@ -53,11 +53,12 @@ exports.sort_narrow_list = function () {
     $(elems).appendTo(parent);
 };
 
-function iterate_to_find(selector, data_name, context) {
+function iterate_to_find(selector, name_to_find, context) {
     var retval = $();
     $(selector, context).each(function (idx, elem) {
         var jelem = $(elem);
-        if (jelem.attr('data-name') === data_name) {
+        var elem_name = jelem.attr('data-name');
+        if (elem_name.toLowerCase() === name_to_find.toLowerCase()) {
             retval = jelem;
             return false;
         }
@@ -122,7 +123,8 @@ exports.set_count = function (type, name, count) {
 };
 
 exports.set_subject_count = function (stream, subject, count) {
-    var count_span = get_subject_filter_li(stream, subject).find('.subject_count');
+    var subject_li = get_subject_filter_li(stream, subject);
+    var count_span = subject_li.find('.subject_count');
     var value_span = count_span.find('.value');
 
     if (count_span.length === 0 || value_span.length === 0) {
