@@ -23,7 +23,7 @@ $(function () {
     $(".letter-form").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         beforeSubmit: function (arr, form, options) {
-            $(".alert").hide();
+            $(".alert-hidden").hide();
             var has_email = false;
             $.each(arr, function (idx, elt) {
                 if (elt.name === 'email' && elt.value.length) {
