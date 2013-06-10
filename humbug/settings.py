@@ -456,7 +456,7 @@ LOGGING = {
         },
     },
     'handlers': {
-        'inapp': {
+        'humbug_admins': {
             'level':     'ERROR',
             'class':     'zephyr.handlers.AdminHumbugHandler',
             # For testing the handler delete the next line
@@ -495,7 +495,7 @@ LOGGING = {
             'propagate': False,
         },
         'django': {
-            'handlers': ['inapp', 'console', 'file', 'mail_admins'],
+            'handlers': ['humbug_admins', 'console', 'file', 'mail_admins'],
             'level':    'INFO',
             'propagate': False,
         },
