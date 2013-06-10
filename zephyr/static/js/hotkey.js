@@ -116,7 +116,7 @@ function process_hotkey(e) {
     }
 
     if (directional_hotkeys_id.hasOwnProperty(code)
-        && directional_hotkeys_id.hasOwnProperty[code].charCode === charCode) {
+        && directional_hotkeys_id[code].charCode === charCode) {
         if (current_msg_list.empty()) {
             return false;
         }
