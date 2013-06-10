@@ -158,6 +158,7 @@ function rebuild_recent_subjects(stream, subject) {
         if (subject === subject_obj.canon_subject) {
             active_orig_subject = subject_obj.subject;
         }
+        subject_obj.url = narrow.by_stream_subject_uri(stream, subject_obj.subject);
     });
 
 
