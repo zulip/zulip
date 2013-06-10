@@ -33,6 +33,8 @@ var narrow_hotkeys = {
 // Returns true if we handled it, false if the browser should.
 function process_hotkey(e) {
     var code = e.which;
+    var charCode = e.charCode;
+
     var next_row, dirkey;
 
     // Disable hotkeys on settings page etc., and when a modal pop-up
@@ -90,6 +92,7 @@ function process_hotkey(e) {
         }
 
         if (arrow_keys.hasOwnProperty(code)
+            && charCode === 0
             && compose.composing()
             && compose.message_content() === "") {
                 compose.cancel();
@@ -112,7 +115,7 @@ function process_hotkey(e) {
         return false;
     }
 
-    if (directional_hotkeys_id.hasOwnProperty(code)) {
+    if (directional_hotkeys_id.hasOwnProperty(code) && charCode === 0) {
         if (current_msg_list.empty()) {
             return false;
         }
@@ -124,7 +127,7 @@ function process_hotkey(e) {
         return true;
     }
 
-    if (directional_hotkeys.hasOwnProperty(code)) {
+    if (directional_hotkeys.hasOwnProperty(code) && charCode === 0) {
         if (current_msg_list.empty()) {
             return false;
         }
