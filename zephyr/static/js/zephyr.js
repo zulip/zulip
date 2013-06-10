@@ -729,7 +729,6 @@ function maybe_add_narrowed_messages(messages, msg_list) {
         },
         error: function (xhr) {
             // We might want to be more clever here
-            $('#connection-error').show();
             setTimeout(function () {
                 if (msg_list === current_msg_list) {
                     // Don't actually try again if we unnarrowed

@@ -127,7 +127,7 @@ exports.wrap_function = function blueslip_wrap_function(func) {
                     message += ":" + ex.lineNumber;
                 }
             }
-            report_error(message, ex.stack, {show_ui_msg: true});
+            report_error(message, ex.stack);
             throw ex;
         }
     };
@@ -288,8 +288,7 @@ exports.error = function blueslip_error (msg, more_info) {
 
 exports.fatal = function blueslip_fatal (msg, more_info) {
     if (! page_params.debug_mode) {
-        report_error(msg, Error().stack, {show_ui_msg: true,
-                                          more_info: more_info});
+        report_error(msg, Error().stack, {more_info: more_info});
     }
 
     throw new BlueslipError(msg, more_info);
