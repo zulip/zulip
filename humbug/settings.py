@@ -454,13 +454,16 @@ LOGGING = {
         'nop': {
             '()': 'zephyr.lib.logging_util.ReturnTrue',
         },
+        'require_really_deployed': {
+            '()': 'zephyr.lib.logging_util.RequireReallyDeployed',
+        },
     },
     'handlers': {
         'humbug_admins': {
             'level':     'ERROR',
             'class':     'zephyr.handlers.AdminHumbugHandler',
             # For testing the handler delete the next line
-            'filters':   ['HumbugLimiter', 'require_debug_false'],
+            'filters':   ['HumbugLimiter', 'require_debug_false', 'require_really_deployed'],
             'formatter': 'default'
         },
         'console': {
@@ -485,7 +488,7 @@ LOGGING = {
             'level': 'ERROR',
             'class': 'zephyr.handlers.HumbugAdminEmailHandler',
             # For testing the handler replace the filters list with just 'nop'
-            'filters': ['EmailLimiter', 'require_debug_false'],
+            'filters': ['EmailLimiter', 'require_debug_false', 'require_really_deployed'],
         },
     },
     'loggers': {
