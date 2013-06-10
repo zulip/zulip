@@ -46,7 +46,7 @@ from zephyr.decorator import require_post, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
     authenticated_rest_api_view, process_as_post, REQ, rate_limit, rate_limit_user
 from zephyr.lib.query import last_n
-from zephyr.lib.avatar import gravatar_hash
+from zephyr.lib.avatar import avatar_url
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed, \
     render_to_response
 from zephyr.lib.timestamp import datetime_to_timestamp
@@ -580,7 +580,7 @@ def home(request):
     return render_to_response('zephyr/index.html',
                               {'user_profile': user_profile,
                                'page_params' : page_params,
-                               'email_hash'  : gravatar_hash(user_profile.email),
+                               'avatar_url': avatar_url(user_profile),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
                                'show_invites': show_invites

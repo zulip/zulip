@@ -10,7 +10,7 @@ from zephyr.lib.utils import make_safe_digest
 import os
 from django.db import transaction, IntegrityError
 from zephyr.lib import bugdown
-from zephyr.lib.avatar import gravatar_hash
+from zephyr.lib.avatar import gravatar_hash, avatar_url
 from django.utils import timezone
 from django.contrib.sessions.models import Session
 from django.utils.html import escape
@@ -333,7 +333,8 @@ class Message(models.Model):
             recipient_id      = self.recipient.id,
             subject           = self.subject,
             timestamp         = datetime_to_timestamp(self.pub_date),
-            gravatar_hash     = gravatar_hash(self.sender.email),
+            gravatar_hash     = gravatar_hash(self.sender.email), # Deprecated June 2013
+            avatar_url        = avatar_url(self.sender),
             client            = self.sending_client.name)
 
         if self.last_edit_time != None:

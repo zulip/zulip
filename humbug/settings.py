@@ -99,6 +99,12 @@ SECRET_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 # username generation.
 HASH_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
+# Use this salt to hash a user's email into a filename for their user-uploaded
+# avatar.  If this salt is discovered, attackers will only be able to determine
+# that the owner of an email account has uploaded an avatar to Humbug, which isn't
+# the end of the world.  Don't use the salt where there is more security exposure.
+AVATAR_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
 # Tell the browser to never send our cookies without encryption, e.g.
 # when executing the initial http -> https redirect.
 #

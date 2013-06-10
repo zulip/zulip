@@ -1046,9 +1046,11 @@ class GetOldMessagesTest(AuthedTestCase):
         self.assertIsInstance(result["messages"], list)
         for message in result["messages"]:
             for field in ("content", "content_type", "display_recipient",
-                          "gravatar_hash", "recipient_id", "sender_full_name",
+                          "avatar_url", "recipient_id", "sender_full_name",
                           "sender_short_name", "timestamp"):
                 self.assertIn(field, message)
+            # TODO: deprecate soon in favor of avatar_url
+            self.assertIn('gravatar_hash', message)
 
     def test_successful_get_old_messages(self):
         """
