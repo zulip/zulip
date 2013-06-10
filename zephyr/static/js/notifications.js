@@ -180,7 +180,7 @@ function process_desktop_notification(message) {
         notification_object.show();
     } else {
         // Shunt the message along to the desktop client
-        window.bridge.notify({title: title, content: content});
+        window.bridge.desktopNotification({title: title, content: content});
     }
 }
 
