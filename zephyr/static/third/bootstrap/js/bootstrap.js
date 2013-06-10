@@ -1221,6 +1221,7 @@
         , actualHeight
         , placement
         , tp
+        , newtop
 
       if (this.hasContent() && this.enabled) {
         $tip = this.tip()
@@ -1259,6 +1260,14 @@
           case 'right':
             tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width}
             break
+        }
+
+        if (this.options.fixed) {
+          // If using position: fixed, position relative to top of
+          // viewport
+          newtop = tp.top - $(document).scrollTop()
+          tp = $.extend(tp, {top: newtop,
+                             position: 'fixed'})
         }
 
         $tip
@@ -1388,6 +1397,7 @@
   , title: ''
   , delay: 0
   , html: true
+  , fixed: false
   }
 
 }(window.jQuery);

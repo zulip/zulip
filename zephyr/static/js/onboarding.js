@@ -76,6 +76,7 @@ function set_app_sticky_popover() {
                   "content": templates.render('sticky_app_popover'),
                   "html": true,
                   "trigger": "manual",
+                  fixed: true,
                   // This is unfortunately what you have to do to set
                   // a custom width for a popover.
                   "template": '<div class="popover"><div class="arrow">' +

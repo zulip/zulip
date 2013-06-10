@@ -1242,7 +1242,8 @@ $(function () {
             content:   templates.render('user_sidebar_actions', {'email': email,
                                                                  'name': name}),
             placement: "left",
-            trigger:   "manual"
+            trigger:   "manual",
+            fixed: true
         });
         $(e.target).popover("show");
         current_user_sidebar_elem = $(e.target);
@@ -1280,7 +1281,8 @@ $(function () {
         var ypos = $(e.target).offset().top - viewport.scrollTop();
         $(e.target).popover({
             content:   templates.render('stream_sidebar_actions', {'stream': subs.have(stream)}),
-            trigger:   "manual"
+            trigger:   "manual",
+            fixed: true
         });
 
         // This little function is a workaround for the fact that
