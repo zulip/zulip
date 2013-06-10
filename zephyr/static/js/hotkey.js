@@ -3,21 +3,21 @@ var hotkeys = (function () {
 var exports = {};
 
 var directional_hotkeys = {
-    40:  {getrow: rows.next_visible, direction: 1},  // down arrow
-    106: {getrow: rows.next_visible, direction: 1}, // 'j'
-    38:  {getrow: rows.prev_visible, direction: -1}, // up arrow
-    107: {getrow: rows.prev_visible, direction: -1}, // 'k'
-    36:  {getrow: rows.first_visible, direction: -1}  // Home
+    40:  {getrow: rows.next_visible, direction: 1, charCode: 0},  // down arrow
+    106: {getrow: rows.next_visible, direction: 1, charCode: 106}, // 'j'
+    38:  {getrow: rows.prev_visible, direction: -1, charCode: 0}, // up arrow
+    107: {getrow: rows.prev_visible, direction: -1, charCode: 107}, // 'k'
+    36:  {getrow: rows.first_visible, direction: -1, charCode: 0}  // Home
 };
 
 var arrow_keys = {
-    40:  {getrow: rows.next_visible, direction: 1},  // down arrow
-    38:  {getrow: rows.prev_visible, direction: -1}  // up arrow
+    40:  {getrow: rows.next_visible, direction: 1, charCode: 0},  // down arrow
+    38:  {getrow: rows.prev_visible, direction: -1, charCode: 0}  // up arrow
 };
 
 var directional_hotkeys_id = {
     35:  {getid: function () {return current_msg_list.last().id;},
-          direction: 1} // End
+          direction: 1, charCode: 0} // End
 };
 
 var narrow_hotkeys = {
@@ -92,7 +92,7 @@ function process_hotkey(e) {
         }
 
         if (arrow_keys.hasOwnProperty(code)
-            && charCode === 0
+            && charCode === arrow_keys[code].charCode
             && compose.composing()
             && compose.message_content() === "") {
                 compose.cancel();
@@ -115,7 +115,8 @@ function process_hotkey(e) {
         return false;
     }
 
-    if (directional_hotkeys_id.hasOwnProperty(code) && charCode === 0) {
+    if (directional_hotkeys_id.hasOwnProperty(code)
+        && directional_hotkeys_id.hasOwnProperty[code].charCode === charCode) {
         if (current_msg_list.empty()) {
             return false;
         }
@@ -127,7 +128,8 @@ function process_hotkey(e) {
         return true;
     }
 
-    if (directional_hotkeys.hasOwnProperty(code) && charCode === 0) {
+    if (directional_hotkeys.hasOwnProperty(code)
+        && directional_hotkeys[code].charCode === charCode) {
         if (current_msg_list.empty()) {
             return false;
         }
