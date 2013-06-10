@@ -443,16 +443,16 @@ LOGGING = {
     },
     'filters': {
         'HumbugLimiter': {
-            '()': 'humbug.ratelimit.HumbugLimiter',
+            '()': 'zephyr.lib.logging_util.HumbugLimiter',
         },
         'EmailLimiter': {
-            '()': 'humbug.ratelimit.EmailLimiter',
+            '()': 'zephyr.lib.logging_util.EmailLimiter',
         },
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
         },
         'nop': {
-            '()': 'humbug.ratelimit.ReturnTrue',
+            '()': 'zephyr.lib.logging_util.ReturnTrue',
         },
     },
     'handlers': {
