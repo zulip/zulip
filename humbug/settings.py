@@ -222,8 +222,9 @@ STATICFILES_FINDERS = (
 if DEBUG:
     STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
 else:
-    STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+    STATICFILES_STORAGE = 'zephyr.storage.HumbugStorage'
 
+STATIC_HEADER_FILE = 'zephyr/static_header.txt'
 STATIC_ROOT = 'prod-static/collected'
 
 # This is the default behavior from Pipeline, but we set it
