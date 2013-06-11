@@ -88,6 +88,17 @@ exports.enable_page_console = function () {
     });
 };
 
+exports.check_form = function (form_selector, expected, test_name) {
+    var values = casper.getFormValues(form_selector);
+    var k;
+    for (k in expected) {
+        if (expected.hasOwnProperty(k)) {
+            casper.test.assertEqual(values[k], expected[k],
+                                    test_name ? (test_name + ": " + k) : undefined);
+        }
+    }
+};
+
 exports.send_message = function (type, params) {
     casper.waitForSelector('#new_message_content', function () {
         if(type === "stream") {
