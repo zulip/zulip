@@ -358,13 +358,14 @@ function send_message() {
             $("#compose-send-button").removeAttr('disabled');
             $("#sending-indicator").hide();
             send_status.hide();
-            if (respond_to_cursor) {
+            if (respond_to_cursor && (page_params.staging ||
+                                      narrow.narrowed_by_reply())) {
                 respond_to_message({trigger: 'autorespond'});
             }
             else {
                 respond_to_cursor = false;
             }
-            if (respond_to_sent_message) {
+            if (respond_to_sent_message && page_params.staging) {
                 var new_msg = $.extend({replying_to_message: request}, request);
                 new_msg.content = "";
                 compose.start(new_msg.type, new_msg);

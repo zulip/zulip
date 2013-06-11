@@ -94,7 +94,8 @@ function process_hotkey(e) {
         if (arrow_keys.hasOwnProperty(code)
             && charCode === arrow_keys[code].charCode
             && compose.composing()
-            && compose.message_content() === "") {
+            && compose.message_content() === ""
+            && page_params.staging) {
                 compose.cancel();
                 // don't return, as we still want it to be picked up by the code below
         } else {
