@@ -30,19 +30,21 @@ function get_event_name(e) {
         return 'ignore';
     }
 
-    switch (e.keyCode) {
-    case 33: // Page Up
-        return 'page_up';
-    case 34: // Page Down
-        return 'page_down';
-    case 35:
-        return 'end';
-    case 36:
-        return 'home';
-    case 38:
-        return 'up_arrow';
-    case 40:
-        return 'down_arrow';
+    if (!e.shiftKey) {
+        switch (e.keyCode) {
+        case 33: // Page Up
+            return 'page_up';
+        case 34: // Page Down
+            return 'page_down';
+        case 35:
+            return 'end';
+        case 36:
+            return 'home';
+        case 38:
+            return 'up_arrow';
+        case 40:
+            return 'down_arrow';
+        }
     }
 
     switch (e.which) {
@@ -53,7 +55,11 @@ function get_event_name(e) {
     case 27:
         return 'escape';
     case 32: // Spacebar
-        return 'page_down';
+        if (e.shiftKey) {
+            return 'page_up';
+        } else {
+            return 'page_down';
+        }
     case 47: // '/': initiate search
         return 'search';
     case 63: // '?': Show keyboard shortcuts page
