@@ -2,52 +2,107 @@ var hotkeys = (function () {
 
 var exports = {};
 
-var directional_hotkeys = {
-    40:  {getrow: rows.next_visible, direction: 1, charCode: 0},  // down arrow
-    106: {getrow: rows.next_visible, direction: 1, charCode: 106}, // 'j'
-    38:  {getrow: rows.prev_visible, direction: -1, charCode: 0}, // up arrow
-    107: {getrow: rows.prev_visible, direction: -1, charCode: 107}, // 'k'
-    36:  {getrow: rows.first_visible, direction: -1, charCode: 0}  // Home
-};
-
-var arrow_keys = {
-    40:  {getrow: rows.next_visible, direction: 1, charCode: 0},  // down arrow
-    38:  {getrow: rows.prev_visible, direction: -1, charCode: 0}  // up arrow
-};
-
-var directional_hotkeys_id = {
-    35:  {getid: function () {return current_msg_list.last().id;},
-          direction: 1, charCode: 0} // End
-};
-
-var narrow_hotkeys = {
-    115: narrow.by_recipient,           // 's'
-    83:  narrow.by_subject,             // 'S'
-    118: function (target, opts) {      // 'v'
-        narrow.by('is', 'private-message', opts);
+function do_narrow_action(action) {
+    if (current_msg_list.empty()) {
+        return false;
     }
+    action(current_msg_list.selected_id(), {trigger: 'hotkey'});
+    return true;
+}
+
+var directional_hotkeys = {
+    'down_arrow':  {getrow: rows.next_visible, direction: 1, charCode: 0},  // down arrow
+    'vim_down': {getrow: rows.next_visible, direction: 1, charCode: 106}, // 'j'
+    'up_arrow':  {getrow: rows.prev_visible, direction: -1, charCode: 0}, // up arrow
+    'vim_up': {getrow: rows.prev_visible, direction: -1, charCode: 107}, // 'k'
+    'home':  {getrow: rows.first_visible, direction: -1, charCode: 0}  // Home
 };
+
+function get_event_name(e) {
+    if ((e.which === 9) && e.shiftKey) {
+        return 'shift_tab';
+    }
+
+    // We're in the middle of a combo; stop processing because
+    // we want the browser to handle it (to avoid breaking
+    // things like Ctrl-C or Command-C for copy).
+    if (e.metaKey || e.ctrlKey) {
+        return 'ignore';
+    }
+
+    switch (e.keyCode) {
+    case 33: // Page Up
+        return 'page_up';
+    case 34: // Page Down
+        return 'page_down';
+    case 35:
+        return 'end';
+    case 36:
+        return 'home';
+    case 38:
+        return 'up_arrow';
+    case 40:
+        return 'down_arrow';
+    }
+
+    switch (e.which) {
+    case 8:
+        return 'backspace';
+    case 13:
+        return 'enter';
+    case 27:
+        return 'escape';
+    case 32: // Spacebar
+        return 'page_down';
+    case 47: // '/': initiate search
+        return 'search';
+    case 63: // '?': Show keyboard shortcuts page
+        return 'show_shortcuts';
+    case 67: // 'C'
+        return 'compose_private_message';
+    case 82: // 'R': respond to author
+        return 'respond_to_author';
+    case 83: //'S'
+        return 'narrow_by_subject';
+    case 99: // 'c'
+        return 'compose';
+    case 106: // 'j'
+        return 'vim_down';
+    case 107: // 'k'
+        return 'vim_up';
+    case 114: // 'r': respond to message
+        return 'reply_message';
+    case 115: // 's'
+        return 'narrow_by_recipient';
+    case 118: // 'v'
+        return 'narrow_private';
+    }
+    return 'ignore';
+}
 
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
 function process_hotkey(e) {
-    var code = e.which;
-    var charCode = e.charCode;
-
-    var next_row, dirkey;
-
     // Disable hotkeys on settings page etc., and when a modal pop-up
     // is visible.
     if (ui.home_tab_obscured())
         return false;
 
+    var event_name = get_event_name(e);
+
+    if (event_name === 'ignore') {
+        return false;
+    }
+
+    var next_row, dirkey;
+
     // Handle a few keys specially when the send button is focused.
     if ($('#compose-send-button').is(':focus')) {
-        if (code === 8) {
+        if (event_name === 'backspace') {
             // Ignore backspace; don't navigate back a page.
             return true;
-        } else if ((code === 9) && e.shiftKey) {
+        } else if (event_name === 'shift_tab') {
             // Shift-Tab: go back to content textarea and restore
             // cursor position.
             ui.restore_compose_cursor();
@@ -57,7 +112,7 @@ function process_hotkey(e) {
 
     // Process hotkeys specially when in an input, textarea, or send button
     if ($('input:focus,textarea:focus,#compose-send-button:focus').length > 0) {
-        if (code === 27) {
+        if (event_name === 'escape') {
             // If one of our typeaheads is open, do nothing so that the Esc
             // will go to close it
             if ($("#subject").data().typeahead.shown ||
@@ -91,8 +146,7 @@ function process_hotkey(e) {
             return false;
         }
 
-        if (arrow_keys.hasOwnProperty(code)
-            && charCode === arrow_keys[code].charCode
+        if ((event_name === 'up_arrow' || event_name === 'down_arrow')
             && compose.composing()
             && compose.message_content() === ""
             && page_params.staging) {
@@ -112,29 +166,26 @@ function process_hotkey(e) {
     // cursor up and down, but Enter won't reply -- it'll just trigger
     // the link on the sidebar! So you keep pressing enter over and
     // over again. Until you click somewhere or press r.
-    if ($('a:focus,button:focus').length > 0 && code === 13) {
+    if ($('a:focus,button:focus').length > 0 && event_name === 'enter') {
         return false;
     }
 
-    if (directional_hotkeys_id.hasOwnProperty(code)
-        && directional_hotkeys_id[code].charCode === charCode) {
+    if (event_name === 'end') {
         if (current_msg_list.empty()) {
             return false;
         }
-        dirkey = directional_hotkeys_id[code];
-        var next_id = dirkey.getid();
-        last_viewport_movement_direction = dirkey.direction;
+        var next_id = current_msg_list.last().id;
+        last_viewport_movement_direction = 1;
         current_msg_list.select_id(next_id, {then_scroll: true,
                                              from_scroll: true});
         return true;
     }
 
-    if (directional_hotkeys.hasOwnProperty(code)
-        && directional_hotkeys[code].charCode === charCode) {
+    if (directional_hotkeys.hasOwnProperty(event_name)) {
         if (current_msg_list.empty()) {
             return false;
         }
-        dirkey = directional_hotkeys[code];
+        dirkey = directional_hotkeys[event_name];
         last_viewport_movement_direction = dirkey.direction;
         next_row = dirkey.getrow(current_msg_list.selected_row());
         if (next_row.length !== 0) {
@@ -142,7 +193,7 @@ function process_hotkey(e) {
                                        {then_scroll: true,
                                         from_scroll: true});
         }
-        if ((next_row.length === 0) && (code === 40 || code === 106)) {
+        if ((next_row.length === 0) && (event_name === 'down_arrow' || event_name === 'vim_down')) {
             // At the last message, scroll to the bottom so we have
             // lots of nice whitespace for new messages coming in.
             //
@@ -153,23 +204,20 @@ function process_hotkey(e) {
         return true;
     }
 
-    if (narrow_hotkeys.hasOwnProperty(code)) {
-        if (current_msg_list.empty()) {
-            return false;
-        }
-        narrow_hotkeys[code](current_msg_list.selected_id(), {trigger: 'hotkey'});
-        return true;
+    switch (event_name) {
+    case 'narrow_by_recipient':
+        return do_narrow_action(narrow.by_recipient);
+    case 'narrow_by_subject':
+        return do_narrow_action(narrow.by_subject);
+    case 'narrow_private':
+        return do_narrow_action(function (target, opts) {
+            narrow.by('is', 'private-message', opts);
+        });
     }
 
-    // We're in the middle of a combo; stop processing because
-    // we want the browser to handle it (to avoid breaking
-    // things like Ctrl-C or Command-C for copy).
-    if (e.metaKey || e.ctrlKey) {
-        return false;
-    }
 
-    switch (code) {
-    case 33: // Page Up
+    switch (event_name) {
+    case 'page_up':
         if (viewport.at_top() && !current_msg_list.empty()) {
             current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
         }
@@ -177,8 +225,7 @@ function process_hotkey(e) {
             ui.page_up_the_right_amount();
         }
         return true;
-    case 32: // Spacebar
-    case 34: // Page Down
+    case 'page_down':
         if (viewport.at_bottom() && !current_msg_list.empty()) {
             current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
         }
@@ -186,7 +233,7 @@ function process_hotkey(e) {
             ui.page_down_the_right_amount();
         }
         return true;
-    case 27: // Esc: close actions popup, cancel compose, clear a find, or un-narrow
+    case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
         if (ui.actions_currently_popped()) {
             ui.hide_actions_popover();
         } else if (compose.composing()) {
@@ -195,29 +242,29 @@ function process_hotkey(e) {
             search.clear_search();
         }
         return true;
-    case 99: // 'c': compose
+    case 'compose': // 'c': compose
         compose.set_mode('stream');
         respond_to_sent_message = true;
         return true;
-    case 67: // 'C': compose private message
+    case 'compose_private_message':
         compose.set_mode('private');
         respond_to_sent_message = true;
         return true;
-    case  13: // Enter: respond to message (unless we need to do something else)
+    case  'enter': // Enter: respond to message (unless we need to do something else)
         respond_to_cursor = true;
         respond_to_message({trigger: 'hotkey enter'});
         return true;
-    case 114: // 'r': respond to message
+    case 'reply_message': // 'r': respond to message
         respond_to_cursor = true;
         respond_to_message({trigger: 'hotkey'});
         return true;
-    case 82: // 'R': respond to author
+    case 'respond_to_author': // 'R': respond to author
         respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
         return true;
-    case 47: // '/': initiate search
+    case 'search':
         search.initiate_search();
         return true;
-    case 63: // '?': Show keyboard shortcuts page
+    case 'show_shortcuts': // Show keyboard shortcuts page
         $('#keyboard-shortcuts').modal('show');
         return true;
     }
