@@ -81,6 +81,15 @@ function get_subject_filter_li(stream, subject) {
     return iterate_to_find(".expanded_subjects li", subject, stream_li);
 }
 
+exports.set_in_home_view = function (stream, in_home) {
+    var li = get_filter_li('stream', stream);
+    if (in_home) {
+        li.removeClass("out_of_home_view");
+    } else {
+        li.addClass("out_of_home_view");
+    }
+};
+
 // Adds the sidebar stream name that, when clicked,
 // narrows to that stream
 function add_narrow_filter(name, type) {

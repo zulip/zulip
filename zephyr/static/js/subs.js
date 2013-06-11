@@ -196,12 +196,7 @@ exports.toggle_home = function (stream_name) {
 
     exports.maybe_toggle_all_messages();
     set_stream_property(stream_name, 'in_home_view', sub.in_home_view);
-    var li = $("#stream_filters li[data-name='" + encodeURIComponent(stream_name) + "']");
-    if (sub.in_home_view) {
-        li.removeClass("out_of_home_view");
-    } else {
-        li.addClass("out_of_home_view");
-    }
+    stream_list.set_in_home_view(stream_name, sub.in_home_view);
 };
 
 function stream_notifications_clicked(e) {
