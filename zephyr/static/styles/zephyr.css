@@ -775,6 +775,10 @@ blockquote p {
     display: none;
 }
 
+#connection-error {
+    font-size: 13px;
+}
+
 .streamname {
     font-weight: bold;
 }
