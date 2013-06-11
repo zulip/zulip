@@ -64,6 +64,10 @@ exports.start = function (row) {
     });
 };
 
+exports.is_editing = function (id) {
+    return currently_editing_messages[id] !== undefined;
+};
+
 exports.end = function (row) {
     var message = current_msg_list.get(rows.id(row));
     if (currently_editing_messages[message.id] !== undefined) {
