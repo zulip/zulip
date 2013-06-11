@@ -567,8 +567,8 @@ exports.validate = function () {
 $(function () {
     $("#new_message_content").autosize();
 
-    $("#new_message_content").focus(function (e) {
-        // If we click or tab into the composebox, start up a new message
+    $("#new_message_content").click(function (e) {
+        // If we click in the composebox, start up a new message
         if (!compose.composing()) {
             respond_to_sent_message = true;
             if (narrow.narrowed_to_pms()) {
