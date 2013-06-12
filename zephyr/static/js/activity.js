@@ -96,6 +96,13 @@ function focus_ping() {
     }
 
     $.post('/json/update_active_status', {status: ACTIVE}, function (data) {
+        if (data === undefined || data.presences === undefined) {
+            // We sometimes receive no data even on successful
+            // requests; we should figure out why but this will
+            // prevent us from throwing errors until then
+            return;
+        }
+
         user_info = {};
 
         // Update Zephyr mirror activity warning
