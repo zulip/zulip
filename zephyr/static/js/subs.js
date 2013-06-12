@@ -489,7 +489,7 @@ exports.receives_notifications = function (stream_name) {
     return sub.notifications;
 };
 
-function populate_subscriptions(subs) {
+function populate_subscriptions(subs, subscribed) {
     var sub_rows = [];
     subs.sort(function (a, b) {
         return util.strcmp(a.name, b.name);
@@ -498,7 +498,7 @@ function populate_subscriptions(subs) {
         var stream_name = elem.name;
         var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
                                            invite_only: elem.invite_only,
-                                           notifications: elem.notifications, subscribed: true});
+                                           notifications: elem.notifications, subscribed: subscribed});
         sub_rows.push(sub);
     });
 
@@ -513,7 +513,7 @@ exports.reload_subscriptions = function (opts) {
     if (! opts.custom_callbacks) {
         on_success = function (data) {
                          if (data) {
-                             populate_subscriptions(data.subscriptions);
+                             populate_subscriptions(data.subscriptions, true);
                          }
                      };
     }
@@ -538,6 +538,7 @@ exports.setup_page = function () {
     function populate_and_fill(stream_data, subscription_data) {
         var all_streams = [];
         var our_subs = [];
+        var sub_rows = [];
 
         /* arguments are [ "success", statusText, jqXHR ] */
         if (stream_data.length > 2 && stream_data[2]) {
@@ -549,15 +550,24 @@ exports.setup_page = function () {
             our_subs = subs_response.subscriptions;
         }
 
-        var sub_rows = populate_subscriptions(our_subs);
+        populate_subscriptions(our_subs, true);
 
-        all_streams.sort();
         all_streams.forEach(function (stream) {
-            if (exports.is_subscribed(stream)) {
-                return;
+            var sub = exports.get(stream);
+            if (!sub) {
+                sub = create_sub(stream, {subscribed: false});
             }
-            var sub = create_sub(stream, {subscribed: false});
             sub_rows.push(sub);
+        });
+
+        sub_rows.sort(function (streama, streamb) {
+            if (streama.subscribed && !streamb.subscribed) {
+                return -1;
+            } else if (streamb.subscribed && !streama.subscribed) {
+                return 1;
+            } else {
+                return util.strcmp(streama.name, streamb.name);
+            }
         });
 
         $('#subscriptions_table tr:gt(0)').remove();
@@ -730,7 +740,8 @@ function show_new_stream_modal() {
 $(function () {
     var i;
     // Populate stream_info with data handed over to client-side template.
-    populate_subscriptions(page_params.stream_list);
+    populate_subscriptions(page_params.stream_list, true);
+    populate_subscriptions(page_params.unsubbed_info, false);
 
     $("#add_new_subscription").on("submit", function (e) {
         e.preventDefault();
