@@ -160,7 +160,12 @@ a:hover code {
 }
 
 #left-sidebar .gravatar-profile {
-    display: table-cell;
+    width: 35px;
+    height: 35px;
+    background-size: 35px 35px;
+    background-repeat: none;
+    border-radius: 35px;
+    border: 1px solid #CCC;
 }
 
 #my_information {

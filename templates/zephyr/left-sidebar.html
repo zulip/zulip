@@ -1,9 +1,9 @@
           <div class="row-fluid">
             <div class="span2 sidebar-nav affix" id="left-sidebar">
               <div class="upper_sidebar">
-                  <div class="brand">
-                    <img class="img-rounded gravatar-profile"
-                         src="{{ avatar_url }}&s=60" />
+                <div class="brand">
+                  <div class="gravatar-profile"
+                       style="background-image: url('{{ avatar_url }}&s=60');"></div>
                     <span id="my_information">
                       <span class="my_fullname">{{ user_profile.full_name }}</span><br />
                       <span class="my_email">{{ user_profile.email }}</span>
