@@ -95,7 +95,7 @@ function add_narrow_filter(name, type) {
                 not_in_home_view: (subs.in_home_view(name) === false),
                 invite_only: subs.get(name).invite_only,
                 color: subs.get_color(name)};
-    var list_item = templates.render('stream_sidebar_row', args);
+    var list_item = $(templates.render('stream_sidebar_row', args));
     $("#" + type + "_filters").append(list_item);
     return list_item;
 }
