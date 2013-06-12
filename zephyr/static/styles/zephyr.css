@@ -431,17 +431,13 @@ td.pointer {
 
 .message_time {
     position: absolute;
-    right: -38px;
+    right: -28px;
     top: 7px;
     display: inline-block;
     font-weight: normal;
     font-size: 75%;
     line-height: 100%;
     color: #999;
-}
-
-.message_hovered .message_time, .selected_message .message_time {
-    right: -23px;
 }
 
 .message_controls {
@@ -582,17 +578,13 @@ td.pointer {
     font-size: 80%;
 }
 
-.actions_hovered .message_time {
+.actions_hovered .message_time, .actions_hovered .info {
     color: #0088CC;
     cursor: pointer;
 }
 
 .message_hovered .info {
     visibility: visible;
-}
-
-.actions_hovered .info {
-    opacity: 1;
 }
 
 .actions_hovered .actions_link {
@@ -1412,20 +1404,23 @@ li.expanded_subject {
 }
 
 .empty-star {
-    opacity: 0.4;
+    color: #CCC;
+}
+
+.empty-star:hover {
+    cursor: pointer;
     color: #565656;
 }
 
 .info {
     display: inline-block;
     font-size: 16px;
-    color: #0088CC;
-    visibility: hidden;
+    color: #CCC;
 }
 
-.star:hover, .info:hover {
+.star:hover {
     cursor:  pointer;
-    opacity: 1;
+    color: #0d7245;
 }
 
 .empty_feed_notice p {
