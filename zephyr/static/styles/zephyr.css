@@ -217,6 +217,13 @@ a:hover code {
     padding: 10px 0 10px 0;
 }
 
+#stream_filters .narrow-filter {
+    display: block;
+    padding-left: 1.5em;
+    position: relative;
+    padding-right: 10px;
+}
+
 #stream_filters:hover {
     overflow-y: auto;
 }
@@ -319,14 +326,23 @@ ul.filters i {
 }
 
 ul.filters .arrow {
-    margin-right: 0.5em;
-    font-size: 1em;
+    position: absolute;
+    right: 0px;
+    top: 2px;
+    font-size: 0.8em;
     display: none;
 }
 
 ul.filters li:hover .arrow {
     display: inline;
     cursor: pointer;
+    color: #888;
+}
+
+ul.filters li .arrow:hover {
+    display: inline;
+    cursor: pointer;
+    color: #000;
 }
 
 ul.filters li.out_of_home_view {
@@ -1163,8 +1179,18 @@ table.floating_recipient {
     vertical-align: middle;
     display: inline-block;
     line-height: 14px;
-    padding-top: 4px;
     height: 16px;
+}
+
+#stream_filters .subscription_name {
+    padding: 0px;
+    display: inline-block;
+    line-height: 12px;
+    width: 100%;
+    padding-top: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .subscription_settings {
@@ -1361,19 +1387,21 @@ table.floating_recipient {
 }
 
 .streamlist_swatch {
-    display: inline-block;
+    display: block;
     width: 1em;
     height: 1em;
     vertical-align: middle;
     border-radius: 1em;
-   -moz-box-shadow:     1px 1px 5px #333 inset;
-   -webkit-box-shadow:  1px 1px 5px #333 inset;
-    box-shadow:         1px 1px 5px #333 inset;
+    float: left;
+    position: absolute;
+    left: 1px;
+    top: 3px;
 }
 
 ul.expanded_subjects {
     list-style-type: none;
     font-weight: normal;
+    margin-left: 0px;
 }
 
 li.expanded_subject {
