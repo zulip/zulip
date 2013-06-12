@@ -1,8 +1,9 @@
 class humbug::app_frontend {
   class { 'humbug::base': }
   class { 'humbug::rabbit': }
+  class { 'humbug::nginx': }
 
-  $web_packages = [ "nginx", "memcached", "python-pylibmc", "python-tornado", "python-django",
+  $web_packages = [ "memcached", "python-pylibmc", "python-tornado", "python-django",
                     "python-pygments", "python-flup", "ipython", "python-psycopg2",
                     "yui-compressor", "python-django-auth-openid",
                     "python-django-statsd-mozilla",
@@ -17,14 +18,6 @@ class humbug::app_frontend {
                     "python-diff-match-patch",]
   package { $web_packages: ensure => "installed" }
 
-  file { "/etc/nginx/nginx.conf":
-    require => Package[nginx],
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/humbug/nginx/nginx.conf",
-  }
   file { "/etc/nginx/humbug-include/":
     require => Package[nginx],
     recurse => true,
@@ -32,6 +25,7 @@ class humbug::app_frontend {
     group  => "root",
     mode => 644,
     source => "puppet:///modules/humbug/nginx/humbug-include/",
+    notify => Service["nginx"],
   }
   file { "/etc/memcached.conf":
     require => Package[memcached],
