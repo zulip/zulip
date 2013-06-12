@@ -12,29 +12,8 @@ exec >update-prod-static.log
     --output ./zephyr/static/templates/compiled.js \
     --known if,unless,each,with
 
-# Collect both original and minified files.
-#
-# We don't delete the old files, because doing so makes the
-# running app with PipelineCachedStorage unhappy.  So if you
-# remove a static file, you need to manually remove it from
-# prod-static/collected on the app servers.
+# Collect the files that we're going to serve
 rm -rf prod-static/source-map
 mkdir -p prod-static/source-map
 ./manage.py collectstatic --noinput
 
-# Copy the files we want to expose
-rm -rf prod-static/serve-new
-mkdir -p prod-static/serve-new
-cp -r prod-static/collected/{favicon.ico,robots.txt,html,images,third,min,audio} prod-static/serve-new/
-
-# Sync the new directory to the one nginx actually serves.
-# Hopefully this doesn't race too badly for clients loading
-# right as a deploy happens.
-mkdir -p prod-static/serve
-rsync -ar --delete prod-static/serve-new/* prod-static/serve/
-
-# Clean up
-rm -rf prod-static/serve-new
-
-# Leave the 'collected' directory around or PipelineCachedStorage
-# will fail.

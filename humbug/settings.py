@@ -208,10 +208,6 @@ RATE_LIMITING_RULES = [
 
 STATIC_URL = '/static/'
 
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-)
-
 # PipelineCachedStorage inserts a file hash into filenames,
 # to prevent the browser from using stale files from cache.
 #
@@ -221,11 +217,18 @@ STATICFILES_FINDERS = (
 
 if DEBUG:
     STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
+    STATICFILES_FINDERS = (
+        'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    )
 else:
     STATICFILES_STORAGE = 'zephyr.storage.HumbugStorage'
+    STATICFILES_FINDERS = (
+        'zephyr.finders.HumbugFinder',
+    )
+
 
 STATIC_HEADER_FILE = 'zephyr/static_header.txt'
-STATIC_ROOT = 'prod-static/collected'
+STATIC_ROOT = 'prod-static/serve'
 
 # This is the default behavior from Pipeline, but we set it
 # here so that urls.py can read it.
