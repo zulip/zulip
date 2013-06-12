@@ -2,12 +2,23 @@
 // in order to be able to report exceptions that occur during their
 // execution.
 
-// Silence jslint errors about the "console" global
-/*global console: true */
-
 var blueslip = (function () {
 
 var exports = {};
+
+var console = (function () {
+    if (window.console !== undefined) {
+        return window.console;
+    }
+
+    var proxy = {};
+    var methods = ['log', 'info', 'warn', 'error', 'trace'];
+    var i;
+    for (i = 0; i < methods.length; i++) {
+        proxy[methods[i]] = function () {};
+    }
+    return proxy;
+}());
 
 var reported_errors = {};
 var last_report_attempt = {};
@@ -296,5 +307,3 @@ exports.fatal = function blueslip_fatal (msg, more_info) {
 
 return exports;
 }());
-
-/*global console: false */
