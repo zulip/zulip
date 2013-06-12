@@ -206,8 +206,7 @@ class Command(BaseCommand):
                 internal_mit_users = []
                 create_users(realms, internal_mit_users)
 
-                internal_humbug_users = []
-                create_users(realms, internal_humbug_users)
+                create_users(realms, settings.INTERNAL_HUMBUG_USERS)
                 humbug_stream_list = ["devel", "all", "humbug", "design", "support", "social", "test",
                                       "errors"]
                 create_streams(realms, humbug_realm, humbug_stream_list)

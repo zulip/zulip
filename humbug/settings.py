@@ -49,28 +49,12 @@ DATABASES = {"default": {
 }
 
 if not DEPLOYED:
-    # We can delete this if statement and the whole else clause below
-    # once everyone is off sqlite.
-    if platform.system() == 'Linux' or False:
-        DATABASES["default"].update({
-                'PASSWORD': 'xxxxxxxxxxxx',
-                'HOST': 'localhost',
-                'OPTIONS': {}
-                })
-    else:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': 'zephyrdb',
-                'USER': '',                      # Not used with sqlite3.
-                'PASSWORD': '',                  # Not used with sqlite3.
-                'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-                'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-                'OPTIONS': {
-                    'timeout': 20,
-                    },
-                },
-            }
+    DATABASES["default"].update({
+            'PASSWORD': 'xxxxxxxxxxxx',
+            'HOST': 'localhost',
+            'OPTIONS': {}
+            })
+    INTERNAL_HUMBUG_USERS = []
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
