@@ -21,10 +21,6 @@ a {
     margin: 0px auto;
 }
 
-#left-sidebar {
-    max-width: 300px;
-}
-
 #right-sidebar {
     margin-left: 20px;
 }
@@ -142,15 +138,17 @@ a:hover code {
 }
 
 .sidebar-nav {
-    background-color: white;
-    padding: 0.5em;
+    padding: 0px 10px 20px 0px;
     margin-top: 1em;
     overflow: hidden;
     text-overflow: ellipsis;
+    /* This is a little hacky, but for whatever reason, span2 in a row-fluid
+       doesn't consistently take on the right width when it's in an affix, so
+       we need to specify a max size. */
+    max-width: 200px;
 }
 @media (max-width: 767px) {
     .sidebar-nav {
-        background-color: white;
         padding: 0.5em;
         margin: 0px;
         border: 1px solid black;
