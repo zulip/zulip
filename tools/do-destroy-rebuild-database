@@ -6,5 +6,5 @@ python manage.py syncdb --noinput
 python manage.py migrate
 python manage.py createcachetable third_party_api_results
 python manage.py populate_db --replay-old-messages -n0
-# Ensure that the local user's API key is synced from the server
+# Ensure that the local user's API key is synced from ~/.humbugrc
 python manage.py sync_api_key
