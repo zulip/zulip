@@ -195,6 +195,7 @@ function process_hotkey(e) {
         last_viewport_movement_direction = dirkey.direction;
         next_row = dirkey.getrow(current_msg_list.selected_row());
         if (next_row.length !== 0) {
+            ui.show_pointer();
             current_msg_list.select_id(rows.id(next_row),
                                        {then_scroll: true,
                                         from_scroll: true});
