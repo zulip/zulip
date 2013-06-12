@@ -541,6 +541,7 @@ def home(request):
         poll_timeout          = settings.POLL_TIMEOUT,
         have_initial_messages = user_has_messages,
         stream_list           = register_ret['subscriptions'],
+        unsubbed_info         = register_ret['unsubscribed'],
         people_list           = register_ret['realm_users'],
         initial_pointer       = register_ret['pointer'],
         initial_presences     = register_ret['presences'],
@@ -1151,14 +1152,12 @@ def get_public_streams_backend(request, user_profile):
 
 @authenticated_api_view
 def api_list_subscriptions(request, user_profile):
-    return list_subscriptions_backend(request, user_profile)
+    return json_success({"subscriptions": gather_subscriptions(user_profile)[0]})
 
 @authenticated_json_post_view
 def json_list_subscriptions(request, user_profile):
-    return list_subscriptions_backend(request, user_profile)
-
-def list_subscriptions_backend(request, user_profile):
-    return json_success({"subscriptions": gather_subscriptions(user_profile)})
+    all_subs = gather_subscriptions(user_profile)
+    return json_success({"subscriptions": all_subs[0], "unsubscribed": all_subs[1]})
 
 @transaction.commit_on_success
 @has_request_variables

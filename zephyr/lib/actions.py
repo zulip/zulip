@@ -1044,7 +1044,6 @@ def gather_subscriptions(user_profile):
     # For now, don't display subscriptions for private messages.
     subs = Subscription.objects.select_related().filter(
         user_profile    = user_profile,
-        active          = True,
         recipient__type = Recipient.STREAM)
 
     stream_ids = [sub.recipient.type_id for sub in subs]
@@ -1053,16 +1052,22 @@ def gather_subscriptions(user_profile):
     for stream in Stream.objects.filter(id__in=stream_ids):
         stream_hash[stream.id] = (stream.name, stream.invite_only)
 
-    result = []
+    subscribed = []
+    unsubscribed = []
+
     for sub in subs:
         (stream_name, invite_only) = stream_hash[sub.recipient.type_id]
-        result.append({'name': stream_name,
+        stream = {'name': stream_name,
                        'in_home_view': sub.in_home_view,
                        'invite_only': invite_only,
                        'color': sub.color,
-                       'notifications': sub.notifications})
+                       'notifications': sub.notifications}
+        if sub.active:
+            subscribed.append(stream)
+        else:
+            unsubscribed.append(stream)
 
-    return sorted(result)
+    return (sorted(subscribed), sorted(unsubscribed))
 
 @cache_with_key(status_dict_cache_key, timeout=60)
 def get_status_dict(requesting_user_profile):
@@ -1114,7 +1119,9 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         ret['onboarding_steps'] = [{'email' : profile.email,
                                     'steps' : profile.onboarding_steps}]
     if event_types is None or "subscription" in event_types:
-        ret['subscriptions'] = gather_subscriptions(user_profile)
+        subs = gather_subscriptions(user_profile)
+        ret['subscriptions'] = subs[0]
+        ret['unsubscribed'] = subs[1]
     if event_types is None or "presence" in event_types:
         ret['presences'] = get_status_dict(user_profile)
 
@@ -1141,6 +1148,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                 sub = event['subscription']
                 ret['subscriptions'] = filter(lambda s: s['name'] != sub['name'],
                                               ret['subscriptions'])
+                ret['unsubscribed'].append(sub)
         elif event['type'] == "presence":
                 ret['presences'][event['email']] = event['presence']
         elif event['type'] == "update_message":

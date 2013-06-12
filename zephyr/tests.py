@@ -619,7 +619,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
-        subs = gather_subscriptions(self.get_user_profile(test_email))
+        subs = gather_subscriptions(self.get_user_profile(test_email))[0]
         result = self.client.get("/json/subscriptions/property",
                                   {"property": "color",
                                    "stream_name": subs[0]['name']})
@@ -642,7 +642,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
 
-        old_subs = gather_subscriptions(self.get_user_profile(test_email))
+        old_subs, _ = gather_subscriptions(self.get_user_profile(test_email))
         sub = old_subs[0]
         stream_name = sub['name']
         old_color = sub['color']
@@ -655,7 +655,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
         self.assert_json_success(result)
 
-        new_subs = gather_subscriptions(self.get_user_profile(test_email))
+        new_subs = gather_subscriptions(self.get_user_profile(test_email))[0]
         sub = {'name': stream_name, 'in_home_view': True, 'color': new_color,
                'invite_only': invite_only, 'notifications': False}
         self.assertIn(sub, new_subs)
@@ -683,7 +683,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
-        subs = gather_subscriptions(self.get_user_profile(test_email))
+        subs = gather_subscriptions(self.get_user_profile(test_email))[0]
         result = self.client.post("/json/subscriptions/property",
                                   {"property": "color",
                                    "stream_name": subs[0]["name"]})
@@ -696,7 +696,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
-        subs = gather_subscriptions(self.get_user_profile(test_email))
+        subs = gather_subscriptions(self.get_user_profile(test_email))[0]
         result = self.client.post("/json/subscriptions/property",
                                   {"property": "bad",
                                    "stream_name": subs[0]["name"]})
@@ -1795,7 +1795,7 @@ class GetSubscribersTest(AuthedTestCase):
         """
         get_subscribers returns the list of subscribers.
         """
-        stream_name = gather_subscriptions(self.user_profile)[0]['name']
+        stream_name = gather_subscriptions(self.user_profile)[0][0]['name']
         self.make_successful_subscriber_request(stream_name)
 
     def test_nonsubscriber(self):
