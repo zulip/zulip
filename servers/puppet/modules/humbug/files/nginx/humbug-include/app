@@ -9,7 +9,7 @@ error_page 502 503 504 /static/html/5xx.html;
 
 # Serve static files directly
 location /static/ {
-    alias /home/humbug/humbug-deployments/current/prod-static/serve/;
+    alias /home/humbug/prod-static/;
     error_page 404 /static/html/404.html;
 }
 

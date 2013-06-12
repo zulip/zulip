@@ -220,15 +220,18 @@ if DEBUG:
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     )
+    STATIC_ROOT = 'prod-static/serve'
 else:
     STATICFILES_STORAGE = 'zephyr.storage.HumbugStorage'
     STATICFILES_FINDERS = (
         'zephyr.finders.HumbugFinder',
     )
-
+    if DEPLOYED:
+        STATIC_ROOT = '/home/humbug/prod-static'
+    else:
+        STATIC_ROOT = 'prod-static/serve'
 
 STATIC_HEADER_FILE = 'zephyr/static_header.txt'
-STATIC_ROOT = 'prod-static/serve'
 
 # This is the default behavior from Pipeline, but we set it
 # here so that urls.py can read it.
