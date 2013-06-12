@@ -319,7 +319,7 @@ ul.filters i {
 }
 
 ul.filters .arrow {
-    margin-right: 5em;
+    margin-right: 0.5em;
     font-size: 1em;
     display: none;
 }
