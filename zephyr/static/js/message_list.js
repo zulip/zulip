@@ -509,7 +509,7 @@ MessageList.prototype = {
         if (stream === undefined) {
             return;
         }
-        var trailing_bookend_content, subscribed = subs.have(stream);
+        var trailing_bookend_content, subscribed = subs.is_subscribed(stream);
         if (subscribed) {
             if (this.last_message_historical) {
                 trailing_bookend_content = "--- Subscribed to stream " + stream + " ---";

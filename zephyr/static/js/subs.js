@@ -553,7 +553,7 @@ exports.setup_page = function () {
 
         all_streams.sort();
         all_streams.forEach(function (stream) {
-            if (exports.have(stream)) {
+            if (exports.is_subscribed(stream)) {
                 return;
             }
             var sub = create_sub(stream, {subscribed: false});
@@ -599,12 +599,18 @@ exports.setup_page = function () {
     $.when.apply(this, requests).then(populate_and_fill, failed_listing);
 };
 
-exports.have = function (stream_name) {
+exports.get = function (stream_name) {
+    return get_sub(stream_name);
+};
+
+exports.in_home_view = function (stream_name) {
     var sub = get_sub(stream_name);
-    if (sub !== undefined && sub.subscribed) {
-        return sub;
-    }
-    return false;
+    return sub !== undefined && sub.in_home_view;
+};
+
+exports.is_subscribed = function (stream_name) {
+    var sub = get_sub(stream_name);
+    return sub !== undefined && sub.subscribed;
 };
 
 function ajaxSubscribe(stream) {

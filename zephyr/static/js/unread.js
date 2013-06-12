@@ -142,14 +142,14 @@ exports.get_counts = function () {
     }
 
     $.each(unread_counts.stream, function(stream, msgs) {
-        if (! subs.have(stream)) {
+        if (! subs.is_subscribed(stream)) {
             return true;
         }
 
         var count = Object.keys(msgs).length;
         res.stream_count[stream] = count;
 
-        if (narrow.stream_in_home(stream)) {
+        if (subs.in_home_view(stream)) {
             res.home_unread_messages += only_in_home_view(Object.keys(msgs)).length;
         }
 

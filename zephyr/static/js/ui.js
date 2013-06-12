@@ -1287,7 +1287,7 @@ $(function () {
 
         var ypos = $(e.target).offset().top - viewport.scrollTop();
         $(e.target).popover({
-            content:   templates.render('stream_sidebar_actions', {'stream': subs.have(stream)}),
+            content:   templates.render('stream_sidebar_actions', {'stream': subs.get(stream)}),
             trigger:   "manual",
             fixed: true
         });
@@ -1311,7 +1311,7 @@ $(function () {
         }
 
         $(e.target).popover("show");
-        var popover = $('.streams_popover[data-id=' + subs.have(stream).id + ']');
+        var popover = $('.streams_popover[data-id=' + subs.get(stream).id + ']');
         update_spectrum(popover, function(colorpicker) {
             colorpicker.spectrum(subs.sidebar_popover_colorpicker_options);
         });

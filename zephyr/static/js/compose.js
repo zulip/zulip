@@ -512,7 +512,7 @@ function validate_stream_message() {
 
     var response;
 
-    if (!subs.have(stream_name)) {
+    if (!subs.is_subscribed(stream_name)) {
         switch(check_stream_for_send(stream_name)) {
         case "does-not-exist":
             response = "<p>The stream <b>" +

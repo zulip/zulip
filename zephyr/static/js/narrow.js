@@ -321,24 +321,12 @@ exports.parse = function (str) {
     return operators;
 };
 
-exports.stream_in_home = function (stream_name) {
-    // If we don't know about this stream for some reason,
-    // we might not have loaded the in_home_view information
-    // yet so show it
-    var stream = subs.have(stream_name);
-    if (stream) {
-        return stream.in_home_view;
-    } else {
-        return true;
-    }
-};
-
 exports.message_in_home = function (message) {
     if (message.type === "private") {
         return true;
     }
 
-    return exports.stream_in_home(message.stream);
+    return subs.in_home_view(message.stream);
 };
 
 exports.stream = function () {
@@ -580,7 +568,7 @@ function pick_empty_narrow_banner() {
             // You have no private messages.
             return $("#empty_narrow_all_private_message");
         }
-    } else if ((first_operator === "stream") && !subs.have(first_operand)) {
+    } else if ((first_operator === "stream") && !subs.is_subscribed(first_operand)) {
         // You are narrowed to a stream to which you aren't subscribed.
         return $("#nonsubbed_stream_narrow_message");
     } else if (first_operator === "search") {

@@ -39,8 +39,7 @@ exports.sort_narrow_list = function () {
 
     var elems = [];
     $.each(streams, function(i, stream) {
-        // TODO: we should export the sub objects better
-        var li = $(subs.have(stream).sidebar_li);
+        var li = $(subs.get(stream).sidebar_li);
         if (sort_recent) {
             if (recent_subjects[stream] === undefined) {
                 li.addClass('inactive_stream');
@@ -93,8 +92,8 @@ function add_narrow_filter(name, type) {
     var args = {name: name,
                 id: subs.stream_id(name),
                 uri: narrow.by_stream_uri(name),
-                not_in_home_view: (subs.have(name).in_home_view === false),
-                invite_only: subs.have(name).invite_only,
+                not_in_home_view: (subs.in_home_view(name) === false),
+                invite_only: subs.get(name).invite_only,
                 color: subs.get_color(name)};
     var list_item = templates.render('stream_sidebar_row', args);
     $("#" + type + "_filters").append(list_item);
@@ -185,7 +184,7 @@ exports.update_streams_sidebar = function () {
         if (op_subject.length !== 0) {
             subject = op_subject[0];
         }
-        if (subs.have(op_stream[0])) {
+        if (subs.is_subscribed(op_stream[0])) {
             rebuild_recent_subjects(op_stream[0], subject);
         }
     }
@@ -268,7 +267,7 @@ $(function () {
             }
         }
         var op_stream = event.filter.operands('stream');
-        if (op_stream.length !== 0 && subs.have(op_stream[0])) {
+        if (op_stream.length !== 0 && subs.is_subscribed(op_stream[0])) {
             var stream_li = get_filter_li('stream', op_stream[0]);
             var op_subject = event.filter.operands('subject');
             var subject;

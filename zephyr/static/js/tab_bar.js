@@ -20,7 +20,7 @@ function make_tab_data() {
         // Root breadcrumb item: Either Home or All Messages
         var operator = ops[0][0];
         var operand = ops[0][1];
-        if ((operator === 'stream' && !narrow.stream_in_home(operand)) ||
+        if ((operator === 'stream' && !subs.in_home_view(operand)) ||
             (operator === 'in' && operand === 'all')) {
             tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
         } else {
