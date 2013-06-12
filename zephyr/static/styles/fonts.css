@@ -473,3 +473,4 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-envelope:before             { content: "\f003"; }
 .icon-vector-tag:before                  { content: "\f02b"; }
 .icon-vector-question-sign:before        { content: "\f059"; }
+.icon-vector-remove:before               { content: "\f00d"; }
