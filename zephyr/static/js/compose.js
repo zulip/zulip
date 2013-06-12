@@ -384,7 +384,6 @@ function send_message() {
                 response += ": " + $.parseJSON(xhr.responseText).msg;
             }
             compose_error(response, $('#new_message_content'));
-            send_status.hide();
         }
     });
 
