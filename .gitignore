@@ -15,3 +15,4 @@ zephyr/fixtures/migration-status
 zephyr/fixtures/test_data1.json
 .kdev4
 humbug.kdev4
+memcached_prefix
