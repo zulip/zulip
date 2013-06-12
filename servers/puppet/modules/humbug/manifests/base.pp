@@ -91,6 +91,35 @@ class humbug::base {
     group      => 'root',
     mode       => 644,
   }
+
+  # TODO: We may or may not want to enforce a set UID/GIT for the
+  # nagios user like we do for the humbug user; we don't do that here
+  # because those values differ widely between our existing systems
+  # (some are "system" users with uids around 100, some have uids
+  # around 1000, some have their own group, some are in the nogroup
+  # group, etc.).
+  user { 'nagios':
+    ensure     => present,
+    shell      => '/bin/bash',
+    home       => '/home/nagios',
+    managehome => true,
+  }
+  file { '/home/nagios/.ssh':
+    ensure     => directory,
+    require    => User['nagios'],
+    owner      => "nagios",
+    group      => "nagios",
+    mode       => 600,
+  }
+  file { '/home/nagios/.ssh/authorized_keys':
+    ensure     => file,
+    require    => File['/home/nagios/.ssh'],
+    mode       => 600,
+    owner      => "nagios",
+    group      => "nagios",
+    source     => 'puppet:///modules/humbug/nagios_authorized_keys',
+  }
+
   file { "/usr/lib/nagios/plugins/":
     require => Package[nagios-plugins-basic],
     recurse => true,
