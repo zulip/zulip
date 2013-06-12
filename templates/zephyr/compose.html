@@ -1,9 +1,10 @@
 <div class="row-fluid">
   <div class="span12" id="compose">
     <div class="message_comp">
+      <button type="button" class="close" id='compose_close'>×</button>
       <div class="alert" id="send-status">
-	    <span class="send-status-close">&times;</span>
-	    <span id="error-msg"></span>
+        <span class="send-status-close">&times;</span>
+        <span id="error-msg"></span>
       </div>
       <form id="send_message_form" action="/json/send_message" method="post">
         {% csrf_token %}

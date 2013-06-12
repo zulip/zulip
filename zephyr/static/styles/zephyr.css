@@ -767,6 +767,10 @@ blockquote p {
     z-index: 1;
 }
 
+#compose_close {
+    display: none;
+}
+
 /* Like .nav-tabs > li > a */
 #send-status {
     width: 90%;

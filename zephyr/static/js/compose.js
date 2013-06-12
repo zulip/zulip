@@ -165,6 +165,8 @@ exports.start = function (msg_type, opts) {
         return;
     }
 
+    $("#compose_close").show();
+
     var default_opts = {
         message_type:     msg_type,
         stream:           '',
@@ -232,6 +234,7 @@ function abort_xhr () {
 }
 
 exports.cancel = function () {
+    $("#compose_close").hide();
     compose.clear();
     compose.hide();
     abort_xhr();
