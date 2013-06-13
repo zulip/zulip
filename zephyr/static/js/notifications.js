@@ -182,7 +182,7 @@ function process_desktop_notification(message) {
         notification_object.show();
     } else {
         // Shunt the message along to the desktop client
-        window.bridge.desktopNotification({title: title, content: content});
+        window.bridge.desktopNotification(title, content);
     }
 }
 
@@ -231,6 +231,14 @@ exports.received_messages = function (messages) {
         }
     });
 };
+
+$(function () {
+    // Shim for Cocoa WebScript exporting top-level JS
+    // objects instead of window.foo objects
+    if (typeof(bridge) !== 'undefined' && window.bridge === undefined) {
+        window.bridge = bridge;
+    }
+});
 
 return exports;
 

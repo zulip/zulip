@@ -5,6 +5,9 @@ var globals =
     // Third-party libraries
       ' $ jQuery Spinner Handlebars XDate zxcvbn Intl mixpanel'
 
+    // Cocoa<-> Javascript bridge
+    + ' bridge'
+
     // index.html
     + ' page_params'
 
