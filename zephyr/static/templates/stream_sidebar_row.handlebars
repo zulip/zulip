@@ -10,12 +10,14 @@
     <span id="stream_sidebar_swatch_{{id}}" class="streamlist_swatch"
      style="background-color: {{color}}">&nbsp;</span>
 
-    <a href="{{uri}}" class="subscription_name">{{name}}<span class="count">(<span class="value"></span>)</span></a>
-
+    <span class="subscription_block">
+      <a href="{{uri}}" class="subscription_name">{{name}}
+        <span class="count">(<span class="value"></span>)</span>
+      </a>
+      {{#if invite_only}}
+      <i class="icon-lock"></i>
+      {{/if}}
+    </span>
     <span class="arrow"><i class="icon-vector-chevron-down"></i></span>
-
-    {{#if invite_only}}
-    <i class="icon-lock"></i>
-    {{/if}}
 
 </li>

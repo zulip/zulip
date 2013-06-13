@@ -5,8 +5,10 @@
   <td>
     <div class="subscription_table_elem subscription_header" data-toggle="collapse" data-target="#subscription_settings_{{id}}">
       <span class="color_swatch fade {{#subscribed}}in{{/subscribed}}" style="background-color: {{color}}"></span>
+      <span class="subscription_block">
       <span class="subscription_name">{{name}}</span>
       {{#if invite_only}}<i class="icon-lock"></i>{{/if}}
+      </span>
       <button class="btn sub_unsub_button {{^subscribed}}btn-primary{{/subscribed}}"
               type="button" name="subscription">
         {{#subscribed}}

@@ -1174,7 +1174,7 @@ table.floating_recipient {
     vertical-align: middle;
 }
 
-.subscription_name {
+#subscriptions_table .subscription_block {
     padding-left: 0.5em;
     vertical-align: middle;
     display: inline-block;
@@ -1182,8 +1182,8 @@ table.floating_recipient {
     height: 16px;
 }
 
-#stream_filters .subscription_name {
-    padding: 0px;
+#stream_filters .subscription_block {
+    padding-bottom: 4px;
     display: inline-block;
     line-height: 12px;
     width: 100%;
@@ -1191,6 +1191,15 @@ table.floating_recipient {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+#stream_filters .subscription_block .icon-lock {
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: 0px;
+    margin-left: 3px;
+    position: absolute;
+    top: 2px;
 }
 
 .subscription_settings {
