@@ -65,7 +65,7 @@ send_with_content('Othello unread test 5');
 casper.then(function () {
     function get_sidebar() { return casper.evaluate(function () { return $("a[href='#narrow/stream/Venice']").text(); }); }
     function get_sidebar_num() {
-        var match = get_sidebar().match(/\w+\((\d+)\)/);
+        var match = get_sidebar().match(/\w+\s*\((\d+)\)/);
         if (match) {
            return parseInt(match[1], 10);
         } else {
