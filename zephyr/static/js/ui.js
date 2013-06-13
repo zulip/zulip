@@ -607,8 +607,21 @@ function poll_for_gravatar_update(start_time, url) {
 
 }
 
-exports.get_gravatar_stamp = function () {
-    return gravatar_stamp;
+exports.small_avatar_url = function (message) {
+    // Try to call this function in all places where we need size-30
+    // quality gravatar images, so that the browser can help
+    // us avoid unnecessary network trips.  (For user-uploaded avatars,
+    // the s=30 parameter is essentially ignored, but it's harmless.)
+    //
+    if (message.avatar_url) {
+        var url = message.avatar_url + "&s=30";
+        if (message.sender_email === page_params.email) {
+            url += "&stamp=" + gravatar_stamp;
+        }
+        return url;
+    } else {
+        return "";
+    }
 };
 
 exports.wait_for_gravatar = function () {

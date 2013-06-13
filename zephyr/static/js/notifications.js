@@ -107,11 +107,6 @@ exports.window_has_focus = function () {
     return window_has_focus;
 };
 
-function gravatar_url(message) {
-    return "https://secure.gravatar.com/avatar/" + message.gravatar_hash +
-           "?d=identicon&s=30?stamp=" + ui.get_gravatar_stamp();
-}
-
 function process_desktop_notification(message) {
     var i, notification_object, key;
     var title = message.sender_full_name;
@@ -166,9 +161,10 @@ function process_desktop_notification(message) {
     }
 
     if (window.bridge === undefined) {
+        var icon_url = ui.small_avatar_url(message);
         notice_memory[key] = {
             obj: window.webkitNotifications.createNotification(
-                    gravatar_url(message), title, content),
+                    icon_url, title, content),
             msg_count: msg_count
         };
         notification_object = notice_memory[key].obj;

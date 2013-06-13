@@ -327,9 +327,7 @@ MessageList.prototype = {
 
             message.dom_id = table_name + message.id;
 
-            if (message.sender_email === page_params.email) {
-                message.stamp = ui.get_gravatar_stamp();
-            }
+            message.small_avatar_url = ui.small_avatar_url(message);
 
             if (message.is_stream) {
                 message.background_color = subs.get_color(message.stream);

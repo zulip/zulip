@@ -58,8 +58,9 @@
         <div class="message_top_line">
         {{#include_sender}}
         <span class="message_sender actions_hover">
+            {{! See ../js/notifications.js for another user of avatar_url. }}
             <div class="inline_profile_picture"
-                 style="background-image: url('{{avatar_url}}&s=30&stamp={{stamp}}');"/>
+                 style="background-image: url('{{small_avatar_url}}');"/>
             <span class="sender_name">{{sender_full_name}}</span>
         </span>
         {{/include_sender}}
