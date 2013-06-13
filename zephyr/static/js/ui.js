@@ -573,7 +573,8 @@ exports.actions_currently_popped = function () {
 
 function update_gravatars() {
     $.each($(".gravatar-profile"), function (index, profile) {
-        $(this).attr('src', $(this).attr('src') + '?stamp=' + gravatar_stamp);
+        // Avatar URLs will have at least one param, so & is safe here.
+        $(this).attr('src', $(this).attr('src') + '&stamp=' + gravatar_stamp);
     });
     gravatar_stamp += 1;
 }
