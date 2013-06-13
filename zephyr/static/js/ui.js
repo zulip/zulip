@@ -720,8 +720,17 @@ exports.stream_sidebar_currently_popped = function () {
     return current_stream_sidebar_elem !== undefined;
 };
 
-exports.show_pointer = function () {
+exports.show_pointer = function (apply_now) {
     pointer_visible = true;
+    if (apply_now) {
+        // Needs a selection change to actually apply the class. Otherwise the
+        // next selection change makes the cursor visible.
+        current_msg_list.select_id(current_msg_list.selected_id());
+    }
+};
+
+exports.pointer_visible = function () {
+    return pointer_visible;
 };
 
 $(function () {
