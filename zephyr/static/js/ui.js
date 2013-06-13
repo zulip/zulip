@@ -579,8 +579,10 @@ function update_gravatars() {
 }
 
 function poll_for_gravatar_update(start_time, url) {
-    var updated = false;
-
+    // Give users 5 minutes to update their picture on gravatar.com,
+    // during which we try to auto-update their image on our site. If
+    // they take longer than that, we'll update when they press the
+    // save button.
     $.ajax({
         type: "HEAD",
         url: url,
@@ -589,20 +591,17 @@ function poll_for_gravatar_update(start_time, url) {
         success: function (resp, statusText, xhr) {
             if (new Date(xhr.getResponseHeader('Last-Modified')) > start_time) {
                 update_gravatars();
-                updated = true;
+            }
+            else {
+                if (($.now() - start_time) < 1000 * 60 * 5) {
+                    setTimeout(function () {
+                        poll_for_gravatar_update(start_time, url);
+                    }, 1500);
+                }
             }
         }
     });
 
-    // Give users 5 minutes to update their picture on gravatar.com,
-    // during which we try to auto-update their image on our site. If
-    // they take longer than that, we'll update when they press the
-    // save button.
-    if (!updated && (($.now() - start_time) < 1000 * 60 * 5)) {
-        setTimeout(function () {
-            poll_for_gravatar_update(start_time, url);
-        }, 1500);
-    }
 }
 
 exports.get_gravatar_stamp = function () {
