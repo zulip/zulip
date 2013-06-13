@@ -46,6 +46,26 @@ Filter.prototype = {
         return result;
     },
 
+    has_operand: function Filter_has_operand(operator, operand) {
+        var result = false;
+        $.each(this._operators, function (idx, elem) {
+            if (elem[0] === operator && elem[1] === operand) {
+                result = true;
+            }
+        });
+        return result;
+    },
+
+    has_operator: function Filter_has_operand(operator) {
+        var result = false;
+        $.each(this._operators, function (idx, elem) {
+            if (elem[0] === operator) {
+                result = true;
+            }
+        });
+        return result;
+    },
+
     is_search: function Filter_is_search() {
         var retval = false;
         $.each(this._operators, function (idx, elem) {

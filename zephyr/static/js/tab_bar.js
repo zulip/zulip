@@ -14,14 +14,14 @@ function make_tab_data() {
     var tabs = [];
 
     if (narrow.active() && narrow.operators().length > 0) {
-        var ops = narrow.operators();
+        var stream, ops = narrow.operators();
+        var filter = narrow.filter();
         var hash = hashchange.operators_to_hash(ops);
 
         // Root breadcrumb item: Either Home or All Messages
-        var operator = ops[0][0];
-        var operand = ops[0][1];
-        if ((operator === 'stream' && !subs.in_home_view(operand)) ||
-            (operator === 'in' && operand === 'all')) {
+        if ((filter.has_operator("stream") &&
+             !subs.in_home_view(filter.operands("stream")[0])) ||
+            filter.has_operand("in", "all")) {
             tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
         } else {
             tabs.push(make_tab("Home", "#", "home", "root"));
@@ -29,20 +29,21 @@ function make_tab_data() {
 
         // Second breadcrumb item
         var hashed = hashchange.operators_to_hash(ops.slice(0, 1));
-        if (operator === 'stream') {
-            tabs.push(make_tab(operand, hashed, operand, 'stream'));
-        } else if ((operator === 'is' && operand === 'private-message') ||
-                   (operator === 'pm-with')) {
+        if (filter.has_operator("stream")) {
+            stream = filter.operands("stream")[0];
+            tabs.push(make_tab(stream, hashed, stream, 'stream'));
+        } else if (filter.has_operator("pm-with") ||
+                   filter.has_operand("is", "private-message")) {
             var extra_cls = "";
-            if (operator === 'pm-with') {
+            if (filter.has_operator("pm-with")) {
                 extra_cls = "dark_background";
             }
 
             tabs.push(make_tab("Private Messages", '#narrow/is/private-message',
                                 undefined, 'private_message ' + extra_cls));
 
-            if (operator === 'pm-with') {
-                var emails = operand.split(',');
+            if (filter.has_operator("pm-with")) {
+                var emails = filter.operands("pm-with")[0].split(',');
                 var names = $.map(emails, function (email) {
                     if (! people_dict[email]) {
                         return email;
@@ -53,35 +54,32 @@ function make_tab_data() {
                 tabs.push(make_tab(names.join(', '), hashed));
             }
 
-        } else if (operator === 'is' && operand === 'starred') {
+        } else if (filter.has_operand("is", "starred")) {
             tabs.push(make_tab("Starred", hashed));
-        } else if (operator === 'is' && operand === 'mentioned') {
+        } else if (filter.has_operand("is", "mentioned")) {
             tabs.push(make_tab("Mentions", hashed));
-        } else if (operator === 'sender') {
-            var sender = operand;
-            if (people_dict[operand]) {
-                sender = people_dict[operand].full_name;
+        } else if (filter.has_operator("sender")) {
+            var sender = filter.operands("sender")[0];
+            if (people_dict[sender]) {
+                sender = people_dict[sender].full_name;
             }
             tabs.push(make_tab("Sent by " + sender, hashed));
-        }  else if (operator === 'search') {
+        }  else if (filter.has_operator("search")) {
             // Search is not a clickable link, since we don't have
             // a search narrow
             tabs.push(make_tab("Search", false));
         }
 
         // Third breadcrumb item for stream-subject naarrows
-        if (ops.length > 1) {
-            operator = ops[1][0];
-            operand = ops[1][1];
+        if (filter.has_operator("stream") &&
+            filter.has_operator("subject")) {
+            stream = filter.operands("stream")[0];
+            var subject = filter.operands("subject")[0];
             hashed = hashchange.operators_to_hash(ops.slice(0, 2));
+            // Colorize text of stream name properly
+            tabs[tabs.length - 1].cls += ' ' + subs.get_color_class(subs.get_color(stream));
 
-            if (operator === 'subject' && ops[0][0] === 'stream') {
-                // Colorize text of stream name properly
-                var stream = ops[0][1];
-                tabs[tabs.length - 1].cls += ' ' + subs.get_color_class(subs.get_color(stream));
-
-                tabs.push(make_tab(operand, hashed));
-            }
+            tabs.push(make_tab(subject, hashed));
         }
     } else {
         // Just the home view
