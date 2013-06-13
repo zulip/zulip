@@ -39,7 +39,7 @@ casper.then(function() {
     casper.click('a[href^="#narrow/is/starred"]');
 });
 
-casper.then(function() {
+casper.waitUntilVisible('#zfilt', function () {
     // You can narrow to your starred messages.
     common.expected_messages('zfilt', ['Verona stars'], ['<p>test star</p>']);
     common.un_narrow();
