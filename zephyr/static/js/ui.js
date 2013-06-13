@@ -473,42 +473,119 @@ function hack_for_floating_recipient_bar() {
     floating_recipient.offset(offset);
 }
 
-var current_actions_popover_elem;
-function show_actions_popover(element, id) {
-    var last_popover_elem = current_actions_popover_elem;
-    ui.hide_actions_popover();
-    if (last_popover_elem !== undefined
-        && last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
+var current_actions_dropdown_elem;
+exports.show_actions_dropdown = function (element, id) {
+    element = $(element).parent()[0];
+
+    if (current_actions_dropdown_elem === element
+        && ui.actions_menu_currently_shown()) {
+        // We want it to be the case that a user can dismiss a dropdown
+        // by clicking on the same element that caused the dropdown.
+        ui.hide_actions_dropdown();
         return;
     }
 
+    ui.hide_actions_dropdown();
+
+    // since we clicked on this element
     current_msg_list.select_id(id);
     var elt = $(element);
-    if (elt.data('popover') === undefined) {
-        timerender.set_full_datetime(current_msg_list.get(id),
-                                     elt.closest(".message_row").find(".message_time"));
 
+    if ($('.dropdown-menu', elt).length === 0) {
+        compose.cancel();
+        ui.hide_message_info_popover();
         var message = current_msg_list.get(id);
-        var can_edit = message.sent_by_me;
         var args = {
             message:  message,
-            can_edit_message: can_edit,
+            can_edit_message: message.sent_by_me,
             narrowed: narrow.active()
         };
+        var rendered_dropdown_menu = $(templates.render('actions_dropdown_content', args));
 
-        var ypos = elt.offset().top - viewport.scrollTop();
-        elt.popover({
-            placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
-            title:     templates.render('actions_popover_title',   args),
-            content:   templates.render('actions_popover_content', args),
-            trigger:   "manual"
-        });
-        elt.popover("show");
-        current_actions_popover_elem = elt;
+        rendered_dropdown_menu.appendTo(elt);
+        current_actions_dropdown_elem = element;
     }
+    $(elt.children()[0]).dropdown('toggle');
+};
+
+exports.actions_menu_handle_keyboard = function (key) {
+    var items = $('li:not(.divider):visible a', current_actions_dropdown_elem);
+    var index = items.index(items.filter(':focus'));
+
+    if (key === "enter" && index >= 0 && index < items.length) {
+        return items.eq(index).trigger('click');
+    }
+    if (index === -1) {
+        index = 0;
+    }
+    else if ((key === 'down_arrow' || key === 'vim_down') && index < items.length - 1) {
+        ++index;
+    }
+    else if ((key === 'up_arrow' || key === 'vim_up') && index > 0) {
+        --index;
+    }
+    items.eq(index).focus();
+};
+
+exports.hide_actions_dropdown = function () {
+    if (ui.actions_menu_currently_shown()) {
+        $(current_actions_dropdown_elem).removeClass('open');
+        $(current_actions_dropdown_elem).children().eq(0).off('click.data-api.dropdown');
+        $('.dropdown-menu', current_actions_dropdown_elem).remove();
+        current_actions_dropdown_elem = undefined;
+    }
+};
+
+exports.actions_menu_currently_shown = function () {
+    return $(current_actions_dropdown_elem).hasClass('open');
+};
+
+
+var current_message_info_popover_elem;
+var current_message_info_hover_timeout;
+function show_message_info_popover(element, id, event_type) {
+
+    ui.hide_message_info_popover();
+
+    if (event_type === 'mouseleave') {
+        return;
+    }
+
+    var elt = $(element);
+    timerender.set_full_datetime(current_msg_list.get(id),
+                                 elt.closest(".message_row").find(".message_time"));
+
+    var message = current_msg_list.get(id);
+    var args = {
+        message:  message,
+        can_edit_message: message.sent_by_me,
+        narrowed: narrow.active()
+    };
+
+    elt.popover({
+        placement: 'left',
+        title:     templates.render('message_info_popover_title',   args),
+        content:   templates.render('message_info_popover_content', args),
+        trigger:   "manual"
+    });
+
+    current_message_info_hover_timeout = window.setTimeout(function() {
+        elt.popover("show");
+        current_message_info_popover_elem = elt;
+    }, 1000);
 }
+
+exports.hide_message_info_popover = function () {
+    if (current_message_info_hover_timeout !== undefined) {
+        window.clearTimeout(current_message_info_hover_timeout);
+        current_message_info_hover_timeout = undefined;
+    }
+
+    if (current_message_info_popover_elem !== undefined) {
+        current_message_info_popover_elem.popover("destroy");
+        current_message_info_popover_elem = undefined;
+    }
+};
 
 function update_message_flag(message, flag_name, set_flag) {
     $.ajax({
@@ -559,17 +636,6 @@ function toggle_star(row_id) {
     // Save the star change.
     change_message_star(message, message.starred);
 }
-
-exports.hide_actions_popover = function () {
-    if (ui.actions_currently_popped()) {
-        current_actions_popover_elem.popover("destroy");
-        current_actions_popover_elem = undefined;
-    }
-};
-
-exports.actions_currently_popped = function () {
-    return current_actions_popover_elem !== undefined;
-};
 
 function update_gravatars() {
     $.each($(".gravatar-profile"), function (index, profile) {
@@ -661,6 +727,7 @@ function condense(row) {
     content.addClass("condensed");
     show_more_link(row);
 }
+
 
 function uncondense(row) {
     var content = row.find(".message_content");
@@ -1087,20 +1154,26 @@ $(function () {
         message_unhover();
     });
 
-    $("#main_div").on("mouseover", ".actions_hover", function (e) {
+    $("#main_div").on("mouseover", ".message_actions_hover", function (e) {
         var row = $(this).closest(".message_row");
         row.addClass("actions_hovered");
     });
 
-    $("#main_div").on("mouseout", ".actions_hover", function (e) {
+    $("#main_div").on("mouseout", ".message_actions_hover", function (e) {
         var row = $(this).closest(".message_row");
         row.removeClass("actions_hovered");
     });
 
-    $("#main_div").on("click", ".actions_hover", function (e) {
+    $("#main_div").on("hover", ".messagebox:not(.message_controls)", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
-        show_actions_popover(this, rows.id(row));
+        show_message_info_popover(this, rows.id(row), e.type);
+    });
+
+    $("#main_div").on("click", ".message_actions_hover", function (e) {
+        var row = $(this).closest(".message_row");
+        e.stopPropagation();
+        exports.show_actions_dropdown(this, rows.id(row));
     });
 
     $("#main_div").on("click", ".star", function (e) {
@@ -1433,30 +1506,35 @@ $(function () {
 
     $('body').on('click', '.respond_button', function (e) {
         respond_to_message({trigger: 'popover respond'});
-        ui.hide_actions_popover();
+        ui.hide_actions_dropdown();
+        e.preventDefault();
         e.stopPropagation();
     });
     $('body').on('click', '.respond_personal_button', function (e) {
         respond_to_message({reply_type: 'personal', trigger: 'popover respond pm'});
-        ui.hide_actions_popover();
+        ui.hide_actions_dropdown();
+        e.preventDefault();
         e.stopPropagation();
     });
     $('body').on('click', '.popover_narrow_by_subject_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
-        ui.hide_actions_popover();
+        ui.hide_actions_dropdown();
         narrow.by_subject(msgid, {trigger: 'popover'});
+        e.preventDefault();
         e.stopPropagation();
     });
     $('body').on('click', '.popover_narrow_by_recipient_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
-        ui.hide_actions_popover();
+        ui.hide_actions_dropdown();
         narrow.by_recipient(msgid, {trigger: 'popover'});
+        e.preventDefault();
         e.stopPropagation();
     });
     $('body').on('click', '.popover_narrow_by_time_travel_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
-        ui.hide_actions_popover();
+        ui.hide_actions_dropdown();
         narrow.by_time_travel(msgid, {trigger: 'popover'});
+        e.preventDefault();
         e.stopPropagation();
     });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
@@ -1464,7 +1542,7 @@ $(function () {
         var row = rows.get(msgid, current_msg_list.table_name);
         var message = current_msg_list.get(rows.id(row));
 
-        ui.hide_actions_popover();
+        ui.hide_actions_dropdown();
 
         if (message.collapsed) {
             uncollapse(row);
@@ -1472,6 +1550,7 @@ $(function () {
             collapse(row);
         }
 
+        e.preventDefault();
         e.stopPropagation();
     });
     $('body').on('click', '.edit_subject', function (e) {
@@ -1483,8 +1562,9 @@ $(function () {
     $('body').on('click', '.popover_edit_message', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         var row = rows.get(msgid, current_msg_list.table_name);
-        ui.hide_actions_popover();
+        ui.hide_actions_dropdown();
         message_edit.start(row);
+        e.preventDefault();
         e.stopPropagation();
     });
     $("body").on("click", ".message_edit_save", function (e) {
@@ -1539,7 +1619,7 @@ $(function () {
     $("body").on('click', function (e) {
         // Dismiss the popover if the user has clicked outside it
         if ($('.popover-inner').has(e.target).length === 0) {
-            ui.hide_actions_popover();
+            ui.hide_actions_dropdown();
             if (stream_sidebar_popup_shown_this_click === false ) {
                 ui.hide_stream_sidebar_popover();
             }

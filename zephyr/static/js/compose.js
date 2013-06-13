@@ -162,6 +162,7 @@ exports.start = function (msg_type, opts) {
         return;
     }
 
+    ui.hide_actions_dropdown();
     $("#compose_close").show();
     $("#compose_controls").hide();
     $('.message_comp').show();

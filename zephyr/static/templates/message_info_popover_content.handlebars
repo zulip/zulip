@@ -1,0 +1,14 @@
+{{! Contents of the "message actions" popup }}
+<ul class="nav nav-list actions_popover">
+  <div class="popover_info">
+    <li>Sent by <b>{{message.sender_full_name}}</b></li>
+    <li class='my_email'>{{message.sender_email}}</li>
+    <hr />
+
+    <li>{{message.full_date_str}}</li>
+    <li>{{message.full_time_str}}</li>
+    {{#if message.historical}}
+    <li class="small">(Message sent when you were not subscribed)</li>
+    {{/if}}
+  </div>
+</ul>

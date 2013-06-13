@@ -18,6 +18,14 @@ var directional_hotkeys = {
     'home':  {getrow: rows.first_visible, direction: -1, charCode: 0}  // Home
 };
 
+var actions_dropdown_hotkeys = [
+    'down_arrow',
+    'up_arrow',
+    'vim_up',
+    'vim_down',
+    'enter'
+];
+
 function get_event_name(e) {
     if ((e.which === 9) && e.shiftKey) {
         return 'shift_tab';
@@ -72,6 +80,8 @@ function get_event_name(e) {
         return 'narrow_by_subject';
     case 99: // 'c'
         return 'compose';
+    case 105: // 'i'
+        return 'message_actions';
     case 106: // 'j'
         return 'vim_down';
     case 107: // 'k'
@@ -102,6 +112,11 @@ function process_hotkey(e) {
     }
 
     var next_row, dirkey;
+
+    if (ui.actions_menu_currently_shown() && actions_dropdown_hotkeys.indexOf(event_name) !== -1) {
+        ui.actions_menu_handle_keyboard(event_name);
+        return true;
+    }
 
     // Handle a few keys specially when the send button is focused.
     if ($('#compose-send-button').is(':focus')) {
@@ -215,6 +230,10 @@ function process_hotkey(e) {
 
 
     switch (event_name) {
+    case 'message_actions':
+        var id = current_msg_list.selected_id();
+        ui.show_actions_dropdown($(".selected_message .message_actions_hover")[0], id);
+        return true;
     case 'page_up':
         if (viewport.at_top() && !current_msg_list.empty()) {
             current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
@@ -232,8 +251,8 @@ function process_hotkey(e) {
         }
         return true;
     case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
-        if (ui.actions_currently_popped()) {
-            ui.hide_actions_popover();
+        if (ui.actions_menu_currently_shown()) {
+            ui.hide_actions_dropdown();
         } else if (compose.composing()) {
             compose.cancel();
         } else {

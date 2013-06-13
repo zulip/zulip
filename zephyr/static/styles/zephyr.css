@@ -649,11 +649,11 @@ background-color: #ffe4e0;
     top: -2px;
 }
 
-.actions_hovered .sender_name {
+.message_hovered .sender_name {
     color: #0088CC;
 }
 
-.actions_hovered .inline_profile_picture {
+.message_hovered .inline_profile_picture {
     border-color: #0088CC;
 }
 
@@ -1893,3 +1893,8 @@ li.expanded_subject {
 .message-pane {
     padding-left: 0.3em;
 }
+
+.dropdown-menu a {
+    font-size: 14px;
+}
+
