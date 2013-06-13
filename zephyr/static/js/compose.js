@@ -206,6 +206,8 @@ exports.start = function (msg_type, opts) {
         focus_area = 'new_message_content';
     }
 
+    is_composing_message = msg_type;
+
     if (msg_type === 'stream') {
         show('stream', $("#" + (focus_area || 'stream')));
     } else {
@@ -216,7 +218,6 @@ exports.start = function (msg_type, opts) {
         do_fade(opts.replying_to_message, msg_type);
     }
 
-    is_composing_message = msg_type;
     exports.decorate_stream_bar(opts.stream);
     $(document).trigger($.Event('compose_started.zephyr', opts));
 };
@@ -566,7 +567,7 @@ exports.validate = function () {
 $(function () {
     $("#new_message_content").autosize();
 
-    $("#new_message_content").click(function (e) {
+    $("#new_message_content").focus(function (e) {
         // If we click in the composebox, start up a new message
         if (!compose.composing()) {
             respond_to_sent_message = true;
