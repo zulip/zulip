@@ -368,16 +368,8 @@ exports.activate = function (operators, opts) {
 
     current_filter = new Filter(operators);
 
-    var collapse_messages = true;
-    $.each(operators, function (idx, operator) {
-        if (operator[0].toString().toLowerCase() === 'search') {
-            collapse_messages = false;
-            return false;
-        }
-    });
-
     narrowed_msg_list = new MessageList('zfilt', current_filter,
-                                        {collapse_messages: collapse_messages});
+                                        {collapse_messages: ! current_filter.is_search()});
     current_msg_list = narrowed_msg_list;
 
     function maybe_select_closest() {
@@ -432,17 +424,6 @@ exports.activate = function (operators, opts) {
     reset_load_more_status();
     if (! defer_selecting_closest) {
         maybe_select_closest();
-    }
-
-    function extract_search_terms(operators) {
-        var i = 0;
-        for (i = 0; i < operators.length; i++) {
-            var type = operators[i][0];
-            if (type === "search") {
-                return operators[i][1];
-            }
-        }
-        return undefined;
     }
 
     // Put the narrow operators in the URL fragment.
@@ -603,15 +584,20 @@ exports.by_stream_subject_uri = function (stream, subject) {
            "/subject/" + hashchange.encodeHashComponent(subject);
 };
 
+// Are we narrowed to PMs: all PMs or PMs with particular people.
 exports.narrowed_to_pms = function () {
-    // Are we narrowed to PMs: all PMs or PMs with particular people.
-    var operators = narrow.operators();
-    if (operators.length === 0) {
+    var i, filter = narrow.filter();
+    if (filter === undefined) {
         return false;
     }
-    if ((operators[0][0] === "pm-with") ||
-        ((operators[0][0] === "is") && (operators[0][1] === "private-message"))) {
+    if (filter.operands("pm-with").length === 1) {
         return true;
+    }
+    var operands = filter.operands("is");
+    for (i = 0; i < operands.length; i++) {
+        if (operands[i] === "private-message") {
+            return true;
+        }
     }
     return false;
 };
@@ -619,15 +605,16 @@ exports.narrowed_to_pms = function () {
 // We auto-reply under certain conditions, namely when you're narrowed
 // to a PM (or huddle), and when you're narrowed to some stream/subject pair
 exports.narrowed_by_reply = function () {
-    if (narrow.filter() === undefined) {
+    var filter = narrow.filter();
+    if (filter === undefined) {
         return false;
     }
-    var operators = narrow.filter().operators();
-        return ((operators.length === 1 &&
-                 operators[0][0] === "pm-with") ||
-                (operators.length === 2 &&
-                 operators[0][0] === "stream" &&
-                 operators[1][0] === "subject"));
+    var operators = filter.operators();
+    return ((operators.length === 1 &&
+             filter.operands("pm-with").length === 1) ||
+            (operators.length === 2 &&
+             filter.operands("stream").length === 1 &&
+             filter.operands("subject").length === 1));
 };
 
 return exports;

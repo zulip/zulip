@@ -942,11 +942,10 @@ $(function () {
 });
 
 function focus_on_narrowed_stream() {
-    var operators = narrow.operators();
-    if (operators.length === 0) {
+    var stream_name = narrow.stream();
+    if (stream_name === undefined) {
         return;
     }
-    var stream_name = operators[0][1];
     var sub = get_sub(stream_name);
     if (sub !== undefined) {
         // This stream is in the list, so focus on it.
