@@ -353,12 +353,9 @@ exports.stream = function () {
     if (current_filter === undefined) {
         return undefined;
     }
-    var j;
-    var current_operators = current_filter.operators();
-    for (j = 0; j < current_operators.length; j++) {
-        if (current_operators[j][0] === "stream") {
-            return current_operators[j][1];
-        }
+    var stream_operands = current_filter.operands("stream");
+    if (stream_operands.length === 1) {
+        return stream_operands[0];
     }
     return undefined;
 };
@@ -606,35 +603,25 @@ exports.by_stream_subject_uri = function (stream, subject) {
 
 // Are we narrowed to PMs: all PMs or PMs with particular people.
 exports.narrowed_to_pms = function () {
-    var i, filter = narrow.filter();
-    if (filter === undefined) {
+    if (current_filter === undefined) {
         return false;
     }
-    if (filter.operands("pm-with").length === 1) {
-        return true;
-    }
-    var operands = filter.operands("is");
-    for (i = 0; i < operands.length; i++) {
-        if (operands[i] === "private-message") {
-            return true;
-        }
-    }
-    return false;
+    return (current_filter.has_operator("pm-with") ||
+            current_filter.has_operand("is", "private-message"));
 };
 
 // We auto-reply under certain conditions, namely when you're narrowed
 // to a PM (or huddle), and when you're narrowed to some stream/subject pair
 exports.narrowed_by_reply = function () {
-    var filter = narrow.filter();
-    if (filter === undefined) {
+    if (current_filter === undefined) {
         return false;
     }
-    var operators = filter.operators();
+    var operators = current_filter.operators();
     return ((operators.length === 1 &&
-             filter.operands("pm-with").length === 1) ||
+             current_filter.operands("pm-with").length === 1) ||
             (operators.length === 2 &&
-             filter.operands("stream").length === 1 &&
-             filter.operands("subject").length === 1));
+             current_filter.operands("stream").length === 1 &&
+             current_filter.operands("subject").length === 1));
 };
 
 return exports;
