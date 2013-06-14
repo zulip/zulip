@@ -1,15 +1,6 @@
 class humbug::bots {
   class { 'humbug::base': }
-
-  $bots_packages = [ "supervisor" ]
-  package { $bots_packages: ensure => "installed" }
-
-  file { '/var/log/humbug':
-    ensure => 'directory',
-    owner  => 'humbug',
-    group  => 'humbug',
-    mode   => 640,
-  }
+  class { 'humbug::supervisor': }
 
   file { '/etc/supervisor/conf.d/feedback-bot.conf':
     require => Package['supervisor'],
@@ -18,5 +9,6 @@ class humbug::bots {
     group   => 'root',
     mode    => 640,
     source  => "puppet:///modules/humbug/supervisord/conf.d/feedback-bot.conf",
+    notify  => Service['supervisor'],
   }
 }

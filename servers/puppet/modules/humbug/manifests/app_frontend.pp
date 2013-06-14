@@ -2,12 +2,13 @@ class humbug::app_frontend {
   class { 'humbug::base': }
   class { 'humbug::rabbit': }
   class { 'humbug::nginx': }
+  class { 'humbug::supervisor': }
 
   $web_packages = [ "memcached", "python-pylibmc", "python-tornado", "python-django",
                     "python-pygments", "python-flup", "ipython", "python-psycopg2",
                     "yui-compressor", "python-django-auth-openid",
                     "python-django-statsd-mozilla",
-                    "build-essential", "libssl-dev", "supervisor",
+                    "build-essential", "libssl-dev",
                     "python-boto", "python-defusedxml", "python-twitter",
                     "python-twisted", "python-markdown",
                     "python-django-south", "python-mock", "python-pika",
@@ -42,12 +43,7 @@ class humbug::app_frontend {
     group => "root",
     mode => 644,
     source => "puppet:///modules/humbug/supervisord/conf.d/humbug.conf",
-  }
-  file { "/var/log/humbug":
-    ensure => directory,
-    owner => "root",
-    group => "root",
-    mode => 755,
+    notify => Service["supervisor"],
   }
   file { "/home/humbug/tornado":
     ensure => directory,
@@ -70,12 +66,5 @@ class humbug::app_frontend {
   service { 'memcached':
     ensure     => running,
     subscribe  => File['/etc/memcached.conf'],
-  }
-
-  # Supervisor is what actually runs the app
-  service { "supervisor":
-    ensure => running,
-    require => File["/var/log/humbug"],
-    subscribe => File["/etc/supervisor/conf.d/humbug.conf"],
   }
 }

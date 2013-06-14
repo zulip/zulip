@@ -92,6 +92,13 @@ class humbug::base {
     mode       => 644,
   }
 
+  file { '/var/log/humbug':
+    ensure => 'directory',
+    owner  => 'humbug',
+    group  => 'humbug',
+    mode   => 640,
+  }
+
   group { 'nagios':
     ensure     => present,
     gid => '1050',
