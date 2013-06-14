@@ -365,7 +365,7 @@ function process_visible_unread_messages(update_cursor) {
         //save the state of respond_to_cursor, and reapply it every time we move the cursor
         var probably_from_sent_message = respond_to_cursor;
         $.map(visible_messages, function(msg) {
-            if ((current_msg_list.get(rows.id($(msg))).sender_email === page_params.email) &&
+            if ((current_msg_list.get(rows.id($(msg))).sent_by_me) &&
                 (current_msg_list.selected_message().id < rows.id($(msg)))) {
                 // every time we move the cursor, we set respond_to_cursor to false. This should only
                 // happen if the user initiated the cursor move, not us, so we reset it when processing
@@ -531,6 +531,8 @@ function add_message_metadata(message, dummy) {
 
     var involved_people;
 
+    message.sent_by_me = (message.sender_email === page_params.email);
+
     message.flags = message.flags || [];
     message.historical = (message.flags !== undefined &&
                           message.flags.indexOf('historical') !== -1);
@@ -560,7 +562,7 @@ function add_message_metadata(message, dummy) {
                             'email': message.sender_email}];
 
         if ((message.subject === compose.empty_subject_placeholder()) &&
-            (message.sender_email === page_params.email)) {
+            message.sent_by_me) {
             // You can only edit messages you sent, so only show the edit hint
             // for empty subjects on messages you sent.
             message.your_empty_subject = true;
@@ -576,7 +578,7 @@ function add_message_metadata(message, dummy) {
 
         involved_people = message.display_recipient;
 
-        if (message.sender_email === page_params.email) {
+        if (message.sent_by_me) {
             typeahead_helper.update_your_recipients(involved_people);
         } else {
             typeahead_helper.update_all_recipients(involved_people);
@@ -903,7 +905,7 @@ function get_updates(options) {
                 var update_cursor = false;
                 // check if we need to update the cursor, and do so if needed.
                 for (i = 0; i < messages.length; i++) {
-                    if (messages[i].sender_email === page_params.email && narrow.narrowed_by_reply()) {
+                    if (messages[i].sent_by_me && narrow.narrowed_by_reply()) {
                         update_cursor = true;
                     }
                 }

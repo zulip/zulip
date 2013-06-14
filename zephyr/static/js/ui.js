@@ -493,7 +493,7 @@ function show_actions_popover(element, id) {
                                      elt.closest(".message_row").find(".message_time"));
 
         var message = current_msg_list.get(id);
-        var can_edit = message.sender_email.toLowerCase() === page_params.email.toLowerCase();
+        var can_edit = message.sent_by_me;
         var args = {
             message:  message,
             can_edit_message: can_edit,
@@ -615,7 +615,7 @@ exports.small_avatar_url = function (message) {
     //
     if (message.avatar_url) {
         var url = message.avatar_url + "&s=30";
-        if (message.sender_email === page_params.email) {
+        if (message.sent_by_me) {
             url += "&stamp=" + gravatar_stamp;
         }
         return url;
