@@ -1126,7 +1126,7 @@ function reset_load_more_status() {
 }
 
 function load_more_messages(msg_list) {
-    var batch_size = 400;
+    var batch_size = 100;
     var oldest_message_id;
     if (!load_more_enabled) {
         return;
