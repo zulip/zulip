@@ -1,5 +1,4 @@
 class humbug::wiki {
-  class { 'humbug::base': }
   class { 'humbug::apache': }
   class { 'humbug::supervisor': }
 
