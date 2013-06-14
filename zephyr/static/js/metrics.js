@@ -3,7 +3,7 @@ var metrics = (function () {
 var exports = {};
 
 function enable_metrics() {
-    return page_params.domain === "humbughq.com";
+    return page_params.enable_metrics && page_params.domain === "humbughq.com";
 }
 
 if (! enable_metrics()) {
