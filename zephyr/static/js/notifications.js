@@ -206,27 +206,23 @@ exports.received_messages = function (messages) {
     var i;
 
     $.each(messages, function (index, message) {
-        if (message.sender_email !== page_params.email &&
-            narrow.message_in_home(message)) {
-
-            // We send notifications for messages which the user has
-            // configured as notifiable, as long as they haven't been
-            // marked as read by process_visible_unread_messages
-            // (which occurs if the message arrived onscreen while the
-            // window had focus).
-            if (!(message_is_notifiable(message) && unread.message_unread(message))) {
-                return;
-            }
-            if (page_params.desktop_notifications_enabled &&
-                browser_desktop_notifications_on()) {
-                process_desktop_notification(message);
-            }
-            if (page_params.sounds_enabled && supports_sound) {
-                if (window.bridge !== undefined) {
-                    window.bridge.bell();
-                } else {
-                    $("#notifications-area").find("audio")[0].play();
-                }
+        // We send notifications for messages which the user has
+        // configured as notifiable, as long as they haven't been
+        // marked as read by process_visible_unread_messages
+        // (which occurs if the message arrived onscreen while the
+        // window had focus).
+        if (!(message_is_notifiable(message) && unread.message_unread(message))) {
+            return;
+        }
+        if (page_params.desktop_notifications_enabled &&
+            browser_desktop_notifications_on()) {
+            process_desktop_notification(message);
+        }
+        if (page_params.sounds_enabled && supports_sound) {
+            if (window.bridge !== undefined) {
+                window.bridge.bell();
+            } else {
+                $("#notifications-area").find("audio")[0].play();
             }
         }
     });

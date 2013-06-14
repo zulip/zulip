@@ -35,20 +35,9 @@ function unread_hashkey(message) {
 }
 
 exports.message_unread = function (message) {
-    // This is the only halfway interesting function in this module.
-    // Everything else is just slinging hashes around.
-
     if (message === undefined) {
         return false;
     }
-
-    var sent_by_human = ['website', 'iphone', 'android']
-                            .indexOf(message.client.toLowerCase()) !== -1;
-
-    if (message.sender_email === page_params.email && sent_by_human) {
-        return false;
-    }
-
     return message.flags === undefined ||
            message.flags.indexOf('read') === -1;
 };
