@@ -102,23 +102,35 @@ class humbug::base {
     uid        => '1050',
     gid        => '1050',
     shell      => '/bin/bash',
-    home       => '/home/nagios',
+    home       => '/var/lib/nagios',
     managehome => true,
   }
-  file { '/home/nagios/.ssh':
+  file { '/var/lib/nagios/':
     ensure     => directory,
     require    => User['nagios'],
     owner      => "nagios",
     group      => "nagios",
     mode       => 600,
   }
-  file { '/home/nagios/.ssh/authorized_keys':
+  file { '/var/lib/nagios/.ssh':
+    ensure     => directory,
+    require    => File['/var/lib/nagios/'],
+    owner      => "nagios",
+    group      => "nagios",
+    mode       => 600,
+  }
+  file { '/var/lib/nagios/.ssh/authorized_keys':
     ensure     => file,
-    require    => File['/home/nagios/.ssh'],
+    require    => File['/var/lib/nagios/.ssh'],
     mode       => 600,
     owner      => "nagios",
     group      => "nagios",
     source     => 'puppet:///modules/humbug/nagios_authorized_keys',
+  }
+  file { '/home/nagios':
+    ensure => absent,
+    force => true,
+    recurse => true,
   }
   file { "/usr/lib/nagios/plugins/":
     require => Package[nagios-plugins-basic],
