@@ -10,8 +10,17 @@ if (! enable_metrics()) {
     mixpanel.disable();
 }
 
+function include_in_sample() {
+    // Send a random sample of events that we generate
+    return Math.random() < 0.1;
+}
+
 $(function () {
     $(document).on('compose_started.zephyr', function (event) {
+        if (! include_in_sample()) {
+            return;
+        }
+
         mixpanel.track('compose started', {user: page_params.email,
                                            realm: page_params.domain,
                                            type: event.message_type,
@@ -23,6 +32,10 @@ $(function () {
                        });
     });
     $(document).on('narrow_activated.zephyr', function (event) {
+        if (! include_in_sample()) {
+            return;
+        }
+
         var operators = event.filter.operators();
         var stream_operands = event.filter.operands('stream');
         var subject_operands = event.filter.operands('subject');
