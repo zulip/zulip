@@ -92,14 +92,14 @@ class humbug::base {
     mode       => 644,
   }
 
-  # TODO: We may or may not want to enforce a set UID/GIT for the
-  # nagios user like we do for the humbug user; we don't do that here
-  # because those values differ widely between our existing systems
-  # (some are "system" users with uids around 100, some have uids
-  # around 1000, some have their own group, some are in the nogroup
-  # group, etc.).
+  group { 'nagios':
+    ensure     => present,
+    gid => '1050',
+  }
   user { 'nagios':
     ensure     => present,
+    uid        => '1050',
+    gid        => '1050',
     shell      => '/bin/bash',
     home       => '/home/nagios',
     managehome => true,
