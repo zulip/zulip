@@ -30,12 +30,7 @@ $(function () {
         }
 
         mixpanel.track('compose started', {type: event.message_type,
-                                           trigger: event.trigger},
-                       function (arg) {
-                           if (arg !== undefined && arg.status !== 1) {
-                               blueslip.warn(arg);
-                           }
-                       });
+                                           trigger: event.trigger});
     });
     $(document).on('narrow_activated.zephyr', function (event) {
         if (! include_in_sample()) {
@@ -56,12 +51,7 @@ $(function () {
         }
 
         mixpanel.track('narrow activated', {operators: reported_operators,
-                                            trigger: event.trigger},
-                       function (arg) {
-                           if (arg !== undefined && arg.status !== 1) {
-                               blueslip.warn(arg);
-                           }
-                       });
+                                            trigger: event.trigger});
     });
 
     $(window).on('resize', $.debounce(3000, send_resize_event));
