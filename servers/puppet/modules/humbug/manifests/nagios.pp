@@ -46,8 +46,17 @@ class humbug::nagios {
     notify => Service["nagios3"],
   }
 
+  # I feel like installing this here is an abstraction violation; we
+  # should probably move this to cron.d
+  file { "/var/spool/cron/crontabs/nagios":
+    require => Package[nagios3],
+    owner  => "nagios",
+    group  => "crontab",
+    mode => 600,
+    source => "puppet:///modules/humbug/nagios_crontab",
+  }
+
   # TODO: Install our API
-  # TODO: Install the pagerduty_nagios cron job /var/spool/cron/crontabs/nagios
 
   # TODO: Add munin configuration
 }
