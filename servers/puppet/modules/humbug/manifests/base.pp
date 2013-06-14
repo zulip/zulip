@@ -20,7 +20,6 @@ class humbug::base {
     ensure     => present,
     gid        => '1000',
   }
-
   user { 'humbug':
     ensure     => present,
     uid        => '1000',
@@ -30,7 +29,6 @@ class humbug::base {
     home       => '/home/humbug',
     managehome => true,
   }
-
   file { '/home/humbug/.ssh/authorized_keys':
     ensure     => file,
     require    => File['/home/humbug/.ssh'],
@@ -39,7 +37,6 @@ class humbug::base {
     group      => "humbug",
     source     => 'puppet:///modules/humbug/authorized_keys',
   }
-
   file { '/home/humbug/.ssh':
     ensure     => directory,
     require    => User['humbug'],
@@ -70,13 +67,6 @@ class humbug::base {
     source     => 'puppet:///modules/humbug/puppet.conf',
   }
 
-  file { '/etc/iptables/rules':
-    ensure     => file,
-    mode       => 600,
-    source     => 'puppet:///modules/humbug/iptables/rules',
-    require    => Package['iptables-persistent'],
-  }
-
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure     => file,
     mode       => 644,
@@ -90,6 +80,10 @@ class humbug::base {
     owner      => 'root',
     group      => 'root',
     mode       => 644,
+  }
+  service { 'ssh':
+    ensure     => running,
+    subscribe  => File['/etc/ssh/sshd_config'],
   }
 
   file { '/var/log/humbug':
@@ -126,7 +120,6 @@ class humbug::base {
     group      => "nagios",
     source     => 'puppet:///modules/humbug/nagios_authorized_keys',
   }
-
   file { "/usr/lib/nagios/plugins/":
     require => Package[nagios-plugins-basic],
     recurse => true,
@@ -136,11 +129,13 @@ class humbug::base {
     mode => 755,
     source => "puppet:///modules/humbug/nagios_plugins/",
   }
-  service { 'ssh':
-    ensure     => running,
-    subscribe  => File['/etc/ssh/sshd_config'],
-  }
 
+  file { '/etc/iptables/rules':
+    ensure     => file,
+    mode       => 600,
+    source     => 'puppet:///modules/humbug/iptables/rules',
+    require    => Package['iptables-persistent'],
+  }
   service { 'iptables-persistent':
     ensure     => running,
 
