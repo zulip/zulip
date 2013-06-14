@@ -10,12 +10,18 @@ if (! enable_metrics()) {
     mixpanel.disable();
 }
 
-mixpanel.register({user: page_params.email, realm: page_params.domain});
-
 function include_in_sample() {
     // Send a random sample of events that we generate
     return Math.random() < 0.1;
 }
+
+function send_resize_event() {
+    mixpanel.track('window resized', {height: $(window).height(),
+                                      width: $(window).width()});
+}
+
+mixpanel.register({user: page_params.email, realm: page_params.domain});
+send_resize_event();
 
 $(function () {
     $(document).on('compose_started.zephyr', function (event) {
@@ -57,6 +63,8 @@ $(function () {
                            }
                        });
     });
+
+    $(window).on('resize', $.debounce(3000, send_resize_event));
 });
 
 return exports;
