@@ -2139,7 +2139,11 @@ int x = 3
          # to avoid triggering the inline image preview support
          ('http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov',
                         "<p>%s</p>",
-                        'http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov')]
+                        'http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov'),
+
+         # Just because it has a TLD and parentheses in it doesn't mean it's a link. Trac #1364
+         ('a.commandstuff()', '<p>a.commandstuff()</p>', ''),
+         ]
 
         for inline_url, reference, url in conversions:
             try:

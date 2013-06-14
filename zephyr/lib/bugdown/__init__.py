@@ -565,7 +565,7 @@ class Bugdown(markdown.Extension):
         # This rule must come after the http_autolink rule we add above to avoid double
         # linkifying.
         tlds = '|'.join(list_of_tlds())
-        link_regex = r"\b(?P<url>[^\s]+\.(%s)(?:/[^\s()\":]*?|([^\s()\":]*\([^\s()\":]*\)[^\s()\":]*))?)(?=([:;\?\),\.\'\"]\Z|[:;\?\),\.\'\"]\s|\Z|\s))" % (tlds,)
+        link_regex = r"\b(?P<url>[^\s]+\.(%s)(?:/[^\s()\":]*?|(/[^\s()\":]*\([^\s()\":]*\)[^\s()\":]*))?)(?=([:;\?\),\.\'\"]\Z|[:;\?\),\.\'\"]\s|\Z|\s))" % (tlds,)
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>http_autolink')
 
         md.preprocessors.add('hanging_ulists',
