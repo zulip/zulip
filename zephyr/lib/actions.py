@@ -68,7 +68,8 @@ def log_event(event):
             log.write(simplejson.dumps(event) + '\n')
 
 def do_create_user(email, password, realm, full_name, short_name,
-                   active=True, bot=False, bot_owner=None):
+                   active=True, bot=False, bot_owner=None,
+                   avatar_source=UserProfile.AVATAR_FROM_GRAVATAR):
     event = {'type': 'user_created',
                'timestamp': time.time(),
                'full_name': full_name,
@@ -81,7 +82,7 @@ def do_create_user(email, password, realm, full_name, short_name,
     log_event(event)
 
     user_profile = create_user(email, password, realm, full_name, short_name,
-                               active, bot, bot_owner)
+                               active, bot, bot_owner, avatar_source)
 
     notice = dict(event=dict(type="realm_user", op="add",
                              person=dict(email=user_profile.email,

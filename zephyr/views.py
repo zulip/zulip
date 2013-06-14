@@ -46,7 +46,7 @@ from zephyr.decorator import require_post, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
     authenticated_rest_api_view, process_as_post, REQ, rate_limit, rate_limit_user
 from zephyr.lib.query import last_n
-from zephyr.lib.avatar import avatar_url
+from zephyr.lib.avatar import avatar_url, user_avatar_hash
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zephyr.lib.timestamp import datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key, cache_get_many, cache_set_many
@@ -1986,14 +1986,46 @@ def json_create_bot(request, user_profile, full_name=REQ, short_name=REQ):
     except UserProfile.DoesNotExist:
         pass
 
+    if len(request.FILES) == 0:
+        avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+    elif len(request.FILES) != 1:
+        return json_error("You may only upload one file at a time")
+    else:
+        user_file = request.FILES.values()[0]
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        key = Key(conn.get_bucket(settings.S3_AVATAR_BUCKET))
+
+        content_type = guess_type(user_file.name)[0]
+        key.key = user_avatar_hash(email)
+        key.set_metadata("user_profile_id", str(user_profile.id))
+        if content_type:
+            headers = {'Content-Type': content_type}
+        else:
+            headers = None
+        key.set_contents_from_filename(
+                user_file.temporary_file_path(),
+                headers=headers)
+        avatar_source = UserProfile.AVATAR_FROM_USER
+
     bot_profile = do_create_user(email, '', user_profile.realm, full_name,
-                                 short_name, True, True, user_profile)
-    return json_success({'api_key': bot_profile.api_key})
+                                 short_name, True, True,
+                                 user_profile, avatar_source)
+    json_result = dict(
+            api_key=bot_profile.api_key,
+            avatar_url=avatar_url(bot_profile)
+    )
+    return json_success(json_result)
 
 @authenticated_json_post_view
 def json_get_bots(request, user_profile):
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                               bot_owner=user_profile)
-    return json_success({'bots': [{'username': bp.email, 'full_name': bp.full_name,
-                                   'api_key': bp.api_key}
-                                  for bp in bot_profiles]})
+    def bot_info(bot_profile):
+        return dict(
+                username   = bot_profile.email,
+                full_name  = bot_profile.full_name,
+                api_key    = bot_profile.api_key,
+                avatar_url = avatar_url(bot_profile)
+        )
+
+    return json_success({'bots': map(bot_info, bot_profiles)})

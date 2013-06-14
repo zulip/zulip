@@ -46,9 +46,11 @@ def create_user_profile(realm, email, password, active, bot, full_name, short_na
     return user_profile
 
 def create_user(email, password, realm, full_name, short_name,
-                active=True, bot=False, bot_owner=None):
+                active=True, bot=False, bot_owner=None,
+                avatar_source=UserProfile.AVATAR_FROM_GRAVATAR):
     user_profile = create_user_profile(realm, email, password, active, bot,
                                        full_name, short_name, bot_owner)
+    user_profile.avatar_source = avatar_source
     user_profile.save()
     recipient = Recipient.objects.create(type_id=user_profile.id,
                                          type=Recipient.PERSONAL)
