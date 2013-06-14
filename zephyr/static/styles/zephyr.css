@@ -769,6 +769,9 @@ blockquote p {
 
 #compose_close {
     display: none;
+    position: absolute;
+    right: 5px;
+    top: 10px;
 }
 
 /* Like .nav-tabs > li > a */
