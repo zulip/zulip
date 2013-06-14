@@ -199,7 +199,7 @@ a:hover code {
 }
 
 .new_message_button {
-    padding-top: 1em;
+    padding: 20px;
 }
 
 .compose_private_button, .compose_stream_button {
@@ -371,12 +371,21 @@ ul.filters li.out_of_home_view {
 }
 
 .message_comp {
+    display: none;
+}
+
+.message_comp,
+#compose_controls {
     border: 1px solid #EEE;
     background-color: white;
     padding: 8px 20px 8px 10px;
     box-shadow: 0px 3px 7px rgba(0, 0, 0, 0.3);
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
+}
+
+#compose_buttons {
+    text-align: center;
 }
 
 td.pointer {

@@ -1,5 +1,24 @@
 <div class="row-fluid">
   <div class="span12" id="compose">
+    <div id="compose_controls">
+        <p>
+          <b>Click on any message to reply to a conversation</b>.  Or start a new one:
+        </p>
+          <div id="compose_buttons">
+            <span class="new_message_button">
+              <button type="button" class="btn btn-large compose_stream_button"
+                      id="left_bar_compose_stream_button_big" title="hotkey = 'c'">
+                <i class="icon-vector-bullhorn"></i>&nbsp;&nbsp;New stream message
+              </button>
+            </span>
+            <span class="new_message_button">
+              <button type="button" class="btn btn-large compose_private_button"
+                      id="left_bar_compose_private_button_big" title="hotkey='C'">
+                <i class="icon-vector-user"></i>&nbsp;&nbsp;New private message
+              </button>
+            </span>
+          </div>
+    </div>
     <div class="message_comp">
       <button type="button" class="close" id='compose_close'>×</button>
       <div class="alert" id="send-status">

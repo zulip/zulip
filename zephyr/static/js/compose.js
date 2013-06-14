@@ -166,6 +166,8 @@ exports.start = function (msg_type, opts) {
     }
 
     $("#compose_close").show();
+    $("#compose_controls").hide();
+    $('.message_comp').show();
 
     var default_opts = {
         message_type:     msg_type,
@@ -418,6 +420,8 @@ exports.hide = function () {
     $(".new_message_textarea").css("min-height", "");
     notifications_bar.enable();
     exports.unfade_messages(true);
+    $('.message_comp').hide();
+    $("#compose_controls").show();
 };
 
 exports.clear = function () {
