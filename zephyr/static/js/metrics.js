@@ -10,6 +10,8 @@ if (! enable_metrics()) {
     mixpanel.disable();
 }
 
+mixpanel.register({user: page_params.email, realm: page_params.domain});
+
 function include_in_sample() {
     // Send a random sample of events that we generate
     return Math.random() < 0.1;
@@ -21,9 +23,7 @@ $(function () {
             return;
         }
 
-        mixpanel.track('compose started', {user: page_params.email,
-                                           realm: page_params.domain,
-                                           type: event.message_type,
+        mixpanel.track('compose started', {type: event.message_type,
                                            trigger: event.trigger},
                        function (arg) {
                            if (arg !== undefined && arg.status !== 1) {
@@ -49,9 +49,7 @@ $(function () {
             reported_operators = 'multiple';
         }
 
-        mixpanel.track('narrow activated', {user: page_params.email,
-                                            realm: page_params.domain,
-                                            operators: reported_operators,
+        mixpanel.track('narrow activated', {operators: reported_operators,
                                             trigger: event.trigger},
                        function (arg) {
                            if (arg !== undefined && arg.status !== 1) {
