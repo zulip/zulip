@@ -90,6 +90,8 @@ class Client(object):
         self.email = email
         self.verbose = verbose
         if site is not None:
+            if not site.startswith("http"):
+                site = "https://" + site
             self.base_url = site
         else:
             self.base_url = "https://humbughq.com"
