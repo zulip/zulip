@@ -193,6 +193,13 @@ exports.same_sender = function util_same_sender(a, b) {
             (a.sender_email === b.sender_email));
 };
 
+exports.normalize_recipients = function (recipients) {
+    recipients = $.map(recipients.split(','), $.trim);
+    recipients = $.grep(recipients, function (s) { return s.length>0; });
+    recipients.sort();
+    return recipients.join(',');
+};
+
 // Avoid URI decode errors by removing characters from the end
 // one by one until the decode succeeds.  This makes sense if
 // we are decoding input that the user is in the middle of

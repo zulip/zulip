@@ -157,7 +157,7 @@ function update_fade () {
         faded_to.stream = $('#stream').val();
         faded_to.subject = $('#subject').val();
     } else {
-        faded_to.reply_to = $('#private_message_recipient').val();
+        faded_to.reply_to = util.normalize_recipients($('#private_message_recipient').val());
     }
 
     compose.update_faded_messages();
