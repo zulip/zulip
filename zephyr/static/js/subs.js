@@ -550,6 +550,14 @@ exports.setup_page = function () {
             our_subs = subs_response.subscriptions;
         }
 
+        // All streams won't contain invite-only streams,
+        // or anything at all if should_list_all_streams() is false
+        $.each(our_subs, function(idx, stream) {
+            if (all_streams.indexOf(stream.name) === -1) {
+                all_streams.push(stream.name);
+            }
+        });
+
         populate_subscriptions(our_subs, true);
 
         all_streams.forEach(function (stream) {
