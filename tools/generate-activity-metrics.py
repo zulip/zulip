@@ -28,7 +28,7 @@ def get_data_url(buckets, realm):
     # This is the slightly-cleaned up JSON api version of https://graphiti.humbughq.com/graphs/945c7aafc2d
     #
     # Fetches 1 month worth of data
-    DATA_URL="https://graphite.humbughq.com/render/?from=-28d&format=json"
+    DATA_URL="https://graphite.humbughq.com/render/?from=-1000d&format=json"
     for bucket in buckets:
         if realm != 'all':
             statsd_target = "stats.gauges.staging.users.active.%s.%s" % (realm_key, bucket)
