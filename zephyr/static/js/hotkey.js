@@ -143,14 +143,6 @@ function process_hotkey(e) {
                 return true;
             }
         }
-        // If we just typed a character to change the recipient in the
-        // compose box, this means that we're no longer replying to
-        // whatever the original message was, and we should unfade.
-        if (compose.composing() &&
-            $("#stream:focus,#subject:focus,#private_message_recipient:focus").length > 0) {
-            compose.unfade_messages(true);
-            return false;
-        }
 
         if ((event_name === 'up_arrow' || event_name === 'down_arrow')
             && compose.composing()

@@ -143,22 +143,32 @@ exports.update_recipient_on_narrow = function() {
     }
 };
 
-function do_fade(reply_message, fade_type) {
-    compose.unfade_messages();
+function update_fade () {
+    if (!is_composing_message) return;
+    compose.unfade_messages(false);
 
     // Construct faded_to as a mocked up element which has all the
     // fields of a message used by util.same_recipient()
     faded_to = {
-        type: fade_type
+        type: is_composing_message
     };
-    if (fade_type === "stream") {
-        faded_to.stream = reply_message.stream;
-        faded_to.subject = reply_message.subject;
+
+    if (faded_to.type === "stream") {
+        faded_to.stream = $('#stream').val();
+        faded_to.subject = $('#subject').val();
     } else {
-        faded_to.reply_to = reply_message.reply_to;
+        faded_to.reply_to = $('#private_message_recipient').val();
     }
-    exports.update_faded_messages();
+
+    compose.update_faded_messages();
 }
+
+$(function () {
+    $('#stream,#subject,#private_message_recipient').bind({
+         keyup: update_fade,
+         change: update_fade
+    });
+});
 
 exports.start = function (msg_type, opts) {
     if (reload.is_in_progress()) {
@@ -218,9 +228,7 @@ exports.start = function (msg_type, opts) {
         show('private', $("#" + (focus_area || 'private_message_recipient')));
     }
 
-    if (opts.replying_to_message !== undefined) {
-        do_fade(opts.replying_to_message, msg_type);
-    }
+    update_fade();
 
     exports.decorate_stream_bar(opts.stream);
     $(document).trigger($.Event('compose_started.zephyr', opts));
