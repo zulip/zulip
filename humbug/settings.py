@@ -515,6 +515,7 @@ LOGGING = {
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'zephyr.context_processors.add_settings',
+    'zephyr.context_processors.add_metrics',
 )
 
 ACCOUNT_ACTIVATION_DAYS=7
