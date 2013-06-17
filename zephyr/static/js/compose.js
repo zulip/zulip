@@ -76,28 +76,6 @@ exports.decorate_stream_bar = function (stream_name) {
         .addClass(subs.get_color_class(color));
 };
 
-function messages_to_fade() {
-    var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row");
-    var i, elts_to_fade = [];
-    var different_recipient = false;
-    // Note: The below algorithm relies on the fact that all_elts is
-    // sorted as it would be displayed in the message view
-    for (i = 0; i < all_elts.length; i++) {
-        var elt = $(all_elts[i]);
-        if (elt.hasClass("recipient_row")) {
-            if (!util.same_recipient(faded_to, current_msg_list.get(rows.id(elt)))) {
-                elts_to_fade.push(elt);
-                different_recipient = true;
-            } else {
-                different_recipient = false;
-            }
-        } else if (different_recipient) {
-            elts_to_fade.push(elt);
-        }
-    }
-    return elts_to_fade;
-}
-
 exports.unfade_messages = function (clear_state) {
     if (faded_to === undefined) {
         return;
@@ -116,14 +94,23 @@ exports.update_faded_messages = function () {
         return;
     }
 
-    var i, fade_class, elts_to_fade;
+    var i, fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
 
-    fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
-    elts_to_fade = messages_to_fade();
+    var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row");
+    var different_recipient = false;
+    // Note: The below algorithm relies on the fact that all_elts is
+    // sorted as it would be displayed in the message view
+    for (i = 0; i < all_elts.length; i++) {
+        var elt = $(all_elts[i]);
+        if (elt.hasClass("recipient_row")) {
+            different_recipient = !util.same_recipient(faded_to, current_msg_list.get(rows.id(elt)));
+        }
 
-    for (i = 0; i < elts_to_fade.length; i++) {
-        $(elts_to_fade[i]).addClass(fade_class);
+        if (elt.hasClass(fade_class) !== different_recipient) {
+            elt.toggleClass(fade_class, different_recipient);
+        }
     }
+
     ui.disable_floating_recipient_bar();
 };
 
@@ -145,7 +132,6 @@ exports.update_recipient_on_narrow = function() {
 
 function update_fade () {
     if (!is_composing_message) return;
-    compose.unfade_messages(false);
 
     // Construct faded_to as a mocked up element which has all the
     // fields of a message used by util.same_recipient()
