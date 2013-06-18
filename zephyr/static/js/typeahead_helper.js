@@ -145,24 +145,16 @@ exports.sorter = function (query, objs, get_item) {
    return results.matches.concat(results.rest);
 };
 
-exports.compare_by_pms = function(user_a, user_b) {
-    var x_count = 0, y_count = 0;
-    if (typeahead_helper.private_message_mapped[user_a]) {
-        x_count = typeahead_helper.private_message_mapped[user_a].count;
-    }
-    if (typeahead_helper.private_message_mapped[user_b]) {
-        y_count = typeahead_helper.private_message_mapped[user_b].count;
-    }
-
-    if (x_count > y_count) {
+exports.compare_by_pms = function (user_a, user_b) {
+    if (user_a.pm_recipient_count > user_b.pm_recipient_count) {
         return -1;
-    } else if (x_count < y_count) {
+    } else if (user_a.pm_recipient_count < user_b.pm_recipient_count) {
         return 1;
     }
 
     // We use alpha sort as a tiebreaker, which might be helpful for
     // new users.
-    if (user_a < user_b)
+    if (user_a.full_name < user_b.full_name)
         return -1;
     else if (user_a === user_b)
         return 0;
@@ -171,10 +163,7 @@ exports.compare_by_pms = function(user_a, user_b) {
 };
 
 exports.sort_by_pms = function(objs) {
-    objs.sort(function (x, y) {
-        return exports.compare_by_pms(x, y);
-    });
-
+    objs.sort(exports.compare_by_pms);
     return objs;
 };
 
@@ -182,17 +171,13 @@ function identity(item) {
     return item;
 }
 
-function email_from_identity(identity) {
-    return exports.private_message_mapped[identity].email;
-}
-
 exports.sort_subjects = function (items) {
     return exports.sorter(this.query, items, identity);
 };
 
 exports.sort_recipients = function (matches, query) {
-    var name_results =  prefix_sort(query, matches, identity);
-    var email_results = prefix_sort(query, name_results.rest, email_from_identity);
+    var name_results =  prefix_sort(query, matches, function (x) { return x.full_name; });
+    var email_results = prefix_sort(query, name_results.rest, function (x) { return x.email; });
     var matches_sorted_by_pms = exports.sort_by_pms(name_results.matches.concat(email_results.matches));
     var rest_sorted_by_pms = exports.sort_by_pms(email_results.rest);
     return matches_sorted_by_pms.concat(rest_sorted_by_pms);

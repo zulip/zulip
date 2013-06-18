@@ -34,14 +34,16 @@ function get_last_recipient_in_pm(query_string) {
 }
 
 function composebox_typeahead_highlighter(item) {
-    var query = this.query;
-    if ($(this.$element).attr('id') === 'private_message_recipient') {
-        // There could be multiple recipients in a private message,
-        // we want to decide what to highlight based only on the most
-        // recent one we're entering.
-        query = get_last_recipient_in_pm(this.query);
-    }
-    return typeahead_helper.highlight_with_escaping(query, item);
+    return typeahead_helper.highlight_with_escaping(this.query, item);
+}
+
+function query_matches_person (query, person) {
+    // Case-insensitive.
+    query = query.toLowerCase();
+
+    return ( person.email    .toLowerCase().indexOf(query) !== -1
+         ||  person.full_name.toLowerCase().indexOf(query) !== -1);
+
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
@@ -206,10 +208,14 @@ exports.initialize = function () {
     });
 
     $( "#private_message_recipient" ).typeahead({
-        source: typeahead_helper.private_message_typeahead_list,
+        source: page_params.people_list,
         items: 5,
         dropup: true,
-        highlighter: composebox_typeahead_highlighter,
+        highlighter: function (item) {
+            var query = get_last_recipient_in_pm(this.query);
+            var item_formatted = typeahead_helper.render_person(item);
+            return typeahead_helper.highlight_with_escaping(query, item_formatted);
+        },
         matcher: function (item) {
             var current_recipient = get_last_recipient_in_pm(this.query);
             // If the name is only whitespace (does not contain any non-whitespace),
@@ -218,8 +224,7 @@ exports.initialize = function () {
                 return false;
             }
 
-            // Case-insensitive.
-            return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
+            return query_matches_person(current_recipient, item);
         },
         sorter: typeahead_helper.sort_recipientbox_typeahead,
         updater: function (item) {
@@ -229,15 +234,18 @@ exports.initialize = function () {
             if (previous_recipients.length !== 0) {
                 previous_recipients += ", ";
             }
-            return previous_recipients + typeahead_helper.private_message_mapped[item].email + ", ";
+            return previous_recipients + item.email + ", ";
         },
         stopAdvance: true // Do not advance to the next field on a tab or enter
     });
 
     $( "#new_message_content" ).typeahead({
-        source: typeahead_helper.private_message_typeahead_list,
+        source: page_params.people_list,
         items: 5,
-        highlighter: composebox_typeahead_highlighter,
+        highlighter: function (item) {
+            var item_formatted = typeahead_helper.render_person(item);
+            return typeahead_helper.highlight_with_escaping(this.query, item_formatted);
+        },
         dropup: true,
         matcher: function (item) {
             var query = exports.split_at_cursor(this.query)[0];
@@ -250,10 +258,8 @@ exports.initialize = function () {
             if (current_recipient.length < 2 || current_recipient.charAt(0) !== "@") {
                 return false;
             }
-            current_recipient = current_recipient.substring(1);
 
-            // Case-insensitive.
-            return (item.toLowerCase().indexOf(current_recipient.toLowerCase()) !== -1);
+            return query_matches_person(current_recipient.substring(1), item);
         },
         sorter: typeahead_helper.sort_textbox_typeahead,
         updater: function (item) {
@@ -261,7 +267,7 @@ exports.initialize = function () {
             var beginning = pieces[0];
             var rest = pieces[1];
 
-            beginning = beginning.replace(/@\S+$/, "") + "@**" + typeahead_helper.private_message_mapped[item].full_name + "**";
+            beginning = beginning.replace(/@\S+$/, "") + "@**" + item.full_name + "**";
             // Keep the cursor after the newly inserted name, as Bootstrap will call textbox.change() to overwrite the text
             // in the textbox.
             setTimeout(function () {

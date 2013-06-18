@@ -43,6 +43,7 @@ var pointer_update_in_flight = false;
 function add_person(person) {
     page_params.people_list.push(person);
     people_dict[person.email] = person;
+    person.pm_recipient_count = 0;
 }
 
 function remove_person(person) {
@@ -59,11 +60,15 @@ function remove_person(person) {
 $(function () {
     $.each(page_params.people_list, function (idx, person) {
         people_dict[person.email] = person;
+        person.pm_recipient_count = 0;
     });
+
     // The special account feedback@humbughq.com is used for in-app
     // feedback and should always show up as an autocomplete option.
-    typeahead_helper.update_your_recipients([{"email": "feedback@humbughq.com",
-                    "full_name": "Humbug Feedback Bot"}]);
+    if (people_dict['feedback@humbughq.com'] === undefined){
+        add_person({"email": "feedback@humbughq.com",
+                    "full_name": "Humbug Feedback Bot"});
+    }
 
     $.each(page_params.initial_presences, function (email, presence) {
         activity.set_user_status(email, presence, page_params.initial_servertime);
@@ -577,12 +582,6 @@ function add_message_metadata(message, dummy) {
         message.display_reply_to = get_private_message_recipient(message, 'full_name');
 
         involved_people = message.display_recipient;
-
-        if (message.sent_by_me) {
-            typeahead_helper.update_your_recipients(involved_people);
-        } else {
-            typeahead_helper.update_all_recipients(involved_people);
-        }
         break;
     }
 
@@ -592,9 +591,12 @@ function add_message_metadata(message, dummy) {
         // with keys like "hasOwnProperty"
         if (people_dict[person.email] === undefined) {
             add_person(person);
-            if (!typeahead_helper.known_to_typeahead(person)) {
-                typeahead_helper.autocomplete_needs_update(true);
-            }
+            typeahead_helper.autocomplete_needs_update(true);
+        }
+
+        if (message.type === 'private' && message.sent_by_me) {
+            // Track the number of PMs we've sent to this person to improve autocomplete
+            people_dict[person.email].pm_recipient_count += 1;
         }
     });
 
@@ -849,10 +851,8 @@ function get_updates(options) {
                 case 'realm_user':
                     if (event.op === 'add') {
                         add_person(event.person);
-                        typeahead_helper.update_all_recipients([event.person]);
                     } else if (event.op === 'remove') {
                         remove_person(event.person);
-                        typeahead_helper.remove_recipient([event.person]);
                     }
                     typeahead_helper.autocomplete_needs_update(true);
                     break;

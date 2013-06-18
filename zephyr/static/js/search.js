@@ -159,7 +159,7 @@ function searchbox_sorter(items) {
         // Get the first object in sorted order.
         if (action === 'private_message' || action === 'sender') {
             objs.sort(function (x, y) {
-                return typeahead_helper.compare_by_pms(get_person(x), get_person(y));
+                return typeahead_helper.compare_by_pms(get_query(x), get_query(y));
             });
         } else if (action !== 'stream') {
             // streams are already sorted

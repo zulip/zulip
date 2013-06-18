@@ -1571,7 +1571,6 @@ $(function () {
     });
 
     // initialize other stuff
-    typeahead_helper.update_all_recipients(page_params.people_list);
     composebox_typeahead.initialize();
     search.initialize();
     notifications.initialize();
