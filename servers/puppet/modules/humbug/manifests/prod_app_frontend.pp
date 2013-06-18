@@ -14,7 +14,28 @@ class humbug::prod_app_frontend {
     target => '/etc/nginx/sites-available/humbug',
   }
 
+  file { [ "/srv/www/", "/srv/www/dist/", "/srv/www/dist/api",
+           "/srv/www/dist/apps/", "/srv/www/dist/apps/mac/" ]:
+    ensure => "directory",
+    owner      => "humbug",
+    group      => "humbug",
+    mode       => 644,
+  }
 
-  # TODO: Setup the API distribution directory at /srv/www/dist/api/.
-
+  file { "/srv/www/dist/apps/mac/sparkle.xml":
+    ensure => file,
+    require    => File['/srv/www/dist/apps/mac/'],
+    owner  => "humbug",
+    group  => "humbug",
+    mode => 644,
+    source => "puppet:///modules/humbug/sparkle/sparkle.xml",
+  }
+  file { "/srv/www/dist/apps/mac/sparkle-changelog.html":
+    ensure => file,
+    require    => File['/srv/www/dist/apps/mac/'],
+    owner  => "humbug",
+    group  => "humbug",
+    mode => 644,
+    source => "puppet:///modules/humbug/sparkle/sparkle-changelog.html",
+  }
 }
