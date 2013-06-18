@@ -1533,6 +1533,13 @@ $(function () {
         e.stopPropagation();
     });
 
+    $('body').on('click', '.open_stream_settings', function (e) {
+        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        ui.hide_stream_sidebar_popover();
+        ui.change_tab_to('#subscriptions');
+        setTimeout(function () { subs.show_settings_for(stream); }, 100);
+    });
+
     $("body").on('click', function (e) {
         // Dismiss the popover if the user has clicked outside it
         if ($('.popover-inner').has(e.target).length === 0) {

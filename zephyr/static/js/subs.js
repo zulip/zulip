@@ -283,6 +283,10 @@ function settings_for_sub(sub) {
     return $("#subscription_settings_" + id);
 }
 
+exports.show_settings_for = function (stream_name) {
+    settings_for_sub(get_sub(stream_name)).collapse('show');
+};
+
 function add_sub_to_table(sub) {
     $('#create_stream_row').after(
         templates.render('subscription', {subscriptions: [sub]}));
