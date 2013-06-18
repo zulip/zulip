@@ -826,12 +826,11 @@ $(function () {
     $("#subscriptions_table").on("click", "#sub_setting_in_home_view", stream_home_view_clicked);
     $("#subscriptions_table").on("click", "#sub_setting_notifications", stream_notifications_clicked);
 
+    // From here down is only stuff that happens when we're rendering
+    // the subscriber settings
     if (! should_render_subscribers()) {
         return;
     }
-
-    // From here down is only stuff that happens when we're rendering
-    // the subscriber settings
 
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
