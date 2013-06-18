@@ -291,26 +291,12 @@ def process_new_message(data):
     message_dict_markdown = message.to_dict(True)
     message_dict_no_markdown = message.to_dict(False)
 
-    user_flags = {}
-    user_ids = []
-    users = data.get('users', [])
-    first = users[0] if len(users) else None
-    # TODO(leo)
-    # We can remove this support for old payloads (the elif int case)
-    # once we have deployed the new format to prod
-    if type(first) == dict:
-        # We modified the users list to be a list of {id, flag} maps
-        for user_data in data['users']:
-            id = user_data['id']
-            user_ids.append(id)
-            user_flags[id] = user_data.get('flags', [])
-    elif type(first) == int:
-        user_ids = data['users']
+    for user_data in data['users']:
+        user_profile_id = user_data['id']
+        flags = user_data.get('flags', [])
 
-    for user_profile_id in user_ids:
         user_receive_message(user_profile_id, message)
 
-        flags = user_flags.get(user_profile_id, [])
         for client in get_client_descriptors_for_user(user_profile_id):
             # The below prevents (Zephyr) mirroring loops.
             if client.accepts_event_type('message') and not \
