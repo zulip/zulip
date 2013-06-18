@@ -8,7 +8,7 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     DefaultStream, UserPresence, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    to_dict_cache_key, get_realm
+    to_dict_cache_key, get_realm, stringify_message_dict
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.core.exceptions import ValidationError
@@ -1010,10 +1010,10 @@ def do_update_message(user_profile, message_id, subject, content):
     cache_save_message(message)
     items_for_memcached = {}
     items_for_memcached[to_dict_cache_key(message, True)] = \
-        (message.to_dict_uncached(apply_markdown=True,
-                                  rendered_content=message.rendered_content),)
+        (stringify_message_dict(message.to_dict_uncached(apply_markdown=True,
+                                  rendered_content=message.rendered_content)),)
     items_for_memcached[to_dict_cache_key(message, False)] = \
-        (message.to_dict_uncached(apply_markdown=False),)
+        (stringify_message_dict(message.to_dict_uncached(apply_markdown=False)),)
     cache_set_many(items_for_memcached)
 
     recipients = [um.user_profile_id for um in UserMessage.objects.filter(message=message_id)]

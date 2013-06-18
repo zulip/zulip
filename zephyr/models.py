@@ -274,6 +274,12 @@ def get_recipient(type, type_id):
 def linebreak(string):
     return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
 
+def extract_message_dict(message_str):
+    return ujson.loads(message_str)
+
+def stringify_message_dict(message_dict):
+    return ujson.dumps(message_dict)
+
 def to_dict_cache_key_id(message_id, apply_markdown, rendered_content=None):
     return 'message_dict:%d:%d' % (message_id, apply_markdown)
 
@@ -298,9 +304,12 @@ class Message(models.Model):
     def __str__(self):
         return self.__repr__()
 
-    @cache_with_key(to_dict_cache_key, timeout=3600*24)
     def to_dict(self, apply_markdown, rendered_content=None):
-        return self.to_dict_uncached(apply_markdown, rendered_content)
+        return extract_message_dict(self.to_dict_json(apply_markdown, rendered_content))
+
+    @cache_with_key(to_dict_cache_key, timeout=3600*24)
+    def to_dict_json(self, apply_markdown, rendered_content=None):
+        return stringify_message_dict(self.to_dict_uncached(apply_markdown, rendered_content))
 
     def to_dict_uncached(self, apply_markdown, rendered_content=None):
         display_recipient = get_display_recipient(self.recipient)

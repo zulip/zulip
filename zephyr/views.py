@@ -19,7 +19,8 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, \
     PreregistrationUser, get_client, MitUser, UserActivity, \
     MAX_SUBJECT_LENGTH, get_stream, UserPresence, \
-    get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id
+    get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
+    extract_message_dict, stringify_message_dict
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
@@ -869,6 +870,8 @@ def get_old_messages_backend(request, user_profile,
 
     bulk_messages = cache_get_many([to_dict_cache_key_id(message_id, apply_markdown)
                                     for message_id in message_ids])
+    for (key, val) in bulk_messages.items():
+        bulk_messages[key] = extract_message_dict(bulk_messages[key][0])
 
     needed_ids = [message_id for message_id in message_ids if
                   to_dict_cache_key_id(message_id, apply_markdown) not in bulk_messages]
@@ -879,9 +882,10 @@ def get_old_messages_backend(request, user_profile,
         for message in full_messages:
             key = to_dict_cache_key(message, apply_markdown)
             if bulk_messages.get(key) is None:
-                elt = message.to_dict_uncached(apply_markdown)
+                msg = message.to_dict_uncached(apply_markdown)
+                elt = stringify_message_dict(msg)
                 items_for_memcached[key] = (elt,)
-                bulk_messages[key] = (elt,)
+                bulk_messages[key] = msg
         if len(items_for_memcached) > 0:
             cache_set_many(items_for_memcached)
 
@@ -891,7 +895,8 @@ def get_old_messages_backend(request, user_profile,
             flags_dict = {'flags': ["read", "historical"]}
         if message_id in user_messages:
             flags_dict = user_messages[message_id].flags_dict()
-        elt = bulk_messages.get(to_dict_cache_key_id(message_id, apply_markdown))[0]
+        key = to_dict_cache_key_id(message_id, apply_markdown)
+        elt = bulk_messages.get(key)
         msg_dict = dict(elt)
         msg_dict.update(flags_dict)
         msg_dict.update(search_fields.get(elt['id'], {}))
