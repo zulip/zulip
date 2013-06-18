@@ -10,7 +10,7 @@ from zephyr.lib.response import json_success, json_error, HttpResponseUnauthoriz
 from django.utils.timezone import now
 from django.db import transaction, IntegrityError
 from django.conf import settings
-import simplejson
+import ujson
 from StringIO import StringIO
 from zephyr.lib.cache import cache_with_key
 from zephyr.lib.queue import queue_json_publish
@@ -333,7 +333,7 @@ def to_non_negative_int(x):
     return x
 
 def json_to_foo(json, type):
-    data = simplejson.loads(json)
+    data = ujson.loads(json)
     if not isinstance(data, type):
         raise ValueError("argument is not a %s" % (type().__class__.__name__))
     return data

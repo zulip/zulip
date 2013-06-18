@@ -5,7 +5,7 @@ import sys
 import datetime
 import tempfile
 import traceback
-import simplejson
+import ujson
 from os import path
 
 from django.core.management.base import BaseCommand
@@ -17,7 +17,7 @@ def copy_retained_messages(infile, outfile):
     """Copy messages from infile to outfile which should be retained
        according to policy."""
     for ln in infile:
-        msg = simplejson.loads(ln)
+        msg = ujson.loads(ln)
         if not should_expunge_from_log(msg, now):
             outfile.write(ln)
 

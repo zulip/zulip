@@ -22,11 +22,11 @@ import optparse
 import os
 import random
 import re
-import simplejson
 import subprocess
 import sys
 import time
 import traceback
+import ujson
 import urllib2
 from StringIO import StringIO
 
@@ -139,7 +139,7 @@ class AuthedTestCase(TestCase):
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after}
         result = self.client.post("/json/get_old_messages", dict(post_params))
-        data = simplejson.loads(result.content)
+        data = ujson.loads(result.content)
         return data['messages']
 
     def users_subscribed_to_stream(self, stream_name, realm_domain):
@@ -159,7 +159,7 @@ class AuthedTestCase(TestCase):
         "msg": ""}.
         """
         self.assertEqual(result.status_code, 200)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertEqual(json.get("result"), "success")
         # We have a msg key for consistency with errors, but it typically has an
         # empty value.
@@ -167,7 +167,7 @@ class AuthedTestCase(TestCase):
 
     def get_json_error(self, result):
         self.assertEqual(result.status_code, 400)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertEqual(json.get("result"), "error")
         return json['msg']
 
@@ -607,8 +607,8 @@ class MessagePOSTTest(AuthedTestCase):
                                                          "sender": "sipbtest@mit.edu",
                                                          "content": "Test message",
                                                          "client": "zephyr_mirror",
-                                                         "to": simplejson.dumps(["starnine@mit.edu",
-                                                                                 "espuser@mit.edu"])})
+                                                         "to": ujson.dumps(["starnine@mit.edu",
+                                                                            "espuser@mit.edu"])})
         self.assert_json_success(result)
 
     def test_mirrored_personal(self):
@@ -639,7 +639,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
                                    "stream_name": subs[0]['name']})
 
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
 
         self.assertIn("stream_name", json)
         self.assertIn("value", json)
@@ -750,7 +750,7 @@ class SubscriptionAPITest(AuthedTestCase):
         """
         result = self.client.post("/json/subscriptions/list", {})
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertIn("subscriptions", json)
         for stream in json["subscriptions"]:
             self.assertIsInstance(stream['name'], basestring)
@@ -781,11 +781,11 @@ class SubscriptionAPITest(AuthedTestCase):
          "already_subscribed": {"iago@humbughq.com": ["Venice", "Verona"]},
          "subscribed": {"iago@humbughq.com": ["Venice8"]}}
         """
-        data = {"subscriptions": simplejson.dumps(subscriptions)}
+        data = {"subscriptions": ujson.dumps(subscriptions)}
         data.update(other_params)
         result = self.client.post(url, data)
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         for subscription_status, val in json_dict.iteritems():
             # keys are subscribed, already_subscribed.
             # vals are a dict mapping e-mails to streams.
@@ -829,7 +829,7 @@ class SubscriptionAPITest(AuthedTestCase):
         # character limit is 30 characters
         long_stream_name = "a" * 31
         result = self.client.post("/json/subscriptions/add",
-                                   {"subscriptions": simplejson.dumps([long_stream_name])})
+                                   {"subscriptions": ujson.dumps([long_stream_name])})
         self.assert_json_error(result,
                                "Stream name (%s) too long." % (long_stream_name,))
 
@@ -842,7 +842,7 @@ class SubscriptionAPITest(AuthedTestCase):
         # currently, the only invalid name is the empty string
         invalid_stream_name = ""
         result = self.client.post("/json/subscriptions/add",
-                                   {"subscriptions": simplejson.dumps([invalid_stream_name])})
+                                   {"subscriptions": ujson.dumps([invalid_stream_name])})
         self.assert_json_error(result,
                                "Invalid stream name (%s)." % (invalid_stream_name,))
 
@@ -862,7 +862,7 @@ class SubscriptionAPITest(AuthedTestCase):
         streams_to_sub.extend(current_streams)
         self.helper_check_subs_before_and_after_add(
             "/json/subscriptions/add", streams_to_sub,
-            {"principals": simplejson.dumps([invitee])},
+            {"principals": ujson.dumps([invitee])},
             {"subscribed": {invitee: streams[:1]},
              "already_subscribed": {invitee: current_streams}},
             invitee, streams_to_sub)
@@ -906,8 +906,8 @@ class SubscriptionAPITest(AuthedTestCase):
         with self.assertRaises(UserProfile.DoesNotExist):
             self.get_user_profile(invalid_principal)
         result = self.client.post("/json/subscriptions/add",
-                                   {"subscriptions": simplejson.dumps(self.streams),
-                                    "principals": simplejson.dumps([invalid_principal])})
+                                   {"subscriptions": ujson.dumps(self.streams),
+                                    "principals": ujson.dumps([invalid_principal])})
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
                                % (invalid_principal,))
 
@@ -921,8 +921,8 @@ class SubscriptionAPITest(AuthedTestCase):
         # verify that principal exists (thus, the reason for the error is the cross-realming)
         self.assertIsInstance(profile, UserProfile)
         result = self.client.post("/json/subscriptions/add",
-                                   {"subscriptions": simplejson.dumps(self.streams),
-                                    "principals": simplejson.dumps([principal])})
+                                   {"subscriptions": ujson.dumps(self.streams),
+                                    "principals": ujson.dumps([principal])})
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
                                % (principal,))
 
@@ -938,11 +938,11 @@ class SubscriptionAPITest(AuthedTestCase):
          "removed": ["Denmark", "Scotland", "Verona"],
          "not_subscribed": ["Rome"], "result": "success"}
         """
-        data = {"subscriptions": simplejson.dumps(subscriptions)}
+        data = {"subscriptions": ujson.dumps(subscriptions)}
         data.update(other_params)
         result = self.client.post(url, data)
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         for key, val in json_dict.iteritems():
             self.assertItemsEqual(val, json[key])  # we don't care about the order of the items
         new_streams = self.get_streams(email)
@@ -981,7 +981,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertNotEqual(len(random_streams), 0)  # necessary for full test coverage
         streams_to_remove = random_streams[:1]  # pick only one fake stream, to make checking the error message easy
         result = self.client.post("/json/subscriptions/remove",
-                                  {"subscriptions": simplejson.dumps(streams_to_remove)})
+                                  {"subscriptions": ujson.dumps(streams_to_remove)})
         self.assert_json_error(result, "Stream(s) (%s) do not exist" % (random_streams[0],))
 
     def helper_subscriptions_exists(self, stream, exists, subscribed):
@@ -993,7 +993,7 @@ class SubscriptionAPITest(AuthedTestCase):
         """
         result = self.client.post("/json/subscriptions/exists",
                                   {"stream": stream})
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertIn("exists", json)
         self.assertEqual(json["exists"], exists)
         if exists:
@@ -1051,7 +1051,7 @@ class GetOldMessagesTest(AuthedTestCase):
         post_params.update(modified_params)
         result = self.client.post("/json/get_old_messages", dict(post_params))
         self.assert_json_success(result)
-        return simplejson.loads(result.content)
+        return ujson.loads(result.content)
 
     def check_well_formed_messages_response(self, result):
         self.assertIn("messages", result)
@@ -1091,7 +1091,7 @@ class GetOldMessagesTest(AuthedTestCase):
         emails = dr_emails(get_display_recipient(personals[0].recipient))
 
         self.login(me)
-        result = self.post_with_params({"narrow": simplejson.dumps(
+        result = self.post_with_params({"narrow": ujson.dumps(
                     [['pm-with', emails]])})
         self.check_well_formed_messages_response(result)
 
@@ -1118,7 +1118,7 @@ class GetOldMessagesTest(AuthedTestCase):
         stream_name = get_display_recipient(stream_messages[0].recipient)
         stream_id = stream_messages[0].recipient.id
 
-        result = self.post_with_params({"narrow": simplejson.dumps(
+        result = self.post_with_params({"narrow": ujson.dumps(
                     [['stream', stream_name]])})
         self.check_well_formed_messages_response(result)
 
@@ -1139,7 +1139,7 @@ class GetOldMessagesTest(AuthedTestCase):
         self.send_message("othello@humbughq.com", "hamlet@humbughq.com", Recipient.PERSONAL)
         self.send_message("iago@humbughq.com", "Scotland", Recipient.STREAM)
 
-        result = self.post_with_params({"narrow": simplejson.dumps(
+        result = self.post_with_params({"narrow": ujson.dumps(
                     [['sender', "othello@humbughq.com"]])})
         self.check_well_formed_messages_response(result)
 
@@ -1220,7 +1220,7 @@ class GetOldMessagesTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         for operator in ['', 'foo', 'stream:verona', '__init__']:
             params = dict(anchor=0, num_before=0, num_after=0,
-                narrow=simplejson.dumps([[operator, '']]))
+                narrow=ujson.dumps([[operator, '']]))
             result = self.client.post("/json/get_old_messages", params)
             self.assert_json_error_contains(result,
                 "Invalid narrow operator: unknown operator")
@@ -1229,7 +1229,7 @@ class GetOldMessagesTest(AuthedTestCase):
         other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
         for operand in operands:
             post_params = dict(other_params + [
-                ("narrow", simplejson.dumps([[operator, operand]]))])
+                ("narrow", ujson.dumps([[operator, operand]]))])
             result = self.client.post("/json/get_old_messages", post_params)
             self.assert_json_error_contains(result, error_msg)
 
@@ -1443,7 +1443,7 @@ class ChangeSettingsTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         json_result = self.post_with_params({})
         self.assert_json_success(json_result)
-        result = simplejson.loads(json_result.content)
+        result = ujson.loads(json_result.content)
         self.check_well_formed_change_settings_response(result)
         self.assertEqual(self.get_user_profile("hamlet@humbughq.com").
                 full_name, "Foo Bar")
@@ -1502,7 +1502,7 @@ class S3Test(AuthedTestCase):
 
         result = self.client.post("/json/upload_file", {'file': fp})
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertIn("uri", json)
         uri = json["uri"]
         self.test_uris.append(uri)
@@ -1642,7 +1642,7 @@ class GetProfileTest(AuthedTestCase):
             max_id = stream[-1].id
 
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
 
         self.assertIn("client_id", json)
         self.assertIn("max_message_id", json)
@@ -1685,7 +1685,7 @@ class GetPublicStreamsTest(AuthedTestCase):
         result = self.client.post("/json/get_public_streams", {'email': email, 'api-key': api_key})
 
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
 
         self.assertIn("streams", json)
         self.assertIsInstance(json["streams"], list)
@@ -1698,7 +1698,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         post_data = {'email': email,
                      'api-key': api_key,
                      'subscriptions': streams,
-                     'invite_only': simplejson.dumps(invite_only)}
+                     'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
 
         result = self.client.post("/api/v1/subscriptions/add", post_data)
@@ -1718,7 +1718,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assert_json_success(result2)
         result = self.client.post("/json/subscriptions/list", {})
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertIn("subscriptions", json)
         for sub in json["subscriptions"]:
             if sub['name'] == "Normandy":
@@ -1733,7 +1733,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         result = self.common_subscribe_to_stream(email, '["Saxony"]', invite_only=True)
         self.assert_json_success(result)
 
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertEqual(json["subscribed"], {email: ['Saxony']})
         self.assertEqual(json["already_subscribed"], {})
 
@@ -1748,8 +1748,8 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.login(email)
         result = self.common_subscribe_to_stream(
             email, '["Saxony"]',
-            extra_post_data={'principals': simplejson.dumps(["othello@humbughq.com"])})
-        json = simplejson.loads(result.content)
+            extra_post_data={'principals': ujson.dumps(["othello@humbughq.com"])})
+        json = ujson.loads(result.content)
         self.assertEqual(json["subscribed"], {"othello@humbughq.com": ['Saxony']})
         self.assertEqual(json["already_subscribed"], {})
 
@@ -1758,7 +1758,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
                                                             'api-key': self.get_api_key(email),
                                                             'stream': 'Saxony'})
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
 
         self.assertTrue('othello@humbughq.com' in json['subscribers'])
         self.assertTrue('hamlet@humbughq.com' in json['subscribers'])
@@ -1794,7 +1794,7 @@ class GetSubscribersTest(AuthedTestCase):
     def make_successful_subscriber_request(self, stream_name):
         result = self.make_subscriber_request(stream_name)
         self.assert_json_success(result)
-        self.check_well_formed_result(simplejson.loads(result.content),
+        self.check_well_formed_result(ujson.loads(result.content),
                                       stream_name, self.user_profile.realm.domain)
 
     def test_subscriber(self):
@@ -1812,7 +1812,7 @@ class GetSubscribersTest(AuthedTestCase):
         # Create a stream for which Hamlet is the only subscriber.
         stream_name = "Saxony"
         self.client.post("/json/subscriptions/add",
-                         {"subscriptions": simplejson.dumps([stream_name])})
+                         {"subscriptions": ujson.dumps([stream_name])})
         other_email = "othello@humbughq.com"
 
         # Fetch the subscriber list as a non-member.
@@ -1825,8 +1825,8 @@ class GetSubscribersTest(AuthedTestCase):
         """
         stream_name = "Saxony"
         self.client.post("/json/subscriptions/add",
-                         {"subscriptions": simplejson.dumps([stream_name]),
-                          "invite_only": simplejson.dumps(True)})
+                         {"subscriptions": ujson.dumps([stream_name]),
+                          "invite_only": ujson.dumps(True)})
         self.make_successful_subscriber_request(stream_name)
 
     def test_nonsubscriber_private_stream(self):
@@ -1836,8 +1836,8 @@ class GetSubscribersTest(AuthedTestCase):
         # Create a private stream for which Hamlet is the only subscriber.
         stream_name = "Saxony"
         self.client.post("/json/subscriptions/add",
-                         {"subscriptions": simplejson.dumps([stream_name]),
-                          "invite_only": simplejson.dumps(True)})
+                         {"subscriptions": ujson.dumps([stream_name]),
+                          "invite_only": ujson.dumps(True)})
         other_email = "othello@humbughq.com"
 
         # Try to fetch the subscriber list as a non-member.
@@ -2349,7 +2349,7 @@ class UserPresenceTests(AuthedTestCase):
         result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
 
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         for email, presence in json['presences'].items():
             self.assertEqual(presence, {})
 
@@ -2360,7 +2360,7 @@ class UserPresenceTests(AuthedTestCase):
 
         def test_result(result):
             self.assert_json_success(result)
-            json = simplejson.loads(result.content)
+            json = ujson.loads(result.content)
             self.assertEqual(json['presences'][email][client]['status'], 'idle')
             self.assertIn('timestamp', json['presences'][email][client])
             self.assertIsInstance(json['presences'][email][client]['timestamp'], int)
@@ -2378,7 +2378,7 @@ class UserPresenceTests(AuthedTestCase):
         self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
         result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         self.assertEqual(json['presences']['hamlet@humbughq.com'][client]['status'], 'idle')
         self.assertEqual(json['presences'].keys(), ['hamlet@humbughq.com', 'othello@humbughq.com'])
@@ -2394,7 +2394,7 @@ class UserPresenceTests(AuthedTestCase):
         result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
 
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
 
         email = "othello@humbughq.com"
@@ -2402,14 +2402,14 @@ class UserPresenceTests(AuthedTestCase):
         self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
         result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         self.assertEqual(json['presences']['hamlet@humbughq.com'][client]['status'], 'idle')
 
         self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'active'})
         result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'active')
         self.assertEqual(json['presences']['hamlet@humbughq.com'][client]['status'], 'idle')
 
@@ -2419,7 +2419,7 @@ class UserPresenceTests(AuthedTestCase):
         api_key = self.common_init(email)
         result = self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertEqual(json['presences'], {})
 
     def test_same_realm(self):
@@ -2436,7 +2436,7 @@ class UserPresenceTests(AuthedTestCase):
 
         result = self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
         self.assert_json_success(result)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         # We only want @humbughq.com emails
         for email in json['presences'].keys():
@@ -2474,7 +2474,7 @@ class UnreadCountTests(AuthedTestCase):
     def test_update_flags(self):
         self.login("hamlet@humbughq.com")
 
-        result = self.client.post("/json/update_message_flags", {"messages": simplejson.dumps([1, 2]),
+        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps([1, 2]),
                                                                  "op": "add",
                                                                  "flag": "read"})
         self.assert_json_success(result)
@@ -2486,7 +2486,7 @@ class UnreadCountTests(AuthedTestCase):
             elif msg['id'] == 2:
                 self.assertEqual(msg['flags'], ['read'])
 
-        result = self.client.post("/json/update_message_flags", {"messages": simplejson.dumps([2]),
+        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps([2]),
                                                                  "op": "remove",
                                                                  "flag": "read"})
         self.assert_json_success(result)
@@ -2501,15 +2501,15 @@ class UnreadCountTests(AuthedTestCase):
     def test_update_all_flags(self):
         self.login("hamlet@humbughq.com")
 
-        result = self.client.post("/json/update_message_flags", {"messages": simplejson.dumps([1, 2]),
+        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps([1, 2]),
                                                                  "op": "add",
                                                                  "flag": "read"})
         self.assert_json_success(result)
 
-        result = self.client.post("/json/update_message_flags", {"messages": simplejson.dumps([]),
+        result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps([]),
                                                                  "op": "remove",
                                                                  "flag": "read",
-                                                                 "all": simplejson.dumps(True)})
+                                                                 "all": ujson.dumps(True)})
         self.assert_json_success(result)
 
         for msg in self.get_old_messages():
@@ -2519,7 +2519,7 @@ class StarTests(AuthedTestCase):
 
     def change_star(self, messages, add=True):
         return self.client.post("/json/update_message_flags",
-                                {"messages": simplejson.dumps(messages),
+                                {"messages": ujson.dumps(messages),
                                  "op": "add" if add else "remove",
                                  "flag": "starred"})
 
@@ -2928,7 +2928,7 @@ class RateLimitTests(AuthedTestCase):
             result = self.send_api_message(email, api_key, "some stuff %s" % (i,))
 
         self.assertEqual(result.status_code, 403)
-        json = simplejson.loads(result.content)
+        json = ujson.loads(result.content)
         self.assertEqual(json.get("result"), "error")
         self.assertIn("API usage exceeded rate limit, try again in", json.get("msg"))
 

@@ -7,7 +7,7 @@ import os.path
 import glob
 import urllib2
 import itertools
-import simplejson
+import ujson
 import twitter
 import platform
 import time

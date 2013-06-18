@@ -59,6 +59,7 @@ from confirmation.models import Confirmation
 
 
 import datetime
+import ujson
 import simplejson
 import re
 import urllib
@@ -317,7 +318,7 @@ def accounts_accept_terms(request):
 
 def api_endpoint_docs(request):
     raw_calls = open('templates/zephyr/api_content.json', 'r').read()
-    calls = simplejson.loads(raw_calls)
+    calls = ujson.loads(raw_calls)
     langs = set()
     for call in calls:
         for example_type in ('request', 'response'):
@@ -555,7 +556,7 @@ def home(request):
         event_queue_id        = register_ret['queue_id'],
         last_event_id         = register_ret['last_event_id'],
         max_message_id        = register_ret['max_message_id'],
-        onboarding_steps      = simplejson.loads(user_profile.onboarding_steps),
+        onboarding_steps      = ujson.loads(user_profile.onboarding_steps),
         staging               = settings.STAGING_DEPLOYED or settings.DEBUG
     ))
 
@@ -632,7 +633,7 @@ def json_get_old_messages(request, user_profile):
 @has_request_variables
 def api_get_old_messages(request, user_profile,
                          apply_markdown=REQ(default=False,
-                                            converter=simplejson.loads)):
+                                            converter=ujson.loads)):
     return get_old_messages_backend(request, user_profile,
                                     apply_markdown=apply_markdown)
 
@@ -1168,7 +1169,7 @@ def update_subscriptions_backend(request, user_profile,
         if response.status_code != 200:
             transaction.rollback()
             return response
-        json_dict.update(simplejson.loads(response.content))
+        json_dict.update(ujson.loads(response.content))
     return json_success(json_dict)
 
 @authenticated_api_view
@@ -1606,8 +1607,8 @@ def api_jira_webhook(request):
         return json_error("Missing api_key parameter.")
 
     try:
-        payload = simplejson.loads(request.body)
-    except simplejson.JSONDecodeError:
+        payload = ujson.loads(request.body)
+    except ValueError:
         return json_error("Malformed JSON input")
 
     try:

@@ -4,16 +4,16 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 from zephyr.models import UserProfile, get_user_profile_by_email
 from zephyr.lib.actions import do_change_password
-import simplejson
+import ujson
 
 def dump():
     passwords = []
     for user_profile in UserProfile.objects.all():
         passwords.append((user_profile.email, user_profile.password))
-    file("dumped-passwords", "w").write(simplejson.dumps(passwords) + "\n")
+    file("dumped-passwords", "w").write(ujson.dumps(passwords) + "\n")
 
 def restore(change):
-    for (email, password) in simplejson.loads(file("dumped-passwords").read()):
+    for (email, password) in ujson.loads(file("dumped-passwords").read()):
         try:
             user_profile = get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:

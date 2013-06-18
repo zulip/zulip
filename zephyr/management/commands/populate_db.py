@@ -18,7 +18,7 @@ from zephyr.lib.bulk_create import bulk_create_realms, \
 from zephyr.lib.timestamp import timestamp_to_datetime
 from zephyr.models import MAX_MESSAGE_LENGTH
 
-import simplejson
+import ujson
 import datetime
 import random
 import glob
@@ -275,14 +275,14 @@ def restore_saved_messages():
         # created goes with the Nth non-subscription row of the input
         # So suppress the duplicates when using sqlite.
         if "sqlite" in settings.DATABASES["default"]["ENGINE"]:
-            tmp_message = simplejson.loads(old_message_json)
+            tmp_message = ujson.loads(old_message_json)
             tmp_message['id'] = '1'
-            duplicate_suppression_key = simplejson.dumps(tmp_message)
+            duplicate_suppression_key = ujson.dumps(tmp_message)
             if duplicate_suppression_key in duplicate_suppression_hash:
                 return
             duplicate_suppression_hash[duplicate_suppression_key] = True
 
-        old_message = simplejson.loads(old_message_json)
+        old_message = ujson.loads(old_message_json)
         message_type = old_message["type"]
 
         # Lower case emails and domains; it will screw up

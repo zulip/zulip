@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from zephyr.models import Realm, UserProfile, Message, UserMessage, \
     get_user_profile_by_email
 from zephyr.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-import simplejson
+import ujson
 
 def dump():
     pointers = []
@@ -16,10 +16,10 @@ def dump():
             pointers.append((u.email, datetime_to_timestamp(pub_date)))
         else:
             pointers.append((u.email, -1))
-    file("dumped-pointers", "w").write(simplejson.dumps(pointers) + "\n")
+    file("dumped-pointers", "w").write(ujson.dumps(pointers) + "\n")
 
 def restore(change):
-    for (email, timestamp) in simplejson.loads(file("dumped-pointers").read()):
+    for (email, timestamp) in ujson.loads(file("dumped-pointers").read()):
         try:
             u = get_user_profile_by_email(email)
         except UserProfile.DoesNotExist:

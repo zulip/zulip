@@ -5,7 +5,7 @@ from django.utils import timezone
 from zephyr.models import UserProfile, Recipient, Subscription
 import base64
 import hashlib
-import simplejson
+import ujson
 import random
 import string
 
@@ -14,7 +14,7 @@ import string
 onboarding_steps = ["sent_stream_message", "sent_private_message", "made_app_sticky"]
 
 def create_onboarding_steps_blob():
-    return simplejson.dumps([(step, False) for step in onboarding_steps])
+    return ujson.dumps([(step, False) for step in onboarding_steps])
 
 # create_user_profile is based on Django's User.objects.create_user,
 # except that we don't save to the database so it can used in

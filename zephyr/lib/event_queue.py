@@ -6,7 +6,7 @@ import os
 import time
 import socket
 import logging
-import simplejson
+import ujson
 import requests
 import cPickle as pickle
 import atexit
@@ -247,11 +247,11 @@ def request_event_queue(user_profile, user_client, apply_markdown,
                         event_types=None):
     if settings.TORNADO_SERVER:
         req = {'dont_block'    : 'true',
-               'apply_markdown': simplejson.dumps(apply_markdown),
+               'apply_markdown': ujson.dumps(apply_markdown),
                'client'        : 'internal',
                'user_client'   : user_client.name}
         if event_types is not None:
-            req['event_types'] = simplejson.dumps(event_types)
+            req['event_types'] = ujson.dumps(event_types)
         resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
                              auth=requests.auth.HTTPBasicAuth(user_profile.email,
                                                               user_profile.api_key),

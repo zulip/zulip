@@ -8,7 +8,7 @@ class humbug::app_frontend {
                     "python-pygments", "python-flup", "ipython", "python-psycopg2",
                     "yui-compressor", "python-django-auth-openid",
                     "python-django-statsd-mozilla",
-                    "build-essential", "libssl-dev",
+                    "build-essential", "libssl-dev", "python-ujson",
                     "python-boto", "python-defusedxml", "python-twitter",
                     "python-twisted", "python-markdown",
                     "python-django-south", "python-mock", "python-pika",

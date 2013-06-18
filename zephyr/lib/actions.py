@@ -40,7 +40,7 @@ import confirmation.settings
 from zephyr import tornado_callbacks
 
 import subprocess
-import simplejson
+import ujson
 import time
 import traceback
 import re
@@ -65,7 +65,7 @@ def log_event(event):
 
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
-            log.write(simplejson.dumps(event) + '\n')
+            log.write(ujson.dumps(event) + '\n')
 
 def do_create_user(email, password, realm, full_name, short_name,
                    active=True, bot=False, bot_owner=None,
@@ -379,7 +379,7 @@ def already_sent_mirrored_message(message):
 def extract_recipients(raw_recipients):
     try:
         recipients = json_to_list(raw_recipients)
-    except (simplejson.decoder.JSONDecodeError, ValueError):
+    except ValueError:
         recipients = [raw_recipients]
 
     # Strip recipients, and then remove any duplicates and any that
@@ -927,7 +927,7 @@ def subscribed_to_stream(user_profile, stream):
         return False
 
 def do_update_onboarding_steps(user_profile, steps):
-    user_profile.onboarding_steps = simplejson.dumps(steps)
+    user_profile.onboarding_steps = ujson.dumps(steps)
     user_profile.save()
 
     log_event({'type': 'update_onboarding',
@@ -959,7 +959,7 @@ def do_update_message(user_profile, message_id, subject, content):
     # contains a prev_rendered_content element.
     first_rendered_content = message.rendered_content
     if message.edit_history is not None:
-        edit_history = simplejson.loads(message.edit_history)
+        edit_history = ujson.loads(message.edit_history)
         for old_edit_history_event in edit_history:
             if 'prev_rendered_content' in old_edit_history_event:
                 first_rendered_content = old_edit_history_event['prev_rendered_content']
@@ -997,7 +997,7 @@ def do_update_message(user_profile, message_id, subject, content):
         edit_history.insert(0, edit_history_event)
     else:
         edit_history = [edit_history_event]
-    message.edit_history = simplejson.dumps(edit_history)
+    message.edit_history = ujson.dumps(edit_history)
 
     log_event(event)
     message.save(update_fields=["subject", "content", "rendered_content",

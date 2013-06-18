@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import time
-import simplejson
+import ujson
 
 from collections import defaultdict
 

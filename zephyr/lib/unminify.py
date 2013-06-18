@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import re
 import bisect
-import simplejson
+import ujson
 import collections
 from os import path
 
@@ -92,7 +92,7 @@ class SourceMap(object):
     '''Map (line,column) pairs from generated to source file.'''
     def __init__(self, sourcemap_file):
         with open(sourcemap_file, 'r') as fil:
-            sourcemap = simplejson.load(fil)
+            sourcemap = ujson.load(fil)
 
         # Pair each link with a sort / search key
         self._links = [ ((link.gen_line, link.gen_col), link)

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.conf import settings
 import pika
 import logging
-import simplejson
+import ujson
 import random
 import time
 import threading
@@ -84,12 +84,12 @@ class SimpleQueueClient(object):
 
     def json_publish(self, queue_name, body):
         try:
-            return self.publish(queue_name, simplejson.dumps(body))
+            return self.publish(queue_name, ujson.dumps(body))
         except (AttributeError, pika.exceptions.AMQPConnectionError):
             self.log.warning("Failed to send to rabbitmq, trying to reconnect and send again")
             self._reconnect()
 
-            return self.publish(queue_name, simplejson.dumps(body))
+            return self.publish(queue_name, ujson.dumps(body))
 
     def register_consumer(self, queue_name, consumer):
         def wrapped_consumer(ch, method, properties, body):
@@ -103,7 +103,7 @@ class SimpleQueueClient(object):
 
     def register_json_consumer(self, queue_name, callback):
         def wrapped_callback(ch, method, properties, body):
-            return callback(ch, method, properties, simplejson.loads(body))
+            return callback(ch, method, properties, ujson.loads(body))
         return self.register_consumer(queue_name, wrapped_callback)
 
     def drain_queue(self, queue_name, json=False):
@@ -118,7 +118,7 @@ class SimpleQueueClient(object):
 
                 self.channel.basic_ack(meta.delivery_tag)
                 if json:
-                    message = simplejson.loads(message)
+                    message = ujson.loads(message)
                 messages.append(message)
 
         self.ensure_queue(queue_name, opened)

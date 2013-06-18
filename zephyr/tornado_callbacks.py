@@ -16,7 +16,7 @@ import sys
 import time
 import logging
 import requests
-import simplejson
+import ujson
 import subprocess
 import collections
 from django.db import connection
@@ -352,7 +352,7 @@ def process_notification(data):
 def send_notification_http(data):
     if settings.TORNADO_SERVER:
         requests.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
-                data   = simplejson.dumps(data),
+                data   = ujson.dumps(data),
                 secret = settings.SHARED_SECRET))
 
 def send_notification(data):

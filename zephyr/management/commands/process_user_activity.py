@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from optparse import make_option
 from django.core.management.base import BaseCommand
-import simplejson
+import ujson
 import pika
 from zephyr.lib.actions import process_user_activity_event, \
         process_user_presence_event, process_update_message_flags

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-import simplejson
+import ujson
 from postmonkey import PostMonkey
 from django.core.management.base import BaseCommand
 from django.conf import settings

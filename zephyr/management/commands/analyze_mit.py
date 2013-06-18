@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from zephyr.models import Realm, UserProfile, Recipient, Message, get_client
-import simplejson
+import ujson
 from zephyr.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 import datetime
 import time

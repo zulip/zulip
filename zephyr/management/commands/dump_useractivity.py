@@ -4,7 +4,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 from zephyr.models import Realm, UserActivity, get_client, \
     get_user_profile_by_email
-import simplejson
+import ujson
 from zephyr.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 
 def dump():
@@ -14,10 +14,10 @@ def dump():
         pointers.append((activity.user_profile.email, activity.client.name,
                          activity.query, activity.count,
                          datetime_to_timestamp(activity.last_visit)))
-    file("dumped-activity", "w").write(simplejson.dumps(pointers) + "\n")
+    file("dumped-activity", "w").write(ujson.dumps(pointers) + "\n")
 
 def restore(change):
-    for (email, client_name, query, count, timestamp) in simplejson.loads(file("dumped-activity").read()):
+    for (email, client_name, query, count, timestamp) in ujson.loads(file("dumped-activity").read()):
         user_profile = get_user_profile_by_email(email)
         client = get_client(client_name)
         last_visit = timestamp_to_datetime(timestamp)

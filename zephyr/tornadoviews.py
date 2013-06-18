@@ -19,7 +19,7 @@ from zephyr.lib.cache_helpers import cache_get_message
 from zephyr.lib.event_queue import allocate_client_descriptor, get_client_descriptor
 
 import datetime
-import simplejson
+import ujson
 import socket
 import time
 import sys
@@ -27,7 +27,7 @@ import logging
 
 @internal_notify_view
 def notify(request):
-    process_notification(simplejson.loads(request.POST['data']))
+    process_notification(ujson.loads(request.POST['data']))
     return json_success()
 
 @asynchronous

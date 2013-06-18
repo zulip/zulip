@@ -18,7 +18,7 @@ from zephyr.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import post_save
 
 from bitfield import BitField
-import simplejson
+import ujson
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
@@ -117,7 +117,7 @@ class UserProfile(AbstractBaseUser):
     #    [("step 1", true), ("step 2", false)]
     # where the second element of each tuple is if the step has been
     # completed.
-    onboarding_steps = models.TextField(default=simplejson.dumps([]))
+    onboarding_steps = models.TextField(default=ujson.dumps([]))
 
     def tutorial_stream_name(self):
         # If you change this, you need to change the corresponding
@@ -339,7 +339,7 @@ class Message(models.Model):
 
         if self.last_edit_time != None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(self.last_edit_time)
-            obj['edit_history'] = simplejson.loads(self.edit_history)
+            obj['edit_history'] = ujson.loads(self.edit_history)
         if apply_markdown and self.rendered_content_version is not None:
             obj['content'] = self.rendered_content
             obj['content_type'] = 'text/html'
