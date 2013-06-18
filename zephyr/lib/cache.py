@@ -76,14 +76,7 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
         def func_with_caching(*args, **kwargs):
             key = KEY_PREFIX + keyfunc(*args, **kwargs)
 
-            memcached_stats_start()
-            if cache_name is None:
-                cache_backend = djcache
-            else:
-                cache_backend = get_cache(cache_name)
-
-            val = cache_backend.get(key)
-            memcached_stats_finish()
+            val = cache_get(key, cache_name=cache_name)
 
             extra = ""
             if cache_name == 'database':
@@ -104,9 +97,7 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
 
             val = func(*args, **kwargs)
 
-            memcached_stats_start()
-            cache_backend.set(key, (val,), timeout=timeout)
-            memcached_stats_finish()
+            cache_set(key, val, cache_name=cache_name, timeout=timeout)
 
             return val
 
@@ -121,6 +112,16 @@ def cache_set(key, val, cache_name=None, timeout=None):
     else:
         cache_backend = get_cache(cache_name)
     ret = cache_backend.set(KEY_PREFIX + key, (val,), timeout=timeout)
+    memcached_stats_finish()
+    return ret
+
+def cache_get(key, cache_name=None):
+    memcached_stats_start()
+    if cache_name is None:
+        cache_backend = djcache
+    else:
+        cache_backend = get_cache(cache_name)
+    ret = cache_backend.get(KEY_PREFIX + key)
     memcached_stats_finish()
     return ret
 
