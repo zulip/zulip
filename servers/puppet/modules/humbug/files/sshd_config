@@ -69,8 +69,9 @@ TCPKeepAlive yes
 #MaxStartups 10:30:60
 #Banner /etc/issue.net
 
-# Allow client to pass locale environment variables
-AcceptEnv LANG LC_*
+# Commented out to prevent use of client locales. This causes problems
+# otherwise if our developers have a non-standard locale.
+#AcceptEnv LANG LC_*
 
 Subsystem sftp /usr/lib/openssh/sftp-server
 
