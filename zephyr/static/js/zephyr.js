@@ -286,6 +286,7 @@ function update_unread_counts() {
     // avoid excessive calls to this.
     stream_list.update_dom_with_unread_counts(res);
     notifications.update_title_count(res.unread_in_current_view);
+    notifications.update_pm_count(res.private_message_count);
     notifications_bar.update(res.unread_in_current_view);
 }
 

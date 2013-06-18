@@ -103,6 +103,12 @@ exports.update_title_count = function (new_message_count) {
     }
 };
 
+exports.update_pm_count = function (new_pm_count) {
+    if (window.bridge !== undefined && window.bridge.updatePMCount !== undefined) {
+        window.bridge.updatePMCount(new_pm_count);
+    }
+};
+
 exports.window_has_focus = function () {
     return window_has_focus;
 };
