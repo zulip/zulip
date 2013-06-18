@@ -15,7 +15,6 @@ from django.contrib.auth.views import login as django_login_page, \
 from django.db.models import Q, F
 from django.core.mail import send_mail, mail_admins
 from django.db import transaction
-from django.template.defaultfilters import slugify
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, \
     PreregistrationUser, get_client, MitUser, UserActivity, \
@@ -46,7 +45,8 @@ from zephyr.decorator import require_post, \
     JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
     authenticated_rest_api_view, process_as_post, REQ, rate_limit, rate_limit_user
 from zephyr.lib.query import last_n
-from zephyr.lib.avatar import avatar_url, user_avatar_hash
+from zephyr.lib.avatar import avatar_url
+from zephyr.lib.upload import upload_message_image, upload_avatar_image
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
 from zephyr.lib.timestamp import datetime_to_timestamp
 from zephyr.lib.cache import cache_with_key, cache_get_many, cache_set_many
@@ -66,13 +66,9 @@ import os
 import base64
 import time
 import logging
-from mimetypes import guess_type, guess_extension
 from os import path
 from functools import wraps
 from collections import defaultdict
-
-from boto.s3.key import Key
-from boto.s3.connection import S3Connection
 
 from defusedxml.ElementTree import fromstring as xml_fromstring
 
@@ -1293,17 +1289,6 @@ def api_get_subscribers(request, user_profile):
 def json_get_subscribers(request, user_profile):
     return get_subscribers_backend(request, user_profile)
 
-def gen_s3_key(user_profile, name):
-    split_name = name.split('.')
-    base = ".".join(split_name[:-1])
-    extension = split_name[-1]
-
-    # To come up with a s3 key we randomly generate a "directory". The "file
-    # name" is the original filename provided by the user run through Django's
-    # slugify.
-
-    return base64.urlsafe_b64encode(os.urandom(60)) + "/" + slugify(base) + "." + slugify(extension)
-
 @authenticated_json_post_view
 def json_upload_file(request, user_profile):
     if len(request.FILES) == 0:
@@ -1312,36 +1297,8 @@ def json_upload_file(request, user_profile):
         return json_error("You may only upload one file at a time")
 
     user_file = request.FILES.values()[0]
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    key = Key(conn.get_bucket(settings.S3_BUCKET))
-
-    uploaded_file_name = user_file.name
-    content_type = request.GET.get('mimetype')
-    if content_type is None:
-        content_type = guess_type(uploaded_file_name)[0]
-    else:
-        uploaded_file_name = uploaded_file_name + guess_extension(content_type)
-
-    key.key = gen_s3_key(user_profile, uploaded_file_name)
-
-    # So for writing the file to S3, the file could either be stored in RAM
-    # (if it is less than 2.5MiB or so) or an actual temporary file on disk.
-    #
-    # Because we set FILE_UPLOAD_MAX_MEMORY_SIZE to 0, only the latter case
-    # should occur in practice.
-    #
-    # This is great, because passing the pseudofile object that Django gives
-    # you to boto would be a pain.
-
-    key.set_metadata("user_profile_id", str(user_profile.id))
-    if content_type:
-        headers = {'Content-Type': content_type}
-    else:
-        headers = None
-    key.set_contents_from_filename(
-            user_file.temporary_file_path(),
-            headers=headers)
-    return json_success({'uri': "https://%s.s3.amazonaws.com/%s" % (settings.S3_BUCKET, key.key)})
+    uri = upload_message_image(request, user_file, user_profile)
+    return json_success({'uri': uri})
 
 @has_request_variables
 def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
@@ -1992,19 +1949,7 @@ def json_create_bot(request, user_profile, full_name=REQ, short_name=REQ):
         return json_error("You may only upload one file at a time")
     else:
         user_file = request.FILES.values()[0]
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        key = Key(conn.get_bucket(settings.S3_AVATAR_BUCKET))
-
-        content_type = guess_type(user_file.name)[0]
-        key.key = user_avatar_hash(email)
-        key.set_metadata("user_profile_id", str(user_profile.id))
-        if content_type:
-            headers = {'Content-Type': content_type}
-        else:
-            headers = None
-        key.set_contents_from_filename(
-                user_file.temporary_file_path(),
-                headers=headers)
+        upload_avatar_image(user_file, user_profile, email)
         avatar_source = UserProfile.AVATAR_FROM_USER
 
     bot_profile = do_create_user(email, '', user_profile.realm, full_name,
