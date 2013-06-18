@@ -69,13 +69,16 @@ $(function () {
     }
 });
 
-function do_reload_app(send_after_reload) {
+function do_reload_app(send_after_reload, message) {
     // TODO: we should completely disable the UI here
     if (compose.composing()) {
         preserve_compose(send_after_reload);
     }
+    if (message === undefined) {
+        message = "Reloading";
+    }
     // TODO: We need a better API for showing messages.
-    ui.report_message("The application has been updated; reloading!", $("#reloading-application"));
+    ui.report_message(message, $("#reloading-application"));
     reload_in_progress = true;
     window.location.reload(true);
 }
@@ -86,7 +89,7 @@ exports.initiate = function (options) {
     options = $.extend(defaults, options);
 
     if (options.immediate) {
-        do_reload_app(options.send_after_reload);
+        do_reload_app(options.send_after_reload, options.message);
     }
 
     if (reload_pending) {
@@ -104,12 +107,16 @@ exports.initiate = function (options) {
     var compose_done_handler, compose_started_handler;
 
     // Make sure we always do a reload eventually
-    setTimeout(function () { do_reload_app(false); }, unconditional_timeout);
+    setTimeout(function () { do_reload_app(false, options.message); }, unconditional_timeout);
+
+    function reload_from_idle () {
+        do_reload_app(false, options.message);
+    }
 
     compose_done_handler = function () {
         idle_control.cancel();
         idle_control = $(document).idle({'idle': home_timeout,
-                                         'onIdle': do_reload_app});
+                                         'onIdle': reload_from_idle});
         $(document).off('compose_canceled.zephyr compose_finished.zephyr',
                         compose_done_handler);
         $(document).on('compose_started.zephyr', compose_started_handler);
@@ -117,7 +124,7 @@ exports.initiate = function (options) {
     compose_started_handler = function () {
         idle_control.cancel();
         idle_control = $(document).idle({'idle': composing_timeout,
-                                         'onIdle': do_reload_app});
+                                         'onIdle': reload_from_idle});
         $(document).off('compose_started.zephyr', compose_started_handler);
         $(document).on('compose_canceled.zephyr compose_finished.zephyr',
                        compose_done_handler);
@@ -125,12 +132,12 @@ exports.initiate = function (options) {
 
     if (compose.composing()) {
         idle_control = $(document).idle({'idle': composing_timeout,
-                                         'onIdle': do_reload_app});
+                                         'onIdle': reload_from_idle});
         $(document).on('compose_canceled.zephyr compose_finished.zephyr',
                        compose_done_handler);
     } else {
         idle_control = $(document).idle({'idle': home_timeout,
-                                         'onIdle': do_reload_app});
+                                         'onIdle': reload_from_idle});
         $(document).on('compose_started.zephyr', compose_started_handler);
     }
 };

@@ -838,7 +838,7 @@ function get_updates(options) {
                     new_pointer = event.pointer;
                     break;
                 case 'restart':
-                    reload.initiate();
+                    reload.initiate({message: "The application has been updated; reloading!"});
                     break;
                 case 'onboarding_steps':
                     onboarding.set_step_info(event.steps);
