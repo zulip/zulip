@@ -27,7 +27,13 @@ function preserve_compose(send_after_reload) {
         url += "+msg_type=private";
         url += "+recipient=" + encodeURIComponent(compose.recipient());
     }
-    url += "+msg="+ encodeURIComponent(compose.message_content());
+    url += "+msg=" + encodeURIComponent(compose.message_content());
+
+    var oldhash = window.location.hash;
+    if (oldhash.length !== 0 && oldhash[0] === '#') {
+        oldhash = oldhash.slice(1);
+    }
+    url += "+oldhash=" + encodeURIComponent(oldhash);
 
     window.location.replace(url);
 }
@@ -40,9 +46,6 @@ $(function () {
     if (fragment.search("reload:") !== 0) {
         return;
     }
-    window.location.hash = '';
-    util.reset_favicon();
-
     fragment = fragment.replace(/^reload:/, "");
     var keyvals = fragment.split("+");
     var vars = {};
@@ -58,6 +61,8 @@ $(function () {
     }
 
     var send_now = parseInt(vars.send_after_reload, 10);
+
+    hashchange.changehash(vars.oldhash);
 
     // TODO: preserve focus
     compose.start(vars.msg_type, {stream: vars.stream,
