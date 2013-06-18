@@ -977,7 +977,7 @@ function load_old_messages(opts) {
         data.narrow = JSON.stringify(narrow.public_operators());
 
     function process_result(messages) {
-        $('#connection-error').hide();
+        $('#get_old_messages_error').hide();
 
         if ((messages.length === 0) && (current_msg_list === narrowed_msg_list) &&
             narrowed_msg_list.empty()) {
@@ -1046,7 +1046,7 @@ function load_old_messages(opts) {
             }
 
             // We might want to be more clever here
-            $('#connection-error').show();
+            $('#get_old_messages_error').show();
             setTimeout(function () {
                 load_old_messages(opts);
             }, 5000);
