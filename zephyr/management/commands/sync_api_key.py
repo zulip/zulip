@@ -11,7 +11,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         config_file = os.path.join(os.environ["HOME"], ".humbugrc")
         if not os.path.exists(config_file):
-            raise RuntimeError("Not ~/.humbughrc")
+            raise RuntimeError("No ~/.humbugrc found")
         config = SafeConfigParser()
         with file(config_file, 'r') as f:
             config.readfp(f, config_file)
