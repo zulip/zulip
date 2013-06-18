@@ -2,7 +2,7 @@ var compose = (function () {
 
 var exports = {};
 var is_composing_message = false;
-var faded_to;
+var focused_recipient;
 var message_snapshot;
 var empty_subject_placeholder = "(no subject)";
 
@@ -77,37 +77,38 @@ exports.decorate_stream_bar = function (stream_name) {
 };
 
 exports.unfade_messages = function (clear_state) {
-    if (faded_to === undefined) {
+    if (focused_recipient === undefined) {
         return;
     }
 
     var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
     rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row").removeClass(fade_class);
     if (clear_state === true) {
-        faded_to = undefined;
+        focused_recipient = undefined;
     }
     ui.enable_floating_recipient_bar();
 };
 
 exports.update_faded_messages = function () {
-    if (faded_to === undefined) {
+    if (focused_recipient === undefined) {
         return;
     }
 
-    var i, fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
+    var i;
+    var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
 
     var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row");
-    var different_recipient = false;
+    var should_fade_message = false;
     // Note: The below algorithm relies on the fact that all_elts is
     // sorted as it would be displayed in the message view
     for (i = 0; i < all_elts.length; i++) {
         var elt = $(all_elts[i]);
         if (elt.hasClass("recipient_row")) {
-            different_recipient = !util.same_recipient(faded_to, current_msg_list.get(rows.id(elt)));
+            should_fade_message = !util.same_recipient(focused_recipient, current_msg_list.get(rows.id(elt)));
         }
 
-        if (elt.hasClass(fade_class) !== different_recipient) {
-            elt.toggleClass(fade_class, different_recipient);
+        if (elt.hasClass(fade_class) !== should_fade_message) {
+            elt.toggleClass(fade_class, should_fade_message);
         }
     }
 
@@ -133,17 +134,17 @@ exports.update_recipient_on_narrow = function() {
 function update_fade () {
     if (!is_composing_message) return;
 
-    // Construct faded_to as a mocked up element which has all the
+    // Construct focused_recipient as a mocked up element which has all the
     // fields of a message used by util.same_recipient()
-    faded_to = {
+    focused_recipient = {
         type: is_composing_message
     };
 
-    if (faded_to.type === "stream") {
-        faded_to.stream = $('#stream').val();
-        faded_to.subject = $('#subject').val();
+    if (focused_recipient.type === "stream") {
+        focused_recipient.stream = $('#stream').val();
+        focused_recipient.subject = $('#subject').val();
     } else {
-        faded_to.reply_to = util.normalize_recipients($('#private_message_recipient').val());
+        focused_recipient.reply_to = util.normalize_recipients($('#private_message_recipient').val());
     }
 
     compose.update_faded_messages();
