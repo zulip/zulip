@@ -113,8 +113,9 @@ exports.window_has_focus = function () {
     return window_has_focus;
 };
 
-function process_desktop_notification(message) {
+function process_notification(notification) {
     var i, notification_object, key;
+    var message = notification.message;
     var title = message.sender_full_name;
     var content = $('<div/>').html(message.content).text();
     var other_recipients;
@@ -166,7 +167,7 @@ function process_desktop_notification(message) {
         title += " (to " + message.stream + " > " + message.subject + ")";
     }
 
-    if (window.bridge === undefined) {
+    if (window.bridge === undefined && notification.in_browser === undefined) {
         var icon_url = ui.small_avatar_url(message);
         notice_memory[key] = {
             obj: window.webkitNotifications.createNotification(
@@ -182,6 +183,14 @@ function process_desktop_notification(message) {
             delete notice_memory[key];
         };
         notification_object.show();
+    } else if (notification.in_browser === true) {
+        var notification_html = $(templates.render('notification', {gravatar_url: ui.small_avatar_url(message),
+                                                                    sender_fullname: message.sender_full_name,
+                                                                    content: content}));
+        $('.top-right').notify({
+            message: { html: notification_html },
+            fadeOut: {enabled:true, delay: 4000}
+        }).show();
     } else {
         // Shunt the message along to the desktop client
         window.bridge.desktopNotification(title, content);
@@ -218,7 +227,10 @@ exports.received_messages = function (messages) {
         }
         if (page_params.desktop_notifications_enabled &&
             browser_desktop_notifications_on()) {
-            process_desktop_notification(message);
+            process_notification({message: message});
+        }
+        else {
+            process_notification({message: message, in_browser: true});
         }
         if (page_params.sounds_enabled && supports_sound) {
             if (window.bridge !== undefined) {

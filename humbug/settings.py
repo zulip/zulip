@@ -259,6 +259,7 @@ PIPELINE_CSS = {
     },
     'app': {
         'source_filenames': (
+            'third/bootstrap-notify/css/bootstrap-notify.css',
             'third/spectrum/spectrum.css',
             'styles/zephyr.css',
             'styles/pygments.css',
@@ -309,6 +310,7 @@ PIPELINE_JS = {
     },
     'app': {
         'source_filenames': [
+            'third/bootstrap-notify/js/bootstrap-notify.js',
             'third/jquery-validate/jquery.validate.js',
             'third/jquery-form/jquery.form.js',
             'third/jquery-highlight/jquery.highlight.js',
