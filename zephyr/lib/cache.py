@@ -120,7 +120,7 @@ def cache_set(key, val, cache_name=None, timeout=None):
         cache_backend = djcache
     else:
         cache_backend = get_cache(cache_name)
-    ret = cache_backend.set(key, (val,), timeout=timeout)
+    ret = cache_backend.set(KEY_PREFIX + key, (val,), timeout=timeout)
     memcached_stats_finish()
     return ret
 
