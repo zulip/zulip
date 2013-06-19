@@ -133,7 +133,7 @@ def cache_get_many(keys, cache_name=None):
         cache_backend = get_cache(cache_name)
     ret = cache_backend.get_many(keys)
     memcached_stats_finish()
-    return ret
+    return dict([(key[len(KEY_PREFIX):], value) for key, value in ret.items()])
 
 def cache_set_many(items, cache_name=None, timeout=None):
     new_items = {}
