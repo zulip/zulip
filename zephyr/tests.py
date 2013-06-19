@@ -17,14 +17,14 @@ from zephyr.lib.actions import do_send_message, gather_subscriptions, \
 from zephyr.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zephyr.lib import bugdown
 
+from django.conf import settings
+import optparse
+import os
+import random
+import re
 import simplejson
 import subprocess
-import optparse
-from django.conf import settings
-import re
 import sys
-import random
-import os
 import urllib2
 from StringIO import StringIO
 
