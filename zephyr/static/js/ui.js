@@ -1574,7 +1574,11 @@ $(function () {
     });
 
     $('#yes-bankrupt').click(function (e) {
-        fast_forward_pointer(this);
+        fast_forward_pointer();
+        $("#yes-bankrupt").hide();
+        $("#no-bankrupt").hide();
+        $(this).after($("<div>").addClass("alert alert-info settings_committed")
+               .text("Bringing you to your latest messages…"));
     });
 
     // initialize other stuff
