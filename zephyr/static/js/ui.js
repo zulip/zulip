@@ -1536,8 +1536,17 @@ $(function () {
     $('body').on('click', '.open_stream_settings', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         ui.hide_stream_sidebar_popover();
-        ui.change_tab_to('#subscriptions');
-        setTimeout(function () { subs.show_settings_for(stream); }, 100);
+        if (! $('#subscriptions').hasClass('active')) {
+            // Go to streams page and once it loads, expand the relevant
+            // stream's settings.
+            $(document).one('subs_page_loaded.zephyr', function (event) {
+                subs.show_settings_for(stream);
+            });
+            ui.change_tab_to('#subscriptions');
+        } else {
+            // Already on streams page, so just expand the relevant stream.
+            subs.show_settings_for(stream);
+        }
     });
 
     $("body").on('click', function (e) {

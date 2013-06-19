@@ -583,6 +583,7 @@ exports.setup_page = function () {
 
         util.destroy_loading_indicator($('#subs_page_loading_indicator'));
         $('#create_stream_name').focus().select();
+        $(document).trigger($.Event('subs_page_loaded.zephyr'));
     }
 
     function failed_listing(xhr, error) {
