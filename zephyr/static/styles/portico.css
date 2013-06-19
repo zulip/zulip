@@ -6,7 +6,7 @@
     height: auto !important;
     height: 100%;
 
-    margin: 0 auto -41px;
+    margin: 0 auto -56px;
 }
 
 /* This is a hack so that our main content
@@ -29,7 +29,7 @@
 }
 
 .navbar.footer .nav  > li {
-    line-height: 41px;
+    line-height: 56px;
 }
 
 .navbar.footer .nav  > li > a {
@@ -38,7 +38,7 @@
 }
 
 .footer, .push {
-    height: 41px;
+    height: 56px;
 }
 
 html {

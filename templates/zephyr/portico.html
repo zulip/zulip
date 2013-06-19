@@ -57,6 +57,9 @@ hence the name.
       <li><a href="/accounts/login/?next=/">Log in</a></li>
       <li>·</li>
       <li><a href="{% url 'signup' %}">Sign up</a></li>
+      {# We only want the mixpanel badge on the front page #}
+      {% block mixpanel_badge %}
+      {% endblock %}
     </ul>
   </div>
 </div>
