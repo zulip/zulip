@@ -28,6 +28,15 @@
     -moz-border-radius: 0px;
 }
 
+.navbar.footer .nav  > li {
+    line-height: 41px;
+}
+
+.navbar.footer .nav  > li > a {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 .footer, .push {
     height: 41px;
 }
