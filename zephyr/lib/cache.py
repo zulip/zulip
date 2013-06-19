@@ -63,6 +63,11 @@ def get_or_create_key_prefix():
 
 KEY_PREFIX = get_or_create_key_prefix()
 
+def get_cache_backend(cache_name):
+    if cache_name is None:
+        return djcache
+    return get_cache(cache_name)
+
 def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None):
     """Decorator which applies Django caching to a function.
 
@@ -107,20 +112,14 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
 
 def cache_set(key, val, cache_name=None, timeout=None):
     memcached_stats_start()
-    if cache_name is None:
-        cache_backend = djcache
-    else:
-        cache_backend = get_cache(cache_name)
+    cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.set(KEY_PREFIX + key, (val,), timeout=timeout)
     memcached_stats_finish()
     return ret
 
 def cache_get(key, cache_name=None):
     memcached_stats_start()
-    if cache_name is None:
-        cache_backend = djcache
-    else:
-        cache_backend = get_cache(cache_name)
+    cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.get(KEY_PREFIX + key)
     memcached_stats_finish()
     return ret
@@ -128,11 +127,7 @@ def cache_get(key, cache_name=None):
 def cache_get_many(keys, cache_name=None):
     keys = [KEY_PREFIX + key for key in keys]
     memcached_stats_start()
-    if cache_name is None:
-        cache_backend = djcache
-    else:
-        cache_backend = get_cache(cache_name)
-    ret = cache_backend.get_many(keys)
+    ret = get_cache_backend(cache_name).get_many(keys)
     memcached_stats_finish()
     return dict([(key[len(KEY_PREFIX):], value) for key, value in ret.items()])
 
@@ -142,11 +137,7 @@ def cache_set_many(items, cache_name=None, timeout=None):
         new_items[KEY_PREFIX + key] = items[key]
     items = new_items
     memcached_stats_start()
-    if cache_name is None:
-        cache_backend = djcache
-    else:
-        cache_backend = get_cache(cache_name)
-    ret = cache_backend.set_many(items, timeout=timeout)
+    ret = get_cache_backend(cache_name).set_many(items, timeout=timeout)
     memcached_stats_finish()
     return ret
 
