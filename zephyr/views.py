@@ -829,16 +829,22 @@ def get_old_messages_backend(request, user_profile,
     # specified to ensure that the resulting list always contains the
     # anchor message.  If a narrow was specified, the anchor message
     # might not match the narrow anyway.
-    if num_before != 0 and num_after == 0:
-        num_before += num_extra_messages
-        query_result = last_n(num_before, query.filter(**add_prefix(id__lte=anchor)))
-    elif num_before == 0 and num_after != 0:
+    if num_after != 0:
         num_after += num_extra_messages
-        query_result = query.filter(**add_prefix(id__gte=anchor))[:num_after]
     else:
-        num_after += num_extra_messages
-        query_result = (last_n(num_before, query.filter(**add_prefix(id__lt=anchor)))
-                    + list(query.filter(**add_prefix(id__gte=anchor))[:num_after]))
+        num_before += num_extra_messages
+
+    before_result = []
+    after_result = []
+    if num_before != 0:
+        before_anchor = anchor
+        if num_after != 0:
+            # Don't include the anchor in both the before query and the after query
+            before_anchor = anchor - 1
+        before_result = last_n(num_before, query.filter(**add_prefix(id__lte=before_anchor)))
+    if num_after != 0:
+        after_result = query.filter(**add_prefix(id__gte=anchor))[:num_after]
+    query_result = list(before_result) + list(after_result)
 
     # The following is a little messy, but ensures that the code paths
     # are similar regardless of the value of include_history.  The
