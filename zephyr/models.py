@@ -16,6 +16,7 @@ from django.contrib.sessions.models import Session
 from django.utils.html import escape
 from zephyr.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import post_save
+import zlib
 
 from bitfield import BitField
 import ujson
@@ -275,10 +276,10 @@ def linebreak(string):
     return string.replace('\n\n', '<p/>').replace('\n', '<br/>')
 
 def extract_message_dict(message_str):
-    return ujson.loads(message_str)
+    return ujson.loads(zlib.decompress(message_str))
 
 def stringify_message_dict(message_dict):
-    return ujson.dumps(message_dict)
+    return zlib.compress(ujson.dumps(message_dict))
 
 def to_dict_cache_key_id(message_id, apply_markdown, rendered_content=None):
     return 'message_dict:%d:%d' % (message_id, apply_markdown)
