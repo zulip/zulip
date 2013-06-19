@@ -20,7 +20,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     PreregistrationUser, get_client, MitUser, UserActivity, \
     MAX_SUBJECT_LENGTH, get_stream, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
-    extract_message_dict, stringify_message_dict
+    extract_message_dict, stringify_message_dict, parse_usermessage_flags
 from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
@@ -55,6 +55,7 @@ from zephyr.lib.unminify import SourceMap
 from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.utils import statsd
 from zephyr import tornado_callbacks
+from django.db import connection
 
 from confirmation.models import Confirmation
 
@@ -814,7 +815,10 @@ def get_old_messages_backend(request, user_profile,
     num_extra_messages = 1
     is_search = False
 
-    if narrow is not None:
+    if narrow is None:
+        use_raw_query = True
+    else:
+        use_raw_query = False
         num_extra_messages = 0
         build = NarrowBuilder(user_profile, prefix)
         for operator, operand in narrow:
@@ -841,9 +845,31 @@ def get_old_messages_backend(request, user_profile,
         if num_after != 0:
             # Don't include the anchor in both the before query and the after query
             before_anchor = anchor - 1
-        before_result = last_n(num_before, query.filter(**add_prefix(id__lte=before_anchor)))
+        if use_raw_query:
+            cursor = connection.cursor()
+            # These queries should always be the same as what we would do
+            # in the !include_history case.
+            cursor.execute("SELECT zephyr_message.id, zephyr_usermessage.flags FROM " +
+                           "zephyr_usermessage INNER JOIN zephyr_message ON " +
+                           "zephyr_message.id = zephyr_usermessage.message_id " +
+                           "WHERE zephyr_usermessage.user_profile_id = %s and zephyr_message.id <= %s " +
+                           "ORDER BY message_id DESC LIMIT %s", [user_profile.id, before_anchor, num_before])
+            before_result = reversed(cursor.fetchall())
+        else:
+            before_result = last_n(num_before, query.filter(**add_prefix(id__lte=before_anchor)))
     if num_after != 0:
-        after_result = query.filter(**add_prefix(id__gte=anchor))[:num_after]
+        if use_raw_query:
+            cursor = connection.cursor()
+            # These queries should always be the same as what we would do
+            # in the !include_history case.
+            cursor.execute("SELECT zephyr_message.id, zephyr_usermessage.flags FROM " +
+                           "zephyr_usermessage INNER JOIN zephyr_message ON " +
+                           "zephyr_message.id = zephyr_usermessage.message_id " +
+                           "WHERE zephyr_usermessage.user_profile_id = %s and zephyr_message.id >= %s " +
+                           "ORDER BY message_id LIMIT %s", [user_profile.id, anchor, num_after])
+            after_result = cursor.fetchall()
+        else:
+            after_result = query.filter(**add_prefix(id__gte=anchor))[:num_after]
     query_result = list(before_result) + list(after_result)
 
     # The following is a little messy, but ensures that the code paths
@@ -856,7 +882,12 @@ def get_old_messages_backend(request, user_profile,
     search_fields = dict()
     message_ids = []
     user_message_flags = {}
-    if include_history:
+    if use_raw_query:
+        for row in query_result:
+            (message_id, flags_val) = row
+            user_message_flags[message_id] = parse_usermessage_flags(flags_val)
+            message_ids.append(message_id)
+    elif include_history:
         user_message_flags = dict((user_message.message_id, user_message.flags_list()) for user_message in
                                   UserMessage.objects.filter(user_profile=user_profile,
                                                              message__in=query_result))

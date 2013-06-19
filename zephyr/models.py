@@ -397,7 +397,8 @@ class UserMessage(models.Model):
     # since this table will be an unpleasant one to do schema changes
     # on later
     archived = models.BooleanField()
-    flags = BitField(flags=['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned'], default=0)
+    ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned']
+    flags = BitField(flags=ALL_FLAGS, default=0)
 
     class Meta:
         unique_together = ("user_profile", "message")
@@ -411,6 +412,15 @@ class UserMessage(models.Model):
 
     def flags_dict(self):
         return dict(flags = [self.flags_list()])
+
+def parse_usermessage_flags(val):
+    flags = []
+    mask = 1
+    for flag in UserMessage.ALL_FLAGS:
+        if val & mask:
+            flags.append(flag)
+        mask <<= 1
+    return flags
 
 class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile)
