@@ -71,21 +71,41 @@ li, .table th, .table td {
     font-size: 115%;
 }
 
-.navbar .brand {
-    font-size: 140%;
-    font-weight: 300;
+.navbar .logo {
+    display: block;
+    font-size: 120%;
+    font-weight: 900;
+    text-shadow: none;
+    color: #ffffff;
+    font-variant: small-caps;
+    letter-spacing: 2px;
+    line-height: 18px;
+    padding-top: 10px;
+    padding-left: 25px;
+    text-decoration: none;
+ }
+
+ @media (max-width: 979px) {
+    .navbar .logo {
+        margin-left: -20px;
+    }
 }
 
+
 .navbar .gravatar-profile {
-    width: 30px;
-    height: 30px;
-    background-size: 30px 30px;
+    width: 25px;
+    height: 25px;
+    background-size: 25px 25px;
     background-repeat: none;
-    border-radius: 30px;
+    border-radius: 25px;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0px rgba(255, 255, 255, 1);
     -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0px rgba(255, 255, 255, 1);
     -moz-mox-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0px rgba(255, 255, 255, 1);
+    position: absolute;
+    left: 5px;
+    top: 7px;
 }
+
 
 /* Classes for hiding and showing controls */
 
@@ -102,6 +122,13 @@ li, .table th, .table td {
     overflow: hidden !important;
     position: absolute !important;
 }
+
+/* Relative positioning */
+
+.position-relative {
+    position: relative;
+}
+
 
 /* Lighter strong */
 
@@ -199,10 +226,7 @@ a:hover code {
 }
 
 .new_message_button {
-    padding: 20px;
-}
-
-.compose_private_button, .compose_stream_button {
+    padding-top: 1.1em;
 }
 
 .bottom_sidebar {
@@ -877,20 +901,21 @@ input.recipient_box {
 }
 
 #navbar-middle {
-    display: table-row;
+    padding-left: 5px;
+    padding-right: 10px;
 }
 
 .brand.skinny-user-gravatar {
     display: table-cell;
-    padding-top: 5px;
+    padding-top: 0px;
     padding-bottom: 0px;
-    margin-bottom: 5px;
+    margin-bottom: 0px;
     white-space: nowrap;
 }
 
 #searchbox {
-    display: table-cell;
-    width: 99%;
+    width: 100%;
+    padding-right: 30px;
 }
 
 #tab_bar {
@@ -975,10 +1000,29 @@ input.recipient_box {
     height: 6px;
 }
 
+.navbar-top {
+    background: rgb(172,197,193); /* Old browsers */
+    background: -moz-linear-gradient(top,  rgba(172,197,193,1) 0%, rgba(220,241,234,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(172,197,193,1)), color-stop(100%,rgba(220,241,234,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(172,197,193,1) 0%,rgba(220,241,234,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(172,197,193,1) 0%,rgba(220,241,234,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(172,197,193,1) 0%,rgba(220,241,234,1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  rgba(172,197,193,1) 0%,rgba(220,241,234,1) 100%); /* W3C */
+
+    background-image: url(/static/images/backgrounds/header.jpg);
+    background-size: 180px 180px;
+
+    border-bottom: 1px solid #314945;
+
+    position: relative;
+}
+
+
 #navbar-buttons {
-    display: table-cell;
     white-space: nowrap;
-    width: 1%;
+    position: absolute;
+    right: 0px;
+    top: 2px;
 }
 
 #navbar-buttons ul.nav {
@@ -992,26 +1036,120 @@ input.recipient_box {
     width: -moz-max-content;
 }
 
+#navbar-buttons ul.nav .dropdown-toggle {
+    font-size: 18px;
+    margin-top: 4px;
+    color: #87cbc0;
+    text-shadow: none;
+    padding-left: 0px !important;
+}
+
+#navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
+    background: none;
+    color: #fff;
+    text-shadow: none;
+}
+
+#searchbox .input-append {
+    position: relative;
+    width: 100%;
+}
+
+#searchbox .input-append .icon-vector-search {
+    padding: 0px;
+    position: absolute;
+    left: 11px;
+    top:8px; 
+    z-index:5;
+}
+
 #searchbox_form {
-    width: 99%;
-    padding-right: 10px;
+    width: 100%;
 }
 
 #search_query {
-    width:       95%;
-    line-height: normal;
-    font-size:   inherit;
-    height:      1.6em;
+    width:       100%;
+    font-size:   1em;
+    line-height: 20px;
+    padding: 0px;
+    color: #222;
+    height: 27px;
+    min-height: 27px;
+    border-radius: 3px;
+    box-shadow: none;
+    margin-left: 5px;
+    margin-top: 1px;
+    margin-bottom: 2px;
+    padding-left: 25px;
+    padding-right: 20px;
+    background: -moz-linear-gradient(top, rgba(14,70,67,0.2) 0%, rgba(14,83,68,0.2) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(14,70,67,0.2)), color-stop(100%,rgba(14,83,68,0.2))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, rgba(14,70,67,0.2) 0%,rgba(14,83,68,0.2) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, rgba(14,70,67,0.2) 0%,rgba(14,83,68,0.2) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, rgba(14,70,67,0.2) 0%,rgba(14,83,68,0.2) 100%); /* IE10+ */
+    background: linear-gradient(to bottom, rgba(14,70,67,0.2) 0%,rgba(14,83,68,0.2) 100%); /* W3C */
+    background: rgb(255,255,255); /* Old browsers */
+    border: none;
+    border-top: 1px solid #777;
+    border-left: 1px solid #777;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7);
+    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7);
+    -moz-mox-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7);
+    font-family: 'Humbug';
 }
-@media (max-width: 480px) {
-    /* This is a hack to keep the search box from overflowing outside the
-       message area -- really the formula should be something like
-       [message area width] - [search query horizontal overhead] At
-       narrow widths, the overhead is a larger % of the window width.
-       */
+
+
+#search_query:focus {
+     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7), 0px 0px 8px rgba(255,255,255, 0.3);
+    -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7), 0px 0px 8px rgba(255,255,255, 0.3);
+    -moz-mox-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7), 0px 0px 8px rgba(255,255,255, 0.3);
+}
+
+#searchbox .search_button, #searchbox .search_button[disabled]:hover {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    background: none;
+    border-radius: 0px;
+    border: none;
+    height: 30px;
+    text-align: center;
+    padding: 4px;
+    color: #ccc;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    text-shadow: none;
+    z-index:5;
+}
+
+#searchbox .search_button:hover {
+    color: #000;
+}
+
+#searchbox .search_button[disabled] {
+    visibility: hidden;
+}
+
+@media (max-width: 767px) {
+
     #search_query {
-        width: 90%;
+        width: 100%;
+        margin-left: 40px;
     }
+
+    #navbar-middle {
+        padding-right: 75px;
+    }
+
+    #searchbox .input-append .icon-vector-search {
+        left: 46px;
+    }
+
+    #searchbox .search_button, #searchbox .search_button[disabled]:hover {
+        right: -35px;
+    }
+
 }
 
 .highlight {
@@ -1031,7 +1169,6 @@ input.recipient_box {
 }
 
 #search_arrows {
-    width: 99%;
     margin-bottom: 5px;
 
     /* Bootstrap wants font-size: 0 to eliminate space between
@@ -1041,11 +1178,6 @@ input.recipient_box {
     letter-spacing: -.3em;
 }
 
-#searchbox .search_button {
-    height: 30px;
-    text-align: center;
-    padding: 4px 10px 4px 10px;
-}
 
 #floating_recipient_bar {
     position: fixed;

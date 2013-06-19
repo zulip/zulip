@@ -1,19 +1,20 @@
 <div class="navbar navbar-fixed-top" id="top_navbar">
-  <div class="navbar-inner">
+  <div class="navbar-top">
     <div class="container-fluid">
-      <div class="row-fluid">
+      <div class="row-fluid position-relative">
         <div class="span2 hidden-phone">
-          <a class="brand" href="#">Humbug</a>
+          <a class="brand logo" href="#">Humbug</a>
         </div>
         <div class="span8" id="navbar-middle">
           <a class="brand skinny-user-gravatar visible-phone" href="#"
              title="{{user_profile.full_name}} - {{user_profile.email}}">
             <div class="gravatar-profile"
-                 style="background-image: url('{{ avatar_url }}&s=30');"></div>
+                 style="background-image: url('{{ avatar_url }}&s=50');"></div>
           </a>
           <div id="searchbox">
             <form id="searchbox_form" class="form-search navbar-search">
               <div id="search_arrows" class="input-append">
+                <i class="icon-vector-search"></i>
                 <input class="search-query input-block-level" id="search_query" type="text" placeholder="Search…"
                        autocomplete="off">
                 {# Start the button off disabled since there is no active search #}
@@ -21,24 +22,13 @@
               </div>
             </form>
           </div>{# /searchbox #}
+        </div>
 
           <div id="navbar-buttons">
             <ul class="nav" role="navigation">
-              {# stuff that gets visible in skinny mode #}
-              <li class="visible-phone" title="New stream message">
-                <a href="#" class="compose_stream_button">
-                  <i class="icon-vector-bullhorn"></i>
-                </a>
-              </li>
-              <li class="visible-phone" title="New private message">
-                <a href="#" class="compose_private_button">
-                  <i class="icon-vector-user"></i>
-                </a>
-              </li>
-              {# /stuff that gets visible in skinny mode #}
               <li class="dropdown" id="gear-menu">
                 <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
-                  <i class="icon-vector-cog"></i></span><b class="caret"></b>
+                  <i class="icon-vector-cog"></i>
                 </a>
                 <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="settings-dropdown">
                   <li title="Messages">
@@ -95,7 +85,6 @@
                 </ul>
               </li>
             </ul>
-          </div>
         </div>
       </div>
       <div class="row-fluid">
