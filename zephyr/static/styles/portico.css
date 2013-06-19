@@ -1,5 +1,12 @@
 .container-fluid {
     padding: 0px;
+    min-height: 100%;
+
+    /* Hack for IE */
+    height: auto !important;
+    height: 100%;
+
+    margin: 0 auto -41px;
 }
 
 /* This is a hack so that our main content
@@ -21,9 +28,18 @@
     -moz-border-radius: 0px;
 }
 
+.footer, .push {
+    height: 41px;
+}
+
+html {
+    height: 100%;
+}
+
 body {
     font-family: 'Humbug', Helvetica, Arial, sans-serif;
     line-height: 150%;
+    height: 100%;
 }
 
 li {

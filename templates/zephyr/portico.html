@@ -44,18 +44,20 @@ hence the name.
   </div>
   {% endblock %}
 
-  <div class="navbar">
-    <div class="content">
-      <ul class="nav pull-right">
-        <li><span class="navbar-text">Humbug © 2013</span></li>
-        <li><span class="navbar-text little-bullet">·</span></li>
-        <li><a href="/terms">Legal</a></li>
-        <li><span class="navbar-text">·</span></li>
-        <li><a href="/accounts/login/?next=/">Log in</a></li>
-        <li><span class="navbar-text">·</span></li>
-        <li><a href="{% url 'signup' %}">Sign up</a></li>
-      </ul>
-    </div>
+  <div class="push"></div>
+</div>
+
+<div class="navbar footer">
+  <div class="content">
+    <ul class="nav pull-right">
+      <li><span class="navbar-text">Humbug © 2013</span></li>
+      <li><span class="navbar-text little-bullet">·</span></li>
+      <li><a href="/terms">Legal</a></li>
+      <li><span class="navbar-text">·</span></li>
+      <li><a href="/accounts/login/?next=/">Log in</a></li>
+      <li><span class="navbar-text">·</span></li>
+      <li><a href="{% url 'signup' %}">Sign up</a></li>
+    </ul>
   </div>
 </div>
 {% endblock %}
