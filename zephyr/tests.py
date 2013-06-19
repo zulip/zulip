@@ -194,7 +194,6 @@ class PublicURLTest(TestCase):
     Account creation URLs are accessible even when not logged in. Authenticated
     URLs redirect to a page.
     """
-    fixtures = ['messages.json']
 
     def fetch(self, method, urls, expected_status):
         for url in urls:
@@ -254,7 +253,6 @@ class LoginTest(AuthedTestCase):
     """
     Logging in, registration, and logging out.
     """
-    fixtures = ['messages.json']
 
     def test_login(self):
         self.login("hamlet@humbughq.com")
@@ -295,7 +293,6 @@ class LoginTest(AuthedTestCase):
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
 class PersonalMessagesTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def test_auto_subbed_to_personals(self):
         """
@@ -387,7 +384,6 @@ class PersonalMessagesTest(AuthedTestCase):
         self.assert_personal("hamlet@humbughq.com", "othello@humbughq.com", u"hümbüǵ")
 
 class StreamMessagesTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def assert_stream_message(self, stream_name, subject="test subject",
                               content="test content"):
@@ -448,7 +444,6 @@ class StreamMessagesTest(AuthedTestCase):
                                    content=u"hümbüǵ")
 
 class PointerTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def test_update_pointer(self):
         """
@@ -508,7 +503,6 @@ class PointerTest(AuthedTestCase):
         self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
 
 class MessagePOSTTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def test_message_to_self(self):
         """
@@ -610,7 +604,6 @@ class MessagePOSTTest(AuthedTestCase):
         self.assert_json_success(result)
 
 class SubscriptionPropertiesTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def test_get_stream_color(self):
         """
@@ -706,7 +699,6 @@ class SubscriptionPropertiesTest(AuthedTestCase):
                                "Unknown subscription property: bad")
 
 class SubscriptionAPITest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def setUp(self):
         """
@@ -1033,7 +1025,6 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assert_json_error(result, "Invalid characters in stream name")
 
 class GetOldMessagesTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def post_with_params(self, modified_params):
         post_params = {"anchor": 1, "num_before": 1, "num_after": 1}
@@ -1253,7 +1244,6 @@ class GetOldMessagesTest(AuthedTestCase):
             "Invalid narrow operator: unknown user")
 
 class InviteUserTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def invite(self, users, streams):
         """
@@ -1407,7 +1397,6 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assert_json_success(self.invite(invitee, [stream_name]))
 
 class ChangeSettingsTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def post_with_params(self, modified_params):
         post_params = {"full_name": "Foo Bar",
@@ -1479,7 +1468,6 @@ class ChangeSettingsTest(AuthedTestCase):
         self.assert_json_error(result, "Wrong password!")
 
 class S3Test(AuthedTestCase):
-    fixtures = ['messages.json']
     test_uris = []
 
     def test_file_upload(self):
@@ -1561,7 +1549,6 @@ class POSTRequestMock(object):
         self.META = {'PATH_INFO': 'test'}
 
 class GetUpdatesTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def common_test_get_updates(self, view_func, extra_post_data = {}):
         user_profile = self.get_user_profile("hamlet@humbughq.com")
@@ -1615,7 +1602,6 @@ class GetUpdatesTest(AuthedTestCase):
         self.assertRaises(RequestVariableConversionError, json_get_updates, request)
 
 class GetProfileTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def common_update_pointer(self, email, pointer):
         self.login(email)
@@ -1665,7 +1651,6 @@ class GetProfileTest(AuthedTestCase):
         self.assertEqual(json["pointer"], 1)
 
 class GetPublicStreamsTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def test_public_streams(self):
         """
@@ -1684,7 +1669,6 @@ class GetPublicStreamsTest(AuthedTestCase):
         self.assertIsInstance(json["streams"], list)
 
 class InviteOnlyStreamTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def common_subscribe_to_stream(self, email, streams, extra_post_data = {}, invite_only=False):
         api_key = self.get_api_key(email)
@@ -1758,7 +1742,6 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assertTrue('hamlet@humbughq.com' in json['subscribers'])
 
 class GetSubscribersTest(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def setUp(self):
         self.email = "hamlet@humbughq.com"
@@ -2324,7 +2307,6 @@ But you can never leave**"""
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.humbughq.com/ticket/224" target="_blank" title="https://trac.humbughq.com/ticket/224">trac #224</a> and <a href="https://trac.humbughq.com/ticket/115" target="_blank" title="https://trac.humbughq.com/ticket/115">Trac #115</a>, but not Ztrac #124 or trac #1124Z today.</p>')
 
 class UserPresenceTests(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def common_init(self, email):
         self.login(email)
@@ -2432,7 +2414,6 @@ class UserPresenceTests(AuthedTestCase):
             self.assertEqual(email.split('@')[1], 'humbughq.com')
 
 class UnreadCountTests(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def test_initial_counts(self):
         # All test users have a pointer at -1, so all messages are read
@@ -2506,7 +2487,6 @@ class UnreadCountTests(AuthedTestCase):
             self.assertEqual(msg['flags'], [])
 
 class StarTests(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def change_star(self, messages, add=True):
         return self.client.post("/json/update_message_flags",
@@ -2557,7 +2537,6 @@ class StarTests(AuthedTestCase):
         self.assertFalse(sent_message.flags.starred)
 
 class JiraHookTests(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def send_jira_message(self, action):
         email = "hamlet@humbughq.com"
@@ -2667,7 +2646,6 @@ class JiraHookTests(AuthedTestCase):
         self.assertEqual(msg.content, """Leo Franchi [Administrator] **transitioned** [TEST-7](https://lfranchi-test.atlassian.net/browse/TEST-7) from Open to Resolved""")
 
 class BeanstalkHookTests(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def http_auth(self, username, password):
         import base64
@@ -2717,7 +2695,6 @@ class BeanstalkHookTests(AuthedTestCase):
 > Added some code""")
 
 class GithubHookTests(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def assert_content(self, msg):
         self.assertEqual(msg.content, """rtomayko [pushed](http://github.com/mojombo/grit/compare/4c8124f...a47fd41) to branch master
@@ -2800,7 +2777,6 @@ class GithubHookTests(AuthedTestCase):
         self.assert_content(msg)
 
 class PivotalHookTests(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def send_pivotal_message(self, name):
         email = "hamlet@humbughq.com"
@@ -2873,7 +2849,6 @@ class PivotalHookTests(AuthedTestCase):
 [(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)')
 
 class RateLimitTests(AuthedTestCase):
-    fixtures = ['messages.json']
 
     def setUp(self):
         settings.RATE_LIMITING = True
