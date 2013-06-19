@@ -1430,9 +1430,6 @@ $(function () {
     $('.change_gravatar_button').click(function (e) {
         ui.wait_for_gravatar();
     });
-    $('.declare_bankruptcy_button').click(function (e) {
-        fast_forward_pointer(this);
-    });
 
     $('body').on('click', '.respond_button', function (e) {
         respond_to_message({trigger: 'popover respond'});
