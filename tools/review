@@ -438,7 +438,7 @@ def main(args):
     print >>sys.stdout
     print >>sys.stdout, msg.get_payload(decode=True),
   else:
-    sys.path.append(os.path.join(os.path.dirname(__file__), '../api'))
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../api'))
     import humbug
     client = humbug.Client(
         email=get_current_user_email(repo),
