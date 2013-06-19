@@ -34,7 +34,7 @@ from zephyr.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_unique, is_inactive, isnt_mit
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_openid_auth.views import default_render_failure, login_complete
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
 from openid.extensions import ax
@@ -187,7 +187,20 @@ def rest_dispatch(request, **kwargs):
             del kwargs[arg]
     if request.method in supported_methods.keys():
         target_function = globals()[supported_methods[request.method]]
-        target_function = authenticated_rest_api_view(target_function)
+        # We want to support authentication by both cookies (web client)
+        # and API keys (API clients). In the former case, we want to
+        # do a check to ensure that CSRF etc is honored, but in the latter
+        # we can skip all of that.
+        #
+        # Security implications of this portion of the code are minimal,
+        # as we should worst-case fail closed if we miscategorise a request.
+        if request.user.is_authenticated():
+            # Authenticated via sessions framework, only CSRF check needed
+            target_function = csrf_protect(authenticated_json_view(target_function))
+        else:
+            # Wrap function with decorator to authenticate the user before
+            # proceeding
+            target_function = authenticated_rest_api_view(target_function)
         if request.method not in ["GET", "POST"]:
             # process_as_post needs to be the outer decorator, because
             # otherwise we might access and thus cache a value for
