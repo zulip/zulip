@@ -1,59 +1,59 @@
 [
     {
-        "endpoint": "GET /api/v1/messages/latest", 
+        "endpoint": "GET /api/v1/messages/latest",
         "example_response": "<div class=\"codehilite\"><pre><span class=\"p\">{</span> <span class=\"s2\">\"messages\"</span> <span class=\"o\">:</span> <span class=\"p\">[</span> <span class=\"p\">{</span> <span class=\"s2\">\"client\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"website\"</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"content\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"hi\"</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"content_type\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"text/x-markdown\"</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"display_recipient\"</span> <span class=\"o\">:</span> <span class=\"p\">[</span> <span class=\"p\">{</span> <span class=\"s2\">\"email\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"wdaher@humbughq.com\"</span><span class=\"p\">,</span>\n              <span class=\"s2\">\"full_name\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"Waseem Daher\"</span><span class=\"p\">,</span>\n              <span class=\"s2\">\"short_name\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"wdaher\"</span>\n            <span class=\"p\">},</span>\n            <span class=\"p\">{</span> <span class=\"s2\">\"email\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"othello-bot@humbughq.com\"</span><span class=\"p\">,</span>\n              <span class=\"s2\">\"full_name\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"Othello, Moor of Venice\"</span><span class=\"p\">,</span>\n              <span class=\"s2\">\"short_name\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"othello-bot\"</span>\n            <span class=\"p\">}</span>\n          <span class=\"p\">],</span>\n        <span class=\"s2\">\"gravatar_hash\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"948fcdfa93dd8986106032f1bad7f2c8\"</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"id\"</span> <span class=\"o\">:</span> <span class=\"mi\">400</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"recipient_id\"</span> <span class=\"o\">:</span> <span class=\"mi\">101</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"sender_email\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"othello-bot@humbughq.com\"</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"sender_full_name\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"Othello, Moor of Venice\"</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"sender_short_name\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"othello-bot\"</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"subject\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"\"</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"timestamp\"</span> <span class=\"o\">:</span> <span class=\"mi\">1365532669</span><span class=\"p\">,</span>\n        <span class=\"s2\">\"type\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"private\"</span>\n      <span class=\"p\">}</span> <span class=\"p\">],</span>\n  <span class=\"s2\">\"msg\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"\"</span><span class=\"p\">,</span>\n  <span class=\"s2\">\"result\"</span> <span class=\"o\">:</span> <span class=\"s2\">\"success\"</span><span class=\"p\">,</span>\n  <span class=\"s2\">\"update_types\"</span> <span class=\"o\">:</span> <span class=\"p\">[</span> <span class=\"s2\">\"new_messages\"</span> <span class=\"p\">]</span>\n<span class=\"p\">}</span>\n</pre></div>",
         "returns": [
             [
-                "messages", 
+                "messages",
                 "an array (possibly zero-length if dont_block is set) of messages with IDs newer than `last_message`"
             ]
-        ], 
-        "call": "Poll for new messages", 
+        ],
+        "call": "Poll for new messages",
         "arguments": [
             [
-                "last", 
+                "last",
                 "(optional) Indicates the highest message ID that the client is not interested in. They are implicitly interested in all messages with ids higher than this. If the `last` argument is not present, the server assumes a value equal to the highest existing message ID."
-            ], 
+            ],
             [
-                "dont_block", 
+                "dont_block",
                 "set to \u201ctrue\u201d if the client is requesting a nonblocking reply"
             ]
-        ], 
+        ],
         "example_request": {
-            "python": "<div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">get_messages<span class=\"p\">()</span>\n</span></pre></div>", 
+            "python": "<div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">get_messages<span class=\"p\">()</span>\n</span></pre></div>",
             "curl": "<div class=\"codehilite\"><pre>curl -G https://humbughq.com/api/v1/messages/latest <span class=\"se\">\\</span>\n -u othello-bot@example.com:a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 <span class=\"se\">\\</span>\n -d <span class=\"s2\">\"last=102345\"</span>\n</pre></div>"
         }
-    }, 
+    },
     {
-        "endpoint": "POST /api/v1/messages", 
-        "example_response": "<div class=\"codehilite\"><pre><span class=\"p\">{</span><span class=\"s2\">\"msg\"</span><span class=\"o\">:</span> <span class=\"s2\">\"\"</span><span class=\"p\">,</span> <span class=\"s2\">\"result\"</span><span class=\"o\">:</span> <span class=\"s2\">\"success\"</span><span class=\"p\">}</span>\n</pre></div>", 
+        "endpoint": "POST /api/v1/messages",
+        "example_response": "<div class=\"codehilite\"><pre><span class=\"p\">{</span><span class=\"s2\">\"msg\"</span><span class=\"o\">:</span> <span class=\"s2\">\"\"</span><span class=\"p\">,</span> <span class=\"s2\">\"result\"</span><span class=\"o\">:</span> <span class=\"s2\">\"success\"</span><span class=\"p\">}</span>\n</pre></div>",
         "returns": [
             [
-                "id", 
+                "id",
                 "The ID of the newly created message."
             ]
-        ], 
-        "call": "Send a message", 
+        ],
+        "call": "Send a message",
         "arguments": [
             [
-                "type", 
+                "type",
                 "One of {private, stream}"
-            ], 
+            ],
             [
-                "content", 
+                "content",
                 "The content of the message"
-            ], 
+            ],
             [
-                "to", 
+                "to",
                 "In the case of a stream message, a string identifying the stream. In the case of a private message, a JSON-encoded list containing the usernames of the recipients."
-            ], 
+            ],
             [
-                "subject", 
+                "subject",
                 "The subject for the message (Only required if type is \u201cstream\u201d)"
             ]
-        ], 
+        ],
         "example_request": {
-            "python": "<div class=\"codehilite\"><pre>\n<span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">send_message</span><span class=\"p\">({</span>\n    <span class=\"s\">\"type\"</span><span class=\"p\">:</span> <span class=\"s\">\"private\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"to\"</span><span class=\"p\">:</span> <span class=\"s\">\"wdaher@humbughq.com\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"content\"</span><span class=\"p\">:</span> <span class=\"s\">\"I come not, friends, to steal away your hearts.\"</span>\n<span class=\"p\">}</span>)\n<span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">send_message</span><span class=\"p\">(</span><span class=\"n\"><span class=\"p\">{</span>\n    <span class=\"s\">\"type\"</span><span class=\"p\">:</span> <span class=\"s\">\"stream\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"to\"</span><span class=\"p\">:</span> <span class=\"s\">\"Denmark\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"subject\"</span><span class=\"p\">:</span> <span class=\"s\">\"Castle\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"content\"</span><span class=\"p\">:</span> <span class=\"s\">\"Something is rotten in the state of Denmark.\"</span>\n<span class=\"p\">}</span></span><span class=\"p\">)</span>\n</pre></div>\n", 
+            "python": "<div class=\"codehilite\"><pre>\n<span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">send_message</span><span class=\"p\">({</span>\n    <span class=\"s\">\"type\"</span><span class=\"p\">:</span> <span class=\"s\">\"private\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"to\"</span><span class=\"p\">:</span> <span class=\"s\">\"wdaher@humbughq.com\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"content\"</span><span class=\"p\">:</span> <span class=\"s\">\"I come not, friends, to steal away your hearts.\"</span>\n<span class=\"p\">}</span>)\n<span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">send_message</span><span class=\"p\">(</span><span class=\"n\"><span class=\"p\">{</span>\n    <span class=\"s\">\"type\"</span><span class=\"p\">:</span> <span class=\"s\">\"stream\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"to\"</span><span class=\"p\">:</span> <span class=\"s\">\"Denmark\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"subject\"</span><span class=\"p\">:</span> <span class=\"s\">\"Castle\"</span><span class=\"p\">,</span>\n    <span class=\"s\">\"content\"</span><span class=\"p\">:</span> <span class=\"s\">\"Something is rotten in the state of Denmark.\"</span>\n<span class=\"p\">}</span></span><span class=\"p\">)</span>\n</pre></div>\n",
             "curl": "<h5>Stream message</h5>\n<div class=\"codehilite\"><pre>curl https://humbughq.com/api/v1/messages <span class=\"se\">\\</span>\n    -u BOT_EMAIL_ADDRESS:BOT_API_KEY <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"type=stream\"</span> <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"to=Denmark\"</span> <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"subject=Castle\"</span> <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"content=Something is rotten in the state of Denmark.\"</span>\n</pre></div>\n<h5>Private message</h5>\n<div class=\"codehilite\"><pre>curl https://humbughq.com/api/v1/messages <span class=\"se\">\\</span>\n    -u BOT_EMAIL_ADDRESS:BOT_API_KEY <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"type=private\"</span> <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"to=wdaher@humbughq.com\"</span> <span class=\"se\">\\</span>\n    -d <span class=\"s2\">\"content=I come not, friends, to steal away your hearts.\"</span>\n</pre></div>"
         }
     }
