@@ -2895,6 +2895,11 @@ class RateLimitTests(AuthedTestCase):
     def test_headers(self):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
+
+        # Sleep 1 second and succeed again
+        import time
+        time.sleep(1)
+
         result = self.send_api_message(email, api_key, "some stuff")
         self.assertTrue('X-RateLimit-Remaining' in result)
         self.assertTrue('X-RateLimit-Limit' in result)
@@ -2921,7 +2926,7 @@ class RateLimitTests(AuthedTestCase):
         self.assertEqual(json.get("result"), "error")
         self.assertIn("API usage exceeded rate limit, try again in", json.get("msg"))
 
-        # Sleep 5 seconds and succeed again
+        # Sleep 1 second and succeed again
         import time
         time.sleep(1)
         result = self.send_api_message(email, api_key, "Good message")
