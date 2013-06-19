@@ -111,7 +111,7 @@
         another step of your deployment process, if you'd like the
         notification to fire at a different time.</li>
       </ul>
-<em></em></p>
+<em></em>
 
       <p><b>Congratulations! You're done!</b><br /> Whenever you do a
       deployment, you'll get an automated notification that looks like
@@ -235,8 +235,7 @@ following, to the stream <code>commits</code> with a subject that matches the re
           <li>Does the stream you picked (e.g. <code>jenkins</code>) already exist? If not, add yourself to it and try again.</li>
           <li>Are your access key and email address correct? Test them using <a href="/api">our curl API</a>.
           <li>Still stuck? Email <a href="mailto:support@humbughq.com?subject=Jenkins">support@humbughq.com</a>.</li>
-      </p>
-
+        </ul>
       <p>
         <a href="#services">^ Back to top</a>
       </p>
@@ -251,11 +250,11 @@ following, to the stream <code>commits</code> with a subject that matches the re
       mechanism that supports older versions of JIRA.
       <p>In your JIRA administration control panel, go to the Webhooks page. If you are using the OnDemand
         hosted JIRA, follow the instructions <a href="https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview#JIRAWebhooksOverview-WhereistheJIRAAdministrationUIforwebhooks?">
-        on the Atlassian wiki</a> for locating the Webhook UI</a>.
+        on the Atlassian wiki</a> for locating the Webhook UI.
       </p>
       <p>Give your new web hook a name, and for the URL provide the following:</p>
       <p>
-      <code>https://humbughq.com/api/v1/external/jira?api_key=abcdefgh&stream=jira</code>
+      <code>https://humbughq.com/api/v1/external/jira?api_key=abcdefgh&amp;stream=jira</code>
       </p>
 
       <p>where <code>api_key</code> is the API key of the user you
@@ -291,14 +290,14 @@ following, to the stream <code>commits</code> with a subject that matches the re
         follow the on-screen instructions and restart JIRA for it to recognize the proper certificates.
       <p><b>Humbug Integration</b></p>
         Copy the folder <code>integrations/jira/org/</code> (from the tarball you downloaded above) to your JIRA <code>classes</code> folder.
-        For self-contained JIRA installations, this will be <code>atlassian-jira/WEB-INF/classes/</code>, but this may be different in your deployment.</p>
+        For self-contained JIRA installations, this will be <code>atlassian-jira/WEB-INF/classes/</code>, but this may be different in your deployment.
         Edit the constants at the top of <code>org/humbug/jira/HumbugListener.groovy</code>
         and fill them with the appropriate values:
 <div class="codehilite"><pre><span class="n">String</span> <span class="n">humbugEmail</span> <span class="o">=</span> <span class="s2">"jira-notifications-bot@example.com"</span>
 <span class="n">String</span> <span class="n">humbugAPIKey</span> <span class="o">=</span> <span class="s2">"0123456789abcdef0123456789abcdef"</span>
 <span class="n">String</span> <span class="n">humbugStream</span> <span class="o">=</span> <span class="s2">"JIRA"</span>
 <span class="n">String</span> <span class="n">issueBaseUrl</span> <span class="o">=</span> <span class="s2">"https://jira.COMPANY.com/browse/"</span>
-</pre></div></p>
+</pre></div>
       <p>In the Administrators page, navigate to <code>Plugins > Other > Script Listeners</code>. In the <code>Add Listener</code> section, click on
         the <code>Custom Listener</code> option. Select the events you wish the Humbug integration to fire for, and the projects you wish Humbug to be notified for.
         In the <code>Name of groovy class</code> field, enter <code>org.humbug.jira.HumbugListener</code>.
@@ -346,7 +345,7 @@ key=NAGIOS_BOT_API_KEY
 </pre></div>
 
       Once you've done that, reload your Nagios configuration
-      using <code>/etc/init.d/nagios3 reload</code>.</p>
+      using <code>/etc/init.d/nagios3 reload</code>.
 
       <p><b>Congratulations! You're done!</b><br /> When your Nagios
       system makes an alert, you'll see a message like the following,
@@ -382,7 +381,7 @@ key=NAGIOS_BOT_API_KEY
      <p>Humbug supports Pivotal Tracker integration and can notify you of changes to the stories in your Pivotal Tracker project. In the Settings page
       for your project, choose the Integrations tab. Scroll down to the <code>Activity Web Hook</code> section, and enter the following url:</p>
 
-      <p><code>https://humbughq.com/api/v1/external/pivotal?api_key=abcdefgh&stream=pivotal</code></p>
+      <p><code>https://humbughq.com/api/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
 
       <p>where <code>api_key</code> is the API key of the user you
       want updates to be sent as, and <code>stream</code> is the stream name you want the notifications sent to, and the stream must already exist.</p>
@@ -480,6 +479,7 @@ key=NAGIOS_BOT_API_KEY
         <a href="#services">^ Back to top</a>
       </p>
     </div>
+  </div>
 </div>
 
 {% endblock %}

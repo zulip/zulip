@@ -30,7 +30,7 @@
 {% autoescape off %}
 
 {% for blurb in content %}
-<div class="api-block" id="{{ blurb.call }}">
+<div class="api-block">
     <h2 class="call">{{ blurb.call }}</h2>
     <div class="endpoint"><code>{{ blurb.endpoint }}</code></div>
     <div class="api-details">
@@ -46,7 +46,6 @@
         {% for return in blurb.returns %}
             <dt><code>{{ return.0 }}</code></dt>
             <dd>{{ return.1 }}</dd>
-            </li>
         {% endfor %}
         </dl>
         {%if blurb.example_request %}
@@ -69,6 +68,5 @@
 
       </div>
     </div>
-</div>
 
 {% endblock %}
