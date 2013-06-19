@@ -204,10 +204,18 @@ function process_hotkey(e) {
     }
 
     switch (event_name) {
+    case 'narrow_by_recipient':
+        return do_narrow_action(narrow.by_recipient);
+    case 'narrow_by_subject':
+        return do_narrow_action(narrow.by_subject);
     case 'narrow_private':
         return do_narrow_action(function (target, opts) {
             narrow.by('is', 'private-message', opts);
         });
+    }
+
+
+    switch (event_name) {
     case 'page_up':
         if (viewport.at_top() && !current_msg_list.empty()) {
             current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
@@ -241,42 +249,23 @@ function process_hotkey(e) {
         compose.set_mode('private');
         respond_to_sent_message = true;
         return true;
+    case  'enter': // Enter: respond to message (unless we need to do something else)
+        respond_to_cursor = true;
+        respond_to_message({trigger: 'hotkey enter'});
+        return true;
+    case 'reply_message': // 'r': respond to message
+        respond_to_cursor = true;
+        respond_to_message({trigger: 'hotkey'});
+        return true;
+    case 'respond_to_author': // 'R': respond to author
+        respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
+        return true;
     case 'search':
         search.initiate_search();
         return true;
     case 'show_shortcuts': // Show keyboard shortcuts page
         $('#keyboard-shortcuts').modal('show');
         return true;
-    }
-
-
-    if (ui.pointer_visible()) {
-        // These actions act on the message under the pointer and don't make
-        // sense when the pointer is hidden.
-        switch (event_name) {
-        case 'narrow_by_recipient':
-            return do_narrow_action(narrow.by_recipient);
-        case 'narrow_by_subject':
-            return do_narrow_action(narrow.by_subject);
-        case  'enter': // Enter: respond to message (unless we need to do something else)
-            respond_to_cursor = true;
-            respond_to_message({trigger: 'hotkey enter'});
-            return true;
-        case 'reply_message': // 'r': respond to message
-            respond_to_cursor = true;
-            respond_to_message({trigger: 'hotkey'});
-            return true;
-        case 'respond_to_author': // 'R': respond to author
-            respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
-            return true;
-        }
-    } else {
-        // Behavior when cursor is hidden
-        switch (event_name) {
-        case 'enter':
-            ui.show_pointer(true);
-            return true;
-        }
     }
 
     return false;
