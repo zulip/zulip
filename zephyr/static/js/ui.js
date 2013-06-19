@@ -18,8 +18,6 @@ exports.home_tab_obscured = function () {
 var scroll_positions = {};
 var gravatar_stamp = 1;
 
-var pointer_visible = false;
-
 exports.change_tab_to = function (tabname) {
     $('#gear-menu a[href="' + tabname + '"]').tab('show');
 };
@@ -733,10 +731,6 @@ exports.stream_sidebar_currently_popped = function () {
     return current_stream_sidebar_elem !== undefined;
 };
 
-exports.show_pointer = function () {
-    pointer_visible = true;
-};
-
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
@@ -1223,10 +1217,7 @@ $(function () {
         }
         var row = rows.get(event.id, event.msg_list.table_name);
         $('.selected_message').removeClass('selected_message');
-
-        if (pointer_visible) {
-            row.addClass('selected_message');
-        }
+        row.addClass('selected_message');
 
         if (event.then_scroll) {
             recenter_view(row, event.from_scroll);
