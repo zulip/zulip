@@ -1610,6 +1610,8 @@ exports.set_presence_list = function (users, presence_info) {
             args.my_fullname = true;
         }
         var entry = templates.render('user_presence_row', args);
+        // We get strange JQuery tracebacks in Firefox if we don't $-ify entry.
+        entry = $(entry);
         $('#user_presences').append(entry);
     }
 
