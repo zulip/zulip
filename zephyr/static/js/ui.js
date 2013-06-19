@@ -1576,6 +1576,10 @@ $(function () {
         compose.cancel();
     });
 
+    $('#yes-bankrupt').click(function (e) {
+        fast_forward_pointer(this);
+    });
+
     // initialize other stuff
     composebox_typeahead.initialize();
     search.initialize();

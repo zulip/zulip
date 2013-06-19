@@ -1058,6 +1058,22 @@ function load_old_messages(opts) {
 // get the initial message list
 $(function () {
     function load_more(messages) {
+
+        // Before trying to load anything: is this user way behind?
+        var last_read_message = home_msg_list.get(home_msg_list.closest_id(page_params.initial_pointer));
+        if (last_read_message !== undefined) {
+            var now = new XDate().getTime() / 1000;
+            var num_unread = unread.get_counts().home_unread_messages;
+
+            if ((num_unread > 500) &&
+                (now - last_read_message.timestamp > 60 * 60 * 24 * 2)) { // 2 days.
+                var unread_info = templates.render('bankruptcy_modal',
+                                                   {"unread_count": num_unread});
+                $('#bankruptcy-unread-count').html(unread_info);
+                $('#bankruptcy').modal('show');
+            }
+        }
+
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
         //
