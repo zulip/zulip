@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
+import pwd
 import subprocess
 import pylibmc
 import traceback
@@ -16,7 +17,7 @@ os.chdir(deploy_path)
 
 if os.path.exists("/etc/humbug-server"):
     with open("/etc/humbug-machinetype") as mtf:
-        if os.getlogin() != "humbug":
+        if pwd.getpwuid(os.getuid())[0] != "humbug":
             logging.error("Must be run as user 'humbug'.")
             sys.exit(1)
 
