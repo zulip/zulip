@@ -412,11 +412,10 @@ function mark_read_between(msg_list, start_id, end_id) {
     process_read_messages(mark_as_read);
 }
 
-function send_pointer_update() {
-    if (!pointer_update_in_flight &&
-        furthest_read > server_furthest_read) {
+function update_pointer() {
+    if (!pointer_update_in_flight) {
         pointer_update_in_flight = true;
-        $.ajax({
+        return $.ajax({
             type:     'POST',
             url:      '/json/update_pointer',
             data:     {pointer: furthest_read},
@@ -429,6 +428,25 @@ function send_pointer_update() {
                 pointer_update_in_flight = false;
             }
         });
+    } else {
+        // Return an empty, resolved Deferred.
+        return $.when();
+    }
+}
+
+function send_pointer_update() {
+    // Only bother if you've read new messages.
+    if (furthest_read > server_furthest_read) {
+        update_pointer();
+    }
+}
+
+function unconditionally_send_pointer_update() {
+    if (pointer_update_in_flight) {
+        // Keep trying.
+        return unconditionally_send_pointer_update();
+    } else {
+        return update_pointer();
     }
 }
 
@@ -1214,9 +1232,10 @@ function fast_forward_pointer() {
         success: function (data) {
             mark_all_as_read(function () {
                 furthest_read = data.max_message_id;
-                send_pointer_update();
-                ui.change_tab_to('#home');
-                reload.initiate({immediate: true});
+                unconditionally_send_pointer_update().then(function () {
+                    ui.change_tab_to('#home');
+                    reload.initiate({immediate: true});
+                });
             });
         }
     });
