@@ -925,10 +925,18 @@ $(function () {
         }
     });
 
-    // N.B. that subs.setup_page calls focus() on our stream textbox,
-    // which may cause the page to scroll away from where we used to
-    // have it (and instead to scroll to a weird place.)
-    $('#gear-menu a[href="#subscriptions"]').on('shown', subs.setup_page);
+    var subs_link = $('#gear-menu a[href="#subscriptions"]');
+
+    // If the streams page is shown by clicking directly on the "Streams"
+    // link (in the gear menu), then focus the new stream textbox.
+    subs_link.on('click', function (e) {
+        $(document).one('subs_page_loaded.zephyr', function (e) {
+            $('#create_stream_name').focus().select();
+        });
+    });
+
+    // Whenever the streams page comes up (from anywhere), populate it.
+    subs_link.on('shown', subs.setup_page);
 
     $('#pw_change_link').on('click', function (e) {
         e.preventDefault();

@@ -582,7 +582,6 @@ exports.setup_page = function () {
             templates.render('subscription', {subscriptions: sub_rows}));
 
         util.destroy_loading_indicator($('#subs_page_loading_indicator'));
-        $('#create_stream_name').focus().select();
         $(document).trigger($.Event('subs_page_loaded.zephyr'));
     }
 
