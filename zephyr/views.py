@@ -855,18 +855,21 @@ def get_old_messages_backend(request, user_profile,
     # 'messages' list.
     search_fields = dict()
     message_ids = []
+    user_message_flags = {}
     if include_history:
-        user_messages = dict((user_message.message_id, user_message) for user_message in
-                             UserMessage.objects.filter(user_profile=user_profile,
-                                                        message__in=query_result))
+        user_message_flags = dict((user_message.message_id, user_message.flags_list()) for user_message in
+                                  UserMessage.objects.filter(user_profile=user_profile,
+                                                             message__in=query_result))
         for message in query_result:
             message_ids.append(message.id)
+            if user_message_flags.get(message.id) is None:
+                user_message_flags[message.id] = ["read", "historical"]
             if is_search:
                 search_fields[message.id] = dict([('match_subject', message.match_subject),
                                                   ('match_content', message.match_content)])
     else:
-        user_messages = dict((user_message.message_id, user_message)
-                             for user_message in query_result)
+        user_message_flags = dict((user_message.message_id, user_message.flags_list())
+                                  for user_message in query_result)
         for user_message in query_result:
             message_ids.append(user_message.message_id)
             if is_search:
@@ -897,14 +900,10 @@ def get_old_messages_backend(request, user_profile,
 
     message_list = []
     for message_id in message_ids:
-        if include_history:
-            flags_dict = {'flags': ["read", "historical"]}
-        if message_id in user_messages:
-            flags_dict = user_messages[message_id].flags_dict()
         key = to_dict_cache_key_id(message_id, apply_markdown)
         elt = bulk_messages.get(key)
         msg_dict = dict(elt)
-        msg_dict.update(flags_dict)
+        msg_dict.update({"flags": user_message_flags[message_id]})
         msg_dict.update(search_fields.get(elt['id'], {}))
         message_list.append(msg_dict)
 
