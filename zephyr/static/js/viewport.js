@@ -6,7 +6,7 @@ var dimensions = {};
 var in_stoppable_autoscroll = false;
 
 exports.at_top = function () {
-    return (jwindow.scrollTop() <= 0);
+    return (exports.scrollTop() <= 0);
 };
 
 exports.message_viewport_info = function () {
@@ -38,7 +38,7 @@ exports.message_viewport_info = function () {
 
 exports.at_bottom = function () {
     // outerHeight(true): Include margin
-    var bottom = jwindow.scrollTop() + jwindow.height();
+    var bottom = exports.scrollTop() + exports.height();
     var window_size = $(document).height();
 
     // We only know within a pixel or two if we're
@@ -49,7 +49,7 @@ exports.at_bottom = function () {
 };
 
 exports.is_below_visible_bottom = function (offset) {
-    return offset > viewport.scrollTop() + viewport.height() - $("#compose").height();
+    return offset > exports.scrollTop() + exports.height() - $("#compose").height();
 };
 
 exports.set_message_position = function (message_top, message_height, viewport_info, ratio) {
@@ -75,7 +75,7 @@ exports.set_message_position = function (message_top, message_height, viewport_i
 
     var hidden_top =
         viewport_info.visible_top
-        - jwindow.scrollTop();
+        - exports.scrollTop();
 
     var message_offset =
         how_far_down_in_visible_page
@@ -86,7 +86,7 @@ exports.set_message_position = function (message_top, message_height, viewport_i
         - message_offset;
 
     suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
-    jwindow.scrollTop(new_scroll_top);
+    exports.scrollTop(new_scroll_top);
 };
 
 exports.scrollTop = function viewport_scrollTop () {
