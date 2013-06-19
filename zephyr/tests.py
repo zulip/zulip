@@ -2953,6 +2953,15 @@ class MyResult:
         print ''.join(traceback.format_exception(exctype, value, tb))
         sys.exit(1)
 
+    def __getattr__(self, attr):
+        print
+        print 'Attribute %s not supported' % attr
+        print '''
+            We have our own implementation of a result class that
+            may no longer be playing nice with the latest Django.
+            '''
+        sys.exit(1)
+
 class Runner(DjangoTestSuiteRunner):
     option_list = ()
 
