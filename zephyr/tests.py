@@ -25,6 +25,7 @@ import re
 import simplejson
 import subprocess
 import sys
+import traceback
 import urllib2
 from StringIO import StringIO
 
@@ -2927,11 +2928,46 @@ class RateLimitTests(AuthedTestCase):
 
         self.assert_json_success(result)
 
+class MyResult:
+    def startTest(self, test):
+        test_class = test.__class__.__name__
+        test_method = test._testMethodName
+        print 'Running %s/%s' % (test_class, test_method)
+
+    def stopTest(self, *args):
+        pass
+
+    def addSuccess(self, test):
+        pass
+
+    def addFailure(self, obj, err):
+        self._die('Failure', err)
+
+    def addError(self, obj, err):
+        self._die('Error', err)
+
+    def _die(self, failure_type, err):
+        print
+        print failure_type
+        exctype, value, tb = err
+        print ''.join(traceback.format_exception(exctype, value, tb))
+        sys.exit(1)
+
 class Runner(DjangoTestSuiteRunner):
     option_list = ()
 
     def __init__(self, *args, **kwargs):
         DjangoTestSuiteRunner.__init__(self, *args, **kwargs)
+
+    def run_suite(self, suite):
+        # This is a simplified version of run_suite
+        # that does simple iteration and plugs in our
+        # own Results class that allows us to fail fast
+        # and add easy hooks to show which tests are running
+        # in real time.
+        result = MyResult()
+        for test in suite:
+            test(result)
 
     # Subsume run_tests under our control.  This is literally copied
     # from /Library/Python/2.7/site-packages/django/test/simple.py.
@@ -2939,7 +2975,8 @@ class Runner(DjangoTestSuiteRunner):
         self.setup_test_environment()
         suite = self.build_suite(test_labels, extra_tests)
         old_config = self.setup_databases()
-        result = self.run_suite(suite)
+        self.run_suite(suite)
         self.teardown_databases(old_config)
         self.teardown_test_environment()
-        return self.suite_result(suite, result)
+        print 'DONE!'
+        print
