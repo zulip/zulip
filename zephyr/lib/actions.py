@@ -263,9 +263,10 @@ def do_send_messages(messages):
             assert((len(message['recipients']) == 1) or (len(message['recipients']) == 2))
         elif (message['message'].recipient.type == Recipient.STREAM or
               message['message'].recipient.type == Recipient.HUDDLE):
-            message['recipients'] = [s.user_profile for
-                                     s in Subscription.objects.select_related(
-                    "user_profile").filter(recipient=message['message'].recipient, active=True)]
+            query = Subscription.objects.select_related("user_profile").only(
+                "id", "user_profile__id", "user_profile__is_active").filter(
+                recipient=message['message'].recipient, active=True)
+            message['recipients'] = [s.user_profile for s in query]
         else:
             raise ValueError('Bad recipient type')
 
