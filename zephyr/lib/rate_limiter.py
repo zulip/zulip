@@ -54,6 +54,14 @@ def unblock_user(user, domain='all'):
     _, _, blocking_key = redis_key(user, domain)
     client.delete(blocking_key)
 
+def clear_user_history(user, domain='all'):
+    '''
+    This is only used by test code now, where it's very helpful in
+    allowing us to run tests quickly, by giving a user a clean slate.
+    '''
+    for key in redis_key(user, domain):
+        client.delete(key)
+
 def _get_api_calls_left(user, domain, range_seconds, max_calls):
     list_key, set_key, _ = redis_key(user, domain)
     # Count the number of values in our sorted set

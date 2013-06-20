@@ -16,6 +16,7 @@ from zephyr.lib.actions import do_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription
 from zephyr.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zephyr.lib import bugdown
+from zephyr.lib.rate_limiter import clear_user_history
 
 from django.conf import settings
 import optparse
@@ -2897,13 +2898,11 @@ class RateLimitTests(AuthedTestCase):
                                                                    "subject": "Test subject",
                                                                    "email": email,
                                                                    "api-key": api_key})
-    @slow(1.1, 'has to sleep to work')
     def test_headers(self):
         email = "hamlet@humbughq.com"
+        user = self.get_user_profile(email)
+        clear_user_history(user)
         api_key = self.get_api_key(email)
-
-        # Sleep 1 second and succeed again
-        time.sleep(1)
 
         result = self.send_api_message(email, api_key, "some stuff")
         self.assertTrue('X-RateLimit-Remaining' in result)
@@ -2912,6 +2911,8 @@ class RateLimitTests(AuthedTestCase):
 
     def test_ratelimit_decrease(self):
         email = "hamlet@humbughq.com"
+        user = self.get_user_profile(email)
+        clear_user_history(user)
         api_key = self.get_api_key(email)
         result = self.send_api_message(email, api_key, "some stuff")
         limit = int(result['X-RateLimit-Remaining'])
@@ -2923,8 +2924,11 @@ class RateLimitTests(AuthedTestCase):
     @slow(1.1, 'has to sleep to work')
     def test_hit_ratelimits(self):
         email = "cordelia@humbughq.com"
+        user = self.get_user_profile(email)
+        clear_user_history(user)
+
         api_key = self.get_api_key(email)
-        for i in range(10):
+        for i in range(6):
             result = self.send_api_message(email, api_key, "some stuff %s" % (i,))
 
         self.assertEqual(result.status_code, 403)
@@ -2932,8 +2936,11 @@ class RateLimitTests(AuthedTestCase):
         self.assertEqual(json.get("result"), "error")
         self.assertIn("API usage exceeded rate limit, try again in", json.get("msg"))
 
-        # Sleep 1 second and succeed again
+        # We actually wait a second here, rather than force-clearing our history,
+        # to make sure the rate-limiting code automatically forgives a user
+        # after some time has passed.
         time.sleep(1)
+
         result = self.send_api_message(email, api_key, "Good message")
 
         self.assert_json_success(result)
