@@ -59,6 +59,20 @@ def find_key_by_email(address):
 def message_ids(result):
     return set(message['id'] for message in result['messages'])
 
+def slow(expected_run_time, slowness_reason):
+    '''
+    This is a decorate that annotates a test as being "known
+    to be slow."  The decorator will set expected_run_time and slowness_reason
+    as atributes of the function.  Other code can use this annotation
+    as needed, e.g. to exclude these tests in "fast" mode.
+    '''
+    def decorator(f):
+        f.expected_run_time = expected_run_time
+        f.slowness_reason = slowness_reason
+        return f
+
+    return decorator
+
 class AuthedTestCase(TestCase):
     def login(self, email, password=None):
         if password is None:
@@ -1471,6 +1485,7 @@ class ChangeSettingsTest(AuthedTestCase):
 class S3Test(AuthedTestCase):
     test_uris = []
 
+    @slow(2.6, "has to contact external S3 service")
     def test_file_upload(self):
         """
         A call to /json/upload_file should return a uri and actually create an object.
@@ -2027,6 +2042,7 @@ int x = 3
         self.common_bugdown_test('__foo__', '<p>__foo__</p>')
         self.common_bugdown_test('**foo**', '<p><strong>foo</strong></p>')
 
+    @slow(1.1, 'lots of examples')
     def test_linkify(self):
         def replaced(payload, url, phrase=''):
             if url[:4] == 'http':
@@ -2674,6 +2690,7 @@ class BeanstalkHookTests(AuthedTestCase):
 * [e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df): add some stuff
 """)
 
+    @slow(1.3, 'talks to beanstalk')
     def test_git_multiple(self):
         msg = self.send_beanstalk_message('git_multiple')
         self.assertEqual(msg.subject, "work-test")
@@ -2871,6 +2888,7 @@ class RateLimitTests(AuthedTestCase):
                                                                    "subject": "Test subject",
                                                                    "email": email,
                                                                    "api-key": api_key})
+    @slow(1.1, 'has to sleep to work')
     def test_headers(self):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
@@ -2893,6 +2911,7 @@ class RateLimitTests(AuthedTestCase):
         newlimit = int(result['X-RateLimit-Remaining'])
         self.assertEqual(limit, newlimit + 1)
 
+    @slow(1.1, 'has to sleep to work')
     def test_hit_ratelimits(self):
         email = "cordelia@humbughq.com"
         api_key = self.get_api_key(email)
