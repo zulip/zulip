@@ -2274,8 +2274,11 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
                        (':even faker smile:', ':even faker smile:'),
                        ]
 
-        # Check every single emoji
-        for img in bugdown.emoji_list:
+        # Check a random sample of our 800+ emojis to make
+        # sure that bugdown builds the correct image tag.
+        emojis = bugdown.emoji_list
+        emojis = random.sample(emojis, 15)
+        for img in emojis:
             emoji_text = ":%s:" % img
             test_cases.append((emoji_text, emoji_img(emoji_text)))
 
