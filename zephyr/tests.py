@@ -2937,14 +2937,36 @@ def full_test_name(test):
 def get_test_method(test):
     return getattr(test, test._testMethodName)
 
+def enforce_timely_test_completion(test_method, test_name, delay):
+    if hasattr(test_method, 'expected_run_time'):
+        # Allow for tests to run 50% slower than normal due
+        # to random variations.
+        max_delay = 1.5 * test_method.expected_run_time
+    else:
+        max_delay = 1 # 1 second
+
+    # Further adjustments for slow laptops:
+    max_delay = max_delay * 3
+
+    if delay > max_delay:
+        print 'Test is TOO slow: %s (%.3f s)' % (test_name, delay)
+        sys.exit(1)
+
 def run_test(test):
     test_method = get_test_method(test)
     test_name = full_test_name(test)
     print 'Running %s' % (test_name,)
     test._pre_setup()
+
+    start_time = time.time()
+
     test.setUp()
     test_method()
     test.tearDown()
+
+    delay = time.time() - start_time
+    enforce_timely_test_completion(test_method, test_name, delay)
+
     test._post_teardown()
 
 class Runner(DjangoTestSuiteRunner):
