@@ -79,7 +79,7 @@ def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None)
     def decorator(func):
         @wraps(func)
         def func_with_caching(*args, **kwargs):
-            key = KEY_PREFIX + keyfunc(*args, **kwargs)
+            key = keyfunc(*args, **kwargs)
 
             val = cache_get(key, cache_name=cache_name)
 
