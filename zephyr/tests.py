@@ -2963,8 +2963,6 @@ class Runner(DjangoTestSuiteRunner):
         for test in suite:
             run_test(test)
 
-    # Subsume run_tests under our control.  This is literally copied
-    # from /Library/Python/2.7/site-packages/django/test/simple.py.
     def run_tests(self, test_labels, extra_tests=None, **kwargs):
         self.setup_test_environment()
         suite = self.build_suite(test_labels, extra_tests)
