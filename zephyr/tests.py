@@ -74,6 +74,9 @@ def slow(expected_run_time, slowness_reason):
 
     return decorator
 
+def is_known_slow_test(test_method):
+    return hasattr(test_method, 'slowness_reason')
+
 class AuthedTestCase(TestCase):
     def login(self, email, password=None):
         if password is None:
@@ -2969,8 +2972,15 @@ def enforce_timely_test_completion(test_method, test_name, delay):
         print 'Test is TOO slow: %s (%.3f s)' % (test_name, delay)
         sys.exit(1)
 
+def fast_tests_only():
+    return os.environ.get('FAST_TESTS_ONLY', False)
+
 def run_test(test):
     test_method = get_test_method(test)
+
+    if fast_tests_only() and is_known_slow_test(test_method):
+        return
+
     test_name = full_test_name(test)
     print 'Running %s' % (test_name,)
     test._pre_setup()
