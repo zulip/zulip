@@ -1257,6 +1257,10 @@ table.floating_recipient {
     line-height: inherit;
 }
 
+.popover-title:empty {
+    display: none;
+}
+
 .popover_info {
     text-align: center;
 }
