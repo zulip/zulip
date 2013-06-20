@@ -21,7 +21,7 @@ class EmailAuthBackend(object):
             return None
 
         try:
-            user_profile = UserProfile.objects.get(email__iexact=username)
+            user_profile = get_user_profile_by_email(username)
             if user_profile.check_password(password):
                 return user_profile
         except UserProfile.DoesNotExist:

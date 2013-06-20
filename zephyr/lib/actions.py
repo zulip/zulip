@@ -770,7 +770,7 @@ def do_update_user_activity(user_profile, client, query, log_time):
     activity.save(update_fields=["last_visit", "count"])
 
 def process_user_activity_event(event):
-    user_profile = UserProfile.objects.get(id=event["user_profile_id"])
+    user_profile = get_user_profile_by_id(event["user_profile_id"])
     client = get_client(event["client"])
     log_time = timestamp_to_datetime(event["time"])
     query = event["query"]
@@ -865,14 +865,14 @@ def update_message_flags(user_profile, operation, flag, messages, all):
     queue_json_publish("user_activity", event, process_update_message_flags)
 
 def process_user_presence_event(event):
-    user_profile = UserProfile.objects.get(id=event["user_profile_id"])
+    user_profile = get_user_profile_by_id(event["user_profile_id"])
     client = get_client(event["client"])
     log_time = timestamp_to_datetime(event["time"])
     status = event["status"]
     return do_update_user_presence(user_profile, client, log_time, status)
 
 def process_update_message_flags(event):
-    user_profile = UserProfile.objects.get(id=event["user_profile_id"])
+    user_profile = get_user_profile_by_id(event["user_profile_id"])
     try:
         until_id = event["until_id"]
         messages = event["messages"]
@@ -1313,7 +1313,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     message_ids = [event.get('message_id') for event in missed_email_events]
     timestamp = timestamp_to_datetime(event.get('timestamp'))
 
-    user_profile = UserProfile.objects.get(id=user_profile_id)
+    user_profile = get_user_profile_by_id(user_profile_id)
     messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
                                                                 message__id__in=message_ids,
                                                                 flags=~UserMessage.flags.read)]
