@@ -2150,6 +2150,7 @@ int x = 3
 
          # Just because it has a TLD and parentheses in it doesn't mean it's a link. Trac #1364
          ('a.commandstuff()', '<p>a.commandstuff()</p>', ''),
+         ('love...it', '<p>love...it</p>', ''),
          ]
 
         for inline_url, reference, url in conversions:
