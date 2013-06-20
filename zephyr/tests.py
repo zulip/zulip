@@ -2910,48 +2910,23 @@ class RateLimitTests(AuthedTestCase):
 
         self.assert_json_success(result)
 
-class MyResult:
-    def startTest(self, test):
-        pass
-
-    def stopTest(self, *args):
-        pass
-
-    def addSuccess(self, test):
-        pass
-
-    def addFailure(self, obj, err):
-        self._die('Failure', err)
-
-    def addError(self, obj, err):
-        self._die('Error', err)
-
-    def _die(self, failure_type, err):
-        print
-        print failure_type
-        exctype, value, tb = err
-        print ''.join(traceback.format_exception(exctype, value, tb))
-        sys.exit(1)
-
-    def __getattr__(self, attr):
-        print
-        print 'Attribute %s not supported' % attr
-        print '''
-            We have our own implementation of a result class that
-            may no longer be playing nice with the latest Django.
-            '''
-        sys.exit(1)
-
 def full_test_name(test):
     test_class = test.__class__.__name__
     test_method = test._testMethodName
     return '%s/%s' % (test_class, test_method)
 
+def get_test_method(test):
+    return getattr(test, test._testMethodName)
+
 def run_test(test):
-    result = MyResult()
+    test_method = get_test_method(test)
     test_name = full_test_name(test)
     print 'Running %s' % (test_name,)
-    test(result)
+    test._pre_setup()
+    test.setUp()
+    test_method()
+    test.tearDown()
+    test._post_teardown()
 
 class Runner(DjangoTestSuiteRunner):
     option_list = ()
