@@ -61,7 +61,7 @@ exports.set_step_info = function (steps) {
 };
 
 exports.mark_checklist_step = function (step) {
-    if (!onboarding) {
+    if (!onboarding || step_info[step].status) {
         return;
     }
 
