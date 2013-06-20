@@ -25,6 +25,7 @@ import re
 import simplejson
 import subprocess
 import sys
+import time
 import traceback
 import urllib2
 from StringIO import StringIO
@@ -2875,7 +2876,6 @@ class RateLimitTests(AuthedTestCase):
         api_key = self.get_api_key(email)
 
         # Sleep 1 second and succeed again
-        import time
         time.sleep(1)
 
         result = self.send_api_message(email, api_key, "some stuff")
@@ -2905,7 +2905,6 @@ class RateLimitTests(AuthedTestCase):
         self.assertIn("API usage exceeded rate limit, try again in", json.get("msg"))
 
         # Sleep 1 second and succeed again
-        import time
         time.sleep(1)
         result = self.send_api_message(email, api_key, "Good message")
 
