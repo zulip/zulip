@@ -412,6 +412,12 @@ ul.filters li.out_of_home_view {
     text-align: center;
 }
 
+@media (max-width: 480px) {
+    .compose_stream_button_label, .compose_private_button_label {
+        display: none;
+    }
+}
+
 td.pointer {
     vertical-align: top;
     padding-top: 10px;
