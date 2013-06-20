@@ -237,8 +237,8 @@ a:hover code {
     overflow-y: hidden;
     border-top: 1px solid #eee;
     border-bottom: 1px solid #eee;
-    margin: 10px 10px 0;
-    padding: 10px 0 10px 0;
+    margin: 10px 0px 10px 10px;
+    padding: 10px 15px 10px 0;
 }
 
 #stream_filters .narrow-filter {
