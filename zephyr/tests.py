@@ -2912,9 +2912,7 @@ class RateLimitTests(AuthedTestCase):
 
 class MyResult:
     def startTest(self, test):
-        test_class = test.__class__.__name__
-        test_method = test._testMethodName
-        print 'Running %s/%s' % (test_class, test_method)
+        pass
 
     def stopTest(self, *args):
         pass
@@ -2944,8 +2942,15 @@ class MyResult:
             '''
         sys.exit(1)
 
+def full_test_name(test):
+    test_class = test.__class__.__name__
+    test_method = test._testMethodName
+    return '%s/%s' % (test_class, test_method)
+
 def run_test(test):
     result = MyResult()
+    test_name = full_test_name(test)
+    print 'Running %s' % (test_name,)
     test(result)
 
 class Runner(DjangoTestSuiteRunner):
