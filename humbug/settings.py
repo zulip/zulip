@@ -208,12 +208,13 @@ RATE_LIMITING_RULES = [
 
 STATIC_URL = '/static/'
 
-# PipelineCachedStorage inserts a file hash into filenames,
+# HumbugStorage is a modified version of PipelineCachedStorage,
+# and, like that class, it inserts a file hash into filenames
 # to prevent the browser from using stale files from cache.
 #
 # Unlike PipelineStorage, it requires the files to exist in
 # STATIC_ROOT even for dev servers.  So we only use
-# PipelineCachedStorage when not DEBUG.
+# HumbugStorage when not DEBUG.
 
 if DEBUG:
     STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
