@@ -325,6 +325,7 @@ class PersonalMessagesTest(AuthedTestCase):
                                           type=Recipient.PERSONAL)
         self.assertEqual(new_messages[-1].recipient, recipient)
 
+    @slow(0.36, "checks several profiles")
     def test_personal_to_self(self):
         """
         If you send a personal to yourself, only you see it.
@@ -384,6 +385,7 @@ class PersonalMessagesTest(AuthedTestCase):
         self.assertEqual(self.message_stream(sender)[-1].recipient, recipient)
         self.assertEqual(self.message_stream(receiver)[-1].recipient, recipient)
 
+    @slow(0.28, "assert_personal checks several profiles")
     def test_personal(self):
         """
         If you send a personal, only you and the recipient see it.
@@ -391,6 +393,7 @@ class PersonalMessagesTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         self.assert_personal("hamlet@humbughq.com", "othello@humbughq.com")
 
+    @slow(0.28, "assert_personal checks several profiles")
     def test_non_ascii_personal(self):
         """
         Sending a PM containing non-ASCII characters succeeds.
@@ -434,6 +437,7 @@ class StreamMessagesTest(AuthedTestCase):
         self.assertEqual(old_non_subscriber_messages, new_non_subscriber_messages)
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
 
+    @slow(0.24, 'checks all users')
     def test_message_to_stream(self):
         """
         If you send a message to a stream, everyone subscribed to the stream
@@ -441,6 +445,7 @@ class StreamMessagesTest(AuthedTestCase):
         """
         self.assert_stream_message("Scotland")
 
+    @slow(0.37, 'checks all users')
     def test_non_ascii_stream_message(self):
         """
         Sending a stream message containing non-ASCII characters in the stream
@@ -1374,6 +1379,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # We only sent emails to the new users.
         self.check_sent_emails(new)
 
+    @slow(0.35, 'inviting is slow')
     def test_invite_outside_domain_in_open_realm(self):
         """
         In a realm with `restricted_to_domain = False`, you can invite people
@@ -2154,6 +2160,7 @@ int x = 3
             converted = bugdown_convert(inline_url)
             self.assertEqual(match, converted)
 
+    @slow(0.545, 'BugDown is slow, several items to test')
     def test_manual_links(self):
         # These are links that the default markdown XSS fails due to to : in the path
         urls = (('[Haskell NYC Meetup](http://www.meetsup.com/r/email/www/0/co1.1_grp/http://www.meetup.com/NY-Haskell/events/108707682/\
@@ -2200,6 +2207,7 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
         self.assertEqual(converted, '<p>Google logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boringGoogle logo today: <a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div><div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" target="_blank" title="https://www.google.com/images/srpr/logo4w.png"><img src="https://www.google.com/images/srpr/logo4w.png"></a></div>')
 
 
+    @slow(0.67, 'Bugdown is slow')
     def test_inline_youtube(self):
         msg = 'Check out the debate: http://www.youtube.com/watch?v=hx1mjT73xYE'
         converted = bugdown_convert(msg)
@@ -2943,7 +2951,7 @@ def enforce_timely_test_completion(test_method, test_name, delay):
         # to random variations.
         max_delay = 1.5 * test_method.expected_run_time
     else:
-        max_delay = 1 # 1 second
+        max_delay = 0.180 # seconds
 
     # Further adjustments for slow laptops:
     max_delay = max_delay * 3
