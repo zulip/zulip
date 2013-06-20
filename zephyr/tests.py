@@ -2945,6 +2945,10 @@ class MyResult:
             '''
         sys.exit(1)
 
+def run_test(test):
+    result = MyResult()
+    test(result)
+
 class Runner(DjangoTestSuiteRunner):
     option_list = ()
 
@@ -2952,14 +2956,8 @@ class Runner(DjangoTestSuiteRunner):
         DjangoTestSuiteRunner.__init__(self, *args, **kwargs)
 
     def run_suite(self, suite):
-        # This is a simplified version of run_suite
-        # that does simple iteration and plugs in our
-        # own Results class that allows us to fail fast
-        # and add easy hooks to show which tests are running
-        # in real time.
-        result = MyResult()
         for test in suite:
-            test(result)
+            run_test(test)
 
     # Subsume run_tests under our control.  This is literally copied
     # from /Library/Python/2.7/site-packages/django/test/simple.py.
