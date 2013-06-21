@@ -424,6 +424,16 @@ def url_to_a(url, text = None):
     return a
 
 class AutoLink(markdown.inlinepatterns.Pattern):
+    def __init__(self, pattern):
+        markdown.inlinepatterns.Pattern.__init__(self, ' ')
+
+        # HACK: we just had python-markdown compile an empty regex.
+        # Now replace with the real regex compiled with the flags we want.
+
+        self.pattern = pattern
+        self.compiled_re = re.compile("^(.*?)%s(.*?)$" % pattern,
+                                      re.DOTALL | re.UNICODE | re.VERBOSE)
+
     def handleMatch(self, match):
         url = match.group('url')
         # As this will also match already-matched https?:// links,
@@ -559,13 +569,27 @@ class Bugdown(markdown.Extension):
         # We detect a url by checking for the TLD, and building around it.
         #
         # To support () in urls but not match ending ) when a url is inside a parenthesis,
-        # we match at maximum one set of matching parens in a url. We could extend this
-        # to match two parenthetical groups, at the cost of more regex complexity.
-        #
+        # 
         # This rule must come after the http_autolink rule we add above to avoid double
         # linkifying.
         tlds = '|'.join(list_of_tlds())
-        link_regex = r"\b(?P<url>([^\s\.]+\.)+(%s)(?:/[^\s()\":]*?|(/[^\s()\":]*\([^\s()\":]*\)[^\s()\":]*))?)(?=([:;\?\),\.\'\"]\Z|[:;\?\),\.\'\"]\s|\Z|\s))" % (tlds,)
+        link_regex = r"""
+            \b                   # Start on a word boundary
+            (?P<url>             # Main group
+                (?:[^\s\.]+\.)+  # One or more domain components, separated by dots
+                (?:%s)           # TLDs (filled in via format from tlds-alpha-by-domain.txt)
+                (?:/             # A path, beginning with /
+                    [^\s()\":]*?            # Containing characters that won't end the URL
+                    (?: \( [^\s()\":]* \)   # and more characters in matched parens
+                        [^\s()\":]*?        # followed by more characters
+                    )*                      # zero-or-more sets of paired parens
+                )?               # Path is optional
+            )
+            (?=                  # URL must be followed by (not included in group)
+                [:;\?\),\.\'\"]* # Optional punctuation characters
+                (?:\Z|\s)        # followed by whitespace or end of string
+            )
+            """ % (tlds,)
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>http_autolink')
 
         md.preprocessors.add('hanging_ulists',
