@@ -287,6 +287,7 @@ MessageList.prototype = {
         $.each(messages, function (index, message) {
             message.include_recipient = false;
             message.include_bookend   = false;
+            message.include_footer    = false;
             if (util.same_recipient(prev, message) && self.collapse_messages &&
                prev.historical === message.historical) {
                 current_group.push(message.id);
@@ -298,6 +299,9 @@ MessageList.prototype = {
                 // Add a space to the table, but not for the first element.
                 message.include_recipient = true;
                 message.include_bookend   = (prev !== undefined);
+                if (prev) {
+                    prev.include_footer = message.include_bookend;
+                }
                 message.subscribed = false;
                 message.unsubscribed = false;
                 if (message.include_bookend && message.historical !== prev.historical) {
@@ -342,6 +346,9 @@ MessageList.prototype = {
             self.last_message_historical = message.historical;
         });
 
+        if (prev) {
+            prev.include_footer = true;
+        }
         if (messages_to_render.length === 0) {
             return;
         }
@@ -375,11 +382,16 @@ MessageList.prototype = {
         // The message that was last before this batch came in has to be
         // handled specially because we didn't just render it and
         // therefore have to lookup its associated element
-        if (last_message_id !== undefined
-            && ids_where_next_is_same_sender[last_message_id])
-        {
+        // If the previous message was part of the same block but
+        // had a footer, we need to remove it.
+        if (last_message_id !== undefined) {
             var row = rows.get(last_message_id, table_name);
-            row.find('.messagebox').addClass("next_is_same_sender");
+            if (ids_where_next_is_same_sender[last_message_id]) {
+                row.find('.messagebox').addClass("next_is_same_sender");
+                if (this.get(last_message_id) && this.get(last_message_id).include_footer) {
+                    row.removeClass('last_message');
+                }
+            }
         }
 
         if (where === 'top' && table.find('.ztable_layout_row').length > 0) {
