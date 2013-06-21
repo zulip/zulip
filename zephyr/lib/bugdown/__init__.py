@@ -436,15 +436,6 @@ class AutoLink(markdown.inlinepatterns.Pattern):
 
     def handleMatch(self, match):
         url = match.group('url')
-        # As this will also match already-matched https?:// links,
-        # don't doubly-link them
-        if url[:5] == 'http:' or url[:6] == 'https:':
-            return url
-        return url_to_a(url)
-
-class HttpLink(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, match):
-        url = match.group('url')
         return url_to_a(url)
 
 class UListProcessor(markdown.blockprocessors.OListProcessor):
@@ -549,39 +540,28 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\S)(?P<syntax>:[^:\s]+:)(?!\S)'), '_begin')
         md.inlinePatterns.add('link', LinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
 
-        # markdown.inlinepatterns.Pattern compiles this with re.UNICODE, which
-        # is important because we're using \w.
-        #
-        # This rule must come after the built-in 'link' markdown linkifier to
-        # avoid errors.
-        #
-        # We support up to 1 nested pair of paranthesis in a url
-        http_link_regex = r'\b(?P<url>https?://(?:(?:[^\s]+\([^\s)]+?\)[^\s]*?)|[^\s]+?))(?=[^\w/]*(\s|\Z))'
-
-        md.inlinePatterns.add('http_autolink', HttpLink(http_link_regex), '>link')
-
         for (pattern, format_string) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
                                   RealmFilterPattern(pattern, format_string), '_begin')
 
         # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
         #
-        # We detect a url by checking for the TLD, and building around it.
-        #
-        # To support () in urls but not match ending ) when a url is inside a parenthesis,
-        # 
-        # This rule must come after the http_autolink rule we add above to avoid double
-        # linkifying.
+        # We detect a url either by the `https?://` or by building around the TLD.
         tlds = '|'.join(list_of_tlds())
         link_regex = r"""
             \b                   # Start on a word boundary
             (?P<url>             # Main group
-                (?:[^\s\.]+\.)+  # One or more domain components, separated by dots
-                (?:%s)           # TLDs (filled in via format from tlds-alpha-by-domain.txt)
+                (?:              # Domain part
+                    https?://[^\s/]+?   # If it has a protocol, anything goes.
+                   |(?:                 # Or, if not, be more strict to avoid false-positives
+                        (?:[^\s\.]+\.)+    # One or more domain components, separated by dots
+                        (?:%s)             # TLDs (filled in via format from tlds-alpha-by-domain.txt)
+                    )
+                )
                 (?:/             # A path, beginning with /
-                    [^\s()\":]*?            # Containing characters that won't end the URL
-                    (?: \( [^\s()\":]* \)   # and more characters in matched parens
-                        [^\s()\":]*?        # followed by more characters
+                    [^\s()\"]*?            # Containing characters that won't end the URL
+                    (?: \( [^\s()\"]* \)   # and more characters in matched parens
+                        [^\s()\"]*?        # followed by more characters
                     )*                      # zero-or-more sets of paired parens
                 )?               # Path is optional
             )
@@ -590,7 +570,7 @@ class Bugdown(markdown.Extension):
                 (?:\Z|\s)        # followed by whitespace or end of string
             )
             """ % (tlds,)
-        md.inlinePatterns.add('autolink', AutoLink(link_regex), '>http_autolink')
+        md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
         md.preprocessors.add('hanging_ulists',
                                  BugdownUListPreprocessor(md),
