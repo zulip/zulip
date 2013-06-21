@@ -577,6 +577,12 @@ if DEPLOYED:
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
+# We are not currently using embedly due to some performance issues, but
+# we are keeping the code on master for now, behind this launch flag.
+# If you turn this back on for dev, you will want it to be still False
+# for running the tests, or you will need to ensure that embedly_client.is_supported()
+# gets called before the tests run.
+USING_EMBEDLY = False
 EMBEDLY_KEY="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 if DEPLOYED:

@@ -24,9 +24,11 @@ from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
 from zephyr.lib.timeout import timeout, TimeoutExpired
 from zephyr.lib.cache import cache_with_key, cache_get_many, cache_set_many
-from embedly import Embedly
 
-embedly_client = Embedly(settings.EMBEDLY_KEY, timeout=2.5)
+
+if settings.USING_EMBEDLY:
+    from embedly import Embedly
+    embedly_client = Embedly(settings.EMBEDLY_KEY, timeout=2.5)
 
 # Format version of the bugdown rendering; stored along with rendered
 # messages so that we can efficiently determine what needs to be re-rendered
@@ -211,14 +213,14 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
 
     def do_embedly(self, root, supported_urls):
-        # embed.ly support disabled on prod/staging until it can be
+        # embed.ly support is disabled until it can be
         # properly debugged.
         #
         # We're not deleting the code for now, since we expect to
         # restore it and want to be able to update it along with
         # future refactorings rather than keeping it as a separate
         # branch.
-        if settings.DEPLOYED:
+        if not settings.USING_EMBEDLY:
             return
 
         # We want this to be able to easily reverse the hashing later
@@ -311,9 +313,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 div.set("class", "inline-preview-twitter")
                 div.insert(0, twitter_data)
                 continue
-            if embedly_client.is_supported(url):
-                embedly_urls.append(url)
-                continue
+            if settings.USING_EMBEDLY:
+                if embedly_client.is_supported(url):
+                    embedly_urls.append(url)
+                    continue
             # NOTE: The youtube code below is inactive at least on
             # staging because embedy.ly is currently handling those
             youtube = self.youtube_image(url)
@@ -321,7 +324,8 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 add_a(root, youtube, url)
                 continue
 
-        self.do_embedly(root, embedly_urls)
+        if settings.USING_EMBEDLY:
+            self.do_embedly(root, embedly_urls)
 
 class Gravatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
