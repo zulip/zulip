@@ -151,7 +151,10 @@ MIDDLEWARE_CLASSES = (
 )
 
 AUTHENTICATION_BACKENDS = ('humbug.backends.EmailAuthBackend',
-                           'humbug.backends.GoogleBackend')
+                           'humbug.backends.GoogleBackend',
+                           'guardian.backends.ObjectPermissionBackend')
+ANONYMOUS_USER_ID = None
+
 AUTH_USER_MODEL = "zephyr.UserProfile"
 
 TEST_RUNNER = 'zephyr.tests.Runner'
@@ -171,6 +174,7 @@ INSTALLED_APPS = (
     'south',
     'django_openid_auth',
     'confirmation',
+    'guardian',
     'pipeline',
     'zephyr',
 )
