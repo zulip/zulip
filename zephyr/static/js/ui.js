@@ -365,7 +365,7 @@ function replace_floating_recipient_bar(desired_label) {
 
             $("#current_label_stream td:first").css(
                 "background-color",
-                desired_label.children(".message_header_stream.right_part")
+                desired_label.children(".message_header_colorblock")
                              .css("background-color"));
         } else {
             new_label = $("#current_label_private_message");
