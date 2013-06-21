@@ -59,6 +59,9 @@ input[type="color"]
 
 li, .table th, .table td {
     line-height: inherit;
+    background-clip: content-box;
+    -webkit-background-clip: content;
+    -moz-background-clip: content;
 }
 
 .btn {
@@ -381,6 +384,7 @@ ul.filters li.out_of_home_view {
 .message_list {
     /* If we change this color, we must change message_reply_fade */
     background-color: aliceblue;
+    padding-left: 4px;
 }
 
 .message_area_padder {
@@ -392,12 +396,7 @@ ul.filters li.out_of_home_view {
      a scrollbar */
     overflow: visible;
 }
-@media (max-width: 480px) {
-    .message_area_padder {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-}
+
 
 .message_comp {
     display: none;
@@ -468,11 +467,6 @@ td.pointer {
     background-color: #1f2170;
 }
 
-/*
-.window_blurred .selected_message .pointer {
-    background-color: #9bc;
-}
-*/
 
 /* Adjust certain message elements so they still
    stand out against the grey background */
@@ -504,7 +498,7 @@ td.pointer {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -58px;
+    right: -63px;
 }
 
 .message_data {
@@ -523,26 +517,20 @@ td.pointer {
     visibility: collapse;
 }
 
-.ztable_col1, .ztable_comp_col1 {    /* pointer */
-    width: 2px;
+.ztable_col1 {    /* colorblock */
+    width: 8px;
 }
 
-.ztable_col2 {    /* subjectname */
+.ztable_col2 {    /* messagebody */
+    width: 100%;
 }
 
-.ztable_col3 {  /* sender's gravatar  and date */
-    width: 0px;
-}
-
-.ztable_col4 {
-    width: 2px;
+.ztable_comp_col1 {
+    width: 8px;
 }
 
 .ztable_comp_col2 {
-    width: 60px;
-}
-
-.ztable_comp_col3 {
+    
 }
 
 .message_header {
@@ -556,22 +544,76 @@ td.pointer {
     font-weight:    600;
     line-height:    14px;
     padding:        3px 0px 2px 5px;
+    border-radius:  0px 3px 0px 0px;
+    background: rgb(236,236,236); /* Old browsers */
+    background: -moz-linear-gradient(top,  rgba(236,236,236,1) 0%, rgba(248,248,248,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(236,236,236,1)), color-stop(100%,rgba(248,248,248,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(236,236,236,1) 0%,rgba(248,248,248,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(236,236,236,1) 0%,rgba(248,248,248,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(236,236,236,1) 0%,rgba(248,248,248,1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  rgba(236,236,236,1) 0%,rgba(248,248,248,1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ececec', endColorstr='#f8f8f8',GradientType=0 ); /* IE6-9 */
+    border-bottom: 1px solid #d2eee7;
+    /* box-shadow: 0px 2px 3px #ccc; */
+    border-top: 1px solid #c1dbd5;
+    border-right: 1px solid #c1dbd5;
 }
 
-.message_header_stream {
-    background-color: #bbb;
+.message_header .icon-vector-narrow {
+    font-size: 0.6em;
+    position: relative;
+    top: -1px;
+}
+
+.message_header_colorblock {
+    border-radius: 3px 0px 0px 0px;
+    /* box-shadow: 0px 2px 3px #ccc; */
+    border-top: 1px solid #c1dbd5;
+    border-left: 1px solid #c1dbd5;
+    border-bottom: 1px solid #d2eee7;
+}
+
+.messagebox.last_message {
+    height: 3px;
+    background-color: #fff;
+    border-radius: 0px 0px 3px 0px;
+    /* box-shadow: 0px 2px 2px -1px #ccc; */
+    border: 1px solid #c1dbd5;
+    border-top: none;
+    border-left: none;
+}
+
+.messagebox_colorblock.last_message {
+    border-radius: 0px 0px 0px 3px;
+    /* box-shadow: 0px 2px 2px -1px #ccc; */
+    border: 1px solid #c1dbd5;
+    border-top: none;
+    border-right: none;
+}
+
+
+.floating_recipient .message_header, .floating_recipient .message_header_colorblock {
+    box-shadow: none;
+    border-bottom: 1px solid #d2eee7;
 }
 
 .message_header_private_message {
     background-color: #444;
 }
 
-.private-message .messagebox, .private-message .message_data, .private-message .pointer {
-    background-color: #FEFFE0;
+.selected_message .messagebox_colorblock {
+    box-shadow: inset -12px 0px 0px -1px rgba(40,40,40,0.5);
 }
 
-.mention .messagebox, .mention .message_data, .mention .pointer {
-    background-color: #FFE4E0;
+.pointer_icon {
+    width: 100%;
+    text-align: center;
+    display: none;
+    color: #fff;
+}
+
+.selected_message .pointer_icon {
+    display: inline-block;
 }
 
 .selected_message.mention .messagebox, .selected_message.mention .message_data {
@@ -653,6 +695,7 @@ td.pointer {
 
 table.message_table {
     table-layout: fixed;
+    border-collapse: separate;
     margin-left: auto;
     display: none;
     width: 100%;
@@ -669,8 +712,8 @@ table.focused_table {
 }
 
 .message_content {
-    margin-top: 3px;
     line-height: 18px;
+    padding-left: 35px;
 }
 @media (max-width: 480px) {
     .message_content {
@@ -711,11 +754,17 @@ blockquote p {
 }
 
 .messagebox {
-    padding: 7px 60px 0px 7px;
+    padding: 7px 70px 0px 7px;
     background-color: #fff;
     word-wrap: break-word;
     cursor: pointer;
     vertical-align: top;
+    border-right: 1px solid #c1dbd5;
+    border-left: none;
+}
+
+.messagebox_colorblock {
+    border-left: 1px solid #c1dbd5;
 }
 
 .messagebox p {
@@ -762,6 +811,7 @@ blockquote p {
 
 .bookend {
     padding-top: 10px;
+    background-color: transparent;
 }
 
 .prev_is_same_sender.messagebox {
@@ -794,10 +844,11 @@ blockquote p {
 
 .inline_profile_picture {
     display: inline-block;
-    width: 20px;
-    height: 20px;
-    background-size: 20px 20px;
-    border-radius: 20px;
+    width: 25px;
+    height: 25px;
+    margin-right: 5px;
+    background-size: 25px 25px;
+    border-radius: 25px;
     border: 1px solid #CCC;
     vertical-align: middle;
     position: relative;
@@ -1203,6 +1254,7 @@ input.recipient_box {
 
 table.floating_recipient {
     table-layout: fixed;
+    border-collapse: separate;
     margin-left: auto;
     width: 100%;
 }
@@ -1548,7 +1600,6 @@ table.floating_recipient {
 }
 
 #stream-message, #private-message {
-    border: 1px solid grey;
     display: none;
 }
 
@@ -1821,4 +1872,8 @@ li.expanded_subject {
 
 .zero_count {
     display: none;
+}
+
+.message-pane {
+    padding-left: 0.3em;
 }

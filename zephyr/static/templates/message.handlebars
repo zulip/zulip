@@ -53,7 +53,7 @@
 <tr zid="{{id}}" id="{{dom_id}}"
 
     class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}">
-        <td class="messagebox_colorblock{{^is_stream}} message_header_private_message{{/is_stream}}{{#include_footer}} last_message{{/include_footer}}" style="background-color: {{background_color}};"></td>
+        <td class="messagebox_colorblock{{^is_stream}} message_header_private_message{{/is_stream}}{{#include_footer}} last_message{{/include_footer}}" style="background-color: {{background_color}};"><span class="pointer_icon"><i class="icon-vector-caret-right"></i></span></td>
         <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}{{#include_footer}} last_message{{/include_footer}}">
         <div class="message_top_line">
         {{#include_sender}}

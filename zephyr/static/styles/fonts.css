@@ -477,3 +477,4 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-angle-down:before           { content: "\f107"; }
 .icon-vector-chevron-up:before           { content: "\f077"; }
 .icon-vector-chevron-down:before         { content: "\f078"; }
+.icon-vector-caret-right:before          { content: "\f0da"; }
