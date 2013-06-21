@@ -19,13 +19,14 @@
           <tr id="floating_recipient_layout_row" class="ztable_layout_row">
             <td class="ztable_col1" />
             <td class="ztable_col2" />
-            <td class="ztable_col3" />
           </tr>
           <tr style="display: none;" id="current_label_stream" class="recipient_row">
-           <td colspan="3" class="message_label_clickable message_header message_header_stream right_part"></td>
+           <td class="message_header_colorblock"></td>
+           <td class="message_label_clickable message_header message_header_stream right_part"></td>
           </tr>
           <tr style="display: none;" id="current_label_private_message" class="recipient_row">
-            <td colspan="3" class="message_label_clickable message_header message_header_private_message right_part"></td>
+            <td class="message_header_colorblock message_header_private_message"></td>
+            <td class="message_label_clickable message_header message_header_private_message right_part"></td>
           </tr>
         </table>
       </div>
@@ -35,7 +36,7 @@
 
 <div class="row-fluid">
   <div class="span12">
-    <div class="message_list message_area_padder" id="main_div">
+    <div class="message_area_padder message_list" id="main_div">
       <div id="loading_more_messages_indicator"></div>
       <div id="page_loading_indicator"></div>
       <div id="first_run_message" class="empty_feed_notice">
