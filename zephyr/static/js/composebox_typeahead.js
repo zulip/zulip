@@ -196,13 +196,19 @@ exports.initialize = function () {
 
     $( "#subject" ).typeahead({
         source: function (query, process) {
-            var stream_name = $("#stream").val();
+            var stream_name = $("#stream").val(), i;
             if (subject_dict.hasOwnProperty(stream_name)) {
-                return subject_dict[stream_name];
+                // If query is an exact match, we don't need to add it to the array of options
+                for (i = 0; i < subject_dict[stream_name].length; i++) {
+                    if (subject_dict[stream_name][i].toLowerCase() === query.toLowerCase()) {
+                        return subject_dict[stream_name];
+                    }
+                }
+                return [query].concat(subject_dict[stream_name]);
             }
             return [];
         },
-        items: 2,
+        items: 3,
         highlighter: composebox_typeahead_highlighter,
         sorter: typeahead_helper.sort_subjects
     });
