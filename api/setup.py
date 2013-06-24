@@ -27,7 +27,10 @@ setup(name='humbug',
       ],
       url='https://humbughq.com/dist/api/',
       packages=['humbug'],
-      data_files=[('share/humbug/examples', ["examples/humbugrc", "examples/send-message"])] + \
+      data_files=[('share/humbug/examples', ["examples/humbugrc", "examples/send-message", "examples/subscribe",
+                                             "examples/get-public-streams", "examples/unsubscribe",
+                                             "examples/list-members", "examples/list-subscriptions",
+                                             "examples/print-messages"])] + \
           list(recur_expand('share/humbug', 'integrations/')) + \
           [('share/humbug/demos',
             [os.path.join("demos", relpath) for relpath in
