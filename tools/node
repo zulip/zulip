@@ -2,7 +2,7 @@
 
 # Wrapper for node which finds the right binary.
 
-if which nodejs >/dev/null; then
+if which nodejs >/dev/null 2>&1; then
     # Name used by Debian etc.
     exec nodejs "$@"
 else
