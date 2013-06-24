@@ -238,10 +238,11 @@ STATIC_HEADER_FILE = 'zephyr/static_header.txt'
 # here so that urls.py can read it.
 PIPELINE = not DEBUG
 
-# To use minified files in dev, set PIPELINE = True.
+# To use minified files in dev, set PIPELINE = True.  For the full
+# cache-busting behavior, you must also set DEBUG = False.
 #
-# You will need to run ./tools/update-prod-static after
-# changing static files.
+# You will need to run ./tools/update-prod-static after changing
+# static files.
 
 PIPELINE_CSS = {
     'activity': {
