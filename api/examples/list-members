@@ -41,5 +41,5 @@ parser.add_option_group(humbug.generate_option_group(parser))
 
 client = humbug.init_from_options(options)
 
-for name, email in client.get_members()["members"]:
-    print name, email
+for user in client.get_members()["members"]:
+    print user["full_name"], user["email"]

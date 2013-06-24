@@ -1319,7 +1319,8 @@ def json_get_members(request, user_profile):
     return get_members_backend(request, user_profile)
 
 def get_members_backend(request, user_profile):
-    members = [(profile.full_name, profile.email) for profile in \
+    members = [{"full_name": profile.full_name,
+                "email": profile.email} for profile in \
                    UserProfile.objects.select_related().filter(realm=user_profile.realm)]
     return json_success({'members': members})
 
