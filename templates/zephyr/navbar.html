@@ -57,18 +57,18 @@
                     </a>
                   </li>
                   <li class="divider"></li>
+                  {% if show_invites %}
+                  <li title="Invite coworkers to Humbug">
+                    <a href="#invite-user" role="button" data-toggle="modal">
+                      <i class="icon-plus-sign"></i> Invite coworkers
+                    </a>
+                  </li>
+                  {% endif %}
                   <li title="Feedback">
                     <a href="#feedback" class="feedback">
                       <i class="icon-vector-comment"></i> Feedback
                     </a>
                   </li>
-                  {% if show_invites %}
-                  <li title="Invite users to Humbug">
-                    <a href="#invite-user" role="button" data-toggle="modal">
-                      <i class="icon-gift"></i> Invite users to Humbug
-                    </a>
-                  </li>
-                  {% endif %}
                   <li class="divider"></li>
                   <li title="Log out">
                     <a href="#logout" class="logout_button">
