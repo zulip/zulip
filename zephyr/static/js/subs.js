@@ -640,7 +640,7 @@ function ajaxSubscribe(stream) {
         type: "POST",
         url: "/json/subscriptions/add",
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        data: {"subscriptions": JSON.stringify([stream]) },
+        data: {"subscriptions": JSON.stringify([{"name": stream}]) },
         success: function (resp, statusText, xhr, form) {
             $("#create_stream_name").val("");
 
@@ -684,7 +684,7 @@ function ajaxSubscribeForCreation(stream, principals, invite_only) {
         type: "POST",
         url: "/json/subscriptions/add",
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        data: {"subscriptions": JSON.stringify([stream]),
+        data: {"subscriptions": JSON.stringify([{"name": stream}]),
                "principals": JSON.stringify(principals),
                "invite_only": JSON.stringify(invite_only)
         },
@@ -853,7 +853,7 @@ $(function () {
             type: "POST",
             url: "/json/subscriptions/add",
             dataType: 'json',
-            data: {"subscriptions": JSON.stringify([stream]),
+            data: {"subscriptions": JSON.stringify([{"name": stream}]),
                    "principals": JSON.stringify([principal])},
             success: function (data) {
                 text_box.val('');

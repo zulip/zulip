@@ -201,7 +201,7 @@ class AuthedTestCase(TestCase):
 
         post_data = {'email': email,
                      'api-key': api_key,
-                     'subscriptions': ujson.dumps(streams),
+                     'subscriptions': ujson.dumps([{"name": stream} for stream in streams]),
                      'invite_only': ujson.dumps(invite_only)}
         post_data.update(extra_post_data)
 

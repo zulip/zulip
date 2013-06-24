@@ -1255,8 +1255,10 @@ def add_subscriptions_backend(request, user_profile,
                               principals = REQ('principals', json_to_list, default=None),):
 
     stream_names = []
-    for stream_name in streams_raw:
-        stream_name = stream_name.strip()
+    for stream in streams_raw:
+        if not isinstance(stream, dict):
+            return json_error("Malformed request")
+        stream_name = stream["name"].strip()
         if len(stream_name) > Stream.MAX_NAME_LENGTH:
             return json_error("Stream name (%s) too long." % (stream_name,))
         if not valid_stream_name(stream_name):
@@ -1268,7 +1270,7 @@ def add_subscriptions_backend(request, user_profile,
     else:
         subscribers = [user_profile]
 
-    streams = list_to_streams(streams_raw, user_profile, autocreate=True, invite_only=invite_only)
+    streams = list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
     private_streams = {}
     result = dict(subscribed=[], already_subscribed=[])
 
