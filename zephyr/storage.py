@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.staticfiles.storage import CachedFilesMixin, StaticFilesStorage
 from pipeline.storage import PipelineMixin
 import os.path
+import ujson
 
 class AddHeaderMixin(object):
     def post_process(self, paths, dry_run=False, **kwargs):
@@ -55,5 +56,35 @@ class AddHeaderMixin(object):
 
         return ret_dict.itervalues()
 
-class HumbugStorage(PipelineMixin, AddHeaderMixin, CachedFilesMixin, StaticFilesStorage):
+
+class DumpManifestMixin(object):
+    """ This mixin creates a JSON manifest file in the deployment root
+    with a dict mapping generated files' base names (like api.js) to their
+    names with the hash for the most recent version (api.HEX_HASH_HERE.js).
+    """
+    def post_process(self, paths, dry_run=False, **kwargs):
+        if dry_run:
+            return
+
+        super_class = super(DumpManifestMixin, self)
+        if hasattr(super_class, 'post_process'):
+            super_ret = super_class.post_process(paths, dry_run, **kwargs)
+        else:
+            super_ret = []
+
+        hashed_versions = {}  # Latest hashed version of each file.
+        for old_path, new_path, processed in super_ret:
+            if old_path[:4] == 'min/':
+                hashed_versions[old_path] = new_path
+
+        manifest_filename = os.path.join(settings.DEPLOY_ROOT,
+                'minified_assets.json')
+        with open(manifest_filename, 'w') as manifest_file:
+            manifest_file.write(ujson.dumps(hashed_versions))
+
+        return super_ret
+
+
+class HumbugStorage(PipelineMixin, AddHeaderMixin, DumpManifestMixin,
+        CachedFilesMixin, StaticFilesStorage):
     pass
