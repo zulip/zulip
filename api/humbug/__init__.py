@@ -41,7 +41,7 @@ assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1'))
 # In newer versions, the 'json' attribute is a function, not a property
 requests_json_is_function = callable(requests.Response.json)
 
-API_VERSTRING = "/api/v1/"
+API_VERSTRING = "/v1/"
 
 def generate_option_group(parser):
     group = optparse.OptionGroup(parser, 'API configuration')
@@ -94,7 +94,9 @@ class Client(object):
                 site = "https://" + site
             self.base_url = site
         else:
-            self.base_url = "https://humbughq.com"
+            self.base_url = "https://api.humbughq.com"
+        if self.base_url != "https://api.humbughq.com" and not self.base_url.endswith("/api"):
+            self.base_url += "/api"
         self.retry_on_errors = retry_on_errors
         self.client_name = client
 

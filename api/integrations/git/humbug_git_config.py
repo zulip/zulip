@@ -54,4 +54,4 @@ def commit_notice_destination(repo, branch, commit):
 HUMBUG_API_PATH = None
 
 # This should not need to change unless you have a custom Humbug subdomain.
-HUMBUG_SITE = "https://humbughq.com"
+HUMBUG_SITE = "https://api.humbughq.com"

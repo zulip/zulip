@@ -15,7 +15,7 @@ parser.add_option('--verbose',
                   action='store_true')
 parser.add_option('--site',
                   dest='site',
-                  default="https://humbughq.com",
+                  default="https://api.humbughq.com",
                   action='store')
 parser.add_option('--sharded',
                   default=False,

@@ -1,14 +1,13 @@
 #!/bin/sh
 # Two quick API tests using curl
 
-curl https://humbughq.com/api/v1/send_message \
+curl https://api.humbughq.com/v1/send_message \
     -d "api-key=BOT_API_KEY" \
     -d "email=BOT_EMAIL" \
     -d "type=private" -d "content=test" \
     -d "to=RECIPIENT_EMAIL"
 
-curl https://humbughq.com/api/v1/get_messages \
+curl https://api.humbughq.com/v1/get_messages \
     -d "api-key=BOT_API_KEY" \
     -d "email=BOT_EMAIL"
 
-# Or replace https://humbughq.com with your local test instance

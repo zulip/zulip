@@ -2,6 +2,6 @@
 if [ "$(hostname)" = "staging.humbughq.com" ]; then
     site="https://staging.humbughq.com"
 else
-    site="https://humbughq.com"
+    site="https://api.humbughq.com"
 fi
 /home/humbug/humbug-deployments/current/bots/check_send_receive.py --munin $1 --site="$site"
