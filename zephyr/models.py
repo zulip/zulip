@@ -2,7 +2,8 @@ from __future__ import absolute_import
 
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import AbstractBaseUser, UserManager
+from django.contrib.auth.models import AbstractBaseUser, UserManager, \
+    PermissionsMixin
 from zephyr.lib.cache import cache_with_key, update_user_profile_cache, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     update_user_presence_cache, generic_bulk_cached_fetch
@@ -65,7 +66,7 @@ class Realm(models.Model):
     def __str__(self):
         return self.__repr__()
 
-class UserProfile(AbstractBaseUser):
+class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
     email = models.EmailField(blank=False, db_index=True, unique=True)
