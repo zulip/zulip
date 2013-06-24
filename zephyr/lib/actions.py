@@ -795,7 +795,8 @@ def do_update_user_presence(user_profile, client, log_time, status):
         (presence, created) = UserPresence.objects.get_or_create(
             user_profile = user_profile,
             client = client,
-            defaults = {'timestamp': log_time})
+            defaults = {'timestamp': log_time,
+                        'status': status})
     except IntegrityError:
         transaction.commit()
         presence = UserPresence.objects.get(user_profile = user_profile,
@@ -806,9 +807,10 @@ def do_update_user_presence(user_profile, client, log_time, status):
     was_idle = presence.status == UserPresence.IDLE
     became_online = (status == UserPresence.ACTIVE) and (stale_status or was_idle)
 
-    presence.timestamp = log_time
-    presence.status = status
-    presence.save(update_fields=["timestamp", "status"])
+    if not created:
+        presence.timestamp = log_time
+        presence.status = status
+        presence.save(update_fields=["timestamp", "status"])
 
     if not user_profile.realm.domain == "mit.edu" and (created or became_online):
         # Push event to all users in the realm so they see the new user
