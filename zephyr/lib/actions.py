@@ -808,9 +808,17 @@ def do_update_user_presence(user_profile, client, log_time, status):
     became_online = (status == UserPresence.ACTIVE) and (stale_status or was_idle)
 
     if not created:
+        # The following block attempts to only update the "status"
+        # field in the event that it actually changed.  This is
+        # important to avoid flushing the UserPresence cache when the
+        # data it would return to a client hasn't actually changed
+        # (see the UserPresence post_save hook for details).
         presence.timestamp = log_time
-        presence.status = status
-        presence.save(update_fields=["timestamp", "status"])
+        update_fields = ["timestamp"]
+        if presence.status != status:
+            presence.status = status
+            update_fields.append("status")
+        presence.save(update_fields=update_fields)
 
     if not user_profile.realm.domain == "mit.edu" and (created or became_online):
         # Push event to all users in the realm so they see the new user

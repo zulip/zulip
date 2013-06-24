@@ -183,4 +183,7 @@ def status_dict_cache_key(user_profile):
 
 def update_user_presence_cache(sender, **kwargs):
     user_profile = kwargs['instance'].user_profile
-    djcache.delete(KEY_PREFIX + status_dict_cache_key(user_profile))
+    if kwargs['update_fields'] is None or "status" in kwargs['update_fields']:
+        # If the status of the user changed, flush the user's realm's
+        # entry in the UserPresence cache to avoid giving out stale state
+        djcache.delete(KEY_PREFIX + status_dict_cache_key(user_profile))
