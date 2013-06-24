@@ -312,6 +312,11 @@ a:hover code {
     color: #333;
 }
 
+#invite-user-link i {
+    text-decoration: none;
+    margin-right: 5px;
+}
+
 ul.filters {
     list-style-type: none;
     padding-right: 1em;
