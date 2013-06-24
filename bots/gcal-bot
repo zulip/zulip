@@ -33,25 +33,10 @@ parser = optparse.OptionParser(r"""
     Depends on: python-gdata
 """)
 
-parser.add_option('--user',
-    dest='user',
-    action='store',
-    help='Humbug user email address',
-    metavar='EMAIL')
-parser.add_option('--api-key',
-    dest='api_key',
-    action='store',
-    help='API key for that user [default: read ~/.humbug-api-key]')
 parser.add_option('--calendar',
     dest='calendar',
     action='store',
     help='Google Calendar XML "Private Address"',
-    metavar='URL')
-parser.add_option('--site',
-    dest='site',
-    default="https://humbughq.com",
-    action='store',
-    help='Humbug site [default: https://humbughq.com]',
     metavar='URL')
 parser.add_option('--interval',
     dest='interval',
@@ -60,6 +45,7 @@ parser.add_option('--interval',
     action='store',
     help='Minutes before event for reminder [default: 10]',
     metavar='MINUTES')
+parser.add_option_group(humbug.generate_option_group(parser))
 
 (options, args) = parser.parse_args()
 
@@ -82,11 +68,7 @@ def get_calendar_url():
 
 calendar_url = get_calendar_url()
 
-client = humbug.Client(
-    email=options.user,
-    api_key=options.api_key,
-    site=options.site,
-    verbose=True)
+client = humbug.init_from_options(options)
 
 def get_events():
     feed = CalendarClient().GetCalendarEventFeed(uri=calendar_url)
