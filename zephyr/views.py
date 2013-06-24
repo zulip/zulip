@@ -1901,7 +1901,7 @@ def json_get_active_statuses(request, user_profile):
 js_source_map = None
 if not (settings.DEBUG or settings.TEST_SUITE):
     js_source_map = SourceMap(path.join(
-        settings.SITE_ROOT, '../prod-static/source-map/app.js.map'))
+        settings.DEPLOY_ROOT, 'prod-static/source-map/app.js.map'))
 
 @authenticated_json_post_view
 @has_request_variables

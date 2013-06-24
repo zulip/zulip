@@ -181,8 +181,8 @@ urlpatterns += patterns('zephyr.tornadoviews',
 
 if not settings.DEPLOYED:
     use_prod_static = getattr(settings, 'PIPELINE', False)
-    static_root = os.path.join(settings.SITE_ROOT,
-        '../prod-static/serve' if use_prod_static else '../zephyr/static')
+    static_root = os.path.join(settings.DEPLOY_ROOT,
+        'prod-static/serve' if use_prod_static else 'zephyr/static')
 
     urlpatterns += patterns('',
         url(r'^static/(?P<path>.*)$', 'django.views.static.serve',

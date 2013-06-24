@@ -84,8 +84,8 @@ USE_L10N = True
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
 
-SITE_ROOT = os.path.realpath(os.path.dirname(__file__))
-TEMPLATE_DIRS = ( os.path.join(SITE_ROOT, '..', 'templates'),)
+DEPLOY_ROOT = os.path.join(os.path.realpath(os.path.dirname(__file__)), '..')
+TEMPLATE_DIRS = ( os.path.join(DEPLOY_ROOT, 'templates'), )
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -379,7 +379,7 @@ PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yui.YUICompressor'
 PIPELINE_YUI_BINARY     = '/usr/bin/env yui-compressor'
 
 PIPELINE_JS_COMPRESSOR  = 'zephyr.lib.minify.ClosureSourceMapCompressor'
-PIPELINE_CLOSURE_BINARY = os.path.join(SITE_ROOT, '../tools/closure-compiler/run')
+PIPELINE_CLOSURE_BINARY = os.path.join(DEPLOY_ROOT, 'tools/closure-compiler/run')
 PIPELINE_CLOSURE_SOURCE_MAP_DIR = 'prod-static/source-map'
 
 # Disable stuffing the entire JavaScript codebase inside an anonymous function.

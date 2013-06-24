@@ -37,7 +37,7 @@ def memcached_stats_finish():
     memcached_total_time += (time.time() - memcached_time_start)
 
 def get_or_create_key_prefix():
-    filename = os.path.join(settings.SITE_ROOT, "..", "memcached_prefix")
+    filename = os.path.join(settings.DEPLOY_ROOT, "memcached_prefix")
     try:
         fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0444)
         prefix = base64.b16encode(hashlib.sha256(str(random.getrandbits(256))).digest())[:32].lower() + ':'
