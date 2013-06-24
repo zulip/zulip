@@ -319,8 +319,7 @@ MessageList.prototype = {
 
             message.include_sender = true;
             if (!message.include_recipient &&
-                util.same_sender(prev, message) &&
-                (Math.abs(message.timestamp - prev.timestamp) < 60*10)) {
+                util.same_sender(prev, message)) {
                 message.include_sender = false;
                 ids_where_next_is_same_sender[prev.id] = true;
             }
