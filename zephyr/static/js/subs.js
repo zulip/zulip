@@ -542,7 +542,9 @@ exports.setup_page = function () {
         /* arguments are [ "success", statusText, jqXHR ] */
         if (stream_data.length > 2 && stream_data[2]) {
             var stream_response = JSON.parse(stream_data[2].responseText);
-            all_streams = stream_response.streams;
+            $.each(stream_response.streams, function(idx, stream) {
+                all_streams.push(stream.name);
+            });
         }
         if (subscription_data.length > 2 && subscription_data[2]) {
             var subs_response = JSON.parse(subscription_data[2].responseText);

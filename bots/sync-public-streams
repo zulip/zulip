@@ -27,9 +27,10 @@ def fetch_public_streams():
         return None
 
     for stream in streams:
+        stream_name = stream["name"]
         # Zephyr class names are canonicalized by first applying NFKC
         # normalization and then lower-casing server-side
-        canonical_cls = unicodedata.normalize("NFKC", stream).lower().encode("utf-8")
+        canonical_cls = unicodedata.normalize("NFKC", stream_name).lower().encode("utf-8")
         if canonical_cls in ['security', 'login', 'network', 'ops', 'user_locate',
                              'mit',
                              'hm_ctl', 'hm_stat', 'zephyr_admin', 'zephyr_ctl']:

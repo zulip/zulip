@@ -1181,7 +1181,7 @@ def get_public_streams_backend(request, user_profile):
     subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
     stream_ids = Recipient.objects.filter(
         type=Recipient.STREAM, id__in=subs_filter).values('type_id')
-    streams = sorted(stream.name for stream in
+    streams = sorted({"name": stream.name} for stream in
                      Stream.objects.filter(id__in = stream_ids,
                                            realm=user_profile.realm,
                                            invite_only=False))
