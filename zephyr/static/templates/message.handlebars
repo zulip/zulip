@@ -25,6 +25,10 @@
 </tr>
 {{/include_bookend}}
 
+{{#if show_date}}
+<tr class="date_row"><td colspan="4">{{{show_date}}}</td></tr>
+{{/if}}
+
 {{#include_recipient}}
 {{#if is_stream}}
 <tr zid="{{id}}" class="recipient_row">
@@ -63,7 +67,7 @@
             <span class="sender_name">{{sender_full_name}}</span>
         </span>
         {{/include_sender}}
-        <span class="message_time actions_hover">{{{timestr}}}</span>
+        <span class="message_time actions_hover">{{timestr}}</span>
         <div class="message_controls">
           <div class="star">
             <span class="message_star {{#if starred}}icon-vector-star{{else}}icon-vector-star empty-star{{/if}}"

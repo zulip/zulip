@@ -1730,9 +1730,37 @@ li.expanded_subject {
     padding-right: 0.09em !important; /* Alignment hack to line up with other icons */
 }
 
-.sub-unsub-message {
+.sub-unsub-message, .date_row {
     text-align: center;
     padding-bottom: 10px; /* same as .bookend */
+}
+
+.date_row span{
+    display: block;
+    background: inherit;
+    padding: 4px;
+    overflow: hidden;
+}
+
+.date_row span:before,
+.date_row span:after{
+    display: inline-block;
+    position: relative;
+    content: " ";
+    vertical-align: middle;
+    width: 50%;
+    height: 0px;
+    border-top: 1px solid #ccc;
+}
+
+.date_row span:before{
+    right: 0.5em;
+    margin-left: -50%;
+}
+
+.date_row span:after{
+    left: 0.5em;
+    margin-right: -50%;
 }
 
 #restore-draft {

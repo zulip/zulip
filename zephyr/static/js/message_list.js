@@ -30,23 +30,24 @@ function add_display_time(message, prev) {
     if (message.timestr !== undefined) {
         return;
     }
-    var two_digits = function (x) { return ('0' + x).slice(-2); };
     var time = new XDate(message.timestamp * 1000);
-    var include_date = message.include_recipient;
+    var include_date = false;
 
     if (prev !== undefined) {
         var prev_time = new XDate(prev.timestamp * 1000);
         if (time.toDateString() !== prev_time.toDateString()) {
             include_date = true;
         }
+    } else {
+        include_date = true;
     }
 
-    // NB: timestr is HTML, inserted into the document without escaping.
     if (include_date) {
-        message.timestr = (timerender.render_time(time))[0].outerHTML;
-    } else {
-        message.timestr = time.toString("HH:mm");
+        // NB: show_date is HTML, inserted into the document without escaping.
+        message.show_date = (timerender.render_time(time))[0].outerHTML;
     }
+
+    message.timestr = time.toString("HH:mm");
 }
 
 MessageList.prototype = {
@@ -288,8 +289,11 @@ MessageList.prototype = {
             message.include_recipient = false;
             message.include_bookend   = false;
             message.include_footer    = false;
+
+            add_display_time(message, prev);
+
             if (util.same_recipient(prev, message) && self.collapse_messages &&
-               prev.historical === message.historical) {
+               prev.historical === message.historical && !message.show_date) {
                 current_group.push(message.id);
             } else {
                 if (current_group.length > 0)
@@ -321,7 +325,6 @@ MessageList.prototype = {
                 ids_where_next_is_same_sender[prev.id] = true;
             }
 
-            add_display_time(message, prev);
             if (message.last_edit_timestamp !== undefined &&
                 message.last_edit_timestr === undefined) {
                 // Add or update the last_edit_timestr

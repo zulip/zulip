@@ -2,14 +2,6 @@ var timerender = (function () {
 
 var exports = {};
 
-// If this is 5, then times from up to 5 days before the current
-// day will be formatted as weekday names:
-//
-//                     1/10 1/11 1/12
-// Sun  Mon  Tue  Wed  Thu  1/18 1/19
-//                     ^ today
-var MAX_AGE_FOR_WEEKDAY = 5;
-
 var next_timerender_id = 0;
 
 var set_to_start_of_day = function (time) {
@@ -34,33 +26,24 @@ function render_now(time) {
     // constants.
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
-    if (days_old >= 0 && days_old <= MAX_AGE_FOR_WEEKDAY) {
-        var day_string;         // e.g. "Yesterday", "Wed"
-        var expire_days;        // after how many days from the
-                                // message send time do we need to
-                                // update?
+    if (days_old >= 0 && days_old <= 1) {
+        var day_string;
 
         if (days_old === 0) {
             day_string = "Today";
-            expire_days = 1;
         } else if (days_old === 1) {
             day_string = "Yesterday";
-            expire_days = 2;
-        } else {
-            day_string = time.toString("ddd");
-            expire_days = MAX_AGE_FOR_WEEKDAY + 1;
         }
 
-        // "\xa0" is U+00A0 NO-BREAK SPACE.
-        // Can't use &nbsp; as that represents the literal string "&nbsp;".
-        return [day_string + " " + time.toString("HH:mm"),
-                start_of_other_day.addDays(expire_days)
-                .toString("yyyy-MM-dd")];
+        return [day_string,
+                start_of_today.addDays(1).toString("yyyy-MM-dd")];
     } else {
         // For now, if we get a message from tomorrow, we don't bother
         // rewriting the timestamp when it gets to be tomorrow.
-        return [time.toString("MMM\xa0dd") + " " + time.toString("HH:mm"),
-                undefined];
+
+        // "\xa0" is U+00A0 NO-BREAK SPACE.
+        // Can't use &nbsp; as that represents the literal string "&nbsp;".
+        return [time.toString("MMM\xa0dd"), undefined];
     }
 }
 
