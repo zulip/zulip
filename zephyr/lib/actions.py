@@ -1007,10 +1007,10 @@ def gather_subscriptions(user_profile):
     for sub in subs:
         (stream_name, invite_only) = stream_hash[sub.recipient.type_id]
         stream = {'name': stream_name,
-                       'in_home_view': sub.in_home_view,
-                       'invite_only': invite_only,
-                       'color': sub.color,
-                       'notifications': sub.notifications}
+                  'in_home_view': sub.in_home_view,
+                  'invite_only': invite_only,
+                  'color': sub.color,
+                  'notifications': sub.notifications}
         if sub.active:
             subscribed.append(stream)
         else:
