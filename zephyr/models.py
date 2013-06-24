@@ -66,6 +66,11 @@ class Realm(models.Model):
     def __str__(self):
         return self.__repr__()
 
+    class Meta:
+        permissions = (
+            ('administer', "Administer a realm"),
+        )
+
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
