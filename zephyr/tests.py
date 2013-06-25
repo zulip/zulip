@@ -743,16 +743,17 @@ class SubscriptionAPITest(AuthedTestCase):
         self.realm = self.user_profile.realm
         self.streams = self.get_streams(self.test_email)
 
-    def make_random_stream_names(self, existing_stream_names, names_to_avoid):
+    def make_random_stream_names(self, existing_stream_names):
         """
         Helper function to make up random stream names. It takes
         existing_stream_names and randomly appends a digit to the end of each,
         but avoids names that appear in the list names_to_avoid.
         """
         random_streams = []
+        all_stream_names = [stream.name for stream in Stream.objects.filter(realm=self.realm)]
         for stream in existing_stream_names:
             random_stream = stream + str(random.randint(0, 9))
-            if not random_stream in names_to_avoid:
+            if not random_stream in all_stream_names:
                 random_streams.append(random_stream)
         return random_streams
 
@@ -815,7 +816,7 @@ class SubscriptionAPITest(AuthedTestCase):
         doesn't matter whether the stream already exists.
         """
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
-        add_streams = self.make_random_stream_names(self.streams, self.streams)
+        add_streams = self.make_random_stream_names(self.streams)
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
         self.helper_check_subs_before_and_after_add(
             "/json/subscriptions/add", self.streams + add_streams, {},
@@ -898,7 +899,7 @@ class SubscriptionAPITest(AuthedTestCase):
         """
         invitee = "iago@humbughq.com"
         current_streams = self.get_streams(invitee)
-        invite_streams = self.make_random_stream_names(current_streams, current_streams)
+        invite_streams = self.make_random_stream_names(current_streams)
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
 
     def test_non_ascii_subscription_for_principal(self):
@@ -988,8 +989,7 @@ class SubscriptionAPITest(AuthedTestCase):
         Calling /json/subscriptions/remove on a stream that doesn't exist
         should return a JSON error.
         """
-        all_stream_names = [stream.name for stream in Stream.objects.filter(realm=self.realm)]
-        random_streams = self.make_random_stream_names(self.streams, all_stream_names)
+        random_streams = self.make_random_stream_names(self.streams)
         self.assertNotEqual(len(random_streams), 0)  # necessary for full test coverage
         streams_to_remove = random_streams[:1]  # pick only one fake stream, to make checking the error message easy
         result = self.client.post("/json/subscriptions/remove",
@@ -1039,8 +1039,7 @@ class SubscriptionAPITest(AuthedTestCase):
         Calling /json/subscriptions/exist on a stream that doesn't exist should
         return that it doesn't exist.
         """
-        all_stream_names = [stream.name for stream in Stream.objects.filter(realm=self.realm)]
-        random_streams = self.make_random_stream_names(self.streams, all_stream_names)
+        random_streams = self.make_random_stream_names(self.streams)
         self.assertNotEqual(len(random_streams), 0)  # necessary for full test coverage
         self.helper_subscriptions_exists(random_streams[0], False, None)
 
