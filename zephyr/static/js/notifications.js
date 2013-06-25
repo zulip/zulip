@@ -207,11 +207,11 @@ exports.speaking_at_me = function (message) {
 
 function message_is_notifiable(message) {
     // based purely on message contents, can we notify the user about the message?
-    return ((message.type === "private" &&
-             !message.sent_by_me) ||
-            exports.speaking_at_me(message) ||
-           (message.type === "stream" &&
-            subs.receives_notifications(message.stream)));
+    return (!message.sent_by_me &&
+            (message.type === "private" ||
+             exports.speaking_at_me(message) ||
+             (message.type === "stream" &&
+              subs.receives_notifications(message.stream))));
 }
 
 exports.received_messages = function (messages) {
