@@ -62,6 +62,19 @@ $(function () {
         return false;
     });
 
+    function is_image_format(file) {
+        var type = file.type;
+        if (!type) return false;
+
+        var supported_types = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/svg+xml'
+        ];
+        return $.inArray(type, supported_types) >= 0;
+    }
+
     $('#bot_avatar_file_input').change(function(e) {
         if (e.target.files.length === 0) {
             $('#bot_avatar_file_input_error').hide();
@@ -72,7 +85,11 @@ $(function () {
                 $('#bot_avatar_file_input_error').show();
                 clear_bot_avatar_file_input();
             }
-            else {
+            else if (!is_image_format(file)) {
+                $('#bot_avatar_file_input_error').text('File type is not supported.');
+                $('#bot_avatar_file_input_error').show();
+                clear_bot_avatar_file_input();
+            } else {
                 $('#bot_avatar_file_input_error').hide();
             }
         }
