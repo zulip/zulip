@@ -52,6 +52,16 @@ $(function () {
         control.replaceWith(new_control);
     }
 
+    $('#bot_avatar_file_input').on('drop', function(e) {
+        var files = e.dataTransfer.files;
+        if (files === null || files === undefined || files.length === 0) {
+            return false;
+        }
+        this.files = files;
+        e.preventDefault();
+        return false;
+    });
+
     $('#bot_avatar_file_input').change(function(e) {
         if (e.target.files.length === 0) {
             $('#bot_avatar_file_input_error').hide();
