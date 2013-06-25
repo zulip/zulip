@@ -792,7 +792,7 @@ class SubscriptionAPITest(AuthedTestCase):
         # also check that this matches the list of your subscriptions
         self.assertItemsEqual(list_streams, self.streams)
 
-    def helper_check_subs_before_and_after_add(self, url, subscriptions, other_params,
+    def helper_check_subs_before_and_after_add(self, subscriptions, other_params,
                                                json_dict, email, new_subs):
         """
         Check result of adding subscriptions.
@@ -808,9 +808,7 @@ class SubscriptionAPITest(AuthedTestCase):
          "already_subscribed": {"iago@humbughq.com": ["Venice", "Verona"]},
          "subscribed": {"iago@humbughq.com": ["Venice8"]}}
         """
-        data = {"subscriptions": ujson.dumps(subscriptions)}
-        data.update(other_params)
-        result = self.client.post(url, data)
+        result = self.common_subscribe_to_streams(self.test_email, subscriptions, other_params)
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         for subscription_status, val in json_dict.iteritems():
@@ -832,8 +830,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
         add_streams = self.make_random_stream_names(self.streams)
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
-        self.helper_check_subs_before_and_after_add(
-            "/json/subscriptions/add", self.streams + add_streams, {},
+        self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
             {"subscribed": {self.test_email: add_streams},
              "already_subscribed": {self.test_email: self.streams}},
             self.test_email, self.streams + add_streams)
@@ -842,8 +839,7 @@ class SubscriptionAPITest(AuthedTestCase):
         """
         Subscribing to a stream name with non-ASCII characters succeeds.
         """
-        self.helper_check_subs_before_and_after_add(
-            "/json/subscriptions/add", self.streams + [u"hümbüǵ"], {},
+        self.helper_check_subs_before_and_after_add(self.streams + [u"hümbüǵ"], {},
             {"subscribed": {self.test_email: [u"hümbüǵ"]},
              "already_subscribed": {self.test_email: self.streams}},
             self.test_email, self.streams + [u"hümbüǵ"])
@@ -855,8 +851,7 @@ class SubscriptionAPITest(AuthedTestCase):
         """
         # character limit is 30 characters
         long_stream_name = "a" * 31
-        result = self.client.post("/json/subscriptions/add",
-                                   {"subscriptions": ujson.dumps([long_stream_name])})
+        result = self.common_subscribe_to_streams(self.test_email, [long_stream_name])
         self.assert_json_error(result,
                                "Stream name (%s) too long." % (long_stream_name,))
 
@@ -868,8 +863,7 @@ class SubscriptionAPITest(AuthedTestCase):
         """
         # currently, the only invalid name is the empty string
         invalid_stream_name = ""
-        result = self.client.post("/json/subscriptions/add",
-                                   {"subscriptions": ujson.dumps([invalid_stream_name])})
+        result = self.common_subscribe_to_streams(self.test_email, [invalid_stream_name])
         self.assert_json_error(result,
                                "Invalid stream name (%s)." % (invalid_stream_name,))
 
@@ -887,8 +881,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertNotEqual(len(streams), 0)  # necessary for full test coverage
         streams_to_sub = streams[:1]  # just add one, to make the message easier to check
         streams_to_sub.extend(current_streams)
-        self.helper_check_subs_before_and_after_add(
-            "/json/subscriptions/add", streams_to_sub,
+        self.helper_check_subs_before_and_after_add(streams_to_sub,
             {"principals": ujson.dumps([invitee])},
             {"subscribed": {invitee: streams[:1]},
              "already_subscribed": {invitee: current_streams}},
@@ -925,36 +918,34 @@ class SubscriptionAPITest(AuthedTestCase):
 
     def test_subscription_add_invalid_principal(self):
         """
-        Calling /json/subscriptions/add on behalf of a principal that does not
-        exist should return a JSON error.
+        Calling subscribe on behalf of a principal that does not exist
+        should return a JSON error.
         """
         invalid_principal = "rosencrantz-and-guildenstern@humbughq.com"
         # verify that invalid_principal actually doesn't exist
         with self.assertRaises(UserProfile.DoesNotExist):
             self.get_user_profile(invalid_principal)
-        result = self.client.post("/json/subscriptions/add",
-                                   {"subscriptions": ujson.dumps(self.streams),
-                                    "principals": ujson.dumps([invalid_principal])})
+        result = self.common_subscribe_to_streams(self.test_email, self.streams,
+                                                  {"principals": ujson.dumps([invalid_principal])})
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
                                % (invalid_principal,))
 
     def test_subscription_add_principal_other_realm(self):
         """
-        Calling /json/subscriptions/add on behalf of a principal in another
-        realm should return a JSON error.
+        Calling subscribe on behalf of a principal in another realm
+        should return a JSON error.
         """
         principal = "starnine@mit.edu"
         profile = self.get_user_profile(principal)
         # verify that principal exists (thus, the reason for the error is the cross-realming)
         self.assertIsInstance(profile, UserProfile)
-        result = self.client.post("/json/subscriptions/add",
-                                   {"subscriptions": ujson.dumps(self.streams),
-                                    "principals": ujson.dumps([principal])})
+        result = self.common_subscribe_to_streams(self.test_email, self.streams,
+                                                  {"principals": ujson.dumps([principal])})
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
                                % (principal,))
 
-    def helper_check_subs_before_and_after_remove(self, url, subscriptions, other_params,
-                                               json_dict, email, new_subs):
+    def helper_check_subs_before_and_after_remove(self, subscriptions, json_dict,
+                                                  email, new_subs):
         """
         Check result of removing subscriptions.
 
@@ -965,9 +956,8 @@ class SubscriptionAPITest(AuthedTestCase):
          "removed": ["Denmark", "Scotland", "Verona"],
          "not_subscribed": ["Rome"], "result": "success"}
         """
-        data = {"subscriptions": ujson.dumps(subscriptions)}
-        data.update(other_params)
-        result = self.client.post(url, data)
+        result = self.client.post("/json/subscriptions/remove",
+                                  {"subscriptions": ujson.dumps(subscriptions)})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         for key, val in json_dict.iteritems():
@@ -993,8 +983,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertNotEqual(len(not_subbed), 0)  # necessary for full test coverage
         try_to_remove = not_subbed[:3]  # attempt to remove up to 3 streams not already subbed to
         streams_to_remove.extend(try_to_remove)
-        self.helper_check_subs_before_and_after_remove(
-            "/json/subscriptions/remove", streams_to_remove, {},
+        self.helper_check_subs_before_and_after_remove(streams_to_remove,
             {"removed": self.streams[1:], "not_subscribed": try_to_remove},
             self.test_email, [self.streams[0]])
 
@@ -1824,8 +1813,7 @@ class GetSubscribersTest(AuthedTestCase):
         """
         # Create a stream for which Hamlet is the only subscriber.
         stream_name = "Saxony"
-        self.client.post("/json/subscriptions/add",
-                         {"subscriptions": ujson.dumps([stream_name])})
+        self.common_subscribe_to_streams(self.email, [stream_name])
         other_email = "othello@humbughq.com"
 
         # Fetch the subscriber list as a non-member.
@@ -1837,9 +1825,8 @@ class GetSubscribersTest(AuthedTestCase):
         A subscriber to a private stream can query that stream's membership.
         """
         stream_name = "Saxony"
-        self.client.post("/json/subscriptions/add",
-                         {"subscriptions": ujson.dumps([stream_name]),
-                          "invite_only": ujson.dumps(True)})
+        self.common_subscribe_to_streams(self.email, [stream_name],
+                                         invite_only=True)
         self.make_successful_subscriber_request(stream_name)
 
     def test_nonsubscriber_private_stream(self):
@@ -1848,9 +1835,8 @@ class GetSubscribersTest(AuthedTestCase):
         """
         # Create a private stream for which Hamlet is the only subscriber.
         stream_name = "Saxony"
-        self.client.post("/json/subscriptions/add",
-                         {"subscriptions": ujson.dumps([stream_name]),
-                          "invite_only": ujson.dumps(True)})
+        self.common_subscribe_to_streams(self.email, [stream_name],
+                                         invite_only=True)
         other_email = "othello@humbughq.com"
 
         # Try to fetch the subscriber list as a non-member.
