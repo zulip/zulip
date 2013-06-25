@@ -1454,7 +1454,7 @@ table.floating_recipient {
     float: right;
 }
 
-#invite_user_form {
+.modal form {
     margin-bottom: 0px;
 }
 
