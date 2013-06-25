@@ -311,6 +311,7 @@ PIPELINE_JS = {
     'app': {
         'source_filenames': [
             'third/bootstrap-notify/js/bootstrap-notify.js',
+            'third/html5-formdata/formdata.js',
             'third/jquery-validate/jquery.validate.js',
             'third/jquery-form/jquery.form.js',
             'third/jquery-highlight/jquery.highlight.js',
