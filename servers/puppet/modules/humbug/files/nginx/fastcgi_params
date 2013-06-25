@@ -5,7 +5,7 @@ fastcgi_param	CONTENT_LENGTH		$content_length;
 
 fastcgi_param	SCRIPT_FILENAME		$request_filename;
 fastcgi_param	SCRIPT_NAME		$fastcgi_script_name;
-fastcgi_param	REQUEST_URI		$request_uri;
+fastcgi_param	REQUEST_URI		$uri;
 fastcgi_param	DOCUMENT_URI		$document_uri;
 fastcgi_param	DOCUMENT_ROOT		$document_root;
 fastcgi_param	SERVER_PROTOCOL		$server_protocol;
