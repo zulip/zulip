@@ -8,13 +8,12 @@ var set_to_start_of_day = function (time) {
     return time.setMilliseconds(0).setSeconds(0).setMinutes(0).setHours(0);
 };
 
-function now() { return (new XDate()); }
+function now () { return new XDate(); }
 
 // Given an XDate object 'time', return a two-element list containing
 //   - a string for the current human-formatted version
-//   - a string like "2013-01-20" representing the day the format
-//     needs to change, or undefined if it will never need to change.
-function render_now(time) {
+//   - a boolean for if it will need to be updated when the day changes
+function render_now (time) {
     var start_of_today = set_to_start_of_day(now());
     var start_of_other_day = set_to_start_of_day(time.clone());
 
@@ -26,50 +25,36 @@ function render_now(time) {
     // constants.
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
-    if (days_old >= 0 && days_old <= 1) {
-        var day_string;
-
-        if (days_old === 0) {
-            day_string = "Today";
-        } else if (days_old === 1) {
-            day_string = "Yesterday";
-        }
-
-        return [day_string,
-                start_of_today.addDays(1).toString("yyyy-MM-dd")];
+    if (days_old === 0) {
+        return ["Today", true];
+    } else if (days_old === 1) {
+        return ["Yesterday", true];
     } else {
         // For now, if we get a message from tomorrow, we don't bother
         // rewriting the timestamp when it gets to be tomorrow.
 
         // "\xa0" is U+00A0 NO-BREAK SPACE.
         // Can't use &nbsp; as that represents the literal string "&nbsp;".
-        return [time.toString("MMM\xa0dd"), undefined];
+        return [time.toString("MMM\xa0dd"), false];
     }
 }
 
-// This table associates to each day (represented as a yyyy-MM-dd
-// string) a list of timestamps that need to be updated on that day.
+// List of the dates that need to be updated when the day changes.
 // Each timestamp is represented as a list of length 2:
 //   [id of the span element, XDate representing the time]
+var update_list = [];
 
-// This is an efficient data structure because we only need to update
-// timestamps at the start of each day. If timestamp update times were
-// arbitrary, a priority queue would be more sensible.
-var update_table = {};
-
-// The day that elements are currently up-to-date with respect to.
+// The time at the beginning of the next day, when the timestamps are updated.
 // Represented as an XDate with hour, minute, second, millisecond 0.
-var last_updated;
+var next_update;
 $(function () {
-       last_updated = set_to_start_of_day(now());
+    next_update = set_to_start_of_day(now()).addDays(1);
 });
 
-function maybe_add_update_table_entry(update_date, id, time) {
-    if (update_date === undefined)
-        return;
-    if (update_table[update_date] === undefined)
-        update_table[update_date] = [];
-    update_table[update_date].push([id, time]);
+function maybe_add_update_list_entry (needs_update, id, time) {
+    if (needs_update) {
+        update_list.push([id, time]);
+    }
 }
 
 // Given an XDate object 'time', return a DOM node that initially
@@ -85,43 +70,34 @@ exports.render_time = function (time) {
     next_timerender_id++;
     var rendered_now = render_now(time);
     var node = $("<span />").attr('id', id).text(rendered_now[0]);
-    maybe_add_update_table_entry(rendered_now[1], id, time);
+    maybe_add_update_list_entry(rendered_now[1], id, time);
     return node;
 };
 
 // This isn't expected to be called externally except manually for
 // testing purposes.
 exports.update_timestamps = function () {
-    var start_of_today = set_to_start_of_day(now());
-    var new_date;
-    // This loop won't do anything unless the day changed since the
-    // last time it ran.
-    for (new_date = last_updated.clone().addDays(1);
-         new_date <= start_of_today;
-         new_date.addDays(1)) {
-        var update_date = new_date.toString("yyyy-MM-dd");
-        if (update_table[update_date] !== undefined)
-        {
-            var to_process = update_table[update_date];
-            var i;
-            update_table[update_date] = [];
-            $.each(to_process, function (idx, elem) {
-                var id = elem[0];
-                var element = document.getElementById(id);
-                // The element might not exist any more (because it
-                // was in the zfilt table, or because we added
-                // messages above it and re-collapsed).
-                if (element !== null) {
-                    var time = elem[1];
-                    var new_rendered = render_now(time);
-                    $(document.getElementById(id)).text(new_rendered[0]);
+    var time = now();
+    if (time >= next_update) {
+        var to_process = update_list;
+        update_list = [];
 
-                    maybe_add_update_table_entry(new_rendered[1], id, time);
-                }
-            });
-        }
+        $.each(to_process, function (idx, elem) {
+            var id = elem[0];
+            var element = document.getElementById(id);
+            // The element might not exist any more (because it
+            // was in the zfilt table, or because we added
+            // messages above it and re-collapsed).
+            if (element !== null) {
+                var time = elem[1];
+                var new_rendered = render_now(time);
+                $(document.getElementById(id)).text(new_rendered[0]);
+                maybe_add_update_list_entry(new_rendered[1], id, time);
+            }
+        });
+
+        next_update = set_to_start_of_day(time.clone().addDays(1));
     }
-    last_updated = start_of_today;
 };
 
 setInterval(exports.update_timestamps, 60 * 1000);
