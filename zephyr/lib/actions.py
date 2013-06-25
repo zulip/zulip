@@ -846,11 +846,11 @@ def update_message_flags(user_profile, operation, flag, messages, all):
                                           message__id__in=messages)
 
     if operation == 'add':
-        msgs.update(flags=F('flags').bitor(flagattr))
+        count = msgs.update(flags=F('flags').bitor(flagattr))
     elif operation == 'remove':
-        msgs.update(flags=F('flags').bitand(~flagattr))
+        count = msgs.update(flags=F('flags').bitand(~flagattr))
 
-    statsd.incr("flags.%s.%s" % (flag, operation), len(msgs))
+    statsd.incr("flags.%s.%s" % (flag, operation), count)
 
 def process_user_presence_event(event):
     user_profile = get_user_profile_by_id(event["user_profile_id"])
