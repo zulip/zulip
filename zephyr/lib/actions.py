@@ -219,7 +219,7 @@ def mentioned_in_message(message):
         for attempt in attempts:
             ups = UserProfile.objects.filter(attempt, realm=message.sender.realm)
             for user in ups:
-                users.add(user)
+                users.add(user.id)
             found = len(ups) > 0
             break
 
@@ -279,17 +279,17 @@ def do_send_messages(messages):
             ums_to_create = [UserMessage(user_profile=user_profile, message=message['message'])
                              for user_profile in message['recipients']
                              if user_profile.is_active]
+            wildcard, mentioned_ids = mentioned_in_message(message['message'])
             for um in ums_to_create:
-                wildcard, mentioned = mentioned_in_message(message['message'])
                 sent_by_human = message['message'].sending_client.name.lower() in \
                                     ['website', 'iphone', 'android']
                 if um.user_profile == message['message'].sender and sent_by_human:
                     um.flags |= UserMessage.flags.read
                 if wildcard:
                     um.flags |= UserMessage.flags.wildcard_mentioned
-                if um.user_profile in mentioned:
+                if um.user_profile_id in mentioned_ids:
                     um.flags |= UserMessage.flags.mentioned
-                user_message_flags[message['message'].id][um.user_profile] = um.flags_dict().get('flags')
+                user_message_flags[message['message'].id][um.user_profile_id] = um.flags_list()
             ums.extend(ums_to_create)
         UserMessage.objects.bulk_create(ums)
 
@@ -308,7 +308,7 @@ def do_send_messages(messages):
             data = dict(
                 type     = 'new_message',
                 message  = message['message'].id,
-                users    = [{'id': user.id, 'flags': user_flags.get(user, [])} for user in message['recipients']])
+                users    = [{'id': user.id, 'flags': user_flags.get(user.id, [])} for user in message['recipients']])
             if message['message'].recipient.type == Recipient.STREAM:
                 # Note: This is where authorization for single-stream
                 # get_updates happens! We only attach stream data to the
