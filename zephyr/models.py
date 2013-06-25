@@ -405,13 +405,10 @@ class UserMessage(models.Model):
 
     def __repr__(self):
         display_recipient = get_display_recipient(self.message.recipient)
-        return (u"<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.email, self.flags_dict())).encode("utf-8")
+        return (u"<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.email, self.flags_list())).encode("utf-8")
 
     def flags_list(self):
         return [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set]
-
-    def flags_dict(self):
-        return dict(flags = [self.flags_list()])
 
 def parse_usermessage_flags(val):
     flags = []
