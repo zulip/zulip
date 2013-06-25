@@ -34,6 +34,7 @@ class LogRequests(object):
         request._memcached_requests_start = get_memcached_requests()
         request._bugdown_time_start = get_bugdown_time()
         request._bugdown_requests_start = get_bugdown_requests()
+        connection.queries = []
 
     def process_response(self, request, response):
         def timedelta_ms(timedelta):
