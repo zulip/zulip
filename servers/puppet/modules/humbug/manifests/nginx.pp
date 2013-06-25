@@ -9,7 +9,18 @@ class humbug::nginx {
     owner  => "root",
     group  => "root",
     mode => 644,
+    notify => Service["nginx"],
     source => "puppet:///modules/humbug/nginx/nginx.conf",
+  }
+
+  file { "/etc/nginx/fastcgi_params":
+    require => Package[nginx],
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    notify => Service["nginx"],
+    source => "puppet:///modules/humbug/nginx/fastcgi_params",
   }
 
   file { "/etc/nginx/sites-enabled/default":
@@ -19,7 +30,6 @@ class humbug::nginx {
 
   service { 'nginx':
     ensure     => running,
-    subscribe  => File['/etc/nginx/nginx.conf'],
   }
 }
 
