@@ -103,7 +103,7 @@ Filter.prototype = {
         // build JavaScript code in a string and then eval() it.
 
         return function (message) {
-            var operand, i;
+            var operand, i, index;
             for (i = 0; i < operators.length; i++) {
                 operand = operators[i][1];
                 switch (operators[i][0]) {
@@ -133,9 +133,19 @@ Filter.prototype = {
                     break;
 
                 case 'stream':
-                    if ((message.type !== 'stream') ||
-                        (message.stream.toLowerCase() !== operand))
+                    if (message.type !== 'stream')
                         return false;
+
+                    if (page_params.domain === "mit.edu") {
+                        // MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
+                        // (unsocial, ununsocial, social.d, etc)
+                        var related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(message.stream) + /(.d)*$/.source, 'i');
+                        if (! related_regexp.test(operand)) {
+                            return false;
+                        }
+                    } else if (message.stream.toLowerCase() !== operand) {
+                           return false;
+                    }
                     break;
 
                 case 'subject':

@@ -696,6 +696,15 @@ class NarrowBuilder(object):
         stream = get_stream(operand, self.user_profile.realm)
         if stream is None:
             raise BadNarrowOperator('unknown stream ' + operand)
+
+        if self.user_profile.realm.domain == "mit.edu":
+            # MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
+            # (unsocial, ununsocial, social.d, etc)
+            matching_streams = Stream.objects.filter(realm=self.user_profile.realm,
+                                                     name__iregex=r'"^(un)*%s(.d)*$' % (re.escape(stream.name),))
+            return self.pQ(recipient__in=[get_recipient(Recipient.STREAM, type_id=stream.id)
+                                          for stream in matching_streams])
+
         recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
         return self.pQ(recipient=recipient)
 
