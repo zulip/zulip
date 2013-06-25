@@ -793,7 +793,8 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertItemsEqual(list_streams, self.streams)
 
     def helper_check_subs_before_and_after_add(self, subscriptions, other_params,
-                                               json_dict, email, new_subs):
+                                               subscribed, already_subscribed,
+                                               email, new_subs):
         """
         Check result of adding subscriptions.
 
@@ -811,12 +812,8 @@ class SubscriptionAPITest(AuthedTestCase):
         result = self.common_subscribe_to_streams(self.test_email, subscriptions, other_params)
         self.assert_json_success(result)
         json = ujson.loads(result.content)
-        for subscription_status, val in json_dict.iteritems():
-            # keys are subscribed, already_subscribed.
-            # vals are a dict mapping e-mails to streams.
-            self.assertIn(subscription_status, json)
-            for email, streams in val.iteritems():
-                self.assertItemsEqual(streams, json[subscription_status][email])
+        self.assertItemsEqual(subscribed, json["subscribed"][email])
+        self.assertItemsEqual(already_subscribed, json["already_subscribed"][email])
         new_streams = self.get_streams(email)
         self.assertItemsEqual(new_streams, new_subs)
 
@@ -831,18 +828,14 @@ class SubscriptionAPITest(AuthedTestCase):
         add_streams = self.make_random_stream_names(self.streams)
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
         self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
-            {"subscribed": {self.test_email: add_streams},
-             "already_subscribed": {self.test_email: self.streams}},
-            self.test_email, self.streams + add_streams)
+            add_streams, self.streams, self.test_email, self.streams + add_streams)
 
     def test_non_ascii_stream_subscription(self):
         """
         Subscribing to a stream name with non-ASCII characters succeeds.
         """
         self.helper_check_subs_before_and_after_add(self.streams + [u"hümbüǵ"], {},
-            {"subscribed": {self.test_email: [u"hümbüǵ"]},
-             "already_subscribed": {self.test_email: self.streams}},
-            self.test_email, self.streams + [u"hümbüǵ"])
+            [u"hümbüǵ"], self.streams, self.test_email, self.streams + [u"hümbüǵ"])
 
     def test_subscriptions_add_too_long(self):
         """
@@ -882,9 +875,7 @@ class SubscriptionAPITest(AuthedTestCase):
         streams_to_sub = streams[:1]  # just add one, to make the message easier to check
         streams_to_sub.extend(current_streams)
         self.helper_check_subs_before_and_after_add(streams_to_sub,
-            {"principals": ujson.dumps([invitee])},
-            {"subscribed": {invitee: streams[:1]},
-             "already_subscribed": {invitee: current_streams}},
+            {"principals": ujson.dumps([invitee])}, streams[:1], current_streams,
             invitee, streams_to_sub)
         # verify that the user was sent a message informing them about the subscription
         msg = Message.objects.latest('id')
