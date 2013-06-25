@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager
 from zephyr.lib.cache import cache_with_key, update_user_profile_cache, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
-    update_user_presence_cache
+    update_user_presence_cache, generic_bulk_cached_fetch
 from zephyr.lib.utils import make_safe_digest
 from django.db import transaction, IntegrityError
 from zephyr.lib import bugdown
@@ -268,6 +268,15 @@ def get_recipient_cache_key(type, type_id):
 @cache_with_key(get_recipient_cache_key, timeout=3600*24*7)
 def get_recipient(type, type_id):
     return Recipient.objects.get(type_id=type_id, type=type)
+
+def bulk_get_recipients(type, type_ids):
+    def cache_key_function(type_id):
+        return get_recipient_cache_key(type, type_id)
+    def query_function(type_ids):
+        return Recipient.objects.filter(type=type, type_id__in=type_ids)
+
+    return generic_bulk_cached_fetch(cache_key_function, query_function, type_ids,
+                                     id_fetcher=lambda recipient: recipient.type_id)
 
 # NB: This function is currently unused, but may come in handy.
 def linebreak(string):

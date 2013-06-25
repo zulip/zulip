@@ -8,7 +8,7 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     DefaultStream, UserPresence, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    to_dict_cache_key, get_realm, stringify_message_dict
+    to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.core.exceptions import ValidationError
@@ -570,42 +570,53 @@ def notify_new_subscription(user_profile, stream, subscription, no_log=False):
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
 
-def bulk_add_subscriptions(stream, users):
-    recipient = get_recipient(Recipient.STREAM, stream.id)
-    all_subs = Subscription.objects.filter(user_profile__in=users,
-                                           recipient__type=Recipient.STREAM)
+def bulk_add_subscriptions(streams, users):
+    recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
+    recipients = [recipient.id for recipient in recipients_map.values()]
+
+    stream_map = {}
+    for stream in streams:
+        stream_map[recipients_map[stream.id].id] = stream
 
     subs_by_user = defaultdict(list)
-    for sub in all_subs:
+    all_subs_query = Subscription.objects.select_related("user_profile")
+    for sub in all_subs_query.filter(user_profile__in=users,
+                                     recipient__type=Recipient.STREAM):
         subs_by_user[sub.user_profile_id].append(sub)
 
     already_subscribed = []
     subs_to_activate = []
-    users_needing_new_subs = []
+    new_subs = []
     for user_profile in users:
-        needs_new_sub = True
+        needs_new_sub = set(recipients)
         for sub in subs_by_user[user_profile.id]:
-            if sub.recipient_id == recipient.id:
-                needs_new_sub = False
+            if sub.recipient_id in needs_new_sub:
+                needs_new_sub.remove(sub.recipient_id)
                 if sub.active:
-                    already_subscribed.append(user_profile)
+                    already_subscribed.append((user_profile, stream_map[sub.recipient_id]))
                 else:
-                    subs_to_activate.append(sub)
-        if needs_new_sub:
-            users_needing_new_subs.append(user_profile)
+                    subs_to_activate.append((sub, stream_map[sub.recipient_id]))
+                    # Mark the sub as active, without saving, so that
+                    # pick_color will consider this to be an active
+                    # subscription when picking colors
+                    sub.active = True
+        for recipient_id in needs_new_sub:
+            new_subs.append((user_profile, recipient_id, stream_map[recipient_id]))
 
     subs_to_add = []
-    for user_profile in users_needing_new_subs:
+    for (user_profile, recipient_id, stream) in new_subs:
         color = pick_color_helper(user_profile, subs_by_user[user_profile.id])
-        subs_to_add.append(Subscription(user_profile=user_profile,
-                                        active=True, color=color,
-                                        recipient=recipient))
-    Subscription.objects.bulk_create(subs_to_add)
-    Subscription.objects.filter(id__in=[s.id for s in subs_to_activate]).update(active=True)
+        sub_to_add = Subscription(user_profile=user_profile, active=True,
+                                  color=color, recipient_id=recipient_id)
+        subs_by_user[user_profile.id].append(sub_to_add)
+        subs_to_add.append((sub_to_add, stream))
+    Subscription.objects.bulk_create([sub for (sub, stream) in subs_to_add])
+    Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in subs_to_activate]).update(active=True)
 
-    for sub in subs_to_add + subs_to_activate:
+    for (sub, stream) in subs_to_add + subs_to_activate:
         notify_new_subscription(sub.user_profile, stream, sub)
-    return (users_needing_new_subs + [sub.user_profile for sub in subs_to_activate],
+    return ([(user_profile, stream_name) for (user_profile, recipient_id, stream_name) in new_subs] +
+            [(sub.user_profile, stream_name) for (sub, stream_name) in subs_to_activate],
             already_subscribed)
 
 # When changing this, also change bulk_add_subscriptions

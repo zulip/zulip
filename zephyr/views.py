@@ -1265,18 +1265,16 @@ def add_subscriptions_backend(request, user_profile,
         subscribers = [user_profile]
 
     streams = list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
-    private_streams = {}
-    result = dict(subscribed=[], already_subscribed=[])
+
+    (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers)
 
     result = dict(subscribed=defaultdict(list), already_subscribed=defaultdict(list))
-    for stream in streams:
-        (subscribed, already_subscribed) = bulk_add_subscriptions(stream, subscribers)
-        for subscriber in subscribed:
-            result["subscribed"][subscriber.email].append(stream.name)
-        for subscriber in already_subscribed:
-            result["already_subscribed"][subscriber.email].append(stream.name)
-        private_streams[stream.name] = stream.invite_only
+    for (subscriber, stream) in subscribed:
+        result["subscribed"][subscriber.email].append(stream.name)
+    for (subscriber, stream) in already_subscribed:
+        result["already_subscribed"][subscriber.email].append(stream.name)
 
+    private_streams = dict((stream.name, stream.invite_only) for stream in streams)
 
     # Inform the user if someone else subscribed them to stuff
     if principals and result["subscribed"]:
