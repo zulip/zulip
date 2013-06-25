@@ -189,10 +189,24 @@ class AuthedTestCase(TestCase):
         return open(os.path.join(os.path.dirname(__file__),
                                  "fixtures/%s/%s_%s.%s" % (type, type, action,file_type))).read()
 
+    # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name):
         stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), stream_name)
         user_profile = self.get_user_profile(email)
         do_add_subscription(user_profile, stream, no_log=True)
+
+    # Subscribe to a stream by making an API request
+    def common_subscribe_to_streams(self, email, streams, extra_post_data = {}, invite_only=False):
+        api_key = self.get_api_key(email)
+
+        post_data = {'email': email,
+                     'api-key': api_key,
+                     'subscriptions': ujson.dumps(streams),
+                     'invite_only': ujson.dumps(invite_only)}
+        post_data.update(extra_post_data)
+
+        result = self.client.post("/api/v1/subscriptions/add", post_data)
+        return result
 
     def send_json_payload(self, email, url, payload, stream_name=None, **post_params):
         if stream_name != None:
@@ -1703,18 +1717,6 @@ class GetPublicStreamsTest(AuthedTestCase):
 
 class InviteOnlyStreamTest(AuthedTestCase):
 
-    def common_subscribe_to_stream(self, email, streams, extra_post_data = {}, invite_only=False):
-        api_key = self.get_api_key(email)
-
-        post_data = {'email': email,
-                     'api-key': api_key,
-                     'subscriptions': streams,
-                     'invite_only': ujson.dumps(invite_only)}
-        post_data.update(extra_post_data)
-
-        result = self.client.post("/api/v1/subscriptions/add", post_data)
-        return result
-
     def test_list_respects_invite_only_bit(self):
         """
         Make sure that /json/subscriptions/list properly returns
@@ -1723,9 +1725,9 @@ class InviteOnlyStreamTest(AuthedTestCase):
         email = 'hamlet@humbughq.com'
         self.login(email)
 
-        result1 = self.common_subscribe_to_stream(email, '["Saxony"]', invite_only=True)
+        result1 = self.common_subscribe_to_streams(email, ["Saxony"], invite_only=True)
         self.assert_json_success(result1)
-        result2 = self.common_subscribe_to_stream(email, '["Normandy"]', invite_only=False)
+        result2 = self.common_subscribe_to_streams(email, ["Normandy"], invite_only=False)
         self.assert_json_success(result2)
         result = self.client.post("/json/subscriptions/list", {})
         self.assert_json_success(result)
@@ -1741,7 +1743,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         # Creating an invite-only stream is allowed
         email = 'hamlet@humbughq.com'
 
-        result = self.common_subscribe_to_stream(email, '["Saxony"]', invite_only=True)
+        result = self.common_subscribe_to_streams(email, ["Saxony"], invite_only=True)
         self.assert_json_success(result)
 
         json = ujson.loads(result.content)
@@ -1751,14 +1753,14 @@ class InviteOnlyStreamTest(AuthedTestCase):
         # Subscribing oneself to an invite-only stream is not allowed
         email = "othello@humbughq.com"
         self.login(email)
-        result = self.common_subscribe_to_stream(email, '["Saxony"]')
+        result = self.common_subscribe_to_streams(email, ["Saxony"])
         self.assert_json_error(result, 'Unable to access invite-only stream (Saxony).')
 
         # Inviting another user to an invite-only stream is allowed
         email = 'hamlet@humbughq.com'
         self.login(email)
-        result = self.common_subscribe_to_stream(
-            email, '["Saxony"]',
+        result = self.common_subscribe_to_streams(
+            email, ["Saxony"],
             extra_post_data={'principals': ujson.dumps(["othello@humbughq.com"])})
         json = ujson.loads(result.content)
         self.assertEqual(json["subscribed"], {"othello@humbughq.com": ['Saxony']})
