@@ -947,6 +947,20 @@ $(function () {
             }
         });
     });
+
+    // Change the down arrow to an up arrow on expansion, and back to a down
+    // arrow on collapse.
+    // FIXME: If there's a way, it may be better to do this in pure CSS.
+    $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
+        var sub_arrow = $(e.target).closest('.subscription_row').find('.sub_arrow i');
+        sub_arrow.removeClass('icon-vector-chevron-down');
+        sub_arrow.addClass('icon-vector-chevron-up');
+    });
+    $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
+        var sub_arrow = $(e.target).closest('.subscription_row').find('.sub_arrow i');
+        sub_arrow.removeClass('icon-vector-chevron-up');
+        sub_arrow.addClass('icon-vector-chevron-down');
+    });
 });
 
 function focus_on_narrowed_stream() {

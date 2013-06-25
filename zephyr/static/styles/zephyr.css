@@ -1412,6 +1412,11 @@ table.floating_recipient {
     float: right;
 }
 
+.sub_arrow {
+    float: right;
+    padding: 0 5px 0 10px;
+}
+
 #create_stream_row td {
     background-color: #f3f3f3;
     border-color: #BBB;

@@ -475,4 +475,5 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-question-sign:before        { content: "\f059"; }
 .icon-vector-remove:before               { content: "\f00d"; }
 .icon-vector-angle-down:before           { content: "\f107"; }
+.icon-vector-chevron-up:before           { content: "\f077"; }
 .icon-vector-chevron-down:before         { content: "\f078"; }
