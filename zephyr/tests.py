@@ -441,6 +441,14 @@ class StreamMessagesTest(AuthedTestCase):
         self.assertEqual(old_non_subscriber_messages, new_non_subscriber_messages)
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
 
+    def test_message_mentions(self):
+        user_profile = self.get_user_profile("iago@humbughq.com")
+        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.send_message("hamlet@humbughq.com", "Denmark", Recipient.STREAM,
+                          content="test @**Iago** rules")
+        message = self.message_stream(user_profile)[-1]
+        assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
+
     @slow(0.24, 'checks all users')
     def test_message_to_stream(self):
         """
