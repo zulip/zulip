@@ -1966,3 +1966,10 @@ li.expanded_subject {
     font-size: 14px;
 }
 
+.screen {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: #000;
+    z-index: 20000;
+}
