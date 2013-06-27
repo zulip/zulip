@@ -262,6 +262,33 @@ def get_stream(stream_name, realm):
     except Stream.DoesNotExist:
         return None
 
+def bulk_get_streams(realm, stream_names):
+    if isinstance(realm, Realm):
+        realm_id = realm.id
+    else:
+        realm_id = realm
+
+    def fetch_streams_by_name(stream_names):
+        # This should be just
+        #
+        # Stream.objects.select_related("realm").filter(name__iexact__in=stream_names,
+        #                                               realm_id=realm_id)
+        #
+        # But chaining __in and __iexact doesn't work with Django's
+        # ORM, so we have the following hack to construct the relevant where clause
+        if len(stream_names) == 0:
+            return []
+        upper_list = ", ".join(["UPPER(%s)"] * len(stream_names))
+        where_clause = "UPPER(zephyr_stream.name::text) IN (%s)" % (upper_list,)
+        return Stream.objects.select_related("realm").filter(realm_id=realm_id).extra(
+            where=[where_clause],
+            params=stream_names)
+
+    return generic_bulk_cached_fetch(lambda stream_name: get_stream_cache_key(stream_name, realm),
+                                     fetch_streams_by_name,
+                                     [stream_name.lower() for stream_name in stream_names],
+                                     id_fetcher=lambda stream: stream.name.lower())
+
 def get_recipient_cache_key(type, type_id):
     return "get_recipient:%s:%s" % (type, type_id,)
 

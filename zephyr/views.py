@@ -18,7 +18,7 @@ from django.db import transaction
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, \
     PreregistrationUser, get_client, MitUser, UserActivity, \
-    MAX_SUBJECT_LENGTH, get_stream, UserPresence, \
+    MAX_SUBJECT_LENGTH, get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags
 from zephyr.lib.actions import do_remove_subscription, \
@@ -102,13 +102,18 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
             raise JsonableError("Stream name (%s) too long." % (stream_name,))
         if not valid_stream_name(stream_name):
             raise JsonableError("Invalid stream name (%s)." % (stream_name,))
-        stream = get_stream(stream_name, user_profile.realm)
 
+    existing_streams = bulk_get_streams(user_profile.realm, stream_set)
+
+    for stream_name in stream_set:
+        stream = existing_streams.get(stream_name.lower())
         if stream is None:
             rejects.append(stream_name)
         else:
             streams.append(stream)
-            # Verify we can access the stream
+            # Verify we can access the stream.  Note that this part
+            # does not use a bulk query, and thus will perform poorly
+            # if a user queries a lot of invite-only streams.
             if stream.invite_only and not subscribed_to_stream(user_profile, stream):
                 raise JsonableError("Unable to access invite-only stream (%s)." % stream.name)
     if autocreate:
