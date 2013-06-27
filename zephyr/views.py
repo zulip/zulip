@@ -16,7 +16,7 @@ from django.db.models import Q, F
 from django.core.mail import send_mail, mail_admins
 from django.db import transaction
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
-    Recipient, Realm, UserMessage, \
+    Recipient, Realm, UserMessage, bulk_get_recipients, \
     PreregistrationUser, get_client, MitUser, UserActivity, \
     MAX_SUBJECT_LENGTH, get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
@@ -702,8 +702,9 @@ class NarrowBuilder(object):
             # (unsocial, ununsocial, social.d, etc)
             matching_streams = Stream.objects.filter(realm=self.user_profile.realm,
                                                      name__iregex=r'"^(un)*%s(.d)*$' % (re.escape(stream.name),))
-            return self.pQ(recipient__in=[get_recipient(Recipient.STREAM, type_id=stream.id)
-                                          for stream in matching_streams])
+            matching_stream_ids = [stream.id for stream in matching_streams]
+            recipients = bulk_get_recipients(Recipient.STREAM, matching_stream_ids).values()
+            return self.pQ(recipient__in=recipients)
 
         recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
         return self.pQ(recipient=recipient)
