@@ -141,6 +141,47 @@ def cache_set_many(items, cache_name=None, timeout=None):
     memcached_stats_finish()
     return ret
 
+# Required Arguments are as follows:
+# * object_ids: The list of object ids to look up
+# * cache_key_function: object_id => cache key
+# * query_function: [object_ids] => [objects from database]
+# Optional keyword arguments:
+# * setter: Function to call before storing items to cache (e.g. compression)
+# * extractor: Function to call on items returned from cache
+#   (e.g. decompression).  Should be the inverse of the setter
+#   function.
+# * id_fetcher: Function mapping an object from database => object_id
+#   (in case we're using a key more complex than obj.id)
+# * cache_transformer: Function mapping an object from database =>
+#   value for cache (in case the values that we're caching are some
+#   function of the objects, not the objects themselves)
+def generic_bulk_cached_fetch(cache_key_function, query_function, object_ids,
+                              extractor=lambda obj: obj,
+                              setter=lambda obj: obj,
+                              id_fetcher=lambda obj: obj.id,
+                              cache_transformer=lambda obj: obj):
+    cache_keys = {}
+    for object_id in object_ids:
+        cache_keys[object_id] = cache_key_function(object_id)
+    cached_objects = cache_get_many([cache_keys[object_id]
+                                     for object_id in object_ids])
+    for (key, val) in cached_objects.items():
+        cached_objects[key] = extractor(cached_objects[key][0])
+    needed_ids = [object_id for object_id in object_ids if
+                  cache_keys[object_id] not in cached_objects]
+    db_objects = query_function(needed_ids)
+
+    items_for_memcached = {}
+    for obj in db_objects:
+        key = cache_keys[id_fetcher(obj)]
+        item = cache_transformer(obj)
+        items_for_memcached[key] = (setter(item),)
+        cached_objects[key] = item
+    if len(items_for_memcached) > 0:
+        cache_set_many(items_for_memcached)
+    return dict((object_id, cached_objects[cache_keys[object_id]]) for object_id in object_ids
+                if cache_keys[object_id] in cached_objects)
+
 def cache(func):
     """Decorator which applies Django caching to a function.
 

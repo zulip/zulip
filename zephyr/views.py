@@ -49,7 +49,8 @@ from zephyr.lib.query import last_n
 from zephyr.lib.avatar import avatar_url
 from zephyr.lib.upload import upload_message_image, upload_avatar_image
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
-from zephyr.lib.cache import cache_get_many, cache_set_many
+from zephyr.lib.cache import cache_get_many, cache_set_many, \
+    generic_bulk_cached_fetch
 from zephyr.lib.unminify import SourceMap
 from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.utils import statsd
@@ -917,34 +918,18 @@ def get_old_messages_backend(request, user_profile,
                     dict([('match_subject', user_message.match_subject),
                           ('match_content', user_message.match_content)])
 
-    bulk_messages = cache_get_many([to_dict_cache_key_id(message_id, apply_markdown)
-                                    for message_id in message_ids])
-    for (key, val) in bulk_messages.items():
-        bulk_messages[key] = extract_message_dict(bulk_messages[key][0])
-
-    needed_ids = [message_id for message_id in message_ids if
-                  to_dict_cache_key_id(message_id, apply_markdown) not in bulk_messages]
-    if len(needed_ids) > 0:
-        full_messages = Message.objects.select_related().filter(id__in=needed_ids)
-
-        items_for_memcached = {}
-        for message in full_messages:
-            key = to_dict_cache_key(message, apply_markdown)
-            if bulk_messages.get(key) is None:
-                msg = message.to_dict_uncached(apply_markdown)
-                elt = stringify_message_dict(msg)
-                items_for_memcached[key] = (elt,)
-                bulk_messages[key] = msg
-        if len(items_for_memcached) > 0:
-            cache_set_many(items_for_memcached)
+    message_dicts = generic_bulk_cached_fetch(lambda message_id: to_dict_cache_key_id(message_id, apply_markdown),
+                                              lambda needed_ids: Message.objects.select_related().filter(id__in=needed_ids),
+                                              message_ids,
+                                              cache_transformer=lambda x: x.to_dict_uncached(apply_markdown),
+                                              extractor=extract_message_dict,
+                                              setter=stringify_message_dict)
 
     message_list = []
     for message_id in message_ids:
-        key = to_dict_cache_key_id(message_id, apply_markdown)
-        elt = bulk_messages.get(key)
-        msg_dict = dict(elt)
+        msg_dict = message_dicts[message_id]
         msg_dict.update({"flags": user_message_flags[message_id]})
-        msg_dict.update(search_fields.get(elt['id'], {}))
+        msg_dict.update(search_fields.get(message_id, {}))
         message_list.append(msg_dict)
 
     statsd.incr('loaded_old_messages', len(message_list))
