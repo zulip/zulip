@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 
-from optparse import make_option
-from django.contrib.sites.models import Site
 from django.core.management.base import BaseCommand
 from confirmation.models import Confirmation
 from zephyr.models import UserProfile, PreregistrationUser, \

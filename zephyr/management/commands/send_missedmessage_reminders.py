@@ -1,12 +1,10 @@
 from __future__ import absolute_import
 
 import time
-import ujson
 
 from collections import defaultdict
 
 from django.core.management.base import BaseCommand
-from django.conf import settings
 
 from zephyr.lib.queue import SimpleQueueClient
 from zephyr.lib.actions import handle_missedmessage_emails

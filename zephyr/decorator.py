@@ -4,18 +4,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.http import QueryDict
 from django.http.multipartparser import MultiPartParser
-from zephyr.models import UserProfile, UserActivity, get_client, \
-    get_user_profile_by_email
-from zephyr.lib.response import json_success, json_error, HttpResponseUnauthorized
+from zephyr.models import UserProfile, get_client, get_user_profile_by_email
+from zephyr.lib.response import json_error, HttpResponseUnauthorized
 from django.utils.timezone import now
-from django.db import transaction, IntegrityError
 from django.conf import settings
 import ujson
 from StringIO import StringIO
-from zephyr.lib.cache import cache_with_key
 from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.timestamp import datetime_to_timestamp
-from zephyr.lib.cache import user_profile_by_email_cache_key
 from zephyr.lib.utils import statsd
 from zephyr.exceptions import RateLimited
 from zephyr.lib.rate_limiter import incr_ratelimit, is_ratelimited, \

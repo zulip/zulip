@@ -3,7 +3,6 @@ import os
 import sys
 import optparse
 import ConfigParser
-from os import path
 
 import humbug
 

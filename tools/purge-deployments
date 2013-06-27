@@ -3,7 +3,7 @@ import os
 import logging
 import datetime
 import shutil
-from humbug_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT
+from humbug_tools import DEPLOYMENTS_DIR, TIMESTAMP_FORMAT
 
 logging.basicConfig(format="%(asctime)s purge-deployments: %(message)s",
                     level=logging.INFO)

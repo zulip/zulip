@@ -31,8 +31,6 @@
 
 import os
 import sys
-import subprocess
-import time
 import os.path
 import pysvn
 

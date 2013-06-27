@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from zephyr.models import get_user_profile_by_id
 
 import redis
 import time

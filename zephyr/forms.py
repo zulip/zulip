@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 from django import forms
-from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 from django.contrib.auth.forms import SetPasswordForm

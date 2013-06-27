@@ -23,8 +23,6 @@
 
 import sys
 import subprocess
-import time
-import optparse
 import os
 import traceback
 import signal

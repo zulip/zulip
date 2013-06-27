@@ -1,7 +1,6 @@
 # Django settings for humbug project.
 import os
 import platform
-import logging
 import time
 import re
 

@@ -2,11 +2,9 @@ from __future__ import absolute_import
 
 from optparse import make_option
 from django.core.management.base import BaseCommand
-from confirmation.models import Confirmation
 from zephyr.models import get_user_profile_by_email, UserMessage
 from zephyr.views import get_old_messages_backend
 import cProfile
-import time
 import logging
 from zephyr.middleware import LogRequests
 

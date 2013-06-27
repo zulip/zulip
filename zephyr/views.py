@@ -21,7 +21,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     MAX_SUBJECT_LENGTH, get_stream, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags
-from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
+from zephyr.lib.actions import do_remove_subscription, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
     do_send_confirmation_email, do_activate_user, do_create_user, check_send_message, \
@@ -35,7 +35,7 @@ from zephyr.lib.actions import do_add_subscription, do_remove_subscription, \
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_unique, is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
-from django_openid_auth.views import default_render_failure, login_complete, parse_openid_response
+from django_openid_auth.views import default_render_failure, login_complete
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
 from openid.extensions import ax
 
@@ -43,14 +43,13 @@ from zephyr.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, authenticated_json_view, \
     to_non_negative_int, json_to_dict, json_to_list, json_to_bool, \
-    JsonableError, RequestVariableMissingError, get_user_profile_by_email, \
-    authenticated_rest_api_view, process_as_post, REQ, rate_limit, rate_limit_user
+    JsonableError, get_user_profile_by_email, \
+    authenticated_rest_api_view, process_as_post, REQ, rate_limit_user
 from zephyr.lib.query import last_n
 from zephyr.lib.avatar import avatar_url
 from zephyr.lib.upload import upload_message_image, upload_avatar_image
 from zephyr.lib.response import json_success, json_error, json_response, json_method_not_allowed
-from zephyr.lib.timestamp import datetime_to_timestamp
-from zephyr.lib.cache import cache_with_key, cache_get_many, cache_set_many
+from zephyr.lib.cache import cache_get_many, cache_set_many
 from zephyr.lib.unminify import SourceMap
 from zephyr.lib.queue import queue_json_publish
 from zephyr.lib.utils import statsd

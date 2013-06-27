@@ -7,13 +7,11 @@ from zephyr.lib.cache import cache_with_key, update_user_profile_cache, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     update_user_presence_cache
 from zephyr.lib.utils import make_safe_digest
-import os
 from django.db import transaction, IntegrityError
 from zephyr.lib import bugdown
 from zephyr.lib.avatar import gravatar_hash, avatar_url
 from django.utils import timezone
 from django.contrib.sessions.models import Session
-from django.utils.html import escape
 from zephyr.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import post_save
 import zlib

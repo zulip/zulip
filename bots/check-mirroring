@@ -7,7 +7,6 @@ import random
 import logging
 import subprocess
 import hashlib
-from os import path
 
 parser = optparse.OptionParser()
 parser.add_option('--verbose',

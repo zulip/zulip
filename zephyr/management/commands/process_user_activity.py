@@ -1,9 +1,6 @@
 from __future__ import absolute_import
 
-from optparse import make_option
 from django.core.management.base import BaseCommand
-import ujson
-import pika
 from zephyr.lib.actions import process_user_activity_event, \
         process_user_presence_event
 from zephyr.lib.queue import SimpleQueueClient

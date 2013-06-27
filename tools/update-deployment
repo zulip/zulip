@@ -2,8 +2,6 @@
 import os
 import sys
 import subprocess
-import pylibmc
-import traceback
 import logging
 from humbug_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, ENDC
 import datetime

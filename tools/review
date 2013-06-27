@@ -42,7 +42,6 @@ from StringIO import StringIO
 from email.message import Message
 from email.header import Header
 from shutil import rmtree, copyfile, copytree
-from tempfile import NamedTemporaryFile
 from time import sleep
 from signal import SIGINT, SIGTERM
 from errno import EAGAIN

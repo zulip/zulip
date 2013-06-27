@@ -3,7 +3,6 @@
 
 import humbug
 
-import glob
 import os
 from distutils.core import setup
 

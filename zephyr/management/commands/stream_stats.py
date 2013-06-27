@@ -1,6 +1,3 @@
-import datetime
-import pytz
-
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 from zephyr.models import Realm, Stream, Message, Subscription, Recipient

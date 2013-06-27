@@ -5,7 +5,6 @@ from zephyr.lib.actions import set_default_streams, log_event
 
 from optparse import make_option
 import sys
-import time
 
 class Command(BaseCommand):
     help = """Set default streams for a realm

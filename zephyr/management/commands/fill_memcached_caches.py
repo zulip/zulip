@@ -3,8 +3,6 @@ from __future__ import absolute_import
 from optparse import make_option
 from django.core.management.base import BaseCommand
 from zephyr.lib.cache_helpers import fill_memcached_cache, cache_fillers
-import subprocess
-import os
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (

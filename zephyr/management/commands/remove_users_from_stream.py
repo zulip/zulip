@@ -5,7 +5,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from zephyr.lib.actions import do_remove_subscription
-from zephyr.models import Realm, User, UserProfile, get_stream, \
+from zephyr.models import Realm, UserProfile, get_stream, \
     get_user_profile_by_email
 
 class Command(BaseCommand):

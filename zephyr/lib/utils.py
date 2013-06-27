@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 import hashlib
-from time import sleep, time
+from time import sleep
 from django.conf import settings
 
 def statsd_key(val, clean_periods=False):

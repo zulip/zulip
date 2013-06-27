@@ -5,7 +5,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from zephyr.lib.actions import do_deactivate, user_sessions
-from zephyr.models import UserProfile, get_user_profile_by_email
+from zephyr.models import get_user_profile_by_email
 
 class Command(BaseCommand):
     help = "Deactivate a user, including forcibly logging them out."

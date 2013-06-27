@@ -1,6 +1,5 @@
 from zephyr.models import UserProfile, get_user_profile_by_id, \
     get_user_profile_by_email
-from django.conf import settings
 
 from openid.consumer.consumer import SUCCESS
 

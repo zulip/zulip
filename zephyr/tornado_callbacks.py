@@ -7,9 +7,7 @@ from zephyr.models import Message, UserProfile, UserMessage, \
 from zephyr.decorator import JsonableError
 from zephyr.lib.cache_helpers import cache_get_message
 from zephyr.lib.queue import queue_json_publish
-from zephyr.lib.timestamp import timestamp_to_datetime
-from zephyr.lib.event_queue import get_client_descriptors_for_user, \
-    add_client_gc_hook, IDLE_EVENT_QUEUE_TIMEOUT_SECS
+from zephyr.lib.event_queue import get_client_descriptors_for_user
 
 import os
 import sys

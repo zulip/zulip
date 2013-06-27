@@ -3,11 +3,9 @@ import os
 import sys
 import pwd
 import subprocess
-import pylibmc
-import traceback
 import logging
 import time
-from humbug_tools import ENDC, WARNING, OKGREEN, DEPLOYMENTS_DIR
+from humbug_tools import ENDC, OKGREEN, DEPLOYMENTS_DIR
 
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
                     level=logging.INFO)

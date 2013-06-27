@@ -10,7 +10,6 @@ Django ORM.
 """
 
 import datetime
-import os
 import sys
 import optparse
 import random

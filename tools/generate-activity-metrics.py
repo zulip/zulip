@@ -7,7 +7,6 @@ import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import optparse
-from itertools import dropwhile, takewhile
 from datetime import timedelta, datetime
 from zephyr.lib.timestamp import datetime_to_timestamp
 from zephyr.lib.utils import statsd_key

@@ -5,7 +5,6 @@ import logging
 
 from django.core.management.base import BaseCommand
 
-from zephyr.lib.actions import do_deactivate
 from zephyr.lib import utils
 from zephyr.models import UserMessage, UserProfile, \
     get_user_profile_by_email

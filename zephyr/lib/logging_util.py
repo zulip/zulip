@@ -1,6 +1,4 @@
 import logging
-import traceback
-from hashlib import sha256
 from datetime import datetime, timedelta
 
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)

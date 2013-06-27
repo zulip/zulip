@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 
-import sys
 import logging
 import traceback
 import platform
@@ -44,7 +43,6 @@ class AdminHumbugHandler(logging.Handler):
 
     def emit(self, record):
         # We have to defer imports to avoid circular imports in settings.py.
-        from zephyr.models import Recipient
         from zephyr.lib.actions import internal_send_message
 
 

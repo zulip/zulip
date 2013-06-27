@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from zephyr.decorator import RequestVariableMissingError, RequestVariableConversionError
 from zephyr.lib.response import json_error
 from django.db import connection
 from zephyr.lib.utils import statsd

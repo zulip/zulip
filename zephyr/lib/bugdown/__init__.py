@@ -5,9 +5,6 @@ import urlparse
 import re
 import os.path
 import glob
-import urllib2
-import itertools
-import ujson
 import twitter
 import platform
 import time
@@ -634,7 +631,6 @@ def do_convert(md, realm):
         # https://trac.humbughq.com/ticket/345
         return timeout(5, _md_engine.convert, md)
     except:
-        from zephyr.models import Recipient
         from zephyr.lib.actions import internal_send_message
 
         cleaned = _sanitize_for_log(md)

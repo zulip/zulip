@@ -1,14 +1,12 @@
 from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
-from django.conf import settings
 
-from zephyr.models import UserProfile, UserPresence, UserActivity
+from zephyr.models import UserPresence, UserActivity
 from zephyr.lib.utils import statsd, statsd_key
 
 from datetime import datetime, timedelta
 from collections import defaultdict
-import os, time
 
 class Command(BaseCommand):
     help = """Sends active user statistics to statsd.

@@ -19,14 +19,11 @@ from zephyr.lib import bugdown
 from zephyr.lib.rate_limiter import clear_user_history
 
 from django.conf import settings
-import optparse
 import os
 import random
 import re
-import subprocess
 import sys
 import time
-import traceback
 import ujson
 import urllib2
 from StringIO import StringIO

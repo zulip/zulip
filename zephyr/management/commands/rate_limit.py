@@ -4,12 +4,7 @@ from zephyr.models import UserProfile, get_user_profile_by_email
 from zephyr.lib.rate_limiter import block_user, unblock_user
 
 from django.core.management.base import BaseCommand
-from django.conf import settings
 from optparse import make_option
-
-from datetime import datetime, timedelta
-from collections import defaultdict
-import os, time
 
 class Command(BaseCommand):
     help = """Manually block or unblock a user from accessing the API

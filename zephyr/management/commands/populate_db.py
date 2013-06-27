@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
-from django.utils.timezone import utc, now
+from django.utils.timezone import now
 
 from django.contrib.sites.models import Site
 from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
@@ -22,7 +22,6 @@ import ujson
 import datetime
 import random
 import glob
-import sys
 import os
 from os import path
 from optparse import make_option

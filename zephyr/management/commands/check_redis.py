@@ -1,13 +1,13 @@
 from __future__ import absolute_import
 
-from zephyr.models import UserProfile, get_user_profile_by_id
-from zephyr.lib.rate_limiter import redis_key, client, max_api_calls, max_api_window
+from zephyr.models import get_user_profile_by_id
+from zephyr.lib.rate_limiter import client, max_api_calls, max_api_window
 
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from optparse import make_option
 
-import os, time, logging
+import time, logging
 
 class Command(BaseCommand):
     help = """Checks redis to make sure our rate limiting system hasn't grown a bug and left redis with a bunch of data

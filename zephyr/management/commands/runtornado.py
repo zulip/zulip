@@ -16,7 +16,6 @@ import os
 import sys
 import tornado.web
 import logging
-import time
 from tornado import ioloop
 from zephyr.lib.debug import interactive_debug_listen
 from zephyr.lib.response import json_response
@@ -47,8 +46,7 @@ class Command(BaseCommand):
         interactive_debug_listen()
 
         import django
-        from django.core.handlers.wsgi import WSGIHandler
-        from tornado import httpserver, wsgi, web
+        from tornado import httpserver, web
 
         try:
             addr, port = addrport.split(':')

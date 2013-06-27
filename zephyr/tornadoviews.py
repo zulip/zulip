@@ -1,14 +1,14 @@
 from __future__ import absolute_import
 
 from django.conf import settings
-from zephyr.models import UserActivity, get_client
+from zephyr.models import get_client
 
 from zephyr.decorator import asynchronous, authenticated_api_view, \
     authenticated_json_post_view, internal_notify_view, RespondAsynchronously, \
     has_request_variables, to_non_negative_int, json_to_bool, json_to_list, \
-    JsonableError, authenticated_rest_api_view, REQ
+    authenticated_rest_api_view, REQ
 
-from zephyr.lib.response import json_response, json_success, json_error
+from zephyr.lib.response import json_success, json_error
 from zephyr.middleware import async_request_restart
 from zephyr.tornado_callbacks import \
     get_user_pointer, fetch_stream_messages, fetch_user_messages, \
@@ -18,12 +18,8 @@ from zephyr.tornado_callbacks import \
 from zephyr.lib.cache_helpers import cache_get_message
 from zephyr.lib.event_queue import allocate_client_descriptor, get_client_descriptor
 
-import datetime
 import ujson
 import socket
-import time
-import sys
-import logging
 
 @internal_notify_view
 def notify(request):

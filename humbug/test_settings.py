@@ -1,6 +1,5 @@
 from settings import *
 import os
-import logging
 
 DATABASES["default"] = {"NAME": "humbug_test",
                         "USER": "humbug_test",
