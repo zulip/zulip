@@ -1047,43 +1047,6 @@ def create_mirrored_message_users(request, user_profile, recipients):
 
 @authenticated_json_post_view
 @has_request_variables
-def json_tutorial_send_message(request, user_profile,
-                               message_type_name = REQ('type'),
-                               subject_name = REQ('subject', lambda x: x.strip(), None),
-                               message_content = REQ('content')):
-    """
-    This function, used by the onboarding tutorial, causes the
-    Tutorial Bot to send you the message you pass in here.
-    (That way, the Tutorial Bot's messages to you get rendered
-     by the server and therefore look like any other message.)
-    """
-    sender_name = "humbug+tutorial@humbughq.com"
-    if message_type_name == 'private':
-        # For now, we discard the recipient on PMs; the tutorial bot
-        # can only send to you.
-        internal_send_message(sender_name,
-                              "private",
-                              user_profile.email,
-                              "",
-                              message_content,
-                              realm=user_profile.realm)
-        return json_success()
-    elif message_type_name == 'stream':
-        tutorial_stream_name = user_profile.tutorial_stream_name()
-        ## TODO: For open realms, we need to use the full name here,
-        ## so that me@gmail.com and me@hotmail.com don't get the same stream.
-        internal_send_message(sender_name,
-                              "stream",
-                              tutorial_stream_name,
-                              subject_name,
-                              message_content,
-                              realm=user_profile.realm)
-        return json_success()
-    return json_error('Bad data passed in to tutorial_send_message')
-
-
-@authenticated_json_post_view
-@has_request_variables
 def json_tutorial_status(request, user_profile, status=REQ('status')):
     if status == 'started':
         user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED

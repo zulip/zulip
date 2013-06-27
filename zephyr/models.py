@@ -118,13 +118,6 @@ class UserProfile(AbstractBaseUser):
     # completed.
     onboarding_steps = models.TextField(default=ujson.dumps([]))
 
-    def tutorial_stream_name(self):
-        # If you change this, you need to change the corresponding
-        # client-computed version of it in tutorial.js
-        long_name = "tutorial-%s" % (self.email.split('@')[0],)
-        short_name = long_name[:Stream.MAX_NAME_LENGTH]
-        return short_name
-
     objects = UserManager()
 
     def __repr__(self):
