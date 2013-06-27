@@ -41,7 +41,7 @@ assert(LooseVersion(requests.__version__) >= LooseVersion('0.12.1'))
 # In newer versions, the 'json' attribute is a function, not a property
 requests_json_is_function = callable(requests.Response.json)
 
-API_VERSTRING = "/v1/"
+API_VERSTRING = "v1/"
 
 def generate_option_group(parser):
     group = optparse.OptionGroup(parser, 'API configuration')
@@ -97,6 +97,8 @@ class Client(object):
             self.base_url = "https://api.humbughq.com"
         if self.base_url != "https://api.humbughq.com" and not self.base_url.endswith("/api"):
             self.base_url += "/api"
+        if not self.base_url.endswith("/"):
+            self.base_url += "/"
         self.retry_on_errors = retry_on_errors
         self.client_name = client
 
@@ -122,7 +124,7 @@ class Client(object):
             if self.verbose:
                 if not query_state["had_error_retry"]:
                     sys.stdout.write("humbug API(%s): connection error%s -- retrying." % \
-                            (url.split(API_VERSTRING, 2)[1], error_string,))
+                            (url.split(API_VERSTRING, 2)[0], error_string,))
                     query_state["had_error_retry"] = True
                 else:
                     sys.stdout.write(".")
