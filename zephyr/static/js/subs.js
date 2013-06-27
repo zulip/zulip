@@ -34,6 +34,14 @@ function get_sub(stream_name) {
 // Classes which could be returned by get_color_class.
 exports.color_classes = 'dark_background';
 
+exports.stream_info = function(new_stream_info) {
+    if (new_stream_info !== undefined) {
+        stream_info = new_stream_info;
+    } else {
+        return stream_info;
+    }
+};
+
 function pick_color() {
     if (available_colors.length === 0) {
         // We've used all the palette colors, so start re-using them.
