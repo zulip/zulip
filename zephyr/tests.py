@@ -2297,7 +2297,7 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
         emojis = bugdown.emoji_list
         emojis = random.sample(emojis, 15)
         for img in emojis:
-            emoji_text = ":%s:" % img
+            emoji_text = ":%s:" % (img,)
             test_cases.append((emoji_text, emoji_img(emoji_text)))
 
         for input, expected in test_cases:
@@ -2562,7 +2562,7 @@ class JiraHookTests(AuthedTestCase):
     def send_jira_message(self, action):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
-        url = "/api/v1/external/jira?api_key=%s" % api_key
+        url = "/api/v1/external/jira?api_key=%s" % (api_key,)
         return self.send_json_payload(email,
                                       url,
                                       self.fixture_data('jira', action),
@@ -2572,7 +2572,7 @@ class JiraHookTests(AuthedTestCase):
     def test_unknown(self):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
-        url = "/api/v1/external/jira?api_key=%s" % api_key
+        url = "/api/v1/external/jira?api_key=%s" % (api_key,)
 
         result = self.client.post(url, self.fixture_data('jira', 'unknown'),
                                   stream_name="jira",
@@ -2584,7 +2584,7 @@ class JiraHookTests(AuthedTestCase):
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
         action = 'created'
-        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % api_key
+        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
         msg = self.send_json_payload(email, url,
                                      self.fixture_data('jira', action),
                                      stream_name="jira_custom",
@@ -2671,7 +2671,7 @@ class BeanstalkHookTests(AuthedTestCase):
     def http_auth(self, username, password):
         import base64
         credentials = base64.b64encode('%s:%s' % (username, password))
-        auth_string = 'Basic %s' % credentials
+        auth_string = 'Basic %s' % (credentials,)
         return auth_string
 
     def send_beanstalk_message(self, action):
