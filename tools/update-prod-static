@@ -1,19 +1,25 @@
-#!/bin/bash -e
+#!/usr/bin/env python
 
 # Update static files in production.
 
-cd "$(dirname "$0")"/..
+from os import chdir, path, open, close, O_WRONLY, O_CREAT
+from glob import glob
+import subprocess
 
-# Redirect output to a log file (most recent run only)
-exec >update-prod-static.log
+chdir(path.join(path.dirname(__file__), '..'))
+
+# Redirect child processes' output to a log file (most recent run only)
+close(1)
+fp = open("update-prod-static.log", O_WRONLY|O_CREAT)  # Will open on 1, stdout.
 
 # Compile Handlebars templates
-./tools/node node_modules/.bin/handlebars zephyr/static/templates/*.handlebars \
-    --output ./zephyr/static/templates/compiled.js \
-    --known if,unless,each,with
+subprocess.check_call(['tools/node', 'node_modules/.bin/handlebars']
+    + glob('zephyr/static/templates/*.handlebars')
+    + ['--output', 'zephyr/static/templates/compiled.js',
+    '--known', 'if,unless,each,with'])
 
 # Collect the files that we're going to serve
-rm -rf prod-static/source-map
-mkdir -p prod-static/source-map
-./manage.py collectstatic --noinput
+subprocess.check_call(['rm', '-r', 'prod-static/source-map'])
+subprocess.check_call(['mkdir', '-p', 'prod-static/source-map'])
+subprocess.check_call(['python', './manage.py', 'collectstatic', '--noinput'])
 
