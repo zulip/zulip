@@ -570,8 +570,6 @@ def notify_new_subscription(user_profile, stream, subscription, no_log=False):
                   users=[user_profile.id])
     tornado_callbacks.send_notification(notice)
 
-# This function assumes that the users are known to not be subscribers
-# of the stream (e.g. because the stream was created by this same query)
 def bulk_add_subscriptions(stream, users):
     recipient = get_recipient(Recipient.STREAM, stream.id)
     all_subs = Subscription.objects.filter(user_profile__in=users,
