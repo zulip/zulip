@@ -78,7 +78,7 @@ class Command(BaseCommand):
             self.validate(display_num_errors=True)
             print "\nDjango version %s" % (django.get_version())
             print "Tornado server is running at http://%s:%s/" % (addr, port)
-            print "Quit the server with %s." % quit_command
+            print "Quit the server with %s." % (quit_command,)
 
             if settings.USING_RABBITMQ:
                 # Process notifications received via RabbitMQ

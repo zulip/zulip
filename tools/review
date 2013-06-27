@@ -339,7 +339,7 @@ def run_test_script(repo, tmp_path):
   os.environ["PWD"] = os.getcwd()
   log = open("test.log", 'w')
   log_path = os.getcwd() + "/" + log.name
-  print "Testing [log=%s] ..." % log_path
+  print "Testing [log=%s] ..." % (log_path,)
   try:
     proc = subprocess.Popen(TEST_SCRIPT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=sys.stdin)
     # Set the proc.stdout.read() to be non-blocking

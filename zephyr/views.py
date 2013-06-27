@@ -200,7 +200,7 @@ Email: %s
 Company: %s
 # users: %s
 Currently using: %s""" % (name, email, company, count, product,)
-    subject = "Interest in Humbug: %s" % company
+    subject = "Interest in Humbug: %s" % (company,)
     from_email = '"%s" via Web <humbug+signups@humbughq.com>' % (name,)
     to_email = '"Humbug Signups" <humbug+signups@humbughq.com>'
     send_mail(subject, content, from_email, [to_email])

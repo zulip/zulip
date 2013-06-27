@@ -28,9 +28,9 @@ class StatsDWrapper(object):
             """Set a gauge value."""
             from django_statsd.clients import statsd
             if delta:
-                value = '%+g|g' % value
+                value = '%+g|g' % (value,)
             else:
-                value = '%g|g' % value
+                value = '%g|g' % (value,)
             statsd._send(stat, value, rate)
 
     def __getattr__(self, name):

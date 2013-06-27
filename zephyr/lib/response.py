@@ -8,7 +8,7 @@ class HttpResponseUnauthorized(HttpResponse):
 
     def __init__(self, realm):
         HttpResponse.__init__(self)
-        self["WWW-Authenticate"] = 'Basic realm="%s"' % realm
+        self["WWW-Authenticate"] = 'Basic realm="%s"' % (realm,)
 
 def json_method_not_allowed(methods):
     resp = HttpResponseNotAllowed(methods)
