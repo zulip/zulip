@@ -19,6 +19,11 @@ ONLY perform this on customer request from an authorized person.
 """
 
     option_list = BaseCommand.option_list + (
+        make_option('-f', '--for-real',
+                    dest='ack',
+                    action="store_true",
+                    default=False,
+                    help='Acknowledgement that this is done according to policy.'),
         make_option('--revoke',
                     dest='grant',
                     action="store_false",
@@ -40,11 +45,18 @@ ONLY perform this on customer request from an authorized person.
             if profile.has_perm('administer', profile.realm):
                 raise CommandError("User already has permission for this realm.")
             else:
-                assign_perm('administer', profile, profile.realm)
-                print "Done!"
+                if options['ack']:
+                    assign_perm('administer', profile, profile.realm)
+                    print "Done!"
+                else:
+                    print "Would have made %s an administrator for %s" % (email, profile.realm.domain)
         else:
             if profile.has_perm('administer', profile.realm):
-                remove_perm('administer', profile, profile.realm)
-                print "Done!"
+                if options['ack']:
+                    remove_perm('administer', profile, profile.realm)
+                    print "Done!"
+                else:
+                    print "Would have removed %s's administrator rights on %s" % (email,
+                            profile.realm.domain)
             else:
                 raise CommandError("User did not have permission for this realm!")
