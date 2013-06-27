@@ -54,12 +54,15 @@ def update_user_activity(request, user_profile):
 # I like the all-lowercase name better
 require_post = require_POST
 
-def process_client(request, user_profile):
-    try:
-        # we want to take from either GET or POST vars
+default_clients = {}
+
+def process_client(request, user_profile, default):
+    if 'client' in request.REQUEST:
         request.client = get_client(request.REQUEST['client'])
-    except (AttributeError, KeyError):
-        request.client = get_client("API")
+    else:
+        if default not in default_clients:
+            default_clients[default] = get_client(default)
+        request.client = default_clients[default]
 
     update_user_activity(request, user_profile)
 
@@ -85,7 +88,7 @@ def authenticated_api_view(view_func):
         user_profile = validate_api_key(email, api_key)
         request.user = user_profile
         request._email = user_profile.email
-        process_client(request, user_profile)
+        process_client(request, user_profile, "API")
         # Apply rate limiting
         limited_func = rate_limit()(view_func)
         return limited_func(request, user_profile, *args, **kwargs)
@@ -117,7 +120,7 @@ def authenticated_rest_api_view(view_func):
             return resp
         request.user = user_profile
         request._email = user_profile.email
-        process_client(request, user_profile)
+        process_client(request, user_profile, "API")
         # Apply rate limiting
         limited_func = rate_limit()(view_func)
         return limited_func(request, user_profile, *args, **kwargs)
@@ -146,11 +149,11 @@ def process_as_post(view_func):
 
     return _wrapped_view_func
 
-def authenticate_log_and_execute_json(request, client, view_func, *args, **kwargs):
+def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
     if not request.user.is_authenticated():
         return json_error("Not logged in", status=401)
-    request.client = client
     user_profile = request.user
+    process_client(request, user_profile, "website")
     request._email = user_profile.email
     update_user_activity(request, user_profile)
     return view_func(request, user_profile, *args, **kwargs)
@@ -163,17 +166,15 @@ def authenticated_json_post_view(view_func):
     @has_request_variables
     @wraps(view_func)
     def _wrapped_view_func(request,
-                           client=REQ(default=get_client("website"), converter=get_client),
                            *args, **kwargs):
-        return authenticate_log_and_execute_json(request, client, view_func, *args, **kwargs)
+        return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func
 
 def authenticated_json_view(view_func):
     @wraps(view_func)
     def _wrapped_view_func(request,
-                           client=get_client("website"),
                            *args, **kwargs):
-        return authenticate_log_and_execute_json(request, client, view_func, *args, **kwargs)
+        return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
     return _wrapped_view_func
 
 # These views are used by the main Django server to notify the Tornado server
