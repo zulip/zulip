@@ -59,9 +59,6 @@ input[type="color"]
 
 li, .table th, .table td {
     line-height: inherit;
-    background-clip: content-box;
-    -webkit-background-clip: content;
-    -moz-background-clip: content;
 }
 
 .btn {
@@ -444,6 +441,11 @@ td.pointer {
     visibility: visible;
 }
 
+
+.private-message .messagebox {
+background-color: #feffe0;
+}
+
 .selected_message.private-message .message_data, .selected_message.private-message .messagebox {
     background-color: #feffcc;
 }
@@ -526,11 +528,11 @@ td.pointer {
 }
 
 .ztable_comp_col1 {
-    width: 8px;
+    width: 40px;
 }
 
 .ztable_comp_col2 {
-    
+    width: 100%;
 }
 
 .message_header {
@@ -573,19 +575,16 @@ td.pointer {
     border-bottom: 1px solid #d2eee7;
 }
 
-.messagebox.last_message {
+.last_message .messagebox {
     height: 3px;
-    background-color: #fff;
     border-radius: 0px 0px 3px 0px;
-    /* box-shadow: 0px 2px 2px -1px #ccc; */
     border: 1px solid #c1dbd5;
     border-top: none;
     border-left: none;
 }
 
-.messagebox_colorblock.last_message {
+.last_message .messagebox_colorblock {
     border-radius: 0px 0px 0px 3px;
-    /* box-shadow: 0px 2px 2px -1px #ccc; */
     border: 1px solid #c1dbd5;
     border-top: none;
     border-right: none;
@@ -597,8 +596,15 @@ td.pointer {
     border-bottom: 1px solid #d2eee7;
 }
 
-.message_header_private_message {
-    background-color: #444;
+.compose_table .message_header.message_header_private_message, .message_header_private_message {
+    background-color: #444444;
+}
+
+.compose_table .message_header {
+    background: none;
+    background-color: #ececec;
+    border: none;
+    border-radius: 0px;
 }
 
 .selected_message .messagebox_colorblock {
@@ -614,6 +620,10 @@ td.pointer {
 
 .selected_message .pointer_icon {
     display: inline-block;
+}
+
+.mention .messagebox {
+background-color: #ffe4e0;
 }
 
 .selected_message.mention .messagebox, .selected_message.mention .message_data {
