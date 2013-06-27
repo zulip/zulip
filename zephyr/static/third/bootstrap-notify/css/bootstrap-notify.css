@@ -161,7 +161,7 @@
 */
 
 
-.notifications{position:fixed;}.notifications.top-right{right:25px;top:60px;z-index:9980;width:200px;}
+.notifications{position:fixed;}.notifications.top-right{right:25px;top:60px;z-index:9980;width:300px;}
 .notifications.top-left{left:10px;top:25px;}
 .notifications.bottom-left{left:10px;bottom:25px;}
 .notifications.bottom-right{right:10px;bottom:25px;}
