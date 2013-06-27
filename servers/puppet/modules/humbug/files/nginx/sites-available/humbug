@@ -62,7 +62,7 @@ server {
 
     server_name api.humbughq.com;
 
-    rewrite ^/.* /api/ break;
+    rewrite ^/(.*) /api/$1 break;
 
     include /etc/nginx/humbug-include/app;
 }
