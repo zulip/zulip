@@ -15,7 +15,8 @@ function add_bot_row(name, email, avatar_url, api_key) {
                                     $('<td>').text(email),
                                     $('<td>').html(avatar_cell),
                                     $('<td class="api_key">').text(api_key));
-    $('#create_bot_row').before(row);
+    $('#bots_table tr:last').after(row);
+    $('#bots_table').show();
 }
 
 function is_local_part(value, element) {

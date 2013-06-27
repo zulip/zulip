@@ -130,8 +130,6 @@
     <hr class="settings_separator" />
 
     <h2>Your bots</h2>
-    <form id="create_bot_form">
-    <div id="bot_table_error" class="alert alert-error hide"></div>
       <table class="table table-condensed table-striped" id="bots_table">
         <tbody>
           <tr>
@@ -140,34 +138,33 @@
             <th>Avatar (optional)</th>
             <th class="bot_api_key_header">API key</th>
           </tr>
-          <tr id="create_bot_row">
-            <td>
-              <div class="create_bot_control">
-                <input type="text" name="bot_name" id="create_bot_name" class="required"
-                       maxlength=100 placeholder="Bot name" value="" />
-              </div>
-              <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
-            </td>
-            <td>
-              <div class="create_bot_control">
-                <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
-                       placeholder="Bot username" value="" />-bot@{{ user_profile.realm.domain }}
-              </div>
-              <div><label for="create_bot_short_name" generated="true" class="text-error"></label></div>
-            </td>
-            <td>
-              <p>
-                  <input type="file" name="bot_avatar_file_input" id="bot_avatar_file_input" value="Upload avatar" />
-              </p>
-              <div id="bot_avatar_file_input_error"></div>
-            </td>
-            <td>
-              <input type="submit" class="btn btn-primary" id="create_bot_button" value="Create Bot" />
-              <div id="create_bot_spinner"></div>
-            </td>
-          </tr>
         </tbody>
       </table>
+
+    <form id="create_bot_form">
+    <div id="bot_table_error" class="alert alert-error hide"></div>
+      <h3>Add new bot:</h3>
+      <p>     
+        <div class="label">Full name:</div>
+        <input type="text" name="bot_name" id="create_bot_name" class="required"
+               maxlength=100 placeholder="Bot name" value="" />
+        <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
+      </p>
+      <p>
+        <div class="label">Username:</div>
+        <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
+               placeholder="Bot username" value="" />-bot@{{ user_profile.realm.domain }}
+        <div><label for="create_bot_short_name" generated="true" class="text-error"></label></div>
+      </p>
+      <p>
+        <div class="label">Optional avatar:</div>
+        <input type="file" name="bot_avatar_file_input" id="bot_avatar_file_input" value="Upload avatar" />
+      </p>
+      <p>
+        <div id="bot_avatar_file_input_error"></div>
+      </p>
+      <input type="submit" class="btn btn-primary" id="create_bot_button" value="Create Bot" />
+      <div id="create_bot_spinner"></div>
     </form>
 
     <hr class="settings_separator" />

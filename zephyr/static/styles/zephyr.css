@@ -1808,6 +1808,10 @@ li.expanded_subject {
     overflow: hidden;
 }
 
+#bots_table {
+    display: none;
+}
+
 #create_bot_name {
     width: 85%;
 }
@@ -1827,14 +1831,6 @@ li.expanded_subject {
 .api_key {
     font-family: monospace;
     font-size: 85%;
-}
-
-.create_bot_control {
-    vertical-align: middle;
-}
-
-#create_bot_row input {
-    margin: 0;
 }
 
 #onboarding-header {
