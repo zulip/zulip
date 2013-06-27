@@ -28,10 +28,10 @@ from zephyr.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     log_subscription_property_change, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, bulk_add_subscriptions, update_message_flags, \
-    recipient_for_emails, extract_recipients, do_events_register, do_finish_tutorial, \
+    recipient_for_emails, extract_recipients, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
-    do_send_messages
+    do_send_messages, do_add_subscription, get_default_subs
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_unique, is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -256,6 +256,14 @@ def accounts_register(request):
                 do_change_full_name(user_profile, full_name)
             else:
                 user_profile = do_create_user(email, password, realm, full_name, short_name)
+                # We want to add the default subs list iff there were no subs
+                # specified when the user was invited.
+                streams = prereg_user.streams.all()
+                if len(streams) == 0:
+                    streams = get_default_subs(user_profile)
+                for stream in streams:
+                    do_add_subscription(user_profile, stream)
+
                 if prereg_user.referred_by is not None:
                     # This is a cross-realm private message.
                     internal_send_message("humbug+signups@humbughq.com",
@@ -512,19 +520,7 @@ def home(request):
 
     # Brand new users get the tutorial
     needs_tutorial = settings.TUTORIAL_ENABLED and \
-        user_profile.tutorial_status == UserProfile.TUTORIAL_WAITING
-
-    # If the user has previously started (but not completed) the tutorial,
-    # finish it for her and subscribe her to the default streams
-    if user_profile.tutorial_status == UserProfile.TUTORIAL_STARTED:
-        tutorial_stream = user_profile.tutorial_stream_name()
-        try:
-            stream = Stream.objects.get(realm=user_profile.realm, name=tutorial_stream)
-            do_remove_subscription(user_profile, stream)
-        except Stream.DoesNotExist:
-            pass
-
-        do_finish_tutorial(user_profile)
+        user_profile.tutorial_status != UserProfile.TUTORIAL_FINISHED
 
     if user_profile.pointer == -1 and user_has_messages:
         # Put the new user's pointer at the bottom
@@ -1091,9 +1087,9 @@ def json_tutorial_send_message(request, user_profile,
 def json_tutorial_status(request, user_profile, status=REQ('status')):
     if status == 'started':
         user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED
-        user_profile.save()
     elif status == 'finished':
-        do_finish_tutorial(user_profile)
+        user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
+    user_profile.save()
 
     return json_success()
 
