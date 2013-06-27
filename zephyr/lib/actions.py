@@ -989,26 +989,6 @@ def do_update_message(user_profile, message_id, subject, content):
     notice = dict(event=event, users=recipients)
     tornado_callbacks.send_notification(notice)
 
-def do_finish_tutorial(user_profile):
-    user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
-    user_profile.save()
-
-    # We want to add the default subs list iff there were no subs
-    try:
-        prereg_user = PreregistrationUser.objects.filter(email=user_profile.email,
-                                                         status=confirmation.settings.STATUS_ACTIVE) \
-                                                 .order_by('-id')[0]
-        streams = prereg_user.streams.all()
-    except IndexError:
-        # If the user signed up via a mechanism other than
-        # PreregistrationUser (e.g. Google Apps connect or MitUser),
-        # just give them the default streams.
-        streams = []
-
-    if len(streams) == 0:
-        streams = get_default_subs(user_profile)
-    bulk_add_subscriptions(streams, [user_profile])
-
 def gather_subscriptions(user_profile):
     # For now, don't display subscriptions for private messages.
     subs = Subscription.objects.select_related().filter(
