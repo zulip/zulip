@@ -185,7 +185,7 @@ function process_notification(notification) {
         notification_object.show();
     } else if (notification.in_browser === true) {
         var notification_html = $(templates.render('notification', {gravatar_url: ui.small_avatar_url(message),
-                                                                    sender_fullname: message.sender_full_name,
+                                                                    title: title,
                                                                     content: content}));
         $('.top-right').notify({
             message: { html: notification_html },
