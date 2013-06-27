@@ -714,8 +714,6 @@ If you wish to be subscribed to any Humbug streams related
 to these .zephyrs.subs lines, please do so via the Humbug
 web interface.
 """)) + "\n")
-    if verbose:
-        logger.info("\nIMPORTANT: Please reload the Humbug app for these changes to take effect.\n")
 
 def valid_stream_name(name):
     return name != ""
