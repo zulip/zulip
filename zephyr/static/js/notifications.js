@@ -33,6 +33,12 @@ exports.initialize = function () {
         window_has_focus = false;
     });
 
+    if ($.browser.mozilla === true && typeof Notification !== "undefined") {
+        Notification.requestPermission(function() {
+            asked_permission_already = true;
+        });
+    }
+
     if (!window.webkitNotifications) {
         return;
     }
@@ -113,6 +119,16 @@ exports.window_has_focus = function () {
     return window_has_focus;
 };
 
+function in_browser_notify(message, title, content) {
+    var notification_html = $(templates.render('notification', {gravatar_url: ui.small_avatar_url(message),
+                                                                title: title,
+                                                                content: content}));
+    $('.top-right').notify({
+        message: { html: notification_html },
+        fadeOut: {enabled:true, delay: 4000}
+    }).show();
+}
+
 function process_notification(notification) {
     var i, notification_object, key;
     var message = notification.message;
@@ -167,7 +183,7 @@ function process_notification(notification) {
         title += " (to " + message.stream + " > " + message.subject + ")";
     }
 
-    if (window.bridge === undefined && notification.in_browser === undefined) {
+    if (window.bridge === undefined && notification.webkit_notify === true) {
         var icon_url = ui.small_avatar_url(message);
         notice_memory[key] = {
             obj: window.webkitNotifications.createNotification(
@@ -183,14 +199,19 @@ function process_notification(notification) {
             delete notice_memory[key];
         };
         notification_object.show();
-    } else if (notification.in_browser === true) {
-        var notification_html = $(templates.render('notification', {gravatar_url: ui.small_avatar_url(message),
-                                                                    title: title,
-                                                                    content: content}));
-        $('.top-right').notify({
-            message: { html: notification_html },
-            fadeOut: {enabled:true, delay: 4000}
-        }).show();
+    } else if (notification.webkit_notify === false && typeof Notification !== "undefined" && $.browser.mozilla === true) {
+        Notification.requestPermission(function (perm) {
+            if (perm === 'granted') {
+                Notification(title, {
+                    body: content,
+                    iconUrl: ui.small_avatar_url(message)
+                });
+            } else {
+                in_browser_notify(message, title, content);
+            }
+        });
+    } else if (notification.webkit_notify === false) {
+        in_browser_notify(message, title, content);
     } else {
         // Shunt the message along to the desktop client
         window.bridge.desktopNotification(title, content);
@@ -228,10 +249,10 @@ exports.received_messages = function (messages) {
         }
         if (page_params.desktop_notifications_enabled &&
             browser_desktop_notifications_on()) {
-            process_notification({message: message});
+            process_notification({message: message, webkit_notify: true});
         }
         else {
-            process_notification({message: message, in_browser: true});
+            process_notification({message: message, webkit_notify: false});
         }
         if (page_params.sounds_enabled && supports_sound) {
             if (window.bridge !== undefined) {

@@ -3,7 +3,7 @@
 // Global variables, categorized by place of definition.
 var globals =
     // Third-party libraries
-      ' $ jQuery Spinner Handlebars XDate zxcvbn Intl mixpanel'
+      ' $ jQuery Spinner Handlebars XDate zxcvbn Intl mixpanel Notification'
 
     // Cocoa<-> Javascript bridge
     + ' bridge'
