@@ -644,7 +644,9 @@ background-color: #ffe4e0;
     color: #333;
     display: inline-block;
     font-weight: bold;
-    line-height: 5px;
+    vertical-align: top;
+    position: relative;
+    top: -2px;
 }
 
 .actions_hovered .sender_name {
@@ -721,6 +723,10 @@ table.focused_table {
     display: table;
 }
 
+.include-sender .message_content {
+    margin-top: -8px;
+}
+
 .message_content {
     line-height: 18px;
     padding-left: 35px;
@@ -778,7 +784,7 @@ blockquote p {
 }
 
 .messagebox p {
-    margin-bottom: 6px;
+    margin: 3px 0px 3px 0px;
 }
 
 .messagebox blockquote {
@@ -860,7 +866,7 @@ blockquote p {
     background-size: 25px 25px;
     border-radius: 25px;
     border: 1px solid #CCC;
-    vertical-align: middle;
+    vertical-align: top;
     position: relative;
     left: -1px;
 }
