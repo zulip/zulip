@@ -60,4 +60,13 @@ class humbug::postgres-common {
     command => "/usr/bin/dpkg-divert --rename --divert /etc/logrotate.d/postgresql-common.disabled --add /etc/logrotate.d/postgresql-common",
     creates => '/etc/logrotate.d/postgresql-common.disabled',
   }
+
+  file { "/usr/share/postgresql/9.1/tsearch_data/humbug_english.stop":
+    require => Package["postgresql-9.1"],
+    ensure => file,
+    owner => "root",
+    group => "root",
+    mode => 644,
+    source => "puppet:///modules/humbug/postgresql/humbug_english.stop",
+  }
 }
