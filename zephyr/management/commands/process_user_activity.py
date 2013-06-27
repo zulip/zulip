@@ -25,7 +25,7 @@ class Command(BaseCommand):
             elif msg_type == 'user_presence':
                 process_user_presence_event(event)
             else:
-                print("[*] Unknown message type: %s" (msg_type,))
+                print("[*] Unknown message type: %s" % (msg_type,))
 
         def signal_handler(signal, frame):
             print("[*] Closing and disconnecting from queues")
