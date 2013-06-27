@@ -146,8 +146,6 @@ class MitUser(models.Model):
     status = models.IntegerField(default=0)
 
 class Stream(models.Model):
-    # If you change this, you also need to change the
-    # corresponding value in tutorial.js
     MAX_NAME_LENGTH = 30
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True)
