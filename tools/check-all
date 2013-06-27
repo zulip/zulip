@@ -63,6 +63,33 @@ def check_trailing_whitespace(fn):
             failed = True
     return failed
 
+def check_python_gotchas(fn):
+    '''
+    Check for certain Python gotchas that pyflakes doesn't catch.
+    '''
+    failed = False
+    for i, line in enumerate(open(fn)):
+        line = line.strip('\n')
+
+        # Hacks to skip lines that confuse our dirt simple code:
+        if re.match('\s*[*#]', line):
+            continue
+        if 'help=' in line:
+            continue
+
+        gotcha_regexes = [
+                "'.*'\s+\(", # 'foo'(2) makes no sense
+                '".*"\s+\(', # ditto
+                '% [a-z_]*$', # "%s" % s [we prefer "%s" % (s,)]
+        ]
+        for gotcha_regex in gotcha_regexes:
+            if re.search(gotcha_regex, line):
+                sys.stdout.write('Suspicious code at %s line %s (regex=%r)\n' % (fn, i+1, gotcha_regex))
+                print line
+                failed = True
+                break
+    return failed
+
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
 
@@ -81,6 +108,10 @@ try:
 
     for fn in by_lang['.js'] + by_lang['.py']:
         if check_trailing_whitespace(fn):
+            failed = True
+
+    for fn in by_lang['.py']:
+        if check_python_gotchas(fn):
             failed = True
 
     pyflakes = subprocess.Popen(['pyflakes'] + by_lang['.py'],
