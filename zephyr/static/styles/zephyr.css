@@ -1973,3 +1973,18 @@ li.expanded_subject {
     background: #000;
     z-index: 20000;
 }
+
+.tutorial-popover {
+    width: 200px;
+}
+
+#tutorial-stream {
+    width: 250px;
+}
+
+#tutorial-subject {
+    width: 250px;
+}
+.tutorial-done-button {
+    text-align: right;
+}

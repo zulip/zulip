@@ -40,6 +40,8 @@ var furthest_read = -1;
 var server_furthest_read = -1;
 var pointer_update_in_flight = false;
 
+var events_stored_during_tutorial = [];
+
 function add_person(person) {
     page_params.people_list.push(person);
     people_dict[person.email] = person;
@@ -812,6 +814,16 @@ function get_updates_success(data) {
     var messages_to_update = [];
     var new_pointer;
 
+    if (tutorial.is_running()) {
+        events_stored_during_tutorial = events_stored_during_tutorial.concat(data.events);
+        return;
+    }
+
+    if (events_stored_during_tutorial.length > 0) {
+        data.events = events_stored_during_tutorial.concat(data.events);
+        events_stored_during_tutorial = [];
+    }
+
     $.each(data.events, function (idx, event) {
         get_updates_params.last_event_id = Math.max(get_updates_params.last_event_id,
                                                     event.id);
@@ -955,7 +967,12 @@ function get_updates(options) {
             $('#connection-error').hide();
 
             get_updates_success(data);
-            get_updates_timeout = setTimeout(get_updates, 0);
+
+            if (tutorial.is_running()) {
+                get_updates_timeout = setTimeout(get_updates, 5000);
+            } else {
+                get_updates_timeout = setTimeout(get_updates, 0);
+            }
         },
         error: function (xhr, error_type, exn) {
             // If we are old enough to have messages outside of the
