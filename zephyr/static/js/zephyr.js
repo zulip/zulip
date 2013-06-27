@@ -495,7 +495,6 @@ function case_insensitive_find(term, array) {
 
 function process_message_for_recent_subjects(message, remove_message) {
     var current_timestamp = 0;
-    var max_subjects = 5;
     var count = 0;
     var canon_stream = subs.canonicalized_name(message.stream);
     var canon_subject = subs.canonicalized_name(message.subject);
@@ -533,8 +532,6 @@ function process_message_for_recent_subjects(message, remove_message) {
     recents.sort(function (a, b) {
         return b.timestamp - a.timestamp;
     });
-
-    recents = recents.slice(0, max_subjects);
 
     recent_subjects[canon_stream] = recents;
 }

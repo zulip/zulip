@@ -155,10 +155,11 @@ function rebuild_recent_subjects(stream, subject) {
     // TODO: Call rebuild_recent_subjects less, not on every new
     // message.
     $('.expanded_subjects').remove();
+    var max_subjects = 5;
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects[stream] || [];
     var active_orig_subject = subject;
-    $.each(subjects, function (idx, subject_obj) {
+    var display_subjects = $.grep(subjects, function (subject_obj, idx) {
         var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
         subject_obj.unread = num_unread;
         subject_obj.is_zero = num_unread === 0;
@@ -167,11 +168,13 @@ function rebuild_recent_subjects(stream, subject) {
             active_orig_subject = subject_obj.subject;
         }
         subject_obj.url = narrow.by_stream_subject_uri(stream, subject_obj.subject);
+
+        // Show the most recent subjects, as well as any with unread messages
+        return idx < max_subjects || subject_obj.unread > 0;
     });
 
-
     stream_li.append(templates.render('sidebar_subject_list',
-                                      {subjects: subjects,
+                                      {subjects: display_subjects,
                                        stream: stream}));
 
     if (active_orig_subject !== undefined) {
