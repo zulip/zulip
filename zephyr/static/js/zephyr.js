@@ -987,6 +987,10 @@ function get_updates(options) {
     });
 }
 
+function force_get_updates() {
+    get_updates_timeout = setTimeout(get_updates, 0);
+}
+
 function load_old_messages(opts) {
     opts = $.extend({}, {
         cont_will_add_messages: false
