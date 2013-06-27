@@ -807,6 +807,122 @@ function update_messages(events) {
     stream_list.update_streams_sidebar();
 }
 
+function get_updates_success(data) {
+    var messages = [];
+    var messages_to_update = [];
+    var new_pointer;
+
+    $.each(data.events, function (idx, event) {
+        get_updates_params.last_event_id = Math.max(get_updates_params.last_event_id,
+                                                    event.id);
+
+        switch (event.type) {
+        case 'message':
+            var msg = event.message;
+            msg.flags = event.flags;
+            messages.push(msg);
+            break;
+        case 'pointer':
+            new_pointer = event.pointer;
+            break;
+        case 'restart':
+            reload.initiate({message: "The application has been updated; reloading!"});
+            break;
+        case 'onboarding_steps':
+            onboarding.set_step_info(event.steps);
+            break;
+        case 'update_message':
+            messages_to_update.push(event);
+            break;
+        case 'realm_user':
+            if (event.op === 'add') {
+                add_person(event.person);
+            } else if (event.op === 'remove') {
+                remove_person(event.person);
+            }
+            typeahead_helper.autocomplete_needs_update(true);
+            break;
+        case 'subscriptions':
+            if (event.op === 'add') {
+                $.each(event.subscriptions, function(index, subscription) {
+                    $(document).trigger($.Event('subscription_add.zephyr',
+                                                {subscription: subscription}));
+                });
+            } else if (event.op === 'remove') {
+                $.each(event.subscriptions, function(index, subscription) {
+                    $(document).trigger($.Event('subscription_remove.zephyr',
+                                                {subscription: subscription}));
+                });
+            }
+            break;
+        case 'presence':
+            activity.set_user_status(event.email, event.presence, event.server_timestamp);
+            break;
+        }
+    });
+
+    if (typeahead_helper.autocomplete_needs_update()) {
+        typeahead_helper.update_autocomplete();
+    }
+
+    if (messages.length !== 0) {
+        // There is a known bug (#1062) in our backend
+        // whereby duplicate messages are delivered during a
+        // server update.  Once that bug is fixed, this
+        // should no longer be needed
+        messages = deduplicate_messages(messages);
+        messages = $.map(messages, add_message_metadata);
+
+        // You must add add messages to home_msg_list BEFORE
+        // calling process_loaded_for_unread.
+        add_messages(messages, home_msg_list);
+        process_loaded_for_unread(messages);
+
+        add_messages(messages, all_msg_list);
+
+        if (narrow.active()) {
+            if (narrow.filter().can_apply_locally()) {
+                add_messages(messages, narrowed_msg_list);
+            } else {
+                maybe_add_narrowed_messages(messages, narrowed_msg_list);
+            }
+        }
+
+        // notifications.received_messages uses values set by
+        // process_visible_unread_messages and thus must
+        // be called after it
+        var i;
+        var update_cursor = false;
+        // check if we need to update the cursor, and do so if needed.
+        for (i = 0; i < messages.length; i++) {
+            if (messages[i].sent_by_me && narrow.narrowed_by_reply()) {
+                update_cursor = true;
+            }
+        }
+
+        process_visible_unread_messages(update_cursor);
+        notifications.received_messages(messages);
+        compose.update_faded_messages();
+        stream_list.update_streams_sidebar();
+    }
+
+    if (new_pointer !== undefined
+        && new_pointer > furthest_read)
+    {
+        furthest_read = new_pointer;
+        server_furthest_read = new_pointer;
+        home_msg_list.select_id(new_pointer, {then_scroll: true, use_closest: true});
+    }
+
+    if ((home_msg_list.selected_id() === -1) && !home_msg_list.empty()) {
+        home_msg_list.select_id(home_msg_list.first().id, {then_scroll: false});
+    }
+
+    if (messages_to_update.length !== 0) {
+        update_messages(messages_to_update);
+    }
+}
+
 var get_updates_xhr;
 var get_updates_timeout;
 function get_updates(options) {
@@ -838,120 +954,7 @@ function get_updates(options) {
             get_updates_failures = 0;
             $('#connection-error').hide();
 
-            var messages = [];
-            var messages_to_update = [];
-            var new_pointer;
-
-            $.each(data.events, function (idx, event) {
-                get_updates_params.last_event_id = Math.max(get_updates_params.last_event_id,
-                                                            event.id);
-
-                switch (event.type) {
-                case 'message':
-                    var msg = event.message;
-                    msg.flags = event.flags;
-                    messages.push(msg);
-                    break;
-                case 'pointer':
-                    new_pointer = event.pointer;
-                    break;
-                case 'restart':
-                    reload.initiate({message: "The application has been updated; reloading!"});
-                    break;
-                case 'onboarding_steps':
-                    onboarding.set_step_info(event.steps);
-                    break;
-                case 'update_message':
-                    messages_to_update.push(event);
-                    break;
-                case 'realm_user':
-                    if (event.op === 'add') {
-                        add_person(event.person);
-                    } else if (event.op === 'remove') {
-                        remove_person(event.person);
-                    }
-                    typeahead_helper.autocomplete_needs_update(true);
-                    break;
-                case 'subscriptions':
-                    if (event.op === 'add') {
-                        $.each(event.subscriptions, function(index, subscription) {
-                            $(document).trigger($.Event('subscription_add.zephyr',
-                                                        {subscription: subscription}));
-                        });
-                    } else if (event.op === 'remove') {
-                        $.each(event.subscriptions, function(index, subscription) {
-                            $(document).trigger($.Event('subscription_remove.zephyr',
-                                                        {subscription: subscription}));
-                        });
-                    }
-                    break;
-                case 'presence':
-                    activity.set_user_status(event.email, event.presence, event.server_timestamp);
-                    break;
-                }
-            });
-
-            if (typeahead_helper.autocomplete_needs_update()) {
-                typeahead_helper.update_autocomplete();
-            }
-
-            if (messages.length !== 0) {
-                // There is a known bug (#1062) in our backend
-                // whereby duplicate messages are delivered during a
-                // server update.  Once that bug is fixed, this
-                // should no longer be needed
-                messages = deduplicate_messages(messages);
-                messages = $.map(messages, add_message_metadata);
-
-                // You must add add messages to home_msg_list BEFORE
-                // calling process_loaded_for_unread.
-                add_messages(messages, home_msg_list);
-                process_loaded_for_unread(messages);
-
-                add_messages(messages, all_msg_list);
-
-                if (narrow.active()) {
-                    if (narrow.filter().can_apply_locally()) {
-                        add_messages(messages, narrowed_msg_list);
-                    } else {
-                        maybe_add_narrowed_messages(messages, narrowed_msg_list);
-                    }
-                }
-
-                // notifications.received_messages uses values set by
-                // process_visible_unread_messages and thus must
-                // be called after it
-                var i;
-                var update_cursor = false;
-                // check if we need to update the cursor, and do so if needed.
-                for (i = 0; i < messages.length; i++) {
-                    if (messages[i].sent_by_me && narrow.narrowed_by_reply()) {
-                        update_cursor = true;
-                    }
-                }
-
-                process_visible_unread_messages(update_cursor);
-                notifications.received_messages(messages);
-                compose.update_faded_messages();
-                stream_list.update_streams_sidebar();
-            }
-
-            if (new_pointer !== undefined
-                && new_pointer > furthest_read)
-            {
-                furthest_read = new_pointer;
-                server_furthest_read = new_pointer;
-                home_msg_list.select_id(new_pointer, {then_scroll: true, use_closest: true});
-            }
-
-            if ((home_msg_list.selected_id() === -1) && !home_msg_list.empty()) {
-                home_msg_list.select_id(home_msg_list.first().id, {then_scroll: false});
-            }
-
-            if (messages_to_update.length !== 0) {
-                update_messages(messages_to_update);
-            }
-
+            get_updates_success(data);
             get_updates_timeout = setTimeout(get_updates, 0);
         },
         error: function (xhr, error_type, exn) {
