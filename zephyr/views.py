@@ -2012,6 +2012,8 @@ def json_create_bot(request, user_profile, full_name=REQ, short_name=REQ):
 def json_get_bots(request, user_profile):
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                               bot_owner=user_profile)
+    bot_profiles = bot_profiles.order_by('date_joined')
+
     def bot_info(bot_profile):
         return dict(
                 username   = bot_profile.email,

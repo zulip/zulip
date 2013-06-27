@@ -22,10 +22,7 @@ $(function () {
         success: function (data) {
             $('#bot_table_error').hide();
 
-            var bots = data.bots.sort(function (a, b) {
-                return b.full_name.localeCompare(a.full_name);
-            });
-            $.each(bots, function (idx, elem) {
+            $.each(data.bots, function (idx, elem) {
                 add_bot_row(elem.full_name, elem.username, elem.api_key);
             });
         },
