@@ -1812,12 +1812,18 @@ li.expanded_subject {
     display: none;
 }
 
+#create_bot_form .control-label {
+    width: 10em;
+    text-align: left;
+    margin-right: 3px;
+}
+
 #create_bot_name {
-    width: 85%;
+    width: 20em;
 }
 
 #create_bot_short_name {
-    width: 35%;
+    width: 10em;
 }
 
 .bot_name_header {

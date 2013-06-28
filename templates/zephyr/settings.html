@@ -141,23 +141,23 @@
         </tbody>
       </table>
 
-    <form id="create_bot_form">
+    <form id="create_bot_form" class="form-horizontal">
     <div id="bot_table_error" class="alert alert-error hide"></div>
       <h3>Add new bot:</h3>
       <p>     
-        <div class="label">Full name:</div>
+        <label for="create_bot_name" class="control-label">Full name</label>
         <input type="text" name="bot_name" id="create_bot_name" class="required"
                maxlength=100 placeholder="Bot name" value="" />
         <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
       </p>
       <p>
-        <div class="label">Username:</div>
+        <label for="bot_short_name" class="control-label">Username</label>
         <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
                placeholder="Bot username" value="" />-bot@{{ user_profile.realm.domain }}
         <div><label for="create_bot_short_name" generated="true" class="text-error"></label></div>
       </p>
       <p>
-        <div class="label">Optional avatar:</div>
+        <label for="bot_avatar_file_input" class="control-label">Optional avatar</label>
         <input type="file" name="bot_avatar_file_input" id="bot_avatar_file_input" value="Upload avatar" />
       </p>
       <p>
