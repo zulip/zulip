@@ -1690,7 +1690,7 @@ exports.set_presence_list = function (users, presence_info) {
                     type: type,
                     type_desc: presence_descriptions[type],
                     email: email};
-        if (email === this.email) {
+        if (email === page_params.email) {
             args.my_fullname = true;
         }
         var entry = templates.render('user_presence_row', args);
