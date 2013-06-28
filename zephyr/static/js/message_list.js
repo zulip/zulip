@@ -298,6 +298,8 @@ MessageList.prototype = {
             if (util.same_recipient(prev, message) && self.collapse_messages &&
                prev.historical === message.historical && !message.show_date) {
                 current_group.push(message.id);
+                // prev is no longer the last element in this block
+                prev.include_footer = false;
             } else {
                 if (current_group.length > 0)
                     new_message_groups.push(current_group);
@@ -306,8 +308,8 @@ MessageList.prototype = {
                 // Add a space to the table, but not for the first element.
                 message.include_recipient = true;
                 message.include_bookend   = (prev !== undefined);
-                if (prev) {
-                    prev.include_footer = message.include_bookend;
+                if (prev !== undefined) {
+                    prev.include_footer = true;
                 }
                 message.subscribed = false;
                 message.unsubscribed = false;
@@ -393,9 +395,13 @@ MessageList.prototype = {
             var row = rows.get(last_message_id, table_name);
             if (ids_where_next_is_same_sender[last_message_id]) {
                 row.find('.messagebox').addClass("next_is_same_sender");
-                if (this.get(last_message_id) && this.get(last_message_id).include_footer) {
-                    row.removeClass('last_message');
-                }
+            }
+            // We didn't actually rerender the original last message,
+            // but we might have set .include_footer=false for it in
+            // the above loop since it was the previous message for
+            // messages[0].  If so, we need to update the DOM.
+            if (this.get(last_message_id) && ! this.get(last_message_id).include_footer) {
+                row.removeClass('last_message');
             }
         }
 
