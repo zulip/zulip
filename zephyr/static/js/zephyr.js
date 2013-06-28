@@ -872,13 +872,17 @@ function get_updates(options) {
                     }
                     typeahead_helper.autocomplete_needs_update(true);
                     break;
-                case 'subscription':
+                case 'subscriptions':
                     if (event.op === 'add') {
-                        $(document).trigger($.Event('subscription_add.zephyr',
-                                                    {subscription: event.subscription}));
+                        $.each(event.subscriptions, function(index, subscription) {
+                            $(document).trigger($.Event('subscription_add.zephyr',
+                                                        {subscription: subscription}));
+                        });
                     } else if (event.op === 'remove') {
-                        $(document).trigger($.Event('subscription_remove.zephyr',
-                                                    {subscription: event.subscription}));
+                        $.each(event.subscriptions, function(index, subscription) {
+                            $(document).trigger($.Event('subscription_remove.zephyr',
+                                                        {subscription: subscription}));
+                        });
                     }
                     break;
                 case 'presence':
