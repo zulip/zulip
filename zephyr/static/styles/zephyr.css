@@ -1818,6 +1818,10 @@ li.expanded_subject {
     margin-right: 3px;
 }
 
+#create_bot_button {
+    margin-left: 24em;
+}
+
 #create_bot_name {
     width: 20em;
 }
