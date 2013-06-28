@@ -27,9 +27,6 @@ function MessageList(table_name, filter, opts) {
 (function () {
 
 function add_display_time(message, prev) {
-    if (message.timestr !== undefined) {
-        return;
-    }
     var time = new XDate(message.timestamp * 1000);
     var include_date = false;
 
@@ -45,9 +42,15 @@ function add_display_time(message, prev) {
     if (include_date) {
         // NB: show_date is HTML, inserted into the document without escaping.
         message.show_date = (timerender.render_time(time))[0].outerHTML;
+    } else {
+        // This is run on re-render, and must remove the date if a message
+        // from the same day is added above this one when scrolling up.
+        message.show_date = undefined;
     }
 
-    message.timestr = time.toString("HH:mm");
+    if (message.timestr === undefined){
+        message.timestr = time.toString("HH:mm");
+    }
 }
 
 MessageList.prototype = {
