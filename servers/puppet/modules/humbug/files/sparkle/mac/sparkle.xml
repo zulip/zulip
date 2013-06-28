@@ -2,7 +2,7 @@
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"  xmlns:dc="http://purl.org/dc/elements/1.1/">
    <channel>
       <title>Humbug Changelog</title>
-      <link>http://humbughq.com/dist/apps/mac/sparkle.xml</link>
+      <link>https://humbughq.com/dist/apps/mac/sparkle.xml</link>
       <description>Latest updates to Humbug's Desktop Application</description>
       <language>en</language>
       <item>
@@ -10,20 +10,20 @@
              Version 0.0.2 (Upgrade Test Alpha)
          </title>
          <sparkle:releaseNotesLink>
-             http://humbughq.com/dist/apps/mac/sparkle-changelog.html
+             https://humbughq.com/dist/apps/mac/sparkle-changelog.html
          </sparkle:releaseNotesLink>
          <pubDate>Tue, 18 Jun 2013 16:20:11 +0000</pubDate>
-         <enclosure url="http://humbughq.com/dist/apps/mac/humbug-0.0.2.tar.bz2" sparkle:version="0.0.2" length="17173500" type="application/octet-stream" sparkle:dsaSignature="MCwCFEu3OR7u9/6qSk+GuLRujcDQtDKOAhR49mNr5O7eVknDFbWvj5LffXS0/A==" />
+         <enclosure url="https://humbughq.com/dist/apps/mac/humbug-0.0.2.tar.bz2" sparkle:version="0.0.2" length="17173500" type="application/octet-stream" sparkle:dsaSignature="MCwCFEu3OR7u9/6qSk+GuLRujcDQtDKOAhR49mNr5O7eVknDFbWvj5LffXS0/A==" />
       </item>
          <item>
             <title>
                 Version 0.0.1 (Initial Alpha)
             </title>
             <sparkle:releaseNotesLink>
-                http://humbughq.com/dist/apps/mac/sparkle-changelog.html
+                https://humbughq.com/dist/apps/mac/sparkle-changelog.html
             </sparkle:releaseNotesLink>
             <pubDate>Tue, 18 Jun 2013 10:20:11 +0000</pubDate>
-            <enclosure url="http://humbughq.com/dist/apps/mac/humbug-0.0.1.tar.bz2" sparkle:version="0.0.1" length="17173159" type="application/octet-stream" sparkle:dsaSignature="MCwCFB7hS21C2gtkPRL2Hj2Mu/C/+qt4AhQmwS+q7ibvtdZEIk3ulKRR+Y2XhQ==" />
+            <enclosure url="https://humbughq.com/dist/apps/mac/humbug-0.0.1.tar.bz2" sparkle:version="0.0.1" length="17173159" type="application/octet-stream" sparkle:dsaSignature="MCwCFB7hS21C2gtkPRL2Hj2Mu/C/+qt4AhQmwS+q7ibvtdZEIk3ulKRR+Y2XhQ==" />
          </item>
    </channel>
 </rss>
