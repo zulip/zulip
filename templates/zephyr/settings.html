@@ -158,7 +158,10 @@
       </p>
       <p>
         <label for="bot_avatar_file_input" class="control-label">Optional avatar</label>
-        <input type="file" name="bot_avatar_file_input" id="bot_avatar_file_input" value="Upload avatar" />
+        <input type="file" name="bot_avatar_file_input" class="notdisplayed" id="bot_avatar_file_input" value="Upload avatar" />
+        <button class="btn" id="bot_avatar_clear_button">Clear avatar</button>
+        <button class="btn" id="bot_avatar_upload_button">Choose avatar</button>
+        <span id="bot_avatar_file"></span>
       </p>
       <p>
         <div id="bot_avatar_file_input_error" class="text-error"></div>

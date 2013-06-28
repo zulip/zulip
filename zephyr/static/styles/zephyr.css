@@ -1822,6 +1822,10 @@ li.expanded_subject {
     margin-left: 24em;
 }
 
+#bot_avatar_clear_button {
+    display: none;
+}
+
 #create_bot_name {
     width: 20em;
 }

@@ -47,18 +47,34 @@ $(function () {
                           },
                           "Please only use characters that are valid in an email address");
 
+
+    function accept_bot_avatar_file_input(file) {
+        $('#bot_avatar_file').text(file.name);
+        $('#bot_avatar_file_input_error').hide();
+        $('#bot_avatar_clear_button').show();
+        $('#bot_avatar_upload_button').hide();
+    }
+
     function clear_bot_avatar_file_input() {
         var control = $('#bot_avatar_file_input');
         var new_control = control.clone(true);
         control.replaceWith(new_control);
+        $('#bot_avatar_file').text('');
+        $('#bot_avatar_clear_button').hide();
+        $('#bot_avatar_upload_button').show();
     }
 
-    $('#bot_avatar_file_input').on('drop', function(e) {
+    $('#bot_avatar_clear_button').click(function(e) {
+        clear_bot_avatar_file_input();
+        e.preventDefault();
+    });
+
+    $('#bot_avatar_upload_button').on('drop', function(e) {
         var files = e.dataTransfer.files;
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
-        this.files = files;
+        $('#bot_avatar_file_input').get(0).files = files;
         e.preventDefault();
         return false;
     });
@@ -91,12 +107,17 @@ $(function () {
                 $('#bot_avatar_file_input_error').show();
                 clear_bot_avatar_file_input();
             } else {
-                $('#bot_avatar_file_input_error').hide();
+                accept_bot_avatar_file_input(file);
             }
         }
         else {
             $('#bot_avatar_file_input_error').text('Please just upload one file.');
         }
+    });
+
+    $('#bot_avatar_upload_button').click(function(e) {
+        $('#bot_avatar_file_input').trigger('click');
+        e.preventDefault();
     });
 
     $('#create_bot_form').validate({
