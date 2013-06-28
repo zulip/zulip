@@ -237,8 +237,8 @@ function process_hotkey(e) {
         }
         return true;
     case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
-        if (ui.actions_currently_popped()) {
-            ui.hide_actions_popover();
+        if (popovers.any_active()) {
+            popovers.hide_all();
         } else if (compose.composing()) {
             compose.cancel();
         } else {

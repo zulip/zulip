@@ -358,6 +358,7 @@ PIPELINE_JS = {
             'js/subs.js',
             'js/message_edit.js',
             'js/ui.js',
+            'js/popovers.js',
             'js/typeahead_helper.js',
             'js/search.js',
             'js/composebox_typeahead.js',
