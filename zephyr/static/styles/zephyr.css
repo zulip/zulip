@@ -1256,6 +1256,12 @@ input.recipient_box {
     letter-spacing: -.3em;
 }
 
+#search_arrows input {
+    /* Chrome and Firefox do this already via default browser stylesheet;
+       but Opera needs this to avoid smushed letters in the search box. */
+    letter-spacing: normal;
+}
+
 
 #floating_recipient_bar {
     position: fixed;
