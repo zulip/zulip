@@ -5,7 +5,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand
 
 from zephyr.lib.actions import do_deactivate, user_sessions
-from zephyr.models import get_user_profile_by_email
+from zephyr.models import get_user_profile_by_email, UserProfile
 
 class Command(BaseCommand):
     help = "Deactivate a user, including forcibly logging them out."
@@ -32,6 +32,12 @@ class Command(BaseCommand):
         for session in user_sessions(user_profile):
             print session.expire_date, session.get_decoded()
         print ""
+        print "%s has %s active bots that will also be deactivated." % (
+                user_profile.email,
+                UserProfile.objects.filter(
+                    is_bot=True, is_active=True, bot_owner=user_profile
+                ).count()
+            )
 
         if not options["for_real"]:
             print "This was a dry run. Pass -f to actually deactivate."
