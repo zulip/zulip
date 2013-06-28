@@ -21,7 +21,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     MAX_SUBJECT_LENGTH, get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags
-from zephyr.lib.actions import do_remove_subscription, \
+from zephyr.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
     do_send_confirmation_email, do_activate_user, do_create_user, check_send_message, \
@@ -1240,12 +1240,11 @@ def remove_subscriptions_backend(request, user_profile,
     streams = list_to_streams(streams_raw, user_profile)
 
     result = dict(removed=[], not_subscribed=[])
-    for stream in streams:
-        did_remove = do_remove_subscription(user_profile, stream)
-        if did_remove:
-            result["removed"].append(stream.name)
-        else:
-            result["not_subscribed"].append(stream.name)
+    (removed, not_subscribed) = bulk_remove_subscriptions([user_profile], streams)
+    for (subscriber, stream) in removed:
+        result["removed"].append(stream.name)
+    for (subscriber, stream) in not_subscribed:
+        result["not_subscribed"].append(stream.name)
 
     return json_success(result)
 

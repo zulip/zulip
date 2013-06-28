@@ -635,6 +635,50 @@ def do_add_subscription(user_profile, stream, no_log=False):
         notify_new_subscription(user_profile, stream, subscription, no_log)
     return did_subscribe
 
+def notify_subscription_removed(user_profile, stream, no_log=False):
+    if not no_log:
+        log_event({'type': 'subscription_removed',
+                   'user': user_profile.email,
+                   'name': stream.name,
+                   'domain': stream.realm.domain})
+
+    notice = dict(event=dict(type="subscription", op="remove",
+                             subscription=dict(name=stream.name)),
+                  users=[user_profile.id])
+    tornado_callbacks.send_notification(notice)
+
+def bulk_remove_subscriptions(users, streams):
+    recipients_map = bulk_get_recipients(Recipient.STREAM,
+                                         [stream.id for stream in streams])
+    stream_map = {}
+    for stream in streams:
+        stream_map[recipients_map[stream.id].id] = stream
+
+    subs_by_user = dict((user_profile.id, []) for user_profile in users)
+    for sub in Subscription.objects.select_related("user_profile").filter(user_profile__in=users,
+                                                                          recipient__in=recipients_map.values(),
+                                                                          active=True):
+        subs_by_user[sub.user_profile_id].append(sub)
+
+    subs_to_deactivate = []
+    not_subscribed = []
+    for user_profile in users:
+        recipients_to_unsub = set([recipient.id for recipient in recipients_map.values()])
+        for sub in subs_by_user[user_profile.id]:
+            recipients_to_unsub.remove(sub.recipient_id)
+            subs_to_deactivate.append((sub, stream_map[sub.recipient_id]))
+        for recipient_id in recipients_to_unsub:
+            not_subscribed.append((user_profile, stream_map[recipient_id]))
+
+    Subscription.objects.filter(id__in=[sub.id for (sub, stream_name) in
+                                        subs_to_deactivate]).update(active=False)
+
+    for (sub, stream) in subs_to_deactivate:
+        notify_subscription_removed(sub.user_profile, stream)
+
+    return ([(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
+            not_subscribed)
+
 def do_remove_subscription(user_profile, stream, no_log=False):
     recipient = get_recipient(Recipient.STREAM, stream.id)
     maybe_sub = Subscription.objects.filter(user_profile=user_profile,
@@ -646,16 +690,7 @@ def do_remove_subscription(user_profile, stream, no_log=False):
     subscription.active = False
     subscription.save(update_fields=["active"])
     if did_remove:
-        if not no_log:
-            log_event({'type': 'subscription_removed',
-                       'user': user_profile.email,
-                       'name': stream.name,
-                       'domain': stream.realm.domain})
-
-        notice = dict(event=dict(type="subscription", op="remove",
-                                 subscription=dict(name=stream.name)),
-                      users=[user_profile.id])
-        tornado_callbacks.send_notification(notice)
+        notify_subscription_removed(user_profile, stream, no_log)
 
     return did_remove
 
