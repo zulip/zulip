@@ -116,7 +116,10 @@ def delete_all_user_sessions():
     for session in Session.objects.all():
         delete_session(session)
 
-def do_deactivate(user_profile, log=True):
+def do_deactivate(user_profile, log=True, _cascade=True):
+    if not user_profile.is_active:
+        return
+
     user_profile.is_active = False;
     user_profile.save(update_fields=["is_active"])
 
@@ -136,6 +139,11 @@ def do_deactivate(user_profile, log=True):
                                                                      is_active=True)])
     tornado_callbacks.send_notification(notice)
 
+    if _cascade:
+        bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
+                                                  bot_owner=user_profile)
+        for profile in bot_profiles:
+            do_deactivate(profile, _cascade=False)
 
 def do_change_user_email(user_profile, new_email):
     old_email = user_profile.email
