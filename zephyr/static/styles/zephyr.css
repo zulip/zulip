@@ -1924,6 +1924,20 @@ li.expanded_subject {
     border: 1px solid #000;
 }
 
+.user-mention {
+    background: #eee;
+    border-radius: 6px;
+    padding: 0px 0.3em;
+    border: 1px solid #ccc;
+    font-weight: bold;
+}
+
+.user-mention-me {
+    background: #58F;
+    color: white;
+    border-color: #7080A5;
+}
+
 #notification-settings .control-group {
     margin-bottom: 5px;
 }

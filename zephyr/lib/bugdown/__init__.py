@@ -21,6 +21,7 @@ from zephyr.lib.bugdown import codehilite, fenced_code
 from zephyr.lib.bugdown.fenced_code import FENCE_RE
 from zephyr.lib.timeout import timeout, TimeoutExpired
 from zephyr.lib.cache import cache_with_key, cache_get_many, cache_set_many
+import zephyr.lib.mention as mention
 
 
 if settings.USING_EMBEDLY:
@@ -517,6 +518,30 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         return url_to_a(self.format_string % m.groupdict(),
                         m.group("name"))
 
+class UserMentionPattern(markdown.inlinepatterns.Pattern):
+    def handleMatch(self, m):
+        name = m.group(2) or m.group(3)
+
+        if current_message:
+            wildcard, user = mention.find_user_for_mention(name, current_message.sender.realm)
+
+            if wildcard:
+                current_message.mentions_wildcard = True
+                email = "*"
+            elif user:
+                current_message.mentions_user_ids.add(user.id)
+                name = user.full_name
+                email = user.email
+            else:
+                # Don't highlight @mentions that don't refer to a valid user
+                return None
+
+            el = markdown.util.etree.Element("span")
+            el.set('class', 'user-mention')
+            el.set('data-user-email', email)
+            el.text = "@%s" % (name,)
+            return el
+
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         del md.preprocessors['reference']
@@ -538,6 +563,7 @@ class Bugdown(markdown.Extension):
         md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
 
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
+        md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\S)(?P<syntax>:[^:\s]+:)(?!\S)'), '_begin')
         md.inlinePatterns.add('link', LinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
 
@@ -615,16 +641,23 @@ _privacy_re = re.compile(r'\w', flags=re.UNICODE)
 def _sanitize_for_log(md):
     return repr(_privacy_re.sub('x', md))
 
-def do_convert(md, realm):
+
+# Filters such as UserMentionPattern need a message, but python-markdown
+# provides no way to pass extra params through to a pattern. Thus, a global.
+current_message = None
+
+def do_convert(md, realm_domain=None, message=None):
     """Convert Markdown to HTML, with Humbug-specific settings and hacks."""
 
-    if realm in md_engines:
-        _md_engine = md_engines[realm]
+    if realm_domain in md_engines:
+        _md_engine = md_engines[realm_domain]
     else:
         _md_engine = md_engines["default"]
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
 
+    global current_message
+    current_message = message
     try:
         # Spend at most 5 seconds rendering.
         # Sometimes Python-Markdown is really slow; see
@@ -645,7 +678,8 @@ def do_convert(md, realm):
                                     cleaned, traceback.format_exc()),
                          fail_silently=False)
         return None
-
+    finally:
+        current_message = None
 
 bugdown_time_start = 0
 bugdown_total_time = 0
@@ -668,8 +702,8 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(md, realm):
+def convert(md, realm_domain=None, message=None):
     bugdown_stats_start()
-    ret = do_convert(md, realm)
+    ret = do_convert(md, realm_domain, message)
     bugdown_stats_finish()
     return ret

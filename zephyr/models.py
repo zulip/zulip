@@ -339,14 +339,48 @@ class Message(models.Model):
     def __str__(self):
         return self.__repr__()
 
-    def to_dict(self, apply_markdown, rendered_content=None):
-        return extract_message_dict(self.to_dict_json(apply_markdown, rendered_content))
+    def render_markdown(self, content):
+        """Return HTML for given markdown. Bugdown may add properties to the
+        message object such as `mentions_user_ids` and `mentions_wildcard`.
+        These are only on this Django object and are not saved in the
+        database.
+        """
+
+        self.mentions_wildcard = False
+        self.mentions_user_ids = set()
+
+        return bugdown.convert(content, self.sender.realm.domain, self)
+
+    def set_rendered_content(self, rendered_content):
+        """Set the content on the message.
+
+        This method does not call .save(). Save afterwards with
+        update_fields=["rendered_content", "rendered_content_version"].
+        """
+
+        self.rendered_content = rendered_content
+        self.rendered_content_version = bugdown.version
+
+        if self.rendered_content is None:
+            return False
+
+        return True
+
+    def maybe_render_content(self):
+        """Render the markdown if there is no existing rendered_content"""
+        if self.rendered_content is None:
+            return self.set_rendered_content(self.render_markdown(self.content))
+        else:
+            return True
+
+    def to_dict(self, apply_markdown):
+        return extract_message_dict(self.to_dict_json(apply_markdown))
 
     @cache_with_key(to_dict_cache_key, timeout=3600*24)
-    def to_dict_json(self, apply_markdown, rendered_content=None):
-        return stringify_message_dict(self.to_dict_uncached(apply_markdown, rendered_content))
+    def to_dict_json(self, apply_markdown):
+        return stringify_message_dict(self.to_dict_uncached(apply_markdown))
 
-    def to_dict_uncached(self, apply_markdown, rendered_content=None):
+    def to_dict_uncached(self, apply_markdown):
         display_recipient = get_display_recipient(self.recipient)
         if self.recipient.type == Recipient.STREAM:
             display_type = "stream"
@@ -388,16 +422,11 @@ class Message(models.Model):
             obj['content'] = self.rendered_content
             obj['content_type'] = 'text/html'
         elif apply_markdown:
-            if rendered_content is None:
-                rendered_content = bugdown.convert(self.content, self.sender.realm.domain)
-                if rendered_content is None:
-                    rendered_content = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
+            if self.rendered_content is not None:
+                obj['content'] = self.rendered_content
+            else:
+                obj['content'] = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
 
-                # Update the database cache of the rendered content
-                self.rendered_content = rendered_content
-                self.rendered_content_version = bugdown.version
-                self.save(update_fields=["rendered_content", "rendered_content_version"])
-            obj['content'] = rendered_content
             obj['content_type'] = 'text/html'
         else:
             obj['content'] = self.content

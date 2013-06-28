@@ -385,6 +385,15 @@ MessageList.prototype = {
             if (ids_where_next_is_same_sender[id]) {
                 row.find('.messagebox').addClass("next_is_same_sender");
             }
+
+            if (row.hasClass('mention')) {
+                row.find('.user-mention').each(function () {
+                    var email = $(this).attr('data-user-email');
+                    if (email === '*' || email === page_params.email) {
+                        $(this).addClass('user-mention-me');
+                    }
+                });
+            }
         });
 
         // The message that was last before this batch came in has to be

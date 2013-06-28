@@ -192,42 +192,6 @@ def log_message(message):
     if not message.sending_client.name.startswith("test:"):
         log_event(message.to_log_dict())
 
-# Match multi-word string between @** ** or match any one-word
-# sequences after @
-find_mentions_re = re.compile(r'\B@(?:\*\*([^\*]+)\*\*)|@(\w+)')
-
-def mentioned_in_message(message):
-    # Determine what, if any, users are mentioned with an @-notification
-    # in this message
-    #
-    # TODO(leo) There is a minor regression in that we no longer
-    # match just-first-names or just-last-names
-    wildcards = ['all', 'everyone']
-
-    potential_mentions = find_mentions_re.findall(message.content)
-    # Either the first or the second group matched something, take the
-    # one that did (find_all returns a list with each item containing all groups)
-    potential_mentions = map(lambda elem: elem[0] or elem[1], potential_mentions)
-
-    users = set()
-    for mention in potential_mentions:
-        if mention in wildcards:
-            return (True, set())
-
-        attempts = [Q(full_name__iexact=mention), Q(short_name__iexact=mention)]
-        found = False
-        for attempt in attempts:
-            ups = UserProfile.objects.filter(attempt, realm=message.sender.realm)
-            for user in ups:
-                users.add(user.id)
-            found = len(ups) > 0
-            break
-
-        if found:
-            continue
-
-    return (False, users)
-
 # Helper function. Defaults here are overriden by those set in do_send_messages
 def do_send_message(message, rendered_content = None, no_log = False, stream = None):
     do_send_messages([{'message': message,
@@ -270,6 +234,8 @@ def do_send_messages(messages):
         else:
             raise ValueError('Bad recipient type')
 
+        message['message'].maybe_render_content()
+
     # Save the message receipts in the database
     user_message_flags = defaultdict(dict)
     with transaction.commit_on_success():
@@ -279,7 +245,12 @@ def do_send_messages(messages):
             ums_to_create = [UserMessage(user_profile=user_profile, message=message['message'])
                              for user_profile in message['recipients']
                              if user_profile.is_active]
-            wildcard, mentioned_ids = mentioned_in_message(message['message'])
+
+            # These properties on the Message are set via
+            # Message.render_markdown by code in the bugdown inline patterns
+            wildcard = message['message'].mentions_wildcard
+            mentioned_ids = message['message'].mentions_user_ids
+
             for um in ums_to_create:
                 sent_by_human = message['message'].sending_client.name.lower() in \
                                     ['website', 'iphone', 'android']
@@ -298,7 +269,7 @@ def do_send_messages(messages):
         # Render Markdown etc. here and store (automatically) in
         # memcached, so that the single-threaded Tornado server
         # doesn't have to.
-        message['message'].to_dict(apply_markdown=True, rendered_content=message['rendered_content'])
+        message['message'].to_dict(apply_markdown=True)
         message['message'].to_dict(apply_markdown=False)
         user_flags = user_message_flags.get(message['message'].id, {})
         data = dict(
@@ -453,15 +424,9 @@ def check_message(sender, client, message_type_name, message_to,
     else:
         return "Invalid message type"
 
-    rendered_content = bugdown.convert(message_content, sender.realm.domain)
-    if rendered_content is None:
-        return "We were unable to render your message"
-
     message = Message()
     message.sender = sender
     message.content = message_content
-    message.rendered_content = rendered_content
-    message.rendered_content_version = bugdown.version
     message.recipient = recipient
     if message_type_name == 'stream':
         message.subject = subject
@@ -472,11 +437,13 @@ def check_message(sender, client, message_type_name, message_to,
         message.pub_date = timezone.now()
     message.sending_client = client
 
+    if not message.maybe_render_content():
+        return "We were unable to render your message"
+
     if client.name == "zephyr_mirror" and already_sent_mirrored_message(message):
         return {'message': None}
 
-    return {'message': message, 'rendered_content': rendered_content,
-            'stream': stream}
+    return {'message': message, 'stream': stream}
 
 def internal_prep_message(sender_email, recipient_type_name, recipients,
                           subject, content, realm=None):
@@ -967,8 +934,8 @@ def do_update_message(user_profile, message_id, subject, content):
     if content is not None:
         if len(content) > MAX_MESSAGE_LENGTH:
             raise JsonableError("Message too long")
-        rendered_content = bugdown.convert(content, message.sender.realm.domain)
-        if rendered_content is None:
+        rendered_content = message.render_markdown(content)
+        if not rendered_content:
             raise JsonableError("We were unable to render your updated message")
 
         if not settings.DEPLOYED or settings.STAGING_DEPLOYED:
@@ -981,8 +948,7 @@ def do_update_message(user_profile, message_id, subject, content):
         edit_history_event["prev_rendered_content"] = message.rendered_content
         edit_history_event["prev_rendered_content_version"] = message.rendered_content_version
         message.content = content
-        message.rendered_content = rendered_content
-        message.rendered_content_version = bugdown.version
+        message.set_rendered_content(rendered_content)
         event["content"] = content
         event["rendered_content"] = rendered_content
 
@@ -1014,8 +980,7 @@ def do_update_message(user_profile, message_id, subject, content):
     cache_save_message(message)
     items_for_memcached = {}
     items_for_memcached[to_dict_cache_key(message, True)] = \
-        (stringify_message_dict(message.to_dict_uncached(apply_markdown=True,
-                                  rendered_content=message.rendered_content)),)
+        (stringify_message_dict(message.to_dict_uncached(apply_markdown=True)),)
     items_for_memcached[to_dict_cache_key(message, False)] = \
         (stringify_message_dict(message.to_dict_uncached(apply_markdown=False)),)
     cache_set_many(items_for_memcached)
