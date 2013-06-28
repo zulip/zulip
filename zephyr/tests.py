@@ -2953,7 +2953,6 @@ def enforce_timely_test_completion(test_method, test_name, delay):
 
     if delay > max_delay:
         print 'Test is TOO slow: %s (%.3f s)' % (test_name, delay)
-        sys.exit(1)
 
 def fast_tests_only():
     return os.environ.get('FAST_TESTS_ONLY', False)
