@@ -8,6 +8,11 @@ var asked_permission_already = false;
 var names;
 var supports_sound;
 
+var unread_pms_favicon = '/static/images/favicon/favicon-pms.png';
+var current_favicon;
+var previous_favicon;
+var flashing = false;
+
 function browser_desktop_notifications_on () {
     return (window.webkitNotifications &&
             // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
@@ -96,10 +101,11 @@ exports.update_title_count = function (new_message_count) {
             if (n > 99)
                 n = 'infinite';
 
-            util.set_favicon('/static/images/favicon/favicon-'+n+'.png');
+            current_favicon = previous_favicon = '/static/images/favicon/favicon-'+n+'.png';
         } else {
-            util.set_favicon('/static/favicon.ico?v=2');
+            current_favicon = previous_favicon = '/static/favicon.ico?v=2';
         }
+        util.set_favicon(current_favicon);
     }
 
     if (window.bridge !== undefined) {
@@ -109,9 +115,36 @@ exports.update_title_count = function (new_message_count) {
     }
 };
 
+function flash_pms() {
+    // When you have unread PMs, toggle the favicon between the unread count and
+    // a special icon indicating that you have unread PMs.
+    if (unread.get_counts().private_message_count > 0) {
+        if (current_favicon === unread_pms_favicon) {
+            util.set_favicon(previous_favicon);
+            current_favicon = previous_favicon;
+            previous_favicon = unread_pms_favicon;
+        } else {
+            util.set_favicon(unread_pms_favicon);
+            previous_favicon = current_favicon;
+            current_favicon = unread_pms_favicon;
+        }
+        // Toggle every 2 seconds.
+        setTimeout(flash_pms, 2000);
+    } else {
+        flashing = false;
+        // You have no more unread PMs, so back to only showing the unread
+        // count.
+        util.set_favicon(current_favicon);
+    }
+}
+
 exports.update_pm_count = function (new_pm_count) {
     if (window.bridge !== undefined && window.bridge.updatePMCount !== undefined) {
         window.bridge.updatePMCount(new_pm_count);
+    }
+    if (!flashing) {
+        flashing = true;
+        flash_pms();
     }
 };
 
