@@ -74,6 +74,8 @@ def slow(expected_run_time, slowness_reason):
 def is_known_slow_test(test_method):
     return hasattr(test_method, 'slowness_reason')
 
+API_KEYS = {}
+
 class AuthedTestCase(TestCase):
     def login(self, email, password=None):
         if password is None:
@@ -99,7 +101,9 @@ class AuthedTestCase(TestCase):
                                  'terms': True})
 
     def get_api_key(self, email):
-        return self.get_user_profile(email).api_key
+        if email not in API_KEYS:
+            API_KEYS[email] =  self.get_user_profile(email).api_key
+        return API_KEYS[email]
 
     def get_user_profile(self, email):
         """
