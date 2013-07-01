@@ -643,8 +643,7 @@ def update_pointer_backend(request, user_profile,
 
 @authenticated_json_post_view
 def json_get_old_messages(request, user_profile):
-    return get_old_messages_backend(request, user_profile,
-                                    apply_markdown=True)
+    return get_old_messages_backend(request, user_profile)
 
 @authenticated_api_view
 @has_request_variables
@@ -805,7 +804,8 @@ def get_old_messages_backend(request, user_profile,
                              num_before = REQ(converter=to_non_negative_int),
                              num_after = REQ(converter=to_non_negative_int),
                              narrow = REQ('narrow', converter=narrow_parameter, default=None),
-                             apply_markdown=True):
+                             apply_markdown=REQ(default=True,
+                                                converter=ujson.loads)):
     include_history = False
     if narrow is not None:
         for operator, operand in narrow:
