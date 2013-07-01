@@ -464,7 +464,7 @@ class StreamMessagesTest(AuthedTestCase):
         message = self.message_stream(user_profile)[-1]
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
 
-    @slow(0.24, 'checks all users')
+    @slow(0.28, 'checks all users')
     def test_message_to_stream(self):
         """
         If you send a message to a stream, everyone subscribed to the stream
@@ -892,6 +892,7 @@ class SubscriptionAPITest(AuthedTestCase):
         self.assertEqual(len(recipients), 1)
         self.assertEqual(recipients[0]['email'], invitee)
 
+    @slow(0.15, "common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):
         """
         You can subscribe other people to streams.
@@ -901,6 +902,7 @@ class SubscriptionAPITest(AuthedTestCase):
         invite_streams = self.make_random_stream_names(current_streams)
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
 
+    @slow(0.15, "common_subscribe_to_streams is slow")
     def test_non_ascii_subscription_for_principal(self):
         """
         You can subscribe other people to streams even if they containing
@@ -1720,6 +1722,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
             if sub['name'] == "Saxony":
                 self.assertEqual(sub['invite_only'], True, "Saxony was not properly marked invite-only")
 
+    @slow(0.15, "lots of queries")
     def test_inviteonly(self):
         # Creating an invite-only stream is allowed
         email = 'hamlet@humbughq.com'
@@ -2692,6 +2695,7 @@ class BeanstalkHookTests(AuthedTestCase):
 * [e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df): add some stuff
 """)
 
+    @slow(0.20, "lots of queries")
     def test_git_multiple(self):
         msg = self.send_beanstalk_message('git_multiple')
         self.assertEqual(msg.subject, "work-test")
