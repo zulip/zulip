@@ -391,7 +391,12 @@ exports.activate = function (operators, opts) {
     compose.unfade_messages();
 
     var was_narrowed = exports.active();
-    var then_select_id  = opts.then_select_id;
+    var then_select_id = opts.then_select_id;
+    var then_select_offset;
+    if (current_msg_list.get(then_select_id)) {
+        then_select_offset = rows.get(then_select_id, current_msg_list.table_name).offset().top -
+            viewport.scrollTop();
+    }
 
     current_filter = new Filter(operators);
 
@@ -410,11 +415,19 @@ exports.activate = function (operators, opts) {
                     }
                 });
             }
-            narrowed_msg_list.select_id(then_select_id, {
-                then_scroll: true,
-                use_closest: true,
-                mark_read: false
-            });
+
+            var manual_scroll = narrowed_msg_list.get(then_select_id) !== undefined;
+            narrowed_msg_list.select_id(then_select_id, {then_scroll: !manual_scroll,
+                                                         use_closest: true,
+                                                         mark_read: false});
+            if (! opts.select_first_unread && then_select_offset !== undefined &&
+                manual_scroll) {
+                // Scroll so that the selected message is in the same
+                // position in the viewport as it was prior to
+                // narrowing
+                viewport.scrollTop(rows.get(then_select_id, narrowed_msg_list.table_name).offset().top
+                                   - then_select_offset);
+            }
         }
     }
 
