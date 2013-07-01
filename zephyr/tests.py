@@ -57,6 +57,12 @@ def find_key_by_email(address):
 def message_ids(result):
     return set(message['id'] for message in result['messages'])
 
+def message_stream_count(user_profile):
+    return UserMessage.objects. \
+        select_related("message"). \
+        filter(user_profile=user_profile). \
+        count()
+
 def get_user_messages(user_profile):
     query = UserMessage.objects. \
         select_related("message"). \
@@ -361,13 +367,13 @@ class PersonalMessagesTest(AuthedTestCase):
 
         old_messages = []
         for user_profile in old_user_profiles:
-            old_messages.append(len(self.message_stream(user_profile)))
+            old_messages.append(message_stream_count(user_profile))
 
         self.send_message("test1@humbughq.com", "test1@humbughq.com", Recipient.PERSONAL)
 
         new_messages = []
         for user_profile in old_user_profiles:
-            new_messages.append(len(self.message_stream(user_profile)))
+            new_messages.append(message_stream_count(user_profile))
 
         self.assertEqual(old_messages, new_messages)
 
@@ -383,28 +389,28 @@ class PersonalMessagesTest(AuthedTestCase):
         sender = self.get_user_profile(sender_email)
         receiver = self.get_user_profile(receiver_email)
 
-        sender_messages = len(self.message_stream(sender))
-        receiver_messages = len(self.message_stream(receiver))
+        sender_messages = message_stream_count(sender)
+        receiver_messages = message_stream_count(receiver)
 
         other_user_profiles = UserProfile.objects.filter(~Q(email=sender_email) &
                                                          ~Q(email=receiver_email))
         old_other_messages = []
         for user_profile in other_user_profiles:
-            old_other_messages.append(len(self.message_stream(user_profile)))
+            old_other_messages.append(message_stream_count(user_profile))
 
         self.send_message(sender_email, receiver_email, Recipient.PERSONAL, content)
 
         # Users outside the conversation don't get the message.
         new_other_messages = []
         for user_profile in other_user_profiles:
-            new_other_messages.append(len(self.message_stream(user_profile)))
+            new_other_messages.append(message_stream_count(user_profile))
 
         self.assertEqual(old_other_messages, new_other_messages)
 
         # The personal message is in the streams of both the sender and receiver.
-        self.assertEqual(len(self.message_stream(sender)),
+        self.assertEqual(message_stream_count(sender),
                          sender_messages + 1)
-        self.assertEqual(len(self.message_stream(receiver)),
+        self.assertEqual(message_stream_count(receiver),
                          receiver_messages + 1)
 
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
@@ -437,13 +443,13 @@ class StreamMessagesTest(AuthedTestCase):
         subscribers = self.users_subscribed_to_stream(stream_name, "humbughq.com")
         old_subscriber_messages = []
         for subscriber in subscribers:
-            old_subscriber_messages.append(len(self.message_stream(subscriber)))
+            old_subscriber_messages.append(message_stream_count(subscriber))
 
         non_subscribers = [user_profile for user_profile in UserProfile.objects.all()
                            if user_profile not in subscribers]
         old_non_subscriber_messages = []
         for non_subscriber in non_subscribers:
-            old_non_subscriber_messages.append(len(self.message_stream(non_subscriber)))
+            old_non_subscriber_messages.append(message_stream_count(non_subscriber))
 
         a_subscriber_email = subscribers[0].email
         self.login(a_subscriber_email)
@@ -453,12 +459,12 @@ class StreamMessagesTest(AuthedTestCase):
         # Did all of the subscribers get the message?
         new_subscriber_messages = []
         for subscriber in subscribers:
-           new_subscriber_messages.append(len(self.message_stream(subscriber)))
+           new_subscriber_messages.append(message_stream_count(subscriber))
 
         # Did non-subscribers not get the message?
         new_non_subscriber_messages = []
         for non_subscriber in non_subscribers:
-            new_non_subscriber_messages.append(len(self.message_stream(non_subscriber)))
+            new_non_subscriber_messages.append(message_stream_count(non_subscriber))
 
         self.assertEqual(old_non_subscriber_messages, new_non_subscriber_messages)
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
