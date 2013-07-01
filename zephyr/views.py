@@ -579,11 +579,21 @@ def home(request):
                               {'user_profile': user_profile,
                                'page_params' : page_params,
                                'avatar_url': avatar_url(user_profile),
+                               'nofontface': is_buggy_ua(request.META["HTTP_USER_AGENT"]),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
                                'show_invites': show_invites
                                },
                               context_instance=RequestContext(request))
+
+def is_buggy_ua(agent):
+    """Discrimiate CSS served to clients based on User Agent
+
+    Due to QTBUG-3467, @font-face is not supported in QtWebKit.
+    This may get fixed in the future, but for right now we can
+    just serve the more conservative CSS to all our desktop apps.
+    """
+    return "Humbug Desktop/" in agent
 
 def get_pointer_backend(request, user_profile):
     return json_success({'pointer': user_profile.pointer})

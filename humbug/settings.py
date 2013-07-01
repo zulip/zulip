@@ -257,12 +257,25 @@ PIPELINE_CSS = {
         ),
         'output_filename': 'min/portico.css'
     },
+    # Two versions of the app CSS exist because of QTBUG-3467
+    'app-fontcompat': {
+        'source_filenames': (
+            'third/bootstrap-notify/css/bootstrap-notify.css',
+            'third/spectrum/spectrum.css',
+            'styles/zephyr.css',
+            'styles/pygments.css',
+            'styles/thirdparty-fonts.css',
+            # We don't want fonts.css on QtWebKit, so its omitted here
+        ),
+        'output_filename': 'min/app-fontcompat.css'
+    },
     'app': {
         'source_filenames': (
             'third/bootstrap-notify/css/bootstrap-notify.css',
             'third/spectrum/spectrum.css',
             'styles/zephyr.css',
             'styles/pygments.css',
+            'styles/thirdparty-fonts.css',
             'styles/fonts.css',
         ),
         'output_filename': 'min/app.css'

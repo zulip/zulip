@@ -17,7 +17,12 @@ var page_params = {{ page_params }};
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+{% if nofontface %}
+{# We can't use @font-face on qtwebkit, so use differently minified CSS #}
+{% compressed_css 'app-fontcompat' %}
+{% else %}
 {% compressed_css 'app' %}
+{% endif %}
 {% compressed_js  'app' %}
 
 {% if debug %}
