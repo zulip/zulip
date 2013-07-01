@@ -297,7 +297,7 @@ def do_send_messages(messages):
         cache_save_message(message['message'])
 
     # We can only publish messages to longpolling clients if the Tornado server is running.
-    if settings.TORNADO_SERVER:
+    if True:
         for message in messages:
             # Render Markdown etc. here and store (automatically) in
             # memcached, so that the single-threaded Tornado server

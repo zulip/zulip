@@ -120,7 +120,7 @@ def initialize_user_messages():
         stream = streams[m.recipient.type_id]
         add_stream_message(stream.realm.id, stream.name, m.id)
 
-    if not settings.DEPLOYED:
+    if not settings.DEPLOYED and not settings.TEST_SUITE:
         # Filling the memcached cache is a little slow, so do it in a child process.
         # For DEPLOYED cases, we run this from restart_server.
         subprocess.Popen(["python", os.path.join(os.path.dirname(__file__), "..", "manage.py"),
@@ -352,6 +352,8 @@ def send_notification_http(data):
         requests.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
                 data   = ujson.dumps(data),
                 secret = settings.SHARED_SECRET))
+    else:
+        process_notification(data)
 
 def send_notification(data):
     return queue_json_publish("notify_tornado", data, send_notification_http)

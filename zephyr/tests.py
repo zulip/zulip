@@ -1555,10 +1555,22 @@ class S3Test(AuthedTestCase):
             self.test_uris.remove(uri)
 
 
+class DummyStream:
+    def closed(self):
+        return False
+
+class DummyObject:
+    pass
+
+class DummyTornadoRequest:
+    def __init__(self):
+        self.connection = DummyObject()
+        self.connection.stream = DummyStream()
 
 class DummyHandler(object):
     def __init__(self, assert_callback):
         self.assert_callback = assert_callback
+        self.request = DummyTornadoRequest()
 
     # Mocks RequestHandler.async_callback, which wraps a callback to
     # handle exceptions.  We return the callback as-is.
@@ -1568,9 +1580,10 @@ class DummyHandler(object):
     def write(self, response):
         raise NotImplemented
 
-    def finish(self, response):
+    def humbug_finish(self, response, *ignore):
         if self.assert_callback:
             self.assert_callback(response)
+
 
 class DummySession(object):
     session_key = "0"
@@ -1589,18 +1602,25 @@ class GetUpdatesTest(AuthedTestCase):
 
     def common_test_get_updates(self, view_func, extra_post_data = {}):
         user_profile = self.get_user_profile("hamlet@humbughq.com")
+        message_content = 'tornado test message'
+        self.got_callback = False
 
         def callback(response):
-            correct_message_ids = [m.id for m in
-                filter_by_subscriptions(Message.objects.all(), user_profile)]
-            for message in response['messages']:
-                self.assertGreater(message['id'], 1)
-                self.assertIn(message['id'], correct_message_ids)
+            self.got_callback = True
+            msg = response['messages'][0]
+            if str(msg['content_type']) == 'text/html':
+                self.assertEqual('<p>%s</p>' % message_content, msg['content'])
+            else:
+                self.assertEqual(message_content, msg['content'])
 
         post_data = {}
         post_data.update(extra_post_data)
         request = POSTRequestMock(post_data, user_profile, callback)
         self.assertEqual(view_func(request), RespondAsynchronously)
+        self.send_message("hamlet@humbughq.com", "hamlet@humbughq.com",
+                Recipient.PERSONAL, message_content)
+        self.assertTrue(self.got_callback)
+
 
     def test_json_get_updates(self):
         """
