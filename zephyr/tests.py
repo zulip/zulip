@@ -57,6 +57,13 @@ def find_key_by_email(address):
 def message_ids(result):
     return set(message['id'] for message in result['messages'])
 
+def get_user_messages(user_profile):
+    query = UserMessage.objects. \
+        select_related("message"). \
+        filter(user_profile=user_profile). \
+        order_by('message')
+    return [um.message for um in query]
+
 def slow(expected_run_time, slowness_reason):
     '''
     This is a decorate that annotates a test as being "known
@@ -156,7 +163,7 @@ class AuthedTestCase(TestCase):
         return [subscription.user_profile for subscription in subscriptions]
 
     def message_stream(self, user_profile):
-        return filter_by_subscriptions(Message.objects.all(), user_profile)
+        return get_user_messages(user_profile)
 
     def assert_json_success(self, result):
         """
