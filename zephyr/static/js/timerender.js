@@ -58,14 +58,13 @@ function maybe_add_update_list_entry (needs_update, id, time) {
 }
 
 // Given an XDate object 'time', return a DOM node that initially
-// displays the human-formatted time, and is updated automatically as
-// necessary (e.g. changing "Mon 11:21" to "Jan 14 11:21" after a week
-// or so).
+// displays the human-formatted date, and is updated automatically as
+// necessary (e.g. changing "Today" to "Yesterday" to "Jul 1").
 
 // (What's actually spliced into the message template is the contents
 // of this DOM node as HTML, so effectively a copy of the node. That's
 // okay since to update the time later we look up the node by its id.)
-exports.render_time = function (time) {
+exports.render_date = function (time) {
     var id = "timerender" + next_timerender_id;
     next_timerender_id++;
     var rendered_now = render_now(time);

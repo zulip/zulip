@@ -41,7 +41,7 @@ function add_display_time(message, prev) {
 
     if (include_date) {
         // NB: show_date is HTML, inserted into the document without escaping.
-        message.show_date = (timerender.render_time(time))[0].outerHTML;
+        message.show_date = (timerender.render_date(time))[0].outerHTML;
     } else {
         // This is run on re-render, and must remove the date if a message
         // from the same day is added above this one when scrolling up.
@@ -333,7 +333,7 @@ MessageList.prototype = {
                 // Add or update the last_edit_timestr
                 var last_edit_time = new XDate(message.last_edit_timestamp * 1000);
                 message.last_edit_timestr =
-                    (timerender.render_time(last_edit_time))[0].outerHTML
+                    (timerender.render_date(last_edit_time))[0].outerHTML
                     + " " + last_edit_time.toString("HH:mm");
             }
 
