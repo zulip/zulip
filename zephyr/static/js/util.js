@@ -234,6 +234,12 @@ exports.strcmp = (function () {
     };
 }());
 
+exports.escape_regexp = function(string) {
+    // code from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
+    // Modified to escape the ^ to appease jslint. :/
+    return string.replace(/([.*+?\^=!:${}()|\[\]\/\\])/g, "\\$1");
+};
+
 exports.array_compare = function util_array_compare(a, b) {
     if (a.length !== b.length) {
         return false;
