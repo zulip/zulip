@@ -46,6 +46,10 @@ function query_matches_person (query, person) {
 
 }
 
+function query_matches_emoji (query, emoji) {
+    return (emoji.emoji_name.indexOf(query.toLowerCase()) !== -1);
+}
+
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
 // We can't focus at the time of keydown because we need to wait for typeahead.
 // And we can't compute where to focus at the time of keyup because only the keydown
@@ -246,9 +250,19 @@ exports.initialize = function () {
     });
 
     $( "#new_message_content" ).typeahead({
-        source: page_params.people_list,
+        source: function (query, process) {
+            var q = exports.split_at_cursor(query)[0];
+
+            if (q.lastIndexOf(":") > q.lastIndexOf("@")) {
+                return emoji.emojis;
+            }
+            return page_params.people_list;
+        },
         items: 5,
         highlighter: function (item) {
+            if (item.emoji_name !== undefined) {
+                return "<img class='emoji' src='" + item.emoji_url + "' /> " + item.emoji_name;
+            }
             var item_formatted = typeahead_helper.render_person(item);
             return typeahead_helper.highlight_with_escaping(this.query, item_formatted);
         },
@@ -260,12 +274,19 @@ exports.initialize = function () {
             if (strings.length < 1) {
                 return false;
             }
-            var current_recipient = strings[strings.length-1];
-            if (current_recipient.length < 2 || current_recipient.charAt(0) !== "@") {
+            var current_token = strings[strings.length-1];
+
+            if ((current_token.indexOf(":") === -1 && current_token.indexOf("@") === -1) ||
+                (current_token.indexOf("@") === current_token.length-1) ||
+                (current_token.indexOf(":") === current_token.length-1)) {
                 return false;
             }
 
-            return query_matches_person(current_recipient.substring(1), item);
+            if (current_token.lastIndexOf(":") > current_token.lastIndexOf("@")) {
+                return query_matches_emoji(current_token.substring(current_token.indexOf(":")+1), item);
+            } else {
+                return query_matches_person(current_token.substring(current_token.indexOf("@")+1), item);
+            }
         },
         sorter: typeahead_helper.sort_textbox_typeahead,
         updater: function (item) {
@@ -273,7 +294,16 @@ exports.initialize = function () {
             var beginning = pieces[0];
             var rest = pieces[1];
 
-            beginning = beginning.replace(/@\S+$/, "") + "@**" + item.full_name + "**";
+            if (item.full_name !== undefined) {
+                beginning = beginning.replace(/@\S+$/, "") + "@**" + item.full_name + "** ";
+            } else {
+                //leading and trailing spaces are required for emoji, except if it begins a message.
+                if (beginning.lastIndexOf(":") === 0 || beginning.charAt(beginning.lastIndexOf(":") - 1) === " ") {
+                    beginning = beginning.replace(/:\S+$/, "") + ":" + item.emoji_name + ": ";
+                } else {
+                    beginning = beginning.replace(/:\S+$/, "") + " :" + item.emoji_name + ": ";
+                }
+            }
             // Keep the cursor after the newly inserted name, as Bootstrap will call textbox.change() to overwrite the text
             // in the textbox.
             setTimeout(function () {

@@ -183,11 +183,25 @@ exports.sort_recipients = function (matches, query) {
     return matches_sorted_by_pms.concat(rest_sorted_by_pms);
 };
 
+exports.sort_emojis = function (matches, query) {
+    //TODO: sort by category in v2
+    var results = prefix_sort(query, matches, function (x) { return x.emoji_name; });
+    return results.matches.concat(results.rest);
+};
+
 exports.sort_textbox_typeahead = function (matches) {
     // input may be free text ending in @ for autocomplete
     var query = composebox_typeahead.split_at_cursor(this.query)[0];
+    var parts;
+
+    if (query.lastIndexOf(":") > query.lastIndexOf("@")) {
+        parts = query.split(':');
+        query = parts[parts.length - 1];
+        return exports.sort_emojis(matches, query);
+    }
+
     if (query.indexOf('@') > -1) {
-        var parts = query.split('@');
+        parts = query.split('@');
         query = parts[parts.length - 1];
     }
     return exports.sort_recipients(matches, query);

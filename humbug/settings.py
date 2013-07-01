@@ -371,7 +371,8 @@ PIPELINE_JS = {
             'js/templates.js',
             'js/settings.js',
             'js/tab_bar.js',
-            'js/metrics.js'
+            'js/metrics.js',
+            'js/emoji.js'
         ],
         'output_filename': 'min/app.js'
     },
