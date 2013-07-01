@@ -329,8 +329,7 @@ MessageList.prototype = {
                 ids_where_next_is_same_sender[prev.id] = true;
             }
 
-            if (message.last_edit_timestamp !== undefined &&
-                message.last_edit_timestr === undefined) {
+            if (message.last_edit_timestamp !== undefined) {
                 // Add or update the last_edit_timestr
                 var last_edit_time = new XDate(message.last_edit_timestamp * 1000);
                 message.last_edit_timestr =
