@@ -295,32 +295,28 @@ def do_send_messages(messages):
 
     for message in messages:
         cache_save_message(message['message'])
-
-    # We can only publish messages to longpolling clients if the Tornado server is running.
-    if True:
-        for message in messages:
-            # Render Markdown etc. here and store (automatically) in
-            # memcached, so that the single-threaded Tornado server
-            # doesn't have to.
-            message['message'].to_dict(apply_markdown=True, rendered_content=message['rendered_content'])
-            message['message'].to_dict(apply_markdown=False)
-            user_flags = user_message_flags.get(message['message'].id, {})
-            data = dict(
-                type     = 'new_message',
-                message  = message['message'].id,
-                users    = [{'id': user.id, 'flags': user_flags.get(user.id, [])} for user in message['recipients']])
-            if message['message'].recipient.type == Recipient.STREAM:
-                # Note: This is where authorization for single-stream
-                # get_updates happens! We only attach stream data to the
-                # notify new_message request if it's a public stream,
-                # ensuring that in the tornado server, non-public stream
-                # messages are only associated to their subscribed users.
-                if message['stream'] is None:
-                    message['stream'] = Stream.objects.select_related("realm").get(id=message['message'].recipient.type_id)
-                if message['stream'].is_public():
-                    data['realm_id'] = message['stream'].realm.id
-                    data['stream_name'] = message['stream'].name
-            tornado_callbacks.send_notification(data)
+        # Render Markdown etc. here and store (automatically) in
+        # memcached, so that the single-threaded Tornado server
+        # doesn't have to.
+        message['message'].to_dict(apply_markdown=True, rendered_content=message['rendered_content'])
+        message['message'].to_dict(apply_markdown=False)
+        user_flags = user_message_flags.get(message['message'].id, {})
+        data = dict(
+            type     = 'new_message',
+            message  = message['message'].id,
+            users    = [{'id': user.id, 'flags': user_flags.get(user.id, [])} for user in message['recipients']])
+        if message['message'].recipient.type == Recipient.STREAM:
+            # Note: This is where authorization for single-stream
+            # get_updates happens! We only attach stream data to the
+            # notify new_message request if it's a public stream,
+            # ensuring that in the tornado server, non-public stream
+            # messages are only associated to their subscribed users.
+            if message['stream'] is None:
+                message['stream'] = Stream.objects.select_related("realm").get(id=message['message'].recipient.type_id)
+            if message['stream'].is_public():
+                data['realm_id'] = message['stream'].realm.id
+                data['stream_name'] = message['stream'].name
+        tornado_callbacks.send_notification(data)
 
 def create_stream_if_needed(realm, stream_name, invite_only=False):
     (stream, created) = Stream.objects.get_or_create(
