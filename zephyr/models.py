@@ -484,22 +484,6 @@ def get_realm(domain):
     except Realm.DoesNotExist:
         return None
 
-# This function is used only by tests.
-# We have faster implementations within the app itself.
-def filter_by_subscriptions(messages, user_profile):
-    user_messages = []
-    subscriptions = [sub.recipient for sub in
-                     Subscription.objects.filter(user_profile=user_profile, active=True)]
-    for message in messages:
-        # If you are subscribed to the personal or stream, or if you
-        # sent the personal, you can see the message.
-        if (message.recipient in subscriptions) or \
-                (message.recipient.type == Recipient.PERSONAL and
-                 message.sender == user_profile):
-            user_messages.append(message)
-
-    return user_messages
-
 def clear_database():
     for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,

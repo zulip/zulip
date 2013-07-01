@@ -7,7 +7,7 @@ from django.utils.timezone import now
 from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
-    filter_by_subscriptions, get_display_recipient, Realm, Client, \
+    get_display_recipient, Realm, Client, \
     PreregistrationUser, UserMessage
 from zephyr.tornadoviews import json_get_updates, api_get_messages
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
