@@ -55,7 +55,7 @@
 {{/if}}
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}"
-    class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}">
+    class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#unread}} unread{{/unread}}">
         <td class="messagebox_colorblock{{^is_stream}} message_header_private_message{{/is_stream}}" style="background-color: {{background_color}};"><span class="pointer_icon"><i class="icon-vector-caret-right"></i></span></td>
         <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
         <div class="message_top_line dropdown">

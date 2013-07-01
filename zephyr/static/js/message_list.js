@@ -348,6 +348,7 @@ MessageList.prototype = {
             }
 
             message.contains_mention = notifications.speaking_at_me(message);
+            message.unread = unread.message_unread(message);
 
             messages_to_render.push(message);
             prev = message;
@@ -612,6 +613,10 @@ MessageList.prototype = {
     hide_edit_message: function MessageList_hide_edit_message(row) {
         row.find(".message_content").show();
         row.find(".message_edit").hide();
+    },
+
+    show_message_as_read: function (message) {
+        rows.get(message.id, this.table_name).removeClass('unread');
     },
 
     rerender: function MessageList_rerender() {

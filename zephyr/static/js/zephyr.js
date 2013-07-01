@@ -324,7 +324,11 @@ function process_read_messages(messages) {
         message.flags = message.flags || [];
         message.flags.push('read');
         processed.push(message.id);
+        message.unread = false;
         unread.process_read_message(message);
+        home_msg_list.show_message_as_read(message);
+        all_msg_list.show_message_as_read(message);
+        if (narrowed_msg_list) narrowed_msg_list.show_message_as_read(message);
 
     });
 

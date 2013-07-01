@@ -631,6 +631,10 @@ background-color: #feffe0;
 background-color: #ffe4e0;
 }
 
+.unread .messagebox {
+    background-image: linear-gradient(to right, rgba(180,180,180,0.3) 0, rgba(255,255,255,0.0) 35px);
+}
+
 .selected_message.mention .messagebox, .selected_message.mention .message_data {
     background-color: #FFE0DC;
 }
