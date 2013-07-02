@@ -21,7 +21,7 @@ if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
 if DEPLOYED and not TESTING_DEPLOYED:
     # The IP addresses are for app.humbughq.com and staging.humbughq.com
-    ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.245.120.64']
+    ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.245.120.64', '.zulip.com']
 elif TESTING_DEPLOYED:
     # Allow any hosts for our test instances, to reduce 500 spam
     ALLOWED_HOSTS = ['*']
