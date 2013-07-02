@@ -13,7 +13,7 @@ class humbug::staging_app_frontend {
     ensure => 'link',
     target => '/etc/nginx/sites-available/humbug-staging',
   }
-   file { "/etc/nginx/sites-available/zulip-staging"
+  file { "/etc/nginx/sites-available/zulip-staging":
     require => Package[nginx],
     ensure => file,
     owner  => "root",
