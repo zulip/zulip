@@ -32,10 +32,9 @@ import sys
 import subprocess
 from humbug_tools import check_output, ENDC, FAIL
 
-def update_deployment(server, oldrev, newrev, refname):
+def update_deployment(server, refname):
     return subprocess.call(["ssh", server, "--", "env", "-u", "GIT_DIR",
-                            "/home/humbug/humbug-deployments/current/tools/update-deployment",
-                            oldrev, newrev, refname])
+                            "/home/humbug/humbug-deployments/current/tools/update-deployment", refname])
 
 def send_deployment_finished_humbug(branch, message):
     subprocess.check_call(["/home/humbug/humbug/api/bin/humbug-send", "--user=humbug+commits@humbughq.com",
@@ -58,7 +57,7 @@ for ln in sys.stdin:
 
         if deployments[refname]:
             server, branch = deployments[refname]
-            ret = update_deployment(server, oldrev, newrev, branch)
+            ret = update_deployment(server, branch)
             if ret == 0:
                 send_deployment_finished_humbug(branch, "deployment of `%s` finished successfully!" % (newrev[:12],))
             else:

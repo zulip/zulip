@@ -10,10 +10,11 @@ import shutil
 logging.basicConfig(format="%(asctime)s update-deployment: %(message)s",
                     level=logging.INFO)
 
-if len(sys.argv) > 1:
-    oldrev = sys.argv[1]
-    newrev = sys.argv[2]
-    refname = sys.argv[3]
+if len(sys.argv) != 2:
+    print FAIL + "Usage: update-deployment refname" + ENDC
+    sys.exit(1)
+
+refname = sys.argv[1]
 
 subprocess.check_call(["mkdir", '-p',
                        DEPLOYMENTS_DIR,
@@ -23,7 +24,7 @@ try:
     os.mkdir(LOCK_DIR)
 except OSError:
     print FAIL + "Deployment already in progress.  Please run\n" \
-               + "  update-deployment %s %s %s\n" % (oldrev, newrev, refname) \
+               + "  /home/humbug/humbug-deployments/current/update-deployment %s\n" % (refname) \
                + "manually when the current deployment finishes." + ENDC
     sys.exit(1)
 
