@@ -10,7 +10,7 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription,
     get_display_recipient, Realm, Client, \
     PreregistrationUser, UserMessage
 from zephyr.tornadoviews import json_get_updates, api_get_messages
-from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError
+from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError, profiled
 from zephyr.lib.initial_password import initial_password
 from zephyr.lib.actions import do_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription

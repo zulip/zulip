@@ -19,6 +19,7 @@ from zephyr.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
 from functools import wraps
 import base64
 import logging
+import cProfile
 
 class _RespondAsynchronously(object):
     pass
@@ -416,3 +417,29 @@ def rate_limit(domain='all'):
             return func(request, *args, **kwargs)
         return wrapped_func
     return wrapper
+
+def profiled(func):
+    """
+    This decorator should obviously be used only in a dev environment.
+    It works best when surrounding a function that you expect to be
+    called once.  One strategy is to write a test case in zephyr/tests.py
+    and wrap the test case with the profiled decorator.
+
+    You can run a single test case like this:
+
+        # edit zephyr/tests.py and place @profiled above the test case below
+        ./tools/test-backend zephyr.RateLimitTests.test_ratelimit_decrease
+
+    Then view the results like this:
+
+        ./tools/show-profile-results.py test_ratelimit_decrease.profile
+
+    """
+    @wraps(func)
+    def wrapped_func(*args, **kwargs):
+        fn = func.__name__ + ".profile"
+        prof = cProfile.Profile()
+        retval = prof.runcall(func, *args, **kwargs)
+        prof.dump_stats(fn)
+        return retval
+    return wrapped_func
