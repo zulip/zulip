@@ -13,6 +13,7 @@ var tutorial_stream_info = {"design": {"color": "#76ce90"},
 
 // Each message object contains the minimal information necessary for it to be
 // processed by our system for adding messages to your feed.
+var today = new Date().getTime() / 1000;
 var fake_messages = [
     {
         id: 1,
@@ -24,6 +25,7 @@ var fake_messages = [
         stream: "design",
         subject: "screenshots",
         timestr: "12:11",
+        timestamp: today,
         type: "stream"
     },
     {
@@ -35,6 +37,7 @@ var fake_messages = [
         display_reply_to: "Jeff Arnold, Waseem Daher",
         reply_to: true,
         timestr: "12:12",
+        timestamp: today,
         type: "private"
     },
     {
@@ -46,6 +49,7 @@ var fake_messages = [
         display_reply_to: "Jeff Arnold, Waseem Daher",
         reply_to: true,
         timestr: "12:12",
+        timestamp: today,
         type: "private"
     },
     {
@@ -58,6 +62,7 @@ var fake_messages = [
         stream: "design",
         subject: "screenshots",
         timestr: "12:15",
+        timestamp: today,
         type: "stream"
     },
     {
@@ -70,6 +75,7 @@ var fake_messages = [
         stream: "design",
         subject: "screenshots",
         timestr: "12:15",
+        timestamp: today,
         type: "stream"
     },
     {
@@ -87,6 +93,7 @@ var fake_messages = [
         stream: "social",
         subject: "lunch",
         timestr: "12:20",
+        timestamp: today,
         type: "stream"
     },
     {
@@ -99,6 +106,7 @@ var fake_messages = [
         stream: "social",
         subject: "lunch",
         timestr: "12:20",
+        timestamp: today,
         type: "stream"
     },
     {
@@ -111,6 +119,7 @@ var fake_messages = [
         stream: "devel",
         subject: "meeting",
         timestr: "12:34",
+        timestamp: today,
         type: "stream"
     }
 ];
