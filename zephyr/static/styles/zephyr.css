@@ -597,6 +597,7 @@ background-color: #feffe0;
 }
 
 .compose_table .message_header.message_header_private_message, .message_header_private_message {
+    background-image: none;
     background-color: #444444;
 }
 
@@ -673,7 +674,7 @@ background-color: #ffe4e0;
 
 /* Brighten text because of the dark background */
 .dark_background {
-    color: white;
+    color: #ffffff;
 }
 
 .dark_background .message_label_clickable:hover {
