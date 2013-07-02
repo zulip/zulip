@@ -175,9 +175,6 @@ class AuthedTestCase(TestCase):
 
         return [subscription.user_profile for subscription in subscriptions]
 
-    def message_stream(self, user_profile):
-        return get_user_messages(user_profile)
-
     def assert_json_success(self, result):
         """
         Successful POSTs return a 200 and JSON of the form {"result": "success",
@@ -1109,7 +1106,7 @@ class GetOldMessagesTest(AuthedTestCase):
         def dr_emails(dr):
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
-        personals = [m for m in self.message_stream(self.get_user_profile(me))
+        personals = [m for m in get_user_messages(self.get_user_profile(me))
             if m.recipient.type == Recipient.PERSONAL
             or m.recipient.type == Recipient.HUDDLE]
         if not personals:
@@ -1140,7 +1137,7 @@ class GetOldMessagesTest(AuthedTestCase):
         do_add_subscription(self.get_user_profile("hamlet@humbughq.com"),
                             stream, no_log=True)
         self.send_message("hamlet@humbughq.com", "Scotland", Recipient.STREAM)
-        messages = self.message_stream(self.get_user_profile("hamlet@humbughq.com"))
+        messages = get_user_messages(self.get_user_profile("hamlet@humbughq.com"))
         stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
                                  messages)
         stream_name = get_display_recipient(stream_messages[0].recipient)
