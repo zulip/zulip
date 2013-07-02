@@ -2499,10 +2499,11 @@ class UnreadCountTests(AuthedTestCase):
                                                          "client": "test suite",
                                                          "content": content,
                                                          "subject": "Test subject"})
-        msgs = Message.objects.all().order_by("id")
-        last = msgs[len(msgs) - 1]
-        self.assertEqual(last.content, "Test message for unset read bit")
-        for um in UserMessage.objects.filter(message=last):
+        last_msg = Message.objects.all().order_by("-id")[0]
+        self.assertEqual(last_msg.content, "Test message for unset read bit")
+        user_messages = list(UserMessage.objects.filter(message=last_msg))
+        self.assertEqual(4, len(user_messages))
+        for um in user_messages:
             self.assertEqual(um.message.content, content)
             if um.user_profile.email != "hamlet@humbughq.com":
                 self.assertFalse(um.flags.read)
