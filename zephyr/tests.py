@@ -70,6 +70,13 @@ def get_user_messages(user_profile):
         order_by('message')
     return [um.message for um in query]
 
+def most_recent_message(user_profile):
+    query = UserMessage.objects. \
+        select_related("message"). \
+        filter(user_profile=user_profile). \
+        order_by('-message')
+    return query[0].message # Django does LIMIT here
+
 def slow(expected_run_time, slowness_reason):
     '''
     This is a decorate that annotates a test as being "known
@@ -348,14 +355,14 @@ class PersonalMessagesTest(AuthedTestCase):
         """
         self.register("test", "test")
         user_profile = self.get_user_profile('test@humbughq.com')
-        old_messages = self.message_stream(user_profile)
+        old_messages_count = message_stream_count(user_profile)
         self.send_message("test@humbughq.com", "test@humbughq.com", Recipient.PERSONAL)
-        new_messages = self.message_stream(user_profile)
-        self.assertEqual(len(new_messages) - len(old_messages), 1)
+        new_messages_count = message_stream_count(user_profile)
+        self.assertEqual(new_messages_count, old_messages_count + 1)
 
         recipient = Recipient.objects.get(type_id=user_profile.id,
                                           type=Recipient.PERSONAL)
-        self.assertEqual(new_messages[-1].recipient, recipient)
+        self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
     @slow(0.36, "checks several profiles")
     def test_personal_to_self(self):
@@ -2780,12 +2787,12 @@ class GithubHookTests(AuthedTestCase):
         # reason.
         self.subscribe_to_stream(email, stream)
 
-        prior_count = len(Message.objects.filter())
+        prior_count = Message.objects.count()
 
         result = self.client.post(url, data)
         self.assert_json_success(result)
 
-        after_count = len(Message.objects.filter())
+        after_count = Message.objects.count()
         self.assertEqual(prior_count, after_count)
 
 
