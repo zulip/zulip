@@ -1677,6 +1677,7 @@ class GetProfileTest(AuthedTestCase):
 
     def common_get_profile(self, email):
         user_profile = self.get_user_profile(email)
+        self.send_message(email, "Verona", Recipient.STREAM, "hello")
 
         api_key = self.get_api_key(email)
         result = self.client.post("/api/v1/get_profile", {'email': email, 'api-key': api_key})
