@@ -7,13 +7,13 @@
       <language>en</language>
       <item>
          <title>
-             Version 0.0.3 (Windows Upgrade Test)
+             Version 0.3.0 (Windows Upgrade Test)
          </title>
          <sparkle:releaseNotesLink>
              https://humbughq.com/dist/apps/win/sparkle-changelog.html
          </sparkle:releaseNotesLink>
          <pubDate>Tue, 28 Jun 2013 16:20:11 +0000</pubDate>
-         <enclosure url="https://humbughq.com/dist/apps/win/humbug-0.0.3.exe" sparkle:version="0.0.3" type="application/octet-stream" />
+         <enclosure url="https://humbughq.com/dist/apps/win/humbug-0.3.0.exe" sparkle:version="0.3.0" type="application/octet-stream" />
       </item>
       <item>
          <title>

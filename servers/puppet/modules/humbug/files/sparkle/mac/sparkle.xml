@@ -7,6 +7,16 @@
       <language>en</language>
       <item>
          <title>
+             Version 0.3.0
+         </title>
+         <sparkle:releaseNotesLink>
+             https://humbughq.com/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Tue, 02 Jul 2013 16:20:11 +0000</pubDate>
+         <enclosure url="https://humbughq.com/dist/apps/mac/Humbug-0.3.0.tar.bz2" sparkle:version="0.3.0" length="17801395" type="application/octet-stream" sparkle:dsaSignature="MC0CFCBQ/boTFD+qlwSu/xnT2Cr1cojlAhUAgWTjho9fV1uUJydxHo/ws5Ivocc=" />
+      </item>
+      <item>
+         <title>
              Version 0.0.2 (Upgrade Test Alpha)
          </title>
          <sparkle:releaseNotesLink>
