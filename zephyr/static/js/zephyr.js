@@ -572,7 +572,7 @@ function add_message_metadata(message, dummy) {
     return message;
 }
 
-function add_messages_helper(messages, msg_list, predicate) {
+function add_messages_helper(messages, msg_list, predicate, messages_are_new) {
     var top_messages = [];
     var bottom_messages = [];
     var interior_messages = [];
@@ -605,11 +605,11 @@ function add_messages_helper(messages, msg_list, predicate) {
         return true;
     }
     msg_list.prepend(top_messages);
-    msg_list.append(bottom_messages);
+    msg_list.append(bottom_messages, messages_are_new);
     return top_messages.length > 0;
 }
 
-function add_messages(messages, msg_list) {
+function add_messages(messages, msg_list, messages_are_new) {
     var prepended = false;
     if (!messages)
         return;
@@ -617,7 +617,8 @@ function add_messages(messages, msg_list) {
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
 
-    if (add_messages_helper(messages, msg_list, msg_list.filter.predicate())) {
+    if (add_messages_helper(messages, msg_list, msg_list.filter.predicate(),
+                            messages_are_new)) {
         prepended = true;
     }
 
@@ -666,7 +667,7 @@ function deduplicate_messages(messages) {
     });
 }
 
-function maybe_add_narrowed_messages(messages, msg_list) {
+function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
     var ids = [];
     $.each(messages, function (idx, elem) {
         ids.push(elem.id);
@@ -695,7 +696,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
             });
 
             new_messages = $.map(new_messages, add_message_metadata);
-            add_messages(new_messages, msg_list);
+            add_messages(new_messages, msg_list, messages_are_new);
             compose.update_faded_messages();
         },
         error: function (xhr) {
@@ -704,7 +705,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
                 if (msg_list === current_msg_list) {
                     // Don't actually try again if we unnarrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list);
+                    maybe_add_narrowed_messages(messages, msg_list, messages_are_new);
                 }
             }, 5000);
         }});
@@ -836,16 +837,16 @@ function get_updates_success(data) {
 
         // You must add add messages to home_msg_list BEFORE
         // calling process_loaded_for_unread.
-        add_messages(messages, home_msg_list);
+        add_messages(messages, home_msg_list, true);
         process_loaded_for_unread(messages);
 
-        add_messages(messages, all_msg_list);
+        add_messages(messages, all_msg_list, true);
 
         if (narrow.active()) {
             if (narrow.filter().can_apply_locally()) {
-                add_messages(messages, narrowed_msg_list);
+                add_messages(messages, narrowed_msg_list, true);
             } else {
-                maybe_add_narrowed_messages(messages, narrowed_msg_list);
+                maybe_add_narrowed_messages(messages, narrowed_msg_list, true);
             }
         }
 
@@ -1000,11 +1001,11 @@ function load_old_messages(opts) {
         // from all_msg_list.
         if (opts.msg_list === home_msg_list) {
             process_loaded_for_unread(messages);
-            add_messages(messages, all_msg_list);
+            add_messages(messages, all_msg_list, false);
         }
 
         if (messages.length !== 0 && !opts.cont_will_add_messages) {
-            add_messages(messages, opts.msg_list);
+            add_messages(messages, opts.msg_list, false);
         }
 
         stream_list.update_streams_sidebar();

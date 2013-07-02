@@ -252,7 +252,7 @@ MessageList.prototype = {
         }
     },
 
-    _render: function MessageList__render(messages, where) {
+    _render: function MessageList__render(messages, where, messages_are_new) {
         if (messages.length === 0 || this.table_name === undefined)
             return;
 
@@ -461,7 +461,7 @@ MessageList.prototype = {
         // Re-add the fading of messages that is lost when we re-render.
         compose.update_faded_messages();
 
-        if (this === current_msg_list) {
+        if (this === current_msg_list && messages_are_new) {
             this._maybe_autoscroll(rendered_elems);
         }
     },
@@ -568,14 +568,14 @@ MessageList.prototype = {
         }
     },
 
-    append: function MessageList_append(messages) {
+    append: function MessageList_append(messages, messages_are_new) {
         this._items = this._items.concat(messages);
         this._add_to_hash(messages);
 
         var cur_window_size = this._render_win_end - this._render_win_start;
         if (cur_window_size < this._RENDER_WINDOW_SIZE) {
             var slice_to_render = messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size);
-            this._render(slice_to_render, 'bottom');
+            this._render(slice_to_render, 'bottom', messages_are_new);
             this._render_win_end += slice_to_render.length;
         }
 
