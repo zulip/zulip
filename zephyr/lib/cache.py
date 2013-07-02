@@ -63,6 +63,10 @@ def get_or_create_key_prefix():
 
 KEY_PREFIX = get_or_create_key_prefix()
 
+def bounce_key_prefix_for_testing(test_name):
+    global KEY_PREFIX
+    KEY_PREFIX = test_name + ':' + str(os.getpid()) + ':'
+
 def get_cache_backend(cache_name):
     if cache_name is None:
         return djcache

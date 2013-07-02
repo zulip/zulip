@@ -16,6 +16,7 @@ from zephyr.lib.actions import do_send_message, gather_subscriptions, \
     create_stream_if_needed, do_add_subscription
 from zephyr.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zephyr.lib import bugdown
+from zephyr.lib.cache import bounce_key_prefix_for_testing
 from zephyr.lib.rate_limiter import clear_user_history
 
 from django.conf import settings
@@ -1404,12 +1405,16 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # We only sent emails to the new users.
         self.check_sent_emails(new)
 
-    @slow(0.35, 'inviting is slow')
-    def test_invite_outside_domain_in_open_realm(self):
+    @slow(0.20, 'inviting is slow')
+    def test_invite_outside_domain_in_closed_realm(self):
         """
-        In a realm with `restricted_to_domain = False`, you can invite people
+        In a realm with `restricted_to_domain = True`, you can't invite people
         with a different domain from that of the realm or your e-mail address.
         """
+        humbug_realm = Realm.objects.get(domain="humbughq.com")
+        humbug_realm.restricted_to_domain = True
+        humbug_realm.save()
+
         self.login("hamlet@humbughq.com")
         external_address = "foo@example.com"
 
@@ -1417,9 +1422,18 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             self.invite(external_address, ["Denmark"]),
             "Some emails did not validate, so we didn't send any invitations.")
 
+    @slow(0.20, 'inviting is slow')
+    def test_invite_outside_domain_in_open_realm(self):
+        """
+        In a realm with `restricted_to_domain = False`, you can invite people
+        with a different domain from that of the realm or your e-mail address.
+        """
         humbug_realm = Realm.objects.get(domain="humbughq.com")
         humbug_realm.restricted_to_domain = False
         humbug_realm.save()
+
+        self.login("hamlet@humbughq.com")
+        external_address = "foo@example.com"
 
         self.assert_json_success(self.invite(external_address, ["Denmark"]))
         self.check_sent_emails([external_address])
@@ -3008,6 +3022,9 @@ def run_test(test):
         return
 
     test_name = full_test_name(test)
+
+    bounce_key_prefix_for_testing(test_name)
+
     print 'Running %s' % (test_name,)
     test._pre_setup()
 
