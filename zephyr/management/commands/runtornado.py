@@ -340,4 +340,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                                         data=response, status=self.get_status())
         django_response = self.apply_response_middleware(request, django_response,
                                                          request._resolver)
+        # Pass through the content-type from Django, as json content should be
+        # served as application/json
+        self.set_header("Content-Type", django_response['Content-Type'])
         return self.finish(django_response.content)
