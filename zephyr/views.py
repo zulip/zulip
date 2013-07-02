@@ -702,7 +702,7 @@ class NarrowBuilder(object):
             # (unsocial, ununsocial, social.d, etc)
             matching_streams = Stream.objects.filter(realm=self.user_profile.realm,
                                                      name__iregex=r'"^(un)*%s(.d)*$' % (re.escape(stream.name),))
-            matching_stream_ids = [stream.id for stream in matching_streams]
+            matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
             recipients = bulk_get_recipients(Recipient.STREAM, matching_stream_ids).values()
             return self.pQ(recipient__in=recipients)
 
