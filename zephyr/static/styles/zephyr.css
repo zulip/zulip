@@ -612,6 +612,10 @@ background-color: #feffe0;
     box-shadow: inset -12px 0px 0px -1px rgba(40,40,40,0.5);
 }
 
+.selected_message .messagebox_colorblock.message_header_private_message {
+    box-shadow: inset -12px 0px 0px -1px rgba(240,240,240,0.5);
+}
+
 .pointer_icon {
     width: 100%;
     text-align: center;
