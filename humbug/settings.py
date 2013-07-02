@@ -405,36 +405,27 @@ USING_RABBITMQ = DEPLOYED
 # This password also appears in servers/configure-rabbitmq
 RABBITMQ_PASSWORD = 'xxxxxxxxxxxxxxxx'
 
-# Caching
-if DEPLOYED:
-    CACHES = {
-        'default': {
-            'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
-            'LOCATION': '127.0.0.1:11211',
-            'TIMEOUT':  3600
-        },
-    }
-    SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
-else:
-    CACHES = { 'default': {
-        'BACKEND':  'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'humbug-default-local-cache',
-        'TIMEOUT':  3600,
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+
+CACHES = {
+    'default': {
+        'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': '127.0.0.1:11211',
+        'TIMEOUT':  3600
+    },
+    'database': {
+        'BACKEND':  'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION':  'third_party_api_results',
+        # Basically never timeout.  Setting to 0 isn't guaranteed
+        # to work, see https://code.djangoproject.com/ticket/9595
+        'TIMEOUT': 2000000000,
         'OPTIONS': {
-            'MAX_ENTRIES': 100000
+            'MAX_ENTRIES': 100000000,
+            'CULL_FREQUENCY': 10,
         }
-    } }
-CACHES['database'] = {
-            'BACKEND':  'django.core.cache.backends.db.DatabaseCache',
-            'LOCATION':  'third_party_api_results',
-            # Basically never timeout.  Setting to 0 isn't guaranteed
-            # to work, see https://code.djangoproject.com/ticket/9595
-            'TIMEOUT': 2000000000,
-            'OPTIONS': {
-                'MAX_ENTRIES': 100000000,
-                'CULL_FREQUENCY': 10,
-            },
-        }
+    },
+}
 
 if DEPLOYED:
     SERVER_LOG_PATH = "/home/humbug/logs/server.log"
