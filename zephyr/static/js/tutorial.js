@@ -350,6 +350,11 @@ function welcome() {
 }
 
 exports.start = function () {
+    if (ui.home_tab_obscured()) {
+        ui.change_tab_to('#home');
+    }
+    narrow.deactivate();
+
     // If you somehow have messages, temporarily remove them from the visible
     // feed.
     current_msg_list.clear();
