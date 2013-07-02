@@ -191,6 +191,7 @@ function process_hotkey(e) {
         last_viewport_movement_direction = 1;
         current_msg_list.select_id(next_id, {then_scroll: true,
                                              from_scroll: true});
+        mark_current_list_as_read();
         return true;
     }
 
@@ -213,6 +214,7 @@ function process_hotkey(e) {
             // FIXME: this doesn't work for End because rows.last_visible()
             // always returns a message.
             viewport.scrollTop($("#main_div").outerHeight(true));
+            mark_current_list_as_read();
         }
         return true;
     }
@@ -245,6 +247,7 @@ function process_hotkey(e) {
     case 'page_down':
         if (viewport.at_bottom() && !current_msg_list.empty()) {
             current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
+            mark_current_list_as_read();
         }
         else {
             ui.page_down_the_right_amount();

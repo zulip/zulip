@@ -346,14 +346,14 @@ function process_read_messages(messages) {
 }
 
 function mark_read_between(msg_list, start_id, end_id) {
-    var mark_as_read = [];
-    $.each(message_range(msg_list, start_id, end_id),
-        function (idx, msg) {
-            if (unread.message_unread(msg)) {
-                mark_as_read.push(msg);
-            }
-    });
-    process_read_messages(mark_as_read);
+    var msgs_in_range = message_range(msg_list, start_id, end_id);
+    var unread_msgs = $.grep(msgs_in_range, unread.message_unread);
+    process_read_messages(unread_msgs);
+}
+
+function mark_current_list_as_read() {
+    var unread_msgs = $.grep(current_msg_list.all(), unread.message_unread);
+    process_read_messages(unread_msgs);
 }
 
 function update_pointer() {
@@ -1195,6 +1195,10 @@ function move_pointer_at_page_top_and_bottom(delta) {
         } else {
             // We're scrolling down (we want more recent messages)
             next_row = rows.next_visible(next_row);
+
+            if (next_row.length === 0) {
+                mark_current_list_as_read();
+            }
         }
         if (next_row.length !== 0) {
             current_msg_list.select_id(rows.id(next_row));
