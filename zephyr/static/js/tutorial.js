@@ -2,6 +2,7 @@ var tutorial = (function () {
 
 var exports = {};
 var is_running = false;
+var event_handlers = {};
 
 // We'll temporarily set stream colors for the streams we use in the demo
 // tutorial messages.
@@ -114,6 +115,26 @@ var fake_messages = [
     }
 ];
 
+function disable_event_handlers() {
+    $('body').css({'overflow':'hidden'}); // prevents scrolling the feed
+    $.each(["keydown", "keyup", "keypress", "scroll"], function (idx, event_name) {
+        var existing_events = $(document).data("events")[event_name];
+        if (existing_events === undefined) {
+            existing_events = [];
+        }
+        event_handlers[event_name] = existing_events;
+        $(document).data("events")[event_name] = [];
+    });
+}
+
+function enable_event_handlers() {
+    $('body').css({'overflow':'auto'}); // enables scrolling the feed
+    $.each(["keydown", "keyup", "keypress", "scroll"], function (idx, event_name) {
+        var new_events = $(document).data("events")[event_name];
+        $(document).data("events")[event_name] = event_handlers[event_name].concat(new_events);
+    });
+}
+
 function set_tutorial_status(status, callback) {
     return $.ajax({
         type:     'POST',
@@ -192,6 +213,7 @@ function finale() {
     subs.stream_info(real_stream_info);
     util.show_first_run_message();
     current_msg_list.rerender();
+    enable_event_handlers();
 }
 
 function reply() {
@@ -327,6 +349,7 @@ exports.start = function () {
     subs.stream_info(tutorial_stream_info);
     // Add the fake messages to the feed and get started.
     current_msg_list.add_and_rerender(fake_messages);
+    disable_event_handlers();
     is_running = true;
     set_tutorial_status("started");
     welcome();
