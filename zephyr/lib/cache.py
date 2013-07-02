@@ -37,6 +37,11 @@ def memcached_stats_finish():
     memcached_total_time += (time.time() - memcached_time_start)
 
 def get_or_create_key_prefix():
+    if settings.TEST_SUITE:
+        # This sets the prefix mostly for the benefit of the JS tests.
+        # The Python tests overwrite KEY_PREFIX on each test.
+        return 'test_suite:' + str(os.getpid()) + ':'
+
     filename = os.path.join(settings.DEPLOY_ROOT, "memcached_prefix")
     try:
         fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0444)
