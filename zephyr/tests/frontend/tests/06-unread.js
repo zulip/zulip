@@ -4,8 +4,7 @@ var common = require('../common.js').common;
 // other tests send a message before this one is run,
 // changing the unread counts. uncomment line 43 to run
 // standalone
-// Silence jslint errors about the "process_visible_unread_messages" global
-/*global process_visible_unread_messages: true */
+// Silence jslint errors about the global
 /*global keep_pointer_in_view: true */
 
 function send_with_content(content) {
@@ -79,8 +78,7 @@ casper.then(function () {
         // Changing the scroll position in phantomjs doesn't seem to trigger on-scroll
         // handlers, so unread messages are not handled
         casper.page.scrollPosition = {top: ypos, left: 0};
-        casper.evaluate(function () { keep_pointer_in_view();
-                                      process_visible_unread_messages(); });
+        casper.evaluate(function () { keep_pointer_in_view(); });
     }
     var i = 0;
     scroll_to(0);

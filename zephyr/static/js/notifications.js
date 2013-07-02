@@ -30,10 +30,6 @@ exports.initialize = function () {
         $.each(notice_memory, function (index, notice_mem_entry) {
            notice_mem_entry.obj.cancel();
         });
-
-        // Update many places on the DOM to reflect unread
-        // counts.
-        process_visible_unread_messages();
     }).blur(function () {
         window_has_focus = false;
     });
@@ -268,18 +264,28 @@ function message_is_notifiable(message) {
               subs.receives_notifications(message.stream))));
 }
 
+function message_is_visible (vp, message) {
+    if (! notifications.window_has_focus()) {
+        return false;
+    }
+
+    var top = vp.visible_top;
+    var height = vp.visible_height;
+
+    var row = rows.get(message.id, current_msg_list.table_name);
+    var row_offset = row.offset();
+    var row_height = row.height();
+    // Very tall messages are visible once we've gotten past them
+    return (row_height > height && row_offset.top > top) || within_viewport(row_offset, row_height);
+}
+
 exports.received_messages = function (messages) {
-    var i;
+    var vp = viewport.message_viewport_info();
 
     $.each(messages, function (index, message) {
-        // We send notifications for messages which the user has
-        // configured as notifiable, as long as they haven't been
-        // marked as read by process_visible_unread_messages
-        // (which occurs if the message arrived onscreen while the
-        // window had focus).
-        if (!(message_is_notifiable(message) && unread.message_unread(message))) {
-            return;
-        }
+        if (!message_is_notifiable(message)) return;
+        if (message_is_visible(vp, message)) return;
+
         if (page_params.desktop_notifications_enabled &&
             browser_desktop_notifications_on()) {
             process_notification({message: message, webkit_notify: true});

@@ -345,68 +345,6 @@ function process_read_messages(messages) {
     update_unread_counts();
 }
 
-// If we ever materially change the algorithm for this function, we
-// may need to update notifications.received_messages as well.
-function process_visible_unread_messages(update_cursor) {
-    // For any messages visible on the screen, make sure they have been marked
-    // as unread.
-    if (! notifications.window_has_focus()) {
-        return;
-    }
-
-    var selected = current_msg_list.selected_message();
-    var vp = viewport.message_viewport_info();
-    var top = vp.visible_top;
-    var height = vp.visible_height;
-
-    // Being simplistic about this, the smallest message is 30 px high.
-    var selected_row = rows.get(current_msg_list.selected_id(), current_msg_list.table_name);
-    var num_neighbors = Math.floor(height / 30);
-    var candidates = $.merge(selected_row.prevAll("tr.message_row[zid]:lt(" + num_neighbors + ")"),
-                             selected_row.nextAll("tr.message_row[zid]:lt(" + num_neighbors + ")"));
-
-    var visible_messages = candidates.filter(function (idx, message) {
-        var row = $(message);
-        var row_offset = row.offset();
-        var row_height = row.height();
-        // Mark very tall messages as read once we've gotten past them
-        return (row_height > height && row_offset.top > top) || within_viewport(row_offset, row_height);
-    });
-
-    if (update_cursor) {
-        //save the state of respond_to_cursor, and reapply it every time we move the cursor
-        var probably_from_sent_message = respond_to_cursor;
-        $.map(visible_messages, function(msg) {
-            if ((current_msg_list.get(rows.id($(msg))).sent_by_me) &&
-                (current_msg_list.selected_message().id < rows.id($(msg)))) {
-                // every time we move the cursor, we set respond_to_cursor to false. This should only
-                // happen if the user initiated the cursor move, not us, so we reset it when processing
-                // these messages
-                current_msg_list.select_id(rows.id($(msg)), {then_scroll: true,
-                                                             from_scroll: true});
-                respond_to_cursor = probably_from_sent_message;
-            }
-        });
-    }
-
-    var mark_as_read = $.map(visible_messages, function(msg) {
-        var message = current_msg_list.get(rows.id($(msg)));
-        if (! unread.message_unread(message)) {
-            return undefined;
-        } else {
-            return message;
-        }
-    });
-
-    if (unread.message_unread(selected)) {
-        mark_as_read.push(selected);
-    }
-
-    if (mark_as_read.length > 0) {
-        process_read_messages(mark_as_read);
-    }
-}
-
 function mark_read_between(msg_list, start_id, end_id) {
     var mark_as_read = [];
     $.each(message_range(msg_list, start_id, end_id),
@@ -750,7 +688,6 @@ function maybe_add_narrowed_messages(messages, msg_list) {
 
             new_messages = $.map(new_messages, add_message_metadata);
             add_messages(new_messages, msg_list);
-            process_visible_unread_messages();
             compose.update_faded_messages();
         },
         error: function (xhr) {
@@ -904,19 +841,32 @@ function get_updates_success(data) {
             }
         }
 
-        // notifications.received_messages uses values set by
-        // process_visible_unread_messages and thus must
-        // be called after it
-        var i;
-        var update_cursor = false;
-        // check if we need to update the cursor, and do so if needed.
-        for (i = 0; i < messages.length; i++) {
-            if (messages[i].sent_by_me && narrow.narrowed_by_reply()) {
-                update_cursor = true;
+        if (narrow.narrowed_by_reply()) {
+            // If you send a message when narrowed to a recipient, move the
+            // pointer to it.
+
+            // Save the state of respond_to_cursor, and reapply it every time
+            // we move the cursor.
+            var saved_respond_to_cursor = respond_to_cursor;
+
+            var i;
+            var selected_id = current_msg_list.selected_message().id;
+
+            // Iterate backwards to find the last message sent_by_me, stopping at
+            // the pointer position.
+            for (i = messages.length-1; i>=0; i--){
+                if (messages[i].id <= selected_id) break;
+                if (messages[i].sent_by_me) {
+                    // If this is a reply we just sent, advance the pointer to it.
+                    current_msg_list.select_id(messages[i].id, {then_scroll: true,
+                                                                from_scroll: true});
+                    break;
+                }
             }
+
+            respond_to_cursor = saved_respond_to_cursor;
         }
 
-        process_visible_unread_messages(update_cursor);
         notifications.received_messages(messages);
         compose.update_faded_messages();
         stream_list.update_streams_sidebar();
