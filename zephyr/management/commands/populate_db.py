@@ -497,6 +497,10 @@ def restore_saved_messages():
     for message in all_messages:
         messages_by_id[message.id] = message
 
+    if len(messages_by_id) == 0:
+        print datetime.datetime.now(), "No old messages to replay"
+        return
+
     if first_message_id is None:
         first_message_id = min(messages_by_id.keys())
 
