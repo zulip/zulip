@@ -386,7 +386,7 @@ class PersonalMessagesTest(AuthedTestCase):
 
         user_profile = self.get_user_profile("test1@humbughq.com")
         recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
-        self.assertEqual(self.message_stream(user_profile)[-1].recipient, recipient)
+        self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
     def assert_personal(self, sender_email, receiver_email, content="test content"):
         """
@@ -421,8 +421,8 @@ class PersonalMessagesTest(AuthedTestCase):
                          receiver_messages + 1)
 
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
-        self.assertEqual(self.message_stream(sender)[-1].recipient, recipient)
-        self.assertEqual(self.message_stream(receiver)[-1].recipient, recipient)
+        self.assertEqual(most_recent_message(sender).recipient, recipient)
+        self.assertEqual(most_recent_message(receiver).recipient, recipient)
 
     @slow(0.28, "assert_personal checks several profiles")
     def test_personal(self):
@@ -481,7 +481,7 @@ class StreamMessagesTest(AuthedTestCase):
         self.subscribe_to_stream(user_profile.email, "Denmark")
         self.send_message("hamlet@humbughq.com", "Denmark", Recipient.STREAM,
                           content="test @**Iago** rules")
-        message = self.message_stream(user_profile)[-1]
+        message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
 
     @slow(0.28, 'checks all users')
@@ -1684,10 +1684,7 @@ class GetProfileTest(AuthedTestCase):
         api_key = self.get_api_key(email)
         result = self.client.post("/api/v1/get_profile", {'email': email, 'api-key': api_key})
 
-        stream = self.message_stream(user_profile)
-        max_id = -1
-        if len(stream) > 0:
-            max_id = stream[-1].id
+        max_id = most_recent_message(user_profile).id
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
