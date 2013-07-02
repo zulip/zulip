@@ -8,7 +8,8 @@ from django.db.models import Q
 
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     get_display_recipient, Realm, Client, \
-    PreregistrationUser, UserMessage
+    PreregistrationUser, UserMessage, \
+    get_user_profile_by_email
 from zephyr.tornadoviews import json_get_updates, api_get_messages
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError, profiled
 from zephyr.lib.initial_password import initial_password
@@ -123,23 +124,14 @@ class AuthedTestCase(TestCase):
 
     def get_api_key(self, email):
         if email not in API_KEYS:
-            API_KEYS[email] =  self.get_user_profile(email).api_key
+            API_KEYS[email] =  get_user_profile_by_email(email).api_key
         return API_KEYS[email]
-
-    def get_user_profile(self, email):
-        """
-        Given an email address, return the UserProfile object for the
-        User that has that email.
-        """
-        # Usernames are unique, even across Realms.
-        # We use this rather than get_user_profile_by_email to circumvent memcached (I think?)
-        return UserProfile.objects.get(email__iexact=email)
 
     def get_streams(self, email):
         """
         Helper function to get the stream names for a user
         """
-        user_profile = self.get_user_profile(email)
+        user_profile = get_user_profile_by_email(email)
         subs = Subscription.objects.filter(
             user_profile    = user_profile,
             active          = True,
@@ -148,9 +140,9 @@ class AuthedTestCase(TestCase):
 
     def send_message(self, sender_name, recipient_name, message_type,
                      content="test content", subject="test"):
-        sender = self.get_user_profile(sender_name)
+        sender = get_user_profile_by_email(sender_name)
         if message_type == Recipient.PERSONAL:
-            recipient = self.get_user_profile(recipient_name)
+            recipient = get_user_profile_by_email(recipient_name)
         else:
             recipient = Stream.objects.get(name=recipient_name, realm=sender.realm)
         recipient = Recipient.objects.get(type_id=recipient.id, type=message_type)
@@ -211,7 +203,7 @@ class AuthedTestCase(TestCase):
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name):
         stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), stream_name)
-        user_profile = self.get_user_profile(email)
+        user_profile = get_user_profile_by_email(email)
         do_add_subscription(user_profile, stream, no_log=True)
 
     # Subscribe to a stream by making an API request
@@ -308,7 +300,7 @@ class LoginTest(AuthedTestCase):
 
     def test_login(self):
         self.login("hamlet@humbughq.com")
-        user_profile = self.get_user_profile('hamlet@humbughq.com')
+        user_profile = get_user_profile_by_email('hamlet@humbughq.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
     def test_login_bad_password(self):
@@ -317,7 +309,7 @@ class LoginTest(AuthedTestCase):
 
     def test_register(self):
         self.register("test", "test")
-        user_profile = self.get_user_profile('test@humbughq.com')
+        user_profile = get_user_profile_by_email('test@humbughq.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
     def test_logout(self):
@@ -334,7 +326,7 @@ class LoginTest(AuthedTestCase):
 
         # Registering succeeds.
         self.register("test", password)
-        user_profile = self.get_user_profile(email)
+        user_profile = get_user_profile_by_email(email)
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
         self.client.post('/accounts/logout/')
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
@@ -352,7 +344,7 @@ class PersonalMessagesTest(AuthedTestCase):
         personals.
         """
         self.register("test", "test")
-        user_profile = self.get_user_profile('test@humbughq.com')
+        user_profile = get_user_profile_by_email('test@humbughq.com')
         old_messages_count = message_stream_count(user_profile)
         self.send_message("test@humbughq.com", "test@humbughq.com", Recipient.PERSONAL)
         new_messages_count = message_stream_count(user_profile)
@@ -382,7 +374,7 @@ class PersonalMessagesTest(AuthedTestCase):
 
         self.assertEqual(old_messages, new_messages)
 
-        user_profile = self.get_user_profile("test1@humbughq.com")
+        user_profile = get_user_profile_by_email("test1@humbughq.com")
         recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
         self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
@@ -391,8 +383,8 @@ class PersonalMessagesTest(AuthedTestCase):
         Send a private message from `sender_email` to `receiver_email` and check
         that only those two parties actually received the message.
         """
-        sender = self.get_user_profile(sender_email)
-        receiver = self.get_user_profile(receiver_email)
+        sender = get_user_profile_by_email(sender_email)
+        receiver = get_user_profile_by_email(receiver_email)
 
         sender_messages = message_stream_count(sender)
         receiver_messages = message_stream_count(receiver)
@@ -475,7 +467,7 @@ class StreamMessagesTest(AuthedTestCase):
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
 
     def test_message_mentions(self):
-        user_profile = self.get_user_profile("iago@humbughq.com")
+        user_profile = get_user_profile_by_email("iago@humbughq.com")
         self.subscribe_to_stream(user_profile.email, "Denmark")
         self.send_message("hamlet@humbughq.com", "Denmark", Recipient.STREAM,
                           content="test @**Iago** rules")
@@ -516,10 +508,10 @@ class PointerTest(AuthedTestCase):
         the pointer we store for your UserProfile.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": 1})
         self.assert_json_success(result)
-        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, 1)
+        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, 1)
 
     def test_api_update_pointer(self):
         """
@@ -527,12 +519,12 @@ class PointerTest(AuthedTestCase):
         """
         email = "hamlet@humbughq.com"
         api_key = self.get_api_key(email)
-        self.assertEqual(self.get_user_profile(email).pointer, -1)
+        self.assertEqual(get_user_profile_by_email(email).pointer, -1)
         result = self.client.post("/api/v1/update_pointer", {"email": email,
                                                              "api-key": api_key,
                                                              "pointer": 1})
         self.assert_json_success(result)
-        self.assertEqual(self.get_user_profile(email).pointer, 1)
+        self.assertEqual(get_user_profile_by_email(email).pointer, 1)
 
     def test_missing_pointer(self):
         """
@@ -540,10 +532,10 @@ class PointerTest(AuthedTestCase):
         returns a 400 and error message.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"foo": 1})
         self.assert_json_error(result, "Missing 'pointer' argument")
-        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
 
     def test_invalid_pointer(self):
         """
@@ -551,10 +543,10 @@ class PointerTest(AuthedTestCase):
         message.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Bad value for 'pointer': foo")
-        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
 
     def test_pointer_out_of_range(self):
         """
@@ -562,10 +554,10 @@ class PointerTest(AuthedTestCase):
         and error message.
         """
         self.login("hamlet@humbughq.com")
-        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": -2})
         self.assert_json_error(result, "Bad value for 'pointer': -2")
-        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
 
 class MessagePOSTTest(AuthedTestCase):
 
@@ -678,7 +670,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
-        subs = gather_subscriptions(self.get_user_profile(test_email))[0]
+        subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
         result = self.client.get("/json/subscriptions/property",
                                   {"property": "color",
                                    "stream_name": subs[0]['name']})
@@ -701,7 +693,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
 
-        old_subs, _ = gather_subscriptions(self.get_user_profile(test_email))
+        old_subs, _ = gather_subscriptions(get_user_profile_by_email(test_email))
         sub = old_subs[0]
         stream_name = sub['name']
         old_color = sub['color']
@@ -714,7 +706,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
         self.assert_json_success(result)
 
-        new_subs = gather_subscriptions(self.get_user_profile(test_email))[0]
+        new_subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
         sub = {'name': stream_name, 'in_home_view': True, 'color': new_color,
                'invite_only': invite_only, 'notifications': False}
         self.assertIn(sub, new_subs)
@@ -742,7 +734,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
-        subs = gather_subscriptions(self.get_user_profile(test_email))[0]
+        subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
         result = self.client.post("/json/subscriptions/property",
                                   {"property": "color",
                                    "stream_name": subs[0]["name"]})
@@ -755,7 +747,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         test_email = "hamlet@humbughq.com"
         self.login(test_email)
-        subs = gather_subscriptions(self.get_user_profile(test_email))[0]
+        subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
         result = self.client.post("/json/subscriptions/property",
                                   {"property": "bad",
                                    "stream_name": subs[0]["name"]})
@@ -772,7 +764,7 @@ class SubscriptionAPITest(AuthedTestCase):
         """
         self.test_email = "hamlet@humbughq.com"
         self.login(self.test_email)
-        self.user_profile = self.get_user_profile(self.test_email)
+        self.user_profile = get_user_profile_by_email(self.test_email)
         self.realm = self.user_profile.realm
         self.streams = self.get_streams(self.test_email)
 
@@ -886,7 +878,7 @@ class SubscriptionAPITest(AuthedTestCase):
         those subscriptions and send a message to the subscribee notifying
         them.
         """
-        other_profile = self.get_user_profile(invitee)
+        other_profile = get_user_profile_by_email(invitee)
         current_streams = self.get_streams(invitee)
         self.assertIsInstance(other_profile, UserProfile)
         self.assertNotEqual(len(current_streams), 0)  # necessary for full test coverage
@@ -900,7 +892,7 @@ class SubscriptionAPITest(AuthedTestCase):
         msg = Message.objects.latest('id')
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
-                self.get_user_profile("humbug+notifications@humbughq.com").id)
+                get_user_profile_by_email("humbug+notifications@humbughq.com").id)
         expected_msg = ("Hi there!  We thought you'd like to know that %s just "
                         "subscribed you to the stream '%s'\nYou can see historical "
                         "content on a non-invite-only stream by narrowing to it."
@@ -936,7 +928,7 @@ class SubscriptionAPITest(AuthedTestCase):
         invalid_principal = "rosencrantz-and-guildenstern@humbughq.com"
         # verify that invalid_principal actually doesn't exist
         with self.assertRaises(UserProfile.DoesNotExist):
-            self.get_user_profile(invalid_principal)
+            get_user_profile_by_email(invalid_principal)
         result = self.common_subscribe_to_streams(self.test_email, self.streams,
                                                   {"principals": ujson.dumps([invalid_principal])})
         self.assert_json_error(result, "User not authorized to execute queries on behalf of '%s'"
@@ -948,7 +940,7 @@ class SubscriptionAPITest(AuthedTestCase):
         should return a JSON error.
         """
         principal = "starnine@mit.edu"
-        profile = self.get_user_profile(principal)
+        profile = get_user_profile_by_email(principal)
         # verify that principal exists (thus, the reason for the error is the cross-realming)
         self.assertIsInstance(profile, UserProfile)
         result = self.common_subscribe_to_streams(self.test_email, self.streams,
@@ -1107,7 +1099,7 @@ class GetOldMessagesTest(AuthedTestCase):
         def dr_emails(dr):
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
-        personals = [m for m in get_user_messages(self.get_user_profile(me))
+        personals = [m for m in get_user_messages(get_user_profile_by_email(me))
             if m.recipient.type == Recipient.PERSONAL
             or m.recipient.type == Recipient.HUDDLE]
         if not personals:
@@ -1135,10 +1127,10 @@ class GetOldMessagesTest(AuthedTestCase):
         # narrow view.
         realm = Realm.objects.get(domain="humbughq.com")
         stream, _ = create_stream_if_needed(realm, "Scotland")
-        do_add_subscription(self.get_user_profile("hamlet@humbughq.com"),
+        do_add_subscription(get_user_profile_by_email("hamlet@humbughq.com"),
                             stream, no_log=True)
         self.send_message("hamlet@humbughq.com", "Scotland", Recipient.STREAM)
-        messages = get_user_messages(self.get_user_profile("hamlet@humbughq.com"))
+        messages = get_user_messages(get_user_profile_by_email("hamlet@humbughq.com"))
         stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
                                  messages)
         stream_name = get_display_recipient(stream_messages[0].recipient)
@@ -1451,7 +1443,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         # Make sure we're subscribed before inviting someone.
         do_add_subscription(
-            self.get_user_profile("hamlet@humbughq.com"),
+            get_user_profile_by_email("hamlet@humbughq.com"),
             stream, no_log=True)
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
@@ -1484,13 +1476,13 @@ class ChangeSettingsTest(AuthedTestCase):
         self.assert_json_success(json_result)
         result = ujson.loads(json_result.content)
         self.check_well_formed_change_settings_response(result)
-        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").
+        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").
                 full_name, "Foo Bar")
-        self.assertEqual(self.get_user_profile("hamlet@humbughq.com").
+        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").
                 enable_desktop_notifications, False)
         self.client.post('/accounts/logout/')
         self.login("hamlet@humbughq.com", "foobar1")
-        user_profile = self.get_user_profile('hamlet@humbughq.com')
+        user_profile = get_user_profile_by_email('hamlet@humbughq.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
     def test_missing_params(self):
@@ -1625,7 +1617,7 @@ class POSTRequestMock(object):
 class GetUpdatesTest(AuthedTestCase):
 
     def common_test_get_updates(self, view_func, extra_post_data = {}):
-        user_profile = self.get_user_profile("hamlet@humbughq.com")
+        user_profile = get_user_profile_by_email("hamlet@humbughq.com")
         message_content = 'tornado test message'
         self.got_callback = False
 
@@ -1667,7 +1659,7 @@ class GetUpdatesTest(AuthedTestCase):
         Calling json_get_updates without any arguments should work
         """
         self.login("hamlet@humbughq.com")
-        user_profile = self.get_user_profile("hamlet@humbughq.com")
+        user_profile = get_user_profile_by_email("hamlet@humbughq.com")
 
         request = POSTRequestMock({}, user_profile)
         self.assertEqual(json_get_updates(request), RespondAsynchronously)
@@ -1677,7 +1669,7 @@ class GetUpdatesTest(AuthedTestCase):
         Specifying a bad value for 'pointer' should return an error
         """
         self.login("hamlet@humbughq.com")
-        user_profile = self.get_user_profile("hamlet@humbughq.com")
+        user_profile = get_user_profile_by_email("hamlet@humbughq.com")
 
         request = POSTRequestMock({'pointer': 'foo'}, user_profile)
         self.assertRaises(RequestVariableConversionError, json_get_updates, request)
@@ -1690,7 +1682,7 @@ class GetProfileTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def common_get_profile(self, email):
-        user_profile = self.get_user_profile(email)
+        user_profile = get_user_profile_by_email(email)
         self.send_message(email, "Verona", Recipient.STREAM, "hello")
 
         api_key = self.get_api_key(email)
@@ -1814,7 +1806,7 @@ class GetSubscribersTest(AuthedTestCase):
     def setUp(self):
         self.email = "hamlet@humbughq.com"
         self.api_key = self.get_api_key(self.email)
-        self.user_profile = self.get_user_profile(self.email)
+        self.user_profile = get_user_profile_by_email(self.email)
         self.login(self.email)
 
     def check_well_formed_result(self, result, stream_name, domain):
@@ -2606,7 +2598,7 @@ class StarTests(AuthedTestCase):
                           content=content)
 
         sent_message = UserMessage.objects.filter(
-            user_profile=self.get_user_profile(test_email)
+            user_profile=get_user_profile_by_email(test_email)
             ).order_by("id").reverse()[0]
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
@@ -2945,7 +2937,7 @@ class RateLimitTests(AuthedTestCase):
                                                                    "api-key": api_key})
     def test_headers(self):
         email = "hamlet@humbughq.com"
-        user = self.get_user_profile(email)
+        user = get_user_profile_by_email(email)
         clear_user_history(user)
         api_key = self.get_api_key(email)
 
@@ -2956,7 +2948,7 @@ class RateLimitTests(AuthedTestCase):
 
     def test_ratelimit_decrease(self):
         email = "hamlet@humbughq.com"
-        user = self.get_user_profile(email)
+        user = get_user_profile_by_email(email)
         clear_user_history(user)
         api_key = self.get_api_key(email)
         result = self.send_api_message(email, api_key, "some stuff")
@@ -2969,7 +2961,7 @@ class RateLimitTests(AuthedTestCase):
     @slow(1.1, 'has to sleep to work')
     def test_hit_ratelimits(self):
         email = "cordelia@humbughq.com"
-        user = self.get_user_profile(email)
+        user = get_user_profile_by_email(email)
         clear_user_history(user)
 
         api_key = self.get_api_key(email)
