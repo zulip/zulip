@@ -607,21 +607,17 @@ function add_messages_helper(messages, msg_list, predicate, messages_are_new) {
     }
     msg_list.prepend(top_messages);
     msg_list.append(bottom_messages, messages_are_new);
-    return top_messages.length > 0;
 }
 
 function add_messages(messages, msg_list, messages_are_new) {
-    var prepended = false;
     if (!messages)
         return;
 
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
 
-    if (add_messages_helper(messages, msg_list, msg_list.filter.predicate(),
-                            messages_are_new)) {
-        prepended = true;
-    }
+    add_messages_helper(messages, msg_list, msg_list.filter.predicate(),
+                        messages_are_new);
 
     if ((msg_list === narrowed_msg_list) && !msg_list.empty() &&
         (msg_list.selected_id() === -1)) {
@@ -630,20 +626,6 @@ function add_messages(messages, msg_list, messages_are_new) {
         // feed placeholder text.
         narrow.hide_empty_narrow_message();
         // And also select the newly arrived message.
-        msg_list.select_id(msg_list.selected_id(), {then_scroll: true, use_closest: true});
-    }
-
-    // If we prepended messages, then we need to scroll back to the pointer.
-    // This will mess with the user's scrollwheel use; possibly we should be
-    // more clever here.  However (for now) we only prepend on page load,
-    // so maybe it's okay.
-    //
-    // We also need to re-select the message by ID, because we might have
-    // removed and re-added the row as part of prepend collapsing.
-    //
-    // We select the closest id as a fallback in case the previously selected
-    // message is no longer in the list
-    if (prepended && (msg_list.selected_id() >= 0)) {
         msg_list.select_id(msg_list.selected_id(), {then_scroll: true, use_closest: true});
     }
 

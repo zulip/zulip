@@ -128,7 +128,9 @@ MessageList.prototype = {
         }
 
         this._selected_id = id;
-        this._maybe_rerender();
+        if (!opts.from_rendering) {
+            this._maybe_rerender();
+        }
 
         $(document).trigger($.Event('message_selected.zephyr', opts));
     },
@@ -262,7 +264,7 @@ MessageList.prototype = {
         var messages_to_render = [];
         var ids_where_next_is_same_sender = {};
         var prev;
-        var last_message_id;
+        var orig_scrolltop_offset, last_message_id;
 
         var current_group = [];
         var new_message_groups = [];
@@ -270,6 +272,8 @@ MessageList.prototype = {
         if (where === "bottom") {
             // Remove the trailing bookend; it'll be re-added after we do our rendering
             this.clear_trailing_bookend();
+        } else {
+            orig_scrolltop_offset = this.selected_row().offset().top - viewport.scrollTop();
         }
 
         if (where === 'top' && this.collapse_messages && this._message_groups.length > 0) {
@@ -427,6 +431,13 @@ MessageList.prototype = {
             // If we have a totally empty narrow, there may not
             // be a .ztable_layout_row.
             table.find('.ztable_layout_row').after(rendered_elems);
+
+            if (this === current_msg_list) {
+                // Restore the selected row to its original position in
+                // relation to the top of the window
+                viewport.scrollTop(this.selected_row().offset().top - orig_scrolltop_offset);
+                this.select_id(this._selected_id, {from_rendering: true});
+            }
         } else {
             table.append(rendered_elems);
 
