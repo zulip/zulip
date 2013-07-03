@@ -5,11 +5,7 @@ var exports = {};
 function add_bot_row(name, email, avatar_url, api_key) {
     var avatar_cell;
 
-    if (avatar_url) {
-        avatar_cell = $('<img>').attr('src', avatar_url).attr('class', 'avatar');
-    } else {
-        avatar_cell = '(default)';
-    }
+    avatar_cell = $('<img>').attr('src', avatar_url).attr('class', 'avatar');
 
     var row = $('<tr></tr>').append($('<td>').text(name),
                                     $('<td>').text(email),
