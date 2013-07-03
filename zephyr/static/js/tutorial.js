@@ -141,8 +141,7 @@ function disable_event_handlers() {
 function enable_event_handlers() {
     $('body').css({'overflow':'auto'}); // enables scrolling the feed
     $.each(["keydown", "keyup", "keypress", "scroll"], function (idx, event_name) {
-        var new_events = $(document).data("events")[event_name];
-        $(document).data("events")[event_name] = event_handlers[event_name].concat(new_events);
+        $(document).data("events")[event_name] = event_handlers[event_name];
     });
 }
 
