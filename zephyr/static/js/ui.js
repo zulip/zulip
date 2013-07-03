@@ -1581,10 +1581,7 @@ $(function () {
     activity.initialize();
     subs.maybe_toggle_all_messages();
     tutorial.initialize();
-    if (!page_params.needs_tutorial) {
-        onboarding.initialize();
-    }
-
+    onboarding.initialize();
 });
 
 var presence_descriptions = {
