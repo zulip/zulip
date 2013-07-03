@@ -591,10 +591,10 @@ function add_messages_helper(messages, msg_list, predicate, messages_are_new) {
             }
 
             // Put messages in correct order on either side of the message list
-            if (msg_list.empty() || (msg.id < msg_list.first().id)) {
-                top_messages.push(msg);
-            } else if (msg.id > msg_list.last().id) {
+            if (msg_list.empty() || msg.id > msg_list.last().id) {
                 bottom_messages.push(msg);
+            } else if (msg.id < msg_list.first().id) {
+                top_messages.push(msg);
             } else {
                 interior_messages.push(msg);
             }
