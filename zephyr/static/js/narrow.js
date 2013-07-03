@@ -400,8 +400,14 @@ exports.activate = function (operators, opts) {
 
     current_filter = new Filter(operators);
 
+    // Save how far from the pointer the top of the message list was.
+    if (current_msg_list.selected_id() !== -1) {
+        current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top - viewport.scrollTop();
+    }
     narrowed_msg_list = new MessageList('zfilt', current_filter,
                                         {collapse_messages: ! current_filter.is_search()});
+
+
     current_msg_list = narrowed_msg_list;
 
     function maybe_select_closest() {
@@ -552,19 +558,18 @@ exports.deactivate = function () {
     // We fall back to the closest selected id, if the user has removed a stream from the home
     // view since leaving it the old selected id might no longer be there
     home_msg_list.select_id(home_msg_list.selected_id(), {
-        then_scroll: true,
+        then_scroll: false,
         use_closest: true,
         mark_read: false
     });
+    // We scroll the user back to exactly the offset from the selected
+    // message that he was at the time that he narrowed.
+    // TODO: Make this correctly handle the case of resizing while narrowed.
+    if (current_msg_list.selected_id() !== -1) {
+        viewport.scrollTop(current_msg_list.selected_row().offset().top - current_msg_list.pre_narrow_offset);
+    }
 
     hashchange.save_narrow();
-
-    // This really shouldn't be necessary since the act of unnarrowing
-    // fires a "message_selected.zephyr" event that in principle goes
-    // and takes care of this, but on Safari (at least) there
-    // seems to be some sort of order-of-events issue that causes
-    // the scrolling not to happen, so this is my hack for now.
-    scroll_to_selected();
 
     $(document).trigger($.Event('narrow_deactivated.zephyr', {msg_list: current_msg_list}));
 };
