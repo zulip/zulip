@@ -200,7 +200,7 @@ exports.initialize = function () {
             if (subject_dict.hasOwnProperty(stream_name)) {
                 // If query is an exact match, we don't need to add it to the array of options
                 for (i = 0; i < subject_dict[stream_name].length; i++) {
-                    if (subject_dict[stream_name][i].toLowerCase() === query.toLowerCase()) {
+                    if (subject_dict[stream_name][i] === query) {
                         return subject_dict[stream_name];
                     }
                 }
