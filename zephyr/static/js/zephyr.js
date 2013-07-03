@@ -605,8 +605,12 @@ function add_messages_helper(messages, msg_list, predicate, messages_are_new) {
         msg_list.add_and_rerender(top_messages.concat(interior_messages).concat(bottom_messages));
         return true;
     }
-    msg_list.prepend(top_messages);
-    msg_list.append(bottom_messages, messages_are_new);
+    if (top_messages.length > 0) {
+        msg_list.prepend(top_messages);
+    }
+    if (bottom_messages.length > 0) {
+        msg_list.append(bottom_messages, messages_are_new);
+    }
 }
 
 function add_messages(messages, msg_list, messages_are_new) {
