@@ -319,8 +319,7 @@ function message() {
     var message_width = bar.width();
 
     box(x, y, message_width, message_height);
-    create_and_show_popover(bar, "left", "Welcome " + page_params.fullname + "!",
-                            "tutorial_message");
+    create_and_show_popover(bar, "left", "Messages", "tutorial_message");
 
     var my_popover = $("#tutorial-message").closest(".popover");
     my_popover.offset({left: my_popover.offset().left - 10});
@@ -338,7 +337,7 @@ function welcome() {
 
     // Highlight the first recipient row.
     var bar = rows.first_visible().prev(".recipient_row");
-    create_and_show_popover(bar, "left", "Welcome " + page_params.fullname + "!",
+    create_and_show_popover(bar, "left", "Welcome, " + page_params.fullname + "!",
                             "tutorial_welcome");
 
     var my_popover = $("#tutorial-welcome").closest(".popover");
