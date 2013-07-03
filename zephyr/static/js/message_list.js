@@ -288,6 +288,8 @@ MessageList.prototype = {
             var top_messages = [];
             $.each(top_group, function (index, id) {
                 rows.get(id, table_name).remove();
+                // Remove any date row headers for these messages
+                $('.date_row[data-zid=' + id + ']').remove();
                 top_messages.push(self.get(id));
             });
             messages = messages.concat(top_messages);
