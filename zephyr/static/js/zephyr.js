@@ -419,7 +419,7 @@ $(function () {
             respond_to_cursor = false;
         }
 
-        if (event.previously_selected !== -1) {
+        if (event.mark_read && event.previously_selected !== -1) {
             // Mark messages between old pointer and new pointer as read
             if (event.id < event.previously_selected) {
                 mark_read_between(event.msg_list, event.id, event.previously_selected);
