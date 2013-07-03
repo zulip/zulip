@@ -593,6 +593,13 @@ MessageList.prototype = {
 
         this._render_win_start += messages.length;
         this._render_win_end += messages.length;
+
+        var cur_window_size = this._render_win_end - this._render_win_start;
+        if (cur_window_size < this._RENDER_WINDOW_SIZE) {
+            var slice_to_render = messages.slice(0, this._RENDER_WINDOW_SIZE - cur_window_size);
+            this._render(slice_to_render, 'top', false);
+            this._render_win_start -= slice_to_render.length;
+        }
     },
 
     add_and_rerender: function MessageList_add_and_rerender(messages) {
