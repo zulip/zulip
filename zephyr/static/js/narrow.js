@@ -139,8 +139,8 @@ Filter.prototype = {
                     if (page_params.domain === "mit.edu") {
                         // MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
                         // (unsocial, ununsocial, social.d, etc)
-                        var related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(message.stream) + /(.d)*$/.source, 'i');
-                        if (! related_regexp.test(operand)) {
+                        var related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(operand) + /(.d)*$/.source, 'i');
+                        if (! related_regexp.test(message.stream)) {
                             return false;
                         }
                     } else if (message.stream.toLowerCase() !== operand) {
