@@ -31,7 +31,7 @@ from zephyr.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     recipient_for_emails, extract_recipients, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
-    do_send_messages, do_add_subscription, get_default_subs
+    do_send_messages, do_add_subscription, get_default_subs, do_deactivate
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_unique, is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt
@@ -1939,6 +1939,20 @@ def messages_in_narrow_backend(request, user_profile, msg_ids = REQ(converter=js
                                            {'match_subject': msg.match_subject,
                                             'match_content': msg.match_content})
                                           for msg in query.iterator())})
+
+@authenticated_json_post_view
+@has_request_variables
+def json_deactivate_bot(request, user_profile, bot_email=REQ):
+    try:
+        bot = get_user_profile_by_email(bot_email)
+    except UserProfile.DoesNotExist:
+        return json_error('Cannot deactivate user')
+
+    if bot.bot_owner != user_profile:
+        return json_error('Cannot deactivate user')
+
+    do_deactivate(bot)
+    return json_success({})
 
 @authenticated_json_post_view
 @has_request_variables

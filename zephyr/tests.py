@@ -515,10 +515,69 @@ class BotTest(AuthedTestCase):
         result = self.client.post("/json/create_bot", bot_info)
         self.assert_json_success(result)
 
+    def deactivate_bot(self):
+        bot_info = {
+            'bot_email': 'hambot-bot@humbughq.com',
+        }
+        result = self.client.post("/json/deactivate_bot", bot_info)
+        self.assert_json_success(result)
+
     def test_add_bot(self):
         self.login("hamlet@humbughq.com")
         self.assert_num_bots_equal(0)
         self.create_bot()
+        self.assert_num_bots_equal(1)
+
+    def test_deactivate_bot(self):
+        self.login("hamlet@humbughq.com")
+        self.assert_num_bots_equal(0)
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+        self.deactivate_bot()
+        # You can deactivate the same bot twice.
+        self.deactivate_bot()
+        self.assert_num_bots_equal(0)
+
+    def test_deactivate_bogus_bot(self):
+        # Deleting a bogus bot will succeed silently.
+        self.login("hamlet@humbughq.com")
+        self.assert_num_bots_equal(0)
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+        bot_info = {
+            'bot_email': 'bogus-bot@humbughq.com',
+        }
+        result = self.client.post("/json/deactivate_bot", bot_info)
+        self.assert_json_error(result, 'Cannot deactivate user')
+        self.assert_num_bots_equal(1)
+
+    def test_bot_deactivation_attacks(self):
+        # You cannot deactivate somebody else's bot.
+        self.login("hamlet@humbughq.com")
+        self.assert_num_bots_equal(0)
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        # Have Othello try to deactivate both Hamlet and
+        # Hamlet's bot.
+        # To confuse attackers, we make their attack
+        # appear successful.
+        self.login("othello@humbughq.com")
+
+        bot_info = {
+            'bot_email': 'hamlet@humbughq.com',
+        }
+        result = self.client.post("/json/deactivate_bot", bot_info)
+        self.assert_json_error(result, 'Cannot deactivate user')
+
+        bot_info = {
+            'bot_email': 'hambot-bot@humbughq.com',
+        }
+        result = self.client.post("/json/deactivate_bot", bot_info)
+        self.assert_json_error(result, 'Cannot deactivate user')
+
+        # But we don't actually deactivate the other person's bot.
+        self.login("hamlet@humbughq.com")
         self.assert_num_bots_equal(1)
 
 class PointerTest(AuthedTestCase):
