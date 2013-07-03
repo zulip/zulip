@@ -500,6 +500,27 @@ class StreamMessagesTest(AuthedTestCase):
         self.assert_stream_message(non_ascii_stream_name, subject=u"hümbüǵ",
                                    content=u"hümbüǵ")
 
+class BotTest(AuthedTestCase):
+    def assert_num_bots_equal(self, count):
+        result = self.client.post("/json/get_bots")
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertEqual(count, len(json['bots']))
+
+    def create_bot(self):
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/create_bot", bot_info)
+        self.assert_json_success(result)
+
+    def test_add_bot(self):
+        self.login("hamlet@humbughq.com")
+        self.assert_num_bots_equal(0)
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
 class PointerTest(AuthedTestCase):
 
     def test_update_pointer(self):
