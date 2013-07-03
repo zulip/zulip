@@ -19,7 +19,7 @@ class LineToFile(object):
         self._cumulative_counts = []
 
         total = 0
-        for filename in settings.PIPELINE_JS['app']['source_filenames']:
+        for filename in settings.JS_SPECS['app']['source_filenames']:
             self._names.append(filename)
             self._cumulative_counts.append(total)
             with open(path.join('zephyr/static', filename), 'r') as fil:

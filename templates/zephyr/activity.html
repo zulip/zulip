@@ -1,12 +1,13 @@
 {% extends "zephyr/base.html" %}
 
 {% load compressed %}
+{% load minified_js %}
 
 {# User Activity. #}
 
 {% block customhead %}
 {{ block.super }}
-{% compressed_js  'activity' %}
+{% minified_js 'activity' %}
 {% compressed_css 'activity' %}
 {% endblock %}
 

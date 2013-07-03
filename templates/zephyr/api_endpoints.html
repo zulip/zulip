@@ -2,11 +2,11 @@
 
 {# API information page #}
 
-{% load compressed %}
+{% load minified_js %}
 
 {% block customhead %}
     {{ block.super }}
-    {% compressed_js 'api' %}
+    {% minified_js 'api' %}
 {% endblock %}
 
 

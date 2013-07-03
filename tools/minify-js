@@ -1,0 +1,117 @@
+#!/usr/bin/env python
+
+# Minifies JavaScripts, creating source maps
+
+from __future__ import absolute_import
+
+import os
+from glob import glob
+import subprocess
+import optparse
+import sys
+
+parser = optparse.OptionParser()
+parser.add_option('--prev-deploy', nargs=1, metavar='DIR',
+                  help='A previous deploy from which to reuse files if possible')
+(options, args) = parser.parse_args()
+prev_deploy = options.prev_deploy
+
+# We have to pull out JS_SPECS, defined in our settings file, so we know what
+# JavaScript source files to minify (and what output files to create).
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'humbug.settings'
+from django.conf import settings
+
+os.chdir(settings.DEPLOY_ROOT)
+
+STATIC_PATH = 'zephyr/static/'
+with open(settings.STATIC_HEADER_FILE, 'r') as fp:
+    static_header = fp.read()
+
+# Compile Handlebars templates
+subprocess.check_call(['tools/node', 'node_modules/.bin/handlebars']
+    + glob(os.path.join(STATIC_PATH, 'templates/*.handlebars'))
+    + ['--output', os.path.join(STATIC_PATH, 'templates/compiled.js'),
+       '--known', 'if,unless,each,with'])
+
+def get_changed_source_files(other_checkout):
+    """ Get list of changed static files since other_checkout.
+    If git fails to return a reasonable looking list, this returns None,
+    in which case it should be assumed no files can be reused from
+    other_checkout. """
+
+    try:
+        git_dir = os.path.join(other_checkout, '.git')
+        old_commit_sha1 = subprocess.check_output(['git', 'rev-parse', 'HEAD'],
+                                                  env={'GIT_DIR': git_dir})
+        old_commit_sha1 = old_commit_sha1.rstrip()
+
+        git_diff = subprocess.check_output(['git', 'diff', '--name-only',
+                                            old_commit_sha1])
+    except subprocess.CalledProcessError:
+        # If git returned an error, assume we can't reuse any files, and
+        # regenerate everything.
+        print "Warning: git returned an error when comparing to the previous"
+        print ("deploy in %s. Will re-minify JavaScript instead of reusing"
+               % other_checkout)
+        return None
+
+    changed = set()
+    for filename in git_diff.split('\n'):
+        if not filename.startswith(STATIC_PATH):
+            continue  # Ignore non-static files.
+
+        if filename.endswith('.handlebars'):
+            # Since Handlebars templates are compiled, treat this as if the
+            # compiled .js file changed (which it did).
+            changed.add('templates/compiled.js')
+            continue
+
+        changed.add(filename)
+
+    return changed
+
+
+changed_files = set()
+if prev_deploy:
+    changed_files = get_changed_source_files(prev_deploy)
+    if changed_files is None:
+        prev_deploy = None
+
+JS_SPECS = settings.JS_SPECS
+CLOSURE_BINARY = 'tools/closure-compiler/run'
+
+# Where to put minified JS and source maps
+MIN_DIR = os.path.join(STATIC_PATH, 'min/')
+MAP_DIR = os.path.join(STATIC_PATH, 'source-map/')
+subprocess.check_call(['mkdir', '-p', MIN_DIR, MAP_DIR])
+
+for js_group, filespec in JS_SPECS.iteritems():
+    in_files = [os.path.join(STATIC_PATH, filename)
+                for filename in filespec['source_filenames']]
+    out_file = os.path.join(MIN_DIR, os.path.basename(filespec['output_filename']))
+    map_file = os.path.join(MAP_DIR, os.path.basename(filespec['output_filename'])
+                                     + '.map')
+
+    if (prev_deploy and len(set(in_files) & changed_files) == 0):
+        # Try to reuse the output file from previous deploy
+        try:
+            for dest in [out_file, map_file]:
+                src = os.path.join(prev_deploy, dest)
+                os.path.getsize(src)  # Just to throw error if it doesn't exist.
+                if os.path.abspath(src) != os.path.abspath(dest):
+                    subprocess.check_call(['cp', src, dest])
+            continue  # Copy succeeded, so go on to next file.
+        except (subprocess.CalledProcessError, OSError):
+            pass  # Copy failed, so fall through to minification instead.
+
+    # No previous deploy, or a source file has changed, or copying was
+    # supposed to work but failed.  Thus, minify the JS anew.
+    cmd = '%s --language_in ECMASCRIPT5 --create_source_map %s %s' % (
+            CLOSURE_BINARY, map_file, ' '.join(in_files))
+    js = subprocess.check_output(cmd, shell=True)
+
+    # Write out the JS with static header prepended
+    with open(out_file, 'w') as fp:
+        fp.write(static_header)
+        fp.write(js)

@@ -20,14 +20,7 @@ class AddHeaderMixin(object):
         for name in paths:
             storage, path = paths[name]
 
-            # Find the top-level directory for the file
-            head, _ = os.path.split(path)
-            top_dir = head
-            while head != '':
-                top_dir = head
-                head, _ = os.path.split(head)
-
-            if top_dir != 'min':
+            if not path.startswith('min/') or not path.endswith('.css'):
                 ret_dict[path] = (path, path, False)
                 continue
 

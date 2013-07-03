@@ -3,6 +3,7 @@
 
 {# Base template for the whole site. #}
 {% load compressed %}
+{% load minified_js %}
 
 <head>
     <meta charset="UTF-8">
@@ -40,7 +41,7 @@ mixpanel.init("{{ mixpanel_token }}", {track_pageview: {{ enable_metrics }}});
     <script type="text/javascript">
     page_params.enable_metrics = {{ enable_metrics }};
     </script>
-    {% compressed_js  'common' %}
+    {% minified_js 'common' %}
     {% block customhead %}
     {% endblock %}
 </head>

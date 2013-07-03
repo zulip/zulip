@@ -1,19 +1,24 @@
-from django.conf import settings
+import re
 from django.contrib.staticfiles.finders import AppDirectoriesFinder
 
-class ExcludeMinifiedMixin(object):
+class ExcludeUnminifiedMixin(object):
+    """ Excludes unminified copies of our JavaScript code, templates
+    and stylesheets, so that these sources don't end up getting served
+    in production. """
+
     def list(self, ignore_patterns):
         # We can't use ignore_patterns because the patterns are
         # applied to just the file part, not the entire path
-        to_exclude = set()
-        for collection in (settings.PIPELINE_CSS, settings.PIPELINE_JS):
-            for key in collection:
-                to_exclude.update(collection[key]['source_filenames'])
+        excluded = '^(js|styles|templates)/'
 
-        super_class = super(ExcludeMinifiedMixin, self)
+        # source-map/ should also not be included.
+        # However, we work around that by moving it later,
+        # in tools/update-prod-static.
+
+        super_class = super(ExcludeUnminifiedMixin, self)
         for path, storage in super_class.list(ignore_patterns):
-            if not path in to_exclude:
+            if not re.search(excluded, path):
                 yield path, storage
 
-class HumbugFinder(ExcludeMinifiedMixin, AppDirectoriesFinder):
+class HumbugFinder(ExcludeUnminifiedMixin, AppDirectoriesFinder):
     pass

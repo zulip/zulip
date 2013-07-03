@@ -4,6 +4,7 @@
 {# Includes some other templates as tabs. #}
 
 {% load compressed %}
+{% load minified_js %}
 
 {% block page_params %}
 {# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
@@ -23,10 +24,10 @@ var page_params = {{ page_params }};
 {% else %}
 {% compressed_css 'app' %}
 {% endif %}
-{% compressed_js  'app' %}
+{% minified_js 'app' %}
 
 {% if debug %}
-{% compressed_js 'app_debug' %}
+{% minified_js 'app_debug' %}
 {% endif %}
 
 {% endblock %}

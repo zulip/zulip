@@ -1,9 +1,10 @@
 {% extends "zephyr/portico.html" %}
 {% load compressed %}
+{% load minified_js %}
 
 {% block customhead %}
     {% compressed_css 'portico' %}
-    {% compressed_js 'landing-page' %}
+    {% minified_js 'landing-page' %}
 {% endblock %}
 
 {% block inner_content %}

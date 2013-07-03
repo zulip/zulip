@@ -1,10 +1,10 @@
 {% extends "zephyr/portico.html" %}
 
-{% load compressed %}
+{% load minified_js %}
 
 {# Portico page with signup code #}
 
 {% block customhead %}
     {{ block.super }}
-    {% compressed_js 'signup' %}
+    {% minified_js 'signup' %}
 {% endblock %}
