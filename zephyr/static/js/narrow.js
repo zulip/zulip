@@ -410,7 +410,11 @@ exports.activate = function (operators, opts) {
                     }
                 });
             }
-            narrowed_msg_list.select_id(then_select_id, {then_scroll: true, use_closest: true, mark_read: false});
+            narrowed_msg_list.select_id(then_select_id, {
+                then_scroll: true,
+                use_closest: true,
+                mark_read: false
+            });
         }
     }
 
@@ -532,7 +536,11 @@ exports.deactivate = function () {
     current_msg_list = home_msg_list;
     // We fall back to the closest selected id, if the user has removed a stream from the home
     // view since leaving it the old selected id might no longer be there
-    home_msg_list.select_id(home_msg_list.selected_id(), {then_scroll: true, use_closest: true, mark_read: false});
+    home_msg_list.select_id(home_msg_list.selected_id(), {
+        then_scroll: true,
+        use_closest: true,
+        mark_read: false
+    });
 
     hashchange.save_narrow();
 
