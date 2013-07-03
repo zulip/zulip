@@ -6,7 +6,7 @@ function add_bot_row(name, email, avatar_url, api_key) {
     var avatar_cell;
 
     if (avatar_url) {
-        avatar_cell = '<img src="' + avatar_url + '" height=60 width=60>';
+        avatar_cell = '<img src="' + avatar_url + '" class="avatar">';
     } else {
         avatar_cell = '(default)';
     }

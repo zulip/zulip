@@ -1852,6 +1852,15 @@ li.expanded_subject {
     width: 18em;
 }
 
+.bot_avatar_header {
+    width: 60px;
+}
+
+#bots_table img.avatar {
+    height: 35px;
+    width: 35px;
+}
+
 .api_key {
     font-family: monospace;
     font-size: 85%;
