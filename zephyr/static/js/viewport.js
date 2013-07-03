@@ -89,6 +89,21 @@ exports.set_message_position = function (message_top, message_height, viewport_i
     exports.scrollTop(new_scroll_top);
 };
 
+exports.message_is_visible = function (vp, message) {
+    if (! notifications.window_has_focus()) {
+        return false;
+    }
+
+    var top = vp.visible_top;
+    var height = vp.visible_height;
+
+    var row = rows.get(message.id, current_msg_list.table_name);
+    var row_offset = row.offset();
+    var row_height = row.height();
+    // Very tall messages are visible once we've gotten past them
+    return (row_height > height && row_offset.top > top) || within_viewport(row_offset, row_height);
+};
+
 exports.scrollTop = function viewport_scrollTop () {
     return jwindow.scrollTop.apply(jwindow, arguments);
 };

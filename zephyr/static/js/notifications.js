@@ -264,27 +264,12 @@ function message_is_notifiable(message) {
               subs.receives_notifications(message.stream))));
 }
 
-function message_is_visible (vp, message) {
-    if (! notifications.window_has_focus()) {
-        return false;
-    }
-
-    var top = vp.visible_top;
-    var height = vp.visible_height;
-
-    var row = rows.get(message.id, current_msg_list.table_name);
-    var row_offset = row.offset();
-    var row_height = row.height();
-    // Very tall messages are visible once we've gotten past them
-    return (row_height > height && row_offset.top > top) || within_viewport(row_offset, row_height);
-}
-
 exports.received_messages = function (messages) {
     var vp = viewport.message_viewport_info();
 
     $.each(messages, function (index, message) {
         if (!message_is_notifiable(message)) return;
-        if (message_is_visible(vp, message)) return;
+        if (viewport.message_is_visible(vp, message)) return;
 
         if (page_params.desktop_notifications_enabled &&
             browser_desktop_notifications_on()) {
