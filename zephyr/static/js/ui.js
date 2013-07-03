@@ -1211,7 +1211,11 @@ $(function () {
         row.addClass('selected_message');
 
         if (event.then_scroll) {
-            recenter_view(row, event.from_scroll);
+            // Scroll to place the message within the current view;
+            // but if this is the initial placement of the pointer,
+            // just place it in the very center
+            recenter_view(row, {from_scroll: event.from_scroll,
+                                force_center: event.previously_selected === -1});
         }
     });
 

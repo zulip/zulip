@@ -133,7 +133,8 @@ function keep_pointer_in_view() {
     current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
 }
 
-function recenter_view(message, from_scroll) {
+function recenter_view(message, opts) {
+    opts = $.extend({}, opts);
     // Barnowl-style recentering: if the pointer is too high, move it to
     // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
     // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
@@ -150,7 +151,7 @@ function recenter_view(message, from_scroll) {
     var is_above = message_top < top_threshold;
     var is_below = message_bottom > bottom_threshold;
 
-    if (from_scroll) {
+    if (opts.from_scroll) {
         // If the message you're trying to center on is already in view AND
         // you're already trying to move in the direction of that message,
         // don't try to recenter. This avoids disorienting jumps when the
@@ -164,7 +165,7 @@ function recenter_view(message, from_scroll) {
         }
     }
 
-    if (is_above) {
+    if (is_above || opts.force_center) {
         viewport.set_message_position(message_top, message_height, viewport_info, 1/2);
     } else if (is_below) {
         viewport.set_message_position(message_top, message_height, viewport_info, 1/7);
