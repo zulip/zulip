@@ -595,7 +595,7 @@ def is_buggy_ua(agent):
     This may get fixed in the future, but for right now we can
     just serve the more conservative CSS to all our desktop apps.
     """
-    return "Humbug Desktop/" in agent
+    return "Humbug Desktop/" in agent and not "Macintosh" in agent
 
 def get_pointer_backend(request, user_profile):
     return json_success({'pointer': user_profile.pointer})
