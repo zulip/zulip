@@ -85,6 +85,9 @@ MessageList.prototype = {
         this._message_groups = [];
         this._clear_table();
         this.last_message_historical = false;
+
+        this._render_win_start = 0;
+        this._render_win_end = 0;
     },
 
     clear: function  MessageList_clear(opts) {
