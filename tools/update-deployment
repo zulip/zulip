@@ -34,7 +34,7 @@ while time.time() - start_time < 300:
 
 if not got_lock:
     print FAIL + "Deployment already in progress.  Please run\n" \
-               + "  /home/humbug/humbug-deployments/current/update-deployment %s\n" % (refname) \
+               + "  %s/current/tools/update-deployment %s\n" % (DEPLOYMENTS_DIR, refname) \
                + "manually when the current deployment finishes." + ENDC
     sys.exit(1)
 
