@@ -47,10 +47,10 @@ from signal import SIGINT, SIGTERM
 from errno import EAGAIN
 
 usage = """
-%%prog -r <reviewer> [-r <another-reviewer>] [-s <summary>] [-m <message>] [options] {<since>|<revision-range>}
+%%prog -r <reviewer> [-r <another-reviewer>] [-T  <alt tmp dir>] [-s <summary>] [-m <message>] [options] {<since>|<revision-range>}
 
-Send a patch series for review, after optionally successfully running test-all.
-Runs tests in /tmp by default, and thus you can continue to work in your own working tree.
+Send a patch series for review, after optionally successfully running test-all (if you specify '-T').
+If requested, tests will run in /tmp, and thus you can continue to work in your own working tree.
 Sends mail to the reviewer, CC %s, identifying the commits to be reviewed.
 
 Name a range of commits, or name a single commit (e.g., 'HEAD^' or
