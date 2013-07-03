@@ -179,17 +179,32 @@ exports.toggle_home = function (stream_name) {
     sub.in_home_view = ! sub.in_home_view;
 
     setTimeout(function () {
-        home_msg_list.clear({clear_selected_id: false});
+        var scroll_offset, saved_ypos;
+        // Save our current scroll position
+        if (ui.home_tab_obscured()) {
+            saved_ypos = window.scrollY;
+        } else if (home_msg_list === current_msg_list) {
+            scroll_offset = current_msg_list.selected_row().offset().top - viewport.scrollTop();
+        }
 
-        // Remember the scroll position as the adding or removing this
-        // number of rows might cause the page to scroll in unexpected ways
-        var saved_ypos = window.scrollY;
+        home_msg_list.clear({clear_selected_id: false});
 
         // Recreate the home_msg_list with the newly filtered all_msg_list
         add_messages(all_msg_list.all(), home_msg_list);
 
         // Ensure we're still at the same scroll position
-        window.scrollTo(0, saved_ypos);
+        if (ui.home_tab_obscured()) {
+            window.scrollTo(0, saved_ypos);
+        } else if (home_msg_list === current_msg_list) {
+            // We pass use_closest to handle the case where the
+            // currently selected message is being hidden from the
+            // home view
+            home_msg_list.select_id(home_msg_list.selected_id(),
+                                    {use_closest: true});
+            if (current_msg_list.selected_id() !== -1) {
+                viewport.scrollTop(current_msg_list.selected_row().offset().top - scroll_offset);
+            }
+        }
 
         // In case we added messages to what's visible in the home view, we need to re-scroll to make
         // sure the pointer is still visible. We don't want the auto-scroll handler to move our pointer
