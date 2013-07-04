@@ -40,7 +40,7 @@ function make_tab_data() {
             }
 
             tabs.push(make_tab("Private Messages", '#narrow/is/private-message',
-                                undefined, 'private_message ' + extra_cls));
+                                undefined, 'private_message '));
 
             if (filter.has_operator("pm-with")) {
                 var emails = filter.operands("pm-with")[0].split(',');
@@ -67,7 +67,7 @@ function make_tab_data() {
         }  else if (filter.has_operator("search")) {
             // Search is not a clickable link, since we don't have
             // a search narrow
-            tabs.push(make_tab("Search", false));
+            tabs.push(make_tab("Search results", false));
         }
 
         // Third breadcrumb item for stream-subject naarrows
@@ -76,10 +76,8 @@ function make_tab_data() {
             stream = filter.operands("stream")[0];
             var subject = filter.operands("subject")[0];
             hashed = hashchange.operators_to_hash(ops.slice(0, 2));
-            // Colorize text of stream name properly
-            tabs[tabs.length - 1].cls += ' ' + subs.get_color_class(subs.get_color(stream));
 
-            tabs.push(make_tab(subject, hashed));
+            tabs.push(make_tab(subject, hashed, null));
         }
     } else {
         // Just the home view
@@ -93,11 +91,6 @@ function make_tab_data() {
 }
 
 function colorize_tab_bar() {
-    // The active tab color should be the same color as the message list background
-    var bg_color = $('#main_div').css('background-color');
-    $('#tab_list .active').css('background-color', bg_color);
-    $('#tab_bar_underpadding').css('background-color', bg_color);
-
     // The stream tab, if it exists, should be the same color as that stream's chosen color
     // Likewise, the border and outline should be the stream color as well
     var stream_tab = $('#tab_list .stream');
@@ -111,7 +104,7 @@ function colorize_tab_bar() {
         var stream_color = subs.get_color(stream_name);
 
         if (!stream_tab.hasClass('active')) {
-            stream_tab.css('background-color', stream_color);
+            stream_tab.css('border-color', stream_color);
         }
 
         $('#tab_list li.active').toggleClass('colorize_tab_outline', true);
