@@ -3,6 +3,12 @@ body {
     overflow-y: scroll;
 }
 
+/* Common background color */
+body, #tab_bar, #tab_bar_underpadding, .message_list, .message_comp {
+    background-color: #eff6ef;
+}
+
+
 input, button, select, textarea {
     font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     line-height: normal;
@@ -379,8 +385,6 @@ ul.filters li.out_of_home_view {
 }
 
 .message_list {
-    /* If we change this color, we must change message_reply_fade */
-    background-color: aliceblue;
     padding-left: 4px;
 }
 
@@ -1009,83 +1013,89 @@ input.recipient_box {
 #tab_bar {
     position: fixed;
     top: 41px;
-    background-color: #FFFFFF;
     z-index: 2;
-
-    padding-top: 10px;
+    padding-top: 0px;
+    padding-bottom: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #tab_list {
     list-style: none;
     height: 20px;
-
     margin: 0px 0px 0px 0px;
     padding: 0px 0px 0px 5px;
-
-    border-bottom: 3px solid #7dcbff;
+    border: none;
+    white-space: nowrap;
 }
 
 #tab_list li {
-    list-style-type: none;
-    display: block;
-    float: left;
-
-    font-weight: 600;
-
-    margin: 0px 0px 0px 5px;
-    padding: 0px 5px 0px 5px;
-
-    height: 20px;
+   white-space: nowrap;
+   list-style-type: none;
+   display: inline-block;
+   position: relative;
+   font-weight: 600;
+   background-color: #f9f9f9;
+   margin: 0px;
+   padding: 0px;
+   border-radius: 0px 0px 3px 3px;
+   border-left: 10px solid;
+   background: -moz-linear-gradient(top, rgba(220,220,220,1) 0%, rgba(230,230,230,1) 100%); /* FF3.6+ */
+   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(220,220,220,1)), color-stop(100%,rgba(230,230,230,1))); /* Chrome,Safari4+ */
+   background: -webkit-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(230,230,230,1) 100%); /* Chrome10+,Safari5.1+ */
+   background: -o-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(230,230,230,1) 100%); /* Opera 11.10+ */
+   background: -ms-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(230,230,230,1) 100%); /* IE10+ */
+   background: linear-gradient(to bottom, rgba(220,220,220,1) 0%,rgba(230,230,230,1) 100%); /* W3C */
+   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dcdcdc', endColorstr='#e6e6e6',GradientType=0 ); /* IE6-9 */
+   border-bottom: 1px solid;
+   border-right: 1px solid;
+   text-overflow: ellipsis;
 }
 
 #tab_list li.narrow_spacer {
-    margin: 0px 0px 0px 5px;
-    padding: 0px 0px 0px 0px;
+   margin: 0px;
+   padding: 0px 0px 0px 1px;
+   min-width: 0px;
+   text-shadow: 0px 1px 0px #fff;
+   border: none;
+   -webkit-box-shadow: none;
+   -moz-box-shadow: none;
+   box-shadow: none;
+   background: none;
+}
+
+#tab_list li.private_message {
+    border-color: #444;
 }
 
 #tab_list a {
     text-decoration: none;
     color: inherit;
-}
-
-#tab_list .inactive {
-    background-color: #DDDDDD;
-}
-
-#tab_list .private_message {
-    background-color: #444;
+    border-color: inherit;
+    height: 15px;
+    width: 100%;
+    min-width: 80px;
+    display: inline-block;
+    padding: 3px 9px 6px 8px;
 }
 
 #tab_list li.active {
-    background-color: #DDDDDD;
-
-    height: 22px;
-
-    border-top-width: 1px;
-    border-left-width: 1px;
-    border-right-width: 1px;
-    border-color: #7dcbff;
-
-    border-style: solid;
-
+    padding: 3px 9px 6px 8px;
+    height: 15px;
+    min-width: 80px;
 }
 
 #tab_list .root {
-    background-color: #7dcbff;
-}
-
-.colorize_tab_outline {
     border-color: #7dcbff;
+    margin: 0px;
 }
 
 #tab_bar_underpadding {
     position: fixed;
     z-index: 10;
-
     top: 74px;
     background-color: #FFF;
-
-    height: 6px;
+    height: 0px;
 }
 
 .navbar-top {
@@ -1289,12 +1299,6 @@ table.floating_recipient {
     border-collapse: separate;
     margin-left: auto;
     width: 100%;
-}
-
-.narrowed_view {
-    /* If we change this color, also change
-       message_reply_fade_narrowed */
-    background-color: #EEE;
 }
 
 #bottom_whitespace {
