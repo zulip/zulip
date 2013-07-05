@@ -40,6 +40,12 @@ exports.initialize = function () {
         });
     }
 
+    if (window.bridge !== undefined) {
+        supports_sound = true;
+
+        return;
+    }
+
     if (!window.webkitNotifications) {
         return;
     }
@@ -53,10 +59,9 @@ exports.initialize = function () {
             asked_permission_already = true;
         }
     });
+
     var audio = $("<audio>");
-    if (window.bridge !== undefined) {
-        supports_sound = true;
-    } else if (audio[0].canPlayType === undefined) {
+    if (audio[0].canPlayType === undefined) {
         supports_sound = false;
     } else {
         supports_sound = true;
