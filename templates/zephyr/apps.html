@@ -51,46 +51,55 @@
       </div>
 
       <div class="tab-pane" id="mac">
-        <p>Humbug for Mac is a Chrome Application Shortcut, which
-        means that it runs in its own window, with its own icon in the
-        Dock, and no URL bar, but is fundamentally the same as the
-        webapp. Many of our users find it more convenient because it's
-        easy to keep track of.</p>
+        <p>You love your Mac. And you love Humbug. So what could be
+        better than a Humbug app for Mac? Enjoy notifications for
+        messages and PMs in your dock whether you're in Sublime,
+        emacs, or Photoshop.</p>
 
         <p style="text-align: center">
-          <a href="https://humbughq.com/dist/apps/mac/Humbug-0.1.0.dmg" class="btn btn-large btn-primary"><i class="icon-download icon-white"></i> Download Humbug for Mac</a>
+          <a href="https://humbughq.com/dist/apps/mac/Humbug-latest.dmg" class="btn btn-large btn-primary"><i class="icon-download icon-white"></i> Download Humbug for Mac</a>
         </p>
 
-        <img class="screenshot" src="/static/images/app-screenshots/humbug-chrome-mac.png">
-        <p><em>Note: Humbug for Mac requires Google Chrome</em>.</p>
+        <img class="screenshot" src="/static/images/app-screenshots/humbug-desktop-mac.png">
       </div>
 
       <div class="tab-pane" id="linux">
-        <p>We recommend making
-        a <a href="http://support.google.com/chrome/bin/answer.py?hl=en&amp;answer=95710">Chrome
-        Application Shortcut</a> for Humbug, so that it can appear on
-        your system like a native application. Alternatively, we
-        recommend simply pinning the Humbug tab in your browser.</p>
+        <p>Humbug provides a native Linux app that runs standalone
+        outside of your browser. How you install it depends on what
+        you're running:</p>
 
-        <p>You can find instructions for how to make a Chrome
-        Application
-        Shortcut <a href="http://support.google.com/chrome/bin/answer.py?hl=en&amp;answer=95710">here</a>.</p>
+        <h3>Debian and Ubuntu</h3>
+        First, run the following:
+        <div class="codehilite"><pre>wget https://apt.humbughq.com/user.asc
+cat user.asc | sudo apt-key add -</pre></div>
 
-        <img class="screenshot" src="/static/images/app-screenshots/humbug-chrome-mac.png">
+        <br />
+        Then, add the following lines to <code>/etc/apt/sources.list</code>:
+        <div class="codehilight"><pre>deb https://apt.humbughq.com/user/ <span class="k">your_distro_here</span> main
+sudo apt-get update
+sudo apt-get install humbug-desktop
+</pre></div>
+        <p>(Replace <b>your_distro_here</b> with one of <code>wheezy</code>, <code>precise</code>, <code>quantal</code>, or <code>raring</code>)</p>
+
+
+        <h3>Other</h3>
+        <p>We provide a <a href="https://humbughq.com/dist/apps/linux/humbug-desktop_latest.bin.tar.gz">binary tarball</a> of the Humbug application, built for 64-bit systems.
+        </p>
       </div>
 
       <div class="tab-pane" id="windows">
-        <p>We recommend making
-        a <a href="http://support.google.com/chrome/bin/answer.py?hl=en&amp;answer=95710">Chrome
-        Application Shortcut</a> for Humbug, so that it can appear on
-        your system like a native application. Alternatively, we
-        recommend simply pinning the Humbug tab in your browser.</p>
+        <p>Windows. It's the best OS for your needs: gaming,
+        coding, expense reports. But you always felt that something
+        was missing... until now.</p>
 
-        <p>You can find instructions for how to make a Chrome
-        Application
-        Shortcut <a href="http://support.google.com/chrome/bin/answer.py?hl=en&amp;answer=95710">here</a>.</p>
+        <p>We proudly present <b>Humbug for Windows</b>: the second-best app for Windows on the market today (after
+        Solitaire, obviously.)</p>
 
-        <img class="screenshot" src="/static/images/app-screenshots/humbug-chrome-windows.png">
+        <p style="text-align: center">
+          <a href="https://humbughq.com/dist/apps/win/humbug-latest.exe" class="btn btn-large btn-primary"><i class="icon-download icon-white"></i> Download Humbug for Windows</a>
+        </p>
+
+        <img class="screenshot" src="/static/images/app-screenshots/humbug-desktop-windows.png">
       </div>
 
       <div class="tab-pane" id="plan9">
