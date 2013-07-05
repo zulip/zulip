@@ -3,16 +3,14 @@ var settings = (function () {
 var exports = {};
 
 function add_bot_row(name, email, avatar_url, api_key) {
-    var avatar_cell;
+    var info = {
+        name: name,
+        email: email,
+        avatar_url: avatar_url,
+        api_key: api_key
+    };
 
-    avatar_cell = $('<img>').attr('src', avatar_url).attr('class', 'avatar');
-
-    var row = $('<li>').append(
-            $('<span>').html(avatar_cell),
-            $('<span>').text(name),
-            $('<span>').text(email),
-            $('<span class="api_key">').text(api_key)
-    );
+    var row = $(templates.render('bot_avatar_row', info));
     $('#bots_list').append(row);
     $('#bots_list').show();
 }
