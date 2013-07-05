@@ -855,8 +855,9 @@ function get_updates_success(data) {
             // Iterate backwards to find the last message sent_by_me, stopping at
             // the pointer position.
             for (i = messages.length-1; i>=0; i--){
-                if (messages[i].id <= selected_id) break;
-                if (messages[i].sent_by_me) {
+                var id = messages[i].id;
+                if (id <= selected_id) break;
+                if (messages[i].sent_by_me && current_msg_list.get(id) !== undefined) {
                     // If this is a reply we just sent, advance the pointer to it.
                     current_msg_list.select_id(messages[i].id, {then_scroll: true,
                                                                 from_scroll: true});
