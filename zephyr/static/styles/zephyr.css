@@ -2051,3 +2051,7 @@ li.expanded_subject .subject_box {
 .tutorial-done-button {
     text-align: right;
 }
+
+#onboarding-checklist i {
+    margin-right: 0.25em;
+}
