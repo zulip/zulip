@@ -34,10 +34,6 @@ function make_tab_data() {
             tabs.push(make_tab(stream, hashed, stream, 'stream'));
         } else if (filter.has_operator("pm-with") ||
                    filter.has_operand("is", "private-message")) {
-            var extra_cls = "";
-            if (filter.has_operator("pm-with")) {
-                extra_cls = "dark_background";
-            }
 
             tabs.push(make_tab("Private Messages", '#narrow/is/private-message',
                                 undefined, 'private_message '));
@@ -107,8 +103,7 @@ function colorize_tab_bar() {
             stream_tab.css('border-color', stream_color);
         }
 
-        $('#tab_list li.active').toggleClass('colorize_tab_outline', true);
-        $('.colorize_tab_outline').css('border-color', stream_color);
+        $('#tab_list li.active').css('border-color', stream_color);
     }
 }
 
