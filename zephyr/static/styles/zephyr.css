@@ -1817,18 +1817,9 @@ li.expanded_subject {
     opacity: .5;
 }
 
-#bots_table {
-    table-layout: fixed;
-    width: 100%;
-    font-size: 90%;
-}
-
-#bots_table td {
-    overflow: hidden;
-}
-
-#bots_table {
+#bots_list {
     display: none;
+    font-size: 90%;
 }
 
 #create_bot_form .control-label {
@@ -1857,15 +1848,7 @@ li.expanded_subject {
     width: 8em;
 }
 
-.bot_api_key_header {
-    width: 18em;
-}
-
-.bot_avatar_header {
-    width: 60px;
-}
-
-#bots_table img.avatar {
+#bots_list img.avatar {
     height: 35px;
     width: 35px;
 }

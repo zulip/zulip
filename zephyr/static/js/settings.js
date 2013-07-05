@@ -7,12 +7,14 @@ function add_bot_row(name, email, avatar_url, api_key) {
 
     avatar_cell = $('<img>').attr('src', avatar_url).attr('class', 'avatar');
 
-    var row = $('<tr></tr>').append($('<td>').text(name),
-                                    $('<td>').text(email),
-                                    $('<td>').html(avatar_cell),
-                                    $('<td class="api_key">').text(api_key));
-    $('#bots_table tr:last').after(row);
-    $('#bots_table').show();
+    var row = $('<li>').append(
+            $('<span>').html(avatar_cell),
+            $('<span>').text(name),
+            $('<span>').text(email),
+            $('<span class="api_key">').text(api_key)
+    );
+    $('#bots_list').append(row);
+    $('#bots_list').show();
 }
 
 function is_local_part(value, element) {
