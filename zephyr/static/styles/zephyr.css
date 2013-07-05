@@ -1820,6 +1820,33 @@ li.expanded_subject {
 #bots_list {
     display: none;
     font-size: 90%;
+    list-style-type: none;
+    width: 550px;
+    margin-left: 0px;
+}
+
+#bots_list .image, 
+#bots_list .bot_info {
+    display: inline-block;
+    margin: 10px;
+}
+
+#bots_list .image {
+    vertical-align: top;
+}
+
+#bots_list .name {
+    font-weight: bold;
+    font-size: 130%;
+}
+
+#bots_list .field:after {
+    content: ':';
+}
+
+.bot_info .field {
+    width: 7em;
+    display: inline-block;
 }
 
 #create_bot_form .control-label {
@@ -1841,7 +1868,7 @@ li.expanded_subject {
 }
 
 #create_bot_short_name {
-    width: 10em;
+    width: 7em;
 }
 
 .bot_name_header {
@@ -1853,7 +1880,8 @@ li.expanded_subject {
     width: 35px;
 }
 
-.api_key {
+#bots_list .email .value,
+#bots_list .api_key .value {
     font-family: monospace;
     font-size: 85%;
 }
