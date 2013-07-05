@@ -98,6 +98,8 @@ exports.message_is_visible = function (vp, message) {
     var height = vp.visible_height;
 
     var row = rows.get(message.id, current_msg_list.table_name);
+    if (row.length === 0) return false;
+
     var row_offset = row.offset();
     var row_height = row.height();
     // Very tall messages are visible once we've gotten past them
