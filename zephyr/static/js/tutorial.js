@@ -153,7 +153,7 @@ function set_tutorial_status(status, callback) {
     });
 }
 
-exports.is_running = function() {
+exports.is_running = function () {
     return is_running;
 };
 

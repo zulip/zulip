@@ -33,7 +33,7 @@ exports.highlight_with_escaping = function (query, item) {
     // to know the case of the content we're replacing (you can't just use a bolded
     // version of 'query')
     var result = "";
-    $.each(pieces, function(idx, piece) {
+    $.each(pieces, function (idx, piece) {
         if (piece.match(regex)) {
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
         } else {
@@ -46,7 +46,7 @@ exports.highlight_with_escaping = function (query, item) {
 exports.highlight_with_escaping_and_regex = function (regex, item) {
     var pieces = item.split(regex);
     var result = "";
-    $.each(pieces, function(idx, piece) {
+    $.each(pieces, function (idx, piece) {
         if (piece.match(regex)) {
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
         } else {
@@ -162,7 +162,7 @@ exports.compare_by_pms = function (user_a, user_b) {
         return 1;
 };
 
-exports.sort_by_pms = function(objs) {
+exports.sort_by_pms = function (objs) {
     objs.sort(exports.compare_by_pms);
     return objs;
 };
@@ -183,7 +183,7 @@ exports.sort_recipients = function (matches, query) {
     return matches_sorted_by_pms.concat(rest_sorted_by_pms);
 };
 
-exports.sort_textbox_typeahead = function(matches) {
+exports.sort_textbox_typeahead = function (matches) {
     // input may be free text ending in @ for autocomplete
     var query = composebox_typeahead.split_at_cursor(this.query)[0];
     if (query.indexOf('@') > -1) {
@@ -193,7 +193,7 @@ exports.sort_textbox_typeahead = function(matches) {
     return exports.sort_recipients(matches, query);
 };
 
-exports.sort_recipientbox_typeahead = function(matches) {
+exports.sort_recipientbox_typeahead = function (matches) {
     // input_text may be one or more pm recipients
     var cleaned = composebox_typeahead.get_cleaned_pm_recipients(this.query);
     var query = cleaned[cleaned.length - 1];

@@ -35,7 +35,7 @@ exports.initialize = function () {
     });
 
     if ($.browser.mozilla === true && typeof Notification !== "undefined") {
-        Notification.requestPermission(function() {
+        Notification.requestPermission(function () {
             asked_permission_already = true;
         });
     }

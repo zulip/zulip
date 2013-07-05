@@ -130,7 +130,7 @@ exports.get_counts = function () {
         });
     }
 
-    $.each(unread_counts.stream, function(stream, msgs) {
+    $.each(unread_counts.stream, function (stream, msgs) {
         if (! subs.is_subscribed(stream)) {
             return true;
         }
@@ -152,7 +152,7 @@ exports.get_counts = function () {
     });
 
     var pm_count = 0;
-    $.each(unread_counts["private"], function(index, obj) {
+    $.each(unread_counts["private"], function (index, obj) {
         var count = Object.keys(obj).length;
         res.pm_count[index] = count;
         pm_count += count;

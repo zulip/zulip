@@ -4,7 +4,7 @@ common.start_and_log_in();
 
 var form_sel = 'form[action^="/json/settings/change"]';
 
-casper.then(function() {
+casper.then(function () {
     casper.test.info('Settings page');
     casper.click('a[href^="#settings"]');
     casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#settings/, 'URL suggests we are on settings page');
@@ -16,7 +16,7 @@ casper.then(function() {
     casper.click(".change_password_button");
 });
 
-casper.waitUntilVisible("#old_password", function() {
+casper.waitUntilVisible("#old_password", function () {
     casper.test.assertVisible("#old_password");
     casper.test.assertVisible("#new_password");
     casper.test.assertVisible("#confirm_password");

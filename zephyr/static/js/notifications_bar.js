@@ -40,7 +40,7 @@ exports.update = function (num_unread) {
 };
 
 // We disable the notifications bar if it overlaps with the composebox
-exports.maybe_disable = function() {
+exports.maybe_disable = function () {
     if ($("#compose").offset().left + $("#compose").width() > $(area_selector).offset().left) {
         disabled = true;
         hide();
@@ -48,7 +48,7 @@ exports.maybe_disable = function() {
 };
 
 // Un-disable the notifications bar, then call the update function to see if it should be displayed
-exports.enable = function() {
+exports.enable = function () {
     disabled = false;
     exports.update();
 };

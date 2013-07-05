@@ -126,7 +126,7 @@ function make_dimen_wrapper(dimen_name, dimen_func) {
 exports.height = make_dimen_wrapper('height', $(window).height);
 exports.width  = make_dimen_wrapper('width',  $(window).width);
 
-exports.stop_auto_scrolling = function() {
+exports.stop_auto_scrolling = function () {
     if (in_stoppable_autoscroll) {
         $("html, body").stop();
     }

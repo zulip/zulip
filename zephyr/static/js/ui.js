@@ -119,7 +119,7 @@ function copy_handler(e) {
         ranges.push(range);
 
         startc = $(range.startContainer);
-        start_data = find_boundary_tr($(startc.parents('tr')[0]), function(row) {
+        start_data = find_boundary_tr($(startc.parents('tr')[0]), function (row) {
             return row.next();
         });
         if (start_data === undefined) {
@@ -136,7 +136,7 @@ function copy_handler(e) {
         } else {
             initial_end_tr = $(endc.parents('tr')[0]);
         }
-        end_data = find_boundary_tr(initial_end_tr, function(row) {
+        end_data = find_boundary_tr(initial_end_tr, function (row) {
             return row.prev();
         });
         if (end_data === undefined) {
@@ -186,7 +186,7 @@ function copy_handler(e) {
 
     // After the copy has happened, delete the div and
     // change the selection back to the original selection
-    window.setTimeout(function() {
+    window.setTimeout(function () {
         selection = window.getSelection();
         selection.removeAllRanges();
         $.each(ranges, function (index, range) {
@@ -1324,12 +1324,12 @@ $(function () {
 
         $(e.target).popover("show");
         var popover = $('.streams_popover[data-id=' + subs.get(stream).id + ']');
-        update_spectrum(popover, function(colorpicker) {
+        update_spectrum(popover, function (colorpicker) {
             colorpicker.spectrum(subs.sidebar_popover_colorpicker_options);
         });
 
         $('.streams_popover').on('click', '.custom_color', function (e) {
-            update_spectrum($(e.target).closest('.streams_popover'), function(colorpicker) {
+            update_spectrum($(e.target).closest('.streams_popover'), function (colorpicker) {
                 colorpicker.spectrum("destroy");
                 colorpicker.spectrum(subs.sidebar_popover_colorpicker_options_full);
                 // In theory this should clean up the old color picker,

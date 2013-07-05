@@ -133,14 +133,14 @@ function handle_keyup(e) {
 
 // http://stackoverflow.com/questions/3380458/looking-for-a-better-workaround-to-chrome-select-on-focus-bug
 function select_on_focus(field_id) {
-    $("#" + field_id).focus(function(e) {
+    $("#" + field_id).focus(function (e) {
         $("#" + field_id).select().one('mouseup', function (e) {
             e.preventDefault();
         });
     });
 }
 
-exports.split_at_cursor = function(query) {
+exports.split_at_cursor = function (query) {
     var cursor = $('#new_message_content').caret().start;
     return [query.slice(0, cursor), query.slice(cursor)];
 };
@@ -151,10 +151,10 @@ exports.initialize = function () {
     select_on_focus("private_message_recipient");
 
     // These handlers are at the "form" level so that they are called after typeahead
-    $("form#send_message_form").keydown(function(e) {
+    $("form#send_message_form").keydown(function (e) {
         handle_keydown(e);
     });
-    $("form#send_message_form").keyup(function(e) {
+    $("form#send_message_form").keyup(function (e) {
         handle_keyup(e);
     });
 

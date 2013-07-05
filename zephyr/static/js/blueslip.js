@@ -150,7 +150,7 @@ exports.wrap_function = function blueslip_wrap_function(func) {
 // Catch all exceptions from jQuery event handlers, $(document).ready
 // functions, and ajax success/failure continuations and funnel them
 // through blueslip.
-(function() {
+(function () {
     // This reference counting scheme can't break all the circular
     // references we create because users can remove jQuery event
     // handlers without referencing the particular handler they want

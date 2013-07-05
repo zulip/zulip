@@ -79,7 +79,7 @@ IterationProfiler.prototype = {
         this.last_time = now;
     },
 
-    section: function(label) {
+    section: function (label) {
         var now = window.performance.now();
         if (this.sections[label] === undefined) {
             this.sections[label] = 0;

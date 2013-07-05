@@ -60,12 +60,12 @@ $(function () {
         $('#bot_avatar_upload_button').show();
     }
 
-    $('#bot_avatar_clear_button').click(function(e) {
+    $('#bot_avatar_clear_button').click(function (e) {
         clear_bot_avatar_file_input();
         e.preventDefault();
     });
 
-    $('#bot_avatar_upload_button').on('drop', function(e) {
+    $('#bot_avatar_upload_button').on('drop', function (e) {
         var files = e.dataTransfer.files;
         if (files === null || files === undefined || files.length === 0) {
             return false;
@@ -88,7 +88,7 @@ $(function () {
         return $.inArray(type, supported_types) >= 0;
     }
 
-    $('#bot_avatar_file_input').change(function(e) {
+    $('#bot_avatar_file_input').change(function (e) {
         if (e.target.files.length === 0) {
             $('#bot_avatar_file_input_error').hide();
         } else if (e.target.files.length === 1) {
@@ -111,7 +111,7 @@ $(function () {
         }
     });
 
-    $('#bot_avatar_upload_button').click(function(e) {
+    $('#bot_avatar_upload_button').click(function (e) {
         $('#bot_avatar_file_input').trigger('click');
         e.preventDefault();
     });
@@ -128,7 +128,7 @@ $(function () {
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('full_name', full_name);
             formData.append('short_name', short_name);
-            jQuery.each($('#bot_avatar_file_input')[0].files, function(i, file) {
+            jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
             });
             util.make_loading_indicator($('#create_bot_spinner'), 'Adding bot');

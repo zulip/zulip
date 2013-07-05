@@ -76,14 +76,14 @@ exports.end = function (row) {
     }
 };
 
-exports.maybe_show_edit = function(row, id) {
+exports.maybe_show_edit = function (row, id) {
     if (currently_editing_messages[id] !== undefined){
         current_msg_list.show_edit_message(row, currently_editing_messages[id]);
     }
 };
 
 $(document).on('narrow_deactivated.zephyr', function (event) {
-    $.each(currently_editing_messages, function(idx, elem) {
+    $.each(currently_editing_messages, function (idx, elem) {
         if (current_msg_list.get(idx) !== undefined) {
             var row = rows.get(idx, current_msg_list.table_name);
             current_msg_list.show_edit_message(row, elem);

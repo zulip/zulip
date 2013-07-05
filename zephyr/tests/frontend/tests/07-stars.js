@@ -14,7 +14,7 @@ function toggle_last_star() {
 
 common.start_and_log_in();
 
-casper.then(function() {
+casper.then(function () {
     casper.test.info("Sending test message");
     common.send_message('stream', {
         stream:  'Verona',
@@ -24,7 +24,7 @@ casper.then(function() {
     casper.waitForText("test star");
 });
 
-casper.then(function() {
+casper.then(function () {
     casper.test.info("Checking star counts");
 
     // Initially, no messages are starred.
@@ -45,7 +45,7 @@ casper.waitUntilVisible('#zfilt', function () {
     common.un_narrow();
 });
 
-casper.then(function() {
+casper.then(function () {
     // Clicking on a starred message unstars it.
     toggle_last_star();
     casper.test.assertEquals(star_count(), 0,

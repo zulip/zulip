@@ -9,7 +9,7 @@ var changing_hash = false;
 // window.location.hash.  So we hide our URI-encoding
 // by replacing % with . (like MediaWiki).
 
-exports.encodeHashComponent = function(str) {
+exports.encodeHashComponent = function (str) {
     return encodeURIComponent(str)
         .replace(/\./g, '%2E')
         .replace(/%/g,  '.');

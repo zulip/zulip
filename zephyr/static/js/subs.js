@@ -34,7 +34,7 @@ function get_sub(stream_name) {
 // Classes which could be returned by get_color_class.
 exports.color_classes = 'dark_background';
 
-exports.stream_info = function(new_stream_info) {
+exports.stream_info = function (new_stream_info) {
     if (new_stream_info !== undefined) {
         stream_info = new_stream_info;
     } else {
@@ -117,7 +117,7 @@ function update_table_stream_color(table, stream_name, color) {
     });
 }
 
-exports.stream_id = function(stream_name) {
+exports.stream_id = function (stream_name) {
     var sub = get_sub(stream_name);
     if (sub === undefined) {
         blueslip.error("Tried to get subs.stream_id for a stream user is not subscribed to!");
@@ -550,7 +550,7 @@ exports.setup_page = function () {
         /* arguments are [ "success", statusText, jqXHR ] */
         if (stream_data.length > 2 && stream_data[2]) {
             var stream_response = JSON.parse(stream_data[2].responseText);
-            $.each(stream_response.streams, function(idx, stream) {
+            $.each(stream_response.streams, function (idx, stream) {
                 all_streams.push(stream.name);
             });
         }
@@ -561,7 +561,7 @@ exports.setup_page = function () {
 
         // All streams won't contain invite-only streams,
         // or anything at all if should_list_all_streams() is false
-        $.each(our_subs, function(idx, stream) {
+        $.each(our_subs, function (idx, stream) {
             if (all_streams.indexOf(stream.name) === -1) {
                 all_streams.push(stream.name);
             }

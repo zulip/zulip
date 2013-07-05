@@ -448,7 +448,7 @@ MessageList.prototype = {
                               }});
         }
 
-        $.each(rendered_elems, function(idx, elem) {
+        $.each(rendered_elems, function (idx, elem) {
             var row = $(elem);
             if (! row.hasClass('message_row')) {
                 return;
@@ -490,7 +490,7 @@ MessageList.prototype = {
         }
 
         var new_messages_height = 0;
-        $.each(rendered_elems, function() {
+        $.each(rendered_elems, function () {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
             if ($(this).is("tr")) {
@@ -600,7 +600,7 @@ MessageList.prototype = {
         // existing messages list, we just add the new messages and
         // then rerender the whole thing.
         this._items = messages.concat(this._items);
-        this._items.sort(function(a, b) {return a.id - b.id;});
+        this._items.sort(function (a, b) {return a.id - b.id;});
         this._add_to_hash(messages);
 
         this._clear_rendering_state();

@@ -554,7 +554,7 @@ exports.deactivate = function () {
     $(document).trigger($.Event('narrow_deactivated.zephyr', {msg_list: current_msg_list}));
 };
 
-exports.restore_home_state = function() {
+exports.restore_home_state = function () {
     // If we click on the Home link while already at Home, unnarrow.
     // If we click on the Home link from another nav pane, just go
     // back to the state you were in (possibly still narrowed) before

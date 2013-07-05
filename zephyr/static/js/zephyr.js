@@ -797,12 +797,12 @@ function get_updates_success(data) {
             break;
         case 'subscriptions':
             if (event.op === 'add') {
-                $.each(event.subscriptions, function(index, subscription) {
+                $.each(event.subscriptions, function (index, subscription) {
                     $(document).trigger($.Event('subscription_add.zephyr',
                                                 {subscription: subscription}));
                 });
             } else if (event.op === 'remove') {
-                $.each(event.subscriptions, function(index, subscription) {
+                $.each(event.subscriptions, function (index, subscription) {
                     $(document).trigger($.Event('subscription_remove.zephyr',
                                                 {subscription: subscription}));
                 });

@@ -115,7 +115,7 @@ exports.update_faded_messages = function () {
     ui.disable_floating_recipient_bar();
 };
 
-exports.update_recipient_on_narrow = function() {
+exports.update_recipient_on_narrow = function () {
     if (!compose.composing()) {
         return;
     }
@@ -244,7 +244,7 @@ exports.cancel = function () {
     respond_to_sent_message = false;
 };
 
-exports.empty_subject_placeholder = function() {
+exports.empty_subject_placeholder = function () {
     return empty_subject_placeholder;
 };
 
@@ -271,7 +271,7 @@ function create_message_object() {
     return message;
 }
 
-exports.snapshot_message = function(message) {
+exports.snapshot_message = function (message) {
     if (!exports.composing() || (exports.message_content() === "")) {
         // If you aren't in the middle of composing the body of a
         // message, don't try to snapshot.
@@ -291,7 +291,7 @@ function clear_message_snapshot() {
     message_snapshot = undefined;
 }
 
-exports.restore_message = function() {
+exports.restore_message = function () {
     if (!message_snapshot) {
         return;
     }

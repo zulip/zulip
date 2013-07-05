@@ -14,7 +14,7 @@ exports.sort_narrow_list = function () {
 
     var sort_recent = (streams.length > 40);
 
-    streams.sort(function(a, b) {
+    streams.sort(function (a, b) {
         if (sort_recent) {
             if (recent_subjects[b] !== undefined &&
                 recent_subjects[a] === undefined) {
@@ -38,7 +38,7 @@ exports.sort_narrow_list = function () {
     parent.empty();
 
     var elems = [];
-    $.each(streams, function(i, stream) {
+    $.each(streams, function (i, stream) {
         var li = $(subs.get(stream).sidebar_li);
         if (sort_recent) {
             if (recent_subjects[stream] === undefined) {
@@ -235,19 +235,19 @@ exports.update_dom_with_unread_counts = function (counts) {
     // Our job is to update some DOM elements.
 
     // counts.stream_count maps streams to counts
-    $.each(counts.stream_count, function(stream, count) {
+    $.each(counts.stream_count, function (stream, count) {
         exports.set_count("stream", stream, count);
     });
 
     // counts.subject_count maps streams to hashes of subjects to counts
-    $.each(counts.subject_count, function(stream, subject_hash) {
-        $.each(subject_hash, function(subject, count) {
+    $.each(counts.subject_count, function (stream, subject_hash) {
+        $.each(subject_hash, function (subject, count) {
             exports.set_subject_count(stream, subject, count);
         });
     });
 
     // counts.pm_count maps people to counts
-    $.each(counts.pm_count, function(person, count) {
+    $.each(counts.pm_count, function (person, count) {
         exports.set_count("private", person, count);
     });
 

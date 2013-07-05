@@ -79,16 +79,16 @@ exports.update_typeahead = function () {
     var stream_names = subs.subscribed_streams();
     stream_names.sort();
 
-    var streams = $.map(stream_names, function(elt,idx) {
+    var streams = $.map(stream_names, function (elt,idx) {
         return {action: 'stream', query: elt};
     });
 
     var people_names = page_params.people_list;
 
-    var people = $.map(people_names, function(elt,idx) {
+    var people = $.map(people_names, function (elt,idx) {
         return {action: 'private_message', query: elt};
     });
-    var senders = $.map(people_names, function(elt,idx) {
+    var senders = $.map(people_names, function (elt,idx) {
         return {action: 'sender', query: elt};
     });
 

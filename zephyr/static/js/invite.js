@@ -42,7 +42,7 @@ exports.initialize = function () {
 
     $("#invite_user_form").ajaxForm({
         dataType: 'json',
-        beforeSubmit: function(arr, $form, options) {
+        beforeSubmit: function (arr, $form, options) {
             reset_error_messages();
             // TODO: You could alternatively parse the textarea here, and return errors to
             // the user if they don't match certain constraints (i.e. not real email addresses,
