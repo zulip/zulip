@@ -63,6 +63,17 @@ def check_trailing_whitespace(fn):
             failed = True
     return failed
 
+def perform_extra_js_checks(fn):
+    failed = False
+    for i, line in enumerate(open(fn)):
+        line = line.strip('\n')
+        if re.search('[^_]function\(', line):
+            sys.stdout.write('The keyword "function" should be followed by a space in %s line %s\n' % (fn, i+1))
+            print line
+            failed = True
+    return failed
+
+
 def check_python_gotchas(fn):
     '''
     Check for certain Python gotchas that pyflakes doesn't catch.
@@ -112,6 +123,10 @@ try:
 
     for fn in by_lang['.py']:
         if check_python_gotchas(fn):
+            failed = True
+
+    for fn in by_lang['.js']:
+        if perform_extra_js_checks(fn):
             failed = True
 
     pyflakes = subprocess.Popen(['pyflakes'] + by_lang['.py'],
