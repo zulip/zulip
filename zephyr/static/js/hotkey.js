@@ -147,6 +147,7 @@ function process_hotkey(e) {
         if ((event_name === 'up_arrow' || event_name === 'down_arrow')
             && compose.composing()
             && compose.message_content() === ""
+            && $('#new_message_content').is(':focus')
             && page_params.staging) {
                 compose.cancel();
                 // don't return, as we still want it to be picked up by the code below
