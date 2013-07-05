@@ -92,6 +92,14 @@ function report_error(msg, stack, opts) {
             }
         }
     });
+
+    if (page_params.staging) {
+        // Save the stacktrace so it can be examined even on local servers.
+        // (N.B. This assumes you have set DEBUG = False on your local
+        // server, or else this code path won't execute to begin with --
+        // useful for testing (un)minification.)
+        window.last_stacktrace = stack;
+    }
 }
 
 function BlueslipError(msg, more_info) {
