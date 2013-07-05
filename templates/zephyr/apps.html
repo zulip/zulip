@@ -73,13 +73,18 @@
         <div class="codehilite"><pre>wget https://apt.humbughq.com/user.asc
 cat user.asc | sudo apt-key add -</pre></div>
 
-        <br />
-        Then, add the following lines to <code>/etc/apt/sources.list</code>:
+        Then, add the following line to <code>/etc/apt/sources.list</code>:
         <div class="codehilight"><pre>deb https://apt.humbughq.com/user/ <span class="k">your_distro_here</span> main
+</pre>
+</div>
+        <p>(Replace <b>your_distro_here</b> with one of <code>wheezy</code>, <code>precise</code>, <code>quantal</code>, or <code>raring</code>)</p>
+
+        Then run:
+<div class="codehilite"><pre>
 sudo apt-get update
 sudo apt-get install humbug-desktop
 </pre></div>
-        <p>(Replace <b>your_distro_here</b> with one of <code>wheezy</code>, <code>precise</code>, <code>quantal</code>, or <code>raring</code>)</p>
+
 
 
         <h3>Other</h3>
