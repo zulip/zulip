@@ -7,7 +7,7 @@ var exports = {};
 var steps = ["sent_stream_message", "sent_private_message", "made_app_sticky"];
 var step_info = {sent_stream_message: {"user_message": "Send a stream message"},
                  sent_private_message: {"user_message": "Send a private message"},
-                 made_app_sticky: {"user_message": "Pin this tab"}};
+                 made_app_sticky: {"user_message": "Get our app"}};
 
 var onboarding = false;
 
