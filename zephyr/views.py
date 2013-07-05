@@ -573,7 +573,7 @@ def home(request):
         last_event_id         = register_ret['last_event_id'],
         max_message_id        = register_ret['max_message_id'],
         onboarding_steps      = ujson.loads(user_profile.onboarding_steps),
-        staging               = settings.STAGING_DEPLOYED or settings.DEBUG
+        staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED
     ))
 
     statsd.incr('views.home')
