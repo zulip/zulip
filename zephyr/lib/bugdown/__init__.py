@@ -576,12 +576,14 @@ class Bugdown(markdown.Extension):
         # We detect a url either by the `https?://` or by building around the TLD.
         tlds = '|'.join(list_of_tlds())
         link_regex = r"""
-            \b                   # Start on a word boundary
+            (?<![^\s'"\(,:])     # Start after whitespace or specified chars
+                                 # (Double-negative lookbehind to allow start-of-string)
             (?P<url>             # Main group
                 (?:              # Domain part
-                    https?://[^\s/]+?   # If it has a protocol, anything goes.
+                    https?://[\w.:@-]+?   # If it has a protocol, anything goes.
                    |(?:                 # Or, if not, be more strict to avoid false-positives
-                        (?:[^\s\.]+\.)+    # One or more domain components, separated by dots
+                        (?:[\w@-]+\.)+     # One or more domain components, separated by dots
+                                           # Allow @ to match email addresses
                         (?:%s)             # TLDs (filled in via format from tlds-alpha-by-domain.txt)
                     )
                 )

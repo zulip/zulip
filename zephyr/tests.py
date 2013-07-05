@@ -2221,10 +2221,10 @@ int x = 3
 
          # XSS sanitization; URL is rendered as plain text
          ('javascript:alert(\'hi\');.com',             "<p>javascript:alert('hi');.com</p>", ''),
-         ('javascript:foo.com',                        "<p>javascript:foo.com</p>",          ''),
+         ('javascript:foo.com',                        "<p>javascript:%s</p>",          'foo.com'),
          ('javascript://foo.com',                      "<p>javascript://foo.com</p>",        ''),
          ('foobarscript://foo.com',                    "<p>foobarscript://foo.com</p>",      ''),
-         ('about:blank.com',                           "<p>about:blank.com</p>",             ''),
+         ('about:blank.com',                           "<p>about:%s</p>",               'blank.com'),
          ('[foo](javascript:foo.com)',                 "<p>[foo](javascript:foo.com)</p>",   ''),
          ('[foo](javascript://foo.com)',               "<p>[foo](javascript://foo.com)</p>", ''),
 
@@ -2261,6 +2261,7 @@ int x = 3
          # Just because it has a TLD and parentheses in it doesn't mean it's a link. Trac #1364
          ('a.commandstuff()', '<p>a.commandstuff()</p>', ''),
          ('love...it', '<p>love...it</p>', ''),
+         ('sorry,http://example.com/', '<p>sorry,%s</p>', 'http://example.com/'),
          ]
 
         for inline_url, reference, url in conversions:
