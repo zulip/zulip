@@ -118,8 +118,7 @@ def delete_all_user_sessions():
 
 def do_deactivate(user_profile, log=True):
     user_profile.is_active = False;
-    user_profile.set_unusable_password()
-    user_profile.save(update_fields=["is_active", "password"])
+    user_profile.save(update_fields=["is_active"])
 
     delete_user_sessions(user_profile)
 
