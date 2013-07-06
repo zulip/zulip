@@ -2,6 +2,13 @@
 
 {# Login page. #}
 
+{% load compressed %}
+
+{% block customhead %}
+    {{ block.super }}
+    {% compressed_js 'signup' %}
+{% endblock %}
+
 {% block portico_content %}
 
 <script type="text/javascript">
@@ -30,19 +37,19 @@ autofocus('#id_username');
 
 <div class="row">
     <div class="span5 login-area">
-        <form name="login_form" method="post" class="form-horizontal"
+        <form name="login_form" id="login_form" method="post" class="form-horizontal"
               action="{% url 'django.contrib.auth.views.login' %}?next={{ request.get_full_path }}">
             {% csrf_token %}
             <div class="control-group">
                 <label for="id_username" class="control-label">Email</label>
                 <div class="controls">
-                    <input id="id_username" type="text" name="username" value="{{ email }}" maxlength="72" />
+                    <input id="id_username" type="text" name="username" class="email required" value="{{ email }}" maxlength="72" />
                 </div>
             </div>
             <div class="control-group">
                 <label for="id_password" class="control-label">Password</label>
                 <div class="controls">
-                    {{ form.password }}
+                    <input id="id_password" name="password" class="required" type="password">
                 </div>
             </div>
             <div class="control-group">

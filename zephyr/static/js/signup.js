@@ -47,4 +47,8 @@ $(function () {
             $('#errors').empty();
         }
     });
+
+    $("#login_form").validate({
+        errorClass: "text-error"
+    });
 });
