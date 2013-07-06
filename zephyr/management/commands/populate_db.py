@@ -8,7 +8,7 @@ from zephyr.models import Message, UserProfile, Stream, Recipient, Client, \
     Subscription, Huddle, get_huddle, Realm, UserMessage, \
     get_huddle_hash, clear_database, get_client, get_user_profile_by_id
 from zephyr.lib.actions import do_send_message, set_default_streams, \
-    do_activate_user, do_change_password
+    do_activate_user, do_deactivate, do_change_password
 from zephyr.lib.parallel import run_parallel
 from django.db import transaction, connection
 from django.conf import settings
@@ -537,6 +537,10 @@ def restore_saved_messages():
             # Update the cache of users to show this user as activated
             users_by_id[user_profile.id] = user_profile
             users[old_message["user"]] = user_profile
+            continue
+        elif message_type == "user_deactivated":
+            user_profile = users[old_message["user"]]
+            do_deactivate(user_profile, log=False)
             continue
         elif message_type == "user_change_password":
             # Just handle these the slow way

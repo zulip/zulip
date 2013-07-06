@@ -116,17 +116,18 @@ def delete_all_user_sessions():
     for session in Session.objects.all():
         delete_session(session)
 
-def do_deactivate(user_profile):
+def do_deactivate(user_profile, log=True):
     user_profile.is_active = False;
     user_profile.set_unusable_password()
     user_profile.save(update_fields=["is_active", "password"])
 
     delete_user_sessions(user_profile)
 
-    log_event({'type': 'user_deactivated',
-               'timestamp': time.time(),
-               'user': user_profile.email,
-               'domain': user_profile.realm.domain})
+    if log:
+        log_event({'type': 'user_deactivated',
+                   'timestamp': time.time(),
+                   'user': user_profile.email,
+                   'domain': user_profile.realm.domain})
 
     notice = dict(event=dict(type="realm_user", op="remove",
                              person=dict(email=user_profile.email,
