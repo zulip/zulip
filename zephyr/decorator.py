@@ -74,6 +74,8 @@ def validate_api_key(email, api_key):
         raise JsonableError("Invalid user: %s" % (email,))
     if api_key != user_profile.api_key:
         raise JsonableError("Invalid API key for user '%s'" % (email,))
+    if not user_profile.is_active:
+        raise JsonableError("User account is not active")
     return user_profile
 
 # authenticated_api_view will add the authenticated user's user_profile to
