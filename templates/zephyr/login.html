@@ -16,7 +16,9 @@ autofocus('#id_username');
 
 {% if form.errors %}
 <div class="alert alert-error">
-    Your email and password didn't match. Please try again.
+    {% for error in form.errors.values %}
+    <div>{{ error | striptags }}</div>
+    {% endfor %}
 </div>
 {% endif %}
 
