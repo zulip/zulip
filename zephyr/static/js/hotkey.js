@@ -199,7 +199,8 @@ function process_hotkey(e) {
             //
             // FIXME: this doesn't work for End because rows.last_visible()
             // always returns a message.
-            viewport.scrollTop($("#main_div").outerHeight(true));
+            var current_msg_table = rows.get_table(current_msg_list.table_name);
+            viewport.scrollTop(current_msg_table.outerHeight(true) - viewport.height() * 0.1);
             mark_current_list_as_read();
         }
         return true;
