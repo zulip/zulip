@@ -488,6 +488,7 @@ exports.by_subject = function (target_id, opts) {
         exports.by_recipient(target_id, opts);
         return;
     }
+    mark_message_as_read(original);
     opts = $.extend({}, {then_select_id: target_id}, opts);
     exports.activate([
             ['stream',  original.stream],
