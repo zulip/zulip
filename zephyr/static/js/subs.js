@@ -110,9 +110,8 @@ function update_table_stream_color(table, stream_name, color) {
 
     $.each(table.find(".stream_label"), function () {
         if ($(this).text() === stream_name) {
-            var parent_label = $(this).parent("td");
-            fixup(parent_label);
-            fixup(parent_label.prev("td"));
+            fixup($(this).parent("td").parent("tr").prev("tr").nextUntil(".bookend_tr")
+                         .children(".messagebox_colorblock,.message_header_colorblock"));
         }
     });
 }
