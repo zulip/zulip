@@ -992,6 +992,7 @@ $(function () {
             respond_to_cursor = true;
             respond_to_message({trigger: 'message click'});
             e.stopPropagation();
+            popovers.hide_all();
         }
         mouse_moved = false;
         clicking = false;
@@ -1020,6 +1021,7 @@ $(function () {
 
     $("#main_div").on("click", ".star", function (e) {
         e.stopPropagation();
+        popovers.hide_all();
         toggle_star(rows.id($(this).closest(".message_row")));
     });
 
@@ -1166,6 +1168,9 @@ $(function () {
         //    composebox is open and you clicked out of it, you must want to
         //    stop composing!"
         e.stopPropagation();
+        // Since we're stopping propagation we have to manually close any
+        // open popovers.
+        popovers.hide_all();
     });
 
     $('#stream_filters li').on('click', 'a.subscription_name', function (e) {
@@ -1233,6 +1238,7 @@ $(function () {
     });
     $('#feedback_button').click(function (e) {
         e.stopPropagation();
+        popovers.hide_all();
         compose.start('private', { 'private_message_recipient': 'feedback@humbughq.com',
                                    trigger: 'feedback button' });
 
@@ -1257,16 +1263,19 @@ $(function () {
                            current_msg_list.table_name);
         message_edit.start(row);
         e.stopPropagation();
+        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_save", function (e) {
         var row = $(this).closest(".message_row");
         message_edit.save(row);
         e.stopPropagation();
+        popovers.hide_all();
     });
     $("body").on("click", ".message_edit_cancel", function (e) {
         var row = $(this).closest(".message_row");
         message_edit.end(row);
         e.stopPropagation();
+        popovers.hide_all();
     });
 
     $("body").on('click', function (e) {
