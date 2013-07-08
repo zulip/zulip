@@ -31,9 +31,10 @@ from zephyr.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     recipient_for_emails, extract_recipients, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
-    do_send_messages, do_add_subscription, get_default_subs, do_deactivate
+    do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
+    user_email_is_unique, do_invite_users
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
-    is_unique, is_inactive, isnt_mit
+    is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_openid_auth.views import default_render_failure, login_complete
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
@@ -247,7 +248,7 @@ def accounts_register(request):
             is_inactive(email)
         else:
             # Other users should not already exist at all.
-            is_unique(email)
+            user_email_is_unique(email)
     except ValidationError:
         return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
 
@@ -385,68 +386,10 @@ def json_invite_users(request, user_profile, invitee_emails=REQ):
             return json_error("Stream does not exist: %s. No invites were sent." % stream_name)
         streams.append(stream)
 
-    new_prereg_users = []
-    errors = []
-    skipped = []
-    for email in invitee_emails:
-        if email == '':
-            continue
+    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
 
-        if not validators.email_re.match(email):
-            errors.append((email, "Invalid address."))
-            continue
-
-        if user_profile.realm.restricted_to_domain and \
-                email.split('@', 1)[-1].lower() != user_profile.realm.domain.lower():
-            errors.append((email, "Outside your domain."))
-            continue
-
-        # Redundant check in case earlier validation preventing MIT users from
-        # inviting people fails.
-        if settings.ALLOW_REGISTER == False:
-            try:
-                isnt_mit(email)
-            except ValidationError:
-                errors.append((email, "Invitations are not enabled for MIT at this time."))
-                continue
-
-        try:
-            is_unique(email)
-        except ValidationError:
-            skipped.append((email, "Already has an account."))
-            continue
-
-        # The logged in user is the referrer.
-        prereg_user = PreregistrationUser(email=email, referred_by=user_profile)
-
-        # We save twice because you cannot associate a ManyToMany field
-        # on an unsaved object.
-        prereg_user.save()
-        prereg_user.streams = streams
-        prereg_user.save()
-
-        new_prereg_users.append(prereg_user)
-
-    if errors:
-        return json_error(data={'errors': errors},
-                          msg="Some emails did not validate, so we didn't send any invitations.")
-
-    if skipped and len(skipped) == len(invitee_emails):
-        # All e-mails were skipped, so we didn't actually invite anyone.
-        return json_error(data={'errors': skipped},
-                          msg="We weren't able to invite anyone.")
-
-    # If we encounter an exception at any point before now, there are no unwanted side-effects,
-    # since it is totally fine to have duplicate PreregistrationUsers
-    for user in new_prereg_users:
-        event = {"email": user.email, "referrer_email": user_profile.email}
-        queue_json_publish("invites", event,
-                           lambda event: do_send_confirmation_email(user, user_profile))
-
-    if skipped:
-        return json_error(data={'errors': skipped},
-                          msg="Some of those addresses are already using Humbug, \
-so we didn't send them an invitation. We did send invitations to everyone else!")
+    if ret_error is not None:
+        return json_error(data=error_data, msg=ret_error)
     else:
         return json_success()
 

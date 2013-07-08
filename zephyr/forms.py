@@ -9,13 +9,6 @@ from humbug import settings
 from zephyr.models import Realm, get_user_profile_by_email, UserProfile
 from zephyr.lib.actions import do_change_password
 
-def is_unique(value):
-    try:
-        get_user_profile_by_email(value)
-        raise ValidationError(u'%s is already registered' % value)
-    except UserProfile.DoesNotExist:
-        pass
-
 def is_inactive(value):
     try:
         if get_user_profile_by_email(value).is_active:

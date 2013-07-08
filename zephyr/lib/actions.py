@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django.conf import settings
+from django.core import validators
 from django.contrib.sessions.models import Session
 from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
@@ -1304,3 +1305,80 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
         return
 
     do_send_missedmessage_email(user_profile, messages)
+
+
+def user_email_is_unique(value):
+    try:
+        get_user_profile_by_email(value)
+        raise ValidationError(u'%s is already registered' % value)
+    except UserProfile.DoesNotExist:
+        pass
+
+def do_invite_users(user_profile, invitee_emails, streams):
+    new_prereg_users = []
+    errors = []
+    skipped = []
+
+    ret_error = None
+    ret_error_data = {}
+
+    for email in invitee_emails:
+        if email == '':
+            continue
+
+        if not validators.email_re.match(email):
+            errors.append((email, "Invalid address."))
+            continue
+
+        if user_profile.realm.restricted_to_domain and \
+                email.split('@', 1)[-1].lower() != user_profile.realm.domain.lower():
+            errors.append((email, "Outside your domain."))
+            continue
+
+        # Redundant check in case earlier validation preventing MIT users from
+        # inviting people fails.
+        if settings.ALLOW_REGISTER == False:
+            if "@mit.edu" in email:
+                errors.append((email, "Invitations are not enabled for MIT at this time."))
+                continue
+
+        try:
+            user_email_is_unique(email)
+        except ValidationError:
+            skipped.append((email, "Already has an account."))
+            continue
+
+        # The logged in user is the referrer.
+        prereg_user = PreregistrationUser(email=email, referred_by=user_profile)
+
+        # We save twice because you cannot associate a ManyToMany field
+        # on an unsaved object.
+        prereg_user.save()
+        prereg_user.streams = streams
+        prereg_user.save()
+
+        new_prereg_users.append(prereg_user)
+
+    if errors:
+        ret_error = "Some emails did not validate, so we didn't send any invitations."
+        ret_error_data = {'errors': errors}
+
+    if skipped and len(skipped) == len(invitee_emails):
+        # All e-mails were skipped, so we didn't actually invite anyone.
+        ret_error = "We weren't able to invite anyone."
+        ret_error_data = {'errors': skipped}
+        return ret_error, ret_error_data
+
+    # If we encounter an exception at any point before now, there are no unwanted side-effects,
+    # since it is totally fine to have duplicate PreregistrationUsers
+    for user in new_prereg_users:
+        event = {"email": user.email, "referrer_email": user_profile.email}
+        queue_json_publish("invites", event,
+                           lambda event: do_send_confirmation_email(user, user_profile))
+
+    if skipped:
+        ret_error = "Some of those addresses are already using Humbug, \
+so we didn't send them an invitation. We did send invitations to everyone else!"
+        ret_error_data = {'errors': skipped}
+
+    return ret_error, ret_error_data
