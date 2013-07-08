@@ -275,7 +275,7 @@ MessageList.prototype = {
         if (where === "bottom") {
             // Remove the trailing bookend; it'll be re-added after we do our rendering
             this.clear_trailing_bookend();
-        } else {
+        } else if (this.selected_row().length > 0) {
             orig_scrolltop_offset = this.selected_row().offset().top - viewport.scrollTop();
         }
 
@@ -437,7 +437,7 @@ MessageList.prototype = {
             // be a .ztable_layout_row.
             table.find('.ztable_layout_row').after(rendered_elems);
 
-            if (this === current_msg_list) {
+            if (this === current_msg_list && orig_scrolltop_offset !== undefined) {
                 // Restore the selected row to its original position in
                 // relation to the top of the window
                 viewport.scrollTop(this.selected_row().offset().top - orig_scrolltop_offset);
