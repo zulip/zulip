@@ -108,7 +108,7 @@ function update_table_stream_color(table, stream_name, color) {
             .addClass(color_class);
     }
 
-    $.each(table.find(".stream_label"), function () {
+    $.each($("#floating_recipient_bar").add(table).find(".stream_label"), function () {
         if ($(this).text() === stream_name) {
             fixup($(this).parent("td").parent("tr").prev("tr").nextUntil(".bookend_tr")
                          .children(".messagebox_colorblock,.message_header_colorblock"));
