@@ -53,8 +53,6 @@ exports.hide_actions_popover = function () {
 
 var current_stream_sidebar_elem;
 var current_user_sidebar_elem;
-var stream_sidebar_popup_shown_this_click = false;
-var user_sidebar_popup_shown_this_click = false;
 
 function user_sidebar_popped() {
     return current_user_sidebar_elem !== undefined;
@@ -92,7 +90,6 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.user_sidebar_entry', function (e) {
         var last_sidebar_elem = current_user_sidebar_elem;
         popovers.hide_user_sidebar_popover();
-        user_sidebar_popup_shown_this_click = true;
 
         var email = $(e.target).find('a').attr('data-email');
         var name = $(e.target).find('a').attr('data-name');
@@ -106,7 +103,7 @@ exports.register_click_handlers = function () {
         });
         $(e.target).popover("show");
         current_user_sidebar_elem = $(e.target);
-        e.preventDefault();
+        e.stopPropagation();
     });
 
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
@@ -141,7 +138,6 @@ exports.register_click_handlers = function () {
 
         var last_sidebar_elem = current_stream_sidebar_elem;
         popovers.hide_stream_sidebar_popover();
-        stream_sidebar_popup_shown_this_click = true;
 
         var stream = $(elt).parents('li').attr('data-name');
 
@@ -195,7 +191,7 @@ exports.register_click_handlers = function () {
         });
 
         current_stream_sidebar_elem = elt;
-        e.preventDefault();
+        e.stopPropagation();
     });
 
     $('body').on('click', '.respond_button', function (e) {
@@ -285,8 +281,6 @@ exports.register_click_handlers = function () {
             subs.show_settings_for(stream);
         }
     });
-
-
 };
 
 exports.any_active = function () {
@@ -296,18 +290,9 @@ exports.any_active = function () {
 
 exports.hide_all = function () {
     popovers.hide_actions_popover();
-    if (stream_sidebar_popup_shown_this_click === false ) {
-        popovers.hide_stream_sidebar_popover();
-    }
-    if (user_sidebar_popup_shown_this_click === false ) {
-        popovers.hide_user_sidebar_popover();
-    }
-    stream_sidebar_popup_shown_this_click = false;
-    user_sidebar_popup_shown_this_click = false;
+    popovers.hide_stream_sidebar_popover();
+    popovers.hide_user_sidebar_popover();
 };
-
-
-
 
 return exports;
 }());
