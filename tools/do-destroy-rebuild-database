@@ -5,6 +5,6 @@ echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | python manage.py dbsh
 python manage.py syncdb --noinput
 python manage.py migrate
 python manage.py createcachetable third_party_api_results
-python manage.py populate_db --replay-old-messages -n0
+python manage.py populate_db -n100 --threads=1
 # Ensure that the local user's API key is synced from ~/.humbugrc
 python manage.py sync_api_key
