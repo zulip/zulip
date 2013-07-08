@@ -204,6 +204,12 @@ function get_private_message_recipient(message, attr) {
     return recipient;
 }
 
+function mark_message_as_read(message) {
+    // This seems like a rather pointless wrapper, but
+    // process_read_messages() should stay as an internal API.
+    process_read_messages([message]);
+}
+
 function respond_to_message(opts) {
     var message, msg_type;
     // Before initiating a reply to a message, if there's an
@@ -215,6 +221,8 @@ function respond_to_message(opts) {
     if (message === undefined) {
         return;
     }
+
+    mark_message_as_read(message);
 
     var stream = '';
     var subject = '';
