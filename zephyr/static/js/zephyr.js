@@ -204,52 +204,6 @@ function get_private_message_recipient(message, attr) {
     return recipient;
 }
 
-function mark_message_as_read(message) {
-    // This seems like a rather pointless wrapper, but
-    // process_read_messages() should stay as an internal API.
-    process_read_messages([message]);
-}
-
-function respond_to_message(opts) {
-    var message, msg_type;
-    // Before initiating a reply to a message, if there's an
-    // in-progress composition, snapshot it.
-    compose.snapshot_message();
-
-    message = current_msg_list.selected_message();
-
-    if (message === undefined) {
-        return;
-    }
-
-    mark_message_as_read(message);
-
-    var stream = '';
-    var subject = '';
-    if (message.type === "stream") {
-        stream = message.stream;
-        subject = message.subject;
-    }
-
-    var pm_recipient = message.reply_to;
-    if (opts.reply_type === "personal" && message.type === "private") {
-        // reply_to for private messages is everyone involved, so for
-        // personals replies we need to set the the private message
-        // recipient to just the sender
-        pm_recipient = message.sender_email;
-    }
-    if (opts.reply_type === 'personal' || message.type === 'private') {
-        msg_type = 'private';
-    } else {
-        msg_type = message.type;
-    }
-    compose.start(msg_type, {'stream': stream, 'subject': subject,
-                             'private_message_recipient': pm_recipient,
-                             'replying_to_message': message,
-                             'trigger': opts.trigger});
-
-}
-
 // Returns messages from the given message list in the specified range, inclusive
 function message_range(msg_list, start, end) {
     if (start === -1) {
@@ -362,6 +316,52 @@ function mark_read_between(msg_list, start_id, end_id) {
 function mark_current_list_as_read() {
     var unread_msgs = $.grep(current_msg_list.all(), unread.message_unread);
     process_read_messages(unread_msgs);
+}
+
+function mark_message_as_read(message) {
+    // This seems like a rather pointless wrapper, but
+    // process_read_messages() should stay as an internal API.
+    process_read_messages([message]);
+}
+
+function respond_to_message(opts) {
+    var message, msg_type;
+    // Before initiating a reply to a message, if there's an
+    // in-progress composition, snapshot it.
+    compose.snapshot_message();
+
+    message = current_msg_list.selected_message();
+
+    if (message === undefined) {
+        return;
+    }
+
+    mark_message_as_read(message);
+
+    var stream = '';
+    var subject = '';
+    if (message.type === "stream") {
+        stream = message.stream;
+        subject = message.subject;
+    }
+
+    var pm_recipient = message.reply_to;
+    if (opts.reply_type === "personal" && message.type === "private") {
+        // reply_to for private messages is everyone involved, so for
+        // personals replies we need to set the the private message
+        // recipient to just the sender
+        pm_recipient = message.sender_email;
+    }
+    if (opts.reply_type === 'personal' || message.type === 'private') {
+        msg_type = 'private';
+    } else {
+        msg_type = message.type;
+    }
+    compose.start(msg_type, {'stream': stream, 'subject': subject,
+                             'private_message_recipient': pm_recipient,
+                             'replying_to_message': message,
+                             'trigger': opts.trigger});
+
 }
 
 function update_pointer() {
