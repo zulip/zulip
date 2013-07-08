@@ -6,7 +6,7 @@ var current_actions_popover_elem;
 
 function show_actions_popover(element, id) {
     var last_popover_elem = current_actions_popover_elem;
-    popovers.hide_actions_popover();
+    popovers.hide_all();
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
@@ -89,7 +89,7 @@ exports.register_click_handlers = function () {
 
     $('body').on('click', '.user_sidebar_entry', function (e) {
         var last_sidebar_elem = current_user_sidebar_elem;
-        popovers.hide_user_sidebar_popover();
+        popovers.hide_all();
 
         var email = $(e.target).find('a').attr('data-email');
         var name = $(e.target).find('a').attr('data-name');
@@ -137,7 +137,7 @@ exports.register_click_handlers = function () {
         }
 
         var last_sidebar_elem = current_stream_sidebar_elem;
-        popovers.hide_stream_sidebar_popover();
+        popovers.hide_all();
 
         var stream = $(elt).parents('li').attr('data-name');
 
