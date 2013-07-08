@@ -500,6 +500,7 @@ exports.by_subject = function (target_id, opts) {
 exports.by_recipient = function (target_id, opts) {
     opts = $.extend({}, {then_select_id: target_id}, opts);
     var message = current_msg_list.get(target_id);
+    mark_message_as_read(message);
     switch (message.type) {
     case 'private':
         exports.by('pm-with', message.reply_to, opts);
