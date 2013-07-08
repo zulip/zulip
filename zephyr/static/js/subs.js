@@ -151,6 +151,7 @@ function update_stream_color(stream_name, color, opts) {
         update_historical_message_color(stream_name, color);
     }
     update_stream_sidebar_swatch_color(stream_name, color);
+    tab_bar.colorize_tab_bar();
 }
 
 function set_stream_property(stream_name, property, value) {

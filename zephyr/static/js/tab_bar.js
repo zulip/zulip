@@ -1,4 +1,4 @@
-var tabbar = (function () {
+var tab_bar = (function () {
 
 var exports = {};
 
@@ -86,7 +86,7 @@ function make_tab_data() {
     return tabs;
 }
 
-function colorize_tab_bar() {
+exports.colorize_tab_bar = function () {
     // The stream tab, if it exists, should be the same color as that stream's chosen color
     // Likewise, the border and outline should be the stream color as well
     var stream_tab = $('#tab_list .stream');
@@ -105,7 +105,7 @@ function colorize_tab_bar() {
 
         $('#tab_list li.active').css('border-color', stream_color);
     }
-}
+};
 
 function build_tab_bar() {
     var tabs = make_tab_data();
@@ -126,7 +126,7 @@ function build_tab_bar() {
     var rendered =  templates.render('tab_bar', {tabs: tabs});
 
     tab_bar.append(rendered);
-    colorize_tab_bar();
+    exports.colorize_tab_bar();
     tab_bar.removeClass('notdisplayed');
 }
 
@@ -140,5 +140,7 @@ $(function () {
 
     build_tab_bar();
 });
+
+return exports;
 
 }());
