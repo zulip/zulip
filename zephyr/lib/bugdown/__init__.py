@@ -576,27 +576,27 @@ class Bugdown(markdown.Extension):
         # We detect a url either by the `https?://` or by building around the TLD.
         tlds = '|'.join(list_of_tlds())
         link_regex = r"""
-            (?<![^\s'"\(,:])     # Start after whitespace or specified chars
+            (?<![^\s'"\(,:<])    # Start after whitespace or specified chars
                                  # (Double-negative lookbehind to allow start-of-string)
             (?P<url>             # Main group
-                (?:              # Domain part
+                (?:(?:           # Domain part
                     https?://[\w.:@-]+?   # If it has a protocol, anything goes.
-                   |(?:                 # Or, if not, be more strict to avoid false-positives
-                        (?:[\w@-]+\.)+     # One or more domain components, separated by dots
-                                           # Allow @ to match email addresses
-                        (?:%s)             # TLDs (filled in via format from tlds-alpha-by-domain.txt)
+                   |(?:                   # Or, if not, be more strict to avoid false-positives
+                        (?:[\w-]+\.)+     # One or more domain components, separated by dots
+                        (?:%s)            # TLDs (filled in via format from tlds-alpha-by-domain.txt)
                     )
                 )
                 (?:/             # A path, beginning with /
                     [^\s()\"]*?            # Containing characters that won't end the URL
                     (?: \( [^\s()\"]* \)   # and more characters in matched parens
                         [^\s()\"]*?        # followed by more characters
-                    )*                      # zero-or-more sets of paired parens
-                )?               # Path is optional
+                    )*                     # zero-or-more sets of paired parens
+                )?)              # Path is optional
+                | (?:[\w.-]+\@[\w.-]+\.[\w]+) # Email is separate, since it can't have a path
             )
-            (?=                  # URL must be followed by (not included in group)
-                [:;\?\),\.\'\"]* # Optional punctuation characters
-                (?:\Z|\s)        # followed by whitespace or end of string
+            (?=                            # URL must be followed by (not included in group)
+                [:;\?\),\.\'\"\>]*         # Optional punctuation characters
+                (?:\Z|\s)                  # followed by whitespace or end of string
             )
             """ % (tlds,)
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')

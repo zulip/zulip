@@ -2161,13 +2161,15 @@ int x = 3
     @slow(1.1, 'lots of examples')
     def test_linkify(self):
         def replaced(payload, url, phrase=''):
+            target = " target=\"_blank\""
             if url[:4] == 'http':
                 href = url
             elif '@' in url:
                 href = 'mailto:' + url
+                target = ""
             else:
                 href = 'http://' + url
-            return payload % ("<a href=\"%s\" target=\"_blank\" title=\"%s\">%s</a>" % (href, href, url),)
+            return payload % ("<a href=\"%s\"%s title=\"%s\">%s</a>" % (href, target, href, url),)
 
         conversions = \
         [
@@ -2241,6 +2243,9 @@ int x = 3
             '<p>[foo](javascript:&lt;i&gt;"foo&amp;bar"&lt;/i&gt;)</p>', ''),
 
          # Emails
+         ('a@b.com',                                    "<p>%s</p>",                         'a@b.com'),
+         ('<a@b.com>',                                  "<p>&lt;%s&gt;</p>",                 'a@b.com'),
+         ('a@b.com/foo',                                "<p>a@b.com/foo</p>",                ''),
          ('http://leo@foo.com/my/file',                 "<p>%s</p>",                         'http://leo@foo.com/my/file'),
 
          ('http://example.com/something?with,commas,in,url, but not at end',
