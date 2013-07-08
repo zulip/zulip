@@ -516,10 +516,7 @@ class BotTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def deactivate_bot(self):
-        bot_info = {
-            'bot_email': 'hambot-bot@humbughq.com',
-        }
-        result = self.client.post("/json/deactivate_bot", bot_info)
+        result = self.client.delete("/json/users/hambot-bot@humbughq.com")
         self.assert_json_success(result)
 
     def test_add_bot(self):
@@ -544,11 +541,8 @@ class BotTest(AuthedTestCase):
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
-        bot_info = {
-            'bot_email': 'bogus-bot@humbughq.com',
-        }
-        result = self.client.post("/json/deactivate_bot", bot_info)
-        self.assert_json_error(result, 'Cannot deactivate user')
+        result = self.client.delete("/json/users/bogus-bot@humbughq.com")
+        self.assert_json_error(result, 'No such user')
         self.assert_num_bots_equal(1)
 
     def test_bot_deactivation_attacks(self):
@@ -560,21 +554,13 @@ class BotTest(AuthedTestCase):
 
         # Have Othello try to deactivate both Hamlet and
         # Hamlet's bot.
-        # To confuse attackers, we make their attack
-        # appear successful.
         self.login("othello@humbughq.com")
 
-        bot_info = {
-            'bot_email': 'hamlet@humbughq.com',
-        }
-        result = self.client.post("/json/deactivate_bot", bot_info)
-        self.assert_json_error(result, 'Cannot deactivate user')
+        result = self.client.delete("/json/users/hamlet@humbughq.com")
+        self.assert_json_error(result, 'Insufficient permission')
 
-        bot_info = {
-            'bot_email': 'hambot-bot@humbughq.com',
-        }
-        result = self.client.post("/json/deactivate_bot", bot_info)
-        self.assert_json_error(result, 'Cannot deactivate user')
+        result = self.client.delete("/json/users/hambot-bot@humbughq.com")
+        self.assert_json_error(result, 'Insufficient permission')
 
         # But we don't actually deactivate the other person's bot.
         self.login("hamlet@humbughq.com")

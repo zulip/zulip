@@ -1953,18 +1953,16 @@ def messages_in_narrow_backend(request, user_profile, msg_ids = REQ(converter=js
                                             'match_content': msg.match_content})
                                           for msg in query.iterator())})
 
-@authenticated_json_post_view
-@has_request_variables
-def json_deactivate_bot(request, user_profile, bot_email=REQ):
+def deactivate_user_backend(request, user_profile, email):
     try:
-        bot = get_user_profile_by_email(bot_email)
+        target = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
-        return json_error('Cannot deactivate user')
+        return json_error('No such user')
 
-    if bot.bot_owner != user_profile:
-        return json_error('Cannot deactivate user')
+    if target.bot_owner != user_profile and not user_profile.has_perm('administer', user_profile.realm):
+        return json_error('Insufficient permission')
 
-    do_deactivate(bot)
+    do_deactivate(target, cascade=True)
     return json_success({})
 
 @authenticated_json_post_view
