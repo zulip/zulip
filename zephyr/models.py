@@ -83,10 +83,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)
 
     USERNAME_FIELD = 'email'
+    MAX_NAME_LENGTH = 100
 
     # Our custom site-specific fields
-    full_name = models.CharField(max_length=100)
-    short_name = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=MAX_NAME_LENGTH)
+    short_name = models.CharField(max_length=MAX_NAME_LENGTH)
     pointer = models.IntegerField()
     last_pointer_updater = models.CharField(max_length=64)
     realm = models.ForeignKey(Realm)

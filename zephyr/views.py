@@ -1367,8 +1367,11 @@ def json_change_settings(request, user_profile, full_name=REQ,
 
     result = {}
     if user_profile.full_name != full_name and full_name.strip() != "":
-        do_change_full_name(user_profile, full_name.strip())
-        result['full_name'] = full_name
+        new_full_name = full_name.strip()
+        if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
+            return json_error("Name too long!")
+        do_change_full_name(user_profile, new_full_name)
+        result['full_name'] = new_full_name
 
     if user_profile.enable_desktop_notifications != enable_desktop_notifications:
         do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications)
