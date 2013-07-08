@@ -1954,17 +1954,21 @@ li.expanded_subject {
 }
 
 .user-mention {
-    background: #eee;
-    border-radius: 6px;
-    padding: 0px 0.3em;
+    background-color: #eee;
+    border-radius: 3px;
+    padding: 0 0.2em;
     border: 1px solid #ccc;
-    font-weight: bold;
+    white-space: nowrap;
+    background-image: -moz-linear-gradient(top, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.1)), color-stop(100%,rgba(0,0,0,0)));
+    background-image: -webkit-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
+    background-image: -o-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
+    background-image: -ms-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
+    background-image: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
 }
 
 .user-mention-me {
-    background: #58F;
-    color: white;
-    border-color: #7080A5;
+    background-color: #c9fcc1;
 }
 
 #notification-settings .control-group {
