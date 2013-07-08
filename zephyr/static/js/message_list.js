@@ -81,9 +81,11 @@ MessageList.prototype = {
         rows.get_table(this.table_name).children().detach();
     },
 
-    _clear_rendering_state: function MessageList__clear_rendering_state() {
+    _clear_rendering_state: function MessageList__clear_rendering_state(clear_table) {
         this._message_groups = [];
-        this._clear_table();
+        if (clear_table) {
+            this._clear_table();
+        }
         this.last_message_historical = false;
 
         this._render_win_start = 0;
@@ -95,7 +97,7 @@ MessageList.prototype = {
 
         this._items = [];
         this._hash = {};
-        this._clear_rendering_state();
+        this._clear_rendering_state(true);
 
         if (opts.clear_selected_id) {
             this._selected_id = -1;
@@ -626,7 +628,7 @@ MessageList.prototype = {
         this._items.sort(function (a, b) {return a.id - b.id;});
         this._add_to_hash(messages);
 
-        this._clear_rendering_state();
+        this._clear_rendering_state(true);
 
         this._update_render_window(this._selected_idx(), false);
 
@@ -653,7 +655,8 @@ MessageList.prototype = {
         // We need to clear the rendering state, rather than just
         // doing _clear_table, since we want to potentially recollapse
         // things.
-        this._clear_rendering_state();
+        this._clear_rendering_state(false);
+        this._update_render_window(this._selected_idx(), false);
         this._rerender_preserving_scrolltop();
         if (this._selected_id !== -1) {
             this.select_id(this._selected_id);
