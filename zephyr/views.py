@@ -1962,7 +1962,7 @@ def deactivate_user_backend(request, user_profile, email):
     if target.bot_owner != user_profile and not user_profile.has_perm('administer', user_profile.realm):
         return json_error('Insufficient permission')
 
-    do_deactivate(target, cascade=True)
+    do_deactivate(target)
     return json_success({})
 
 @authenticated_json_post_view
