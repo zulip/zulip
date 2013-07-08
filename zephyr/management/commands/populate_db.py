@@ -17,6 +17,7 @@ from zephyr.lib.bulk_create import bulk_create_realms, \
     bulk_create_clients
 from zephyr.lib.timestamp import timestamp_to_datetime
 from zephyr.models import MAX_MESSAGE_LENGTH
+from zephyr.models import DefaultStream, get_stream
 
 import ujson
 import datetime
@@ -207,8 +208,12 @@ class Command(BaseCommand):
 
                 create_users(realms, settings.INTERNAL_HUMBUG_USERS)
                 humbug_stream_list = ["devel", "all", "humbug", "design", "support", "social", "test",
-                                      "errors"]
+                                      "errors", "sales"]
                 create_streams(realms, humbug_realm, humbug_stream_list)
+
+                # Add a few default streams
+                for stream_name in ["design", "devel", "social", "support"]:
+                    DefaultStream.objects.create(realm=humbug_realm, stream=get_stream(stream_name, humbug_realm))
 
                 # Now subscribe everyone to these streams
                 subscriptions_to_add = []
