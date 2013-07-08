@@ -5,7 +5,7 @@ body {
 
 /* Common background color */
 body, #tab_bar, #tab_bar_underpadding, .message_list, .message_comp {
-    background-color: #eff6ef;
+    background-color: #f8f9f8;
 }
 
 
