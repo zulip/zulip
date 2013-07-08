@@ -18,6 +18,7 @@ from django.db.models.signals import post_save
 import zlib
 
 from bitfield import BitField
+import pylibmc
 import ujson
 
 MAX_SUBJECT_LENGTH = 60
@@ -545,6 +546,7 @@ def get_realm(domain):
         return None
 
 def clear_database():
+    pylibmc.Client(['127.0.0.1']).flush_all()
     for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,
                   DefaultStream]:
