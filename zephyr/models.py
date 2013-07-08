@@ -342,25 +342,24 @@ class Message(models.Model):
 
         return bugdown.convert(content, self.sender.realm.domain, self)
 
-    def set_rendered_content(self, rendered_content):
+    def set_rendered_content(self, rendered_content, save = False):
         """Set the content on the message.
-
-        This method does not call .save(). Save afterwards with
-        update_fields=["rendered_content", "rendered_content_version"].
         """
 
         self.rendered_content = rendered_content
         self.rendered_content_version = bugdown.version
 
-        if self.rendered_content is None:
+        if self.rendered_content is not None:
+            if save:
+                self.save(update_fields=["rendered_content", "rendered_content_version"])
+            return True
+        else:
             return False
 
-        return True
-
-    def maybe_render_content(self):
+    def maybe_render_content(self, save = False):
         """Render the markdown if there is no existing rendered_content"""
-        if self.rendered_content is None:
-            return self.set_rendered_content(self.render_markdown(self.content))
+        if self.rendered_content_version < bugdown.version or self.rendered_content is None:
+            return self.set_rendered_content(self.render_markdown(self.content), save)
         else:
             return True
 
@@ -409,10 +408,9 @@ class Message(models.Model):
         if self.last_edit_time != None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(self.last_edit_time)
             obj['edit_history'] = ujson.loads(self.edit_history)
-        if apply_markdown and self.rendered_content_version is not None:
-            obj['content'] = self.rendered_content
-            obj['content_type'] = 'text/html'
-        elif apply_markdown:
+
+        if apply_markdown:
+            self.maybe_render_content(save = True)
             if self.rendered_content is not None:
                 obj['content'] = self.rendered_content
             else:

@@ -1361,6 +1361,15 @@ class GetOldMessagesTest(AuthedTestCase):
         self.exercise_bad_narrow_operand("pm-with", ['non-existent-user@humbughq.com'],
             "Invalid narrow operator: unknown user")
 
+    def test_message_without_rendered_content(self):
+        """Older messages may not have rendered_content in the database"""
+        m = Message.objects.all().order_by('-id')[0]
+        m.rendered_content = m.rendered_content_version = None
+        m.content = 'test content'
+        # Use to_dict_uncached directly to avoid having to deal with memcached
+        d = m.to_dict_uncached(True)
+        self.assertEqual(d['content'], '<p>test content</p>')
+
 class InviteUserTest(AuthedTestCase):
 
     def invite(self, users, streams):
