@@ -1965,6 +1965,8 @@ li.expanded_subject {
     background-image: -o-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
     background-image: -ms-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
     background-image: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
+    display: inline-block;
+    margin-bottom: 1px;
 }
 
 .user-mention-me {
