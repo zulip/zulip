@@ -846,7 +846,7 @@ function get_updates_success(data) {
             var saved_respond_to_cursor = respond_to_cursor;
 
             var i;
-            var selected_id = current_msg_list.selected_message().id;
+            var selected_id = current_msg_list.selected_id();
 
             // Iterate backwards to find the last message sent_by_me, stopping at
             // the pointer position.
