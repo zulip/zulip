@@ -173,7 +173,7 @@ exports.register_click_handlers = function () {
         });
 
         $('.streams_popover').on('click', '.custom_color', function (e) {
-            update_spectrum($(elt).closest('.streams_popover'), function (colorpicker) {
+            update_spectrum($(e.target).closest('.streams_popover'), function (colorpicker) {
                 colorpicker.spectrum("destroy");
                 colorpicker.spectrum(subs.sidebar_popover_colorpicker_options_full);
                 // In theory this should clean up the old color picker,
