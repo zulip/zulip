@@ -259,7 +259,11 @@ a:hover code {
 }
 
 #stream_filters li:hover {
-    background-color: lightgrey;
+    background-color: #e2e8dd;
+}
+
+#stream_filters li.active-subject-filter:hover {
+    background-color: #ccd6cc;
 }
 
 #user_presences {
@@ -339,6 +343,20 @@ ul.filters hr {
 
 li.active-filter, li.active-subject-filter {
     font-weight: bold;
+    background: #ccd6cc;
+    position: relative;
+}
+
+li.active-filter:after, li.active-subject-filter:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -6px;
+    margin-top: -6px;
+    display: block;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-left: 6px solid #ccd6cc;
 }
 
 li.hidden-filter {
@@ -1679,6 +1697,11 @@ ul.expanded_subjects {
 
 li.expanded_subject {
     margin-left: .3em;
+}
+
+li.expanded_subject .subject_box {
+    display: inline-block;
+    width: 100%;
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
