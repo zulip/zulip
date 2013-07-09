@@ -34,6 +34,10 @@ function show(tabname, focus_area) {
     $("#new_message_content").trigger("autosize");
     $(".new_message_textarea").css("min-height", "3em");
 
+    if (focus_area !== undefined) {
+        focus_area.focus().select();
+    }
+
     // If the compose box is obscuring the currently selected message,
     // scroll up until the message is no longer occluded.
     if (current_msg_list.selected_id() === -1) {
@@ -47,8 +51,6 @@ function show(tabname, focus_area) {
     if (cover > 0) {
         viewport.user_initiated_animate_scroll(cover+5);
     }
-
-    focus_area.focus().select();
 
     // Disable the notifications bar if it overlaps with the composebox
     notifications_bar.maybe_disable();
@@ -201,9 +203,10 @@ exports.start = function (msg_type, opts) {
     ui.change_tab_to("#home");
 
     var focus_area;
-    if (opts.stream && ! opts.subject) {
+    if (msg_type === 'stream' && opts.stream && ! opts.subject) {
         focus_area = 'subject';
-    } else if (opts.stream || opts.private_message_recipient) {
+    } else if ((msg_type === 'stream' && opts.stream)
+               || opts.private_message_recipient) {
         focus_area = 'new_message_content';
     }
 
@@ -427,10 +430,10 @@ exports.set_mode = function (mode) {
         exports.start(mode);
     }
     if (mode === 'private') {
-        show('private', $("#private_message_recipient"));
+        show('private');
         is_composing_message = "private";
     } else {
-        show('stream', $("#stream"));
+        show('stream');
         is_composing_message = "stream";
     }
 };
