@@ -1042,7 +1042,7 @@ input.recipient_box {
     top: 41px;
     z-index: 2;
     padding-top: 0px;
-    padding-bottom: 20px;
+    padding-bottom: 10px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -1314,7 +1314,7 @@ input.recipient_box {
     position: fixed;
     /* .message_list max-width */
     text-decoration: none;
-    top: 70px; /* should really be the same as the height of navbar-spacer + height of the tab bar*/
+    top: 60px; /* should really be the same as the height of navbar-spacer + height of the tab bar*/
     visibility: hidden; /* so that we pass clicks through to underneath us */
     /* If zhome has opacity on it, it suddenly starts getting drawn on top
        of top_statusbar -- unless we specify a z-index.  */
