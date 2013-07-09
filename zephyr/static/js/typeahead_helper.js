@@ -171,10 +171,6 @@ function identity(item) {
     return item;
 }
 
-exports.sort_subjects = function (items) {
-    return exports.sorter(this.query, items, identity);
-};
-
 exports.sort_recipients = function (matches, query) {
     var name_results =  prefix_sort(query, matches, function (x) { return x.full_name; });
     var email_results = prefix_sort(query, name_results.rest, function (x) { return x.email; });
