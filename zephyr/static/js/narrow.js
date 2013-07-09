@@ -115,7 +115,7 @@ Filter.prototype = {
                         if (!message.starred) {
                             return false;
                         }
-                    } else if (operand === 'mentioned') {
+                    } else if (operand === 'mentioned-message') {
                         if (!message.mentioned) {
                             return false;
                         }
@@ -258,7 +258,7 @@ exports.describe = function (operators) {
                 return 'Narrow to all private messages';
             } else if (operand === 'starred') {
                 return 'Narrow to starred messages';
-            } else if (operand === 'mentioned') {
+            } else if (operand === 'mentioned-message') {
                 return 'Narrow to mentioned messages';
             }
             break;
@@ -598,7 +598,7 @@ function pick_empty_narrow_banner() {
         if (first_operand === "starred") {
             // You have no starred messages.
             return $("#empty_star_narrow_message");
-        } else if (first_operand === "mentioned") {
+        } else if (first_operand === "mentioned-message") {
             return $("#empty_narrow_all_mentioned");
         } else if (first_operand === "private-message") {
             // You have no private messages.
