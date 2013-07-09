@@ -653,18 +653,22 @@ background-color: #feffe0;
     background-color: #ffe4e0;
 }
 
-.unread .messagebox {
+.unread .messagebox .message_top_line {
     position: relative;
 }
 
-.unread .messagebox:before {
+.unread .messagebox .message_top_line:before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 0px;
+    left: -7px;
     border-width: 8px 8px 0px 0;
     border-style: solid;
     border-color: #db1f1f transparent;
+}
+
+.include-sender.unread .messagebox .message_top_line:before {
+    top: -7px;
 }
 
 .selected_message.mention .messagebox, .selected_message.mention .message_data {
