@@ -495,6 +495,9 @@ function toggle_star(row_id) {
     // Update the message object pointed to by the various message
     // lists.
     var message = current_msg_list.get(row_id);
+
+    mark_message_as_read(message);
+
     if (message.starred === true) {
         message.starred = false;
     } else {
