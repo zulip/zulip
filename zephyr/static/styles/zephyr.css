@@ -636,13 +636,6 @@ background-color: #feffe0;
 }
 
 .unread .messagebox {
-    background-image: -moz-linear-gradient(-45deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.03) 25%, rgba(0,0,0,0.03) 75%, rgba(0,0,0,0.08) 100%); /* FF3.6+ */
-    background-image: -webkit-gradient(linear, left top, right bottom, color-stop(0%,rgba(0,0,0,0.08)), color-stop(25%,rgba(0,0,0,0.03)), color-stop(75%,rgba(0,0,0,0.03)), color-stop(100%,rgba(0,0,0,0.08))); /* Chrome,Safari4+ */
-    background-image: -webkit-linear-gradient(-45deg, rgba(0,0,0,0.08) 0%,rgba(0,0,0,0.03) 25%,rgba(0,0,0,0.03) 75%,rgba(0,0,0,0.08) 100%); /* Chrome10+,Safari5.1+ */
-    background-image: -o-linear-gradient(-45deg, rgba(0,0,0,0.08) 0%,rgba(0,0,0,0.03) 25%,rgba(0,0,0,0.03) 75%,rgba(0,0,0,0.08) 100%); /* Opera 11.10+ */
-    background-image: -ms-linear-gradient(-45deg, rgba(0,0,0,0.08) 0%,rgba(0,0,0,0.03) 25%,rgba(0,0,0,0.03) 75%,rgba(0,0,0,0.08) 100%); /* IE10+ */
-    background-image: linear-gradient(135deg, rgba(0,0,0,0.08) 0%,rgba(0,0,0,0.03) 25%,rgba(0,0,0,0.03) 75%,rgba(0,0,0,0.08) 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#14000000', endColorstr='#14000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
     position: relative;
 }
 
