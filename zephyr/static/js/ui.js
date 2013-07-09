@@ -269,12 +269,7 @@ function get_new_heights() {
     var res = {};
 
     res.bottom_whitespace_height =
-        viewport.height()
-        - $("#top_navbar").height()
-        - 56 // $("#compose").height(), when compose box closed
-        - $("#floating_recipient_bar").height()
-        - 51 // 1 message, without recipient header
-        - 10; // small padding
+        viewport.height() * 0.4;
 
     res.main_div_min_height =
         viewport.height()
