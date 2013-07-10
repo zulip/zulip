@@ -33,9 +33,9 @@ function make_tab_data() {
             stream = filter.operands("stream")[0];
             tabs.push(make_tab(stream, hashed, stream, 'stream'));
         } else if (filter.has_operator("pm-with") ||
-                   filter.has_operand("is", "private-message")) {
+                   filter.has_operand("is", "private")) {
 
-            tabs.push(make_tab("Private Messages", '#narrow/is/private-message',
+            tabs.push(make_tab("Private Messages", '#narrow/is/private',
                                 undefined, 'private_message '));
 
             if (filter.has_operator("pm-with")) {

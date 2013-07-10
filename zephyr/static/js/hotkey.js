@@ -213,7 +213,7 @@ function process_hotkey(e) {
         return do_narrow_action(narrow.by_subject);
     case 'narrow_private':
         return do_narrow_action(function (target, opts) {
-            narrow.by('is', 'private-message', opts);
+            narrow.by('is', 'private', opts);
         });
     }
 

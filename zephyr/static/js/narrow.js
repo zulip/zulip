@@ -108,7 +108,7 @@ Filter.prototype = {
                 operand = operators[i][1];
                 switch (operators[i][0]) {
                 case 'is':
-                    if (operand === 'private-message') {
+                    if (operand === 'private') {
                         if (message.type !== 'private')
                             return false;
                     } else if (operand === 'starred') {
@@ -254,7 +254,7 @@ exports.describe = function (operators) {
         var operand = elem[1];
         switch (elem[0]) {
         case 'is':
-            if (operand === 'private-message') {
+            if (operand === 'private') {
                 return 'Narrow to all private messages';
             } else if (operand === 'starred') {
                 return 'Narrow to starred messages';
@@ -606,7 +606,7 @@ function pick_empty_narrow_banner() {
             return $("#empty_star_narrow_message");
         } else if (first_operand === "mentioned") {
             return $("#empty_narrow_all_mentioned");
-        } else if (first_operand === "private-message") {
+        } else if (first_operand === "private") {
             // You have no private messages.
             return $("#empty_narrow_all_private_message");
         }
@@ -651,7 +651,7 @@ exports.narrowed_to_pms = function () {
         return false;
     }
     return (current_filter.has_operator("pm-with") ||
-            current_filter.has_operand("is", "private-message"));
+            current_filter.has_operand("is", "private"));
 };
 
 // We auto-reply under certain conditions, namely when you're narrowed

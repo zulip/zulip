@@ -691,7 +691,7 @@ class NarrowBuilder(object):
         return Q(**dict((self.prefix + key, kwargs[key]) for key in kwargs.keys()))
 
     def by_is(self, operand):
-        if operand == 'private-message':
+        if operand == 'private':
             return (self.pQ(recipient__type=Recipient.PERSONAL) |
                     self.pQ(recipient__type=Recipient.HUDDLE))
         elif operand == 'starred':
