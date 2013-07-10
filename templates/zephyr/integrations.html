@@ -13,7 +13,7 @@
 
     <p>The English poet John Donne once wrote that "no man is an
     island", and we feel the same about software. No system exists in
-    complete isolation, so we've made it easy for Humbug to connect to
+    complete isolation, so we've made it easy for Zulip to connect to
     the services you already use.</p>
 
     <p>With the integrations below, your team can stay up-to-date on
@@ -64,7 +64,7 @@
     {#--------------------------------------------------------------------#}
     <div id="beanstalk" class="integration">
       <h4>Beanstalk</h4>
-     <p>Humbug supports both SVN and Git notifications from Beanstalk. In the beanstalk web application, go to the Setup page, and choose the Integrations tab.
+     <p>Zulip supports both SVN and Git notifications from Beanstalk. In the beanstalk web application, go to the Setup page, and choose the Integrations tab.
      Choose the <code>Webhooks</code> integration from the list presented. Make sure to replace the <code>@</code> in the bot's email address with <code>%40</code>,
      as Beanstalk's website will incorrectly refuse to parse a username containing a <code>@</code>.</p>
 
@@ -87,14 +87,14 @@
       Once you've done that, you'll use the <code>humbug-send</code>
       utility to notify you when certain events happen.</p>
 
-      <p>Here's some example code for sending a Humbug notification
+      <p>Here's some example code for sending a Zulip notification
       after a deployment has completed:</p>
 <div class="codehilite"><pre><span class="n">after</span> <span class="s1">'deploy'</span><span class="p">,</span> <span class="s1">'notify:humbug'</span>
 
 <span class="n">namespace</span> <span class="ss">:notify</span> <span class="k">do</span>
-  <span class="n">desc</span> <span class="s2">"Post a message to Humbug that we've deployed"</span>
+  <span class="n">desc</span> <span class="s2">"Post a message to Zulip that we've deployed"</span>
   <span class="n">task</span> <span class="ss">:humbug</span> <span class="k">do</span>
-    <span class="c1"># this will post to Humbug as the user defined in
+    <span class="c1"># this will post to Zulip as the user defined in
     # ~/.humbugrc if you omit --user and --api-key</span>
     <span class="n">run_locally</span> <span class="s2">"echo ':beers: I just deployed to </span><span class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="s2">! :beers:' | humbug-send \
     --user capistrano-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
@@ -155,7 +155,7 @@
 
       <p><b>Congratulations! You're done!</b><br /> Whenever you make
       a push to the <code>master</code> branch of your git repository
-      (or whatever you configured above), the Humbug git plugin will
+      (or whatever you configured above), the Zulip git plugin will
       send an automated notification that looks like this:</p>
       <img class="screenshot" src="/static/images/integrations/git/001.png">
 
@@ -214,7 +214,7 @@ following, to the stream <code>commits</code> with a subject that matches the re
 
       <p><strong>Configure a post-build action for your project</strong><br />
       Once you've done that, it's time to configure one of your
-      projects to use the Humbug notification plugin. From your
+      projects to use the Zulip notification plugin. From your
       project page, click "Configure" on the left sidebar. Scroll to
       the bottom until you find the section labeled "Post-build
       Actions". Click the dropdown and select "Humbug
@@ -245,7 +245,7 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <h4>JIRA</h4>
       <h5>Webhook mechanism</h5>
       If you are running JIRA version 5.2 or greater, or if you are using the hosted JIRA provided
-      by Atlassian, you can use the built in web-hook support to connect to Humbug. If you are not
+      by Atlassian, you can use the built in web-hook support to connect to Zulip. If you are not
       using the Atlassian-hosted JIRA, you may also use the <a href="#jira-plugin">Jira Plugin</a>
       mechanism that supports older versions of JIRA.
       <p>In your JIRA administration control panel, go to the Webhooks page. If you are using the OnDemand
@@ -260,11 +260,11 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <p>where <code>api_key</code> is the API key of the user you
       want updates to be sent as, and <code>stream</code> is the stream name you want the notifications sent to.
 
-      <p>Next, go back to Humbug and set up a stream called "jira," if it does not already exist.
+      <p>Next, go back to Zulip and set up a stream called "jira," if it does not already exist.
       (If you prefer your JIRA notifications to go to a stream other than "jira," then change the URL above to match it.)</p>
 
       <p><b>Congratulations! You're done!</b><br />
-      Updates from JIRA will be sent to the Humbug stream you specified in the JIRA web-hook.
+      Updates from JIRA will be sent to the Zulip stream you specified in the JIRA web-hook.
       <img class="screenshot" src="/static/images/integrations/jira/001.png">
       <p>
         <a href="#services">^ Back to top</a>
@@ -284,11 +284,11 @@ following, to the stream <code>commits</code> with a subject that matches the re
           <li><a href="https://marketplace.atlassian.com/plugins/com.atlassian.jira.plugin.jirasslplugin">SSL Plugin</a></li>
         </ul>
       <p><b>SSL Setup</b></p>
-        As Humbug is using a StartCOM SSL certificate that is not recognized by default in the Java installation shipped with JIRA,
+        As Zulip is using a StartCOM SSL certificate that is not recognized by default in the Java installation shipped with JIRA,
         you will need to tell JIRA about the certificate. Navigate to <code>Administration > System > Configure SSL</code> and in
         the <code>Import SSL Certificates</code> field, enter <code>https://www.humbughq.com</code>. After clicking <code>Save Certificates</code>,
         follow the on-screen instructions and restart JIRA for it to recognize the proper certificates.
-      <p><b>Humbug Integration</b></p>
+      <p><b>Zulip Integration</b></p>
         Copy the folder <code>integrations/jira/org/</code> (from the tarball you downloaded above) to your JIRA <code>classes</code> folder.
         For self-contained JIRA installations, this will be <code>atlassian-jira/WEB-INF/classes/</code>, but this may be different in your deployment.
         Edit the constants at the top of <code>org/humbug/jira/HumbugListener.groovy</code>
@@ -299,10 +299,10 @@ following, to the stream <code>commits</code> with a subject that matches the re
 <span class="n">String</span> <span class="n">issueBaseUrl</span> <span class="o">=</span> <span class="s2">"https://jira.COMPANY.com/browse/"</span>
 </pre></div>
       <p>In the Administrators page, navigate to <code>Plugins > Other > Script Listeners</code>. In the <code>Add Listener</code> section, click on
-        the <code>Custom Listener</code> option. Select the events you wish the Humbug integration to fire for, and the projects you wish Humbug to be notified for.
+        the <code>Custom Listener</code> option. Select the events you wish the Zulip integration to fire for, and the projects you wish Zulip to be notified for.
         In the <code>Name of groovy class</code> field, enter <code>org.humbug.jira.HumbugListener</code>.
 
-      <p>Click <code>Add Listener</code>, and JIRA will now notify your Humbug of changes to your issues!</p>
+      <p>Click <code>Add Listener</code>, and JIRA will now notify your Zulip of changes to your issues!</p>
 
       <p><b>Congratulations! You're done!</b><br />
       Updates from JIRA will be sent to the stream you've configured, as below.</p>
@@ -364,10 +364,10 @@ key=NAGIOS_BOT_API_KEY
         service's page on your Nagios instance.</p>
 
       <p><b>Troubleshooting</b><br />You can confirm whether you've
-      correctly configured Nagios to run the Humbug plugin by looking
+      correctly configured Nagios to run the Zulip plugin by looking
       for <code>SERVICE NOTIFICATION</code> lines mentioning humbug
       in <code>/var/log/nagios3/nagios.log</code>.  You can confirm
-      whether you've configured the Humbug plugin code correctly by
+      whether you've configured the Zulip plugin code correctly by
       running <code>/usr/local/share/humbug/integrations/nagios/nagios-notify-humbug</code>
       directly.</p>
 
@@ -378,7 +378,7 @@ key=NAGIOS_BOT_API_KEY
 {#--------------------------------------------------------------------#}
     <div id="pivotal" class="integration">
       <h4>Pivotal Tracker</h4>
-     <p>Humbug supports Pivotal Tracker integration and can notify you of changes to the stories in your Pivotal Tracker project. In the Settings page
+     <p>Zulip supports Pivotal Tracker integration and can notify you of changes to the stories in your Pivotal Tracker project. In the Settings page
       for your project, choose the Integrations tab. Scroll down to the <code>Activity Web Hook</code> section, and enter the following url:</p>
 
       <p><code>https://api.humbughq.com/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
@@ -388,7 +388,7 @@ key=NAGIOS_BOT_API_KEY
 
       <img class="screenshot" src="/static/images/integrations/pivotal/001.png">
 
-      <p><b>Congratulations! You're done!</b><br /> When you make changes in Pivotal Tracker they will be reflected in Humbug:
+      <p><b>Congratulations! You're done!</b><br /> When you make changes in Pivotal Tracker they will be reflected in Zulip:
       <img class="screenshot" src="/static/images/integrations/pivotal/002.png">
       <p>
         <a href="#services">^ Back to top</a>
@@ -398,7 +398,7 @@ key=NAGIOS_BOT_API_KEY
     <div id="svn" class="integration">
       <h4>Subversion</h4>
 
-      <p>It is easy to send Humbugs on SVN commits, by configuring a post-commit
+      <p>It is easy to send Zulips on SVN commits, by configuring a post-commit
       hook. To do this:</p>
 
       <ol>
@@ -420,12 +420,12 @@ key=NAGIOS_BOT_API_KEY
         <li>The default stream used by this post-commit hook
         is <code>commits</code>; if you'd prefer a different stream, change it
         now in <code>humbug_svn_config.py</code>. Make sure that everyone
-        interested in getting these post-commit Humbugs is subscribed to that
+        interested in getting these post-commit Zulips is subscribed to that
         stream!</li>
       </ol>
 
       <p><b>Congratulations! You're done!</b><br /> When you commit to this SVN
-      repository, the team can see these updates in real time in Humbug:</p>
+      repository, the team can see these updates in real time in Zulip:</p>
 
       <img class="screenshot" src="/static/images/integrations/svn/001.png">
       <p>
@@ -471,7 +471,7 @@ key=NAGIOS_BOT_API_KEY
 
       <p><b>Additional trac configuration</b><br /> After using the plugin
       for a while, you may want to customize which changes to tickets
-      result in a Humbug notification using
+      result in a Zulip notification using
       the <code>TRAC_NOTIFY_FIELDS</code> setting
       in <code>humbug_trac_config.py</code>.</p>
 
