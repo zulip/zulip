@@ -141,12 +141,21 @@ function update_historical_message_color(stream_name, color) {
     }
 }
 
+function set_colorpicker_color(colorpicker, color) {
+    colorpicker.spectrum($.extend(subscriptions_table_colorpicker_options,
+                         {color: color}));
+}
+
 function update_stream_color(stream_name, color, opts) {
     opts = $.extend({}, {update_historical: false}, opts);
     var sub = get_sub(stream_name);
     sub.color = color;
     var id = parseInt(sub.id, 10);
+    // The swatch in the subscription row header.
     $("#subscription_" + id + " .color_swatch").css('background-color', color);
+    // The swatch in the color picker.
+    set_colorpicker_color($("#subscription_" + id + " .colorpicker"), color);
+
     if (opts.update_historical) {
         update_historical_message_color(stream_name, color);
     }
@@ -810,7 +819,9 @@ $(function () {
     $("#subscriptions_table").on("show", ".subscription_settings", function (e) {
         var subrow = $(e.target).closest('.subscription_row');
         var colorpicker = subrow.find('.colorpicker');
-        colorpicker.spectrum(subscriptions_table_colorpicker_options);
+
+        var color = exports.get_color(subrow.find('.subscription_name').text());
+        set_colorpicker_color(colorpicker, color);
 
         // To figure out the worst case for an expanded row's height, we do some math:
         // .subscriber_list_container max-height,
