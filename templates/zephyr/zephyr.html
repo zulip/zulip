@@ -5,13 +5,13 @@
 {% block portico_content %}
 <div class="row-fluid">
   <div class="span8">
-    <h2>Zephyr Mirroring for Humbug</h2>
+    <h2>Zephyr Mirroring for Zulip</h2>
 
-<p>Thanks for giving Humbug a try!  This page describes how to use
-  Humbug as to use MIT Zephyr; if you're not a current Zephyr user,
-  you probably want to visit the main Humbug website.</p>
+<p>Thanks for giving Zulip a try!  This page describes how to use
+  Zulip as to use MIT Zephyr; if you're not a current Zephyr user,
+  you probably want to visit the main Zulip website.</p>
 
-<p>There are a few steps you need to take to setup Humbug for your
+<p>There are a few steps you need to take to setup Zulip for your
 MIT Zephyr account.</p>
 
 <h3>First time setup</h3>
@@ -28,12 +28,12 @@ MIT Zephyr account.</p>
     run the following command:<br />
             <code>/mit/tabbott/humbug/zephyr_mirror.py --sync-subscriptions</code></p>
 
-    <p> NOTE: Humbug does not fully support the equivalent of Barnowl
+    <p> NOTE: Zulip does not fully support the equivalent of Barnowl
     filters.  If you have too many subscriptions (you know who you
     are), you may want to either manually subscribe to just your main
     barnowl view or make extensive use of the "Not in home view"
     option on streams. You can add or remove subscriptions from the
-    Humbug app (or your Humbug home view) by clicking the gear in the
+    Zulip app (or your Zulip home view) by clicking the gear in the
     upper right-hand corner and then selecting "Streams."</p>
 </ol>
 
@@ -47,9 +47,9 @@ MIT Zephyr account.</p>
     <p><strong>IMPORTANT: You must keep the Zephyr mirroring script
     always running in a session with unexpired Kerberos
     tickets.</strong>  The script forwards personals you receive on
-    Zephyr to Humbug, and forwards messages you send in Humbug to
-    Zephyr.  <strong>If it is not running, only other Humbug users
-    will receive messages you send from Humbug!</strong>.  The Humbug
+    Zephyr to Zulip, and forwards messages you send in Zulip to
+    Zephyr.  <strong>If it is not running, only other Zulip users
+    will receive messages you send from Zulip!</strong>.  The Zulip
     web application will warn you if the Zephyr mirroring script is
     not running.</p>
 
@@ -78,7 +78,7 @@ MIT Zephyr account.</p>
     <p>This will run the Zephyr Mirroring script inside a screen
     session, and use `/mit/kchen/bin/cont-renew-notify` to continually
     renew your Kerberos tickets for up to a week; each week, it will
-    send you a Zephyr/Humbug letting you know that you need to renew
+    send you a Zephyr/Zulip letting you know that you need to renew
     your tickets.  To do so, login to the server that you setup the
     screen session on and use the following procedure:</p>
 

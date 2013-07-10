@@ -12,7 +12,7 @@
   <div class="content">
     <div class="span12 main-headline">
       <h1>Sign up now!</h1>
-      <h4>Humbug is currently in closed beta, but we're constantly
+      <h4>Zulip is currently in closed beta, but we're constantly
         adding new beta customer sites.</h4>
     </div>
   </div>
@@ -46,7 +46,7 @@
         <form method="post" class="letter-form" id="beta-user-form" action="{% url 'beta-signup-submission' %}">
           {% csrf_token %}
           <p>&nbsp;</p>
-          <p>Hi Humbugs,</p>
+          <p>Hi Zulips,</p>
 
           <p>My name is <input class="input-medium" type="text"
           id="name" name="name" placeholder="Wolfgang A. Mozart" />, and
@@ -57,7 +57,7 @@
 
           <p>I work at <input class="input-large" type="text"
           name="company" id="company" placeholder="Salzburg Court" />,
-          and I wanted to try Humbug. There are
+          and I wanted to try Zulip. There are
           about <input class="input-mini" type="text" id="count"
           name="count" placeholder="10" /> of us, and today we use
           <input class="input-small" type="text" id="product"
@@ -76,7 +76,7 @@
 <div class="row-fluid shaded-background landing-page-bottom">
   <div class="content">
     <div class="span6 offset3 muted">
-      Does your company already use Humbug? <a href="{% url 'register' %}">Register your account here</a>.
+      Does your company already use Zulip? <a href="{% url 'register' %}">Register your account here</a>.
   </div>
   </div>
 </div>

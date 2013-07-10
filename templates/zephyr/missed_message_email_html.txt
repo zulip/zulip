@@ -27,14 +27,14 @@ While you were away you received {{ message_count }} new message{{ message_count
 </div>
 
 
-<p><a href="{{ url }}">Click here to log in to Humbug and view your new messages.</a></p>
+<p><a href="{{ url }}">Click here to log in to Zulip and view your new messages.</a></p>
 
 {% if reply_warning %}
-<p>Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Humbug and send your replies there.</p>
+<p>Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Zulip and send your replies there.</p>
 {% endif %}
 
 <p>Cheers,
 <br>
-The Humbug Team</p>
+The Zulip Team</p>
 
-<p>Note: click <a href="https://humbughq.com/#settings">here</a> to open your Humbug Settings page and disable future email notifications</p>
+<p>Note: click <a href="https://humbughq.com/#settings">here</a> to open your Zulip Settings page and disable future email notifications</p>
