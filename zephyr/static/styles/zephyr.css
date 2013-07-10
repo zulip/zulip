@@ -1587,6 +1587,8 @@ table.floating_recipient {
     overflow: hidden;
     margin-top: 0;
     top: 5%;
+    outline: 0; /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
+                   so avoid the outline it causes */
 }
 
 .modal-body {
