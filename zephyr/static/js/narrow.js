@@ -580,6 +580,7 @@ exports.deactivate = function () {
     }
 
     hashchange.save_narrow();
+    compose.update_faded_messages();
 
     $(document).trigger($.Event('narrow_deactivated.zephyr', {msg_list: current_msg_list}));
 };
