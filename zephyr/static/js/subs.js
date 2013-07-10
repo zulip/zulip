@@ -141,6 +141,19 @@ function update_historical_message_color(stream_name, color) {
     }
 }
 
+var stream_color_palette = [
+    ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
+    ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
+    ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
+    ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
+];
+
+var subscriptions_table_colorpicker_options = {
+    clickoutFiresChange: true,
+    showPalette: true,
+    palette: stream_color_palette
+};
+
 function set_colorpicker_color(colorpicker, color) {
     colorpicker.spectrum($.extend(subscriptions_table_colorpicker_options,
                          {color: color}));
@@ -245,18 +258,12 @@ function set_color(stream_name, color) {
     set_stream_property(stream_name, 'color', color);
 }
 
-var stream_color_palette = [
-    ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
-    ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
-    ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
-    ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
-];
-
 function picker_do_change_color (color) {
     var stream_name = $(this).attr('stream_name');
     var hex_color = color.toHexString();
     set_color(stream_name, hex_color);
 }
+subscriptions_table_colorpicker_options.change = picker_do_change_color;
 
 exports.sidebar_popover_colorpicker_options = {
     clickoutFiresChange: true,
@@ -273,13 +280,6 @@ exports.sidebar_popover_colorpicker_options_full = {
     flat: true,
     cancelText: "",
     chooseText: "choose",
-    palette: stream_color_palette,
-    change: picker_do_change_color
-};
-
-var subscriptions_table_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPalette: true,
     palette: stream_color_palette,
     change: picker_do_change_color
 };
