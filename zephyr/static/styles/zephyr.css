@@ -1396,7 +1396,7 @@ table.floating_recipient {
 
 .hotkeys_table {
     float: left;
-    width: 250px;
+    width: 245px;
     margin-right: 10px;
     font-size: 90%;
 }
@@ -1583,6 +1583,16 @@ table.floating_recipient {
     float: right;
 }
 
+.modal {
+    overflow: hidden;
+    margin-top: 0;
+    top: 5%;
+}
+
+.modal-body {
+    max-height: 60vh;
+}
+
 .modal form {
     margin-bottom: 0px;
 }
@@ -1633,16 +1643,6 @@ table.floating_recipient {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-#stream-creation {
-    max-height: 80%;
-}
-
-#stream-creation .modal-body {
-    /* Setting max-height to a percentage doesn't work. */
-    max-height: 400px;
-    overflow-y: scroll;
 }
 
 .empty_feed_notice {
