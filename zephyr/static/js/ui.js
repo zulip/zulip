@@ -1330,31 +1330,34 @@ var presence_descriptions = {
 };
 
 exports.set_presence_list = function (users, presence_info) {
-    $('#user_presences').empty();
+    if (page_params.domain === 'mit.edu')
+        return;  // MIT realm doesn't have a presence list
 
-    function add_entry(name, email, type) {
-        var args = {name: name,
-                    type: type,
-                    type_desc: presence_descriptions[type],
-                    email: email};
-        if (email === page_params.email) {
-            args.my_fullname = true;
-        }
-        var entry = templates.render('user_presence_row', args);
-        // We get strange JQuery tracebacks in Firefox if we don't $-ify entry.
-        entry = $(entry);
-        $('#user_presences').append(entry);
+    var my_info = {
+        name: page_params.fullname,
+        email: page_params.email,
+        type: 'active',
+        type_desc: presence_descriptions.active,
+        my_fullname: true
+    };
+
+    function info_for(email) {
+        var presence = presence_info[email];
+        return {
+            name: people_dict[email].full_name,
+            email: email,
+            type: presence,
+            type_desc: presence_descriptions[presence]
+        };
     }
 
-    if (page_params.domain !== "mit.edu") {
-        add_entry(page_params.fullname, page_params.email, 'active');
-    }
-
-    $.each(users, function (idx, email) {
-        if (people_dict[email] !== undefined) {
-            add_entry(people_dict[email].full_name, email, presence_info[email]);
-        }
+    var user_emails = $.grep(users, function (email, idx) {
+        return people_dict[email] !== undefined;
     });
+
+    var user_info = [my_info].concat($.map(user_emails, info_for));
+
+    $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
 };
 
 // Save the compose content cursor position and restore when we

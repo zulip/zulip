@@ -1,5 +1,7 @@
 {{! User Presence rows }}
+{{#each users}}
 <li class="user_sidebar_entry user_{{type}}">
 <a href="#" data-email="{{email}}" data-name="{{name}}" title="{{name}} {{type_desc}}"
  class="{{#if my_fullname}} my_fullname{{/if}}"><span class="count">(<span class="value"></span>) </span>{{name}}</a>
 </li>
+{{/each}}
