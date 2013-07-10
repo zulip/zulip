@@ -1,6 +1,6 @@
 Hi there,
 
-{{ referrer.full_name }} ({{ referrer.email }}) wants you to join them on Humbug -- the group communication tool you've always wished you had at work.
+{{ referrer.full_name }} ({{ referrer.email }}) wants you to join them on Zulip -- the group communication tool you've always wished you had at work.
 
 To get started, visit the link below:
     <{{ activate_url }}>
@@ -9,4 +9,4 @@ Feel free to give us a shout at <support@humbughq.com> if you have any questions
 
 Cheers,
 
-The Humbug Team
+The Zulip Team

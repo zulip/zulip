@@ -1,6 +1,6 @@
 Hello there.
 
-You recently signed up for Humbug. Awesome!
+You recently signed up for Zulip. Awesome!
 
 To complete signup, visit this link below:
     <{{ activate_url }}>
@@ -9,4 +9,4 @@ Feel free to give us a shout at <support@humbughq.com> if you have any questions
 
 Cheers,
 
-The Humbug Team
+The Zulip Team

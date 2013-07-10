@@ -1,1 +1,1 @@
-{{referrer.full_name}} invited you to join Humbug
+{{referrer.full_name}} invited you to join Zulip
