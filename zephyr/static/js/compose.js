@@ -88,7 +88,7 @@ exports.unfade_messages = function (clear_state) {
     if (clear_state === true) {
         focused_recipient = undefined;
     }
-    ui.enable_floating_recipient_bar();
+    ui.update_floating_recipient_bar();
 };
 
 exports.update_faded_messages = function () {
@@ -114,7 +114,7 @@ exports.update_faded_messages = function () {
         }
     }
 
-    ui.disable_floating_recipient_bar();
+    ui.update_floating_recipient_bar();
 };
 
 exports.update_recipient_on_narrow = function () {
