@@ -70,6 +70,7 @@ exports.make_loading_indicator = function (container, opts) {
         zIndex: 1000
     }).spin(spinner_elem[0]);
     container.data("spinner_obj", spinner);
+    container.data("destroying", false);
 
     // Make the spinner appear in the center of its enclosing
     // element.  spinner.el is a 0x0 div.  The parts of the spinner
@@ -81,6 +82,11 @@ exports.make_loading_indicator = function (container, opts) {
 };
 
 exports.destroy_loading_indicator = function (container) {
+    if (container.data("destroying")) {
+        return;
+    }
+    container.data("destroying", true);
+
     var spinner = container.data("spinner_obj");
     if (spinner !== undefined) {
         spinner.stop();
