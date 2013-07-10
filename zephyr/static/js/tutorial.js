@@ -190,6 +190,27 @@ function messages_in_viewport() {
     });
 }
 
+function small_window() {
+    return $("#left-sidebar").width() < 175;
+}
+
+function maybe_tweak_placement(placement) {
+    // If viewed on a small screen, move popovers on the left to the center so
+    // they won't be cut off.
+
+    if (!small_window()) {
+        return placement;
+    }
+
+    if (placement === "left") {
+        return "bottom";
+    }
+
+    if (placement === "bottom") {
+        return "right";
+    }
+}
+
 function create_and_show_popover(target_div, placement, title, content_template) {
     target_div.popover({
         placement: placement,
@@ -228,7 +249,8 @@ function finale() {
 
 function reply() {
     var spotlight_message = rows.first_visible().prev(".recipient_row");
-    create_and_show_popover(spotlight_message, "left", "Replying", "tutorial_reply");
+    create_and_show_popover(spotlight_message, maybe_tweak_placement("left"),
+                            "Replying", "tutorial_reply");
 
     var my_popover = $("#tutorial-reply").closest(".popover");
     my_popover.offset({left: my_popover.offset().left - 10});
@@ -249,7 +271,8 @@ function home() {
     });
 
     box(x, y, spotlight_message.width(), height);
-    create_and_show_popover(spotlight_message, "left", "Home view", "tutorial_home");
+    create_and_show_popover(spotlight_message, maybe_tweak_placement("left"),
+                            "Home view", "tutorial_home");
 
     var my_popover = $("#tutorial-home").closest(".popover");
     my_popover.offset({left: my_popover.offset().left - 10});
@@ -274,8 +297,15 @@ function private_message() {
     create_and_show_popover(bar, "top", "Private messages", "tutorial_private");
 
     var my_popover = $("#tutorial-private").closest(".popover");
-    my_popover.offset({top: my_popover.offset().top - 10,
-                       left: bar.offset().left + 76 - my_popover.width() / 2});
+
+    var left_offset;
+    if (small_window()) { // Don't let part of the popover spill out of the feed area.
+        left_offset = bar.offset().left + bar.width() / 2 - my_popover.width() / 2;
+    } else {
+        left_offset = bar.offset().left + 76 - my_popover.width() / 2;
+    }
+
+    my_popover.offset({top: my_popover.offset().top - 10, left: left_offset});
 
     $("#tutorial-private-next").click(function () {
         bar.popover("destroy");
@@ -286,10 +316,15 @@ function private_message() {
 function subject() {
     var spotlight_message = rows.first_visible();
     var bar = spotlight_message.prev(".recipient_row");
-    create_and_show_popover(bar, "bottom", "Subjects", "tutorial_subject");
+    var placement = maybe_tweak_placement("bottom");
+    create_and_show_popover(bar, placement, "Subjects", "tutorial_subject");
 
     var my_popover = $("#tutorial-subject").closest(".popover");
-    my_popover.offset({left: bar.offset().left + 94 - my_popover.width() / 2});
+    if (placement === "bottom") { // Wider screen, popover is on bottom.
+        my_popover.offset({left: bar.offset().left + 94 - my_popover.width() / 2});
+    } else {
+        my_popover.offset({left: bar.offset().left + 156});
+    }
 
     $("#tutorial-subject-next").click(function () {
         bar.popover("destroy");
@@ -299,10 +334,15 @@ function subject() {
 
 function stream() {
     var bar = rows.first_visible().prev(".recipient_row");
-    create_and_show_popover(bar, "bottom", "Streams", "tutorial_stream");
+    var placement = maybe_tweak_placement("bottom");
+    create_and_show_popover(bar, placement, "Streams", "tutorial_stream");
 
     var my_popover = $("#tutorial-stream").closest(".popover");
-    my_popover.offset({left: bar.offset().left + 24 - my_popover.width() / 2});
+    if (placement === "bottom") { // Wider screen, popover is on bottom.
+        my_popover.offset({left: bar.offset().left + 24 - my_popover.width() / 2});
+    } else { // Smaller screen, popover is to the right of the stream label.
+        my_popover.offset({left: bar.offset().left + 67});
+    }
 
     $("#tutorial-stream-next").click(function () {
         bar.popover("destroy");
@@ -319,7 +359,8 @@ function message() {
     var message_width = bar.width();
 
     box(x, y, message_width, message_height);
-    create_and_show_popover(bar, "left", "Messages", "tutorial_message");
+    create_and_show_popover(bar, maybe_tweak_placement("left"), "Messages",
+                            "tutorial_message");
 
     var my_popover = $("#tutorial-message").closest(".popover");
     my_popover.offset({left: my_popover.offset().left - 10});
@@ -337,7 +378,8 @@ function welcome() {
 
     // Highlight the first recipient row.
     var bar = rows.first_visible().prev(".recipient_row");
-    create_and_show_popover(bar, "left", "Welcome, " + page_params.fullname + "!",
+    create_and_show_popover(bar, maybe_tweak_placement("left"),
+                            "Welcome, " + page_params.fullname + "!",
                             "tutorial_welcome");
 
     var my_popover = $("#tutorial-welcome").closest(".popover");
