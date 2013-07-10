@@ -1259,6 +1259,7 @@ def do_send_missedmessage_email(user_profile, missed_messages):
         # There are some @-mentions mixed in with personals
         template_payload['mention'] = True
         template_payload['reply_warning'] = True
+        headers['Reply-To'] = "Nobody <noreply@humbughq.com>"
 
     subject = "Missed Humbug%s from %s" % ('s' if len(senders) > 1 else '', sender_str)
     from_email = "%s (via Humbug) <noreply@humbughq.com>" % (sender_str)
