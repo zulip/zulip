@@ -163,6 +163,19 @@ $(function () {
             });
         }
     });
+
+    $("#bots_list").on("click", "button.delete_bot", function (e) {
+        var email = $(e.target).data('email');
+        $.ajax({
+            url: '/json/users/' + encodeURIComponent(email),
+            type: 'DELETE',
+            success: function () {
+                var row = $(e.target).closest("li");
+                row.remove();
+            }
+
+        });
+    });
 });
 
 }());
