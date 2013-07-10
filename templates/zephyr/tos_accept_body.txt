@@ -4,7 +4,7 @@ Mail sent to us when a user accepts the ToS
 
 Hello,
 
-{{ name }} <{{ email }}> just accepted the Humbug Terms of Service.
+{{ name }} <{{ email }}> just accepted the Zulip Terms of Service.
 
 {{ ip }} submitted /accounts/accept_tos from {{ browser }}.
 
