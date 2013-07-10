@@ -295,7 +295,7 @@ def process_loop(log):
                 try:
                     update_subscriptions()
                 except Exception:
-                    logger.exception("Error updating subscriptions from Humbug:")
+                    logger.exception("Error updating subscriptions from Zulip:")
 
 def parse_zephyr_body(zephyr_data):
     try:
@@ -325,7 +325,7 @@ def process_notice(notice, log):
                      (zephyr_class, notice.instance, is_personal))
         return
     if notice.format.startswith("Zephyr error: See") or notice.format.endswith("@(@color(blue))"):
-        logger.debug("Skipping message we got from Humbug!")
+        logger.debug("Skipping message we got from Zulip!")
         return
 
     if is_personal:
@@ -552,7 +552,7 @@ def forward_to_zephyr(message):
                      (zwrite_args, wrapped_content.encode("utf-8")))
         return
 
-    heading = "Hi there! This is an automated message from Humbug."
+    heading = "Hi there! This is an automated message from Zulip."
     support_closing = """If you have any questions, please be in touch through the \
 Feedback tab or at support@humbughq.com."""
 
@@ -576,10 +576,10 @@ returned the following warning:
         if code == 0:
             return send_error_humbug("""%s
 
-Your last message was forwarded from Humbug to Zephyr unauthenticated, \
+Your last message was forwarded from Zulip to Zephyr unauthenticated, \
 because your Kerberos tickets have expired. It was sent successfully, \
 but please renew your Kerberos tickets in the screen session where you \
-are running the Humbug-Zephyr mirroring bot, so we can send \
+are running the Zulip-Zephyr mirroring bot, so we can send \
 authenticated Zephyr messages for you again.
 
 %s""" % (heading, support_closing))
@@ -589,8 +589,8 @@ authenticated Zephyr messages for you again.
     # but regardless, we should just notify the user.
     return send_error_humbug("""%s
 
-Your Humbug-Zephyr mirror bot was unable to forward that last message \
-from Humbug to Zephyr. That means that while Humbug users (like you) \
+Your Zulip-Zephyr mirror bot was unable to forward that last message \
+from Zulip to Zephyr. That means that while Zulip users (like you) \
 received it, Zephyr users did not.  The error message from zwrite was:
 
 %s
@@ -692,13 +692,13 @@ def add_humbug_subscriptions(verbose):
         if verbose:
             logger.info("\n" + "\n".join(textwrap.wrap("""\
 You have some lines in ~/.zephyr.subs that could not be
-synced to your Humbug subscriptions because they do not
+synced to your Zulip subscriptions because they do not
 use "*" as both the instance and recipient and not one of
 the special cases (e.g. personals and mail zephyrs) that
-Humbug has a mechanism for forwarding.  Humbug does not
-allow subscribing to only some subjects on a Humbug
+Zulip has a mechanism for forwarding.  Zulip does not
+allow subscribing to only some subjects on a Zulip
 stream, so this tool has not created a corresponding
-Humbug subscription to these lines in ~/.zephyr.subs:
+Zulip subscription to these lines in ~/.zephyr.subs:
 """)) + "\n")
 
     for (cls, instance, recipient, reason) in skipped:
@@ -710,8 +710,8 @@ Humbug subscription to these lines in ~/.zephyr.subs:
     if len(skipped) > 0:
         if verbose:
             logger.info("\n" + "\n".join(textwrap.wrap("""\
-If you wish to be subscribed to any Humbug streams related
-to these .zephyrs.subs lines, please do so via the Humbug
+If you wish to be subscribed to any Zulip streams related
+to these .zephyrs.subs lines, please do so via the Zulip
 web interface.
 """)) + "\n")
 
@@ -917,7 +917,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
 
     if options.sync_subscriptions:
         configure_logger(logger, None)  # make the output cleaner
-        logger.info("Syncing your ~/.zephyr.subs to your Humbug Subscriptions!")
+        logger.info("Syncing your ~/.zephyr.subs to your Zulip Subscriptions!")
         add_humbug_subscriptions(True)
         sys.exit(0)
 
