@@ -79,7 +79,7 @@ function report_error(msg, stack, opts) {
                 // probably try to reload anyway.
                 ui.report_message("Oops.  It seems something has gone wrong. " +
                                   "The error has been reported to the fine " +
-                                  "folks at Humbug, but, in the mean time, " +
+                                  "folks at Zulip, but, in the mean time, " +
                                   "please try reloading the page.",
                                   $("#home-error"), "alert-error");
             }

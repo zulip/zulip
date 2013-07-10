@@ -86,7 +86,7 @@ exports.update_title_count = function (new_message_count) {
     var n;
 
     var new_title = (new_message_count ? ("(" + new_message_count + ") ") : "")
-        + page_params.domain + " - Humbug";
+        + page_params.domain + " - Zulip";
 
     if (document.title === new_title) {
         return;

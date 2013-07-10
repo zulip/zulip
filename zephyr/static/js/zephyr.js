@@ -64,7 +64,7 @@ $(function () {
     // feedback and should always show up as an autocomplete option.
     if (people_dict['feedback@humbughq.com'] === undefined){
         add_person({"email": "feedback@humbughq.com",
-                    "full_name": "Humbug Feedback Bot"});
+                    "full_name": "Zulip Feedback Bot"});
     }
 
     activity.set_user_statuses(page_params.initial_presences,
