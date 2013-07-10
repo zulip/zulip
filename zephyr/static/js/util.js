@@ -32,15 +32,16 @@ exports.set_favicon = function (url) {
     }
 };
 
-exports.make_loading_indicator = function (container, text) {
+exports.make_loading_indicator = function (container, opts) {
+    opts = $.extend({}, opts);
     container.empty();
     var spinner_elem = $('<div class="loading_indicator_spinner"></div>');
     container.append(spinner_elem);
     var text_width = 0;
 
-    if (text !== '' && text !== undefined) {
+    if (opts.text !== undefined && opts.text !== '') {
         var text_elem = $('<span class="loading_indicator_text"></span>');
-        text_elem.text(text);
+        text_elem.text(opts.text);
         container.append(text_elem);
         // See note, below
         text_width = 20 + text_elem.width();

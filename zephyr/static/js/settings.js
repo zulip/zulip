@@ -131,7 +131,7 @@ $(function () {
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
             });
-            util.make_loading_indicator($('#create_bot_spinner'), 'Adding bot');
+            util.make_loading_indicator($('#create_bot_spinner'), {text: 'Adding bot'});
             $('#create_bot_button').hide();
             $.ajax({
                 url: '/json/create_bot',
