@@ -52,7 +52,7 @@ function make_tab_data() {
 
         } else if (filter.has_operand("is", "starred")) {
             tabs.push(make_tab("Starred", hashed));
-        } else if (filter.has_operand("is", "mentioned-message")) {
+        } else if (filter.has_operand("is", "mentioned")) {
             tabs.push(make_tab("Mentions", hashed));
         } else if (filter.has_operator("sender")) {
             var sender = filter.operands("sender")[0];

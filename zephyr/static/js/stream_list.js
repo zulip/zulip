@@ -225,7 +225,7 @@ function animate_private_message_changes(new_private_message_count) {
 
 function animate_mention_changes(new_mention_count) {
     if (new_mention_count > last_mention_count) {
-        do_new_messages_animation('mentioned-message');
+        do_new_messages_animation('mentioned');
     }
     last_mention_count = new_mention_count;
 }
@@ -253,7 +253,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     // integer counts
     exports.set_count("global", "private-message", counts.private_message_count);
-    exports.set_count("global", "mentioned-message", counts.mentioned_message_count);
+    exports.set_count("global", "mentioned", counts.mentioned_message_count);
     exports.set_count("global", "home", counts.home_unread_messages);
 
     animate_private_message_changes(counts.private_message_count);
@@ -274,7 +274,7 @@ $(function () {
         }
         var op_is = event.filter.operands('is');
         if (op_is.length !== 0) {
-            if (['private-message', 'starred', 'mentioned-message'].indexOf(op_is[0]) !== -1) {
+            if (['private-message', 'starred', 'mentioned'].indexOf(op_is[0]) !== -1) {
                 $("#global_filters li[data-name='" + op_is[0] + "']").addClass('active-filter');
             }
         }
