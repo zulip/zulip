@@ -96,6 +96,11 @@ exports.update_faded_messages = function () {
         return;
     }
 
+    if (focused_recipient.type === "stream" && focused_recipient.subject === "") {
+        exports.unfade_messages();
+        return;
+    }
+
     var i;
     var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
 
