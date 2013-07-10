@@ -16,7 +16,7 @@ def is_inactive(value):
     except UserProfile.DoesNotExist:
         pass
 
-SIGNUP_STRING = '<a href="https://humbughq.com/signup">Sign up</a> to find out when Humbug is ready for you.'
+SIGNUP_STRING = '<a href="https://humbughq.com/signup">Sign up</a> to find out when Zulip is ready for you.'
 
 def has_valid_realm(value):
     try:
@@ -26,7 +26,7 @@ def has_valid_realm(value):
 
 def isnt_mit(value):
     if "@mit.edu" in value:
-        raise ValidationError(mark_safe(u'Humbug for MIT is by invitation only. ' + SIGNUP_STRING))
+        raise ValidationError(mark_safe(u'Zulip for MIT is by invitation only. ' + SIGNUP_STRING))
 
 class RegistrationForm(forms.Form):
     full_name = forms.CharField(max_length=100)

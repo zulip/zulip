@@ -424,7 +424,7 @@ class Message(models.Model):
             if self.rendered_content is not None:
                 obj['content'] = self.rendered_content
             else:
-                obj['content'] = '<p>[Humbug note: Sorry, we could not understand the formatting of your message]</p>'
+                obj['content'] = '<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
 
             obj['content_type'] = 'text/html'
         else:
