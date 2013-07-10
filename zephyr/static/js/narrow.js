@@ -393,7 +393,7 @@ exports.activate = function (operators, opts) {
     var was_narrowed = exports.active();
     var then_select_id = opts.then_select_id;
     var then_select_offset;
-    if (current_msg_list.get(then_select_id)) {
+    if (!opts.select_first_unread && rows.get(then_select_id, current_msg_list.table_name).length > 0) {
         then_select_offset = rows.get(then_select_id, current_msg_list.table_name).offset().top -
             viewport.scrollTop();
     }
