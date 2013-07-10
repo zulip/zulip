@@ -171,7 +171,7 @@ $(function () {
             type: 'DELETE',
             success: function () {
                 var row = $(e.target).closest("li");
-                row.remove();
+                row.hide('slow', function () { row.remove(); });
             }
 
         });
