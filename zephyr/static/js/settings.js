@@ -172,8 +172,10 @@ $(function () {
             success: function () {
                 var row = $(e.target).closest("li");
                 row.hide('slow', function () { row.remove(); });
+            },
+            error: function (xhr) {
+                $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
             }
-
         });
     });
 });
