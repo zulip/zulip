@@ -143,11 +143,21 @@ exports.initialize = function () {
     focus_ping();
 };
 
-exports.set_user_status = function (user_email, presence, server_time) {
-    if (user_email === page_params.email) {
-        return;
-    }
-    user_info[user_email] = status_from_timestamp(server_time, presence);
+// Set user statuses. `users` should be an object with user emails as keys
+// and presence information (see `status_from_timestamp`) as values.
+//
+// The object does not need to include every user, only the ones
+// whose presence you wish to update.
+//
+// This rerenders the user sidebar at the end, which can be slow if done too
+// often, so try to avoid calling this repeatedly.
+exports.set_user_statuses = function (users, server_time) {
+    $.each(users, function (email, presence) {
+        if (email === page_params.email) {
+            return;
+        }
+        user_info[email] = status_from_timestamp(server_time, presence);
+    });
 
     update_users();
 };

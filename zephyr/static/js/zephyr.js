@@ -72,10 +72,8 @@ $(function () {
                     "full_name": "Humbug Feedback Bot"});
     }
 
-    $.each(page_params.initial_presences, function (email, presence) {
-        activity.set_user_status(email, presence, page_params.initial_servertime);
-    });
-
+    activity.set_user_statuses(page_params.initial_presences,
+                               page_params.initial_servertime);
 });
 
 function within_viewport(row_offset, row_height) {
@@ -823,7 +821,9 @@ function get_updates_success(data) {
             }
             break;
         case 'presence':
-            activity.set_user_status(event.email, event.presence, event.server_timestamp);
+            var users = {};
+            users[event.email] = event.presence;
+            activity.set_user_statuses(users, event.server_timestamp);
             break;
         }
     });
