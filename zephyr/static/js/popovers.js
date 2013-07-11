@@ -3,9 +3,10 @@ var popovers = (function () {
 var exports = {};
 
 var current_actions_popover_elem;
+var current_message_info_popover_elem;
 
-function show_actions_popover(element, id) {
-    var last_popover_elem = current_actions_popover_elem;
+function show_message_info_popover(element, id) {
+    var last_popover_elem = current_message_info_popover_elem;
     popovers.hide_all();
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
@@ -13,7 +14,6 @@ function show_actions_popover(element, id) {
         // by clicking on the same element that caused the popover.
         return;
     }
-
     current_msg_list.select_id(id);
     var elt = $(element);
     if (elt.data('popover') === undefined) {
@@ -31,25 +31,90 @@ function show_actions_popover(element, id) {
         var ypos = elt.offset().top - viewport.scrollTop();
         elt.popover({
             placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
-            title:     templates.render('actions_popover_title',   args),
+            title:     templates.render('message_info_popover_title',   args),
+            content:   templates.render('message_info_popover_content', args),
+            trigger:   "manual"
+        });
+        elt.popover("show");
+        current_message_info_popover_elem = elt;
+    }
+}
+
+exports.show_actions_popover = function (element, id) {
+    var last_popover_elem = current_actions_popover_elem;
+    popovers.hide_all();
+    if (last_popover_elem !== undefined
+        && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    current_msg_list.select_id(id);
+    var elt = $(element);
+    if (elt.data('popover') === undefined) {
+        var message = current_msg_list.get(id);
+        var can_edit = message.sent_by_me;
+        var args = {
+            message:  message,
+            can_edit_message: can_edit,
+            narrowed: narrow.active()
+        };
+
+        var ypos = elt.offset().top - viewport.scrollTop();
+        elt.popover({
+            placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
+            title:     "",
             content:   templates.render('actions_popover_content', args),
             trigger:   "manual"
         });
         elt.popover("show");
         current_actions_popover_elem = elt;
     }
-}
+};
 
-function actions_popped() {
+exports.actions_menu_handle_keyboard = function (key) {
+    var items = $('li:not(.divider):visible a', current_actions_popover_elem.data('popover').$tip);
+    var index = items.index(items.filter(':focus'));
+
+    if (key === "enter" && index >= 0 && index < items.length) {
+        return items.eq(index).trigger('click');
+    }
+    if (index === -1) {
+        index = 0;
+    }
+    else if ((key === 'down_arrow' || key === 'vim_down') && index < items.length - 1) {
+        ++index;
+    }
+    else if ((key === 'up_arrow' || key === 'vim_up') && index > 0) {
+        --index;
+    }
+    items.eq(index).focus();
+};
+
+exports.actions_popped = function () {
     return current_actions_popover_elem !== undefined;
-}
+};
 
 exports.hide_actions_popover = function () {
-    if (actions_popped()) {
+    if (popovers.actions_popped()) {
         current_actions_popover_elem.popover("destroy");
         current_actions_popover_elem = undefined;
     }
 };
+
+function message_info_popped() {
+    return current_message_info_popover_elem !== undefined;
+}
+
+exports.hide_message_info_popover = function () {
+    if (message_info_popped()) {
+        current_message_info_popover_elem.popover("destroy");
+        current_message_info_popover_elem = undefined;
+    }
+};
+
+
 
 var current_stream_sidebar_elem;
 var current_user_sidebar_elem;
@@ -84,8 +149,15 @@ exports.register_click_handlers = function () {
     $("#main_div").on("click", ".actions_hover", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
-        show_actions_popover(this, rows.id(row));
+        popovers.show_actions_popover(this, rows.id(row));
     });
+
+    $("#main_div").on("click", ".sender_info_hover", function (e) {
+        var row = $(this).closest(".message_row");
+        e.stopPropagation();
+        show_message_info_popover(this, rows.id(row));
+    });
+
 
     $('body').on('click', '.user_sidebar_entry', function (e) {
         var last_sidebar_elem = current_user_sidebar_elem;
@@ -198,29 +270,34 @@ exports.register_click_handlers = function () {
         respond_to_message({trigger: 'popover respond'});
         popovers.hide_actions_popover();
         e.stopPropagation();
+        e.preventDefault();
     });
     $('body').on('click', '.respond_personal_button', function (e) {
         respond_to_message({reply_type: 'personal', trigger: 'popover respond pm'});
         popovers.hide_actions_popover();
         e.stopPropagation();
+        e.preventDefault();
     });
     $('body').on('click', '.popover_narrow_by_subject_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         popovers.hide_actions_popover();
         narrow.by_subject(msgid, {trigger: 'popover'});
         e.stopPropagation();
+        e.preventDefault();
     });
     $('body').on('click', '.popover_narrow_by_recipient_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         popovers.hide_actions_popover();
         narrow.by_recipient(msgid, {trigger: 'popover'});
         e.stopPropagation();
+        e.preventDefault();
     });
     $('body').on('click', '.popover_narrow_by_time_travel_button', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
         popovers.hide_actions_popover();
         narrow.by_time_travel(msgid, {trigger: 'popover'});
         e.stopPropagation();
+        e.preventDefault();
     });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
@@ -236,6 +313,7 @@ exports.register_click_handlers = function () {
         }
 
         e.stopPropagation();
+        e.preventDefault();
     });
     $('body').on('click', '.popover_edit_message', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
@@ -243,6 +321,7 @@ exports.register_click_handlers = function () {
         popovers.hide_actions_popover();
         message_edit.start(row);
         e.stopPropagation();
+        e.preventDefault();
     });
 
     $('body').on('click', '.toggle_home', function (e) {
@@ -281,15 +360,17 @@ exports.register_click_handlers = function () {
             subs.show_settings_for(stream);
         }
     });
+
 };
 
 exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
-    return actions_popped() || user_sidebar_popped() || stream_sidebar_popped();
+    return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped();
 };
 
 exports.hide_all = function () {
     popovers.hide_actions_popover();
+    popovers.hide_message_info_popover();
     popovers.hide_stream_sidebar_popover();
     popovers.hide_user_sidebar_popover();
 };

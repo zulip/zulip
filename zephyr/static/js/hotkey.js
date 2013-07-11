@@ -18,6 +18,14 @@ var directional_hotkeys = {
     'home':  {getrow: rows.first_visible, direction: -1, charCode: 0}  // Home
 };
 
+var actions_dropdown_hotkeys = [
+    'down_arrow',
+    'up_arrow',
+    'vim_up',
+    'vim_down',
+    'enter'
+];
+
 function get_event_name(e) {
     if ((e.which === 9) && e.shiftKey) {
         return 'shift_tab';
@@ -72,6 +80,8 @@ function get_event_name(e) {
         return 'narrow_by_subject';
     case 99: // 'c'
         return 'compose';
+    case 105: // 'i'
+        return 'message_actions';
     case 106: // 'j'
         return 'vim_down';
     case 107: // 'k'
@@ -102,6 +112,11 @@ function process_hotkey(e) {
     }
 
     var next_row, dirkey;
+
+    if (popovers.actions_popped() && actions_dropdown_hotkeys.indexOf(event_name) !== -1) {
+        popovers.actions_menu_handle_keyboard(event_name);
+        return true;
+    }
 
     // Handle a few keys specially when the send button is focused.
     if ($('#compose-send-button').is(':focus')) {
@@ -207,6 +222,10 @@ function process_hotkey(e) {
     }
 
     switch (event_name) {
+    case 'message_actions':
+        var id = current_msg_list.selected_id();
+        popovers.show_actions_popover($(".selected_message .actions_hover")[0], id);
+        return true;
     case 'narrow_by_recipient':
         return do_narrow_action(narrow.by_recipient);
     case 'narrow_by_subject':

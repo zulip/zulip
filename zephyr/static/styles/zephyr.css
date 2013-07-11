@@ -731,12 +731,16 @@ background-color: #feffe0;
     top: -2px;
 }
 
-.actions_hovered .sender_name {
+.sender_name_hovered .sender_name {
     color: #0088CC;
 }
 
-.actions_hovered .inline_profile_picture {
+.sender_name_hovered .inline_profile_picture {
     border-color: #0088CC;
+}
+
+.actions_hover:hover {
+    color: #0088CC;
 }
 
 .message_label_clickable:hover {

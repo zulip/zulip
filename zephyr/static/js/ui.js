@@ -1003,14 +1003,14 @@ $(function () {
         message_unhover();
     });
 
-    $("#main_div").on("mouseover", ".actions_hover", function (e) {
+    $("#main_div").on("mouseover", ".message_sender", function (e) {
         var row = $(this).closest(".message_row");
-        row.addClass("actions_hovered");
+        row.addClass("sender_name_hovered");
     });
 
-    $("#main_div").on("mouseout", ".actions_hover", function (e) {
+    $("#main_div").on("mouseout", ".message_sender", function (e) {
         var row = $(this).closest(".message_row");
-        row.removeClass("actions_hovered");
+        row.removeClass("sender_name_hovered");
     });
 
     $("#main_div").on("click", ".star", function (e) {
