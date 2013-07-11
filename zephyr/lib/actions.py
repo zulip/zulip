@@ -941,6 +941,8 @@ def do_update_message(user_profile, message_id, subject, content):
                 first_rendered_content = old_edit_history_event['prev_rendered_content']
 
     if content is not None:
+        if content == "":
+            raise JsonableError("Message can't be empty")
         if len(content) > MAX_MESSAGE_LENGTH:
             raise JsonableError("Message too long")
         rendered_content = message.render_markdown(content)
@@ -962,6 +964,10 @@ def do_update_message(user_profile, message_id, subject, content):
         event["rendered_content"] = rendered_content
 
     if subject is not None:
+        subject = subject.strip()
+        if subject == "":
+            raise JsonableError("Subject can't be empty")
+
         if len(subject) > MAX_SUBJECT_LENGTH:
             raise JsonableError("Subject too long")
         event["orig_subject"] = message.subject
