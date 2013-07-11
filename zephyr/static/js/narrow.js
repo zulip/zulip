@@ -468,7 +468,6 @@ exports.activate = function (operators, opts) {
     $("#main_div").addClass("narrowed_view");
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
-    $("#zfilt").css("opacity", 0).animate({opacity: 1});
 
     // Deal with message condensing/uncondensing.
     // In principle, this code causes us to scroll around because divs
@@ -555,7 +554,6 @@ exports.deactivate = function () {
     $("#searchbox").removeClass('narrowed_view');
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
-    $("#zhome").css("opacity", 0).animate({opacity: 1});
 
     $('#search_query').val('');
     reset_load_more_status();
