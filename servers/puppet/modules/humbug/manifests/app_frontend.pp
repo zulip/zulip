@@ -15,7 +15,7 @@ class humbug::app_frontend {
                     "python-django-pipeline", "hunspell-en-us",
                     "python-django-bitfield", "python-embedly",
                     "python-postmonkey", "python-django-jstemplate",
-                    "redis-server", "python-redis",
+                    "redis-server", "python-redis", "python-django-guardian",
                     "python-diff-match-patch",]
   package { $web_packages: ensure => "installed" }
 
