@@ -308,6 +308,23 @@ function process_read_messages(messages) {
     update_unread_counts();
 }
 
+// If we ever materially change the algorithm for this function, we
+// may need to update notifications.received_messages as well.
+function process_visible_unread_messages(update_cursor) {
+    // For any messages visible on the screen, make sure they have been marked
+    // as read.
+    if (! notifications.window_has_focus()) {
+        return;
+    }
+
+    var visible_messages = viewport.visible_messages();
+    var mark_as_read = $.grep(visible_messages, unread.message_unread);
+
+    if (mark_as_read.length > 0) {
+        process_read_messages(mark_as_read);
+    }
+}
+
 function mark_read_between(msg_list, start_id, end_id) {
     var msgs_in_range = message_range(msg_list, start_id, end_id);
     var unread_msgs = $.grep(msgs_in_range, unread.message_unread);
@@ -684,6 +701,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 
             new_messages = $.map(new_messages, add_message_metadata);
             add_messages(new_messages, msg_list, messages_are_new);
+            process_visible_unread_messages();
             compose.update_faded_messages();
         },
         error: function (xhr) {
@@ -864,6 +882,7 @@ function get_updates_success(data) {
             respond_to_cursor = saved_respond_to_cursor;
         }
 
+        process_visible_unread_messages();
         notifications.received_messages(messages);
         compose.update_faded_messages();
         stream_list.update_streams_sidebar();

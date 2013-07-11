@@ -675,6 +675,11 @@ $(function () {
             } else if (!have_scrolled_away_from_top) {
                 have_scrolled_away_from_top = true;
             }
+            // When the window scrolls, it may cause some messages to
+            // enter the screen and become read.  Calling
+            // process_visible_unread_messages will update necessary
+            // data structures and DOM elements.
+            setTimeout(process_visible_unread_messages, 0);
         }
     }
 
@@ -685,6 +690,7 @@ $(function () {
     }
 
     $(window).scroll($.throttle(50, function (e) {
+        process_visible_unread_messages();
         scroll_finish();
     }));
 

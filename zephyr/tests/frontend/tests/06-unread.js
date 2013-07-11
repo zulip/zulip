@@ -6,6 +6,7 @@ var common = require('../common.js').common;
 // standalone
 // Silence jslint errors about the global
 /*global keep_pointer_in_view: true */
+/*global process_visible_unread_messages: true */
 
 function send_with_content(content) {
     common.send_message('stream', {
@@ -78,7 +79,8 @@ casper.then(function () {
         // Changing the scroll position in phantomjs doesn't seem to trigger on-scroll
         // handlers, so unread messages are not handled
         casper.page.scrollPosition = {top: ypos, left: 0};
-        casper.evaluate(function () { keep_pointer_in_view(); });
+        casper.evaluate(function () { keep_pointer_in_view();
+                                      process_visible_unread_messages(); });
     }
     var i = 0;
     scroll_to(0);

@@ -30,6 +30,11 @@ exports.initialize = function () {
         $.each(notice_memory, function (index, notice_mem_entry) {
            notice_mem_entry.obj.cancel();
         });
+
+        // Update many places on the DOM to reflect unread
+        // counts.
+        process_visible_unread_messages();
+
     }).blur(function () {
         window_has_focus = false;
     });
@@ -270,11 +275,9 @@ function message_is_notifiable(message) {
 }
 
 exports.received_messages = function (messages) {
-    var vp = viewport.message_viewport_info();
-
     $.each(messages, function (index, message) {
         if (!message_is_notifiable(message)) return;
-        if (viewport.message_is_visible(vp, message)) return;
+        if (!unread.message_unread(message)) return;
 
         if (page_params.desktop_notifications_enabled &&
             browser_desktop_notifications_on()) {

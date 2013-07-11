@@ -430,8 +430,8 @@ exports.activate = function (operators, opts) {
             var then_scroll = !preserve_pre_narrowing_screen_position;
 
             narrowed_msg_list.select_id(then_select_id, {then_scroll: then_scroll,
-                                                         use_closest: true,
-                                                         mark_read: false});
+                                                         use_closest: true
+                                                        });
 
             if (preserve_pre_narrowing_screen_position) {
                 // Scroll so that the selected message is in the same
@@ -565,8 +565,7 @@ exports.deactivate = function () {
     // view since leaving it the old selected id might no longer be there
     home_msg_list.select_id(home_msg_list.selected_id(), {
         then_scroll: false,
-        use_closest: true,
-        mark_read: false
+        use_closest: true
     });
     // We scroll the user back to exactly the offset from the selected
     // message that he was at the time that he narrowed.

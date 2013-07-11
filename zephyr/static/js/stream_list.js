@@ -289,6 +289,7 @@ $(function () {
                 stream_li.addClass('active-filter');
             }
             rebuild_recent_subjects(op_stream[0], subject);
+            process_visible_unread_messages();
         }
     });
 

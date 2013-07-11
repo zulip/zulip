@@ -106,6 +106,34 @@ exports.message_is_visible = function (vp, message) {
     return (row_height > height && row_offset.top > top) || within_viewport(row_offset, row_height);
 };
 
+exports.visible_messages = function () {
+    var selected = current_msg_list.selected_message();
+    var vp = viewport.message_viewport_info();
+    var top = vp.visible_top;
+    var height = vp.visible_height;
+
+    // Being simplistic about this, the smallest message is 30 px high.
+    var selected_row = rows.get(current_msg_list.selected_id(), current_msg_list.table_name);
+    var num_neighbors = Math.floor(height / 30);
+    var candidates = $.merge(selected_row.prevAll("tr.message_row[zid]:lt(" + num_neighbors + ")"),
+                             selected_row.nextAll("tr.message_row[zid]:lt(" + num_neighbors + ")"));
+
+    var visible_messages = [];
+    var i;
+
+    for (i = 0; i<candidates.length; i++) {
+        var row = $(candidates[i]);
+        var row_offset = row.offset();
+        var row_height = row.height();
+        // Mark very tall messages as read once we've gotten past them
+        if ((row_height > height && row_offset.top > top) || within_viewport(row_offset, row_height)) {
+            var message = current_msg_list.get(rows.id(row));
+            visible_messages.push(message);
+        }
+    }
+    return visible_messages;
+};
+
 exports.scrollTop = function viewport_scrollTop () {
     return jwindow.scrollTop.apply(jwindow, arguments);
 };

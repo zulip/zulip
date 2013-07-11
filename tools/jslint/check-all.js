@@ -41,7 +41,7 @@ var globals =
     + ' scroll_to_selected get_private_message_recipient'
     + ' load_old_messages'
     + ' at_top_of_viewport at_bottom_of_viewport within_viewport'
-    + ' viewport restart_get_updates force_get_updates'
+    + ' process_visible_unread_messages viewport restart_get_updates force_get_updates'
     + ' load_more_messages reset_load_more_status have_scrolled_away_from_top'
     + ' maybe_scroll_to_selected recenter_pointer_on_display suppress_scroll_pointer_update'
     + ' mark_current_list_as_read message_range message_in_table process_loaded_for_unread'
