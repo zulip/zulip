@@ -561,16 +561,21 @@ exports.deactivate = function () {
     reset_load_more_status();
 
     current_msg_list = home_msg_list;
+    var preserve_pre_narrowing_screen_position =
+        (current_msg_list.selected_row().length > 0) &&
+        (current_msg_list.pre_narrow_offset !== undefined);
+
     // We fall back to the closest selected id, if the user has removed a stream from the home
     // view since leaving it the old selected id might no longer be there
-    home_msg_list.select_id(home_msg_list.selected_id(), {
-        then_scroll: false,
+    current_msg_list.select_id(current_msg_list.selected_id(), {
+        then_scroll: !preserve_pre_narrowing_screen_position,
         use_closest: true
     });
-    // We scroll the user back to exactly the offset from the selected
-    // message that he was at the time that he narrowed.
-    // TODO: Make this correctly handle the case of resizing while narrowed.
-    if (current_msg_list.selected_id() !== -1) {
+
+    if (preserve_pre_narrowing_screen_position) {
+        // We scroll the user back to exactly the offset from the selected
+        // message that he was at the time that he narrowed.
+        // TODO: Make this correctly handle the case of resizing while narrowed.
         viewport.scrollTop(current_msg_list.selected_row().offset().top - current_msg_list.pre_narrow_offset);
     }
 
