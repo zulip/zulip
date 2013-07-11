@@ -5,7 +5,7 @@ Hi there,
 To get started, visit the link below:
     <{{ activate_url }}>
 
-Feel free to give us a shout at <support@humbughq.com> if you have any questions.
+Feel free to give us a shout at <support@zulip.com> if you have any questions.
 
 Cheers,
 

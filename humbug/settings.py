@@ -30,7 +30,7 @@ else:
     ALLOWED_HOSTS = ['localhost']
 
 ADMINS = (
-    ('Humbug Error Reports', 'errors@humbughq.com'),
+    ('Zulip Error Reports', 'errors@zulip.com'),
 )
 
 MANAGERS = ADMINS
@@ -542,7 +542,7 @@ EMAIL_HOST_USER = 'humbug@humbughq.com'
 EMAIL_HOST_PASSWORD = 'xxxxxxxxxxxxxxxx'
 EMAIL_PORT = 587
 
-DEFAULT_FROM_EMAIL = "Humbug <humbug@humbughq.com>"
+DEFAULT_FROM_EMAIL = "Zulip <zulip@zulip.com>"
 
 LOGIN_REDIRECT_URL='/'
 OPENID_SSO_SERVER_URL = 'https://www.google.com/accounts/o8/id'

@@ -1271,7 +1271,7 @@ def do_send_missedmessage_email(user_profile, missed_messages):
         headers['Reply-To'] = "Nobody <noreply@humbughq.com>"
 
     subject = "Missed Zulip%s from %s" % ('s' if len(senders) > 1 else '', sender_str)
-    from_email = "%s (via Zulip) <noreply@humbughq.com>" % (sender_str)
+    from_email = "%s (via Zulip) <noreply@zulip.com>" % (sender_str)
 
     text_content = loader.render_to_string('zephyr/missed_message_email.txt', template_payload)
     html_content = loader.render_to_string('zephyr/missed_message_email_html.txt', template_payload)
