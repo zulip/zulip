@@ -7,9 +7,9 @@ if [ -z "$hostname" ]; then
     echo "USAGE: $0 server type hostname"
     exit 1
 fi
-if ! $(echo "$hostname" | grep -q humbughq.com$); then
+if ! $(echo "$hostname" | grep -q zulip); then
     echo "USAGE: $0 server type hostname"
-    echo "Hostname must end with humbughq.com"
+    echo "Hostname must have zulip in it."
     exit 1
 fi
 
