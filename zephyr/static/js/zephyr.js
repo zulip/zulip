@@ -843,8 +843,6 @@ function get_updates_success(data) {
         // You must add add messages to home_msg_list BEFORE
         // calling process_loaded_for_unread.
         add_messages(messages, home_msg_list, true);
-        process_loaded_for_unread(messages);
-
         add_messages(messages, all_msg_list, true);
 
         if (narrow.active()) {
@@ -854,6 +852,8 @@ function get_updates_success(data) {
                 maybe_add_narrowed_messages(messages, narrowed_msg_list, true);
             }
         }
+
+        process_loaded_for_unread(messages);
 
         if (narrow.narrowed_by_reply()) {
             // If you send a message when narrowed to a recipient, move the
