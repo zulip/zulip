@@ -379,12 +379,7 @@ function send_message() {
                 reload.initiate({immediate: true, send_after_reload: true});
                 return;
             }
-            var response = "Error sending message";
-            if (xhr.status.toString().charAt(0) === "4") {
-                // Only display the error response for 4XX, where we've crafted
-                // a nice response.
-                response += ": " + $.parseJSON(xhr.responseText).msg;
-            }
+            var response = util.xhr_error_message("Error sending message", xhr);
             compose_error(response, $('#new_message_content'));
         }
     });

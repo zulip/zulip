@@ -28,6 +28,10 @@ exports.save = function (row) {
             if (msg_list === current_msg_list) {
                 message_edit.end(row);
             }
+        },
+        error: function (xhr, error_type, xhn) {
+            var message = util.xhr_error_message("Error saving edit", xhr);
+            row.find(".message_edit_error").text(message).show();
         }
     });
     // The message will automatically get replaced when it arrives.
