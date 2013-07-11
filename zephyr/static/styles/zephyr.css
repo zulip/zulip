@@ -241,12 +241,21 @@ a:hover code {
     margin-top: 1em;
 }
 
-#stream_filters {
-    overflow-y: hidden;
+#streams_title {
+    font-size: 0.9em;
+    font-weight: 275;
+
     border-top: 1px solid #eee;
+
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+#stream_filters {
     border-bottom: 1px solid #eee;
-    margin: 10px 0px 10px 10px;
-    padding: 10px 15px 10px 0;
+    overflow-y: hidden;
+    margin: 2px 0px 10px 10px;
+    padding: 2px 15px 10px 0;
 }
 
 #stream_filters .narrow-filter {
