@@ -191,10 +191,10 @@ class Command(BaseCommand):
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
             hardcoded_humbug_users_nosubs = [
-                ("Humbug New User Bot", "humbug+signups@humbughq.com"),
-                ("Humbug Error Bot", "humbug+errors@humbughq.com"),
-                ("Humbug Notification Bot", "humbug+notifications@humbughq.com"),
-                ("Humbug Tutorial Bot", "humbug+tutorial@humbughq.com"),
+                ("Zulip New User Bot", "humbug+signups@humbughq.com"),
+                ("Zulip Error Bot", "humbug+errors@humbughq.com"),
+                ("Zulip Notification Bot", "humbug+notifications@humbughq.com"),
+                ("Zulip Tutorial Bot", "humbug+tutorial@humbughq.com"),
                 ]
             create_users(realms, hardcoded_humbug_users_nosubs)
 
@@ -229,10 +229,10 @@ class Command(BaseCommand):
 
                 # These bots are not needed by the test suite
                 internal_humbug_users_nosubs = [
-                    ("Humbug Commit Bot", "humbug+commits@humbughq.com"),
-                    ("Humbug Trac Bot", "humbug+trac@humbughq.com"),
-                    ("Humbug Nagios Bot", "humbug+nagios@humbughq.com"),
-                    ("Humbug Feedback Bot", "feedback@humbughq.com"),
+                    ("Zulip Commit Bot", "humbug+commits@humbughq.com"),
+                    ("Zulip Trac Bot", "humbug+trac@humbughq.com"),
+                    ("Zulip Nagios Bot", "humbug+nagios@humbughq.com"),
+                    ("Zulip Feedback Bot", "feedback@humbughq.com"),
                     ]
                 create_users(realms, internal_humbug_users_nosubs)
 
