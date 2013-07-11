@@ -281,9 +281,16 @@ exports.initialize = function () {
             }
             var current_token = strings[strings.length-1];
 
+            // Match : or @ if they're in the current string but not at the end
             if ((current_token.indexOf(":") === -1 && current_token.indexOf("@") === -1) ||
                 (current_token.indexOf("@") === current_token.length-1) ||
                 (current_token.indexOf(":") === current_token.length-1)) {
+                return false;
+            }
+
+            // Only start the emoji autocompleter if there's a space before the :
+            if ((current_token.lastIndexOf(":") > 0) &&
+                /\w/.test(current_token[current_token.lastIndexOf(":")-1])) {
                 return false;
             }
 
