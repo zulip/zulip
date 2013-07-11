@@ -336,3 +336,14 @@ img.screenshot{
 .alert-hidden {
     display: none;
 }
+
+label.text-error {
+    display: inline;
+
+    padding-left: 5px;
+}
+
+input.text-error {
+    border-color: red;
+    outline-color: red;
+}

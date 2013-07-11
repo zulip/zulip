@@ -261,6 +261,7 @@ def accounts_register(request):
             full_name  = form.cleaned_data['full_name']
             short_name = email.split('@')[0]
             (realm, _) = Realm.objects.get_or_create(domain=domain)
+            first_in_realm = len(UserProfile.objects.filter(realm=realm)) == 0
 
             # FIXME: sanitize email addresses and fullname
             if mit_beta_user:
@@ -309,7 +310,11 @@ def accounts_register(request):
                     lambda event: None)
 
             login(request, authenticate(username=email, password=password))
-            return HttpResponseRedirect(reverse('zephyr.views.home'))
+
+            if first_in_realm:
+                return HttpResponseRedirect(reverse('zephyr.views.initial_invite_page'))
+            else:
+                return HttpResponseRedirect(reverse('zephyr.views.home'))
 
     return render_to_response('zephyr/register.html',
             {'form': form,
@@ -429,6 +434,35 @@ def login_page(request, **kwargs):
     except KeyError:
         pass
     return template_response
+
+@authenticated_json_post_view
+@has_request_variables
+def json_bulk_invite_users(request, user_profile, invitee_emails=REQ(converter=json_to_list)):
+    invitee_emails = set(invitee_emails)
+    streams = get_default_subs(user_profile)
+
+    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
+
+    if ret_error is not None:
+        return json_error(data=error_data, msg=ret_error)
+    else:
+        return json_success()
+
+@login_required(login_url = settings.HOME_NOT_LOGGED_IN)
+def initial_invite_page(request):
+    user = request.user
+    # Only show the bulk-invite page for the first user in a realm
+    domain_count = len(UserProfile.objects.filter(realm=user.realm))
+    if domain_count > 1:
+        return redirect('zephyr.views.home')
+
+    params = {'company_name': user.realm.domain}
+
+    if (user.realm.restricted_to_domain):
+        params['invite_suffix'] = user.realm.domain
+
+    return render_to_response('zephyr/initial_invite_page.html', params,
+                              context_instance=RequestContext(request))
 
 @require_post
 def logout_then_login(request, **kwargs):
