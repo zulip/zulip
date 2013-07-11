@@ -590,8 +590,8 @@ exports.hide_loading_more_messages_indicator = function () {
     }
 };
 
-function could_be_condensed(content) {
-    return content.height() > (viewport.height() * 0.65);
+function could_be_condensed(elem) {
+    return elem.getBoundingClientRect().height > viewport.height() * 0.65;
 }
 
 function show_more_link(row) {
@@ -1392,7 +1392,8 @@ exports.process_condensing = function (index, elem) {
     var content = $(elem).find(".message_content");
     var message = current_msg_list.get(rows.id($(elem)));
     if (content !== undefined && message !== undefined) {
-        if (could_be_condensed(content)) {
+        var long_message = could_be_condensed(elem);
+        if (long_message) {
             // All long messages are flagged as such.
             content.addClass("could-be-condensed");
         }
@@ -1405,7 +1406,7 @@ exports.process_condensing = function (index, elem) {
         } else if (message.condensed === false) {
             uncondense($(elem));
             return;
-        } else if (could_be_condensed(content)) {
+        } else if (long_message) {
             // By default, condense a long message.
             condense($(elem));
         }
