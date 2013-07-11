@@ -27,32 +27,39 @@ if ! [ -e "$server_private_key_file" ]; then
     exit 1
 fi
 
-humbug_cert_file=$humbug_root/certs/humbug-self-signed.key
-if ! [ -e "$humbug_cert_file" ]; then
-    echo "You need humbug-self-signed.key at $humbug_cert_file"
-    exit 1
-fi
+# Force RSA keys. We do this because the ECDSA key is not printed on syslog,
+# and our puppet configuration does not use ECDSA. If we don't do this,
+# we'll get key errors after puppet apply.
+SSH_OPTS="-o HostKeyAlgorithms=ssh-rsa"
 
-ssh "$server" -t -i "$amazon_key_file" -lroot <<EOF
-resize2fs /dev/xvda1
+ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -ladmin <<EOF
+sudo sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
+sudo mkdir ~root/.ssh && sudo cp .ssh/authorized_keys ~root/.ssh/authorized_keys
+sudo service ssh restart
 
-# First, install a sufficiently new version of puppet on the target
-cat >>/etc/apt/sources.list.d/backports.list <<EOF2
-deb http://backports.debian.org/debian-backports squeeze-backports main
-deb-src http://backports.debian.org/debian-backports squeeze-backports main
+EOF
+
+ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
+echo "$hostname" > /etc/hostname
+sed -i 's/localhost$/localhost $hostname/' /etc/hosts
+/etc/init.d/hostname.sh start
+
+# First, install any updates from the apt repo that may be needed
+cat >>/etc/apt/sources.list.d/humbug.list <<EOF2
+deb http://apt.humbughq.com/ops wheezy main
 EOF2
 apt-get update
 apt-get -y upgrade
 
-# need to get puppet from squeeze-backports before we can do anything with puppet
-apt-get install -y -t squeeze-backports puppet git
+# need to get puppet before we can do anything with puppeti
+apt-get install -y puppet git
 EOF
 
 # Give new server git access
 # TODO: Don't give servers push access to our git!
-scp -i "$amazon_key_file" "$server_private_key_file" root@"$server":/root/.ssh/id_rsa
+scp $SSH_OPTS -i "$amazon_key_file" "$server_private_key_file" root@"$server":/root/.ssh/id_rsa
 
-ssh "$server" -t -i "$amazon_key_file" -lroot <<EOF
+ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
 chmod 600 /root/.ssh/id_rsa
 # Setup initial known_hosts including git server
 cat > /root/.ssh/known_hosts <<EOF2
@@ -67,12 +74,9 @@ cd /root/humbug
 git checkout master
 EOF
 
-# Stupid hack because humbug-self-signed.key isn't in git
-scp -i "$amazon_key_file" "$humbug_cert_file" root@"$server":/root/humbug/certs/humbug-self-signed.key
-
-ssh "$server" -t -i "$amazon_key_file" -lroot <<EOF
-cp -a /root/humbug/certs/ /etc/ssl/
+ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
 cp -a /root/humbug/servers/puppet/modules/humbug/files/puppet.conf /etc/puppet/
+
 userdel admin
 puppet apply -e 'class {"humbug": machinetype => "$type"}'
 cp -a /root/humbug /home/humbug/humbug
@@ -86,14 +90,11 @@ if [ -e "/etc/init.d/apache2" ]; then
     service apache2 restart
 fi
 
-echo "$hostname" > /etc/hostname
-sed -i 's/localhost$/localhost $hostname/' /etc/hosts
-/etc/init.d/hostname.sh start
 EOF
 
 # TODO: Don't give servers push access to our git!
-scp -i "$amazon_key_file" "$server_private_key_file" humbug@"$server":/home/humbug/.ssh/id_rsa
-ssh "$server" -t -i "$amazon_key_file" -lhumbug <<EOF
+scp $SSH_OPTS -i "$amazon_key_file" "$server_private_key_file" humbug@"$server":/home/humbug/.ssh/id_rsa
+ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lhumbug <<EOF
 chmod 600 /home/humbug/.ssh/id_rsa
 EOF
 
