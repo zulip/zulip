@@ -37,7 +37,7 @@ function composebox_typeahead_highlighter(item) {
     return typeahead_helper.highlight_with_escaping(this.query, item);
 }
 
-function query_matches_person (query, person) {
+function query_matches_person(query, person) {
     // Case-insensitive.
     query = query.toLowerCase();
 
@@ -46,7 +46,12 @@ function query_matches_person (query, person) {
 
 }
 
-function query_matches_emoji (query, emoji) {
+function query_matches_emoji(query, emoji) {
+    // We don't want to match non-emoji emoticons such
+    // as :P or :-p
+    if (/^-?.$/.test(query)) {
+        return false;
+    }
     return (emoji.emoji_name.indexOf(query.toLowerCase()) !== -1);
 }
 
