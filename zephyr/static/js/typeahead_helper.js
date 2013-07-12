@@ -75,6 +75,9 @@ exports.private_message_typeahead_list = [];
 exports.private_message_mapped = {};
 
 exports.render_person = function (person) {
+    if (person.special_item_text){
+        return person.special_item_text;
+    }
     return person.full_name + " <" + person.email + ">";
 };
 

@@ -282,7 +282,15 @@ exports.initialize = function () {
             } else {
                 this.completing = 'mention';
                 this.token = current_token.substring(current_token.indexOf("@")+1);
-                return page_params.people_list;
+                var all_item = {
+                    special_item_text: "all (Notify everyone)",
+                    email: "all",
+                    // Always sort above, under the assumption that names will
+                    // be longer and only contain "all" as a substring.
+                    pm_recipient_count: Infinity,
+                    full_name: "all"
+                };
+                return page_params.people_list.concat([all_item]);
             }
         },
         items: 5,
