@@ -185,24 +185,6 @@ exports.sort_emojis = function (matches, query) {
     return results.matches.concat(results.rest);
 };
 
-exports.sort_textbox_typeahead = function (matches) {
-    // input may be free text ending in @ for autocomplete
-    var query = composebox_typeahead.split_at_cursor(this.query)[0];
-    var parts;
-
-    if (query.lastIndexOf(":") > query.lastIndexOf("@")) {
-        parts = query.split(':');
-        query = parts[parts.length - 1];
-        return exports.sort_emojis(matches, query);
-    }
-
-    if (query.indexOf('@') > -1) {
-        parts = query.split('@');
-        query = parts[parts.length - 1];
-    }
-    return exports.sort_recipients(matches, query);
-};
-
 exports.sort_recipientbox_typeahead = function (matches) {
     // input_text may be one or more pm recipients
     var cleaned = composebox_typeahead.get_cleaned_pm_recipients(this.query);

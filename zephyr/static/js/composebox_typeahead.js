@@ -257,24 +257,7 @@ exports.initialize = function () {
         source: function (query, process) {
             var q = exports.split_at_cursor(query)[0];
 
-            if (q.lastIndexOf(":") > q.lastIndexOf("@")) {
-                return emoji.emojis;
-            }
-            return page_params.people_list;
-        },
-        items: 5,
-        highlighter: function (item) {
-            if (item.emoji_name !== undefined) {
-                return "<img class='emoji' src='" + item.emoji_url + "' /> " + item.emoji_name;
-            }
-            var item_formatted = typeahead_helper.render_person(item);
-            return typeahead_helper.highlight_with_escaping(this.query, item_formatted);
-        },
-        dropup: true,
-        matcher: function (item) {
-            var query = exports.split_at_cursor(this.query)[0];
-
-            var strings = query.split(/[\s*(){}\[\]]/);
+            var strings = q.split(/[\s*(){}\[\]]/);
             if (strings.length < 1) {
                 return false;
             }
@@ -287,35 +270,62 @@ exports.initialize = function () {
                 return false;
             }
 
-            // Only start the emoji autocompleter if there's a space before the :
-            if ((current_token.lastIndexOf(":") > 0) &&
-                /\w/.test(current_token[current_token.lastIndexOf(":")-1])) {
-                return false;
-            }
+            if (q.lastIndexOf(":") > q.lastIndexOf("@")) {
+                // Only start the emoji autocompleter if there's a space before the :
+                if (!/\w/.test(current_token[current_token.lastIndexOf(":")-1])){
+                    return false;
+                }
 
-            if (current_token.lastIndexOf(":") > current_token.lastIndexOf("@")) {
-                return query_matches_emoji(current_token.substring(current_token.indexOf(":")+1), item);
+                this.completing = 'emoji';
+                this.token = current_token.substring(current_token.indexOf(":")+1);
+                return emoji.emojis;
             } else {
-                return query_matches_person(current_token.substring(current_token.indexOf("@")+1), item);
+                this.completing = 'mention';
+                this.token = current_token.substring(current_token.indexOf("@")+1);
+                return page_params.people_list;
             }
         },
-        sorter: typeahead_helper.sort_textbox_typeahead,
+        items: 5,
+        highlighter: function (item) {
+            if (this.completing === 'emoji') {
+                return "<img class='emoji' src='" + item.emoji_url + "' /> " + item.emoji_name;
+            } else if (this.completing === 'mention') {
+                var item_formatted = typeahead_helper.render_person(item);
+                return typeahead_helper.highlight_with_escaping(this.query, item_formatted);
+            }
+        },
+        dropup: true,
+        matcher: function (item) {
+            if (this.completing === 'emoji') {
+                return query_matches_emoji(this.token, item);
+            } else if (this.completing === 'mention') {
+                return query_matches_person(this.token, item);
+            }
+        },
+        sorter: function (matches) {
+            if (this.completing === 'emoji') {
+                return typeahead_helper.sort_emojis(matches, this.token);
+            } else if (this.completing === 'mention') {
+                return typeahead_helper.sort_recipients(matches, this.token);
+            }
+        },
         updater: function (item) {
             var pieces = exports.split_at_cursor(this.query);
             var beginning = pieces[0];
             var rest = pieces[1];
 
-            if (item.full_name !== undefined) {
-                beginning = beginning.replace(/@\S+$/, "") + "@**" + item.full_name + "** ";
-            } else {
+            if (this.completing === 'emoji') {
                 //leading and trailing spaces are required for emoji, except if it begins a message.
                 if (beginning.lastIndexOf(":") === 0 || beginning.charAt(beginning.lastIndexOf(":") - 1) === " ") {
                     beginning = beginning.replace(/:\S+$/, "") + ":" + item.emoji_name + ": ";
                 } else {
                     beginning = beginning.replace(/:\S+$/, "") + " :" + item.emoji_name + ": ";
                 }
+            } else if (this.completing === 'mention') {
+                beginning = beginning.replace(/@\S+$/, "") + "@**" + item.full_name + "** ";
             }
-            // Keep the cursor after the newly inserted name, as Bootstrap will call textbox.change() to overwrite the text
+
+            // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to overwrite the text
             // in the textbox.
             setTimeout(function () {
                 $('#new_message_content').caret(beginning.length, beginning.length);
