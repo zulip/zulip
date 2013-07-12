@@ -32,9 +32,23 @@ exports.set_favicon = function (url) {
     }
 };
 
-exports.make_loading_indicator = function (container, opts) {
+exports.make_loading_indicator = function (outer_container, opts) {
     opts = $.extend({}, opts);
+    var container = outer_container;
     container.empty();
+
+    if (opts.abs_positioned !== undefined && opts.abs_positioned) {
+        // Create some additional containers to facilitate absolutely
+        // positioned spinners.
+        var container_id = container.attr('id');
+        var inner_container = $('<div id="' + container_id + '_box_container"></div>');
+        container.append(inner_container);
+        container = inner_container;
+        inner_container = $('<div id="' + container_id + '_box"></div>');
+        container.append(inner_container);
+        container = inner_container;
+    }
+
     var spinner_elem = $('<div class="loading_indicator_spinner"></div>');
     container.append(spinner_elem);
     var text_width = 0;
@@ -56,9 +70,9 @@ exports.make_loading_indicator = function (container, opts) {
     // too small.  The container's div will be slightly too small,
     // but that's probably OK for our purposes.
     container.css({width: 38 + text_width,
-                   height: 38,
-                   display: 'block',
-                   'white-space': 'nowrap'});
+                   height: 38});
+    outer_container.css({display: 'block',
+                         'white-space': 'nowrap'});
 
     var spinner = new Spinner({
         lines: 8,
@@ -69,8 +83,8 @@ exports.make_loading_indicator = function (container, opts) {
         shadow: false,
         zIndex: 1000
     }).spin(spinner_elem[0]);
-    container.data("spinner_obj", spinner);
-    container.data("destroying", false);
+    outer_container.data("spinner_obj", spinner);
+    outer_container.data("destroying", false);
 
     // Make the spinner appear in the center of its enclosing
     // element.  spinner.el is a 0x0 div.  The parts of the spinner
