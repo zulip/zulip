@@ -112,12 +112,11 @@ function handle_keydown(e) {
                 nextFocus = false;
             }
 
-            // If no typeaheads are shown and the user has configured enter to send,
-            // then make enter send instead of inserting a line break.
-            // (Unless shift is being held down, which we *do* want to insert a linebreak)
-            if (e.target.id === "new_message_content"
-                && code === 13 && !e.shiftKey
-                && page_params.enter_sends) {
+            // Send the message on Ctrl/Cmd-Enter or if the user has configured enter to
+            // send and the shift key is not pressed.
+            if (e.target.id === "new_message_content" && code === 13 &&
+                (e.metaKey || e.ctrlKey || (page_params.enter_sends && !e.shiftKey))
+               ) {
                 e.preventDefault();
                 if ($("#compose-send-button").attr('disabled') !== "disabled") {
                     $("#compose-send-button").attr('disabled', 'disabled');
