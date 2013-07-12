@@ -1170,6 +1170,15 @@ $(function () {
         popovers.hide_all();
     });
 
+    $('#streams_inline_cog').tooltip({ placement: 'left',
+                                       animation: false });
+
+    $('#streams_header a').click(function (e) {
+        exports.change_tab_to('#subscriptions');
+
+        e.preventDefault();
+    });
+
     $('#stream_filters li').on('click', 'a.subscription_name', function (e) {
         if (exports.home_tab_obscured()) {
             ui.change_tab_to('#home');
