@@ -573,7 +573,8 @@ exports.wait_for_gravatar = function () {
 var loading_more_messages_indicator_showing = false;
 exports.show_loading_more_messages_indicator = function () {
     if (! loading_more_messages_indicator_showing) {
-        util.make_loading_indicator($('#loading_more_messages_indicator'));
+        util.make_loading_indicator($('#loading_more_messages_indicator'),
+                                    {abs_positioned: true});
         loading_more_messages_indicator_showing = true;
         hide_floating_recipient_bar();
     }

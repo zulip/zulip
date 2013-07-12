@@ -1444,7 +1444,24 @@ table.floating_recipient {
 }
 
 #loading_more_messages_indicator {
-    margin: 10px auto;
+    margin: 10px;
+}
+
+#loading_more_messages_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#loading_more_messages_indicator_box {
+    position: relative;
+    left: -50%;
+    top: 25px;
+    border: 1px rgb(100, 100, 100) solid;
+    background-color: rgba(230, 230, 230, 0.8);
+    z-index: 1;
+    -webkit-border-radius: 6px;
+       -moz-border-radius: 6px;
+            border-radius: 6px;
 }
 
 #page_loading_indicator {
