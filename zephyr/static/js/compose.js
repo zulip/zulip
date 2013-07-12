@@ -17,7 +17,8 @@ function clear_out_file_list(jq_file_list) {
     //    $("#file_input").val("");
 }
 
-function show(tabname, focus_area) {
+// Show the compose box.
+function show_box(tabname, focus_area) {
     if (tabname === "stream") {
         $('#private-message').hide();
         $('#stream-message').show();
@@ -54,6 +55,24 @@ function show(tabname, focus_area) {
 
     // Disable the notifications bar if it overlaps with the composebox
     notifications_bar.maybe_disable();
+}
+
+function clear_box() {
+    exports.snapshot_message();
+    $("#compose").find('input[type=text], textarea').val('');
+    $("#new_message_content").trigger('autosize');
+    $("#send-status").hide(0);
+}
+
+function hide_box() {
+    $('.message_comp').find('input, textarea, button').blur();
+    $('#stream-message').hide();
+    $('#private-message').hide();
+    $(".new_message_textarea").css("min-height", "");
+    notifications_bar.enable();
+    exports.unfade_messages(true);
+    $('.message_comp').hide();
+    $("#compose_controls").show();
 }
 
 function update_lock_icon_for_stream(stream_name) {
@@ -193,7 +212,7 @@ exports.start = function (msg_type, opts) {
            (msg_type === "private" &&
             opts.private_message_recipient === compose.recipient())))) {
         // Clear the compose box if the existing message is to a different recipient
-        compose.clear();
+        clear_box();
     }
 
     compose.stream_name(opts.stream);
@@ -218,9 +237,9 @@ exports.start = function (msg_type, opts) {
     is_composing_message = msg_type;
 
     if (msg_type === 'stream') {
-        show('stream', $("#" + (focus_area || 'stream')));
+        show_box('stream', $("#" + (focus_area || 'stream')));
     } else {
-        show('private', $("#" + (focus_area || 'private_message_recipient')));
+        show_box('private', $("#" + (focus_area || 'private_message_recipient')));
     }
 
     update_fade();
@@ -240,8 +259,8 @@ function abort_xhr () {
 
 exports.cancel = function () {
     $("#compose_close").hide();
-    compose.clear();
-    compose.hide();
+    clear_box();
+    hide_box();
     abort_xhr();
     is_composing_message = false;
     if (message_snapshot !== undefined) {
@@ -347,10 +366,10 @@ function send_message() {
         type: 'POST',
         data: request,
         success: function (resp, statusText, xhr) {
-            compose.clear();
+            clear_box();
             send_status.hide();
             is_composing_message = false;
-            compose.hide();
+            hide_box();
             if (request.type === "private") {
                 onboarding.mark_checklist_step("sent_private_message");
             } else {
@@ -403,24 +422,6 @@ $(function () {
        compose.finish();
     });
 });
-
-exports.hide = function () {
-    $('.message_comp').find('input, textarea, button').blur();
-    $('#stream-message').hide();
-    $('#private-message').hide();
-    $(".new_message_textarea").css("min-height", "");
-    notifications_bar.enable();
-    exports.unfade_messages(true);
-    $('.message_comp').hide();
-    $("#compose_controls").show();
-};
-
-exports.clear = function () {
-    exports.snapshot_message();
-    $("#compose").find('input[type=text], textarea').val('');
-    $("#new_message_content").trigger('autosize');
-    $("#send-status").hide(0);
-};
 
 exports.composing = function () {
     return is_composing_message;
