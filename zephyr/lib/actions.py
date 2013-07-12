@@ -15,6 +15,7 @@ from django.core.exceptions import ValidationError
 from django.utils.importlib import import_module
 from django.template import loader
 from django.core.mail import EmailMultiAlternatives
+from django.utils.timezone import utc, is_naive
 
 from confirmation.models import Confirmation
 
@@ -1283,6 +1284,12 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
                                                                 message__id__in=message_ids,
                                                                 flags=~UserMessage.flags.read)]
+
+    last_reminder = user_profile.last_reminder
+    if last_reminder is not None and is_naive(last_reminder):
+        logging.warning("Loaded a user_profile.last_reminder for user %s that's not tz-aware: %s"
+                          % (user_profile.user.email, last_reminder))
+        last_reminder = last_reminder.replace(tzinfo=utc)
 
     waitperiod = datetime.timedelta(hours=UserProfile.EMAIL_REMINDER_WAITPERIOD)
     if len(messages) == 0 or (user_profile.last_reminder and \
