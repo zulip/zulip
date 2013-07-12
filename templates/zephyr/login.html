@@ -2,11 +2,11 @@
 
 {# Login page. #}
 
-{% load compressed %}
+{% load minified_js %}
 
 {% block customhead %}
     {{ block.super }}
-    {% compressed_js 'signup' %}
+    {% minified_js 'signup' %}
 {% endblock %}
 
 {% block portico_content %}
