@@ -51,20 +51,6 @@ exports.initialize = function () {
         return;
     }
 
-    if (!window.webkitNotifications) {
-        return;
-    }
-
-    $(document).click(function () {
-        if (!page_params.desktop_notifications_enabled || asked_permission_already) {
-            return;
-        }
-        if (window.webkitNotifications.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
-            window.webkitNotifications.requestPermission(function () {});
-            asked_permission_already = true;
-        }
-    });
-
     var audio = $("<audio>");
     if (audio[0].canPlayType === undefined) {
         supports_sound = false;
@@ -80,6 +66,18 @@ exports.initialize = function () {
                                       .attr("loop", "yes")
                                       .attr("src", "/static/audio/humbug.mp3"));
         }
+    }
+
+    if (window.webkitNotifications) {
+        $(document).click(function () {
+            if (!page_params.desktop_notifications_enabled || asked_permission_already) {
+                return;
+            }
+            if (window.webkitNotifications.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
+                window.webkitNotifications.requestPermission(function () {});
+                asked_permission_already = true;
+            }
+        });
     }
 };
 
