@@ -13,7 +13,7 @@
     </ul>
 
     <h3>Installation instructions</h3>
-    <ul class="nav nav-tabs" id="api-example-tabs">
+    <ul class="nav nav-tabs" id="apps-tabs">
       <li class="active"><a href="#android" data-toggle="tab">Android</a></li>
       <li><a href="#iphone" data-toggle="tab">iPhone</a></li>
       <li><a href="#mac" data-toggle="tab">Mac</a></li>
@@ -126,4 +126,18 @@ sudo apt-get install humbug-desktop
   </div>
 </div>
 
+
+<script>
+$(function () {
+    if (navigator.appVersion.indexOf("Win") !== -1) {
+        $('#apps-tabs [href=#windows]').tab('show');
+    }
+    if (navigator.appVersion.indexOf("Mac") !== -1) {
+        $('#apps-tabs [href=#mac]').tab('show');
+    }
+    if (navigator.appVersion.indexOf("Linux") !== -1) {
+        $('#apps-tabs [href=#linux]').tab('show');
+    }
+});
+</script>
 {% endblock %}
