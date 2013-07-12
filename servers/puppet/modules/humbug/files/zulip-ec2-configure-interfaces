@@ -1,0 +1,71 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+'''Configure a host for EC2-VPC dynamically assigned network interfaces
+
+Amazon VPC gives us a good deal of flexibility compared to classic EC2.
+However there are limitations; you can assign multiple IPs to a host
+yet only the first IP per interface will be DHCP assigned, and you are
+limited in the total number of interfaces you have, so doing one-IP-per-
+interface is also untenable.
+
+This script grabs the metadata provided by AWS and uses it to correctly
+configure all available network interfaces.
+
+It is suitable to be hooked in to system boot and network
+reconfiguration scripts.
+
+Note that it currently does not handle the deconfiguration of
+interfaces.
+
+'''
+
+import sys
+import syslog
+import subprocess
+import re
+
+import boto.utils
+import netifaces
+
+def address_of(device_id):
+    try:
+        return netifaces.ifaddresses("eth%i" % device_id)[netifaces.AF_INET][0]['addr']
+    except KeyError:
+        return None
+
+syslog.openlog(logoption=syslog.LOG_PID)
+syslog.syslog("ec2ify starting")
+
+macs = boto.utils.get_instance_metadata()["network"]["interfaces"]["macs"]
+ids = [int(macdata['device-number']) for macdata in macs.values()]
+ifaces = [iface for iface in netifaces.interfaces() if ":" not in iface and iface != "lo"]
+
+# Number of IDs should equal number of interfaces
+if len(ids) != len(ifaces):
+    syslog.syslog(syslog.LOG_ERR, "Metadata indicated %i interfaces but we have %i!" % (len(ids), len(ifaces)))
+    sys.exit(1)
+
+for device in macs.values():
+    # There's an annoying API inconsistency here:
+    #   If you have multiple IPs, local-ipv4s is a list.
+    #   If you only have one, local-ipv4s is a string.
+    # Who knew?
+    if type(device['local-ipv4s']) is str:
+        # Only do dhcp, don't try to assign addresses
+        to_configure = [device['local-ipv4s']]
+    else:
+        to_configure = list(device['local-ipv4s'])
+    device_number = int(device['device-number'])
+
+    if address_of(device_number) is None:
+        # If the device was not autoconfigured, do so now.
+        syslog.syslog(syslog.LOG_INFO, "Device eth%i not configured, starting dhcpd" % device_number)
+        subprocess.check_call(['/sbin/dhcpcd', 'eth%i' % device_number])
+
+    to_configure.remove(address_of(device_number))
+
+    for (count, ip) in enumerate(to_configure):
+        # Configure the IP via a virtual interface
+        device = "eth%i:%i" % (device_number, count)
+        syslog.syslog(syslog.LOG_INFO, "Configuring %s with IP %s" % (device, ip))
+        subprocess.check_call(['/sbin/ifconfig', device, ip])

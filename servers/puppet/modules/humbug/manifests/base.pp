@@ -4,7 +4,8 @@ class humbug::base {
                 "openssh-server", "python-pip", "puppet-el",
                 "iptables-persistent", "nagios-plugins-basic", "munin-node",
                 "munin-plugins-extra", "postgresql-client-9.1",
-		"debian-goodies", "moreutils", "python-requests", ]
+		"debian-goodies", "moreutils", "python-requests", "ipython",
+                "python-boto", "python-netifaces" ]
   package { $packages: ensure => "installed" }
 
 
@@ -73,6 +74,18 @@ class humbug::base {
     source     => 'puppet:///modules/humbug/apt/apt.conf.d/02periodic',
   }
 
+  file { '/usr/local/sbin/zulip-ec2-configure-interfaces':
+    ensure     => file,
+    mode       => 755,
+    source     => 'puppet:///modules/humbug/zulip-ec2-configure-interfaces',
+  }
+
+  file { '/etc/network/if-up.d/zulip-ec2-configure-interfaces_if-up.d.sh':
+    ensure     => file,
+    mode       => 755,
+    source     => 'puppet:///modules/humbug/zulip-ec2-configure-interfaces_if-up.d.sh',
+  }
+
   file { '/etc/ssh/sshd_config':
     require    => Package['openssh-server'],
     ensure     => file,
@@ -81,6 +94,7 @@ class humbug::base {
     group      => 'root',
     mode       => 644,
   }
+
   service { 'ssh':
     ensure     => running,
     subscribe  => File['/etc/ssh/sshd_config'],
