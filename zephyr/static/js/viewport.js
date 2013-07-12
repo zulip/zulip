@@ -89,48 +89,54 @@ exports.set_message_position = function (message_top, message_height, viewport_i
     exports.scrollTop(new_scroll_top);
 };
 
-exports.message_is_visible = function (vp, message) {
-    if (! notifications.window_has_focus()) {
-        return false;
-    }
+function in_viewport_or_tall(el, top_of_feed, bottom_of_feed) {
+    var rect = el.getBoundingClientRect();
+    return ((rect.top > top_of_feed) && // Message top is in view and
+            ((rect.bottom < bottom_of_feed) || // message is fully in view or
+             ((rect.height > bottom_of_feed - top_of_feed) &&
+              (rect.top < bottom_of_feed)))); // message is tall.
+}
 
-    var top = vp.visible_top;
-    var height = vp.visible_height;
-
-    var row = rows.get(message.id, current_msg_list.table_name);
-    if (row.length === 0) return false;
-
-    var row_offset = row.offset();
-    var row_height = row.height();
-    // Very tall messages are visible once we've gotten past them
-    return (row_height > height && row_offset.top > top) || within_viewport(row_offset, row_height);
-};
+function add_to_visible_messages(candidates, visible_messages,
+                                 top_of_feed, bottom_of_feed) {
+    $.each(candidates, function (idx, row) {
+        var row_rect = row.getBoundingClientRect();
+        // Mark very tall messages as read once we've gotten past them
+        if (in_viewport_or_tall(row, top_of_feed, bottom_of_feed)) {
+            visible_messages.push(current_msg_list.get(rows.id($(row))));
+        } else {
+            return false;
+        }
+    });
+}
 
 exports.visible_messages = function () {
+    // Note that when using getBoundingClientRect() we are getting offsets
+    // relative to the visible window, but when using jQuery's offset() we are
+    // getting offsets relative to the full scrollable window. You can't try to
+    // compare heights from these two methods.
+
     var selected = current_msg_list.selected_message();
-    var vp = viewport.message_viewport_info();
-    var top = vp.visible_top;
-    var height = vp.visible_height;
+    var top_of_feed = $(".navbar-top")[0].getBoundingClientRect().bottom;
+    var bottom_of_feed = $("#compose")[0].getBoundingClientRect().top;
+    var height = bottom_of_feed - top_of_feed;
 
     // Being simplistic about this, the smallest message is 30 px high.
     var selected_row = rows.get(current_msg_list.selected_id(), current_msg_list.table_name);
     var num_neighbors = Math.floor(height / 30);
-    var candidates = $.merge(selected_row.prevAll("tr.message_row[zid]:lt(" + num_neighbors + ")"),
-                             selected_row.nextAll("tr.message_row[zid]:lt(" + num_neighbors + ")"));
 
+    // We do this explicitly without merges and without recalculating
+    // the feed bounds to keep this computation as cheap as possible.
     var visible_messages = [];
-    var i;
+    var messages_above_pointer = selected_row.prevAll("tr.message_row[zid]:lt(" + num_neighbors + ")");
+    var messages_below_pointer = selected_row.nextAll("tr.message_row[zid]:lt(" + num_neighbors + ")");
+    add_to_visible_messages(selected_row, visible_messages,
+                            top_of_feed, bottom_of_feed);
+    add_to_visible_messages(messages_above_pointer, visible_messages,
+                            top_of_feed, bottom_of_feed);
+    add_to_visible_messages(messages_below_pointer, visible_messages,
+                            top_of_feed, bottom_of_feed);
 
-    for (i = 0; i<candidates.length; i++) {
-        var row = $(candidates[i]);
-        var row_offset = row.offset();
-        var row_height = row.height();
-        // Mark very tall messages as read once we've gotten past them
-        if ((row_height > height && row_offset.top > top) || within_viewport(row_offset, row_height)) {
-            var message = current_msg_list.get(rows.id(row));
-            visible_messages.push(message);
-        }
-    }
     return visible_messages;
 };
 
