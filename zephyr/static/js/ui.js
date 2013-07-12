@@ -1205,11 +1205,11 @@ $(function () {
     });
 
     $('.compose_stream_button').click(function (e) {
-        compose.set_mode('stream');
+        compose.start('stream');
         return false;
     });
     $('.compose_private_button').click(function (e) {
-        compose.set_mode('private');
+        compose.start('private');
         return false;
     });
 

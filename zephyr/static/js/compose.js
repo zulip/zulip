@@ -422,22 +422,6 @@ exports.clear = function () {
     $("#send-status").hide(0);
 };
 
-// Set the mode of a compose already in progress.
-// Does not clear the input fields.
-exports.set_mode = function (mode) {
-    ui.change_tab_to('#home');
-    if (!is_composing_message) {
-        exports.start(mode);
-    }
-    if (mode === 'private') {
-        show('private');
-        is_composing_message = "private";
-    } else {
-        show('stream');
-        is_composing_message = "stream";
-    }
-};
-
 exports.composing = function () {
     return is_composing_message;
 };
@@ -638,7 +622,7 @@ $(function () {
             // when text gets added into the composebox.
             if (!compose.composing()) {
                 respond_to_sent_message = true;
-                compose.set_mode('stream');
+                compose.start('stream');
             }
             if (i === -1) {
                 // This is a paste, so there's no filename. Show the image directly
@@ -662,7 +646,7 @@ $(function () {
             var textbox = $("#new_message_content");
             if (!compose.composing()) {
                 respond_to_sent_message = true;
-                compose.set_mode('stream');
+                compose.start('stream');
             }
             textbox.val(textbox.val() + contents);
         }
