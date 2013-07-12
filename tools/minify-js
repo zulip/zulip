@@ -25,8 +25,6 @@ from django.conf import settings
 os.chdir(settings.DEPLOY_ROOT)
 
 STATIC_PATH = 'zephyr/static/'
-with open(settings.STATIC_HEADER_FILE, 'r') as fp:
-    static_header = fp.read()
 
 # Compile Handlebars templates
 subprocess.check_call(['tools/node', 'node_modules/.bin/handlebars']
@@ -107,11 +105,13 @@ for js_group, filespec in JS_SPECS.iteritems():
 
     # No previous deploy, or a source file has changed, or copying was
     # supposed to work but failed.  Thus, minify the JS anew.
-    cmd = '%s --language_in ECMASCRIPT5 --create_source_map %s %s' % (
-            CLOSURE_BINARY, map_file, ' '.join(in_files))
+    # (N.B. we include STATIC_HEADER_FILE before the JavaScripts.
+    #  This way it doesn't throw off the source map.)
+    cmd = '%s --language_in ECMASCRIPT5 --create_source_map %s %s %s' % (
+            CLOSURE_BINARY, map_file,
+            settings.STATIC_HEADER_FILE, ' '.join(in_files))
     js = subprocess.check_output(cmd, shell=True)
 
-    # Write out the JS with static header prepended
+    # Write out the JS
     with open(out_file, 'w') as fp:
-        fp.write(static_header)
         fp.write(js)

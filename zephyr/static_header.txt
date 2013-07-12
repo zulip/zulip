@@ -1,4 +1,4 @@
-/*
+/** @preserve
   Some of the software provided in this file may be offered under an open source
   license. If some of the software in this file is offered under an open source
   license, information about that license will appear in this file.
