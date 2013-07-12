@@ -974,6 +974,7 @@ def do_update_message(user_profile, message_id, subject, content):
         event["orig_subject"] = message.subject
         message.subject = subject
         event["subject"] = subject
+        event['subject_links'] = bugdown.subject_links(message.sender.realm.domain.lower(), subject)
         edit_history_event["prev_subject"] = event['orig_subject']
 
     message.last_edit_time = timezone.now()

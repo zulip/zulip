@@ -413,6 +413,8 @@ class Message(models.Model):
             avatar_url        = avatar_url(self.sender),
             client            = self.sending_client.name)
 
+        obj['subject_links'] = bugdown.subject_links(self.sender.realm.domain.lower(), self.subject)
+
         if self.last_edit_time != None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(self.last_edit_time)
             obj['edit_history'] = ujson.loads(self.edit_history)

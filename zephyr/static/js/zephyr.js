@@ -729,6 +729,7 @@ function update_messages(events) {
             unread.update_unread_subjects(msg, event);
 
             msg.subject = event.subject;
+            msg.subject_links = event.subject_links;
             if (msg.subject === compose.empty_subject_placeholder()) {
                 msg.your_empty_subject = true;
             } else {

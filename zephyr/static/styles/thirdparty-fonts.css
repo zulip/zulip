@@ -335,3 +335,4 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-chevron-down:before         { content: "\f078"; }
 .icon-vector-caret-right:before          { content: "\f0da"; }
 .icon-vector-caret-down:before           { content: "\f0d7"; }
+.icon-vector-external-link-sign:before   { content: "\f14c"; }

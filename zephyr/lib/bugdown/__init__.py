@@ -628,6 +628,14 @@ realm_filters = {
         ],
     }
 
+def subject_links(domain, subject):
+    matches = []
+    for source_pattern, format_string in realm_filters.get(domain, []):
+        pattern = r'\b(?P<name>' + source_pattern + ')(?!\w)'
+        for m in re.finditer(pattern, subject):
+            matches += [format_string % m.groupdict()]
+    return matches
+
 for realm in realm_filters.keys():
     # Because of how the Markdown config API works, this has confusing
     # large number of layers of dicts/arrays :(
