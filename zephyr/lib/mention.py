@@ -6,7 +6,6 @@ import zephyr.models
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
 find_mentions = r'(?<![^\s\'\"\(,:<])@(?:\*\*([^\*]+)\*\*|(\w+))'
-find_mentions_re = re.compile(find_mentions)
 
 wildcards = ['all', 'everyone']
 
