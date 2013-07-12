@@ -1,6 +1,6 @@
 {% extends "zephyr/portico.html" %}
 
-{% load compressed %}
+{% load minified_js %}
 
 {# A landing page for the first user in a realm, prompting her to invite her colleages. #}
 
@@ -8,7 +8,7 @@
 
 {% block customhead %}
     {{ block.super }}
-    {% compressed_js 'initial_invite' %}
+    {% minified_js 'initial_invite' %}
 
 	<script type="text/javascript">
 	var invite_suffix = "{{invite_suffix}}";
