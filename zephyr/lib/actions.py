@@ -1295,7 +1295,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     last_reminder = user_profile.last_reminder
     if last_reminder is not None and is_naive(last_reminder):
         logging.warning("Loaded a user_profile.last_reminder for user %s that's not tz-aware: %s"
-                          % (user_profile.user.email, last_reminder))
+                          % (user_profile.email, last_reminder))
         last_reminder = last_reminder.replace(tzinfo=utc)
 
     waitperiod = datetime.timedelta(hours=UserProfile.EMAIL_REMINDER_WAITPERIOD)
