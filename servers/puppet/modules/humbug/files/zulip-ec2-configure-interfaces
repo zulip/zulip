@@ -36,6 +36,12 @@ def address_of(device_id):
 syslog.openlog(logoption=syslog.LOG_PID)
 syslog.syslog("ec2ify starting")
 
+def guess_gateway(device_id):
+    # This will not work if the default gateway isn't n.n.n.1.
+    address = address_of(device_id).split('.')
+    address[3] = '1'
+    return '.'.join(address)
+
 macs = boto.utils.get_instance_metadata()["network"]["interfaces"]["macs"]
 ids = [int(macdata['device-number']) for macdata in macs.values()]
 ifaces = [iface for iface in netifaces.interfaces() if ":" not in iface and iface != "lo"]
@@ -61,6 +67,18 @@ for device in macs.values():
         # If the device was not autoconfigured, do so now.
         syslog.syslog(syslog.LOG_INFO, "Device eth%i not configured, starting dhcpd" % device_number)
         subprocess.check_call(['/sbin/dhcpcd', 'eth%i' % device_number])
+
+        # Horrible hack to route return packets on the correct interface
+        # See http://unix.stackexchange.com/a/4421/933
+        subprocess.check_call(
+                ['/sbin/ip', 'rule', 'add', 'fwmark', str(device_number), 'table', str(device_number)])
+        subprocess.check_call(
+                ['/sbin/ip', 'route', 'add', '0.0.0.0/0', 'table', str(device_number), 'dev',
+                    'eth%i' % device_number, 'via', guess_gateway(device_number)])
+        subprocess.check_call(
+                ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
+                    address_of(device_number), '-j', 'MARK', '--set-mark', str(device_number)])
+
 
     to_configure.remove(address_of(device_number))
 
