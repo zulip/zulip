@@ -10,7 +10,7 @@ SERVER_GENERATION = int(time.time())
 
 DEPLOYED = (('humbughq.com' in platform.node())
             or os.path.exists('/etc/humbug-server'))
-STAGING_DEPLOYED = (platform.node() == 'staging.humbughq.com')
+STAGING_DEPLOYED = (platform.node() == 'staging.zulip.net')
 TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
 
 # Uncomment end of next line to test JS/CSS minification.

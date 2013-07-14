@@ -43,8 +43,8 @@ def send_deployment_finished_humbug(branch, message):
                            u"--subject=deploy \u21D2 %s" % (branch,), "--message=%s" % (message,)])
 
 deployments = {
-    'refs/heads/prod': ('humbughq.com', 'prod'),
-    'refs/heads/master': ('staging.humbughq.com', 'master'),
+    'refs/heads/prod': ('prod0.zulip.net', 'prod'),
+    'refs/heads/master': ('staging.zulip.net', 'master'),
     'refs/heads/test-post-receive': None,
     }
 
