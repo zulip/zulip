@@ -20,7 +20,8 @@ interfaces.
 '''
 
 import sys
-import syslog
+import logging
+import logging.handlers
 import subprocess
 import re
 
@@ -33,14 +34,18 @@ def address_of(device_id):
     except KeyError:
         return None
 
-syslog.openlog(logoption=syslog.LOG_PID)
-syslog.syslog("ec2ify starting")
-
 def guess_gateway(device_id):
     # This will not work if the default gateway isn't n.n.n.1.
     address = address_of(device_id).split('.')
     address[3] = '1'
     return '.'.join(address)
+
+log = logging.getLogger('ec2ify')
+log.setLevel(logging.DEBUG)
+
+log.addHandler(logging.handlers.SysLogHandler(facility=logging.handlers.SysLogHandler.LOG_DAEMON))
+log.addHandler(logging.StreamHandler())
+log.info("ec2ify starting")
 
 macs = boto.utils.get_instance_metadata()["network"]["interfaces"]["macs"]
 ids = [int(macdata['device-number']) for macdata in macs.values()]
@@ -48,7 +53,7 @@ ifaces = [iface for iface in netifaces.interfaces() if ":" not in iface and ifac
 
 # Number of IDs should equal number of interfaces
 if len(ids) != len(ifaces):
-    syslog.syslog(syslog.LOG_ERR, "Metadata indicated %i interfaces but we have %i!" % (len(ids), len(ifaces)))
+    log.error("Metadata indicated %i interfaces but we have %i!" % (len(ids), len(ifaces)))
     sys.exit(1)
 
 for device in macs.values():
@@ -65,7 +70,7 @@ for device in macs.values():
 
     if address_of(device_number) is None:
         # If the device was not autoconfigured, do so now.
-        syslog.syslog(syslog.LOG_INFO, "Device eth%i not configured, starting dhcpd" % device_number)
+        log.info("Device eth%i not configured, starting dhcpd" % device_number)
         subprocess.check_call(['/sbin/dhcpcd', 'eth%i' % device_number])
 
         # Horrible hack to route return packets on the correct interface
@@ -85,5 +90,5 @@ for device in macs.values():
     for (count, ip) in enumerate(to_configure):
         # Configure the IP via a virtual interface
         device = "eth%i:%i" % (device_number, count)
-        syslog.syslog(syslog.LOG_INFO, "Configuring %s with IP %s" % (device, ip))
+        log.info("Configuring %s with IP %s" % (device, ip))
         subprocess.check_call(['/sbin/ifconfig', device, ip])
