@@ -1,4 +1,4 @@
-# For any system using nginx (currently just app frontends)
+# For any system using nginx (currently just app frontends and load balancers)
 class humbug::nginx {
   $web_packages = [ "nginx", ]
   package { $web_packages: ensure => "installed" }

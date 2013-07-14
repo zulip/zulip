@@ -1,0 +1,93 @@
+upstream staging {
+    server staging.zulip.net:443;
+}
+
+upstream prod {
+    server prod0.zulip.net:443;
+}
+
+server {
+    listen 80;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen staging.humbughq.com:443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
+
+    location / {
+        proxy_pass https://staging/;
+        include /etc/nginx/humbug-include/loadbalancer;
+    }
+}
+
+server {
+    # This stanza covers api, www, zephyr, and bare humbughq.com
+    listen www.humbughq.com:443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
+
+    location / {
+        proxy_pass https://prod/;
+        include /etc/nginx/humbug-include/loadbalancer;
+    }
+}
+
+server {
+    listen staging.zulip.com:443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/staging.zulip.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/staging-zulip.key;
+
+    location / {
+        proxy_pass https://staging/;
+        include /etc/nginx/humbug-include/loadbalancer;
+    }
+}
+
+server {
+    # This stanza also covers bare zulip.com
+    listen www.zulip.com:443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/www.zulip.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/production-zulip.key;
+
+    location / {
+        proxy_pass https://prod/;
+        include /etc/nginx/humbug-include/loadbalancer;
+    }
+}
+
+server {
+    listen api.zulip.com:443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/api.zulip.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/production-zulip.key;
+
+    location / {
+        proxy_pass https://prod/;
+        include /etc/nginx/humbug-include/loadbalancer;
+    }
+}
+
+
+server {
+    listen zephyr.zulip.com:443;
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/zephyr.zulip.com.combined-chain.crt;
+    ssl_certificate_key /etc/ssl/private/production-zulip.key;
+
+    location / {
+        proxy_pass https://prod/;
+        include /etc/nginx/humbug-include/loadbalancer;
+    }
+}
