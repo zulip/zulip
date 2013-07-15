@@ -80,35 +80,6 @@ function describe(operators) {
     }).join(', ');
 }
 
-function get_object_parts(obj) {
-    // N.B. action is *not* escaped by the caller
-    switch (obj.action) {
-    case 'stream':
-        return {prefix: 'Narrow to stream', query: get_query(obj), suffix: ''};
-
-    case 'private_message':
-        return {prefix: 'Narrow to private messages with',
-
-                query: get_person(obj),
-                suffix: ''};
-
-    case 'sender':
-        return {prefix: 'Narrow to messages sent by',
-                query: get_person(obj),
-                suffix: ''};
-
-    case 'operators':
-        // HACK: This label needs to be distinct from the above, because of the
-        // way we identify action objects by their labels.  Using two spaces
-        // after 'Narrow to' ensures this, and is invisible with standard HTML
-        // whitespace handling.
-        return {prefix: '',
-                query: describe(obj.operators),
-                suffix: ''};
-    }
-    return {prefix: 'Error', query: 'Error', suffix: 'Error'};
-}
-
 function get_label(obj) {
     switch (obj.action) {
     case 'stream':
@@ -319,9 +290,9 @@ exports.initialize = function () {
                 return prefix + ' ' + stream;
             }
 
-            var parts = get_object_parts(obj);
-            parts.query = Handlebars.Utils.escapeExpression(parts.query);
-            return parts.prefix + " " + parts.query + " " + parts.suffix;
+            var description = describe(obj.operators);
+            description = Handlebars.Utils.escapeExpression(description);
+            return description;
         },
         matcher: function (item) {
             return true;
