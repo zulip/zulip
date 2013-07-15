@@ -80,7 +80,7 @@ function describe(operators) {
     }).join(', ');
 }
 
-function render_object_in_parts(obj) {
+function get_object_parts(obj) {
     // N.B. action is *not* escaped by the caller
     switch (obj.action) {
     case 'stream':
@@ -110,7 +110,7 @@ function render_object_in_parts(obj) {
 }
 
 function render_object(obj) {
-    var parts = render_object_in_parts(obj);
+    var parts = get_object_parts(obj);
     return parts.prefix + " " + parts.query + " " + parts.suffix;
 }
 
@@ -283,7 +283,7 @@ exports.initialize = function () {
                 return prefix + ' ' + stream;
             }
 
-            var parts = render_object_in_parts(obj);
+            var parts = get_object_parts(obj);
             parts.query = Handlebars.Utils.escapeExpression(parts.query);
             return parts.prefix + " " + parts.query + " " + parts.suffix;
         },
