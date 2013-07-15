@@ -5,7 +5,7 @@ class humbug::app_frontend {
   class { 'humbug::supervisor': }
 
   $web_packages = [ "memcached", "python-pylibmc", "python-tornado", "python-django",
-                    "python-pygments", "python-flup", "ipython", "python-psycopg2",
+                    "python-pygments", "python-flup", "python-psycopg2",
                     "yui-compressor", "python-django-auth-openid",
                     "python-django-statsd-mozilla",
                     "build-essential", "libssl-dev", "python-ujson",
