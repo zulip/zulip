@@ -93,6 +93,11 @@ li, .table th, .table td {
     text-decoration: none;
  }
 
+ .navbar .logoimage {
+    width: 45px;
+    height: auto;
+ }
+
  @media (max-width: 979px) {
     .navbar .logo {
         margin-left: -20px;
