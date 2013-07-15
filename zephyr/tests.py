@@ -2448,10 +2448,10 @@ But you can never leave**"""
         self.assertEqual(converted, "<p>You can check out **any time you'd like<br>\nBut you can never leave**</p>")
 
     def test_realm_patterns(self):
-        msg = "We should fix trac #224 and Trac #115, but not Ztrac #124 or trac #1124Z today."
+        msg = "We should fix #224 and #115, but not issue#124 or #1124z today."
         converted = bugdown_convert(msg)
 
-        self.assertEqual(converted, '<p>We should fix <a href="https://trac.humbughq.com/ticket/224" target="_blank" title="https://trac.humbughq.com/ticket/224">trac #224</a> and <a href="https://trac.humbughq.com/ticket/115" target="_blank" title="https://trac.humbughq.com/ticket/115">Trac #115</a>, but not Ztrac #124 or trac #1124Z today.</p>')
+        self.assertEqual(converted, '<p>We should fix <a href="https://trac.humbughq.com/ticket/224" target="_blank" title="https://trac.humbughq.com/ticket/224">#224</a> and <a href="https://trac.humbughq.com/ticket/115" target="_blank" title="https://trac.humbughq.com/ticket/115">#115</a>, but not issue#124 or #1124z today.</p>')
 
 class UserPresenceTests(AuthedTestCase):
 
