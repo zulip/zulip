@@ -39,7 +39,9 @@ server {
     ssl_certificate /etc/ssl/certs/wildcard-humbughq.com.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/app.humbughq.com.key;
 
-    server_name humbughq.com www.humbughq.com;
+    # We don't actually have an SSL cert for zulip.com, but that's okay since
+    # clients will never be accessing this host directly.
+    server_name humbughq.com www.humbughq.com zulip.com;
 
     # Avoid clickjacking attacks
     add_header X-Frame-Options DENY;
