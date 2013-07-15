@@ -1,39 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"  xmlns:dc="http://purl.org/dc/elements/1.1/">
    <channel>
-      <title>Humbug Changelog</title>
-      <link>https://humbughq.com/dist/apps/win/sparkle.xml</link>
-      <description>Latest updates to Humbug</description>
+      <title>Zulip Changelog</title>
+      <link>https://zulip.com/dist/apps/win/sparkle.xml</link>
+      <description>Latest updates to Zulip's Desktop App</description>
       <language>en</language>
       <item>
          <title>
-             Version 0.3.3
+             Version 0.3.4
          </title>
          <sparkle:releaseNotesLink>
-             https://humbughq.com/dist/apps/win/sparkle-changelog.html
+             https://zulip.com/dist/apps/win/sparkle-changelog.html
          </sparkle:releaseNotesLink>
-         <pubDate>Fri, 5 Jul 2013 16:20:11 +0000</pubDate>
-         <enclosure url="https://humbughq.com/dist/apps/win/humbug-0.3.3.exe" sparkle:version="0.3.3" type="application/octet-stream" />
-      </item>
-      <item>
-         <title>
-             Version 0.3.0 (Windows Upgrade Test)
-         </title>
-         <sparkle:releaseNotesLink>
-             https://humbughq.com/dist/apps/win/sparkle-changelog.html
-         </sparkle:releaseNotesLink>
-         <pubDate>Tue, 28 Jun 2013 16:20:11 +0000</pubDate>
-         <enclosure url="https://humbughq.com/dist/apps/win/humbug-0.3.0.exe" sparkle:version="0.3.0" type="application/octet-stream" />
-      </item>
-      <item>
-         <title>
-             Version 0.0.2 (Upgrade Test Alpha)
-         </title>
-         <sparkle:releaseNotesLink>
-             https://humbughq.com/dist/apps/win/sparkle-changelog.html
-         </sparkle:releaseNotesLink>
-         <pubDate>Tue, 28 Jun 2013 16:20:11 +0000</pubDate>
-         <enclosure url="https://humbughq.com/dist/apps/win/humbug-0.0.2.exe" sparkle:version="0.0.2" type="application/octet-stream" />
+         <pubDate>Mon, 15 Jul 2013 16:20:11 +0000</pubDate>
+         <enclosure url="https://zulip.com/dist/apps/win/zulip-0.3.4.exe" sparkle:version="0.3.4" type="application/octet-stream" />
       </item>
    </channel>
 </rss>
