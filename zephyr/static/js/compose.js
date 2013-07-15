@@ -230,7 +230,7 @@ exports.start = function (msg_type, opts) {
     if (msg_type === 'stream' && opts.stream && ! opts.subject) {
         focus_area = 'subject';
     } else if ((msg_type === 'stream' && opts.stream)
-               || opts.private_message_recipient) {
+               || (msg_type === 'private' && opts.private_message_recipient)) {
         focus_area = 'new_message_content';
     }
 
