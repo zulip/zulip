@@ -191,40 +191,6 @@ function narrow_or_search_for_term(item) {
     return item;
 }
 
-function searchbox_sorter(items) {
-    var objects_by_action = {};
-    var result = [];
-
-    $.each(items, function (idx, elt) {
-        var obj = mapped[elt];
-        if (objects_by_action[obj.action] === undefined)
-            objects_by_action[obj.action] = [];
-        objects_by_action[obj.action].push(obj);
-    });
-
-    var query = this.query;
-    $.each(['operators', 'private_message', 'sender', 'stream'], function (idx, action) {
-        var objs = objects_by_action[action];
-        if (!objs)
-            return;
-        // Get the first object in sorted order.
-        if (action === 'private_message' || action === 'sender') {
-            objs.sort(function (x, y) {
-                return typeahead_helper.compare_by_pms(get_query(x), get_query(y));
-            });
-        } else if (action !== 'stream') {
-            // streams are already sorted
-            objs = typeahead_helper.sorter(query, objs, get_query);
-        }
-        objs = objs.slice(0, 4);
-        var labels = $.map(objs, function (obj) { return obj.label;});
-
-        result = result.concat(labels);
-    });
-
-    return result;
-}
-
 function update_buttons_with_focus(focused) {
     var search_query = $('#search_query');
 
@@ -266,7 +232,7 @@ exports.initialize = function () {
                 return [];
             }
 
-            return $.grep(labels, function (label) {
+            var items = $.grep(labels, function (label) {
                 var obj = mapped[label];
                 if (obj.disabled)
                     return false;
@@ -280,6 +246,37 @@ exports.initialize = function () {
                 // Case-insensitive (from Bootstrap's default matcher).
                 return (actual_search_term.toLowerCase().indexOf(query.toLowerCase()) !== -1);
             });
+
+            var objects_by_action = {};
+            var result = [];
+
+            $.each(items, function (idx, elt) {
+                var obj = mapped[elt];
+                if (objects_by_action[obj.action] === undefined)
+                    objects_by_action[obj.action] = [];
+                objects_by_action[obj.action].push(obj);
+            });
+
+            $.each(['operators', 'private_message', 'sender', 'stream'], function (idx, action) {
+                var objs = objects_by_action[action];
+                if (!objs)
+                    return;
+                // Get the first object in sorted order.
+                if (action === 'private_message' || action === 'sender') {
+                    objs.sort(function (x, y) {
+                        return typeahead_helper.compare_by_pms(get_query(x), get_query(y));
+                    });
+                } else if (action !== 'stream') {
+                    // streams are already sorted
+                    objs = typeahead_helper.sorter(query, objs, get_query);
+                }
+                objs = objs.slice(0, 4);
+                var labels = $.map(objs, function (obj) { return obj.label;});
+
+                result = result.concat(labels);
+            });
+
+            return result;
         },
         items: 20,
         highlighter: function (item) {
@@ -319,7 +316,9 @@ exports.initialize = function () {
             return true;
         },
         updater: narrow_or_search_for_term,
-        sorter: searchbox_sorter
+        sorter: function (items) {
+            return items;
+        }
     });
 
     $("#searchbox_form").keydown(function (e) {
