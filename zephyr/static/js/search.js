@@ -109,9 +109,20 @@ function get_object_parts(obj) {
     return {prefix: 'Error', query: 'Error', suffix: 'Error'};
 }
 
-function render_object(obj) {
-    var parts = get_object_parts(obj);
-    return parts.prefix + " " + parts.query + " " + parts.suffix;
+function get_label(obj) {
+    switch (obj.action) {
+    case 'stream':
+        return 'stream:' + obj.query;
+
+    case 'private_message':
+        return 'pm-with:' + obj.query.email;
+
+    case 'sender':
+        return 'sender:' + obj.query.email;
+
+    case 'operators':
+        return obj.query;
+    }
 }
 
 exports.update_typeahead = function () {
@@ -139,8 +150,9 @@ exports.update_typeahead = function () {
     mapped = {};
     labels = [];
     $.each(options, function (i, obj) {
-        var label = render_object(obj);
+        var label = get_label(obj);
         mapped[label] = obj;
+        obj.label = label;
         labels.push(label);
     });
 };
@@ -204,8 +216,10 @@ function searchbox_sorter(items) {
             // streams are already sorted
             objs = typeahead_helper.sorter(query, objs, get_query);
         }
+        objs = objs.slice(0, 4);
+        var labels = $.map(objs, function (obj) { return obj.label;});
 
-        result = result.concat($.map(objs.slice(0, 4), render_object));
+        result = result.concat(labels);
     });
 
     return result;
@@ -244,8 +258,9 @@ exports.initialize = function () {
             var operators = narrow.parse(query);
             if (operators.length !== 0) {
                 var obj = {action: 'operators', query: query, operators: operators};
-                var label = render_object(obj);
+                var label = get_label(obj);
                 mapped[label] = obj;
+                obj.label = label;
                 labels.unshift(label);
 
                 return labels;
