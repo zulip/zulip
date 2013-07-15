@@ -197,6 +197,13 @@ function get_stream_suggestions(query) {
         return mapped[label];
     });
 
+    $.each(objs, function (idx, obj) {
+        var prefix = 'Narrow to stream';
+        var stream = obj.query;
+        stream = typeahead_helper.highlight_query_in_phrase(query, stream);
+        obj.description = prefix + ' ' + stream;
+    });
+
     // streams are already sorted
     objs = typeahead_helper.sorter(query, objs, get_query);
 
@@ -215,6 +222,24 @@ function get_person_suggestions(query, action) {
     });
     var objs = $.map(items, function (label) {
         return mapped[label];
+    });
+
+    $.each(objs, function (idx, obj) {
+        var prefix;
+        var person;
+        var name;
+
+        if (action === 'private_message') {
+            prefix = 'Narrow to private messages with';
+        }
+
+        if (action === 'sender') {
+            prefix = 'Narrow to messages sent by';
+        }
+
+        person = obj.query;
+        name = highlight_person(query, person);
+        obj.description = prefix + ' ' + name;
     });
 
 
@@ -242,6 +267,8 @@ exports.initialize = function () {
                 var label = get_label(obj);
                 mapped[label] = obj;
                 obj.label = label;
+                var description = describe(operators);
+                obj.description = Handlebars.Utils.escapeExpression(description);
                 result = [label];
             } else {
                 return [];
@@ -262,37 +289,8 @@ exports.initialize = function () {
         },
         items: 20,
         highlighter: function (item) {
-            var query = this.query;
             var obj = mapped[item];
-            var prefix;
-            var person;
-            var name;
-            var stream;
-
-            if (obj.action === 'private_message') {
-                prefix = 'Narrow to private messages with';
-                person = obj.query;
-                name = highlight_person(query, person);
-                return prefix + ' ' + name;
-            }
-
-            if (obj.action === 'sender') {
-                prefix = 'Narrow to messages sent by';
-                person = obj.query;
-                name = highlight_person(query, person);
-                return prefix + ' ' + name;
-            }
-
-            if (obj.action === 'stream') {
-                prefix = 'Narrow to stream';
-                stream = obj.query;
-                stream = typeahead_helper.highlight_query_in_phrase(query, stream);
-                return prefix + ' ' + stream;
-            }
-
-            var description = describe(obj.operators);
-            description = Handlebars.Utils.escapeExpression(description);
-            return description;
+            return obj.description;
         },
         matcher: function (item) {
             return true;
