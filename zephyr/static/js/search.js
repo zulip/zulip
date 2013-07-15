@@ -262,6 +262,8 @@ exports.initialize = function () {
             // Delete our old search queries (one for find-in-page, one for operators)
             delete mapped[labels.shift()]; // Operators
 
+            var result = [];
+
             // Add an entry for narrow by operators.
             var operators = narrow.parse(query);
             if (operators.length !== 0) {
@@ -269,45 +271,10 @@ exports.initialize = function () {
                 var label = get_label(obj);
                 mapped[label] = obj;
                 obj.label = label;
-                labels.unshift(label);
+                result = [label];
             } else {
                 return [];
             }
-
-            var items = $.grep(labels, function (label) {
-                var obj = mapped[label];
-                if (obj.disabled)
-                    return false;
-                if (obj.action === 'stream') {
-                    return false;
-                }
-                if (obj.action === 'private_message' || obj.action === "sender") {
-                    return false;
-                }
-                var actual_search_term = obj.query;
-                // Case-insensitive (from Bootstrap's default matcher).
-                return (actual_search_term.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-            });
-
-            var objects_by_action = {};
-            var result = [];
-
-            $.each(items, function (idx, elt) {
-                var obj = mapped[elt];
-                if (objects_by_action[obj.action] === undefined)
-                    objects_by_action[obj.action] = [];
-                objects_by_action[obj.action].push(obj);
-            });
-
-            $.each(['operators'], function (idx, action) {
-                var objs = objects_by_action[action];
-                if (!objs)
-                    return;
-                objs = objs.slice(0, 4);
-                var labels = $.map(objs, function (obj) { return obj.label;});
-
-                result = result.concat(labels);
-            });
 
             var stream_suggestions = get_stream_suggestions(query).slice(0,4);
             result = result.concat(stream_suggestions);
