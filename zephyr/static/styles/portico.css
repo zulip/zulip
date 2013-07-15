@@ -125,6 +125,10 @@ img.screenshot{
     max-width: 150%;
 }
 
+.full-width-screenshot {
+    width: 100%;
+}
+
 .little-bullet {
     /* In our footer navbar, the · doesn't get appropriate padding without this */
     padding-left: 15px;
