@@ -121,8 +121,9 @@ process.argv.forEach(function (filepath) {
         options.node    = true;
 
         if (filepath.indexOf('zephyr/tests/frontend/') !== -1) {
-            // Include '$' because we use jQuery inside casper.evaluate
-            options.predef = ['casper', '$'];
+            // Include '$' and browser globals because we use them inside
+            // casper.evaluate
+            options.predef = ['casper', '$', 'document', 'window'];
         } else {
             options.predef = [];
         }
