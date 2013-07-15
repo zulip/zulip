@@ -248,43 +248,6 @@ function unparse(operators) {
     return parts.join(' ');
 }
 
-// Convert a list of operators to a human-readable description.
-exports.describe = function (operators) {
-    return $.map(operators, function (elem) {
-        var operand = elem[1];
-        switch (elem[0]) {
-        case 'is':
-            if (operand === 'private') {
-                return 'Narrow to all private messages';
-            } else if (operand === 'starred') {
-                return 'Narrow to starred messages';
-            } else if (operand === 'mentioned') {
-                return 'Narrow to mentioned messages';
-            }
-            break;
-
-        case 'stream':
-            return 'Narrow to stream ' + operand;
-
-        case 'subject':
-            return 'Narrow to subject ' + operand;
-
-        case 'sender':
-            return 'Narrow to sender ' + operand;
-
-        case 'pm-with':
-            return 'Narrow to private messages with ' + operand;
-
-        case 'search':
-            return 'Search for ' + operand;
-
-        case 'in':
-            return 'Narrow to messages in ' + operand;
-        }
-        return 'Narrow to (unknown operator)';
-    }).join(', ');
-};
-
 // Collect operators which appear only once into an object,
 // and discard those which appear more than once.
 function collect_single(operators) {

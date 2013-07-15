@@ -42,6 +42,44 @@ function stream_matches_query(stream_name, q) {
     return phrase_match(stream_name, q);
 }
 
+
+// Convert a list of operators to a human-readable description.
+function describe(operators) {
+    return $.map(operators, function (elem) {
+        var operand = elem[1];
+        switch (elem[0]) {
+        case 'is':
+            if (operand === 'private') {
+                return 'Narrow to all private messages';
+            } else if (operand === 'starred') {
+                return 'Narrow to starred messages';
+            } else if (operand === 'mentioned') {
+                return 'Narrow to mentioned messages';
+            }
+            break;
+
+        case 'stream':
+            return 'Narrow to stream ' + operand;
+
+        case 'subject':
+            return 'Narrow to subject ' + operand;
+
+        case 'sender':
+            return 'Narrow to sender ' + operand;
+
+        case 'pm-with':
+            return 'Narrow to private messages with ' + operand;
+
+        case 'search':
+            return 'Search for ' + operand;
+
+        case 'in':
+            return 'Narrow to messages in ' + operand;
+        }
+        return 'Narrow to (unknown operator)';
+    }).join(', ');
+}
+
 function render_object_in_parts(obj) {
     // N.B. action is *not* escaped by the caller
     switch (obj.action) {
@@ -50,6 +88,7 @@ function render_object_in_parts(obj) {
 
     case 'private_message':
         return {prefix: 'Narrow to private messages with',
+
                 query: get_person(obj),
                 suffix: ''};
 
@@ -64,7 +103,7 @@ function render_object_in_parts(obj) {
         // after 'Narrow to' ensures this, and is invisible with standard HTML
         // whitespace handling.
         return {prefix: '',
-                query: narrow.describe(obj.operators),
+                query: describe(obj.operators),
                 suffix: ''};
     }
     return {prefix: 'Error', query: 'Error', suffix: 'Error'};
