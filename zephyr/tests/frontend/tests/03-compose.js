@@ -37,6 +37,9 @@ casper.waitUntilVisible('#stream', function () {
 
     // Check that when you reply to a message it pre-populates the stream and subject fields
     casper.click('body');
+});
+
+casper.waitWhileVisible('#stream', function () {
     casper.clickLabel("We reply to this message");
 });
 
@@ -70,6 +73,19 @@ casper.waitWhileVisible('#stream', function () {
 
 casper.waitWhileVisible('#private-message', function () {
     casper.test.assertNotVisible('#private-message', 'Close PM compose box');
+});
+
+// Test focus after narrowing to PMs with a user and typing 'c'
+casper.then(function () {
+    casper.click('*[title="Narrow to your private messages with Cordelia Lear"]');
+});
+casper.waitUntilVisible('#tab_list li.private_message', function () {
+    casper.page.sendEvent('keypress', 'c');
+});
+casper.waitUntilVisible('#compose', function () {
+    casper.test.assertEval(function () {
+        return document.activeElement === $('#stream')[0];
+    }, 'Stream box focused after narrowing to PMs with a user and pressing `c`');
 });
 
 common.then_log_out();
