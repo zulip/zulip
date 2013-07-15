@@ -137,7 +137,7 @@ def send_signup_message(sender, signups_stream, user_profile, internal=False):
 
     internal_send_message(sender,
             "stream", signups_stream, user_profile.realm.domain,
-            "%s <`%s`> just signed up for Humbug!%s(total: **%i**)" % (
+            "%s <`%s`> just signed up for Zulip!%s(total: **%i**)" % (
                 user_profile.full_name,
                 user_profile.email,
                 internal_blurb,
@@ -219,9 +219,9 @@ Email: %s
 Company: %s
 # users: %s
 Currently using: %s""" % (name, email, company, count, product,)
-    subject = "Interest in Humbug: %s" % (company,)
+    subject = "Interest in Zulip: %s" % (company,)
     from_email = '"%s" via Web <humbug+signups@humbughq.com>' % (name,)
-    to_email = '"Humbug Signups" <humbug+signups@humbughq.com>'
+    to_email = '"Zulip Signups" <humbug+signups@humbughq.com>'
     send_mail(subject, content, from_email, [to_email])
     return json_success()
 
@@ -283,7 +283,7 @@ def accounts_register(request):
                     # This is a cross-realm private message.
                     internal_send_message("humbug+signups@humbughq.com",
                             "private", prereg_user.referred_by.email, user_profile.realm.domain,
-                            "%s <`%s`> accepted your invitation to join Humbug!" % (
+                            "%s <`%s`> accepted your invitation to join Zulip!" % (
                                 user_profile.full_name,
                                 user_profile.email,
                                 )
@@ -585,7 +585,8 @@ def is_buggy_ua(agent):
     This may get fixed in the future, but for right now we can
     just serve the more conservative CSS to all our desktop apps.
     """
-    return "Humbug Desktop/" in agent and not "Macintosh" in agent
+    return ("Humbug Desktop/" in agent or "Zulip Desktop/" in agent) and \
+        not "Macintosh" in agent
 
 def get_pointer_backend(request, user_profile):
     return json_success({'pointer': user_profile.pointer})
