@@ -262,11 +262,24 @@ exports.initialize = function () {
                 mapped[label] = obj;
                 obj.label = label;
                 labels.unshift(label);
-
-                return labels;
             } else {
                 return [];
             }
+
+            return $.grep(labels, function (label) {
+                var obj = mapped[label];
+                if (obj.disabled)
+                    return false;
+                if (obj.action === 'stream') {
+                    return stream_matches_query(obj.query, query);
+                }
+                if (obj.action === 'private_message' || obj.action === "sender") {
+                    return person_matches_query(obj.query, query);
+                }
+                var actual_search_term = obj.query;
+                // Case-insensitive (from Bootstrap's default matcher).
+                return (actual_search_term.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+            });
         },
         items: 20,
         highlighter: function (item) {
@@ -303,18 +316,7 @@ exports.initialize = function () {
             return parts.prefix + " " + parts.query + " " + parts.suffix;
         },
         matcher: function (item) {
-            var obj = mapped[item];
-            if (obj.disabled)
-                return false;
-            if (obj.action === 'stream') {
-                return stream_matches_query(obj.query, this.query);
-            }
-            if (obj.action === 'private_message' || obj.action === "sender") {
-                return person_matches_query(obj.query, this.query);
-            }
-            var actual_search_term = obj.query;
-            // Case-insensitive (from Bootstrap's default matcher).
-            return (actual_search_term.toLowerCase().indexOf(this.query.toLowerCase()) !== -1);
+            return true;
         },
         updater: narrow_or_search_for_term,
         sorter: searchbox_sorter
