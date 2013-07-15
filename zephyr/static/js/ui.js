@@ -1261,6 +1261,19 @@ $(function () {
         ui.wait_for_gravatar();
     });
 
+    var notification_docs = $("#notification-docs");
+    notification_docs.popover({"placement": "right",
+                               "content": templates.render('notification_docs'),
+                               "trigger": "manual"});
+    $("body").on("mouseover", "#notification-docs", function (e) {
+        notification_docs.popover('show');
+        e.stopPropagation();
+    });
+    $("body").on("mouseout", "#notification-docs", function (e) {
+        notification_docs.popover('hide');
+        e.stopPropagation();
+    });
+
     $('body').on('click', '.edit_subject', function (e) {
         var row = rows.get(rows.id($(this).closest(".recipient_row")),
                            current_msg_list.table_name);

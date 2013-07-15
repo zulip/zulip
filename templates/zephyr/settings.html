@@ -84,11 +84,12 @@
         </div>
 
       <hr class="settings_separator">
-      <h2>Notification settings</h2>
+      <h2>Notification settings <i class="tiny icon-vector-question-sign" id="notification-docs"></i></h2>
       <div id="notification-settings">
         <div class="control-group">
             <label for="enable_desktop_notifications" class="control-label">
-                Desktop notifications</label>
+                Desktop
+                notifications </label>
             <div class="controls">
                 <input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
                    {% if user_profile.enable_desktop_notifications %}
@@ -98,7 +99,7 @@
         </div>
         <div class="control-group">
             <label for="enable_sounds" class="control-label">
-                Audible notifications for messages</label>
+                Audible notifications</label>
             <div class="controls">
                 <input type="checkbox" name="enable_sounds" id="enable_sounds"
                    {% if user_profile.enable_sounds %}
@@ -109,7 +110,7 @@
 
         <div class="control-group">
             <label for="enable_offline_email_notifications" class="control-label">
-                Notify on PMs and @-mentions when offline</label>
+                Email notifications when offline</label>
             <div class="controls">
                 <input type="checkbox" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
                    {% if user_profile.enable_offline_email_notifications %}

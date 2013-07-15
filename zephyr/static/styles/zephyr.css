@@ -783,6 +783,10 @@ background-color: #feffe0;
     font-size: 80%;
 }
 
+.tiny {
+    font-size: 60%;
+}
+
 .actions_hovered .message_time, .actions_hovered .info {
     color: #0088CC;
     cursor: pointer;
