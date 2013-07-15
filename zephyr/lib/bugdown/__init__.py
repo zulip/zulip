@@ -505,12 +505,18 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         fixup_link(el)
         return el
 
+def prepare_realm_pattern(source):
+    """ Augment a realm filter so it only matches after start-of-string,
+    whitespace, or opening delimiters, won't match if there are word
+    characters directly after, and saves what was matched as "name". """
+    return r"""(?<![^\s'"\(,:<])(?P<name>""" + source + ')(?!\w)'
+
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
 class RealmFilterPattern(markdown.inlinepatterns.Pattern):
     """ Applied a given realm filter to the input """
     def __init__(self, source_pattern, format_string, markdown_instance=None):
-        self.pattern = r'\b(?P<name>' + source_pattern + ')(?!\w)'
+        self.pattern = prepare_realm_pattern(source_pattern)
         self.format_string = format_string
         markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
 
@@ -631,7 +637,7 @@ realm_filters = {
 def subject_links(domain, subject):
     matches = []
     for source_pattern, format_string in realm_filters.get(domain, []):
-        pattern = r'\b(?P<name>' + source_pattern + ')(?!\w)'
+        pattern = prepare_realm_pattern(source_pattern)
         for m in re.finditer(pattern, subject):
             matches += [format_string % m.groupdict()]
     return matches
