@@ -214,6 +214,26 @@ function highlight_person(query, person) {
     return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
 }
 
+function get_stream_suggestions(query) {
+    var items = $.grep(labels, function (label) {
+        var obj = mapped[label];
+        if (obj.action === 'stream') {
+            return stream_matches_query(obj.query, query);
+        }
+        return false;
+    });
+    var objs = $.map(items, function (label) {
+        return mapped[label];
+    });
+
+    // streams are already sorted
+    objs = typeahead_helper.sorter(query, objs, get_query);
+
+    items = $.map(objs, function (obj) { return obj.label;});
+
+    return items;
+}
+
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
@@ -237,7 +257,7 @@ exports.initialize = function () {
                 if (obj.disabled)
                     return false;
                 if (obj.action === 'stream') {
-                    return stream_matches_query(obj.query, query);
+                    return false;
                 }
                 if (obj.action === 'private_message' || obj.action === "sender") {
                     return person_matches_query(obj.query, query);
@@ -257,7 +277,7 @@ exports.initialize = function () {
                 objects_by_action[obj.action].push(obj);
             });
 
-            $.each(['operators', 'private_message', 'sender', 'stream'], function (idx, action) {
+            $.each(['operators', 'private_message', 'sender'], function (idx, action) {
                 var objs = objects_by_action[action];
                 if (!objs)
                     return;
@@ -266,15 +286,15 @@ exports.initialize = function () {
                     objs.sort(function (x, y) {
                         return typeahead_helper.compare_by_pms(get_query(x), get_query(y));
                     });
-                } else if (action !== 'stream') {
-                    // streams are already sorted
-                    objs = typeahead_helper.sorter(query, objs, get_query);
                 }
                 objs = objs.slice(0, 4);
                 var labels = $.map(objs, function (obj) { return obj.label;});
 
                 result = result.concat(labels);
             });
+
+            var stream_suggestions = get_stream_suggestions(query).slice(0,4);
+            result = result.concat(stream_suggestions);
 
             return result;
         },
