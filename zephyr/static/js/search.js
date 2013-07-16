@@ -127,7 +127,7 @@ function get_stream_suggestions(query, max_num) {
     });
 
     var objs = $.map(streams, function (stream) {
-        return {action: 'stream', query: stream};
+        return {query: stream};
     });
 
     objs = typeahead_helper.sorter(query, objs, get_query);
@@ -145,13 +145,13 @@ function get_stream_suggestions(query, max_num) {
     return objs;
 }
 
-function get_person_suggestions(all_people, query, action, max_num) {
+function get_person_suggestions(all_people, query, prefix, operator, max_num) {
     var people = $.grep(all_people, function (person) {
         return person_matches_query(person, query);
     });
 
     var objs = $.map(people, function (person) {
-        return {action: action, query: person};
+        return {query: person};
     });
 
 
@@ -162,20 +162,8 @@ function get_person_suggestions(all_people, query, action, max_num) {
     objs = objs.slice(0, max_num);
 
     $.each(objs, function (idx, obj) {
-        var prefix;
         var person;
         var name;
-        var operator;
-
-        if (action === 'private_message') {
-            prefix = 'Narrow to private messages with';
-            operator = 'pm-with';
-        }
-
-        if (action === 'sender') {
-            prefix = 'Narrow to messages sent by';
-            operator = 'sender';
-        }
 
         person = obj.query;
         name = highlight_person(query, person);
@@ -194,7 +182,7 @@ exports.initialize = function () {
             // Add an entry for narrow by operators.
             var operators = narrow.parse(query);
             if (operators.length !== 0) {
-                var obj = {action: 'operators', query: query};
+                var obj = {query: query};
                 obj.search_string  = query;
                 var description = describe(operators);
                 obj.description = Handlebars.Utils.escapeExpression(description);
@@ -209,10 +197,10 @@ exports.initialize = function () {
             var people = page_params.people_list;
             var person_suggestions;
 
-            person_suggestions = get_person_suggestions(people, query, 'private_message', 4);
+            person_suggestions = get_person_suggestions(people, query, 'Narrow to private messages with', 'pm-with', 4);
             result = result.concat(person_suggestions);
 
-            person_suggestions = get_person_suggestions(people, query, 'sender', 4);
+            person_suggestions = get_person_suggestions(people, query, 'Narrow to messages sent by', 'sender', 4);
             result = result.concat(person_suggestions);
 
             // We can't send typeahead objects, only strings.
