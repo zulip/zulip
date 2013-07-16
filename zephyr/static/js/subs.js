@@ -382,8 +382,6 @@ function mark_subscribed(stream_name, attrs) {
     // need its unread counts re-calculated
     process_loaded_for_unread(all_msg_list.all());
 
-    typeahead_helper.update_autocomplete();
-
     $(document).trigger($.Event('subscription_add_done.zephyr', {sub: sub}));
 }
 
@@ -420,8 +418,6 @@ function mark_unsubscribed(stream_name) {
     if (current_msg_list.narrowed) {
         current_msg_list.update_trailing_bookend();
     }
-
-    typeahead_helper.update_autocomplete();
 
     $(document).trigger($.Event('subscription_remove_done.zephyr', {sub: sub}));
 }

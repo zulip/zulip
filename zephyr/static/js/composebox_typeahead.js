@@ -348,8 +348,6 @@ exports.initialize = function () {
         var recipients = exports.get_cleaned_pm_recipients(val);
         $(this).val(recipients.join(", "));
     });
-
-    typeahead_helper.update_autocomplete();
 };
 
 return exports;

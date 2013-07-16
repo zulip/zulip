@@ -2,19 +2,6 @@ var typeahead_helper = (function () {
 
 var exports = {};
 
-var autocomplete_needs_update = false;
-exports.autocomplete_needs_update = function (needs_update) {
-    if (needs_update === undefined) {
-        return autocomplete_needs_update;
-    } else {
-        autocomplete_needs_update = needs_update;
-    }
-};
-
-exports.update_autocomplete = function () {
-    autocomplete_needs_update = false;
-};
-
 // Loosely based on Bootstrap's default highlighter, but with escaping added.
 exports.highlight_with_escaping = function (query, item) {
     // query: The text currently in the searchbox

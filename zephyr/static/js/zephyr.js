@@ -535,8 +535,6 @@ function add_message_metadata(message, dummy) {
         if (! case_insensitive_find(message.subject, subject_dict[message.stream])) {
             subject_dict[message.stream].push(message.subject);
             subject_dict[message.stream].sort();
-            // We don't need to update the autocomplete after this because
-            // the subject box's source is a function
         }
         message.reply_to = message.sender_email;
 
@@ -570,7 +568,6 @@ function add_message_metadata(message, dummy) {
         // with keys like "hasOwnProperty"
         if (people_dict[person.email] === undefined) {
             add_person(person);
-            typeahead_helper.autocomplete_needs_update(true);
         }
 
         if (message.type === 'private' && message.sent_by_me) {
@@ -641,10 +638,6 @@ function add_messages(messages, msg_list, messages_are_new) {
         narrow.hide_empty_narrow_message();
         // And also select the newly arrived message.
         msg_list.select_id(msg_list.selected_id(), {then_scroll: true, use_closest: true});
-    }
-
-    if (typeahead_helper.autocomplete_needs_update()) {
-        typeahead_helper.update_autocomplete();
     }
 
     // There are some other common tasks that happen when adding messages, but these
@@ -801,7 +794,6 @@ function get_updates_success(data) {
             } else if (event.op === 'remove') {
                 remove_person(event.person);
             }
-            typeahead_helper.autocomplete_needs_update(true);
             break;
         case 'subscriptions':
             if (event.op === 'add') {
@@ -823,10 +815,6 @@ function get_updates_success(data) {
             break;
         }
     });
-
-    if (typeahead_helper.autocomplete_needs_update()) {
-        typeahead_helper.update_autocomplete();
-    }
 
     if (messages.length !== 0) {
         // There is a known bug (#1062) in our backend
