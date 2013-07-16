@@ -98,21 +98,8 @@ function get_label(obj) {
 }
 
 exports.update_typeahead = function () {
-    var stream_names = subs.subscribed_streams();
-    stream_names.sort();
-
-    var streams = $.map(stream_names, function (elt,idx) {
-        return {action: 'stream', query: elt};
-    });
-
     mapped = {};
-    labels = [];
-    $.each(streams, function (i, obj) {
-        var label = get_label(obj);
-        mapped[label] = obj;
-        obj.label = label;
-        labels.push(label);
-    });
+    labels = []; // deprecated
 };
 
 function narrow_or_search_for_term(item) {
@@ -173,15 +160,14 @@ function highlight_person(query, person) {
 }
 
 function get_stream_suggestions(query) {
-    var items = $.grep(labels, function (label) {
-        var obj = mapped[label];
-        if (obj.action === 'stream') {
-            return stream_matches_query(obj.query, query);
-        }
-        return false;
+    var streams = subs.subscribed_streams();
+
+    streams = $.grep(streams, function (stream) {
+        return stream_matches_query(stream, query);
     });
-    var objs = $.map(items, function (label) {
-        return mapped[label];
+
+    var objs = $.map(streams, function (stream) {
+        return {action: 'stream', query: stream};
     });
 
     $.each(objs, function (idx, obj) {
@@ -189,12 +175,12 @@ function get_stream_suggestions(query) {
         var stream = obj.query;
         stream = typeahead_helper.highlight_query_in_phrase(query, stream);
         obj.description = prefix + ' ' + stream;
+        obj.label = get_label(obj);
     });
 
-    // streams are already sorted
     objs = typeahead_helper.sorter(query, objs, get_query);
 
-     return objs;
+    return objs;
 }
 
 function get_person_suggestions(all_people, query, action) {
