@@ -115,7 +115,13 @@ function prefix_sort(query, objs, get_item) {
 
     var obj = objs.shift();
     while (obj) {
-        var item = get_item(obj);
+        var item;
+        if (get_item) {
+            item = get_item(obj);
+        }
+        else {
+            item = obj;
+        }
         if (item.indexOf(query) === 0)
             beginswithCaseSensitive.push(obj);
         else if (item.toLowerCase().indexOf(query.toLowerCase()) === 0)
