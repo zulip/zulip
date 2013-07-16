@@ -146,7 +146,7 @@ casper.then(function () {
 casper.then(function () {
     expect_home();
     casper.test.info('Narrowing by clicking subject');
-    casper.click('*[title="Narrow to stream \\\"Verona\\\", subject \\\"frontend test\\\""]');
+    casper.click('*[title="Narrow to stream \\\"Verona\\\", topic \\\"frontend test\\\""]');
 });
 
 casper.then(function () {

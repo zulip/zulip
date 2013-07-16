@@ -403,12 +403,12 @@ def check_message(sender, client, message_type_name, message_to,
             return "Invalid stream name"
 
         if subject_name is None:
-            return "Missing subject"
+            return "Missing topic"
         subject = subject_name.strip()
         if subject == "":
-            return "Subject can't be empty"
+            return "Topic can't be empty"
         if len(subject) > MAX_SUBJECT_LENGTH:
-            return "Subject too long"
+            return "Topic too long"
         ## FIXME: Commented out temporarily while we figure out what we want
         # if not valid_stream_name(subject):
         #     return json_error("Invalid subject name")
@@ -992,10 +992,10 @@ def do_update_message(user_profile, message_id, subject, content):
     if subject is not None:
         subject = subject.strip()
         if subject == "":
-            raise JsonableError("Subject can't be empty")
+            raise JsonableError("Topic can't be empty")
 
         if len(subject) > MAX_SUBJECT_LENGTH:
-            raise JsonableError("Subject too long")
+            raise JsonableError("Topic too long")
         event["orig_subject"] = message.subject
         message.subject = subject
         event["subject"] = subject

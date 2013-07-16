@@ -317,7 +317,7 @@ function subject() {
     var spotlight_message = rows.first_visible();
     var bar = spotlight_message.prev(".recipient_row");
     var placement = maybe_tweak_placement("bottom");
-    create_and_show_popover(bar, placement, "Subjects", "tutorial_subject");
+    create_and_show_popover(bar, placement, "Topics", "tutorial_subject");
 
     var my_popover = $("#tutorial-subject").closest(".popover");
     if (placement === "bottom") { // Wider screen, popover is on bottom.
