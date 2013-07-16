@@ -79,22 +79,6 @@ function describe(operators) {
     }).join(', ');
 }
 
-function get_search_string(obj) {
-    switch (obj.action) {
-    case 'stream':
-        return 'stream:' + obj.query;
-
-    case 'private_message':
-        return 'pm-with:' + obj.query.email;
-
-    case 'sender':
-        return 'sender:' + obj.query.email;
-
-    case 'operators':
-        return obj.query;
-    }
-}
-
 function narrow_or_search_for_term(item) {
     var search_query_box = $("#search_query");
     var obj = search_object[item];
@@ -155,7 +139,7 @@ function get_stream_suggestions(query, max_num) {
         var stream = obj.query;
         stream = typeahead_helper.highlight_query_in_phrase(query, stream);
         obj.description = prefix + ' ' + stream;
-        obj.search_string = get_search_string(obj);
+        obj.search_string = 'stream:' + obj.query;
     });
 
     return objs;
@@ -181,19 +165,22 @@ function get_person_suggestions(all_people, query, action, max_num) {
         var prefix;
         var person;
         var name;
+        var operator;
 
         if (action === 'private_message') {
             prefix = 'Narrow to private messages with';
+            operator = 'pm-with';
         }
 
         if (action === 'sender') {
             prefix = 'Narrow to messages sent by';
+            operator = 'sender';
         }
 
         person = obj.query;
         name = highlight_person(query, person);
         obj.description = prefix + ' ' + name;
-        obj.search_string = get_search_string(obj);
+        obj.search_string = operator + ':' + obj.query.email;
     });
 
     return objs;
@@ -208,7 +195,7 @@ exports.initialize = function () {
             var operators = narrow.parse(query);
             if (operators.length !== 0) {
                 var obj = {action: 'operators', query: query};
-                obj.search_string  = get_search_string(obj);
+                obj.search_string  = query;
                 var description = describe(operators);
                 obj.description = Handlebars.Utils.escapeExpression(description);
                 result = [obj];
