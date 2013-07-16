@@ -145,25 +145,14 @@ function get_person_suggestions(all_people, query, prefix, operator, max_num) {
         return person_matches_query(person, query);
     });
 
+    people.sort(typeahead_helper.compare_by_pms);
+    people = people.slice(0, max_num);
+
     var objs = $.map(people, function (person) {
-        return {query: person};
-    });
-
-
-    objs.sort(function (x, y) {
-        return typeahead_helper.compare_by_pms(get_query(x), get_query(y));
-    });
-
-    objs = objs.slice(0, max_num);
-
-    $.each(objs, function (idx, obj) {
-        var person;
-        var name;
-
-        person = obj.query;
-        name = highlight_person(query, person);
-        obj.description = prefix + ' ' + name;
-        obj.search_string = operator + ':' + obj.query.email;
+        var name = highlight_person(query, person);
+        var description = prefix + ' ' + name;
+        var search_string = operator + ':' + person.email;
+        return {description: description, search_string: search_string};
     });
 
     return objs;
