@@ -2,6 +2,12 @@ var ui = (function () {
 
 var exports = {};
 
+var actively_scrolling = false;
+
+exports.actively_scrolling = function () {
+    return actively_scrolling;
+};
+
 // What, if anything, obscures the home tab?
 exports.home_tab_obscured = function () {
     if ($('.modal:visible').length > 0)
@@ -659,6 +665,8 @@ $(function () {
     var scroll_start_message;
 
     function scroll_finished() {
+        actively_scrolling = false;
+
         if ($('#home').hasClass('active')) {
             if (!suppress_scroll_pointer_update) {
                 keep_pointer_in_view();
@@ -683,6 +691,7 @@ $(function () {
 
     var scroll_timer;
     function scroll_finish() {
+        actively_scrolling = true;
         clearTimeout(scroll_timer);
         scroll_timer = setTimeout(scroll_finished, 100);
     }

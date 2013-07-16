@@ -509,6 +509,14 @@ exports.deactivate = function () {
         return;
     }
 
+    if (ui.actively_scrolling()) {
+        // There is no way to intercept in-flight scroll events, and they will
+        // cause you to end up in the wrong place if you are actively scrolling
+        // on an unnarrow. Wait a bit and try again once the scrolling is over.
+        setTimeout(exports.deactivate, 50);
+        return;
+    }
+
     current_filter = undefined;
 
     exports.hide_empty_narrow_message();
