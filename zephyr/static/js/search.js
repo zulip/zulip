@@ -60,8 +60,8 @@ function describe(operators) {
         case 'stream':
             return 'Narrow to stream ' + operand;
 
-        case 'subject':
-            return 'Narrow to subject ' + operand;
+        case 'topic':
+            return 'Narrow to topic ' + operand;
 
         case 'sender':
             return 'Narrow to sender ' + operand;

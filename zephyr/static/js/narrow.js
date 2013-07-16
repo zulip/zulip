@@ -10,7 +10,7 @@ function Filter(operators) {
     }
 }
 
-var canonical_operators = {"from": "sender"};
+var canonical_operators = {"from": "sender", "subject": "topic"};
 
 exports.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
@@ -166,7 +166,7 @@ Filter.prototype = {
                     }
                     break;
 
-                case 'subject':
+                case 'topic':
                     if ((message.type !== 'stream') ||
                         (message.subject.toLowerCase() !== operand))
                         return false;
@@ -294,7 +294,7 @@ exports.set_compose_defaults = function (opts) {
 
     // Set the stream, subject, and/or PM recipient if they are
     // uniquely specified in the narrow view.
-    $.each(['stream', 'subject'], function (idx, key) {
+    $.each(['stream', 'topic'], function (idx, key) {
         if (single[key] !== undefined)
             opts[key] = single[key];
     });
@@ -497,7 +497,7 @@ exports.by_subject = function (target_id, opts) {
     opts = $.extend({}, {then_select_id: target_id}, opts);
     exports.activate([
             ['stream',  original.stream],
-            ['subject', original.subject]
+            ['topic', original.subject]
         ], opts);
 };
 
@@ -656,7 +656,7 @@ exports.narrowed_by_reply = function () {
              current_filter.operands("pm-with").length === 1) ||
             (operators.length === 2 &&
              current_filter.operands("stream").length === 1 &&
-             current_filter.operands("subject").length === 1));
+             current_filter.operands("topic").length === 1));
 };
 
 return exports;

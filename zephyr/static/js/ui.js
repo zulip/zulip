@@ -1205,7 +1205,7 @@ $(function () {
         var subject = $(e.target).parents('li').attr('data-name');
 
         narrow.activate([['stream',  stream],
-                         ['subject', subject]],
+                         ['topic', subject]],
                         {select_first_unread: true, trigger: 'sidebar'});
 
         e.preventDefault();

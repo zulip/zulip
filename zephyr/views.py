@@ -702,7 +702,7 @@ class NarrowBuilder(object):
         recipient = get_recipient(Recipient.STREAM, type_id=stream.id)
         return self.pQ(recipient=recipient)
 
-    def by_subject(self, operand):
+    def by_topic(self, operand):
         return self.pQ(subject__iexact=operand)
 
     def by_sender(self, operand):

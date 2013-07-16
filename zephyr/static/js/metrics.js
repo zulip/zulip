@@ -39,7 +39,7 @@ $(function () {
 
         var operators = event.filter.operators();
         var stream_operands = event.filter.operands('stream');
-        var subject_operands = event.filter.operands('subject');
+        var subject_operands = event.filter.operands('topic');
         var reported_operators;
         if (operators.length === 1) {
             reported_operators = operators[0][0];

@@ -190,7 +190,7 @@ exports.update_streams_sidebar = function () {
     }
 
     var op_stream = narrow.filter().operands('stream');
-    var op_subject = narrow.filter().operands('subject');
+    var op_subject = narrow.filter().operands('topic');
     var subject;
     if (op_stream.length !== 0) {
         if (op_subject.length !== 0) {
@@ -281,7 +281,7 @@ $(function () {
         var op_stream = event.filter.operands('stream');
         if (op_stream.length !== 0 && subs.is_subscribed(op_stream[0])) {
             var stream_li = get_filter_li('stream', op_stream[0]);
-            var op_subject = event.filter.operands('subject');
+            var op_subject = event.filter.operands('topic');
             var subject;
             if (op_subject.length !== 0) {
                 subject = op_subject[0];
