@@ -46,7 +46,7 @@ function stream_matches_query(stream_name, q) {
 function describe(operators) {
     return $.map(operators, function (elem) {
         var operand = elem[1];
-        switch (elem[0]) {
+        switch (narrow.canonicalize_operator(elem[0])) {
         case 'is':
             if (operand === 'private') {
                 return 'Narrow to all private messages';

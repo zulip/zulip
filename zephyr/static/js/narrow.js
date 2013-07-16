@@ -10,6 +10,17 @@ function Filter(operators) {
     }
 }
 
+var canonical_operators = {"from": "sender"};
+
+exports.canonicalize_operator = function (operator) {
+    operator = operator.toLowerCase();
+    if (canonical_operators[operator] !== undefined) {
+        return canonical_operators[operator];
+    } else {
+        return operator;
+    }
+};
+
 Filter.prototype = {
     predicate: function Filter_predicate() {
         if (this._predicate === undefined) {
@@ -85,7 +96,8 @@ Filter.prototype = {
         // We don't use $.map because it flattens returned arrays.
         $.each(operators_mixed_case, function (idx, operator) {
             // We may want to consider allowing mixed-case operators at some point
-            new_operators.push([operator[0], subs.canonicalized_name(operator[1])]);
+            new_operators.push([exports.canonicalize_operator(operator[0]),
+                                subs.canonicalized_name(operator[1])]);
         });
         return new_operators;
     },
