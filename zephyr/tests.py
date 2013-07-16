@@ -575,6 +575,42 @@ class BotTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         self.assert_num_bots_equal(1)
 
+    def get_bot(self):
+        result = self.client.post("/json/get_bots")
+        bots = ujson.loads(result.content)['bots']
+        return bots[0]
+
+    def test_patch_bot_full_name(self):
+        self.login("hamlet@humbughq.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client.post("/json/create_bot", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'full_name': 'Fred',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@humbughq.com", bot_info)
+        self.assert_json_success(result)
+
+        full_name = ujson.loads(result.content)['full_name']
+        self.assertEqual('Fred', full_name)
+
+        bot = self.get_bot()
+        self.assertEqual('Fred', bot['full_name'])
+
+    def test_patch_bogus_bot(self):
+        # Deleting a bogus bot will succeed silently.
+        self.login("hamlet@humbughq.com")
+        self.create_bot()
+        bot_info = {
+            'full_name': 'Fred',
+        }
+        result = self.client_patch("/json/bots/nonexistent-bot@humbughq.com", bot_info)
+        self.assert_json_error(result, 'No such user')
+        self.assert_num_bots_equal(1)
+
 class PointerTest(AuthedTestCase):
 
     def test_update_pointer(self):

@@ -170,6 +170,8 @@ v1_api_and_json_patterns = patterns('zephyr.views',
              'PATCH': 'update_subscriptions_backend'}),
     url(r'^users/(?P<email>.*)$', 'rest_dispatch',
             {'DELETE': 'deactivate_user_backend'}),
+    url(r'^bots/(?P<email>.*)$', 'rest_dispatch',
+            {'PATCH': 'patch_bot_backend'}),
     url(r'^register$', 'rest_dispatch',
             {'POST': 'api_events_register'}),
 )

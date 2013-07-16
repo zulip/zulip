@@ -1997,6 +1997,25 @@ def deactivate_user_backend(request, user_profile, email):
     do_deactivate(target)
     return json_success({})
 
+@has_request_variables
+def patch_bot_backend(request, user_profile, email, full_name=REQ):
+    # TODO:
+    #   1) Validate data
+    #   2) Support avatar changes
+    # Note that API key changes will be done with a separate POST command:
+    #   POST /bots/[email]/api_key/regenerate
+    try:
+        bot = get_user_profile_by_email(email)
+    except:
+        return json_error('No such user')
+    bot.full_name = full_name
+    bot.save()
+
+    json_result = dict(
+        full_name = full_name,
+    )
+    return json_success(json_result)
+
 @authenticated_json_post_view
 @has_request_variables
 def json_create_bot(request, user_profile, full_name=REQ, short_name=REQ):
