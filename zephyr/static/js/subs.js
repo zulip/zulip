@@ -196,9 +196,11 @@ function stream_home_view_clicked(e) {
     subs.toggle_home(stream);
 }
 
-exports.toggle_home = function (stream_name) {
-    var sub = get_sub(stream_name);
-    sub.in_home_view = ! sub.in_home_view;
+function update_in_home_view(sub, value) {
+    if (sub.in_home_view === value) {
+        return;
+    }
+    sub.in_home_view = value;
 
     setTimeout(function () {
         var scroll_offset, saved_ypos;
@@ -240,9 +242,23 @@ exports.toggle_home = function (stream_name) {
     }, 0);
 
     exports.maybe_toggle_all_messages();
+    stream_list.set_in_home_view(sub.name, sub.in_home_view);
+
+    var in_home_view_checkbox = $("#subscription_" + sub.id + " #sub_setting_in_home_view .sub_setting_control");
+    in_home_view_checkbox.attr('checked', value);
+}
+
+exports.toggle_home = function (stream_name) {
+    var sub = get_sub(stream_name);
+    update_in_home_view(sub, ! sub.in_home_view);
     set_stream_property(stream_name, 'in_home_view', sub.in_home_view);
-    stream_list.set_in_home_view(stream_name, sub.in_home_view);
 };
+
+function update_stream_notifications(sub, value) {
+    var in_home_view_checkbox = $("#subscription_" + sub.id + " #sub_setting_notifications .sub_setting_control");
+    in_home_view_checkbox.attr('checked', value);
+    sub.notifications = value;
+}
 
 function stream_notifications_clicked(e) {
     var sub_row = $(e.target).closest('.subscription_row');
@@ -667,11 +683,10 @@ exports.update_subscription_properties = function (stream_name, property, value)
         update_stream_color(stream_name, value, {update_historical: true});
         break;
     case 'in_home_view':
-        sub[property] = value;
-        stream_list.set_in_home_view(stream_name, sub.in_home_view);
+        update_in_home_view(sub, value);
         break;
     case 'notifications':
-        sub[property] = value;
+        update_stream_notifications(sub, value);
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
