@@ -105,20 +105,9 @@ exports.update_typeahead = function () {
         return {action: 'stream', query: elt};
     });
 
-    var people_names = page_params.people_list;
-
-    var people = $.map(people_names, function (elt,idx) {
-        return {action: 'private_message', query: elt};
-    });
-    var senders = $.map(people_names, function (elt,idx) {
-        return {action: 'sender', query: elt};
-    });
-
-    var options = streams.concat(people).concat(senders);
-
     mapped = {};
     labels = [];
-    $.each(options, function (i, obj) {
+    $.each(streams, function (i, obj) {
         var label = get_label(obj);
         mapped[label] = obj;
         obj.label = label;
@@ -208,16 +197,13 @@ function get_stream_suggestions(query) {
      return objs;
 }
 
-function get_person_suggestions(query, action) {
-    var items = $.grep(labels, function (label) {
-        var obj = mapped[label];
-        if (obj.action === action) {
-            return person_matches_query(obj.query, query);
-        }
-        return false;
+function get_person_suggestions(all_people, query, action) {
+    var people = $.grep(all_people, function (person) {
+        return person_matches_query(person, query);
     });
-    var objs = $.map(items, function (label) {
-        return mapped[label];
+
+    var objs = $.map(people, function (person) {
+        return {action: action, query: person};
     });
 
     $.each(objs, function (idx, obj) {
@@ -236,6 +222,7 @@ function get_person_suggestions(query, action) {
         person = obj.query;
         name = highlight_person(query, person);
         obj.description = prefix + ' ' + name;
+        obj.label = get_label(obj);
     });
 
 
@@ -267,12 +254,13 @@ exports.initialize = function () {
             var stream_suggestions = get_stream_suggestions(query).slice(0,4);
             result = result.concat(stream_suggestions);
 
+            var people = page_params.people_list;
             var person_suggestions;
 
-            person_suggestions = get_person_suggestions(query, 'private_message').slice(0, 4);
+            person_suggestions = get_person_suggestions(people, query, 'private_message').slice(0, 4);
             result = result.concat(person_suggestions);
 
-            person_suggestions = get_person_suggestions(query, 'sender').slice(0, 4);
+            person_suggestions = get_person_suggestions(people, query, 'sender').slice(0, 4);
             result = result.concat(person_suggestions);
 
             // We can't send typeahead objects, only labels.
