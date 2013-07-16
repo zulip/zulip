@@ -135,7 +135,7 @@ function highlight_person(query, person) {
     return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
 }
 
-function get_stream_suggestions(query) {
+function get_stream_suggestions(query, max_num) {
     var streams = subs.subscribed_streams();
 
     streams = $.grep(streams, function (stream) {
@@ -148,6 +148,8 @@ function get_stream_suggestions(query) {
 
     objs = typeahead_helper.sorter(query, objs, get_query);
 
+    objs = objs.slice(0, max_num);
+
     $.each(objs, function (idx, obj) {
         var prefix = 'Narrow to stream';
         var stream = obj.query;
@@ -159,7 +161,7 @@ function get_stream_suggestions(query) {
     return objs;
 }
 
-function get_person_suggestions(all_people, query, action) {
+function get_person_suggestions(all_people, query, action, max_num) {
     var people = $.grep(all_people, function (person) {
         return person_matches_query(person, query);
     });
@@ -172,6 +174,8 @@ function get_person_suggestions(all_people, query, action) {
     objs.sort(function (x, y) {
         return typeahead_helper.compare_by_pms(get_query(x), get_query(y));
     });
+
+    objs = objs.slice(0, max_num);
 
     $.each(objs, function (idx, obj) {
         var prefix;
@@ -212,16 +216,16 @@ exports.initialize = function () {
                 return [];
             }
 
-            var stream_suggestions = get_stream_suggestions(query).slice(0,4);
+            var stream_suggestions = get_stream_suggestions(query, 4);
             result = result.concat(stream_suggestions);
 
             var people = page_params.people_list;
             var person_suggestions;
 
-            person_suggestions = get_person_suggestions(people, query, 'private_message').slice(0, 4);
+            person_suggestions = get_person_suggestions(people, query, 'private_message', 4);
             result = result.concat(person_suggestions);
 
-            person_suggestions = get_person_suggestions(people, query, 'sender').slice(0, 4);
+            person_suggestions = get_person_suggestions(people, query, 'sender', 4);
             result = result.concat(person_suggestions);
 
             // We can't send typeahead objects, only strings.
