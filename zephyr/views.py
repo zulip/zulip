@@ -25,7 +25,7 @@ from zephyr.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
     do_send_confirmation_email, do_activate_user, do_create_user, check_send_message, \
-    log_subscription_property_change, internal_send_message, \
+    do_change_subscription_property, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
     update_user_presence, bulk_add_subscriptions, update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, \
@@ -1425,10 +1425,8 @@ def json_subscription_property(request, user_profile, stream_name=REQ,
         @has_request_variables
         def do_set_property(request,
                             value=REQ(converter=property_converters[property])):
-            setattr(sub, property, value)
-            sub.save(update_fields=[property])
-            log_subscription_property_change(user_profile.email, stream_name,
-                                             property, value)
+            do_change_subscription_property(user_profile, sub, stream_name,
+                                            property, value)
         do_set_property(request)
         return json_success()
     else:

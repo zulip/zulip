@@ -695,6 +695,13 @@ def log_subscription_property_change(user_email, stream_name, property, value):
              'value': value}
     log_event(event)
 
+def do_change_subscription_property(user_profile, sub, stream_name,
+                                    property_name, value):
+    setattr(sub, property_name, value)
+    sub.save(update_fields=[property_name])
+    log_subscription_property_change(user_profile.email, stream_name,
+                                     property_name, value)
+
 def do_activate_user(user_profile, log=True, join_date=timezone.now()):
     user_profile.is_active = True
     user_profile.set_password(initial_password(user_profile.email))
