@@ -11,14 +11,6 @@ var current_search_term;
 // Data storage for the typeahead -- to go from object to string representation and vice versa.
 var search_object = {};
 
-function get_query(obj) {
-    return obj.query;
-}
-
-function get_person(obj) {
-    return typeahead_helper.render_person(obj.query);
-}
-
 function phrase_match(phrase, q) {
     // match "tes" to "test" and "stream test" but not "hostess"
     var i;
