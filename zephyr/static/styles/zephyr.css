@@ -840,6 +840,9 @@ table.focused_table {
     line-height: 18px;
     padding-left: 35px;
 }
+.message_edit_content {
+    line-height: 18px;
+}
 @media (max-width: 480px) {
     .message_content {
         margin-right: 5px;
@@ -2057,8 +2060,11 @@ li.expanded_subject .subject_box {
     margin-left: 50px;
 }
 #message_edit_form textarea {
-    width: 90%;
+    width: 100%;
     min-width: 206px;
+}
+#message_edit_form .control-group {
+    margin-bottom: 5px;
 }
 
 .message_edit_notice {
