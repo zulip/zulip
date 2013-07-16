@@ -27,6 +27,7 @@ import re
 import sys
 import time
 import ujson
+import urllib
 import urllib2
 from StringIO import StringIO
 
@@ -99,6 +100,12 @@ def is_known_slow_test(test_method):
 API_KEYS = {}
 
 class AuthedTestCase(TestCase):
+    def client_patch(self, url, info):
+        # self.client.patch will be available in later versions of Django,
+        # although we may still want our version for the url encoding
+        info = urllib.urlencode(info)
+        return self.client.generic('PATCH', url, info)
+
     def login(self, email, password=None):
         if password is None:
             password = initial_password(email)
