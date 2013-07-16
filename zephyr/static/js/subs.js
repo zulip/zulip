@@ -660,6 +660,25 @@ exports.is_subscribed = function (stream_name) {
     return sub !== undefined && sub.subscribed;
 };
 
+exports.update_subscription_properties = function (stream_name, property, value) {
+    var sub = get_sub(stream_name);
+    switch(property) {
+    case 'color':
+        update_stream_color(stream_name, value, {update_historical: true});
+        break;
+    case 'in_home_view':
+        sub[property] = value;
+        stream_list.set_in_home_view(stream_name, sub.in_home_view);
+        break;
+    case 'notifications':
+        sub[property] = value;
+        break;
+    default:
+        blueslip.warn("Unexpected subscription property type", {property: property,
+                                                                value: value});
+    }
+};
+
 function ajaxSubscribe(stream) {
     // Subscribe yourself to a single stream.
     var true_stream_name;

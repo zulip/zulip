@@ -830,6 +830,8 @@ function get_updates_success(data) {
                     $(document).trigger($.Event('subscription_remove.zephyr',
                                                 {subscription: subscription}));
                 });
+            } else if (event.op === 'update') {
+                subs.update_subscription_properties(event.name, event.property, event.value);
             }
             break;
         case 'presence':

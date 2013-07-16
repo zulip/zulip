@@ -702,6 +702,15 @@ def do_change_subscription_property(user_profile, sub, stream_name,
     log_subscription_property_change(user_profile.email, stream_name,
                                      property_name, value)
 
+    notice = dict(event=dict(type="subscriptions",
+                             op="update",
+                             email=user_profile.email,
+                             property=property_name,
+                             value=value,
+                             name=stream_name,),
+                  users=[user_profile.id])
+    tornado_callbacks.send_notification(notice)
+
 def do_activate_user(user_profile, log=True, join_date=timezone.now()):
     user_profile.is_active = True
     user_profile.set_password(initial_password(user_profile.email))
@@ -1142,6 +1151,10 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                 ret['unsubscribed'] += event['subscriptions']
                 ret['subscriptions'] = filter(lambda s: s['name'].lower() not in subscriptions_to_filter,
                                               ret['subscriptions'])
+            elif event['op'] == 'update':
+                for sub in ret['subscriptions']:
+                    if sub['name'].lower() == event['name'].lower():
+                        sub[event['property']] = event['value']
         elif event['type'] == "presence":
                 ret['presences'][event['email']] = event['presence']
         elif event['type'] == "update_message":
