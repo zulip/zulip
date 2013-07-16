@@ -54,6 +54,28 @@ function remove_person(person) {
     delete people_dict[person.email];
 }
 
+function update_person(person) {
+    // Currently the only attribute that can change is full_name, so
+    // we just push out changes to that field.  As we add more things
+    // that can change, this will need to either get complicated or be
+    // replaced by MVC
+    var i;
+    people_dict[person.email].full_name = person.full_name;
+    for (i = 0; i < page_params.people_list.length; i++) {
+        if (page_params.people_list[i].email === person.email) {
+            page_params.people_list[i].full_name = person.full_name;
+            break;
+        }
+    }
+    if (person.email === page_params.email) {
+        page_params.fullname = person.full_name;
+        $("#my_information .my_fullname").text(person.full_name);
+    }
+    activity.set_user_statuses([]);
+
+    // TODO: update sender names on messages
+}
+
 $(function () {
     $.each(page_params.people_list, function (idx, person) {
         people_dict[person.email] = person;
@@ -793,6 +815,8 @@ function get_updates_success(data) {
                 add_person(event.person);
             } else if (event.op === 'remove') {
                 remove_person(event.person);
+            } else if (event.op === 'update') {
+                update_person(event.person);
             }
             break;
         case 'subscriptions':

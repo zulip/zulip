@@ -729,6 +729,15 @@ def do_change_full_name(user_profile, full_name, log=True):
                    'user': user_profile.email,
                    'full_name': full_name})
 
+    notice = dict(event=dict(type="realm_user", op="update",
+                             person=dict(email=user_profile.email,
+                                         full_name=user_profile.full_name)),
+                  users=[up.id for up in
+                         UserProfile.objects.select_related().filter(realm=user_profile.realm,
+                                                                     is_active=True)])
+    tornado_callbacks.send_notification(notice)
+
+
 def do_create_realm(domain, restricted_to_domain=True):
     realm = get_realm(domain)
     created = not realm
@@ -1101,12 +1110,14 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         elif event['type'] == "onboarding_steps":
             ret['onboarding_steps'] = event['steps']
         elif event['type'] == "realm_user":
-            if event['op'] == "add":
-                ret['realm_users'].append(event['person'])
-            elif event['op'] == "remove":
+            # We handle update by just removing the old value and
+            # adding the new one.
+            if event['op'] == "remove" or event['op'] == "update":
                 person = event['person']
                 ret['realm_users'] = filter(lambda p: p['email'] != person['email'],
                                             ret['realm_users'])
+            if event['op'] == "add" or event['op'] == "update":
+                ret['realm_users'].append(event['person'])
         elif event['type'] == "subscriptions":
             subscriptions_to_filter = set(sub.name.lower() for sub in event["subscriptions"])
             # We add the new subscriptions to the list of streams the
