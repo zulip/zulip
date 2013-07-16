@@ -1882,6 +1882,7 @@
 
       items = $.isFunction(this.source) ? this.source(this.query, $.proxy(this.process, this)) : this.source
 
+      if (!items && this.shown) this.hide();
       return items ? this.process(items) : this
     }
 
