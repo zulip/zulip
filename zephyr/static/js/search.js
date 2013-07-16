@@ -9,8 +9,6 @@ var cached_table = $('table.focused_table');
 var current_search_term;
 
 // Data storage for the typeahead -- to go from object to string representation and vice versa.
-var labels = [];
-var mapped = {}; // to be deprecated
 var search_object = {};
 
 function get_query(obj) {
@@ -96,11 +94,6 @@ function get_label(obj) {
         return obj.query;
     }
 }
-
-exports.update_typeahead = function () {
-    mapped = {};
-    labels = []; // deprecated
-};
 
 function narrow_or_search_for_term(item) {
     var search_query_box = $("#search_query");
