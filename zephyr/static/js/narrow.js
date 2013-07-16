@@ -139,7 +139,13 @@ Filter.prototype = {
                     if (page_params.domain === "mit.edu") {
                         // MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
                         // (unsocial, ununsocial, social.d, etc)
-                        var related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(operand) + /(.d)*$/.source, 'i');
+                        // TODO: hoist the regex compiling out of the closure
+                        var m = /^(?:un)*(.+?)(?:.d)*$/.exec(operand);
+                        var base_stream_name = operand;
+                        if (m !== null && m[1] !== undefined) {
+                            base_stream_name = m[1];
+                        }
+                        var related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(base_stream_name) + /(.d)*$/.source, 'i');
                         if (! related_regexp.test(message.stream)) {
                             return false;
                         }
