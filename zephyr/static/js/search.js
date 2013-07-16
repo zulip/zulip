@@ -146,6 +146,8 @@ function get_stream_suggestions(query) {
         return {action: 'stream', query: stream};
     });
 
+    objs = typeahead_helper.sorter(query, objs, get_query);
+
     $.each(objs, function (idx, obj) {
         var prefix = 'Narrow to stream';
         var stream = obj.query;
@@ -153,8 +155,6 @@ function get_stream_suggestions(query) {
         obj.description = prefix + ' ' + stream;
         obj.search_string = get_search_string(obj);
     });
-
-    objs = typeahead_helper.sorter(query, objs, get_query);
 
     return objs;
 }
@@ -166,6 +166,11 @@ function get_person_suggestions(all_people, query, action) {
 
     var objs = $.map(people, function (person) {
         return {action: action, query: person};
+    });
+
+
+    objs.sort(function (x, y) {
+        return typeahead_helper.compare_by_pms(get_query(x), get_query(y));
     });
 
     $.each(objs, function (idx, obj) {
@@ -185,11 +190,6 @@ function get_person_suggestions(all_people, query, action) {
         name = highlight_person(query, person);
         obj.description = prefix + ' ' + name;
         obj.search_string = get_search_string(obj);
-    });
-
-
-    objs.sort(function (x, y) {
-        return typeahead_helper.compare_by_pms(get_query(x), get_query(y));
     });
 
     return objs;
