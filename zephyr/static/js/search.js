@@ -99,34 +99,17 @@ function narrow_or_search_for_term(item) {
     var search_query_box = $("#search_query");
     var obj = search_object[item];
     ui.change_tab_to('#home');
-    switch (obj.action) {
-    case 'stream':
-        narrow.by('stream', obj.query, {trigger: 'search'});
-        // It's sort of annoying that this is not in a position to
-        // blur the search box, because it means that Esc won't
-        // unnarrow, it'll leave the searchbox.
+    var operators = narrow.parse(obj.search_string);
+    narrow.activate(operators, {trigger: 'search'});
 
-        // Narrowing will have already put some operators in the search box,
-        // so leave the current text in.
-        search_query_box.blur();
-        return search_query_box.val();
+    // It's sort of annoying that this is not in a position to
+    // blur the search box, because it means that Esc won't
+    // unnarrow, it'll leave the searchbox.
 
-    case 'private_message':
-        narrow.by('pm-with', obj.query.email, {trigger: 'search'});
-        search_query_box.blur();
-        return search_query_box.val();
-
-    case 'sender':
-        narrow.by('sender', obj.query.email, {trigger: 'search'});
-        search_query_box.blur();
-        return search_query_box.val();
-
-    case 'operators':
-        narrow.activate(obj.operators, {trigger: 'search'});
-        search_query_box.blur();
-        return search_query_box.val();
-    }
-    return item;
+    // Narrowing will have already put some operators in the search box,
+    // so leave the current text in.
+    search_query_box.blur();
+    return search_query_box.val();
 }
 
 function update_buttons_with_focus(focused) {
@@ -220,7 +203,7 @@ exports.initialize = function () {
             // Add an entry for narrow by operators.
             var operators = narrow.parse(query);
             if (operators.length !== 0) {
-                var obj = {action: 'operators', query: query, operators: operators};
+                var obj = {action: 'operators', query: query};
                 obj.search_string  = get_search_string(obj);
                 var description = describe(operators);
                 obj.description = Handlebars.Utils.escapeExpression(description);
