@@ -126,20 +126,15 @@ function get_stream_suggestions(query, max_num) {
         return stream_matches_query(stream, query);
     });
 
+    streams = typeahead_helper.sorter(query, streams);
+    streams = streams.slice(0, max_num);
+
     var objs = $.map(streams, function (stream) {
-        return {query: stream};
-    });
-
-    objs = typeahead_helper.sorter(query, objs, get_query);
-
-    objs = objs.slice(0, max_num);
-
-    $.each(objs, function (idx, obj) {
         var prefix = 'Narrow to stream';
-        var stream = obj.query;
-        stream = typeahead_helper.highlight_query_in_phrase(query, stream);
-        obj.description = prefix + ' ' + stream;
-        obj.search_string = 'stream:' + obj.query;
+        var highlighted_stream = typeahead_helper.highlight_query_in_phrase(query, stream);
+        var description = prefix + ' ' + highlighted_stream;
+        var search_string = 'stream:' + stream;
+        return {description: description, search_string: search_string};
     });
 
     return objs;
