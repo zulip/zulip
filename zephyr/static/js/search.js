@@ -150,6 +150,13 @@ function get_person_suggestions(all_people, query, prefix, operator, max_num) {
     return objs;
 }
 
+function get_suggestion_based_on_query(search_string, operators) {
+    // We expect caller to call narrow.parse to get operators from search_string.
+    var description = describe(operators);
+    description = Handlebars.Utils.escapeExpression(description);
+    return {description: description, search_string: search_string};
+}
+
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
@@ -158,11 +165,8 @@ exports.initialize = function () {
             // Add an entry for narrow by operators.
             var operators = narrow.parse(query);
             if (operators.length !== 0) {
-                var obj = {query: query};
-                obj.search_string  = query;
-                var description = describe(operators);
-                obj.description = Handlebars.Utils.escapeExpression(description);
-                result = [obj];
+                var suggestion = get_suggestion_based_on_query(query, operators);
+                result = [suggestion];
             } else {
                 return [];
             }
