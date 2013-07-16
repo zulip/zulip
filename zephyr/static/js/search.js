@@ -79,7 +79,7 @@ function describe(operators) {
     }).join(', ');
 }
 
-function get_label(obj) {
+function get_search_string(obj) {
     switch (obj.action) {
     case 'stream':
         return 'stream:' + obj.query;
@@ -168,7 +168,7 @@ function get_stream_suggestions(query) {
         var stream = obj.query;
         stream = typeahead_helper.highlight_query_in_phrase(query, stream);
         obj.description = prefix + ' ' + stream;
-        obj.label = get_label(obj);
+        obj.search_string = get_search_string(obj);
     });
 
     objs = typeahead_helper.sorter(query, objs, get_query);
@@ -201,7 +201,7 @@ function get_person_suggestions(all_people, query, action) {
         person = obj.query;
         name = highlight_person(query, person);
         obj.description = prefix + ' ' + name;
-        obj.label = get_label(obj);
+        obj.search_string = get_search_string(obj);
     });
 
 
@@ -221,8 +221,7 @@ exports.initialize = function () {
             var operators = narrow.parse(query);
             if (operators.length !== 0) {
                 var obj = {action: 'operators', query: query, operators: operators};
-                var label = get_label(obj);
-                obj.label = label;
+                obj.search_string  = get_search_string(obj);
                 var description = describe(operators);
                 obj.description = Handlebars.Utils.escapeExpression(description);
                 result = [obj];
@@ -242,13 +241,13 @@ exports.initialize = function () {
             person_suggestions = get_person_suggestions(people, query, 'sender').slice(0, 4);
             result = result.concat(person_suggestions);
 
-            // We can't send typeahead objects, only labels.
+            // We can't send typeahead objects, only strings.
             search_object = {};
             $.each(result, function (idx, obj) {
-                search_object[obj.label] = obj;
+                search_object[obj.search_string] = obj;
             });
             return $.map(result, function (obj) {
-                return obj.label;
+                return obj.search_string;
             });
         },
         items: 20,
