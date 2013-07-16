@@ -434,7 +434,7 @@ exports.activate = function (operators, opts) {
     });
 
     // Show the new set of messages.
-    $("#main_div").addClass("narrowed_view");
+    $("body").addClass("narrowed_view");
     $("#zfilt").addClass("focused_table");
     $("#zhome").removeClass("focused_table");
 
@@ -527,8 +527,7 @@ exports.deactivate = function () {
 
     exports.hide_empty_narrow_message();
 
-    $("#main_div").removeClass('narrowed_view');
-    $("#searchbox").removeClass('narrowed_view');
+    $("body").removeClass('narrowed_view');
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
 
