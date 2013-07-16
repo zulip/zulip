@@ -640,6 +640,7 @@ MessageList.prototype = {
         row.find(".message_edit_form").empty().append(edit_obj.form);
         row.find(".message_content").hide();
         row.find(".message_edit").show();
+        row.find(".message_edit_content").autosize();
     },
 
     hide_edit_message: function MessageList_hide_edit_message(row) {
