@@ -1329,6 +1329,31 @@ def do_update_message_flags(user_profile, operation, flag, messages, all):
     else:
         msgs = UserMessage.objects.filter(user_profile=user_profile,
                                           message__id__in=messages)
+        # Hack to let you star any message
+        if msgs.count() == 0:
+            if not len(messages) == 1:
+                raise JsonableError("Invalid message(s)")
+            if flag != "starred":
+                raise JsonableError("Invalid message(s)")
+            # Check that the user could have read the relevant message
+            try:
+                message = Message.objects.get(id=messages[0])
+            except Message.DoesNotExist:
+                raise JsonableError("Invalid message(s)")
+            recipient = Recipient.objects.get(id=message.recipient_id)
+            if recipient.type != Recipient.STREAM:
+                raise JsonableError("Invalid message(s)")
+            stream = Stream.objects.select_related("realm").get(id=recipient.type_id)
+            if not stream.is_public():
+                raise JsonableError("Invalid message(s)")
+
+            # OK, this is a message that you legitimately have access
+            # to via narrowing to the stream it is on, even though you
+            # didn't actually receive it.  So we create a historical,
+            # read UserMessage message row for you to star.
+            UserMessage.objects.create(user_profile=user_profile,
+                                       message=message,
+                                       flags=UserMessage.flags.historical | UserMessage.flags.read)
 
     # The filter() statements below prevent postgres from doing a lot of
     # unnecessary work, which is a big deal for users updating lots of
