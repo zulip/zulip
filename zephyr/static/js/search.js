@@ -10,7 +10,8 @@ var current_search_term;
 
 // Data storage for the typeahead -- to go from object to string representation and vice versa.
 var labels = [];
-var mapped = {};
+var mapped = {}; // to be deprecated
+var search_object = {};
 
 function get_query(obj) {
     return obj.query;
@@ -114,9 +115,6 @@ exports.update_typeahead = function () {
     });
 
     var options = streams.concat(people).concat(senders);
-    // The first slot is reserved for "search for x".
-    // (this is updated in the source function for our typeahead as well)
-    options.unshift({action: 'operators', query: '', operators: []});
 
     mapped = {};
     labels = [];
@@ -130,7 +128,7 @@ exports.update_typeahead = function () {
 
 function narrow_or_search_for_term(item) {
     var search_query_box = $("#search_query");
-    var obj = mapped[item];
+    var obj = search_object[item];
     ui.change_tab_to('#home');
     switch (obj.action) {
     case 'stream':
@@ -207,9 +205,7 @@ function get_stream_suggestions(query) {
     // streams are already sorted
     objs = typeahead_helper.sorter(query, objs, get_query);
 
-    items = $.map(objs, function (obj) { return obj.label;});
-
-    return items;
+     return objs;
 }
 
 function get_person_suggestions(query, action) {
@@ -247,17 +243,12 @@ function get_person_suggestions(query, action) {
         return typeahead_helper.compare_by_pms(get_query(x), get_query(y));
     });
 
-    items = $.map(objs, function (obj) { return obj.label;});
-
-    return items;
+    return objs;
 }
 
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
-            // Delete our old search queries (one for find-in-page, one for operators)
-            delete mapped[labels.shift()]; // Operators
-
             var result = [];
 
             // Add an entry for narrow by operators.
@@ -265,11 +256,10 @@ exports.initialize = function () {
             if (operators.length !== 0) {
                 var obj = {action: 'operators', query: query, operators: operators};
                 var label = get_label(obj);
-                mapped[label] = obj;
                 obj.label = label;
                 var description = describe(operators);
                 obj.description = Handlebars.Utils.escapeExpression(description);
-                result = [label];
+                result = [obj];
             } else {
                 return [];
             }
@@ -285,11 +275,18 @@ exports.initialize = function () {
             person_suggestions = get_person_suggestions(query, 'sender').slice(0, 4);
             result = result.concat(person_suggestions);
 
-            return result;
+            // We can't send typeahead objects, only labels.
+            search_object = {};
+            $.each(result, function (idx, obj) {
+                search_object[obj.label] = obj;
+            });
+            return $.map(result, function (obj) {
+                return obj.label;
+            });
         },
         items: 20,
         highlighter: function (item) {
-            var obj = mapped[item];
+            var obj = search_object[item];
             return obj.description;
         },
         matcher: function (item) {
