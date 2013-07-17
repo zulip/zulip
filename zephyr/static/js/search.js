@@ -203,7 +203,8 @@ exports.initialize = function () {
         updater: narrow_or_search_for_term,
         sorter: function (items) {
             return items;
-        }
+        },
+        smartSpaceBar: true
     });
 
     $("#searchbox_form").keydown(function (e) {
