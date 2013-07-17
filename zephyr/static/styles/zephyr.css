@@ -503,31 +503,6 @@ td.pointer {
     background-color: #fff;
 }
 
-.selected_message .messagebox, .selected_message .message_data {
-    background-color: #f7f7f7;
-}
-
-.selected_message .inline_profile_picture {
-    border-color: #AAA;
-}
-
-.selected_message.private-message .inline_profile_picture {
-    border-color: #AAA;
-}
-
-.selected_message .info {
-    visibility: visible;
-}
-
-
-.private-message .messagebox {
-background-color: #feffe0;
-}
-
-.selected_message.private-message .message_data, .selected_message.private-message .messagebox {
-    background-color: #feffcc;
-}
-
 .new_messages {
     background-color: lightblue;
 }
@@ -653,22 +628,6 @@ background-color: #feffe0;
     border-bottom: 1px solid #d2eee7;
 }
 
-.last_message .messagebox {
-    height: 3px;
-    border-radius: 0px 0px 3px 0px;
-    border: 1px solid #c1dbd5;
-    border-top: none;
-    border-left: none;
-}
-
-.last_message .messagebox_colorblock {
-    border-radius: 0px 0px 0px 3px;
-    border: 1px solid #c1dbd5;
-    border-top: none;
-    border-right: none;
-}
-
-
 .floating_recipient .message_header, .floating_recipient .message_header_colorblock {
     box-shadow: none;
     border-bottom: 1px solid #d2eee7;
@@ -705,6 +664,33 @@ background-color: #feffe0;
     display: inline-block;
 }
 
+/* Round edges on the bottom of each message --
+   a necessary evil in the world of tables */
+.last_message .messagebox {
+    height: 3px;
+    border-radius: 0px 0px 3px 0px;
+    border: 1px solid #c1dbd5;
+    border-top: none;
+    border-left: none;
+}
+
+.last_message .messagebox_colorblock {
+    border-radius: 0px 0px 0px 3px;
+    border: 1px solid #c1dbd5;
+    border-top: none;
+    border-right: none;
+}
+
+/* Base color backgrounds for messageboxes,
+   private messages, mentions, and unread messages */
+.messagebox {
+    background-color: #ffffff;
+}
+
+.private-message .messagebox {
+    background-color: #feffe0;
+}
+
 .mention .messagebox {
     background-color: #ffe4e0;
 }
@@ -727,12 +713,27 @@ background-color: #feffe0;
     top: -7px;
 }
 
-.selected_message.mention .messagebox, .selected_message.mention .message_data {
-    background-color: #FFE0DC;
+/* Selected messages use an inset box shadow to highlight, with
+   different highlight colors for selected messages, selected mentions,
+   and selected private messages */   
+.selected_message .messagebox {
+    box-shadow: inset 0px -1px 1px -1px #888, inset 0px 1px 1px -1px #888, inset -1000px 0px 0px -1px #eaefe9;
+ }
+ 
+.selected_message.mention .messagebox, .selected_message.private-message.mention .messagebox {
+    box-shadow: inset 0px -1px 1px -1px #888, inset 0px 1px 1px -1px #888, inset -1000px 0px 0px -1px #ead6cd;
+ }
+ 
+.selected_message.private-message .messagebox {
+    box-shadow: inset 0px -1px 1px -1px #888, inset 0px 1px 1px -1px #888, inset -1000px 0px 0px -1px #e9efcd;
 }
 
-.selected_message.private-message.mention .messagebox, .selected_message.private-message.mention .message_data {
-    background-color: #FFE0DC;
+.selected_message .inline_profile_picture {
+    border-color: #AAA;
+}
+
+.selected_message.private-message .inline_profile_picture {
+    border-color: #AAA;
 }
 
 .message_sender {
