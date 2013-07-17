@@ -1310,9 +1310,10 @@ $(function () {
         }
 
         // Unfocus our compose area if we click out of it. Don't let exits out
-        // of modals trigger cancelling.
+        // of modals or selecting text (for copy+paste) trigger cancelling.
         if (compose.composing() && !$(e.target).is("a") &&
-            ($(e.target).closest(".modal").length === 0)) {
+            ($(e.target).closest(".modal").length === 0) &&
+            window.getSelection().toString() === "") {
             compose.cancel();
         }
     });
