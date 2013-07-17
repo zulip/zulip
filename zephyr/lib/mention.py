@@ -17,8 +17,7 @@ def find_user_for_mention(mention, realm):
         user = zephyr.models.UserProfile.objects.filter(
                 Q(full_name__iexact=mention) | Q(short_name__iexact=mention),
                 is_active=True,
-                realm=realm
-            )[0]
+                realm=realm).order_by("id")[0]
     except IndexError:
         user = None
 
