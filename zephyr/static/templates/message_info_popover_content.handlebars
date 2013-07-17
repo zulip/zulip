@@ -1,5 +1,5 @@
 {{! Contents of the "message info" popup }}
-<ul class="nav nav-list actions_popover">
+<ul class="nav nav-list actions_popover sender_info_popover" data-email="{{message.sender_email}}">
   <div class="popover_info">
     <li>Sent by <b>{{message.sender_full_name}}</b></li>
     <li class='my_email'>{{message.sender_email}}</li>
@@ -11,4 +11,20 @@
     <li class="small">(Message sent when you were not subscribed)</li>
     {{/if}}
   </div>
+  <hr />
+  <li>
+    <a href="#" class="respond_personal_button">
+      <i class="icon-vector-edit"></i> Send {{message.sender_full_name}}</b> a private message
+    </a>
+  </li>
+  <li>
+    <a href="#" class="narrow_to_private_messages">
+      <i class="icon-vector-user"></i> Narrow to private messages with {{message.sender_full_name}}
+    </a>
+  </li>
+  <li>
+    <a href="#" class="narrow_to_messages_sent">
+      <i class="icon-vector-bullhorn"></i> Narrow to messages sent by {{message.sender_full_name}}
+    </a>
+  </li>
 </ul>

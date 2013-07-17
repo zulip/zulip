@@ -199,6 +199,22 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
     });
 
+    $('body').on('click', '.sender_info_popover .narrow_to_private_messages', function (e) {
+        var email = $(e.target).parents('ul').attr('data-email');
+        narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar popover'});
+        popovers.hide_message_info_popover();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.sender_info_popover .narrow_to_messages_sent', function (e) {
+        var email = $(e.target).parents('ul').attr('data-email');
+        narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
+        popovers.hide_message_info_popover();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $('#stream_filters').on('click', 'span.arrow', function (e) {
         var elt = e.target;
         if (stream_sidebar_popped()
@@ -274,7 +290,7 @@ exports.register_click_handlers = function () {
     });
     $('body').on('click', '.respond_personal_button', function (e) {
         respond_to_message({reply_type: 'personal', trigger: 'popover respond pm'});
-        popovers.hide_actions_popover();
+        popovers.hide_all();
         e.stopPropagation();
         e.preventDefault();
     });
