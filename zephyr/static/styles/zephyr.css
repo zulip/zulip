@@ -13,7 +13,7 @@ body, #tab_bar, #tab_bar_underpadding, .message_list, .message_comp {
    transition: background-color 200ms linear;
 }
 
-body.narrowed_view, .narrowed_view #tab_bar, .narrowed_view #tab_bar_underpadding, .narrowed_view .message_list, .narrowed_view .message_comp {
+body.narrowed_view, .narrowed_view #tab_bar, .narrowed_view #tab_bar_underpadding, .narrowed_view .message_list {
     background-color: #f0f8ff;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
