@@ -13,21 +13,27 @@ exports.is_in_progress = function () {
     return reload_in_progress;
 };
 
-function preserve_compose(send_after_reload) {
+function preserve_state(send_after_reload) {
     if (send_after_reload === undefined) {
         send_after_reload = 0;
     }
     var url = "#reload:send_after_reload=" + Number(send_after_reload);
     url += "+csrf_token=" + encodeURIComponent(csrf_token);
+
     if (compose.composing() === 'stream') {
         url += "+msg_type=stream";
         url += "+stream=" + encodeURIComponent(compose.stream_name());
         url += "+subject=" + encodeURIComponent(compose.subject());
-    } else {
+    } else if (compose.composing() === 'private') {
         url += "+msg_type=private";
         url += "+recipient=" + encodeURIComponent(compose.recipient());
     }
-    url += "+msg=" + encodeURIComponent(compose.message_content());
+
+    if (compose.composing()){
+        url += "+msg=" + encodeURIComponent(compose.message_content());
+    }
+
+    url += "+pointer=" + current_msg_list.selected_id();
 
     var oldhash = window.location.hash;
     if (oldhash.length !== 0 && oldhash[0] === '#') {
@@ -60,25 +66,32 @@ $(function () {
         return;
     }
 
-    var send_now = parseInt(vars.send_after_reload, 10);
+    if (vars.msg !== undefined){
+        var send_now = parseInt(vars.send_after_reload, 10);
+
+        // TODO: preserve focus
+        compose.start(vars.msg_type, {stream: vars.stream,
+                                      subject: vars.subject,
+                                      private_message_recipient: vars.recipient,
+                                      content: vars.msg});
+        if (send_now) {
+            compose.finish();
+        }
+    }
+
+    var pointer = parseInt(vars.pointer, 10);
+
+    if (pointer) {
+        page_params.initial_pointer = pointer;
+    }
 
     hashchange.changehash(vars.oldhash);
-
-    // TODO: preserve focus
-    compose.start(vars.msg_type, {stream: vars.stream,
-                                  subject: vars.subject,
-                                  private_message_recipient: vars.recipient,
-                                  content: vars.msg});
-    if (send_now) {
-        compose.finish();
-    }
 });
 
 function do_reload_app(send_after_reload, message) {
     // TODO: we should completely disable the UI here
-    if (compose.composing()) {
-        preserve_compose(send_after_reload);
-    }
+    preserve_state(send_after_reload);
+
     if (message === undefined) {
         message = "Reloading";
     }

@@ -366,6 +366,7 @@ exports.activate = function (operators, opts) {
         // to a model where home_msg_list.selected_id() is always
         // initialized early.
         opts.then_select_id = page_params.initial_pointer;
+        opts.select_first_unread = false;
     }
 
     // Unfade the home view before we switch tables.
