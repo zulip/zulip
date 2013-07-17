@@ -27,6 +27,10 @@ var actions_dropdown_hotkeys = [
 ];
 
 function get_event_name(e) {
+    // Note that multiple keys can map to the same event_name, which
+    // we'll do in cases where they have the exact same semantics.
+    // DON'T FORGET: update keyboard_shortcuts.html
+
     if ((e.which === 9) && e.shiftKey) {
         return 'shift_tab';
     }
@@ -74,6 +78,10 @@ function get_event_name(e) {
         return 'show_shortcuts';
     case 67: // 'C'
         return 'compose_private_message';
+    case 74: // 'J'
+        return 'page_down';
+    case 75: // 'K'
+        return 'page_up';
     case 82: // 'R': respond to author
         return 'respond_to_author';
     case 83: //'S'
