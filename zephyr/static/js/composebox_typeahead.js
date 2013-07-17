@@ -276,7 +276,7 @@ exports.initialize = function () {
             // Don't autocomplete more than this many characters.
             var max_chars = 30;
             var last_at = q.lastIndexOf('@');
-            if (last_at < q.length-1 - max_chars)
+            if (last_at === -1 || last_at < q.length-1 - max_chars)
                 return false;  // No '@', or too far back
 
             current_token = q.substring(last_at + 1);
