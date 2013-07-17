@@ -1,7 +1,7 @@
 class humbug::postgres-common {
   class { 'humbug::base': }
 
-  $postgres_packages = [ "postgresql-9.1", "pgtune", "python-boto",
+  $postgres_packages = [ "postgresql-9.1", "pgtune",
                          "python-argparse", "python-gevent",
                          "lzop", "pv", "hunspell-en-us", "python-dateutil"]
   package { $postgres_packages: ensure => "installed" }
