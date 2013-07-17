@@ -434,6 +434,8 @@ MessageList.prototype = {
             }
         }
 
+        $.each(rendered_elems, ui.process_condensing);
+
         if (where === 'top' && table.find('.ztable_layout_row').length > 0) {
             // If we have a totally empty narrow, there may not
             // be a .ztable_layout_row.
@@ -474,7 +476,6 @@ MessageList.prototype = {
             var id = rows.id(row);
             message_edit.maybe_show_edit(row, id);
         });
-        $.each(rendered_elems, ui.process_condensing);
 
         // Re-add the fading of messages that is lost when we re-render.
         compose.update_faded_messages();
