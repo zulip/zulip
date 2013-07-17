@@ -49,6 +49,11 @@ function edit_message (row, raw_content) {
     current_msg_list.show_edit_message(row, edit_obj);
 
     currently_editing_messages[message.id] = edit_obj;
+    if (message.subject === compose.empty_subject_placeholder()) {
+        edit_row.find(".message_edit_subject").focus();
+    } else {
+        edit_row.find(".message_edit_content").focus();
+    }
 }
 
 exports.start = function (row) {
