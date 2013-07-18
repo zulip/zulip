@@ -2045,9 +2045,7 @@
             if (!this.shown) return
             this.select_and_continue()
           }
-          else {
-            this.lookup()
-          }
+          this.lookup()
           break
 
         case 27: // escape
