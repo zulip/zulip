@@ -5,7 +5,7 @@ body {
 
 /* Common background color */
 body, #tab_bar, #tab_bar_underpadding, .message_list, .message_comp {
-    background-color: #f8f9f8;
+    background-color: #f4f5f4;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
    -o-transition: background-color 200ms linear;
@@ -514,15 +514,6 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-.selected_message .pointer, .selected_message.mention .pointer {
-    background-color: #1f2170;
-}
-
-.private-message.selected_message .pointer {
-    background-color: #1f2170;
-}
-
-
 /* Adjust certain message elements so they still
    stand out against the grey background */
 
@@ -608,10 +599,7 @@ td.pointer {
     background: -ms-linear-gradient(top, rgba(220,220,220,1) 0%,rgba(230,230,230,1) 100%); /* IE10+ */
     background: linear-gradient(to bottom, rgba(220,220,220,1) 0%,rgba(230,230,230,1) 100%); /* W3C */
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dcdcdc', endColorstr='#e6e6e6',GradientType=0 ); /* IE6-9 */
-    border-bottom: 1px solid #d2eee7;
-    /* box-shadow: 0px 2px 3px #ccc; */
-    border-top: 1px solid #c1dbd5;
-    border-right: 1px solid #c1dbd5;
+    box-shadow: inset 0px 2px 1px -2px #333, inset -2px 0px 1px -2px #333, inset 0px -2px 1px -2px #ccc;
 }
 
 .message_header .icon-vector-narrow {
@@ -623,14 +611,15 @@ td.pointer {
 .message_header_colorblock {
     border-radius: 3px 0px 0px 0px;
     /* box-shadow: 0px 2px 3px #ccc; */
-    border-top: 1px solid #c1dbd5;
-    border-left: 1px solid #c1dbd5;
-    border-bottom: 1px solid #d2eee7;
+    box-shadow: inset 0px 2px 1px -2px #333, inset 2px 0px 1px -2px #333 !important;
 }
 
-.floating_recipient .message_header, .floating_recipient .message_header_colorblock {
-    box-shadow: none;
-    border-bottom: 1px solid #d2eee7;
+.floating_recipient .message_header {
+    box-shadow: inset 0px 2px 1px -2px #333, inset -2px 0px 1px -2px #333 !important;
+}
+
+.floating_recipient .message_header_colorblock {
+    box-shadow: inset 0px 2px 1px -2px #333, inset 2px 0px 1px -2px #333 !important;
 }
 
 .compose_table .message_header.message_header_private_message, .message_header_private_message {
@@ -645,40 +634,27 @@ td.pointer {
     border-radius: 0px;
 }
 
-.selected_message .messagebox_colorblock {
-    box-shadow: inset -12px 0px 0px -1px rgba(40,40,40,0.5);
-}
-
-.selected_message .messagebox_colorblock.message_header_private_message {
-    box-shadow: inset -12px 0px 0px -1px rgba(240,240,240,0.5);
-}
-
 .pointer_icon {
     width: 100%;
     text-align: center;
     display: none;
-    color: #fff;
+    color: #000;
 }
 
-.selected_message .pointer_icon {
-    display: inline-block;
-}
 
 /* Round edges on the bottom of each message --
    a necessary evil in the world of tables */
 .last_message .messagebox {
     height: 3px;
     border-radius: 0px 0px 3px 0px;
-    border: 1px solid #c1dbd5;
-    border-top: none;
-    border-left: none;
+    border: none;
+    box-shadow: inset -2px 0px 1px -2px #333, inset 0px -2px 1px -2px #333;
 }
 
 .last_message .messagebox_colorblock {
     border-radius: 0px 0px 0px 3px;
-    border: 1px solid #c1dbd5;
-    border-top: none;
-    border-right: none;
+    border: none;
+    box-shadow: inset 2px 0px 1px -2px #333, inset 0px -2px 1px -2px #333;
 }
 
 /* Base color backgrounds for messageboxes,
@@ -715,17 +691,47 @@ td.pointer {
 
 /* Selected messages use an inset box shadow to highlight, with
    different highlight colors for selected messages, selected mentions,
-   and selected private messages */   
+   and selected private messages */
+
+.selected_message + .message_row .messagebox {
+    box-shadow: inset 0px 4px 5px -4px #3093c3, inset -2px 0px 1px -2px #333;
+}
+
+.selected_message + .message_row .messagebox_colorblock {
+    box-shadow: inset 0px 4px 5px -4px #3093c3, inset 2px 0px 1px -2px #333;
+}
+
+.selected_message + .message_row.last_message .messagebox {
+    box-shadow: inset 0px 4px 5px -4px #3093c3, inset -2px 0px 1px -2px #333, inset 0px -2px 1px -2px #333;
+}
+
+.selected_message + .message_row.last_message .messagebox_colorblock {
+    box-shadow: inset 0px 4px 5px -4px #3093c3, inset 2px 0px 1px -2px #333, inset 0px -2px 1px -2px #333;
+}
+
+.selected_message .messagebox_colorblock {
+    box-shadow: 0px 0px 5px 0px #3093c3, inset 3px 0px 1px -2px #39afe8, inset 0px -3px 1px -2px #39afe8, inset 0px 3px 1px -2px #39afe8, inset -12px 0px 0px -1px rgba(240,240,240,0.6);
+}
+
+.selected_message .messagebox_colorblock.message_header_private_message {
+    box-shadow: 0px 0px 5px 0px #3093c3, inset 3px 0px 1px -2px #39afe8, inset 0px -3px 1px -2px #39afe8, inset 0px 3px 1px -2px #39afe8, inset -12px 0px 0px -1px rgba(240,240,240,0.6);
+}
+
+.selected_message .pointer_icon {
+    display: inline-block;
+}
+
 .selected_message .messagebox {
-    box-shadow: inset 0px -1px 1px -1px #888, inset 0px 1px 1px -1px #888, inset -1000px 0px 0px -1px #eaefe9;
+    box-shadow: 0px 0px 5px 0px #3093c3, inset 0px -3px 0px -2px #39afe8, inset 0px 3px 0px -2px #39afe8, inset -3px 0px 0px -2px #39afe8;
  }
  
 .selected_message.mention .messagebox, .selected_message.private-message.mention .messagebox {
-    box-shadow: inset 0px -1px 1px -1px #888, inset 0px 1px 1px -1px #888, inset -1000px 0px 0px -1px #ead6cd;
+    box-shadow: 0px 0px 5px 0px #3093c3, inset 0px -3px 0px -2px #39afe8, inset 0px 3px 0px -2px #39afe8, inset -3px 0px 0px -2px #39afe8;
  }
  
+
 .selected_message.private-message .messagebox {
-    box-shadow: inset 0px -1px 1px -1px #888, inset 0px 1px 1px -1px #888, inset -1000px 0px 0px -1px #e9efcd;
+    box-shadow: 0px 0px 5px 0px #3093c3, inset 0px -3px 0px -2px #39afe8, inset 0px 3px 0px -2px #39afe8, inset -3px 0px 0px -2px #39afe8;
 }
 
 .selected_message .inline_profile_picture {
@@ -884,16 +890,16 @@ blockquote p {
 
 .messagebox {
     padding: 7px 70px 0px 7px;
-    background-color: #fff;
     word-wrap: break-word;
     cursor: pointer;
     vertical-align: top;
-    border-right: 1px solid #c1dbd5;
-    border-left: none;
+    border: none;
+    box-shadow: inset -2px 0px 1px -2px #333;
 }
 
 .messagebox_colorblock {
-    border-left: 1px solid #c1dbd5;
+    border: none;
+    box-shadow: inset 2px 0px 1px -2px #333;
 }
 
 .messagebox p {
