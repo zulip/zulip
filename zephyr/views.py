@@ -60,7 +60,7 @@ from django.db import connection
 
 from confirmation.models import Confirmation
 
-
+import subprocess
 import datetime
 import ujson
 import simplejson
@@ -1889,11 +1889,18 @@ def json_report_error(request, user_profile, message=REQ, stacktrace=REQ,
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
     body = ("Message:\n%s\n\nStacktrace:\n%s\n\nUser agent: %s\nhref: %s\n"
-            "User saw error in UI: %s"
+            "User saw error in UI: %s\n"
             % (message, stacktrace, user_agent, href, ui_message))
 
+    body += "Server path: %s\n" % (settings.DEPLOY_ROOT,)
+    try:
+        body += "Deployed version: %s" % (
+            subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"]),)
+    except Exception:
+        body += "Could not determine current git commit ID.\n"
+
     if more_info is not None:
-        body += "\n\nAdditional information:"
+        body += "\nAdditional information:"
         for (key, value) in more_info.iteritems():
             body += "\n  %s: %s" % (key, value)
 
