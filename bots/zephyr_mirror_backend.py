@@ -505,7 +505,7 @@ def forward_to_zephyr(message):
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
             for line in message["content"].split("\n"))
 
-    zwrite_args = ["zwrite", "-n", "-s", zsig_fullname, "-F", "Zephyr error: See http://zephyr.1ts.org/wiki/df"]
+    zwrite_args = ["zwrite", "-n", "-s", message["sender_full_name"], "-F", "Zephyr error: See http://zephyr.1ts.org/wiki/df"]
     if message['type'] == "stream":
         zephyr_class = message["display_recipient"]
         instance = message["subject"]
@@ -746,19 +746,6 @@ def parse_zephyr_subs(verbose=False):
         zephyr_subscriptions.add((cls.strip(), instance.strip(), recipient.strip()))
     return zephyr_subscriptions
 
-def fetch_fullname(username):
-    try:
-        proc = subprocess.Popen(['hesinfo', username, 'passwd'],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        out, _err_unused = proc.communicate()
-        if proc.returncode == 0:
-            return out.split(':')[4].split(',')[0]
-    except Exception:
-        logger.exception("Error getting fullname for %s:" % (username,))
-
-    return username
-
 def open_logger():
     if options.forward_class_messages:
         if options.test_mode:
@@ -954,7 +941,6 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
             CURRENT_STATE = States.HumbugToZephyr
             # Run the humbug => zephyr mirror in the child
             configure_logger(logger, "humbug=>zephyr")
-            zsig_fullname = fetch_fullname(options.user)
             humbug_to_zephyr(options)
             sys.exit(0)
     else:
