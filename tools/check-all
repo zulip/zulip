@@ -104,31 +104,14 @@ def check_python_gotchas(fn):
 # Invoke the appropriate lint checker for each language,
 # and also check files for extra whitespace.
 
-try:
+import logging
+logging.basicConfig(format="%(asctime)s %(message)s")
+logger = logging.getLogger()
+# Change this to logging.INFO to see performance data
+logger.setLevel(logging.WARNING)
+
+def check_pyflakes():
     failed = False
-
-    # Make the lint output bright red
-    sys.stdout.write('\x1B[1;31m')
-    sys.stdout.flush()
-
-    try:
-        subprocess.check_call(['tools/node', 'tools/jslint/check-all.js']
-            + by_lang['.js'])
-    except subprocess.CalledProcessError:
-        failed = True
-
-    for fn in by_lang['.js'] + by_lang['.py']:
-        if check_trailing_whitespace(fn):
-            failed = True
-
-    for fn in by_lang['.py']:
-        if check_python_gotchas(fn):
-            failed = True
-
-    for fn in by_lang['.js']:
-        if perform_extra_js_checks(fn):
-            failed = True
-
     pyflakes = subprocess.Popen(['pyflakes'] + by_lang['.py'],
         stdout = subprocess.PIPE,
         stderr = subprocess.PIPE)
@@ -142,6 +125,58 @@ try:
                       "redefinition of unused 'simplejson' from line" in ln)):
                 sys.stdout.write(ln)
                 failed = True
+    return failed
+
+def check_custom_checks():
+    failed = False
+
+    for fn in by_lang['.js'] + by_lang['.py']:
+        if check_trailing_whitespace(fn):
+            failed = True
+
+    for fn in by_lang['.py']:
+        if check_python_gotchas(fn):
+            failed = True
+
+    for fn in by_lang['.js']:
+        if perform_extra_js_checks(fn):
+            failed = True
+
+    return failed
+
+try:
+    failed = False
+
+    # Make the lint output bright red
+    sys.stdout.write('\x1B[1;31m')
+    sys.stdout.flush()
+
+    jslint_pid = os.fork()
+    if jslint_pid == 0:
+        logging.info("start jslint")
+        subprocess.check_call(['tools/node', 'tools/jslint/check-all.js']
+                              + by_lang['.js'])
+        logging.info("finish jslint")
+        os._exit(0)
+
+    custom_pid = os.fork()
+    if custom_pid == 0:
+        logging.info("start custom")
+        failed = check_custom_checks()
+        logging.info("finish custom")
+        os._exit(not failed)
+
+    logging.info("start pyflakes")
+    check_pyflakes()
+    logging.info("finish pyflakes")
+
+    (_, status) = os.waitpid(custom_pid, 0)
+    if status != 0:
+        failed = True
+
+    (_, status) = os.waitpid(jslint_pid, 0)
+    if status != 0:
+        failed = True
 
     sys.exit(1 if failed else 0)
 
