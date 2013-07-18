@@ -250,7 +250,7 @@ function decodeOperand(encoded) {
    These are not keys in a JavaScript object, because we
    might need to support multiple operators of the same type.
 */
-function unparse(operators) {
+exports.unparse = function (operators) {
     var parts = [];
     $.each(operators, function (index, elem) {
         var operator = elem[0];
@@ -264,7 +264,7 @@ function unparse(operators) {
         }
     });
     return parts.join(' ');
-}
+};
 
 // Collect operators which appear only once into an object,
 // and discard those which appear more than once.
@@ -470,7 +470,7 @@ exports.activate = function (operators, opts) {
         hashchange.save_narrow(operators);
 
     // Put the narrow operators in the search bar.
-    $('#search_query').val(unparse(operators));
+    $('#search_query').val(exports.unparse(operators));
     search.update_button_visibility();
     compose.update_recipient_on_narrow();
     compose.update_faded_messages();
