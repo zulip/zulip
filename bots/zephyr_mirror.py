@@ -71,6 +71,7 @@ print ""
 print ""
 print "ERROR: The Zephyr mirroring bot is unable to continue mirroring Zephyrs."
 print "This is often caused by failing to maintain unexpired Kerberos tickets"
-print "or AFS tokens."
+print "or AFS tokens.  See https://zulip.com/zephyr for documentation on how to"
+print "maintain unexpired Kerberos tickets and AFS tokens."
 print ""
 sys.exit(1)
