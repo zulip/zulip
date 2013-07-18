@@ -464,7 +464,7 @@ ul.filters li.out_of_home_view {
 
 .message_area_padder {
     margin-top: 10px;
-    padding-left: 5px;
+    padding-left: 15px;
     padding-right: 5px;
     /* This is needed for the floating recipient bar
      in Firefox only, for some reason; otherwise it gets
@@ -677,22 +677,38 @@ td.pointer {
     background-color: #ffe4e0;
 }
 
-.unread .messagebox .message_top_line {
+.messagebox .message_top_line {
     position: relative;
 }
 
-.unread .messagebox .message_top_line:before {
-    content: "";
+.messagebox .unread_marker {
+    display: block;
     position: absolute;
-    top: 0px;
-    left: -7px;
-    border-width: 8px 8px 0px 0;
-    border-style: solid;
-    border-color: #db1f1f transparent;
+    width: 10px;
+    height: 10px;
+    border-radius: 16px;
+    background: #2b8213;
+    left: -31px;
+    margin-top: 6px;
+    opacity: 0;
+    box-shadow: inset 1px 1px 1px -1px #000;
+    border: 1px solid #fff;
+    -webkit-transition: all 0.7s linear 2s;
+    -moz-transition: all 0.7s linear 2s;
+    -o-transition: all 0.7s linear 2s;
+     transition: all 0.7s linear 2s;
 }
 
-.include-sender.unread .messagebox .message_top_line:before {
-    top: -7px;
+.include-sender .messagebox .unread_marker {
+    margin-top: 8px; /* To line up with avatar */
+}
+
+.unread .unread_marker {
+    opacity: 1;
+    -webkit-transition: all 0.7s linear 2s;
+    -moz-transition: all 0.7s linear 2s;
+    -o-transition: all 0.7s linear 2s;
+     transition: all 0.7s linear 2s;
 }
 
 /* Selected messages use an inset box shadow to highlight, with
@@ -1129,6 +1145,7 @@ input.recipient_box {
     padding-bottom: 10px;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-left: 10px;
 }
 
 #tab_list {
