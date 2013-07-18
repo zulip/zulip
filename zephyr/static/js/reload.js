@@ -33,7 +33,10 @@ function preserve_state(send_after_reload) {
         url += "+msg=" + encodeURIComponent(compose.message_content());
     }
 
-    url += "+pointer=" + current_msg_list.selected_id();
+    var pointer = current_msg_list.selected_id();
+    if (pointer !== -1) {
+        url += "+pointer=" + pointer;
+    }
 
     var oldhash = window.location.hash;
     if (oldhash.length !== 0 && oldhash[0] === '#') {
