@@ -157,6 +157,104 @@ function get_suggestion_based_on_query(search_string, operators) {
     return {description: description, search_string: search_string};
 }
 
+function get_topic_suggestions(query, query_operators, max_num) {
+    if (query_operators.length === 0) {
+        return [];
+    }
+
+    var last_term = query_operators.slice(-1)[0];
+    var operator = narrow.canonicalize_operator(last_term[0]);
+    var operand = last_term[1];
+    var stream;
+    var guess;
+
+    // stream:Rome -> show all Rome topics
+    // stream:Rome topic: -> show all Rome topics
+    // stream:Rome f -> show all Rome topics with a word starting in f
+    // stream:Rome topic:f -> show all Rome topics with a word starting in f
+    // stream:Rome topic:f -> show all Rome topics with a word starting in f
+
+    // When narrowed to a stream:
+    //   topic: -> show all topics in current stream
+    //   foo -> show all topics in current stream with words starting with foo
+
+    // If somebody explicitly types search:, then we might
+    // not want to suggest topics, but I feel this is a very
+    // minor issue, and narrow.parse() is currently lossy
+    // in terms of telling us whether they provided the operator,
+    // i.e. "foo" and "search:foo" both become [['search', 'foo']].
+    switch (operator) {
+    case 'stream':
+        guess = '';
+        stream = operand;
+        break;
+    case 'topic':
+    case 'search':
+        guess = operand;
+        query_operators = query_operators.slice(0, -1);
+        var filter = new narrow.Filter(query_operators);
+        if (filter.has_operator('topic')) {
+            return [];
+        }
+        if (filter.has_operator('stream')) {
+            stream = filter.operands('stream')[0];
+        } else {
+            stream = narrow.stream();
+            query_operators.push(['stream', stream]);
+        }
+        break;
+    default:
+        return [];
+    }
+
+    if (!stream) {
+        return [];
+    }
+
+    stream = subs.canonicalized_name(stream);
+
+    var topics = recent_subjects[stream];
+
+    if (!topics) {
+        return [];
+    }
+
+    // Be defensive here in case recent_subjects gets super huge, but
+    // still slice off enough topics to find matches.
+    topics = topics.slice(0, 100);
+
+    // topics = $.map(topics, (t) -> t.subject)
+    topics = $.map(topics, function (topic) {
+        return topic.subject; // "subject" is just the name of the topic
+    });
+
+    if (guess !== '') {
+        topics = $.grep(topics, function (topic) {
+            // Don't suggest a topic if the user has already typed out
+            // the full topic name.
+            var redundant = topic.toLowerCase() === guess.toLowerCase();
+            if (redundant) {
+                return false;
+            }
+            return phrase_match(topic, guess);
+        });
+    }
+
+    // Just use alphabetical order.  While recency and read/unreadness of
+    // subjects do matter in some contexts, you can get that from the left sidebar,
+    // and I'm leaning toward high scannability for autocompletion.  I also don't
+    // care about case.
+    topics.sort();
+
+    return $.map(topics, function (topic) {
+        var topic_operator = ['topic', topic];
+        var operators = query_operators.concat([topic_operator]);
+        var search_string = narrow.unparse(operators);
+        var description = describe(operators);
+        return {description: description, search_string: search_string};
+    });
+}
+
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
@@ -182,6 +280,9 @@ exports.initialize = function () {
             result = result.concat(suggestions);
 
             suggestions = get_person_suggestions(people, query, 'Narrow to messages sent by', 'sender', 4);
+            result = result.concat(suggestions);
+
+            suggestions = get_topic_suggestions(query, operators, 15);
             result = result.concat(suggestions);
 
             // We can't send typeahead objects, only strings.
