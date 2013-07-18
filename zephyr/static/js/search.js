@@ -125,7 +125,7 @@ function get_stream_suggestions(query, max_num) {
         var prefix = 'Narrow to stream';
         var highlighted_stream = typeahead_helper.highlight_query_in_phrase(query, stream);
         var description = prefix + ' ' + highlighted_stream;
-        var search_string = 'stream:' + stream;
+        var search_string = narrow.unparse([['stream', stream]]);
         return {description: description, search_string: search_string};
     });
 
