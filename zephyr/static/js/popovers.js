@@ -381,7 +381,7 @@ exports.register_click_handlers = function () {
 
 exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
-    return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped();
+    return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped() || message_info_popped();
 };
 
 exports.hide_all = function () {
