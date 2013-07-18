@@ -115,7 +115,8 @@ exports.update_faded_messages = function () {
         return;
     }
 
-    if (focused_recipient.type === "stream" && focused_recipient.subject === "") {
+    if ((focused_recipient.type === "stream" && focused_recipient.subject === "") ||
+        (focused_recipient.type === "private" && focused_recipient.reply_to === "")) {
         exports.unfade_messages();
         return;
     }
