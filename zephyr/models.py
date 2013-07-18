@@ -72,6 +72,18 @@ class Realm(models.Model):
             ('administer', "Administer a realm"),
         )
 
+# These functions should only be used on email addresses that have
+# been validated via django.core.validators.validate_email
+#
+# Note that we need to use some care, since can you have multiple @-signs; e.g.
+# "tabbott@test"@humbughq.com
+# is valid email address
+def email_to_username(email):
+    return "@".join(email.split("@")[:-1])
+
+def email_to_domain(email):
+    return email.split("@")[-1]
+
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.

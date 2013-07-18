@@ -20,7 +20,8 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     PreregistrationUser, get_client, MitUser, UserActivity, \
     MAX_SUBJECT_LENGTH, get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
-    extract_message_dict, stringify_message_dict, parse_usermessage_flags
+    extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
+    email_to_domain, email_to_username
 from zephyr.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
@@ -233,6 +234,7 @@ def accounts_register(request):
     email = prereg_user.email
     mit_beta_user = isinstance(confirmation.content_object, MitUser)
 
+    validators.validate_email(email)
     # If someone invited you, you are joining their realm regardless
     # of your e-mail address.
     #
@@ -240,7 +242,7 @@ def accounts_register(request):
     if not mit_beta_user and prereg_user.referred_by:
         domain = prereg_user.referred_by.realm.domain
     else:
-        domain = email.split('@')[-1]
+        domain = email_to_domain(email)
 
     try:
         if mit_beta_user:
@@ -259,7 +261,7 @@ def accounts_register(request):
         if form.is_valid():
             password   = form.cleaned_data['password']
             full_name  = form.cleaned_data['full_name']
-            short_name = email.split('@')[0]
+            short_name = email_to_username(email)
             (realm, _) = Realm.objects.get_or_create(domain=domain)
             first_in_realm = len(UserProfile.objects.filter(realm=realm)) == 0
 
@@ -328,7 +330,7 @@ def accounts_register(request):
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def accounts_accept_terms(request):
     email = request.user.email
-    company_name = email.split('@')[-1]
+    domain = email_to_domain(email)
     if request.method == "POST":
         form = ToSForm(request.POST)
         if form.is_valid():
@@ -347,7 +349,7 @@ def accounts_accept_terms(request):
     else:
         form = ToSForm()
     return render_to_response('zephyr/accounts_accept_terms.html',
-        { 'form': form, 'company_name': company_name, 'email': email },
+        { 'form': form, 'company_name': domain, 'email': email },
         context_instance=RequestContext(request))
 
 def api_endpoint_docs(request):
@@ -1012,14 +1014,14 @@ def mit_to_mit(user_profile, email):
     # We have to handle this specially, inferring the domain from the
     # e-mail address, because the recipient may not existing in Humbug
     # and we may need to make a stub MIT user on the fly.
-    if not validators.email_re.match(email):
+    try:
+        validators.validate_email(email)
+    except ValidationError:
         return False
 
-    if user_profile.realm.domain != "mit.edu":
-        return False
+    domain = email_to_domain(email)
 
-    domain = email.split("@", 1)[1]
-    return user_profile.realm.domain == domain
+    return user_profile.realm.domain == "mit.edu" and domain == "mit.edu"
 
 def create_mirrored_message_users(request, user_profile, recipients):
     if "sender" not in request.POST:

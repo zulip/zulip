@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.core import validators
 
-from zephyr.models import Realm
+from zephyr.models import Realm, email_to_username
 from zephyr.lib.actions import do_create_user
 from zephyr.views import notify_new_user
 from zephyr.lib.initial_password import initial_password
@@ -67,7 +67,7 @@ parameters, or specify no parameters for interactive user creation.""")
 
         try:
             notify_new_user(do_create_user(email, initial_password(email),
-                realm, full_name, email.split('@')[0]),
+                realm, full_name, email_to_username(email)),
                 internal=True)
         except IntegrityError:
             raise CommandError("User already exists.")

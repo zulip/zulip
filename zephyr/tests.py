@@ -9,7 +9,7 @@ from django.db.models import Q
 from zephyr.models import Message, UserProfile, Stream, Recipient, Subscription, \
     get_display_recipient, Realm, Client, \
     PreregistrationUser, UserMessage, \
-    get_user_profile_by_email
+    get_user_profile_by_email, email_to_domain
 from zephyr.tornadoviews import json_get_updates, api_get_messages
 from zephyr.decorator import RespondAsynchronously, RequestVariableConversionError, profiled
 from zephyr.lib.initial_password import initial_password
@@ -2558,7 +2558,7 @@ class UserPresenceTests(AuthedTestCase):
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         # We only want @humbughq.com emails
         for email in json['presences'].keys():
-            self.assertEqual(email.split('@')[1], 'humbughq.com')
+            self.assertEqual(email_to_domain(email), 'humbughq.com')
 
 class UnreadCountTests(AuthedTestCase):
 

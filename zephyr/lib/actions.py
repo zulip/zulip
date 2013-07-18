@@ -9,7 +9,8 @@ from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     DefaultStream, UserPresence, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
-    to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients
+    to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
+    email_to_domain, email_to_username
 from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from django.core.exceptions import ValidationError
@@ -190,7 +191,7 @@ def create_mit_user_if_needed(realm, email):
         try:
             # Forge a user for this person
             return create_user(email, initial_password(email), realm,
-                               compute_mit_user_fullname(email), email.split("@")[0],
+                               compute_mit_user_fullname(email), email_to_username(email),
                                active=False)
         except IntegrityError:
             # Unless we raced with another thread doing the same
@@ -1358,12 +1359,14 @@ def do_invite_users(user_profile, invitee_emails, streams):
         if email == '':
             continue
 
-        if not validators.email_re.match(email):
+        try:
+            validators.validate_email(email)
+        except ValidationError:
             errors.append((email, "Invalid address."))
             continue
 
         if user_profile.realm.restricted_to_domain and \
-                email.split('@', 1)[-1].lower() != user_profile.realm.domain.lower():
+                email_to_domain(email).lower() != user_profile.realm.domain.lower():
             errors.append((email, "Outside your domain."))
             continue
 

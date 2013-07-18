@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from zephyr.lib.initial_password import initial_password
 from zephyr.models import Realm, Stream, UserProfile, Huddle, \
-    Subscription, Recipient, Client, get_huddle_hash
+    Subscription, Recipient, Client, get_huddle_hash, email_to_domain
 from zephyr.lib.create_user import create_user_profile
 
 def bulk_create_realms(realm_list):
@@ -31,7 +31,7 @@ def bulk_create_users(realms, users_raw):
     # Now create user_profiles
     profiles_to_create = []
     for (email, full_name, short_name, active) in users:
-        domain = email.split('@')[1]
+        domain = email_to_domain(email)
         profile = create_user_profile(realms[domain], email,
                                       initial_password(email), active, False,
                                       full_name, short_name, None)
