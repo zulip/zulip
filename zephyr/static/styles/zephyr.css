@@ -632,6 +632,7 @@ td.pointer {
     background-color: #ececec;
     border: none;
     border-radius: 0px;
+    box-shadow: none !important;
 }
 
 .pointer_icon {
@@ -659,6 +660,11 @@ td.pointer {
 
 /* Base color backgrounds for messageboxes,
    private messages, mentions, and unread messages */
+
+.compose_table .messagebox {
+   box-shadow: none !important;
+}
+
 .messagebox {
     background-color: #ffffff;
 }
