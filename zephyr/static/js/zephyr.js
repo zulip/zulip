@@ -265,9 +265,9 @@ function update_unread_counts() {
     // This updates some DOM elements directly, so try to
     // avoid excessive calls to this.
     stream_list.update_dom_with_unread_counts(res);
-    notifications.update_title_count(res.unread_in_current_view);
+    notifications.update_title_count(res.home_unread_messages);
     notifications.update_pm_count(res.private_message_count);
-    notifications_bar.update(res.unread_in_current_view);
+    notifications_bar.update(res.home_unread_messages);
 }
 
 function mark_all_as_read(cont) {

@@ -338,7 +338,7 @@ function resizehandler(e) {
     // screen resolution changes, so we might want to wait for a more
     // intentional action to say that the user has "read" a message.
     var res = unread.get_counts();
-    notifications_bar.update(res.unread_in_current_view);
+    notifications_bar.update(res.home_unread_messages);
 }
 
 $(function () {
