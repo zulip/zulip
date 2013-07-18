@@ -161,27 +161,28 @@ exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
             var result = [];
+            var suggestion;
+            var suggestions;
 
             // Add an entry for narrow by operators.
             var operators = narrow.parse(query);
             if (operators.length !== 0) {
-                var suggestion = get_suggestion_based_on_query(query, operators);
+                suggestion = get_suggestion_based_on_query(query, operators);
                 result = [suggestion];
             } else {
                 return [];
             }
 
-            var stream_suggestions = get_stream_suggestions(query, 4);
-            result = result.concat(stream_suggestions);
+            suggestions = get_stream_suggestions(query, 4);
+            result = result.concat(suggestions);
 
             var people = page_params.people_list;
-            var person_suggestions;
 
-            person_suggestions = get_person_suggestions(people, query, 'Narrow to private messages with', 'pm-with', 4);
-            result = result.concat(person_suggestions);
+            suggestions = get_person_suggestions(people, query, 'Narrow to private messages with', 'pm-with', 4);
+            result = result.concat(suggestions);
 
-            person_suggestions = get_person_suggestions(people, query, 'Narrow to messages sent by', 'sender', 4);
-            result = result.concat(person_suggestions);
+            suggestions = get_person_suggestions(people, query, 'Narrow to messages sent by', 'sender', 4);
+            result = result.concat(suggestions);
 
             // We can't send typeahead objects, only strings.
             search_object = {};
