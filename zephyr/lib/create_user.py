@@ -16,6 +16,13 @@ onboarding_steps = ["sent_stream_message", "sent_private_message", "made_app_sti
 def create_onboarding_steps_blob():
     return ujson.dumps([(step, False) for step in onboarding_steps])
 
+def random_api_key():
+    # select 2 random ascii letters or numbers to fill out our base 64 "encoding"
+    randchar1 = random.choice(string.ascii_letters + string.digits)
+    randchar2 = random.choice(string.ascii_letters + string.digits)
+    bits = str(random.getrandbits(256))
+    return base64.b64encode(hashlib.sha256(bits).digest(), randchar1 + randchar2)[0:32]
+
 # create_user_profile is based on Django's User.objects.create_user,
 # except that we don't save to the database so it can used in
 # bulk_creates
@@ -37,12 +44,7 @@ def create_user_profile(realm, email, password, active, bot, full_name, short_na
     else:
         user_profile.set_password(password)
 
-    # select 2 random ascii letters or numbers to fill out our base 64 "encoding"
-    randchars = random.choice(string.ascii_letters + string.digits) + \
-        random.choice(string.ascii_letters + string.digits)
-    # Generate a new, random API key
-    user_profile.api_key = base64.b64encode(hashlib.sha256(str(random.getrandbits(256))).digest(),
-                                   randchars)[0:32]
+    user_profile.api_key = random_api_key()
     return user_profile
 
 def create_user(email, password, realm, full_name, short_name,
