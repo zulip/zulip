@@ -453,8 +453,7 @@ exports.update_floating_recipient_bar = function () {
     }
 
     // Hide if the message is faded
-    if (current_label.hasClass('message_reply_fade')
-     || current_label.hasClass('message_reply_fade_narrowed')) {
+    if (current_label.hasClass('faded')) {
         hide_floating_recipient_bar();
         return;
     }

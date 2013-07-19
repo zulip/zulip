@@ -102,8 +102,8 @@ exports.unfade_messages = function (clear_state) {
         return;
     }
 
-    var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
-    rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row").removeClass(fade_class);
+    rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row")
+                                               .removeClass("faded").addClass("unfaded");
     if (clear_state === true) {
         focused_recipient = undefined;
     }
@@ -122,8 +122,6 @@ exports.update_faded_messages = function () {
     }
 
     var i;
-    var fade_class = narrow.active() ? "message_reply_fade_narrowed" : "message_reply_fade";
-
     var all_elts = rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row");
     var should_fade_message = false;
     // Note: The below algorithm relies on the fact that all_elts is
@@ -134,8 +132,10 @@ exports.update_faded_messages = function () {
             should_fade_message = !util.same_recipient(focused_recipient, current_msg_list.get(rows.id(elt)));
         }
 
-        if (elt.hasClass(fade_class) !== should_fade_message) {
-            elt.toggleClass(fade_class, should_fade_message);
+        if (should_fade_message) {
+            elt.removeClass("unfaded").addClass("faded");
+        } else {
+            elt.removeClass("faded").addClass("unfaded");
         }
     }
 

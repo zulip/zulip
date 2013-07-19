@@ -1782,11 +1782,7 @@ table.floating_recipient {
     text-align: center;
 }
 
-.message_reply_fade .messagebox {
-    background-color: transparent !important;
-}
-
-.message_reply_fade_narrowed .messagebox {
+.faded .messagebox {
     background-color: transparent !important;
 }
 
