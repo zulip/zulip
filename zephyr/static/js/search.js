@@ -36,6 +36,10 @@ function stream_matches_query(stream_name, q) {
 
 // Convert a list of operators to a human-readable description.
 function describe(operators) {
+    if (operators.length === 0) {
+        return 'Go to Home view';
+    }
+
     var parts = [];
 
     if (operators.length >= 2) {
@@ -145,6 +149,10 @@ function get_stream_suggestions(query) {
 }
 
 function get_person_suggestions(all_people, query, prefix, operator) {
+    if (query === '') {
+        return [];
+    }
+
     var people = $.grep(all_people, function (person) {
         return person_matches_query(person, query);
     });
@@ -280,12 +288,8 @@ exports.initialize = function () {
 
             // Add an entry for narrow by operators.
             var operators = narrow.parse(query);
-            if (operators.length !== 0) {
-                suggestion = get_suggestion_based_on_query(query, operators);
-                result = [suggestion];
-            } else {
-                return [];
-            }
+            suggestion = get_suggestion_based_on_query(query, operators);
+            result = [suggestion];
 
             suggestions = get_stream_suggestions(query);
             result = result.concat(suggestions);
@@ -311,6 +315,7 @@ exports.initialize = function () {
             });
         },
         items: 50,
+        helpOnEmptyStrings: true,
         highlighter: function (item) {
             var obj = search_object[item];
             return obj.description;
