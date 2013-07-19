@@ -304,6 +304,10 @@ function get_special_filter_suggestions(query, operators) {
         {
             search_string: 'is:mentioned',
             description: '@-mentions'
+        },
+        {
+            search_string: 'sender:' + page_params.email,
+            description: 'Sent by me'
         }
     ];
 
