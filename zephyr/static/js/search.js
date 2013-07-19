@@ -148,6 +148,62 @@ function get_stream_suggestions(query) {
     return objs;
 }
 
+function get_private_suggestions(all_people, operators) {
+    if (operators.length === 0) {
+        return [];
+    }
+
+    var ok = false;
+    if ((operators[0][0] === 'is') && (operators[0][1] === 'private')) {
+        operators = operators.slice(1);
+        ok = true;
+    } else if (operators[0][0] === 'pm-with') {
+        ok = true;
+    }
+
+    if (!ok) {
+        return [];
+    }
+
+    var query;
+
+    if (operators.length === 0) {
+        query = '';
+    } else if (operators.length === 1) {
+        var operator = operators[0][0];
+        if (operator === 'search' || operator === 'pm-with') {
+            query = operators[0][1];
+        }
+        else {
+            return [];
+        }
+    }
+    else {
+        return [];
+    }
+
+
+    var people = $.grep(all_people, function (person) {
+        return (query === '') || person_matches_query(person, query);
+    });
+
+    people.sort(typeahead_helper.compare_by_pms);
+
+    var suggestions = $.map(people, function (person) {
+        var name = highlight_person(query, person);
+        var description = 'Narrow to private messages with ' + name;
+        var search_string = narrow.unparse([['pm-with', person.email]]);
+        return {description: description, search_string: search_string};
+    });
+
+    suggestions.unshift({
+        search_string: 'is:private',
+        description: 'Private messages'
+    });
+
+    return suggestions;
+}
+
 function get_person_suggestions(all_people, query, prefix, operator) {
     if (query === '') {
         return [];
@@ -351,6 +407,9 @@ exports.initialize = function () {
             result = result.concat(suggestions);
 
             suggestions = get_person_suggestions(people, query, 'Narrow to messages sent by', 'sender');
+            result = result.concat(suggestions);
+
+            suggestions = get_private_suggestions(people, operators);
             result = result.concat(suggestions);
 
             suggestions = get_topic_suggestions(query, operators);
