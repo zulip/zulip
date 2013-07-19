@@ -149,9 +149,11 @@ class AuthedTestCase(TestCase):
         pub_date = now()
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
         # Subject field is unused by PMs.
-        do_send_message(Message(sender=sender, recipient=recipient, subject=subject,
-                                pub_date=pub_date, sending_client=sending_client,
-                                content=content))
+        message = Message(sender=sender, recipient=recipient, subject=subject,
+                          pub_date=pub_date, sending_client=sending_client,
+                          content=content)
+        do_send_message(message)
+        return message
 
     def get_old_messages(self, anchor=1, num_before=1, num_after=1):
         post_params = {"anchor": anchor, "num_before": num_before,
