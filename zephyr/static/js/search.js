@@ -36,7 +36,19 @@ function stream_matches_query(stream_name, q) {
 
 // Convert a list of operators to a human-readable description.
 function describe(operators) {
-    return $.map(operators, function (elem) {
+    var parts = [];
+
+    if (operators.length >= 2) {
+        if (operators[0][0] === 'stream' && operators[1][0] === 'topic') {
+            var stream = operators[0][1];
+            var topic = operators[1][1];
+            var part = 'Narrow to ' + stream + ' > ' + topic;
+            parts = [part];
+            operators = operators.slice(2);
+        }
+    }
+
+    var more_parts = $.map(operators, function (elem) {
         var operand = elem[1];
         switch (narrow.canonicalize_operator(elem[0])) {
         case 'is':
@@ -68,7 +80,8 @@ function describe(operators) {
             return 'Narrow to messages in ' + operand;
         }
         return 'Narrow to (unknown operator)';
-    }).join(', ');
+    });
+    return parts.concat(more_parts).join(', ');
 }
 
 function narrow_or_search_for_term(item) {
