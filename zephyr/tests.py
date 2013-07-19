@@ -575,10 +575,34 @@ class BotTest(AuthedTestCase):
         self.login("hamlet@humbughq.com")
         self.assert_num_bots_equal(1)
 
+    def test_bot_permissions(self):
+        self.login("hamlet@humbughq.com")
+        self.assert_num_bots_equal(0)
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        # Have Othello try to mess with Hamlet's bots.
+        self.login("othello@humbughq.com")
+
+        result = self.client.post("/json/bots/hambot-bot@humbughq.com/api_key/regenerate")
+        self.assert_json_error(result, 'Insufficient permission')
+
     def get_bot(self):
         result = self.client.post("/json/get_bots")
         bots = ujson.loads(result.content)['bots']
         return bots[0]
+
+    def test_update_api_key(self):
+        self.login("hamlet@humbughq.com")
+        self.create_bot()
+        bot = self.get_bot()
+        old_api_key = bot['api_key']
+        result = self.client.post('/json/bots/hambot-bot@humbughq.com/api_key/regenerate')
+        self.assert_json_success(result)
+        new_api_key = ujson.loads(result.content)['api_key']
+        self.assertNotEqual(old_api_key, new_api_key)
+        bot = self.get_bot()
+        self.assertEqual(new_api_key, bot['api_key'])
 
     def test_patch_bot_full_name(self):
         self.login("hamlet@humbughq.com")

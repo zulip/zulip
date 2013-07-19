@@ -34,6 +34,7 @@ from zephyr.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
     user_email_is_unique, do_invite_users
+from zephyr.lib.create_user import random_api_key
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_inactive, isnt_mit
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -2002,8 +2003,6 @@ def patch_bot_backend(request, user_profile, email, full_name=REQ):
     # TODO:
     #   1) Validate data
     #   2) Support avatar changes
-    # Note that API key changes will be done with a separate POST command:
-    #   POST /bots/[email]/api_key/regenerate
     try:
         bot = get_user_profile_by_email(email)
     except:
@@ -2013,6 +2012,23 @@ def patch_bot_backend(request, user_profile, email, full_name=REQ):
 
     json_result = dict(
         full_name = full_name,
+    )
+    return json_success(json_result)
+
+@has_request_variables
+def regenerate_bot_api_key(request, user_profile, email):
+    try:
+        bot = get_user_profile_by_email(email)
+    except:
+        return json_error('No such user')
+
+    if bot.bot_owner != user_profile and not user_profile.has_perm('administer', user_profile.realm):
+        return json_error('Insufficient permission')
+
+    bot.api_key = random_api_key()
+    bot.save()
+    json_result = dict(
+        api_key = bot.api_key
     )
     return json_success(json_result)
 
