@@ -350,9 +350,7 @@ exports.initialize = function () {
             // operators.  (The reason the other actions don't call
             // this codepath is that they first all blur the box to
             // indicate that they've done what they need to do)
-            if (search_query_box.val().trim()) {
-                narrow.activate(narrow.parse(search_query_box.val()));
-            }
+            narrow.activate(narrow.parse(search_query_box.val()));
             search_query_box.blur();
             update_buttons_with_focus(false);
         }

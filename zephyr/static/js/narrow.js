@@ -352,6 +352,10 @@ exports.stream = function () {
 };
 
 exports.activate = function (operators, opts) {
+    if (operators.length === 0) {
+        return exports.deactivate();
+    }
+
     opts = $.extend({}, {
         then_select_id: home_msg_list.selected_id(),
         select_first_unread: false,
