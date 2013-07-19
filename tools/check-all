@@ -164,7 +164,7 @@ try:
         logging.info("start custom")
         failed = check_custom_checks()
         logging.info("finish custom")
-        os._exit(not failed)
+        os._exit(1 if failed else 0)
 
     logging.info("start pyflakes")
     check_pyflakes()
