@@ -124,7 +124,7 @@ function highlight_person(query, person) {
     return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
 }
 
-function get_stream_suggestions(query, max_num) {
+function get_stream_suggestions(query) {
     var streams = subs.subscribed_streams();
 
     streams = $.grep(streams, function (stream) {
@@ -132,7 +132,6 @@ function get_stream_suggestions(query, max_num) {
     });
 
     streams = typeahead_helper.sorter(query, streams);
-    streams = streams.slice(0, max_num);
 
     var objs = $.map(streams, function (stream) {
         var prefix = 'Narrow to stream';
@@ -145,13 +144,12 @@ function get_stream_suggestions(query, max_num) {
     return objs;
 }
 
-function get_person_suggestions(all_people, query, prefix, operator, max_num) {
+function get_person_suggestions(all_people, query, prefix, operator) {
     var people = $.grep(all_people, function (person) {
         return person_matches_query(person, query);
     });
 
     people.sort(typeahead_helper.compare_by_pms);
-    people = people.slice(0, max_num);
 
     var objs = $.map(people, function (person) {
         var name = highlight_person(query, person);
@@ -170,7 +168,7 @@ function get_suggestion_based_on_query(search_string, operators) {
     return {description: description, search_string: search_string};
 }
 
-function get_topic_suggestions(query, query_operators, max_num) {
+function get_topic_suggestions(query, query_operators) {
     if (query_operators.length === 0) {
         return [];
     }
@@ -258,8 +256,6 @@ function get_topic_suggestions(query, query_operators, max_num) {
         });
     }
 
-    topics = topics.slice(0, max_num);
-
     // Just use alphabetical order.  While recency and read/unreadness of
     // subjects do matter in some contexts, you can get that from the left sidebar,
     // and I'm leaning toward high scannability for autocompletion.  I also don't
@@ -291,18 +287,18 @@ exports.initialize = function () {
                 return [];
             }
 
-            suggestions = get_stream_suggestions(query, 4);
+            suggestions = get_stream_suggestions(query);
             result = result.concat(suggestions);
 
             var people = page_params.people_list;
 
-            suggestions = get_person_suggestions(people, query, 'Narrow to private messages with', 'pm-with', 4);
+            suggestions = get_person_suggestions(people, query, 'Narrow to private messages with', 'pm-with');
             result = result.concat(suggestions);
 
-            suggestions = get_person_suggestions(people, query, 'Narrow to messages sent by', 'sender', 4);
+            suggestions = get_person_suggestions(people, query, 'Narrow to messages sent by', 'sender');
             result = result.concat(suggestions);
 
-            suggestions = get_topic_suggestions(query, operators, 15);
+            suggestions = get_topic_suggestions(query, operators);
             result = result.concat(suggestions);
 
             // We can't send typeahead objects, only strings.
