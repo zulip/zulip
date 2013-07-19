@@ -352,12 +352,17 @@ exports.initialize = function () {
             suggestions = get_topic_suggestions(query, operators);
             result = result.concat(suggestions);
 
-            // We can't send typeahead objects, only strings.
+            // We can't send typeahead objects, only strings, so we have to create a map
+            // back to our objects, and we also filter duplicates here.
             search_object = {};
+            var final_result = [];
             $.each(result, function (idx, obj) {
-                search_object[obj.search_string] = obj;
+                if (!search_object[obj.search_string]) {
+                    search_object[obj.search_string] = obj;
+                    final_result.push(obj);
+                }
             });
-            return $.map(result, function (obj) {
+            return $.map(final_result, function (obj) {
                 return obj.search_string;
             });
         },
