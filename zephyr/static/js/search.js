@@ -240,6 +240,8 @@ function get_topic_suggestions(query, query_operators, max_num) {
         });
     }
 
+    topics = topics.slice(0, max_num);
+
     // Just use alphabetical order.  While recency and read/unreadness of
     // subjects do matter in some contexts, you can get that from the left sidebar,
     // and I'm leaning toward high scannability for autocompletion.  I also don't
@@ -294,7 +296,7 @@ exports.initialize = function () {
                 return obj.search_string;
             });
         },
-        items: 20,
+        items: 50,
         highlighter: function (item) {
             var obj = search_object[item];
             return obj.description;
