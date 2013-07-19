@@ -154,10 +154,10 @@ try:
     jslint_pid = os.fork()
     if jslint_pid == 0:
         logging.info("start jslint")
-        subprocess.check_call(['tools/node', 'tools/jslint/check-all.js']
-                              + by_lang['.js'])
+        result = subprocess.call(['tools/node', 'tools/jslint/check-all.js']
+                                 + by_lang['.js'])
         logging.info("finish jslint")
-        os._exit(0)
+        os._exit(result)
 
     custom_pid = os.fork()
     if custom_pid == 0:
