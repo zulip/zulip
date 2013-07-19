@@ -167,6 +167,7 @@ function get_topic_suggestions(query, query_operators, max_num) {
     var operand = last_term[1];
     var stream;
     var guess;
+    var filter;
 
     // stream:Rome -> show all Rome topics
     // stream:Rome topic: -> show all Rome topics
@@ -185,6 +186,10 @@ function get_topic_suggestions(query, query_operators, max_num) {
     // i.e. "foo" and "search:foo" both become [['search', 'foo']].
     switch (operator) {
     case 'stream':
+        filter = new narrow.Filter(query_operators);
+        if (filter.has_operator('topic')) {
+            return [];
+        }
         guess = '';
         stream = operand;
         break;
@@ -192,7 +197,7 @@ function get_topic_suggestions(query, query_operators, max_num) {
     case 'search':
         guess = operand;
         query_operators = query_operators.slice(0, -1);
-        var filter = new narrow.Filter(query_operators);
+        filter = new narrow.Filter(query_operators);
         if (filter.has_operator('topic')) {
             return [];
         }
