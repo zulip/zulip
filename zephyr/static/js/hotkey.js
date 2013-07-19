@@ -62,6 +62,8 @@ function get_event_name(e) {
     switch (e.which) {
     case 8:
         return 'backspace';
+    case 9:
+        return 'tab';
     case 13:
         return 'enter';
     case 27:
@@ -135,6 +137,18 @@ function process_hotkey(e) {
             // Shift-Tab: go back to content textarea and restore
             // cursor position.
             ui.restore_compose_cursor();
+            return true;
+        }
+    }
+
+    // In Safari and the desktop app, we can't tab to buttons. Intercept the
+    // tab from the message edit content box to Save and then Cancel.
+    if (event_name === "tab") {
+        if ($("#message_edit_content").is(":focus")) {
+            $(".message_edit_save").focus();
+            return true;
+        } else if ($(".message_edit_save").is(":focus")) {
+            $(".message_edit_cancel").focus();
             return true;
         }
     }
