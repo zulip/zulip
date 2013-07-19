@@ -224,7 +224,13 @@ MessageListView.prototype = {
                 }
                 message.subscribed = false;
                 message.unsubscribed = false;
-                if (message.include_bookend && message.historical !== prev.historical) {
+                if (message.include_bookend &&
+                    // This home_msg_list condition can be removed
+                    // once we filter historical messages from the
+                    // home view on the server side (which requires
+                    // having an index on UserMessage.flags)
+                    self.list !== home_msg_list &&
+                    message.historical !== prev.historical) {
                     if (message.historical) {
                         message.unsubscribed = message.stream;
                     } else {
@@ -266,7 +272,13 @@ MessageListView.prototype = {
 
             messages_to_render.push(message);
             prev = message;
-            list.last_message_historical = message.historical;
+            // This home_msg_list condition can be removed
+            // once we filter historical messages from the
+            // home view on the server side (which requires
+            // having an index on UserMessage.flags)
+            if (self.list !== home_msg_list) {
+                list.last_message_historical = message.historical;
+            }
         });
 
         if (prev) {
