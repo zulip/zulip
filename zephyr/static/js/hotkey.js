@@ -273,11 +273,9 @@ function process_hotkey(e) {
         return true;
     case 'compose': // 'c': compose
         compose.start('stream');
-        respond_to_sent_message = true;
         return true;
     case 'compose_private_message':
         compose.start('private');
-        respond_to_sent_message = true;
         return true;
     case  'enter': // Enter: respond to message (unless we need to do something else)
         respond_to_cursor = true;
