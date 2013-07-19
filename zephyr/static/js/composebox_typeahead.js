@@ -169,6 +169,11 @@ exports.initialize = function () {
         } else {
             send_button.fadeIn();
         }
+
+        // Refocus in the content box so you can continue typing or
+        // press Enter to send.
+        $("#new_message_content").focus();
+
         return $.ajax({
             dataType: 'json',
             url: '/json/change_enter_sends',
