@@ -279,6 +279,50 @@ function get_topic_suggestions(query, query_operators) {
     });
 }
 
+function get_special_filter_suggestions(query, operators) {
+    if (operators.length >= 2) {
+        return [];
+    }
+
+    var suggestions = [
+        {
+            search_string: '',
+            description: 'Home'
+        },
+        {
+            search_string: 'in:all',
+            description: 'All messages'
+        },
+        {
+            search_string: 'is:private',
+            description: 'Private messages'
+        },
+        {
+            search_string: 'is:starred',
+            description: 'Starred messages'
+        },
+        {
+            search_string: 'is:mentioned',
+            description: '@-mentions'
+        }
+    ];
+
+    query = query.toLowerCase();
+
+    suggestions = $.grep(suggestions, function (s) {
+        if (s.search_string.toLowerCase() === query) {
+            return false; // redundant
+        }
+        if (query === '') {
+            return true;
+        }
+        return (s.search_string.toLowerCase().indexOf(query) === 0) ||
+               (s.description.toLowerCase().indexOf(query) === 0);
+    });
+
+    return suggestions;
+}
+
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
         source: function (query, process) {
@@ -290,6 +334,9 @@ exports.initialize = function () {
             var operators = narrow.parse(query);
             suggestion = get_suggestion_based_on_query(query, operators);
             result = [suggestion];
+
+            suggestions = get_special_filter_suggestions(query, operators);
+            result = result.concat(suggestions);
 
             suggestions = get_stream_suggestions(query);
             result = result.concat(suggestions);
