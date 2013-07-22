@@ -91,9 +91,11 @@ $(function () {
     hashchange.changehash(vars.oldhash);
 });
 
-function do_reload_app(send_after_reload, message) {
+function do_reload_app(send_after_reload, save_state, message) {
     // TODO: we should completely disable the UI here
-    preserve_state(send_after_reload);
+    if (save_state) {
+        preserve_state(send_after_reload);
+    }
 
     if (message === undefined) {
         message = "Reloading";
@@ -106,11 +108,12 @@ function do_reload_app(send_after_reload, message) {
 
 exports.initiate = function (options) {
     var defaults = {immediate: false,
+                    save_state: true,
                     send_after_reload: false};
     options = $.extend(defaults, options);
 
     if (options.immediate) {
-        do_reload_app(options.send_after_reload, options.message);
+        do_reload_app(options.send_after_reload, options.save_state, options.message);
     }
 
     if (reload_pending) {
@@ -127,12 +130,12 @@ exports.initiate = function (options) {
     var home_timeout          = 1000*60    + util.random_int(0, 1000*60);
     var compose_done_handler, compose_started_handler;
 
-    // Make sure we always do a reload eventually
-    setTimeout(function () { do_reload_app(false, options.message); }, unconditional_timeout);
-
     function reload_from_idle () {
-        do_reload_app(false, options.message);
+        do_reload_app(false, options.save_state, options.message);
     }
+
+    // Make sure we always do a reload eventually
+    setTimeout(reload_from_idle, unconditional_timeout);
 
     compose_done_handler = function () {
         idle_control.cancel();
