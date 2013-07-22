@@ -167,12 +167,17 @@ function in_browser_notify(message, title, content) {
 }
 
 function process_notification(notification) {
-    var i, notification_object, key;
+    var i, notification_object, key, content, other_recipients;
     var message = notification.message;
     var title = message.sender_full_name;
-    var content = $('<div/>').html(message.content).text();
-    var other_recipients;
     var msg_count = 1;
+
+    // Convert the content to plain text, replacing emoji with their alt text
+    content = $('<div/>').html(message.content);
+    content.find(".emoji").replaceWith(function () {
+        return $(this).attr("alt");
+    });
+    content = content.text();
 
     if (message.type === "private") {
         key = message.display_reply_to;
