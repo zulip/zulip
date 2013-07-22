@@ -754,11 +754,11 @@ td.pointer {
 .selected_message .messagebox {
     box-shadow: 0px 0px 5px 0px #3093c3, inset 0px -3px 0px -2px #39afe8, inset 0px 3px 0px -2px #39afe8, inset -3px 0px 0px -2px #39afe8;
  }
- 
+
 .selected_message.mention .messagebox, .selected_message.private-message.mention .messagebox {
     box-shadow: 0px 0px 5px 0px #3093c3, inset 0px -3px 0px -2px #39afe8, inset 0px 3px 0px -2px #39afe8, inset -3px 0px 0px -2px #39afe8;
  }
- 
+
 
 .selected_message.private-message .messagebox {
     box-shadow: 0px 0px 5px 0px #3093c3, inset 0px -3px 0px -2px #39afe8, inset 0px 3px 0px -2px #39afe8, inset -3px 0px 0px -2px #39afe8;
@@ -1293,8 +1293,8 @@ input.recipient_box {
     padding: 0px;
     position: absolute;
     left: 11px;
-    top:8px; 
-    z-index:5;
+    top: 8px;
+    z-index: 5;
 }
 
 #searchbox_form {
@@ -1981,7 +1981,7 @@ li.expanded_subject .subject_box {
     margin-left: 0px;
 }
 
-#bots_list .image, 
+#bots_list .image,
 #bots_list .bot_info {
     display: inline-block;
     margin: 10px;
