@@ -429,7 +429,7 @@ exports.initialize = function () {
                 return obj.search_string;
             });
         },
-        items: 50,
+        items: 30,
         helpOnEmptyStrings: true,
         highlighter: function (item) {
             var obj = search_object[item];
