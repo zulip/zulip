@@ -1332,8 +1332,8 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
         last_reminder = last_reminder.replace(tzinfo=utc)
 
     waitperiod = datetime.timedelta(hours=UserProfile.EMAIL_REMINDER_WAITPERIOD)
-    if len(messages) == 0 or (user_profile.last_reminder and \
-                              timestamp - user_profile.last_reminder < waitperiod):
+    if len(messages) == 0 or (last_reminder and \
+                              timestamp - last_reminder < waitperiod):
         # Don't spam the user, if we've sent an email in the last day
         return
 
