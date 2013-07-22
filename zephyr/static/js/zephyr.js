@@ -59,6 +59,11 @@ function update_person(person) {
     // that can change, this will need to either get complicated or be
     // replaced by MVC
     var i;
+    if (people_dict[person.email] === undefined) {
+        blueslip.error("Got update_person event for unexpected user",
+                       {email: person.email});
+        return;
+    }
     people_dict[person.email].full_name = person.full_name;
     for (i = 0; i < page_params.people_list.length; i++) {
         if (page_params.people_list[i].email === person.email) {
