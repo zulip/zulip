@@ -8,7 +8,7 @@ from zephyr.openid import openid_failure_handler
 
 SERVER_GENERATION = int(time.time())
 
-DEPLOYED = (('humbughq.com' in platform.node())
+DEPLOYED = (('zulip.net' in platform.node())
             or os.path.exists('/etc/humbug-server'))
 STAGING_DEPLOYED = (platform.node() == 'staging.zulip.net')
 TESTING_DEPLOYED = not not re.match(r'^test', platform.node())
@@ -21,8 +21,10 @@ TEST_SUITE = False
 if DEBUG:
     INTERNAL_IPS = ('127.0.0.1',)
 if DEPLOYED and not TESTING_DEPLOYED:
-    # The IP addresses are for app.humbughq.com and staging.humbughq.com
-    ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.245.120.64', '.zulip.com']
+    # The IP addresses are for app.zulip.{com,net} and staging.zulip.{com,net}
+    ALLOWED_HOSTS = ['localhost', '.humbughq.com', '54.214.48.144', '54.213.44.54',
+                     '54.213.41.54', '54.213.44.58', '54.213.44.73',
+                     '54.245.120.64', '54.213.44.83', '.zulip.com', '.zulip.net']
 elif TESTING_DEPLOYED:
     # Allow any hosts for our test instances, to reduce 500 spam
     ALLOWED_HOSTS = ['*']
@@ -70,7 +72,7 @@ LANGUAGE_CODE = 'en-us'
 # This is used so that application data can hook into specific site(s) and a
 # single database can manage content for multiple sites.
 #
-# We set this site's domain to 'humbughq.com' in populate_db.
+# We set this site's domain to 'zulip.com' in populate_db.
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
