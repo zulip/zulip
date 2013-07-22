@@ -114,6 +114,12 @@ function find_boundary_tr(initial_tr, iterate_row) {
     return [rows.id(tr), skip_same_td_check];
 }
 
+exports.replace_emoji_with_text = function (element) {
+    element.find(".emoji").replaceWith(function () {
+        return $(this).attr("alt");
+    });
+};
+
 function copy_handler(e) {
     var selection = window.getSelection();
     var i, range, ranges = [], startc, endc, initial_end_tr, start_id, end_id, row, message;
@@ -181,6 +187,13 @@ function copy_handler(e) {
             div.append(message_firstp);
             div.append($(message.content).slice(1));
         }
+    }
+
+    if (window.bridge !== undefined) {
+        // If the user is running the desktop app,
+        // convert emoji images to plain text for
+        // copy-paste purposes.
+        exports.replace_emoji_with_text(div);
     }
 
     // Select div so that the browser will copy it

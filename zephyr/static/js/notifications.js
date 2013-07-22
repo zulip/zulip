@@ -174,9 +174,7 @@ function process_notification(notification) {
 
     // Convert the content to plain text, replacing emoji with their alt text
     content = $('<div/>').html(message.content);
-    content.find(".emoji").replaceWith(function () {
-        return $(this).attr("alt");
-    });
+    ui.replace_emoji_with_text(content);
     content = content.text();
 
     if (message.type === "private") {
