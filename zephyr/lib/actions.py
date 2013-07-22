@@ -70,6 +70,15 @@ def log_event(event):
         with open(template % ('events',), 'a') as log:
             log.write(ujson.dumps(event) + '\n')
 
+def notify_created_user(user_profile):
+    notice = dict(event=dict(type="realm_user", op="add",
+                             person=dict(email=user_profile.email,
+                                         full_name=user_profile.full_name)),
+                  users=[up.id for up in
+                         UserProfile.objects.select_related().filter(realm=user_profile.realm,
+                                                                     is_active=True)])
+    tornado_callbacks.send_notification(notice)
+
 def do_create_user(email, password, realm, full_name, short_name,
                    active=True, bot=False, bot_owner=None,
                    avatar_source=UserProfile.AVATAR_FROM_GRAVATAR):
@@ -87,13 +96,7 @@ def do_create_user(email, password, realm, full_name, short_name,
     user_profile = create_user(email, password, realm, full_name, short_name,
                                active, bot, bot_owner, avatar_source)
 
-    notice = dict(event=dict(type="realm_user", op="add",
-                             person=dict(email=user_profile.email,
-                                         full_name=user_profile.full_name)),
-                  users=[up.id for up in
-                         UserProfile.objects.select_related().filter(realm=user_profile.realm,
-                                                                     is_active=True)])
-    tornado_callbacks.send_notification(notice)
+    notify_created_user(user_profile)
     return user_profile
 
 def user_sessions(user_profile):
@@ -723,6 +726,8 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
         log_event({'type': 'user_activated',
                    'user': user_profile.email,
                    'domain': domain})
+
+    notify_created_user(user_profile)
 
 def do_change_password(user_profile, password, log=True, commit=True,
                        hashed_password=False):
