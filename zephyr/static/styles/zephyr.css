@@ -1975,7 +1975,6 @@ li.expanded_subject .subject_box {
 
 #bots_list {
     display: none;
-    font-size: 90%;
     list-style-type: none;
     width: 550px;
     margin-left: 0px;
@@ -2005,6 +2004,21 @@ li.expanded_subject .subject_box {
     display: inline-block;
 }
 
+.edit_bot_form {
+    font-size: 100%;
+}
+
+.edit_bot_email {
+    font-weight: bold;
+}
+
+div.edit_bot {
+    border: 1px black solid;
+    display: none;
+    padding: 10px;
+}
+
+.edit_bot_form .control-label,
 #create_bot_form .control-label {
     width: 10em;
     text-align: left;
@@ -2019,6 +2033,7 @@ li.expanded_subject .subject_box {
     display: none;
 }
 
+.edit_bot_name,
 #create_bot_name {
     width: 20em;
 }

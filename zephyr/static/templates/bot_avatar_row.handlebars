@@ -16,9 +16,30 @@
 			</button>
 			<div class="api_key_error text-error"></div>
 		</div>
-		<button type="submit" class="btn btn-primary delete_bot" data-email="{{email}}">
+		<button type="submit" class="btn btn-primary open_edit_bot_form">
+			Edit Bot
+		</button>
+		<button type="submit" class="btn btn-secondary delete_bot" data-email="{{email}}">
 			Delete Bot
 		</button>
 		<div id="bot_delete_error" class="alert alert-error hide"></div>
 	</div>
+
+
+	<div class='edit_bot'>
+	    <form class="edit_bot_form form-horizontal" data-email="{{email}}">
+		    <div class="bot_edit_errors alert alert-error hide"></div>
+	        <p>
+	      	    <div class="edit_bot_email">{{email}}</div>
+	            <label for="edit_bot_name" class="control-label">Full name</label>
+	            <input type="text" name="bot_name" class="edit_bot_name required"
+	               maxlength=50 />
+	            <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
+	        </p>
+	     <input type="submit" class="btn btn-primary edit_bot_button" value="Save" />
+    	 <button type="submit" class="btn btn-secondary reset_edit_bot">Cancel</button>
+	     <div class="edit_bot_spinner"></div>
+	    </form>
+	</div>
+
 </li>

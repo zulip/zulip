@@ -195,6 +195,79 @@ $(function () {
             }
         });
     });
+
+
+    $("#bots_list").on("click", "button.open_edit_bot_form", function (e) {
+        var li = $(e.target).closest('li');
+        var edit_div = li.find('div.edit_bot');
+        var form = li.find('.edit_bot_form');
+        var image = li.find(".image");
+        var bot_info = li.find(".bot_info");
+        var reset_edit_bot = li.find(".reset_edit_bot");
+
+        var old_full_name = bot_info.find(".name").text();
+        form.find(".edit_bot_name").attr('value', old_full_name);
+
+        image.hide();
+        bot_info.hide();
+        edit_div.show();
+
+        function show_row_again() {
+            image.show();
+            bot_info.show();
+            edit_div.hide();
+        }
+
+        reset_edit_bot.click(function (event) {
+            show_row_again();
+            $(this).off(event);
+        });
+
+        var errors = form.find('.bot_edit_errors');
+
+        form.validate({
+            errorClass: 'text-error',
+            success: function (label) {
+                errors.hide();
+            },
+            submitHandler: function () {
+                var email = form.data('email');
+                var full_name = form.find('.edit_bot_name').val();
+                var spinner = form.find('.edit_bot_spinner');
+                var edit_button = form.find('.edit_bot_button');
+                var formData = new FormData();
+                formData.append('full_name', full_name);
+                formData.append('csrfmiddlewaretoken', csrf_token);
+                util.make_loading_indicator(spinner, {text: 'Editing bot'});
+                edit_button.hide();
+                $.ajax({
+                    url: '/json/bots/' + encodeURIComponent(email),
+                    type: 'PATCH',
+                    data: formData,
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        util.destroy_loading_indicator(spinner);
+                        errors.hide();
+                        edit_button.show();
+                        show_row_again();
+                        bot_info.find('.name').text(full_name);
+                    },
+                    error: function (xhr, error_type, exn) {
+                        util.destroy_loading_indicator(spinner);
+                        edit_button.show();
+                        errors.text(JSON.parse(xhr.responseText).msg).show();
+                    }
+                });
+            }
+        });
+
+
+    });
+
+
+
 });
 
 }());
