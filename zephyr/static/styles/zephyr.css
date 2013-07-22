@@ -875,7 +875,7 @@ table.focused_table {
 
 .message_content {
     line-height: 18px;
-    padding-left: 35px;
+    padding-left: 35px; /* Also edit #message_edit_form .edit-controls */
 }
 .message_edit_content {
     line-height: 18px;
@@ -2087,19 +2087,25 @@ li.expanded_subject .subject_box {
 
 .message_edit {
     display: none;
+    margin-top: 5px;
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
 #message_edit_form .edit-control-label {
     width: auto;
     float: left;
+    font-size: 80%;
 }
 #message_edit_form .edit-controls {
-    margin-left: 50px;
+    margin-left: 28px; /* Match .message_content padding less 7px textarea padding and border */
+    margin-right: -7px;
 }
 #message_edit_form textarea {
     width: 100%;
     min-width: 206px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 #message_edit_form .control-group {
     margin-bottom: 5px;

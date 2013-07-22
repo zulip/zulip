@@ -38,6 +38,9 @@ exports.save = function (row) {
 };
 
 function edit_message (row, raw_content) {
+    var content_top = row.find('.message_content')[0]
+        .getBoundingClientRect().top;
+
     var message = current_msg_list.get(rows.id(row));
     var edit_row = row.find(".message_edit");
     var form = $(templates.render('message_edit_form',
@@ -54,6 +57,14 @@ function edit_message (row, raw_content) {
     } else {
         edit_row.find(".message_edit_content").focus();
     }
+
+    // Scroll to keep the message content in the same place
+    var edit_top = edit_row.find('.message_edit_content')[0]
+        .getBoundingClientRect().top;
+
+    var scroll_by = edit_top - content_top + 5 /* border and padding */;
+    edit_obj.scrolled_by = scroll_by;
+    viewport.scrollTop(viewport.scrollTop() + scroll_by);
 }
 
 exports.start = function (row) {
@@ -80,6 +91,8 @@ exports.is_editing = function (id) {
 exports.end = function (row) {
     var message = current_msg_list.get(rows.id(row));
     if (currently_editing_messages[message.id] !== undefined) {
+        var scroll_by = currently_editing_messages[message.id].scrolled_by;
+        viewport.scrollTop(viewport.scrollTop() - scroll_by);
         delete currently_editing_messages[message.id];
         current_msg_list.hide_edit_message(row);
     }
