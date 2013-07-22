@@ -311,6 +311,8 @@ function get_topic_suggestions(query, query_operators) {
         return topic.subject; // "subject" is just the name of the topic
     });
 
+    topics = topics.slice(0, 10);
+
     if (guess !== '') {
         topics = $.grep(topics, function (topic) {
             // Don't suggest a topic if the user has already typed out
