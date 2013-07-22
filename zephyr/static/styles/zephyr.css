@@ -1782,12 +1782,12 @@ table.floating_recipient {
     text-align: center;
 }
 
-.message_reply_fade {
-    opacity: .4;
+.message_reply_fade .messagebox {
+    background-color: transparent !important;
 }
 
-.message_reply_fade_narrowed {
-    opacity: .4;
+.message_reply_fade_narrowed .messagebox {
+    background-color: transparent !important;
 }
 
 #stream-message, #private-message {
