@@ -199,7 +199,7 @@ function get_private_suggestions(all_people, operators) {
         return {description: description, search_string: search_string};
     });
 
-    suggestions.unshift({
+    suggestions.push({
         search_string: 'is:private',
         description: 'Private messages'
     });
