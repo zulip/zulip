@@ -189,6 +189,9 @@ function get_private_suggestions(all_people, operators) {
 
     people.sort(typeahead_helper.compare_by_pms);
 
+    // Take top 15 people, since they're ordered by pm_recipient_count.
+    people = people.slice(0, 15);
+
     var suggestions = $.map(people, function (person) {
         var name = highlight_person(query, person);
         var description = 'Narrow to private messages with ' + name;
