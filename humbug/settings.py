@@ -258,6 +258,7 @@ PIPELINE_CSS = {
             'third/zocial/zocial.css',
             'styles/portico.css',
             'styles/pygments.css',
+            'styles/thirdparty-fonts.css',
             'styles/fonts.css',
         ),
         'output_filename': 'min/portico.css'
