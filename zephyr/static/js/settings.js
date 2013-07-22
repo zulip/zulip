@@ -178,6 +178,23 @@ $(function () {
             }
         });
     });
+
+    $("#bots_list").on("click", "button.update_bot_api_key", function (e) {
+        var email = $(e.target).data('email');
+        $.ajax({
+            url: '/json/bots/' + encodeURIComponent(email) + '/api_key/regenerate',
+            type: 'POST',
+            success: function (data) {
+                var row = $(e.target).closest("li");
+                row.find(".api_key").find(".value").text(data.api_key);
+                row.find("api_key_error").hide();
+            },
+            error: function (xhr) {
+                var row = $(e.target).closest("li");
+                row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
+            }
+        });
+    });
 });
 
 }());

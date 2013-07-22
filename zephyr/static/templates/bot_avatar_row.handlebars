@@ -10,7 +10,11 @@
 		</div>
 		<div class="api_key">
 			<span class="field">API Key</span>
-			<span class="value">{{api_key}}</e>
+			<span class="value">{{api_key}}</span>
+			<button type="submit" class="btn btn-secondary update_bot_api_key" data-email="{{email}}">
+				Update API Key
+			</button>
+			<div class="api_key_error text-error"></div>
 		</div>
 		<button type="submit" class="btn btn-primary delete_bot" data-email="{{email}}">
 			Delete Bot
