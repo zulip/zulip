@@ -17,10 +17,10 @@
 # Author: Greg Price <price@ksplice.com>
 
 ## CC_EMAIL: All review requests will be CC'd here.
-CC_EMAIL = 'code-review@humbughq.com'
+CC_EMAIL = 'code-review@zulip.com'
 
 ## DOMAIN: Reviewers without an '@' will be assumed to be localparts here.
-DOMAIN = 'humbughq.com'
+DOMAIN = 'zulip.com'
 
 ## TEST_SCRIPT: Test file to run; path relative to root of the working tree, or absolute.
 TEST_SCRIPT = "tools/test-all"
@@ -439,10 +439,7 @@ def main(args):
   else:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../api'))
     import humbug
-    client = humbug.Client(
-        email=get_current_user_email(repo),
-        site="https://staging.humbughq.com",
-        verbose=True)
+    client = humbug.Client(verbose=True)
 
     reviewer_usernames = [x.split("@")[0] for x in opts.reviewers]
 
