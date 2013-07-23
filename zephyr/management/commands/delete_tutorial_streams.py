@@ -45,7 +45,7 @@ class Command(BaseCommand):
                     if options["for_real"]:
                         tutorial_user = subscribers[0]
                         tutorial_user.active = False
-                        tutorial_user.save()
+                        tutorial_user.save(update_fields=["active"])
 
         if options["for_real"]:
             print "Subscriptions deactivated."

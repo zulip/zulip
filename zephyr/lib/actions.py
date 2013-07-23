@@ -936,7 +936,7 @@ def subscribed_to_stream(user_profile, stream):
 
 def do_update_onboarding_steps(user_profile, steps):
     user_profile.onboarding_steps = ujson.dumps(steps)
-    user_profile.save()
+    user_profile.save(update_fields=["onboarding_steps"])
 
     log_event({'type': 'update_onboarding',
                'user': user_profile.email,

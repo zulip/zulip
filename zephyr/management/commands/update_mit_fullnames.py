@@ -19,7 +19,7 @@ def update_mit_fullnames(change=False):
             print "%s: %s => %s" % (u.email, u.full_name, computed_name)
             if change:
                 u.full_name = computed_name
-                u.save()
+                u.save(update_fields=["full_name"])
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (

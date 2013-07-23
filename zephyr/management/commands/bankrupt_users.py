@@ -30,7 +30,7 @@ Usage: python manage.py bankrupt_users <list of email addresses>"""
                 old_pointer = user_profile.pointer
                 new_pointer = messages[0].id
                 user_profile.pointer = new_pointer
-                user_profile.save()
+                user_profile.save(update_fields=["pointer"])
                 print "%s: %d => %d" % (email, old_pointer, new_pointer)
             else:
                 print "%s has no messages, can't bankrupt!" % (email,)

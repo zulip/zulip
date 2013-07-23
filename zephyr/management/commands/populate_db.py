@@ -558,21 +558,22 @@ def restore_saved_messages():
             # Just handle these the slow way
             user_profile = users[old_message["user"]]
             user_profile.full_name = old_message["full_name"]
-            user_profile.save()
+            user_profile.save(update_fields=["full_name"])
             continue
         elif message_type == "enable_desktop_notifications_changed":
             # Just handle these the slow way
             user_profile = users[old_message["user"]]
             user_profile.enable_desktop_notifications = (old_message["enable_desktop_notifications"] != "false")
-            user_profile.save()
+            user_profile.save(update_fields=["enable_desktop_notifications"])
             continue
         elif message_type == "enable_sounds_changed":
             user_profile = users[old_message["user"]]
             user_profile.enable_sounds = (old_message["enable_sounds"] != "false")
+            user_profile.save(update_fields=["enable_sounds"])
         elif message_type == "enable_offline_email_notifications_changed":
             user_profile = users[old_message["user"]]
             user_profile.enable_offline_email_notifications = (old_message["enable_offline_email_notifications"] != "false")
-            user_profile.save()
+            user_profile.save(update_fields=["enable_offline_email_notifications"])
             continue
         elif message_type == "default_streams":
             set_default_streams(Realm.objects.get(domain=old_message["domain"]),
@@ -656,7 +657,7 @@ def restore_saved_messages():
     with transaction.commit_on_success():
         for (sub, active) in subscriptions_to_change:
             current_subs_obj[sub].active = active
-            current_subs_obj[sub].save()
+            current_subs_obj[sub].save(update_fields=["active"])
 
     subs = {}
     for sub in Subscription.objects.all():
@@ -683,7 +684,7 @@ def restore_saved_messages():
                 user_profile.pointer = top.message_id
             except IndexError:
                 user_profile.pointer = -1
-            user_profile.save()
+            user_profile.save(update_fields=["pointer"])
 
     print datetime.datetime.now(), "Done replaying old messages"
 

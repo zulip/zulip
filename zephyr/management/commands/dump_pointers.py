@@ -36,7 +36,7 @@ def restore(change):
                 continue
         if change:
             u.pointer = pointer
-            u.save()
+            u.save(update_fields=["pointer"])
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (

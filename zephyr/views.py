@@ -413,8 +413,7 @@ def handle_openid_errors(request, issue, openid_response=None):
             if form.is_valid():
                 # Construct a PreregistrationUser object and send the user over to
                 # the confirmation view.
-                prereg_user = PreregistrationUser()
-                prereg_user.email = google_email
+                prereg_user = PreregistrationUser(email=google_email)
                 prereg_user.save()
                 return redirect("".join((
                     "/",
@@ -475,8 +474,7 @@ def accounts_home(request):
         form = HomepageForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
-            prereg_user = PreregistrationUser()
-            prereg_user.email = email
+            prereg_user = PreregistrationUser(email=email)
             prereg_user.save()
             Confirmation.objects.send_confirmation(prereg_user, email)
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
@@ -508,7 +506,7 @@ def home(request):
     # user has since logged in
     if not user_profile.last_reminder is None:
         user_profile.last_reminder = None
-        user_profile.save()
+        user_profile.save(update_fields=["last_reminder"])
 
     # Brand new users get the tutorial
     needs_tutorial = settings.TUTORIAL_ENABLED and \
@@ -1052,7 +1050,7 @@ def json_tutorial_status(request, user_profile, status=REQ('status')):
         user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED
     elif status == 'finished':
         user_profile.tutorial_status = UserProfile.TUTORIAL_FINISHED
-    user_profile.save()
+    user_profile.save(update_fields=["tutorial_status"])
 
     return json_success()
 

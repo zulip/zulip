@@ -20,4 +20,4 @@ class Command(BaseCommand):
 
         user_profile = get_user_profile_by_email(email)
         user_profile.api_key = api_key
-        user_profile.save()
+        user_profile.save(update_fields=["api_key"])
