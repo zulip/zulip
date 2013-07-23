@@ -136,6 +136,7 @@ urlpatterns += patterns('zephyr.views',
     url(r'^api/v1/external/github$',        'api_github_landing'),
     url(r'^api/v1/external/jira$',          'api_jira_webhook'),
     url(r'^api/v1/external/pivotal$',       'api_pivotal_webhook'),
+    url(r'^api/v1/external/newrelic$',      'api_newrelic_webhook'),
 )
 
 v1_api_and_json_patterns = patterns('zephyr.views',

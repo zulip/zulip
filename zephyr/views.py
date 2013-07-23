@@ -1829,6 +1829,45 @@ def api_beanstalk_webhook(request, user_profile,
         return json_error(ret)
     return json_success()
 
+@csrf_exempt
+@has_request_variables
+def api_newrelic_webhook(request, alert=REQ(converter=json_to_dict, default=None),
+                             deployment=REQ(converter=json_to_dict, default=None)):
+    try:
+        api_key = request.GET['api_key']
+        stream = request.GET['stream']
+    except (AttributeError, KeyError):
+        return json_error("Missing api_key or stream parameter.")
+
+    try:
+        user_profile = UserProfile.objects.get(api_key=api_key)
+        request.user = user_profile
+    except UserProfile.DoesNotExist:
+        return json_error("Failed to find user with API key: %s" % (api_key,))
+
+    rate_limit_user(request, user_profile, domain='all')
+
+    if alert:
+        # Use the message as the subject because it stays the same for
+        # "opened", "acknowledged", and "closed" messages that should be
+        # grouped.
+        subject = alert['message']
+        content = "%(long_description)s\n[View alert](%(alert_url)s)" % (alert)
+    elif deployment:
+        subject = "%s deploy" % (deployment['application_name'])
+        content = """`%(revision)s` deployed by **%(deployed_by)s**
+%(description)s
+
+%(changelog)s""" % (deployment)
+    else:
+        return json_error("Unknown webhook request")
+
+    subject = elide_subject(subject)
+    ret = check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
+    if ret is not None:
+        return json_error(ret)
+    return json_success()
+
 def get_status_list(requesting_user_profile):
     return {'presences': get_status_dict(requesting_user_profile),
             'server_timestamp': time.time()}

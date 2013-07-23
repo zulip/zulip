@@ -52,6 +52,7 @@
       <li><a href="#jira">Jira (hosted or v5.2+)</a></li>
       <li><a href="#jira-plugin">Jira (locally installed)</a></li>
       <li><a href="#nagios">Nagios</a></li>
+      <li><a href="#newrelic">New Relic</a></li>
       <li><a href="#pivotal">Pivotal Tracker</a></li>
       <li><a href="#svn">Subversion</a></li>
       <li><a href="#trac">Trac</a></li>
@@ -390,6 +391,29 @@ key=NAGIOS_BOT_API_KEY
 
       <p><b>Congratulations! You're done!</b><br /> When you make changes in Pivotal Tracker they will be reflected in Zulip:
       <img class="screenshot" src="/static/images/integrations/pivotal/002.png">
+      <p>
+        <a href="#services">^ Back to top</a>
+      </p>
+    </div>
+{#--------------------------------------------------------------------#}
+    <div id="newrelic" class="integration">
+     <h4>New Relic</h4>
+
+     <p>New Relic can send messages to a Zulip stream for alerts and deploys.
+     In your Account Settings page, click "Integrations", then
+     "Alerting notifications". On the "Webhook" tab, enter the following
+     webhook URL:</p>
+
+      <p><code>https://api.humbughq.com/v1/external/newrelic?api_key=abcdefgh&amp;stream=newrelic</code></p>
+
+      <p>where <code>api_key</code> is the API key of the user you
+      want updates to be sent as, and <code>stream</code> is the stream name you want the notifications sent to. The stream must already exist.</p>
+
+      <img class="screenshot" src="/static/images/integrations/newrelic/001.png">
+
+      <p><b>Congratulations! You're done!</b><br /> Your New Relic events will
+       appear in Zulip:
+      <img class="screenshot" src="/static/images/integrations/newrelic/002.png">
       <p>
         <a href="#services">^ Back to top</a>
       </p>

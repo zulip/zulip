@@ -2988,6 +2988,28 @@ class PivotalHookTests(AuthedTestCase):
         self.assertEqual(msg.content, 'Leo Franchi edited "My new Feature story" \
 [(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)')
 
+class NewRelicHookTests(AuthedTestCase):
+    def send_new_relic_message(self, name):
+        email = "hamlet@humbughq.com"
+        api_key = self.get_api_key(email)
+        return self.send_json_payload(email, "/api/v1/external/newrelic?api_key=%s&stream=%s" % (api_key,"newrelic"),
+                                      self.fixture_data('newrelic', name, file_type='txt'),
+                                      stream_name="newrelic",
+                                      content_type="application/x-www-form-urlencoded")
+
+    def test_alert(self):
+        msg = self.send_new_relic_message('alert')
+        self.assertEqual(msg.subject, "Apdex score fell below critical level of 0.90")
+        self.assertEqual(msg.content, 'Alert opened on [application name]: \
+Apdex score fell below critical level of 0.90\n\
+[View alert](https://rpm.newrelc.com/accounts/[account_id]/applications/[application_id]/incidents/[incident_id])')
+
+    def test_deployment(self):
+        msg = self.send_new_relic_message('deployment')
+        self.assertEqual(msg.subject, 'Test App deploy')
+        self.assertEqual(msg.content, '`1242` deployed by **Zulip Test**\n\
+Description sent via curl\n\nChangelog string')
+
 class RateLimitTests(AuthedTestCase):
 
     def setUp(self):
