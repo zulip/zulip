@@ -1826,6 +1826,9 @@
     this.source = this.options.source
     this.shown = false
     this.dropup = this.options.dropup
+    // The naturalSearch option causes arrow keys to immediately
+    // update the search box with the underlying values from the
+    // search suggestions.
     this.listen()
   }
 
@@ -1839,6 +1842,11 @@
         .val(this.updater(val))
         .change()
       return this.hide()
+    }
+
+  , set_value: function () {
+      var val = this.$menu.find('.active').data('typeahead-value')
+      this.$element.val(val)
     }
 
   , select_and_continue: function () {
@@ -1966,6 +1974,10 @@
       }
 
       next.addClass('active')
+
+      if (this.options.naturalSearch) {
+        this.set_value();
+      }
     }
 
   , prev: function (event) {
@@ -1977,6 +1989,10 @@
       }
 
       prev.addClass('active')
+
+      if (this.options.naturalSearch) {
+        this.set_value();
+      }
     }
 
   , listen: function () {
