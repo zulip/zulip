@@ -340,6 +340,32 @@ function get_topic_suggestions(query, query_operators) {
     });
 }
 
+function get_operator_subset_suggestions(query, operators) {
+    // If you have stream:foo topic:x search:needle, then
+    // suggest "stream:foo" and "stream:foo topic:x" so that
+    // power users can use search as a quick mouse-free way
+    // to de-narrow.  This won't cause too much clutter, as
+    // you generally only have 1 to 3 operators, and this gives
+    // N-1 additional suggestions.
+    if (operators.length < 1) {
+        return [];
+    }
+
+    var i;
+    var suggestions = [];
+
+    for (i = 0; i < operators.length; ++i) {
+        var subset = operators.slice(0, i);
+        var search_string = narrow.unparse(subset);
+        var description = describe(subset);
+        var suggestion = {description: description, search_string: search_string};
+        suggestions.push(suggestion);
+    }
+
+    return suggestions;
+}
+
+
 function get_special_filter_suggestions(query, operators) {
     if (operators.length >= 2) {
         return [];
@@ -401,6 +427,9 @@ exports.initialize = function () {
             result = [suggestion];
 
             suggestions = get_special_filter_suggestions(query, operators);
+            result = result.concat(suggestions);
+
+            suggestions = get_operator_subset_suggestions(query, operators);
             result = result.concat(suggestions);
 
             suggestions = get_stream_suggestions(query);
