@@ -12,7 +12,7 @@ fonts:
   - DejaVuSans
 auto_refresh:
   enabled: true # checked by default?
-  interval: 10 # seconds
+  interval: 120 # seconds
 default_options:
   title: "New Graph"
   from: -7d

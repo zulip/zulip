@@ -8,8 +8,8 @@
     ServerName graphiti.zulip.net
 
     SSLEngine on
-    SSLCertificateFile /etc/apache2/certs/humbug-self-signed.crt
-    SSLCertificateKeyFile /etc/apache2/certs/humbug-self-signed.key
+    SSLCertificateFile /etc/ssl/certs/stats1.zulip.net.crt
+    SSLCertificateKeyFile /etc/ssl/certs/stats1.zulip.net.key
 
     Header add Strict-Transport-Security "max-age=15768000"
     Header add X-Frame-Options DENY
