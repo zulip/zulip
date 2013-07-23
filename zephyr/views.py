@@ -2007,8 +2007,11 @@ def patch_bot_backend(request, user_profile, email, full_name=REQ):
         bot = get_user_profile_by_email(email)
     except:
         return json_error('No such user')
-    bot.full_name = full_name
-    bot.save()
+
+    if bot.bot_owner != user_profile and not user_profile.has_perm('administer', user_profile.realm):
+        return json_error('Insufficient permission')
+
+    do_change_full_name(bot, full_name)
 
     json_result = dict(
         full_name = full_name,

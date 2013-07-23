@@ -587,6 +587,12 @@ class BotTest(AuthedTestCase):
         result = self.client.post("/json/bots/hambot-bot@humbughq.com/api_key/regenerate")
         self.assert_json_error(result, 'Insufficient permission')
 
+        bot_info = {
+            'full_name': 'Fred',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@humbughq.com", bot_info)
+        self.assert_json_error(result, 'Insufficient permission')
+
     def get_bot(self):
         result = self.client.post("/json/get_bots")
         bots = ujson.loads(result.content)['bots']
