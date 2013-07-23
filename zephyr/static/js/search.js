@@ -436,6 +436,7 @@ exports.initialize = function () {
         },
         items: 30,
         helpOnEmptyStrings: true,
+        naturalSearch: true,
         highlighter: function (item) {
             var obj = search_object[item];
             return obj.description;
