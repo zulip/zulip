@@ -41,7 +41,7 @@
             ],
             [
                 "content",
-                "The content of the message"
+                "The content of the message. Maximum message size of 10000 bytes."
             ],
             [
                 "to",
@@ -49,7 +49,7 @@
             ],
             [
                 "subject",
-                "The subject for the message (Only required if type is \u201cstream\u201d)"
+                "The subject for the message (Only required if type is \u201cstream\u201d). Maxiumum length of 60 characters."
             ]
         ],
         "example_request": {
