@@ -266,6 +266,10 @@ exports.unparse = function (operators) {
     return parts.join(' ');
 };
 
+exports.search_string = function () {
+    return exports.unparse(exports.operators());
+};
+
 // Collect operators which appear only once into an object,
 // and discard those which appear more than once.
 function collect_single(operators) {

@@ -489,13 +489,13 @@ exports.initialize = function () {
 
         // The search query box is a visual cue as to
         // whether search or narrowing is active.  If
-        // neither is active, we should clear the box on
-        // blur.
+        // the user blurs the search box, then we should
+        // update the search string to reflect the currect
+        // narrow (or lack of narrow).
         //
         // But we can't do this right away, because
         // selecting something in the typeahead menu causes
-        // the box to lose focus a moment before.  We would
-        // clear the thing we're about to search for.
+        // the box to lose focus a moment before.
         //
         // The workaround is to check 100ms later -- long
         // enough for the search to have gone through, but
@@ -503,9 +503,8 @@ exports.initialize = function () {
         // really it would be OK if they did).
 
         setTimeout(function () {
-            if (!(narrow.active())) {
-                query.val('');
-            }
+            var search_string = narrow.search_string();
+            query.val(search_string);
             exports.update_button_visibility();
         }, 100);
     });
