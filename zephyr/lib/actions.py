@@ -981,7 +981,8 @@ def do_update_message(user_profile, message_id, subject, content):
         if not rendered_content:
             raise JsonableError("We were unable to render your updated message")
 
-        if not settings.DEPLOYED or settings.STAGING_DEPLOYED:
+        # We are turning off diff highlighting everywhere until ticket #1532 is addressed.
+        if False:
             # Don't highlight message edit diffs on prod
             rendered_content = highlight_html_differences(first_rendered_content, rendered_content)
 
