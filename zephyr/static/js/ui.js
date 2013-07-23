@@ -161,31 +161,41 @@ function copy_handler(e) {
         }
 
         // If the selection starts and ends in the same td,
-        // we should let the browser handle the copy-paste entirely on its own
-        // (In this case, there is no need for our special copy code)
+        // we want to let the browser handle the copy-paste mostly on its own
         if (!skip_same_td_check &&
             startc.parents('td')[0] === endc.parents('td')[0]) {
-            return;
-        }
 
-        // Construct a div for what we want to copy (div)
-        for (row = rows.get(start_id, current_msg_list.table_name);
-             rows.id(row) <= end_id;
-             row = rows.next_visible(row))
-        {
-            if (row.prev().hasClass("recipient_row")) {
-                content = $('<div>').text(row.prev().children(".right_part").text()
-                                            .replace(/\s+/g, " ")
-                                            .replace(/^\s/, "").replace(/\s$/, ""));
-                div.append($('<p>').append($('<strong>').text(content.text())));
+            // If the user is not running the desktop app, let the browser handle
+            // the copy entirely on its own
+            if (window.bridge === undefined) {
+                return;
             }
 
-            message = current_msg_list.get(rows.id(row));
+            // If the user is running the desktop app, we still create "div"
+            // so that we can replace emoji with their text
+            div.append(range.cloneContents());
+        }
+        else {
 
-            var message_firstp = $(message.content).slice(0, 1);
-            message_firstp.prepend(message.sender_full_name + ": ");
-            div.append(message_firstp);
-            div.append($(message.content).slice(1));
+            // Construct a div for what we want to copy (div)
+            for (row = rows.get(start_id, current_msg_list.table_name);
+                 rows.id(row) <= end_id;
+                 row = rows.next_visible(row))
+            {
+                if (row.prev().hasClass("recipient_row")) {
+                    content = $('<div>').text(row.prev().children(".right_part").text()
+                                                .replace(/\s+/g, " ")
+                                                .replace(/^\s/, "").replace(/\s$/, ""));
+                    div.append($('<p>').append($('<strong>').text(content.text())));
+                }
+
+                message = current_msg_list.get(rows.id(row));
+
+                var message_firstp = $(message.content).slice(0, 1);
+                message_firstp.prepend(message.sender_full_name + ": ");
+                div.append(message_firstp);
+                div.append($(message.content).slice(1));
+            }
         }
     }
 
