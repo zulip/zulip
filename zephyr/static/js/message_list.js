@@ -468,8 +468,12 @@ MessageList.prototype = {
             message_edit.maybe_show_edit(row, id);
         });
 
+        // Must happen after the elements are inserted into the document for
+        // getBoundingClientRect to work.
         $.each(rendered_elems, ui.process_condensing);
 
+        // Must happen after anything that changes the height of messages has
+        // taken effect.
         if (where === 'top' && this === current_msg_list && orig_scrolltop_offset !== undefined) {
             // Restore the selected row to its original position in
             // relation to the top of the window
