@@ -130,8 +130,8 @@ class Command(BaseCommand):
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             create_streams(realms, humbug_realm, stream_list)
-            recipient_streams = [recipient.type_id for recipient in
-                                 Recipient.objects.filter(type=Recipient.STREAM)]
+            recipient_streams = [Stream.objects.get(name=name, realm=humbug_realm).id for name in stream_list]
+
             # Create subscriptions to streams
             subscriptions_to_add = []
             profiles = UserProfile.objects.select_related().all()
