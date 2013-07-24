@@ -14,10 +14,10 @@ import humbug
 parser = optparse.OptionParser(r"""
 
 %prog \
-    --user foo@humbughq.com \
-    --calendar http://www.google.com/calendar/feeds/foo%40humbughq.com/private-fedcba9876543210fedcba9876543210/basic
+    --user foo@zulip.com \
+    --calendar http://www.google.com/calendar/feeds/foo%40zulip.com/private-fedcba9876543210fedcba9876543210/basic
 
-    Send yourself reminders on Humbug of Google Calendar events.
+    Send yourself reminders on Zulip of Google Calendar events.
 
     To get the calendar URL:
       - Load Google Calendar in a web browser

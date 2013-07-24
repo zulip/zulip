@@ -17,7 +17,7 @@ def write_config(config, since_id):
 
 parser = optparse.OptionParser(r"""
 
-%prog --user foo@humbughq.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --search="@nprnews,quantum physics"
+%prog --user foo@zulip.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --search="@nprnews,quantum physics"
 
 Send Twitter search results to a Humbug stream.
 
