@@ -1,8 +1,8 @@
 # Copy this file to ~/.msmtprc, then add your Humbug Mail
 # address and password here.
 
-from you@humbughq.com
-user you@humbughq.com
+from you@zulip.com
+user you@zulip.com
 password foobarbadpassword
 
 host smtp.gmail.com
@@ -11,8 +11,8 @@ auth on
 
 protocol smtp
 
-maildomain humbughq.com
-domain humbughq.com
+maildomain zulip.com
+domain zulip.com
 
 tls on
 tls_trust_file /etc/ssl/certs/ca-certificates.crt
