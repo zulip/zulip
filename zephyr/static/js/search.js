@@ -341,12 +341,10 @@ function get_topic_suggestions(query, query_operators) {
 }
 
 function get_operator_subset_suggestions(query, operators) {
-    // If you have stream:foo topic:x search:needle, then
-    // suggest "stream:foo" and "stream:foo topic:x" so that
-    // power users can use search as a quick mouse-free way
-    // to de-narrow.  This won't cause too much clutter, as
-    // you generally only have 1 to 3 operators, and this gives
-    // N-1 additional suggestions.
+    // For stream:a topic:b search:c, suggest:
+    //  stream:a topic:b
+    //  stream:a
+    //  <Home>
     if (operators.length < 1) {
         return [];
     }
@@ -354,7 +352,7 @@ function get_operator_subset_suggestions(query, operators) {
     var i;
     var suggestions = [];
 
-    for (i = 0; i < operators.length; ++i) {
+    for (i = operators.length - 1; i >= 0; --i) {
         var subset = operators.slice(0, i);
         var search_string = narrow.unparse(subset);
         var description = describe(subset);
