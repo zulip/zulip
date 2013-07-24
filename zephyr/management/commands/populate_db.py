@@ -233,7 +233,7 @@ class Command(BaseCommand):
                 internal_humbug_users_nosubs = [
                     ("Zulip Commit Bot", "humbug+commits@humbughq.com"),
                     ("Zulip Trac Bot", "humbug+trac@humbughq.com"),
-                    ("Zulip Nagios Bot", "humbug+nagios@humbughq.com"),
+                    ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                     ("Zulip Feedback Bot", "feedback@humbughq.com"),
                     ]
                 create_users(realms, internal_humbug_users_nosubs)

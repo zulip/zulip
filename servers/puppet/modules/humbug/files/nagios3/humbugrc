@@ -2,6 +2,6 @@
 # The plugin and example config are under api/integrations/
 
 [api]
-email = humbug+nagios@humbughq.com
+email = nagios-bot@zulip.com
 key = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-site = https://staging.humbughq.com
+site = https://staging.zulip.com
