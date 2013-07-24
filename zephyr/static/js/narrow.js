@@ -380,12 +380,16 @@ exports.activate = function (operators, opts) {
     // Unfade the home view before we switch tables.
     compose.unfade_messages();
 
-    var was_narrowed = exports.active();
+    var was_narrowed_already = exports.active();
     var then_select_id = opts.then_select_id;
     var then_select_offset;
     if (!opts.select_first_unread && rows.get(then_select_id, current_msg_list.table_name).length > 0) {
         then_select_offset = rows.get(then_select_id, current_msg_list.table_name).offset().top -
             viewport.scrollTop();
+    }
+
+    if (!was_narrowed_already) {
+        message_tour.start_tour(current_msg_list.selected_id());
     }
 
     current_filter = new Filter(operators);
@@ -554,6 +558,10 @@ exports.deactivate = function () {
 
     $('#search_query').val('');
     reset_load_more_status();
+
+    var visited_messages = message_tour.get_tour();
+    home_msg_list.advance_past_messages(visited_messages);
+    message_tour.finish_tour();
 
     current_msg_list = home_msg_list;
     var preserve_pre_narrowing_screen_position =

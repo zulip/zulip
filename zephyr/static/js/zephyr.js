@@ -472,6 +472,9 @@ $(function () {
                 messages = message_range(event.msg_list, event.previously_selected, event.id);
             }
             mark_messages_as_read(messages);
+            $.each(messages, function (idx, message) {
+                message_tour.visit(message.id);
+            });
         }
     });
 });

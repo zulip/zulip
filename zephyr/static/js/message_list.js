@@ -166,6 +166,34 @@ MessageList.prototype = {
         return this._items[closest].id;
     },
 
+    advance_past_messages: function MessageList_advance_past_messages(msg_ids) {
+        // Start with the current pointer, but then keep advancing the
+        // pointer while the next message's id is in msg_ids.  See trac #1555
+        // for more context, but basically we are skipping over contiguous
+        // messages that we have recently visited.
+        var next_msg_id = 0;
+
+        var id_set = {};
+
+        $.each(msg_ids, function (idx, msg_id) {
+            id_set[msg_id] = true;
+        });
+
+        var idx = this._selected_idx() + 1;
+        while (idx < this._items.length) {
+            var msg_id = this._items[idx].id;
+            if (!id_set[msg_id]) {
+                break;
+            }
+            next_msg_id = msg_id;
+            ++idx;
+        }
+
+        if (next_msg_id > 0) {
+            this._selected_id = next_msg_id;
+        }
+    },
+
     _add_to_hash: function MessageList__add_to_hash(messages) {
         var self = this;
         messages.forEach(function (elem) {
