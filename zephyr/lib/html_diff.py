@@ -106,7 +106,7 @@ def highlight_html_differences(s1, s2):
         logging.getLogger('').error('HTML diff produced mal-formed HTML')
 
         subject = "HTML diff failure on %s" % (platform.node(),)
-        internal_send_message("humbug+errors@humbughq.com", "stream",
+        internal_send_message("error-bot@zulip.com", "stream",
                               "errors", subject, "HTML diff produced malformed HTML")
         return s2
 

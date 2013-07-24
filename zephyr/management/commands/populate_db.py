@@ -194,7 +194,7 @@ class Command(BaseCommand):
             # are needed for the test suite.
             hardcoded_humbug_users_nosubs = [
                 ("Zulip New User Bot", "humbug+signups@humbughq.com"),
-                ("Zulip Error Bot", "humbug+errors@humbughq.com"),
+                ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Notification Bot", "humbug+notifications@humbughq.com"),
                 ("Zulip Tutorial Bot", "tutorial-bot@zulip.com"),
                 ]
