@@ -118,6 +118,7 @@ class Command(BaseCommand):
             realms = {}
             for realm in Realm.objects.all():
                 realms[realm.domain] = realm
+            realms['zulip.com'] = realms['humbughq.com']
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
