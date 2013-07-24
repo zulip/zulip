@@ -10,7 +10,7 @@ var common = require('../common.js').common;
 
 function send_with_content(content) {
     common.send_message('stream', {
-            stream:  'Venice',
+            stream:  'Verona',
             subject: 'unread test',
             content: content
     });
@@ -55,7 +55,7 @@ common.then_log_out();
 common.then_log_in({username: 'othello@humbughq.com', password: '52VeZqtHDCdAr5yM'});
 casper.then(function () {
     // Make sure we have 3 unread messages
-    casper.test.assertSelectorHasText("a[href='#narrow/stream/Venice']", 'Venice', 'Unread count in sidebar is correct');
+    casper.test.assertSelectorHasText("a[href='#narrow/stream/Verona']", 'Verona', 'Unread count in sidebar is correct');
 });
 
 // Sending a message should not increase the count
@@ -63,7 +63,7 @@ send_with_content('Othello unread test 4');
 send_with_content('Othello unread test 5');
 
 casper.then(function () {
-    function get_sidebar() { return casper.evaluate(function () { return $("a[href='#narrow/stream/Venice']").text(); }); }
+    function get_sidebar() { return casper.evaluate(function () { return $("a[href='#narrow/stream/Verona']").text(); }); }
     function get_sidebar_num() {
         var match = get_sidebar().match(/\w+\s*\((\d+)\)/);
         if (match) {
@@ -100,7 +100,7 @@ casper.then(function () {
 common.then_log_out();
 common.then_log_in({username: 'othello@humbughq.com', password: '52VeZqtHDCdAr5yM'});
 casper.then(function () {
-    casper.test.assertSelectorHasText("a[href='#narrow/stream/Venice']", 'Venice', 'Sidebar unread correct on login');
+    casper.test.assertSelectorHasText("a[href='#narrow/stream/Verona']", 'Verona', 'Sidebar unread correct on login');
 });
 
 // Run the above queued actions.
