@@ -26,7 +26,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         possible_tutorial_streams = Stream.objects.filter(Q(name__startswith='tutorial-'))
 
-        tutorial_bot = get_user_profile_by_email("humbug+tutorial@humbughq.com")
+        tutorial_bot = get_user_profile_by_email("tutorial-bot@zulip.com")
 
         for stream in possible_tutorial_streams:
             recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
