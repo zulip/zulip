@@ -2,13 +2,18 @@ var navigate = (function () {
 
 var exports = {};
 
+
+function go_to_row(row) {
+    current_msg_list.select_id(rows.id(row),
+                               {then_scroll: true,
+                                from_scroll: true});
+}
+
 exports.up = function () {
     last_viewport_movement_direction = -1;
     var next_row = rows.prev_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
-        current_msg_list.select_id(rows.id(next_row),
-                                   {then_scroll: true,
-                                    from_scroll: true});
+        go_to_row(next_row);
     }
 };
 
@@ -16,9 +21,7 @@ exports.down = function () {
     last_viewport_movement_direction = 1;
     var next_row = rows.next_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
-        current_msg_list.select_id(rows.id(next_row),
-                                   {then_scroll: true,
-                                    from_scroll: true});
+        go_to_row(next_row);
     }
     if ((next_row.length === 0)) {
         // At the last message, scroll to the bottom so we have
@@ -36,9 +39,7 @@ exports.to_home = function () {
     last_viewport_movement_direction = -1;
     var next_row = rows.first_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
-        current_msg_list.select_id(rows.id(next_row),
-                                   {then_scroll: true,
-                                    from_scroll: true});
+        go_to_row(next_row);
     }
 };
 
