@@ -258,8 +258,9 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <code>https://api.humbughq.com/v1/external/jira?api_key=abcdefgh&amp;stream=jira</code>
       </p>
 
-      <p>where <code>api_key</code> is the API key of the user you
-      want updates to be sent as, and <code>stream</code> is the stream name you want the notifications sent to.
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to. The stream must already exist.</p>
 
       <p>Next, go back to Zulip and set up a stream called "jira," if it does not already exist.
       (If you prefer your JIRA notifications to go to a stream other than "jira," then change the URL above to match it.)</p>
@@ -384,8 +385,9 @@ key=NAGIOS_BOT_API_KEY
 
       <p><code>https://api.humbughq.com/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
 
-      <p>where <code>api_key</code> is the API key of the user you
-      want updates to be sent as, and <code>stream</code> is the stream name you want the notifications sent to, and the stream must already exist.</p>
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to. The stream must already exist.</p>
 
       <img class="screenshot" src="/static/images/integrations/pivotal/001.png">
 
@@ -400,14 +402,15 @@ key=NAGIOS_BOT_API_KEY
      <h4>New Relic</h4>
 
      <p>New Relic can send messages to a Zulip stream for alerts and deploys.
-     In your Account Settings page, click "Integrations", then
+     In your New Relic Account Settings page, click "Integrations", then
      "Alerting notifications". On the "Webhook" tab, enter the following
      webhook URL:</p>
 
       <p><code>https://api.humbughq.com/v1/external/newrelic?api_key=abcdefgh&amp;stream=newrelic</code></p>
 
-      <p>where <code>api_key</code> is the API key of the user you
-      want updates to be sent as, and <code>stream</code> is the stream name you want the notifications sent to. The stream must already exist.</p>
+      <p>where <code>api_key</code> is the API key of your Zulip bot,
+      and <code>stream</code> is the stream name you want the
+      notifications sent to. The stream must already exist.</p>
 
       <img class="screenshot" src="/static/images/integrations/newrelic/001.png">
 
