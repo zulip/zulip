@@ -76,7 +76,7 @@ class Realm(models.Model):
 # been validated via django.core.validators.validate_email
 #
 # Note that we need to use some care, since can you have multiple @-signs; e.g.
-# "tabbott@test"@humbughq.com
+# "tabbott@test"@zulip.com
 # is valid email address
 def email_to_username(email):
     return "@".join(email.split("@")[:-1])

@@ -554,7 +554,7 @@ def forward_to_zephyr(message):
 
     heading = "Hi there! This is an automated message from Zulip."
     support_closing = """If you have any questions, please be in touch through the \
-Feedback tab or at support@humbughq.com."""
+Feedback tab or at support@zulip.com."""
 
     (code, stderr) = send_authed_zephyr(zwrite_args, wrapped_content)
     if code == 0 and stderr == "":

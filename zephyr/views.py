@@ -345,7 +345,7 @@ def accounts_accept_terms(request):
                          'ip': request.META['REMOTE_ADDR'],
                          'browser': request.META['HTTP_USER_AGENT']}),
                         "humbug@humbughq.com",
-                        ["all@humbughq.com"])
+                        ["all@zulip.com"])
             do_change_full_name(request.user, full_name)
             return redirect(home)
 

@@ -1280,7 +1280,7 @@ def do_send_missedmessage_email(user_profile, missed_messages):
     template_payload = {'name': user_profile.full_name,
                         'messages': build_message_list(user_profile, missed_messages),
                         'message_count': len(missed_messages),
-                        'url': 'https://humbughq.com',
+                        'url': 'https://zulip.com',
                         'reply_warning': False}
 
     senders = set(m.sender.full_name for m in missed_messages)
@@ -1306,7 +1306,7 @@ def do_send_missedmessage_email(user_profile, missed_messages):
         # There are some @-mentions mixed in with personals
         template_payload['mention'] = True
         template_payload['reply_warning'] = True
-        headers['Reply-To'] = "Nobody <noreply@humbughq.com>"
+        headers['Reply-To'] = "Nobody <noreply@zulip.com>"
 
     subject = "Missed Zulip%s from %s" % ('s' if len(senders) > 1 else '', sender_str)
     from_email = "%s (via Zulip) <noreply@zulip.com>" % (sender_str)

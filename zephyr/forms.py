@@ -16,7 +16,7 @@ def is_inactive(value):
     except UserProfile.DoesNotExist:
         pass
 
-SIGNUP_STRING = '<a href="https://humbughq.com/signup">Sign up</a> to find out when Zulip is ready for you.'
+SIGNUP_STRING = '<a href="https://zulip.com/signup">Sign up</a> to find out when Zulip is ready for you.'
 
 def has_valid_realm(value):
     try:

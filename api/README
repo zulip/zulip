@@ -35,7 +35,7 @@ examples, which is especially useful if you are running several bots
 which share a home directory.
 
 You can obtain your Humbug API key, create bots, and manage bots all
-from your Humbug [settings page](https://humbughq.com/#settings).
+from your Humbug [settings page](https://zulip.com/#settings).
 
 A typical simple bot sending API messages will look as follows:
 
