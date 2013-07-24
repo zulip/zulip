@@ -1033,7 +1033,7 @@ class SubscriptionAPITest(AuthedTestCase):
         msg = Message.objects.latest('id')
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
-                get_user_profile_by_email("humbug+notifications@humbughq.com").id)
+                get_user_profile_by_email("notification-bot@zulip.com").id)
         expected_msg = ("Hi there!  We thought you'd like to know that %s just "
                         "subscribed you to the stream '%s'\nYou can see historical "
                         "content on a non-invite-only stream by narrowing to it."

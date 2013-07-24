@@ -195,7 +195,7 @@ class Command(BaseCommand):
             hardcoded_humbug_users_nosubs = [
                 ("Zulip New User Bot", "new-user-bot@zulip.com"),
                 ("Zulip Error Bot", "error-bot@zulip.com"),
-                ("Zulip Notification Bot", "humbug+notifications@humbughq.com"),
+                ("Zulip Notification Bot", "notification-bot@zulip.com"),
                 ("Zulip Tutorial Bot", "tutorial-bot@zulip.com"),
                 ]
             create_users(realms, hardcoded_humbug_users_nosubs)
