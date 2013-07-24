@@ -86,10 +86,10 @@ $(function () {
         person.pm_recipient_count = 0;
     });
 
-    // The special account feedback@humbughq.com is used for in-app
+    // The special account feedback@zulip.com is used for in-app
     // feedback and should always show up as an autocomplete option.
-    if (people_dict['feedback@humbughq.com'] === undefined){
-        add_person({"email": "feedback@humbughq.com",
+    if (people_dict['feedback@zulip.com'] === undefined){
+        add_person({"email": "feedback@zulip.com",
                     "full_name": "Zulip Feedback Bot"});
     }
 

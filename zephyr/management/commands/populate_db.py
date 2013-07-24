@@ -234,7 +234,7 @@ class Command(BaseCommand):
                     ("Zulip Commit Bot", "commit-bot@zulip.com"),
                     ("Zulip Trac Bot", "trac-bot@zulip.com"),
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
-                    ("Zulip Feedback Bot", "feedback@humbughq.com"),
+                    ("Zulip Feedback Bot", "feedback@zulip.com"),
                     ]
                 create_users(realms, internal_humbug_users_nosubs)
 

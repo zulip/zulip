@@ -33,12 +33,12 @@ stderr_logger = StreamLogger(logging.getLogger("stderr"), logging.ERROR)
 sys.stderr = stderr_logger
 
 prod_client = humbug.Client(
-    email="feedback@humbughq.com",
+    email="feedback@zulip.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
     site="https://api.humbughq.com")
 staging_client = humbug.Client(
-    email="feedback@humbughq.com",
+    email="feedback@zulip.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
     site="https://staging.humbughq.com/api")
