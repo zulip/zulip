@@ -1782,8 +1782,8 @@ table.floating_recipient {
     text-align: center;
 }
 
-.faded .messagebox {
-    background-color: transparent !important;
+.faded {
+    opacity: 0.4;
 }
 
 #stream-message, #private-message {
