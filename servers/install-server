@@ -81,6 +81,7 @@ ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
 cp -a /root/humbug/servers/puppet/modules/zulip/files/puppet.conf /etc/puppet/
 
 userdel admin
+passwd -d root
 puppet apply -e 'class {"zulip": machinetype => "$type"}'
 cp -a /root/humbug /home/humbug/humbug
 chown -R humbug:humbug /home/humbug/humbug
