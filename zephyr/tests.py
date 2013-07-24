@@ -1510,7 +1510,6 @@ earl-test@zulip.com""", ["Denmark"]))
         If you invite an address already using Humbug, no invitation is sent.
         """
         self.login("hamlet@zulip.com")
-        return
         self.assert_json_error(
             self.client.post("/json/invite_users",
                              {"invitee_emails": "hamlet@zulip.com",
@@ -1528,7 +1527,6 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login("hamlet@zulip.com")
         existing = ["hamlet@zulip.com", "othello@zulip.com"]
-        return
         new = ["foo-test@zulip.com", "bar-test@zulip.com"]
 
         result = self.client.post("/json/invite_users",
