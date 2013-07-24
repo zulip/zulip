@@ -24,12 +24,12 @@ function commit {
 }
 
 cd ../message_logs
-for h in staging.humbughq.com app.humbughq.com; do
+for h in staging.zulip.net prod0.zulip.net; do
     rsync -v humbug@$h:logs/event_log/events.* .
 done
 git add events.*
 commit
 
 cd ../trac
-rsync -v humbug@trac.humbughq.com:trac/db/trac.db .
+rsync -v humbug@trac.zulip.net:trac/db/trac.db .
 commit

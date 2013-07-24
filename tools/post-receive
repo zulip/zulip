@@ -3,9 +3,9 @@
 # Humbug's post-receive hook.  There is a symlink
 #   from /srv/git/humbug.git/hooks/post-receive
 #   to   ~humbug/humbug/tools/post-receive
-# on git.humbughq.com.  So to deploy changes to this script, run
+# on git.zulip.net.  So to deploy changes to this script, run
 #
-#   ssh humbug@git.humbughq.com 'cd humbug; git pull'
+#   ssh humbug@git.zulip.net 'cd humbug; git pull'
 #
 # To send the Humbug notices, this script calls out to our
 # for-distribution git hook (under api/integrations/); since the git

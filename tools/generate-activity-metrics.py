@@ -24,10 +24,10 @@ def extract_json_response(resp):
 def get_data_url(buckets, realm):
     realm_key = statsd_key(realm, True)
 
-    # This is the slightly-cleaned up JSON api version of https://graphiti.humbughq.com/graphs/945c7aafc2d
+    # This is the slightly-cleaned up JSON api version of https://graphiti.zulip.net/graphs/945c7aafc2d
     #
     # Fetches 1 month worth of data
-    DATA_URL="https://graphite.humbughq.com/render/?from=-1000d&format=json"
+    DATA_URL="https://graphite.zulip.net/render/?from=-1000d&format=json"
     for bucket in buckets:
         if realm != 'all':
             statsd_target = "stats.gauges.staging.users.active.%s.%s" % (realm_key, bucket)
@@ -156,7 +156,7 @@ if __name__ == '__main__':
     realm_key = statsd_key(options.realm, True)
     buckets = [options.bucket]
 
-    # This is the slightly-cleaned up JSON api version of https://graphiti.humbughq.com/graphs/945c7aafc2d
+    # This is the slightly-cleaned up JSON api version of https://graphiti.zulip.net/graphs/945c7aafc2d
     #
     # Fetches 1 month worth of data
     DATA_URL = get_data_url(buckets, options.realm)
