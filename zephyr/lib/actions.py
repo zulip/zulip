@@ -774,7 +774,7 @@ def do_create_realm(domain, restricted_to_domain=True):
         signup_message = "Signups enabled"
         if not restricted_to_domain:
             signup_message += " (open realm)"
-        internal_send_message("humbug+signups@humbughq.com", "stream",
+        internal_send_message("new-user-bot@zulip.com", "stream",
                               "signups", domain, signup_message)
     return (realm, created)
 

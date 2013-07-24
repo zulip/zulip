@@ -149,7 +149,7 @@ def send_signup_message(sender, signups_stream, user_profile, internal=False):
             )
 
 def notify_new_user(user_profile, internal=False):
-    send_signup_message("humbug+signups@humbughq.com", "signups", user_profile, internal)
+    send_signup_message("new-user-bot@zulip.com", "signups", user_profile, internal)
     statsd.gauge("users.signups.%s" % (user_profile.realm.domain.replace('.', '_')), 1, delta=True)
 
 class PrincipalError(JsonableError):
@@ -286,7 +286,7 @@ def accounts_register(request):
 
                 if prereg_user.referred_by is not None:
                     # This is a cross-realm private message.
-                    internal_send_message("humbug+signups@humbughq.com",
+                    internal_send_message("new-user-bot@zulip.com",
                             "private", prereg_user.referred_by.email, user_profile.realm.domain,
                             "%s <`%s`> accepted your invitation to join Zulip!" % (
                                 user_profile.full_name,
