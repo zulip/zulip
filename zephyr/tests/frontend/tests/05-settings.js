@@ -25,7 +25,7 @@ casper.waitUntilVisible("#old_password", function () {
 
     casper.fill(form_sel, {
         "full_name": "IagoNew",
-        "old_password": "FlokrWdZefyEWkfI",
+        "old_password": "JhwLkBydEG1tAL5P",
         "new_password": "qwertyuiop",
         "confirm_password": "qwertyuiop"
     });
@@ -52,8 +52,8 @@ casper.waitUntilVisible('#api_key_value', function () {
     casper.fill(form_sel, {
         "full_name": "Iago",
         "old_password": "qwertyuiop",
-        "new_password": "FlokrWdZefyEWkfI",
-        "confirm_password": "FlokrWdZefyEWkfI"
+        "new_password": "JhwLkBydEG1tAL5P",
+        "confirm_password": "JhwLkBydEG1tAL5P"
     });
     casper.click('input[name="change_settings"]');
 });

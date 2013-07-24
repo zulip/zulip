@@ -9,7 +9,7 @@ common.send_message('stream', {
     content: "We reply to this message"
 });
 common.send_message('private', {
-    recipient: "cordelia@humbughq.com",
+    recipient: "cordelia@zulip.com",
     content: "And reply to this message"
 });
 
@@ -51,7 +51,7 @@ casper.waitUntilVisible('#stream', function () {
 });
 
 casper.waitUntilVisible('#private_message_recipient', function () {
-    common.check_form('#send_message_form', {recipient: "cordelia@humbughq.com"}, "Recipient populated after PM click");
+    common.check_form('#send_message_form', {recipient: "cordelia@zulip.com"}, "Recipient populated after PM click");
 
     common.keypress(27); //escape
     casper.page.sendEvent('keypress', 'k');

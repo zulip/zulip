@@ -11,7 +11,7 @@ var last_send_or_update = -1;
 
 function log_in(credentials) {
     if (credentials === undefined) {
-        credentials = {username: 'iago@humbughq.com', password: 'FlokrWdZefyEWkfI'};
+        credentials = {username: 'iago@zulip.com', password: 'JhwLkBydEG1tAL5P'};
     }
 
     casper.test.info('Logging in');

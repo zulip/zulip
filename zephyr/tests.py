@@ -308,12 +308,12 @@ class LoginTest(AuthedTestCase):
     """
 
     def test_login(self):
-        self.login("hamlet@humbughq.com")
-        user_profile = get_user_profile_by_email('hamlet@humbughq.com')
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
     def test_login_bad_password(self):
-        self.login("hamlet@humbughq.com", "wrongpassword")
+        self.login("hamlet@zulip.com", "wrongpassword")
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
     def test_register(self):
@@ -322,7 +322,7 @@ class LoginTest(AuthedTestCase):
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
     def test_logout(self):
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.client.post('/accounts/logout/')
         self.assertIsNone(self.client.session.get('_auth_user_id', None))
 
@@ -428,16 +428,16 @@ class PersonalMessagesTest(AuthedTestCase):
         """
         If you send a personal, only you and the recipient see it.
         """
-        self.login("hamlet@humbughq.com")
-        self.assert_personal("hamlet@humbughq.com", "othello@humbughq.com")
+        self.login("hamlet@zulip.com")
+        self.assert_personal("hamlet@zulip.com", "othello@zulip.com")
 
     @slow(0.28, "assert_personal checks several profiles")
     def test_non_ascii_personal(self):
         """
         Sending a PM containing non-ASCII characters succeeds.
         """
-        self.login("hamlet@humbughq.com")
-        self.assert_personal("hamlet@humbughq.com", "othello@humbughq.com", u"hümbüǵ")
+        self.login("hamlet@zulip.com")
+        self.assert_personal("hamlet@zulip.com", "othello@zulip.com", u"hümbüǵ")
 
 class StreamMessagesTest(AuthedTestCase):
 
@@ -476,9 +476,9 @@ class StreamMessagesTest(AuthedTestCase):
         self.assertEqual(new_subscriber_messages, [elt + 1 for elt in old_subscriber_messages])
 
     def test_message_mentions(self):
-        user_profile = get_user_profile_by_email("iago@humbughq.com")
+        user_profile = get_user_profile_by_email("iago@zulip.com")
         self.subscribe_to_stream(user_profile.email, "Denmark")
-        self.send_message("hamlet@humbughq.com", "Denmark", Recipient.STREAM,
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
                           content="test @**Iago** rules")
         message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
@@ -497,7 +497,7 @@ class StreamMessagesTest(AuthedTestCase):
         Sending a stream message containing non-ASCII characters in the stream
         name, subject, or message body succeeds.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
 
         # Subscribe everyone to a stream with non-ASCII characters.
         non_ascii_stream_name = u"hümbüǵ"
@@ -529,13 +529,13 @@ class BotTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def test_add_bot(self):
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
 
     def test_deactivate_bot(self):
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
@@ -546,7 +546,7 @@ class BotTest(AuthedTestCase):
 
     def test_deactivate_bogus_bot(self):
         # Deleting a bogus bot will succeed silently.
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
@@ -556,41 +556,41 @@ class BotTest(AuthedTestCase):
 
     def test_bot_deactivation_attacks(self):
         # You cannot deactivate somebody else's bot.
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
 
         # Have Othello try to deactivate both Hamlet and
         # Hamlet's bot.
-        self.login("othello@humbughq.com")
+        self.login("othello@zulip.com")
 
-        result = self.client.delete("/json/users/hamlet@humbughq.com")
+        result = self.client.delete("/json/users/hamlet@zulip.com")
         self.assert_json_error(result, 'Insufficient permission')
 
         result = self.client.delete("/json/users/hambot-bot@humbughq.com")
         self.assert_json_error(result, 'Insufficient permission')
 
         # But we don't actually deactivate the other person's bot.
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(1)
 
     def test_bot_permissions(self):
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
 
         # Have Othello try to mess with Hamlet's bots.
-        self.login("othello@humbughq.com")
+        self.login("othello@zulip.com")
 
-        result = self.client.post("/json/bots/hambot-bot@humbughq.com/api_key/regenerate")
+        result = self.client.post("/json/bots/hambot-bot@zulip.com/api_key/regenerate")
         self.assert_json_error(result, 'Insufficient permission')
 
         bot_info = {
             'full_name': 'Fred',
         }
-        result = self.client_patch("/json/bots/hambot-bot@humbughq.com", bot_info)
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
         self.assert_json_error(result, 'Insufficient permission')
 
     def get_bot(self):
@@ -599,11 +599,11 @@ class BotTest(AuthedTestCase):
         return bots[0]
 
     def test_update_api_key(self):
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.create_bot()
         bot = self.get_bot()
         old_api_key = bot['api_key']
-        result = self.client.post('/json/bots/hambot-bot@humbughq.com/api_key/regenerate')
+        result = self.client.post('/json/bots/hambot-bot@zulip.com/api_key/regenerate')
         self.assert_json_success(result)
         new_api_key = ujson.loads(result.content)['api_key']
         self.assertNotEqual(old_api_key, new_api_key)
@@ -611,7 +611,7 @@ class BotTest(AuthedTestCase):
         self.assertEqual(new_api_key, bot['api_key'])
 
     def test_patch_bot_full_name(self):
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         bot_info = {
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
@@ -621,7 +621,7 @@ class BotTest(AuthedTestCase):
         bot_info = {
             'full_name': 'Fred',
         }
-        result = self.client_patch("/json/bots/hambot-bot@humbughq.com", bot_info)
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
         self.assert_json_success(result)
 
         full_name = ujson.loads(result.content)['full_name']
@@ -632,12 +632,12 @@ class BotTest(AuthedTestCase):
 
     def test_patch_bogus_bot(self):
         # Deleting a bogus bot will succeed silently.
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.create_bot()
         bot_info = {
             'full_name': 'Fred',
         }
-        result = self.client_patch("/json/bots/nonexistent-bot@humbughq.com", bot_info)
+        result = self.client_patch("/json/bots/nonexistent-bot@zulip.com", bot_info)
         self.assert_json_error(result, 'No such user')
         self.assert_num_bots_equal(1)
 
@@ -648,17 +648,17 @@ class PointerTest(AuthedTestCase):
         Posting a pointer to /update (in the form {"pointer": pointer}) changes
         the pointer we store for your UserProfile.
         """
-        self.login("hamlet@humbughq.com")
-        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
+        self.login("hamlet@zulip.com")
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": 1})
         self.assert_json_success(result)
-        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, 1)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, 1)
 
     def test_api_update_pointer(self):
         """
         Same as above, but for the API view
         """
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         self.assertEqual(get_user_profile_by_email(email).pointer, -1)
         result = self.client.post("/api/v1/update_pointer", {"email": email,
@@ -672,33 +672,33 @@ class PointerTest(AuthedTestCase):
         Posting json to /json/update_pointer which does not contain a pointer key/value pair
         returns a 400 and error message.
         """
-        self.login("hamlet@humbughq.com")
-        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
+        self.login("hamlet@zulip.com")
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"foo": 1})
         self.assert_json_error(result, "Missing 'pointer' argument")
-        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
     def test_invalid_pointer(self):
         """
         Posting json to /json/update_pointer with an invalid pointer returns a 400 and error
         message.
         """
-        self.login("hamlet@humbughq.com")
-        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
+        self.login("hamlet@zulip.com")
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Bad value for 'pointer': foo")
-        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
     def test_pointer_out_of_range(self):
         """
         Posting json to /json/update_pointer with an out of range (< 0) pointer returns a 400
         and error message.
         """
-        self.login("hamlet@humbughq.com")
-        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
+        self.login("hamlet@zulip.com")
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
         result = self.client.post("/json/update_pointer", {"pointer": -2})
         self.assert_json_error(result, "Bad value for 'pointer': -2")
-        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").pointer, -1)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
 class MessagePOSTTest(AuthedTestCase):
 
@@ -707,7 +707,7 @@ class MessagePOSTTest(AuthedTestCase):
         Sending a message to a stream to which you are subscribed is
         successful.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         result = self.client.post("/json/send_message", {"type": "stream",
                                                          "to": "Verona",
                                                          "client": "test suite",
@@ -719,7 +719,7 @@ class MessagePOSTTest(AuthedTestCase):
         """
         Same as above, but for the API view
         """
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         result = self.client.post("/api/v1/send_message", {"type": "stream",
                                                            "to": "Verona",
@@ -734,7 +734,7 @@ class MessagePOSTTest(AuthedTestCase):
         """
         Sending a message to a nonexistent stream fails.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.assertFalse(Stream.objects.filter(name="nonexistent_stream"))
         result = self.client.post("/json/send_message", {"type": "stream",
                                                          "to": "nonexistent_stream",
@@ -747,18 +747,18 @@ class MessagePOSTTest(AuthedTestCase):
         """
         Sending a personal message to a valid username is successful.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         result = self.client.post("/json/send_message", {"type": "private",
                                                          "content": "Test message",
                                                          "client": "test suite",
-                                                         "to": "othello@humbughq.com"})
+                                                         "to": "othello@zulip.com"})
         self.assert_json_success(result)
 
     def test_personal_message_to_nonexistent_user(self):
         """
         Sending a personal message to an invalid email returns error JSON.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         result = self.client.post("/json/send_message", {"type": "private",
                                                          "content": "Test message",
                                                          "client": "test suite",
@@ -769,11 +769,11 @@ class MessagePOSTTest(AuthedTestCase):
         """
         Sending a message of unknown type returns error JSON.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         result = self.client.post("/json/send_message", {"type": "invalid type",
                                                          "content": "Test message",
                                                          "client": "test suite",
-                                                         "to": "othello@humbughq.com"})
+                                                         "to": "othello@zulip.com"})
         self.assert_json_error(result, "Invalid message type")
 
     def test_mirrored_huddle(self):
@@ -809,7 +809,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         /json/subscriptions/property?property=color+stream_name=foo returns
         the color for stream foo.
         """
-        test_email = "hamlet@humbughq.com"
+        test_email = "hamlet@zulip.com"
         self.login(test_email)
         subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
         result = self.client.get("/json/subscriptions/property",
@@ -831,7 +831,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         A POST request to /json/subscriptions/property with stream_name and
         color data sets the stream color, and for that stream only.
         """
-        test_email = "hamlet@humbughq.com"
+        test_email = "hamlet@zulip.com"
         self.login(test_email)
 
         old_subs, _ = gather_subscriptions(get_user_profile_by_email(test_email))
@@ -861,7 +861,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         Updating the color property requires a stream_name.
         """
-        test_email = "hamlet@humbughq.com"
+        test_email = "hamlet@zulip.com"
         self.login(test_email)
         result = self.client.post("/json/subscriptions/property",
                                   {"property": "color",
@@ -873,7 +873,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         Updating the color property requires a color.
         """
-        test_email = "hamlet@humbughq.com"
+        test_email = "hamlet@zulip.com"
         self.login(test_email)
         subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
         result = self.client.post("/json/subscriptions/property",
@@ -886,7 +886,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         """
         Trying to set an invalid property returns a JSON error.
         """
-        test_email = "hamlet@humbughq.com"
+        test_email = "hamlet@zulip.com"
         self.login(test_email)
         subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
         result = self.client.post("/json/subscriptions/property",
@@ -903,7 +903,7 @@ class SubscriptionAPITest(AuthedTestCase):
         All tests will be logged in as hamlet. Also save various useful values
         as attributes that tests can access.
         """
-        self.test_email = "hamlet@humbughq.com"
+        self.test_email = "hamlet@zulip.com"
         self.login(self.test_email)
         self.user_profile = get_user_profile_by_email(self.test_email)
         self.realm = self.user_profile.realm
@@ -958,8 +958,8 @@ class SubscriptionAPITest(AuthedTestCase):
 
         {"msg": "",
          "result": "success",
-         "already_subscribed": {"iago@humbughq.com": ["Venice", "Verona"]},
-         "subscribed": {"iago@humbughq.com": ["Venice8"]}}
+         "already_subscribed": {"iago@zulip.com": ["Venice", "Verona"]},
+         "subscribed": {"iago@zulip.com": ["Venice8"]}}
         """
         result = self.common_subscribe_to_streams(self.test_email, subscriptions, other_params)
         self.assert_json_success(result)
@@ -1048,7 +1048,7 @@ class SubscriptionAPITest(AuthedTestCase):
         """
         You can subscribe other people to streams.
         """
-        invitee = "iago@humbughq.com"
+        invitee = "iago@zulip.com"
         current_streams = self.get_streams(invitee)
         invite_streams = self.make_random_stream_names(current_streams)
         self.assert_adding_subscriptions_for_principal(invitee, invite_streams)
@@ -1059,7 +1059,7 @@ class SubscriptionAPITest(AuthedTestCase):
         You can subscribe other people to streams even if they containing
         non-ASCII characters.
         """
-        self.assert_adding_subscriptions_for_principal("iago@humbughq.com", [u"hümbüǵ"])
+        self.assert_adding_subscriptions_for_principal("iago@zulip.com", [u"hümbüǵ"])
 
     def test_subscription_add_invalid_principal(self):
         """
@@ -1228,7 +1228,7 @@ class GetOldMessagesTest(AuthedTestCase):
         A call to /json/get_old_messages with valid parameters returns a list of
         messages.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.check_well_formed_messages_response(self.post_with_params({}))
 
     def test_get_old_messages_with_narrow_pm_with(self):
@@ -1236,7 +1236,7 @@ class GetOldMessagesTest(AuthedTestCase):
         A request for old messages with a narrow by pm-with only returns
         conversations with that user.
         """
-        me = 'hamlet@humbughq.com'
+        me = 'hamlet@zulip.com'
         def dr_emails(dr):
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
@@ -1262,16 +1262,16 @@ class GetOldMessagesTest(AuthedTestCase):
         A request for old messages with a narrow by stream only returns
         messages for that stream.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
         realm = Realm.objects.get(domain="humbughq.com")
         stream, _ = create_stream_if_needed(realm, "Scotland")
-        do_add_subscription(get_user_profile_by_email("hamlet@humbughq.com"),
+        do_add_subscription(get_user_profile_by_email("hamlet@zulip.com"),
                             stream, no_log=True)
-        self.send_message("hamlet@humbughq.com", "Scotland", Recipient.STREAM)
-        messages = get_user_messages(get_user_profile_by_email("hamlet@humbughq.com"))
+        self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM)
+        messages = get_user_messages(get_user_profile_by_email("hamlet@zulip.com"))
         stream_messages = filter(lambda msg: msg.recipient.type == Recipient.STREAM,
                                  messages)
         stream_name = get_display_recipient(stream_messages[0].recipient)
@@ -1290,27 +1290,27 @@ class GetOldMessagesTest(AuthedTestCase):
         A request for old messages with a narrow by sender only returns
         messages sent by that person.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         # We need to send a message here to ensure that we actually
         # have a stream message in this narrow view.
-        self.send_message("hamlet@humbughq.com", "Scotland", Recipient.STREAM)
-        self.send_message("othello@humbughq.com", "Scotland", Recipient.STREAM)
-        self.send_message("othello@humbughq.com", "hamlet@humbughq.com", Recipient.PERSONAL)
-        self.send_message("iago@humbughq.com", "Scotland", Recipient.STREAM)
+        self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM)
+        self.send_message("othello@zulip.com", "Scotland", Recipient.STREAM)
+        self.send_message("othello@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL)
+        self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM)
 
         result = self.post_with_params({"narrow": ujson.dumps(
-                    [['sender', "othello@humbughq.com"]])})
+                    [['sender', "othello@zulip.com"]])})
         self.check_well_formed_messages_response(result)
 
         for message in result["messages"]:
-            self.assertEqual(message["sender_email"], "othello@humbughq.com")
+            self.assertEqual(message["sender_email"], "othello@zulip.com")
 
     def test_missing_params(self):
         """
         anchor, num_before, and num_after are all required
         POST parameters for get_old_messages.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
 
         required_args = (("anchor", 1), ("num_before", 1), ("num_after", 1))
 
@@ -1325,7 +1325,7 @@ class GetOldMessagesTest(AuthedTestCase):
         num_before, num_after, and narrow must all be non-negative
         integers or strings that can be converted to non-negative integers.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
 
         other_params = [("narrow", {}), ("anchor", 0)]
         int_params = ["num_before", "num_after"]
@@ -1347,7 +1347,7 @@ class GetOldMessagesTest(AuthedTestCase):
         """
         narrow must be a list of string pairs.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
 
         other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]
 
@@ -1363,7 +1363,7 @@ class GetOldMessagesTest(AuthedTestCase):
         """
         '{}' is accepted to mean 'no narrow', for use by old mobile clients.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         all_result    = self.post_with_params({})
         narrow_result = self.post_with_params({'narrow': '{}'})
 
@@ -1376,7 +1376,7 @@ class GetOldMessagesTest(AuthedTestCase):
         """
         Unrecognized narrow operators are rejected.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         for operator in ['', 'foo', 'stream:verona', '__init__']:
             params = dict(anchor=0, num_before=0, num_after=0,
                 narrow=ujson.dumps([[operator, '']]))
@@ -1397,7 +1397,7 @@ class GetOldMessagesTest(AuthedTestCase):
         If an invalid stream name is requested in get_old_messages, an error is
         returned.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         bad_stream_content = (0, [], ["x", "y"])
         self.exercise_bad_narrow_operand("stream", bad_stream_content,
             "Bad value for 'narrow'")
@@ -1407,18 +1407,18 @@ class GetOldMessagesTest(AuthedTestCase):
         If an invalid 'pm-with' is requested in get_old_messages, an
         error is returned.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         bad_stream_content = (0, [], ["x","y"])
         self.exercise_bad_narrow_operand("pm-with", bad_stream_content,
             "Bad value for 'narrow'")
 
     def test_bad_narrow_nonexistent_stream(self):
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.exercise_bad_narrow_operand("stream", ['non-existent stream'],
             "Invalid narrow operator: unknown stream")
 
     def test_bad_narrow_nonexistent_email(self):
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.exercise_bad_narrow_operand("pm-with", ['non-existent-user@humbughq.com'],
             "Invalid narrow operator: unknown user")
 
@@ -1458,7 +1458,7 @@ class InviteUserTest(AuthedTestCase):
         A call to /json/invite_users with valid parameters causes an invitation
         email to be sent.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         invitee = "alice-test@humbughq.com"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
@@ -1468,7 +1468,7 @@ class InviteUserTest(AuthedTestCase):
         """
         Invites multiple users with a variety of delimiters.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         # Intentionally use a weird string.
         self.assert_json_success(self.invite(
 """bob-test@humbughq.com,     carol-test@humbughq.com,
@@ -1485,7 +1485,7 @@ earl-test@humbughq.com""", ["Denmark"]))
         """
         Tests inviting with various missing or invalid parameters.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.assert_json_error(
             self.client.post("/json/invite_users", {"invitee_emails": "foo@humbughq.com"}),
             "You must specify at least one stream for invitees to join.")
@@ -1500,7 +1500,7 @@ earl-test@humbughq.com""", ["Denmark"]))
         """
         Tests inviting to a non-existent stream.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.assert_json_error(self.invite("iago-test@humbughq.com", ["NotARealStream"]),
                 "Stream does not exist: NotARealStream. No invites were sent.")
         self.check_sent_emails([])
@@ -1509,16 +1509,16 @@ earl-test@humbughq.com""", ["Denmark"]))
         """
         If you invite an address already using Humbug, no invitation is sent.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         return
         self.assert_json_error(
             self.client.post("/json/invite_users",
-                             {"invitee_emails": "hamlet@humbughq.com",
+                             {"invitee_emails": "hamlet@zulip.com",
                               "stream": ["Denmark"]}),
             "We weren't able to invite anyone.")
         self.assertRaises(PreregistrationUser.DoesNotExist,
                           lambda: PreregistrationUser.objects.get(
-                email="hamlet@humbughq.com"))
+                email="hamlet@zulip.com"))
         self.check_sent_emails([])
 
     def test_invite_some_existing_some_new(self):
@@ -1526,8 +1526,8 @@ earl-test@humbughq.com""", ["Denmark"]))
         If you invite a mix of already existing and new users, invitations are
         only sent to the new users.
         """
-        self.login("hamlet@humbughq.com")
-        existing = ["hamlet@humbughq.com", "othello@humbughq.com"]
+        self.login("hamlet@zulip.com")
+        existing = ["hamlet@zulip.com", "othello@zulip.com"]
         return
         new = ["foo-test@humbughq.com", "bar-test@humbughq.com"]
 
@@ -1559,7 +1559,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         humbug_realm.restricted_to_domain = True
         humbug_realm.save()
 
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         external_address = "foo@example.com"
 
         self.assert_json_error(
@@ -1576,7 +1576,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         humbug_realm.restricted_to_domain = False
         humbug_realm.save()
 
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         external_address = "foo@example.com"
 
         self.assert_json_success(self.invite(external_address, ["Denmark"]))
@@ -1586,7 +1586,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         """
         Inviting someone to streams with non-ASCII characters succeeds.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         invitee = "alice-test@humbughq.com"
 
         stream_name = u"hümbüǵ"
@@ -1595,7 +1595,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         # Make sure we're subscribed before inviting someone.
         do_add_subscription(
-            get_user_profile_by_email("hamlet@humbughq.com"),
+            get_user_profile_by_email("hamlet@zulip.com"),
             stream, no_log=True)
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
@@ -1604,7 +1604,7 @@ class ChangeSettingsTest(AuthedTestCase):
 
     def post_with_params(self, modified_params):
         post_params = {"full_name": "Foo Bar",
-                  "old_password": initial_password("hamlet@humbughq.com"),
+                  "old_password": initial_password("hamlet@zulip.com"),
                   "new_password": "foobar1", "confirm_password": "foobar1",
                   "enable_desktop_notifications": "",
                   "enable_offline_email_notifications": "",
@@ -1623,18 +1623,18 @@ class ChangeSettingsTest(AuthedTestCase):
         A call to /json/settings/change with valid parameters changes the user's
         settings correctly and returns correct values.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         json_result = self.post_with_params({})
         self.assert_json_success(json_result)
         result = ujson.loads(json_result.content)
         self.check_well_formed_change_settings_response(result)
-        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
                 full_name, "Foo Bar")
-        self.assertEqual(get_user_profile_by_email("hamlet@humbughq.com").
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
                 enable_desktop_notifications, False)
         self.client.post('/accounts/logout/')
-        self.login("hamlet@humbughq.com", "foobar1")
-        user_profile = get_user_profile_by_email('hamlet@humbughq.com')
+        self.login("hamlet@zulip.com", "foobar1")
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
     def test_missing_params(self):
@@ -1643,11 +1643,11 @@ class ChangeSettingsTest(AuthedTestCase):
         parameters for json_change_settings. (enable_desktop_notifications is
         false by default)
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         required_params = (("full_name", "Foo Bar"),
-                  ("old_password", initial_password("hamlet@humbughq.com")),
-                  ("new_password", initial_password("hamlet@humbughq.com")),
-                  ("confirm_password", initial_password("hamlet@humbughq.com")))
+                  ("old_password", initial_password("hamlet@zulip.com")),
+                  ("new_password", initial_password("hamlet@zulip.com")),
+                  ("confirm_password", initial_password("hamlet@zulip.com")))
         for i in range(len(required_params)):
             post_params = dict(required_params[:i] + required_params[i + 1:])
             result = self.client.post("/json/settings/change", post_params)
@@ -1658,7 +1658,7 @@ class ChangeSettingsTest(AuthedTestCase):
         """
         new_password and confirm_password must match
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         result = self.post_with_params({"new_password": "mismatched_password"})
         self.assert_json_error(result,
                 "New password must match confirmation password!")
@@ -1667,7 +1667,7 @@ class ChangeSettingsTest(AuthedTestCase):
         """
         new_password and confirm_password must match
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         result = self.post_with_params({"old_password": "bad_password"})
         self.assert_json_error(result, "Wrong password!")
 
@@ -1679,7 +1679,7 @@ class S3Test(AuthedTestCase):
         """
         A call to /json/upload_file should return a uri and actually create an object.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         fp = StringIO("humbug!")
         fp.name = "humbug.txt"
 
@@ -1695,7 +1695,7 @@ class S3Test(AuthedTestCase):
         """
         Attempting to upload two files should fail.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         fp = StringIO("bah!")
         fp.name = "a.txt"
         fp2 = StringIO("pshaw!")
@@ -1708,7 +1708,7 @@ class S3Test(AuthedTestCase):
         """
         Calling this endpoint with no files should fail.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
 
         result = self.client.post("/json/upload_file")
         self.assert_json_error(result, "You must specify a file to upload")
@@ -1769,7 +1769,7 @@ class POSTRequestMock(object):
 class GetUpdatesTest(AuthedTestCase):
 
     def common_test_get_updates(self, view_func, extra_post_data = {}):
-        user_profile = get_user_profile_by_email("hamlet@humbughq.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
         message_content = 'tornado test message'
         self.got_callback = False
 
@@ -1785,7 +1785,7 @@ class GetUpdatesTest(AuthedTestCase):
         post_data.update(extra_post_data)
         request = POSTRequestMock(post_data, user_profile, callback)
         self.assertEqual(view_func(request), RespondAsynchronously)
-        self.send_message("hamlet@humbughq.com", "hamlet@humbughq.com",
+        self.send_message("hamlet@zulip.com", "hamlet@zulip.com",
                 Recipient.PERSONAL, message_content)
         self.assertTrue(self.got_callback)
 
@@ -1795,14 +1795,14 @@ class GetUpdatesTest(AuthedTestCase):
         json_get_updates returns messages with IDs greater than the
         last_received ID.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         self.common_test_get_updates(json_get_updates)
 
     def test_api_get_messages(self):
         """
         Same as above, but for the API view
         """
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         self.common_test_get_updates(api_get_messages, {'email': email, 'api-key': api_key})
 
@@ -1810,8 +1810,8 @@ class GetUpdatesTest(AuthedTestCase):
         """
         Calling json_get_updates without any arguments should work
         """
-        self.login("hamlet@humbughq.com")
-        user_profile = get_user_profile_by_email("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
 
         request = POSTRequestMock({}, user_profile)
         self.assertEqual(json_get_updates(request), RespondAsynchronously)
@@ -1820,8 +1820,8 @@ class GetUpdatesTest(AuthedTestCase):
         """
         Specifying a bad value for 'pointer' should return an error
         """
-        self.login("hamlet@humbughq.com")
-        user_profile = get_user_profile_by_email("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
 
         request = POSTRequestMock({'pointer': 'foo'}, user_profile)
         self.assertRaises(RequestVariableConversionError, json_get_updates, request)
@@ -1856,21 +1856,21 @@ class GetProfileTest(AuthedTestCase):
         """
         Ensure get_profile returns a max message id and returns successfully
         """
-        json = self.common_get_profile("othello@humbughq.com")
+        json = self.common_get_profile("othello@zulip.com")
         self.assertEqual(json["pointer"], -1)
 
     def test_profile_with_pointer(self):
         """
         Ensure get_profile returns a proper pointer id after the pointer is updated
         """
-        json = self.common_get_profile("hamlet@humbughq.com")
+        json = self.common_get_profile("hamlet@zulip.com")
 
-        self.common_update_pointer("hamlet@humbughq.com", 1)
-        json = self.common_get_profile("hamlet@humbughq.com")
+        self.common_update_pointer("hamlet@zulip.com", 1)
+        json = self.common_get_profile("hamlet@zulip.com")
         self.assertEqual(json["pointer"], 1)
 
-        self.common_update_pointer("hamlet@humbughq.com", 0)
-        json = self.common_get_profile("hamlet@humbughq.com")
+        self.common_update_pointer("hamlet@zulip.com", 0)
+        json = self.common_get_profile("hamlet@zulip.com")
         self.assertEqual(json["pointer"], 1)
 
 class GetPublicStreamsTest(AuthedTestCase):
@@ -1879,7 +1879,7 @@ class GetPublicStreamsTest(AuthedTestCase):
         """
         Ensure that get_public_streams successfully returns a list of streams
         """
-        email = 'hamlet@humbughq.com'
+        email = 'hamlet@zulip.com'
         self.login(email)
 
         api_key = self.get_api_key(email)
@@ -1898,7 +1898,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
         Make sure that /json/subscriptions/list properly returns
         the invite-only bit for streams that are invite-only
         """
-        email = 'hamlet@humbughq.com'
+        email = 'hamlet@zulip.com'
         self.login(email)
 
         result1 = self.common_subscribe_to_streams(email, ["Saxony"], invite_only=True)
@@ -1918,7 +1918,7 @@ class InviteOnlyStreamTest(AuthedTestCase):
     @slow(0.15, "lots of queries")
     def test_inviteonly(self):
         # Creating an invite-only stream is allowed
-        email = 'hamlet@humbughq.com'
+        email = 'hamlet@zulip.com'
 
         result = self.common_subscribe_to_streams(email, ["Saxony"], invite_only=True)
         self.assert_json_success(result)
@@ -1928,19 +1928,19 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assertEqual(json["already_subscribed"], {})
 
         # Subscribing oneself to an invite-only stream is not allowed
-        email = "othello@humbughq.com"
+        email = "othello@zulip.com"
         self.login(email)
         result = self.common_subscribe_to_streams(email, ["Saxony"])
         self.assert_json_error(result, 'Unable to access invite-only stream (Saxony).')
 
         # Inviting another user to an invite-only stream is allowed
-        email = 'hamlet@humbughq.com'
+        email = 'hamlet@zulip.com'
         self.login(email)
         result = self.common_subscribe_to_streams(
             email, ["Saxony"],
-            extra_post_data={'principals': ujson.dumps(["othello@humbughq.com"])})
+            extra_post_data={'principals': ujson.dumps(["othello@zulip.com"])})
         json = ujson.loads(result.content)
-        self.assertEqual(json["subscribed"], {"othello@humbughq.com": ['Saxony']})
+        self.assertEqual(json["subscribed"], {"othello@zulip.com": ['Saxony']})
         self.assertEqual(json["already_subscribed"], {})
 
         # Make sure both users are subscribed to this stream
@@ -1950,13 +1950,13 @@ class InviteOnlyStreamTest(AuthedTestCase):
         self.assert_json_success(result)
         json = ujson.loads(result.content)
 
-        self.assertTrue('othello@humbughq.com' in json['subscribers'])
-        self.assertTrue('hamlet@humbughq.com' in json['subscribers'])
+        self.assertTrue('othello@zulip.com' in json['subscribers'])
+        self.assertTrue('hamlet@zulip.com' in json['subscribers'])
 
 class GetSubscribersTest(AuthedTestCase):
 
     def setUp(self):
-        self.email = "hamlet@humbughq.com"
+        self.email = "hamlet@zulip.com"
         self.api_key = self.get_api_key(self.email)
         self.user_profile = get_user_profile_by_email(self.email)
         self.login(self.email)
@@ -1968,7 +1968,7 @@ class GetSubscribersTest(AuthedTestCase):
 
         {"msg": "",
          "result": "success",
-         "subscribers": ["hamlet@humbughq.com", "prospero@humbughq.com"]}
+         "subscribers": ["hamlet@zulip.com", "prospero@zulip.com"]}
         """
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)
@@ -2002,7 +2002,7 @@ class GetSubscribersTest(AuthedTestCase):
         # Create a stream for which Hamlet is the only subscriber.
         stream_name = "Saxony"
         self.common_subscribe_to_streams(self.email, [stream_name])
-        other_email = "othello@humbughq.com"
+        other_email = "othello@zulip.com"
 
         # Fetch the subscriber list as a non-member.
         self.login(other_email)
@@ -2025,7 +2025,7 @@ class GetSubscribersTest(AuthedTestCase):
         stream_name = "Saxony"
         self.common_subscribe_to_streams(self.email, [stream_name],
                                          invite_only=True)
-        other_email = "othello@humbughq.com"
+        other_email = "othello@zulip.com"
 
         # Try to fetch the subscriber list as a non-member.
         self.login(other_email)
@@ -2369,8 +2369,8 @@ NY-Haskell/events/108707682/?a=co1.1_grp&amp;rv=co1.1\">Haskell NYC Meetup</a></
 >YOLO</a></p>'),
                 ('Sent to http_something_real@humbughq.com', '<p>Sent to <a href="mailto:http_something_real@humbughq.com" \
 title="mailto:http_something_real@humbughq.com">http_something_real@humbughq.com</a></p>'),
-                ('Sent to othello@humbughq.com', '<p>Sent to <a href="mailto:othello@humbughq.com" title="mailto:othello@humbughq.com">\
-othello@humbughq.com</a></p>')
+                ('Sent to othello@zulip.com', '<p>Sent to <a href="mailto:othello@zulip.com" title="mailto:othello@zulip.com">\
+othello@zulip.com</a></p>')
                 )
 
         for input, output in urls:
@@ -2538,7 +2538,7 @@ class UserPresenceTests(AuthedTestCase):
         return api_key
 
     def test_get_empty(self):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.common_init(email)
 
         result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
@@ -2549,7 +2549,7 @@ class UserPresenceTests(AuthedTestCase):
             self.assertEqual(presence, {})
 
     def test_set_idle(self):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.common_init(email)
         client = 'website'
 
@@ -2559,7 +2559,7 @@ class UserPresenceTests(AuthedTestCase):
             self.assertEqual(json['presences'][email][client]['status'], 'idle')
             self.assertIn('timestamp', json['presences'][email][client])
             self.assertIsInstance(json['presences'][email][client]['timestamp'], int)
-            self.assertEqual(json['presences'].keys(), ['hamlet@humbughq.com'])
+            self.assertEqual(json['presences'].keys(), ['hamlet@zulip.com'])
             return json['presences'][email][client]['timestamp']
 
         result = self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
@@ -2568,20 +2568,20 @@ class UserPresenceTests(AuthedTestCase):
         result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
         timestamp = test_result(result)
 
-        email = "othello@humbughq.com"
+        email = "othello@zulip.com"
         api_key = self.common_init(email)
         self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
         result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        self.assertEqual(json['presences']['hamlet@humbughq.com'][client]['status'], 'idle')
-        self.assertEqual(json['presences'].keys(), ['hamlet@humbughq.com', 'othello@humbughq.com'])
+        self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
+        self.assertEqual(json['presences'].keys(), ['hamlet@zulip.com', 'othello@zulip.com'])
         newer_timestamp = json['presences'][email][client]['timestamp']
         self.assertGreaterEqual(newer_timestamp, timestamp)
 
     def test_set_active(self):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.common_init(email)
         client = 'website'
 
@@ -2592,21 +2592,21 @@ class UserPresenceTests(AuthedTestCase):
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
 
-        email = "othello@humbughq.com"
+        email = "othello@zulip.com"
         api_key = self.common_init(email)
         self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
         result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        self.assertEqual(json['presences']['hamlet@humbughq.com'][client]['status'], 'idle')
+        self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
 
         self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'active'})
         result = self.client.post("/json/get_active_statuses", {'email': email, 'api-key': api_key})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'active')
-        self.assertEqual(json['presences']['hamlet@humbughq.com'][client]['status'], 'idle')
+        self.assertEqual(json['presences']['hamlet@zulip.com'][client]['status'], 'idle')
 
     def test_no_mit(self):
         # MIT never gets a list of users
@@ -2625,8 +2625,8 @@ class UserPresenceTests(AuthedTestCase):
         self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
         result = self.client.post("/accounts/logout/")
 
-        # Ensure we don't see hamlet@humbughq.com information leakage
-        email = "hamlet@humbughq.com"
+        # Ensure we don't see hamlet@zulip.com information leakage
+        email = "hamlet@zulip.com"
         api_key = self.common_init(email)
 
         result = self.client.post("/json/update_active_status", {'email': email, 'api-key': api_key, 'status': 'idle'})
@@ -2635,27 +2635,27 @@ class UserPresenceTests(AuthedTestCase):
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
         # We only want @humbughq.com emails
         for email in json['presences'].keys():
-            self.assertEqual(email_to_domain(email), 'humbughq.com')
+            self.assertEqual(email_to_domain(email), 'zulip.com')
 
 class UnreadCountTests(AuthedTestCase):
     def setUp(self):
-        self.unread_msgs = [self.send_message("iago@humbughq.com", "hamlet@humbughq.com", Recipient.PERSONAL, "hello"),
-                            self.send_message("iago@humbughq.com", "hamlet@humbughq.com", Recipient.PERSONAL, "hello2")]
+        self.unread_msgs = [self.send_message("iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello"),
+                            self.send_message("iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello2")]
 
     def test_new_message(self):
         # Sending a new message results in unread UserMessages being created
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         content = "Test message for unset read bit"
-        last_msg = self.send_message("hamlet@humbughq.com", "Verona", Recipient.STREAM, content)
+        last_msg = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, content)
         user_messages = list(UserMessage.objects.filter(message=last_msg))
         self.assertEqual(len(user_messages) > 0, True)
         for um in user_messages:
             self.assertEqual(um.message.content, content)
-            if um.user_profile.email != "hamlet@humbughq.com":
+            if um.user_profile.email != "hamlet@zulip.com":
                 self.assertFalse(um.flags.read)
 
     def test_update_flags(self):
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
 
         result = self.client.post("/json/update_message_flags",
                                   {"messages": ujson.dumps([msg.id for msg in self.unread_msgs]),
@@ -2684,7 +2684,7 @@ class UnreadCountTests(AuthedTestCase):
                 self.assertEqual(msg['flags'], [])
 
     def test_update_all_flags(self):
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
 
         result = self.client.post("/json/update_message_flags", {"messages": ujson.dumps([1, 2]),
                                                                  "op": "add",
@@ -2713,7 +2713,7 @@ class StarTests(AuthedTestCase):
         You can set a message as starred/un-starred through
         /json/update_message_flags.
         """
-        self.login("hamlet@humbughq.com")
+        self.login("hamlet@zulip.com")
         message_ids = [1, 2]
 
         # Star a few messages.
@@ -2738,7 +2738,7 @@ class StarTests(AuthedTestCase):
         """
         New messages aren't starred.
         """
-        test_email = "hamlet@humbughq.com"
+        test_email = "hamlet@zulip.com"
         self.login(test_email)
         content = "Test message for star"
         self.send_message(test_email, "Verona", Recipient.STREAM,
@@ -2753,7 +2753,7 @@ class StarTests(AuthedTestCase):
 class JiraHookTests(AuthedTestCase):
 
     def send_jira_message(self, action):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s" % (api_key,)
         return self.send_json_payload(email,
@@ -2763,7 +2763,7 @@ class JiraHookTests(AuthedTestCase):
                                       content_type="application/json")
 
     def test_unknown(self):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s" % (api_key,)
 
@@ -2774,7 +2774,7 @@ class JiraHookTests(AuthedTestCase):
         self.assert_json_error(result, 'Unknown JIRA event type')
 
     def test_custom_stream(self):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         action = 'created'
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
@@ -2868,7 +2868,7 @@ class BeanstalkHookTests(AuthedTestCase):
         return auth_string
 
     def send_beanstalk_message(self, action):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         data = {'payload': self.fixture_data('beanstalk', action)}
         return self.send_json_payload(email, "/api/v1/external/beanstalk",
@@ -2920,7 +2920,7 @@ class GithubHookTests(AuthedTestCase):
 """)
 
     def test_spam_branch_is_ignored(self):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         stream = 'commits'
         data = {'email': email,
@@ -2946,7 +2946,7 @@ class GithubHookTests(AuthedTestCase):
 
 
     def test_user_specified_branches(self):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         stream = 'my_commits'
         data = {'email': email,
@@ -2964,7 +2964,7 @@ class GithubHookTests(AuthedTestCase):
     def test_user_specified_stream(self):
         # Around May 2013 the github webhook started to specify the stream.
         # Before then, the stream was hard coded to "commits".
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         stream = 'my_commits'
         data = {'email': email,
@@ -2979,7 +2979,7 @@ class GithubHookTests(AuthedTestCase):
         self.assert_content(msg)
 
     def test_legacy_hook(self):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         data = {'email': email,
                 'api-key': api_key,
@@ -2994,7 +2994,7 @@ class GithubHookTests(AuthedTestCase):
 class PivotalHookTests(AuthedTestCase):
 
     def send_pivotal_message(self, name):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         return self.send_json_payload(email, "/api/v1/external/pivotal?api_key=%s&stream=%s" % (api_key,"pivotal"),
                                       self.fixture_data('pivotal', name, file_type='xml'),
@@ -3065,7 +3065,7 @@ class PivotalHookTests(AuthedTestCase):
 
 class NewRelicHookTests(AuthedTestCase):
     def send_new_relic_message(self, name):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         return self.send_json_payload(email, "/api/v1/external/newrelic?api_key=%s&stream=%s" % (api_key,"newrelic"),
                                       self.fixture_data('newrelic', name, file_type='txt'),
@@ -3105,7 +3105,7 @@ class RateLimitTests(AuthedTestCase):
                                                                    "email": email,
                                                                    "api-key": api_key})
     def test_headers(self):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         user = get_user_profile_by_email(email)
         clear_user_history(user)
         api_key = self.get_api_key(email)
@@ -3116,7 +3116,7 @@ class RateLimitTests(AuthedTestCase):
         self.assertTrue('X-RateLimit-Reset' in result)
 
     def test_ratelimit_decrease(self):
-        email = "hamlet@humbughq.com"
+        email = "hamlet@zulip.com"
         user = get_user_profile_by_email(email)
         clear_user_history(user)
         api_key = self.get_api_key(email)
@@ -3129,7 +3129,7 @@ class RateLimitTests(AuthedTestCase):
 
     @slow(1.1, 'has to sleep to work')
     def test_hit_ratelimits(self):
-        email = "cordelia@humbughq.com"
+        email = "cordelia@zulip.com"
         user = get_user_profile_by_email(email)
         clear_user_history(user)
 

@@ -140,11 +140,11 @@ class HumbugSession extends Session
 host = 'http://localhost:9991'
 
 users = [
-    {username:'iago@humbughq.com',      password: 'FlokrWdZefyEWkfI'}
-    {username: 'othello@humbughq.com',  password: '52VeZqtHDCdAr5yM'}
-    {username: 'cordelia@humbughq.com', password: 'ZBldCWrQYEckMcaL'}
-    {username: 'hamlet@humbughq.com',   password: 'qXqHrDf/UByuJQOb'}
-    {username: 'prospero@humbughq.com', password: 'GxInqKrm+2u06gfQ'}
+    {username: 'iago@zulip.com',     password: 'JhwLkBydEG1tAL5P'}
+    {username: 'othello@zulip.com',  password: 'GX5MTQ+qYSzcmDoH'}
+    {username: 'cordelia@zulip.com', password: '+1pkoQiP0wEbEvv/'}
+    {username: 'hamlet@zulip.com',   password: 'Z/hx5nEcXRQBGzk3'}
+    {username: 'prospero@zulip.com', password: 'j+XqHkQ2cycwCQJE'}
 ]
 
 user_start_step = 1000*1

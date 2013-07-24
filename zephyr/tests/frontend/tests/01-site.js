@@ -46,13 +46,13 @@ common.send_many([
     { stream:  'Verona', subject: 'other subject',
       content: 'test message C' },
 
-    { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
+    { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
       content:   'personal A' },
 
-    { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
+    { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
       content:   'personal B' },
 
-    { recipient: 'cordelia@humbughq.com',
+    { recipient: 'cordelia@zulip.com',
       content:   'personal C' }]);
 
 common.wait_for_receive(function () {
@@ -77,7 +77,7 @@ common.send_many([
     { stream:  'Verona', subject: 'frontend test',
       content: 'test message D' },
 
-    { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
+    { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
       content:   'personal D' }
 ]);
 

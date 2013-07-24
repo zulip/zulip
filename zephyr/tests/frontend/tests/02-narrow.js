@@ -23,22 +23,22 @@ common.send_many([
     { stream:  'Venice', subject: 'frontend test',
       content: 'other message' },
 
-    { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
+    { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
       content:   'personal A' },
 
-    { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
+    { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
       content:   'personal B' },
 
-    { recipient: 'cordelia@humbughq.com',
+    { recipient: 'cordelia@zulip.com',
       content:   'personal C' },
 
     { stream:  'Verona', subject: 'frontend test',
       content: 'test message D' },
 
-    { recipient: 'cordelia@humbughq.com, hamlet@humbughq.com',
+    { recipient: 'cordelia@zulip.com, hamlet@zulip.com',
       content:   'personal D' },
 
-    { recipient: 'cordelia@humbughq.com',
+    { recipient: 'cordelia@zulip.com',
       content:   'personal E' }
 ]);
 

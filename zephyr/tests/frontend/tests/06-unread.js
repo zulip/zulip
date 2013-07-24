@@ -25,7 +25,7 @@ common.then_log_out();
 
 // Othello
 casper.open("http://localhost:9981/accounts/login");
-common.then_log_in({username: 'othello@humbughq.com', password: '52VeZqtHDCdAr5yM'});
+common.then_log_in({username: 'othello@zulip.com', password: 'GX5MTQ+qYSzcmDoH'});
 
 casper.then(function () {
     // Force a pointer update so we no longer have a -1 pointer in the db
@@ -35,7 +35,7 @@ casper.then(function () {
 });
 
 common.then_log_out();
-common.then_log_in({username: 'iago@humbughq.com', password: 'FlokrWdZefyEWkfI'});
+common.then_log_in({username: 'iago@zulip.com', password: 'JhwLkBydEG1tAL5P'});
 
 send_with_content('Iago unread test 1');
 send_with_content('Iago unread test 2');
@@ -52,7 +52,7 @@ send_with_content('Iago unread test 12');
 send_with_content('Iago unread test 13');
 common.then_log_out();
 
-common.then_log_in({username: 'othello@humbughq.com', password: '52VeZqtHDCdAr5yM'});
+common.then_log_in({username: 'othello@zulip.com', password: 'GX5MTQ+qYSzcmDoH'});
 casper.then(function () {
     // Make sure we have 3 unread messages
     casper.test.assertSelectorHasText("a[href='#narrow/stream/Verona']", 'Verona', 'Unread count in sidebar is correct');
@@ -98,7 +98,7 @@ casper.then(function () {
 
 });
 common.then_log_out();
-common.then_log_in({username: 'othello@humbughq.com', password: '52VeZqtHDCdAr5yM'});
+common.then_log_in({username: 'othello@zulip.com', password: 'GX5MTQ+qYSzcmDoH'});
 casper.then(function () {
     casper.test.assertSelectorHasText("a[href='#narrow/stream/Verona']", 'Verona', 'Sidebar unread correct on login');
 });

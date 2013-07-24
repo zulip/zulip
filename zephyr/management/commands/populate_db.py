@@ -122,9 +122,9 @@ class Command(BaseCommand):
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).
-            names = [("Othello, the Moor of Venice", "othello@humbughq.com"), ("Iago", "iago@humbughq.com"),
-                     ("Prospero from The Tempest", "prospero@humbughq.com"),
-                     ("Cordelia Lear", "cordelia@humbughq.com"), ("King Hamlet", "hamlet@humbughq.com")]
+            names = [("Othello, the Moor of Venice", "othello@zulip.com"), ("Iago", "iago@zulip.com"),
+                     ("Prospero from The Tempest", "prospero@zulip.com"),
+                     ("Cordelia Lear", "cordelia@zulip.com"), ("King Hamlet", "hamlet@zulip.com")]
             for i in xrange(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@humbughq.com' % (i,)))
             create_users(realms, names)
@@ -459,8 +459,8 @@ def restore_saved_messages():
 
         if 'sending_client' in old_message:
             message.sending_client = clients[old_message['sending_client']]
-        elif sender_email in ["othello@humbughq.com", "iago@humbughq.com", "prospero@humbughq.com",
-                              "cordelia@humbughq.com", "hamlet@humbughq.com"]:
+        elif sender_email in ["othello@zulip.com", "iago@zulip.com", "prospero@zulip.com",
+                              "cordelia@zulip.com", "hamlet@zulip.com"]:
             message.sending_client = clients['populate_db']
         elif realm.domain == "humbughq.com":
             message.sending_client = clients["website"]
