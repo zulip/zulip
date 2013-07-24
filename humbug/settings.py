@@ -373,6 +373,7 @@ JS_SPECS = {
             'js/typeahead_helper.js',
             'js/search.js',
             'js/composebox_typeahead.js',
+            'js/navigate.js',
             'js/hotkey.js',
             'js/notifications.js',
             'js/hashchange.js',

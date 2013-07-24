@@ -10,14 +10,6 @@ function do_narrow_action(action) {
     return true;
 }
 
-var directional_hotkeys = {
-    'down_arrow':  {getrow: rows.next_visible, direction: 1, charCode: 0},  // down arrow
-    'vim_down': {getrow: rows.next_visible, direction: 1, charCode: 106}, // 'j'
-    'up_arrow':  {getrow: rows.prev_visible, direction: -1, charCode: 0}, // up arrow
-    'vim_up': {getrow: rows.prev_visible, direction: -1, charCode: 107}, // 'k'
-    'home':  {getrow: rows.first_visible, direction: -1, charCode: 0}  // Home
-};
-
 var actions_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
@@ -121,8 +113,6 @@ function process_hotkey(e) {
         return false;
     }
 
-    var next_row, dirkey;
-
     if (popovers.actions_popped() && actions_dropdown_hotkeys.indexOf(event_name) !== -1) {
         popovers.actions_menu_handle_keyboard(event_name);
         return true;
@@ -206,39 +196,7 @@ function process_hotkey(e) {
     }
 
     if (event_name === 'end') {
-        if (current_msg_list.empty()) {
-            return false;
-        }
-        var next_id = current_msg_list.last().id;
-        last_viewport_movement_direction = 1;
-        current_msg_list.select_id(next_id, {then_scroll: true,
-                                             from_scroll: true});
-        mark_current_list_as_read();
-        return true;
-    }
-
-    if (directional_hotkeys.hasOwnProperty(event_name)) {
-        if (current_msg_list.empty()) {
-            return false;
-        }
-        dirkey = directional_hotkeys[event_name];
-        last_viewport_movement_direction = dirkey.direction;
-        next_row = dirkey.getrow(current_msg_list.selected_row());
-        if (next_row.length !== 0) {
-            current_msg_list.select_id(rows.id(next_row),
-                                       {then_scroll: true,
-                                        from_scroll: true});
-        }
-        if ((next_row.length === 0) && (event_name === 'down_arrow' || event_name === 'vim_down')) {
-            // At the last message, scroll to the bottom so we have
-            // lots of nice whitespace for new messages coming in.
-            //
-            // FIXME: this doesn't work for End because rows.last_visible()
-            // always returns a message.
-            var current_msg_table = rows.get_table(current_msg_list.table_name);
-            viewport.scrollTop(current_msg_table.outerHeight(true) - viewport.height() * 0.1);
-            mark_current_list_as_read();
-        }
+        navigate.to_end();
         return true;
     }
 
@@ -260,21 +218,10 @@ function process_hotkey(e) {
 
     switch (event_name) {
     case 'page_up':
-        if (viewport.at_top() && !current_msg_list.empty()) {
-            current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
-        }
-        else {
-            ui.page_up_the_right_amount();
-        }
+        navigate.page_up();
         return true;
     case 'page_down':
-        if (viewport.at_bottom() && !current_msg_list.empty()) {
-            current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
-            mark_current_list_as_read();
-        }
-        else {
-            ui.page_down_the_right_amount();
-        }
+        navigate.page_down();
         return true;
     case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
         if (popovers.any_active()) {
@@ -308,6 +255,24 @@ function process_hotkey(e) {
     case 'show_shortcuts': // Show keyboard shortcuts page
         $('#keyboard-shortcuts').modal('show');
         return true;
+    }
+
+    if (current_msg_list.empty()) {
+        return false;
+    }
+
+    switch (event_name) {
+        case 'down_arrow':
+        case 'vim_down':
+            navigate.down();
+            return true;
+        case 'up_arrow':
+        case 'vim_up':
+            navigate.up();
+            return true;
+        case 'home':
+            navigate.to_home();
+            return true;
     }
 
     return false;
