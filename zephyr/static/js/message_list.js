@@ -434,19 +434,10 @@ MessageList.prototype = {
             }
         }
 
-        $.each(rendered_elems, ui.process_condensing);
-
         if (where === 'top' && table.find('.ztable_layout_row').length > 0) {
             // If we have a totally empty narrow, there may not
             // be a .ztable_layout_row.
             table.find('.ztable_layout_row').after(rendered_elems);
-
-            if (this === current_msg_list && orig_scrolltop_offset !== undefined) {
-                // Restore the selected row to its original position in
-                // relation to the top of the window
-                viewport.scrollTop(this.selected_row().offset().top - orig_scrolltop_offset);
-                this.select_id(this._selected_id, {from_rendering: true});
-            }
         } else {
             table.append(rendered_elems);
 
@@ -476,6 +467,15 @@ MessageList.prototype = {
             var id = rows.id(row);
             message_edit.maybe_show_edit(row, id);
         });
+
+        $.each(rendered_elems, ui.process_condensing);
+
+        if (where === 'top' && this === current_msg_list && orig_scrolltop_offset !== undefined) {
+            // Restore the selected row to its original position in
+            // relation to the top of the window
+            viewport.scrollTop(this.selected_row().offset().top - orig_scrolltop_offset);
+            this.select_id(this._selected_id, {from_rendering: true});
+        }
 
         // Re-add the fading of messages that is lost when we re-render.
         compose.update_faded_messages();
