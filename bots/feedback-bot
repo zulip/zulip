@@ -36,12 +36,12 @@ prod_client = humbug.Client(
     email="feedback@zulip.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
-    site="https://api.humbughq.com")
+    site="https://api.zulip.com")
 staging_client = humbug.Client(
     email="feedback@zulip.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
-    site="https://staging.humbughq.com/api")
+    site="https://staging.zulip.com/api")
 
 def forward_message(message):
     if message["type"] != "private" or len(message["display_recipient"]) != 2:

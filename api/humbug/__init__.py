@@ -94,8 +94,8 @@ class Client(object):
                 site = "https://" + site
             self.base_url = site
         else:
-            self.base_url = "https://api.humbughq.com"
-        if self.base_url != "https://api.humbughq.com" and not self.base_url.endswith("/api"):
+            self.base_url = "https://api.zulip.com"
+        if self.base_url != "https://api.zulip.com" and not self.base_url.endswith("/api"):
             self.base_url += "/api"
         if not self.base_url.endswith("/"):
             self.base_url += "/"

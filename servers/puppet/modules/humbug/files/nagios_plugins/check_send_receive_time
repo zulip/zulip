@@ -26,7 +26,7 @@ usage = """Usage: send-receive.py [options] [config]
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('--site',
                   dest='site',
-                  default="https://api.humbughq.com",
+                  default="https://api.zulip.com",
                   action='store')
 
 parser.add_option('--nagios',
@@ -92,14 +92,14 @@ if "staging" in options.site:
     sender_key = "dfe1c934d555f4b9538d0d4cfd3069c2"
     recipient = "othello@zulip.com"
     recipient_key = "4e5d97591bec64bf57d2698ffbb563e3"
-    site = "https://staging.humbughq.com/api"
+    site = "https://staging.zulip.com/api"
 else:
     # cordelia and iago are default users on prod
     sender = "iago@zulip.com"
     sender_key = "d43b53c27a8106195b46781abc67901a"
     recipient = "cordelia@zulip.com"
     recipient_key = "24cf18de98d5c31da9c6c79f0cbec195"
-    site = "https://api.humbughq.com"
+    site = "https://api.zulip.com"
 
 humbug_sender = humbug.Client(
     email=sender,

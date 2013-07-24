@@ -32,7 +32,7 @@ class HumbugListener extends AbstractIssueEventListener {
     String issueBaseUrl = "https://jira.COMPANY.com/browse/"
 
     // Your humbug domain, only change if you have a custom one
-    String domain = ""
+    String base_url = "https://api.zulip.com"
 
     @Override
     void workflowEvent(IssueEvent event) {
@@ -142,10 +142,6 @@ class HumbugListener extends AbstractIssueEventListener {
     }
 
     String humbugUrl(method) {
-      String url = "humbughq.com"
-      if (domain != "") {
-        url = domain + "." + url
-      }
-      return "https://" + url + "/api/v1/" + method
+      return base_url + "/v1/" + method
     }
 }

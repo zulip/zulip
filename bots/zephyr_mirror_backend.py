@@ -70,7 +70,7 @@ class RandomExponentialBackoff(CountingBackoff):
             print message
         time.sleep(delay)
 
-DEFAULT_SITE = "https://api.humbughq.com"
+DEFAULT_SITE = "https://api.zulip.com"
 
 class States:
     Startup, HumbugToZephyr, ZephyrToHumbug, ChildSending = range(4)
