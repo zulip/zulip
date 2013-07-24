@@ -4,7 +4,7 @@
 # Leaving all the instructions out of this file to avoid having to
 # sync them as we update the comments.
 
-HUMBUG_USER = "humbug+commits@humbughq.com"
+HUMBUG_USER = "commit-bot@zulip.com"
 HUMBUG_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # commit_notice_destination() lets you customize where commit notices
@@ -31,4 +31,4 @@ def commit_notice_destination(repo, branch, commit):
     return None
 
 HUMBUG_API_PATH = "/home/humbug/humbug/api"
-HUMBUG_SITE = "https://staging.humbughq.com"
+HUMBUG_SITE = "https://staging.zulip.com"

@@ -231,7 +231,7 @@ class Command(BaseCommand):
 
                 # These bots are not needed by the test suite
                 internal_humbug_users_nosubs = [
-                    ("Zulip Commit Bot", "humbug+commits@humbughq.com"),
+                    ("Zulip Commit Bot", "commit-bot@zulip.com"),
                     ("Zulip Trac Bot", "trac-bot@zulip.com"),
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                     ("Zulip Feedback Bot", "feedback@humbughq.com"),
