@@ -427,9 +427,6 @@ exports.initialize = function () {
             suggestions = get_special_filter_suggestions(query, operators);
             result = result.concat(suggestions);
 
-            suggestions = get_operator_subset_suggestions(query, operators);
-            result = result.concat(suggestions);
-
             suggestions = get_stream_suggestions(query);
             result = result.concat(suggestions);
 
@@ -445,6 +442,9 @@ exports.initialize = function () {
             result = result.concat(suggestions);
 
             suggestions = get_topic_suggestions(query, operators);
+            result = result.concat(suggestions);
+
+            suggestions = get_operator_subset_suggestions(query, operators);
             result = result.concat(suggestions);
 
             // We can't send typeahead objects, only strings, so we have to create a map
