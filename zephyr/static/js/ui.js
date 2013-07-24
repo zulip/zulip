@@ -1461,5 +1461,14 @@ exports.process_condensing = function (index, elem) {
     }
 };
 
+$(function () {
+    // Workaround for Bootstrap issue #5900, which basically makes dropdowns
+    // unclickable on mobile devices.
+    // https://github.com/twitter/bootstrap/issues/5900
+    $('a.dropdown-toggle, .dropdown-menu a').on('touchstart', function (e) {
+        e.stopPropagation();
+    });
+});
+
 return exports;
 }());
