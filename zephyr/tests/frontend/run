@@ -12,7 +12,7 @@ import glob
 # In order to use remote casperjs debugging, pass the --remote-debug flag
 # This will start a remote debugging session listening on port 7777
 #
-# See https://wiki.humbughq.com/Testing%20the%20app for more information
+# See https://wiki.zulip.net/wiki/Testing_the_app for more information
 # on how to use remote debugging
 #
 
