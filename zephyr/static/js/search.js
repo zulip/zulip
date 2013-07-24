@@ -128,7 +128,24 @@ function highlight_person(query, person) {
     return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
 }
 
-function get_stream_suggestions(query) {
+function get_stream_suggestions(operators) {
+    var query;
+
+    switch (operators.length) {
+    case 0:
+        query = '';
+        break;
+    case 1:
+        var operand = operators[0][0];
+        query = operators[0][1];
+        if (!(operand === 'stream' || operand === 'search')) {
+            return [];
+        }
+        break;
+    default:
+        return [];
+    }
+
     var streams = subs.subscribed_streams();
 
     streams = $.grep(streams, function (stream) {
@@ -427,7 +444,7 @@ exports.initialize = function () {
             suggestions = get_special_filter_suggestions(query, operators);
             result = result.concat(suggestions);
 
-            suggestions = get_stream_suggestions(query);
+            suggestions = get_stream_suggestions(operators);
             result = result.concat(suggestions);
 
             var people = page_params.people_list;
