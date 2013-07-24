@@ -195,10 +195,6 @@ function process_hotkey(e) {
         return false;
     }
 
-    if (event_name === 'end') {
-        navigate.to_end();
-        return true;
-    }
 
     switch (event_name) {
     case 'message_actions':
@@ -217,12 +213,6 @@ function process_hotkey(e) {
 
 
     switch (event_name) {
-    case 'page_up':
-        navigate.page_up();
-        return true;
-    case 'page_down':
-        navigate.page_down();
-        return true;
     case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
         if (popovers.any_active()) {
             popovers.hide_all();
@@ -272,6 +262,15 @@ function process_hotkey(e) {
             return true;
         case 'home':
             navigate.to_home();
+            return true;
+        case 'end':
+            navigate.to_end();
+            return true;
+        case 'page_up':
+            navigate.page_up();
+            return true;
+        case 'page_down':
+            navigate.page_down();
             return true;
     }
 

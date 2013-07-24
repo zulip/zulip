@@ -44,9 +44,6 @@ exports.to_home = function () {
 };
 
 exports.to_end = function () {
-    if (current_msg_list.empty()) {
-        return false;
-    }
     var next_id = current_msg_list.last().id;
     last_viewport_movement_direction = 1;
     current_msg_list.select_id(next_id, {then_scroll: true,
