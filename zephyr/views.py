@@ -1490,7 +1490,7 @@ class ActivityTable(object):
         return sorted(self.rows.iteritems(), key=lambda (k,r): r['age'])
 
 def can_view_activity(request):
-    return request.user.realm.domain == 'humbughq.com'
+    return request.user.realm.domain == 'zulip.com'
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def get_activity(request):
@@ -1562,7 +1562,7 @@ def api_github_landing(request, user_profile, event=REQ,
         stream = 'commits'
 
     # CUSTOMER18 has requested not to get pull request notifications
-    if event == 'pull_request' and user_profile.realm.domain not in ['customer18.invalid', 'humbughq.com']:
+    if event == 'pull_request' and user_profile.realm.domain not in ['customer18.invalid', 'zulip.com']:
         pull_req = payload['pull_request']
 
         subject = "%s: pull request %d" % (repository['name'],
@@ -1579,7 +1579,7 @@ def api_github_landing(request, user_profile, event=REQ,
         # get spammed when people commit to non-master all over the place.
         # Long-term, this will be replaced by some GitHub configuration
         # option of which branches to notify on.
-        if short_ref != 'master' and user_profile.realm.domain in ['customer18.invalid', 'humbughq.com']:
+        if short_ref != 'master' and user_profile.realm.domain in ['customer18.invalid', 'zulip.com']:
             return json_success()
 
         if branches:

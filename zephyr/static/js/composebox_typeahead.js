@@ -101,8 +101,8 @@ function handle_keydown(e) {
             // want to change focus right away in the private_message_recipient box since it
             // takes the typeaheads a little time to open after the user finishes typing, which
             // can lead to the focus moving without the autocomplete having a chance to happen.
-            if ((page_params.domain === "humbughq.com" && nextFocus === "compose-send-button") ||
-                (page_params.domain !== "humbughq.com" && nextFocus)) {
+            if ((page_params.domain === "zulip.com" && nextFocus === "compose-send-button") ||
+                (page_params.domain !== "zulip.com" && nextFocus)) {
                 ui.focus_on(nextFocus);
                 nextFocus = false;
             }

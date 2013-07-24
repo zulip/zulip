@@ -379,7 +379,7 @@ def sanitize_url(url):
         scheme = 'mailto'
 
     # Humbug modification: If scheme is not specified, assume http://
-    # It's unlikely that users want relative links within humbughq.com.
+    # It's unlikely that users want relative links within zulip.com.
     # We re-enter sanitize_url because netloc etc. need to be re-parsed.
     if not scheme:
         return sanitize_url('http://' + url)
@@ -629,7 +629,7 @@ def make_md_engine(key, opts):
 
 realm_filters = {
     "default": [],
-    "humbughq.com": [
+    "zulip.com": [
         ("#(?P<id>[0-9]{1,8})", "https://trac.humbughq.com/ticket/%(id)s"),
         ],
     }

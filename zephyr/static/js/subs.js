@@ -778,8 +778,8 @@ function show_new_stream_modal() {
     var people_minus_you_and_maybe_humbuggers = [];
     $.each(page_params.people_list, function (idx, person) {
         if (person.email !== page_params.email &&
-               (page_params.domain === "humbughq.com" ||
-                   person.email.split('@')[1] !== "humbughq.com"
+               (page_params.domain === "zulip.com" ||
+                   person.email.split('@')[1] !== "zulip.com"
                )
            ) {
             people_minus_you_and_maybe_humbuggers.push({"email": person.email,

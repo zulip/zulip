@@ -113,7 +113,7 @@ class Command(BaseCommand):
             clear_database()
 
             # Create our two default realms
-            humbug_realm = Realm.objects.create(domain="humbughq.com")
+            humbug_realm = Realm.objects.create(domain="zulip.com")
             Realm.objects.create(domain="mit.edu")
             realms = {}
             for realm in Realm.objects.all():
@@ -126,7 +126,7 @@ class Command(BaseCommand):
                      ("Prospero from The Tempest", "prospero@zulip.com"),
                      ("Cordelia Lear", "cordelia@zulip.com"), ("King Hamlet", "hamlet@zulip.com")]
             for i in xrange(options["extra_users"]):
-                names.append(('Extra User %d' % (i,), 'extrauser%d@humbughq.com' % (i,)))
+                names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
             create_users(realms, names)
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
@@ -145,7 +145,7 @@ class Command(BaseCommand):
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
         else:
-            humbug_realm = Realm.objects.get(domain="humbughq.com")
+            humbug_realm = Realm.objects.get(domain="zulip.com")
             recipient_streams = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
@@ -462,7 +462,7 @@ def restore_saved_messages():
         elif sender_email in ["othello@zulip.com", "iago@zulip.com", "prospero@zulip.com",
                               "cordelia@zulip.com", "hamlet@zulip.com"]:
             message.sending_client = clients['populate_db']
-        elif realm.domain == "humbughq.com":
+        elif realm.domain == "zulip.com":
             message.sending_client = clients["website"]
         elif realm.domain == "mit.edu":
             message.sending_client = clients['zephyr_mirror']
@@ -671,7 +671,7 @@ def restore_saved_messages():
         (len(all_messages), tot_user_messages)
 
     site = Site.objects.get_current()
-    site.domain = 'humbughq.com'
+    site.domain = 'zulip.com'
     site.save()
 
     print datetime.datetime.now(), "Filling in user pointers..."

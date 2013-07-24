@@ -114,7 +114,7 @@ class AuthedTestCase(TestCase):
 
     def register(self, username, password):
         self.client.post('/accounts/home/',
-                         {'email': username + '@humbughq.com'})
+                         {'email': username + '@zulip.com'})
         return self.submit_reg_form_for_user(username, password)
 
     def submit_reg_form_for_user(self, username, password):
@@ -126,7 +126,7 @@ class AuthedTestCase(TestCase):
         """
         return self.client.post('/accounts/register/',
                                 {'full_name': username, 'password': password,
-                                 'key': find_key_by_email(username + '@humbughq.com'),
+                                 'key': find_key_by_email(username + '@zulip.com'),
                                  'terms': True})
 
     def get_api_key(self, email):
@@ -211,7 +211,7 @@ class AuthedTestCase(TestCase):
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name):
-        stream, _ = create_stream_if_needed(Realm.objects.get(domain="humbughq.com"), stream_name)
+        stream, _ = create_stream_if_needed(Realm.objects.get(domain="zulip.com"), stream_name)
         user_profile = get_user_profile_by_email(email)
         do_add_subscription(user_profile, stream, no_log=True)
 
@@ -318,7 +318,7 @@ class LoginTest(AuthedTestCase):
 
     def test_register(self):
         self.register("test", "test")
-        user_profile = get_user_profile_by_email('test@humbughq.com')
+        user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(self.client.session['_auth_user_id'], user_profile.id)
 
     def test_logout(self):
@@ -330,7 +330,7 @@ class LoginTest(AuthedTestCase):
         """
         You can log in even if your password contain non-ASCII characters.
         """
-        email = "test@humbughq.com"
+        email = "test@zulip.com"
         password = u"hümbüǵ"
 
         # Registering succeeds.
@@ -353,9 +353,9 @@ class PersonalMessagesTest(AuthedTestCase):
         personals.
         """
         self.register("test", "test")
-        user_profile = get_user_profile_by_email('test@humbughq.com')
+        user_profile = get_user_profile_by_email('test@zulip.com')
         old_messages_count = message_stream_count(user_profile)
-        self.send_message("test@humbughq.com", "test@humbughq.com", Recipient.PERSONAL)
+        self.send_message("test@zulip.com", "test@zulip.com", Recipient.PERSONAL)
         new_messages_count = message_stream_count(user_profile)
         self.assertEqual(new_messages_count, old_messages_count + 1)
 
@@ -375,7 +375,7 @@ class PersonalMessagesTest(AuthedTestCase):
         for user_profile in old_user_profiles:
             old_messages.append(message_stream_count(user_profile))
 
-        self.send_message("test1@humbughq.com", "test1@humbughq.com", Recipient.PERSONAL)
+        self.send_message("test1@zulip.com", "test1@zulip.com", Recipient.PERSONAL)
 
         new_messages = []
         for user_profile in old_user_profiles:
@@ -383,7 +383,7 @@ class PersonalMessagesTest(AuthedTestCase):
 
         self.assertEqual(old_messages, new_messages)
 
-        user_profile = get_user_profile_by_email("test1@humbughq.com")
+        user_profile = get_user_profile_by_email("test1@zulip.com")
         recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
         self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
@@ -446,7 +446,7 @@ class StreamMessagesTest(AuthedTestCase):
         """
         Check that messages sent to a stream reach all subscribers to that stream.
         """
-        subscribers = self.users_subscribed_to_stream(stream_name, "humbughq.com")
+        subscribers = self.users_subscribed_to_stream(stream_name, "zulip.com")
         old_subscriber_messages = []
         for subscriber in subscribers:
             old_subscriber_messages.append(message_stream_count(subscriber))
@@ -501,7 +501,7 @@ class StreamMessagesTest(AuthedTestCase):
 
         # Subscribe everyone to a stream with non-ASCII characters.
         non_ascii_stream_name = u"hümbüǵ"
-        realm = Realm.objects.get(domain="humbughq.com")
+        realm = Realm.objects.get(domain="zulip.com")
         stream, _ = create_stream_if_needed(realm, non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(realm=realm):
             do_add_subscription(user_profile, stream, no_log=True)
@@ -525,7 +525,7 @@ class BotTest(AuthedTestCase):
         self.assert_json_success(result)
 
     def deactivate_bot(self):
-        result = self.client.delete("/json/users/hambot-bot@humbughq.com")
+        result = self.client.delete("/json/users/hambot-bot@zulip.com")
         self.assert_json_success(result)
 
     def test_add_bot(self):
@@ -550,7 +550,7 @@ class BotTest(AuthedTestCase):
         self.assert_num_bots_equal(0)
         self.create_bot()
         self.assert_num_bots_equal(1)
-        result = self.client.delete("/json/users/bogus-bot@humbughq.com")
+        result = self.client.delete("/json/users/bogus-bot@zulip.com")
         self.assert_json_error(result, 'No such user')
         self.assert_num_bots_equal(1)
 
@@ -568,7 +568,7 @@ class BotTest(AuthedTestCase):
         result = self.client.delete("/json/users/hamlet@zulip.com")
         self.assert_json_error(result, 'Insufficient permission')
 
-        result = self.client.delete("/json/users/hambot-bot@humbughq.com")
+        result = self.client.delete("/json/users/hambot-bot@zulip.com")
         self.assert_json_error(result, 'Insufficient permission')
 
         # But we don't actually deactivate the other person's bot.
@@ -1066,7 +1066,7 @@ class SubscriptionAPITest(AuthedTestCase):
         Calling subscribe on behalf of a principal that does not exist
         should return a JSON error.
         """
-        invalid_principal = "rosencrantz-and-guildenstern@humbughq.com"
+        invalid_principal = "rosencrantz-and-guildenstern@zulip.com"
         # verify that invalid_principal actually doesn't exist
         with self.assertRaises(UserProfile.DoesNotExist):
             get_user_profile_by_email(invalid_principal)
@@ -1266,7 +1266,7 @@ class GetOldMessagesTest(AuthedTestCase):
         # We need to susbcribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
-        realm = Realm.objects.get(domain="humbughq.com")
+        realm = Realm.objects.get(domain="zulip.com")
         stream, _ = create_stream_if_needed(realm, "Scotland")
         do_add_subscription(get_user_profile_by_email("hamlet@zulip.com"),
                             stream, no_log=True)
@@ -1419,7 +1419,7 @@ class GetOldMessagesTest(AuthedTestCase):
 
     def test_bad_narrow_nonexistent_email(self):
         self.login("hamlet@zulip.com")
-        self.exercise_bad_narrow_operand("pm-with", ['non-existent-user@humbughq.com'],
+        self.exercise_bad_narrow_operand("pm-with", ['non-existent-user@zulip.com'],
             "Invalid narrow operator: unknown user")
 
     def test_message_without_rendered_content(self):
@@ -1459,7 +1459,7 @@ class InviteUserTest(AuthedTestCase):
         email to be sent.
         """
         self.login("hamlet@zulip.com")
-        invitee = "alice-test@humbughq.com"
+        invitee = "alice-test@zulip.com"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
         self.check_sent_emails([invitee])
@@ -1471,15 +1471,15 @@ class InviteUserTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         # Intentionally use a weird string.
         self.assert_json_success(self.invite(
-"""bob-test@humbughq.com,     carol-test@humbughq.com,
-dave-test@humbughq.com
+"""bob-test@zulip.com,     carol-test@zulip.com,
+dave-test@zulip.com
 
 
-earl-test@humbughq.com""", ["Denmark"]))
+earl-test@zulip.com""", ["Denmark"]))
         for user in ("bob", "carol", "dave", "earl"):
-            self.assertTrue(find_key_by_email("%s-test@humbughq.com" % user))
-        self.check_sent_emails(["bob-test@humbughq.com", "carol-test@humbughq.com",
-                                "dave-test@humbughq.com", "earl-test@humbughq.com"])
+            self.assertTrue(find_key_by_email("%s-test@zulip.com" % user))
+        self.check_sent_emails(["bob-test@zulip.com", "carol-test@zulip.com",
+                                "dave-test@zulip.com", "earl-test@zulip.com"])
 
     def test_missing_or_invalid_params(self):
         """
@@ -1487,7 +1487,7 @@ earl-test@humbughq.com""", ["Denmark"]))
         """
         self.login("hamlet@zulip.com")
         self.assert_json_error(
-            self.client.post("/json/invite_users", {"invitee_emails": "foo@humbughq.com"}),
+            self.client.post("/json/invite_users", {"invitee_emails": "foo@zulip.com"}),
             "You must specify at least one stream for invitees to join.")
 
         for address in ("noatsign.com", "outsideyourdomain@example.net"):
@@ -1501,7 +1501,7 @@ earl-test@humbughq.com""", ["Denmark"]))
         Tests inviting to a non-existent stream.
         """
         self.login("hamlet@zulip.com")
-        self.assert_json_error(self.invite("iago-test@humbughq.com", ["NotARealStream"]),
+        self.assert_json_error(self.invite("iago-test@zulip.com", ["NotARealStream"]),
                 "Stream does not exist: NotARealStream. No invites were sent.")
         self.check_sent_emails([])
 
@@ -1529,7 +1529,7 @@ earl-test@humbughq.com""", ["Denmark"]))
         self.login("hamlet@zulip.com")
         existing = ["hamlet@zulip.com", "othello@zulip.com"]
         return
-        new = ["foo-test@humbughq.com", "bar-test@humbughq.com"]
+        new = ["foo-test@zulip.com", "bar-test@zulip.com"]
 
         result = self.client.post("/json/invite_users",
                                   {"invitee_emails": "\n".join(existing + new),
@@ -1555,7 +1555,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = True`, you can't invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        humbug_realm = Realm.objects.get(domain="humbughq.com")
+        humbug_realm = Realm.objects.get(domain="zulip.com")
         humbug_realm.restricted_to_domain = True
         humbug_realm.save()
 
@@ -1572,7 +1572,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = False`, you can invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        humbug_realm = Realm.objects.get(domain="humbughq.com")
+        humbug_realm = Realm.objects.get(domain="zulip.com")
         humbug_realm.restricted_to_domain = False
         humbug_realm.save()
 
@@ -1587,10 +1587,10 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         Inviting someone to streams with non-ASCII characters succeeds.
         """
         self.login("hamlet@zulip.com")
-        invitee = "alice-test@humbughq.com"
+        invitee = "alice-test@zulip.com"
 
         stream_name = u"hümbüǵ"
-        realm = Realm.objects.get(domain="humbughq.com")
+        realm = Realm.objects.get(domain="zulip.com")
         stream, _ = create_stream_if_needed(realm, stream_name)
 
         # Make sure we're subscribed before inviting someone.
@@ -2034,7 +2034,7 @@ class GetSubscribersTest(AuthedTestCase):
                                "Unable to retrieve subscribers for invite-only stream")
 
 def bugdown_convert(text):
-    return bugdown.convert(text, "humbughq.com")
+    return bugdown.convert(text, "zulip.com")
 
 class BugdownTest(TestCase):
     def common_bugdown_test(self, text, expected):
@@ -2260,7 +2260,7 @@ int x = 3
          ('go to views.org please',                    "<p>go to %s please</p>",            'views.org'),
          ('http://foo.com/blah_blah/',                 "<p>%s</p>",                         'http://foo.com/blah_blah/'),
          ('python class views.py is',                  "<p>python class views.py is</p>",   ''),
-         ('with www www.humbughq.com/foo ok?',         "<p>with www %s ok?</p>",            'www.humbughq.com/foo'),
+         ('with www www.zulip.com/foo ok?',            "<p>with www %s ok?</p>",            'www.zulip.com/foo'),
          ('allow questions like foo.com?',             "<p>allow questions like %s?</p>",   'foo.com'),
          ('"is.gd/foo/ "',                             "<p>\"%s \"</p>",                    'is.gd/foo/'),
          ('end of sentence https://t.co.',             "<p>end of sentence %s.</p>",        'https://t.co'),
@@ -2270,7 +2270,7 @@ int x = 3
          ('http://www.guardian.co.uk/foo/bar',         "<p>%s</p>",                         'http://www.guardian.co.uk/foo/bar'),
          ('from http://supervisord.org/running.html:', "<p>from %s:</p>",                   'http://supervisord.org/running.html'),
          ('http://raven.io',                           "<p>%s</p>",                         'http://raven.io'),
-         ('at https://humbughq.com/api. Check it!',    "<p>at %s. Check it!</p>",           'https://humbughq.com/api'),
+         ('at https://zulip.com/api. Check it!',       "<p>at %s. Check it!</p>",           'https://zulip.com/api'),
          ('goo.gl/abc',                                "<p>%s</p>",                         'goo.gl/abc'),
          ('I spent a year at ucl.ac.uk',               "<p>I spent a year at %s</p>",       'ucl.ac.uk'),
          ('http://a.cc/i/FMXO',                        "<p>%s</p>",                         'http://a.cc/i/FMXO'),
@@ -2367,8 +2367,8 @@ NY-Haskell/events/108707682/?a=co1.1_grp&amp;rv=co1.1\">Haskell NYC Meetup</a></
                 ('[YOLO](http://en.wikipedia.org/wiki/YOLO_(motto))',
                  '<p><a href="http://en.wikipedia.org/wiki/YOLO_(motto)" target="_blank" title="http://en.wikipedia.org/wiki/YOLO_(motto)"\
 >YOLO</a></p>'),
-                ('Sent to http_something_real@humbughq.com', '<p>Sent to <a href="mailto:http_something_real@humbughq.com" \
-title="mailto:http_something_real@humbughq.com">http_something_real@humbughq.com</a></p>'),
+                ('Sent to http_something_real@zulip.com', '<p>Sent to <a href="mailto:http_something_real@zulip.com" \
+title="mailto:http_something_real@zulip.com">http_something_real@zulip.com</a></p>'),
                 ('Sent to othello@zulip.com', '<p>Sent to <a href="mailto:othello@zulip.com" title="mailto:othello@zulip.com">\
 othello@zulip.com</a></p>')
                 )
@@ -2633,7 +2633,7 @@ class UserPresenceTests(AuthedTestCase):
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json['presences'][email][client]['status'], 'idle')
-        # We only want @humbughq.com emails
+        # We only want @zulip.com emails
         for email in json['presences'].keys():
             self.assertEqual(email_to_domain(email), 'zulip.com')
 
