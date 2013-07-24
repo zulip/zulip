@@ -56,7 +56,7 @@ var fake_messages = [
     },
     {
         id: 4,
-        content: "<p>Ok, here's my <a href='https://humbughq.com/static/images/app-screenshots/humbug-desktop-windows.png' target='_blank' title='https://humbughq.com/static/images/app-screenshots/humbug-desktop-windows.png'>latest version</a><div class='message_inline_image'><a href='https://humbughq.com/static/images/app-screenshots/humbug-desktop-windows.png' target='_blank' title='https://humbughq.com/static/images/app-screenshots/humbug-desktop-windows.png'><img src='https://humbughq.com/static/images/app-screenshots/humbug-desktop-windows.png'></a></div> for the Windows app -- thoughts? I'm particularly wondering whether people think the screenshot should be from Windows 7 or some other version.</p>",
+        content: "<p>Ok, here's my <a href='https://zulip.com/static/images/app-screenshots/humbug-desktop-windows.png' target='_blank' title='https://zulip.com/static/images/app-screenshots/humbug-desktop-windows.png'>latest version</a><div class='message_inline_image'><a href='https://zulip.com/static/images/app-screenshots/humbug-desktop-windows.png' target='_blank' title='https://zulip.com/static/images/app-screenshots/humbug-desktop-windows.png'><img src='https://zulip.com/static/images/app-screenshots/humbug-desktop-windows.png'></a></div> for the Windows app -- thoughts? I'm particularly wondering whether people think the screenshot should be from Windows 7 or some other version.</p>",
         is_stream: true,
         sender_full_name: "Waseem Daher",
         avatar_url: "https://secure.gravatar.com/avatar/364a79a57718ede3fadf6dd3623d2e0a",

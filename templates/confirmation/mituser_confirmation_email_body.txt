@@ -8,7 +8,7 @@ MIT Zephyr account.
  1) Create a password and activate your account:
         <{{ activate_url }}>
 
- 2) Follow the instructions on <https://humbughq.com/zephyr> to setup
+ 2) Follow the instructions on <https://zulip.com/zephyr> to setup
  the Zephyr mirroring system.
 
 Feel free to send us a message via the Feedback button under the gear
