@@ -2973,8 +2973,11 @@ table [class*=span],
 }
 
 .dropdown-menu li > a:hover,
-.dropdown-menu li > a:focus,
 .dropdown-submenu:hover > a {
+  text-decoration: none;
+}
+
+.dropdown-menu li > a:focus {
   color: #ffffff;
   text-decoration: none;
   background-color: #0088cc;
@@ -2988,8 +2991,7 @@ table [class*=span],
   filter: progid:dximagetransform.microsoft.gradient(startColorstr='#ff0088cc', endColorstr='#ff0077b3', GradientType=0);
 }
 
-.dropdown-menu .active > a,
-.dropdown-menu .active > a:hover {
+.dropdown-menu .active > a {
   color: #ffffff;
   text-decoration: none;
   background-color: #0088cc;
