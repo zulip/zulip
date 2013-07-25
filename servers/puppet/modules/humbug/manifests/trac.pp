@@ -1,6 +1,7 @@
 class humbug::trac {
   class { 'humbug::base': }
   class { 'humbug::apache': }
+  class { 'humbug::mediawiki': }
 
   $trac_packages = [ "trac", ]
   package { $trac_packages: ensure => "installed" }
