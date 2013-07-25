@@ -1,5 +1,5 @@
 class humbug::postgres-master {
-  class { 'humbug::postgres-common': }
+  class { 'humbug::postgres-appdb': }
 
   $master_packages = [ "xfsprogs", "mdadm", ]
   package { $master_packages: ensure => "installed" }

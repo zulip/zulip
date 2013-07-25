@@ -1,5 +1,5 @@
 class humbug::postgres-slave {
-  class { 'humbug::postgres-common': }
+  class { 'humbug::postgres-appdb': }
 
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
   file { '/etc/sysctl.d/30-postgresql-shm.conf':
