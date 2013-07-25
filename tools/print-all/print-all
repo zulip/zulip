@@ -24,7 +24,7 @@ from os import path
 # (binary files, minified third-party JS).
 
 exclude_trees = """
-zephyr/static/third
+static/third
 servers/puppet/modules/common
 servers/puppet/modules/puppet-common
 servers/puppet/modules/apt

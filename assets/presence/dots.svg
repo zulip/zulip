@@ -219,11 +219,11 @@
        transform="matrix(0,0.04182885,-0.03977476,0,7.8218971,1034.3239)"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90"
-       inkscape:export-filename="/home/keegan/work/humbug/git/humbug/zephyr/static/images/presence/user-active.png" />
+       inkscape:export-filename="/home/keegan/work/humbug/git/humbug/static/images/presence/user-active.png" />
     <g
        id="g5762"
        transform="matrix(0.99431261,0,0,0.99685318,0.36497654,3.3956519)"
-       inkscape:export-filename="/home/keegan/work/humbug/git/humbug/zephyr/static/images/presence/user-away.png"
+       inkscape:export-filename="/home/keegan/work/humbug/git/humbug/static/images/presence/user-away.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90">
       <path
@@ -266,7 +266,7 @@
        id="path5701-5"
        style="fill:none;stroke:#505050;stroke-width:19.18614006;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        sodipodi:type="arc"
-       inkscape:export-filename="/home/keegan/work/humbug/git/humbug/zephyr/static/images/presence/user-idle.png" />
+       inkscape:export-filename="/home/keegan/work/humbug/git/humbug/static/images/presence/user-idle.png" />
     <text
        xml:space="preserve"
        style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial"
@@ -281,6 +281,6 @@
          sodipodi:role="line"
          x="-20.234934"
          y="1108.5381"
-         id="tspan3017">in zephyr/static/images/presence</tspan></text>
+         id="tspan3017">in static/images/presence</tspan></text>
   </g>
 </svg>

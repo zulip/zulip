@@ -3,7 +3,7 @@
 // purpose, but, briefly, it provides an API to keep track of
 // messages that you visit on a "tour."
 
-var message_tour = require('../../../static/js/message_tour.js');
+var message_tour = require('../../../../static/js/message_tour.js');
 var assert = require('assert');
 
 (function test_basic_tour() {

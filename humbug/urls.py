@@ -200,7 +200,7 @@ urlpatterns += patterns('',
 if not settings.DEPLOYED:
     use_prod_static = getattr(settings, 'PIPELINE', False)
     static_root = os.path.join(settings.DEPLOY_ROOT,
-        'prod-static/serve' if use_prod_static else 'zephyr/static')
+        'prod-static/serve' if use_prod_static else 'static')
 
     urlpatterns += patterns('',
         url(r'^static/(?P<path>.*)$', 'django.views.static.serve',

@@ -20,5 +20,5 @@ for i in xrange(1,100):
 
     # Convert to PNG
     subprocess.check_call(['inkscape', '--without-gui', '--export-area-page',
-        '--export-png=../../zephyr/static/images/favicon/favicon-%d.png' % (i,),
+        '--export-png=../../static/images/favicon/favicon-%d.png' % (i,),
         'tmp.svg'])

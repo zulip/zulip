@@ -333,8 +333,8 @@ class Gravatar(markdown.inlinepatterns.Pattern):
             % (gravatar_hash(match.group('email')),))
         return img
 
-path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..',
-                             # This should be zephyr/
+path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
+                             # This should be the root
                              'static', 'third', 'gemoji', 'images', 'emoji', '*.png')
 emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_emoji)]
 

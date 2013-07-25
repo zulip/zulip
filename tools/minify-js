@@ -24,7 +24,7 @@ from django.conf import settings
 
 os.chdir(settings.DEPLOY_ROOT)
 
-STATIC_PATH = 'zephyr/static/'
+STATIC_PATH = 'static/'
 
 # Compile Handlebars templates
 subprocess.check_call(['tools/node', 'node_modules/.bin/handlebars']

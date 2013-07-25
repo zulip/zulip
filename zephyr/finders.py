@@ -1,5 +1,5 @@
 import re
-from django.contrib.staticfiles.finders import AppDirectoriesFinder
+from django.contrib.staticfiles.finders import FileSystemFinder
 
 class ExcludeUnminifiedMixin(object):
     """ Excludes unminified copies of our JavaScript code, templates
@@ -20,5 +20,5 @@ class ExcludeUnminifiedMixin(object):
             if not re.search(excluded, path):
                 yield path, storage
 
-class HumbugFinder(ExcludeUnminifiedMixin, AppDirectoriesFinder):
+class HumbugFinder(ExcludeUnminifiedMixin, FileSystemFinder):
     pass

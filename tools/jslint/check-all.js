@@ -113,7 +113,7 @@ process.argv.forEach(function (filepath) {
     var messages = [];
 
     // We mutate 'options' so be sure to clear everything.
-    if (filepath.indexOf('zephyr/static/js/') !== -1) {
+    if (filepath.indexOf('static/js/') !== -1) {
         // Frontend browser code
         options.browser = true;
         options.node    = false;

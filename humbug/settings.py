@@ -245,6 +245,7 @@ else:
     else:
         STATIC_ROOT = 'prod-static/serve'
 
+STATICFILES_DIRS = ['static/']
 STATIC_HEADER_FILE = 'zephyr/static_header.txt'
 
 # To use minified files in dev, set PIPELINE = True.  For the full

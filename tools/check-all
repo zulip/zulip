@@ -22,7 +22,7 @@ os.chdir(path.join(path.dirname(__file__), '..'))
 # Exclude some directories and files from lint checking
 
 exclude_trees = """
-zephyr/static/third
+static/third
 confirmation
 zephyr/tests/frontend/casperjs
 zephyr/migrations
