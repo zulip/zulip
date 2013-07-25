@@ -13,7 +13,7 @@ from django.core import validators
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.db.models import Q, F
-from django.core.mail import send_mail, mail_admins
+from django.core.mail import send_mail, mail_admins, EmailMessage
 from django.db import transaction
 from zephyr.models import Message, UserProfile, Stream, Subscription, \
     Recipient, Realm, UserMessage, bulk_get_recipients, \
@@ -222,9 +222,11 @@ Company: %s
 # users: %s
 Currently using: %s""" % (name, email, company, count, product,)
     subject = "Interest in Zulip: %s" % (company,)
-    from_email = '"%s" via Web <humbug+signups@humbughq.com>' % (name,)
+    from_email = '"%s" <humbug+signups@humbughq.com>' % (name,)
     to_email = '"Zulip Signups" <humbug+signups@humbughq.com>'
-    send_mail(subject, content, from_email, [to_email])
+    headers = {'Reply-To' : '"%s" <%s>' % (name, email,)}
+    msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
+    msg.send()
     return json_success()
 
 @require_post
