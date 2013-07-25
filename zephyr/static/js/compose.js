@@ -4,7 +4,7 @@ var exports = {};
 var is_composing_message = false;
 var focused_recipient;
 var message_snapshot;
-var empty_subject_placeholder = "(no subject)";
+var empty_subject_placeholder = "(no topic)";
 
 // This function resets an input type="file".  Pass in the
 // jquery object.
