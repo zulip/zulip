@@ -344,9 +344,8 @@ function process_visible_unread_messages(update_cursor) {
     }
 }
 
-function mark_read_between(msg_list, start_id, end_id) {
-    var msgs_in_range = message_range(msg_list, start_id, end_id);
-    var unread_msgs = $.grep(msgs_in_range, unread.message_unread);
+function mark_messages_as_read(msg_list) {
+    var unread_msgs = $.grep(msg_list, unread.message_unread);
     process_read_messages(unread_msgs);
 }
 
@@ -466,11 +465,13 @@ $(function () {
 
         if (event.mark_read && event.previously_selected !== -1) {
             // Mark messages between old pointer and new pointer as read
+            var messages;
             if (event.id < event.previously_selected) {
-                mark_read_between(event.msg_list, event.id, event.previously_selected);
+                messages = message_range(event.msg_list, event.id, event.previously_selected);
             } else {
-                mark_read_between(event.msg_list, event.previously_selected, event.id);
+                messages = message_range(event.msg_list, event.previously_selected, event.id);
             }
+            mark_messages_as_read(messages);
         }
     });
 });
