@@ -270,7 +270,7 @@ PIPELINE_CSS = {
         'source_filenames': (
             'third/bootstrap-notify/css/bootstrap-notify.css',
             'third/spectrum/spectrum.css',
-            'styles/zephyr.css',
+            'styles/zulip.css',
             'styles/pygments.css',
             'styles/thirdparty-fonts.css',
             # We don't want fonts.css on QtWebKit, so its omitted here
@@ -281,7 +281,7 @@ PIPELINE_CSS = {
         'source_filenames': (
             'third/bootstrap-notify/css/bootstrap-notify.css',
             'third/spectrum/spectrum.css',
-            'styles/zephyr.css',
+            'styles/zulip.css',
             'styles/pygments.css',
             'styles/thirdparty-fonts.css',
             'styles/fonts.css',
