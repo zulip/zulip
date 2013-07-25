@@ -1,5 +1,8 @@
 var all_msg_list = new MessageList();
-var home_msg_list = new MessageList('zhome', new narrow.Filter([["in", "home"]]));
+var home_msg_list = new MessageList('zhome',
+    new narrow.Filter([["in", "home"]]),
+    {summarize_read: feature_flags.summarize_read_while_narrowed?'home':false}
+);
 var narrowed_msg_list;
 var current_msg_list = home_msg_list;
 var subject_dict = {};
@@ -267,6 +270,26 @@ function send_queued_flags() {
                    flag:     'read'},
         dataType: 'json',
         success:  on_success});
+
+    if (feature_flags.summarize_read_while_narrowed) {
+        // This assumes success and lets the normal 'read' case manage the queue
+        var send_flag = function (flag) {
+            var marked = _.filter(queued_mark_as_read,
+                function (msg){ return all_msg_list.get(msg).flags.indexOf(flag) !== -1; });
+
+            $.ajax({
+                type:     'POST',
+                url:      '/json/update_message_flags',
+                data:     {messages: JSON.stringify(marked),
+                           op:       'add',
+                           flag:     flag},
+                dataType: 'json'
+            });
+        };
+
+        send_flag('summarize_in_stream');
+        send_flag('summarize_in_home');
+    }
 }
 
 function update_unread_counts() {
@@ -310,10 +333,23 @@ function process_loaded_for_unread(messages) {
 function process_read_messages(messages, options) {
     options = options || {};
     var processed = [];
-    _.each(messages, function (message) {
 
+    _.each(messages, function (message) {
         message.flags = message.flags || [];
         message.flags.push('read');
+
+        if (feature_flags.summarize_read_while_narrowed) {
+            if (narrow.narrowed_by_reply()) {
+                // Narrowed to a topic or PM recipient
+                message.flags.push('summarize_in_stream');
+            }
+
+            if (narrow.active() && !narrow.narrowed_to_search()) {
+                // Narrowed to anything except a search
+                message.flags.push('summarize_in_home');
+            }
+        }
+
         processed.push(message.id);
         message.unread = false;
         unread.process_read_message(message, options);

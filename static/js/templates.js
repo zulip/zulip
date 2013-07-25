@@ -31,6 +31,10 @@ $(function () {
     Handlebars.registerHelper('partial', function (template_name, context) {
         return new Handlebars.SafeString(exports.render(template_name, this));
     });
+
+    Handlebars.registerHelper('plural', function (condition, one, other) {
+        return (condition === 1) ? one : other;
+    });
 });
 
 return exports;

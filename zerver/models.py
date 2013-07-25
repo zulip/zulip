@@ -484,7 +484,8 @@ class UserMessage(models.Model):
     # since this table will be an unpleasant one to do schema changes
     # on later
     archived = models.BooleanField()
-    ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned']
+    ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
+                 'summarize_in_home', 'summarize_in_stream']
     flags = BitField(flags=ALL_FLAGS, default=0)
 
     class Meta:

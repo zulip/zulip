@@ -29,6 +29,22 @@
 <tr class="date_row" data-zid="{{id}}"><td colspan="4">{{{show_date}}}</td></tr>
 {{/if}}
 
+{{#if is_summary}}
+  <tr data-messages="{{message_ids}}" class="recipient_row summary_row">
+  {{#if is_stream}}
+    <td class="message_header_colorblock" style="background-color: {{background_color}};"></td>
+    <td class="message_header message_header_stream right_part">
+        <span class="message_label_clickable"><i class="icon-vector-expand-alt"></i> Expand {{count}} read {{plural count 'message' 'messages'}} on {{display_recipient}} &nbsp;<i class="icon-vector-narrow icon-vector-small"></i><span class="copy-paste-text">&gt;</span> &nbsp;{{subject}}</span>
+    </td>
+  {{else}}
+    <td class="message_header_colorblock message_header_private_message" style="background-color: {{background_color}};"></td>
+    <td class="message_header message_header_private_message right_part dark_background">
+        <span class="message_label_clickable"><i class="icon-vector-expand-alt"></i> Expand {{count}} read {{plural count 'message' 'messages'}} with {{display_reply_to}}</span>
+    </td>
+  {{/if}}
+  </tr>
+{{else}}
+
 {{#include_recipient}}
 {{#if is_stream}}
 <tr zid="{{id}}" class="recipient_row">
@@ -91,6 +107,8 @@
         {{/if}}
     </td>
 </tr>
+
+{{/if}}
 {{/with}}
 {{/each}}
 

@@ -427,8 +427,13 @@ exports.activate = function (operators, opts) {
     if (current_msg_list.selected_id() !== -1) {
         current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top - viewport.scrollTop();
     }
-    narrowed_msg_list = new MessageList('zfilt', current_filter,
-                                        {collapse_messages: ! current_filter.is_search()});
+
+    var can_summarize = feature_flags.summarize_read_while_narrowed
+        && !current_filter.is_search() && !exports.narrowed_by_reply();
+    narrowed_msg_list = new MessageList('zfilt', current_filter, {
+        collapse_messages: ! current_filter.is_search(),
+        summarize_read: can_summarize ? 'stream' : false
+    });
 
 
     current_msg_list = narrowed_msg_list;
@@ -614,6 +619,12 @@ exports.deactivate = function () {
     hashchange.save_narrow();
     compose.update_faded_messages();
 
+    if (feature_flags.summarize_read_while_narrowed) {
+        // needed to replace messages read in the narrow with summary blocks
+        // TODO: avoid a full re-render
+        current_msg_list.rerender();
+    }
+
     $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
 };
 
@@ -703,6 +714,10 @@ exports.narrowed_by_reply = function () {
             (operators.length === 2 &&
              current_filter.operands("stream").length === 1 &&
              current_filter.operands("topic").length === 1));
+};
+
+exports.narrowed_to_search = function () {
+    return (current_filter !== undefined) && current_filter.is_search();
 };
 
 return exports;

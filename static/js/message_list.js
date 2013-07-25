@@ -1,6 +1,10 @@
 /*jslint nomen: true */
 function MessageList(table_name, filter, opts) {
-    _.extend(this, {collapse_messages: true}, opts);
+    _.extend(this, {
+        collapse_messages: true,
+        summarize_read: false
+    }, opts);
+
     this._items = [];
     this._hash = {};
     this.table_name = table_name;
@@ -123,7 +127,7 @@ MessageList.prototype = {
         if (isNaN(id)) {
             blueslip.fatal("Bad message id");
         }
-        if (this.get(id) === undefined) {
+        if (this.get(id) === undefined || this._is_summarized_message(this.get(id))) {
             if (!opts.use_closest) {
                 blueslip.error("Selected message id not in MessageList",
                                {table_name: this.table_name, id: id});
@@ -149,21 +153,29 @@ MessageList.prototype = {
     },
 
     closest_id: function MessageList_closest_id(id) {
-        if (this._items.length === 0) {
+        var items = this._items;
+
+        if (this.summarize_read) {
+            items = _.reject(items, this._is_summarized_message, this);
+        }
+
+        if (items.length === 0) {
             return -1;
         }
-        var closest = util.lower_bound(this._items, id,
+
+        var closest = util.lower_bound(items, id,
                                        function (a, b) {
                                            return a.id < b;
                                        });
-        if (closest === this._items.length
+
+        if (closest === items.length
             || (closest !== 0
-                && (id - this._items[closest - 1].id <
-                    this._items[closest].id - id)))
+                && (id - items[closest - 1].id <
+                    items[closest].id - id)))
         {
             closest = closest - 1;
         }
-        return this._items[closest].id;
+        return items[closest].id;
     },
 
     advance_past_messages: function MessageList_advance_past_messages(msg_ids) {
@@ -207,6 +219,19 @@ MessageList.prototype = {
             }
             self._hash[id] = elem;
         });
+    },
+
+    _is_summarized_message: function (message) {
+        if (message.flags === undefined) {
+            return false;
+        }
+        if (this.summarize_read === 'home') {
+            return message.flags.indexOf('summarize_in_home') !== -1;
+        } else if (this.summarize_read === 'stream' ) {
+            return message.flags.indexOf('summarize_in_stream') !== -1;
+        } else {
+            return false;
+        }
     },
 
     // Number of messages to render at a time
@@ -288,6 +313,9 @@ MessageList.prototype = {
     },
 
     _render: function MessageList__render(messages, where, messages_are_new) {
+        // This function processes messages into chunks with separators between them,
+        // and templates them to be inserted as table rows into the DOM.
+
         if (messages.length === 0 || this.table_name === undefined) {
             return;
         }
@@ -302,6 +330,10 @@ MessageList.prototype = {
 
         var current_group = [];
         var new_message_groups = [];
+
+        var summary_group = {};
+        var has_summary = false;
+        var summary_start_id = 0;
 
         if (where === "bottom") {
             // Remove the trailing bookend; it'll be re-added after we do our rendering
@@ -331,8 +363,42 @@ MessageList.prototype = {
             // Delete the leftover recipient label.
             table.find('.recipient_row:first').remove();
         } else {
-            last_message_id = rows.id(table.find('tr[zid]:last'));
+            var last_row = table.find('tr[zid]:last');
+            last_message_id = rows.id(last_row);
             prev = this.get(last_message_id);
+
+            if (last_row.nextAll('.summary_row').length) {
+                // Don't group with a summary, but don't put separators before the new message
+                prev = _.pick(prev, 'timestamp', 'historical');
+            }
+        }
+
+        function set_template_properties(message) {
+            if (message.is_stream) {
+                message.background_color = subs.get_color(message.stream);
+                message.color_class = subs.get_color_class(message.background_color);
+                message.invite_only = subs.get_invite_only(message.stream);
+            }
+        }
+
+        function finish_summary() {
+            var i;
+
+            if (prev) {
+                prev.include_footer = true;
+            }
+
+            _.each(summary_group, function (summary_row) {
+                summary_row.count = summary_row.messages.length;
+                summary_row.message_ids = _.pluck(summary_row.messages, 'id').join(' ');
+                set_template_properties(summary_row);
+                messages_to_render.push(summary_row);
+                prev = summary_row;
+            });
+
+            has_summary = false;
+            summary_group = {};
+            prev = _.pick(prev, 'timestamp', 'historical');
         }
 
         _.each(messages, function (message) {
@@ -341,6 +407,36 @@ MessageList.prototype = {
             message.include_footer    = false;
 
             add_display_time(message, prev);
+
+            if (has_summary && message.show_date) {
+                finish_summary();
+            }
+
+            if (self._is_summarized_message(message)) {
+                var key = util.recipient_key(message);
+                if (summary_group[key] === undefined) {
+                    // Start building a new summary row for messages from this recipient.
+                    //
+                    // Ugly: handlebars renderer only takes messages. We don't want to modify
+                    // the original message, so we make a fake message based on the real one
+                    // that will trigger the right part of the handlebars template and won't
+                    // show the content, date, etc. from the real message.
+                    summary_group[key] = $.extend({}, message, {
+                        is_summary: true,
+                        include_recipient: true,
+                        include_sender: false,
+                        include_bookend: true,
+                        messages: [message]
+                    });
+                } else {
+                    summary_group[key].messages.push(message);
+                }
+                has_summary = true;
+                prev = message;
+                return;
+            } else if (has_summary) {
+                finish_summary();
+            }
 
             if (util.same_recipient(prev, message) && self.collapse_messages &&
                prev.historical === message.historical && !message.show_date) {
@@ -389,11 +485,7 @@ MessageList.prototype = {
 
             message.small_avatar_url = ui.small_avatar_url(message);
 
-            if (message.is_stream) {
-                message.background_color = subs.get_color(message.stream);
-                message.color_class = subs.get_color_class(message.background_color);
-                message.invite_only = subs.get_invite_only(message.stream);
-            }
+            set_template_properties(message);
 
             message.contains_mention = notifications.speaking_at_me(message);
             message.unread = unread.message_unread(message);
@@ -408,6 +500,10 @@ MessageList.prototype = {
         }
         if (messages_to_render.length === 0) {
             return;
+        }
+
+        if (has_summary) {
+            finish_summary();
         }
 
         if (current_group.length > 0) {

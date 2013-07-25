@@ -511,22 +511,22 @@ function hack_for_floating_recipient_bar() {
     floating_recipient.offset(offset);
 }
 
-function update_message_flag(message, flag_name, set_flag) {
+function update_message_flag(messages, flag_name, set_flag) {
     $.ajax({
         type: 'POST',
         url: '/json/update_message_flags',
-        data: {messages: JSON.stringify([message.id]),
+        data: {messages: JSON.stringify(_.pluck(messages, 'id')),
                op: set_flag ? 'add' : 'remove',
                flag: flag_name},
         dataType: 'json'});
 }
 
 function change_message_collapse(message, collapsed) {
-    update_message_flag(message, "collapsed", collapsed);
+    update_message_flag([message], "collapsed", collapsed);
 }
 
 function change_message_star(message, starred) {
-    update_message_flag(message, "starred", starred);
+    update_message_flag([message], "starred", starred);
 }
 
 function toggle_star(row_id) {
@@ -988,6 +988,36 @@ $(function () {
     // box, but, close enough for now.
     resizehandler();
     hack_for_floating_recipient_bar();
+
+    if (feature_flags.summarize_read_while_narrowed) {
+        $("#main_div").on("click", ".summary_row", function (e) {
+            var target = $(e.target).closest('.summary_row');
+            var message_ids = target.attr('data-messages').split(' ');
+            var messages = _.map(message_ids, function (id) {
+                return all_msg_list.get(id);
+            });
+
+            function remove_flag(flag) {
+                _.each(messages, function (msg){
+                    msg.flags = _.without(msg.flags, flag);
+                });
+                update_message_flag(messages, flag, false);
+            }
+
+            remove_flag('summarize_in_stream');
+            if (!narrow.active()) {
+                remove_flag('summarize_in_home');
+            }
+
+            //TODO: Avoid a full re-render
+            home_msg_list.rerender();
+            if (current_msg_list !== home_msg_list) {
+                current_msg_list.rerender();
+            }
+
+            e.stopImmediatePropagation();
+        });
+    }
 
     $("#main_div").on("click", ".messagebox", function (e) {
         var target = $(e.target);
