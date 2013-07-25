@@ -252,7 +252,7 @@ exports.start = function (msg_type, opts) {
     update_fade();
 
     exports.decorate_stream_bar(opts.stream);
-    $(document).trigger($.Event('compose_started.zephyr', opts));
+    $(document).trigger($.Event('compose_started.zulip', opts));
 };
 
 function abort_xhr () {
@@ -273,7 +273,7 @@ exports.cancel = function () {
     if (message_snapshot !== undefined) {
         $('#restore-draft').show();
     }
-    $(document).trigger($.Event('compose_canceled.zephyr'));
+    $(document).trigger($.Event('compose_canceled.zulip'));
     respond_to_cursor = false;
 };
 
@@ -418,7 +418,7 @@ exports.finish = function () {
     send_message();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
-    $(document).trigger($.Event('compose_finished.zephyr'));
+    $(document).trigger($.Event('compose_finished.zulip'));
     return true;
 };
 

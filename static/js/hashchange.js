@@ -23,7 +23,7 @@ exports.changehash = function (newhash) {
     if (changing_hash) {
         return;
     }
-    $(document).trigger($.Event('hashchange.zephyr'));
+    $(document).trigger($.Event('hashchange.zulip'));
     expected_hash = newhash;
     // Some browsers reset scrollTop when changing the hash to "",
     // so we save and restore it.
@@ -99,7 +99,7 @@ function do_hashchange() {
         return false;
     }
 
-    $(document).trigger($.Event('hashchange.zephyr'));
+    $(document).trigger($.Event('hashchange.zulip'));
 
     // NB: In Firefox, window.location.hash is URI-decoded.
     // Even if the URL bar says #%41%42%43%44, the value here will

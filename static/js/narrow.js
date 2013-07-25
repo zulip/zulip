@@ -487,7 +487,7 @@ exports.activate = function (operators, opts) {
     compose.update_recipient_on_narrow();
     compose.update_faded_messages();
 
-    $(document).trigger($.Event('narrow_activated.zephyr', {msg_list: narrowed_msg_list,
+    $(document).trigger($.Event('narrow_activated.zulip', {msg_list: narrowed_msg_list,
                                                             filter: current_filter,
                                                             trigger: opts.trigger}));
 };
@@ -585,7 +585,7 @@ exports.deactivate = function () {
     hashchange.save_narrow();
     compose.update_faded_messages();
 
-    $(document).trigger($.Event('narrow_deactivated.zephyr', {msg_list: current_msg_list}));
+    $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
 };
 
 exports.restore_home_state = function () {

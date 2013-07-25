@@ -24,7 +24,7 @@ mixpanel.register({user: page_params.email, realm: page_params.domain});
 send_resize_event();
 
 $(function () {
-    $(document).on('compose_started.zephyr', function (event) {
+    $(document).on('compose_started.zulip', function (event) {
         if (! include_in_sample()) {
             return;
         }
@@ -32,7 +32,7 @@ $(function () {
         mixpanel.track('compose started', {type: event.message_type,
                                            trigger: event.trigger});
     });
-    $(document).on('narrow_activated.zephyr', function (event) {
+    $(document).on('narrow_activated.zulip', function (event) {
         if (! include_in_sample()) {
             return;
         }

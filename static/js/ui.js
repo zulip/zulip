@@ -829,7 +829,7 @@ $(function () {
     // If the streams page is shown by clicking directly on the "Streams"
     // link (in the gear menu), then focus the new stream textbox.
     subs_link.on('click', function (e) {
-        $(document).one('subs_page_loaded.zephyr', function (e) {
+        $(document).one('subs_page_loaded.zulip', function (e) {
             $('#create_stream_name').focus().select();
         });
     });
@@ -1117,7 +1117,7 @@ $(function () {
         $(document.body).removeClass('window_blurred');
     });
 
-    $(document).on('message_selected.zephyr', function (event) {
+    $(document).on('message_selected.zulip', function (event) {
         if (current_msg_list !== event.msg_list) {
             return;
         }

@@ -317,7 +317,7 @@ function create_sub(stream_name, attrs) {
     mark_color_used(sub.color);
 
     add_sub(stream_name, sub);
-    $(document).trigger($.Event('sub_obj_created.zephyr', {sub: sub}));
+    $(document).trigger($.Event('sub_obj_created.zulip', {sub: sub}));
     return sub;
 }
 
@@ -398,7 +398,7 @@ function mark_subscribed(stream_name, attrs) {
     // need its unread counts re-calculated
     process_loaded_for_unread(all_msg_list.all());
 
-    $(document).trigger($.Event('subscription_add_done.zephyr', {sub: sub}));
+    $(document).trigger($.Event('subscription_add_done.zulip', {sub: sub}));
 }
 
 function mark_unsubscribed(stream_name) {
@@ -435,14 +435,14 @@ function mark_unsubscribed(stream_name) {
         current_msg_list.update_trailing_bookend();
     }
 
-    $(document).trigger($.Event('subscription_remove_done.zephyr', {sub: sub}));
+    $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
 }
 
 $(function () {
-    $(document).on('subscription_add.zephyr', function (e) {
+    $(document).on('subscription_add.zulip', function (e) {
         mark_subscribed(e.subscription.name, e.subscription);
     });
-    $(document).on('subscription_remove.zephyr', function (e) {
+    $(document).on('subscription_remove.zulip', function (e) {
         mark_unsubscribed(e.subscription.name);
     });
 
@@ -628,7 +628,7 @@ exports.setup_page = function () {
         $('#subscriptions_table').append(rendered);
 
         util.destroy_loading_indicator($('#subs_page_loading_indicator'));
-        $(document).trigger($.Event('subs_page_loaded.zephyr'));
+        $(document).trigger($.Event('subs_page_loaded.zulip'));
     }
 
     function failed_listing(xhr, error) {

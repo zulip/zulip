@@ -453,7 +453,7 @@ $(function () {
                       onIdle: send_pointer_update,
                       keepTracking: true});
 
-    $(document).on('message_selected.zephyr', function (event) {
+    $(document).on('message_selected.zulip', function (event) {
 
         // Narrowing is a temporary view on top of the home view and
         // doesn't affect your pointer in the home view.
@@ -836,12 +836,12 @@ function get_updates_success(data) {
         case 'subscriptions':
             if (event.op === 'add') {
                 $.each(event.subscriptions, function (index, subscription) {
-                    $(document).trigger($.Event('subscription_add.zephyr',
+                    $(document).trigger($.Event('subscription_add.zulip',
                                                 {subscription: subscription}));
                 });
             } else if (event.op === 'remove') {
                 $.each(event.subscriptions, function (index, subscription) {
-                    $(document).trigger($.Event('subscription_remove.zephyr',
+                    $(document).trigger($.Event('subscription_remove.zulip',
                                                 {subscription: subscription}));
                 });
             } else if (event.op === 'update') {

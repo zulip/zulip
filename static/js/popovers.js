@@ -367,7 +367,7 @@ exports.register_click_handlers = function () {
         if (! $('#subscriptions').hasClass('active')) {
             // Go to streams page and once it loads, expand the relevant
             // stream's settings.
-            $(document).one('subs_page_loaded.zephyr', function (event) {
+            $(document).one('subs_page_loaded.zulip', function (event) {
                 subs.show_settings_for(stream);
             });
             ui.change_tab_to('#subscriptions');

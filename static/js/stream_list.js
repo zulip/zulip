@@ -261,7 +261,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 };
 
 $(function () {
-    $(document).on('narrow_activated.zephyr', function (event) {
+    $(document).on('narrow_activated.zulip', function (event) {
         $("ul.filters li").removeClass('active-filter active-subject-filter');
         $('.expanded_subjects').remove();
 
@@ -293,13 +293,13 @@ $(function () {
         }
     });
 
-    $(document).on('narrow_deactivated.zephyr', function (event) {
+    $(document).on('narrow_deactivated.zulip', function (event) {
         $("ul.filters li").removeClass('active-filter active-subject-filter');
         $("ul.expanded_subjects").remove();
         $("#global_filters li[data-name='home']").addClass('active-filter');
     });
 
-    $(document).on('sub_obj_created.zephyr', function (event) {
+    $(document).on('sub_obj_created.zulip', function (event) {
         if (event.sub.subscribed) {
             var stream_name = event.sub.name;
             var li = add_narrow_filter(stream_name, "stream");
@@ -309,7 +309,7 @@ $(function () {
         }
     });
 
-    $(document).on('subscription_add_done.zephyr', function (event) {
+    $(document).on('subscription_add_done.zulip', function (event) {
         var stream_name = event.sub.name;
         var li = add_narrow_filter(stream_name, "stream");
         if (li) {
@@ -318,7 +318,7 @@ $(function () {
         exports.sort_narrow_list();
     });
 
-    $(document).on('subscription_remove_done.zephyr', function (event) {
+    $(document).on('subscription_remove_done.zulip', function (event) {
         var stream_name = event.sub.name;
         exports.remove_narrow_filter(stream_name, 'stream');
         // We need to make sure we resort if the removed sub gets added again

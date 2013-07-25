@@ -104,7 +104,7 @@ exports.maybe_show_edit = function (row, id) {
     }
 };
 
-$(document).on('narrow_deactivated.zephyr', function (event) {
+$(document).on('narrow_deactivated.zulip', function (event) {
     $.each(currently_editing_messages, function (idx, elem) {
         if (current_msg_list.get(idx) !== undefined) {
             var row = rows.get(idx, current_msg_list.table_name);

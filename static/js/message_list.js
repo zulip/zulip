@@ -137,7 +137,7 @@ MessageList.prototype = {
             this._maybe_rerender();
         }
 
-        $(document).trigger($.Event('message_selected.zephyr', opts));
+        $(document).trigger($.Event('message_selected.zulip', opts));
     },
 
     selected_message: function MessageList_selected_message() {
@@ -706,7 +706,7 @@ MessageList.prototype = {
 // doing something.  Be careful, though, if you try to capture
 // mousemove, then you will have to contend with the autoscroll
 // itself generating mousemove events.
-$(document).on('message_selected.zephyr hashchange.zephyr mousewheel', function (event) {
+$(document).on('message_selected.zulip hashchange.zulip mousewheel', function (event) {
     viewport.stop_auto_scrolling();
 });
 }());

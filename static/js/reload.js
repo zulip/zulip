@@ -141,28 +141,28 @@ exports.initiate = function (options) {
         idle_control.cancel();
         idle_control = $(document).idle({'idle': home_timeout,
                                          'onIdle': reload_from_idle});
-        $(document).off('compose_canceled.zephyr compose_finished.zephyr',
+        $(document).off('compose_canceled.zulip compose_finished.zulip',
                         compose_done_handler);
-        $(document).on('compose_started.zephyr', compose_started_handler);
+        $(document).on('compose_started.zulip', compose_started_handler);
     };
     compose_started_handler = function () {
         idle_control.cancel();
         idle_control = $(document).idle({'idle': composing_timeout,
                                          'onIdle': reload_from_idle});
-        $(document).off('compose_started.zephyr', compose_started_handler);
-        $(document).on('compose_canceled.zephyr compose_finished.zephyr',
+        $(document).off('compose_started.zulip', compose_started_handler);
+        $(document).on('compose_canceled.zulip compose_finished.zulip',
                        compose_done_handler);
     };
 
     if (compose.composing()) {
         idle_control = $(document).idle({'idle': composing_timeout,
                                          'onIdle': reload_from_idle});
-        $(document).on('compose_canceled.zephyr compose_finished.zephyr',
+        $(document).on('compose_canceled.zulip compose_finished.zulip',
                        compose_done_handler);
     } else {
         idle_control = $(document).idle({'idle': home_timeout,
                                          'onIdle': reload_from_idle});
-        $(document).on('compose_started.zephyr', compose_started_handler);
+        $(document).on('compose_started.zulip', compose_started_handler);
     }
 };
 

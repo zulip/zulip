@@ -131,10 +131,10 @@ function build_tab_bar() {
 }
 
 $(function () {
-    $(document).on('narrow_activated.zephyr', function (event) {
+    $(document).on('narrow_activated.zulip', function (event) {
         build_tab_bar();
     });
-    $(document).on('narrow_deactivated.zephyr', function (event) {
+    $(document).on('narrow_deactivated.zulip', function (event) {
         build_tab_bar();
     });
 
