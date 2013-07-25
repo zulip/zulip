@@ -235,7 +235,7 @@ function get_suggestion_based_on_query(search_string, operators) {
     return {description: description, search_string: search_string};
 }
 
-function get_topic_suggestions(query, query_operators) {
+function get_topic_suggestions(query_operators) {
     if (query_operators.length === 0) {
         return [];
     }
@@ -441,7 +441,7 @@ exports.initialize = function () {
             suggestions = get_private_suggestions(people, operators);
             result = result.concat(suggestions);
 
-            suggestions = get_topic_suggestions(query, operators);
+            suggestions = get_topic_suggestions(operators);
             result = result.concat(suggestions);
 
             suggestions = get_operator_subset_suggestions(query, operators);
