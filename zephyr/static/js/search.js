@@ -332,12 +332,6 @@ function get_topic_suggestions(query_operators) {
 
     if (guess !== '') {
         topics = $.grep(topics, function (topic) {
-            // Don't suggest a topic if the user has already typed out
-            // the full topic name.
-            var redundant = topic.toLowerCase() === guess.toLowerCase();
-            if (redundant) {
-                return false;
-            }
             return phrase_match(topic, guess);
         });
     }
