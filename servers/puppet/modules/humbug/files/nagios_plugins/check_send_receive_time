@@ -86,7 +86,7 @@ def get_humbug(recipient, max_message_id):
         report("CRITICAL", "Error receiving Humbugs, args were: %s, %s" % (max_message_id, result))
     return result['messages']
 
-if options.site == "staging.humbughq.com":
+if "staging" in options.site:
     # hamlet and othello are default users on staging
     sender = "hamlet@zulip.com"
     sender_key = "dfe1c934d555f4b9538d0d4cfd3069c2"
