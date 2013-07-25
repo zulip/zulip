@@ -1,9 +1,6 @@
 class humbug::git {
   class { 'humbug::base': }
 
-  # We run our wiki off of git.humbughq.com; this may change.
-  class { 'humbug::wiki': }
-
   $git_packages = [ ]
   package { $git_packages: ensure => "installed" }
 
