@@ -385,11 +385,11 @@ function send_message() {
             }
             else {
                 respond_to_cursor = false;
-            }
-            if (page_params.staging) {
-                var new_msg = $.extend({replying_to_message: request}, request);
-                new_msg.content = "";
-                compose.start(new_msg.type, new_msg);
+                if (page_params.staging) {
+                    var new_msg = $.extend({replying_to_message: request}, request);
+                    new_msg.content = "";
+                    compose.start(new_msg.type, new_msg);
+                }
             }
         },
         error: function (xhr, error_type) {
