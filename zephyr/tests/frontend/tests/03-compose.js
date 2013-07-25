@@ -88,6 +88,30 @@ casper.waitUntilVisible('#compose', function () {
     }, 'Stream box focused after narrowing to PMs with a user and pressing `c`');
 });
 
+// Make sure multiple PM recipients display properly.
+var recipients = ['cordelia@zulip.com', 'othello@zulip.com'];
+casper.then(function () {
+    common.keypress(27);  // escape to dismiss compose box
+});
+casper.waitWhileVisible('.message_comp', function () {
+    common.send_many([
+        { recipient: recipients.join(','),
+          content:   'A huddle to check spaces' }]);
+    common.un_narrow();
+});
+casper.waitForText('A huddle to check spaces', function () {
+    casper.clickLabel('A huddle to check spaces');
+});
+casper.waitUntilVisible('#compose', function () {
+    // It may be possible to get the textbox contents with CasperJS,
+    // but it's easier to just evaluate jQuery in page context here.
+    var displayed_recipients = casper.evaluate(function () {
+        return $('#private_message_recipient').val();
+    });
+    casper.test.assertEquals(displayed_recipients, recipients.join(', '),
+        'Recipients are displayed correctly in a huddle reply');
+});
+
 common.then_log_out();
 
 casper.run(function () {

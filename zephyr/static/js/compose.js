@@ -218,7 +218,10 @@ exports.start = function (msg_type, opts) {
 
     compose.stream_name(opts.stream);
     compose.subject(opts.subject);
-    compose.recipient(opts.private_message_recipient);
+
+    // Set the recipients with a space after each comma, so it looks nice.
+    compose.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
+
     // If the user opens the compose box, types some text, and then clicks on a
     // different stream/subject, we want to keep the text in the compose box
     if (opts.content !== undefined) {
