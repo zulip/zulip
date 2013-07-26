@@ -222,12 +222,19 @@ STATIC_URL = '/static/'
 # STATIC_ROOT even for dev servers.  So we only use
 # HumbugStorage when not DEBUG.
 
+# This is the default behavior from Pipeline, but we set it
+# here so that urls.py can read it.
+PIPELINE = not DEBUG
+
 if DEBUG:
     STATICFILES_STORAGE = 'pipeline.storage.PipelineStorage'
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     )
-    STATIC_ROOT = 'prod-static/serve'
+    if PIPELINE:
+        STATIC_ROOT = 'prod-static/serve'
+    else:
+        STATIC_ROOT = 'static/'
 else:
     STATICFILES_STORAGE = 'zephyr.storage.HumbugStorage'
     STATICFILES_FINDERS = (
@@ -239,10 +246,6 @@ else:
         STATIC_ROOT = 'prod-static/serve'
 
 STATIC_HEADER_FILE = 'zephyr/static_header.txt'
-
-# This is the default behavior from Pipeline, but we set it
-# here so that urls.py can read it.
-PIPELINE = not DEBUG
 
 # To use minified files in dev, set PIPELINE = True.  For the full
 # cache-busting behavior, you must also set DEBUG = False.
