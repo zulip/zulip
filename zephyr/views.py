@@ -180,6 +180,9 @@ def principal_to_user_profile(agent, principal):
 
 METHODS = ('GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH')
 
+# Import the Tornado REST views that are used by rest_dispatch
+from zephyr.tornadoviews import get_events_backend, get_updates_backend
+
 @csrf_exempt
 def rest_dispatch(request, **kwargs):
     supported_methods = {}

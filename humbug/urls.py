@@ -176,15 +176,17 @@ v1_api_and_json_patterns = patterns('zephyr.views',
             {'PATCH': 'patch_bot_backend'}),
     url(r'^register$', 'rest_dispatch',
             {'POST': 'api_events_register'}),
+    url(r'^messages/latest$', 'rest_dispatch',
+        {'GET': 'get_updates_backend'}),
+    url(r'^events$', 'rest_dispatch',
+        {'GET': 'get_events_backend'}),
 )
 
 
 urlpatterns += patterns('zephyr.tornadoviews',
     # Tornado views
     url(r'^api/v1/get_messages$',           'api_get_messages'),
-    url(r'^api/v1/messages/latest$',        'rest_get_messages'),
     url(r'^json/get_updates$',              'json_get_updates'),
-    url(r'^api/v1/events$',                 'rest_get_events'),
     url(r'^json/get_events$',               'json_get_events'),
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$',                'notify'),
