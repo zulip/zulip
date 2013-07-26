@@ -64,7 +64,7 @@ exports.update_unread_subjects = function (msg, event) {
 };
 
 exports.process_loaded_messages = function (messages) {
-    $.each(messages, function (idx, message) {
+    _.each(messages, function (message) {
         var unread = exports.message_unread(message);
         if (!unread) {
             return;
@@ -102,7 +102,7 @@ exports.declare_bankruptcy = function () {
 exports.num_unread_current_messages = function () {
     var num_unread = 0;
 
-    $.each(current_msg_list.all(), function (idx, msg) {
+    _.each(current_msg_list.all(), function (msg) {
         if ((msg.id > current_msg_list.selected_id()) && exports.message_unread(msg)) {
             num_unread += 1;
         }
@@ -125,12 +125,12 @@ exports.get_counts = function () {
     res.pm_count = {}; // Hash by email -> count
 
     function only_in_home_view(msgids) {
-        return $.grep(msgids, function (msgid) {
+        return _.filter(msgids, function (msgid) {
             return home_msg_list.get(msgid) !== undefined;
         });
     }
 
-    $.each(unread_counts.stream, function (stream, msgs) {
+    _.each(unread_counts.stream, function (msgs, stream) {
         if (! subs.is_subscribed(stream)) {
             return true;
         }
@@ -144,7 +144,7 @@ exports.get_counts = function () {
 
         if (unread_subjects[stream] !== undefined) {
             res.subject_count[stream] = {};
-            $.each(unread_subjects[stream], function (subject, msgs) {
+            _.each(unread_subjects[stream], function (msgs, subject) {
                 res.subject_count[stream][subject] = Object.keys(msgs).length;
             });
         }
@@ -152,7 +152,7 @@ exports.get_counts = function () {
     });
 
     var pm_count = 0;
-    $.each(unread_counts["private"], function (index, obj) {
+    _.each(unread_counts["private"], function (obj, index) {
         var count = Object.keys(obj).length;
         res.pm_count[index] = count;
         pm_count += count;
