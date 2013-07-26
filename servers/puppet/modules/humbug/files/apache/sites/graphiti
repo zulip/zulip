@@ -1,11 +1,11 @@
 <VirtualHost *:80>
-    ServerName graphiti.humbughq.com
-    Redirect permanent / https://graphiti.humbughq.com/
+    ServerName graphiti.zulip.net
+    Redirect permanent / https://graphiti.zulip.net/
 </VirtualHost>
 
 
 <VirtualHost *:443>
-    ServerName graphiti.humbughq.com
+    ServerName graphiti.zulip.net
 
     SSLEngine on
     SSLCertificateFile /etc/apache2/certs/humbug-self-signed.crt
