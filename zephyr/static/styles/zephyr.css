@@ -127,7 +127,7 @@ li, .table th, .table td {
     border-radius: 25px;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0px rgba(255, 255, 255, 1);
     -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0px rgba(255, 255, 255, 1);
-    -moz-mox-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0px rgba(255, 255, 255, 1);
+    -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6), 0 1px 0px rgba(255, 255, 255, 1);
     position: absolute;
     left: 5px;
     top: 7px;
@@ -1328,7 +1328,7 @@ input.recipient_box {
     border-left: 1px solid #777;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7);
     -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7);
-    -moz-mox-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7);
+    -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7);
     font-family: 'Humbug';
 }
 
@@ -1336,7 +1336,7 @@ input.recipient_box {
 #search_query:focus {
      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7), 0px 0px 8px rgba(255,255,255, 0.3);
     -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7), 0px 0px 8px rgba(255,255,255, 0.3);
-    -moz-mox-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7), 0px 0px 8px rgba(255,255,255, 0.3);
+    -moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 1px 0px rgba(255, 255, 255, 0.7), 0px 0px 8px rgba(255,255,255, 0.3);
 }
 
 #searchbox .search_button, #searchbox .search_button[disabled]:hover {
