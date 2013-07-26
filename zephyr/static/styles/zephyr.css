@@ -1270,12 +1270,17 @@ input.recipient_box {
     width: -moz-max-content;
 }
 
-#navbar-buttons ul.nav .dropdown-toggle {
+#navbar-buttons ul.nav .dropdown-toggle,
+#navbar-buttons ul.nav li.active .dropdown-toggle {
     font-size: 18px;
     margin-top: 4px;
     color: #87cbc0;
     text-shadow: none;
     padding-left: 0px !important;
+    background-color: inherit;
+    box-shadow: inherit;
+    -webkit-box-shadow: inherit;
+    -moz-box-shadow: inherit;
 }
 
 #navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
