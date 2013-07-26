@@ -1,4 +1,9 @@
 var message_tour = (function () {
+// A "message tour" starts with the first narrow from the home view,
+// continues when a user visits several narrows in a row, and ends
+// when they return to the home view.  This module helps us track
+// where a user has visited during the tour.
+
 // For a message tour, we keep track of messages that get visited
 // below our original starting message id.  This helps us with
 // pointer positioning, knowing where the user has visited.
