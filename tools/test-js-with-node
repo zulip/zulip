@@ -1,6 +1,12 @@
 #!/bin/bash -e
 
 cd "$(dirname "$0")"/../zephyr/tests/frontend/node
-node message_tour.js
-node unread.js
-node search.js
+
+NODEJS=$(which nodejs)
+if [ ! -x "$NODEJS" ]; then
+    NODEJS=$(which node)
+fi
+
+$NODEJS message_tour.js
+$NODEJS unread.js
+$NODEJS search.js
