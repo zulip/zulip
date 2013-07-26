@@ -52,9 +52,8 @@ def upload_image_to_s3(
     else:
         headers = None
 
-    key.set_contents_from_filename(
-            user_file.temporary_file_path(),
-            headers=headers)
+    contents = user_file.read()
+    key.set_contents_from_string(contents, headers=headers)
 
 def get_file_info(request, user_file):
     uploaded_file_name = user_file.name
