@@ -2235,3 +2235,34 @@ div.edit_bot {
 #onboarding-checklist i {
     margin-right: 0.25em;
 }
+
+#share-the-love {
+    margin-left: 10px;
+    margin-bottom: 5px;
+    line-height: 18px;
+}
+
+#share-the-love input, #share-the-love p {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+#share-the-love .icon-vector-heart {
+    color: red;
+}
+
+#share-the-love .still-have-invites {
+}
+
+#share-the-love .no-more-invites {
+    display: none;
+}
+
+#share-the-love .alert {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+#referral-form {
+    margin-bottom: 0;
+}

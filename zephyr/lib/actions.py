@@ -6,7 +6,7 @@ from django.contrib.sessions.models import Session
 from zephyr.lib.context_managers import lockfile
 from zephyr.models import Realm, Stream, UserProfile, UserActivity, \
     Subscription, Recipient, Message, UserMessage, valid_stream_name, \
-    DefaultStream, UserPresence, MAX_SUBJECT_LENGTH, \
+    DefaultStream, UserPresence, Referral, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     to_dict_cache_key, get_realm, stringify_message_dict, bulk_get_recipients, \
@@ -16,7 +16,7 @@ from django.db.models import F, Q
 from django.core.exceptions import ValidationError
 from django.utils.importlib import import_module
 from django.template import loader
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.utils.timezone import utc, is_naive
 
 from confirmation.models import Confirmation
@@ -1122,6 +1122,9 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         ret['unsubscribed'] = subs[1]
     if event_types is None or "presence" in event_types:
         ret['presences'] = get_status_dict(user_profile)
+    if event_types is None or "referral" in event_types:
+        ret['referrals'] = {'granted': user_profile.invites_granted,
+                            'used': user_profile.invites_used}
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
@@ -1163,10 +1166,12 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
                     if sub['name'].lower() == event['name'].lower():
                         sub[event['property']] = event['value']
         elif event['type'] == "presence":
-                ret['presences'][event['email']] = event['presence']
+            ret['presences'][event['email']] = event['presence']
         elif event['type'] == "update_message":
             # The client will get the updated message directly
             pass
+        elif event['type'] == "referral":
+            ret['referrals'] = event['referrals']
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 
@@ -1423,3 +1428,28 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         ret_error_data = {'errors': skipped}
 
     return ret_error, ret_error_data
+
+def send_referral_event(user_profile):
+    notice = dict(event=dict(type="referral",
+                             referrals=dict(granted=user_profile.invites_granted,
+                                            used=user_profile.invites_used)),
+                  users=[user_profile.id])
+    tornado_callbacks.send_notification(notice)
+
+def do_refer_friend(user_profile, email):
+    content = """Referrer: "%s" <%s>
+Realm: %s
+Referred: %s""" % (user_profile.full_name, user_profile.email, user_profile.realm.domain, email)
+    subject = "Zulip referral: %s" % (email,)
+    from_email = '"%s" <referral-bot@zulip.com>' % (user_profile.full_name,)
+    to_email = '"Zulip Referrals" <zulip+referrals@zulip.com>'
+    headers = {'Reply-To' : '"%s" <%s>' % (user_profile.full_name, user_profile.email,)}
+    msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
+    msg.send()
+
+    referral = Referral(user_profile=user_profile, email=email)
+    referral.save()
+    user_profile.invites_used += 1
+    user_profile.save(update_fields=['invites_used'])
+
+    send_referral_event(user_profile)

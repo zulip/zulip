@@ -139,6 +139,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # completed.
     onboarding_steps = models.TextField(default=ujson.dumps([]))
 
+    invites_granted = models.IntegerField(default=0)
+    invites_used = models.IntegerField(default=0)
+
     objects = UserManager()
 
     def __repr__(self):
@@ -649,3 +652,8 @@ class StreamColor(models.Model):
 
     subscription = models.ForeignKey(Subscription)
     color = models.CharField(max_length=10)
+
+class Referral(models.Model):
+    user_profile = models.ForeignKey(UserProfile)
+    email = models.EmailField(blank=False, null=False)
+    timestamp = models.DateTimeField(auto_now_add=True, null=False)

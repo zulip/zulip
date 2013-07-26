@@ -567,3 +567,5 @@ ul.icons li [class*=" icon-vector-"] {
 
 .icon-vector-eraser:before               { content: "\f12d"; }
 .icon-vector-external-link-sign:before   { content: "\f14c"; }
+.icon-vector-heart-empty:before          { content: "\f08a"; }
+.icon-vector-heart:before                { content: "\f004"; }

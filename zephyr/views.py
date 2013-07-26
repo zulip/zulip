@@ -33,7 +33,7 @@ from zephyr.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
-    user_email_is_unique, do_invite_users
+    user_email_is_unique, do_invite_users, do_refer_friend
 from zephyr.lib.create_user import random_api_key
 from zephyr.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_inactive, isnt_mit
@@ -579,6 +579,7 @@ def home(request):
         email                 = user_profile.email,
         domain                = user_profile.realm.domain,
         enter_sends           = user_profile.enter_sends,
+        referrals             = register_ret['referrals'],
         needs_tutorial        = needs_tutorial,
         desktop_notifications_enabled =
             user_profile.enable_desktop_notifications,
@@ -2173,3 +2174,13 @@ def json_get_bots(request, user_profile):
         )
 
     return json_success({'bots': map(bot_info, bot_profiles)})
+
+@authenticated_json_post_view
+@has_request_variables
+def json_refer_friend(request, user_profile, email=REQ):
+    if user_profile.invites_granted - user_profile.invites_used <= 0:
+        return json_error("Insufficient invites")
+
+    do_refer_friend(user_profile, email);
+
+    return json_success()

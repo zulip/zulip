@@ -303,24 +303,31 @@ function need_skinny_mode() {
 function get_new_heights() {
     var res = {};
     var viewport_height = viewport.height();
-    var top_navbar_height = $("#top_navbar").height();
+    var top_navbar_height = $("#top_navbar").outerHeight(true);
 
     res.bottom_whitespace_height = viewport_height * 0.4;
 
     res.main_div_min_height = viewport_height - top_navbar_height;
 
     res.bottom_sidebar_height = viewport_height - top_navbar_height
-        - $(".upper_sidebar").height()
+        - $(".upper_sidebar").outerHeight(true)
         - 40;
 
     res.right_sidebar_height =
         viewport_height - top_navbar_height
-        - $("#notifications-area").height()
-        - 14  // margin for right sidebar
-        - 10; // padding on notifications bar
+        - $("#notifications-area").outerHeight(true)
+        - 14;  // margin for right sidebar
 
     res.stream_filters_max_height =
-        res.bottom_sidebar_height * 0.75;
+        res.bottom_sidebar_height
+        - $("#global_filters").outerHeight(true)
+        - $("#streams_header").outerHeight(true)
+        - $("#share-the-love").outerHeight(true)
+        - 10 // stream_filters margin-bottom
+        -  5;// share-the-love margin-bottom
+
+    // Don't let us crush the stream sidebar completely out of view
+    res.stream_filters_max_height = Math.max(40, res.stream_filters_max_height);
 
     res.user_presences_max_height =
         res.right_sidebar_height * 0.90;
