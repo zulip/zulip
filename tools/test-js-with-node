@@ -1,0 +1,4 @@
+#!/bin/bash -e
+
+cd "$(dirname "$0")"/../zephyr/tests/frontend/node
+node test_message_tour.js
