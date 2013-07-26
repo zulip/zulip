@@ -1,11 +1,17 @@
 from __future__ import absolute_import
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from zephyr.lib.actions import process_user_activity_event, \
         process_user_presence_event
 from zephyr.lib.queue import SimpleQueueClient
 import sys
 import signal
+import os
+import traceback
+import ujson
+
+ERROR_LOG_FILE = os.path.join(settings.ERROR_LOG_DIR, "process_user_activity")
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list
@@ -16,6 +22,19 @@ class Command(BaseCommand):
 
         def callback_activity(ch, method, properties, event):
             print " [x] Received activity %r" % (event,)
+            try:
+                process_event(event)
+            except Exception:
+                if not os.path.exists(settings.ERROR_LOG_DIR):
+                    os.mkdir(settings.ERROR_LOG_DIR)
+                # One can parse out just the JSON records from this log format using:
+                #
+                # grep "Error Processing" errors/process_user_activity  | cut -f 2- -d:
+                file(ERROR_LOG_FILE, "a").write(
+                    "Error Processing event: " + ujson.dumps(event) + "\n" +
+                    traceback.format_exc())
+
+        def process_event(event):
             msg_type = event['type']
             if msg_type == 'user_activity':
                 process_user_activity_event(event)

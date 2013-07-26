@@ -444,11 +444,13 @@ CACHES = {
 if DEPLOYED:
     SERVER_LOG_PATH = "/home/humbug/logs/server.log"
     EVENT_LOG_DIR = '/home/humbug/logs/event_log'
+    ERROR_LOG_DIR = '/home/humbug/logs/errors'
     STATS_DIR = '/home/humbug/stats'
     PERSISTENT_QUEUE_FILENAME = "/home/humbug/tornado/event_queues.pickle"
 else:
     EVENT_LOG_DIR = 'event_log'
     SERVER_LOG_PATH = "server.log"
+    ERROR_LOG_DIR = 'errors'
     STATS_DIR = 'stats'
     PERSISTENT_QUEUE_FILENAME = "event_queues.pickle"
 
