@@ -45,4 +45,11 @@ class humbug::postgres-common {
     creates => '/etc/logrotate.d/postgresql-common.disabled',
   }
 
+  exec { "sysctl_p":
+    command   => "/sbin/sysctl -p /etc/sysctl.d/40-postgresql.conf",
+    subscribe => File['/etc/sysctl.d/40-postgresql.conf'],
+    refreshonly => true,
+  }
+
+
 }

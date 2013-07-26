@@ -20,10 +20,4 @@ class humbug::postgres-appdb {
     source => "puppet:///modules/humbug/postgresql/humbug_english.stop",
   }
 
-  exec { "sysctl_p":
-    command   => "/sbin/sysctl -p /etc/sysctl.d/40-postgresql.conf",
-    subscribe => File['/etc/sysctl.d/40-postgresql.conf'],
-    refreshonly => true,
-  }
-
 }

@@ -28,4 +28,21 @@ class humbug::trac {
     target => '/home/humbug/humbug/bots/humbug_trac_config.py',
   }
   # TODO: Add downloading and installing trac at /home/humbug/trac
+
+  file { '/etc/sysctl.d/40-postgresql.conf':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => 644,
+    source   => 'puppet:///modules/humbug/postgresql/40-postgresql.conf.trac',
+  }
+
+  file { "/etc/postgresql/9.1/main/postgresql.conf":
+    require => Package["postgresql-9.1"],
+    ensure => file,
+    owner  => "postgres",
+    group  => "postgres",
+    mode => 644,
+    source => "puppet:///modules/humbug/postgresql/postgresql.conf.trac",
+  }
 }
