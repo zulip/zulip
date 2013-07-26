@@ -24,5 +24,13 @@ exports.render = function (name, arg) {
     return Handlebars.templates[name](arg);
 };
 
+$(function () {
+    // Regular Handlebars partials require pre-registering.  This allows us
+    // to treat any template as a partial.
+    Handlebars.registerHelper('partial', function (template_name, context) {
+        return new Handlebars.SafeString(exports.render(template_name, this));
+    });
+});
+
 return exports;
 }());
