@@ -308,7 +308,8 @@ function process_loaded_for_unread(messages) {
 }
 
 // Takes a list of messages and marks them as read
-function process_read_messages(messages) {
+function process_read_messages(messages, options) {
+    options = options || {};
     var processed = [];
     _.each(messages, function (message) {
 
@@ -316,10 +317,12 @@ function process_read_messages(messages) {
         message.flags.push('read');
         processed.push(message.id);
         message.unread = false;
-        unread.process_read_message(message);
-        home_msg_list.show_message_as_read(message);
-        all_msg_list.show_message_as_read(message);
-        if (narrowed_msg_list) narrowed_msg_list.show_message_as_read(message);
+        unread.process_read_message(message, options);
+        home_msg_list.show_message_as_read(message, options);
+        all_msg_list.show_message_as_read(message, options);
+        if (narrowed_msg_list) {
+            narrowed_msg_list.show_message_as_read(message, options);
+        }
 
     });
 
@@ -357,20 +360,20 @@ function process_visible_unread_messages(update_cursor) {
     }
 }
 
-function mark_messages_as_read(msg_list) {
+function mark_messages_as_read(msg_list, options) {
     var unread_msgs = _.filter(msg_list, unread.message_unread);
-    process_read_messages(unread_msgs);
+    process_read_messages(unread_msgs, options);
 }
 
-function mark_current_list_as_read() {
+function mark_current_list_as_read(options) {
     var unread_msgs = _.filter(current_msg_list.all(), unread.message_unread);
-    process_read_messages(unread_msgs);
+    process_read_messages(unread_msgs, options);
 }
 
-function mark_message_as_read(message) {
+function mark_message_as_read(message, options) {
     // This seems like a rather pointless wrapper, but
     // process_read_messages() should stay as an internal API.
-    process_read_messages([message]);
+    process_read_messages([message], options);
 }
 
 function respond_to_message(opts) {
@@ -489,7 +492,7 @@ $(function () {
             } else {
                 messages = message_range(event.msg_list, event.previously_selected, event.id);
             }
-            mark_messages_as_read(messages);
+            mark_messages_as_read(messages, {from: 'pointer'});
             _.each(messages, function (message) {
                 message_tour.visit(message.id);
             });

@@ -681,8 +681,14 @@ MessageList.prototype = {
         row.find(".message_edit").hide();
     },
 
-    show_message_as_read: function (message) {
-        rows.get(message.id, this.table_name).removeClass('unread');
+    show_message_as_read: function (message, options) {
+        var row = rows.get(message.id, this.table_name);
+        if (options.from === 'pointer' && feature_flags.mark_read_at_bottom) {
+            row.find('.unread_marker').addClass('fast_fade');
+        } else {
+            row.find('.unread_marker').addClass('slow_fade');
+        }
+        row.removeClass('unread');
     },
 
     rerender: function MessageList_rerender() {
