@@ -337,7 +337,7 @@ exports.show_settings_for = function (stream_name) {
 
 function add_sub_to_table(sub) {
     $('#create_stream_row').after(
-        templates.render('subscription', {subscriptions: [sub]}));
+        templates.render('subscription', sub));
     settings_for_sub(sub).collapse('show');
 }
 
@@ -623,9 +623,9 @@ exports.setup_page = function () {
             }
         });
 
-        $('#subscriptions_table tr:gt(0)').remove();
-        $('#subscriptions_table').append(
-            templates.render('subscription', {subscriptions: sub_rows}));
+        $('#subscriptions_table').empty();
+        var rendered = templates.render('subscription_table_body', {subscriptions: sub_rows});
+        $('#subscriptions_table').append(rendered);
 
         util.destroy_loading_indicator($('#subs_page_loading_indicator'));
         $(document).trigger($.Event('subs_page_loaded.zephyr'));
@@ -799,7 +799,7 @@ $(function () {
     populate_subscriptions(page_params.stream_list, true);
     populate_subscriptions(page_params.unsubbed_info, false);
 
-    $("#add_new_subscription").on("submit", function (e) {
+    $("#subscriptions_table").on("submit", "#add_new_subscription", function (e) {
         e.preventDefault();
 
         if (!should_list_all_streams()) {
