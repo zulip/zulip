@@ -171,7 +171,10 @@ function update_fade () {
         focused_recipient.stream = $('#stream').val();
         focused_recipient.subject = $('#subject').val();
     } else {
-        focused_recipient.reply_to = util.normalize_recipients($('#private_message_recipient').val());
+        // Normalize the recipient list so it matches the one used when
+        // adding the message (see add_message_metadata(), zephyr.js).
+        focused_recipient.reply_to = util.normalize_recipients(
+                $('#private_message_recipient').val());
     }
 
     compose.update_faded_messages();

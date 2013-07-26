@@ -215,6 +215,9 @@ exports.same_sender = function util_same_sender(a, b) {
 };
 
 exports.normalize_recipients = function (recipients) {
+    // Converts a string listing emails of message recipients
+    // into a canonical formatting: emails sorted ASCIIbetically
+    // with exactly one comma and no spaces between each.
     recipients = $.map(recipients.split(','), $.trim);
     recipients = $.grep(recipients, function (s) { return s.length>0; });
     recipients.sort();
