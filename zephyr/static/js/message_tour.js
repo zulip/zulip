@@ -44,3 +44,6 @@ exports.get_tour = function () {
 
 return exports;
 }());
+if (typeof module !== 'undefined') {
+    module.exports = message_tour;
+}
