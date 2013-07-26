@@ -432,7 +432,12 @@ function send_pointer_update() {
 function unconditionally_send_pointer_update() {
     if (pointer_update_in_flight) {
         // Keep trying.
-        return unconditionally_send_pointer_update();
+        var deferred = $.Deferred();
+
+        setTimeout(function () {
+            deferred.resolve(unconditionally_send_pointer_update());
+        }, 100);
+        return deferred;
     } else {
         return update_pointer();
     }
