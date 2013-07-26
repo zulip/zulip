@@ -2977,6 +2977,7 @@ table [class*=span],
   text-decoration: none;
 }
 
+.actual-dropdown-menu li > a:hover,
 .dropdown-menu li > a:focus {
   color: #ffffff;
   text-decoration: none;
