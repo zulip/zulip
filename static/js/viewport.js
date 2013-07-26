@@ -48,6 +48,19 @@ exports.at_bottom = function () {
     return bottom + 2 >= window_size;
 };
 
+// This differs from at_bottom in that it only requires the bottom message to
+// be visible, but you may be able to scroll down further.
+exports.bottom_message_visible = function () {
+    var last_row = rows.last_visible();
+    if (last_row.length) {
+        var message_bottom = last_row[0].getBoundingClientRect().bottom;
+        var bottom_of_feed = $("#compose")[0].getBoundingClientRect().top;
+        return bottom_of_feed > message_bottom;
+    } else {
+        return false;
+    }
+};
+
 exports.is_below_visible_bottom = function (offset) {
     return offset > exports.scrollTop() + exports.height() - $("#compose").height();
 };

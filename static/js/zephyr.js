@@ -1,6 +1,7 @@
 var feature_flags = {};
 _.each([
-    'always_open_compose'
+    'always_open_compose',
+    'mark_read_at_bottom'
 ], function (key) {
     feature_flags[key] = page_params.staging;
 });
@@ -338,17 +339,21 @@ function process_read_messages(messages) {
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
 function process_visible_unread_messages(update_cursor) {
-    // For any messages visible on the screen, make sure they have been marked
-    // as read.
     if (! notifications.window_has_focus()) {
         return;
     }
 
-    var visible_messages = viewport.visible_messages();
-    var mark_as_read = _.filter(visible_messages, unread.message_unread);
+    if (feature_flags.mark_read_at_bottom) {
+        if (viewport.bottom_message_visible()) {
+            mark_current_list_as_read();
+        }
+    } else {
+        var visible_messages = viewport.visible_messages();
+        var mark_as_read = _.filter(visible_messages, unread.message_unread);
 
-    if (mark_as_read.length > 0) {
-        process_read_messages(mark_as_read);
+        if (mark_as_read.length > 0) {
+            process_read_messages(mark_as_read);
+        }
     }
 }
 
