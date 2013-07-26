@@ -1,3 +1,10 @@
+var feature_flags = {};
+_.each([
+    'always_open_compose'
+], function (key) {
+    feature_flags[key] = page_params.staging;
+});
+
 var all_msg_list = new MessageList();
 var home_msg_list = new MessageList('zhome', new narrow.Filter([["in", "home"]]));
 var narrowed_msg_list;
