@@ -179,7 +179,7 @@ $(function () {
         });
     });
 
-    $("#bots_list").on("click", "button.update_bot_api_key", function (e) {
+    $("#bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
         var email = $(e.target).data('email');
         $.ajax({
             url: '/json/bots/' + encodeURIComponent(email) + '/api_key/regenerate',
