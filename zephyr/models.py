@@ -416,6 +416,7 @@ class Message(models.Model):
             sender_full_name  = self.sender.full_name,
             sender_short_name = self.sender.short_name,
             sender_domain     = self.sender.realm.domain,
+            sender_id         = self.sender.id,
             type              = display_type,
             display_recipient = display_recipient,
             recipient_id      = self.recipient.id,
