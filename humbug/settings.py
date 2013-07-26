@@ -356,6 +356,7 @@ JS_SPECS = {
             'third/jquery-idle/jquery.idle.js',
             'third/jquery-autosize/jquery.autosize.js',
             'third/spectrum/spectrum.js',
+            'third/underscore/underscore.js',
             ('third/handlebars/handlebars.runtime.js'
                 if PIPELINE
                 else 'third/handlebars/handlebars.js'),
