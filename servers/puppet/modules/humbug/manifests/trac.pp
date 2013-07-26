@@ -15,6 +15,7 @@ class humbug::trac {
   file { "/home/humbug/trac/conf/trac.ini":
     owner  => "humbug",
     group  => "humbug",
+    mode => 644,
     source => "puppet:///modules/humbug/trac.ini",
     require => User['humbug'],
   }
