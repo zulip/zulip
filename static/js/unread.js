@@ -181,4 +181,6 @@ exports.num_unread_for_subject = function (stream, subject) {
 
 return exports;
 }());
-
+if (typeof module !== 'undefined') {
+    module.exports = unread;
+}
