@@ -578,3 +578,6 @@ exports.clear_search = function () {
 return exports;
 
 }());
+if (typeof module !== 'undefined') {
+    module.exports = search;
+}

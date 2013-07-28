@@ -679,3 +679,6 @@ exports.narrowed_by_reply = function () {
 return exports;
 
 }());
+if (typeof module !== 'undefined') {
+    module.exports = narrow;
+}

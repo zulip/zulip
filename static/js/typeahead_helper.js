@@ -189,3 +189,6 @@ exports.sort_recipientbox_typeahead = function (matches) {
 return exports;
 
 }());
+if (typeof module !== 'undefined') {
+    module.exports = typeahead_helper;
+}
