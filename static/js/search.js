@@ -423,55 +423,59 @@ function get_special_filter_suggestions(query, operators) {
     return suggestions;
 }
 
+// We make this a public method to facilitate testing, but it's only
+// used internally.  This becomes the "source" callback for typeahead.
+exports.get_suggestions = function (query) {
+    var result = [];
+    var suggestion;
+    var suggestions;
+
+    // Add an entry for narrow by operators.
+    var operators = narrow.parse(query);
+    suggestion = get_suggestion_based_on_query(query, operators);
+    result = [suggestion];
+
+    suggestions = get_special_filter_suggestions(query, operators);
+    result = result.concat(suggestions);
+
+    suggestions = get_stream_suggestions(operators);
+    result = result.concat(suggestions);
+
+    var people = page_params.people_list;
+
+    suggestions = get_person_suggestions(people, query, 'Narrow to private messages with', 'pm-with');
+    result = result.concat(suggestions);
+
+    suggestions = get_person_suggestions(people, query, 'Narrow to messages sent by', 'sender');
+    result = result.concat(suggestions);
+
+    suggestions = get_private_suggestions(people, operators);
+    result = result.concat(suggestions);
+
+    suggestions = get_topic_suggestions(operators);
+    result = result.concat(suggestions);
+
+    suggestions = get_operator_subset_suggestions(query, operators);
+    result = result.concat(suggestions);
+
+    // We can't send typeahead objects, only strings, so we have to create a map
+    // back to our objects, and we also filter duplicates here.
+    search_object = {};
+    var final_result = [];
+    $.each(result, function (idx, obj) {
+        if (!search_object[obj.search_string]) {
+            search_object[obj.search_string] = obj;
+            final_result.push(obj);
+        }
+    });
+    return $.map(final_result, function (obj) {
+        return obj.search_string;
+    });
+};
+
 exports.initialize = function () {
     $( "#search_query" ).typeahead({
-        source: function (query, process) {
-            var result = [];
-            var suggestion;
-            var suggestions;
-
-            // Add an entry for narrow by operators.
-            var operators = narrow.parse(query);
-            suggestion = get_suggestion_based_on_query(query, operators);
-            result = [suggestion];
-
-            suggestions = get_special_filter_suggestions(query, operators);
-            result = result.concat(suggestions);
-
-            suggestions = get_stream_suggestions(operators);
-            result = result.concat(suggestions);
-
-            var people = page_params.people_list;
-
-            suggestions = get_person_suggestions(people, query, 'Narrow to private messages with', 'pm-with');
-            result = result.concat(suggestions);
-
-            suggestions = get_person_suggestions(people, query, 'Narrow to messages sent by', 'sender');
-            result = result.concat(suggestions);
-
-            suggestions = get_private_suggestions(people, operators);
-            result = result.concat(suggestions);
-
-            suggestions = get_topic_suggestions(operators);
-            result = result.concat(suggestions);
-
-            suggestions = get_operator_subset_suggestions(query, operators);
-            result = result.concat(suggestions);
-
-            // We can't send typeahead objects, only strings, so we have to create a map
-            // back to our objects, and we also filter duplicates here.
-            search_object = {};
-            var final_result = [];
-            $.each(result, function (idx, obj) {
-                if (!search_object[obj.search_string]) {
-                    search_object[obj.search_string] = obj;
-                    final_result.push(obj);
-                }
-            });
-            return $.map(final_result, function (obj) {
-                return obj.search_string;
-            });
-        },
+        source: exports.get_suggestions,
         items: 30,
         helpOnEmptyStrings: true,
         naturalSearch: true,
