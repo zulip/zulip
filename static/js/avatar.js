@@ -29,6 +29,23 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
     var clear_button = $('#bot_avatar_clear_button');
     var upload_button = $('#bot_avatar_upload_button');
 
+    return exports.set_up_file_input(
+        get_file_input,
+        file_name_field,
+        input_error,
+        clear_button,
+        upload_button
+    );
+};
+
+exports.set_up_file_input = function (
+        get_file_input, // function returns a jQuery file input object
+        file_name_field, // jQuery object to show file name
+        input_error, // jQuery object for error text
+        clear_button, // jQuery button to clear last upload choice
+        upload_button // jQuery button to open file dialog
+) {
+
     function accept_bot_avatar_file_input(file) {
         file_name_field.text(file.name);
         input_error.hide();
