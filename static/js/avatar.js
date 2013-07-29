@@ -48,7 +48,7 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
         return false;
     });
 
-    $('#bot_avatar_file_input').change(function (e) {
+    var validate_avatar = function (e) {
         if (e.target.files.length === 0) {
             $('#bot_avatar_file_input_error').hide();
         } else if (e.target.files.length === 1) {
@@ -69,7 +69,9 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
         else {
             $('#bot_avatar_file_input_error').text('Please just upload one file.');
         }
-    });
+    };
+
+    $('#bot_avatar_file_input').change(validate_avatar);
 
     $('#bot_avatar_upload_button').click(function (e) {
         $('#bot_avatar_file_input').trigger('click');
