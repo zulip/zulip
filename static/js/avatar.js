@@ -12,7 +12,7 @@ function is_image_format(file) {
         'image/gif',
         'image/svg+xml'
     ];
-    return $.inArray(type, supported_types) >= 0;
+    return _.indexOf(supported_types, type) >= 0;
 }
 
 exports.set_up_avatar_logic_for_creating_bots = function () {
