@@ -138,18 +138,18 @@ common.wait_for_receive(function () {
     casper.click('*[title="Narrow to stream \\\"Verona\\\""]');
 });
 
-casper.then(function () {
+casper.waitUntilVisible('#zfilt', function () {
     expect_stream();
     un_narrow();
 });
 
-casper.then(function () {
+casper.waitUntilVisible('#zhome', function () {
     expect_home();
     casper.test.info('Narrowing by clicking subject');
     casper.click('*[title="Narrow to stream \\\"Verona\\\", topic \\\"frontend test\\\""]');
 });
 
-casper.then(function () {
+casper.waitUntilVisible('#zfilt', function () {
     expect_stream_subject();
 
     // This time, un-narrow by hitting the search 'x'
@@ -157,14 +157,14 @@ casper.then(function () {
     casper.click('#search_exit');
 });
 
-casper.then(function () {
+casper.waitUntilVisible('#zhome', function () {
     expect_home();
     casper.test.info('Narrowing by clicking personal');
     casper.click('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]');
 });
 
 
-casper.then(function () {
+casper.waitUntilVisible('#zfilt', function () {
     expect_huddle();
 
     // Un-narrow by clicking "Humbug"
@@ -212,7 +212,7 @@ function search_and_check(str, item, check) {
     un_narrow();
 }
 
-casper.then(expect_home);
+casper.waitUntilVisible('#zhome', expect_home);
 
 // Test stream / recipient autocomplete in the search bar
 search_and_check('Verona',   'Narrow to stream',  expect_stream);
