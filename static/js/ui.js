@@ -1374,7 +1374,7 @@ exports.set_presence_list = function (users, presence_info) {
         return people_dict[email] !== undefined;
     });
 
-    var user_info = [my_info].concat($.map(user_emails, info_for));
+    var user_info = [my_info].concat(_.map(user_emails, info_for));
 
     $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
 };

@@ -40,7 +40,7 @@ function make_tab_data() {
 
             if (filter.has_operator("pm-with")) {
                 var emails = filter.operands("pm-with")[0].split(',');
-                var names = $.map(emails, function (email) {
+                var names = _.map(emails, function (email) {
                     if (! people_dict[email]) {
                         return email;
                     }

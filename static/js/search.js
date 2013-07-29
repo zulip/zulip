@@ -52,7 +52,7 @@ function describe(operators) {
         }
     }
 
-    var more_parts = $.map(operators, function (elem) {
+    var more_parts = _.map(operators, function (elem) {
         var operand = elem[1];
         switch (narrow.canonicalize_operator(elem[0])) {
         case 'is':
@@ -154,7 +154,7 @@ function get_stream_suggestions(operators) {
 
     streams = typeahead_helper.sorter(query, streams);
 
-    var objs = $.map(streams, function (stream) {
+    var objs = _.map(streams, function (stream) {
         var prefix = 'Narrow to stream';
         var highlighted_stream = typeahead_helper.highlight_query_in_phrase(query, stream);
         var description = prefix + ' ' + highlighted_stream;
@@ -209,7 +209,7 @@ function get_private_suggestions(all_people, operators) {
     // Take top 15 people, since they're ordered by pm_recipient_count.
     people = people.slice(0, 15);
 
-    var suggestions = $.map(people, function (person) {
+    var suggestions = _.map(people, function (person) {
         var name = highlight_person(query, person);
         var description = 'Narrow to private messages with ' + name;
         var search_string = narrow.unparse([['pm-with', person.email]]);
@@ -235,7 +235,7 @@ function get_person_suggestions(all_people, query, prefix, operator) {
 
     people.sort(typeahead_helper.compare_by_pms);
 
-    var objs = $.map(people, function (person) {
+    var objs = _.map(people, function (person) {
         var name = highlight_person(query, person);
         var description = prefix + ' ' + name;
         var search_string = operator + ':' + person.email;
@@ -323,8 +323,7 @@ function get_topic_suggestions(query_operators) {
     // still slice off enough topics to find matches.
     topics = topics.slice(0, 100);
 
-    // topics = $.map(topics, (t) -> t.subject)
-    topics = $.map(topics, function (topic) {
+    topics = _.map(topics, function (topic) {
         return topic.subject; // "subject" is just the name of the topic
     });
 
@@ -342,7 +341,7 @@ function get_topic_suggestions(query_operators) {
     // care about case.
     topics.sort();
 
-    return $.map(topics, function (topic) {
+    return _.map(topics, function (topic) {
         var topic_operator = ['topic', topic];
         var operators = query_operators.concat([topic_operator]);
         var search_string = narrow.unparse(operators);
@@ -468,7 +467,7 @@ exports.get_suggestions = function (query) {
             final_result.push(obj);
         }
     });
-    return $.map(final_result, function (obj) {
+    return _.map(final_result, function (obj) {
         return obj.search_string;
     });
 };

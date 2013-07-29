@@ -956,7 +956,7 @@ $(function () {
             data: {stream: stream},
             success: function (data) {
                 util.destroy_loading_indicator(indicator_elem);
-                var subscribers = $.map(data.subscribers, function (elem) {
+                var subscribers = _.map(data.subscribers, function (elem) {
                     var person = people_dict[elem];
                     if (person === undefined) {
                         return elem;

@@ -92,14 +92,11 @@ Filter.prototype = {
     },
 
     _canonicalize_operators: function Filter__canonicalize_operators(operators_mixed_case) {
-        var new_operators = [];
-        // We don't use $.map because it flattens returned arrays.
-        $.each(operators_mixed_case, function (idx, operator) {
+        return _.map(operators_mixed_case, function (operator) {
             // We may want to consider allowing mixed-case operators at some point
-            new_operators.push([exports.canonicalize_operator(operator[0]),
-                                subs.canonicalized_name(operator[1])]);
+            return [exports.canonicalize_operator(operator[0]),
+                    subs.canonicalized_name(operator[1])];
         });
-        return new_operators;
     },
 
     // Build a filter function from a list of operators.

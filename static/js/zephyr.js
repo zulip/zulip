@@ -535,7 +535,7 @@ function process_message_for_recent_subjects(message, remove_message) {
 }
 
 var msg_metadata_cache = {};
-function add_message_metadata(message, dummy) {
+function add_message_metadata(message) {
     var cached_msg = msg_metadata_cache[message.id];
     if (cached_msg !== undefined) {
         // Copy the match subject and content over if they exist on
@@ -721,7 +721,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
                 }
             });
 
-            new_messages = $.map(new_messages, add_message_metadata);
+            new_messages = _.map(new_messages, add_message_metadata);
             add_messages(new_messages, msg_list, messages_are_new);
             process_visible_unread_messages();
             compose.update_faded_messages();
@@ -862,7 +862,7 @@ function get_updates_success(data) {
         // server update.  Once that bug is fixed, this
         // should no longer be needed
         messages = deduplicate_messages(messages);
-        messages = $.map(messages, add_message_metadata);
+        messages = _.map(messages, add_message_metadata);
 
         // You must add add messages to home_msg_list BEFORE
         // calling process_loaded_for_unread.
@@ -1024,7 +1024,7 @@ function load_old_messages(opts) {
             narrow.show_empty_narrow_message();
         }
 
-        messages = $.map(messages, add_message_metadata);
+        messages = _.map(messages, add_message_metadata);
 
         // If we're loading more messages into the home view, save them to
         // the all_msg_list as well, as the home_msg_list is reconstructed
