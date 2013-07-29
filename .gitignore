@@ -6,6 +6,7 @@
 /server.log
 /update-prod-static.log
 /prod-static
+/errors/*
 *.sw[po]
 .DS_Store
 event_queues.pickle
