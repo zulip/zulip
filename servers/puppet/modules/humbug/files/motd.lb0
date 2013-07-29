@@ -1,0 +1,15 @@
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+[1;31m
+You are connected to lb0.zulip.net.
+[0m
+To connect to an app server, you need to run:
+    ssh <servername>.zulip.net
+
+Note the [1m.net[0m, not the .com.
+

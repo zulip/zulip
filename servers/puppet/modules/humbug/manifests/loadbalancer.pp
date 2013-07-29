@@ -20,6 +20,15 @@ class humbug::loadbalancer {
     mode => 644,
     source => "puppet:///modules/humbug/nginx/sites-available/loadbalancer",
   }
+
+  file { "/etc/motd":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/humbug/motd.lb0",
+  }
+
   file { '/etc/nginx/sites-enabled/loadbalancer':
     ensure => 'link',
     target => '/etc/nginx/sites-available/loadbalancer',
