@@ -2,7 +2,7 @@ from django.conf import settings
 from django.conf.urls import patterns, url, include
 from django.views.generic import TemplateView, RedirectView
 import os.path
-import zephyr.forms
+import zerver.forms
 
 # NB: There are several other pieces of code which route requests by URL:
 #
@@ -14,79 +14,79 @@ import zephyr.forms
 #   - Likewise for the local dev server in tools/run-dev.py.
 
 urlpatterns = patterns('',
-    url(r'^$', 'zephyr.views.home'),
+    url(r'^$', 'zerver.views.home'),
     url(r'^accounts/login/openid/$', 'django_openid_auth.views.login_begin', name='openid-login'),
-    url(r'^accounts/login/openid/done/$', 'zephyr.views.process_openid_login', name='openid-complete'),
+    url(r'^accounts/login/openid/done/$', 'zerver.views.process_openid_login', name='openid-complete'),
     url(r'^accounts/login/openid/done/$', 'django_openid_auth.views.login_complete', name='openid-complete'),
     # We have two entries for accounts/login to allow reverses on the Django
     # view we're wrapping to continue to function.
-    url(r'^accounts/login/',  'zephyr.views.login_page',         {'template_name': 'zephyr/login.html'}),
-    url(r'^accounts/login/',  'django.contrib.auth.views.login', {'template_name': 'zephyr/login.html'}),
-    url(r'^accounts/logout/', 'zephyr.views.logout_then_login'),
+    url(r'^accounts/login/',  'zerver.views.login_page',         {'template_name': 'zerver/login.html'}),
+    url(r'^accounts/login/',  'django.contrib.auth.views.login', {'template_name': 'zerver/login.html'}),
+    url(r'^accounts/logout/', 'zerver.views.logout_then_login'),
 
     url(r'^accounts/password/reset/$', 'django.contrib.auth.views.password_reset',
         {'post_reset_redirect' : '/accounts/password/reset/done/',
-            'template_name': 'zephyr/reset.html',
+            'template_name': 'zerver/reset.html',
             'email_template_name': 'registration/password_reset_email.txt',
             }),
     url(r'^accounts/password/reset/done/$', 'django.contrib.auth.views.password_reset_done',
-        {'template_name': 'zephyr/reset_emailed.html'}),
+        {'template_name': 'zerver/reset_emailed.html'}),
     url(r'^accounts/password/reset/(?P<uidb36>[0-9A-Za-z]+)-(?P<token>.+)/$', 'django.contrib.auth.views.password_reset_confirm',
-        {'post_reset_redirect' : '/accounts/password/done/', 'template_name': 'zephyr/reset_confirm.html',
-         'set_password_form' : zephyr.forms.LoggingSetPasswordForm}),
+        {'post_reset_redirect' : '/accounts/password/done/', 'template_name': 'zerver/reset_confirm.html',
+         'set_password_form' : zerver.forms.LoggingSetPasswordForm}),
     url(r'^accounts/password/done/$', 'django.contrib.auth.views.password_reset_complete',
-        {'template_name': 'zephyr/reset_done.html'}),
+        {'template_name': 'zerver/reset_done.html'}),
 
 
-    url(r'^activity$', 'zephyr.views.get_activity'),
+    url(r'^activity$', 'zerver.views.get_activity'),
 
     # Registration views, require a confirmation ID.
-    url(r'^accounts/home/', 'zephyr.views.accounts_home'),
+    url(r'^accounts/home/', 'zerver.views.accounts_home'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
-        TemplateView.as_view(template_name='zephyr/accounts_send_confirm.html'), name='send_confirm'),
-    url(r'^accounts/register/', 'zephyr.views.accounts_register'),
+        TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'), name='send_confirm'),
+    url(r'^accounts/register/', 'zerver.views.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', 'confirmation.views.confirm'),
-    url(r'^invite/$', 'zephyr.views.initial_invite_page', name='initial-invite-users'),
+    url(r'^invite/$', 'zerver.views.initial_invite_page', name='initial-invite-users'),
 
     # Portico-styled page used to provide email confirmation of terms acceptance.
-    url(r'^accounts/accept_terms/$', 'zephyr.views.accounts_accept_terms'),
+    url(r'^accounts/accept_terms/$', 'zerver.views.accounts_accept_terms'),
 
     # Terms of service and privacy policy
-    url(r'^terms/$',   TemplateView.as_view(template_name='zephyr/terms.html')),
-    url(r'^privacy/$', TemplateView.as_view(template_name='zephyr/privacy.html')),
+    url(r'^terms/$',   TemplateView.as_view(template_name='zerver/terms.html')),
+    url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html')),
 
     # "About Humbug" information
-    url(r'^what-is-humbug/$', TemplateView.as_view(template_name='zephyr/what-is-humbug.html')),
-    url(r'^new-user/$', TemplateView.as_view(template_name='zephyr/new-user.html')),
-    url(r'^features/$', TemplateView.as_view(template_name='zephyr/features.html')),
+    url(r'^what-is-humbug/$', TemplateView.as_view(template_name='zerver/what-is-humbug.html')),
+    url(r'^new-user/$', TemplateView.as_view(template_name='zerver/new-user.html')),
+    url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
 
     # Landing page, signup form, and nice register URL
-    url(r'^hello/$', TemplateView.as_view(template_name='zephyr/hello.html'),
+    url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'),
                                          name='landing-page'),
-    url(r'^signup/$', TemplateView.as_view(template_name='zephyr/signup.html'),
+    url(r'^signup/$', TemplateView.as_view(template_name='zerver/signup.html'),
                                          name='signup'),
-    url(r'^signup/sign-me-up$', 'zephyr.views.beta_signup_submission', name='beta-signup-submission'),
-    url(r'^register/$', 'zephyr.views.accounts_home', name='register'),
-    url(r'^login/$',  'zephyr.views.login_page', {'template_name': 'zephyr/login.html'}),
+    url(r'^signup/sign-me-up$', 'zerver.views.beta_signup_submission', name='beta-signup-submission'),
+    url(r'^register/$', 'zerver.views.accounts_home', name='register'),
+    url(r'^login/$',  'zerver.views.login_page', {'template_name': 'zerver/login.html'}),
 
     # A registration page that passes through the domain, for totally open realms.
-    url(r'^register/(?P<domain>\S+)/$', 'zephyr.views.accounts_home_with_domain'),
+    url(r'^register/(?P<domain>\S+)/$', 'zerver.views.accounts_home_with_domain'),
 
     # API and integrations documentation
-    url(r'^api/$', TemplateView.as_view(template_name='zephyr/api.html')),
-    url(r'^api/endpoints/$', 'zephyr.views.api_endpoint_docs'),
-    url(r'^integrations/$', TemplateView.as_view(template_name='zephyr/integrations.html')),
-    url(r'^zephyr/$', TemplateView.as_view(template_name='zephyr/zephyr.html')),
-    url(r'^apps$', TemplateView.as_view(template_name='zephyr/apps.html')),
+    url(r'^api/$', TemplateView.as_view(template_name='zerver/api.html')),
+    url(r'^api/endpoints/$', 'zerver.views.api_endpoint_docs'),
+    url(r'^integrations/$', TemplateView.as_view(template_name='zerver/integrations.html')),
+    url(r'^zerver/$', TemplateView.as_view(template_name='zerver/zerver.html')),
+    url(r'^apps$', TemplateView.as_view(template_name='zerver/apps.html')),
 
     # Job postings
-    url(r'^jobs/$', TemplateView.as_view(template_name='zephyr/jobs/index.html')),
-    url(r'^jobs/lead-designer/$', TemplateView.as_view(template_name='zephyr/jobs/lead-designer.html')),
+    url(r'^jobs/$', TemplateView.as_view(template_name='zerver/jobs/index.html')),
+    url(r'^jobs/lead-designer/$', TemplateView.as_view(template_name='zerver/jobs/lead-designer.html')),
 
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt')),
 )
 
-urlpatterns += patterns('zephyr.views',
+urlpatterns += patterns('zerver.views',
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/update_pointer$',           'json_update_pointer'),
     url(r'^json/get_old_messages$',         'json_get_old_messages'),
@@ -143,7 +143,7 @@ urlpatterns += patterns('zephyr.views',
     url(r'^api/v1/external/newrelic$',      'api_newrelic_webhook'),
 )
 
-v1_api_and_json_patterns = patterns('zephyr.views',
+v1_api_and_json_patterns = patterns('zerver.views',
     # JSON format views used by the redesigned API, accept basic auth username:password.
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', 'rest_dispatch',
@@ -189,7 +189,7 @@ v1_api_and_json_patterns = patterns('zephyr.views',
 )
 
 
-urlpatterns += patterns('zephyr.tornadoviews',
+urlpatterns += patterns('zerver.tornadoviews',
     # Tornado views
     url(r'^api/v1/get_messages$',           'api_get_messages'),
     url(r'^json/get_updates$',              'json_get_updates'),

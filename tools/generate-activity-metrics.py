@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import optparse
 from datetime import timedelta, datetime
-from zephyr.lib.timestamp import datetime_to_timestamp
-from zephyr.lib.utils import statsd_key
+from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.utils import statsd_key
 import requests
 
 # Workaround to support the Python-requests 1.0 transition of .json

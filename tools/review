@@ -323,9 +323,9 @@ def run_test_script(repo, tmp_path):
   # Copy over relevant files to $tmp_dir/humbug_test.git
   working_dir = os.getcwd()
   clone = clone_to_tmp(repo, tmp_path)
-  for filename in ['zephyr/fixtures/available-migrations',
-                   'zephyr/fixtures/migration-status',
-                   'zephyr/fixtures/messages.json',
+  for filename in ['zerver/fixtures/available-migrations',
+                   'zerver/fixtures/migration-status',
+                   'zerver/fixtures/messages.json',
                    'event_queues.pickle']:
     if os.path.isfile(filename):
       copyfile(filename, clone.working_tree_dir + "/" + filename)

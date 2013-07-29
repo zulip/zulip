@@ -4,7 +4,7 @@ import platform
 import time
 import re
 
-from zephyr.openid import openid_failure_handler
+from zerver.openid import openid_failure_handler
 
 SERVER_GENERATION = int(time.time())
 
@@ -144,9 +144,9 @@ TEMPLATE_LOADERS = (
 
 MIDDLEWARE_CLASSES = (
     # Our logging middleware should be the first middleware item.
-    'zephyr.middleware.LogRequests',
-    'zephyr.middleware.JsonErrorHandler',
-    'zephyr.middleware.RateLimitMiddleware',
+    'zerver.middleware.LogRequests',
+    'zerver.middleware.JsonErrorHandler',
+    'zerver.middleware.RateLimitMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -158,9 +158,9 @@ AUTHENTICATION_BACKENDS = ('humbug.backends.EmailAuthBackend',
                            'guardian.backends.ObjectPermissionBackend')
 ANONYMOUS_USER_ID = None
 
-AUTH_USER_MODEL = "zephyr.UserProfile"
+AUTH_USER_MODEL = "zerver.UserProfile"
 
-TEST_RUNNER = 'zephyr.tests.Runner'
+TEST_RUNNER = 'zerver.tests.Runner'
 
 ROOT_URLCONF = 'humbug.urls'
 
@@ -179,7 +179,7 @@ INSTALLED_APPS = (
     'confirmation',
     'guardian',
     'pipeline',
-    'zephyr',
+    'zerver',
 )
 
 LOCAL_STATSD = (False)
@@ -236,9 +236,9 @@ if DEBUG:
     else:
         STATIC_ROOT = 'static/'
 else:
-    STATICFILES_STORAGE = 'zephyr.storage.HumbugStorage'
+    STATICFILES_STORAGE = 'zerver.storage.HumbugStorage'
     STATICFILES_FINDERS = (
-        'zephyr.finders.HumbugFinder',
+        'zerver.finders.HumbugFinder',
     )
     if DEPLOYED:
         STATIC_ROOT = '/home/humbug/prod-static'
@@ -246,7 +246,7 @@ else:
         STATIC_ROOT = 'prod-static/serve'
 
 STATICFILES_DIRS = ['static/']
-STATIC_HEADER_FILE = 'zephyr/static_header.txt'
+STATIC_HEADER_FILE = 'zerver/static_header.txt'
 
 # To use minified files in dev, set PIPELINE = True.  For the full
 # cache-busting behavior, you must also set DEBUG = False.
@@ -473,25 +473,25 @@ LOGGING = {
     },
     'filters': {
         'HumbugLimiter': {
-            '()': 'zephyr.lib.logging_util.HumbugLimiter',
+            '()': 'zerver.lib.logging_util.HumbugLimiter',
         },
         'EmailLimiter': {
-            '()': 'zephyr.lib.logging_util.EmailLimiter',
+            '()': 'zerver.lib.logging_util.EmailLimiter',
         },
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
         },
         'nop': {
-            '()': 'zephyr.lib.logging_util.ReturnTrue',
+            '()': 'zerver.lib.logging_util.ReturnTrue',
         },
         'require_really_deployed': {
-            '()': 'zephyr.lib.logging_util.RequireReallyDeployed',
+            '()': 'zerver.lib.logging_util.RequireReallyDeployed',
         },
     },
     'handlers': {
         'humbug_admins': {
             'level':     'ERROR',
-            'class':     'zephyr.handlers.AdminHumbugHandler',
+            'class':     'zerver.handlers.AdminHumbugHandler',
             # For testing the handler delete the next line
             'filters':   ['HumbugLimiter', 'require_debug_false', 'require_really_deployed'],
             'formatter': 'default'
@@ -516,7 +516,7 @@ LOGGING = {
         # to replace the list of filters for mail_admins with 'nop'.
         'mail_admins': {
             'level': 'ERROR',
-            'class': 'zephyr.handlers.HumbugAdminEmailHandler',
+            'class': 'zerver.handlers.HumbugAdminEmailHandler',
             # For testing the handler replace the filters list with just 'nop'
             'filters': ['EmailLimiter', 'require_debug_false', 'require_really_deployed'],
         },
@@ -547,8 +547,8 @@ LOGGING = {
 }
 
 TEMPLATE_CONTEXT_PROCESSORS = (
-    'zephyr.context_processors.add_settings',
-    'zephyr.context_processors.add_metrics',
+    'zerver.context_processors.add_settings',
+    'zerver.context_processors.add_metrics',
 )
 
 ACCOUNT_ACTIVATION_DAYS=7
@@ -600,7 +600,7 @@ if not DEPLOYED:
 
 if DEPLOYED:
     # Filter out user data
-    DEFAULT_EXCEPTION_REPORTER_FILTER = 'zephyr.filters.HumbugExceptionReporterFilter'
+    DEFAULT_EXCEPTION_REPORTER_FILTER = 'zerver.filters.HumbugExceptionReporterFilter'
 
 # We want all temporary uploaded files to be stored on disk.
 

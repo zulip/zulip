@@ -13,9 +13,9 @@ import sys
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "humbug.settings"
 sys.path.append('/home/humbug/humbug-deployments/current')
-sys.path.append('/home/humbug/humbug-deployments/current/zephyr')
+sys.path.append('/home/humbug/humbug-deployments/current/zerver')
 
-from zephyr.models import UserActivity
+from zerver.models import UserActivity
 
 states = {
     "OK": 0,

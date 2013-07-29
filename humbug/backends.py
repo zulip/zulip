@@ -1,4 +1,4 @@
-from zephyr.models import UserProfile, get_user_profile_by_id, \
+from zerver.models import UserProfile, get_user_profile_by_id, \
     get_user_profile_by_email
 
 from openid.consumer.consumer import SUCCESS

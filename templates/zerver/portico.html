@@ -1,0 +1,66 @@
+{% extends "zerver/base.html" %}
+
+{% load compressed %}
+
+{% comment %}
+A base template for stuff like login, register, etc.
+
+Not inside the app itself, but covered by the same structure,
+hence the name.
+{% endcomment %}
+
+    {% block customhead %}
+    {% compressed_css 'portico' %}
+    {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="navbar navbar-inverse">
+    <div class="navbar-inner">
+      <div class="content">
+        <a class="brand" href="/">Zulip</a>
+        <ul class="nav pull-right">
+          <li><a href="/accounts/login/?next=/">Log in</a></li>
+          {# TODO: Can we make this more buttony? #}
+          <li><a href="{% url 'signup' %}">Sign up</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {# This lets people override things if they don't want a giant "Humbug" #}
+  {% block inner_content %}
+  <div class="row-fluid">
+    <div class="content">
+      <div id="portico-area" class="offset2 span10">
+        <div class="title">
+          <a class="title" href="/">Zulip</a>
+          <span class="for_you">{% block for_you %}{% endblock %}</span>
+        </div>
+        {% block portico_content %}
+        {% endblock %}
+      </div>
+    </div>
+  </div>
+  {% endblock %}
+
+  <div class="push"></div>
+</div>
+
+<div class="navbar footer">
+  <div class="content">
+    <ul class="nav pull-right">
+      <li>Humbug © 2013</li>
+      <li><span class="little-bullet">·</span></li>
+      <li><a href="/terms">Legal</a></li>
+      <li>·</li>
+      <li><a href="/accounts/login/?next=/">Log in</a></li>
+      <li>·</li>
+      <li><a href="{% url 'signup' %}">Sign up</a></li>
+      {# We only want the mixpanel badge on the front page #}
+      {% block mixpanel_badge %}
+      {% endblock %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

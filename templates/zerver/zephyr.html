@@ -1,0 +1,113 @@
+{% extends "zerver/portico.html" %}
+
+{# Zephyr Mirroring information page #}
+
+{% block portico_content %}
+<div class="row-fluid">
+  <div class="span8">
+    <h2>Zephyr Mirroring for Zulip</h2>
+
+<p>Thanks for giving Zulip a try!  This page describes how to use
+  Zulip with MIT Zephyr; if you're not a current Zephyr user,
+  you probably want to visit the main Zulip website.</p>
+
+<p>There are a few steps you need to take to setup Zulip for your
+MIT Zephyr account.</p>
+
+<h3>First time setup</h3>
+<ol>
+  <li><p>Create a password and activate your account using the URL in
+  your email.</p></li>
+
+  <li><p>Get your API key from the "Settings" panel and put it in a file in your
+    Athena home directory called <code>~/Private/.humbug-api-key</code>.</p></li>
+
+  <li><p>Copy over your Zephyr subscriptions</p>
+
+    <p>If you would like to copy over all of your subscriptions, please
+    run the following command:<br />
+            <code>/mit/tabbott/humbug/zephyr_mirror.py --sync-subscriptions</code></p>
+
+    <p> NOTE: Zulip does not fully support the equivalent of Barnowl
+    filters.  If you have too many subscriptions (you know who you
+    are), you may want to either manually subscribe to just your main
+    barnowl view or make extensive use of the "Not in home view"
+    option on streams. You can add or remove subscriptions from the
+    Zulip app (or your Zulip home view) by clicking the gear in the
+    upper right-hand corner and then selecting "Streams."</p>
+</ol>
+
+<h3 id="mirror">Running the Zephyr Mirror script</h3>
+    <p>On an Athena dialup
+    (<a href="https://linerva.mit.edu">linerva.mit.edu</a>,
+     <a href="https://athena.dialup.mit.edu">athena.dialup.mit.edu</a>,
+    etc.), run the Zephyr mirroring script inside a screen
+    session.</p>
+
+    <p><strong>IMPORTANT: You must keep the Zephyr mirroring script
+    always running in a session with unexpired Kerberos
+    tickets.</strong>  The script forwards personals you receive on
+    Zephyr to Zulip, and forwards messages you send in Zulip to
+    Zephyr.  <strong>If it is not running, only other Zulip users
+    will receive messages you send from Zulip!</strong>.  The Zulip
+    web application will warn you if the Zephyr mirroring script is
+    not running.</p>
+
+    <p>If you already have Barnowl running in screen/tmux somewhere,
+    you can just run:</p>
+
+    <p><code>/mit/tabbott/humbug/zephyr_mirror.py</code></p>
+
+    <p>inside that screen session.</p>
+
+    <h4>Mirroring without a Barnowl session</h4>
+
+    <p>If you are not already running a screen/tmux for Barnowl, you
+    can setup a screen session to run the Zephyr mirroring script by
+    running the following on a dialup such
+    as <a href="https://linerva.mit.edu">linerva.mit.edu</a>:</p>
+
+      <ol>
+    <li><code>kinit -l7d && aklog</code></li>
+    <li>(Type your password to create 7-day renewable Kerberos tickets)</li>
+    <li><code>env ZEPHYR_SCREEN_CLIENT=/mit/tabbott/humbug/zephyr_mirror.py
+        SCREEN_SESSION_NAME=humbug athrun kchen owl-screen
+    </code></li>
+    </ol>
+
+    <p>This will run the Zephyr Mirroring script inside a screen
+    session, and use `/mit/kchen/bin/cont-renew-notify` to continually
+    renew your Kerberos tickets for up to a week; each week, it will
+    send you a Zephyr/Zulip letting you know that you need to renew
+    your tickets.  To do so, login to the server that you setup the
+    screen session on and use the following procedure:</p>
+
+    <ol>
+    <li>Run <code>screen -x humbug</code> to connect to the mirroring
+        screen session created above.</li>
+    <li>The first time, you'll need to type <code>ctrl-a c</code> to switch to a new terminal in your screen session.</li>
+    <li><code>kinit -l7d && aklog</code></li>
+    <li>(Type type your password to renew your Kerberos tickets).</li>
+    </ol>
+
+    <p>Don't run multiple copies of the Zephyr mirroring script;
+    doing so will result in messages you sent being forwarded to
+    Zephyr twice.</p>
+
+<h3>Using the app</h3>
+    <p>You can use the app by visiting <a href="https://zulip.com/">https://zulip.com</a></p>
+
+<p>If you're interested in mobile apps, we have early alphas available
+as well. You can get the
+  <a href="https://play.google.com/store/apps/details?id=com.humbughq.mobile">
+     Android app</a> immediately or <a href="http://goo.gl/ROOVQ">join
+     our waitlist for the iPhone version</a>.</p>
+
+<p>Feel free to send us a message via the Feedback button under the
+  gear tab within the app if you have any questions or encounter any
+  problems.</p>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "zerver/portico.html" %}
+
+{# New user tutorial standin. #}
+
+{% block portico_content %}
+<div class="row-fluid">
+  <div class="span8" style="font-size: 110%">
+    <h1>Hello, and welcome!</h1>
+    <ul class="breadcrumb">
+      <li><a href="/">Home</a> <span class="divider">/</span></li>
+      <li class="active">New user guide</li>
+    </ul>
+
+    <p>Zulip is a little different than some chat systems you may have already
+      used.<br />
+      Here's what you need to know:</p>
+
+    <ul>
+      <li>Every message has a <b>stream</b> and a <b>topic</b></li>
+      <li>A stream is kind of like a mailing list -- it represents a group of people -- and anyone can <i>subscribe</i> to a stream and start getting traffic there</li>
+      <li>A topic, on the other hand, is what the message is <i>actually about</i></li>
+      <li>(You can, of course, send private messages.)</li>
+      <li>All of these are displayed simultaneously, in an interleaved way, chronologically</li>
+      <li>Time flows down</li>
+    </ul>
+
+    <p>This means we can have a conversation about git, jQuery,
+      fundraising, where to go to lunch, and a message from your commit bot
+      all simultaneously--without it getting unmanageable.</p>
+
+    <h3>Let's take a look</h3>
+    <p>
+    <img class="screenshot" src="/static/images/streams-example.png">
+    </p>
+
+    <p>Here, we have three conversations occurring simultaneously:</p>
+    <ul>
+      <li>One on stream "zulip" with topic "Lunch", about where to go to lunch</li>
+      <li>One on stream "zulip" with topic "Zulip testers", about early beta testers</li>
+      <li>One automated notification on stream "commits", about a commit made to the repository</li>
+    </ul>
+
+    <h3>Some things to know</h3>
+    <ul>
+      <li>"Enter" will start a reply to the message with the blue line by it (in the example above, the one with topic "Zulip testers")</li>
+      <li>When you send the reply, it will appear at the very bottom of the stream (not directly below the message you reply to)</li>
+      <li>We have mobile apps, an API, and integrations with many popular services</li>
+    </ul>
+
+    <h3>You're ready to go!</h3>
+    <p>If you have any feedback, please, <a href="mailto:support@zulip.com">send it our way</a>!</p>
+  </div>
+</div>
+{% endblock %}

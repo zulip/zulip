@@ -1,0 +1,77 @@
+{% extends "zerver/base.html" %}
+
+{# The app itself. #}
+{# Includes some other templates as tabs. #}
+
+{% load compressed %}
+{% load minified_js %}
+
+{% block page_params %}
+{# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
+<script type="text/javascript">
+{% autoescape off %}
+var page_params = {{ page_params }};
+{% endautoescape %}
+</script>
+{% endblock %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+{% if nofontface %}
+{# We can't use @font-face on qtwebkit, so use differently minified CSS #}
+{% compressed_css 'app-fontcompat' %}
+{% else %}
+{% compressed_css 'app' %}
+{% endif %}
+{% minified_js 'app' %}
+
+{% if debug %}
+{% minified_js 'app_debug' %}
+{% endif %}
+
+{% endblock %}
+{% block content %}
+<div id="top-screen" class="screen"></div>
+<div id="bottom-screen" class="screen"></div>
+<div id="left-screen" class="screen"></div>
+<div id="right-screen" class="screen"></div>
+<div id="clear-screen" class="screen"></div>
+
+<div class="container-fluid">
+    {% include "zerver/navbar.html" %}
+    <div class="row-fluid">
+        <div class="span2 hidden-phone">
+          {% include "zerver/left-sidebar.html" %}
+        </div><!--/left sidebar-->
+        <div class="span8 tab-content">
+            <div class="tab-pane active" id="home">
+                {% include "zerver/home.html" %}
+            </div>
+            <div class="tab-pane" id="subscriptions">
+                {% include "zerver/subscriptions.html" %}
+            </div>
+            <div class="tab-pane" id="settings">
+                {% include "zerver/settings.html" %}
+            </div>
+
+            {% if show_debug %}
+            <div class="tab-pane" id="debug">
+                {% include "zerver/debug.html" %}
+            </div>
+            {% endif %}
+
+        </div><!--/tab-content-->
+        <div class="span2 hidden-phone">
+          {% include "zerver/right-sidebar.html" %}
+        </div><!--/right sidebar-->
+    </div><!--/row-->
+    {% include "zerver/keyboard_shortcuts.html" %}
+    {% include "zerver/markdown_help.html" %}
+    {% include "zerver/invite_user.html" %}
+    {% include "zerver/bankruptcy.html" %}
+    {% include "zerver/logout.html" %}
+    {% include "zerver/tutorial_finale.html" %}
+    <div class='notifications top-right'></div>
+</div>
+{% endblock %}

@@ -11,9 +11,9 @@
 .DS_Store
 event_queues.pickle
 stats/
-zephyr/fixtures/available-migrations
-zephyr/fixtures/migration-status
-zephyr/fixtures/test_data1.json
+zerver/fixtures/available-migrations
+zerver/fixtures/migration-status
+zerver/fixtures/test_data1.json
 .kdev4
 humbug.kdev4
 memcached_prefix
