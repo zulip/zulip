@@ -174,7 +174,7 @@ exports.wrap_function = function blueslip_wrap_function(func) {
     }
 
     $.ajaxPrefilter(function (options) {
-        $.each(['success', 'error', 'complete'], function (idx, cb_name) {
+        _.each(['success', 'error', 'complete'], function (cb_name) {
             if (options[cb_name] !== undefined) {
                 options[cb_name] = exports.wrap_function(options[cb_name]);
             }

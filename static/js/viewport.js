@@ -99,7 +99,7 @@ function in_viewport_or_tall(el, top_of_feed, bottom_of_feed) {
 
 function add_to_visible_messages(candidates, visible_messages,
                                  top_of_feed, bottom_of_feed) {
-    $.each(candidates, function (idx, row) {
+    _.each(candidates, function (row) {
         var row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
         if (in_viewport_or_tall(row, top_of_feed, bottom_of_feed)) {

@@ -34,57 +34,35 @@ Filter.prototype = {
     },
 
     public_operators: function Filter_public_operators() {
-        var safe_to_return;
-        safe_to_return = [];
-        $.each(this._operators, function (index, value) {
+        var safe_to_return = _.filter(this._operators, function (value) {
             // Currently just filter out the "in" keyword.
-            if (value[0] !== "in") {
-                safe_to_return.push(value);
-            }
+            return value[0] !== 'in';
         });
-        if (safe_to_return.length !== 0) {
+        if (safe_to_return.length !== 0)
             return safe_to_return;
-        }
     },
 
     operands: function Filter_get_operands(operator) {
-        var result = [];
-        $.each(this._operators, function (idx, elem) {
-            if (elem[0] === operator) {
-                result.push(elem[1]);
-            }
-        });
-        return result;
+        return _.chain(this._operators)
+            .filter(function (elem) { return elem[0] === operator; })
+            .map(function (elem) { return elem[1]; })
+            .value();
     },
 
     has_operand: function Filter_has_operand(operator, operand) {
-        var result = false;
-        $.each(this._operators, function (idx, elem) {
-            if (elem[0] === operator && elem[1] === operand) {
-                result = true;
-            }
+        return _.some(this._operators, function (elem) {
+            return elem[0] === operator && elem[1] === operand;
         });
-        return result;
     },
 
-    has_operator: function Filter_has_operand(operator) {
-        var result = false;
-        $.each(this._operators, function (idx, elem) {
-            if (elem[0] === operator) {
-                result = true;
-            }
+    has_operator: function Filter_has_operator(operator) {
+        return _.some(this._operators, function (elem) {
+            return elem[0] === operator;
         });
-        return result;
     },
 
     is_search: function Filter_is_search() {
-        var retval = false;
-        $.each(this._operators, function (idx, elem) {
-            if (elem[0] === "search") {
-                retval = true;
-                return false;
-            }});
-        return retval;
+        return this.has_operator('search');
     },
 
     can_apply_locally: function Filter_can_apply_locally() {
@@ -248,16 +226,15 @@ function decodeOperand(encoded) {
    might need to support multiple operators of the same type.
 */
 exports.unparse = function (operators) {
-    var parts = [];
-    $.each(operators, function (index, elem) {
+    var parts = _.map(operators, function (elem) {
         var operator = elem[0];
         if (operator === 'search') {
             // Search terms are the catch-all case.
             // All tokens that don't start with a known operator and
             // a colon are glued together to form a search term.
-            parts.push(elem[1]);
+            return elem[1];
         } else {
-            parts.push(elem[0] + ':' + encodeOperand(elem[1].toString().toLowerCase()));
+            return elem[0] + ':' + encodeOperand(elem[1].toString().toLowerCase());
         }
     });
     return parts.join(' ');
@@ -272,7 +249,7 @@ exports.search_string = function () {
 function collect_single(operators) {
     var seen   = {};
     var result = {};
-    $.each(operators, function (index, elem) {
+    _.each(operators, function (elem) {
         var key = elem[0];
         if (seen.hasOwnProperty(key)) {
             delete result[key];
@@ -295,7 +272,7 @@ exports.set_compose_defaults = function (opts) {
 
     // Set the stream, subject, and/or PM recipient if they are
     // uniquely specified in the narrow view.
-    $.each(['stream', 'topic'], function (idx, key) {
+    _.each(['stream', 'topic'], function (key) {
         if (single[key] !== undefined)
             opts[key] = single[key];
     });
@@ -312,7 +289,7 @@ exports.parse = function (str) {
     if (matches === null) {
         return operators;
     }
-    $.each(matches, function (idx, token) {
+    _.each(matches, function (token) {
         var parts, operator;
         if (token.length === 0)
             return;
@@ -405,7 +382,7 @@ exports.activate = function (operators, opts) {
         if (! narrowed_msg_list.empty()) {
             if (opts.select_first_unread) {
                 then_select_id = narrowed_msg_list.last().id;
-                $.each(narrowed_msg_list.all(), function (idx, msg) {
+                _.each(narrowed_msg_list.all(), function (msg) {
                     if (unread.message_unread(msg)) {
                         then_select_id = msg.id;
                         return false;
@@ -465,7 +442,7 @@ exports.activate = function (operators, opts) {
     // above us could change size -- which is problematic, because it
     // could cause us to lose our position. But doing this here, right
     // after showing the table, seems to cause us to win the race.
-    $("tr.message_row").each(ui.process_condensing);
+    _.each($("tr.message_row"), ui.process_condensing);
 
     reset_load_more_status();
     if (! defer_selecting_closest) {

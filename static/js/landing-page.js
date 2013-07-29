@@ -25,7 +25,7 @@ $(function () {
         beforeSubmit: function (arr, form, options) {
             $(".alert-hidden").hide();
             var has_email = false;
-            $.each(arr, function (idx, elt) {
+            _.each(arr, function (elt) {
                 if (elt.name === 'email' && elt.value.length) {
                     has_email = true;
                 }

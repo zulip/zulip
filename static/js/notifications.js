@@ -27,7 +27,7 @@ exports.initialize = function () {
     $(window).focus(function () {
         window_has_focus = true;
 
-        $.each(notice_memory, function (index, notice_mem_entry) {
+        _.each(notice_memory, function (notice_mem_entry) {
            notice_mem_entry.obj.cancel();
         });
 
@@ -276,7 +276,7 @@ function message_is_notifiable(message) {
 }
 
 exports.received_messages = function (messages) {
-    $.each(messages, function (index, message) {
+    _.each(messages, function (message) {
         if (!message_is_notifiable(message)) return;
         if (!unread.message_unread(message)) return;
 

@@ -19,7 +19,7 @@ exports.highlight_with_escaping = function (query, item) {
     // to know the case of the content we're replacing (you can't just use a bolded
     // version of 'query')
     var result = "";
-    $.each(pieces, function (idx, piece) {
+    _.each(pieces, function (piece) {
         if (piece.match(regex)) {
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
         } else {
@@ -32,7 +32,7 @@ exports.highlight_with_escaping = function (query, item) {
 exports.highlight_with_escaping_and_regex = function (regex, item) {
     var pieces = item.split(regex);
     var result = "";
-    $.each(pieces, function (idx, piece) {
+    _.each(pieces, function (piece) {
         if (piece.match(regex)) {
             result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
         } else {
@@ -84,13 +84,13 @@ exports.known_to_typeahead = function (recipient_data) {
 };
 
 exports.update_all_recipients = function (recipients) {
-    $.each(recipients, function (idx, recipient_data) {
+    _.each(recipients, function (recipient_data) {
         add_to_known_recipients(recipient_data, false);
     });
 };
 
 exports.update_your_recipients = function (recipients) {
-    $.each(recipients, function (idx, recipient_data) {
+    _.each(recipients, function (recipient_data) {
         if (recipient_data.email !== page_params.email) {
             add_to_known_recipients(recipient_data, true);
         }
@@ -98,7 +98,7 @@ exports.update_your_recipients = function (recipients) {
 };
 
 exports.remove_recipient = function (recipients) {
-    $.each(recipients, function (idx, recipient_data) {
+    _.each(recipients, function (recipient_data) {
         var name_string = exports.render_person(recipient_data);
         delete exports.private_message_mapped[name_string];
         var arr = exports.private_message_typeahead_list;

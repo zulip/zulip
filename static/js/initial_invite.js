@@ -133,7 +133,7 @@ function is_local_part(value, element) {
 
 function get_invitee_emails() {
     var emails = [];
-    $.each($('.invite_row > input'), function (idx, elem) {
+    _.each($('.invite_row > input'), function (elem) {
         var email = $(elem).val();
 
         if (email === '') {

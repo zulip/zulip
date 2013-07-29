@@ -128,7 +128,7 @@ var fake_messages = [
 
 function disable_event_handlers() {
     $('body').css({'overflow':'hidden'}); // prevents scrolling the feed
-    $.each(["keydown", "keyup", "keypress", "scroll"], function (idx, event_name) {
+    _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
         var existing_events = $(document).data("events")[event_name];
         if (existing_events === undefined) {
             existing_events = [];
@@ -140,7 +140,7 @@ function disable_event_handlers() {
 
 function enable_event_handlers() {
     $('body').css({'overflow':'auto'}); // enables scrolling the feed
-    $.each(["keydown", "keyup", "keypress", "scroll"], function (idx, event_name) {
+    _.each(["keydown", "keyup", "keypress", "scroll"], function (event_name) {
         $(document).data("events")[event_name] = event_handlers[event_name];
     });
 }
@@ -266,7 +266,7 @@ function home() {
     var x = spotlight_message.offset().left;
     var y = spotlight_message.offset().top;
     var height = 0;
-    $.each(messages_in_viewport(), function (idx, row) {
+    _.each(messages_in_viewport(), function (row) {
         height += $(row).height();
     });
 

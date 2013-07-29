@@ -12,9 +12,8 @@ var step_info = {sent_stream_message: {"user_message": "Send a stream message"},
 var onboarding = false;
 
 function update_onboarding_steps() {
-    var step_statuses = [];
-    $.each(steps, function (idx, step) {
-        step_statuses.push([step, step_info[step].status]);
+    var step_statuses = _.map(steps, function (step) {
+        return [step, step_info[step].status];
     });
 
     $.ajax({
@@ -50,7 +49,7 @@ function update_checklist_ui(step) {
 }
 
 exports.set_step_info = function (steps) {
-    $.each(steps, function (idx, step) {
+    _.each(steps, function (step) {
         var step_name = step[0];
         var status = step[1];
         step_info[step_name].status = status;
@@ -121,7 +120,7 @@ function set_up_checklist() {
         return;
     }
 
-    $.each(steps, function (idx, step) {
+    _.each(steps, function (step) {
         var entry = $('<div>');
         if (step_info[step].status) {
             entry.append($("<i class='icon-vector-check'>"));

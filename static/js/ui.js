@@ -218,7 +218,7 @@ function copy_handler(e) {
     window.setTimeout(function () {
         selection = window.getSelection();
         selection.removeAllRanges();
-        $.each(ranges, function (index, range) {
+        _.each(ranges, function (range) {
             selection.addRange(range);
         });
         $('#copytempdiv').remove();
@@ -523,11 +523,11 @@ function toggle_star(row_id) {
 
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
-    $.each([all_msg_list, home_msg_list, narrowed_msg_list], function () {
-        if (this === undefined) {
+    _.each([all_msg_list, home_msg_list, narrowed_msg_list], function (list) {
+        if (list === undefined) {
             return;
         }
-        var row = rows.get(row_id, this.table_name);
+        var row = rows.get(row_id, list.table_name);
         if (row === undefined) {
             // The row may not exist, e.g. if you star a message in the all
             // messages table from a stream that isn't in your home view.
@@ -544,9 +544,9 @@ function toggle_star(row_id) {
 }
 
 function update_gravatars() {
-    $.each($(".gravatar-profile"), function (index, profile) {
+    _.each($(".gravatar-profile"), function (profile) {
         // Avatar URLs will have at least one param, so & is safe here.
-        $(this).attr('src', $(this).attr('src') + '&stamp=' + gravatar_stamp);
+        $(profile).attr('src', $(profile).attr('src') + '&stamp=' + gravatar_stamp);
     });
     gravatar_stamp += 1;
 }
@@ -1397,7 +1397,7 @@ exports.restore_compose_cursor = function () {
         .caret(saved_compose_cursor, saved_compose_cursor);
 };
 
-exports.process_condensing = function (index, elem) {
+exports.process_condensing = function (elem) {
     var content = $(elem).find(".message_content");
     var message = current_msg_list.get(rows.id($(elem)));
     if (content !== undefined && message !== undefined) {

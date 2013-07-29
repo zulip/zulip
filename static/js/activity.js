@@ -113,7 +113,7 @@ function focus_ping() {
         }
 
         // Ping returns the active peer list
-        $.each(data.presences, function (this_email, presence) {
+        _.each(data.presences, function (presence, this_email) {
             if (page_params.email !== this_email) {
                 user_info[this_email] = status_from_timestamp(data.server_timestamp, presence);
             }
@@ -152,7 +152,7 @@ exports.initialize = function () {
 // This rerenders the user sidebar at the end, which can be slow if done too
 // often, so try to avoid calling this repeatedly.
 exports.set_user_statuses = function (users, server_time) {
-    $.each(users, function (email, presence) {
+    _.each(users, function (presence, email) {
         if (email === page_params.email) {
             return;
         }

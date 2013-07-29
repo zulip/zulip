@@ -28,14 +28,14 @@ function print_elapsed_time(name, fun) {
 
 
 /* An IterationProfiler is used for profiling parts of looping
- * constructs (like a for loop or $.each).  You mark sections of the
+ * constructs (like a for loop or _.each).  You mark sections of the
  * iteration body and the IterationProfiler will sum the costs of those
  * sections over all iterations.
  *
  * Example:
  *
  *     var ip = new IterationProfiler();
- *     $.each(myarray, function (idx, elem) {
+ *     _.each(myarray, function (elem) {
  *         ip.iteration_start();
  *
  *         cheap_op(elem);

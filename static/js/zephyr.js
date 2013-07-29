@@ -81,7 +81,7 @@ function update_person(person) {
 }
 
 $(function () {
-    $.each(page_params.people_list, function (idx, person) {
+    _.each(page_params.people_list, function (person) {
         people_dict[person.email] = person;
         person.pm_recipient_count = 0;
     });
@@ -275,7 +275,7 @@ function update_unread_counts() {
 }
 
 function mark_all_as_read(cont) {
-    $.each(all_msg_list.all(), function (idx, msg) {
+    _.each(all_msg_list.all(), function (msg) {
         msg.flags = msg.flags || [];
         msg.flags.push('read');
     });
@@ -301,7 +301,7 @@ function process_loaded_for_unread(messages) {
 // Takes a list of messages and marks them as read
 function process_read_messages(messages) {
     var processed = [];
-    $.each(messages, function (idx, message) {
+    _.each(messages, function (message) {
 
         message.flags = message.flags || [];
         message.flags.push('read');
@@ -477,7 +477,7 @@ $(function () {
                 messages = message_range(event.msg_list, event.previously_selected, event.id);
             }
             mark_messages_as_read(messages);
-            $.each(messages, function (idx, message) {
+            _.each(messages, function (message) {
                 message_tour.visit(message.id);
             });
         }
@@ -599,7 +599,7 @@ function add_message_metadata(message) {
     }
 
     // Add new people involved in this message to the people list
-    $.each(involved_people, function (idx, person) {
+    _.each(involved_people, function (person) {
         // Do the hasOwnProperty() call via the prototype to avoid problems
         // with keys like "hasOwnProperty"
         if (people_dict[person.email] === undefined) {
@@ -626,7 +626,7 @@ function add_messages_helper(messages, msg_list, predicate, messages_are_new) {
     if (msg_list.selected_id() === -1 && msg_list.empty()) {
         bottom_messages = _.filter(messages, predicate);
     } else {
-        $.each(messages, function (idx, msg) {
+        _.each(messages, function (msg) {
             // Filter out duplicates that are already in msg_list, and all messages
             // that fail our filter predicate
             if (! (msg_list.get(msg.id) === undefined && predicate(msg))) {
@@ -695,7 +695,7 @@ function deduplicate_messages(messages) {
 
 function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
     var ids = [];
-    $.each(messages, function (idx, elem) {
+    _.each(messages, function (elem) {
         ids.push(elem.id);
     });
 
@@ -713,7 +713,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             }
 
             var new_messages = [];
-            $.each(messages, function (idx, elem) {
+            _.each(messages, function (elem) {
                 if (data.messages.hasOwnProperty(elem.id)) {
                     elem.match_subject = data.messages[elem.id].match_subject;
                     elem.match_content = data.messages[elem.id].match_content;
@@ -739,7 +739,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 }
 
 function update_messages(events) {
-    $.each(events, function (idx, event) {
+    _.each(events, function (event) {
         var msg = all_msg_list.get(event.message_id);
         if (msg === undefined) {
             return;
@@ -802,7 +802,7 @@ function get_updates_success(data) {
         events_stored_during_tutorial = [];
     }
 
-    $.each(data.events, function (idx, event) {
+    _.each(data.events, function (event) {
         get_updates_params.last_event_id = Math.max(get_updates_params.last_event_id,
                                                     event.id);
 
@@ -835,12 +835,12 @@ function get_updates_success(data) {
             break;
         case 'subscriptions':
             if (event.op === 'add') {
-                $.each(event.subscriptions, function (index, subscription) {
+                _.each(event.subscriptions, function (subscription) {
                     $(document).trigger($.Event('subscription_add.zulip',
                                                 {subscription: subscription}));
                 });
             } else if (event.op === 'remove') {
-                $.each(event.subscriptions, function (index, subscription) {
+                _.each(event.subscriptions, function (subscription) {
                     $(document).trigger($.Event('subscription_remove.zulip',
                                                 {subscription: subscription}));
                 });

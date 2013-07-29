@@ -28,7 +28,7 @@ $(function () {
         success: function (data) {
             $('#bot_table_error').hide();
 
-            $.each(data.bots, function (idx, elem) {
+            _.each(data.bots, function (elem) {
                 add_bot_row(elem.full_name, elem.username, elem.avatar_url, elem.api_key);
             });
         },

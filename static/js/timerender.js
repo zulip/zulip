@@ -81,7 +81,7 @@ exports.update_timestamps = function () {
         var to_process = update_list;
         update_list = [];
 
-        $.each(to_process, function (idx, elem) {
+        _.each(to_process, function (elem) {
             var id = elem[0];
             var element = document.getElementById(id);
             // The element might not exist any more (because it

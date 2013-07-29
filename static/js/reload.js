@@ -58,7 +58,7 @@ $(function () {
     fragment = fragment.replace(/^reload:/, "");
     var keyvals = fragment.split("+");
     var vars = {};
-    $.each(keyvals, function (idx, str) {
+    _.each(keyvals, function (str) {
         var pair = str.split("=");
         vars[pair[0]] = decodeURIComponent(pair[1]);
     });

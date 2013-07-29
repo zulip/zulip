@@ -44,7 +44,7 @@ exports.operators_to_hash = function (operators) {
 
     if (operators !== undefined) {
         hash = '#narrow';
-        $.each(operators, function (idx, elem) {
+        _.each(operators, function (elem) {
             hash += '/' + hashchange.encodeHashComponent(elem[0])
                   + '/' + hashchange.encodeHashComponent(elem[1]);
         });

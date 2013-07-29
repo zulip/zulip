@@ -63,21 +63,16 @@ function mark_color_used(color) {
 }
 
 exports.subscribed_streams = function () {
-    // TODO: Object.keys() compatibility
-    var list = [];
-    $.each(Object.keys(stream_info), function (idx, key) {
-        var sub = stream_info[key];
-        if (sub.subscribed) {
-            list.push(sub.name);
-        }
-    });
-    list.sort();
-    return list;
+    return _.chain(stream_info)
+        .values()
+        .filter(function (sub) { return sub.subscribed; })
+        .map(function (sub) { return sub.name; })
+        .value();
 };
 
 exports.maybe_toggle_all_messages = function () {
     var show_all_messages = false;
-    $.each(stream_info, function (idx, stream) {
+    _.each(stream_info, function (stream) {
         if (!stream.in_home_view) {
             show_all_messages = true;
             return false;
@@ -108,10 +103,12 @@ function update_table_stream_color(table, stream_name, color) {
             .addClass(color_class);
     }
 
-    $.each($("#floating_recipient_bar").add(table).find(".stream_label"), function () {
-        if ($(this).text() === stream_name) {
-            fixup($(this).parent("td").parent("tr").prev("tr").nextUntil(".bookend_tr")
-                         .children(".messagebox_colorblock,.message_header_colorblock"));
+    var stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
+    _.each(stream_labels, function (label) {
+        if ($(label).text() === stream_name) {
+            fixup($(label).parent("td").parent("tr").prev("tr")
+                          .nextUntil(".bookend_tr")
+                          .children(".messagebox_colorblock,.message_header_colorblock"));
         }
     });
 }
@@ -586,7 +583,7 @@ exports.setup_page = function () {
         /* arguments are [ "success", statusText, jqXHR ] */
         if (stream_data.length > 2 && stream_data[2]) {
             var stream_response = JSON.parse(stream_data[2].responseText);
-            $.each(stream_response.streams, function (idx, stream) {
+            _.each(stream_response.streams, function (stream) {
                 all_streams.push(stream.name);
             });
         }
@@ -597,8 +594,8 @@ exports.setup_page = function () {
 
         // All streams won't contain invite-only streams,
         // or anything at all if should_list_all_streams() is false
-        $.each(our_subs, function (idx, stream) {
-            if (all_streams.indexOf(stream.name) === -1) {
+        _.each(our_subs, function (stream) {
+            if (_.indexOf(all_streams, stream.name) === -1) {
                 all_streams.push(stream.name);
             }
         });
@@ -776,7 +773,7 @@ function people_cmp(person1, person2) {
 
 function show_new_stream_modal() {
     var people_minus_you_and_maybe_humbuggers = [];
-    $.each(page_params.people_list, function (idx, person) {
+    _.each(page_params.people_list, function (person) {
         if (person.email !== page_params.email &&
                (page_params.domain === "zulip.com" ||
                    person.email.split('@')[1] !== "zulip.com"
@@ -820,10 +817,12 @@ $(function () {
     $("#stream_creation_form").on("submit", function (e) {
         e.preventDefault();
         var stream = $.trim($("#create_stream_name").val());
-        var principals = [];
-        $("#stream_creation_form input:checkbox[name=user]:checked").each(function () {
-            principals.push($(this).val());
-        });
+        var principals = _.map(
+            $("#stream_creation_form input:checkbox[name=user]:checked"),
+            function (elem) {
+                return $(elem).val();
+            }
+        );
         // You are always subscribed to streams you create.
         principals.push(page_params.email);
         ajaxSubscribeForCreation(stream,
@@ -963,7 +962,7 @@ $(function () {
                     }
                     return format_member_list_elem(people_dict[elem].full_name, elem);
                 });
-                $.each(subscribers.sort().reverse(), function (idx, elem) {
+                _.each(subscribers.sort().reverse(), function (elem) {
                     // add_to_member_list *prepends* the element,
                     // so we need to sort in reverse order for it to
                     // appear in alphabetical order.

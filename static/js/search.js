@@ -461,7 +461,7 @@ exports.get_suggestions = function (query) {
     // back to our objects, and we also filter duplicates here.
     search_object = {};
     var final_result = [];
-    $.each(result, function (idx, obj) {
+    _.each(result, function (obj) {
         if (!search_object[obj.search_string]) {
             search_object[obj.search_string] = obj;
             final_result.push(obj);

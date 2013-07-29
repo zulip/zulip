@@ -175,7 +175,7 @@ MessageList.prototype = {
 
         var id_set = {};
 
-        $.each(msg_ids, function (idx, msg_id) {
+        _.each(msg_ids, function (msg_id) {
             id_set[msg_id] = true;
         });
 
@@ -319,7 +319,7 @@ MessageList.prototype = {
 
             var top_group = this._message_groups[0];
             var top_messages = [];
-            $.each(top_group, function (index, id) {
+            _.each(top_group, function (id) {
                 rows.get(id, table_name).remove();
                 // Remove any date row headers for these messages
                 $('.date_row[data-zid=' + id + ']').remove();
@@ -334,7 +334,7 @@ MessageList.prototype = {
             prev = this.get(last_message_id);
         }
 
-        $.each(messages, function (index, message) {
+        _.each(messages, function (message) {
             message.include_recipient = false;
             message.include_bookend   = false;
             message.include_footer    = false;
@@ -423,7 +423,7 @@ MessageList.prototype = {
             use_match_properties: this.filter.is_search()
         }));
 
-        $.each(rendered_elems, function (index, elem) {
+        _.each(rendered_elems, function (elem) {
             var row = $(elem);
             if (! row.hasClass('message_row')) {
                 return;
@@ -487,7 +487,7 @@ MessageList.prototype = {
                               }});
         }
 
-        $.each(rendered_elems, function (idx, elem) {
+        _.each(rendered_elems, function (elem) {
             var row = $(elem);
             if (! row.hasClass('message_row')) {
                 return;
@@ -498,7 +498,7 @@ MessageList.prototype = {
 
         // Must happen after the elements are inserted into the document for
         // getBoundingClientRect to work.
-        $.each(rendered_elems, ui.process_condensing);
+        _.each(rendered_elems, ui.process_condensing);
 
         // Must happen after anything that changes the height of messages has
         // taken effect.
@@ -541,11 +541,11 @@ MessageList.prototype = {
         }
 
         var new_messages_height = 0;
-        $.each(rendered_elems, function () {
+        _.each(rendered_elems, function (elem) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
-            if ($(this).is("tr")) {
-                new_messages_height += $(this).height();
+            if ($(elem).is("tr")) {
+                new_messages_height += $(elem).height();
             }
         });
 

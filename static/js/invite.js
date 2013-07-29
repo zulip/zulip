@@ -8,7 +8,7 @@ function update_subscription_checkboxes() {
     // checkboxes are saved from invocation to invocation (which is
     // nice if I want to invite a bunch of people at once)
     var streams = [];
-    $.each(subs.subscribed_streams(), function (index, value) {
+    _.each(subs.subscribed_streams(), function (value) {
         streams.push({name: value, invite_only: subs.get_invite_only(value)});
     });
     $('#streams_to_add').html(templates.render('invite_subscription', {streams: streams}));
@@ -70,7 +70,7 @@ exports.initialize = function () {
             } else {
                 // Some users were not invited.
                 var error_list = $('<ul>');
-                $.each(arr.errors, function (index, value) {
+                _.each(arr.errors, function (value) {
                     error_list.append($('<li>').text(value.join(': ')));
                 });
 

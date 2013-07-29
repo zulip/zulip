@@ -38,7 +38,7 @@ exports.sort_narrow_list = function () {
     parent.empty();
 
     var elems = [];
-    $.each(streams, function (i, stream) {
+    _.each(streams, function (stream) {
         var li = $(subs.get(stream).sidebar_li);
         if (sort_recent) {
             if (recent_subjects[stream] === undefined) {
@@ -53,16 +53,11 @@ exports.sort_narrow_list = function () {
 };
 
 function iterate_to_find(selector, name_to_find, context) {
-    var retval = $();
-    $(selector, context).each(function (idx, elem) {
-        var jelem = $(elem);
-        var elem_name = jelem.attr('data-name');
-        if (elem_name.toLowerCase() === name_to_find.toLowerCase()) {
-            retval = jelem;
-            return false;
-        }
+    var lowercase_name = name_to_find.toLowerCase();
+    var found = _.find($(selector, context), function (elem) {
+        return $(elem).attr('data-name') === lowercase_name;
     });
-    return retval;
+    return found ? $(found) : $();
 }
 
 // TODO: Now that the unread count functions support the user sidebar
@@ -235,19 +230,19 @@ exports.update_dom_with_unread_counts = function (counts) {
     // Our job is to update some DOM elements.
 
     // counts.stream_count maps streams to counts
-    $.each(counts.stream_count, function (stream, count) {
+    _.each(counts.stream_count, function (count, stream) {
         exports.set_count("stream", stream, count);
     });
 
     // counts.subject_count maps streams to hashes of subjects to counts
-    $.each(counts.subject_count, function (stream, subject_hash) {
-        $.each(subject_hash, function (subject, count) {
+    _.each(counts.subject_count, function (subject_hash, stream) {
+        _.each(subject_hash, function (count, subject) {
             exports.set_subject_count(stream, subject, count);
         });
     });
 
     // counts.pm_count maps people to counts
-    $.each(counts.pm_count, function (person, count) {
+    _.each(counts.pm_count, function (count, person) {
         exports.set_count("private", person, count);
     });
 

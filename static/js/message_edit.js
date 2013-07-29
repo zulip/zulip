@@ -105,7 +105,7 @@ exports.maybe_show_edit = function (row, id) {
 };
 
 $(document).on('narrow_deactivated.zulip', function (event) {
-    $.each(currently_editing_messages, function (idx, elem) {
+    _.each(currently_editing_messages, function (elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {
             var row = rows.get(idx, current_msg_list.table_name);
             current_msg_list.show_edit_message(row, elem);
