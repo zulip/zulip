@@ -187,15 +187,19 @@ class Client(object):
                 return {'msg': "Unexpected error:\n%s" % traceback.format_exc(),
                         "result": "unexpected-error"}
 
-            if requests_json_is_function:
-                json_result = res.json()
-            else:
-                json_result = res.json
+            try:
+                if requests_json_is_function:
+                    json_result = res.json()
+                else:
+                    json_result = res.json
+            except Exception:
+                json_result = None
+
             if json_result is not None:
                 end_error_retry(True)
                 return json_result
             end_error_retry(False)
-            return {'msg': res.text, "result": "http-error",
+            return {'msg': "Unexpected error from the server", "result": "http-error",
                     "status_code": res.status_code}
 
     @classmethod
