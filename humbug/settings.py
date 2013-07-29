@@ -388,7 +388,7 @@ JS_SPECS = {
             'js/invite.js',
             'js/message_list.js',
             'js/onboarding.js',
-            'js/zephyr.js',
+            'js/zulip.js',
             'js/activity.js',
             'js/colorspace.js',
             'js/timerender.js',

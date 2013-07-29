@@ -174,7 +174,7 @@ function update_fade () {
         focused_recipient.subject = $('#subject').val();
     } else {
         // Normalize the recipient list so it matches the one used when
-        // adding the message (see add_message_metadata(), zephyr.js).
+        // adding the message (see add_message_metadata(), zulip.js).
         focused_recipient.reply_to = util.normalize_recipients(
                 $('#private_message_recipient').val());
     }
