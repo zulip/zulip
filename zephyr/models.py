@@ -361,7 +361,12 @@ class Message(models.Model):
         self.mentions_wildcard = False
         self.mentions_user_ids = set()
 
-        return bugdown.convert(content, self.sender.realm.domain, self)
+        domain = self.sender.realm.domain
+        if self.sending_client.name == "zephyr_mirror" and domain == "mit.edu":
+            # Use slightly customized Markdown processor for content
+            # delivered via zephyr_mirror
+            domain = "mit.edu/zephyr_mirror"
+        return bugdown.convert(content, domain, self)
 
     def set_rendered_content(self, rendered_content, save = False):
         """Set the content on the message.

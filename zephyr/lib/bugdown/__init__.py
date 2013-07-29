@@ -623,6 +623,12 @@ class Bugdown(markdown.Extension):
 
         md.treeprocessors.add("inline_interesting_links", InlineInterestingLinkProcessor(md), "_end")
 
+        if self.getConfig("realm") == "mit.edu/zephyr_mirror":
+            # Disable almost all patterns for mit.edu users' traffic that is mirrored
+            for k in md.inlinePatterns.keys():
+                if k not in ["autolink", "inline_interesting_links"]:
+                    del md.inlinePatterns[k]
+
 
 md_engines = {}
 
@@ -642,6 +648,7 @@ realm_filters = {
     "zulip.com": [
         ("#(?P<id>[0-9]{2,8})", "https://trac.humbughq.com/ticket/%(id)s"),
         ],
+    "mit.edu/zephyr_mirror": [],
     }
 
 def subject_links(domain, subject):
@@ -655,7 +662,8 @@ def subject_links(domain, subject):
 for realm in realm_filters.keys():
     # Because of how the Markdown config API works, this has confusing
     # large number of layers of dicts/arrays :(
-    make_md_engine(realm, {"realm_filters": [realm_filters[realm], "Realm-specific filters for %s" % (realm,)]})
+    make_md_engine(realm, {"realm_filters": [realm_filters[realm], "Realm-specific filters for %s" % (realm,)],
+                           "realm": [realm, "Realm name"]})
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
