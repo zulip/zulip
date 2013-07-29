@@ -140,8 +140,8 @@ common.wait_for_receive(function () {
 
 casper.waitUntilVisible('#zfilt', function () {
     expect_stream();
-    un_narrow();
 });
+un_narrow();
 
 casper.waitUntilVisible('#zhome', function () {
     expect_home();
