@@ -1849,19 +1849,6 @@
       this.$element.val(val)
     }
 
-  , select_and_continue: function () {
-      // We don't call updater() because it potentially has side-effects.
-      // This does mean that smartSpaceBar can't be used in cases where the
-      // item values are transformed by updater().  It's generally imprudent
-      // to do transformations in updater(), so this should be a
-      // non-issue for most users.
-      var val = this.$menu.find('.active').data('typeahead-value')
-      this.$element
-        .val(val + ' ')
-        .change()
-      return this.hide()
-    }
-
   , updater: function (item) {
       return item
     }
@@ -2056,14 +2043,6 @@
         case 13: // enter
           if (!this.shown) return
           this.select()
-          break
-
-        case 32: // space
-          if (this.options.smartSpaceBar) {
-            if (!this.shown) return
-            this.select_and_continue()
-          }
-          this.lookup()
           break
 
         case 27: // escape
