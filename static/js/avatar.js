@@ -24,28 +24,33 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
         return $('#bot_avatar_file_input');
     };
 
+    var file_name_field = $('#bot_avatar_file');
+    var input_error = $('#bot_avatar_file_input_error');
+    var clear_button = $('#bot_avatar_clear_button');
+    var upload_button = $('#bot_avatar_upload_button');
+
     function accept_bot_avatar_file_input(file) {
-        $('#bot_avatar_file').text(file.name);
-        $('#bot_avatar_file_input_error').hide();
-        $('#bot_avatar_clear_button').show();
-        $('#bot_avatar_upload_button').hide();
+        file_name_field.text(file.name);
+        input_error.hide();
+        clear_button.show();
+        upload_button.hide();
     }
 
     function clear_bot_avatar_file_input() {
         var control = get_file_input();
         var new_control = control.clone(true);
         control.replaceWith(new_control);
-        $('#bot_avatar_file').text('');
-        $('#bot_avatar_clear_button').hide();
-        $('#bot_avatar_upload_button').show();
+        file_name_field.text('');
+        clear_button.hide();
+        upload_button.show();
     }
 
-    $('#bot_avatar_clear_button').click(function (e) {
+    clear_button.click(function (e) {
         clear_bot_avatar_file_input();
         e.preventDefault();
     });
 
-    $('#bot_avatar_upload_button').on('drop', function (e) {
+    upload_button.on('drop', function (e) {
         var files = e.dataTransfer.files;
         if (files === null || files === undefined || files.length === 0) {
             return false;
@@ -57,30 +62,30 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
 
     var validate_avatar = function (e) {
         if (e.target.files.length === 0) {
-            $('#bot_avatar_file_input_error').hide();
+            input_error.hide();
         } else if (e.target.files.length === 1) {
             var file = e.target.files[0];
             if (file.size > 5*1024*1024) {
-                $('#bot_avatar_file_input_error').text('File size must be < 5Mb.');
-                $('#bot_avatar_file_input_error').show();
+                input_error.text('File size must be < 5Mb.');
+                input_error.show();
                 clear_bot_avatar_file_input();
             }
             else if (!is_image_format(file)) {
-                $('#bot_avatar_file_input_error').text('File type is not supported.');
-                $('#bot_avatar_file_input_error').show();
+                input_error.text('File type is not supported.');
+                input_error.show();
                 clear_bot_avatar_file_input();
             } else {
                 accept_bot_avatar_file_input(file);
             }
         }
         else {
-            $('#bot_avatar_file_input_error').text('Please just upload one file.');
+            input_error.text('Please just upload one file.');
         }
     };
 
     get_file_input().change(validate_avatar);
 
-    $('#bot_avatar_upload_button').click(function (e) {
+    upload_button.click(function (e) {
         get_file_input().trigger('click');
         e.preventDefault();
     });
