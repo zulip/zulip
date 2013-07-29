@@ -7,8 +7,8 @@
 // clean up after themselves, and they should explicitly stub all
 // dependencies (except _).
 
-global._ = require('../../../static/third/underscore/underscore.js');
-var unread = require('../../../static/js/unread.js');
+global._ = require('../../../../static/third/underscore/underscore.js');
+var unread = require('../../../../static/js/unread.js');
 var assert = require('assert');
 
 var narrow = {};
