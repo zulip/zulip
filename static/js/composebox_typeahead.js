@@ -22,7 +22,7 @@ function get_pm_recipients(query_string) {
 // For example, "a,,b, " => ["a", "b"]
 exports.get_cleaned_pm_recipients = function (query_string) {
     var recipients = get_pm_recipients(query_string);
-    recipients = $.grep(recipients, function (elem, idx) {
+    recipients = _.filter(recipients, function (elem) {
         return elem.match(/\S/);
     });
     return recipients;

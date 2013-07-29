@@ -219,7 +219,7 @@ exports.normalize_recipients = function (recipients) {
     // into a canonical formatting: emails sorted ASCIIbetically
     // with exactly one comma and no spaces between each.
     recipients = $.map(recipients.split(','), $.trim);
-    recipients = $.grep(recipients, function (s) { return s.length>0; });
+    recipients = _.filter(recipients, function (s) { return s.length > 0; });
     recipients.sort();
     return recipients.join(',');
 };

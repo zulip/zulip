@@ -1370,7 +1370,7 @@ exports.set_presence_list = function (users, presence_info) {
         };
     }
 
-    var user_emails = $.grep(users, function (email, idx) {
+    var user_emails = _.filter(users, function (email) {
         return people_dict[email] !== undefined;
     });
 

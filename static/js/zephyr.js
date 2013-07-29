@@ -208,8 +208,8 @@ function maybe_scroll_to_selected() {
 
 function get_private_message_recipient(message, attr) {
     var recipient, i;
-    var other_recipients = $.grep(message.display_recipient,
-                                  function (element, index) {
+    var other_recipients = _.filter(message.display_recipient,
+                                  function (element) {
                                       return element.email !== page_params.email;
                                   });
     if (other_recipients.length === 0) {
@@ -246,7 +246,7 @@ function send_queued_flags() {
     function on_success(data, status, jqXHR) {
         if (data ===  undefined || data.messages === undefined) return;
 
-        queued_mark_as_read = $.grep(queued_mark_as_read, function (message, idx) {
+        queued_mark_as_read = _.filter(queued_mark_as_read, function (message) {
             return data.messages.indexOf(message) === -1;
         });
     }
@@ -337,7 +337,7 @@ function process_visible_unread_messages(update_cursor) {
     }
 
     var visible_messages = viewport.visible_messages();
-    var mark_as_read = $.grep(visible_messages, unread.message_unread);
+    var mark_as_read = _.filter(visible_messages, unread.message_unread);
 
     if (mark_as_read.length > 0) {
         process_read_messages(mark_as_read);
@@ -345,12 +345,12 @@ function process_visible_unread_messages(update_cursor) {
 }
 
 function mark_messages_as_read(msg_list) {
-    var unread_msgs = $.grep(msg_list, unread.message_unread);
+    var unread_msgs = _.filter(msg_list, unread.message_unread);
     process_read_messages(unread_msgs);
 }
 
 function mark_current_list_as_read() {
-    var unread_msgs = $.grep(current_msg_list.all(), unread.message_unread);
+    var unread_msgs = _.filter(current_msg_list.all(), unread.message_unread);
     process_read_messages(unread_msgs);
 }
 
@@ -486,7 +486,7 @@ $(function () {
 
 function case_insensitive_find(term, array) {
     var lowered_term = term.toLowerCase();
-    return $.grep(array, function (elt) {
+    return _.filter(array, function (elt) {
         return elt.toLowerCase() === lowered_term;
     }).length !== 0;
 }
@@ -501,7 +501,7 @@ function process_message_for_recent_subjects(message, remove_message) {
         recent_subjects[canon_stream] = [];
     } else {
         recent_subjects[canon_stream] =
-            $.grep(recent_subjects[canon_stream], function (item) {
+            _.filter(recent_subjects[canon_stream], function (item) {
                 var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
                 if (is_duplicate) {
                     current_timestamp = item.timestamp;
@@ -624,7 +624,7 @@ function add_messages_helper(messages, msg_list, predicate, messages_are_new) {
     // If we're initially populating the list, save the messages in
     // bottom_messages regardless
     if (msg_list.selected_id() === -1 && msg_list.empty()) {
-        bottom_messages = $.grep(messages, predicate);
+        bottom_messages = _.filter(messages, predicate);
     } else {
         $.each(messages, function (idx, msg) {
             // Filter out duplicates that are already in msg_list, and all messages
@@ -682,7 +682,7 @@ function add_messages(messages, msg_list, messages_are_new) {
 
 function deduplicate_messages(messages) {
     var new_message_ids = {};
-    return $.grep(messages, function (msg, idx) {
+    return _.filter(messages, function (msg) {
         if (new_message_ids[msg.id] === undefined
             && all_msg_list.get(msg.id) === undefined)
         {

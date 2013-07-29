@@ -159,7 +159,7 @@ function rebuild_recent_subjects(stream, subject) {
     var stream_li = get_filter_li('stream', stream);
     var subjects = recent_subjects[stream] || [];
     var active_orig_subject = subject;
-    var display_subjects = $.grep(subjects, function (subject_obj, idx) {
+    var display_subjects = _.filter(subjects, function (subject_obj, idx) {
         var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
         subject_obj.unread = num_unread;
         subject_obj.is_zero = num_unread === 0;

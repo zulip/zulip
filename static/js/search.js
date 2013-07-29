@@ -148,7 +148,7 @@ function get_stream_suggestions(operators) {
 
     var streams = subs.subscribed_streams();
 
-    streams = $.grep(streams, function (stream) {
+    streams = _.filter(streams, function (stream) {
         return stream_matches_query(stream, query);
     });
 
@@ -200,7 +200,7 @@ function get_private_suggestions(all_people, operators) {
     }
 
 
-    var people = $.grep(all_people, function (person) {
+    var people = _.filter(all_people, function (person) {
         return (query === '') || person_matches_query(person, query);
     });
 
@@ -229,7 +229,7 @@ function get_person_suggestions(all_people, query, prefix, operator) {
         return [];
     }
 
-    var people = $.grep(all_people, function (person) {
+    var people = _.filter(all_people, function (person) {
         return person_matches_query(person, query);
     });
 
@@ -331,7 +331,7 @@ function get_topic_suggestions(query_operators) {
     topics = topics.slice(0, 10);
 
     if (guess !== '') {
-        topics = $.grep(topics, function (topic) {
+        topics = _.filter(topics, function (topic) {
             return phrase_match(topic, guess);
         });
     }
@@ -409,7 +409,7 @@ function get_special_filter_suggestions(query, operators) {
 
     query = query.toLowerCase();
 
-    suggestions = $.grep(suggestions, function (s) {
+    suggestions = _.filter(suggestions, function (s) {
         if (s.search_string.toLowerCase() === query) {
             return false; // redundant
         }
