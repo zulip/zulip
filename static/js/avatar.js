@@ -17,6 +17,13 @@ function is_image_format(file) {
 
 exports.set_up_avatar_logic_for_creating_bots = function () {
 
+    // We have to do strange gyrations with the file input to clear it,
+    // where we replace it wholesale, so we generalize the file input with
+    // a callback function.
+    var get_file_input = function () {
+        return $('#bot_avatar_file_input');
+    };
+
     function accept_bot_avatar_file_input(file) {
         $('#bot_avatar_file').text(file.name);
         $('#bot_avatar_file_input_error').hide();
@@ -25,7 +32,7 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
     }
 
     function clear_bot_avatar_file_input() {
-        var control = $('#bot_avatar_file_input');
+        var control = get_file_input();
         var new_control = control.clone(true);
         control.replaceWith(new_control);
         $('#bot_avatar_file').text('');
@@ -43,7 +50,7 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
-        $('#bot_avatar_file_input').get(0).files = files;
+        get_file_input().get(0).files = files;
         e.preventDefault();
         return false;
     });
@@ -71,10 +78,10 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
         }
     };
 
-    $('#bot_avatar_file_input').change(validate_avatar);
+    get_file_input().change(validate_avatar);
 
     $('#bot_avatar_upload_button').click(function (e) {
-        $('#bot_avatar_file_input').trigger('click');
+        get_file_input().trigger('click');
         e.preventDefault();
     });
 
