@@ -270,7 +270,7 @@ exports.register_click_handlers = function () {
                 // have been hidden.  We work around this by just manually
                 // fixing it up here.
                 colorpicker.parent().find('.sp-container').removeClass('sp-buttons-disabled');
-                $(elt).hide();
+                $(e.target).hide();
             });
 
             $('.streams_popover').on('click', 'a.sp-cancel', function (e) {
