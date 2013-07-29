@@ -1418,7 +1418,7 @@ def do_invite_users(user_profile, invitee_emails, streams):
                            lambda event: do_send_confirmation_email(user, user_profile))
 
     if skipped:
-        ret_error = "Some of those addresses are already using Humbug, \
+        ret_error = "Some of those addresses are already using Zulip, \
 so we didn't send them an invitation. We did send invitations to everyone else!"
         ret_error_data = {'errors': skipped}
 

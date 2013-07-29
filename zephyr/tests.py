@@ -1533,7 +1533,7 @@ earl-test@zulip.com""", ["Denmark"]))
                                   {"invitee_emails": "\n".join(existing + new),
                                    "stream": ["Denmark"]})
         self.assert_json_error(result,
-                               "Some of those addresses are already using Humbug, \
+                               "Some of those addresses are already using Zulip, \
 so we didn't send them an invitation. We did send invitations to everyone else!")
 
         # We only created accounts for the new users.
