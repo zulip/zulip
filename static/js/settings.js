@@ -126,6 +126,7 @@ $(function () {
         });
     });
 
+    var image_version = 0;
 
     $("#bots_list").on("click", "button.open_edit_bot_form", function (e) {
         var li = $(e.target).closest('li');
@@ -142,10 +143,13 @@ $(function () {
         bot_info.hide();
         edit_div.show();
 
+        var avatar_handler = avatar.set_up_avatar_logic_for_editing_bots(li);
+
         function show_row_again() {
             image.show();
             bot_info.show();
             edit_div.hide();
+            avatar_handler.close();
         }
 
         reset_edit_bot.click(function (event) {
@@ -163,11 +167,15 @@ $(function () {
             submitHandler: function () {
                 var email = form.data('email');
                 var full_name = form.find('.edit_bot_name').val();
+                var file_input = li.find('.edit_bot_avatar_file_input');
                 var spinner = form.find('.edit_bot_spinner');
                 var edit_button = form.find('.edit_bot_button');
                 var formData = new FormData();
                 formData.append('full_name', full_name);
                 formData.append('csrfmiddlewaretoken', csrf_token);
+                jQuery.each(file_input[0].files, function (i, file) {
+                    formData.append('file-'+i, file);
+                });
                 util.make_loading_indicator(spinner, {text: 'Editing bot'});
                 edit_button.hide();
                 $.ajax({
@@ -183,6 +191,13 @@ $(function () {
                         edit_button.show();
                         show_row_again();
                         bot_info.find('.name').text(full_name);
+                        if (data.avatar_url) {
+                            // Note that the avatar_url won't actually change on the back end
+                            // when the user had a previous uploaded avatar.  Only the content
+                            // changes, so we version it to get an uncached copy.
+                            image_version += 1;
+                            image.find('img').attr('src', data.avatar_url+'&v='+image_version.toString());
+                        }
                     },
                     error: function (xhr, error_type, exn) {
                         util.destroy_loading_indicator(spinner);

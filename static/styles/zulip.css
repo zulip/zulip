@@ -2019,6 +2019,7 @@ div.edit_bot {
     margin-left: 24em;
 }
 
+.edit_bot_avatar_clear_button,
 #bot_avatar_clear_button {
     display: none;
 }

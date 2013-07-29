@@ -29,16 +29,29 @@
 	<div class='edit_bot'>
 	    <form class="edit_bot_form form-horizontal" data-email="{{email}}">
 		    <div class="bot_edit_errors alert alert-error hide"></div>
-	        <p>
-	      	    <div class="edit_bot_email">{{email}}</div>
-	            <label for="edit_bot_name" class="control-label">Full name</label>
-	            <input type="text" name="bot_name" class="edit_bot_name required"
-	               maxlength=50 />
-	            <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
-	        </p>
-	     <input type="submit" class="btn btn-primary edit_bot_button" value="Save" />
-    	 <button type="submit" class="btn btn-secondary reset_edit_bot">Cancel</button>
-	     <div class="edit_bot_spinner"></div>
+
+    		<div class="edit_bot_email">{{email}}</div>
+            <label for="edit_bot_name" class="control-label">Full name</label>
+            <input type="text" name="bot_name" class="edit_bot_name required"
+               maxlength=50 />
+            <div><label for="edit_bot_name" generated="true" class="text-error"></label></div>
+
+
+            <br clear="left" />
+
+    		<label for="bot_avatar_file_input" class="control-label">Avatar</label>
+    		<input type="file" name="bot_avatar_file_input" class="notdisplayed edit_bot_avatar_file_input" value="Upload avatar" />
+	        <button type="button" class="btn edit_bot_avatar_upload_button">Choose avatar</button>
+	        <button type="button" class="btn edit_bot_avatar_clear_button">Clear avatar</button>
+    		<span class="edit_bot_avatar_file"></span>
+            <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
+
+
+		    <br clear="left" />
+
+		    <input type="submit" class="btn btn-primary edit_bot_button" value="Save" />
+	    	<button type="submit" class="btn btn-secondary reset_edit_bot">Cancel</button>
+		    <div class="edit_bot_spinner"></div>
 	    </form>
 	</div>
 

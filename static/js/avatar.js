@@ -38,6 +38,25 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
     );
 };
 
+exports.set_up_avatar_logic_for_editing_bots = function (li) {
+    var get_file_input = function () {
+        return li.find('.edit_bot_avatar_file_input');
+    };
+
+    var file_name_field = li.find('.edit_bot_avatar_file');
+    var input_error = li.find('.edit_bot_avatar_error');
+    var clear_button = li.find('.edit_bot_avatar_clear_button');
+    var upload_button = li.find('.edit_bot_avatar_upload_button');
+
+    return exports.set_up_file_input(
+        get_file_input,
+        file_name_field,
+        input_error,
+        clear_button,
+        upload_button
+    );
+};
+
 exports.set_up_file_input = function (
         get_file_input, // function returns a jQuery file input object
         file_name_field, // jQuery object to show file name

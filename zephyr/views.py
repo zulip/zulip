@@ -2041,8 +2041,23 @@ def update_bot_backend(request, user_profile, email, full_name=REQ):
 
     do_change_full_name(bot, full_name)
 
+    bot_avatar_url = None
+
+    if len(request.FILES) == 0:
+        pass
+    elif len(request.FILES) == 1:
+        user_file = request.FILES.values()[0]
+        upload_avatar_image(user_file, user_profile, bot.email)
+        avatar_source = UserProfile.AVATAR_FROM_USER
+        bot.avatar_source = avatar_source
+        bot.save()
+        bot_avatar_url = avatar_url(bot)
+    else:
+        return json_error("You may only upload one file at a time")
+
     json_result = dict(
         full_name = full_name,
+        avatar_url = bot_avatar_url
     )
     return json_success(json_result)
 
