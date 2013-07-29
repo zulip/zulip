@@ -1981,7 +1981,6 @@ li.expanded_subject .subject_box {
 #bots_list {
     display: none;
     list-style-type: none;
-    width: 550px;
     margin-left: 0px;
 }
 
