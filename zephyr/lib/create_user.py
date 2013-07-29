@@ -4,9 +4,8 @@ from django.contrib.auth.models import UserManager
 from django.utils import timezone
 from zephyr.models import UserProfile, Recipient, Subscription
 import base64
-import hashlib
 import ujson
-import random
+import os
 import string
 
 # The ordered list of onboarding steps we want new users to complete. If the
@@ -17,11 +16,9 @@ def create_onboarding_steps_blob():
     return ujson.dumps([(step, False) for step in onboarding_steps])
 
 def random_api_key():
-    # select 2 random ascii letters or numbers to fill out our base 64 "encoding"
-    randchar1 = random.choice(string.ascii_letters + string.digits)
-    randchar2 = random.choice(string.ascii_letters + string.digits)
-    bits = str(random.getrandbits(256))
-    return base64.b64encode(hashlib.sha256(bits).digest(), randchar1 + randchar2)[0:32]
+    choices = string.ascii_letters + string.digits
+    altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)])
+    return base64.b64encode(os.urandom(24), altchars=altchars)
 
 # create_user_profile is based on Django's User.objects.create_user,
 # except that we don't save to the database so it can used in
