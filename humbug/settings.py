@@ -308,6 +308,7 @@ JS_SPECS = {
             'js/blueslip.js',
             'third/bootstrap/js/bootstrap.js',
             'js/common.js',
+            'third/underscore/underscore.js',
             ),
         'output_filename':  'min/common.js'
     },
@@ -356,7 +357,6 @@ JS_SPECS = {
             'third/jquery-idle/jquery.idle.js',
             'third/jquery-autosize/jquery.autosize.js',
             'third/spectrum/spectrum.js',
-            'third/underscore/underscore.js',
             ('third/handlebars/handlebars.runtime.js'
                 if PIPELINE
                 else 'third/handlebars/handlebars.js'),
