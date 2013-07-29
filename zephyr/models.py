@@ -56,7 +56,8 @@ def get_display_recipient_memcached(recipient):
     return [{'email': user_profile.email,
              'domain': user_profile.realm.domain,
              'full_name': user_profile.full_name,
-             'short_name': user_profile.short_name} for user_profile in user_profile_list]
+             'short_name': user_profile.short_name,
+             'id': user_profile.id} for user_profile in user_profile_list]
 
 class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True)
@@ -402,7 +403,8 @@ class Message(models.Model):
                 recip = {'email': self.sender.email,
                          'domain': self.sender.realm.domain,
                          'full_name': self.sender.full_name,
-                         'short_name': self.sender.short_name};
+                         'short_name': self.sender.short_name,
+                         'id': self.sender.id};
                 if recip['email'] < display_recipient[0]['email']:
                     display_recipient = [recip, display_recipient[0]]
                 elif recip['email'] > display_recipient[0]['email']:
