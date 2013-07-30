@@ -28,18 +28,15 @@ def notify(request):
 
 @authenticated_json_post_view
 def json_get_updates(request, user_profile):
-    client_id = request.session.session_key
-    return get_updates_backend(request, user_profile, client_id,
+    return get_updates_backend(request, user_profile,
                                client=request.client, apply_markdown=True)
 
 @authenticated_api_view
 def api_get_messages(request, user_profile):
     return get_messages_backend(request, user_profile)
 
-@has_request_variables
-def get_messages_backend(request, user_profile, client_id=REQ(default=None)):
-    return get_updates_backend(request, user_profile, client_id,
-                               client=request.client)
+def get_messages_backend(request, user_profile):
+    return get_updates_backend(request, user_profile, client=request.client)
 
 def format_updates_response(messages=[], apply_markdown=True,
                             user_profile=None, new_pointer=None,
@@ -58,7 +55,7 @@ def format_updates_response(messages=[], apply_markdown=True,
 
     return ret
 
-def return_messages_immediately(user_profile, client_id, last,
+def return_messages_immediately(user_profile, last,
                                 client_server_generation,
                                 client_pointer, dont_block,
                                 stream_name, **kwargs):
@@ -114,7 +111,7 @@ def return_messages_immediately(user_profile, client_id, last,
 # just never receive any messages.
 @asynchronous
 @has_request_variables
-def get_updates_backend(request, user_profile, client_id, handler=None,
+def get_updates_backend(request, user_profile, handler=None,
                         last = REQ(converter=to_non_negative_int, default=None),
                         client_server_generation = REQ(whence='server_generation', default=None,
                                                         converter=int),
@@ -123,7 +120,7 @@ def get_updates_backend(request, user_profile, client_id, handler=None,
                         stream_name = REQ(default=None),
                         apply_markdown = REQ(default=False, converter=json_to_bool),
                         **kwargs):
-    resp = return_messages_immediately(user_profile, client_id, last,
+    resp = return_messages_immediately(user_profile, last,
                                        client_server_generation,
                                        client_pointer,
                                        dont_block, stream_name,
