@@ -39,10 +39,8 @@ def api_get_messages(request, user_profile, handler):
     return get_messages_backend(request, user_profile, handler)
 
 @has_request_variables
-def get_messages_backend(request, user_profile, handler, client_id=REQ(default=None),
-                     apply_markdown=REQ(default=False, converter=json_to_bool)):
+def get_messages_backend(request, user_profile, handler, client_id=REQ(default=None)):
     return get_updates_backend(request, user_profile, handler, client_id,
-                               apply_markdown=apply_markdown,
                                client=request.client)
 
 @asynchronous
@@ -128,7 +126,8 @@ def get_updates_backend(request, user_profile, handler, client_id,
                                                         converter=int),
                         client_pointer = REQ(whence='pointer', converter=int, default=None),
                         dont_block = REQ(converter=json_to_bool, default=False),
-                        stream_name = REQ(default=None), apply_markdown=True,
+                        stream_name = REQ(default=None),
+                        apply_markdown=REQ(default=False, converter=json_to_bool),
                         **kwargs):
     resp = return_messages_immediately(user_profile, client_id, last,
                                        client_server_generation,
@@ -195,21 +194,20 @@ def get_updates_backend(request, user_profile, handler, client_id,
 @asynchronous
 @authenticated_json_post_view
 def json_get_events(request, user_profile, handler):
-    return get_events_backend(request, user_profile, handler)
+    return get_events_backend(request, user_profile, handler,
+                              apply_markdown=True)
 
 @asynchronous
 @authenticated_rest_api_view
-@has_request_variables
-def rest_get_events(request, user_profile, handler,
-                    apply_markdown=REQ(default=False, converter=json_to_bool)):
-    return get_events_backend(request, user_profile, handler,
-                              apply_markdown=apply_markdown)
+def rest_get_events(request, user_profile, handler):
+    return get_events_backend(request, user_profile, handler)
 
 @has_request_variables
 def get_events_backend(request, user_profile, handler,
                        user_client = REQ(converter=get_client, default=None),
                        last_event_id = REQ(converter=int, default=None),
-                       queue_id = REQ(default=None), apply_markdown=True,
+                       queue_id = REQ(default=None),
+                       apply_markdown=REQ(default=False, converter=json_to_bool),
                        event_types = REQ(default=None, converter=json_to_list),
                        dont_block = REQ(default=False, converter=json_to_bool)):
     if user_client is None:
