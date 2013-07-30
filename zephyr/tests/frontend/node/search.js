@@ -65,7 +65,7 @@ var search = set_up_dependencies();
         'fred',
         ''
     ];
-    assert.deepEqual(suggestions, expected);
+    assert.deepEqual(suggestions.strings, expected);
 }());
 
 (function test_empty_query_suggestions() {
@@ -92,7 +92,7 @@ var search = set_up_dependencies();
         "stream:office"
     ];
 
-    assert.deepEqual(suggestions, expected);
+    assert.deepEqual(suggestions.strings, expected);
 }());
 
 (function test_topic_suggestions() {
@@ -123,7 +123,7 @@ var search = set_up_dependencies();
         ""
     ];
 
-    assert.deepEqual(suggestions, expected);
+    assert.deepEqual(suggestions.strings, expected);
 }());
 
 
@@ -166,5 +166,5 @@ var search = set_up_dependencies();
         ""
     ];
 
-    assert.deepEqual(suggestions, expected);
+    assert.deepEqual(suggestions.strings, expected);
 }());

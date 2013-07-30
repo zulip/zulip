@@ -8,9 +8,6 @@ var cached_index;
 var cached_table = $('table.focused_table');
 var current_search_term;
 
-// Data storage for the typeahead -- to go from object to string representation and vice versa.
-var search_object = {};
-
 function phrase_match(phrase, q) {
     // match "tes" to "test" and "stream test" but not "hostess"
     var i;
@@ -427,9 +424,12 @@ function get_special_filter_suggestions(query, operators) {
     return suggestions;
 }
 
-// We make this a public method to facilitate testing, but it's only
-// used internally.  This becomes the "source" callback for typeahead.
 exports.get_suggestions = function (query) {
+    // This method works in tandem with the typeahead library to generate
+    // search suggestions.  If you want to change its behavior, be sure to update
+    // the tests.  Its API is partly shaped by the typeahead library, which wants
+    // us to give it strings only, but we also need to return our caller a hash
+    // with information for subsequent callbacks.
     var result = [];
     var suggestion;
     var suggestions;
@@ -462,24 +462,41 @@ exports.get_suggestions = function (query) {
     suggestions = get_operator_subset_suggestions(query, operators);
     result = result.concat(suggestions);
 
-    // We can't send typeahead objects, only strings, so we have to create a map
+    // Typeahead expects us to give it strings, not objects, so we maintain our own hash
     // back to our objects, and we also filter duplicates here.
-    search_object = {};
-    var final_result = [];
+    var lookup_table = {};
+    var unique_suggestions = [];
     _.each(result, function (obj) {
-        if (!search_object[obj.search_string]) {
-            search_object[obj.search_string] = obj;
-            final_result.push(obj);
+        if (!lookup_table[obj.search_string]) {
+            lookup_table[obj.search_string] = obj;
+            unique_suggestions.push(obj);
         }
     });
-    return _.map(final_result, function (obj) {
+    var strings = _.map(unique_suggestions, function (obj) {
         return obj.search_string;
     });
+    return {
+        strings: strings,
+        lookup_table: lookup_table
+    };
 };
 
 exports.initialize = function () {
+
+    // Data storage for the typeahead.
+    // This maps a search string to an object with a "description" field.
+    // (It's a bit of legacy that we have an object with only one important
+    // field.  There's also a "search_string" field on each element that actually
+    // just represents the key of the hash, so it's redundant.)
+    var search_object = {};
+
     $( "#search_query" ).typeahead({
-        source: exports.get_suggestions,
+        source: function (query) {
+            var suggestions = exports.get_suggestions(query);
+            // Update our global search_object hash
+            search_object = suggestions.lookup_table;
+            return suggestions.strings;
+        },
         items: 30,
         helpOnEmptyStrings: true,
         naturalSearch: true,
