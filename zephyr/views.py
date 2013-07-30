@@ -41,6 +41,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_openid_auth.views import default_render_failure, login_complete
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
 from openid.extensions import ax
+from zephyr.lib import bugdown
 
 from zephyr.decorator import require_post, \
     authenticated_api_view, authenticated_json_post_view, \
@@ -1159,6 +1160,11 @@ def send_message_backend(request, user_profile,
     if ret is not None:
         return json_error(ret)
     return json_success()
+
+@has_request_variables
+def render_message_backend(request, user_profile, content=REQ):
+    rendered_content = bugdown.convert(content, user_profile.realm.domain)
+    return json_success({"rendered": rendered_content})
 
 @authenticated_api_view
 def api_get_public_streams(request, user_profile):

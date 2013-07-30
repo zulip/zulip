@@ -146,6 +146,8 @@ v1_api_and_json_patterns = patterns('zephyr.views',
             {'GET':  'get_old_messages_backend',
              'PATCH': 'update_message_backend',
              'POST': 'send_message_backend'}),
+    url(r'^messages/render$', 'rest_dispatch',
+            {'GET':  'render_message_backend'}),
     url(r'^streams$', 'rest_dispatch',
             {'GET':  'get_public_streams_backend'}),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
