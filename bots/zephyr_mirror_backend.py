@@ -503,7 +503,7 @@ def send_unauthed_zephyr(zwrite_args, content):
 def forward_to_zephyr(message):
     wrapper = textwrap.TextWrapper(break_long_words=False, break_on_hyphens=False)
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
-            for line in message["content"].split("\n"))
+            for line in message["content"].replace("@", "@@").split("\n"))
 
     zwrite_args = ["zwrite", "-n", "-s", message["sender_full_name"], "-F", "Zephyr error: See http://zephyr.1ts.org/wiki/df"]
     if message['type'] == "stream":
