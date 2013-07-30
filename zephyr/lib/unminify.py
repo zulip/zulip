@@ -38,7 +38,7 @@ class SourceMap(object):
                     out += ('       = %s line %d column %d\n' %
                         (result.src, result.src_line+1, result.src_col+1))
                 except IndexError:
-                    out +=  '       [Unable to look up in source map]'
+                    out +=  '       [Unable to look up in source map]\n'
 
             if ln.startswith('    at'):
                 out += '\n'
