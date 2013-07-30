@@ -698,7 +698,6 @@ class NarrowBuilder(object):
             else:
                 base_stream_name = stream.name
 
-            print "base name:", base_stream_name
             matching_streams = Stream.objects.filter(realm=self.user_profile.realm,
                                                      name__iregex=r'^(un)*%s(.d)*$' % (re.escape(base_stream_name),))
             matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
