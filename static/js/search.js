@@ -94,11 +94,10 @@ function describe(operators) {
     return parts.concat(more_parts).join(', ');
 }
 
-function narrow_or_search_for_term(item) {
+function narrow_or_search_for_term(search_string) {
     var search_query_box = $("#search_query");
-    var obj = search_object[item];
     ui.change_tab_to('#home');
-    var operators = narrow.parse(obj.search_string);
+    var operators = narrow.parse(search_string);
     narrow.activate(operators, {trigger: 'search'});
 
     // It's sort of annoying that this is not in a position to
