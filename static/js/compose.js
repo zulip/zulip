@@ -334,7 +334,8 @@ exports.restore_message = function () {
          snapshot_copy.subject.length > 0) ||
         (snapshot_copy.type === "private" &&
          snapshot_copy.reply_to.length > 0)) {
-        _.defaults(snapshot_copy, {replying_to_message: snapshot_copy});
+        snapshot_copy = _.extend({replying_to_message: snapshot_copy},
+                                 snapshot_copy);
     }
     clear_message_snapshot();
     exports.unfade_messages(true);

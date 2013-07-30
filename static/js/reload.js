@@ -73,10 +73,10 @@ $(function () {
         var send_now = parseInt(vars.send_after_reload, 10);
 
         // TODO: preserve focus
-        compose.start(vars.msg_type, {stream: vars.stream,
-                                      subject: vars.subject,
-                                      private_message_recipient: vars.recipient,
-                                      content: vars.msg});
+        compose.start(vars.msg_type, {stream: vars.stream || '',
+                                      subject: vars.subject || '',
+                                      private_message_recipient: vars.recipient || '',
+                                      content: vars.msg || ''});
         if (send_now) {
             compose.finish();
         }
