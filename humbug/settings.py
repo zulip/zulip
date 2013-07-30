@@ -378,6 +378,7 @@ JS_SPECS = {
             'js/ui.js',
             'js/popovers.js',
             'js/typeahead_helper.js',
+            'js/search_suggestion.js',
             'js/search.js',
             'js/composebox_typeahead.js',
             'js/navigate.js',

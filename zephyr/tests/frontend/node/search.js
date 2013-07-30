@@ -1,4 +1,4 @@
-// Unit test the search.js module.
+// Unit test the search_suggestion.js module.
 //
 // These tests are framework-free and run sequentially; they are invoked
 // immediately after being defined.  The contract here is that tests should
@@ -22,7 +22,7 @@ function set_up_dependencies() {
     $.grep = _.filter;
 
     var actual_narrow = require('js/narrow.js');
-    var search = require('js/search.js');
+    var search = require('js/search_suggestion.js');
 
     global.narrow = {
         parse: actual_narrow.parse,
