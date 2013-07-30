@@ -10,6 +10,12 @@ class HttpResponseUnauthorized(HttpResponse):
         HttpResponse.__init__(self)
         self["WWW-Authenticate"] = 'Basic realm="%s"' % (realm,)
 
+def json_unauthorized(message):
+    resp = HttpResponseUnauthorized("humbug")
+    resp.content = ujson.dumps({"result": "error",
+                                "msg": message})
+    return resp
+
 def json_method_not_allowed(methods):
     resp = HttpResponseNotAllowed(methods)
     resp.content = ujson.dumps({"result": "error",

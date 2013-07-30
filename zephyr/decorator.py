@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 from django.http import QueryDict
 from django.http.multipartparser import MultiPartParser
 from zephyr.models import UserProfile, get_client, get_user_profile_by_email
-from zephyr.lib.response import json_error, HttpResponseUnauthorized
+from zephyr.lib.response import json_error, json_unauthorized
 from django.utils.timezone import now
 from django.conf import settings
 import ujson
@@ -112,15 +112,13 @@ def authenticated_rest_api_view(view_func):
         except ValueError:
             return json_error("Invalid authorization header for basic auth")
         except KeyError:
-            return HttpResponseUnauthorized("humbug")
+            return json_unauthorized("Missing authorization header for basic auth")
 
         # Now we try to do authentication or die
         try:
             user_profile = validate_api_key(email, api_key)
         except JsonableError, e:
-            resp = HttpResponseUnauthorized("humbug")
-            resp.content = e.error
-            return resp
+            return json_unauthorized(e.error)
         request.user = user_profile
         request._email = user_profile.email
         process_client(request, user_profile, "API")
