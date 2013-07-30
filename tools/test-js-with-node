@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
 cd "$(dirname "$0")"/../zephyr/tests/frontend/node
-node test_message_tour.js
-node test_unread.js
-node test_search.js
+node message_tour.js
+node unread.js
+node search.js
