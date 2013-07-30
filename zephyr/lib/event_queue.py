@@ -253,8 +253,8 @@ def request_event_queue(user_profile, user_client, apply_markdown,
         if event_types is not None:
             req['event_types'] = ujson.dumps(event_types)
         resp = requests.get(settings.TORNADO_SERVER + '/api/v1/events',
-                             auth=requests.auth.HTTPBasicAuth(user_profile.email,
-                                                              user_profile.api_key),
+                            auth=requests.auth.HTTPBasicAuth(user_profile.email,
+                                                             user_profile.api_key),
                             params=req)
 
         resp.raise_for_status()
