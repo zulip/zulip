@@ -11,16 +11,6 @@ function set_up_dependencies() {
     var _ = global._ = require('third/underscore/underscore.js');
     global.Handlebars = require('handlebars');
 
-    // We stub out most of jQuery, which is irrelevant to most of these tests.
-    var $ = function () {};
-    global.$ = $;
-    $.each = function (it, cb) {
-        var cb2 = function (a, b) { return cb(b,a); };
-        return _.each(it, cb2);
-    };
-    $.map = _.map;
-    $.grep = _.filter;
-
     var actual_narrow = require('js/narrow.js');
     var search = require('js/search_suggestion.js');
 
