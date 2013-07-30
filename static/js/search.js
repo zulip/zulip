@@ -127,13 +127,6 @@ exports.initialize = function () {
     });
 };
 
-function match_on_visible_text(row, search_term) {
-    // You can't select on :visible, since that includes hidden elements that
-    // take up space.
-    return row.find(".message_content, .message_header")
-              .text().toLowerCase().indexOf(search_term) !== -1;
-}
-
 exports.focus_search = function () {
     // The search bar is not focused yet, but will be.
     update_buttons_with_focus(true);
