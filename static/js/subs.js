@@ -152,12 +152,12 @@ var subscriptions_table_colorpicker_options = {
 };
 
 function set_colorpicker_color(colorpicker, color) {
-    colorpicker.spectrum($.extend(subscriptions_table_colorpicker_options,
+    colorpicker.spectrum(_.extend(subscriptions_table_colorpicker_options,
                          {color: color}));
 }
 
 function update_stream_color(stream_name, color, opts) {
-    opts = $.extend({}, {update_historical: false}, opts);
+    opts = _.defaults({}, opts, {update_historical: false});
     var sub = get_sub(stream_name);
     sub.color = color;
     var id = parseInt(sub.id, 10);
@@ -304,13 +304,16 @@ function create_sub(stream_name, attrs) {
         return sub;
     }
 
-    sub = $.extend({}, {name: stream_name, id: next_sub_id++,
-                        render_subscribers: should_render_subscribers(),
-                        subscribed: true, in_home_view: true, invite_only: false,
-                        notifications: false}, attrs);
-    if (sub.color === undefined) {
-        sub.color = pick_color();
-    }
+    sub = _.defaults({}, attrs, {
+        name: stream_name,
+        id: next_sub_id++,
+        render_subscribers: should_render_subscribers(),
+        subscribed: true,
+        in_home_view: true,
+        invite_only: false,
+        notifications: false,
+        color: pick_color()
+    });
     mark_color_used(sub.color);
 
     add_sub(stream_name, sub);
@@ -548,7 +551,7 @@ function populate_subscriptions(subs, subscribed) {
 
 exports.reload_subscriptions = function (opts) {
     var on_success;
-    opts = $.extend({}, {clear_first: false, custom_callbacks: false}, opts);
+    opts = _.defaults({}, opts, {clear_first: false, custom_callbacks: false});
 
     if (! opts.custom_callbacks) {
         on_success = function (data) {

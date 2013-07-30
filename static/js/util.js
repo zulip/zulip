@@ -33,7 +33,7 @@ exports.set_favicon = function (url) {
 };
 
 exports.make_loading_indicator = function (outer_container, opts) {
-    opts = $.extend({}, opts);
+    opts = opts || {};
     var container = outer_container;
     container.empty();
 

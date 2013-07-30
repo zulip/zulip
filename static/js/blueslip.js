@@ -23,7 +23,7 @@ var console = (function () {
 var reported_errors = {};
 var last_report_attempt = {};
 function report_error(msg, stack, opts) {
-    opts = $.extend({}, {show_ui_msg: false}, opts);
+    opts = _.extend({show_ui_msg: false}, opts);
 
     if (stack === undefined) {
         stack = 'No stacktrace available';

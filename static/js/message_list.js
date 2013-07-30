@@ -1,6 +1,6 @@
 /*jslint nomen: true */
 function MessageList(table_name, filter, opts) {
-    $.extend(this, {collapse_messages: true}, opts);
+    _.extend(this, {collapse_messages: true}, opts);
     this._items = [];
     this._hash = {};
     this.table_name = table_name;
@@ -93,7 +93,7 @@ MessageList.prototype = {
     },
 
     clear: function  MessageList_clear(opts) {
-        opts = $.extend({}, {clear_selected_id: true}, opts);
+        opts = _.extend({clear_selected_id: true}, opts);
 
         this._items = [];
         this._hash = {};
@@ -109,7 +109,7 @@ MessageList.prototype = {
     },
 
     select_id: function MessageList_select_id(id, opts) {
-        opts = $.extend({
+        opts = _.extend({
                 then_scroll: false,
                 use_closest: false,
                 mark_read: true

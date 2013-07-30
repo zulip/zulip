@@ -107,10 +107,11 @@ function do_reload_app(send_after_reload, save_state, message) {
 }
 
 exports.initiate = function (options) {
-    var defaults = {immediate: false,
-                    save_state: true,
-                    send_after_reload: false};
-    options = $.extend(defaults, options);
+    options = _.defaults({}, options, {
+        immediate: false,
+        save_state: true,
+        send_after_reload: false
+    });
 
     if (options.immediate) {
         do_reload_app(options.send_after_reload, options.save_state, options.message);

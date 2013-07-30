@@ -207,7 +207,7 @@ exports.start = function (msg_type, opts) {
     // Set default parameters based on the current narrowed view.
     narrow.set_compose_defaults(default_opts);
 
-    opts = $.extend(default_opts, opts);
+    opts = _.extend(default_opts, opts);
 
     if (!(compose.composing() === msg_type &&
           ((msg_type === "stream" &&
@@ -312,7 +312,7 @@ exports.snapshot_message = function (message) {
     }
 
     if (message !== undefined) {
-        message_snapshot = $.extend({}, message);
+        message_snapshot = _.extend({}, message);
     } else {
         // Save what we can.
         message_snapshot = create_message_object();
@@ -328,14 +328,13 @@ exports.restore_message = function () {
     if (!message_snapshot) {
         return;
     }
-    var snapshot_copy = $.extend({}, message_snapshot);
+    var snapshot_copy = _.extend({}, message_snapshot);
     if ((snapshot_copy.type === "stream" &&
          snapshot_copy.stream.length > 0 &&
          snapshot_copy.subject.length > 0) ||
         (snapshot_copy.type === "private" &&
          snapshot_copy.reply_to.length > 0)) {
-        snapshot_copy = $.extend({replying_to_message: snapshot_copy},
-                                 snapshot_copy);
+        _.defaults(snapshot_copy, {replying_to_message: snapshot_copy});
     }
     clear_message_snapshot();
     exports.unfade_messages(true);
@@ -392,7 +391,8 @@ function send_message() {
             else {
                 respond_to_cursor = false;
                 if (page_params.staging) {
-                    var new_msg = $.extend({replying_to_message: request}, request);
+                    var new_msg = _.extend({replying_to_message: request},
+                                           request);
                     new_msg.content = "";
                     compose.start(new_msg.type, new_msg);
                 }

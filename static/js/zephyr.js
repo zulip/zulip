@@ -153,7 +153,8 @@ function keep_pointer_in_view() {
 }
 
 function recenter_view(message, opts) {
-    opts = $.extend({}, opts);
+    opts = opts || {};
+
     // Barnowl-style recentering: if the pointer is too high, move it to
     // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
     // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
@@ -932,8 +933,7 @@ function get_updates_success(data) {
 var get_updates_xhr;
 var get_updates_timeout;
 function get_updates(options) {
-    var defaults = {dont_block: false};
-    options = $.extend({}, defaults, options);
+    options = _.extend({dont_block: false}, options);
 
     get_updates_params.pointer = furthest_read;
     get_updates_params.dont_block = options.dont_block || get_updates_failures > 0;
@@ -1003,9 +1003,7 @@ function force_get_updates() {
 }
 
 function load_old_messages(opts) {
-    opts = $.extend({}, {
-        cont_will_add_messages: false
-    }, opts);
+    opts = _.extend({cont_will_add_messages: false}, opts);
 
     var data = {anchor: opts.anchor,
                 num_before: opts.num_before,

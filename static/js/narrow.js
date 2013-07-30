@@ -334,12 +334,12 @@ exports.activate = function (operators, opts) {
         return exports.deactivate();
     }
 
-    opts = $.extend({}, {
+    opts = _.defaults({}, opts, {
         then_select_id: home_msg_list.selected_id(),
         select_first_unread: false,
         change_hash: true,
         trigger: 'unknown'
-    }, opts);
+    });
 
     if (opts.then_select_id === -1) {
         // If we're loading the page via a narrowed URL, we may not
@@ -481,7 +481,7 @@ exports.by_subject = function (target_id, opts) {
         return;
     }
     mark_message_as_read(original);
-    opts = $.extend({}, {then_select_id: target_id}, opts);
+    opts = _.defaults({}, opts, {then_select_id: target_id});
     exports.activate([
             ['stream',  original.stream],
             ['topic', original.subject]
@@ -490,7 +490,7 @@ exports.by_subject = function (target_id, opts) {
 
 // Called for the 'narrow by stream' hotkey.
 exports.by_recipient = function (target_id, opts) {
-    opts = $.extend({}, {then_select_id: target_id}, opts);
+    opts = _.defaults({}, opts, {then_select_id: target_id});
     var message = current_msg_list.get(target_id);
     mark_message_as_read(message);
     switch (message.type) {
@@ -505,7 +505,7 @@ exports.by_recipient = function (target_id, opts) {
 };
 
 exports.by_time_travel = function (target_id, opts) {
-    opts = $.extend({}, {then_select_id: target_id}, opts);
+    opts = _.defaults({}, opts, {then_select_id: target_id});
     narrow.activate([], opts);
 };
 
