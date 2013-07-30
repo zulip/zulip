@@ -2,12 +2,6 @@ var search = (function () {
 
 var exports = {};
 
-var cached_term = "";
-var cached_matches = [];
-var cached_index;
-var cached_table = $('table.focused_table');
-var current_search_term;
-
 function narrow_or_search_for_term(search_string) {
     var search_query_box = $("#search_query");
     ui.change_tab_to('#home');
