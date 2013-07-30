@@ -10,4 +10,4 @@ NODEJS=$(which nodejs || which node)
 
 $NODEJS message_tour.js
 $NODEJS unread.js
-$NODEJS search.js
+$NODEJS search_suggestion.js
