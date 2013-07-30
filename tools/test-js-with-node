@@ -2,10 +2,7 @@
 
 cd "$(dirname "$0")"/../zephyr/tests/frontend/node
 
-NODEJS=$(which nodejs)
-if [ ! -x "$NODEJS" ]; then
-    NODEJS=$(which node)
-fi
+NODEJS=$(which nodejs || which node)
 
 $NODEJS message_tour.js
 $NODEJS unread.js
