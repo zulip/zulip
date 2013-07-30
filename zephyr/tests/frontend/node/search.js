@@ -93,6 +93,16 @@ var search = set_up_dependencies();
     ];
 
     assert.deepEqual(suggestions.strings, expected);
+
+    function describe(q) {
+        return suggestions.lookup_table[q].description;
+    }
+    assert.equal(describe('in:all'), 'All messages');
+    assert.equal(describe('is:private'), 'Private messages');
+    assert.equal(describe('is:starred'), 'Starred messages');
+    assert.equal(describe('is:mentioned'), '@-mentions');
+    assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
+    assert.equal(describe('stream:devel'), 'Narrow to stream <strong>devel</strong>');
 }());
 
 (function test_topic_suggestions() {
@@ -124,6 +134,13 @@ var search = set_up_dependencies();
     ];
 
     assert.deepEqual(suggestions.strings, expected);
+
+    function describe(q) {
+        return suggestions.lookup_table[q].description;
+    }
+    assert.equal(describe('te'), "Search for te");
+    assert.equal(describe('stream:office topic:team'), "Narrow to office > team");
+
 }());
 
 
@@ -167,4 +184,12 @@ var search = set_up_dependencies();
     ];
 
     assert.deepEqual(suggestions.strings, expected);
+    function describe(q) {
+        return suggestions.lookup_table[q].description;
+    }
+    assert.equal(describe('pm-with:ted@zulip.com'),
+        "Narrow to private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
+    assert.equal(describe('sender:ted@zulip.com'),
+        "Narrow to messages sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
+
 }());
