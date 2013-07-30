@@ -46,14 +46,14 @@ exports.set_up_file_input = function (
         upload_button // jQuery button to open file dialog
 ) {
 
-    function accept_bot_avatar_file_input(file) {
+    function accept(file) {
         file_name_field.text(file.name);
         input_error.hide();
         clear_button.show();
         upload_button.hide();
     }
 
-    function clear_bot_avatar_file_input() {
+    function clear() {
         var control = get_file_input();
         var new_control = control.clone(true);
         control.replaceWith(new_control);
@@ -63,7 +63,7 @@ exports.set_up_file_input = function (
     }
 
     clear_button.click(function (e) {
-        clear_bot_avatar_file_input();
+        clear();
         e.preventDefault();
     });
 
@@ -85,14 +85,14 @@ exports.set_up_file_input = function (
             if (file.size > 5*1024*1024) {
                 input_error.text('File size must be < 5Mb.');
                 input_error.show();
-                clear_bot_avatar_file_input();
+                clear();
             }
             else if (!is_image_format(file)) {
                 input_error.text('File type is not supported.');
                 input_error.show();
-                clear_bot_avatar_file_input();
+                clear();
             } else {
-                accept_bot_avatar_file_input(file);
+                accept(file);
             }
         }
         else {
@@ -107,7 +107,7 @@ exports.set_up_file_input = function (
         e.preventDefault();
     });
 
-    return clear_bot_avatar_file_input;
+    return clear;
 };
 
 return exports;
