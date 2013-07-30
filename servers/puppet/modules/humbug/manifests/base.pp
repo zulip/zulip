@@ -3,7 +3,7 @@ class humbug::base {
                 "sqlite3", "ntp", "python-simplejson", "host",
                 "openssh-server", "python-pip", "puppet-el",
                 "iptables-persistent", "nagios-plugins-basic", "munin-node",
-                "munin-plugins-extra", "postgresql-client-9.1",
+                "munin-plugins-extra", "postgresql-client-9.1", "molly-guard",
 		"debian-goodies", "moreutils", "python-requests", "ipython",
                 "python-boto", "python-netifaces" ]
   package { $packages: ensure => "installed" }
