@@ -143,7 +143,7 @@ Filter.prototype = {
                             return false;
                         }
                     } else if (message.stream.toLowerCase() !== operand) {
-                           return false;
+                        return false;
                     }
                     break;
 
