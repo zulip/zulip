@@ -30,9 +30,5 @@ done
 git add events.*
 commit
 
-cd ../trac
-rsync -v humbug@trac.zulip.net:trac/db/trac.db .
-commit
-
 ssh root@trac.zulip.net php /usr/share/mediawiki/maintenance/dumpBackup.php --full > mediawiki.xml
 commit
