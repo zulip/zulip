@@ -70,17 +70,12 @@ exports.subscribed_streams = function () {
         .value();
 };
 
-exports.maybe_toggle_all_messages = function () {
-    var show_all_messages = false;
-    _.each(stream_info, function (stream) {
-        if (!stream.in_home_view) {
-            show_all_messages = true;
-            return false;
-        }
-    });
-
+exports.update_all_messages_link = function () {
+    // Show or hide the "All messages" link, depending on whether
+    // the user has any subscriptions hidden from home view.
     var all_messages = $("#global_filters [data-name='all']")[0];
-    if (!show_all_messages) {
+
+    if (_.every(stream_info, function (sub) { return sub.in_home_view; })) {
         $(all_messages).addClass('hidden-filter');
     } else {
         $(all_messages).removeClass('hidden-filter');
@@ -238,7 +233,7 @@ function update_in_home_view(sub, value) {
         }
     }, 0);
 
-    exports.maybe_toggle_all_messages();
+    exports.update_all_messages_link();
     stream_list.set_in_home_view(sub.name, sub.in_home_view);
 
     var in_home_view_checkbox = $("#subscription_" + sub.id + " #sub_setting_in_home_view .sub_setting_control");

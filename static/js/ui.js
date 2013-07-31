@@ -1337,7 +1337,7 @@ $(function () {
     hashchange.initialize();
     invite.initialize();
     activity.initialize();
-    subs.maybe_toggle_all_messages();
+    subs.update_all_messages_link();
     tutorial.initialize();
     onboarding.initialize();
 });
