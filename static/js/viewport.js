@@ -123,6 +123,18 @@ function add_to_visible_messages(candidates, visible_messages,
     });
 }
 
+var top_of_feed = new util.CachedValue({
+    compute_value: function () {
+        return $("#tab_bar_underpadding")[0].getBoundingClientRect().bottom;
+    }
+});
+
+var bottom_of_feed = new util.CachedValue({
+    compute_value: function () {
+        return $("#compose")[0].getBoundingClientRect().top;
+    }
+});
+
 exports.visible_messages = function () {
     // Note that when using getBoundingClientRect() we are getting offsets
     // relative to the visible window, but when using jQuery's offset() we are
@@ -130,9 +142,7 @@ exports.visible_messages = function () {
     // compare heights from these two methods.
 
     var selected = current_msg_list.selected_message();
-    var top_of_feed = $("#tab_bar_underpadding")[0].getBoundingClientRect().bottom;
-    var bottom_of_feed = $("#compose")[0].getBoundingClientRect().top;
-    var height = bottom_of_feed - top_of_feed;
+    var height = bottom_of_feed.get() - top_of_feed.get();
 
     // Being simplistic about this, the smallest message is 25 px high.
     var selected_row = rows.get(current_msg_list.selected_id(), current_msg_list.table_name);
@@ -144,11 +154,11 @@ exports.visible_messages = function () {
     var messages_above_pointer = selected_row.prevAll("tr.message_row[zid]:lt(" + num_neighbors + ")");
     var messages_below_pointer = selected_row.nextAll("tr.message_row[zid]:lt(" + num_neighbors + ")");
     add_to_visible_messages(selected_row, visible_messages,
-                            top_of_feed, bottom_of_feed);
+                            top_of_feed.get(), bottom_of_feed.get());
     add_to_visible_messages(messages_above_pointer, visible_messages,
-                            top_of_feed, bottom_of_feed);
+                            top_of_feed.get(), bottom_of_feed.get());
     add_to_visible_messages(messages_below_pointer, visible_messages,
-                            top_of_feed, bottom_of_feed);
+                            top_of_feed.get(), bottom_of_feed.get());
 
     return visible_messages;
 };
@@ -212,6 +222,12 @@ $(function () {
     jwindow.resize(function () {
         dimensions.height.reset();
         dimensions.width.reset();
+        top_of_feed.reset();
+        bottom_of_feed.reset();
+    });
+
+    $(document).on('compose_started compose_canceled compose_finished', function () {
+        bottom_of_feed.reset();
     });
 });
 
