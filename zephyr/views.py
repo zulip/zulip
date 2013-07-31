@@ -713,6 +713,9 @@ class NarrowBuilder(object):
     def by_sender(self, operand):
         return self.pQ(sender__email__iexact=operand)
 
+    def by_near(self, operand):
+        return Q()
+
     def by_pm_with(self, operand):
         if ',' in operand:
             # Huddle

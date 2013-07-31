@@ -119,6 +119,9 @@ Filter.prototype = {
                     }
                     break;
 
+                case 'near':
+                    return true;
+
                 case 'stream':
                     if (message.type !== 'stream')
                         return false;
@@ -333,6 +336,7 @@ exports.activate = function (operators, opts) {
     if (operators.length === 0) {
         return exports.deactivate();
     }
+    var filter = new Filter(operators);
 
     opts = _.defaults({}, opts, {
         then_select_id: home_msg_list.selected_id(),
@@ -340,6 +344,10 @@ exports.activate = function (operators, opts) {
         change_hash: true,
         trigger: 'unknown'
     });
+    if (filter.has_operator("near")) {
+        opts.then_select_id = filter.operands("near")[0];
+        opts.select_first_unread = false;
+    }
 
     if (opts.then_select_id === -1) {
         // If we're loading the page via a narrowed URL, we may not
@@ -366,7 +374,7 @@ exports.activate = function (operators, opts) {
         message_tour.start_tour(current_msg_list.selected_id());
     }
 
-    current_filter = new Filter(operators);
+    current_filter = filter;
 
     // Save how far from the pointer the top of the message list was.
     if (current_msg_list.selected_id() !== -1) {
@@ -504,7 +512,7 @@ exports.by_recipient = function (target_id, opts) {
 
 exports.by_time_travel = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
-    narrow.activate([], opts);
+    narrow.activate([["near", target_id]], opts);
 };
 
 exports.deactivate = function () {
