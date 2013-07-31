@@ -50,13 +50,13 @@ Filter.prototype = {
     },
 
     has_operand: function Filter_has_operand(operator, operand) {
-        return _.some(this._operators, function (elem) {
+        return _.any(this._operators, function (elem) {
             return elem[0] === operator && elem[1] === operand;
         });
     },
 
     has_operator: function Filter_has_operator(operator) {
-        return _.some(this._operators, function (elem) {
+        return _.any(this._operators, function (elem) {
             return elem[0] === operator;
         });
     },
