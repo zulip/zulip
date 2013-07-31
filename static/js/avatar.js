@@ -62,7 +62,7 @@ exports.set_up_file_input = function (
         upload_button.show();
     }
 
-    clear_button.click(function (e) {
+    clear_button.on('click', function (e) {
         clear();
         e.preventDefault();
     });
@@ -77,7 +77,7 @@ exports.set_up_file_input = function (
         return false;
     });
 
-    var validate_avatar = function (e) {
+    get_file_input().on('change', function (e) {
         if (e.target.files.length === 0) {
             input_error.hide();
         } else if (e.target.files.length === 1) {
@@ -98,11 +98,9 @@ exports.set_up_file_input = function (
         else {
             input_error.text('Please just upload one file.');
         }
-    };
+    });
 
-    get_file_input().change(validate_avatar);
-
-    upload_button.click(function (e) {
+    upload_button.on('click', function (e) {
         get_file_input().trigger('click');
         e.preventDefault();
     });
