@@ -630,7 +630,7 @@ def make_md_engine(key, opts):
 realm_filters = {
     "default": [],
     "zulip.com": [
-        ("#(?P<id>[0-9]{1,8})", "https://trac.humbughq.com/ticket/%(id)s"),
+        ("#(?P<id>[0-9]{2,8})", "https://trac.humbughq.com/ticket/%(id)s"),
         ],
     }
 
