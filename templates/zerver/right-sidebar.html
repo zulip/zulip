@@ -8,6 +8,16 @@
                 <strong>Unable to connect to Zulip.</strong>  Could not fetch messages.
                 <br /><br /> Retrying soon... <br /><br />
               </div>
+              <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
+                <strong>Messages you send are not being mirrored to MIT
+                  zephyr</strong> &mdash; Please check
+                that <a href="/zephyr#mirror">you are running the Zephyr mirror
+                  script</a>. Once you've corrected this
+                issue, you can <a class="restart_get_updates_button">click
+                  here</a> to update this alert.
+              </div>
+              <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
+              <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
               <div id="feedback_section">
                 <button type="button" class="btn btn-large" id="feedback_button">
                   <i class="icon-vector-comment"></i>&nbsp;&nbsp;Send feedback
