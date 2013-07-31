@@ -382,12 +382,10 @@ exports.activate = function (operators, opts) {
         if (! narrowed_msg_list.empty()) {
             if (opts.select_first_unread) {
                 then_select_id = narrowed_msg_list.last().id;
-                _.each(narrowed_msg_list.all(), function (msg) {
-                    if (unread.message_unread(msg)) {
-                        then_select_id = msg.id;
-                        return false;
-                    }
-                });
+                var first_unread = _.find(narrowed_msg_list.all(),
+                                          unread.message_unread);
+                if (first_unread)
+                    then_select_id = first_unread.id;
             }
 
             var preserve_pre_narrowing_screen_position =
