@@ -90,7 +90,7 @@ Filter.prototype = {
         // build JavaScript code in a string and then eval() it.
 
         return function (message) {
-            var operand, i, index;
+            var operand, i, index, m, related_regexp;
             for (i = 0; i < operators.length; i++) {
                 operand = operators[i][1];
                 switch (operators[i][0]) {
@@ -133,12 +133,12 @@ Filter.prototype = {
                         // MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
                         // (unsocial, ununsocial, social.d, etc)
                         // TODO: hoist the regex compiling out of the closure
-                        var m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(operand);
+                        m = /^(?:un)*(.+?)(?:\.d)*$/i.exec(operand);
                         var base_stream_name = operand;
                         if (m !== null && m[1] !== undefined) {
                             base_stream_name = m[1];
                         }
-                        var related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source, 'i');
+                        related_regexp = new RegExp(/^(un)*/.source + util.escape_regexp(base_stream_name) + /(\.d)*$/.source, 'i');
                         if (! related_regexp.test(message.stream)) {
                             return false;
                         }
@@ -148,9 +148,36 @@ Filter.prototype = {
                     break;
 
                 case 'topic':
-                    if ((message.type !== 'stream') ||
-                        (message.subject.toLowerCase() !== operand))
+                    if (message.type !== 'stream')
                         return false;
+
+                    if (page_params.domain === "mit.edu") {
+                        // MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
+                        // (foo, foo.d, foo.d.d, etc)
+                        // TODO: hoist the regex compiling out of the closure
+                        m = /^(.*?)(?:\.d)*$/i.exec(operand);
+                        var base_topic = operand;
+                        if (m !== null && m[1] !== undefined) {
+                            base_topic = m[1];
+                        }
+
+                        // Additionally, MIT users expect the empty instance and
+                        // instance "personal" to be the same.
+                        if (base_topic === ''
+                            || base_topic.toLowerCase() === 'personal'
+                            || base_topic.toLowerCase() === '(instance "")')
+                        {
+                            related_regexp = /^(|personal|\(instance ""\))(\.d)*$/i;
+                        } else {
+                            related_regexp = new RegExp(/^/.source + util.escape_regexp(base_topic) + /(\.d)*$/.source, 'i');
+                        }
+
+                        if (! related_regexp.test(message.subject)) {
+                            return false;
+                        }
+                    } else if (message.subject.toLowerCase() !== operand) {
+                        return false;
+                    }
                     break;
 
                 case 'sender':

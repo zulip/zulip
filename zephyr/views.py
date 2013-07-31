@@ -708,6 +708,24 @@ class NarrowBuilder(object):
         return self.pQ(recipient=recipient)
 
     def by_topic(self, operand):
+        if self.user_profile.realm.domain == "mit.edu":
+            # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
+            # (foo, foo.d, foo.d.d, etc)
+            m = re.search(r'^(.*?)(?:\.d)*$', operand, re.IGNORECASE)
+            if m:
+                base_topic = m.group(1)
+            else:
+                base_topic = operand
+
+            # Additionally, MIT users expect the empty instance and
+            # instance "personal" to be the same.
+            if base_topic in ('', 'personal', '(instance "")'):
+                regex = r'^(|personal|\(instance ""\))(\.d)*$'
+            else:
+                regex = r'^%s(\.d)*$' % (re.escape(base_topic),)
+
+            return self.pQ(subject__iregex=regex)
+
         return self.pQ(subject__iexact=operand)
 
     def by_sender(self, operand):
