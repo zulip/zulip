@@ -102,8 +102,7 @@ exports.set_message_position = function (message_top, message_height, viewport_i
     exports.scrollTop(new_scroll_top);
 };
 
-function in_viewport_or_tall(el, top_of_feed, bottom_of_feed) {
-    var rect = el.getBoundingClientRect();
+function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed) {
     return ((rect.top > top_of_feed) && // Message top is in view and
             ((rect.bottom < bottom_of_feed) || // message is fully in view or
              ((rect.height > bottom_of_feed - top_of_feed) &&
@@ -115,7 +114,7 @@ function add_to_visible_messages(candidates, visible_messages,
     _.each(candidates, function (row) {
         var row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
-        if (in_viewport_or_tall(row, top_of_feed, bottom_of_feed)) {
+        if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed)) {
             visible_messages.push(current_msg_list.get(rows.id($(row))));
         } else {
             return false;
