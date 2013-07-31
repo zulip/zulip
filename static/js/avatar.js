@@ -105,10 +105,21 @@ exports.set_up_file_input = function (
         e.preventDefault();
     });
 
+    function close() {
+        clear();
+        clear_button.off('click');
+        upload_button.off('drop');
+        get_file_input().off('change');
+        upload_button.off('click');
+    }
+
     return {
         // Call back to clear() in situations like adding bots, when
         // we want to use the same widget over and over again.
-        clear: clear
+        clear: clear,
+        // Call back to close() when you are truly done with the widget,
+        // so you can release handlers.
+        close: close
     };
 };
 
