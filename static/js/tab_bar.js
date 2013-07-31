@@ -54,6 +54,8 @@ function make_tab_data() {
             tabs.push(make_tab("Starred", hashed));
         } else if (filter.has_operator("near")) {
             tabs.push(make_tab("Near " + filter.operands("near")[0], hashed));
+        } else if (filter.has_operator("id")) {
+            tabs.push(make_tab("ID " + filter.operands("id")[0], hashed));
         } else if (filter.has_operand("is", "mentioned")) {
             tabs.push(make_tab("Mentions", hashed));
         } else if (filter.has_operator("sender")) {

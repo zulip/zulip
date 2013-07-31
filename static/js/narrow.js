@@ -122,6 +122,9 @@ Filter.prototype = {
                 case 'near':
                     return true;
 
+                case 'id':
+                    return message.id.toString() === operand;
+
                 case 'stream':
                     if (message.type !== 'stream')
                         return false;
@@ -346,6 +349,10 @@ exports.activate = function (operators, opts) {
     });
     if (filter.has_operator("near")) {
         opts.then_select_id = filter.operands("near")[0];
+        opts.select_first_unread = false;
+    }
+    if (filter.has_operator("id")) {
+        opts.then_select_id = filter.operands("id")[0];
         opts.select_first_unread = false;
     }
 

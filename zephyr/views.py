@@ -716,6 +716,9 @@ class NarrowBuilder(object):
     def by_near(self, operand):
         return Q()
 
+    def by_id(self, operand):
+        return self.pQ(id=operand)
+
     def by_pm_with(self, operand):
         if ',' in operand:
             # Huddle
