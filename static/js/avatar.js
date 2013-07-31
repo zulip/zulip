@@ -105,7 +105,11 @@ exports.set_up_file_input = function (
         e.preventDefault();
     });
 
-    return clear;
+    return {
+        // Call back to clear() in situations like adding bots, when
+        // we want to use the same widget over and over again.
+        clear: clear
+    };
 };
 
 return exports;

@@ -44,7 +44,7 @@ $(function () {
                           "Please only use characters that are valid in an email address");
 
 
-    var clear_bot_avatar_file_input = avatar.set_up_avatar_logic_for_creating_bots();
+    var clear_bot_avatar_file_input = avatar.set_up_avatar_logic_for_creating_bots().clear;
 
     $('#create_bot_form').validate({
         errorClass: 'text-error',
