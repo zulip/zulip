@@ -924,6 +924,7 @@ blockquote p {
 .messagebox blockquote {
     padding-left: 5px;
     margin-left: 10px;
+    border-left-color: #ddd;
 }
 
 #send_message_form {
