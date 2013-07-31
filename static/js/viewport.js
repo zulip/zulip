@@ -111,11 +111,12 @@ function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed) {
 
 function add_to_visible_messages(candidates, visible_messages,
                                  top_of_feed, bottom_of_feed) {
-    _.each(candidates, function (row) {
+    _.every(candidates, function (row) {
         var row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
         if (in_viewport_or_tall(row_rect, top_of_feed, bottom_of_feed)) {
             visible_messages.push(current_msg_list.get(rows.id($(row))));
+            return true;
         } else {
             return false;
         }
