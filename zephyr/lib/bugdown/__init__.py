@@ -548,6 +548,16 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             el.text = "@%s" % (name,)
             return el
 
+# This prevents realm_filters from running on the content of a
+# Markdown link, breaking up the link.  This is a monkey-patch, but it
+# might be worth sending a version of this change upstream.
+class AtomicLinkPattern(LinkPattern):
+    def handleMatch(self, m):
+        ret = LinkPattern.handleMatch(self, m)
+        if not isinstance(ret, basestring):
+            ret.text = markdown.util.AtomicString(ret.text)
+        return ret
+
 class Bugdown(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         del md.preprocessors['reference']
@@ -571,11 +581,11 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('gravatar', Gravatar(r'!gravatar\((?P<email>[^)]*)\)'), '_begin')
         md.inlinePatterns.add('usermention', UserMentionPattern(mention.find_mentions), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?<!\S)(?P<syntax>:[^:\s]+:)(?!\S)'), '_begin')
-        md.inlinePatterns.add('link', LinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
+        md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>backtick')
 
         for (pattern, format_string) in self.getConfig("realm_filters"):
             md.inlinePatterns.add('realm_filters/%s' % (pattern,),
-                                  RealmFilterPattern(pattern, format_string), '_begin')
+                                  RealmFilterPattern(pattern, format_string), '>link')
 
         # A link starts at a word boundary, and ends at space, punctuation, or end-of-input.
         #
