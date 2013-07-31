@@ -172,7 +172,7 @@ $(function () {
                 edit_button.hide();
                 $.ajax({
                     url: '/json/bots/' + encodeURIComponent(email),
-                    type: 'PATCH',
+                    type: 'POST',
                     data: formData,
                     cache: false,
                     processData: false,
