@@ -692,14 +692,14 @@ class NarrowBuilder(object):
         if self.user_profile.realm.domain == "mit.edu":
             # MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
             # (unsocial, ununsocial, social.d, etc)
-            m = re.search(r'^(?:un)*(.+?)(?:.d)*$', stream.name)
+            m = re.search(r'^(?:un)*(.+?)(?:\.d)*$', stream.name, re.IGNORECASE)
             if m:
                 base_stream_name = m.group(1)
             else:
                 base_stream_name = stream.name
 
             matching_streams = Stream.objects.filter(realm=self.user_profile.realm,
-                                                     name__iregex=r'^(un)*%s(.d)*$' % (re.escape(base_stream_name),))
+                                                     name__iregex=r'^(un)*%s(\.d)*$' % (re.escape(base_stream_name),))
             matching_stream_ids = [matching_stream.id for matching_stream in matching_streams]
             recipients = bulk_get_recipients(Recipient.STREAM, matching_stream_ids).values()
             return self.pQ(recipient__in=recipients)
