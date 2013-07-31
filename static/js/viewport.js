@@ -130,7 +130,7 @@ exports.visible_messages = function () {
     // compare heights from these two methods.
 
     var selected = current_msg_list.selected_message();
-    var top_of_feed = $(".navbar-top")[0].getBoundingClientRect().bottom;
+    var top_of_feed = $("#tab_bar_underpadding")[0].getBoundingClientRect().bottom;
     var bottom_of_feed = $("#compose")[0].getBoundingClientRect().top;
     var height = bottom_of_feed - top_of_feed;
 
