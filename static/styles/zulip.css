@@ -514,21 +514,6 @@ td.pointer {
     transition: all 3s ease-in-out;
 }
 
-/* Adjust certain message elements so they still
-   stand out against the grey background */
-
-.selected_message pre {
-    background-color: white;
-}
-
-.selected_message code {
-    background-color: white;
-}
-
-.selected_message blockquote {
-    border-left-color: #BBB;
-}
-
 .message_time {
     position: absolute;
     right: -26px;
