@@ -16,8 +16,9 @@ function autofocus(selector) {
 // and also from the in-app password change interface.
 function password_quality(password, bar) {
     // We load zxcvbn.js asynchronously, so the variable might not be set.
-    if (typeof zxcvbn === 'undefined')
+    if (typeof zxcvbn === 'undefined') {
         return undefined;
+    }
 
     // Consider the password acceptable if it's at least 6 characters.
     var acceptable = password.length >= 6;
@@ -29,8 +30,9 @@ function password_quality(password, bar) {
 
         // Even if zxcvbn loves your short password, the bar should be filled
         // at most 1/3 of the way, because we won't accept it.
-        if (!acceptable)
+        if (!acceptable) {
             quality = Math.min(quality, 0.33);
+        }
 
         // Display the password quality score on a progress bar
         // which bottoms out at 10% so there's always something

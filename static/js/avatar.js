@@ -4,7 +4,9 @@ var exports = {};
 
 function is_image_format(file) {
     var type = file.type;
-    if (!type) return false;
+    if (!type) {
+        return false;
+    }
 
     var supported_types = [
         'image/jpeg',

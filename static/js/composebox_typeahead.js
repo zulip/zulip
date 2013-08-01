@@ -74,7 +74,9 @@ function handle_keydown(e) {
         if (e.target.id === "stream") {
             nextFocus = "subject";
         } else if (e.target.id === "subject") {
-            if (code === 13) e.preventDefault();
+            if (code === 13) {
+                e.preventDefault();
+            }
             nextFocus = "new_message_content";
         } else if (e.target.id === "private_message_recipient") {
             nextFocus = "new_message_content";
@@ -182,7 +184,9 @@ exports.initialize = function () {
         });
     });
     $("#enter_sends").prop('checked', page_params.enter_sends);
-    if (page_params.enter_sends) $("#compose-send-button").hide();
+    if (page_params.enter_sends) {
+        $("#compose-send-button").hide();
+    }
 
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({
@@ -281,12 +285,14 @@ exports.initialize = function () {
             // Don't autocomplete more than this many characters.
             var max_chars = 30;
             var last_at = q.lastIndexOf('@');
-            if (last_at === -1 || last_at < q.length-1 - max_chars)
+            if (last_at === -1 || last_at < q.length-1 - max_chars) {
                 return false;  // No '@', or too far back
+            }
 
             current_token = q.substring(last_at + 1);
-            if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1)
+            if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
                 return false;
+            }
 
             this.completing = 'mention';
             this.token = current_token.substring(current_token.indexOf("@")+1);

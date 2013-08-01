@@ -102,8 +102,9 @@ exports.update_title_count = function (new_message_count) {
             // measure.  And we don't have images above 99, so display those as
             // 'infinite'.
             n = (+new_message_count);
-            if (n > 99)
+            if (n > 99) {
                 n = 'infinite';
+            }
 
             current_favicon = previous_favicon = '/static/images/favicon/favicon-'+n+'.png';
         } else {
@@ -277,14 +278,17 @@ function message_is_notifiable(message) {
 
 exports.received_messages = function (messages) {
     _.each(messages, function (message) {
-        if (!message_is_notifiable(message)) return;
-        if (!unread.message_unread(message)) return;
+        if (!message_is_notifiable(message)) {
+            return;
+        }
+        if (!unread.message_unread(message)) {
+            return;
+        }
 
         if (page_params.desktop_notifications_enabled &&
             browser_desktop_notifications_on()) {
             process_notification({message: message, webkit_notify: true});
-        }
-        else {
+        } else {
             process_notification({message: message, webkit_notify: false});
         }
         if (page_params.sounds_enabled && supports_sound) {

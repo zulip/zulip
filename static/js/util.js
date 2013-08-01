@@ -193,10 +193,12 @@ exports.same_stream_and_subject = function util_same_stream_and_subject(a, b) {
 };
 
 exports.same_recipient = function util_same_recipient(a, b) {
-    if ((a === undefined) || (b === undefined))
+    if ((a === undefined) || (b === undefined)) {
         return false;
-    if (a.type !== b.type)
+    }
+    if (a.type !== b.type) {
         return false;
+    }
 
     switch (a.type) {
     case 'private':
@@ -234,8 +236,9 @@ exports.robust_uri_decode = function (str) {
         try {
             return decodeURIComponent(str.substring(0, end));
         } catch (e) {
-            if (!(e instanceof URIError))
+            if (!(e instanceof URIError)) {
                 throw e;
+            }
             end--;
         }
     }

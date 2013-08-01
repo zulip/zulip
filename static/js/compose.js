@@ -159,7 +159,9 @@ exports.update_recipient_on_narrow = function () {
 };
 
 function update_fade () {
-    if (!is_composing_message) return;
+    if (!is_composing_message) {
+        return;
+    }
 
     // Construct focused_recipient as a mocked up element which has all the
     // fields of a message used by util.same_recipient()

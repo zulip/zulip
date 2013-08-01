@@ -38,8 +38,9 @@ Filter.prototype = {
             // Currently just filter out the "in" keyword.
             return value[0] !== 'in';
         });
-        if (safe_to_return.length !== 0)
+        if (safe_to_return.length !== 0) {
             return safe_to_return;
+        }
     },
 
     operands: function Filter_get_operands(operator) {
@@ -96,8 +97,9 @@ Filter.prototype = {
                 switch (operators[i][0]) {
                 case 'is':
                     if (operand === 'private') {
-                        if (message.type !== 'private')
+                        if (message.type !== 'private') {
                             return false;
+                        }
                     } else if (operand === 'starred') {
                         if (!message.starred) {
                             return false;
@@ -126,8 +128,9 @@ Filter.prototype = {
                     return message.id.toString() === operand;
 
                 case 'stream':
-                    if (message.type !== 'stream')
+                    if (message.type !== 'stream') {
                         return false;
+                    }
 
                     if (page_params.domain === "mit.edu") {
                         // MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
@@ -148,8 +151,9 @@ Filter.prototype = {
                     break;
 
                 case 'topic':
-                    if (message.type !== 'stream')
+                    if (message.type !== 'stream') {
                         return false;
+                    }
 
                     if (page_params.domain === "mit.edu") {
                         // MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
@@ -181,14 +185,16 @@ Filter.prototype = {
                     break;
 
                 case 'sender':
-                    if ((message.sender_email.toLowerCase() !== operand))
+                    if ((message.sender_email.toLowerCase() !== operand)) {
                         return false;
+                    }
                     break;
 
                 case 'pm-with':
                     if ((message.type !== 'private') ||
-                        message.reply_to.toLowerCase() !== operand.split(',').sort().join(','))
+                        message.reply_to.toLowerCase() !== operand.split(',').sort().join(',')) {
                         return false;
+                    }
                     break;
                 }
             }
@@ -306,12 +312,14 @@ exports.set_compose_defaults = function (opts) {
     // Set the stream, subject, and/or PM recipient if they are
     // uniquely specified in the narrow view.
     _.each(['stream', 'topic'], function (key) {
-        if (single[key] !== undefined)
+        if (single[key] !== undefined) {
             opts[key] = single[key];
+        }
     });
 
-    if (single['pm-with'] !== undefined)
+    if (single['pm-with'] !== undefined) {
         opts.private_message_recipient = single['pm-with'];
+    }
 };
 
 // Parse a string into a list of operators (see below).
@@ -324,8 +332,9 @@ exports.parse = function (str) {
     }
     _.each(matches, function (token) {
         var parts, operator;
-        if (token.length === 0)
+        if (token.length === 0) {
             return;
+        }
         parts = token.split(':');
         if (token[0] === '"' || parts.length === 1) {
             // Looks like a normal search term.
@@ -338,8 +347,9 @@ exports.parse = function (str) {
         }
     });
     // NB: Callers of 'parse' can assume that the 'search' operator is last.
-    if (search_term.length > 0)
+    if (search_term.length > 0) {
         operators.push(['search', search_term.join(' ')]);
+    }
     return operators;
 };
 
@@ -426,8 +436,9 @@ exports.activate = function (operators, opts) {
                 then_select_id = narrowed_msg_list.last().id;
                 var first_unread = _.find(narrowed_msg_list.all(),
                                           unread.message_unread);
-                if (first_unread)
+                if (first_unread) {
                     then_select_id = first_unread.id;
+                }
             }
 
             var preserve_pre_narrowing_screen_position =
@@ -492,8 +503,9 @@ exports.activate = function (operators, opts) {
     // Put the narrow operators in the URL fragment.
     // Disabled when the URL fragment was the source
     // of this narrow.
-    if (opts.change_hash)
+    if (opts.change_hash) {
         hashchange.save_narrow(operators);
+    }
 
     // Put the narrow operators in the search bar.
     $('#search_query').val(exports.unparse(operators));

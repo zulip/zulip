@@ -104,8 +104,9 @@ function get_event_name(e) {
 function process_hotkey(e) {
     // Disable hotkeys on settings page etc., and when a modal pop-up
     // is visible.
-    if (ui.home_tab_obscured())
+    if (ui.home_tab_obscured()) {
         return false;
+    }
 
     var event_name = get_event_name(e);
 
@@ -290,8 +291,9 @@ function process_hotkey(e) {
 $(document).keydown(function (e) {
     // Restrict to non-alphanumeric keys
     if (48 > e.which || 90 < e.which) {
-        if (process_hotkey(e))
+        if (process_hotkey(e)) {
             e.preventDefault();
+        }
     }
 });
 
@@ -303,8 +305,9 @@ $(document).keypress(function (e) {
     // keypress event with keycode 0 after processing the original
     // event.
     if (e.which !== 0 && e.charCode !== 0) {
-        if (process_hotkey(e))
+        if (process_hotkey(e)) {
             e.preventDefault();
+        }
     }
 });
 

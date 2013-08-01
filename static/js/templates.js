@@ -3,8 +3,9 @@ var templates = (function () {
 var exports = {};
 
 exports.render = function (name, arg) {
-    if (Handlebars.templates === undefined)
+    if (Handlebars.templates === undefined) {
         Handlebars.templates = {};
+    }
 
     if (Handlebars.templates[name] === undefined) {
         // Fetch the template using a synchronous AJAX request.

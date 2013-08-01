@@ -8,8 +8,9 @@ var bar_selector = "#notifications-bar"; // the selector jQuery can use to pick 
 var area_selector = "#notifications-area"; // the selector jQuery can use to pick the container
 
 function show() {
-    if (disabled)
+    if (disabled) {
         return; // we should never show the bar when disabled
+    }
 
     if (!displayed) {
         // If the bar wasn't already displayed, simply show it
@@ -20,8 +21,9 @@ function show() {
 
 // Hide the notifications bar
 function hide() {
-    if (!displayed)
+    if (!displayed) {
         return; // don't unnecessarily add to the element's fx queue
+    }
     displayed = false;
     $(bar_selector).slideUp(50);
 }
@@ -33,10 +35,11 @@ exports.update = function (num_unread) {
     if (last_row
         && last_row.offset() !== null // otherwise the next line will error
         && viewport.is_below_visible_bottom(last_row.offset().top + last_row.height())
-        && num_unread > 0)
+        && num_unread > 0) {
         show();
-    else
+    } else {
         hide();
+    }
 };
 
 // We disable the notifications bar if it overlaps with the composebox

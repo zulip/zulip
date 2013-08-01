@@ -288,8 +288,9 @@ MessageList.prototype = {
     },
 
     _render: function MessageList__render(messages, where, messages_are_new) {
-        if (messages.length === 0 || this.table_name === undefined)
+        if (messages.length === 0 || this.table_name === undefined) {
             return;
+        }
 
         var self = this;
         var table_name = this.table_name;
@@ -347,8 +348,9 @@ MessageList.prototype = {
                 // prev is no longer the last element in this block
                 prev.include_footer = false;
             } else {
-                if (current_group.length > 0)
+                if (current_group.length > 0) {
                     new_message_groups.push(current_group);
+                }
                 current_group = [message.id];
 
                 // Add a space to the table, but not for the first element.
@@ -408,8 +410,9 @@ MessageList.prototype = {
             return;
         }
 
-        if (current_group.length > 0)
+        if (current_group.length > 0) {
             new_message_groups.push(current_group);
+        }
 
         if (where === 'top') {
             this._message_groups = new_message_groups.concat(this._message_groups);

@@ -126,8 +126,9 @@ function keep_pointer_in_view() {
     var candidate;
     var next_row = current_msg_list.selected_row();
 
-    if (next_row.length === 0)
+    if (next_row.length === 0) {
         return;
+    }
 
     var info = viewport.message_viewport_info();
     var top_threshold = info.visible_top + (1/10 * info.visible_height);
@@ -143,19 +144,22 @@ function keep_pointer_in_view() {
     }
 
     function adjust(past_threshold, at_end, advance) {
-        if (!past_threshold(next_row) || at_end())
+        if (!past_threshold(next_row) || at_end()) {
             return false;  // try other side
+        }
         while (past_threshold(next_row)) {
             candidate = advance(next_row);
-            if (candidate.length === 0)
+            if (candidate.length === 0) {
                 break;
+            }
             next_row = candidate;
         }
         return true;
     }
 
-    if (! adjust(above_view_threshold, viewport.at_top, rows.next_visible))
+    if (! adjust(above_view_threshold, viewport.at_top, rows.next_visible)) {
         adjust(below_view_threshold, viewport.at_bottom, rows.prev_visible);
+    }
 
     current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
 }
@@ -202,8 +206,9 @@ function recenter_view(message, opts) {
 
 function scroll_to_selected() {
     var selected_row = current_msg_list.selected_row();
-    if (selected_row && (selected_row.length !== 0))
+    if (selected_row && (selected_row.length !== 0)) {
         recenter_view(selected_row);
+    }
 }
 
 function maybe_scroll_to_selected() {
@@ -253,7 +258,9 @@ function send_queued_flags() {
     }
 
     function on_success(data, status, jqXHR) {
-        if (data ===  undefined || data.messages === undefined) return;
+        if (data ===  undefined || data.messages === undefined) {
+            return;
+        }
 
         queued_mark_as_read = _.filter(queued_mark_as_read, function (message) {
             return data.messages.indexOf(message) === -1;
@@ -673,8 +680,9 @@ function add_messages_helper(messages, msg_list, predicate, messages_are_new) {
 }
 
 function add_messages(messages, msg_list, messages_are_new) {
-    if (!messages)
+    if (!messages) {
         return;
+    }
 
     util.destroy_loading_indicator($('#page_loading_indicator'));
     util.destroy_first_run_message();
@@ -910,7 +918,9 @@ function get_updates_success(data) {
             // the pointer position.
             for (i = messages.length-1; i>=0; i--){
                 var id = messages[i].id;
-                if (id <= selected_id) break;
+                if (id <= selected_id) {
+                    break;
+                }
                 if (messages[i].sent_by_me && current_msg_list.get(id) !== undefined) {
                     // If this is a reply we just sent, advance the pointer to it.
                     current_msg_list.select_id(messages[i].id, {then_scroll: true,
@@ -1024,8 +1034,9 @@ function load_old_messages(opts) {
                 num_before: opts.num_before,
                 num_after: opts.num_after};
 
-    if (opts.msg_list.narrowed && narrow.active())
+    if (opts.msg_list.narrowed && narrow.active()) {
         data.narrow = JSON.stringify(narrow.public_operators());
+    }
 
     function process_result(messages) {
         $('#get_old_messages_error').hide();
@@ -1179,11 +1190,13 @@ $(function () {
 });
 
 function restart_get_updates(options) {
-    if (get_updates_xhr !== undefined)
+    if (get_updates_xhr !== undefined) {
         get_updates_xhr.abort();
+    }
 
-    if (get_updates_timeout !== undefined)
+    if (get_updates_timeout !== undefined) {
         clearTimeout(get_updates_timeout);
+    }
 
     get_updates(options);
 }

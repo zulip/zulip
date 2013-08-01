@@ -6,8 +6,9 @@ var rows = (function () {
     // that our next element is *not* a message_row, so this
     // isn't going to end up empty unless we're at the bottom or top.
     exports.next_visible = function (message_row) {
-        if (message_row === undefined)
+        if (message_row === undefined) {
             return $();
+        }
         var row = message_row.next('.message_row');
         if (row.length !== 0) {
             return row;
@@ -16,8 +17,9 @@ var rows = (function () {
     };
 
     exports.prev_visible = function (message_row) {
-        if (message_row === undefined)
+        if (message_row === undefined) {
             return $();
+        }
         var row = message_row.prev('.message_row');
         if (row.length !== 0) {
             return row;
@@ -46,20 +48,23 @@ var rows = (function () {
         // Make sure message_id is just an int, because we build
         // a jQuery selector using it.
         message_id = parseInt(message_id, 10);
-        if (isNaN(message_id))
+        if (isNaN(message_id)) {
             return $();
+        }
 
         // To avoid attacks and bizarre errors, we have a whitelist
         // of valid table names.
-        if (! valid_table_names.hasOwnProperty(table_name))
+        if (! valid_table_names.hasOwnProperty(table_name)) {
             return $();
+        }
 
         return $('#' + table_name + message_id);
     };
 
     exports.get_table = function (table_name) {
-        if (! valid_table_names.hasOwnProperty(table_name))
+        if (! valid_table_names.hasOwnProperty(table_name)) {
             return $();
+        }
 
         return $('#' + table_name);
     };

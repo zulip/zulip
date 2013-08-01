@@ -51,7 +51,9 @@ exports.highlight_query_in_phrase = function (query, phrase) {
     var result = "";
     var parts = phrase.split(' ');
     for (i = 0; i < parts.length; i++) {
-        if (i > 0) result += " ";
+        if (i > 0) {
+            result += " ";
+        }
         result += exports.highlight_with_escaping_and_regex(regex, parts[i]);
     }
     return result;
@@ -122,12 +124,13 @@ function prefix_sort(query, objs, get_item) {
         else {
             item = obj;
         }
-        if (item.indexOf(query) === 0)
+        if (item.indexOf(query) === 0) {
             beginswithCaseSensitive.push(obj);
-        else if (item.toLowerCase().indexOf(query.toLowerCase()) === 0)
+        } else if (item.toLowerCase().indexOf(query.toLowerCase()) === 0) {
             beginswithCaseInsensitive.push(obj);
-        else
+        } else {
             noMatch.push(obj);
+        }
         obj = objs.shift();
     }
     return { matches: beginswithCaseSensitive.concat(beginswithCaseInsensitive),
@@ -149,12 +152,13 @@ exports.compare_by_pms = function (user_a, user_b) {
 
     // We use alpha sort as a tiebreaker, which might be helpful for
     // new users.
-    if (user_a.full_name < user_b.full_name)
+    if (user_a.full_name < user_b.full_name) {
         return -1;
-    else if (user_a === user_b)
+    } else if (user_a === user_b) {
         return 0;
-    else
+    } else {
         return 1;
+    }
 };
 
 exports.sort_by_pms = function (objs) {

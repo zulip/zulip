@@ -10,10 +10,12 @@ exports.actively_scrolling = function () {
 
 // What, if anything, obscures the home tab?
 exports.home_tab_obscured = function () {
-    if ($('.modal:visible').length > 0)
+    if ($('.modal:visible').length > 0) {
         return 'modal';
-    if (! $('#home').hasClass('active'))
+    }
+    if (! $('#home').hasClass('active')) {
         return 'other_tab';
+    }
     return false;
 };
 
@@ -59,7 +61,9 @@ function amount_to_paginate() {
     // If the user has shrunk their browser a whole lot, pagination
     // is not going to be very pleasant, but we can at least
     // ensure they go in the right direction.
-    if (delta < 1) delta = 1;
+    if (delta < 1) {
+        delta = 1;
+    }
 
     return delta;
 }
@@ -235,8 +239,9 @@ $(function () {
 
 var current_message_hover;
 function message_unhover() {
-    if (current_message_hover === undefined)
+    if (current_message_hover === undefined) {
         return;
+    }
     current_message_hover.removeClass('message_hovered');
     current_message_hover = undefined;
 }
@@ -248,8 +253,9 @@ function message_hover(message_row) {
 }
 
 exports.report_message = function (response, status_box, cls) {
-    if (cls === undefined)
+    if (cls === undefined) {
         cls = 'alert';
+    }
 
     status_box.removeClass(status_classes).addClass(cls)
               .text(response).stop(true).fadeTo(0, 1);
@@ -1349,8 +1355,9 @@ var presence_descriptions = {
 };
 
 exports.set_presence_list = function (users, presence_info) {
-    if (page_params.domain === 'mit.edu')
+    if (page_params.domain === 'mit.edu') {
         return;  // MIT realm doesn't have a presence list
+    }
 
     var my_info = {
         name: page_params.fullname,
