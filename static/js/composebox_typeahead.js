@@ -289,6 +289,12 @@ exports.initialize = function () {
                 return false;  // No '@', or too far back
             }
 
+            // Only match if the @ follows a space, various punctuation,
+            // or is at the beginning of the string.
+            if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at-1]) === -1) {
+                return false;
+            }
+
             current_token = q.substring(last_at + 1);
             if (current_token.length < 1 || current_token.lastIndexOf('*') !== -1) {
                 return false;
