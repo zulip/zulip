@@ -102,6 +102,8 @@ function get_event_name(e) {
 //
 // Returns true if we handled it, false if the browser should.
 function process_hotkey(e) {
+    var row;
+
     // Disable hotkeys on settings page etc., and when a modal pop-up
     // is visible.
     if (ui.home_tab_obscured()) {
@@ -159,6 +161,9 @@ function process_hotkey(e) {
                 // event before we even get it.
                 // Regardless, we do nothing in this case.
                 return true;
+            } else if ($(".message_edit_content").filter(":focus").length > 0) {
+                row = $(".message_edit_content").filter(":focus").closest(".message_row");
+                message_edit.end(row);
             } else if (compose.composing()) {
                 // If the user hit the escape key, cancel the current compose
                 compose.cancel();
