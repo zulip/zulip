@@ -141,8 +141,11 @@ def process_as_post(view_func):
         if not request.POST:
             # Only take action if POST is empty.
             if request.META.get('CONTENT_TYPE', '').startswith('multipart'):
-                request.POST = MultiPartParser(request.META, StringIO(request.body),
-                        [], request.encoding).parse()[0]
+                # Note that request._files is just the private attribute that backs the
+                # FILES property, so we are essentially setting request.FILES here.  (In
+                # Django 1.5 FILES was still a read-only property.)
+                request.POST, request._files = MultiPartParser(request.META, StringIO(request.body),
+                        request.upload_handlers, request.encoding).parse()
             else:
                 request.POST = QueryDict(request.body, encoding=request.encoding)
 
