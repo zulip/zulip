@@ -2,12 +2,27 @@ var referral = (function () {
 
 var exports = {};
 
+var placeholder_invitees = ['guglielmo@marconi.com',
+                            'heinrich@hertz.com',
+                            'nikola@tesla.com',
+                            'samuel@morse.com',
+                            'claude@shannon.com',
+                            'thomas@edison.com',
+                            'hedy@lamarr.com',
+                            'grace@hopper.com',
+                            'martha@coston.com',
+                            'ada@lovelace.com',
+                            'hanna@hammarstrom.com',
+                            'hertha@ayrton.com'
+                           ];
+
 exports.update_state = function (granted, used) {
     if (granted <= 0) {
         $("#share-the-love").hide();
         return;
     }
 
+    $("#referral-form input").attr('placeholder', _.shuffle(placeholder_invitees).pop());
     $("#invite-hearts").empty();
     var i;
     for (i = 0; i < used; i++) {
