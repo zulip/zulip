@@ -25,7 +25,7 @@ var globals =
     + ' composebox_typeahead typeahead_helper notifications hashchange'
     + ' invite ui util activity timerender MessageList blueslip unread stream_list'
     + ' onboarding message_edit tab_bar emoji popovers navigate message_tour'
-    + ' avatar'
+    + ' avatar feature_flags'
 
     // colorspace.js
     + ' colorspace'
@@ -38,7 +38,7 @@ var globals =
 
     // zephyr.js
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list get_updates_params'
-    + ' feature_flags add_messages'
+    + ' add_messages'
     + ' subject_dict people_dict'
     + ' keep_pointer_in_view move_pointer_at_page_top_and_bottom'
     + ' respond_to_message recenter_view last_viewport_movement_direction'

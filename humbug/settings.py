@@ -361,6 +361,7 @@ JS_SPECS = {
                 if PIPELINE
                 else 'third/handlebars/handlebars.js'),
 
+            'js/feature_flags.js',
             'js/util.js',
             'js/setup.js',
             'js/viewport.js',
