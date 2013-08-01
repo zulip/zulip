@@ -2033,7 +2033,7 @@ def deactivate_user_backend(request, user_profile, email):
     return json_success({})
 
 @has_request_variables
-def update_bot_backend(request, user_profile, email, full_name=REQ):
+def patch_bot_backend(request, user_profile, email, full_name=REQ):
     # TODO:
     #   1) Validate data
     #   2) Support avatar changes

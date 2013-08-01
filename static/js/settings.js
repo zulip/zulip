@@ -180,7 +180,7 @@ $(function () {
                 edit_button.hide();
                 $.ajax({
                     url: '/json/bots/' + encodeURIComponent(email),
-                    type: 'POST',
+                    type: 'PATCH',
                     data: formData,
                     cache: false,
                     processData: false,

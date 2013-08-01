@@ -590,7 +590,7 @@ class BotTest(AuthedTestCase):
         bot_info = {
             'full_name': 'Fred',
         }
-        result = self.client.post("/json/bots/hambot-bot@zulip.com", bot_info)
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
         self.assert_json_error(result, 'Insufficient permission')
 
     def get_bot(self):
@@ -621,7 +621,7 @@ class BotTest(AuthedTestCase):
         bot_info = {
             'full_name': 'Fred',
         }
-        result = self.client.post("/json/bots/hambot-bot@zulip.com", bot_info)
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
         self.assert_json_success(result)
 
         full_name = ujson.loads(result.content)['full_name']
@@ -637,7 +637,7 @@ class BotTest(AuthedTestCase):
         bot_info = {
             'full_name': 'Fred',
         }
-        result = self.client.post("/json/bots/nonexistent-bot@zulip.com", bot_info)
+        result = self.client_patch("/json/bots/nonexistent-bot@zulip.com", bot_info)
         self.assert_json_error(result, 'No such user')
         self.assert_num_bots_equal(1)
 
