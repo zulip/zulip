@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import logging
 import time
 from tornado import ioloop
+from django.conf import settings
 
 orig_poll_impl = ioloop._poll
 
@@ -49,9 +50,11 @@ class InstrumentedPoll(object):
             total = t1 - self._times[0][0]
             in_poll = sum(b-a for a,b in self._times)
             if total > 0:
-                logging.info('Tornado %5.1f%% busy over the past %4.1f seconds'
-                    % (100 * (1 - in_poll/total), total))
-                self._last_print = t1
+                percent_busy = 100 * (1 - in_poll/total)
+                if settings.DEPLOYED or percent_busy > 20:
+                    logging.info('Tornado %5.1f%% busy over the past %4.1f seconds'
+                        % (percent_busy, total))
+                    self._last_print = t1
 
         return result
 
