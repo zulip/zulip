@@ -44,7 +44,7 @@ $(function () {
                           "Please only use characters that are valid in an email address");
 
 
-    var clear_bot_avatar_file_input = avatar.set_up_avatar_logic_for_creating_bots().clear;
+    var create_avatar_widget = avatar.build_bot_create_widget();
 
     $('#create_bot_form').validate({
         errorClass: 'text-error',
@@ -76,7 +76,7 @@ $(function () {
                     $('#create_bot_name').val('');
                     $('#create_bot_short_name').val('');
                     $('#create_bot_button').show();
-                    clear_bot_avatar_file_input();
+                    create_avatar_widget.clear();
 
                     add_bot_row(
                             full_name,
@@ -143,13 +143,13 @@ $(function () {
         bot_info.hide();
         edit_div.show();
 
-        var avatar_handler = avatar.set_up_avatar_logic_for_editing_bots(li);
+        var avatar_widget = avatar.build_bot_edit_widget(li);
 
         function show_row_again() {
             image.show();
             bot_info.show();
             edit_div.hide();
-            avatar_handler.close();
+            avatar_widget.close();
         }
 
         reset_edit_bot.click(function (event) {

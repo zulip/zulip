@@ -15,7 +15,7 @@ function is_image_format(file) {
     return _.indexOf(supported_types, type) >= 0;
 }
 
-exports.set_up_avatar_logic_for_creating_bots = function () {
+exports.build_bot_create_widget = function () {
 
     // We have to do strange gyrations with the file input to clear it,
     // where we replace it wholesale, so we generalize the file input with
@@ -29,7 +29,7 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
     var clear_button = $('#bot_avatar_clear_button');
     var upload_button = $('#bot_avatar_upload_button');
 
-    return exports.set_up_file_input(
+    return exports.build_widget(
         get_file_input,
         file_name_field,
         input_error,
@@ -38,7 +38,7 @@ exports.set_up_avatar_logic_for_creating_bots = function () {
     );
 };
 
-exports.set_up_avatar_logic_for_editing_bots = function (li) {
+exports.build_bot_edit_widget = function (li) {
     var get_file_input = function () {
         return li.find('.edit_bot_avatar_file_input');
     };
@@ -48,7 +48,7 @@ exports.set_up_avatar_logic_for_editing_bots = function (li) {
     var clear_button = li.find('.edit_bot_avatar_clear_button');
     var upload_button = li.find('.edit_bot_avatar_upload_button');
 
-    return exports.set_up_file_input(
+    return exports.build_widget(
         get_file_input,
         file_name_field,
         input_error,
@@ -57,7 +57,7 @@ exports.set_up_avatar_logic_for_editing_bots = function (li) {
     );
 };
 
-exports.set_up_file_input = function (
+exports.build_widget = function (
         get_file_input, // function returns a jQuery file input object
         file_name_field, // jQuery object to show file name
         input_error, // jQuery object for error text
