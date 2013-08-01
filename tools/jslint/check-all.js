@@ -74,12 +74,6 @@ var options = {
 // For each error.raw message, we can return 'true' to ignore
 // the error.
 var exceptions = {
-    "Expected '{a}' and instead saw '{b}'." : function (error) {
-        // We allow single-statement 'if' with no brace.
-        // This exception might be overly broad but oh well.
-        return (error.a === '{');
-    },
-
     "Unexpected 'else' after 'return'." : function () {
         return true;
     },
