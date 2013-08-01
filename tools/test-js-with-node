@@ -2,6 +2,10 @@
 
 cd "$(dirname "$0")"/../zephyr/tests/frontend/node
 
+STATIC_DIR=`python -c 'import os;print os.path.realpath("../../../../static")'`
+
+export NODE_PATH=$STATIC_DIR
+
 NODEJS=$(which nodejs || which node)
 
 $NODEJS message_tour.js

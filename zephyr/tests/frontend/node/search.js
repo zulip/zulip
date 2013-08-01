@@ -8,7 +8,7 @@
 var assert = require('assert');
 
 function set_up_dependencies() {
-    var _ = global._ = require('../../../../static/third/underscore/underscore.js');
+    var _ = global._ = require('third/underscore/underscore.js');
     global.Handlebars = require('handlebars');
 
     // We stub out most of jQuery, which is irrelevant to most of these tests.
@@ -21,8 +21,8 @@ function set_up_dependencies() {
     $.map = _.map;
     $.grep = _.filter;
 
-    var actual_narrow = require('../../../../static/js/narrow.js');
-    var search = require('../../../../static/js/search.js');
+    var actual_narrow = require('js/narrow.js');
+    var search = require('js/search.js');
 
     global.narrow = {
         parse: actual_narrow.parse,
@@ -39,7 +39,7 @@ function set_up_dependencies() {
         canonicalized_name: function (name) { return name; }
     };
 
-    global.typeahead_helper = require('../../../../static/js/typeahead_helper.js');
+    global.typeahead_helper = require('js/typeahead_helper.js');
 
     global.recent_subjects = {};
 
