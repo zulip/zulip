@@ -69,7 +69,7 @@ exports.mark_checklist_step = function (step) {
     update_onboarding_steps();
 };
 
-function set_app_sticky_popover() {
+function set_app_sticky_popover(completed) {
     var item = $("#made_app_sticky");
     item.popover({"placement": "left",
                   "content": templates.render('sticky_app_popover'),
@@ -83,34 +83,30 @@ function set_app_sticky_popover() {
                               '<h3 class="popover-title"></h3>' +
                               '<div class="popover-content"><p></p></div>' +
                               '</div></div>'});
-    // Popover on hover.
-    item.mouseenter(function (e) {
-        if (!$(this).data('popover').tip().hasClass('in')) {
-            item.popover('show');
 
-            // Clicking the Done button inside the popover closes it, removes
-            // the mousenter event handler so it doesn't keep popping up if you
-            // mouse around in that area, and instead reveals a ? to the right
-            // of the checklist item you can click to revisit the content if you
-            // want to.
-            $("#sticky_done").on("click", function (e) {
+    function show() {
+        item.popover('show');
+        function handler(e){
+            if (!$(e.target).is('#sticky-popover a, #pin_info_question i')) {
                 item.popover('hide');
-                if (item.find("#pin_info_question").length === 0) {
-                    item.unbind("mouseenter");
-                    var info_span = $('<span id="pin_info_question">' +
-                                      '<i class="icon-vector-question-sign"></i></span>');
-                    info_span.click(function () {
-                        item.popover("show");
-                        $("#sticky_done").on("click", function (e) {
-                            item.popover('hide');
-                        });
-                    });
-                    item.append(info_span);
-                    exports.mark_checklist_step("made_app_sticky");
-                }
-            });
+                $(document).off('click', handler);
+            }
         }
-    });
+        $(document.body).on('click', handler);
+    }
+
+    var info_span = $('<span id="pin_info_question">' +
+                      '<i class="icon-vector-question-sign"></i></span>');
+    info_span.click(show);
+    item.append(info_span);
+
+    if (!completed) {
+        item.one('mouseenter', show);
+
+        $(document.body).one('click', "#sticky_done", function (e) {
+            exports.mark_checklist_step("made_app_sticky");
+        });
+    }
 }
 step_info.made_app_sticky.register = set_app_sticky_popover;
 
@@ -132,7 +128,7 @@ function set_up_checklist() {
 
         var register_action = step_info[step].register;
         if (register_action !== undefined) {
-            register_action();
+            register_action(step_info[step].status);
         }
         $("#onboarding").show();
     });
