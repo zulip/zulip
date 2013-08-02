@@ -83,23 +83,6 @@ function update_person(person) {
     // TODO: update sender names on messages
 }
 
-$(function () {
-    _.each(page_params.people_list, function (person) {
-        people_dict[person.email] = person;
-        person.pm_recipient_count = 0;
-    });
-
-    // The special account feedback@zulip.com is used for in-app
-    // feedback and should always show up as an autocomplete option.
-    if (people_dict['feedback@zulip.com'] === undefined){
-        add_person({"email": "feedback@zulip.com",
-                    "full_name": "Zulip Feedback Bot"});
-    }
-
-    activity.set_user_statuses(page_params.initial_presences,
-                               page_params.initial_servertime);
-});
-
 function within_viewport(row_offset, row_height) {
     // Returns true if a message is fully within the effectively visible
     // part of the viewport.
@@ -504,47 +487,6 @@ function unconditionally_send_pointer_update() {
         return update_pointer();
     }
 }
-
-$(function () {
-    furthest_read = page_params.initial_pointer;
-    server_furthest_read = page_params.initial_pointer;
-
-    // We only send pointer updates when the user has been idle for a
-    // short while to avoid hammering the server
-    $(document).idle({idle: 1000,
-                      onIdle: send_pointer_update,
-                      keepTracking: true});
-
-    $(document).on('message_selected.zulip', function (event) {
-
-        // Narrowing is a temporary view on top of the home view and
-        // doesn't affect your pointer in the home view.
-        if (event.msg_list === home_msg_list
-            && event.id > furthest_read)
-        {
-            furthest_read = event.id;
-        }
-
-        // If we move the pointer, we don't want to respond to what's at the pointer
-        if (event.previously_selected !== event.id) {
-            respond_to_cursor = false;
-        }
-
-        if (event.mark_read && event.previously_selected !== -1) {
-            // Mark messages between old pointer and new pointer as read
-            var messages;
-            if (event.id < event.previously_selected) {
-                messages = message_range(event.msg_list, event.id, event.previously_selected);
-            } else {
-                messages = message_range(event.msg_list, event.previously_selected, event.id);
-            }
-            mark_messages_as_read(messages, {from: 'pointer'});
-            _.each(messages, function (message) {
-                message_tour.visit(message.id);
-            });
-        }
-    });
-});
 
 function case_insensitive_find(term, array) {
     var lowered_term = term.toLowerCase();
@@ -1166,79 +1108,6 @@ function load_old_messages(opts) {
     });
 }
 
-// get the initial message list
-$(function () {
-    function load_more(messages) {
-
-        // Before trying to load anything: is this user way behind?
-        var last_read_message = home_msg_list.get(home_msg_list.closest_id(page_params.initial_pointer));
-        if (last_read_message !== undefined) {
-            var now = new XDate().getTime() / 1000;
-            var num_unread = unread.get_counts().home_unread_messages;
-
-            if ((num_unread > 500) &&
-                (now - last_read_message.timestamp > 60 * 60 * 24 * 2)) { // 2 days.
-                var unread_info = templates.render('bankruptcy_modal',
-                                                   {"unread_count": num_unread});
-                $('#bankruptcy-unread-count').html(unread_info);
-                $('#bankruptcy').modal('show');
-            }
-        }
-
-        // If we received the initially selected message, select it on the client side,
-        // but not if the user has already selected another one during load.
-        //
-        // We fall back to the closest selected id, as the user may have removed
-        // a stream from the home before already
-        if (home_msg_list.selected_id() === -1) {
-            home_msg_list.select_id(page_params.initial_pointer,
-                {then_scroll: true, use_closest: true});
-        }
-
-        // catch the user up
-        if (messages.length !== 0) {
-            var latest_id = messages[messages.length-1].id;
-            if (latest_id < page_params.max_message_id) {
-                load_old_messages({
-                    anchor: latest_id,
-                    num_before: 0,
-                    num_after: 400,
-                    msg_list: home_msg_list,
-                    cont: load_more
-                });
-                return;
-            }
-        }
-        // now start subscribing to updates
-        get_updates();
-
-        // backfill more messages after the user is idle
-        var backfill_batch_size = 1000;
-        $(document).idle({'idle': 1000*10,
-                          'onIdle': function () {
-                              var first_id = all_msg_list.first().id;
-                              load_old_messages({
-                                  anchor: first_id,
-                                  num_before: backfill_batch_size,
-                                  num_after: 0,
-                                  msg_list: home_msg_list
-                              });
-                          }});
-    }
-
-    if (page_params.have_initial_messages) {
-        load_old_messages({
-            anchor: page_params.initial_pointer,
-            num_before: 200,
-            num_after: 200,
-            msg_list: home_msg_list,
-            cont: load_more
-        });
-    } else {
-        get_updates();
-    }
-});
-
 function restart_get_updates(options) {
     if (get_updates_xhr !== undefined) {
         get_updates_xhr.abort();
@@ -1314,3 +1183,134 @@ function fast_forward_pointer() {
         }
     });
 }
+
+function main() {
+    _.each(page_params.people_list, function (person) {
+        people_dict[person.email] = person;
+        person.pm_recipient_count = 0;
+    });
+
+    // The special account feedback@zulip.com is used for in-app
+    // feedback and should always show up as an autocomplete option.
+    if (people_dict['feedback@zulip.com'] === undefined){
+        add_person({"email": "feedback@zulip.com",
+                    "full_name": "Zulip Feedback Bot"});
+    }
+
+    activity.set_user_statuses(page_params.initial_presences,
+                               page_params.initial_servertime);
+
+    furthest_read = page_params.initial_pointer;
+    server_furthest_read = page_params.initial_pointer;
+
+    // We only send pointer updates when the user has been idle for a
+    // short while to avoid hammering the server
+    $(document).idle({idle: 1000,
+                      onIdle: send_pointer_update,
+                      keepTracking: true});
+
+    $(document).on('message_selected.zulip', function (event) {
+
+        // Narrowing is a temporary view on top of the home view and
+        // doesn't affect your pointer in the home view.
+        if (event.msg_list === home_msg_list
+            && event.id > furthest_read)
+        {
+            furthest_read = event.id;
+        }
+
+        // If we move the pointer, we don't want to respond to what's at the pointer
+        if (event.previously_selected !== event.id) {
+            respond_to_cursor = false;
+        }
+
+        if (event.mark_read && event.previously_selected !== -1) {
+            // Mark messages between old pointer and new pointer as read
+            var messages;
+            if (event.id < event.previously_selected) {
+                messages = message_range(event.msg_list, event.id, event.previously_selected);
+            } else {
+                messages = message_range(event.msg_list, event.previously_selected, event.id);
+            }
+            mark_messages_as_read(messages, {from: 'pointer'});
+            _.each(messages, function (message) {
+                message_tour.visit(message.id);
+            });
+        }
+    });
+
+    // get the initial message list
+    function load_more(messages) {
+
+        // Before trying to load anything: is this user way behind?
+        var last_read_message = home_msg_list.get(home_msg_list.closest_id(page_params.initial_pointer));
+        if (last_read_message !== undefined) {
+            var now = new XDate().getTime() / 1000;
+            var num_unread = unread.get_counts().home_unread_messages;
+
+            if ((num_unread > 500) &&
+                (now - last_read_message.timestamp > 60 * 60 * 24 * 2)) { // 2 days.
+                var unread_info = templates.render('bankruptcy_modal',
+                                                   {"unread_count": num_unread});
+                $('#bankruptcy-unread-count').html(unread_info);
+                $('#bankruptcy').modal('show');
+            }
+        }
+
+        // If we received the initially selected message, select it on the client side,
+        // but not if the user has already selected another one during load.
+        //
+        // We fall back to the closest selected id, as the user may have removed
+        // a stream from the home before already
+        if (home_msg_list.selected_id() === -1) {
+            home_msg_list.select_id(page_params.initial_pointer,
+                {then_scroll: true, use_closest: true});
+        }
+
+        // catch the user up
+        if (messages.length !== 0) {
+            var latest_id = messages[messages.length-1].id;
+            if (latest_id < page_params.max_message_id) {
+                load_old_messages({
+                    anchor: latest_id,
+                    num_before: 0,
+                    num_after: 400,
+                    msg_list: home_msg_list,
+                    cont: load_more
+                });
+                return;
+            }
+        }
+        // now start subscribing to updates
+        get_updates();
+
+        // backfill more messages after the user is idle
+        var backfill_batch_size = 1000;
+        $(document).idle({'idle': 1000*10,
+                          'onIdle': function () {
+                              var first_id = all_msg_list.first().id;
+                              load_old_messages({
+                                  anchor: first_id,
+                                  num_before: backfill_batch_size,
+                                  num_after: 0,
+                                  msg_list: home_msg_list
+                              });
+                          }});
+    }
+
+    if (page_params.have_initial_messages) {
+        load_old_messages({
+            anchor: page_params.initial_pointer,
+            num_before: 200,
+            num_after: 200,
+            msg_list: home_msg_list,
+            cont: load_more
+        });
+    } else {
+        get_updates();
+    }
+}
+
+$(function () {
+    main();
+});
