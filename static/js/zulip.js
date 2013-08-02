@@ -1019,6 +1019,55 @@ function force_get_updates() {
     get_updates_timeout = setTimeout(get_updates, 0);
 }
 
+function process_result(messages, opts) {
+    $('#get_old_messages_error').hide();
+
+    if ((messages.length === 0) && (current_msg_list === narrowed_msg_list) &&
+        narrowed_msg_list.empty()) {
+        // Even after trying to load more messages, we have no
+        // messages to display in this narrow.
+        narrow.show_empty_narrow_message();
+    }
+
+    messages = _.map(messages, add_message_metadata);
+
+    // If we're loading more messages into the home view, save them to
+    // the all_msg_list as well, as the home_msg_list is reconstructed
+    // from all_msg_list.
+    if (opts.msg_list === home_msg_list) {
+        process_loaded_for_unread(messages);
+        add_messages(messages, all_msg_list, false);
+    }
+
+    if (messages.length !== 0 && !opts.cont_will_add_messages) {
+        add_messages(messages, opts.msg_list, false);
+    }
+
+    stream_list.update_streams_sidebar();
+
+    if (opts.cont !== undefined) {
+        opts.cont(messages);
+    }
+}
+
+function get_old_messages_success(data, opts) {
+    if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
+        // We unnarrowed before receiving new messages so
+        // don't bother processing the newly arrived messages.
+        return;
+    }
+    if (! data) {
+        // The server occationally returns no data during a
+        // restart.  Ignore those responses and try again
+        setTimeout(function () {
+            load_old_messages(opts);
+        }, 0);
+        return;
+    }
+
+    process_result(data.messages, opts);
+}
+
 function load_old_messages(opts) {
     opts = _.extend({cont_will_add_messages: false}, opts);
 
@@ -1030,58 +1079,13 @@ function load_old_messages(opts) {
         data.narrow = JSON.stringify(narrow.public_operators());
     }
 
-    function process_result(messages) {
-        $('#get_old_messages_error').hide();
-
-        if ((messages.length === 0) && (current_msg_list === narrowed_msg_list) &&
-            narrowed_msg_list.empty()) {
-            // Even after trying to load more messages, we have no
-            // messages to display in this narrow.
-            narrow.show_empty_narrow_message();
-        }
-
-        messages = _.map(messages, add_message_metadata);
-
-        // If we're loading more messages into the home view, save them to
-        // the all_msg_list as well, as the home_msg_list is reconstructed
-        // from all_msg_list.
-        if (opts.msg_list === home_msg_list) {
-            process_loaded_for_unread(messages);
-            add_messages(messages, all_msg_list, false);
-        }
-
-        if (messages.length !== 0 && !opts.cont_will_add_messages) {
-            add_messages(messages, opts.msg_list, false);
-        }
-
-        stream_list.update_streams_sidebar();
-
-        if (opts.cont !== undefined) {
-            opts.cont(messages);
-        }
-    }
-
     $.ajax({
         type:     'POST',
         url:      '/json/get_old_messages',
         data:     data,
         dataType: 'json',
         success: function (data) {
-            if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
-                // We unnarrowed before receiving new messages so
-                // don't bother processing the newly arrived messages.
-                return;
-            }
-            if (! data) {
-                // The server occationally returns no data during a
-                // restart.  Ignore those responses and try again
-                setTimeout(function () {
-                    load_old_messages(opts);
-                }, 0);
-                return;
-            }
-
-            process_result(data.messages);
+            get_old_messages_success(data, opts);
         },
         error: function (xhr, error_type, exn) {
             if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
@@ -1095,7 +1099,7 @@ function load_old_messages(opts) {
                 // retry or display a connection error.
                 //
                 // FIXME: Warn the user when this has happened?
-                process_result([]);
+                process_result([], opts);
                 return;
             }
 
