@@ -102,7 +102,7 @@ function get_event_name(e) {
 //
 // Returns true if we handled it, false if the browser should.
 function process_hotkey(e) {
-    var row;
+    var row, focused_message_edit_content, focused_message_edit_save, message_edit_form;
 
     // Disable hotkeys on settings page etc., and when a modal pop-up
     // is visible.
@@ -137,11 +137,17 @@ function process_hotkey(e) {
     // In Safari and the desktop app, we can't tab to buttons. Intercept the
     // tab from the message edit content box to Save and then Cancel.
     if (event_name === "tab") {
-        if ($("#message_edit_content").is(":focus")) {
-            $(".message_edit_save").focus();
+        focused_message_edit_content = $(".message_edit_content").filter(":focus");
+        if (focused_message_edit_content.length > 0) {
+            message_edit_form = focused_message_edit_content.closest(".message_edit_form");
+            message_edit_form.find(".message_edit_save").focus();
             return true;
-        } else if ($(".message_edit_save").is(":focus")) {
-            $(".message_edit_cancel").focus();
+        }
+
+        focused_message_edit_save = $(".message_edit_save").filter(":focus");
+        if (focused_message_edit_save.length > 0) {
+            message_edit_form = focused_message_edit_save.closest(".message_edit_form");
+            message_edit_form.find(".message_edit_cancel").focus();
             return true;
         }
     }
