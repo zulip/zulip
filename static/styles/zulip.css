@@ -350,16 +350,43 @@ a:hover code {
     display: none;
 }
 
-#user_presences li.user_active {
-    list-style-image: url(/static/images/presence/user-active.png);
+#user_presences li {
+    list-style-type: none;
 }
 
-#user_presences li.user_away {
-    list-style-image: url(/static/images/presence/user-away.png);
+.user-status-indicator {
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid;
+    float: left;
+    position: relative;
+    top: 5px;
+    margin-right: 0.5em;
 }
 
-#user_presences li.user_idle {
-    list-style-image: url(/static/images/presence/user-idle.png);
+.user_active .user-status-indicator {
+    background-color: #44C21D;
+    border-color: #44C21D;
+}
+
+.user_away .user-status-indicator {
+    border-color: #EC7E18;
+    background-color: #EC7E18;
+
+    background: -moz-linear-gradient(top,  rgba(255,255,255,0) 50%, rgba(236,126,24,1) 50%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(50%,rgba(255,255,255,0)), color-stop(50%,rgba(236,126,24,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* IE10+ */
+    background: linear-gradient(to bottom,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18',GradientType=0 ); /* IE6-9 */
+}
+
+.user_idle .user-status-indicator {
+    background-color: none;
+    border-color: gray;
 }
 
 #user_presences .arrow {
