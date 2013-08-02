@@ -707,45 +707,6 @@ $(function () {
         function () { $('#send-status').stop(true).fadeOut(500); }
     );
 
-    var scroll_start_message;
-
-    function scroll_finished() {
-        actively_scrolling = false;
-
-        if ($('#home').hasClass('active')) {
-            if (!suppress_scroll_pointer_update) {
-                keep_pointer_in_view();
-            } else {
-                suppress_scroll_pointer_update = false;
-            }
-            exports.update_floating_recipient_bar();
-            if (viewport.scrollTop() === 0 &&
-                have_scrolled_away_from_top) {
-                have_scrolled_away_from_top = false;
-                load_more_messages(current_msg_list);
-            } else if (!have_scrolled_away_from_top) {
-                have_scrolled_away_from_top = true;
-            }
-            // When the window scrolls, it may cause some messages to
-            // enter the screen and become read.  Calling
-            // process_visible_unread_messages will update necessary
-            // data structures and DOM elements.
-            setTimeout(process_visible_unread_messages, 0);
-        }
-    }
-
-    var scroll_timer;
-    function scroll_finish() {
-        actively_scrolling = true;
-        clearTimeout(scroll_timer);
-        scroll_timer = setTimeout(scroll_finished, 100);
-    }
-
-    $(window).scroll($.throttle(50, function (e) {
-        process_visible_unread_messages();
-        scroll_finish();
-    }));
-
     var throttled_mousewheelhandler = $.throttle(50, function (e, delta) {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
@@ -1404,6 +1365,46 @@ $(function () {
     tutorial.initialize();
     onboarding.initialize();
 });
+
+
+var scroll_start_message;
+
+function scroll_finished() {
+    actively_scrolling = false;
+
+    if ($('#home').hasClass('active')) {
+        if (!suppress_scroll_pointer_update) {
+            keep_pointer_in_view();
+        } else {
+            suppress_scroll_pointer_update = false;
+        }
+        exports.update_floating_recipient_bar();
+        if (viewport.scrollTop() === 0 &&
+            have_scrolled_away_from_top) {
+            have_scrolled_away_from_top = false;
+            load_more_messages(current_msg_list);
+        } else if (!have_scrolled_away_from_top) {
+            have_scrolled_away_from_top = true;
+        }
+        // When the window scrolls, it may cause some messages to
+        // enter the screen and become read.  Calling
+        // process_visible_unread_messages will update necessary
+        // data structures and DOM elements.
+        setTimeout(process_visible_unread_messages, 0);
+    }
+}
+
+var scroll_timer;
+function scroll_finish() {
+    actively_scrolling = true;
+    clearTimeout(scroll_timer);
+    scroll_timer = setTimeout(scroll_finished, 100);
+}
+
+$(window).scroll($.throttle(50, function (e) {
+    process_visible_unread_messages();
+    scroll_finish();
+}));
 
 var presence_descriptions = {
     active: 'is active',
