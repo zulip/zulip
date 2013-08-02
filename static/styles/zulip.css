@@ -333,7 +333,7 @@ a:hover code {
 }
 
 #user_presences li:hover {
-    background-color: lightgrey;
+    background-color: #e2e8dd;
 }
 
 #user_presences .user_sidebar_entry:hover {
