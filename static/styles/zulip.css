@@ -2145,6 +2145,11 @@ div.edit_bot {
     background-color: #c9fcc1;
 }
 
+#settings-change-box .gravatar-profile {
+    width: 60px;
+    height: 60px;
+}
+
 #notification-settings .control-group {
     margin-bottom: 5px;
 }

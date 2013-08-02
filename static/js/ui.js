@@ -584,13 +584,15 @@ function poll_for_gravatar_update(start_time, url) {
 }
 
 exports.small_avatar_url = function (message) {
-    // Try to call this function in all places where we need size-30
-    // quality gravatar images, so that the browser can help
+    // Try to call this function in all places where we need 25px
+    // gravatar images, so that the browser can help
     // us avoid unnecessary network trips.  (For user-uploaded avatars,
-    // the s=30 parameter is essentially ignored, but it's harmless.)
+    // the s=25 parameter is essentially ignored, but it's harmless.)
     //
+    // We actually request these at s=50, so that we look better
+    // on retina displays.
     if (message.avatar_url) {
-        var url = message.avatar_url + "&s=30";
+        var url = message.avatar_url + "&s=50";
         if (message.sent_by_me) {
             url += "&stamp=" + gravatar_stamp;
         }
