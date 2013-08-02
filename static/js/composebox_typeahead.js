@@ -156,12 +156,8 @@ exports.initialize = function () {
     select_on_focus("private_message_recipient");
 
     // These handlers are at the "form" level so that they are called after typeahead
-    $("form#send_message_form").keydown(function (e) {
-        handle_keydown(e);
-    });
-    $("form#send_message_form").keyup(function (e) {
-        handle_keyup(e);
-    });
+    $("form#send_message_form").keydown(handle_keydown);
+    $("form#send_message_form").keyup(handle_keyup);
 
     $("#enter_sends").click(function () {
         var send_button = $("#compose-send-button");
