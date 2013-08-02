@@ -1817,6 +1817,7 @@ table.floating_recipient {
 .emoji {
     height: 1.4em;
     width: 1.4em;
+    vertical-align: text-bottom;
 }
 
 #sending-indicator {
