@@ -55,7 +55,7 @@ exports.sort_narrow_list = function () {
 function iterate_to_find(selector, name_to_find, context) {
     var lowercase_name = name_to_find.toLowerCase();
     var found = _.find($(selector, context), function (elem) {
-        return $(elem).attr('data-name') === lowercase_name;
+        return $(elem).attr('data-name').toLowerCase() === lowercase_name;
     });
     return found ? $(found) : $();
 }
