@@ -37,6 +37,16 @@ exports.save = function (row) {
     // The message will automatically get replaced when it arrives.
 };
 
+function handle_edit_keydown(e) {
+    var row, code = e.keyCode || e.which;
+
+    if (e.target.id === "message_edit_content" && code === 13 &&
+        (e.metaKey || e.ctrlKey)) {
+        row = $(".message_edit_content").filter(":focus").closest(".message_row");
+        message_edit.save(row);
+    }
+}
+
 function edit_message (row, raw_content) {
     var content_top = row.find('.message_content')[0]
         .getBoundingClientRect().top;
@@ -50,6 +60,10 @@ function edit_message (row, raw_content) {
 
     var edit_obj = {form: form, raw_content: raw_content};
     current_msg_list.show_edit_message(row, edit_obj);
+
+    form.keydown(function (e) {
+        handle_edit_keydown(e);
+    });
 
     currently_editing_messages[message.id] = edit_obj;
     if (message.subject === compose.empty_subject_placeholder()) {
