@@ -1401,10 +1401,12 @@ function scroll_finish() {
     scroll_timer = setTimeout(scroll_finished, 100);
 }
 
-$(window).scroll($.throttle(50, function (e) {
-    process_visible_unread_messages();
-    scroll_finish();
-}));
+exports.register_scroll_handler = function () {
+    $(window).scroll($.throttle(50, function (e) {
+        process_visible_unread_messages();
+        scroll_finish();
+    }));
+};
 
 var presence_descriptions = {
     active: 'is active',
