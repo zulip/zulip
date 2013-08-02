@@ -735,7 +735,17 @@ $(function () {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
-        move_pointer_at_page_top_and_bottom(delta);
+
+        if (delta > 0) {
+            if (viewport.at_top()) {
+                navigate.up();
+            }
+        } else if (delta < 0) {
+            if (viewport.at_bottom()) {
+                navigate.down();
+            }
+        }
+
         last_viewport_movement_direction = delta;
     });
 

@@ -40,7 +40,7 @@ var globals =
     + ' all_msg_list home_msg_list narrowed_msg_list current_msg_list get_updates_params'
     + ' add_messages'
     + ' subject_dict people_dict'
-    + ' keep_pointer_in_view move_pointer_at_page_top_and_bottom'
+    + ' keep_pointer_in_view'
     + ' respond_to_message recenter_view last_viewport_movement_direction'
     + ' scroll_to_selected get_private_message_recipient'
     + ' load_old_messages'

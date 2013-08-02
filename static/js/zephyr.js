@@ -1239,31 +1239,6 @@ setInterval(function () {
     watchdog_time = new_time;
 }, 5000);
 
-// The idea here is when you've scrolled to the very
-// bottom of the page, e.g., the scroll handler isn't
-// going to fire anymore. But if I continue to use
-// the scrollwheel, the selection should advance until
-// I'm at the very top or the very bottom of the page.
-function move_pointer_at_page_top_and_bottom(delta) {
-    if (delta !== 0 && (viewport.at_top() || viewport.at_bottom())) {
-        var next_row = current_msg_list.selected_row();
-        if (delta > 0) {
-            // Scrolling up (want older messages)
-            next_row = rows.prev_visible(next_row);
-        } else {
-            // We're scrolling down (we want more recent messages)
-            next_row = rows.next_visible(next_row);
-
-            if (next_row.length === 0) {
-                mark_current_list_as_read();
-            }
-        }
-        if (next_row.length !== 0) {
-            current_msg_list.select_id(rows.id(next_row));
-        }
-    }
-}
-
 function fast_forward_pointer() {
     $.ajax({
         type: 'POST',
