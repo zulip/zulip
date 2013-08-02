@@ -1351,9 +1351,9 @@ $(function () {
 });
 
 var presence_descriptions = {
-    active: ' is active',
-    away:   ' was recently active',
-    idle:   ' is not active'
+    active: 'is active',
+    away:   'was recently active',
+    idle:   'is not active'
 };
 
 exports.set_presence_list = function (users, presence_info) {
