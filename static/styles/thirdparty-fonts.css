@@ -324,6 +324,8 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-narrow:before               { content: "\f054"; }
 .icon-vector-minus-sign:before           { content: "\f056"; }
 .icon-vector-plus-sign:before            { content: "\f055"; }
+.icon-vector-minus:before                { content: "\f068"; }
+.icon-vector-plus:before                 { content: "\f067"; }
 .icon-vector-pencil:before               { content: "\f040"; }
 .icon-vector-eraser:before               { content: "\f12d"; }
 .icon-vector-envelope:before             { content: "\f003"; }
@@ -336,3 +338,10 @@ ul.icons li [class*=" icon-vector-"] {
 .icon-vector-caret-right:before          { content: "\f0da"; }
 .icon-vector-caret-down:before           { content: "\f0d7"; }
 .icon-vector-external-link-sign:before   { content: "\f14c"; }
+.icon-vector-share-alt:before            { content: "\f064"; }
+.icon-vector-time:before                 { content: "\f017"; }
+.icon-vector-globe:before                { content: "\f0ac"; }
+.icon-vector-wrench:before               { content: "\f0ad"; }
+.icon-vector-off:before                  { content: "\f011"; }
+.icon-vector-barcode:before              { content: "\f02a"; }
+.icon-vector-download:before             { content: "\f01a"; }

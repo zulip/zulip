@@ -1594,7 +1594,7 @@ table.floating_recipient {
     text-overflow: ellipsis;
 }
 
-#stream_filters .subscription_block .icon-lock {
+#stream_filters .subscription_block .icon-vector-lock {
     display: inline-block;
     vertical-align: middle;
     margin-top: 0px;
@@ -1890,11 +1890,6 @@ li.expanded_subject .subject_box {
 
 #pw_change_controls {
     display: none;
-}
-
-.humbug-icon-star {
-    background-position: -121px 0 !important;
-    padding-right: 0.09em !important; /* Alignment hack to line up with other icons */
 }
 
 .sub-unsub-message, .date_row {
