@@ -69,6 +69,9 @@ urlpatterns = patterns('',
     url(r'^register/$', 'zephyr.views.accounts_home', name='register'),
     url(r'^login/$',  'zephyr.views.login_page', {'template_name': 'zephyr/login.html'}),
 
+    # A registration page that passes through the domain, for totally open realms.
+    url(r'^register/(?P<domain>\S+)/$', 'zephyr.views.accounts_home_with_domain'),
+
     # API and integrations documentation
     url(r'^api/$', TemplateView.as_view(template_name='zephyr/api.html')),
     url(r'^api/endpoints/$', 'zephyr.views.api_endpoint_docs'),

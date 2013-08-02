@@ -21,7 +21,7 @@ from zephyr.models import Message, UserProfile, Stream, Subscription, \
     MAX_SUBJECT_LENGTH, get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
-    email_to_domain, email_to_username
+    email_to_domain, email_to_username, get_realm
 from zephyr.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
@@ -248,6 +248,11 @@ def accounts_register(request):
     # MitUsers can't be referred and don't have a referred_by field.
     if not mit_beta_user and prereg_user.referred_by:
         domain = prereg_user.referred_by.realm.domain
+    elif prereg_user.realm:
+        # You have a realm set, even though nobody referred you. This
+        # happens if you sign up through a special URL for an open
+        # realm.
+        domain = prereg_user.realm.domain
     else:
         domain = email_to_domain(email)
 
@@ -420,8 +425,7 @@ def handle_openid_errors(request, issue, openid_response=None):
             if form.is_valid():
                 # Construct a PreregistrationUser object and send the user over to
                 # the confirmation view.
-                prereg_user = PreregistrationUser(email=google_email)
-                prereg_user.save()
+                prereg_user = create_preregistration_user(google_email, request)
                 return redirect("".join((
                     "/",
                     # Split this so we only get the part after the /
@@ -476,13 +480,41 @@ def initial_invite_page(request):
 def logout_then_login(request, **kwargs):
     return django_logout_then_login(request, kwargs)
 
+def completely_open(domain):
+    # This domain is completely open to everyone on the internet to
+    # join. This is not the same as a "restricted_to_domain" realm: in
+    # those realms, users from outside the domain must be invited.
+    return domain.lower() == "customer3.invalid"
+
+def create_preregistration_user(email, request):
+    domain = request.session.get("domain")
+    if domain and not completely_open(domain):
+        domain = None
+    prereg_user = PreregistrationUser(email=email, realm=get_realm(domain))
+    prereg_user.save()
+
+    request.session["domain"] = None
+
+    return prereg_user
+
+def accounts_home_with_domain(request, domain):
+    if completely_open(domain):
+        # You can sign up for a completely open realm through a
+        # special registration path that contains the domain in the
+        # URL. We store this information in the session rather than
+        # elsewhere because we don't have control over URL or form
+        # data for folks registering through OpenID.
+        request.session["domain"] = domain
+        return accounts_home(request)
+    else:
+        return HttpResponseRedirect(reverse('zephyr.views.accounts_home'))
+
 def accounts_home(request):
     if request.method == 'POST':
         form = HomepageForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
-            prereg_user = PreregistrationUser(email=email)
-            prereg_user.save()
+            prereg_user = create_preregistration_user(email, request)
             Confirmation.objects.send_confirmation(prereg_user, email)
             return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
         try:
@@ -493,7 +525,8 @@ def accounts_home(request):
             return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
     else:
         form = HomepageForm()
-    return render_to_response('zephyr/accounts_home.html', {'form': form},
+    return render_to_response('zephyr/accounts_home.html',
+                              {'form': form, 'current_url': request.get_full_path},
                               context_instance=RequestContext(request))
 
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)

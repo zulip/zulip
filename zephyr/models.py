@@ -565,6 +565,8 @@ def get_huddle_backend(huddle_hash, id_list):
     return huddle
 
 def get_realm(domain):
+    if not domain:
+        return None
     try:
         return Realm.objects.get(domain__iexact=domain.strip())
     except Realm.DoesNotExist:
