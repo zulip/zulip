@@ -160,6 +160,8 @@ class PreregistrationUser(models.Model):
     #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
     status = models.IntegerField(default=0)
 
+    realm = models.ForeignKey(Realm, null=True)
+
 class MitUser(models.Model):
     email = models.EmailField(unique=True)
     # status: whether an object has been confirmed.
