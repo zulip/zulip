@@ -67,7 +67,7 @@ ssh $SSH_OPTS "$server" -t -i "$amazon_key_file" -lroot <<EOF
 chmod 600 /root/.ssh/id_rsa
 # Setup initial known_hosts including git server
 cat > /root/.ssh/known_hosts <<EOF2
-|1|ykmanuFqgkQCswGBhrVtnLLPrbc=|IaJCSR5qJVwma2uxX4VRSZnMLuU= ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDjW3wKDRuah6XT5a7Xta+S2d5ew1ZPxWTbKKgp6Cun111zFw1bvLGSKS0W3HnbXOyXLbVVsAH/cSNFHMvH2nitM15zp7w2w3NV8YbLZCkdFXp5KeKHuBQ+DYL+nDCKjunlrDfxDXvD7jn/wMN995ZsnEJqnc7N8uzIgt+5lbmie5jz3Xbt/7gQdjG5E0xGL7DzzJPp8kBzfE6B1qr5pWLVKXMuGXLCcbMaco5kEjRuM8dPrtG3kGG2YsjOkoHIqwtRwztXEmjklt1FFI06JYsW43PjmdP586nOg7n28k1ibhlF968PmRRX7USI7jJ+awPd/XH4neCdNG2f8JL2kRD
+git.zulip.net ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDjW3wKDRuah6XT5a7Xta+S2d5ew1ZPxWTbKKgp6Cun111zFw1bvLGSKS0W3HnbXOyXLbVVsAH/cSNFHMvH2nitM15zp7w2w3NV8YbLZCkdFXp5KeKHuBQ+DYL+nDCKjunlrDfxDXvD7jn/wMN995ZsnEJqnc7N8uzIgt+5lbmie5jz3Xbt/7gQdjG5E0xGL7DzzJPp8kBzfE6B1qr5pWLVKXMuGXLCcbMaco5kEjRuM8dPrtG3kGG2YsjOkoHIqwtRwztXEmjklt1FFI06JYsW43PjmdP586nOg7n28k1ibhlF968PmRRX7USI7jJ+awPd/XH4neCdNG2f8JL2kRD
 EOF2
 # clone humbug repository
 cd /root
