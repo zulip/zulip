@@ -30,7 +30,7 @@
     <form id="invite_form">
     {% csrf_token %}
     <div class="invite_row"><input name="email_1" class="invite_email" type={% if not invite_suffix %}"email"{% else %}"text"{% endif %} /> {% if invite_suffix %}@{{invite_suffix}}{% endif %}</div>
-	<p id="invite_blurb">(We'll email invitations to these people so they can revel in the joy that is Humbug.)</p>
+	<p id="invite_blurb">(We'll email invitations to these people so they can revel in the joy that is Zulip.)</p>
     <div class="alert" id="invite_error" style="display: none;">
     </div>
     <button id="submit_invitation" class="btn btn-primary" data-loading-text="Next">Next »</button>
