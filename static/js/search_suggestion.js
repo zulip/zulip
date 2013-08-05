@@ -309,7 +309,6 @@ function get_operator_subset_suggestions(query, operators) {
     // For stream:a topic:b search:c, suggest:
     //  stream:a topic:b
     //  stream:a
-    //  <Home>
     if (operators.length < 1) {
         return [];
     }
@@ -317,7 +316,7 @@ function get_operator_subset_suggestions(query, operators) {
     var i;
     var suggestions = [];
 
-    for (i = operators.length - 1; i >= 0; --i) {
+    for (i = operators.length - 1; i >= 1; --i) {
         var subset = operators.slice(0, i);
         var search_string = narrow.unparse(subset);
         var description = describe(subset);

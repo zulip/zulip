@@ -52,8 +52,7 @@ var search = set_up_dependencies();
     var suggestions = search.get_suggestions(query);
 
     var expected = [
-        'fred',
-        ''
+        'fred'
     ];
     assert.deepEqual(suggestions.strings, expected);
 }());
@@ -119,8 +118,7 @@ var search = set_up_dependencies();
     var expected = [
         "te",
         "stream:office topic:team",
-        "stream:office topic:test",
-        ""
+        "stream:office topic:test"
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -169,8 +167,7 @@ var search = set_up_dependencies();
     var expected = [
         "te",
         "pm-with:ted@zulip.com",
-        "sender:ted@zulip.com",
-        ""
+        "sender:ted@zulip.com"
     ];
 
     assert.deepEqual(suggestions.strings, expected);
