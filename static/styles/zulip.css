@@ -2266,3 +2266,7 @@ div.edit_bot {
 #referral-form {
     margin-bottom: 0;
 }
+
+#tell-a-friend-success, #tell-a-friend-error {
+    display: none;
+}
