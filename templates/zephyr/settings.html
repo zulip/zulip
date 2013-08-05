@@ -12,7 +12,7 @@
       <div id="settings-change-box">
       <form action="/json/settings/change" method="post"
             class="form-horizontal">{% csrf_token %}
-        <div class="control-group">
+        <div class="control-group" id="name_change_container">
             <label for="full_name" class="control-label">Full name</label>
             <div class="controls">
                 <input type="text" name="full_name" id="full_name"

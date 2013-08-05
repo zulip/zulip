@@ -21,6 +21,15 @@ function is_local_part(value, element) {
 }
 
 $(function () {
+    if (page_params.domain === "users.customer4.invalid") {
+        // At the request of the facilitators, CUSTOMER4 users
+        // can't change their names, so don't show that as a settings
+        // option. This is also disabled through the JSON UI. Once we
+        // have the infrastructure for administrative policies, we can
+        // handle this more gracefully.
+        $("#name_change_container").hide();
+    }
+
     $.ajax({
         type: 'POST',
         url: '/json/get_bots',
