@@ -1774,6 +1774,13 @@ table.floating_recipient {
     height: 35px;
 }
 
+.notifications-gravatar img {
+    max-width: 25px;
+    max-height: 25px;
+    padding-left: 4px;
+    padding-top: 4px;
+}
+
 #notifications-bar {
     z-index: 9000;
     position: absolute;
