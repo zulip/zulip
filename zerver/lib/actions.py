@@ -1109,9 +1109,9 @@ def get_status_dict(requesting_user_profile):
 
 
 def do_events_register(user_profile, user_client, apply_markdown=True,
-                       event_types=None):
+                       event_types=None, queue_lifespan_secs=0):
     queue_id = request_event_queue(user_profile, user_client, apply_markdown,
-                                   event_types)
+                                   queue_lifespan_secs, event_types)
     if queue_id is None:
         raise JsonableError("Could not allocate event queue")
 

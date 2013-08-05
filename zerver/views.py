@@ -2195,9 +2195,10 @@ def api_events_register(request, user_profile,
 
 @has_request_variables
 def events_register_backend(request, user_profile, apply_markdown=True,
-                            event_types=REQ(converter=json_to_list, default=None)):
+                            event_types=REQ(converter=json_to_list, default=None),
+                            queue_lifespan_secs=REQ(converter=int, default=0)):
     ret = do_events_register(user_profile, request.client, apply_markdown,
-                             event_types)
+                             event_types, queue_lifespan_secs)
     return json_success(ret)
 
 @authenticated_json_post_view
