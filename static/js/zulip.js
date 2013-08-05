@@ -247,50 +247,52 @@ function message_range(msg_list, start, end) {
     return all.slice(start_idx, end_idx + 1);
 }
 
-function send_queued_flags() {
-    if (queued_mark_as_read.length === 0) {
-        return;
-    }
+function batched_flag_updater(flag, op) {
+    var queue = [];
 
     function on_success(data, status, jqXHR) {
         if (data ===  undefined || data.messages === undefined) {
             return;
         }
 
-        queued_mark_as_read = _.filter(queued_mark_as_read, function (message) {
+        queue = _.filter(queue, function (message) {
             return data.messages.indexOf(message) === -1;
         });
     }
 
-    $.ajax({
-        type:     'POST',
-        url:      '/json/update_message_flags',
-        data:     {messages: JSON.stringify(queued_mark_as_read),
-                   op:       'add',
-                   flag:     'read'},
-        dataType: 'json',
-        success:  on_success});
-
-    if (feature_flags.summarize_read_while_narrowed) {
-        // This assumes success and lets the normal 'read' case manage the queue
-        var send_flag = function (flag) {
-            var marked = _.filter(queued_mark_as_read,
-                function (msg){ return all_msg_list.get(msg).flags.indexOf(flag) !== -1; });
-
-            $.ajax({
-                type:     'POST',
-                url:      '/json/update_message_flags',
-                data:     {messages: JSON.stringify(marked),
-                           op:       'add',
-                           flag:     flag},
-                dataType: 'json'
-            });
-        };
-
-        send_flag('summarize_in_stream');
-        send_flag('summarize_in_home');
+    function server_request() {
+        $.ajax({
+            type:     'POST',
+            url:      '/json/update_message_flags',
+            data:     {messages: JSON.stringify(queue),
+                       op:       op,
+                       flag:     flag},
+            dataType: 'json',
+            success:  on_success
+        });
     }
+
+    var start = _.debounce(server_request, 1000);
+
+    function add(message) {
+        if (message.flags === undefined) {
+            message.flags = [];
+        }
+        if (op === 'add')  {
+            message.flags.push(flag);
+        } else {
+            message.flags = _.without(message.flags, flag);
+        }
+        queue.push(message.id);
+        start();
+    }
+
+    return add;
 }
+
+var send_read = batched_flag_updater('read', 'add');
+var send_summarize_in_stream = batched_flag_updater('summarize_in_stream', 'add');
+var send_summarize_in_home = batched_flag_updater('summarize_in_home', 'add');
 
 function update_unread_counts() {
     // Pure computation:
@@ -329,10 +331,24 @@ function process_loaded_for_unread(messages) {
     update_unread_counts();
 }
 
+function maybe_mark_summarized(message) {
+    if (feature_flags.summarize_read_while_narrowed) {
+        if (narrow.narrowed_by_reply()) {
+            // Narrowed to a topic or PM recipient
+            send_summarize_in_stream(message);
+        }
+
+        if (narrow.active() && !narrow.narrowed_to_search()) {
+            // Narrowed to anything except a search
+            send_summarize_in_home(message);
+        }
+    }
+}
+
 // Takes a list of messages and marks them as read
 function mark_messages_as_read(messages, options) {
     options = options || {};
-    var processed = [];
+    var processed = false;
 
     _.each(messages, function (message) {
         if (!unread.message_unread(message)) {
@@ -340,22 +356,9 @@ function mark_messages_as_read(messages, options) {
             return;
         }
 
-        message.flags = message.flags || [];
-        message.flags.push('read');
+        send_read(message);
+        maybe_mark_summarized(message);
 
-        if (feature_flags.summarize_read_while_narrowed) {
-            if (narrow.narrowed_by_reply()) {
-                // Narrowed to a topic or PM recipient
-                message.flags.push('summarize_in_stream');
-            }
-
-            if (narrow.active() && !narrow.narrowed_to_search()) {
-                // Narrowed to anything except a search
-                message.flags.push('summarize_in_home');
-            }
-        }
-
-        processed.push(message.id);
         message.unread = false;
         unread.process_read_message(message, options);
         home_msg_list.show_message_as_read(message, options);
@@ -363,16 +366,10 @@ function mark_messages_as_read(messages, options) {
         if (narrowed_msg_list) {
             narrowed_msg_list.show_message_as_read(message, options);
         }
+        processed = true;
     });
 
-    if (processed.length > 0) {
-        queued_mark_as_read = queued_mark_as_read.concat(processed);
-
-        if (queued_flag_timer !== undefined) {
-            clearTimeout(queued_flag_timer);
-        }
-
-        queued_flag_timer = setTimeout(send_queued_flags, 1000);
+    if (processed) {
         update_unread_counts();
     }
 }
