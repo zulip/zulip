@@ -58,6 +58,12 @@ function describe(operators) {
         case 'stream':
             return 'Narrow to stream ' + operand;
 
+        case 'near':
+            return 'Narrow to messages around ' + operand;
+
+        case 'id':
+            return 'Narrow to message ID ' + operand;
+
         case 'topic':
             return 'Narrow to topic ' + operand;
 
