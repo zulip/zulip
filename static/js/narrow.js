@@ -311,11 +311,14 @@ exports.set_compose_defaults = function (opts) {
 
     // Set the stream, subject, and/or PM recipient if they are
     // uniquely specified in the narrow view.
-    _.each(['stream', 'topic'], function (key) {
-        if (single[key] !== undefined) {
-            opts[key] = single[key];
-        }
-    });
+
+    if (single.stream) {
+        opts.stream = single.stream;
+    }
+
+    if (single.topic) {
+        opts.subject = single.topic;
+    }
 
     if (single['pm-with'] !== undefined) {
         opts.private_message_recipient = single['pm-with'];
