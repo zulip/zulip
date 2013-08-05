@@ -330,11 +330,16 @@ function process_loaded_for_unread(messages) {
 }
 
 // Takes a list of messages and marks them as read
-function process_read_messages(messages, options) {
+function mark_messages_as_read(messages, options) {
     options = options || {};
     var processed = [];
 
     _.each(messages, function (message) {
+        if (!unread.message_unread(message)) {
+            // Don't do anything if the message is already read.
+            return;
+        }
+
         message.flags = message.flags || [];
         message.flags.push('read');
 
@@ -358,7 +363,6 @@ function process_read_messages(messages, options) {
         if (narrowed_msg_list) {
             narrowed_msg_list.show_message_as_read(message, options);
         }
-
     });
 
     if (processed.length > 0) {
@@ -369,9 +373,12 @@ function process_read_messages(messages, options) {
         }
 
         queued_flag_timer = setTimeout(send_queued_flags, 1000);
+        update_unread_counts();
     }
+}
 
-    update_unread_counts();
+function mark_message_as_read(message, options) {
+    mark_messages_as_read([message], options);
 }
 
 // If we ever materially change the algorithm for this function, we
@@ -386,29 +393,12 @@ function process_visible_unread_messages(update_cursor) {
             mark_current_list_as_read();
         }
     } else {
-        var visible_messages = viewport.visible_messages();
-        var mark_as_read = _.filter(visible_messages, unread.message_unread);
-
-        if (mark_as_read.length > 0) {
-            process_read_messages(mark_as_read);
-        }
+        mark_messages_as_read(viewport.visible_messages());
     }
 }
 
-function mark_messages_as_read(msg_list, options) {
-    var unread_msgs = _.filter(msg_list, unread.message_unread);
-    process_read_messages(unread_msgs, options);
-}
-
 function mark_current_list_as_read(options) {
-    var unread_msgs = _.filter(current_msg_list.all(), unread.message_unread);
-    process_read_messages(unread_msgs, options);
-}
-
-function mark_message_as_read(message, options) {
-    // This seems like a rather pointless wrapper, but
-    // process_read_messages() should stay as an internal API.
-    process_read_messages([message], options);
+    mark_messages_as_read(current_msg_list.all(), options);
 }
 
 function respond_to_message(opts) {
