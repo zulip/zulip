@@ -2252,9 +2252,11 @@ div.edit_bot {
 }
 
 #share-the-love .still-have-invites {
+    clear: both;
 }
 
 #share-the-love .no-more-invites {
+    clear: both;
     display: none;
 }
 
