@@ -17,11 +17,21 @@ exports.up = function () {
     }
 };
 
-exports.down = function () {
+exports.down = function (with_centering) {
     last_viewport_movement_direction = 1;
     var next_row = rows.next_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
         go_to_row(next_row);
+    }
+    if (with_centering && (next_row.length === 0)) {
+        // At the last message, scroll to the bottom so we have
+        // lots of nice whitespace for new messages coming in.
+        //
+        // FIXME: this doesn't work for End because rows.last_visible()
+        // always returns a message.
+        var current_msg_table = rows.get_table(current_msg_list.table_name);
+        viewport.scrollTop(current_msg_table.outerHeight(true) - viewport.height() * 0.1);
+        mark_current_list_as_read();
     }
 };
 

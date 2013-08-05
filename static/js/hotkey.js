@@ -266,7 +266,7 @@ function process_hotkey(e) {
     switch (event_name) {
         case 'down_arrow':
         case 'vim_down':
-            navigate.down();
+            navigate.down(true); // with_centering
             return true;
         case 'up_arrow':
         case 'vim_up':
