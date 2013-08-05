@@ -906,6 +906,14 @@ function get_updates_success(data) {
         messages = deduplicate_messages(messages);
         messages = _.map(messages, add_message_metadata);
 
+        if (feature_flags.summarize_read_while_narrowed) {
+            _.each(messages, function (message) {
+                if (message.sent_by_me) {
+                    maybe_mark_summarized(message);
+                }
+            });
+        }
+
         // You must add add messages to home_msg_list BEFORE
         // calling process_loaded_for_unread.
         add_messages(messages, home_msg_list, true);
