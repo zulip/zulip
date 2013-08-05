@@ -1420,11 +1420,18 @@ def json_change_settings(request, user_profile, full_name=REQ,
 
     result = {}
     if user_profile.full_name != full_name and full_name.strip() != "":
-        new_full_name = full_name.strip()
-        if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
-            return json_error("Name too long!")
-        do_change_full_name(user_profile, new_full_name)
-        result['full_name'] = new_full_name
+        if user_profile.realm.domain == "users.customer4.invalid":
+            # At the request of the facilitators, CUSTOMER4
+            # students can't change their names. Failingly silently is
+            # fine -- they can't do it through the UI, so they'd have
+            # to be trying to break the rules.
+            pass
+        else:
+            new_full_name = full_name.strip()
+            if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
+                return json_error("Name too long!")
+            do_change_full_name(user_profile, new_full_name)
+            result['full_name'] = new_full_name
 
     if user_profile.enable_desktop_notifications != enable_desktop_notifications:
         do_change_enable_desktop_notifications(user_profile, enable_desktop_notifications)
