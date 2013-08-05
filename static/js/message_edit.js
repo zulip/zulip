@@ -61,7 +61,9 @@ function edit_message (row, raw_content) {
     var edit_obj = {form: form, raw_content: raw_content};
     current_msg_list.show_edit_message(row, edit_obj);
 
-    form.keydown(handle_edit_keydown);
+    form.keydown(function (e) {
+        handle_edit_keydown(e);
+    });
 
     currently_editing_messages[message.id] = edit_obj;
     if (message.subject === compose.empty_subject_placeholder()) {
