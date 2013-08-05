@@ -1199,7 +1199,7 @@ $(function () {
         e.preventDefault();
     });
 
-    $('#stream_filters li').on('click', 'a.subscription_name, .subscription_block', function (e) {
+    $('#stream_filters li').on('click', '.subscription_block', function (e) {
         if (exports.home_tab_obscured()) {
             ui.change_tab_to('#home');
         }
@@ -1211,7 +1211,7 @@ $(function () {
 
     popovers.register_click_handlers();
 
-    $('#stream_filters').on('click', '.expanded_subject a, .subject_box', function (e) {
+    $('#stream_filters').on('click', '.subject_box', function (e) {
         if (exports.home_tab_obscured()) {
             ui.change_tab_to('#home');
         }
