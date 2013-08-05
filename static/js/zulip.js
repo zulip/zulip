@@ -129,21 +129,36 @@ function keep_pointer_in_view() {
     var top_threshold = info.visible_top + (1/10 * info.visible_height);
     var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
 
-    function above_view_threshold() {
-        var bottom_offset = next_row.offset().top + next_row.outerHeight(true);
-        return bottom_offset < top_threshold;
+    function message_is_far_enough_down() {
+        if (viewport.at_top()) {
+            return true;
+        }
+
+        var message_top = next_row.offset().top;
+
+
+        var bottom_offset = message_top + next_row.outerHeight(true);
+        if (bottom_offset >= top_threshold) {
+            return true;
+        }
+
+        // If we got this far, the message is not "in view."
+        return false;
     }
 
-    function below_view_threshold() {
-        return next_row.offset().top > bottom_threshold;
+    function message_is_far_enough_up() {
+        return viewport.at_bottom() ||
+            (next_row.offset().top <= bottom_threshold);
     }
 
-    function adjust(past_threshold, at_end, advance) {
-        if (!past_threshold(next_row) || at_end()) {
+    function adjust(in_view, get_next_row) {
+        // return true only if we make an actual adjustment, so
+        // that we know to short circuit the other direction
+        if (in_view(next_row)) {
             return false;  // try other side
         }
-        while (past_threshold(next_row)) {
-            candidate = advance(next_row);
+        while (!in_view(next_row)) {
+            candidate = get_next_row(next_row);
             if (candidate.length === 0) {
                 break;
             }
@@ -152,8 +167,8 @@ function keep_pointer_in_view() {
         return true;
     }
 
-    if (! adjust(above_view_threshold, viewport.at_top, rows.next_visible)) {
-        adjust(below_view_threshold, viewport.at_bottom, rows.prev_visible);
+    if (!adjust(message_is_far_enough_down, rows.next_visible)) {
+        adjust(message_is_far_enough_up, rows.prev_visible);
     }
 
     current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
