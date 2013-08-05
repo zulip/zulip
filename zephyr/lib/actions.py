@@ -744,6 +744,13 @@ def do_change_password(user_profile, password, log=True, commit=True,
                    'pwhash': user_profile.password})
 
 def do_change_full_name(user_profile, full_name, log=True):
+    if user_profile.realm.domain == "users.customer4.invalid":
+        # At the request of the facilitators, CUSTOMER4 users
+        # can't change their names. Failingly silently is fine -- they
+        # can't do it through the UI, so they'd have to be trying to
+        # break the rules.
+        return
+
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
     if log:
