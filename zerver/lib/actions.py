@@ -919,6 +919,15 @@ def update_message_flags(user_profile, operation, flag, messages, all):
     elif operation == 'remove':
         count = msgs.update(flags=F('flags').bitand(~flagattr))
 
+    event = {'type': 'update_message_flags',
+             'operation': operation,
+             'flag': flag,
+             'messages': messages,
+             'all': all}
+    log_event(event)
+    notice = dict(event=event, users=[user_profile.id])
+    tornado_callbacks.send_notification(notice)
+
     statsd.incr("flags.%s.%s" % (flag, operation), count)
 
 def process_user_presence_event(event):
@@ -1151,6 +1160,10 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     if event_types is None or "referral" in event_types:
         ret['referrals'] = {'granted': user_profile.invites_granted,
                             'used': user_profile.invites_used}
+    if event_types is None or "update_message_flags" in event_types:
+        # There's no initial data for message flag updates, client will
+        # get any updates during a session from get_events()
+        pass
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
@@ -1198,6 +1211,9 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
             pass
         elif event['type'] == "referral":
             ret['referrals'] = event['referrals']
+        elif event['type'] == "update_message_flags":
+            # The client will get the message with the updated flags directly
+            pass
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 
