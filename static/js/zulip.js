@@ -136,7 +136,16 @@ function keep_pointer_in_view() {
 
         var message_top = next_row.offset().top;
 
+        // If the message starts after the very top of the screen, we just
+        // leave it alone.  This avoids bugs like #1608, where overzealousness
+        // about repositioning the pointer can cause users to miss messages.
+        if (message_top >= info.visible_top) {
+            return true;
+        }
 
+
+        // If at least part of the message is below top_threshold (10% from
+        // the top), then we also leave it alone.
         var bottom_offset = message_top + next_row.outerHeight(true);
         if (bottom_offset >= top_threshold) {
             return true;
