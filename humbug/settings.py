@@ -472,8 +472,8 @@ LOGGING = {
         }
     },
     'filters': {
-        'HumbugLimiter': {
-            '()': 'zerver.lib.logging_util.HumbugLimiter',
+        'ZulipLimiter': {
+            '()': 'zerver.lib.logging_util.ZulipLimiter',
         },
         'EmailLimiter': {
             '()': 'zerver.lib.logging_util.EmailLimiter',
@@ -493,7 +493,7 @@ LOGGING = {
             'level':     'ERROR',
             'class':     'zerver.handlers.AdminZulipHandler',
             # For testing the handler delete the next line
-            'filters':   ['HumbugLimiter', 'require_debug_false', 'require_really_deployed'],
+            'filters':   ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
             'formatter': 'default'
         },
         'console': {

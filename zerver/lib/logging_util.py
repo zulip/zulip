@@ -34,7 +34,7 @@ class _RateLimitFilter(object):
 
         return not duplicate
 
-class HumbugLimiter(_RateLimitFilter):
+class ZulipLimiter(_RateLimitFilter):
     pass
 
 class EmailLimiter(_RateLimitFilter):
