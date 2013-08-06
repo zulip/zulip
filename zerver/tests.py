@@ -1678,8 +1678,8 @@ class S3Test(AuthedTestCase):
         A call to /json/upload_file should return a uri and actually create an object.
         """
         self.login("hamlet@zulip.com")
-        fp = StringIO("humbug!")
-        fp.name = "humbug.txt"
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
 
         result = self.client.post("/json/upload_file", {'file': fp})
         self.assert_json_success(result)
@@ -1687,7 +1687,7 @@ class S3Test(AuthedTestCase):
         self.assertIn("uri", json)
         uri = json["uri"]
         self.test_uris.append(uri)
-        self.assertEquals("humbug!", urllib2.urlopen(uri).read().strip())
+        self.assertEquals("zulip!", urllib2.urlopen(uri).read().strip())
 
     def test_multiple_upload_failure(self):
         """

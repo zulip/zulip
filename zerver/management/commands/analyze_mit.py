@@ -48,15 +48,15 @@ def compute_stats(log_level):
         top_percents[size] = 0
     for i, email in enumerate(sorted(total_user_counts.keys(),
                                      key=lambda x: -total_user_counts[x])):
-        percent_humbug = round(100 - (user_counts[email].get("zephyr_mirror", 0)) * 100. /
+        percent_zulip = round(100 - (user_counts[email].get("zephyr_mirror", 0)) * 100. /
                                total_user_counts[email], 1)
         for size in top_percents.keys():
             top_percents.setdefault(size, 0)
             if i < size:
-                top_percents[size] += (percent_humbug * 1.0 / size)
+                top_percents[size] += (percent_zulip * 1.0 / size)
 
         logging.debug("%40s | %10s | %s%%" % (email, total_user_counts[email],
-                                              percent_humbug))
+                                              percent_zulip))
 
     logging.info("")
     for size in sorted(top_percents.keys()):
