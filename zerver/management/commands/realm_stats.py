@@ -82,11 +82,11 @@ class Command(BaseCommand):
 
             print "%d active users (%d total)" % (num_active, len(user_profiles))
             streams = Stream.objects.filter(realm=realm).extra(
-                tables=['zephyr_subscription', 'zephyr_recipient'],
-                where=['zephyr_subscription.recipient_id = zephyr_recipient.id',
-                       'zephyr_recipient.type = 2',
-                       'zephyr_recipient.type_id = zephyr_stream.id',
-                       'zephyr_subscription.active = true']).annotate(count=Count("name"))
+                tables=['zerver_subscription', 'zerver_recipient'],
+                where=['zerver_subscription.recipient_id = zerver_recipient.id',
+                       'zerver_recipient.type = 2',
+                       'zerver_recipient.type_id = zerver_stream.id',
+                       'zerver_subscription.active = true']).annotate(count=Count("name"))
             print "%d streams" % (streams.count(),)
 
             for days_ago in (1, 7, 30):

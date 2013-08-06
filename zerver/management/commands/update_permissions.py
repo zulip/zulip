@@ -9,4 +9,4 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # From http://stackoverflow.com/a/11914435/90777
-        create_permissions(get_app("zephyr"), get_models(), 2)
+        create_permissions(get_app("zerver"), get_models(), 2)
