@@ -8,7 +8,7 @@ import subprocess
 from os          import path
 from collections import defaultdict
 
-from humbug_tools import check_output
+from zulip_tools import check_output
 
 parser = optparse.OptionParser()
 parser.add_option('--full',

@@ -8,7 +8,7 @@ from collections import defaultdict
 from os import path, environ
 
 sys.path.append(path.join(path.dirname(__file__), '../tools'))
-from humbug_tools import check_output
+from zulip_tools import check_output
 
 states = {
     0: "OK",

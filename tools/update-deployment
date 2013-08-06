@@ -3,7 +3,7 @@ import os
 import sys
 import subprocess
 import logging
-from humbug_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, WARNING, ENDC
+from zulip_tools import DEPLOYMENTS_DIR, LOCK_DIR, TIMESTAMP_FORMAT, FAIL, WARNING, ENDC
 import datetime
 import shutil
 import time

@@ -5,7 +5,7 @@ import pwd
 import subprocess
 import logging
 import time
-from humbug_tools import ENDC, OKGREEN, DEPLOYMENTS_DIR
+from zulip_tools import ENDC, OKGREEN, DEPLOYMENTS_DIR
 
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
                     level=logging.INFO)

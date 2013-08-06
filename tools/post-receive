@@ -30,7 +30,7 @@
 
 import sys
 import subprocess
-from humbug_tools import check_output, ENDC, FAIL
+from zulip_tools import check_output, ENDC, FAIL
 
 def update_deployment(server, refname):
     return subprocess.call(["ssh", server, "--", "env", "-u", "GIT_DIR",
