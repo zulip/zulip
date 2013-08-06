@@ -1,6 +1,5 @@
 *.pyc
 *~
-/zephyrdb
 /all_messages_log.*
 /event_log/*
 /server.log
