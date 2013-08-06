@@ -322,7 +322,9 @@ function get_new_heights() {
         res.bottom_sidebar_height
         - $("#global_filters").outerHeight(true)
         - $("#streams_header").outerHeight(true)
-        - 10; // stream_filters margin-bottom
+        - $("#share-the-love").outerHeight(true)
+        - 10 // stream_filters margin-bottom
+        -  5;// share-the-love margin-bottom
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(40, res.stream_filters_max_height);

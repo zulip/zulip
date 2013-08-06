@@ -869,6 +869,9 @@ function get_updates_success(data) {
             users[event.email] = event.presence;
             activity.set_user_statuses(users, event.server_timestamp);
             break;
+        case 'referral':
+            referral.update_state(event.referrals.granted, event.referrals.used);
+            break;
         }
     });
 
