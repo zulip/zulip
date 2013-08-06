@@ -720,3 +720,6 @@ $(document).on('message_selected.zulip hashchange.zulip mousewheel', function (e
 });
 }());
 /*jslint nomen: false */
+if (typeof module !== 'undefined') {
+    module.exports = MessageList;
+}
