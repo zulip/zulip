@@ -76,7 +76,7 @@ class States:
     Startup, ZulipToZephyr, ZephyrToZulip, ChildSending = range(4)
 CURRENT_STATE = States.Startup
 
-def to_humbug_username(zephyr_username):
+def to_zulip_username(zephyr_username):
     if "@" in zephyr_username:
         (user, realm) = zephyr_username.split("@")
     else:
@@ -85,13 +85,13 @@ def to_humbug_username(zephyr_username):
         return user.lower() + "@mit.edu"
     return user.lower() + "|" + realm.upper() + "@mit.edu"
 
-def to_zephyr_username(humbug_username):
-    (user, realm) = humbug_username.split("@")
+def to_zephyr_username(zulip_username):
+    (user, realm) = zulip_username.split("@")
     if "|" not in user:
         return user.lower() + "@ATHENA.MIT.EDU"
     match_user = re.match(r'([a-zA-Z0-9_]+)\|(.+)', user)
     if not match_user:
-        raise Exception("Could not parse Zephyr realm for cross-realm user %s" % (humbug_username,))
+        raise Exception("Could not parse Zephyr realm for cross-realm user %s" % (zulip_username,))
     return match_user.group(1).lower() + "@" + match_user.group(2).upper()
 
 # Checks whether the pair of adjacent lines would have been
@@ -135,13 +135,13 @@ def unwrap_lines(body):
     result += previous_line
     return result
 
-def send_humbug(zeph):
+def send_zulip(zeph):
     message = {}
     if options.forward_class_messages:
         message["forged"] = "yes"
     message['type'] = zeph['type']
     message['time'] = zeph['time']
-    message['sender'] = to_humbug_username(zeph['sender'])
+    message['sender'] = to_zulip_username(zeph['sender'])
     if "subject" in zeph:
         # Truncate the subject to the current limit in Zulip.  No
         # need to do this for stream names, since we're only
@@ -167,10 +167,10 @@ def send_humbug(zeph):
 
     return humbug_client.send_message(message)
 
-def send_error_humbug(error_msg):
+def send_error_zulip(error_msg):
     message = {"type": "private",
-               "sender": humbug_account_email,
-               "to": humbug_account_email,
+               "sender": zulip_account_email,
+               "to": zulip_account_email,
                "content": error_msg,
                }
     humbug_client.send_message(message)
@@ -332,10 +332,10 @@ def process_notice(notice, log):
         if body.startswith("CC:"):
             is_huddle = True
             # Map "CC: sipbtest espuser" => "starnine@mit.edu,espuser@mit.edu"
-            huddle_recipients = [to_humbug_username(x.strip()) for x in
+            huddle_recipients = [to_zulip_username(x.strip()) for x in
                                  body.split("\n")[0][4:].split()]
             if notice.sender not in huddle_recipients:
-                huddle_recipients.append(to_humbug_username(notice.sender))
+                huddle_recipients.append(to_zulip_username(notice.sender))
             body = body.split("\n", 1)[1]
 
     zeph = { 'time'      : str(notice.time),
@@ -347,7 +347,7 @@ def process_notice(notice, log):
         zeph['recipient'] = huddle_recipients
     elif is_personal:
         zeph['type'] = 'private'
-        zeph['recipient'] = to_humbug_username(notice.recipient)
+        zeph['recipient'] = to_zulip_username(notice.recipient)
     else:
         zeph['type'] = 'stream'
         zeph['stream'] = zephyr_class
@@ -381,7 +381,7 @@ def process_notice(notice, log):
         CURRENT_STATE = States.ChildSending
         # Actually send the message in a child process, to avoid blocking.
         try:
-            res = send_humbug(zeph)
+            res = send_zulip(zeph)
             if res.get("result") != "success":
                 logger.error("Error relaying zephyr:\n%s\n%s" % (zeph, res))
         except Exception:
@@ -434,7 +434,7 @@ def zephyr_subscribe_autoretry(sub):
 
     quit_failed_initialization("Could not subscribe to personals, quitting!")
 
-def zephyr_to_humbug(options):
+def zephyr_to_zulip(options):
     zephyr_init_autoretry()
     if options.forward_class_messages:
         update_subscriptions()
@@ -465,7 +465,7 @@ def zephyr_to_humbug(options):
                     logger.info("sending saved message to %s from %s..." %
                                 (zeph.get('stream', zeph.get('recipient')),
                                  zeph['sender']))
-                    send_humbug(zeph)
+                    send_zulip(zeph)
                 except Exception:
                     logger.exception("Could not send saved zephyr:")
                     time.sleep(2)
@@ -534,7 +534,7 @@ def forward_to_zephyr(message):
         elif len(message['display_recipient']) == 2:
             recipient = ""
             for r in message["display_recipient"]:
-                if r["email"].lower() != humbug_account_email.lower():
+                if r["email"].lower() != zulip_account_email.lower():
                     recipient = to_zephyr_username(r["email"])
                     break
             recipients = [recipient]
@@ -560,7 +560,7 @@ Feedback tab or at support@zulip.com."""
     if code == 0 and stderr == "":
         return
     elif code == 0:
-        return send_error_humbug("""%s
+        return send_error_zulip("""%s
 
 Your last message was successfully mirrored to zephyr, but zwrite \
 returned the following warning:
@@ -574,7 +574,7 @@ returned the following warning:
         # just notify the user that they need to renew their tickets
         (code, stderr) = send_unauthed_zephyr(zwrite_args, wrapped_content)
         if code == 0:
-            return send_error_humbug("""%s
+            return send_error_zulip("""%s
 
 Your last message was forwarded from Zulip to Zephyr unauthenticated, \
 because your Kerberos tickets have expired. It was sent successfully, \
@@ -587,7 +587,7 @@ authenticated Zephyr messages for you again.
     # zwrite failed and it wasn't because of expired tickets: This is
     # probably because the recipient isn't subscribed to personals,
     # but regardless, we should just notify the user.
-    return send_error_humbug("""%s
+    return send_error_zulip("""%s
 
 Your Zulip-Zephyr mirror bot was unable to forward that last message \
 from Zulip to Zephyr. That means that while Zulip users (like you) \
@@ -598,7 +598,7 @@ received it, Zephyr users did not.  The error message from zwrite was:
 %s""" % (heading, stderr, support_closing))
 
 def maybe_forward_to_zephyr(message):
-    if (message["sender_email"] == humbug_account_email):
+    if (message["sender_email"] == zulip_account_email):
         if not ((message["type"] == "stream") or
                 (message["type"] == "private" and
                  False not in [u["email"].lower().endswith("mit.edu") for u in
@@ -618,8 +618,8 @@ def maybe_forward_to_zephyr(message):
             # whole process
             logger.exception("Error forwarding message:")
 
-def humbug_to_zephyr(options):
-    # Sync messages from zephyr to humbug
+def zulip_to_zephyr(options):
+    # Sync messages from zephyr to zulip
     logger.info("Starting syncing messages.")
     while True:
         try:
@@ -642,7 +642,7 @@ def subscribed_to_mail_messages():
     os.environ["HUMBUG_FORWARD_MAIL_ZEPHYRS"] = "False"
     return False
 
-def add_humbug_subscriptions(verbose):
+def add_zulip_subscriptions(verbose):
     zephyr_subscriptions = set()
     skipped = set()
     for (cls, instance, recipient) in parse_zephyr_subs(verbose=verbose):
@@ -656,8 +656,8 @@ def add_humbug_subscriptions(verbose):
                 if recipient == "*":
                     skipped.add((cls, instance, recipient, "subscribing to all of class message is not supported."))
                 continue
-            # If you're on -i white-magic on zephyr, get on stream white-magic on humbug
-            # instead of subscribing to stream "message" on humbug
+            # If you're on -i white-magic on zephyr, get on stream white-magic on zulip
+            # instead of subscribing to stream "message" on zulip
             zephyr_subscriptions.add(instance)
             continue
         elif cls.lower() == "mail" and instance.lower() == "inbox":
@@ -753,7 +753,7 @@ def open_logger():
         else:
             log_file = "/home/humbug/mirror-log"
     else:
-        f = tempfile.NamedTemporaryFile(prefix="humbug-log.%s." % (options.user,),
+        f = tempfile.NamedTemporaryFile(prefix="zulip-log.%s." % (options.user,),
                                         delete=False)
         log_file = f.name
         # Close the file descriptor, since the logging system will
@@ -806,9 +806,9 @@ def parse_args():
                       help=optparse.SUPPRESS_HELP,
                       default=True,
                       action='store_false')
-    parser.add_option('--no-forward-from-humbug',
+    parser.add_option('--no-forward-from-zulip',
                       default=True,
-                      dest='forward_from_humbug',
+                      dest='forward_from_zulip',
                       help=optparse.SUPPRESS_HELP,
                       action='store_false')
     parser.add_option('--verbose',
@@ -842,7 +842,7 @@ def die_gracefully(signal, frame):
 
     if CURRENT_STATE == States.ZephyrToZulip:
         try:
-            # zephyr=>humbug processes may have added subs, so run cancelSubs
+            # zephyr=>zulip processes may have added subs, so run cancelSubs
             zephyr._z.cancelSubs()
         except IOError:
             # We don't care whether we failed to cancel subs properly, but we should log it
@@ -891,10 +891,10 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
         # don't need to read it in
         os.environ["HUMBUG_API_KEY"] = api_key
 
-    humbug_account_email = options.user + "@mit.edu"
+    zulip_account_email = options.user + "@mit.edu"
     import humbug
     humbug_client = humbug.Client(
-        email=humbug_account_email,
+        email=zulip_account_email,
         api_key=api_key,
         verbose=True,
         client="zephyr_mirror",
@@ -905,7 +905,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
     if options.sync_subscriptions:
         configure_logger(logger, None)  # make the output cleaner
         logger.info("Syncing your ~/.zephyr.subs to your Zulip Subscriptions!")
-        add_humbug_subscriptions(True)
+        add_zulip_subscriptions(True)
         sys.exit(0)
 
     # Kill all zephyr_mirror processes other than this one and its parent.
@@ -931,27 +931,27 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
 
     if options.shard is not None and set(options.shard) != set("a"):
         # The shard that is all "a"s is the one that handles personals
-        # forwarding and humbug => zephyr forwarding
+        # forwarding and zulip => zephyr forwarding
         options.forward_personals = False
-        options.forward_from_humbug = False
+        options.forward_from_zulip = False
 
-    if options.forward_from_humbug:
+    if options.forward_from_zulip:
         child_pid = os.fork()
         if child_pid == 0:
             CURRENT_STATE = States.ZulipToZephyr
-            # Run the humbug => zephyr mirror in the child
-            configure_logger(logger, "humbug=>zephyr")
-            humbug_to_zephyr(options)
+            # Run the zulip => zephyr mirror in the child
+            configure_logger(logger, "zulip=>zephyr")
+            zulip_to_zephyr(options)
             sys.exit(0)
     else:
         child_pid = None
     CURRENT_STATE = States.ZephyrToZulip
 
     import zephyr
-    logger_name = "zephyr=>humbug"
+    logger_name = "zephyr=>zulip"
     if options.shard is not None:
         logger_name += "(%s)" % (options.shard,)
     configure_logger(logger, logger_name)
     # Have the kernel reap children for when we fork off processes to send Zulips
     signal.signal(signal.SIGCHLD, signal.SIG_IGN)
-    zephyr_to_humbug(options)
+    zephyr_to_zulip(options)
