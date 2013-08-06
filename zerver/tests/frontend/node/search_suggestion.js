@@ -33,6 +33,8 @@ function set_up_dependencies() {
 
     global.recent_subjects = {};
 
+    global.util = require('js/util.js');
+
     return search;
 }
 
@@ -131,6 +133,27 @@ var search = set_up_dependencies();
 
 }());
 
+(function test_whitespace_glitch() {
+    var query = 'stream:office '; // note trailing space
+
+    global.subs.subscribed_streams = function () {
+        return ['office'];
+    };
+
+    global.narrow.stream = function () {
+        return;
+    };
+
+    global.recent_subjects = {};
+
+    var suggestions = search.get_suggestions(query);
+
+    var expected = [
+        "stream:office"
+    ];
+
+    assert.deepEqual(suggestions.strings, expected);
+}());
 
 (function test_people_suggestions() {
     var query = 'te';

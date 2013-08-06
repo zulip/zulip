@@ -206,8 +206,10 @@ function get_person_suggestions(all_people, query, prefix, operator) {
     return objs;
 }
 
-function get_suggestion_based_on_query(search_string, operators) {
-    // We expect caller to call narrow.parse to get operators from search_string.
+function get_default_suggestion(operators) {
+    // Here we return the canonical suggestion for the full query that the
+    // user typed.  (The caller passes us the parsed query as "operators".)
+    var search_string = narrow.unparse(operators);
     var description = describe(operators);
     description = Handlebars.Utils.escapeExpression(description);
     return {description: description, search_string: search_string};
@@ -394,7 +396,7 @@ exports.get_suggestions = function (query) {
 
     // Add an entry for narrow by operators.
     var operators = narrow.parse(query);
-    suggestion = get_suggestion_based_on_query(query, operators);
+    suggestion = get_default_suggestion(operators);
     result = [suggestion];
 
     suggestions = get_special_filter_suggestions(query, operators);
