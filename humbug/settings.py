@@ -56,7 +56,7 @@ if not DEPLOYED:
             'HOST': 'localhost',
             'OPTIONS': {}
             })
-    INTERNAL_HUMBUG_USERS = []
+    INTERNAL_ZULIP_USERS = []
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name

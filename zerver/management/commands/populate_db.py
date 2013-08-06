@@ -191,13 +191,13 @@ class Command(BaseCommand):
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
-            hardcoded_humbug_users_nosubs = [
+            hardcoded_zulip_users_nosubs = [
                 ("Zulip New User Bot", "new-user-bot@zulip.com"),
                 ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Notification Bot", "notification-bot@zulip.com"),
                 ("Zulip Tutorial Bot", "tutorial-bot@zulip.com"),
                 ]
-            create_users(realms, hardcoded_humbug_users_nosubs)
+            create_users(realms, hardcoded_zulip_users_nosubs)
 
             if not options["test_suite"]:
                 # To keep the messages.json fixtures file for the test
@@ -207,10 +207,10 @@ class Command(BaseCommand):
                 internal_mit_users = []
                 create_users(realms, internal_mit_users)
 
-                create_users(realms, settings.INTERNAL_HUMBUG_USERS)
-                humbug_stream_list = ["devel", "all", "humbug", "design", "support", "social", "test",
+                create_users(realms, settings.INTERNAL_ZULIP_USERS)
+                zulip_stream_list = ["devel", "all", "zulip", "design", "support", "social", "test",
                                       "errors", "sales"]
-                create_streams(realms, zulip_realm, humbug_stream_list)
+                create_streams(realms, zulip_realm, zulip_stream_list)
 
                 # Add a few default streams
                 for stream_name in ["design", "devel", "social", "support"]:
@@ -219,7 +219,7 @@ class Command(BaseCommand):
                 # Now subscribe everyone to these streams
                 subscriptions_to_add = []
                 profiles = UserProfile.objects.select_related().filter(realm=zulip_realm)
-                for cls in humbug_stream_list:
+                for cls in zulip_stream_list:
                     stream = Stream.objects.get(name=cls, realm=zulip_realm)
                     recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                     for profile in profiles:
@@ -229,13 +229,13 @@ class Command(BaseCommand):
                 Subscription.objects.bulk_create(subscriptions_to_add)
 
                 # These bots are not needed by the test suite
-                internal_humbug_users_nosubs = [
+                internal_zulip_users_nosubs = [
                     ("Zulip Commit Bot", "commit-bot@zulip.com"),
                     ("Zulip Trac Bot", "trac-bot@zulip.com"),
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
                     ("Zulip Feedback Bot", "feedback@zulip.com"),
                     ]
-                create_users(realms, internal_humbug_users_nosubs)
+                create_users(realms, internal_zulip_users_nosubs)
 
             # Mark all messages as read
             with transaction.commit_on_success():
