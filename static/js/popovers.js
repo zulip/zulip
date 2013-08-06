@@ -163,18 +163,19 @@ exports.register_click_handlers = function () {
         var last_sidebar_elem = current_user_sidebar_elem;
         popovers.hide_all();
 
-        var email = $(e.target).find('a').attr('data-email');
-        var name = $(e.target).find('a').attr('data-name');
+        var target = $(e.target).closest('li');
+        var email = target.find('a').attr('data-email');
+        var name = target.find('a').attr('data-name');
 
-        $(e.target).popover({
+        target.popover({
             content:   templates.render('user_sidebar_actions', {'email': email,
                                                                  'name': name}),
             placement: "left",
             trigger:   "manual",
             fixed: true
         });
-        $(e.target).popover("show");
-        current_user_sidebar_elem = $(e.target);
+        target.popover("show");
+        current_user_sidebar_elem = target;
         e.stopPropagation();
     });
 
