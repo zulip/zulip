@@ -600,7 +600,7 @@ if not DEPLOYED:
 
 if DEPLOYED:
     # Filter out user data
-    DEFAULT_EXCEPTION_REPORTER_FILTER = 'zerver.filters.HumbugExceptionReporterFilter'
+    DEFAULT_EXCEPTION_REPORTER_FILTER = 'zerver.filters.ZulipExceptionReporterFilter'
 
 # We want all temporary uploaded files to be stored on disk.
 

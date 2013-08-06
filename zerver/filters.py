@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from django.views.debug import SafeExceptionReporterFilter
 from django.http import build_request_repr
 
-class HumbugExceptionReporterFilter(SafeExceptionReporterFilter):
+class ZulipExceptionReporterFilter(SafeExceptionReporterFilter):
     def get_post_parameters(self, request):
         filtered_post = SafeExceptionReporterFilter.get_post_parameters(self, request).copy()
         filtered_vars = ['content', 'secret', 'password', 'key', 'api-key', 'subject', 'stream',
