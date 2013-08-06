@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def subscribe(self, ch, method, properties, data):
         self.pm.listSubscribe(
-                id=settings.HUMBUG_FRIENDS_LIST_ID,
+                id=settings.ZULIP_FRIENDS_LIST_ID,
                 email_address=data['EMAIL'],
                 merge_vars=data['merge_vars'],
                 double_optin=False,

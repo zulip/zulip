@@ -489,7 +489,7 @@ LOGGING = {
         },
     },
     'handlers': {
-        'humbug_admins': {
+        'zulip_admins': {
             'level':     'ERROR',
             'class':     'zerver.handlers.AdminZulipHandler',
             # For testing the handler delete the next line
@@ -528,7 +528,7 @@ LOGGING = {
             'propagate': False,
         },
         'django': {
-            'handlers': ['humbug_admins', 'console', 'file', 'mail_admins'],
+            'handlers': ['zulip_admins', 'console', 'file', 'mail_admins'],
             'level':    'INFO',
             'propagate': False,
         },
@@ -566,7 +566,7 @@ OPENID_CREATE_USERS = True
 OPENID_RENDER_FAILURE = openid_failure_handler
 
 MAILCHIMP_API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us4'
-HUMBUG_FRIENDS_LIST_ID = '84b2f3da6b'
+ZULIP_FRIENDS_LIST_ID = '84b2f3da6b'
 
 # Client-side polling timeout for get_events, in milliseconds.
 # We configure this here so that the client test suite can override it.
