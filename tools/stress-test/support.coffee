@@ -7,7 +7,7 @@ class @Session
         @agent = new http.Agent()
         @agent._name = @name
         @jar = request.jar()
-        @headers = {'User-agent': "Humbug Load Tester"}
+        @headers = {'User-agent': "Zulip Load Tester"}
         @last_body = null
 
     request: (method, url, form, cb) ->

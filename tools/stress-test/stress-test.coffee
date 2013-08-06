@@ -8,7 +8,7 @@ argv = require('optimist').default({
     'max-wait': 10
 }).argv
 
-class HumbugSession extends Session
+class ZulipSession extends Session
     constructor: (id, host, {@username, @password}) ->
         user = @username.split('@')[0]
         super(host, "#{id} #{user}")
@@ -154,7 +154,7 @@ if argv.users > users.length
 
 for i in [0..argv.users] then do ->
     user = users[i%users.length]
-    h = new HumbugSession(i, host, user)
+    h = new ZulipSession(i, host, user)
     setTimeout(h.run_test, i*user_start_step)
 
 stats = [
