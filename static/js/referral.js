@@ -19,35 +19,37 @@ var placeholder_invitees = ['guglielmo@marconi.com',
 exports.update_state = function (granted, used) {
     if (granted <= 0) {
         $("#share-the-love").hide();
-        return;
-    }
-
-    $("#referral-form input").attr('placeholder', _.shuffle(placeholder_invitees).pop());
-    $("#invite-hearts").empty();
-    var i;
-    for (i = 0; i < used; i++) {
-        $("#invite-hearts").append($('<i class="icon-vector-heart"> </i>'));
-    }
-
-    var invites_left = Math.max(0, granted - used);
-    for (i = 0; i < invites_left; i++) {
-        $("#invite-hearts").append($('<i class="icon-vector-heart-empty"> </i>'));
-    }
-    $(".invite-count").text(invites_left);
-    if (invites_left === 1) {
-        $(".invite-count-is-plural").hide();
     } else {
-        $(".invite-count-is-plural").show();
+        $("#referral-form input").attr('placeholder', _.shuffle(placeholder_invitees).pop());
+        $("#invite-hearts").empty();
+        var i;
+        for (i = 0; i < used; i++) {
+            $("#invite-hearts").append($('<i class="icon-vector-heart"> </i>'));
+        }
+
+        var invites_left = Math.max(0, granted - used);
+        for (i = 0; i < invites_left; i++) {
+            $("#invite-hearts").append($('<i class="icon-vector-heart-empty"> </i>'));
+        }
+        $(".invite-count").text(invites_left);
+        if (invites_left === 1) {
+            $(".invite-count-is-plural").hide();
+        } else {
+            $(".invite-count-is-plural").show();
+        }
+
+        if (invites_left > 0) {
+            $(".still-have-invites").show();
+            $(".no-more-invites").hide();
+        } else {
+            $(".still-have-invites").hide();
+            $(".no-more-invites").show();
+        }
+
+        $("#share-the-love").show();
     }
 
-    if (invites_left > 0) {
-        $(".still-have-invites").show();
-        $(".no-more-invites").hide();
-    } else {
-        $(".still-have-invites").hide();
-        $(".no-more-invites").show();
-    }
-    $("#share-the-love").show();
+    ui.resize_page_components();
 };
 
 function show_and_fade_elem(elem) {

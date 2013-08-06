@@ -2240,6 +2240,7 @@ div.edit_bot {
     margin-left: 10px;
     margin-bottom: 5px;
     line-height: 18px;
+    display: none;
 }
 
 #share-the-love input, #share-the-love p {
