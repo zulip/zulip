@@ -1,5 +1,5 @@
-class humbug::postgres-master {
-  class { 'humbug::postgres-appdb': }
+class zulip::postgres-master {
+  class { 'zulip::postgres-appdb': }
 
   $master_packages = [ "xfsprogs", "mdadm", ]
   package { $master_packages: ensure => "installed" }
@@ -14,7 +14,7 @@ class humbug::postgres-master {
     owner  => 'root',
     group  => 'root',
     mode   => 644,
-    source   => 'puppet:///modules/humbug/postgresql/40-postgresql.conf.master',
+    source   => 'puppet:///modules/zulip/postgresql/40-postgresql.conf.master',
   }
 
   file { "/etc/postgresql/9.1/main/postgresql.conf":
@@ -23,7 +23,7 @@ class humbug::postgres-master {
     owner  => "postgres",
     group  => "postgres",
     mode => 644,
-    source => "puppet:///modules/humbug/postgresql/postgresql.conf.master",
+    source => "puppet:///modules/zulip/postgresql/postgresql.conf.master",
   }
 
   file { "/root/setup_disks.sh":
@@ -31,7 +31,7 @@ class humbug::postgres-master {
     owner  => 'root',
     group  => 'root',
     mode   => 744,
-    source => 'puppet:///modules/humbug/postgresql/setup_disks.sh',
+    source => 'puppet:///modules/zulip/postgresql/setup_disks.sh',
   }
 
   exec { "setup_disks":

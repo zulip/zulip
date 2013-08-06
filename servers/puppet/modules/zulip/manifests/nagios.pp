@@ -1,6 +1,6 @@
-class humbug::nagios {
-  class { 'humbug::base': }
-  class { 'humbug::apache': }
+class zulip::nagios {
+  class { 'zulip::base': }
+  class { 'zulip::apache': }
 
   $nagios_packages = [ "nagios3", "munin", "autossh" ]
   package { $nagios_packages: ensure => "installed" }
@@ -19,7 +19,7 @@ class humbug::nagios {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/nagios3/",
+    source => "puppet:///modules/zulip/nagios3/",
     notify => Service["nagios3"],
   }
 
@@ -32,7 +32,7 @@ class humbug::nagios {
     mode       => 755,
     owner      => "root",
     group      => "root",
-    source     => 'puppet:///modules/humbug/pagerduty_nagios.pl',
+    source     => 'puppet:///modules/zulip/pagerduty_nagios.pl',
   }
 
   exec { "fix_nagios_permissions":
@@ -53,7 +53,7 @@ class humbug::nagios {
     owner  => "nagios",
     group  => "crontab",
     mode => 600,
-    source => "puppet:///modules/humbug/nagios_crontab",
+    source => "puppet:///modules/zulip/nagios_crontab",
   }
 
   # TODO: Install our API

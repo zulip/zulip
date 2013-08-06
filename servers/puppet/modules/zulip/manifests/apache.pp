@@ -1,4 +1,4 @@
-class humbug::apache {
+class zulip::apache {
   $apache_packages = [ "apache2", "libapache2-mod-wsgi", ]
   package { $apache_packages: ensure => "installed" }
 
@@ -21,7 +21,7 @@ class humbug::apache {
     owner  => "www-data",
     group  => "www-data",
     mode => 600,
-    source => "puppet:///modules/humbug/apache/users",
+    source => "puppet:///modules/zulip/apache/users",
   }
 
   file { "/etc/apache2/certs/":
@@ -56,7 +56,7 @@ class humbug::apache {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "puppet:///modules/humbug/apache/ports.conf",
+    source => "puppet:///modules/zulip/apache/ports.conf",
   }
 
   file { "/etc/apache2/sites-available/":
@@ -65,7 +65,7 @@ class humbug::apache {
     owner  => "root",
     group  => "root",
     mode => 640,
-    source => "puppet:///modules/humbug/apache/sites/",
+    source => "puppet:///modules/zulip/apache/sites/",
   }
 
   apache2site { 'humbug-default':

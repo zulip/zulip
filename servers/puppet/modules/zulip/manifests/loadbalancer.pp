@@ -1,6 +1,6 @@
-class humbug::loadbalancer {
-  class { 'humbug::base': }
-  class { 'humbug::nginx': }
+class zulip::loadbalancer {
+  class { 'zulip::base': }
+  class { 'zulip::nginx': }
 
   file { "/etc/nginx/humbug-include/":
     require => Package[nginx],
@@ -8,7 +8,7 @@ class humbug::loadbalancer {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/nginx/humbug-include/",
+    source => "puppet:///modules/zulip/nginx/humbug-include/",
     notify => Service["nginx"],
   }
 
@@ -18,7 +18,7 @@ class humbug::loadbalancer {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/nginx/sites-available/loadbalancer",
+    source => "puppet:///modules/zulip/nginx/sites-available/loadbalancer",
   }
 
   file { "/etc/motd":
@@ -26,7 +26,7 @@ class humbug::loadbalancer {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/motd.lb0",
+    source => "puppet:///modules/zulip/motd.lb0",
   }
 
   file { '/etc/nginx/sites-enabled/loadbalancer':

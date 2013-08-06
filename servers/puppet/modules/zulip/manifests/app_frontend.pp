@@ -1,8 +1,8 @@
-class humbug::app_frontend {
-  class { 'humbug::base': }
-  class { 'humbug::rabbit': }
-  class { 'humbug::nginx': }
-  class { 'humbug::supervisor': }
+class zulip::app_frontend {
+  class { 'zulip::base': }
+  class { 'zulip::rabbit': }
+  class { 'zulip::nginx': }
+  class { 'zulip::supervisor': }
 
   $web_packages = [ "memcached", "python-pylibmc", "python-tornado", "python-django",
                     "python-pygments", "python-flup", "python-psycopg2",
@@ -25,7 +25,7 @@ class humbug::app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/nginx/humbug-include/",
+    source => "puppet:///modules/zulip/nginx/humbug-include/",
     notify => Service["nginx"],
   }
   file { "/etc/memcached.conf":
@@ -34,7 +34,7 @@ class humbug::app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/memcached.conf",
+    source => "puppet:///modules/zulip/memcached.conf",
   }
   file { "/etc/supervisor/conf.d/humbug.conf":
     require => Package[supervisor],
@@ -42,7 +42,7 @@ class humbug::app_frontend {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/supervisord/conf.d/humbug.conf",
+    source => "puppet:///modules/zulip/supervisord/conf.d/humbug.conf",
     notify => Service["supervisor"],
   }
   file { "/home/humbug/tornado":
@@ -57,7 +57,7 @@ class humbug::app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/redis/redis.conf",
+    source => "puppet:///modules/zulip/redis/redis.conf",
   }
   service { 'redis-server':
     ensure     => running,

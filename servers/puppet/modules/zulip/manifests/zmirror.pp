@@ -1,5 +1,5 @@
-class humbug::zmirror {
-  class { 'humbug::base': }
+class zulip::zmirror {
+  class { 'zulip::base': }
 
   $zmirror_packages = [ "cython", "libzephyr-dev", "comerr-dev", "python-dev", "libzephyr4-krb5", "zephyr-clients",
                         "krb5-config", "krb5-user", "krb5-clients"]

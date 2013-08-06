@@ -1,5 +1,5 @@
 # For any system using nginx (currently just app frontends and load balancers)
-class humbug::nginx {
+class zulip::nginx {
   $web_packages = [ "nginx", ]
   package { $web_packages: ensure => "installed" }
 
@@ -10,7 +10,7 @@ class humbug::nginx {
     group  => "root",
     mode => 644,
     notify => Service["nginx"],
-    source => "puppet:///modules/humbug/nginx/nginx.conf",
+    source => "puppet:///modules/zulip/nginx/nginx.conf",
   }
 
   file { "/etc/nginx/fastcgi_params":
@@ -20,7 +20,7 @@ class humbug::nginx {
     group  => "root",
     mode => 644,
     notify => Service["nginx"],
-    source => "puppet:///modules/humbug/nginx/fastcgi_params",
+    source => "puppet:///modules/zulip/nginx/fastcgi_params",
   }
 
   file { "/etc/nginx/sites-enabled/default":

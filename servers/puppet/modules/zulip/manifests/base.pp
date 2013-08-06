@@ -1,4 +1,4 @@
-class humbug::base {
+class zulip::base {
   $packages = [ "screen", "strace", "vim", "emacs23-nox", "git", "python-tz",
                 "sqlite3", "ntp", "python-simplejson", "host",
                 "openssh-server", "python-pip", "puppet-el",
@@ -36,7 +36,7 @@ class humbug::base {
     mode       => 600,
     owner      => "humbug",
     group      => "humbug",
-    source     => 'puppet:///modules/humbug/authorized_keys',
+    source     => 'puppet:///modules/zulip/authorized_keys',
   }
   file { '/home/humbug/.ssh':
     ensure     => directory,
@@ -51,7 +51,7 @@ class humbug::base {
     mode       => 600,
     owner      => "root",
     group      => "root",
-    source     => 'puppet:///modules/humbug/root_authorized_keys',
+    source     => 'puppet:///modules/zulip/root_authorized_keys',
   }
 
   # This is just an empty file.  It's used by the app to test if it's running
@@ -59,37 +59,37 @@ class humbug::base {
   file { '/etc/humbug-server':
     ensure     => file,
     mode       => 644,
-    source     => 'puppet:///modules/humbug/humbug-server',
+    source     => 'puppet:///modules/zulip/humbug-server',
   }
 
   file { '/etc/puppet/puppet.conf':
     ensure     => file,
     mode       => 640,
-    source     => 'puppet:///modules/humbug/puppet.conf',
+    source     => 'puppet:///modules/zulip/puppet.conf',
   }
 
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure     => file,
     mode       => 644,
-    source     => 'puppet:///modules/humbug/apt/apt.conf.d/02periodic',
+    source     => 'puppet:///modules/zulip/apt/apt.conf.d/02periodic',
   }
 
   file { '/usr/local/sbin/zulip-ec2-configure-interfaces':
     ensure     => file,
     mode       => 755,
-    source     => 'puppet:///modules/humbug/zulip-ec2-configure-interfaces',
+    source     => 'puppet:///modules/zulip/zulip-ec2-configure-interfaces',
   }
 
   file { '/etc/network/if-up.d/zulip-ec2-configure-interfaces_if-up.d.sh':
     ensure     => file,
     mode       => 755,
-    source     => 'puppet:///modules/humbug/zulip-ec2-configure-interfaces_if-up.d.sh',
+    source     => 'puppet:///modules/zulip/zulip-ec2-configure-interfaces_if-up.d.sh',
   }
 
   file { '/etc/ssh/sshd_config':
     require    => Package['openssh-server'],
     ensure     => file,
-    source     => 'puppet:///modules/humbug/sshd_config',
+    source     => 'puppet:///modules/zulip/sshd_config',
     owner      => 'root',
     group      => 'root',
     mode       => 644,
@@ -139,7 +139,7 @@ class humbug::base {
     mode       => 600,
     owner      => "nagios",
     group      => "nagios",
-    source     => 'puppet:///modules/humbug/nagios_authorized_keys',
+    source     => 'puppet:///modules/zulip/nagios_authorized_keys',
   }
   file { '/home/nagios':
     ensure => absent,
@@ -153,13 +153,13 @@ class humbug::base {
     owner => "root",
     group => "root",
     mode => 755,
-    source => "puppet:///modules/humbug/nagios_plugins/",
+    source => "puppet:///modules/zulip/nagios_plugins/",
   }
 
   file { '/etc/iptables/rules':
     ensure     => file,
     mode       => 600,
-    source     => 'puppet:///modules/humbug/iptables/rules',
+    source     => 'puppet:///modules/zulip/iptables/rules',
     require    => Package['iptables-persistent'],
   }
   service { 'iptables-persistent':

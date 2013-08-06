@@ -1,4 +1,4 @@
-class humbug::rabbit {
+class zulip::rabbit {
   $rabbit_packages = [ "rabbitmq-server" ]
   package { $rabbit_packages: ensure => "installed" }
 

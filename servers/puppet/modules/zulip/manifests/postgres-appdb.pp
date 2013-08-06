@@ -1,7 +1,7 @@
-class humbug::postgres-appdb {
-  class { 'humbug::base': }
-  class { 'humbug::postgres-common': }
-  class { 'humbug::supervisor': }
+class zulip::postgres-appdb {
+  class { 'zulip::base': }
+  class { 'zulip::postgres-common': }
+  class { 'zulip::supervisor': }
 
   $appdb_packages = [ "python-psycopg2",]
   package { $appdb_packages: ensure => "installed" }
@@ -11,7 +11,7 @@ class humbug::postgres-appdb {
     owner => "root",
     group => "root",
     mode => 755,
-    source => "puppet:///modules/humbug/postgresql/process_fts_updates",
+    source => "puppet:///modules/zulip/postgresql/process_fts_updates",
   }
 
   file { "/etc/supervisor/conf.d/zulip_db.conf":
@@ -20,7 +20,7 @@ class humbug::postgres-appdb {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/supervisord/conf.d/zulip_db.conf",
+    source => "puppet:///modules/zulip/supervisord/conf.d/zulip_db.conf",
     notify => Service[supervisor],
   }
 
@@ -30,7 +30,7 @@ class humbug::postgres-appdb {
     owner  => "postgres",
     group  => "postgres",
     mode => 640,
-    source => "puppet:///modules/humbug/postgresql/pg_hba.conf",
+    source => "puppet:///modules/zulip/postgresql/pg_hba.conf",
   }
 
   file { "/usr/share/postgresql/9.1/tsearch_data/humbug_english.stop":
@@ -39,7 +39,7 @@ class humbug::postgres-appdb {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/postgresql/humbug_english.stop",
+    source => "puppet:///modules/zulip/postgresql/humbug_english.stop",
   }
 
 }

@@ -1,5 +1,5 @@
-class humbug::prod_app_frontend {
-  class { 'humbug::app_frontend': }
+class zulip::prod_app_frontend {
+  class { 'zulip::app_frontend': }
 
   file { "/etc/nginx/sites-available/humbug":
     require => Package[nginx],
@@ -7,7 +7,7 @@ class humbug::prod_app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/nginx/sites-available/humbug",
+    source => "puppet:///modules/zulip/nginx/sites-available/humbug",
   }
   file { '/etc/nginx/sites-enabled/humbug':
     ensure => 'link',
@@ -29,7 +29,7 @@ class humbug::prod_app_frontend {
     owner  => "humbug",
     group  => "humbug",
     mode => 644,
-    source => "puppet:///modules/humbug/sparkle/mac/sparkle.xml",
+    source => "puppet:///modules/zulip/sparkle/mac/sparkle.xml",
   }
   file { "/srv/www/dist/apps/mac/sparkle-changelog.html":
     ensure => file,
@@ -37,7 +37,7 @@ class humbug::prod_app_frontend {
     owner  => "humbug",
     group  => "humbug",
     mode => 644,
-    source => "puppet:///modules/humbug/sparkle/mac/sparkle-changelog.html",
+    source => "puppet:///modules/zulip/sparkle/mac/sparkle-changelog.html",
   }
   file { "/srv/www/dist/apps/win/sparkle.xml":
     ensure => file,
@@ -45,7 +45,7 @@ class humbug::prod_app_frontend {
     owner  => "humbug",
     group  => "humbug",
     mode => 644,
-    source => "puppet:///modules/humbug/sparkle/win/sparkle.xml",
+    source => "puppet:///modules/zulip/sparkle/win/sparkle.xml",
   }
   file { "/srv/www/dist/apps/win/sparkle-changelog.html":
     ensure => file,
@@ -53,6 +53,6 @@ class humbug::prod_app_frontend {
     owner  => "humbug",
     group  => "humbug",
     mode => 644,
-    source => "puppet:///modules/humbug/sparkle/win/sparkle-changelog.html",
+    source => "puppet:///modules/zulip/sparkle/win/sparkle-changelog.html",
   }
 }

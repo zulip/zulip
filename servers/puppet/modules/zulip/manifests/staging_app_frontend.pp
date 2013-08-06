@@ -1,5 +1,5 @@
-class humbug::staging_app_frontend {
-  class { 'humbug::app_frontend': }
+class zulip::staging_app_frontend {
+  class { 'zulip::app_frontend': }
 
   file { "/etc/nginx/sites-available/humbug-staging":
     require => Package[nginx],
@@ -7,7 +7,7 @@ class humbug::staging_app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/nginx/sites-available/humbug-staging",
+    source => "puppet:///modules/zulip/nginx/sites-available/humbug-staging",
   }
   file { '/etc/nginx/sites-enabled/humbug-staging':
     ensure => 'link',

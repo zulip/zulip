@@ -1,5 +1,5 @@
-class humbug::mediawiki {
-  class { 'humbug::postgres-common': }
+class zulip::mediawiki {
+  class { 'zulip::postgres-common': }
 
 
   $mediawiki_packages = [ "mediawiki", "mediawiki-extensions" ]
@@ -17,7 +17,7 @@ class humbug::mediawiki {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/mediawiki/LocalSettings.php",
+    source => "puppet:///modules/zulip/mediawiki/LocalSettings.php",
   }
 
   file { '/usr/local/share/mediawiki/extensions/Auth_remoteuser.php':
@@ -25,7 +25,7 @@ class humbug::mediawiki {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/humbug/mediawiki/Auth_remoteuser.php",
+    source => "puppet:///modules/zulip/mediawiki/Auth_remoteuser.php",
   }
 
   file { '/etc/mediawiki-extensions/extensions-available/Auth_remoteuser.php':

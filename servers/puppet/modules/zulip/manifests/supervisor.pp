@@ -1,4 +1,4 @@
-class humbug::supervisor {
+class zulip::supervisor {
   $supervisor_packages = [ "supervisor",]
   package { $supervisor_packages: ensure => "installed" }
 

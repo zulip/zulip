@@ -1,5 +1,5 @@
-class humbug::git {
-  class { 'humbug::base': }
+class zulip::git {
+  class { 'zulip::base': }
 
   $git_packages = [ ]
   package { $git_packages: ensure => "installed" }

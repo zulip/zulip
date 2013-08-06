@@ -1,7 +1,7 @@
-class humbug::trac {
-  class { 'humbug::base': }
-  class { 'humbug::apache': }
-  class { 'humbug::mediawiki': }
+class zulip::trac {
+  class { 'zulip::base': }
+  class { 'zulip::apache': }
+  class { 'zulip::mediawiki': }
 
   $trac_packages = [ "trac", ]
   package { $trac_packages: ensure => "installed" }
@@ -16,7 +16,7 @@ class humbug::trac {
     owner  => "humbug",
     group  => "humbug",
     mode => 644,
-    source => "puppet:///modules/humbug/trac.ini",
+    source => "puppet:///modules/zulip/trac.ini",
     require => User['humbug'],
   }
   file { '/home/humbug/trac/plugins/humbug_trac.py':
@@ -34,7 +34,7 @@ class humbug::trac {
     owner  => 'root',
     group  => 'root',
     mode   => 644,
-    source   => 'puppet:///modules/humbug/postgresql/40-postgresql.conf.trac',
+    source   => 'puppet:///modules/zulip/postgresql/40-postgresql.conf.trac',
   }
 
   file { "/etc/postgresql/9.1/main/postgresql.conf":
@@ -43,6 +43,6 @@ class humbug::trac {
     owner  => "postgres",
     group  => "postgres",
     mode => 644,
-    source => "puppet:///modules/humbug/postgresql/postgresql.conf.trac",
+    source => "puppet:///modules/zulip/postgresql/postgresql.conf.trac",
   }
 }

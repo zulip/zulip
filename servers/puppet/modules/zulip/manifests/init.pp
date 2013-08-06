@@ -1,5 +1,5 @@
-class humbug ($machinetype) {
-  class { "humbug::$machinetype": }
+class zulip ($machinetype) {
+  class { "zulip::$machinetype": }
 
   file { '/etc/humbug-machinetype':
     ensure  => file,
