@@ -289,6 +289,31 @@ exports.xhr_error_message = function (message, xhr) {
     return message;
 };
 
+/* Represents a value that is expensive to compute and should be
+ * computed on demand and then cached.  The value can be forcefully
+ * recalculated on the next call to get() by calling reset().
+ *
+ * You must supply a option to the constructor called compute_value
+ * which should be a function that computes the uncached value.
+ */
+var unassigned_value_sentinel = {};
+exports.CachedValue = function (opts) {
+    this._value = unassigned_value_sentinel;
+    _.extend(this, opts);
+};
+
+exports.CachedValue.prototype = {
+    get: function CachedValue_get() {
+        if (this._value === unassigned_value_sentinel) {
+            this._value = this.compute_value();
+        }
+        return this._value;
+    },
+
+    reset: function CachedValue_reset() {
+        this._value = unassigned_value_sentinel;
+    }
+};
 
 return exports;
 }());
