@@ -20,5 +20,5 @@ class ExcludeUnminifiedMixin(object):
             if not re.search(excluded, path):
                 yield path, storage
 
-class HumbugFinder(ExcludeUnminifiedMixin, FileSystemFinder):
+class ZulipFinder(ExcludeUnminifiedMixin, FileSystemFinder):
     pass

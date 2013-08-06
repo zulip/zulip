@@ -238,7 +238,7 @@ if DEBUG:
 else:
     STATICFILES_STORAGE = 'zerver.storage.ZulipStorage'
     STATICFILES_FINDERS = (
-        'zerver.finders.HumbugFinder',
+        'zerver.finders.ZulipFinder',
     )
     if DEPLOYED:
         STATIC_ROOT = '/home/humbug/prod-static'
