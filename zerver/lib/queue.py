@@ -18,7 +18,7 @@ from zerver.lib.utils import statsd
 # out from bots without having to import pika code all over our codebase.
 class SimpleQueueClient(object):
     def __init__(self):
-        self.log = logging.getLogger('humbug.queue')
+        self.log = logging.getLogger('zulip.queue')
         self.queues = set()
         self.channel = None
         self.consumers = defaultdict(set)

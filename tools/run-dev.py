@@ -33,7 +33,7 @@ base_port   = 9991
 manage_args = ''
 if options.test:
     base_port   = 9981
-    manage_args = '--settings=humbug.test_settings'
+    manage_args = '--settings=zproject.test_settings'
 
 proxy_port   = base_port
 django_port  = base_port+1

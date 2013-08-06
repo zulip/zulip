@@ -11,7 +11,7 @@ from zerver.exceptions import RateLimited
 import logging
 import time
 
-logger = logging.getLogger('humbug.requests')
+logger = logging.getLogger('zulip.requests')
 
 def async_request_stop(request):
     request._time_stopped = time.time()

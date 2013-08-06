@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.utils.safestring import mark_safe
 from django.contrib.auth.forms import SetPasswordForm
 
-from humbug import settings
+from zproject import settings
 from zerver.models import Realm, get_user_profile_by_email, UserProfile
 from zerver.lib.actions import do_change_password
 

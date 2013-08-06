@@ -46,4 +46,4 @@ CACHES['database'] = {
     }
 }
 
-LOGGING['loggers']['humbug.requests']['level'] = 'CRITICAL'
+LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'

@@ -4,7 +4,7 @@ function migration_status {
     ./manage.py migrate --list | sed 's/*/ /' > "$1"
 }
 
-template_grep_error_code=$(echo "SELECT 1 from pg_database WHERE datname='humbug_test_template';" | python manage.py dbshell --settings=humbug.test_settings | grep -q "1 row"; echo $?)
+template_grep_error_code=$(echo "SELECT 1 from pg_database WHERE datname='humbug_test_template';" | python manage.py dbshell --settings=zproject.test_settings | grep -q "1 row"; echo $?)
 
 if [ $template_grep_error_code == "0" ]; then
     migration_status zerver/fixtures/available-migrations
@@ -26,15 +26,15 @@ mkdir -p zerver/fixtures
 rm -f zerver/lib/time.pyc
 
 
-echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | python manage.py dbshell --settings=humbug.test_settings
-python manage.py syncdb --noinput --settings=humbug.test_settings
-python manage.py migrate --settings=humbug.test_settings --all
+echo "DROP SCHEMA humbug CASCADE; CREATE SCHEMA humbug;" | python manage.py dbshell --settings=zproject.test_settings
+python manage.py syncdb --noinput --settings=zproject.test_settings
+python manage.py migrate --settings=zproject.test_settings --all
 migration_status "zerver/fixtures/migration-status"
 
 # This next line can be simplified to "-n0" once we fix our app with 0 messages.
-python manage.py populate_db --settings=humbug.test_settings --test-suite -n2 \
+python manage.py populate_db --settings=zproject.test_settings --test-suite -n2 \
     --threads=1 --huddles=0 --personals=0 --percent-huddles=0 --percent-personals=0
-python manage.py dumpdata  --settings=humbug.test_settings \
+python manage.py dumpdata  --settings=zproject.test_settings \
     zerver.UserProfile zerver.Stream zerver.Recipient \
     zerver.Subscription zerver.Message zerver.Huddle zerver.Realm \
     zerver.UserMessage zerver.Client \

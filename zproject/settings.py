@@ -153,8 +153,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
 
-AUTHENTICATION_BACKENDS = ('humbug.backends.EmailAuthBackend',
-                           'humbug.backends.GoogleBackend',
+AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
+                           'zproject.backends.GoogleBackend',
                            'guardian.backends.ObjectPermissionBackend')
 ANONYMOUS_USER_ID = None
 
@@ -162,14 +162,14 @@ AUTH_USER_MODEL = "zerver.UserProfile"
 
 TEST_RUNNER = 'zerver.tests.Runner'
 
-ROOT_URLCONF = 'humbug.urls'
+ROOT_URLCONF = 'zproject.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'humbug.wsgi.application'
+WSGI_APPLICATION = 'zproject.wsgi.application'
 
 INSTALLED_APPS = (
     'django.contrib.auth',
-    'humbug.authhack',
+    'zproject.authhack',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
@@ -532,7 +532,7 @@ LOGGING = {
             'level':    'INFO',
             'propagate': False,
         },
-        'humbug.requests': {
+        'zulip.requests': {
             'handlers': ['console', 'file'],
             'level':    'INFO',
             'propagate': False,

@@ -19,7 +19,7 @@ prev_deploy = options.prev_deploy
 # We have to pull out JS_SPECS, defined in our settings file, so we know what
 # JavaScript source files to minify (and what output files to create).
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'humbug.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 
 os.chdir(settings.DEPLOY_ROOT)

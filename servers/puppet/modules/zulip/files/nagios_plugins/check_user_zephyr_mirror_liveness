@@ -11,7 +11,7 @@ import datetime
 import os
 import sys
 
-os.environ['DJANGO_SETTINGS_MODULE'] = "humbug.settings"
+os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
 sys.path.append('/home/humbug/humbug-deployments/current')
 sys.path.append('/home/humbug/humbug-deployments/current/zerver')
 

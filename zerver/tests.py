@@ -41,7 +41,7 @@ def bail(msg):
 try:
     settings.TEST_SUITE
 except:
-    bail('Test suite only runs correctly with --settings=humbug.test_settings')
+    bail('Test suite only runs correctly with --settings=zproject.test_settings')
 
 # Even though we don't use pygments directly in this file, we need
 # this import.

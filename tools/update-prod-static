@@ -11,7 +11,7 @@ import sys
 
 # We need settings so we can figure out where the prod-static directory is.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'humbug.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 
 parser = optparse.OptionParser()

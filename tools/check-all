@@ -30,7 +30,7 @@ node_modules
 """.split()
 
 exclude_files = """
-humbug/test_settings.py
+zproject/test_settings.py
 tools/jslint/jslint.js
 """.split()
 
