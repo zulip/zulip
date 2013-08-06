@@ -292,3 +292,6 @@ exports.xhr_error_message = function (message, xhr) {
 
 return exports;
 }());
+if (typeof module !== 'undefined') {
+    module.exports = util;
+}
