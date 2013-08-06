@@ -158,15 +158,17 @@ exports.scrollTop = function viewport_scrollTop () {
 };
 
 function make_dimen_wrapper(dimen_name, dimen_func) {
+    dimensions[dimen_name] = new util.CachedValue({
+        compute_value: function () {
+            return dimen_func.call(jwindow);
+        }
+    });
     return function viewport_dimension_wrapper() {
         if (arguments.length !== 0) {
-            delete dimensions[dimen_name];
+            dimensions[dimen_name].reset();
             return dimen_func.apply(jwindow, arguments);
         }
-        if (! dimensions.hasOwnProperty(dimen_name)) {
-            dimensions[dimen_name] = dimen_func.call(jwindow);
-        }
-        return dimensions[dimen_name];
+        return dimensions[dimen_name].get();
     };
 }
 
@@ -208,7 +210,8 @@ $(function () {
     jwindow = $(window);
     // This handler must be placed before all resize handlers in our application
     jwindow.resize(function () {
-        dimensions = {};
+        dimensions.height.reset();
+        dimensions.width.reset();
     });
 });
 
