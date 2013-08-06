@@ -2510,6 +2510,16 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
         self.assertEqual(converted, '<p>test ' + emoji_img(':smile:') + ' again ' + emoji_img(':poop:') + '<br>\n'
                                   + ':) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>')
 
+        msg = ':smile:, :smile:; :smile:'
+        converted = bugdown_convert(msg)
+        self.assertEqual(converted,
+            '<p>' +
+            emoji_img(':smile:') +
+            ', ' +
+            emoji_img(':smile:') +
+            '; ' +
+            emoji_img(':smile:') +
+            '</p>')
 
     def test_multiline_strong(self):
         msg = "Welcome to **the jungle**"
