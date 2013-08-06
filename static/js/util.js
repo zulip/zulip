@@ -119,25 +119,6 @@ exports.destroy_first_run_message = function () {
     $('#first_run_message').remove();
 };
 
-// Takes a one-argument function.  Returns a variant of that
-// function which caches result values.
-//
-// Since this uses a JavaScript object as the cache structure,
-// arguments with the same string representation will be
-// considered equal.
-exports.memoize = function (fun) {
-    var table = {};
-
-    return function (arg) {
-        // See #351; we should have a generic associative data
-        // structure instead.
-        if (! Object.prototype.hasOwnProperty.call(table, arg)) {
-            table[arg] = fun(arg);
-        }
-        return table[arg];
-    };
-};
-
 // Like C++'s std::lower_bound.  Returns the first index at which
 // `value` could be inserted without changing the ordering.  Assumes
 // the array is sorted.
