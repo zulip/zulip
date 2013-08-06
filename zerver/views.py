@@ -1070,7 +1070,8 @@ def json_update_onboarding_steps(request, user_profile,
 # Currently tabbott/extra@mit.edu is our only superuser.  TODO: Make
 # this a real superuser security check.
 def is_super_user_api(request):
-    return request.user.is_authenticated() and request.user.email == "tabbott/extra@mit.edu"
+    return request.user.is_authenticated() and \
+        (request.user.email in ["tabbott/extra@mit.edu", "emailgateway@zulip.com"])
 
 def mit_to_mit(user_profile, email):
     # Are the sender and recipient both @mit.edu addresses?
