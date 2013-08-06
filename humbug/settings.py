@@ -103,7 +103,7 @@ HASH_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 # Use this salt to hash a user's email into a filename for their user-uploaded
 # avatar.  If this salt is discovered, attackers will only be able to determine
-# that the owner of an email account has uploaded an avatar to Humbug, which isn't
+# that the owner of an email account has uploaded an avatar to Zulip, which isn't
 # the end of the world.  Don't use the salt where there is more security exposure.
 AVATAR_SALT = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 
@@ -491,7 +491,7 @@ LOGGING = {
     'handlers': {
         'humbug_admins': {
             'level':     'ERROR',
-            'class':     'zerver.handlers.AdminHumbugHandler',
+            'class':     'zerver.handlers.AdminZulipHandler',
             # For testing the handler delete the next line
             'filters':   ['HumbugLimiter', 'require_debug_false', 'require_really_deployed'],
             'formatter': 'default'
@@ -516,7 +516,7 @@ LOGGING = {
         # to replace the list of filters for mail_admins with 'nop'.
         'mail_admins': {
             'level': 'ERROR',
-            'class': 'zerver.handlers.HumbugAdminEmailHandler',
+            'class': 'zerver.handlers.ZulipAdminEmailHandler',
             # For testing the handler replace the filters list with just 'nop'
             'filters': ['EmailLimiter', 'require_debug_false', 'require_really_deployed'],
         },

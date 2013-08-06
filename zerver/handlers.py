@@ -11,7 +11,7 @@ from django.views.debug import ExceptionReporter, get_exception_reporter_filter
 def format_record(record):
     """
     Given a Django error LogRecord, format and return the interesting details,
-    for use by notification mechanisms like Humbug and e-mail.
+    for use by notification mechanisms like Zulip and e-mail.
     """
     subject = '%s: %s' % (platform.node(), record.getMessage())
 
@@ -29,8 +29,8 @@ def format_record(record):
 
     return (subject, stack_trace, user_info)
 
-class AdminHumbugHandler(logging.Handler):
-    """An exception log handler that Humbugs log entries to the Humbug realm.
+class AdminZulipHandler(logging.Handler):
+    """An exception log handler that Zulips log entries to the Zulip realm.
 
     If the request is passed as the first argument to the log record,
     request data will be provided in the email report.
@@ -82,7 +82,7 @@ class AdminHumbugHandler(logging.Handler):
         formatted_subject = subject.replace('\n', '\\n').replace('\r', '\\r')
         return formatted_subject[:MAX_SUBJECT_LENGTH]
 
-class HumbugAdminEmailHandler(AdminEmailHandler):
+class ZulipAdminEmailHandler(AdminEmailHandler):
     """An exception log handler that emails log entries to site admins.
 
     If the request is passed as the first argument to the log record,
