@@ -1,4 +1,4 @@
-# Humbug Inc's internal git plugin configuration.
+# Zulip, Inc's internal git plugin configuration.
 # The plugin and example config are under api/integrations/
 
 # Leaving all the instructions out of this file to avoid having to

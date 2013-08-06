@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2012 Humbug, Inc.
+# Copyright (C) 2012 Zulip, Inc.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -143,7 +143,7 @@ def send_humbug(zeph):
     message['time'] = zeph['time']
     message['sender'] = to_humbug_username(zeph['sender'])
     if "subject" in zeph:
-        # Truncate the subject to the current limit in Humbug.  No
+        # Truncate the subject to the current limit in Zulip.  No
         # need to do this for stream names, since we're only
         # subscribed to valid stream names.
         message["subject"] = zeph["subject"][:60]
@@ -952,6 +952,6 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
     if options.shard is not None:
         logger_name += "(%s)" % (options.shard,)
     configure_logger(logger, logger_name)
-    # Have the kernel reap children for when we fork off processes to send Humbugs
+    # Have the kernel reap children for when we fork off processes to send Zulips
     signal.signal(signal.SIGCHLD, signal.SIG_IGN)
     zephyr_to_humbug(options)

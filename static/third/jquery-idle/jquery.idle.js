@@ -1,5 +1,5 @@
 /**
- *  Modified by Humbug, Inc.
+ *  Modified by Zulip, Inc.
  */
 
 /** @preserve

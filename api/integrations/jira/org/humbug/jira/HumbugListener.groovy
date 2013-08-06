@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2013 Humbug, Inc
+* Copyright (c) 2013 Zulip, Inc
 */
 
 package org.humbug.jira
@@ -20,7 +20,7 @@ import org.apache.commons.httpclient.NameValuePair
 class HumbugListener extends AbstractIssueEventListener {
     Logger LOGGER = Logger.getLogger(HumbugListener.class.getName());
 
-    // The email address of one of the bots you created on your Humbug settings page.
+    // The email address of one of the bots you created on your Zulip settings page.
     String humbugEmail = ""
     // That bot's API key.
     String humbugAPIKey = ""
@@ -113,7 +113,7 @@ class HumbugListener extends AbstractIssueEventListener {
           for (NameValuePair pair: parameters) {
               params += "\n" + pair.getName() + ":" + pair.getValue()
           }
-          LOGGER.log(Level.SEVERE, "Error sending Humbug message:\n" + response + "\n\n" +
+          LOGGER.log(Level.SEVERE, "Error sending Zulip message:\n" + response + "\n\n" +
                                    "We sent:" + params)
         }
         return response;

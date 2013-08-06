@@ -95,7 +95,7 @@
   $.fn.filedrop = function(options) {
     var opts = $.extend({}, default_opts, options),
         global_progress = []
-        // Humbug modification: keep a pointer to the object that the function
+        // Zulip modification: keep a pointer to the object that the function
         // was invoked on.
         caller = this;
 
@@ -286,7 +286,7 @@
           boundary              = '------multipartformboundary' + (new Date()).getTime(),
           upload                = xhr.upload;
 
-      // Humbug modification: Shunt the XHR into the parent object so we
+      // Zulip modification: Shunt the XHR into the parent object so we
       // can interrupt it later.
       caller.data("filedrop_xhr", xhr);
 

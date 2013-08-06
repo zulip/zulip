@@ -167,7 +167,7 @@ casper.waitUntilVisible('#zhome', function () {
 casper.waitUntilVisible('#zfilt', function () {
     expect_huddle();
 
-    // Un-narrow by clicking "Humbug"
+    // Un-narrow by clicking "Zulip"
     casper.test.info('Un-narrowing');
     casper.click('.brand');
 });

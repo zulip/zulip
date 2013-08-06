@@ -1,6 +1,6 @@
 #### Dependencies
 
-The Humbug API Python bindings require the following Python libraries:
+The Zulip API Python bindings require the following Python libraries:
 
 * simplejson
 * requests (version >= 0.12.1)
@@ -34,14 +34,14 @@ Alternatively, you may explicitly use "--user" and "--api-key" in our
 examples, which is especially useful if you are running several bots
 which share a home directory.
 
-You can obtain your Humbug API key, create bots, and manage bots all
-from your Humbug [settings page](https://zulip.com/#settings).
+You can obtain your Zulip API key, create bots, and manage bots all
+from your Zulip [settings page](https://zulip.com/#settings).
 
 A typical simple bot sending API messages will look as follows:
 
 At the top of the file:
 
-    # Make sure the Humbug API distribution's root directory is in sys.path, then:
+    # Make sure the Zulip API distribution's root directory is in sys.path, then:
     import humbug
     humbug_client = humbug.Client(email="your-bot@example.com")
 
@@ -57,9 +57,9 @@ When you want to send a message:
 
 Additional examples:
 
-    client.send_message({'type': 'stream', 'content': 'Humbug rules!',
+    client.send_message({'type': 'stream', 'content': 'Zulip rules!',
                          'subject': 'feedback', 'to': ['support']})
-    client.send_message({'type': 'private', 'content': 'Humbug rules!',
+    client.send_message({'type': 'private', 'content': 'Zulip rules!',
                          'to': ['user1@example.com', 'user2@example.com']})
 
 send_message() returns a dict guaranteed to contain the following

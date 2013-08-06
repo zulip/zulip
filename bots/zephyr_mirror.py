@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2012 Humbug, Inc.
+# Copyright (C) 2012 Zulip, Inc.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files

@@ -1,4 +1,4 @@
-# Humbug Inc's internal nagios plugin configuration.
+# Zulip, Inc's internal nagios plugin configuration.
 # The plugin and example config are under api/integrations/
 
 [api]

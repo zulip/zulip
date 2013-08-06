@@ -62,7 +62,7 @@ casper.waitUntilVisible('#settings-status', function () {
     casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
 });
 
-// TODO: test the "Declare Humbug Bankruptcy option"
+// TODO: test the "Declare Zulip Bankruptcy option"
 
 common.then_log_out();
 

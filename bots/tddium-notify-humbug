@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2012 Humbug, Inc.
+# Copyright (C) 2012 Zulip, Inc.
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -26,7 +26,7 @@ from os import path, environ
 
 
 # Configure this script as a Tddium post-build task and it will send
-# messages to Humbug when a build finishes.
+# messages to Zulip when a build finishes.
 #
 # Expects Tddium environment variables plus:
 #
@@ -64,5 +64,5 @@ result = client.send_message(dict(
         (repo_name, environ['TDDIUM_BUILD_STATUS'], report_url)))
 
 if result['result'] != 'success':
-    sys.stderr.write('Error sending to Humbug:\n%s\n' % (result['msg'],))
+    sys.stderr.write('Error sending to Zulip:\n%s\n' % (result['msg'],))
     sys.exit(1)

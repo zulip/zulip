@@ -16,7 +16,7 @@ import humbug
 RSS_DATA_DIR = os.path.expanduser(os.path.join('~', '.cache', 'humbug-rss'))
 OLDNESS_THRESHOLD = 30 # days
 
-usage = """Usage: Send summaries of RSS entries for your favorite feeds to Humbug.
+usage = """Usage: Send summaries of RSS entries for your favorite feeds to Zulip.
 
 This bot requires the feedparser module.
 

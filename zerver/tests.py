@@ -1435,7 +1435,7 @@ class InviteUserTest(AuthedTestCase):
 
     def invite(self, users, streams):
         """
-        Invites the specified users to Humbug with the specified streams.
+        Invites the specified users to Zulip with the specified streams.
 
         users should be a string containing the users to invite, comma or
             newline separated.
@@ -1507,7 +1507,7 @@ earl-test@zulip.com""", ["Denmark"]))
 
     def test_invite_existing_user(self):
         """
-        If you invite an address already using Humbug, no invitation is sent.
+        If you invite an address already using Zulip, no invitation is sent.
         """
         self.login("hamlet@zulip.com")
         self.assert_json_error(
@@ -2291,8 +2291,8 @@ int x = 3
             '<p>%s</p>', 'https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel'),
          ('http://web.archive.org/web/20120630032016/http://web.mit.edu/mitcard/idpolicies.html', '<p>%s</p>',
             'http://web.archive.org/web/20120630032016/http://web.mit.edu/mitcard/idpolicies.html'),
-         ('https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Humbug-062-subscriptions-page-3rd-ver.fw.png',
-            '<p>%s</p>', 'https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Humbug-062-subscriptions-page-3rd-ver.fw.png'),
+         ('https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Zulip-062-subscriptions-page-3rd-ver.fw.png',
+            '<p>%s</p>', 'https://www.dropbox.com/sh/7d0ved3h5kf7dj8/_aD5_ceDFY?lst#f:Zulip-062-subscriptions-page-3rd-ver.fw.png'),
          ('http://www.postgresql.org/message-id/14040.1364490185@sss.pgh.pa.us', '<p>%s</p>',
             'http://www.postgresql.org/message-id/14040.1364490185@sss.pgh.pa.us'),
 

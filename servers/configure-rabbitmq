@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Delete the "guest" default user and replace it with a Humbug user
+# Delete the "guest" default user and replace it with a Zulip user
 # with a real password
 
 rabbitmqctl delete_user guest

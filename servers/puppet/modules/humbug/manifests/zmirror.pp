@@ -9,7 +9,7 @@ class humbug::zmirror {
   # Configuring Kerberos and Zephyr for the MIT realm
   # Building python-zephyr after cloning it from https://github.com/ebroder/python-zephyr
   # Putting tabbott/extra's keytab on the system at /home/humbug/tabbott.extra.keytab
-  # Setting api/bots/zephyr-mirror-crontab to be the Humbug user's crontab
+  # Setting api/bots/zephyr-mirror-crontab to be the humbug user's crontab
   # Running the mirroring bot in a screen session with these arguments:
   # /home/humbug/api/bots/zephyr_mirror.py --root-path=/home/humbug/ --user=tabbott/extra --enable-log=/home/humbug/all_zephyrs_log --forward-class-messages
 }

@@ -42,7 +42,7 @@ def compute_stats(log_level):
             total_counts[client_name] += count
             total_user_counts[email] += count
 
-    logging.debug("%40s | %10s | %s" % ("User", "Messages", "Percentage Humbug"))
+    logging.debug("%40s | %10s | %s" % ("User", "Messages", "Percentage Zulip"))
     top_percents = {}
     for size in [10, 25, 50, 100, 200, len(total_user_counts.keys())]:
         top_percents[size] = 0

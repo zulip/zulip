@@ -78,12 +78,12 @@ def report(state, time, msg=None):
 def send_humbug(sender, message):
     result = sender.send_message(message)
     if result["result"] != "success" and options.nagios:
-        report("CRITICAL", "Error sending Humbug, args were: %s, %s" % (message, result))
+        report("CRITICAL", "Error sending Zulip, args were: %s, %s" % (message, result))
 
 def get_humbug(recipient, max_message_id):
     result = recipient.get_messages({'last': str(max_message_id)})
     if result['result'] != "success" and options.nagios:
-        report("CRITICAL", "Error receiving Humbugs, args were: %s, %s" % (max_message_id, result))
+        report("CRITICAL", "Error receiving Zulips, args were: %s, %s" % (max_message_id, result))
     return result['messages']
 
 if "staging" in options.site:

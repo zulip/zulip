@@ -47,7 +47,7 @@ function amount_to_paginate() {
     var info = viewport.message_viewport_info();
     var page_size = info.visible_height;
 
-    // We don't want to page up a full page, because Humbug users
+    // We don't want to page up a full page, because Zulip users
     // are especially worried about missing messages, so we want
     // a little bit of the old page to stay on the screen.  The
     // value chosen here is roughly 2 or 3 lines of text, but there

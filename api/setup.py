@@ -14,8 +14,8 @@ def recur_expand(target_root, dir):
 
 setup(name='humbug',
       version=humbug.__version__,
-      description='Bindings for the Humbug message API',
-      author='Humbug, Inc.',
+      description='Bindings for the Zulip message API',
+      author='Zulip, Inc.',
       author_email='humbug@humbughq.com',
       classifiers=[
           'Development Status :: 3 - Alpha',

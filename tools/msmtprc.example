@@ -1,4 +1,4 @@
-# Copy this file to ~/.msmtprc, then add your Humbug Mail
+# Copy this file to ~/.msmtprc, then add your Zulip Mail
 # address and password here.
 
 from you@zulip.com

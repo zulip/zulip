@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright © 2012 Humbug, Inc.
+# Copyright © 2012 Zulip, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 
-# Humbug trac plugin -- sends humbugs when tickets change.
+# Zulip trac plugin -- sends humbugs when tickets change.
 #
 # Install by copying this file and humbug_trac_config.py to the trac
 # plugins/ subdirectory, customizing the constants in

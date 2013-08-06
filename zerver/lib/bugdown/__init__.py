@@ -378,7 +378,7 @@ def sanitize_url(url):
     if scheme == '' and netloc == '' and '@' in path:
         scheme = 'mailto'
 
-    # Humbug modification: If scheme is not specified, assume http://
+    # Zulip modification: If scheme is not specified, assume http://
     # It's unlikely that users want relative links within zulip.com.
     # We re-enter sanitize_url because netloc etc. need to be re-parsed.
     if not scheme:
@@ -681,7 +681,7 @@ def _sanitize_for_log(md):
 current_message = None
 
 def do_convert(md, realm_domain=None, message=None):
-    """Convert Markdown to HTML, with Humbug-specific settings and hacks."""
+    """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
 
     if realm_domain in md_engines:
         _md_engine = md_engines[realm_domain]

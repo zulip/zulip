@@ -55,7 +55,7 @@ urlpatterns = patterns('',
     url(r'^terms/$',   TemplateView.as_view(template_name='zerver/terms.html')),
     url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html')),
 
-    # "About Humbug" information
+    # "About Zulip" information
     url(r'^what-is-humbug/$', TemplateView.as_view(template_name='zerver/what-is-humbug.html')),
     url(r'^new-user/$', TemplateView.as_view(template_name='zerver/new-user.html')),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),

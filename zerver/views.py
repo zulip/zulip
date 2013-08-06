@@ -172,7 +172,7 @@ def principal_to_user_profile(agent, principal):
         or agent.realm.domain == 'mit.edu'
         or agent.realm != principal_user_profile.realm):
         # We have to make sure we don't leak information about which users
-        # are registered for Humbug in a different realm.  We could do
+        # are registered for Zulip in a different realm.  We could do
         # something a little more clever and check the domain part of the
         # principal to maybe give a better error message
         raise PrincipalError(principal)
@@ -1074,7 +1074,7 @@ def is_super_user_api(request):
 def mit_to_mit(user_profile, email):
     # Are the sender and recipient both @mit.edu addresses?
     # We have to handle this specially, inferring the domain from the
-    # e-mail address, because the recipient may not existing in Humbug
+    # e-mail address, because the recipient may not existing in Zulip
     # and we may need to make a stub MIT user on the fly.
     try:
         validators.validate_email(email)
@@ -1321,7 +1321,7 @@ def add_subscriptions_backend(request, user_profile,
         notifications = []
         for email, subscriptions in result["subscribed"].iteritems():
             if email == user_profile.email:
-                # Don't send a Humbug if you invited yourself.
+                # Don't send a Zulip if you invited yourself.
                 continue
 
             if len(subscriptions) == 1:

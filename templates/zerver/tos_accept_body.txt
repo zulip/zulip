@@ -10,5 +10,5 @@ Hello,
 
 Cheers,
 
-Humbug Legal Bot
+Zulip Legal Bot
 

@@ -63,7 +63,7 @@ with open('tools/print-all/tex/preamble.tex', 'w') as f:
     f.write(r'''
 \begin{center}
 
-{\Huge Humbug, Inc. code printout}\\[1cm]
+{\Huge Zulip, Inc. code printout}\\[1cm]
 
 {\Large Generated on \today\\[1cm]
 
