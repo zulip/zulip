@@ -113,7 +113,7 @@ class Command(BaseCommand):
             clear_database()
 
             # Create our two default realms
-            humbug_realm = Realm.objects.create(domain="zulip.com")
+            zulip_realm = Realm.objects.create(domain="zulip.com")
             Realm.objects.create(domain="mit.edu")
             realms = {}
             for realm in Realm.objects.all():
@@ -129,8 +129,8 @@ class Command(BaseCommand):
             create_users(realms, names)
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
-            create_streams(realms, humbug_realm, stream_list)
-            recipient_streams = [Stream.objects.get(name=name, realm=humbug_realm).id for name in stream_list]
+            create_streams(realms, zulip_realm, stream_list)
+            recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list]
 
             # Create subscriptions to streams
             subscriptions_to_add = []
@@ -144,7 +144,7 @@ class Command(BaseCommand):
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
         else:
-            humbug_realm = Realm.objects.get(domain="zulip.com")
+            zulip_realm = Realm.objects.get(domain="zulip.com")
             recipient_streams = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
@@ -210,17 +210,17 @@ class Command(BaseCommand):
                 create_users(realms, settings.INTERNAL_HUMBUG_USERS)
                 humbug_stream_list = ["devel", "all", "humbug", "design", "support", "social", "test",
                                       "errors", "sales"]
-                create_streams(realms, humbug_realm, humbug_stream_list)
+                create_streams(realms, zulip_realm, humbug_stream_list)
 
                 # Add a few default streams
                 for stream_name in ["design", "devel", "social", "support"]:
-                    DefaultStream.objects.create(realm=humbug_realm, stream=get_stream(stream_name, humbug_realm))
+                    DefaultStream.objects.create(realm=zulip_realm, stream=get_stream(stream_name, zulip_realm))
 
                 # Now subscribe everyone to these streams
                 subscriptions_to_add = []
-                profiles = UserProfile.objects.select_related().filter(realm=humbug_realm)
+                profiles = UserProfile.objects.select_related().filter(realm=zulip_realm)
                 for cls in humbug_stream_list:
-                    stream = Stream.objects.get(name=cls, realm=humbug_realm)
+                    stream = Stream.objects.get(name=cls, realm=zulip_realm)
                     recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
                     for profile in profiles:
                         # Subscribe to some streams.

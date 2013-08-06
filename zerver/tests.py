@@ -1553,9 +1553,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = True`, you can't invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        humbug_realm = Realm.objects.get(domain="zulip.com")
-        humbug_realm.restricted_to_domain = True
-        humbug_realm.save()
+        zulip_realm = Realm.objects.get(domain="zulip.com")
+        zulip_realm.restricted_to_domain = True
+        zulip_realm.save()
 
         self.login("hamlet@zulip.com")
         external_address = "foo@example.com"
@@ -1570,9 +1570,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = False`, you can invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        humbug_realm = Realm.objects.get(domain="zulip.com")
-        humbug_realm.restricted_to_domain = False
-        humbug_realm.save()
+        zulip_realm = Realm.objects.get(domain="zulip.com")
+        zulip_realm.restricted_to_domain = False
+        zulip_realm.save()
 
         self.login("hamlet@zulip.com")
         external_address = "foo@example.com"
