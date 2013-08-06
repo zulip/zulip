@@ -206,9 +206,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                     urlresolvers.set_urlconf(urlconf)
                     resolver = urlresolvers.RegexURLResolver(r'^/', urlconf)
 
-                ### ADDED BY HUMBUG
+                ### ADDED BY ZULIP
                 request._resolver = resolver
-                ### END ADDED BY HUMBUG
+                ### END ADDED BY ZULIP
 
                 callback, callback_args, callback_kwargs = resolver.resolve(
                         request.path_info)
@@ -220,7 +220,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                         if response:
                             break
 
-                ### THIS BLOCK MODIFIED BY HUMBUG
+                ### THIS BLOCK MODIFIED BY ZULIP
                 if response is None:
                     from ...decorator import RespondAsynchronously
 
@@ -297,7 +297,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             # Reset urlconf on the way out for isolation
             urlresolvers.set_urlconf(None)
 
-        ### HUMBUG CHANGE: The remainder of this function was moved
+        ### ZULIP CHANGE: The remainder of this function was moved
         ### into its own function, just below, so we can call it from
         ### finish().
         response = self.apply_response_middleware(request, response, resolver)
