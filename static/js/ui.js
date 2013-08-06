@@ -335,7 +335,7 @@ function get_new_heights() {
     return res;
 }
 
-function resizehandler(e) {
+exports.resize_page_components = function () {
     var composebox = $("#compose");
     var floating_recipient_bar = $("#floating_recipient_bar");
     var tab_bar = $("#tab_bar");
@@ -359,6 +359,10 @@ function resizehandler(e) {
     $("#right-sidebar").height(h.right_sidebar_height);
     $("#stream_filters").css('max-height', h.stream_filters_max_height);
     $("#user_presences").css('max-height', h.user_presences_max_height);
+};
+
+function resizehandler(e) {
+    exports.resize_page_components();
 
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
