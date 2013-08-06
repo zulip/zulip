@@ -48,6 +48,6 @@ class AddHeaderMixin(object):
         return ret_dict.itervalues()
 
 
-class HumbugStorage(PipelineMixin, AddHeaderMixin, CachedFilesMixin,
+class ZulipStorage(PipelineMixin, AddHeaderMixin, CachedFilesMixin,
         StaticFilesStorage):
     pass

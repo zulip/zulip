@@ -214,13 +214,13 @@ RATE_LIMITING_RULES = [
 
 STATIC_URL = '/static/'
 
-# HumbugStorage is a modified version of PipelineCachedStorage,
+# ZulipStorage is a modified version of PipelineCachedStorage,
 # and, like that class, it inserts a file hash into filenames
 # to prevent the browser from using stale files from cache.
 #
 # Unlike PipelineStorage, it requires the files to exist in
 # STATIC_ROOT even for dev servers.  So we only use
-# HumbugStorage when not DEBUG.
+# ZulipStorage when not DEBUG.
 
 # This is the default behavior from Pipeline, but we set it
 # here so that urls.py can read it.
@@ -236,7 +236,7 @@ if DEBUG:
     else:
         STATIC_ROOT = 'static/'
 else:
-    STATICFILES_STORAGE = 'zerver.storage.HumbugStorage'
+    STATICFILES_STORAGE = 'zerver.storage.ZulipStorage'
     STATICFILES_FINDERS = (
         'zerver.finders.HumbugFinder',
     )
