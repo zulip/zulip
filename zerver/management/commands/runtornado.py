@@ -317,7 +317,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         return response
 
-    def humbug_finish(self, response, request, apply_markdown):
+    def zulip_finish(self, response, request, apply_markdown):
         # Make sure that Markdown rendering really happened, if requested.
         # This is a security issue because it's where we escape HTML.
         # c.f. ticket #64

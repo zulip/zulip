@@ -53,11 +53,11 @@ class ClientDescriptor(object):
         self.event_queue.push(event)
         if self.current_handler is not None:
             try:
-                self.current_handler.humbug_finish(dict(result='success', msg='',
-                                                        events=[event],
-                                                        queue_id=self.event_queue.id),
-                                                   self.current_handler._request,
-                                                   apply_markdown=self.apply_markdown)
+                self.current_handler.zulip_finish(dict(result='success', msg='',
+                                                       events=[event],
+                                                       queue_id=self.event_queue.id),
+                                                  self.current_handler._request,
+                                                  apply_markdown=self.apply_markdown)
             except socket.error:
                 pass
             self.disconnect_handler()

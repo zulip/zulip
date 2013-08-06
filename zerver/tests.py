@@ -1746,7 +1746,7 @@ class DummyHandler(object):
     def write(self, response):
         raise NotImplemented
 
-    def humbug_finish(self, response, *ignore):
+    def zulip_finish(self, response, *ignore):
         if self.assert_callback:
             self.assert_callback(response)
 

@@ -126,9 +126,9 @@ def get_updates_backend(request, user_profile, handler=None,
                                        dont_block, stream_name,
                                        apply_markdown=apply_markdown, **kwargs)
     if resp is not None:
-        handler.humbug_finish(resp, request, apply_markdown)
+        handler.zulip_finish(resp, request, apply_markdown)
 
-        # We have already invoked handler.humbug_finish(), so we bypass the usual view
+        # We have already invoked handler.zulip_finish(), so we bypass the usual view
         # response path.  We are "responding asynchronously" except that it
         # already happened.  This is slightly weird.
         return RespondAsynchronously
@@ -157,10 +157,10 @@ def get_updates_backend(request, user_profile, handler=None,
                     # We must return a response because we don't have
                     # a way to re-queue a callback and so the client
                     # must do it by making a new request
-                    handler.humbug_finish({"result": "success",
-                                           "msg": "",
-                                           'update_types': []},
-                                          request, apply_markdown)
+                    handler.zulip_finish({"result": "success",
+                                          "msg": "",
+                                          'update_types': []},
+                                         request, apply_markdown)
                     return
 
             kwargs.update(cb_kwargs)
@@ -168,7 +168,7 @@ def get_updates_backend(request, user_profile, handler=None,
                                           client_server_generation=client_server_generation,
                                           apply_markdown=apply_markdown,
                                           **kwargs)
-            handler.humbug_finish(res, request, apply_markdown)
+            handler.zulip_finish(res, request, apply_markdown)
         except socket.error:
             pass
 
