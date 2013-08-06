@@ -73,7 +73,7 @@ class RandomExponentialBackoff(CountingBackoff):
 DEFAULT_SITE = "https://api.zulip.com"
 
 class States:
-    Startup, HumbugToZephyr, ZephyrToHumbug, ChildSending = range(4)
+    Startup, ZulipToZephyr, ZephyrToZulip, ChildSending = range(4)
 CURRENT_STATE = States.Startup
 
 def to_humbug_username(zephyr_username):
@@ -836,11 +836,11 @@ def parse_args():
     return parser.parse_args()
 
 def die_gracefully(signal, frame):
-    if CURRENT_STATE == States.HumbugToZephyr or CURRENT_STATE == States.ChildSending:
+    if CURRENT_STATE == States.ZulipToZephyr or CURRENT_STATE == States.ChildSending:
         # this is a child process, so we want os._exit (no clean-up necessary)
         os._exit(1)
 
-    if CURRENT_STATE == States.ZephyrToHumbug:
+    if CURRENT_STATE == States.ZephyrToZulip:
         try:
             # zephyr=>humbug processes may have added subs, so run cancelSubs
             zephyr._z.cancelSubs()
@@ -938,14 +938,14 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
     if options.forward_from_humbug:
         child_pid = os.fork()
         if child_pid == 0:
-            CURRENT_STATE = States.HumbugToZephyr
+            CURRENT_STATE = States.ZulipToZephyr
             # Run the humbug => zephyr mirror in the child
             configure_logger(logger, "humbug=>zephyr")
             humbug_to_zephyr(options)
             sys.exit(0)
     else:
         child_pid = None
-    CURRENT_STATE = States.ZephyrToHumbug
+    CURRENT_STATE = States.ZephyrToZulip
 
     import zephyr
     logger_name = "zephyr=>humbug"
