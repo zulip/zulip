@@ -602,6 +602,12 @@ exports.deactivate = function () {
         (current_msg_list.selected_row().length > 0) &&
         (current_msg_list.pre_narrow_offset !== undefined);
 
+    if (feature_flags.summarize_read_while_narrowed) {
+        // TODO: avoid a full re-render
+        // Necessary to replace messages read in the narrow with summary blocks
+        current_msg_list.rerender();
+    }
+
     // We fall back to the closest selected id, if the user has removed a stream from the home
     // view since leaving it the old selected id might no longer be there
     current_msg_list.select_id(current_msg_list.selected_id(), {
@@ -618,12 +624,6 @@ exports.deactivate = function () {
 
     hashchange.save_narrow();
     compose.update_faded_messages();
-
-    if (feature_flags.summarize_read_while_narrowed) {
-        // needed to replace messages read in the narrow with summary blocks
-        // TODO: avoid a full re-render
-        current_msg_list.rerender();
-    }
 
     $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
 };

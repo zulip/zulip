@@ -757,7 +757,7 @@ td.pointer {
     box-shadow: inset 0px 4px 5px -4px #3093c3, inset 2px 0px 1px -2px #333, inset 0px -2px 1px -2px #333;
 }
 
-.selected_message .messagebox_colorblock {
+.selected_message .messagebox_colorblock, .selected_message .summary_colorblock {
     box-shadow: 0px 0px 5px 0px #3093c3, inset 3px 0px 1px -2px #39afe8, inset 0px -3px 1px -2px #39afe8, inset 0px 3px 1px -2px #39afe8, inset -12px 0px 0px -1px rgba(240,240,240,0.6);
 }
 
@@ -769,7 +769,7 @@ td.pointer {
     display: inline-block;
 }
 
-.selected_message .messagebox {
+.selected_message .messagebox, .selected_message.summary_row .message_header{
     box-shadow: 0px 0px 5px 0px #3093c3, inset 0px -3px 0px -2px #39afe8, inset 0px 3px 0px -2px #39afe8, inset -3px 0px 0px -2px #39afe8;
  }
 

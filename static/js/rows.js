@@ -9,30 +9,30 @@ var rows = (function () {
         if (message_row === undefined) {
             return $();
         }
-        var row = message_row.next('.message_row');
+        var row = message_row.next('.selectable_row');
         if (row.length !== 0) {
             return row;
         }
-        return message_row.nextUntil('.message_row').next('.message_row');
+        return message_row.nextUntil('.selectable_row').next('.selectable_row');
     };
 
     exports.prev_visible = function (message_row) {
         if (message_row === undefined) {
             return $();
         }
-        var row = message_row.prev('.message_row');
+        var row = message_row.prev('.selectable_row');
         if (row.length !== 0) {
             return row;
         }
-        return message_row.prevUntil('.message_row').prev('.message_row');
+        return message_row.prevUntil('.selectable_row').prev('.selectable_row');
     };
 
     exports.first_visible = function () {
-        return $('.focused_table .message_row:first');
+        return $('.focused_table .selectable_row:first');
     };
 
     exports.last_visible = function () {
-        return $('.focused_table .message_row:last');
+        return $('.focused_table .selectable_row:last');
     };
 
     exports.id = function (message_row) {
@@ -58,7 +58,7 @@ var rows = (function () {
             return $();
         }
 
-        return $('#' + table_name + message_id);
+        return $('#' + table_name + message_id + ', #' + table_name + ' [data-messages~=' + message_id + ']');
     };
 
     exports.get_table = function (table_name) {

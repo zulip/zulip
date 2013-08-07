@@ -137,10 +137,6 @@ MessageList.prototype = {
             opts.id = id;
         }
 
-        if (this._is_summarized_message(this.get(id))) {
-            id = opts.id = this.closest_id(id);
-        }
-
         this._selected_id = id;
         if (!opts.from_rendering) {
             this._maybe_rerender();
@@ -159,10 +155,6 @@ MessageList.prototype = {
 
     closest_id: function MessageList_closest_id(id) {
         var items = this._items;
-
-        if (this.summarize_read) {
-            items = _.reject(items, this._is_summarized_message, this);
-        }
 
         if (items.length === 0) {
             return -1;
@@ -373,7 +365,7 @@ MessageList.prototype = {
             last_message_id = rows.id(last_row);
             prev = this.get(last_message_id);
 
-            if (last_row.nextAll('.summary_row').length) {
+            if (last_row.is('.summary_row')) {
                 // Don't group with a summary, but don't put separators before the new message
                 prev = _.pick(prev, 'timestamp', 'historical');
             }
@@ -428,6 +420,7 @@ MessageList.prototype = {
                     // that will trigger the right part of the handlebars template and won't
                     // show the content, date, etc. from the real message.
                     summary_group[key] = $.extend({}, message, {
+                        first_message_id: message.id,
                         is_summary: true,
                         include_recipient: true,
                         include_sender: false,

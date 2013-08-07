@@ -30,9 +30,11 @@
 {{/if}}
 
 {{#if is_summary}}
-  <tr data-messages="{{message_ids}}" class="recipient_row summary_row">
+  <tr zid="{{first_message_id}}" id="{{dom_id}}" data-messages="{{message_ids}}" class="summary_row selectable_row{{#include_footer}} last_message{{/include_footer}}{{^is_stream}} summary_row_private_message{{/is_stream}}">
   {{#if is_stream}}
-    <td class="message_header_colorblock" style="background-color: {{background_color}};"></td>
+    <td class="summary_colorblock" style="background-color: {{background_color}};">
+      <span class="pointer_icon"><i class="icon-vector-caret-right"></i></span>
+    </td>
     <td class="message_header message_header_stream right_part">
         <span class="message_label_clickable"><i class="icon-vector-expand-alt"></i> {{display_recipient}} &nbsp;<i class="icon-vector-narrow icon-vector-small"></i><span class="copy-paste-text">&gt;</span> &nbsp;{{subject}} ({{count}} read)</span>
     </td>
@@ -72,7 +74,7 @@
 {{/if}}
 {{/include_recipient}}
 <tr zid="{{id}}" id="{{dom_id}}"
-    class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#unread}} unread{{/unread}}">
+    class="message_row{{^is_stream}} private-message{{/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#unread}} unread{{/unread}} selectable_row">
         <td class="messagebox_colorblock{{^is_stream}} message_header_private_message{{/is_stream}}" style="background-color: {{background_color}};"><span class="pointer_icon"><i class="icon-vector-caret-right"></i></span></td>
         <td class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^is_stream}} private-message{{/is_stream}}">
         <div class="message_top_line">
