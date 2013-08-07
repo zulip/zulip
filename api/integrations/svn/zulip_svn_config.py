@@ -23,8 +23,8 @@
 
 
 # Change these values to configure authentication for the plugin
-HUMBUG_USER = "svn-bot@example.com"
-HUMBUG_API_KEY = "0123456789abcdef0123456789abcdef"
+ZULIP_USER = "svn-bot@example.com"
+ZULIP_API_KEY = "0123456789abcdef0123456789abcdef"
 
 # commit_notice_destination() lets you customize where commit notices
 # are sent to with the full power of a Python function.
@@ -51,7 +51,7 @@ def commit_notice_destination(path, commit):
 
 ## If properly installed, the Zulip API should be in your import
 ## path, but if not, set a custom path below
-HUMBUG_API_PATH = None
+ZULIP_API_PATH = None
 
 # This should not need to change unless you have a custom Zulip subdomain.
-HUMBUG_SITE = "https://api.zulip.com"
+ZULIP_SITE = "https://api.zulip.com"

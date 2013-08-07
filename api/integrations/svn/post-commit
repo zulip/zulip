@@ -37,14 +37,14 @@ import pysvn
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_svn_config as config
 
-if config.HUMBUG_API_PATH is not None:
-    sys.path.append(config.HUMBUG_API_PATH)
+if config.ZULIP_API_PATH is not None:
+    sys.path.append(config.ZULIP_API_PATH)
 
 import zulip
 client = zulip.Client(
-    email=config.HUMBUG_USER,
-    site=config.HUMBUG_SITE,
-    api_key=config.HUMBUG_API_KEY)
+    email=config.ZULIP_USER,
+    site=config.ZULIP_SITE,
+    api_key=config.ZULIP_API_KEY)
 svn = pysvn.Client()
 
 path, rev = sys.argv[1:]
