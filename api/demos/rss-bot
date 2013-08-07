@@ -13,7 +13,7 @@ import urlparse
 import feedparser
 import zulip
 
-RSS_DATA_DIR = os.path.expanduser(os.path.join('~', '.cache', 'humbug-rss'))
+RSS_DATA_DIR = os.path.expanduser(os.path.join('~', '.cache', 'zulip-rss'))
 OLDNESS_THRESHOLD = 30 # days
 
 usage = """Usage: Send summaries of RSS entries for your favorite feeds to Zulip.
@@ -23,7 +23,7 @@ This bot requires the feedparser module.
 To use this script:
 
 1. Create an RSS feed file containing 1 feed URL per line (default feed
-   file location: ~/.cache/humbug-rss/rss-feeds)
+   file location: ~/.cache/zulip-rss/rss-feeds)
 2. Subscribe to the stream that will receive RSS updates (default stream: rss)
 3. create a ~/.zuliprc, or specify user and api-key with command line arguments
 4. Test the script by running it manually, like this:
@@ -113,7 +113,7 @@ def compute_entry_hash(entry):
     entry_time = entry.get("published", entry.get("updated"))
     return hashlib.md5(entry.id + entry_time).hexdigest()
 
-def send_humbug(entry, feed_name):
+def send_zulip(entry, feed_name):
     content = "**%s**\n%s\n%s" % (entry.title,
                                   strip_tags(entry.summary),
                                   entry.link)
@@ -164,7 +164,7 @@ for feed_url in feed_urls:
             # entries in reverse chronological order.
             break
 
-        response = send_humbug(entry, data.feed.title)
+        response = send_zulip(entry, data.feed.title)
         if response["result"] != "success":
             logger.error("Error processing %s" % (feed_url,))
             logger.error(response)
@@ -181,4 +181,4 @@ for feed_url in feed_urls:
         for hash in new_hashes:
             f.write(hash + "\n")
 
-    logger.info("Sent humbugs for %d %s entries" % (len(new_hashes), feed_url))
+    logger.info("Sent zulips for %d %s entries" % (len(new_hashes), feed_url))
