@@ -34,12 +34,12 @@ sys.path[:0] = [os.path.join(options.root_path, "api/"),
                 options.root_path]
 
 mit_user = 'tabbott/extra@ATHENA.MIT.EDU'
-humbug_user = 'tabbott/extra@mit.edu'
+zulip_user = 'tabbott/extra@mit.edu'
 
 sys.path.append(".")
 import zulip
 zulip_client = zulip.Client(
-    email=humbug_user,
+    email=zulip_user,
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
     client="test: Humbug API",
@@ -60,7 +60,7 @@ logger.addHandler(file_handler)
 
 # Initialize list of streams to test
 if options.sharded:
-    # NOTE: Streams in this list must be in humbug_user's Zulip
+    # NOTE: Streams in this list must be in zulip_user's Zulip
     # subscriptions, or we won't receive messages via Zulip.
 
     # The sharded stream list has a bunch of pairs
@@ -102,7 +102,7 @@ def print_status_and_exit(status):
     print status
     sys.exit(status)
 
-def send_humbug(message):
+def send_zulip(message):
     result = zulip_client.send_message(message)
     if result["result"] != "success":
         logger.error("Error sending zulip, args were:")
@@ -237,13 +237,13 @@ logger.info("Sent Zephyr messages!")
 # Send Zulips
 for key, (stream, test) in hzkeys.items():
     if stream == "message":
-        send_humbug({
+        send_zulip({
                 "type": "private",
                 "content": str(key),
-                "to": humbug_user,
+                "to": zulip_user,
         })
     else:
-        send_humbug({
+        send_zulip({
                 "type": "stream",
                 "subject": "test",
                 "content": str(key),
