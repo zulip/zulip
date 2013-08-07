@@ -125,7 +125,7 @@
       <p>First, download and install our <a href="/api">Python
       bindings and example scripts</a> on your Git server.</p>
 
-      <p>Next, open <code>integrations/git/humbug_git_config.py</code>
+      <p>Next, open <code>integrations/git/zulip_git_config.py</code>
       in your favorite editor, and change the following lines to
       specify the email address and API key for your Git bot:</p>
 
@@ -136,12 +136,12 @@
       <p>You can also specify which pushes will result in
       notifications and to what stream the notifications will be sent
       by modifying the <code>commit_notice_destination</code> function
-      in <code>humbug_git_config.py</code>.  By default, pushes to
+      in <code>zulip_git_config.py</code>.  By default, pushes to
       the <code>master</code> and <code>test-post-receive</code>
       branches will result in a notification to
       stream <code>commits</code>.</p>
 
-      <p>Save <code>integrations/git/humbug_git_config.py</code> to
+      <p>Save <code>integrations/git/zulip_git_config.py</code> to
       the <code>.git/hooks</code> directory of your git
       repository.</p>
 
@@ -431,17 +431,17 @@ x      <p><code>https://api.zulip.com/v1/external/pivotal?api_key=abcdefgh&amp;s
         a binary or from source following
         the <a href="http://pysvn.tigris.org/project_downloads.html">instructions
         on the pysvn website</a>.</li>
-        <li>Copy <code>integrations/svn/humbug_svn_config.py</code>
+        <li>Copy <code>integrations/svn/zulip_svn_config.py</code>
         and <code>integrations/svn/post-commit</code> from the API bindings
         directory to the <code>hooks</code> subdirectory of your SVN
         repository.</li>
-        <li>Open <code>humbug_svn_config.py</code> in your favorite editor and
+        <li>Open <code>zulip_svn_config.py</code> in your favorite editor and
         change the <code>HUMBUG_USER</code> and <code>HUMBUG_API_KEY</code>
         variables at the top of the file to the credentials for the bot you'd
         like to use for this integration.</li>
         <li>The default stream used by this post-commit hook
         is <code>commits</code>; if you'd prefer a different stream, change it
-        now in <code>humbug_svn_config.py</code>. Make sure that everyone
+        now in <code>zulip_svn_config.py</code>. Make sure that everyone
         interested in getting these post-commit Zulips is subscribed to that
         stream!</li>
       </ol>
@@ -460,7 +460,7 @@ x      <p><code>https://api.zulip.com/v1/external/pivotal?api_key=abcdefgh&amp;s
       <p>First, download and install our <a href="/api">Python
       bindings and example scripts</a> on your Trac server.</p>
 
-      <p>Next, open <code>integrations/trac/humbug_trac_config.py</code> in
+      <p>Next, open <code>integrations/trac/zulip_trac_config.py</code> in
       your favorite editor, and change the following lines to specify
       your bot's email address, API key, and where you'd like your
       notification messages to go (by default,
@@ -472,7 +472,7 @@ x      <p><code>https://api.zulip.com/v1/external/pivotal?api_key=abcdefgh&amp;s
 <span class="n">TRAC_BASE_TICKET_URL</span> <span class="o">=</span> <span class="s">"https://trac.example.com/ticket"</span></pre></div>
 
       <p>Copy <code>integrations/trac/humbug_trac.py</code>
-      and <code>integrations/trac/humbug_trac_config.py</code> into
+      and <code>integrations/trac/zulip_trac_config.py</code> into
       your Trac installation's <code>plugins/</code>
       subdirectory. Once you've done that, edit your Trac
       installation's <code>conf/trac.ini</code> to
@@ -495,7 +495,7 @@ x      <p><code>https://api.zulip.com/v1/external/pivotal?api_key=abcdefgh&amp;s
       for a while, you may want to customize which changes to tickets
       result in a Zulip notification using
       the <code>TRAC_NOTIFY_FIELDS</code> setting
-      in <code>humbug_trac_config.py</code>.</p>
+      in <code>zulip_trac_config.py</code>.</p>
 
       <p>
         <a href="#services">^ Back to top</a>

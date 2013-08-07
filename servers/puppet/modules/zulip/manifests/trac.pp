@@ -23,9 +23,9 @@ class zulip::trac {
     ensure => 'link',
     target => '/home/humbug/humbug/api/integrations/trac/humbug_trac.py',
   }
-  file { '/home/humbug/trac/plugins/humbug_trac_config.py':
+  file { '/home/humbug/trac/plugins/zulip_trac_config.py':
     ensure => 'link',
-    target => '/home/humbug/humbug/bots/humbug_trac_config.py',
+    target => '/home/humbug/humbug/bots/zulip_trac_config.py',
   }
   # TODO: Add downloading and installing trac at /home/humbug/trac
 

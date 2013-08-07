@@ -23,9 +23,9 @@
 
 # Zulip trac plugin -- sends humbugs when tickets change.
 #
-# Install by copying this file and humbug_trac_config.py to the trac
+# Install by copying this file and zulip_trac_config.py to the trac
 # plugins/ subdirectory, customizing the constants in
-# humbug_trac_config.py, and then adding "humbug_trac" to the
+# zulip_trac_config.py, and then adding "humbug_trac" to the
 # components section of the conf/trac.ini file, like so:
 #
 # [components]
@@ -39,7 +39,7 @@ from trac.ticket import ITicketChangeListener
 import sys
 import os.path
 sys.path.insert(0, os.path.dirname(__file__))
-import humbug_trac_config as config
+import zulip_trac_config as config
 
 if config.HUMBUG_API_PATH is not None:
     sys.path.append(config.HUMBUG_API_PATH)

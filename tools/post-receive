@@ -13,7 +13,7 @@
 # for the git hook, this means that we need to have a shared directory
 # containing (a symlink to) both the the for-distribution git hook and
 # the Zulip configuration; for the moment those are
-# bots/githook-post-receive and bots/humbug_git_config.py,
+# bots/githook-post-receive and bots/zulip_git_config.py,
 # respectively.  We need the intermediate symlink because the git hook
 # looks for its configuration in the directory that it sits in, and
 # api/integrations/git/ has the example configuration.

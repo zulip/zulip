@@ -35,7 +35,7 @@ import os.path
 import pysvn
 
 sys.path.insert(0, os.path.dirname(__file__))
-import humbug_svn_config as config
+import zulip_svn_config as config
 
 if config.HUMBUG_API_PATH is not None:
     sys.path.append(config.HUMBUG_API_PATH)
