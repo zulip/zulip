@@ -16,13 +16,14 @@ var stream_assignment_colors = ["#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
 exports.color_classes = 'dark_background';
 
 exports.pick_color = function (used_colors) {
+    var colors = _.shuffle(stream_assignment_colors);
     var used_color_hash = {};
 
     _.each(used_colors, function (color) {
         used_color_hash[color] = true;
     });
 
-    var color = _.find(stream_assignment_colors, function (color) {
+    var color = _.find(colors, function (color) {
         return !_.has(used_color_hash, color);
     });
 
@@ -31,7 +32,7 @@ exports.pick_color = function (used_colors) {
     }
 
     // All available colors were used.
-    return stream_assignment_colors[0];
+    return colors[0];
 };
 
 
