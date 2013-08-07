@@ -30,6 +30,14 @@ exports.subscribed_streams = function () {
         .value();
 };
 
+function get_color() {
+    var streams = _.values(stream_info);
+    var subscribed_streams = _.where(streams, {subscribed: true});
+    var used_colors = _.pluck(subscribed_streams, 'color');
+    var color = stream_color.pick_color(used_colors);
+    return color;
+}
+
 exports.update_all_messages_link = function () {
     // Show or hide the "All messages" link, depending on whether
     // the user has any subscriptions hidden from home view.
@@ -176,10 +184,12 @@ function create_sub(stream_name, attrs) {
         subscribed: true,
         in_home_view: true,
         invite_only: false,
-        notifications: false,
-        color: stream_color.pick_color()
+        notifications: false
     });
-    stream_color.mark_color_used(sub.color);
+
+    if (!sub.color) {
+        sub.color = get_color();
+    }
 
     add_sub(stream_name, sub);
     $(document).trigger($.Event('sub_obj_created.zulip', {sub: sub}));
@@ -229,9 +239,9 @@ function mark_subscribed(stream_name, attrs) {
         add_sub_to_table(sub);
     } else if (! sub.subscribed) {
         // Add yourself to an existing stream.
+        var color = get_color();
+        exports.set_color(stream_name, color);
         sub.subscribed = true;
-        exports.set_color(stream_name, stream_color.pick_color());
-        stream_color.mark_color_used(sub.color);
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {

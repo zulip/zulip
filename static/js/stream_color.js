@@ -12,31 +12,28 @@ var stream_assignment_colors = ["#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
                                 "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
                                 "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"];
 
-// Clone stream_assignement_colors
-var available_colors = stream_assignment_colors.slice(0);
-
 // Classes which could be returned by get_color_class.
 exports.color_classes = 'dark_background';
 
-exports.pick_color = function () {
-    if (available_colors.length === 0) {
-        // We've used all the palette colors, so start re-using them.
-        return stream_assignment_colors[exports.subscribed_streams().length
-                                        % stream_assignment_colors.length];
+exports.pick_color = function (used_colors) {
+    var used_color_hash = {};
+
+    _.each(used_colors, function (color) {
+        used_color_hash[color] = true;
+    });
+
+    var color = _.find(stream_assignment_colors, function (color) {
+        return !_.has(used_color_hash, color);
+    });
+
+    if (color) {
+        return color;
     }
 
-    return available_colors[0];
+    // All available colors were used.
+    return stream_assignment_colors[0];
 };
 
-exports.mark_color_used = function (color) {
-    var i;
-    for (i = 0; i < available_colors.length; ++i) {
-        if (available_colors[i] === color) {
-            available_colors.splice(i, 1);
-            return;
-        }
-    }
-};
 
 function update_table_stream_color(table, stream_name, color) {
     var color_class = exports.get_color_class(color);
