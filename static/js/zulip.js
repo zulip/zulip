@@ -1344,7 +1344,7 @@ $(function () {
         install_main_scroll_handler();
     }, 500);
 
-    (window).scroll(function () {
+    $(window).scroll(function () {
         if (viewport.scrollTop() < viewport.height()) {
             // This is the browser-induced scroll to the top of the
             // page that we were waiting for. It only happens once,
