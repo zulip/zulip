@@ -373,6 +373,7 @@ JS_SPECS = {
             'js/reload.js',
             'js/notifications_bar.js',
             'js/compose.js',
+            'js/stream_color.js',
             'js/subs.js',
             'js/message_edit.js',
             'js/ui.js',

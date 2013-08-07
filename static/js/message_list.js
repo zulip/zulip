@@ -378,7 +378,7 @@ MessageList.prototype = {
         function set_template_properties(message) {
             if (message.is_stream) {
                 message.background_color = subs.get_color(message.stream);
-                message.color_class = subs.get_color_class(message.background_color);
+                message.color_class = stream_color.get_color_class(message.background_color);
                 message.invite_only = subs.get_invite_only(message.stream);
             }
         }

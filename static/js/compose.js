@@ -93,8 +93,8 @@ exports.decorate_stream_bar = function (stream_name) {
     update_lock_icon_for_stream(stream_name);
     $("#stream-message .message_header_stream")
         .css('background-color', color)
-        .removeClass(subs.color_classes)
-        .addClass(subs.get_color_class(color));
+        .removeClass(stream_color.color_classes)
+        .addClass(stream_color.get_color_class(color));
 };
 
 exports.unfade_messages = function (clear_state) {

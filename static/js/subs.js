@@ -3,23 +3,6 @@ var subs = (function () {
 var exports = {};
 
 var stream_info = {}; // Maps lowercase stream name to stream properties object
-// We fetch the stream colors asynchronous while the message feed is
-// getting constructed, so we may need to go back and color streams
-// that have already been rendered.
-var initial_color_fetch = true;
-
-var default_color = "#c2c2c2";
-// Auto-assigned colors should be from the default palette so it's easy to undo
-// changes, so if that pallete changes, change these colors.
-var stream_assignment_colors = ["#76ce90", "#fae589", "#a6c7e5", "#e79ab5",
-                                "#bfd56f", "#f4ae55", "#b0a5fd", "#addfe5",
-                                "#f5ce6e", "#c2726a", "#94c849", "#bd86e5",
-                                "#ee7e4a", "#a6dcbf", "#95a5fd", "#53a063",
-                                "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
-                                "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"];
-
-// Clone stream_assignement_colors
-var available_colors = stream_assignment_colors.slice(0);
 
 var next_sub_id = 0;
 
@@ -31,9 +14,6 @@ function get_sub(stream_name) {
     return stream_info[stream_name.toLowerCase()];
 }
 
-// Classes which could be returned by get_color_class.
-exports.color_classes = 'dark_background';
-
 exports.stream_info = function (new_stream_info) {
     if (new_stream_info !== undefined) {
         stream_info = new_stream_info;
@@ -41,26 +21,6 @@ exports.stream_info = function (new_stream_info) {
         return stream_info;
     }
 };
-
-function pick_color() {
-    if (available_colors.length === 0) {
-        // We've used all the palette colors, so start re-using them.
-        return stream_assignment_colors[exports.subscribed_streams().length
-                                        % stream_assignment_colors.length];
-    }
-
-    return available_colors[0];
-}
-
-function mark_color_used(color) {
-    var i;
-    for (i = 0; i < available_colors.length; ++i) {
-        if (available_colors[i] === color) {
-            available_colors.splice(i, 1);
-            return;
-        }
-    }
-}
 
 exports.subscribed_streams = function () {
     return _.chain(stream_info)
@@ -90,24 +50,6 @@ function should_list_all_streams() {
     return page_params.domain !== 'mit.edu';
 }
 
-function update_table_stream_color(table, stream_name, color) {
-    var color_class = exports.get_color_class(color);
-    function fixup(elem) {
-        elem.css("background-color", color)
-            .removeClass(exports.color_classes)
-            .addClass(color_class);
-    }
-
-    var stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
-    _.each(stream_labels, function (label) {
-        if ($(label).text() === stream_name) {
-            fixup($(label).parent("td").parent("tr").prev("tr")
-                          .nextUntil(".bookend_tr")
-                          .children(".messagebox_colorblock,.message_header_colorblock"));
-        }
-    });
-}
-
 exports.stream_id = function (stream_name) {
     var sub = get_sub(stream_name);
     if (sub === undefined) {
@@ -120,53 +62,6 @@ exports.stream_id = function (stream_name) {
 exports.canonicalized_name = function (stream_name) {
    return stream_name.toString().toLowerCase();
 };
-
-function update_stream_sidebar_swatch_color(stream_name, color) {
-    var id = exports.stream_id(stream_name);
-    $("#stream_sidebar_swatch_" + id).css('background-color', color);
-}
-
-function update_historical_message_color(stream_name, color) {
-    update_table_stream_color($(".focused_table"), stream_name, color);
-    if ($(".focused_table").attr("id") !== "#zhome") {
-        update_table_stream_color($("#zhome"), stream_name, color);
-    }
-}
-
-var stream_color_palette = [
-    ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
-    ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
-    ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
-    ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
-];
-
-var subscriptions_table_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPalette: true,
-    palette: stream_color_palette
-};
-
-function set_colorpicker_color(colorpicker, color) {
-    colorpicker.spectrum(_.extend(subscriptions_table_colorpicker_options,
-                         {color: color}));
-}
-
-function update_stream_color(stream_name, color, opts) {
-    opts = _.defaults({}, opts, {update_historical: false});
-    var sub = get_sub(stream_name);
-    sub.color = color;
-    var id = parseInt(sub.id, 10);
-    // The swatch in the subscription row header.
-    $("#subscription_" + id + " .color_swatch").css('background-color', color);
-    // The swatch in the color picker.
-    set_colorpicker_color($("#subscription_" + id + " .colorpicker"), color);
-
-    if (opts.update_historical) {
-        update_historical_message_color(stream_name, color);
-    }
-    update_stream_sidebar_swatch_color(stream_name, color);
-    tab_bar.colorize_tab_bar();
-}
 
 function set_stream_property(stream_name, property, value) {
     $.ajax({
@@ -261,35 +156,10 @@ function stream_notifications_clicked(e) {
     set_stream_property(stream, 'notifications', sub.notifications);
 }
 
-function set_color(stream_name, color) {
-    update_stream_color(stream_name, color, {update_historical: true});
+exports.set_color = function (stream_name, color) {
+    var sub = get_sub(stream_name);
+    stream_color.update_stream_color(sub, stream_name, color, {update_historical: true});
     set_stream_property(stream_name, 'color', color);
-}
-
-function picker_do_change_color (color) {
-    var stream_name = $(this).attr('stream_name');
-    var hex_color = color.toHexString();
-    set_color(stream_name, hex_color);
-}
-subscriptions_table_colorpicker_options.change = picker_do_change_color;
-
-exports.sidebar_popover_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPaletteOnly: true,
-    showPalette: true,
-    flat: true,
-    palette: stream_color_palette,
-    change: picker_do_change_color
-};
-
-exports.sidebar_popover_colorpicker_options_full = {
-    clickoutFiresChange: true,
-    showPalette: true,
-    flat: true,
-    cancelText: "",
-    chooseText: "choose",
-    palette: stream_color_palette,
-    change: picker_do_change_color
 };
 
 function create_sub(stream_name, attrs) {
@@ -307,9 +177,9 @@ function create_sub(stream_name, attrs) {
         in_home_view: true,
         invite_only: false,
         notifications: false,
-        color: pick_color()
+        color: stream_color.pick_color()
     });
-    mark_color_used(sub.color);
+    stream_color.mark_color_used(sub.color);
 
     add_sub(stream_name, sub);
     $(document).trigger($.Event('sub_obj_created.zulip', {sub: sub}));
@@ -360,8 +230,8 @@ function mark_subscribed(stream_name, attrs) {
     } else if (! sub.subscribed) {
         // Add yourself to an existing stream.
         sub.subscribed = true;
-        set_color(stream_name, pick_color());
-        mark_color_used(sub.color);
+        exports.set_color(stream_name, stream_color.pick_color());
+        stream_color.mark_color_used(sub.color);
         var settings = settings_for_sub(sub);
         var button = button_for_sub(sub);
         if (button.length !== 0) {
@@ -454,62 +324,10 @@ $(function () {
 exports.get_color = function (stream_name) {
     var sub = get_sub(stream_name);
     if (sub === undefined) {
-        return default_color;
+        return stream_color.default_color;
     }
     return sub.color;
 };
-
-var lightness_threshold;
-$(function () {
-    // sRGB color component for dark label text.
-    // 0x33 to match the color #333333 set by Bootstrap.
-    var label_color = 0x33;
-    var lightness = colorspace.luminance_to_lightness(
-        colorspace.sRGB_to_linear(label_color));
-
-    // Compute midpoint lightness between that and white (100).
-    lightness_threshold = (lightness + 100) / 2;
-});
-
-// From a background color (in format "#fff" or "#ffffff")
-// pick a CSS class (or empty string) to determine the
-// text label color etc.
-//
-// It would be better to work with an actual data structure
-// rather than a hex string, but we have to deal with values
-// already saved on the server, etc.
-//
-// This gets called on every message, so cache the results.
-exports.get_color_class = _.memoize(function (color) {
-    var match, i, lightness, channel = [0, 0, 0], mult = 1;
-
-    match = /^#([\da-fA-F]{2})([\da-fA-F]{2})([\da-fA-F]{2})$/.exec(color);
-    if (!match) {
-        // 3-digit shorthand; Spectrum gives this e.g. for pure black.
-        // Multiply each digit by 16+1.
-        mult = 17;
-
-        match = /^#([\da-fA-F])([\da-fA-F])([\da-fA-F])$/.exec(color);
-        if (!match) {
-            // Can't understand color.
-            return '';
-        }
-    }
-
-    // CSS colors are specified in the sRGB color space.
-    // Convert to linear intensity values.
-    for (i=0; i<3; i++) {
-        channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i+1], 16));
-    }
-
-    // Compute perceived lightness as CIE L*.
-    lightness = colorspace.luminance_to_lightness(
-        colorspace.rgb_luminance(channel));
-
-    // Determine if we're past the midpoint between the
-    // dark and light label lightness.
-    return (lightness < lightness_threshold) ? 'dark_background' : '';
-});
 
 exports.get_invite_only = function (stream_name) {
     var sub = get_sub(stream_name);
@@ -675,7 +493,7 @@ exports.update_subscription_properties = function (stream_name, property, value)
     var sub = get_sub(stream_name);
     switch(property) {
     case 'color':
-        update_stream_color(stream_name, value, {update_historical: true});
+        stream_color.update_stream_color(sub, stream_name, value, {update_historical: true});
         break;
     case 'in_home_view':
         update_in_home_view(sub, value);
@@ -848,7 +666,7 @@ $(function () {
         var colorpicker = subrow.find('.colorpicker');
 
         var color = exports.get_color(subrow.find('.subscription_name').text());
-        set_colorpicker_color(colorpicker, color);
+        stream_color.set_colorpicker_color(colorpicker, color);
 
         // To figure out the worst case for an expanded row's height, we do some math:
         // .subscriber_list_container max-height,
