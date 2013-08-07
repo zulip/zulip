@@ -19,9 +19,9 @@ class zulip::trac {
     source => "puppet:///modules/zulip/trac.ini",
     require => User['humbug'],
   }
-  file { '/home/humbug/trac/plugins/humbug_trac.py':
+  file { '/home/humbug/trac/plugins/zulip_trac.py':
     ensure => 'link',
-    target => '/home/humbug/humbug/api/integrations/trac/humbug_trac.py',
+    target => '/home/humbug/humbug/api/integrations/trac/zulip_trac.py',
   }
   file { '/home/humbug/trac/plugins/zulip_trac_config.py':
     ensure => 'link',

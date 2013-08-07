@@ -466,21 +466,21 @@ x      <p><code>https://api.zulip.com/v1/external/pivotal?api_key=abcdefgh&amp;s
       notification messages to go (by default,
       stream <code>trac</code>):</p>
 
-<div class="codehilite"><pre><span class="n">HUMBUG_USER</span> <span class="o">=</span> <span class="s">"trac-notifications-bot@example.com"</span>
-<span class="n">HUMBUG_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
+<div class="codehilite"><pre><span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"trac-notifications-bot@example.com"</span>
+<span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
 <span class="n">STREAM_FOR_NOTIFICATIONS</span> <span class="o">=</span> <span class="s">"trac"</span>
 <span class="n">TRAC_BASE_TICKET_URL</span> <span class="o">=</span> <span class="s">"https://trac.example.com/ticket"</span></pre></div>
 
-      <p>Copy <code>integrations/trac/humbug_trac.py</code>
+      <p>Copy <code>integrations/trac/zulip_trac.py</code>
       and <code>integrations/trac/zulip_trac_config.py</code> into
       your Trac installation's <code>plugins/</code>
       subdirectory. Once you've done that, edit your Trac
       installation's <code>conf/trac.ini</code> to
-      add <code>humbug_trac</code> to the <code>[components]</code>
+      add <code>zulip_trac</code> to the <code>[components]</code>
       section, as follows:</p>
 
 <div class="codehilite"><pre><span class="k">[components]</span>
-<span class="na">humbug_trac</span> <span class="o">=</span> <span class="s">enabled</span></pre></div>
+<span class="na">zulip_trac</span> <span class="o">=</span> <span class="s">enabled</span></pre></div>
 
       <p>You may then need to restart Trac (or Apache) so that Trac will load our plugin.</p>
 

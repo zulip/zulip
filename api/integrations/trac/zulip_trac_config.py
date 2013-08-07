@@ -20,11 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# See humbug_trac.py for installation and configuration instructions
+# See zulip_trac.py for installation and configuration instructions
 
 # Change these constants to configure the plugin:
-HUMBUG_USER = "trac-bot@example.com"
-HUMBUG_API_KEY = "0123456789abcdef0123456789abcdef"
+ZULIP_USER = "trac-bot@example.com"
+ZULIP_API_KEY = "0123456789abcdef0123456789abcdef"
 STREAM_FOR_NOTIFICATIONS = "trac"
 TRAC_BASE_TICKET_URL = "https://trac.example.com/ticket"
 
@@ -41,12 +41,11 @@ TRAC_BASE_TICKET_URL = "https://trac.example.com/ticket"
 # The following is the list of fields which can be changed without
 # triggering a Zulip notification; change these to match your team's
 # workflow.
-TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment",
-                      "owner"]
+TRAC_NOTIFY_FIELDS = ["description", "summary", "resolution", "comment", "owner"]
 
 ## If properly installed, the Zulip API should be in your import
 ## path, but if not, set a custom path below
-HUMBUG_API_PATH = None
+ZULIP_API_PATH = None
 
 # This should not need to change unless you have a custom Zulip subdomain.
-HUMBUG_SITE = "https://api.zulip.com"
+ZULIP_SITE = "https://api.zulip.com"

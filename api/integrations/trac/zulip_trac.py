@@ -21,15 +21,15 @@
 # THE SOFTWARE.
 
 
-# Zulip trac plugin -- sends humbugs when tickets change.
+# Zulip trac plugin -- sends zulips when tickets change.
 #
 # Install by copying this file and zulip_trac_config.py to the trac
 # plugins/ subdirectory, customizing the constants in
-# zulip_trac_config.py, and then adding "humbug_trac" to the
+# zulip_trac_config.py, and then adding "zulip_trac" to the
 # components section of the conf/trac.ini file, like so:
 #
 # [components]
-# humbug_trac = enabled
+# zulip_trac = enabled
 #
 # You may then need to restart trac (or restart Apache) for the bot
 # (or changes to the bot) to actually be loaded by trac.
@@ -41,14 +41,14 @@ import os.path
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_trac_config as config
 
-if config.HUMBUG_API_PATH is not None:
-    sys.path.append(config.HUMBUG_API_PATH)
+if config.ZULIP_API_PATH is not None:
+    sys.path.append(config.ZULIP_API_PATH)
 
 import zulip
 client = zulip.Client(
-    email=config.HUMBUG_USER,
-    site=config.HUMBUG_SITE,
-    api_key=config.HUMBUG_API_KEY)
+    email=config.ZULIP_USER,
+    site=config.ZULIP_SITE,
+    api_key=config.ZULIP_API_KEY)
 
 def markdown_ticket_url(ticket, heading="ticket"):
     return "[%s #%s](%s/%s)" % (heading, ticket.id, config.TRAC_BASE_TICKET_URL, ticket.id)
@@ -72,7 +72,7 @@ def send_update(ticket, content):
             "subject": trac_subject(ticket)
             })
 
-class HumbugPlugin(Component):
+class ZulipPlugin(Component):
     implements(ITicketChangeListener)
 
     def ticket_created(self, ticket):
