@@ -288,16 +288,16 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <p><b>Zulip Integration</b></p>
         Copy the folder <code>integrations/jira/org/</code> (from the tarball you downloaded above) to your JIRA <code>classes</code> folder.
         For self-contained JIRA installations, this will be <code>atlassian-jira/WEB-INF/classes/</code>, but this may be different in your deployment.
-        Edit the constants at the top of <code>org/humbug/jira/HumbugListener.groovy</code>
+        Edit the constants at the top of <code>org/zulip/jira/ZulipListener.groovy</code>
         and fill them with the appropriate values:
-<div class="codehilite"><pre><span class="n">String</span> <span class="n">humbugEmail</span> <span class="o">=</span> <span class="s2">"jira-notifications-bot@example.com"</span>
-<span class="n">String</span> <span class="n">humbugAPIKey</span> <span class="o">=</span> <span class="s2">"0123456789abcdef0123456789abcdef"</span>
-<span class="n">String</span> <span class="n">humbugStream</span> <span class="o">=</span> <span class="s2">"JIRA"</span>
+<div class="codehilite"><pre><span class="n">String</span> <span class="n">zulipEmail</span> <span class="o">=</span> <span class="s2">"jira-notifications-bot@example.com"</span>
+<span class="n">String</span> <span class="n">zulipAPIKey</span> <span class="o">=</span> <span class="s2">"0123456789abcdef0123456789abcdef"</span>
+<span class="n">String</span> <span class="n">zulipStream</span> <span class="o">=</span> <span class="s2">"JIRA"</span>
 <span class="n">String</span> <span class="n">issueBaseUrl</span> <span class="o">=</span> <span class="s2">"https://jira.COMPANY.com/browse/"</span>
 </pre></div>
       <p>In the Administrators page, navigate to <code>Plugins > Other > Script Listeners</code>. In the <code>Add Listener</code> section, click on
         the <code>Custom Listener</code> option. Select the events you wish the Zulip integration to fire for, and the projects you wish Zulip to be notified for.
-        In the <code>Name of groovy class</code> field, enter <code>org.humbug.jira.HumbugListener</code>.
+        In the <code>Name of groovy class</code> field, enter <code>org.zulip.jira.ZulipListener</code>.
 
       <p>Click <code>Add Listener</code>, and JIRA will now notify your Zulip of changes to your issues!</p>
 

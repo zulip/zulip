@@ -2,7 +2,7 @@
 * Copyright (c) 2013 Zulip, Inc
 */
 
-package org.humbug.jira
+package org.zulip.jira
 
 import static com.atlassian.jira.event.type.EventType.*
 
@@ -17,21 +17,21 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.PostMethod
 import org.apache.commons.httpclient.NameValuePair
 
-class HumbugListener extends AbstractIssueEventListener {
-    Logger LOGGER = Logger.getLogger(HumbugListener.class.getName());
+class ZulipListener extends AbstractIssueEventListener {
+    Logger LOGGER = Logger.getLogger(ZulipListener.class.getName());
 
     // The email address of one of the bots you created on your Zulip settings page.
-    String humbugEmail = ""
+    String zulipEmail = ""
     // That bot's API key.
-    String humbugAPIKey = ""
+    String zulipAPIKey = ""
 
     // What stream to send messages to. Must already exist.
-    String humbugStream = "jira"
+    String zulipStream = "jira"
 
     // The base JIRA url for browsing
     String issueBaseUrl = "https://jira.COMPANY.com/browse/"
 
-    // Your humbug domain, only change if you have a custom one
+    // Your zulip domain, only change if you have a custom one
     String base_url = "https://api.zulip.com"
 
     @Override
@@ -97,11 +97,11 @@ class HumbugListener extends AbstractIssueEventListener {
           return
       }
 
-      sendStreamMessage(humbugStream, subject, content)
+      sendStreamMessage(zulipStream, subject, content)
     }
 
     String post(String method, NameValuePair[] parameters) {
-      PostMethod post = new PostMethod(humbugUrl(method))
+      PostMethod post = new PostMethod(zulipUrl(method))
       post.setRequestHeader("Content-Type", post.FORM_URL_ENCODED_CONTENT_TYPE)
       try {
         post.setRequestBody(parameters)
@@ -132,8 +132,8 @@ class HumbugListener extends AbstractIssueEventListener {
     }
 
     String sendStreamMessage(String stream, String subject, String message) {
-      NameValuePair[] body = [new NameValuePair("api-key", humbugAPIKey),
-                              new NameValuePair("email",   humbugEmail),
+      NameValuePair[] body = [new NameValuePair("api-key", zulipAPIKey),
+                              new NameValuePair("email",   zulipEmail),
                               new NameValuePair("type",    "stream"),
                               new NameValuePair("to",      stream),
                               new NameValuePair("subject", subject),
@@ -141,7 +141,7 @@ class HumbugListener extends AbstractIssueEventListener {
       return post("send_message", body);
     }
 
-    String humbugUrl(method) {
+    String zulipUrl(method) {
       return base_url + "/v1/" + method
     }
 }
