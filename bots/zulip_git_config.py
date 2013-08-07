@@ -4,8 +4,8 @@
 # Leaving all the instructions out of this file to avoid having to
 # sync them as we update the comments.
 
-HUMBUG_USER = "commit-bot@zulip.com"
-HUMBUG_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ZULIP_USER = "commit-bot@zulip.com"
+ZULIP_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # commit_notice_destination() lets you customize where commit notices
 # are sent to.
@@ -30,5 +30,5 @@ def commit_notice_destination(repo, branch, commit):
     # Return None for cases where you don't want a notice sent
     return None
 
-HUMBUG_API_PATH = "/home/humbug/humbug/api"
-HUMBUG_SITE = "https://staging.zulip.com"
+ZULIP_API_PATH = "/home/humbug/humbug/api"
+ZULIP_SITE = "https://staging.zulip.com"
