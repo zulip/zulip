@@ -614,6 +614,31 @@ td.pointer {
     box-shadow: inset 0px 2px 1px -2px #333, inset -2px 0px 1px -2px #333, inset 0px -2px 1px -2px #ccc;
 }
 
+.summary_row .message_header{
+    padding:        5px 0px 4px 5px;
+}
+
+.summary_row .message_header {
+    border-radius: 0;
+}
+
+.bookend_tr + .summary_row .message_header {
+    border-top-right-radius: 3px;
+}
+
+.bookend_tr + .summary_row .summary_colorblock {
+    border-top-left-radius: 3px;
+}
+
+.summary_row.last_message .message_header {
+    border-bottom-right-radius: 3px;
+    box-shadow: inset 0px 2px 1px -2px #333, inset -2px 0px 1px -2px #333, inset 0px -2px 1px -2px #333;
+}
+
+.summary_row.last_message .summary_colorblock {
+    border-bottom-left-radius: 3px;
+}
+
 .message_header .icon-vector-narrow {
     font-size: 0.6em;
     position: relative;
@@ -632,6 +657,10 @@ td.pointer {
     border-radius: 3px 0px 0px 0px;
     /* box-shadow: 0px 2px 3px #ccc; */
     box-shadow: inset 0px 2px 1px -2px #333, inset 2px 0px 1px -2px #333 !important;
+}
+
+.summary_row_private_message .summary_colorblock {
+    background: #000;
 }
 
 .floating_recipient .message_header {

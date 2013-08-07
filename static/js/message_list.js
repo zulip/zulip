@@ -384,19 +384,21 @@ MessageList.prototype = {
         }
 
         function finish_summary() {
-            var i;
-
-            if (prev) {
-                prev.include_footer = true;
-            }
+            var first = true;
 
             _.each(summary_group, function (summary_row) {
                 summary_row.count = summary_row.messages.length;
                 summary_row.message_ids = _.pluck(summary_row.messages, 'id').join(' ');
+                if (first) {
+                    summary_row.include_bookend = true;
+                    first = false;
+                }
                 set_template_properties(summary_row);
                 messages_to_render.push(summary_row);
                 prev = summary_row;
             });
+
+            prev.include_footer = true;
 
             has_summary = false;
             summary_group = {};
@@ -415,6 +417,10 @@ MessageList.prototype = {
             }
 
             if (self._is_summarized_message(message)) {
+                if (prev) {
+                    prev.include_footer = true;
+                }
+
                 var key = util.recipient_key(message);
                 if (summary_group[key] === undefined) {
                     // Start building a new summary row for messages from this recipient.
@@ -428,7 +434,6 @@ MessageList.prototype = {
                         is_summary: true,
                         include_recipient: true,
                         include_sender: false,
-                        include_bookend: true,
                         messages: [message]
                     });
                 } else {

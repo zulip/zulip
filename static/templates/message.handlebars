@@ -31,19 +31,18 @@
 
 {{#if is_summary}}
   <tr zid="{{first_message_id}}" id="{{dom_id}}" data-messages="{{message_ids}}" class="summary_row selectable_row{{#include_footer}} last_message{{/include_footer}}{{^is_stream}} summary_row_private_message{{/is_stream}}">
-  {{#if is_stream}}
     <td class="summary_colorblock" style="background-color: {{background_color}};">
       <span class="pointer_icon"><i class="icon-vector-caret-right"></i></span>
     </td>
     <td class="message_header message_header_stream right_part">
-        <span class="message_label_clickable"><i class="icon-vector-expand-alt"></i> {{display_recipient}} &nbsp;<i class="icon-vector-narrow icon-vector-small"></i><span class="copy-paste-text">&gt;</span> &nbsp;{{subject}} ({{count}} read)</span>
+        <span class="message_label_clickable"><i class="icon-vector-expand-alt"></i>
+          {{#if is_stream}}
+            {{display_recipient}} &nbsp;<i class="icon-vector-narrow icon-vector-small"></i><span class="copy-paste-text">&gt;</span> &nbsp;{{subject}} ({{count}} read)
+          {{else}}
+            You and {{display_reply_to}} ({{count}} read)
+          {{/if}}
+        </span>
     </td>
-  {{else}}
-    <td class="message_header_colorblock message_header_private_message" style="background-color: {{background_color}};"></td>
-    <td class="message_header message_header_private_message right_part dark_background">
-        <span class="message_label_clickable"><i class="icon-vector-expand-alt"></i> You and {{display_reply_to}} ({{count}} read)</span>
-    </td>
-  {{/if}}
   </tr>
 {{else}}
 
