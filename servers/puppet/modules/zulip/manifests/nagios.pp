@@ -35,6 +35,21 @@ class zulip::nagios {
     source     => 'puppet:///modules/zulip/pagerduty_nagios.pl',
   }
 
+  file { '/etc/nagios3/conf.d/zulip_nagios.cfg':
+    ensure     => file,
+    mode       => 644,
+    owner      => "root",
+    group      => "root",
+    source => '/root/humbug/api/integrations/nagios/zulip_nagios.cfg',
+  }
+  file { '/etc/nagios3/zuliprc':
+    ensure     => file,
+    mode       => 644,
+    owner      => "root",
+    group      => "root",
+    source => '/root/humbug/bots/zuliprc.nagios',
+  }
+
   exec { "fix_nagios_permissions":
     command => "dpkg-statoverride --update --add nagios www-data 2710 /var/lib/nagios3/rw",
     unless => "bash -c 'ls -ld /var/lib/nagios3/rw | grep ^drwx--s--- -q'",
