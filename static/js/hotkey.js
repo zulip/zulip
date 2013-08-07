@@ -3,9 +3,6 @@ var hotkeys = (function () {
 var exports = {};
 
 function do_narrow_action(action) {
-    if (current_msg_list.empty()) {
-        return false;
-    }
     action(current_msg_list.selected_id(), {trigger: 'hotkey'});
     return true;
 }
@@ -207,62 +204,40 @@ function process_hotkey(e) {
         return false;
     }
 
-
+    // Shortcuts that don't require a message
     switch (event_name) {
-    case 'message_actions':
-        var id = current_msg_list.selected_id();
-        popovers.show_actions_popover($(".selected_message .actions_hover")[0], id);
-        return true;
-    case 'narrow_by_recipient':
-        return do_narrow_action(narrow.by_recipient);
-    case 'narrow_by_subject':
-        return do_narrow_action(narrow.by_subject);
-    case 'narrow_private':
-        return do_narrow_action(function (target, opts) {
-            narrow.by('is', 'private', opts);
-        });
-    }
-
-
-    switch (event_name) {
-    case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
-        if (popovers.any_active()) {
-            popovers.hide_all();
-        } else if (compose.composing()) {
-            compose.cancel();
-        } else {
-            search.clear_search();
-        }
-        return true;
-    case 'compose': // 'c': compose
-        compose.start('stream');
-        return true;
-    case 'compose_private_message':
-        compose.start('private');
-        return true;
-    case  'enter': // Enter: respond to message (unless we need to do something else)
-        respond_to_cursor = true;
-        respond_to_message({trigger: 'hotkey enter'});
-        return true;
-    case 'reply_message': // 'r': respond to message
-        respond_to_cursor = true;
-        respond_to_message({trigger: 'hotkey'});
-        return true;
-    case 'respond_to_author': // 'R': respond to author
-        respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
-        return true;
-    case 'search':
-        search.initiate_search();
-        return true;
-    case 'show_shortcuts': // Show keyboard shortcuts page
-        $('#keyboard-shortcuts').modal('show');
-        return true;
+        case 'narrow_private':
+            return do_narrow_action(function (target, opts) {
+                narrow.by('is', 'private', opts);
+            });
+        case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
+            if (popovers.any_active()) {
+                popovers.hide_all();
+            } else if (compose.composing()) {
+                compose.cancel();
+            } else {
+                search.clear_search();
+            }
+            return true;
+        case 'compose': // 'c': compose
+            compose.start('stream');
+            return true;
+        case 'compose_private_message':
+            compose.start('private');
+            return true;
+        case 'search':
+            search.initiate_search();
+            return true;
+        case 'show_shortcuts': // Show keyboard shortcuts page
+            $('#keyboard-shortcuts').modal('show');
+            return true;
     }
 
     if (current_msg_list.empty()) {
         return false;
     }
 
+    // Navigation shortcuts
     switch (event_name) {
         case 'down_arrow':
         case 'vim_down':
@@ -283,6 +258,29 @@ function process_hotkey(e) {
             return true;
         case 'page_down':
             navigate.page_down();
+            return true;
+    }
+
+    // Shortcuts that operate on a message
+    switch (event_name) {
+        case 'message_actions':
+            var id = current_msg_list.selected_id();
+            popovers.show_actions_popover($(".selected_message .actions_hover")[0], id);
+            return true;
+        case 'narrow_by_recipient':
+            return do_narrow_action(narrow.by_recipient);
+        case 'narrow_by_subject':
+            return do_narrow_action(narrow.by_subject);
+        case  'enter': // Enter: respond to message (unless we need to do something else)
+            respond_to_cursor = true;
+            respond_to_message({trigger: 'hotkey enter'});
+            return true;
+        case 'reply_message': // 'r': respond to message
+            respond_to_cursor = true;
+            respond_to_message({trigger: 'hotkey'});
+            return true;
+        case 'respond_to_author': // 'R': respond to author
+            respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
             return true;
     }
 
