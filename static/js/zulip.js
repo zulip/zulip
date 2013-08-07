@@ -570,7 +570,7 @@ function add_message_metadata(message) {
     case 'stream':
         message.is_stream = true;
         message.stream = message.display_recipient;
-        if (! subject_dict.hasOwnProperty(message.stream)) {
+        if (! _.has(subject_dict, message.stream)) {
             subject_dict[message.stream] = [];
         }
         if (! case_insensitive_find(message.subject, subject_dict[message.stream])) {
