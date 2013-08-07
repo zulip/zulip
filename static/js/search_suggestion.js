@@ -7,9 +7,14 @@ function phrase_match(phrase, q) {
     var i;
     q = q.toLowerCase();
 
+    phrase = phrase.toLowerCase();
+    if (phrase.indexOf(q) === 0) {
+        return true;
+    }
+
     var parts = phrase.split(' ');
     for (i = 0; i < parts.length; i++) {
-        if (parts[i].toLowerCase().indexOf(q) === 0) {
+        if (parts[i].indexOf(q) === 0) {
             return true;
         }
     }

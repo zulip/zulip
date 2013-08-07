@@ -202,4 +202,13 @@ var search = set_up_dependencies();
     assert.equal(describe('sender:ted@zulip.com'),
         "Narrow to messages sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
 
+    suggestions = search.get_suggestions('Ted '); // note space
+
+    expected = [
+        "Ted",
+        "pm-with:ted@zulip.com",
+        "sender:ted@zulip.com"
+    ];
+
+    assert.deepEqual(suggestions.strings, expected);
 }());
