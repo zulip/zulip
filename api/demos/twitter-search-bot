@@ -6,7 +6,7 @@ import ConfigParser
 
 import zulip
 
-CONFIGFILE = os.path.expanduser("~/.humbug_twitterrc")
+CONFIGFILE = os.path.expanduser("~/.zulip_twitterrc")
 
 def write_config(config, since_id):
     if 'search' not in config.sections():
@@ -42,7 +42,7 @@ Run this on a personal or trusted machine, because your API key is
 visible to local users through the command line or config file.
 
 This bot uses OAuth to authenticate with twitter. Please create a
-~/.humbug_twitterrc with the following contents:
+~/.zulip_twitterrc with the following contents:
 
 [twitter]
 consumer_key =
@@ -91,10 +91,10 @@ try:
     access_token_key = config.get('twitter', 'access_token_key')
     access_token_secret = config.get('twitter', 'access_token_secret')
 except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
-   parser.error("Please provide a ~/.humbug_twitterrc")
+   parser.error("Please provide a ~/.zulip_twitterrc")
 
 if not (consumer_key and consumer_secret and access_token_key and access_token_secret):
-   parser.error("Please provide a ~/.humbug_twitterrc")
+   parser.error("Please provide a ~/.zulip_twitterrc")
 
 try:
     since_id = config.getint('search', 'since_id')
@@ -157,7 +157,7 @@ for status in statuses[::-1][:opts.limit_tweets]:
 
     if ret['result'] == 'error':
         # If sending failed (e.g. no such stream), abort and retry next time
-        print "Error sending message to humbug: %s" % ret['msg']
+        print "Error sending message to zulip: %s" % ret['msg']
         break
     else:
         since_id = status.GetId()
