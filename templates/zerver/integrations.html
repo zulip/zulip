@@ -325,10 +325,10 @@ email=NAGIOS_BOT_EMAIL_ADDRESS
 key=NAGIOS_BOT_API_KEY
 </pre></div>
 
-      <p>Copy <code>integrations/nagios/humbug_nagios.cfg</code>
+      <p>Copy <code>integrations/nagios/zulip_nagios.cfg</code>
       to <code>/etc/nagios3/conf.d</code> on your Nagios server.</p>
 
-      <p>Finally, add <code>humbug</code> to the <code>members</code>
+      <p>Finally, add <code>zulip</code> to the <code>members</code>
       list for one or more of the contact groups in the <code>CONTACT
       GROUPS</code> section
       of <code>/etc/nagios3/conf.d/contacts.cfg</code>, doing
@@ -337,7 +337,7 @@ key=NAGIOS_BOT_API_KEY
 <div class="codehilite"><pre>define contactgroup{
         contactgroup_name       admins
         alias                   Nagios Administrators
-        members                 monitoring<span class="na">, humbug</span>
+        members                 monitoring<span class="na">, zulip</span>
         }
 </pre></div>
 
@@ -347,8 +347,8 @@ key=NAGIOS_BOT_API_KEY
       <p><b>Congratulations! You're done!</b><br /> When your Nagios
       system makes an alert, you'll see a message like the following,
       to the stream <code>nagios</code> (to change this, edit the
-      arguments to <code>nagios-notify-humbug</code>
-      in <code>/etc/nagios3/conf.d/humbug_nagios.cfg</code>) with a
+      arguments to <code>nagios-notify-zulip</code>
+      in <code>/etc/nagios3/conf.d/zulip_nagios.cfg</code>) with a
       subject indicating the service with an issue:</p>
       <img class="screenshot" src="/static/images/integrations/nagios/001.png">
 
@@ -362,10 +362,10 @@ key=NAGIOS_BOT_API_KEY
 
       <p><b>Troubleshooting</b><br />You can confirm whether you've
       correctly configured Nagios to run the Zulip plugin by looking
-      for <code>SERVICE NOTIFICATION</code> lines mentioning humbug
+      for <code>SERVICE NOTIFICATION</code> lines mentioning zulip
       in <code>/var/log/nagios3/nagios.log</code>.  You can confirm
       whether you've configured the Zulip plugin code correctly by
-      running <code>/usr/local/share/humbug/integrations/nagios/nagios-notify-humbug</code>
+      running <code>/usr/local/share/humbug/integrations/nagios/nagios-notify-zulip</code>
       directly.</p>
 
       <p>
