@@ -127,13 +127,18 @@ MessageList.prototype = {
         if (isNaN(id)) {
             blueslip.fatal("Bad message id");
         }
-        if (this.get(id) === undefined || this._is_summarized_message(this.get(id))) {
+
+        if (this.get(id) === undefined) {
             if (!opts.use_closest) {
                 blueslip.error("Selected message id not in MessageList",
                                {table_name: this.table_name, id: id});
             }
             id = this.closest_id(id);
             opts.id = id;
+        }
+
+        if (this._is_summarized_message(this.get(id))) {
+            id = opts.id = this.closest_id(id);
         }
 
         this._selected_id = id;
