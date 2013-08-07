@@ -6,7 +6,7 @@ import ConfigParser
 
 import zulip
 
-CONFIGFILE = os.path.expanduser("~/.humbug_twitterrc")
+CONFIGFILE = os.path.expanduser("~/.zulip_twitterrc")
 
 def write_config(config, since_id, user):
     config.set('twitter', 'since_id', since_id)
@@ -18,12 +18,12 @@ parser = optparse.OptionParser(r"""
 
 %prog --user foo@example.com --api-key 0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 --twitter-id twitter_handle
 
-    Slurp tweets on your timeline into a specific humbug stream.
+    Slurp tweets on your timeline into a specific zulip stream.
 
     Run this on your personal machine.  Your API key and twitter id are revealed to local
     users through the command line or config file.
 
-    This bot uses OAuth to authenticate with twitter. Please create a ~/.humbug_twitterrc with
+    This bot uses OAuth to authenticate with twitter. Please create a ~/.zulip_twitterrc with
     the following contents:
 
     [twitter]
@@ -48,7 +48,7 @@ parser.add_option('--twitter-id',
     help='Twitter username to poll for new tweets from"',
     metavar='URL')
 parser.add_option('--stream',
-    help='Default humbug stream to write tweets to')
+    help='Default zulip stream to write tweets to')
 parser.add_option('--limit-tweets',
     default=15,
     type='int',
@@ -69,10 +69,10 @@ try:
     access_token_key = config.get('twitter', 'access_token_key')
     access_token_secret = config.get('twitter', 'access_token_secret')
 except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
-   parser.error("Please provide a ~/.humbug_twitterrc")
+   parser.error("Please provide a ~/.zulip_twitterrc")
 
 if not consumer_key or not consumer_secret or not access_token_key or not access_token_secret:
-   parser.error("Please provide a ~/.humbug_twitterrc")
+   parser.error("Please provide a ~/.zulip_twitterrc")
 
 try:
     import twitter
@@ -113,7 +113,7 @@ if since_id < 0 or options.twitter_id != user_id:
     # Either way, fetch last 5 tweets to start off
     statuses = api.GetFriendsTimeline(user=options.twitter_id, count=5)
 else:
-    # We have a saved last id, so insert all newer tweets into the humbug stream
+    # We have a saved last id, so insert all newer tweets into the zulip stream
     statuses = api.GetFriendsTimeline(user=options.twitter_id, since_id=since_id)
 
 for status in statuses[::-1][:options.limit_tweets]:
@@ -129,7 +129,7 @@ for status in statuses[::-1][:options.limit_tweets]:
 
     if ret['result'] == 'error':
         # If sending failed (e.g. no such stream), abort and retry next time
-        print "Error sending message to humbug: %s" % ret['msg']
+        print "Error sending message to zulip: %s" % ret['msg']
         break
     else:
         since_id = status.GetId()
