@@ -261,6 +261,15 @@ function process_hotkey(e) {
             return true;
     }
 
+    if (current_msg_list.summary_is_selected()) {
+        switch (event_name) {
+            case 'enter':
+                ui.expand_summary_row(current_msg_list.selected_row());
+                return true;
+        }
+        return false;
+    }
+
     // Shortcuts that operate on a message
     switch (event_name) {
         case 'message_actions':

@@ -153,6 +153,10 @@ MessageList.prototype = {
         return rows.get(this._selected_id, this.table_name);
     },
 
+    summary_is_selected: function () {
+        return this._is_summarized_message(this.selected_message());
+    },
+
     closest_id: function MessageList_closest_id(id) {
         var items = this._items;
 

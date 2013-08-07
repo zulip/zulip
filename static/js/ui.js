@@ -700,6 +700,33 @@ exports.collapse = function (row) {
     show_more_link(row);
 };
 
+exports.expand_summary_row = function (row) {
+    var message_ids = row.attr('data-messages').split(' ');
+    var messages = _.map(message_ids, function (id) {
+        return all_msg_list.get(id);
+    });
+
+    function remove_flag(flag) {
+        _.each(messages, function (msg){
+            msg.flags = _.without(msg.flags, flag);
+        });
+        update_message_flag(messages, flag, false);
+    }
+
+    remove_flag('summarize_in_stream');
+    if (!narrow.active()) {
+        remove_flag('summarize_in_home');
+    }
+
+    //TODO: Avoid a full re-render
+    home_msg_list.rerender();
+    if (current_msg_list !== home_msg_list) {
+        current_msg_list.rerender();
+    }
+
+    current_msg_list.select_id(message_ids[0]);
+};
+
 $(function () {
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
@@ -952,30 +979,7 @@ $(function () {
 
     if (feature_flags.summarize_read_while_narrowed) {
         $("#main_div").on("click", ".summary_row", function (e) {
-            var target = $(e.target).closest('.summary_row');
-            var message_ids = target.attr('data-messages').split(' ');
-            var messages = _.map(message_ids, function (id) {
-                return all_msg_list.get(id);
-            });
-
-            function remove_flag(flag) {
-                _.each(messages, function (msg){
-                    msg.flags = _.without(msg.flags, flag);
-                });
-                update_message_flag(messages, flag, false);
-            }
-
-            remove_flag('summarize_in_stream');
-            if (!narrow.active()) {
-                remove_flag('summarize_in_home');
-            }
-
-            //TODO: Avoid a full re-render
-            home_msg_list.rerender();
-            if (current_msg_list !== home_msg_list) {
-                current_msg_list.rerender();
-            }
-
+            exports.expand_summary_row($(e.target).closest('.summary_row'));
             e.stopImmediatePropagation();
         });
     }
