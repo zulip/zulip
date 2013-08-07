@@ -36,7 +36,7 @@ for file in args:
 
 os.chdir(path.join(path.dirname(__file__), '../../..'))
 
-subprocess.check_call('zerver/tests/generate-fixtures')
+subprocess.check_call('tools/generate-fixtures')
 
 subprocess.check_call(['rm', '-f'] + glob.glob('/tmp/casper-failure*.png'))
 

@@ -10,7 +10,7 @@ case "$1" in
 esac
 
 cd "$(dirname "$0")"/..
-./zerver/tests/generate-fixtures
+./tools/generate-fixtures
 # "-u" uses unbuffered IO, which is important when wrapping it in
 # something like subprocess (as tools/review does)
 /usr/bin/env python -u ./manage.py test "$target" --settings=zproject.test_settings "$@"
