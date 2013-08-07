@@ -16,7 +16,16 @@ var placeholder_invitees = ['guglielmo@marconi.com',
                             'hertha@ayrton.com'
                            ];
 
+var last_granted;
+var last_used;
 exports.update_state = function (granted, used) {
+    if (last_granted === granted && last_used === used) {
+        return;
+    }
+
+    last_granted = granted;
+    last_used = used;
+
     if (granted <= 0) {
         $("#share-the-love").hide();
     } else {
@@ -55,7 +64,7 @@ exports.update_state = function (granted, used) {
 function show_and_fade_elem(elem) {
     elem.stop();
     elem.css({opacity: 100});
-    elem.show().delay(4000).fadeOut(1000);
+    elem.show().delay(4000).fadeOut(1000, ui.resize_page_components);
 }
 
 $(function () {
@@ -67,14 +76,16 @@ $(function () {
                 url: "/json/refer_friend",
                 dataType: "json",
                 data: { email: $("#referral-form input").val() },
-                success: function () {
-                    show_and_fade_elem($("#tell-a-friend-success"));
-                    $("#referral-form input").val('');
-                },
                 error: function () {
-                    show_and_fade_elem($("#tell-a-friend-error"));
+                    // We ignore errors from the server because
+                    // they're unlikely and we'll get an email either
+                    // way
                 }
             });
+
+            show_and_fade_elem($("#tell-a-friend-success"));
+            $("#referral-form input").val('');
+            exports.update_state(last_granted, last_used + 1);
         }
     });
 

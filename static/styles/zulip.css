@@ -2288,6 +2288,6 @@ div.edit_bot {
     margin-bottom: 0;
 }
 
-#tell-a-friend-success, #tell-a-friend-error {
+#tell-a-friend-success {
     display: none;
 }
