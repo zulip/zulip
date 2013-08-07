@@ -6,7 +6,8 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth.forms import SetPasswordForm
 
 from zproject import settings
-from zerver.models import Realm, get_user_profile_by_email, UserProfile
+from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
+    completely_open
 from zerver.lib.actions import do_change_password
 
 def is_inactive(value):
@@ -19,10 +20,7 @@ def is_inactive(value):
 SIGNUP_STRING = '<a href="https://zulip.com/signup">Sign up</a> to find out when Zulip is ready for you.'
 
 def has_valid_realm(value):
-    try:
-        Realm.objects.get(domain=value.split("@")[-1])
-    except Realm.DoesNotExist:
-        raise ValidationError(mark_safe(u'Registration is not currently available for your domain. ' + SIGNUP_STRING))
+    return Realm.objects.filter(domain=value.split("@")[-1]).exists()
 
 def isnt_mit(value):
     if "@mit.edu" in value:
@@ -38,13 +36,28 @@ class ToSForm(forms.Form):
     terms = forms.BooleanField(required=True)
 
 class HomepageForm(forms.Form):
-    # This form is sort of important, because it determines whether users
-    # can register for our product. Be careful when modifying the validators.
+    # This form is important because it determines whether users can
+    # register for our product. Be careful when modifying the
+    # validators.
     if settings.ALLOW_REGISTER:
         email = forms.EmailField()
     else:
-        validators = [has_valid_realm, isnt_mit, is_inactive]
+        validators = [isnt_mit, is_inactive]
         email = forms.EmailField(validators=validators)
+
+    def __init__(self, *args, **kwargs):
+        self.domain = kwargs.get("domain")
+        if kwargs.has_key("domain"):
+            del kwargs["domain"]
+        super(HomepageForm, self).__init__(*args, **kwargs)
+
+    def clean_email(self):
+        data = self.cleaned_data['email']
+        if completely_open(self.domain) or has_valid_realm(data):
+            return data
+        raise ValidationError(mark_safe(
+                u'Registration is not currently available for your domain. ' \
+                    + SIGNUP_STRING))
 
 class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):

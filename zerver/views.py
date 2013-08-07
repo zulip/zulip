@@ -412,6 +412,13 @@ def json_invite_users(request, user_profile, invitee_emails=REQ):
     else:
         return json_success()
 
+def create_homepage_form(request, user_info=None):
+    if user_info:
+        return HomepageForm(user_info, domain=request.session.get("domain"))
+    # An empty fields dict is not treated the same way as not
+    # providing it.
+    return HomepageForm(domain=request.session.get("domain"))
+
 def handle_openid_errors(request, issue, openid_response=None):
     if issue == "Unknown user":
         if openid_response is not None and openid_response.status == openid_SUCCESS:
@@ -420,7 +427,7 @@ def handle_openid_errors(request, issue, openid_response=None):
             full_name = " ".join((
                     ax_response.get('http://axschema.org/namePerson/first')[0],
                     ax_response.get('http://axschema.org/namePerson/last')[0]))
-            form = HomepageForm({'email': google_email})
+            form = create_homepage_form(request, user_info={'email': google_email})
             request.verified_email = None
             if form.is_valid():
                 # Construct a PreregistrationUser object and send the user over to
@@ -482,7 +489,7 @@ def logout_then_login(request, **kwargs):
 
 def create_preregistration_user(email, request):
     domain = request.session.get("domain")
-    if domain and not completely_open(domain):
+    if not completely_open(domain):
         domain = None
     prereg_user = PreregistrationUser(email=email, realm=get_realm(domain))
     prereg_user.save()
@@ -505,7 +512,7 @@ def accounts_home_with_domain(request, domain):
 
 def accounts_home(request):
     if request.method == 'POST':
-        form = HomepageForm(request.POST)
+        form = create_homepage_form(request, user_info=request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
             prereg_user = create_preregistration_user(email, request)
@@ -518,7 +525,7 @@ def accounts_home(request):
         except ValidationError:
             return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
     else:
-        form = HomepageForm()
+        form = create_homepage_form(request)
     return render_to_response('zerver/accounts_home.html',
                               {'form': form, 'current_url': request.get_full_path},
                               context_instance=RequestContext(request))
