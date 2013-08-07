@@ -3,6 +3,7 @@ var assert = require('assert');
 (function set_up_dependencies () {
     global._ = require('third/underscore/underscore.js');
     global.util = require('js/util.js');
+    global.Dict = require('js/dict.js');
     global.narrow = require('js/narrow.js');
     global.$ = function () {}; // for subs.js
     global.subs = require('js/subs.js');

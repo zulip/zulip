@@ -291,15 +291,15 @@ exports.search_string = function () {
 // Collect operators which appear only once into an object,
 // and discard those which appear more than once.
 function collect_single(operators) {
-    var seen   = {};
-    var result = {};
+    var seen   = new Dict();
+    var result = new Dict();
     _.each(operators, function (elem) {
         var key = elem[0];
-        if (seen.hasOwnProperty(key)) {
-            delete result[key];
+        if (seen.has(key)) {
+            result.del(key);
         } else {
-            result[key] = elem[1];
-            seen  [key] = true;
+            result.set(key, elem[1]);
+            seen.set(key, true);
         }
     });
     return result;
@@ -317,16 +317,16 @@ exports.set_compose_defaults = function (opts) {
     // Set the stream, subject, and/or PM recipient if they are
     // uniquely specified in the narrow view.
 
-    if (single.stream) {
-        opts.stream = single.stream;
+    if (single.has('stream')) {
+        opts.stream = single.get('stream');
     }
 
-    if (single.topic) {
-        opts.subject = single.topic;
+    if (single.has('topic')) {
+        opts.subject = single.get('topic');
     }
 
-    if (single['pm-with'] !== undefined) {
-        opts.private_message_recipient = single['pm-with'];
+    if (single.has('pm-with')) {
+        opts.private_message_recipient = single.get('pm-with');
     }
 };
 

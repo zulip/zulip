@@ -41,10 +41,10 @@ function make_tab_data() {
             if (filter.has_operator("pm-with")) {
                 var emails = filter.operands("pm-with")[0].split(',');
                 var names = _.map(emails, function (email) {
-                    if (! people_dict[email]) {
+                    if (! people_dict.has(email)) {
                         return email;
                     }
-                    return people_dict[email].full_name;
+                    return people_dict.get(email).full_name;
                 });
 
                 tabs.push(make_tab(names.join(', '), hashed));
@@ -60,8 +60,8 @@ function make_tab_data() {
             tabs.push(make_tab("Mentions", hashed));
         } else if (filter.has_operator("sender")) {
             var sender = filter.operands("sender")[0];
-            if (people_dict[sender]) {
-                sender = people_dict[sender].full_name;
+            if (people_dict.has(sender)) {
+                sender = people_dict.get(sender).full_name;
             }
             tabs.push(make_tab("Sent by " + sender, hashed));
         }  else if (filter.has_operator("search")) {

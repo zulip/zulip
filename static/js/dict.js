@@ -33,7 +33,7 @@ function unmunge(k) {
     return k.substr(1);
 }
 
-Dict.prototype = {
+Dict.prototype = _.object(_.map({
     get: function Dict_get(key) {
         return this._items[munge(key)];
     },
@@ -63,12 +63,9 @@ Dict.prototype = {
             return [unmunge(pair[0]), pair[1]];
         });
     }
-};
-
-Dict.prototype = _.object(_.map(Dict.prototype,
-                                function (value, key) {
-                                    return [key, util.enforce_arity(value)];
-                                }));
+}, function (value, key) {
+    return [key, util.enforce_arity(value)];
+}));
 
 }());
 

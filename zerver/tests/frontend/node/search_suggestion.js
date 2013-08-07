@@ -31,9 +31,9 @@ function set_up_dependencies() {
 
     global.typeahead_helper = require('js/typeahead_helper.js');
 
-    global.recent_subjects = {};
-
     global.util = require('js/util.js');
+    global.Dict = require('js/dict.js');
+    global.recent_subjects = new global.Dict();
 
     return search;
 }
@@ -107,13 +107,13 @@ var search = set_up_dependencies();
         return 'office';
     };
 
-    global.recent_subjects = {
+    global.recent_subjects = new global.Dict({
         office: [
             {subject: 'team'},
             {subject: 'ignore'},
             {subject: 'test'}
         ]
-    };
+    });
 
     var suggestions = search.get_suggestions(query);
 
@@ -144,7 +144,7 @@ var search = set_up_dependencies();
         return;
     };
 
-    global.recent_subjects = {};
+    global.recent_subjects = new global.Dict();
 
     var suggestions = search.get_suggestions(query);
 
@@ -177,13 +177,13 @@ var search = set_up_dependencies();
         }
     ];
 
-    global.recent_subjects = {
+    global.recent_subjects = new global.Dict({
         office: [
             {subject: 'team'},
             {subject: 'ignore'},
             {subject: 'test'}
         ]
-    };
+    });
 
     var suggestions = search.get_suggestions(query);
 

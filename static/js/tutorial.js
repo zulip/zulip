@@ -7,9 +7,9 @@ var event_handlers = {};
 // We'll temporarily set stream colors for the streams we use in the demo
 // tutorial messages.
 var real_stream_info;
-var tutorial_stream_info = {"design": {"color": "#76ce90"},
-                            "social": {"color": "#fae589"},
-                            "devel": {"color": "#a6c7e5"}};
+var tutorial_stream_info = new Dict({"design": {"color": "#76ce90"},
+                                     "social": {"color": "#fae589"},
+                                     "devel": {"color": "#a6c7e5"}});
 
 // Each message object contains the minimal information necessary for it to be
 // processed by our system for adding messages to your feed.

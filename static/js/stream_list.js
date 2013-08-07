@@ -16,11 +16,9 @@ exports.sort_narrow_list = function () {
 
     streams.sort(function (a, b) {
         if (sort_recent) {
-            if (recent_subjects[b] !== undefined &&
-                recent_subjects[a] === undefined) {
+            if (recent_subjects.has(b) && ! recent_subjects.has(a)) {
                 return 1;
-            } else if (recent_subjects[b] === undefined &&
-                       recent_subjects[a] !== undefined) {
+            } else if (! recent_subjects.has(b) && recent_subjects.has(a)) {
                 return -1;
             }
         }
@@ -41,7 +39,7 @@ exports.sort_narrow_list = function () {
     _.each(streams, function (stream) {
         var li = $(subs.get(stream).sidebar_li);
         if (sort_recent) {
-            if (recent_subjects[stream] === undefined) {
+            if (! recent_subjects.has(stream)) {
                 li.addClass('inactive_stream');
             } else {
                 li.removeClass('inactive_stream');
@@ -152,7 +150,7 @@ function rebuild_recent_subjects(stream, subject) {
     $('.expanded_subjects').remove();
     var max_subjects = 5;
     var stream_li = get_filter_li('stream', stream);
-    var subjects = recent_subjects[stream] || [];
+    var subjects = recent_subjects.get(stream) || [];
     var active_orig_subject = subject;
     var display_subjects = _.filter(subjects, function (subject_obj, idx) {
         var num_unread = unread.num_unread_for_subject(stream, subject_obj.canon_subject);
@@ -230,19 +228,27 @@ exports.update_dom_with_unread_counts = function (counts) {
     // Our job is to update some DOM elements.
 
     // counts.stream_count maps streams to counts
-    _.each(counts.stream_count, function (count, stream) {
+    _.each(counts.stream_count.items(), function (item) {
+        var stream = item[0];
+        var count = item[1];
         exports.set_count("stream", stream, count);
     });
 
     // counts.subject_count maps streams to hashes of subjects to counts
-    _.each(counts.subject_count, function (subject_hash, stream) {
-        _.each(subject_hash, function (count, subject) {
+    _.each(counts.subject_count.items(), function (item) {
+        var stream = item[0];
+        var subject_hash = item[1];
+        _.each(subject_hash.items(), function (item) {
+            var subject = item[0];
+            var count = item[1];
             exports.set_subject_count(stream, subject, count);
         });
     });
 
     // counts.pm_count maps people to counts
-    _.each(counts.pm_count, function (count, person) {
+    _.each(counts.pm_count.items(), function (item) {
+        var person = item[0];
+        var count = item[1];
         exports.set_count("private", person, count);
     });
 

@@ -41,11 +41,11 @@ function sort_users(users, user_info) {
         // Sort equivalent PM names alphabetically
         var full_name_a = a;
         var full_name_b = b;
-        if (people_dict[a] !== undefined) {
-            full_name_a = people_dict[a].full_name;
+        if (people_dict.has(a)) {
+            full_name_a = people_dict.get(a).full_name;
         }
-        if (people_dict[b] !== undefined) {
-            full_name_b = people_dict[b].full_name;
+        if (people_dict.has(b)) {
+            full_name_b = people_dict.get(b).full_name;
         }
         return util.strcmp(full_name_a, full_name_b);
     });

@@ -281,7 +281,7 @@ function get_topic_suggestions(query_operators) {
 
     stream = subs.canonicalized_name(stream);
 
-    var topics = recent_subjects[stream];
+    var topics = recent_subjects.get(stream);
 
     if (!topics) {
         return [];

@@ -203,8 +203,8 @@ exports.initialize = function () {
     $( "#subject" ).typeahead({
         source: function (query, process) {
             var stream_name = $("#stream").val(), i;
-            if (subject_dict.hasOwnProperty(stream_name)) {
-                return subject_dict[stream_name];
+            if (subject_dict.has(stream_name)) {
+                return subject_dict.get(stream_name);
             }
             return [];
         },

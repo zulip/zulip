@@ -3,6 +3,8 @@ var assert = require('assert');
 (function set_up_dependencies () {
     global._ = require('third/underscore/underscore.js');
 
+    global.util = require('js/util.js');
+    global.Dict = require('js/dict.js');
     // An upcoming change is to put Filter in its own module, but
     // for now it still lives in narrow.js.  (I'm waiting for a big
     // commit from Zev to hit master first.  Once that happens,

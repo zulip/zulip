@@ -2,16 +2,16 @@ var subs = (function () {
 
 var exports = {};
 
-var stream_info = {}; // Maps lowercase stream name to stream properties object
+var stream_info = new Dict(); // Maps lowercase stream name to stream properties object
 
 var next_sub_id = 0;
 
 function add_sub(stream_name, sub) {
-    stream_info[stream_name.toLowerCase()] = sub;
+    stream_info.set(stream_name.toLowerCase(), sub);
 }
 
 function get_sub(stream_name) {
-    return stream_info[stream_name.toLowerCase()];
+    return stream_info.get(stream_name.toLowerCase());
 }
 
 exports.stream_info = function (new_stream_info) {
@@ -23,8 +23,7 @@ exports.stream_info = function (new_stream_info) {
 };
 
 exports.subscribed_streams = function () {
-    return _.chain(stream_info)
-        .values()
+    return _.chain(stream_info.values())
         .where({subscribed: true})
         .pluck('name')
         .value();
@@ -43,7 +42,7 @@ exports.update_all_messages_link = function () {
     // the user has any subscriptions hidden from home view.
     var all_messages = $("#global_filters [data-name='all']")[0];
 
-    if (_.every(stream_info, function (sub) { return sub.in_home_view; })) {
+    if (_.every(stream_info.values(), function (sub) { return sub.in_home_view; })) {
         $(all_messages).addClass('hidden-filter');
     } else {
         $(all_messages).removeClass('hidden-filter');
@@ -385,7 +384,7 @@ exports.reload_subscriptions = function (opts) {
     }
 
     if (opts.clear_first) {
-        stream_info = {};
+        stream_info = new Dict();
         stream_list.remove_all_narrow_filters();
     }
 
@@ -739,7 +738,7 @@ $(function () {
                         // mark_subscribed adds the user to the member list
                         mark_subscribed(stream);
                     } else {
-                        add_to_member_list(list, people_dict[principal].full_name, principal);
+                        add_to_member_list(list, people_dict.get(principal).full_name, principal);
                     }
                 } else {
                     error_elem.addClass("hide");
@@ -782,11 +781,11 @@ $(function () {
             success: function (data) {
                 util.destroy_loading_indicator(indicator_elem);
                 var subscribers = _.map(data.subscribers, function (elem) {
-                    var person = people_dict[elem];
+                    var person = people_dict.get(elem);
                     if (person === undefined) {
                         return elem;
                     }
-                    return format_member_list_elem(people_dict[elem].full_name, elem);
+                    return format_member_list_elem(people_dict.get(elem).full_name, elem);
                 });
                 _.each(subscribers.sort().reverse(), function (elem) {
                     // add_to_member_list *prepends* the element,

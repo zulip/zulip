@@ -5,9 +5,9 @@ var home_msg_list = new MessageList('zhome',
 );
 var narrowed_msg_list;
 var current_msg_list = home_msg_list;
-var subject_dict = {};
-var people_dict = {};
-var recent_subjects = {};
+var subject_dict = new Dict();
+var people_dict = new Dict();
+var recent_subjects = new Dict();
 
 var queued_mark_as_read = [];
 var queued_flag_timer;
@@ -43,7 +43,7 @@ var waiting_on_browser_scroll = true;
 
 function add_person(person) {
     page_params.people_list.push(person);
-    people_dict[person.email] = person;
+    people_dict.set(person.email, person);
     person.pm_recipient_count = 0;
 }
 
@@ -55,7 +55,7 @@ function remove_person(person) {
             break;
         }
     }
-    delete people_dict[person.email];
+    people_dict.del(person.email);
 }
 
 function update_person(person) {
@@ -64,12 +64,12 @@ function update_person(person) {
     // that can change, this will need to either get complicated or be
     // replaced by MVC
     var i;
-    if (people_dict[person.email] === undefined) {
+    if (! people_dict.has(person.email)) {
         blueslip.error("Got update_person event for unexpected user",
                        {email: person.email});
         return;
     }
-    people_dict[person.email].full_name = person.full_name;
+    people_dict.get(person.email).full_name = person.full_name;
     for (i = 0; i < page_params.people_list.length; i++) {
         if (page_params.people_list[i].email === person.email) {
             page_params.people_list[i].full_name = person.full_name;
@@ -503,22 +503,22 @@ function process_message_for_recent_subjects(message, remove_message) {
     var canon_stream = subs.canonicalized_name(message.stream);
     var canon_subject = subs.canonicalized_name(message.subject);
 
-    if (! recent_subjects.hasOwnProperty(canon_stream)) {
-        recent_subjects[canon_stream] = [];
+    if (! recent_subjects.has(canon_stream)) {
+        recent_subjects.set(canon_stream, []);
     } else {
-        recent_subjects[canon_stream] =
-            _.filter(recent_subjects[canon_stream], function (item) {
-                var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
-                if (is_duplicate) {
-                    current_timestamp = item.timestamp;
-                    count = item.count;
-                }
+        recent_subjects.set(canon_stream,
+                            _.filter(recent_subjects.get(canon_stream), function (item) {
+                                var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
+                                if (is_duplicate) {
+                                    current_timestamp = item.timestamp;
+                                    count = item.count;
+                                }
 
-                return !is_duplicate;
-            });
+                                return !is_duplicate;
+                            }));
     }
 
-    var recents = recent_subjects[canon_stream];
+    var recents = recent_subjects.get(canon_stream);
 
     if (remove_message !== undefined) {
         count = count - 1;
@@ -537,7 +537,7 @@ function process_message_for_recent_subjects(message, remove_message) {
         return b.timestamp - a.timestamp;
     });
 
-    recent_subjects[canon_stream] = recents;
+    recent_subjects.set(canon_stream, recents);
 }
 
 var msg_metadata_cache = {};
@@ -570,12 +570,12 @@ function add_message_metadata(message) {
     case 'stream':
         message.is_stream = true;
         message.stream = message.display_recipient;
-        if (! _.has(subject_dict, message.stream)) {
-            subject_dict[message.stream] = [];
+        if (! subject_dict.has(message.stream)) {
+            subject_dict.set(message.stream, []);
         }
-        if (! case_insensitive_find(message.subject, subject_dict[message.stream])) {
-            subject_dict[message.stream].push(message.subject);
-            subject_dict[message.stream].sort();
+        if (! case_insensitive_find(message.subject, subject_dict.get(message.stream))) {
+            subject_dict.get(message.stream).push(message.subject);
+            subject_dict.get(message.stream).sort();
         }
         message.reply_to = message.sender_email;
 
@@ -608,13 +608,13 @@ function add_message_metadata(message) {
     _.each(involved_people, function (person) {
         // Do the hasOwnProperty() call via the prototype to avoid problems
         // with keys like "hasOwnProperty"
-        if (people_dict[person.email] === undefined) {
+        if (! people_dict.has(person.email)) {
             add_person(person);
         }
 
         if (message.type === 'private' && message.sent_by_me) {
             // Track the number of PMs we've sent to this person to improve autocomplete
-            people_dict[person.email].pm_recipient_count += 1;
+            people_dict.get(person.email).pm_recipient_count += 1;
         }
     });
 
@@ -1199,13 +1199,13 @@ function fast_forward_pointer() {
 
 function main() {
     _.each(page_params.people_list, function (person) {
-        people_dict[person.email] = person;
+        people_dict.set(person.email, person);
         person.pm_recipient_count = 0;
     });
 
     // The special account feedback@zulip.com is used for in-app
     // feedback and should always show up as an autocomplete option.
-    if (people_dict['feedback@zulip.com'] === undefined){
+    if (! people_dict.has('feedback@zulip.com')){
         add_person({"email": "feedback@zulip.com",
                     "full_name": "Zulip Feedback Bot"});
     }

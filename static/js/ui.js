@@ -1434,7 +1434,7 @@ exports.set_presence_list = function (users, presence_info) {
     function info_for(email) {
         var presence = presence_info[email];
         return {
-            name: people_dict[email].full_name,
+            name: people_dict.get(email).full_name,
             email: email,
             type: presence,
             type_desc: presence_descriptions[presence]
@@ -1442,7 +1442,7 @@ exports.set_presence_list = function (users, presence_info) {
     }
 
     var user_emails = _.filter(users, function (email) {
-        return people_dict[email] !== undefined;
+        return people_dict.has(email);
     });
 
     var user_info = [my_info].concat(_.map(user_emails, info_for));

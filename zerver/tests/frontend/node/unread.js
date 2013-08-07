@@ -8,6 +8,9 @@
 // dependencies (except _).
 
 global._ = require('third/underscore/underscore.js');
+global.util = require('js/util.js');
+global.Dict = require('js/dict.js');
+var Dict = global.Dict;
 var unread = require('js/unread.js');
 var assert = require('assert');
 
@@ -31,9 +34,9 @@ var zero_counts = {
     private_message_count: 0,
     home_unread_messages: 0,
     mentioned_message_count: 0,
-    stream_count: {},
-    subject_count: {},
-    pm_count: {},
+    stream_count: new Dict(),
+    subject_count: new Dict(),
+    pm_count: new Dict(),
     unread_in_current_view: 0
 };
 

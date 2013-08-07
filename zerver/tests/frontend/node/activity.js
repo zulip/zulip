@@ -4,6 +4,7 @@ var assert = require('assert');
     global._ = require('third/underscore/underscore.js');
     global.activity = require('js/activity.js');
     global.util = require('js/util.js');
+    global.Dict = require('js/dict.js');
 }());
 
 var activity = global.activity;
@@ -18,11 +19,11 @@ var activity = global.activity;
     };
 
 
-    global.people_dict = {
+    global.people_dict = new global.Dict({
         'alice@zulip.com': 'Alice Smith',
         'fred@zulip.com': 'Fred Flintstone',
         'jill@zulip.com': 'Jill Hill'
-    };
+    });
 
     activity._sort_users(users, user_info);
 
