@@ -175,7 +175,8 @@
         </div>
       </div>
       <div id="get_api_key_box">
-          <p>Please re-enter your password to confirm your identity.</p>
+          <p>Please re-enter your password to confirm your identity.
+          (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)</p>
           <form action="/json/fetch_api_key" method="post" class="form-horizontal">{% csrf_token %}
               <div class="control-group">
                   <label for="password" class="control-label">Current password</label>
