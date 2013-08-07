@@ -363,6 +363,7 @@ JS_SPECS = {
 
             'js/feature_flags.js',
             'js/util.js',
+            'js/dict.js',
             'js/setup.js',
             'js/viewport.js',
             'js/rows.js',
