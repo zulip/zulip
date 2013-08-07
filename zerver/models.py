@@ -59,6 +59,12 @@ def get_display_recipient_memcached(recipient):
              'short_name': user_profile.short_name,
              'id': user_profile.id} for user_profile in user_profile_list]
 
+def completely_open(domain):
+    # This domain is completely open to everyone on the internet to
+    # join. This is not the same as a "restricted_to_domain" realm: in
+    # those realms, users from outside the domain must be invited.
+    return domain and domain.lower() == "customer3.invalid"
+
 class Realm(models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True)
     restricted_to_domain = models.BooleanField(default=True)

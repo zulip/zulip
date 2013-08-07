@@ -21,7 +21,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     MAX_SUBJECT_LENGTH, get_stream, bulk_get_streams, UserPresence, \
     get_recipient, valid_stream_name, to_dict_cache_key, to_dict_cache_key_id, \
     extract_message_dict, stringify_message_dict, parse_usermessage_flags, \
-    email_to_domain, email_to_username, get_realm
+    email_to_domain, email_to_username, get_realm, completely_open
 from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions, \
     do_change_password, create_mit_user_if_needed, do_change_full_name, \
     do_change_enable_desktop_notifications, do_change_enter_sends, do_change_enable_sounds, \
@@ -479,12 +479,6 @@ def initial_invite_page(request):
 @require_post
 def logout_then_login(request, **kwargs):
     return django_logout_then_login(request, kwargs)
-
-def completely_open(domain):
-    # This domain is completely open to everyone on the internet to
-    # join. This is not the same as a "restricted_to_domain" realm: in
-    # those realms, users from outside the domain must be invited.
-    return domain.lower() == "customer3.invalid"
 
 def create_preregistration_user(email, request):
     domain = request.session.get("domain")
