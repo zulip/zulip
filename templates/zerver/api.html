@@ -30,7 +30,7 @@
     <ul class="nav nav-tabs" id="api-example-tabs">
       <li class="active"><a href="#curl" data-toggle="tab">curl</a></li>
       <li><a href="#python" data-toggle="tab">Python</a></li>
-      <li><a href="#commandline" data-toggle="tab">humbug-send</a></li>
+      <li><a href="#commandline" data-toggle="tab">zulip-send</a></li>
     </ul>
 
     <div class="tab-content">
@@ -96,20 +96,20 @@ to pull out the resulting HTML :)
 
 
       <div class="tab-pane" id="commandline">
-        <p>You can use <code>humbug-send</code> (found in <code>bin/</code> in the tarball) to easily send Zulips from the command-line, providing the message to be sent on STDIN.
+        <p>You can use <code>zulip-send</code> (found in <code>bin/</code> in the tarball) to easily send Zulips from the command-line, providing the message to be sent on STDIN.
 
 <h4>Stream message</h4>
-<div class="codehilite"><pre>humbug-send --stream Denmark --subject Castle \
+<div class="codehilite"><pre>zulip-send --stream Denmark --subject Castle \
 --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5</pre></div>
 
 <h4>Private message</h4>
-<div class="codehilite"><pre>humbug-send wdaher@example.com --user othello-bot@example.com \
+<div class="codehilite"><pre>zulip-send wdaher@example.com --user othello-bot@example.com \
 --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 </pre></div>
 
 <h4>Passing in the message on the command-line</h4>
 <p>If you'd like, you can also provide the message on the command-line with the <code>-m</code> flag, as follows:</p>
-<div class="codehilite"><pre>humbug-send --stream Denmark --subject Castle \
+<div class="codehilite"><pre>zulip-send --stream Denmark --subject Castle \
 -m <span class="s2">"Something is rotten in the state of Denmark."</span> \
 --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 </pre></div>

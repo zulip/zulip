@@ -80,7 +80,7 @@
       <h4>Capistrano</h4>
       <p>First, download and install our <a href="/api">Python
       bindings and example scripts</a> on your Capistrano server.
-      Once you've done that, you'll use the <code>humbug-send</code>
+      Once you've done that, you'll use the <code>zulip-send</code>
       utility to notify you when certain events happen.</p>
 
       <p>Here's some example code for sending a Zulip notification
@@ -92,7 +92,7 @@
   <span class="n">task</span> <span class="ss">:humbug</span> <span class="k">do</span>
     <span class="c1"># this will post to Zulip as the user defined in
     # ~/.zuliprc if you omit --user and --api-key</span>
-    <span class="n">run_locally</span> <span class="s2">"echo ':beers: I just deployed to </span><span class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="s2">! :beers:' | humbug-send \
+    <span class="n">run_locally</span> <span class="s2">"echo ':beers: I just deployed to </span><span class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="s2">! :beers:' | zulip-send \
     --user capistrano-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
     --stream commits --subject deployments || true"</span>
   <span class="k">end</span>

@@ -34,5 +34,5 @@ setup(name='zulip',
           [('share/humbug/demos',
             [os.path.join("demos", relpath) for relpath in
             os.listdir("demos")])],
-      scripts=["bin/humbug-send"],
+      scripts=["bin/zulip-send"],
      )

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# humbug-send -- Sends a message to the specified recipients.
+# zulip-send -- Sends a message to the specified recipients.
 
 # Copyright © 2012 Zulip, Inc.
 #
@@ -30,7 +30,7 @@ import logging
 
 logging.basicConfig()
 
-log = logging.getLogger('humbug-send')
+log = logging.getLogger('zulip-send')
 
 def do_send_message(client, message_data ):
     '''Sends a message and optionally prints status about the same.'''

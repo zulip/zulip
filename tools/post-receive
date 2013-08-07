@@ -37,7 +37,7 @@ def update_deployment(server, refname):
                             "/home/humbug/humbug-deployments/current/tools/update-deployment", refname])
 
 def send_deployment_finished_message(branch, message):
-    subprocess.check_call(["/home/humbug/humbug/api/bin/humbug-send", "--user=commit-bot@zulip.com",
+    subprocess.check_call(["/home/humbug/humbug/api/bin/zulip-send", "--user=commit-bot@zulip.com",
                            "--api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "--stream=commits",
                            "--site=https://staging.zulip.com",
                            u"--subject=deploy \u21D2 %s" % (branch,), "--message=%s" % (message,)])

@@ -69,15 +69,15 @@ msg will describe what went wrong.
 
 #### Sending messages
 
-You can use the included `humbug-send` script to send messages via the
+You can use the included `zulip-send` script to send messages via the
 API directly from existing scripts.
 
-    humbug-send hamlet@example.com cordelia@example.com -m \
+    zulip-send hamlet@example.com cordelia@example.com -m \
         "Conscience doth make cowards of us all."
 
 Alternatively, if you don't want to use your ~/.zuliprc file:
 
-    humbug-send --user shakespeare-bot@example.com \
+    zulip-send --user shakespeare-bot@example.com \
         --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
         hamlet@example.com cordelia@example.com -m \
         "Conscience doth make cowards of us all."
