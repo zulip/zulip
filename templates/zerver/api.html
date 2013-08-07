@@ -69,7 +69,7 @@ to pull out the resulting HTML :)
 <span class="kn">import</span> <span class="nn">humbug</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 
-<span class="c"># Keyword arguments 'email' and 'api_key' are optional if you are using ~/.humbugrc</span>
+<span class="c"># Keyword arguments 'email' and 'api_key' are optional if you are using ~/.zuliprc</span>
 <span class="n">client</span> <span class="o">=</span> <span class="n">humbug</span><span class="o">.</span><span class="n">Client</span><span class="p">(</span><span class="p">email</span><span class="o">=</span><span class="s">"othello-bot@example.com"</span><span class="p">,</span>
                        <span class="n">api_key</span><span class="o">=</span><span class="s">"a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5"</span><span class="p">)</span>
 
@@ -134,7 +134,7 @@ to pull out the resulting HTML :)
     <p>If you prefer to send messages as your own user, you can also find your API key on your <a href="/#settings" target="_blank">settings page</a>.</p>
     <p>When using our python bindings, you may either specify the user
     and API key for each Client object that you initialize, or let the binding look for
-    them in your <code>~/.humbugrc</code>, which you can create as follows:</p>
+    them in your <code>~/.zuliprc</code>, which you can create as follows:</p>
 <div class="codehilite"><pre><span class="k">[api]</span>
 <span class="na">key</span><span class="o">=</span><span class="s">BOT_API_KEY</span>
 <span class="na">email</span><span class="o">=</span><span class="s">BOT_EMAIL_ADDRESS</span>

@@ -9,9 +9,9 @@ class Command(BaseCommand):
     help = """Reset all colors for a person to the default grey"""
 
     def handle(self, *args, **options):
-        config_file = os.path.join(os.environ["HOME"], ".humbugrc")
+        config_file = os.path.join(os.environ["HOME"], ".zuliprc")
         if not os.path.exists(config_file):
-            raise RuntimeError("No ~/.humbugrc found")
+            raise RuntimeError("No ~/.zuliprc found")
         config = SafeConfigParser()
         with file(config_file, 'r') as f:
             config.readfp(f, config_file)

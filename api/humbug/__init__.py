@@ -55,7 +55,7 @@ def generate_option_group(parser):
                      help='Email address of the calling bot or user.')
     group.add_option('--config-file',
                      action='store',
-                     help='Location of an ini file containing the\nabove information. (default ~/.humbugrc)')
+                     help='Location of an ini file containing the\nabove information. (default ~/.zuliprc)')
     group.add_option('-v', '--verbose',
                      action='store_true',
                      help='Provide detailed output.')
@@ -72,7 +72,10 @@ class Client(object):
                  site=None, client="API: Python"):
         if None in (api_key, email):
             if config_file is None:
-                config_file = os.path.join(os.environ["HOME"], ".humbugrc")
+                config_file = os.path.join(os.environ["HOME"], ".zuliprc")
+                if (not os.path.exists(config_file) and
+                    os.path.exists(os.path.join(os.environ["HOME"], ".humbugrc"))):
+                    raise RuntimeError("The Zulip API configuration file is now ~/.zuliprc; please run:\n\n  mv ~/.humbugrc ~/.zuliprc\n")
             if not os.path.exists(config_file):
                 raise RuntimeError("api_key or email not specified and %s does not exist"
                                    % (config_file,))

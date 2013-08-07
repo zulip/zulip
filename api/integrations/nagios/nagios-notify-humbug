@@ -9,7 +9,7 @@ parser = optparse.OptionParser()
 parser.add_option('--output',      default='')
 parser.add_option('--long-output', default='')
 parser.add_option('--stream', default='nagios')
-parser.add_option('--config', default='/etc/nagios3/humbugrc')
+parser.add_option('--config', default='/etc/nagios3/zuliprc')
 for opt in ('type', 'host', 'service', 'state'):
     parser.add_option('--' + opt)
 (opts, args) = parser.parse_args()

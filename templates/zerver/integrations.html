@@ -91,7 +91,7 @@
   <span class="n">desc</span> <span class="s2">"Post a message to Zulip that we've deployed"</span>
   <span class="n">task</span> <span class="ss">:humbug</span> <span class="k">do</span>
     <span class="c1"># this will post to Zulip as the user defined in
-    # ~/.humbugrc if you omit --user and --api-key</span>
+    # ~/.zuliprc if you omit --user and --api-key</span>
     <span class="n">run_locally</span> <span class="s2">"echo ':beers: I just deployed to </span><span class="si">#{</span><span class="n">stage</span><span class="si">}</span><span class="s2">! :beers:' | humbug-send \
     --user capistrano-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
     --stream commits --subject deployments || true"</span>
@@ -101,7 +101,7 @@
 
       <p>Some notes:</p>
       <ul>
-        <li>If you prefer not to use <code>--user</code> and <code>--api-key</code> above, you can fill out <code>~/.humbugrc</code> on your Capistrano
+        <li>If you prefer not to use <code>--user</code> and <code>--api-key</code> above, you can fill out <code>~/.zuliprc</code> on your Capistrano
       machine. For instructions on how to write that file, see <a href="/api">the API page</a>.</li>
         <li>You may need to change the <code>deploy</code> above to
         another step of your deployment process, if you'd like the
@@ -314,10 +314,10 @@ following, to the stream <code>commits</code> with a subject that matches the re
       <p>First, download and install our <a href="/api">Python
       bindings and example scripts</a> on your Nagios server.</p>
 
-      <p>Next, open <code>integrations/nagios/humbugrc.example</code>
+      <p>Next, open <code>integrations/nagios/zuliprc.example</code>
       in your favorite editor, and change the following lines to
       specify the email address and API key for your Nagios bot,
-      saving it to <code>/etc/nagios3/humbugrc</code> on your Nagios
+      saving it to <code>/etc/nagios3/zuliprc</code> on your Nagios
       server:</p>
 
 <div class="codehilite"><pre>[api]

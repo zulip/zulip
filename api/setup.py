@@ -26,7 +26,7 @@ setup(name='humbug',
       ],
       url='https://www.zulip.com/dist/api/',
       packages=['humbug'],
-      data_files=[('share/humbug/examples', ["examples/humbugrc", "examples/send-message", "examples/subscribe",
+      data_files=[('share/humbug/examples', ["examples/zuliprc", "examples/send-message", "examples/subscribe",
                                              "examples/get-public-streams", "examples/unsubscribe",
                                              "examples/list-members", "examples/list-subscriptions",
                                              "examples/print-messages"])] + \

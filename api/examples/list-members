@@ -29,7 +29,7 @@ usage = """list-members --user=<bot's email address> --api-key=<bot's api key> [
 
 List the names and e-mail addresses of the people in your realm.
 
-You can omit --user and --api-key arguments if you have a properly set up ~/.humbugrc
+You can omit --user and --api-key arguments if you have a properly set up ~/.zuliprc
 """
 
 sys.path.append(path.join(path.dirname(__file__), '..'))
