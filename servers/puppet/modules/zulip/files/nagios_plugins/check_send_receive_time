@@ -59,7 +59,7 @@ sendreceive.critical 5"""
         sys.exit(0)
 
 sys.path.append('/home/humbug/humbug-deployments/current/api')
-import humbug
+import zulip
 
 states = {
     "OK": 0,
@@ -101,14 +101,14 @@ else:
     recipient_key = "24cf18de98d5c31da9c6c79f0cbec195"
     site = "https://api.zulip.com"
 
-humbug_sender = humbug.Client(
+humbug_sender = zulip.Client(
     email=sender,
     api_key=sender_key,
     verbose=True,
     client="test: Humbug API",
     site=site)
 
-humbug_recipient = humbug.Client(
+humbug_recipient = zulip.Client(
     email=recipient,
     api_key=recipient_key,
     verbose=True,

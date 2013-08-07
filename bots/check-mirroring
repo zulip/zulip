@@ -26,7 +26,7 @@ parser.add_option('--root-path',
                   action='store')
 (options, args) = parser.parse_args()
 
-# The 'api' directory needs to go first, so that 'import humbug' won't pick up
+# The 'api' directory needs to go first, so that 'import zulip' won't pick up
 # some other directory named 'humbug'.
 sys.path[:0] = [os.path.join(options.root_path, "api/"),
                 os.path.join(options.root_path, "python-zephyr"),
@@ -37,8 +37,8 @@ mit_user = 'tabbott/extra@ATHENA.MIT.EDU'
 humbug_user = 'tabbott/extra@mit.edu'
 
 sys.path.append(".")
-import humbug
-humbug_client = humbug.Client(
+import zulip
+zulip_client = zulip.Client(
     email=humbug_user,
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
@@ -103,7 +103,7 @@ def print_status_and_exit(status):
     sys.exit(status)
 
 def send_humbug(message):
-    result = humbug_client.send_message(message)
+    result = zulip_client.send_message(message)
     if result["result"] != "success":
         logger.error("Error sending zulip, args were:")
         logger.error(message)
@@ -128,7 +128,7 @@ def send_zephyr(zwrite_args, content):
 
 # Subscribe to Zulip
 try:
-    res = humbug_client.get_profile()
+    res = zulip_client.get_profile()
     max_message_id = res.get('max_message_id')
     if max_message_id is None:
         logging.error("Error subscribing to Zulips!")
@@ -264,7 +264,7 @@ receive_zephyrs()
 logger.info("Starting receiving messages!")
 
 # receive zulips
-messages = humbug_client.get_messages({'last': str(max_message_id)})['messages']
+messages = zulip_client.get_messages({'last': str(max_message_id)})['messages']
 logger.info("Finished receiving Zulip messages!")
 
 receive_zephyrs()

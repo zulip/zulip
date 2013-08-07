@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import humbug
+import zulip
 
 import os
 from distutils.core import setup
@@ -12,8 +12,8 @@ def recur_expand(target_root, dir):
     if len(paths):
       yield os.path.join(target_root, root), paths
 
-setup(name='humbug',
-      version=humbug.__version__,
+setup(name='zulip',
+      version=zulip.__version__,
       description='Bindings for the Zulip message API',
       author='Zulip, Inc.',
       author_email='humbug@humbughq.com',
@@ -25,7 +25,7 @@ setup(name='humbug',
           'Topic :: Communications :: Chat',
       ],
       url='https://www.zulip.com/dist/api/',
-      packages=['humbug'],
+      packages=['zulip'],
       data_files=[('share/humbug/examples', ["examples/zuliprc", "examples/send-message", "examples/subscribe",
                                              "examples/get-public-streams", "examples/unsubscribe",
                                              "examples/list-members", "examples/list-subscriptions",

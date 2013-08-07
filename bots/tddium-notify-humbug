@@ -46,9 +46,9 @@ humbug_directory = path.join(path.dirname(__file__), '../api')
 
 
 sys.path.append(humbug_directory)
-import humbug
+import zulip
 
-client = humbug.Client(
+client = zulip.Client(
     email   = environ['HUMBUG_USER'],
     api_key = environ.get('HUMBUG_API_KEY'))
 

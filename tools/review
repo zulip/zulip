@@ -438,8 +438,8 @@ def main(args):
     print >>sys.stdout, msg.get_payload(decode=True),
   else:
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../api'))
-    import humbug
-    client = humbug.Client(verbose=True)
+    import zulip
+    client = zulip.Client(verbose=True)
 
     reviewer_usernames = [x.split("@")[0] for x in opts.reviewers]
 

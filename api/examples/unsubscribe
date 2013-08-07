@@ -35,14 +35,14 @@ Examples: unsubscribe --user=tabbott@zulip.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f
 You can omit --user and --api-key arguments if you have a properly set up ~/.zuliprc
 """
 sys.path.append(path.join(path.dirname(__file__), '..'))
-import humbug
+import zulip
 
 parser = optparse.OptionParser(usage=usage)
-parser.add_option_group(humbug.generate_option_group(parser))
+parser.add_option_group(zulip.generate_option_group(parser))
 parser.add_option('--streams', default='')
 (options, args) = parser.parse_args()
 
-client = humbug.init_from_options(options)
+client = zulip.init_from_options(options)
 
 if options.streams == "":
     print >>sys.stderr, "Usage:", parser.usage

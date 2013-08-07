@@ -165,7 +165,7 @@ def send_zulip(zeph):
         logger.debug("Message is: %s" % (str(message),))
         return {'result': "success"}
 
-    return humbug_client.send_message(message)
+    return zulip_client.send_message(message)
 
 def send_error_zulip(error_msg):
     message = {"type": "private",
@@ -173,7 +173,7 @@ def send_error_zulip(error_msg):
                "to": zulip_account_email,
                "content": error_msg,
                }
-    humbug_client.send_message(message)
+    zulip_client.send_message(message)
 
 current_zephyr_subs = set()
 def zephyr_bulk_subscribe(subs):
@@ -623,7 +623,7 @@ def zulip_to_zephyr(options):
     logger.info("Starting syncing messages.")
     while True:
         try:
-            humbug_client.call_on_each_message(maybe_forward_to_zephyr)
+            zulip_client.call_on_each_message(maybe_forward_to_zephyr)
         except Exception:
             logger.exception("Error syncing messages:")
             time.sleep(1)
@@ -675,7 +675,7 @@ def add_zulip_subscriptions(verbose):
         zephyr_subscriptions.add(cls)
 
     if len(zephyr_subscriptions) != 0:
-        res = humbug_client.add_subscriptions(list({"name": stream} for stream in zephyr_subscriptions))
+        res = zulip_client.add_subscriptions(list({"name": stream} for stream in zephyr_subscriptions))
         if res.get("result") != "success":
             logger.error("Error subscribing to streams:\n%s" % (res["msg"],))
             return
@@ -866,7 +866,7 @@ if __name__ == "__main__":
     logger = open_logger()
     configure_logger(logger, "parent")
 
-    # The 'api' directory needs to go first, so that 'import humbug' won't pick
+    # The 'api' directory needs to go first, so that 'import zulip' won't pick
     # up some other directory named 'humbug'.
     pyzephyr_lib_path = "python-zephyr/build/lib.linux-" + os.uname()[4] + "-2.6/"
     sys.path[:0] = [os.path.join(options.root_path, 'api'),
@@ -892,8 +892,8 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
         os.environ["HUMBUG_API_KEY"] = api_key
 
     zulip_account_email = options.user + "@mit.edu"
-    import humbug
-    humbug_client = humbug.Client(
+    import zulip
+    zulip_client = zulip.Client(
         email=zulip_account_email,
         api_key=api_key,
         verbose=True,

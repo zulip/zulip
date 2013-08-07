@@ -44,8 +44,8 @@ import humbug_trac_config as config
 if config.HUMBUG_API_PATH is not None:
     sys.path.append(config.HUMBUG_API_PATH)
 
-import humbug
-client = humbug.Client(
+import zulip
+client = zulip.Client(
     email=config.HUMBUG_USER,
     site=config.HUMBUG_SITE,
     api_key=config.HUMBUG_API_KEY)

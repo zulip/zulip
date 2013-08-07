@@ -4,7 +4,7 @@ from os import path
 import logging
 
 sys.path.append(path.join(path.dirname(__file__), '../api'))
-import humbug
+import zulip
 
 class StreamLogger(object):
     """
@@ -32,12 +32,12 @@ sys.stdout = stdout_logger
 stderr_logger = StreamLogger(logging.getLogger("stderr"), logging.ERROR)
 sys.stderr = stderr_logger
 
-prod_client = humbug.Client(
+prod_client = zulip.Client(
     email="feedback@zulip.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
     site="https://api.zulip.com")
-staging_client = humbug.Client(
+staging_client = zulip.Client(
     email="feedback@zulip.com",
     api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,

@@ -9,7 +9,7 @@ import traceback
 from os import path
 
 sys.path.append(path.join(path.dirname(__file__), '../api'))
-import humbug
+import zulip
 
 parser = optparse.OptionParser(r"""
 
@@ -43,7 +43,7 @@ parser.add_option('--interval',
     action='store',
     help='Minutes before event for reminder [default: 10]',
     metavar='MINUTES')
-parser.add_option_group(humbug.generate_option_group(parser))
+parser.add_option_group(zulip.generate_option_group(parser))
 
 (options, args) = parser.parse_args()
 
@@ -66,7 +66,7 @@ def get_calendar_url():
 
 calendar_url = get_calendar_url()
 
-client = humbug.init_from_options(options)
+client = zulip.init_from_options(options)
 
 def get_events():
     feed = CalendarClient().GetCalendarEventFeed(uri=calendar_url)

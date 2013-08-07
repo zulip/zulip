@@ -17,7 +17,7 @@ parser.add_option("--site",
 (options, args) = parser.parse_args()
 
 sys.path.append(path.join(path.dirname(__file__), '../../api'))
-import humbug
+import zulip
 
 characters = {'othello': {'api-key': '4e5d97591bec64bf57d2698ffbb563e3', 'intro': ''},
               'iago':    {'api-key': 'd43b53c27a8106195b46781abc67901a', 'intro': ''}}
@@ -35,7 +35,7 @@ next_user = gen_next_user()
 
 def connect_all(users):
     for user in users:
-        users[user]['client'] = humbug.Client(
+        users[user]['client'] = zulip.Client(
             email=user + '@zulip.com',
             api_key=users[user]['api-key'],
             site=options.site,

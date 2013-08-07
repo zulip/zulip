@@ -42,8 +42,8 @@ A typical simple bot sending API messages will look as follows:
 At the top of the file:
 
     # Make sure the Zulip API distribution's root directory is in sys.path, then:
-    import humbug
-    humbug_client = humbug.Client(email="your-bot@example.com")
+    import zulip
+    zulip_client = zulip.Client(email="your-bot@example.com")
 
 When you want to send a message:
 
@@ -53,7 +53,7 @@ When you want to send a message:
       "subject": "your subject",
       "content": "your content",
     }
-    humbug_client.send_message(message)
+    zulip_client.send_message(message)
 
 Additional examples:
 

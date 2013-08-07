@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import optparse
-import humbug
+import zulip
 
 # Nagios passes the notification details as command line options.
 # In Nagios, "output" means "first line of output", and "long
@@ -14,7 +14,7 @@ for opt in ('type', 'host', 'service', 'state'):
     parser.add_option('--' + opt)
 (opts, args) = parser.parse_args()
 
-client = humbug.Client(config_file=opts.config)
+client = zulip.Client(config_file=opts.config)
 
 msg = dict(type='stream', to=opts.stream)
 

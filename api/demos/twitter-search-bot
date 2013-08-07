@@ -4,7 +4,7 @@ import sys
 import optparse
 import ConfigParser
 
-import humbug
+import zulip
 
 CONFIGFILE = os.path.expanduser("~/.humbug_twitterrc")
 
@@ -76,7 +76,7 @@ parser.add_option('--limit-tweets',
                   type='int',
                   help='Maximum number of tweets to send at once')
 
-parser.add_option_group(humbug.generate_option_group(parser))
+parser.add_option_group(zulip.generate_option_group(parser))
 (opts, args) = parser.parse_args()
 
 if not opts.search_terms:
@@ -118,7 +118,7 @@ if not user.GetId():
 Please double-check and try again."
     sys.exit()
 
-client = humbug.Client(
+client = zulip.Client(
     email=opts.user,
     api_key=opts.api_key,
     site=opts.site,

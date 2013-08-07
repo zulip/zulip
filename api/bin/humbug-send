@@ -65,12 +65,12 @@ def main(argv=None):
 
     sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-    import humbug
+    import zulip
 
     parser = optparse.OptionParser(usage=usage)
 
     # Grab parser options from the API common set
-    parser.add_option_group(humbug.generate_option_group(parser))
+    parser.add_option_group(zulip.generate_option_group(parser))
 
     parser.add_option('-m', '--message',
                       help='Specifies the message to send, prevents interactive prompting.')
@@ -99,7 +99,7 @@ def main(argv=None):
     if len(recipients) == 0 and not (options.stream and options.subject):
         parser.error('You must specify a stream/subject or at least one recipient.')
 
-    client = humbug.init_from_options(options)
+    client = zulip.init_from_options(options)
 
     if not options.message:
         options.message = sys.stdin.read()

@@ -11,7 +11,7 @@ import time
 import urlparse
 
 import feedparser
-import humbug
+import zulip
 
 RSS_DATA_DIR = os.path.expanduser(os.path.join('~', '.cache', 'humbug-rss'))
 OLDNESS_THRESHOLD = 30 # days
@@ -56,7 +56,7 @@ parser.add_option('--feed-file',
                   help='The file containing a list of RSS feed URLs to follow, one URL per line',
                   default=os.path.join(RSS_DATA_DIR, "rss-feeds"),
                   action='store')
-parser.add_option_group(humbug.generate_option_group(parser))
+parser.add_option_group(zulip.generate_option_group(parser))
 (opts, args) = parser.parse_args()
 
 def mkdir_p(path):
@@ -131,7 +131,7 @@ try:
 except IOError:
     log_error_and_exit("Unable to read feed file at %s." % (opts.feed_file,))
 
-client = humbug.Client(email=opts.email, api_key=opts.api_key,
+client = zulip.Client(email=opts.email, api_key=opts.api_key,
                        site=opts.site)
 
 first_message = True
