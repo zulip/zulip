@@ -28,17 +28,17 @@ To use this script:
 3. create a ~/.zuliprc, or specify user and api-key with command line arguments
 4. Test the script by running it manually, like this:
 
-/usr/local/share/humbug/demos/rss-bot
+/usr/local/share/zulip/demos/rss-bot
 
 You can customize the location on the feed file and recipient stream, e.g.:
 
-/usr/local/share/humbug/demos/rss-bot --feed-file=/path/to/my-feeds --stream=my-rss-stream
+/usr/local/share/zulip/demos/rss-bot --feed-file=/path/to/my-feeds --stream=my-rss-stream
 
 4. Configure a crontab entry for this script. A sample crontab entry for
 processing feeds stored in the default location and sending to the default
 stream every 5 minutes is:
 
-*/5 * * * * /usr/local/share/humbug/demos/rss-bot"""
+*/5 * * * * /usr/local/share/zulip/demos/rss-bot"""
 
 parser = optparse.OptionParser(usage)
 parser.add_option('--stream',

@@ -26,12 +26,12 @@ setup(name='zulip',
       ],
       url='https://www.zulip.com/dist/api/',
       packages=['zulip'],
-      data_files=[('share/humbug/examples', ["examples/zuliprc", "examples/send-message", "examples/subscribe",
+      data_files=[('share/zulip/examples', ["examples/zuliprc", "examples/send-message", "examples/subscribe",
                                              "examples/get-public-streams", "examples/unsubscribe",
                                              "examples/list-members", "examples/list-subscriptions",
                                              "examples/print-messages"])] + \
-          list(recur_expand('share/humbug', 'integrations/')) + \
-          [('share/humbug/demos',
+          list(recur_expand('share/zulip', 'integrations/')) + \
+          [('share/zulip/demos',
             [os.path.join("demos", relpath) for relpath in
             os.listdir("demos")])],
       scripts=["bin/zulip-send"],
