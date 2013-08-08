@@ -904,7 +904,7 @@ def update_user_presence(user_profile, client, log_time, status):
 
     queue_json_publish("user_activity", event, process_user_presence_event)
 
-def update_message_flags(user_profile, operation, flag, messages, all):
+def do_update_message_flags(user_profile, operation, flag, messages, all):
     flagattr = getattr(UserMessage.flags, flag)
 
     if all:

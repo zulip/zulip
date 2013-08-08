@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import update_message_flags
+from zerver.lib.actions import do_update_message_flags
 from zerver.models import UserProfile, Message, get_user_profile_by_email
 
 class Command(BaseCommand):
@@ -22,7 +22,7 @@ Usage: python manage.py bankrupt_users <list of email addresses>"""
                 print "e-mail %s doesn't exist in the system, skipping" % (email,)
                 continue
 
-            update_message_flags(user_profile, "add", "read", None, True)
+            do_update_message_flags(user_profile, "add", "read", None, True)
 
             messages = Message.objects.filter(
                 usermessage__user_profile=user_profile).order_by('-id')[:1]

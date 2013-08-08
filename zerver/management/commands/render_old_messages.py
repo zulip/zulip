@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import update_message_flags
 from zerver.models import UserProfile, Message, get_user_profile_by_email
 import datetime
 import time

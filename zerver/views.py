@@ -29,7 +29,7 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     do_send_confirmation_email, do_activate_user, do_create_user, check_send_message, \
     do_change_subscription_property, internal_send_message, \
     create_stream_if_needed, gather_subscriptions, subscribed_to_stream, \
-    update_user_presence, bulk_add_subscriptions, update_message_flags, \
+    update_user_presence, bulk_add_subscriptions, do_update_message_flags, \
     recipient_for_emails, extract_recipients, do_events_register, \
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
@@ -1106,11 +1106,14 @@ def get_profile_backend(request, user_profile):
     return json_success(result)
 
 @authenticated_json_post_view
+def json_update_flags(request, user_profile):
+    return update_message_flags(request, user_profile);
+
 @has_request_variables
-def json_update_flags(request, user_profile, messages=REQ('messages', converter=json_to_list),
+def update_message_flags(request, user_profile, messages=REQ('messages', converter=json_to_list),
                       operation=REQ('op'), flag=REQ('flag'),
                       all=REQ('all', converter=json_to_bool, default=False)):
-    update_message_flags(user_profile, operation, flag, messages, all)
+    do_update_message_flags(user_profile, operation, flag, messages, all)
     return json_success({'result': 'success',
                          'messages': messages,
                          'msg': ''})
