@@ -159,6 +159,13 @@ try:
         logging.info("finish jslint")
         os._exit(result)
 
+    puppet_pid = os.fork()
+    if puppet_pid == 0:
+        logging.info("start puppet")
+        result = subprocess.call(['puppet', 'parser', 'validate'] + by_lang['.pp'])
+        logging.info("finish puppet")
+        os._exit(result)
+
     custom_pid = os.fork()
     if custom_pid == 0:
         logging.info("start custom")
