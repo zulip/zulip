@@ -40,7 +40,7 @@ def send_deployment_finished_message(branch, message):
     subprocess.check_call(["/home/humbug/humbug/api/bin/zulip-send", "--user=commit-bot@zulip.com",
                            "--api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "--stream=commits",
                            "--site=https://staging.zulip.com",
-                           u"--subject=deploy \u21D2 %s" % (branch,), "--message=%s" % (message,)])
+                           (u"--subject=deploy \u21D2 %s" % (branch,)).encode("utf-8"), "--message=%s" % (message,)])
 
 deployments = {
     'refs/heads/prod': ('prod0.zulip.net', 'prod'),
