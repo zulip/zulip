@@ -114,7 +114,8 @@ def compute_entry_hash(entry):
     return hashlib.md5(entry.id + entry_time).hexdigest()
 
 def send_zulip(entry, feed_name):
-    content = "**%s**\n%s\n%s" % (entry.title,
+    content = "**[%s](%s)**\n%s\n%s" % (entry.title,
+                                  entry.link,
                                   strip_tags(entry.summary),
                                   entry.link)
     message = {"type": "stream",
