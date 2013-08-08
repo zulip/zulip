@@ -55,10 +55,10 @@
                 {{ req }}
             </div>
         {% endfor %}{% endif %}
-        {%if blurb.example_response %}
+        {%if blurb.rendered_response %}
         <h3>Example response</h3>
         <div class="example_response">
-            {{ blurb.example_response }}
+            {{ blurb.rendered_response }}
         </div>
         {% endif %}
     </div>

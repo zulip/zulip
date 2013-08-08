@@ -368,6 +368,13 @@ def api_endpoint_docs(request):
     calls = ujson.loads(raw_calls)
     langs = set()
     for call in calls:
+        response = call['example_response']
+        if not '\n' in response:
+            # For 1-line responses, pretty-print them
+            extended_response = response.replace(", ", ",\n ")
+        else:
+            extended_response = response
+        call['rendered_response'] = bugdown.convert("~~~ .py\n" + extended_response + "\n~~~\n", "default")
         for example_type in ('request', 'response'):
             for lang in call.get('example_' + example_type, []):
                 langs.add(lang)
