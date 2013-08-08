@@ -25,8 +25,8 @@ exports.stream_info = function (new_stream_info) {
 exports.subscribed_streams = function () {
     return _.chain(stream_info)
         .values()
-        .filter(function (sub) { return sub.subscribed; })
-        .map(function (sub) { return sub.name; })
+        .where({subscribed: true})
+        .pluck('name')
         .value();
 };
 
