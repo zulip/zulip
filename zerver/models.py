@@ -7,7 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
 from zerver.lib.cache import cache_with_key, update_user_profile_cache, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     update_user_presence_cache, generic_bulk_cached_fetch
-from zerver.lib.utils import make_safe_digest
+from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction, IntegrityError
 from zerver.lib import bugdown
 from zerver.lib.avatar import gravatar_hash, avatar_url
@@ -182,6 +182,11 @@ class Stream(models.Model):
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)
     realm = models.ForeignKey(Realm, db_index=True)
     invite_only = models.NullBooleanField(default=False)
+    # Used by the e-mail forwarder. The e-mail RFC specifies a maximum
+    # e-mail length of 254, and our max stream length is 30, so we
+    # have plenty of room for the token.
+    email_token = models.CharField(
+        max_length=32, default=lambda: generate_random_token(32), null=True)
 
     def __repr__(self):
         return (u"<Stream: %s>" % (self.name,)).encode("utf-8")
