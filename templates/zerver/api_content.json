@@ -65,7 +65,6 @@
         "endpoint": "GET /api/v1/events",
         "example_response":
 "{'result': 'success',
- 'queue_id': '1375801870:2942',
  'msg': '',
  'events': [
    {'type': 'message',

@@ -198,6 +198,7 @@ def get_events_backend(request, user_profile, handler = None,
     if user_client is None:
         user_client = request.client
 
+    orig_queue_id = queue_id
     if queue_id is None:
         if dont_block:
             client = allocate_client_descriptor(user_profile.id, event_types,
@@ -217,8 +218,10 @@ def get_events_backend(request, user_profile, handler = None,
         client.disconnect_handler()
 
     if not client.event_queue.empty() or dont_block:
-        return json_success({'events': client.event_queue.contents(),
-                             'queue_id': queue_id})
+        ret = {'events': client.event_queue.contents()}
+        if orig_queue_id is None:
+            ret['queue_id'] = queue_id
+        return json_success(ret)
 
     handler._request = request
     client.connect_handler(handler)
