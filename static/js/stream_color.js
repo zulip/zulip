@@ -180,3 +180,6 @@ exports.get_color_class = _.memoize(function (color) {
 return exports;
 
 }());
+if (typeof module !== 'undefined') {
+    module.exports = stream_color;
+}
