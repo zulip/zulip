@@ -208,10 +208,10 @@ def log_message(message):
 
 # Helper function. Defaults here are overriden by those set in do_send_messages
 def do_send_message(message, rendered_content = None, no_log = False, stream = None):
-    do_send_messages([{'message': message,
-                       'rendered_content': rendered_content,
-                       'no_log': no_log,
-                       'stream': stream}])
+    return do_send_messages([{'message': message,
+                              'rendered_content': rendered_content,
+                              'no_log': no_log,
+                              'stream': stream}])[0]
 
 def do_send_messages(messages):
     # Filter out messages which didn't pass internal_prep_message properly
@@ -303,6 +303,8 @@ def do_send_messages(messages):
                 data['stream_name'] = message['stream'].name
         tornado_callbacks.send_notification(data)
 
+    return [message['message'].id for message in messages]
+
 def create_stream_if_needed(realm, stream_name, invite_only=False):
     (stream, created) = Stream.objects.get_or_create(
         realm=realm, name__iexact=stream_name,
@@ -377,8 +379,7 @@ def check_send_message(*args, **kwargs):
     if(type(message) != dict):
         assert isinstance(message, basestring)
         return message
-    do_send_messages([message])
-    return None
+    return do_send_messages([message])[0]
 
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
