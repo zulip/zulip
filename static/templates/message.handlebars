@@ -30,7 +30,7 @@
 {{/if}}
 
 {{#if is_summary}}
-  <tr zid="{{first_message_id}}" id="{{dom_id}}" data-messages="{{message_ids}}" class="summary_row selectable_row{{#include_footer}} last_message{{/include_footer}}{{^is_stream}} summary_row_private_message{{/is_stream}}">
+  <tr zid="{{first_message_id}}" data-messages="{{message_ids}}" class="summary_row selectable_row{{#include_footer}} last_message{{/include_footer}}{{^is_stream}} summary_row_private_message{{/is_stream}}">
     <td class="summary_colorblock" style="background-color: {{background_color}};">
       <span class="pointer_icon"><i class="icon-vector-caret-right"></i></span>
     </td>
