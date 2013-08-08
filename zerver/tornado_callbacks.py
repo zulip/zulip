@@ -312,7 +312,9 @@ def process_new_message(data):
         received_pm = message.recipient.type in (Recipient.PERSONAL, Recipient.HUDDLE) and \
                         user_profile_id != message.sender.id
         mentioned = 'mentioned' in flags
-        idle = len(get_client_descriptors_for_user(user_profile_id)) == 0
+        all_client_descriptors = get_client_descriptors_for_user(user_profile_id)
+        message_event_queues = [client for client in all_client_descriptors if client.accepts_event_type('message')]
+        idle = len(message_event_queues) == 0
         if (received_pm or mentioned) and idle:
             if receives_offline_notifications(user_profile_id):
                 event = build_offline_notification_event(user_profile_id, message.id)
