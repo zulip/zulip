@@ -4,9 +4,7 @@
 
 __revision__ = '$Id: models.py 28 2009-10-22 15:03:02Z jarek.zgoda $'
 
-import os
 import re
-import base64
 
 from django.db import models
 from django.core.urlresolvers import reverse
@@ -20,6 +18,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now
 
 from confirmation.util import get_status_field
+from zerver.lib.utils import generate_random_token
 
 try:
     import mailer
@@ -32,7 +31,7 @@ except ImportError:
 B16_RE = re.compile('^[a-f0-9]{40}$')
 
 def generate_key():
-    return base64.b16encode(os.urandom(20)).lower()
+    return generate_random_token(40)
 
 def generate_activation_url(key):
     current_site = Site.objects.get_current()

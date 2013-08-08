@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import base64
 import hashlib
+import os
 from time import sleep
+
 from django.conf import settings
 
 def statsd_key(val, clean_periods=False):
@@ -93,3 +96,6 @@ def log_statsd_event(name):
     """
     event_name = "events.%s" % (name,)
     statsd.incr(event_name)
+
+def generate_random_token(length):
+    return base64.b16encode(os.urandom(length / 2)).lower()

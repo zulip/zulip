@@ -57,7 +57,7 @@ from zerver.lib.cache import cache_get_many, cache_set_many, \
     generic_bulk_cached_fetch
 from zerver.lib.unminify import SourceMap
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.utils import statsd
+from zerver.lib.utils import statsd, generate_random_token
 from zerver import tornado_callbacks
 from django.db import connection
 
@@ -69,7 +69,6 @@ import ujson
 import simplejson
 import re
 import urllib
-import os
 import base64
 import time
 import logging
@@ -1013,7 +1012,7 @@ def get_old_messages_backend(request, user_profile,
     return json_success(ret)
 
 def generate_client_id():
-    return base64.b16encode(os.urandom(16)).lower()
+    return generate_random_token(32)
 
 @authenticated_json_post_view
 def json_get_profile(request, user_profile):
