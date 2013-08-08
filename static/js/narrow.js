@@ -14,7 +14,7 @@ var canonical_operators = {"from": "sender", "subject": "topic"};
 
 exports.canonicalize_operator = function (operator) {
     operator = operator.toLowerCase();
-    if (canonical_operators[operator] !== undefined) {
+    if (canonical_operators.hasOwnProperty(operator)) {
         return canonical_operators[operator];
     } else {
         return operator;
