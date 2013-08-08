@@ -2110,6 +2110,15 @@ def patch_bot_backend(request, user_profile, email, full_name=REQ):
     return json_success(json_result)
 
 @has_request_variables
+def regenerate_api_key(request, user_profile):
+    user_profile.api_key = random_api_key()
+    user_profile.save()
+    json_result = dict(
+        api_key = user_profile.api_key
+    )
+    return json_success(json_result)
+
+@has_request_variables
 def regenerate_bot_api_key(request, user_profile, email):
     try:
         bot = get_user_profile_by_email(email)
