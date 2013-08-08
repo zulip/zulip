@@ -1158,11 +1158,22 @@ def send_message_backend(request, user_profile,
                          message_to = REQ('to', converter=extract_recipients),
                          forged = REQ(default=False),
                          subject_name = REQ('subject', lambda x: x.strip(), None),
-                         message_content = REQ('content')):
+                         message_content = REQ('content'),
+                         domain = REQ('domain', default=None)):
     client = request.client
     is_super_user = is_super_user_api(request)
     if forged and not is_super_user:
         return json_error("User not authorized for this query")
+
+    realm = None
+    if domain:
+        if not is_super_user:
+            # The email gateway bot needs to be able to send messages in
+            # any realm.
+            return json_error("User not authorized for this query")
+        realm = get_realm(domain)
+        if not realm:
+            return json_error("Unknown domain " + domain)
 
     if client.name == "zephyr_mirror":
         # Here's how security works for non-superuser mirroring:
@@ -1192,7 +1203,7 @@ def send_message_backend(request, user_profile,
     ret = check_send_message(sender, client, message_type_name, message_to,
                              subject_name, message_content, forged=forged,
                              forged_timestamp = request.POST.get('time'),
-                             forwarder_user_profile=user_profile)
+                             forwarder_user_profile=user_profile, realm=realm)
     if ret is not None:
         return json_error(ret)
     return json_success()
