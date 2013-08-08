@@ -5,9 +5,10 @@ var exports = {};
 // The ordered list of onboarding steps we want new users to complete. If the
 // steps are changed here, they must also be changed in create_user.py.
 var steps = ["sent_stream_message", "sent_private_message", "made_app_sticky"];
+// N.B. user_message is **unescaped HTML**, so please use caution
 var step_info = {sent_stream_message: {"user_message": "Send a stream message"},
                  sent_private_message: {"user_message": "Send a private message"},
-                 made_app_sticky: {"user_message": "Get our app"}};
+                 made_app_sticky: {"user_message": 'Get our <a id="get-the-app" href="/apps" target="_blank">apps</a>'}};
 
 var onboarding = false;
 
@@ -69,47 +70,6 @@ exports.mark_checklist_step = function (step) {
     update_onboarding_steps();
 };
 
-function set_app_sticky_popover(completed) {
-    var item = $("#made_app_sticky");
-    item.popover({"placement": "left",
-                  "content": templates.render('sticky_app_popover'),
-                  "html": true,
-                  "trigger": "manual",
-                  fixed: true,
-                  // This is unfortunately what you have to do to set
-                  // a custom width for a popover.
-                  "template": '<div class="popover"><div class="arrow">' +
-                              '</div><div class="sticky-popover-inner">' +
-                              '<h3 class="popover-title"></h3>' +
-                              '<div class="popover-content"><p></p></div>' +
-                              '</div></div>'});
-
-    function show() {
-        item.popover('show');
-        function handler(e){
-            if (!$(e.target).is('#sticky-popover a, #pin_info_question i')) {
-                item.popover('hide');
-                $(document).off('click', handler);
-            }
-        }
-        $(document.body).on('click', handler);
-    }
-
-    var info_span = $('<span id="pin_info_question">' +
-                      '<i class="icon-vector-question-sign"></i></span>');
-    info_span.click(show);
-    item.append(info_span);
-
-    if (!completed) {
-        item.one('mouseenter', show);
-
-        $(document.body).one('click', "#sticky_done", function (e) {
-            exports.mark_checklist_step("made_app_sticky");
-        });
-    }
-}
-step_info.made_app_sticky.register = set_app_sticky_popover;
-
 function set_up_checklist() {
     var onboarding_checklist = $('#onboarding-checklist').empty();
     if (all_steps_completed()) {
@@ -123,13 +83,18 @@ function set_up_checklist() {
         } else {
             entry.append($("<i class='icon-vector-check-empty'>"));
         }
-        entry.append($('<span>').text(step_info[step].user_message)).attr("id", step);
+        entry.append($('<span>').html(step_info[step].user_message)).attr("id", step);
         onboarding_checklist.append(entry);
 
         var register_action = step_info[step].register;
         if (register_action !== undefined) {
             register_action(step_info[step].status);
         }
+
+        $(document.body).one('click', "#get-the-app", function (e) {
+            exports.mark_checklist_step("made_app_sticky");
+        });
+
         $("#onboarding").show();
     });
 }
