@@ -196,6 +196,7 @@ class Command(BaseCommand):
                 ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Notification Bot", "notification-bot@zulip.com"),
                 ("Zulip Tutorial Bot", "tutorial-bot@zulip.com"),
+                ("Zulip Email Gateway", "emailgateway@zulip.com"),
                 ]
             create_users(realms, hardcoded_zulip_users_nosubs)
 
