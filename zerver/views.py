@@ -1393,8 +1393,12 @@ def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
     if stream.invite_only and not subscribed_to_stream(user_profile, stream):
         return json_error("Unable to retrieve subscribers for invite-only stream")
 
+    # Note that non-active users may still have "active" subscriptions, because we
+    # want to be able to easily reactivate them with their old subscriptions.  This
+    # is why the query here has to look at the UserProfile.is_active flag.
     subscriptions = Subscription.objects.filter(recipient__type=Recipient.STREAM,
                                                 recipient__type_id=stream.id,
+                                                user_profile__is_active=True,
                                                 active=True).select_related()
 
     return json_success({'subscribers': [subscription.user_profile.email
