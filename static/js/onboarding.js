@@ -4,11 +4,12 @@ var exports = {};
 
 // The ordered list of onboarding steps we want new users to complete. If the
 // steps are changed here, they must also be changed in create_user.py.
-var steps = ["sent_stream_message", "sent_private_message", "made_app_sticky"];
+var steps = ["sent_stream_message", "sent_private_message", "made_app_sticky", "set_up_integration"];
 // N.B. user_message is **unescaped HTML**, so please use caution
 var step_info = {sent_stream_message: {"user_message": "Send a stream message"},
                  sent_private_message: {"user_message": "Send a private message"},
-                 made_app_sticky: {"user_message": 'Get our <a id="get-the-app" href="/apps" target="_blank">apps</a>'}};
+                 made_app_sticky: {"user_message": 'Get our <a id="get-the-app" href="/apps" target="_blank">apps</a>'},
+                 set_up_integration: {"user_message": 'Set up an <a id="set-up-integration" href="/integrations" target="_blank">integration</a>'}};
 
 var onboarding = false;
 
@@ -93,6 +94,9 @@ function set_up_checklist() {
 
         $(document.body).one('click', "#get-the-app", function (e) {
             exports.mark_checklist_step("made_app_sticky");
+        });
+        $(document.body).one('click', "#set-up-integration", function (e) {
+            exports.mark_checklist_step("set_up_integration");
         });
 
         $("#onboarding").show();
