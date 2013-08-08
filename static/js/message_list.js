@@ -429,11 +429,13 @@ MessageList.prototype = {
                     // the original message, so we make a fake message based on the real one
                     // that will trigger the right part of the handlebars template and won't
                     // show the content, date, etc. from the real message.
-                    summary_group[key] = $.extend({}, message, {
-                        first_message_id: message.id,
+                    summary_group[key] = _.extend(_.pick(message,
+                        'timestamp', 'show_date', 'historical', 'stream',
+                        'is_stream', 'subject', 'display_recipient', 'display_reply_to'), {
                         is_summary: true,
-                        include_recipient: true,
-                        include_sender: false,
+                        include_footer: false,
+                        include_bookend: false,
+                        first_message_id: message.id,
                         messages: [message]
                     });
                 } else {
