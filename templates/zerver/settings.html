@@ -137,7 +137,7 @@
     <form id="create_bot_form" class="form-horizontal">
     <div id="bot_table_error" class="alert alert-error hide"></div>
       <h3>Add new bot</h3>
-      <p>     
+      <p>
         <label for="create_bot_name" class="control-label">Full name</label>
         <input type="text" name="bot_name" id="create_bot_name" class="required"
                maxlength=100 placeholder="Full Bot Name" value="" />
@@ -171,7 +171,7 @@
         want to write a bot that can e.g. read your own private
         messages, you should use your personal API key.</p>
         <div class="controls">
-          <button class="btn" id="api_key_button">Show your API key</button>
+          <button class="btn" id="api_key_button">Show/change your API key</button>
         </div>
       </div>
       <div id="get_api_key_box">
@@ -196,8 +196,12 @@
       <div id="show_api_key_box">
           <p>Your API key:</p>
           <p><b><span id="api_key_value"></span></b></p>
+          <button type="submit" class="btn btn-primary regenerate_api_key">
+              Generate new API Key
+          </button>
+          <div id="user_api_key_error text-error"></div>
+          </div>
       </div>
-
       <hr class="settings_separator">
 
   </div>

@@ -220,7 +220,18 @@ $(function () {
 
     });
 
-
+    $("#show_api_key_box").on("click", "button.regenerate_api_key", function (e) {
+        $.ajax({
+            url: '/json/users/me/api_key/regenerate',
+            type: 'POST',
+            success: function (data) {
+                $('#api_key_value').text(data.api_key);
+            },
+            error: function (xhr) {
+                $('#user_api_key_error').text(JSON.parse(xhr.responseText).msg).show();
+            }
+        });
+    });
 
 });
 
