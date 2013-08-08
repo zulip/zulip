@@ -194,7 +194,7 @@ class Stream(models.Model):
     # e-mail length of 254, and our max stream length is 30, so we
     # have plenty of room for the token.
     email_token = models.CharField(
-        max_length=32, default=lambda: generate_random_token(32), null=True)
+        max_length=32, default=lambda: generate_random_token(32))
 
     def __repr__(self):
         return (u"<Stream: %s>" % (self.name,)).encode("utf-8")
