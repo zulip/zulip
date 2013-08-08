@@ -304,6 +304,17 @@ exports.CachedValue.prototype = {
     }
 };
 
+exports.enforce_arity = function util_enforce_arity(func) {
+    return function () {
+        if (func.length !== arguments.length) {
+            throw new Error("Function '" + func.name + "' called with "
+                            + arguments.length + " arguments, but expected "
+                            + func.length);
+        }
+        return func.apply(this, arguments);
+    };
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {

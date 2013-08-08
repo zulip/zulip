@@ -96,4 +96,29 @@ var util = global.util;
     assert(!util.array_compare([1,2,3], [1,2]));
 }());
 
+(function test_enforce_arity() {
+    function f1() {}
+    var eaf1 = util.enforce_arity(f1);
 
+    assert.doesNotThrow(function () { f1('foo'); });
+    assert.doesNotThrow(function () { eaf1(); });
+    assert.throws(function () { eaf1('foo'); }, /called with \d+ arguments/);
+    assert.throws(function () { eaf1('foo', 'bar'); }, /called with \d+ arguments/);
+
+    function f2(x) {}
+    var eaf2 = util.enforce_arity(f2);
+
+    assert.doesNotThrow(function () { f2(); });
+    assert.doesNotThrow(function () { eaf2('foo'); });
+    assert.throws(function () { eaf2(); }, /called with \d+ arguments/);
+    assert.throws(function () { eaf2('foo', 'bar'); }, /called with \d+ arguments/);
+
+    function f3(x, y) {}
+    var eaf3 = util.enforce_arity(f3);
+
+    assert.doesNotThrow(function () { f3(); });
+    assert.doesNotThrow(function () { eaf3('foo', 'bar'); });
+    assert.throws(function () { eaf3(); }, /called with \d+ arguments/);
+    assert.throws(function () { eaf3('foo'); }, /called with \d+ arguments/);
+    assert.throws(function () { eaf3('foo','bar', 'baz'); }, /called with \d+ arguments/);
+}());
