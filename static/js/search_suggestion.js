@@ -289,7 +289,7 @@ function get_topic_suggestions(query_operators) {
 
     // Be defensive here in case recent_subjects gets super huge, but
     // still slice off enough topics to find matches.
-    topics = topics.slice(0, 100);
+    topics = topics.slice(0, 300);
 
     topics = _.map(topics, function (topic) {
         return topic.subject; // "subject" is just the name of the topic
