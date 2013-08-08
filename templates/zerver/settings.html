@@ -2,127 +2,127 @@
 
 <div class="row-fluid">
   <div id="current_settings" class="span12">
-      <h1>Settings</h1>
+    <h1>Settings</h1>
 
-      {# One text line worth of space #}
-      <div>&nbsp;</div>
+    {# One text line worth of space #}
+    <div>&nbsp;</div>
 
-      <div class="alert" id="settings-status"></div>
+    <div class="alert" id="settings-status"></div>
 
-      <div id="settings-change-box">
-      <form action="/json/settings/change" method="post"
-            class="form-horizontal">{% csrf_token %}
-        <div class="control-group" id="name_change_container">
-            <label for="full_name" class="control-label">Full name</label>
-            <div class="controls">
-                <input type="text" name="full_name" id="full_name"
-                       value="{{ user_profile.full_name }}" />
-            </div>
+    <div id="settings-change-box">
+    <form action="/json/settings/change" method="post"
+          class="form-horizontal">{% csrf_token %}
+      <div class="control-group" id="name_change_container">
+        <label for="full_name" class="control-label">Full name</label>
+        <div class="controls">
+          <input type="text" name="full_name" id="full_name"
+                 value="{{ user_profile.full_name }}" />
         </div>
+      </div>
 
-        <div class="control-group" id="pw_change_link">
+      <div class="control-group" id="pw_change_link">
+        <div class="controls">
+          <button class="btn change_password_button" data-dismiss="modal" aria-hidden="true">Change Password</button>
+          </div>
+      </div>
+
+      <div id="pw_change_controls">
+
+        <div class="control-group">
+          <label for="old_password" class="control-label">Old password</label>
           <div class="controls">
-            <button class="btn change_password_button" data-dismiss="modal" aria-hidden="true">Change Password</button>
-            </div>
-        </div>
-
-        <div id="pw_change_controls">
-
-            <div class="control-group">
-                <label for="old_password" class="control-label">Old password</label>
-                <div class="controls">
-                    <input type="password" autocomplete="off"
-                           name="old_password" id="old_password" value="" />
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label for="new_password" class="control-label">New password</label>
-                <div class="controls">
-                    <input type="password" autocomplete="off"
-                           name="new_password" id="new_password" value="" />
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label class="control-label">Password strength</label>
-                <div class="controls">
-                    <div class="progress" id="pw_strength">
-                        <div class="bar bar-danger" style="width: 10%;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label for="confirm_password" class="control-label">Confirm password</label>
-                <div class="controls">
-                    <input type="password" autocomplete="off"
-                           name="confirm_password" id="confirm_password" value="" />
-                </div>
-            </div>
-
-        </div>
-
-        <div class="form-horizontal">
-          <div class="control-group">
-              <label class="control-label">Your picture</label>
-              <div class="controls">
-                  <a href="https://en.gravatar.com/emails" target="_blank" class="change_gravatar_button">
-                      <p><img class="img-rounded gravatar-profile user-image-settings"
-                           src="{{ avatar_url }}&s=120" /></p>
-                      <p>Change at Gravatar.com</p>
-                  </a>
-              </div>
+            <input type="password" autocomplete="off"
+                   name="old_password" id="old_password" value="" />
           </div>
         </div>
 
         <div class="control-group">
+          <label for="new_password" class="control-label">New password</label>
           <div class="controls">
-            <input type="submit" name="change_settings"
-                   value="Save changes" class="btn btn-big btn-primary" />
+            <input type="password" autocomplete="off"
+                   name="new_password" id="new_password" value="" />
           </div>
         </div>
+
+        <div class="control-group">
+          <label class="control-label">Password strength</label>
+          <div class="controls">
+            <div class="progress" id="pw_strength">
+              <div class="bar bar-danger" style="width: 10%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="confirm_password" class="control-label">Confirm password</label>
+          <div class="controls">
+            <input type="password" autocomplete="off"
+                   name="confirm_password" id="confirm_password" value="" />
+          </div>
+        </div>
+
+      </div>
+
+      <div class="form-horizontal">
+        <div class="control-group">
+          <label class="control-label">Your picture</label>
+          <div class="controls">
+            <a href="https://en.gravatar.com/emails" target="_blank" class="change_gravatar_button">
+              <p><img class="img-rounded gravatar-profile user-image-settings"
+                   src="{{ avatar_url }}&s=120" /></p>
+              <p>Change at Gravatar.com</p>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="controls">
+          <input type="submit" name="change_settings"
+                 value="Save changes" class="btn btn-big btn-primary" />
+        </div>
+      </div>
 
       <hr class="settings_separator">
       <h2>Notification settings <i class="tiny icon-vector-question-sign" id="notification-docs"></i></h2>
       <div id="notification-settings">
         <div class="control-group">
-            <label for="enable_desktop_notifications" class="control-label">
-                Desktop
-                notifications </label>
-            <div class="controls">
-                <input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
-                   {% if user_profile.enable_desktop_notifications %}
-                   checked="yes"
-                   {% endif %} />
-            </div>
+          <label for="enable_desktop_notifications" class="control-label">
+            Desktop
+            notifications </label>
+          <div class="controls">
+            <input type="checkbox" name="enable_desktop_notifications" id="enable_desktop_notifications"
+              {% if user_profile.enable_desktop_notifications %}
+                checked="yes"
+              {% endif %} />
+          </div>
         </div>
         <div class="control-group">
-            <label for="enable_sounds" class="control-label">
-                Audible notifications</label>
-            <div class="controls">
-                <input type="checkbox" name="enable_sounds" id="enable_sounds"
-                   {% if user_profile.enable_sounds %}
-                   checked="yes"
-                   {% endif %} />
-            </div>
-        </div>
-
-        <div class="control-group">
-            <label for="enable_offline_email_notifications" class="control-label">
-                Email notifications when offline</label>
-            <div class="controls">
-                <input type="checkbox" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
-                   {% if user_profile.enable_offline_email_notifications %}
-                   checked="yes"
-                   {% endif %} />
-            </div>
+          <label for="enable_sounds" class="control-label">
+            Audible notifications</label>
+          <div class="controls">
+            <input type="checkbox" name="enable_sounds" id="enable_sounds"
+              {% if user_profile.enable_sounds %}
+                checked="yes"
+              {% endif %} />
+          </div>
         </div>
 
         <div class="control-group">
-            <div class="controls">
-                <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
-            </div>
+          <label for="enable_offline_email_notifications" class="control-label">
+            Email notifications when offline</label>
+          <div class="controls">
+            <input type="checkbox" name="enable_offline_email_notifications" id="enable_offline_email_notifications"
+              {% if user_profile.enable_offline_email_notifications %}
+              checked="yes"
+              {% endif %} />
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="controls">
+            <input type="submit" name="change_settings" value="Save changes" class="btn btn-big btn-primary" />
+          </div>
         </div>
       </div>
     </form>
@@ -131,8 +131,9 @@
     <hr class="settings_separator" />
 
     <h2>Your bots</h2>
-      <ol id="bots_list">
-      </ol>
+
+    <ol id="bots_list">
+    </ol>
 
     <form id="create_bot_form" class="form-horizontal">
     <div id="bot_table_error" class="alert alert-error hide"></div>
@@ -175,32 +176,32 @@
         </div>
       </div>
       <div id="get_api_key_box">
-          <p>Please re-enter your password to confirm your identity.
-          (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)</p>
-          <form action="/json/fetch_api_key" method="post" class="form-horizontal">{% csrf_token %}
-              <div class="control-group">
-                  <label for="password" class="control-label">Current password</label>
-                  <div class="controls">
-                      <input type="password" autocomplete="off"
-                             name="password" id="get_api_key_password" value="" />
-                  </div>
-              </div>
-              <div class="control-group">
-                  <div class="controls">
-                      <input type="submit" name="view_api_key" value="Get API key"
-                             class="btn btn-primary" />
-                  </div>
-              </div>
-          </form>
+        <p>Please re-enter your password to confirm your identity.
+        (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)</p>
+        <form action="/json/fetch_api_key" method="post" class="form-horizontal">{% csrf_token %}
+          <div class="control-group">
+            <label for="password" class="control-label">Current password</label>
+            <div class="controls">
+              <input type="password" autocomplete="off"
+                     name="password" id="get_api_key_password" value="" />
+            </div>
+          </div>
+          <div class="control-group">
+            <div class="controls">
+              <input type="submit" name="view_api_key" value="Get API key"
+                     class="btn btn-primary" />
+            </div>
+          </div>
+        </form>
       </div>
       <div id="show_api_key_box">
-          <p>Your API key:</p>
-          <p><b><span id="api_key_value"></span></b></p>
-          <button type="submit" class="btn btn-primary regenerate_api_key">
-              Generate new API Key
-          </button>
-          <div id="user_api_key_error text-error"></div>
-          </div>
+        <p>Your API key:</p>
+        <p><b><span id="api_key_value"></span></b></p>
+        <button type="submit" class="btn btn-primary regenerate_api_key">
+          Generate new API Key
+        </button>
+        <div id="user_api_key_error text-error"></div>
+        </div>
       </div>
       <hr class="settings_separator">
 
