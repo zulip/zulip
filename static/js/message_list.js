@@ -227,7 +227,8 @@ MessageList.prototype = {
     },
 
     _is_summarized_message: function (message) {
-        if (message.flags === undefined) {
+        if (!feature_flags.summarize_read_while_narrowed ||
+            message === undefined || message.flags === undefined) {
             return false;
         }
         if (this.summarize_read === 'home') {

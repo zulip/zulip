@@ -15,6 +15,7 @@ var assert = require('assert');
 
     global._ = require('third/underscore/underscore.js');
     global.util = require('js/util.js');
+    global.feature_flags = {};
 
 }());
 
