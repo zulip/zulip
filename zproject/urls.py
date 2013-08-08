@@ -76,7 +76,7 @@ urlpatterns = patterns('',
     url(r'^api/$', TemplateView.as_view(template_name='zerver/api.html')),
     url(r'^api/endpoints/$', 'zerver.views.api_endpoint_docs'),
     url(r'^integrations/$', TemplateView.as_view(template_name='zerver/integrations.html')),
-    url(r'^zerver/$', TemplateView.as_view(template_name='zerver/zerver.html')),
+    url(r'^zephyr/$', TemplateView.as_view(template_name='zerver/zephyr.html')),
     url(r'^apps$', TemplateView.as_view(template_name='zerver/apps.html')),
 
     # Job postings
