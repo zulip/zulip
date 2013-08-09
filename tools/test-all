@@ -14,7 +14,7 @@ function run {
 }
 
 run ./tools/clean-repo
-run ./tools/check-all
+run ./tools/lint-all
 run ./tools/test-js-with-node
 run ./tools/test-backend
 run ./tools/test-js-with-casper
