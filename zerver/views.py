@@ -292,6 +292,19 @@ def accounts_register(request):
                 for stream in streams:
                     do_add_subscription(user_profile, stream)
 
+                # For the CUSTOMER3 realm, we're experimenting with
+                # including the last N messages to the home view on signup
+                if user_profile.realm.domain == "customer3.invalid":
+                    recipients = Recipient.objects.filter(type=Recipient.STREAM,
+                                                          type_id__in=[stream.id for stream in streams])
+                    messages = Message.objects.filter(recipient_id__in=recipients).order_by("-id")[0:100]
+                    if len(messages) > 0:
+                        ums_to_create = [UserMessage(user_profile=user_profile, message=message,
+                                                     flags=UserMessage.flags.read)
+                                         for message in messages]
+
+                        UserMessage.objects.bulk_create(ums_to_create)
+
                 if prereg_user.referred_by is not None:
                     # This is a cross-realm private message.
                     internal_send_message("new-user-bot@zulip.com",
