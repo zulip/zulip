@@ -53,7 +53,10 @@ function add_display_time(message, prev) {
     }
 
     if (message.timestr === undefined){
-        message.timestr = time.toString("HH:mm");
+        message.timestr = time.toString("h:mmtt");
+        if (feature_flags.twenty_four_hour_time) {
+            message.timestr = time.toString("HH:mm");
+        }
     }
 }
 
