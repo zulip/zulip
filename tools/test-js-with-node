@@ -8,8 +8,12 @@ export NODE_PATH=$STATIC_DIR
 
 NODEJS=$(which nodejs || which node)
 
-# Run all the JS scripts in our test directory.  The node command only runs one
-# script at a time, hence the use of xargs.  The order that the scripts run in now
+
+# Run all the JS scripts in our test directory.  The order that the scripts run in now
 # is fairly arbitrary, as they run isolated from each other, and none of them are
 # particularly slow.
-ls -1 *.js | xargs -L 1 $NODEJS
+for js_file in *.js
+do
+    echo $js_file
+    $NODEJS $js_file
+done
