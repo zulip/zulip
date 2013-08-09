@@ -209,6 +209,11 @@ exports.Filter = Filter;
 
 var current_filter;
 
+// A small concession to unit testing follows:
+exports._set_current_filter = function (filter) {
+    current_filter = filter;
+};
+
 exports.active = function () {
     return current_filter !== undefined;
 };

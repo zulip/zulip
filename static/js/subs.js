@@ -863,3 +863,6 @@ exports.show_and_focus_on_narrow = function () {
 return exports;
 
 }());
+if (typeof module !== 'undefined') {
+    module.exports = subs;
+}
