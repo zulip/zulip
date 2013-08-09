@@ -9,8 +9,7 @@ from zerver.lib.cache import cache_with_key, update_user_profile_cache, \
     generic_bulk_cached_fetch, cache_set, \
     display_recipient_cache_key, active_user_dicts_in_realm_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
-from django.db import transaction
-from zerver.lib import bugdown
+from django.db import transaction, IntegrityError
 from zerver.lib.avatar import gravatar_hash, get_avatar_url
 from django.utils import timezone
 from django.contrib.sessions.models import Session
@@ -24,6 +23,8 @@ from collections import defaultdict
 import pylibmc
 import ujson
 import logging
+
+bugdown = None
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
@@ -530,6 +531,9 @@ class Message(models.Model):
         These are only on this Django object and are not saved in the
         database.
         """
+        global bugdown
+        if bugdown is None:
+            from zerver.lib import bugdown
 
         self.mentions_wildcard = False
         self.mentions_user_ids = set()
@@ -557,6 +561,9 @@ class Message(models.Model):
     def set_rendered_content(self, rendered_content, save = False):
         """Set the content on the message.
         """
+        global bugdown
+        if bugdown is None:
+            from zerver.lib import bugdown
 
         self.rendered_content = rendered_content
         self.rendered_content_version = bugdown.version
@@ -573,6 +580,10 @@ class Message(models.Model):
 
     def maybe_render_content(self, domain, save = False):
         """Render the markdown if there is no existing rendered_content"""
+        global bugdown
+        if bugdown is None:
+            from zerver.lib import bugdown
+
         if Message.need_to_render_content(self.rendered_content, self.rendered_content_version):
             return self.set_rendered_content(self.render_markdown(self.content, domain), save)
         else:
@@ -665,6 +676,9 @@ class Message(models.Model):
             recipient_type,
             recipient_type_id,
     ):
+        global bugdown
+        if bugdown is None:
+            from zerver.lib import bugdown
 
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
