@@ -1059,6 +1059,14 @@ function get_old_messages_success(data, opts) {
         }, 25);
         return;
     }
+    if (tutorial.is_running()) {
+        // Don't actually process the messages until the tutorial is
+        // finished, but do disable the loading indicator so it isn't
+        // distracting in the background
+        util.destroy_loading_indicator($('#page_loading_indicator'));
+        tutorial.defer(function () { get_old_messages_success(data, opts); });
+        return;
+    }
 
     if (opts.msg_list.narrowed && opts.msg_list !== current_msg_list) {
         // We unnarrowed before receiving new messages so

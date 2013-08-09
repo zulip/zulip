@@ -3,6 +3,7 @@ var tutorial = (function () {
 var exports = {};
 var is_running = false;
 var event_handlers = {};
+var deferred_work = [];
 
 // We'll temporarily set stream colors for the streams we use in the demo
 // tutorial messages.
@@ -223,6 +224,10 @@ function create_and_show_popover(target_div, placement, title, content_template)
     $(".popover").css("z-index", 20001);
 }
 
+exports.defer = function (callback) {
+    deferred_work.push(callback);
+};
+
 function finale() {
     var finale_modal = $("#tutorial-finale");
     $(".screen").css({opacity: 0.0});
@@ -245,6 +250,10 @@ function finale() {
     util.show_first_run_message();
     current_msg_list.rerender();
     enable_event_handlers();
+    _.each(deferred_work, function (callback) {
+        callback();
+    });
+    deferred_work = [];
 }
 
 function reply() {
@@ -397,9 +406,6 @@ exports.start = function () {
     }
     narrow.deactivate();
 
-    // If you somehow have messages, temporarily remove them from the visible
-    // feed.
-    current_msg_list.clear();
     // Set temporarly colors for the streams used in the tutorial.
     real_stream_info = subs.stream_info();
     subs.stream_info(tutorial_stream_info);
