@@ -1932,10 +1932,6 @@ li.expanded_subject .subject_box {
     color: #0d7245;
 }
 
-.empty_feed_notice p {
-    text-align: center;
-}
-
 .settings_separator {
     margin-top:    2em;
     margin-bottom: 2em;
