@@ -8,6 +8,7 @@ export NODE_PATH=$STATIC_DIR
 
 NODEJS=$(which nodejs || which node)
 
+$NODEJS filter.js
 $NODEJS util.js
 $NODEJS message_list.js
 $NODEJS message_tour.js
