@@ -17,6 +17,6 @@ run ./tools/clean-repo
 run ./tools/check-all
 run ./tools/test-js-with-node
 run ./tools/test-backend
-run ./zerver/tests/frontend/run
+run ./tools/test-js-with-casper
 
 printf '\n\e[32mAll OK!\e[0m\n'

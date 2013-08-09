@@ -34,7 +34,7 @@ for file in args:
         file = path.join(path.dirname(__file__), 'tests', file)
     test_files.append(path.abspath(file))
 
-os.chdir(path.join(path.dirname(__file__), '../../..'))
+os.chdir(path.join(path.dirname(path.realpath(__file__)), '../../..'))
 
 subprocess.check_call('tools/generate-fixtures')
 
