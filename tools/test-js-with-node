@@ -8,12 +8,8 @@ export NODE_PATH=$STATIC_DIR
 
 NODEJS=$(which nodejs || which node)
 
-$NODEJS filter.js
-$NODEJS stream_color.js
-$NODEJS activity.js
-$NODEJS util.js
-$NODEJS message_list.js
-$NODEJS message_tour.js
-$NODEJS narrow.js
-$NODEJS unread.js
-$NODEJS search_suggestion.js
+# Run all the JS scripts in our test directory.  The node command only runs one
+# script at a time, hence the use of xargs.  The order that the scripts run in now
+# is fairly arbitrary, as they run isolated from each other, and none of them are
+# particularly slow.
+ls -1 *.js | xargs -L 1 $NODEJS
