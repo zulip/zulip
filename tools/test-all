@@ -3,22 +3,20 @@
 cd "$(dirname "$0")"/..
 
 function run {
-    desc="$1"
-    shift
-
-    echo "Running $desc"
+    echo '----'
+    echo "Running $@"
     if ! "$@"; then
-        printf "\n\e[31;1mFAILED\e[0m $desc\n"
+        printf "\n\e[31;1mFAILED\e[0m $@\n"
         exit 1
     else
         echo
     fi
 }
 
-run 'clean repo'       ./tools/clean-repo
-run 'lint checkers'    ./tools/check-all
-run 'js unit tests'    ./tools/test-js-with-node
-run 'server tests'     ./tools/test-backend
-run 'web client tests' ./zerver/tests/frontend/run
+run ./tools/clean-repo
+run ./tools/check-all
+run ./tools/test-js-with-node
+run ./tools/test-backend
+run ./zerver/tests/frontend/run
 
 printf '\n\e[32mAll OK!\e[0m\n'
