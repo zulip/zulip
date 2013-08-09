@@ -1509,5 +1509,14 @@ $(function () {
     });
 });
 
+$(function () {
+    // Disable "spellchecking" in our desktop app. The "spellchecking"
+    // in our Mac app is actually autocorrect, and frustrates our
+    // users.
+    if (window.bridge !== undefined) {
+        $("#new_message_content").attr('spellcheck', 'false');
+    }
+});
+
 return exports;
 }());
