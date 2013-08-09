@@ -10,6 +10,7 @@ NODEJS=$(which nodejs || which node)
 
 $NODEJS filter.js
 $NODEJS stream_color.js
+$NODEJS activity.js
 $NODEJS util.js
 $NODEJS message_list.js
 $NODEJS message_tour.js

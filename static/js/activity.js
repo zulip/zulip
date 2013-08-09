@@ -53,6 +53,9 @@ function sort_users(users, user_info) {
     return users;
 }
 
+// for testing:
+exports._sort_users = sort_users;
+
 function focus_lost() {
     if (!has_focus) {
         return false;
@@ -165,3 +168,6 @@ exports.set_user_statuses = function (users, server_time) {
 return exports;
 
 }());
+if (typeof module !== 'undefined') {
+    module.exports = activity;
+}
