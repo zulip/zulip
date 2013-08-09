@@ -18,6 +18,7 @@ var placeholder_invitees = ['guglielmo@marconi.com',
 
 var last_granted;
 var last_used;
+var ever_had_invites = false;
 exports.update_state = function (granted, used) {
     if (last_granted === granted && last_used === used) {
         return;
@@ -48,11 +49,14 @@ exports.update_state = function (granted, used) {
         }
 
         if (invites_left > 0) {
+            ever_had_invites = true;
             $(".still-have-invites").show();
             $(".no-more-invites").hide();
         } else {
             $(".still-have-invites").hide();
-            $(".no-more-invites").show();
+            if (ever_had_invites) {
+                $(".no-more-invites").show();
+            }
         }
 
         if (used > 0) {
