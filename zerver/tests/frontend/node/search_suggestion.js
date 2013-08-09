@@ -13,13 +13,7 @@ function set_up_dependencies() {
 
     var actual_narrow = require('js/narrow.js');
     var search = require('js/search_suggestion.js');
-
-    global.narrow = {
-        parse: actual_narrow.parse,
-        unparse: actual_narrow.unparse,
-        canonicalize_operator: actual_narrow.canonicalize_operator,
-        Filter: actual_narrow.Filter
-    };
+    global.narrow = require('js/narrow.js');
 
     global.page_params = {
         email: 'bob@zulip.com'
@@ -34,6 +28,8 @@ function set_up_dependencies() {
     global.util = require('js/util.js');
     global.Dict = require('js/dict.js');
     global.recent_subjects = new global.Dict();
+
+    global.Filter = require('js/filter.js');
 
     return search;
 }

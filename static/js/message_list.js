@@ -19,7 +19,7 @@ function MessageList(table_name, filter, opts) {
         this._clear_table();
     }
     if (this.filter === undefined) {
-        this.filter = new narrow.Filter();
+        this.filter = new Filter();
     }
     this.narrowed = false;
     if (this.table_name === "zfilt") {

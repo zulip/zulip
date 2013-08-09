@@ -49,7 +49,7 @@ function describe(operators) {
 
     var more_parts = _.map(operators, function (elem) {
         var operand = elem[1];
-        switch (narrow.canonicalize_operator(elem[0])) {
+        switch (Filter.canonicalize_operator(elem[0])) {
         case 'is':
             if (operand === 'private') {
                 return 'Narrow to all private messages';
@@ -226,7 +226,7 @@ function get_topic_suggestions(query_operators) {
     }
 
     var last_term = query_operators.slice(-1)[0];
-    var operator = narrow.canonicalize_operator(last_term[0]);
+    var operator = Filter.canonicalize_operator(last_term[0]);
     var operand = last_term[1];
     var stream;
     var guess;
@@ -249,7 +249,7 @@ function get_topic_suggestions(query_operators) {
     // i.e. "foo" and "search:foo" both become [['search', 'foo']].
     switch (operator) {
     case 'stream':
-        filter = new narrow.Filter(query_operators);
+        filter = new Filter(query_operators);
         if (filter.has_operator('topic')) {
             return [];
         }
@@ -260,7 +260,7 @@ function get_topic_suggestions(query_operators) {
     case 'search':
         guess = operand;
         query_operators = query_operators.slice(0, -1);
-        filter = new narrow.Filter(query_operators);
+        filter = new Filter(query_operators);
         if (filter.has_operator('topic')) {
             return [];
         }

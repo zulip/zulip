@@ -1,6 +1,6 @@
 var all_msg_list = new MessageList();
 var home_msg_list = new MessageList('zhome',
-    new narrow.Filter([["in", "home"]]),
+    new Filter([["in", "home"]]),
     {summarize_read: feature_flags.summarize_read_while_narrowed?'home':false}
 );
 var narrowed_msg_list;

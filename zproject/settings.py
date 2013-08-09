@@ -370,6 +370,7 @@ JS_SPECS = {
             'js/unread.js',
             'js/message_tour.js',
             'js/stream_list.js',
+            'js/filter.js',
             'js/narrow.js',
             'js/reload.js',
             'js/notifications_bar.js',

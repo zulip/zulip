@@ -7,9 +7,11 @@ var assert = require('assert');
     global.narrow = require('js/narrow.js');
     global.$ = function () {}; // for subs.js
     global.subs = require('js/subs.js');
+    global.Filter = require('js/filter.js');
 }());
 
 var narrow = global.narrow;
+var Filter = global.Filter;
 
 (function test_parse_and_unparse() {
     var string ='stream:Foo topic:Bar yo';
@@ -23,7 +25,7 @@ var narrow = global.narrow;
 
 (function test_stream() {
     var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
-    narrow._set_current_filter(new narrow.Filter(operators));
+    narrow._set_current_filter(new Filter(operators));
 
     assert.equal(narrow.stream(), 'foo');
 }());
@@ -31,7 +33,7 @@ var narrow = global.narrow;
 (function test_operators() {
     var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
     var canonical_operators = [['stream', 'foo'], ['topic', 'bar'], ['search', 'yo']];
-    narrow._set_current_filter(new narrow.Filter(operators));
+    narrow._set_current_filter(new Filter(operators));
 
     assert.deepEqual(narrow.operators(), canonical_operators);
 }());
