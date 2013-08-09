@@ -64,6 +64,7 @@ from django.db import connection
 from confirmation.models import Confirmation
 
 import subprocess
+import calendar
 import datetime
 import ujson
 import simplejson
@@ -548,6 +549,21 @@ def accounts_home(request):
                               {'form': form, 'current_url': request.get_full_path},
                               context_instance=RequestContext(request))
 
+def approximate_unread_count(user_profile, latest_read_message):
+    # latest_read_message is a UserMessage object.
+    if not latest_read_message:
+        return 0
+    return UserMessage.objects.filter(user_profile=user_profile,
+                                      id__gt=latest_read_message.id).count()
+
+def sent_time_in_epoch_seconds(user_message):
+    # user_message is a UserMessage object.
+    if not user_message:
+        return None
+    # We have USE_TZ = True, so our datetime objects are timezone-aware.
+    # Return the epoch seconds in UTC.
+    return calendar.timegm(user_message.message.pub_date.utctimetuple())
+
 @login_required(login_url = settings.HOME_NOT_LOGGED_IN)
 def home(request):
     # We need to modify the session object every two weeks or it will expire.
@@ -582,6 +598,12 @@ def home(request):
         register_ret['pointer'] = register_ret['max_message_id']
         user_profile.last_pointer_updater = request.session.session_key
 
+    if user_profile.pointer == -1:
+        latest_read = None
+    else:
+        latest_read = UserMessage.objects.get(user_profile=user_profile,
+                                              message__id=user_profile.pointer)
+
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = simplejson.encoder.JSONEncoderForHTML().encode(dict(
@@ -609,6 +631,9 @@ def home(request):
         event_queue_id        = register_ret['queue_id'],
         last_event_id         = register_ret['last_event_id'],
         max_message_id        = register_ret['max_message_id'],
+        unread_count          = approximate_unread_count(user_profile,
+                                                         latest_read),
+        furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         onboarding_steps      = ujson.loads(user_profile.onboarding_steps),
         staging               = settings.STAGING_DEPLOYED or not settings.DEPLOYED
     ))
