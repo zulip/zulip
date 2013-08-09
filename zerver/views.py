@@ -567,7 +567,7 @@ def home(request):
         # organization is interested in recent messages more than the very
         # first messages on the system.
 
-        user_profile.pointer = register_ret['max_message_id']
+        register_ret['pointer'] = register_ret['max_message_id']
         user_profile.last_pointer_updater = request.session.session_key
 
     # Pass parameters to the client-side JavaScript code.
