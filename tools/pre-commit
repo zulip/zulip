@@ -1,1 +1,1 @@
-./tools/check-all || true
+./tools/lint-all || true
