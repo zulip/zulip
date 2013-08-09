@@ -55,6 +55,10 @@ exports.update_state = function (granted, used) {
             $(".no-more-invites").show();
         }
 
+        if (used > 0) {
+            $("#encouraging-invite-message").hide();
+        }
+
         $("#share-the-love").show();
     }
 
