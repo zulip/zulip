@@ -57,7 +57,7 @@
             ]
         ],
         "example_request": {
-            "python": "<div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">get_messages<span class=\"p\">()</span>\n</span></pre></div>",
+            "python": "<div class=\"codehilite\"><pre><span class=\"n\">client</span><span class=\"o\">.</span><span class=\"n\">register<span class=\"p\">()</span>\n</span></pre></div>",
             "curl": "<div class=\"codehilite\"><pre>curl -G https://api.zulip.com/v1/register <span class=\"se\">\\</span>\n -u othello-bot@example.com:a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 <span class=\"se\">\\</span>\n -d <span class=\"s2\">\"event_types=['messages']\"</span>\n</pre></div>"
         }
     },
