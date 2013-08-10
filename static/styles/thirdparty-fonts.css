@@ -35,7 +35,8 @@
  *    "Font Awesome by Dave Gandy - http://fortawesome.github.com/Font-Awesome"
  */
 
-
+/* Our custom narrowing symbol */
+.icon-vector-narrow:before               { content: "\f054"; }
 
 @font-face {
   font-family: 'FontAwesome';
@@ -292,8 +293,6 @@ ul.icons li [class*=" icon-vector-"] {
   }
 }
 
-/* Our custom narrowing symbol */
-.icon-vector-narrow:before               { content: "\f054"; }
 
 /*  Font Awesome uses the Unicode Private Use Area (PUA) to ensure screen
     readers do not read off random characters that represent icons */
