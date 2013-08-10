@@ -1096,6 +1096,10 @@ $(function () {
     if (window.XMLHttpRequest && (new XMLHttpRequest()).upload) {
         $("#compose #attach_files").removeClass("notdisplayed");
     }
+    if (feature_flags.dropbox_integration && Dropbox.isBrowserSupported()) {
+        $("#compose #attach_dropbox_files").removeClass("notdisplayed");
+    }
+
 
     // Event bindings for "Compose" pane
 
@@ -1106,6 +1110,24 @@ $(function () {
         e.preventDefault();
         $("#compose #file_input").trigger("click");
     } );
+
+    $("#compose").on("click", "#attach_dropbox_files", function (e) {
+        e.preventDefault();
+        var options = {
+            // Required. Called when a user selects an item in the Chooser.
+            success: function (files) {
+                var textbox = $("#new_message_content");
+                var links = _.map(files, function (file) { return '[' + file.name + '](' + file.link +')'; })
+                             .join(' ') + ' ';
+                textbox.val(textbox.val() + links);
+
+            },
+            // Optional. A value of false (default) limits selection to a single file, while
+            // true enables multiple file selection.
+            multiselect: true
+        };
+        Dropbox.choose(options);
+    });
 
     $("#subscriptions_table").on("mouseover", ".subscription_header", function (e) {
         $(this).addClass("active");
