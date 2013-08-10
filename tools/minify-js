@@ -62,7 +62,7 @@ def get_changed_source_files(other_checkout):
         if filename.endswith('.handlebars'):
             # Since Handlebars templates are compiled, treat this as if the
             # compiled .js file changed (which it did).
-            changed.add('templates/compiled.js')
+            changed.add(os.path.join(STATIC_PATH, 'templates/compiled.js'))
             continue
 
         changed.add(filename)
@@ -85,8 +85,12 @@ MAP_DIR = os.path.join(STATIC_PATH, 'source-map/')
 subprocess.check_call(['mkdir', '-p', MIN_DIR, MAP_DIR])
 
 for js_group, filespec in JS_SPECS.iteritems():
+    #      JS_SPECS look like        'js/foobar.js'.
+    # changed_files look like 'static/js/foobar.js'.
+    # So we prepend 'static/' to the JS_SPECS so these match up.
     in_files = [os.path.join(STATIC_PATH, filename)
                 for filename in filespec['source_filenames']]
+
     out_file = os.path.join(MIN_DIR, os.path.basename(filespec['output_filename']))
     map_file = os.path.join(MAP_DIR, os.path.basename(filespec['output_filename'])
                                      + '.map')
