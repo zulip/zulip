@@ -110,7 +110,8 @@ exports.unfade_messages = function (clear_state) {
     ui.update_floating_recipient_bar();
 };
 
-exports.update_faded_messages = function () {
+function _update_faded_messages() {
+    // See also update_faded_messages(), which just wraps this with a debounce.
     if (focused_recipient === undefined) {
         return;
     }
@@ -148,7 +149,11 @@ exports.update_faded_messages = function () {
     }
 
     ui.update_floating_recipient_bar();
-};
+}
+
+// See trac #1633.  For fast typists, calls to _update_faded_messages can
+// cause typing sluggishness.
+exports.update_faded_messages = _.debounce(_update_faded_messages, 150);
 
 exports.update_recipient_on_narrow = function () {
     if (!compose.composing()) {
