@@ -7,6 +7,8 @@ exports.mark_read_at_bottom = page_params.staging;
 exports.summarize_read_while_narrowed = page_params.staging;
 exports.twenty_four_hour_time = _.contains([],
                                   page_params.email);
+exports.kiosk_mode = _.contains(['role-user@customer3.invalid'],
+                                page_params.email);
 return exports;
 
 }());

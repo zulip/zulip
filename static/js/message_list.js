@@ -623,6 +623,7 @@ MessageList.prototype = {
 
         // Re-add the fading of messages that is lost when we re-render.
         compose.update_faded_messages();
+        kiosk.update_new_messages();
 
         if (this === current_msg_list && messages_are_new) {
             this._maybe_autoscroll(rendered_elems);
