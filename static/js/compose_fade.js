@@ -3,6 +3,7 @@ var compose_fade = (function () {
 var exports = {};
 
 var focused_recipient;
+var any_messages_faded = false;
 
 exports.set_focused_recipient = function (recipient) {
     focused_recipient = recipient;
@@ -13,8 +14,15 @@ exports.unfade_messages = function (clear_state) {
         return;
     }
 
+    if (!any_messages_faded) {
+        return;
+    }
+
     rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row")
                                                .removeClass("faded").addClass("unfaded");
+
+    any_messages_faded = false;
+
     if (clear_state === true) {
         focused_recipient = undefined;
     }
@@ -52,6 +60,7 @@ function _update_faded_messages() {
             if (!elt.hasClass("faded")) {
                 elt.removeClass("unfaded").addClass("faded");
             }
+            any_messages_faded = true;
         } else {
             if (!elt.hasClass("unfaded")) {
                 elt.removeClass("faded").addClass("unfaded");
