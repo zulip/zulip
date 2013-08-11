@@ -402,11 +402,10 @@ def api_endpoint_docs(request):
 @has_request_variables
 def json_invite_users(request, user_profile, invitee_emails=REQ):
     # Validation
-    if settings.ALLOW_REGISTER == False:
-        try:
-            isnt_mit(user_profile.email)
-        except ValidationError, e:
-            return json_error(e.message)
+    try:
+        isnt_mit(user_profile.email)
+    except ValidationError, e:
+        return json_error(e.message)
 
     if not invitee_emails:
         return json_error("You must specify at least one email address.")
@@ -620,7 +619,7 @@ def home(request):
         isnt_mit(user_profile.email)
         show_invites = True
     except ValidationError:
-        show_invites = settings.ALLOW_REGISTER
+        show_invites = False
 
     # For the CUSTOMER4 student realm, only let instructors (who have
     # @customer4.invalid addresses) invite new users.

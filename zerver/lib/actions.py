@@ -1391,10 +1391,9 @@ def do_invite_users(user_profile, invitee_emails, streams):
 
         # Redundant check in case earlier validation preventing MIT users from
         # inviting people fails.
-        if settings.ALLOW_REGISTER == False:
-            if "@mit.edu" in email:
-                errors.append((email, "Invitations are not enabled for MIT at this time."))
-                continue
+        if "@mit.edu" in email:
+            errors.append((email, "Invitations are not enabled for MIT at this time."))
+            continue
 
         try:
             user_email_is_unique(email)

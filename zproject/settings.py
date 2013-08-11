@@ -586,10 +586,8 @@ TUTORIAL_ENABLED = True
 
 HOME_NOT_LOGGED_IN = '/login'
 if DEPLOYED:
-    ALLOW_REGISTER = False
     FULL_NAVBAR    = False
 else:
-    ALLOW_REGISTER = True
     FULL_NAVBAR    = True
 
 # For testing, you may want to have emails be printed to the console.
