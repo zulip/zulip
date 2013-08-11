@@ -373,6 +373,7 @@ JS_SPECS = {
             'js/narrow.js',
             'js/reload.js',
             'js/notifications_bar.js',
+            'js/compose_fade.js',
             'js/compose.js',
             'js/stream_color.js',
             'js/subs.js',

@@ -21,7 +21,7 @@ var globals =
     + ' csrf_token'
 
     // Modules, defined in their respective files.
-    + ' compose rows hotkeys narrow reload notifications_bar search subs'
+    + ' compose compose_fade rows hotkeys narrow reload notifications_bar search subs'
     + ' composebox_typeahead typeahead_helper notifications hashchange'
     + ' invite ui util activity timerender MessageList blueslip unread stream_list'
     + ' onboarding message_edit tab_bar emoji popovers navigate message_tour'
