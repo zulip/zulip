@@ -117,23 +117,9 @@ function update_fade () {
         return;
     }
 
-    // Construct focused_recipient as a mocked up element which has all the
-    // fields of a message used by util.same_recipient()
-    var focused_recipient = {
-        type: is_composing_message
-    };
-
-    if (focused_recipient.type === "stream") {
-        focused_recipient.stream = $('#stream').val();
-        focused_recipient.subject = $('#subject').val();
-    } else {
-        // Normalize the recipient list so it matches the one used when
-        // adding the message (see add_message_metadata(), zulip.js).
-        focused_recipient.reply_to = util.normalize_recipients(
-                $('#private_message_recipient').val());
-    }
-
-    compose_fade.set_focused_recipient(focused_recipient);
+    // Legacy strangeness: is_composing_message can be false, "stream", or "private"
+    var msg_type = is_composing_message;
+    compose_fade.set_focused_recipient(msg_type);
     compose_fade.update_faded_messages();
 }
 

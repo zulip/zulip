@@ -5,8 +5,22 @@ var exports = {};
 var focused_recipient;
 var any_messages_faded = false;
 
-exports.set_focused_recipient = function (recipient) {
-    focused_recipient = recipient;
+exports.set_focused_recipient = function (msg_type) {
+    // Construct focused_recipient as a mocked up element which has all the
+    // fields of a message used by util.same_recipient()
+    focused_recipient = {
+        type: msg_type
+    };
+
+    if (focused_recipient.type === "stream") {
+        focused_recipient.stream = $('#stream').val();
+        focused_recipient.subject = $('#subject').val();
+    } else {
+        // Normalize the recipient list so it matches the one used when
+        // adding the message (see add_message_metadata(), zulip.js).
+        focused_recipient.reply_to = util.normalize_recipients(
+                $('#private_message_recipient').val());
+    }
 };
 
 exports.unfade_messages = function (clear_state) {
