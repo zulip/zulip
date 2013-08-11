@@ -7,7 +7,7 @@ class zulip::app_frontend {
   $web_packages = [ "memcached", "python-pylibmc", "python-tornado", "python-django",
                     "python-pygments", "python-flup", "python-psycopg2",
                     "yui-compressor", "python-django-auth-openid",
-                    "python-django-statsd-mozilla",
+                    "python-django-statsd-mozilla", "python-dns",
                     "build-essential", "libssl-dev", "python-ujson",
                     "python-defusedxml", "python-twitter",
                     "python-twisted", "python-markdown",
