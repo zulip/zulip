@@ -9,6 +9,7 @@ from zproject import settings
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     completely_open
 from zerver.lib.actions import do_change_password
+import DNS
 
 def is_inactive(value):
     try:
@@ -26,6 +27,19 @@ def isnt_mit(value):
     if "@mit.edu" in value:
         raise ValidationError(mark_safe(u'Zulip for MIT is by invitation only. ' + SIGNUP_STRING))
 
+def not_mit_mailing_list(value):
+    # I don't want ec-discuss signed up for Zulip
+    if "@mit.edu" in value:
+        username = value.rsplit("@", 1)[0]
+        # Check whether the user exists and can get mail.
+        try:
+            DNS.dnslookup("%s.pobox.ns.athena.mit.edu" % username, DNS.Type.TXT)
+        except DNS.Base.ServerError, e:
+            if e.rcode == DNS.Status.NXDOMAIN:
+                raise ValidationError(mark_safe(u'That user does not exist at MIT or is a <a href="https://ist.mit.edu/email-lists">mailing list</a>. If you want to sign up an alias for Zulip, <a href="mailto:support@zulip.com">contact us</a>.'))
+            else:
+                raise
+
 class RegistrationForm(forms.Form):
     full_name = forms.CharField(max_length=100)
     password = forms.CharField(widget=forms.PasswordInput, max_length=100)
@@ -42,7 +56,7 @@ class HomepageForm(forms.Form):
     if settings.ALLOW_REGISTER:
         email = forms.EmailField()
     else:
-        validators = [isnt_mit, is_inactive]
+        validators = [not_mit_mailing_list, is_inactive]
         email = forms.EmailField(validators=validators)
 
     def __init__(self, *args, **kwargs):

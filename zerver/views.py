@@ -36,7 +36,7 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     user_email_is_unique, do_invite_users, do_refer_friend
 from zerver.lib.create_user import random_api_key
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
-    is_inactive, isnt_mit
+    is_inactive, isnt_mit, not_mit_mailing_list
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django_openid_auth.views import default_render_failure, login_complete
 from openid.consumer.consumer import SUCCESS as openid_SUCCESS
@@ -405,8 +405,8 @@ def json_invite_users(request, user_profile, invitee_emails=REQ):
     if settings.ALLOW_REGISTER == False:
         try:
             isnt_mit(user_profile.email)
-        except ValidationError:
-            return json_error("Invitations are not enabled for MIT at this time.")
+        except ValidationError, e:
+            return json_error(e.message)
 
     if not invitee_emails:
         return json_error("You must specify at least one email address.")
