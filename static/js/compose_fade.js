@@ -89,6 +89,11 @@ function _update_faded_messages() {
 // cause typing sluggishness.
 exports.update_faded_messages = _.debounce(_update_faded_messages, 150);
 
+exports.set_faded_messages = function (msg_type) {
+    exports.set_focused_recipient(msg_type);
+    _update_faded_messages();
+};
+
 return exports;
 
 }());

@@ -192,7 +192,7 @@ exports.start = function (msg_type, opts) {
         show_box('private', $("#" + (focus_area || 'private_message_recipient')));
     }
 
-    update_fade();
+    compose_fade.set_faded_messages(msg_type);
 
     exports.decorate_stream_bar(opts.stream);
     $(document).trigger($.Event('compose_started.zulip', opts));
