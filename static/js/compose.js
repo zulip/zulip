@@ -132,10 +132,18 @@ exports.update_faded_messages = function () {
             should_fade_message = !util.same_recipient(focused_recipient, current_msg_list.get(rows.id(elt)));
         }
 
+        // Usually we are not actually switching up the classes here, so the hasClass()
+        // calls here will usually short circuit two function calls that are more expensive.
+        // So, while the hasClass() checks are semantically unnecessary, they should improve
+        // performance.  See trac #1633 for more context.
         if (should_fade_message) {
-            elt.removeClass("unfaded").addClass("faded");
+            if (!elt.hasClass("faded")) {
+                elt.removeClass("unfaded").addClass("faded");
+            }
         } else {
-            elt.removeClass("faded").addClass("unfaded");
+            if (!elt.hasClass("unfaded")) {
+                elt.removeClass("faded").addClass("unfaded");
+            }
         }
     }
 
