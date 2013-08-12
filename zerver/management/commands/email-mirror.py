@@ -17,6 +17,7 @@ Run this management command out of a cron job.
 
 import email
 from os import path
+from email.header import decode_header
 import logging
 import sys
 
@@ -141,8 +142,8 @@ def fetch(result, proto, mailboxes):
     message_uids.sort()
     for uid in message_uids:
         message = email.message_from_string(result[uid]["RFC822"])
-        subject = message.get("Subject", "(no subject)")
-        body = message.get_payload()
+        subject = decode_header(message.get("Subject", "(no subject)"))[0][0]
+        body = message.get_payload(decode=True)
 
         try:
             to = find_emailgateway_recipient(message)
