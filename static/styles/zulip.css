@@ -2266,6 +2266,10 @@ div.edit_bot {
     margin-bottom: 5px;
 }
 
+#referral-form label {
+    margin: 0;
+}
+
 #share-the-love .icon-vector-heart {
     color: red;
 }
