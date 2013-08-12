@@ -329,7 +329,6 @@ function send_message() {
         data: request,
         success: function (resp, statusText, xhr) {
             clear_box();
-            send_status.hide();
             is_composing_message = false;
             hide_box();
             if (request.type === "private") {
@@ -340,7 +339,6 @@ function send_message() {
             clear_message_snapshot();
             $("#compose-send-button").removeAttr('disabled');
             $("#sending-indicator").hide();
-            send_status.hide();
 
             var new_msg = _.extend({replying_to_message: request},
                                    request);
