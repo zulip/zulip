@@ -8,7 +8,7 @@ import glob
 import twitter
 import platform
 import time
-
+import HTMLParser
 import httplib2
 
 from hashlib import sha1
@@ -198,7 +198,9 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             image_url = user.get('profile_image_url_https', user['profile_image_url'])
             profile_img.set('src', image_url)
             p = markdown.util.etree.SubElement(tweet, 'p')
-            p.text = res['text']
+            ## TODO: unescape is an internal function, so we should
+            ## use something else if we can find it
+            p.text = HTMLParser.HTMLParser().unescape(res['text'])
             span = markdown.util.etree.SubElement(tweet, 'span')
             span.text = "- %s (@%s)" % (user['name'], user['screen_name'])
 
