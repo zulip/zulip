@@ -350,18 +350,14 @@ def already_sent_mirrored_message_id(message):
     else:
         time_window = datetime.timedelta(seconds=0)
 
-    # Since our database doesn't store timestamps with
-    # better-than-second resolution, we should do our comparisons
-    # using objects at second resolution
-    pub_date_lowres = message.pub_date.replace(microsecond=0)
     messages =  Message.objects.filter(
         sender=message.sender,
         recipient=message.recipient,
         content=message.content,
         subject=message.subject,
         sending_client=message.sending_client,
-        pub_date__gte=pub_date_lowres - time_window,
-        pub_date__lte=pub_date_lowres + time_window)
+        pub_date__gte=message.pub_date - time_window,
+        pub_date__lte=message.pub_date + time_window)
 
     if messages.exists():
         return messages[0].id
