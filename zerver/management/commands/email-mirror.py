@@ -24,6 +24,7 @@ import sys
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
+from zerver.lib.actions import decode_email_address
 from zerver.models import Stream, get_user_profile_by_email
 
 from twisted.internet import protocol, reactor, ssl
@@ -104,7 +105,7 @@ def extract_and_validate(email):
     # Recipient is of the form
     # <stream name>+<regenerable stream token>@streams.zulip.com
     try:
-        stream_name_and_token = email.rsplit("@", 1)[0]
+        stream_name_and_token = decode_email_address(email).rsplit("@", 1)[0]
         stream_name, token = stream_name_and_token.rsplit("+", 1)
     except ValueError:
         log_and_raise("Malformed email recipient " + email)

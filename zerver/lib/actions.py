@@ -1042,6 +1042,24 @@ def do_update_message(user_profile, message_id, subject, content):
     notice = dict(event=event, users=recipients)
     tornado_callbacks.send_notification(notice)
 
+def encode_email_address(stream):
+    # Given the fact that we have almost no restrictions on stream names and
+    # that what characters are allowed in e-mail addresses is complicated and
+    # dependent on context in the address, we opt for a very simple scheme:
+    #
+    # Only encode the stream name (leave the + and token alone). Encode
+    # everything that isn't alphanumeric plus _ as the percent-prefixed integer
+    # ordinal of that character, padded with zeroes to the maximum number of
+    # bytes of a UTF-8 encoded Unicode character.
+    encoded_name = re.sub("\W", lambda x: "%" + str(ord(x.group(0))).zfill(4),
+                          stream.name)
+    return "%s+%s@streams.zulip.com" % (encoded_name, stream.email_token)
+
+def decode_email_address(email):
+    # Perform the reverse of encode_email_address. Only the stream name will be
+    # transformed.
+    return re.sub("%\d{4}", lambda x: unichr(int(x.group(0)[1:])), email)
+
 def gather_subscriptions(user_profile):
     # For now, don't display subscriptions for private messages.
     subs = Subscription.objects.select_related().filter(
