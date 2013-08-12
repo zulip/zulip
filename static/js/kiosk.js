@@ -33,9 +33,10 @@ exports.enable = function () {
     // Disable hotkeys? Seems like this is not necessary after the
     // above, and keeping them around lets us scroll nicely.
 
-    // TODO: Is it going to prompt for notifications?
-    // My guess is that it probably won't if we disable notifications
-    // for the iframe user, but who knows.
+    // We can't easily avoid asking you for Notification permission,
+    // but we can probably avoid actually triggering a notification
+    page_params.sounds_enabled = false;
+    page_params.desktop_notifications_enabled = false;
 };
 
 exports.update_new_messages = function () {
