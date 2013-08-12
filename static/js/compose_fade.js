@@ -89,7 +89,7 @@ function _update_faded_messages() {
 
 // See trac #1633.  For fast typists, calls to _update_faded_messages can
 // cause typing sluggishness.
-exports.update_faded_messages = _.debounce(_update_faded_messages, 50);
+exports.update_faded_messages = _.debounce(_update_faded_messages, 50, true);
 
 exports.start_compose = function (msg_type) {
     exports.set_focused_recipient(msg_type);
