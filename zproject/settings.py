@@ -362,6 +362,7 @@ JS_SPECS = {
                 else 'third/handlebars/handlebars.js'),
 
             'js/feature_flags.js',
+            'js/summary.js',
             'js/util.js',
             'js/dict.js',
             'js/setup.js',

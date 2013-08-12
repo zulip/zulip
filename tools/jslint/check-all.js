@@ -26,7 +26,7 @@ var globals =
     + ' invite ui util activity timerender MessageList blueslip unread stream_list'
     + ' onboarding message_edit tab_bar emoji popovers navigate message_tour'
     + ' avatar feature_flags search_suggestion referral stream_color Dict'
-    + ' Filter'
+    + ' Filter summary'
 
     // colorspace.js
     + ' colorspace'
@@ -55,6 +55,8 @@ var globals =
     + ' add_message_metadata'
     + ' respond_to_cursor'
     + ' mark_message_as_read'
+    + ' send_summarize_in_home'
+    + ' send_summarize_in_stream'
     ;
 
 

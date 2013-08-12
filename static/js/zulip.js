@@ -340,20 +340,6 @@ function process_loaded_for_unread(messages) {
     update_unread_counts();
 }
 
-function maybe_mark_summarized(message) {
-    if (feature_flags.summarize_read_while_narrowed) {
-        if (narrow.narrowed_by_reply()) {
-            // Narrowed to a topic or PM recipient
-            send_summarize_in_stream(message);
-        }
-
-        if (narrow.active() && !narrow.narrowed_to_search()) {
-            // Narrowed to anything except a search
-            send_summarize_in_home(message);
-        }
-    }
-}
-
 // Takes a list of messages and marks them as read
 function mark_messages_as_read(messages, options) {
     options = options || {};
@@ -366,7 +352,7 @@ function mark_messages_as_read(messages, options) {
         }
 
         send_read(message);
-        maybe_mark_summarized(message);
+        summary.maybe_mark_summarized(message);
 
         message.unread = false;
         unread.process_read_message(message, options);
@@ -877,7 +863,7 @@ function get_updates_success(data) {
         if (feature_flags.summarize_read_while_narrowed) {
             _.each(messages, function (message) {
                 if (message.sent_by_me) {
-                    maybe_mark_summarized(message);
+                    summary.maybe_mark_summarized(message);
                 }
             });
         }
