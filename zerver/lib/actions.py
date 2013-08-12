@@ -218,7 +218,14 @@ def do_send_messages(messages):
     messages = [message for message in messages if message is not None]
 
     # Filter out zephyr mirror anomalies where the message was already sent
-    messages = [message for message in messages if message['message'] is not None]
+    already_sent_ids = []
+    new_messages = []
+    for message in messages:
+        if isinstance(message['message'], int):
+            already_sent_ids.append(message['message'])
+        else:
+            new_messages.append(message)
+    messages = new_messages
 
     # For consistency, changes to the default values for these gets should also be applied
     # to the default args in do_send_message
@@ -303,7 +310,7 @@ def do_send_messages(messages):
                 data['stream_name'] = message['stream'].name
         tornado_callbacks.send_notification(data)
 
-    return [message['message'].id for message in messages]
+    return already_sent_ids + [message['message'].id for message in messages]
 
 def create_stream_if_needed(realm, stream_name, invite_only=False):
     (stream, created) = Stream.objects.get_or_create(
@@ -338,7 +345,7 @@ def recipient_for_emails(emails, not_forged_zephyr_mirror, user_profile, sender)
     else:
         return get_recipient(Recipient.PERSONAL, list(recipient_profile_ids)[0])
 
-def already_sent_mirrored_message(message):
+def already_sent_mirrored_message_id(message):
     if message.recipient.type == Recipient.HUDDLE:
         # For huddle messages, we use a 10-second window because the
         # timestamps aren't guaranteed to actually match between two
@@ -351,14 +358,18 @@ def already_sent_mirrored_message(message):
     # better-than-second resolution, we should do our comparisons
     # using objects at second resolution
     pub_date_lowres = message.pub_date.replace(microsecond=0)
-    return Message.objects.filter(
+    messages =  Message.objects.filter(
         sender=message.sender,
         recipient=message.recipient,
         content=message.content,
         subject=message.subject,
         sending_client=message.sending_client,
         pub_date__gte=pub_date_lowres - time_window,
-        pub_date__lte=pub_date_lowres + time_window).exists()
+        pub_date__lte=pub_date_lowres + time_window)
+
+    if messages.exists():
+        return messages[0].id
+    return None
 
 def extract_recipients(raw_recipients):
     try:
@@ -455,8 +466,10 @@ def check_message(sender, client, message_type_name, message_to,
     if not message.maybe_render_content():
         return "We were unable to render your message"
 
-    if client.name == "zephyr_mirror" and already_sent_mirrored_message(message):
-        return {'message': None}
+    if client.name == "zephyr_mirror":
+        id = already_sent_mirrored_message_id(message)
+        if id is not None:
+            return {'message': id}
 
     return {'message': message, 'stream': stream}
 
