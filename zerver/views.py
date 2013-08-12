@@ -1247,8 +1247,6 @@ def send_message_backend(request, user_profile,
                              subject_name, message_content, forged=forged,
                              forged_timestamp = request.POST.get('time'),
                              forwarder_user_profile=user_profile, realm=realm)
-    if isinstance(ret, basestring):
-        return json_error(ret)
     return json_success({"id": ret})
 
 @has_request_variables
@@ -1831,9 +1829,7 @@ def api_jira_webhook(request):
 
     subject = elide_subject(subject)
 
-    ret = check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
-    if isinstance(ret, basestring):
-        return json_error(ret)
+    check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
     return json_success()
 
 @csrf_exempt
@@ -1908,9 +1904,7 @@ def api_pivotal_webhook(request):
 
     subject = elide_subject(subject)
 
-    ret = check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
-    if isinstance(ret, basestring):
-        return json_error(ret)
+    check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
     return json_success()
 
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
@@ -1960,9 +1954,7 @@ def api_beanstalk_webhook(request, user_profile,
 
     subject = elide_subject(subject)
 
-    ret = check_send_message(user_profile, get_client("API"), "stream", ["commits"], subject, content)
-    if isinstance(ret, basestring):
-        return json_error(ret)
+    check_send_message(user_profile, get_client("API"), "stream", ["commits"], subject, content)
     return json_success()
 
 @csrf_exempt
@@ -1999,9 +1991,7 @@ def api_newrelic_webhook(request, alert=REQ(converter=json_to_dict, default=None
         return json_error("Unknown webhook request")
 
     subject = elide_subject(subject)
-    ret = check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
-    if isinstance(ret, basestring):
-        return json_error(ret)
+    check_send_message(user_profile, get_client("API"), "stream", [stream], subject, content)
     return json_success()
 
 def get_status_list(requesting_user_profile):

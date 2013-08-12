@@ -375,13 +375,9 @@ def extract_recipients(raw_recipients):
     return list(set(recipient for recipient in recipients if recipient))
 
 # check_send_message:
-# Returns the id of the sent message on success or the error message on error.
-# Has same argspec as check_message
+# Returns the id of the sent message.  Has same argspec as check_message.
 def check_send_message(*args, **kwargs):
     message = check_message(*args, **kwargs)
-    if(type(message) != dict):
-        assert isinstance(message, basestring)
-        return message
     return do_send_messages([message])[0]
 
 # check_message:
@@ -391,46 +387,46 @@ def check_message(sender, client, message_type_name, message_to,
                   forged_timestamp=None, forwarder_user_profile=None):
     stream = None
     if len(message_to) == 0:
-        return "Message must have recipients"
+        raise JsonableError("Message must have recipients")
     if len(message_content) > MAX_MESSAGE_LENGTH:
-        return "Message too long"
+        raise JsonableError("Message too long")
 
     if realm is None:
         realm = sender.realm
 
     if message_type_name == 'stream':
         if len(message_to) > 1:
-            return "Cannot send to multiple streams"
+            raise JsonableError("Cannot send to multiple streams")
 
         stream_name = message_to[0].strip()
         if stream_name == "":
-            return "Stream can't be empty"
+            raise JsonableError("Stream can't be empty")
         if len(stream_name) > Stream.MAX_NAME_LENGTH:
-            return "Stream name too long"
+            raise JsonableError("Stream name too long")
         if not valid_stream_name(stream_name):
-            return "Invalid stream name"
+            raise JsonableError("Invalid stream name")
 
         if subject_name is None:
-            return "Missing topic"
+            raise JsonableError("Missing topic")
         subject = subject_name.strip()
         if subject == "":
-            return "Topic can't be empty"
+            raise JsonableError("Topic can't be empty")
         if len(subject) > MAX_SUBJECT_LENGTH:
-            return "Topic too long"
+            raise JsonableError("Topic too long")
         ## FIXME: Commented out temporarily while we figure out what we want
         # if not valid_stream_name(subject):
         #     return json_error("Invalid subject name")
 
         stream = get_stream(stream_name, realm)
         if stream is None:
-            return "Stream does not exist"
+            raise JsonableError("Stream does not exist")
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
         if (stream.invite_only
             and ((not sender.is_bot and not subscribed_to_stream(sender, stream))
                  or (sender.is_bot and not (subscribed_to_stream(sender.bot_owner, stream)
                                             or subscribed_to_stream(sender, stream))))):
-            return "Not authorized to send to stream '%s'" % (stream.name,)
+            raise JsonableError("Not authorized to send to stream '%s'" % (stream.name,))
     elif message_type_name == 'private':
         not_forged_zephyr_mirror = client and client.name == "zephyr_mirror" and not forged
         try:
@@ -438,9 +434,9 @@ def check_message(sender, client, message_type_name, message_to,
                                              forwarder_user_profile, sender)
         except ValidationError, e:
             assert isinstance(e.messages[0], basestring)
-            return e.messages[0]
+            raise JsonableError(e.messages[0])
     else:
-        return "Invalid message type"
+        raise JsonableError("Invalid message type")
 
     message = Message()
     message.sender = sender
@@ -456,7 +452,7 @@ def check_message(sender, client, message_type_name, message_to,
     message.sending_client = client
 
     if not message.maybe_render_content():
-        return "Unable to render message"
+        raise JsonableError("Unable to render message")
 
     if client.name == "zephyr_mirror":
         id = already_sent_mirrored_message_id(message)
@@ -483,15 +479,13 @@ def internal_prep_message(sender_email, recipient_type_name, recipients,
     if recipient_type_name == "stream":
         stream, _ = create_stream_if_needed(realm, parsed_recipients[0])
 
-    ret = check_message(sender, get_client("Internal"), recipient_type_name,
-                        parsed_recipients, subject, content, realm)
-    if isinstance(ret, basestring):
-        logging.error("Error queueing internal message by %s: %s" % (sender_email, ret))
-    elif isinstance(ret, dict):
-        return ret
-    else:
-        logging.error("Error queueing internal message; check message return unexpected type: %s" \
-                      % (repr(ret),))
+    try:
+        return check_message(sender, get_client("Internal"), recipient_type_name,
+                             parsed_recipients, subject, content, realm)
+    except JsonableError, e:
+        logging.error("Error queueing internal message by %s: %s" % (sender_email, str(e)))
+
+    return None
 
 def internal_send_message(sender_email, recipient_type_name, recipients,
                           subject, content, realm=None):
