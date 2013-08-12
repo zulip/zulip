@@ -130,15 +130,7 @@ $(function () {
     });
 });
 
-exports.start = function (msg_type, opts) {
-    if (reload.is_in_progress()) {
-        return;
-    }
-
-    $("#compose_close").show();
-    $("#compose_controls").hide();
-    $('.message_comp').show();
-
+function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     var default_opts = {
         message_type:     msg_type,
         stream:           '',
@@ -149,8 +141,20 @@ exports.start = function (msg_type, opts) {
 
     // Set default parameters based on the current narrowed view.
     narrow.set_compose_defaults(default_opts);
-
     opts = _.extend(default_opts, opts);
+    return opts;
+}
+
+exports.start = function (msg_type, opts) {
+    if (reload.is_in_progress()) {
+        return;
+    }
+
+    $("#compose_close").show();
+    $("#compose_controls").hide();
+    $('.message_comp').show();
+
+    opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
 
     if (!(compose.composing() === msg_type &&
           ((msg_type === "stream" &&
