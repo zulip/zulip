@@ -659,7 +659,8 @@ def home(request):
                                'nofontface': is_buggy_ua(request.META["HTTP_USER_AGENT"]),
                                'show_debug':
                                    settings.DEBUG and ('show_debug' in request.GET),
-                               'show_invites': show_invites
+                               'show_invites': show_invites,
+                               'show_admin': user_profile.show_admin,
                                },
                               context_instance=RequestContext(request))
 

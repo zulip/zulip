@@ -150,6 +150,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
+    @property
+    def show_admin(self):
+        # Logic to determine if the user should see the administration tools.
+        # Do NOT use this to check if a user is authorized to perform a specific action!
+        return 0 < self.userobjectpermission_set.filter(
+                content_type__name="realm",
+                permission__codename="administer").count()
+
     def __repr__(self):
         return (u"<UserProfile: %s %s>" % (self.email, self.realm)).encode("utf-8")
     def __str__(self):

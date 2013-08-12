@@ -130,6 +130,9 @@ function do_hashchange() {
         case "#subscriptions":
             ui.change_tab_to("#subscriptions");
             break;
+        case "#administration":
+            ui.change_tab_to("#administration");
+            break;
         case "#settings":
             ui.change_tab_to("#settings");
             break;

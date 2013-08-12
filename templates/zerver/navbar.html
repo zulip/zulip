@@ -58,6 +58,13 @@
                     </a>
                   </li>
                   <li class="divider"></li>
+                  {% if show_admin %}
+                  <li title="Administration">
+                    <a href="#administration" role="button" data-toggle="tab">
+                      <i class="icon-vector-bolt"></i> Administration
+                    </a>
+                  </li>
+                  {% endif %}
                   {% if show_invites %}
                   <li title="Invite coworkers to Zulip">
                     <a href="#invite-user" role="button" data-toggle="modal">

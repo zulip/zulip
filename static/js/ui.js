@@ -858,6 +858,9 @@ $(function () {
     // Whenever the streams page comes up (from anywhere), populate it.
     subs_link.on('shown', subs.setup_page);
 
+    var admin_link = $('#gear-menu a[href="#administration"]');
+    admin_link.on('shown', admin.setup_page);
+
     $('#pw_change_link').on('click', function (e) {
         e.preventDefault();
         $('#pw_change_link').hide();

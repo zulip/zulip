@@ -1,0 +1,23 @@
+{{#with person}}
+<tr class="user_row" id="user_{{email}}">
+  <td>
+      <span class="user_name">{{full_name}}</span>
+  </td>
+  <td>
+      <span class="email">{{email}}</span>
+  </td>
+  <td>
+      <button class="btn activation_toggle_button btn-danger"
+	      {{#inactive}}disabled{{/inactive}}
+              type="button" name="activation_toggle">
+        {{#inactive}}
+        Reactivate
+        {{/inactive}}
+        {{^inactive}}
+        Deactivate
+        {{/inactive}}
+      </button>
+    </div>
+  </td>
+</tr>
+{{/with}}

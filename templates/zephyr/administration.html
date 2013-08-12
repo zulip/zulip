@@ -1,0 +1,32 @@
+{# Administration panel #}
+
+<div class="row-fluid">
+  <div class="span12">
+    <div class="administration">
+      <h1>Administration</h1>
+      <h2>Users</h2>
+      <table class="table table-condensed table-striped">
+        <tbody id="admin_users_table">
+          <th>Name</th>
+          <th>Email</th>
+          <th>Actions</th>
+        </tbody>
+      </table>
+      <div id="deactivation_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_modal_label" aria-hidden="true">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3 id="deactivation_modal_label">Deactivate <span class="email"></span></h3>
+        </div>
+        <div class="modal-body">
+          <p>By deactivating <strong><span class="user_name"></span></strong> &lt;<span class="email"></span>&gt;, they will be logged out of Zulip immediately.</p>
+          <p>Their password will be cleared from our systems, and any bots they maintain will be disabled.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+          <button class="btn btn-danger" id="do_deactivate_button">Deactivate now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -378,6 +378,7 @@ JS_SPECS = {
             'js/compose_fade.js',
             'js/compose.js',
             'js/stream_color.js',
+            'js/admin.js',
             'js/subs.js',
             'js/message_edit.js',
             'js/ui.js',
