@@ -46,6 +46,8 @@ exports.update_new_messages = function () {
     // Format messages properly & scroll to last message
     $(".message_controls").hide();
     $(".message_time").css('right', -65);
+    // Suppress user-info popover
+    $(".sender_info_hover").removeClass("sender_info_hover");
     navigate.to_end();
 };
 
