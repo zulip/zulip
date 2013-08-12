@@ -2223,6 +2223,8 @@ def json_get_bots(request, user_profile):
 @authenticated_json_post_view
 @has_request_variables
 def json_refer_friend(request, user_profile, email=REQ):
+    if not email:
+        return json_error("No email address specified")
     if user_profile.invites_granted - user_profile.invites_used <= 0:
         return json_error("Insufficient invites")
 

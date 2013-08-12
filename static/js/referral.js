@@ -54,6 +54,7 @@ exports.update_state = function (granted, used) {
             $(".no-more-invites").hide();
         } else {
             $(".still-have-invites").hide();
+            $("#referral-form input").blur();
             if (ever_had_invites) {
                 $(".no-more-invites").show();
             }
