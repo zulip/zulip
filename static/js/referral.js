@@ -77,7 +77,7 @@ function show_and_fade_elem(elem) {
 }
 
 $(function () {
-    $("#referral-form").validate({
+    var validator = $("#referral-form").validate({
         errorClass: 'text-error',
         submitHandler: function () {
             $.ajax({
@@ -95,6 +95,20 @@ $(function () {
             show_and_fade_elem($("#tell-a-friend-success"));
             $("#referral-form input").val('');
             exports.update_state(last_granted, last_used + 1);
+        },
+        success: function () {
+            ui.resize_page_components();
+        },
+        showErrors: function () {
+            this.defaultShowErrors();
+            ui.resize_page_components();
+        }
+    });
+
+    $("#referral-form input").on('blur', function (e) {
+        if ($("#referral-form input").val() === '') {
+            validator.resetForm();
+            ui.resize_page_components();
         }
     });
 
