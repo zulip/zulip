@@ -10,7 +10,7 @@ function populate_users () {
     });
 
     $.each(page_params.people_list, function (index, person) {
-        if (person.email.indexOf("+") === -1 && person.email.indexOf("-bot@") === -1) {
+        if (!person.is_bot) {
             tb.append(templates.render("admin_user_list", {person: person}));
         }
     });

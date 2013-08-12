@@ -1113,6 +1113,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         ret['pointer'] = user_profile.pointer
     if event_types is None or "realm_user" in event_types:
         ret['realm_users'] = [{'email'     : profile.email,
+                               'is_bot'    : profile.is_bot,
                                'full_name' : profile.full_name}
                               for profile in
                               UserProfile.objects.select_related().filter(realm=user_profile.realm,
