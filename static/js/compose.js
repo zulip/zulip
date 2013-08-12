@@ -328,19 +328,14 @@ function send_message() {
             $("#compose-send-button").removeAttr('disabled');
             $("#sending-indicator").hide();
             send_status.hide();
-            if (respond_to_cursor && (feature_flags.always_open_compose ||
-                                      narrow.narrowed_by_reply())) {
+            if (respond_to_cursor) {
                 respond_to_message({trigger: 'autorespond'});
             }
             else {
-                respond_to_cursor = false;
-
-                if (feature_flags.always_open_compose) {
-                    var new_msg = _.extend({replying_to_message: request},
-                                           request);
-                    new_msg.content = "";
-                    compose.start(new_msg.type, new_msg);
-                }
+                var new_msg = _.extend({replying_to_message: request},
+                                       request);
+                new_msg.content = "";
+                compose.start(new_msg.type, new_msg);
             }
         },
         error: function (xhr, error_type) {
