@@ -7,6 +7,7 @@ exports.summarize_read_while_narrowed = page_params.staging;
 exports.twenty_four_hour_time = _.contains([],
                                   page_params.email);
 exports.dropbox_integration = page_params.staging || _.contains(['dropbox.com'], page_params.domain);
+exports.email_forwarding = page_params.staging;
 return exports;
 
 }());

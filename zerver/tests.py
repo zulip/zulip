@@ -872,6 +872,7 @@ class SubscriptionPropertiesTest(AuthedTestCase):
         stream_name = sub['name']
         old_color = sub['color']
         invite_only = sub['invite_only']
+        email_address = sub['email_address']
         new_color = "#ffffff" # TODO: ensure that this is different from old_color
         result = self.client.post("/json/subscriptions/property",
                                   {"property": "color",
@@ -882,7 +883,8 @@ class SubscriptionPropertiesTest(AuthedTestCase):
 
         new_subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
         sub = {'name': stream_name, 'in_home_view': True, 'color': new_color,
-               'invite_only': invite_only, 'notifications': False}
+               'invite_only': invite_only, 'notifications': False,
+               'email_address': email_address}
         self.assertIn(sub, new_subs)
 
         new_subs.remove(sub)

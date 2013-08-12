@@ -44,6 +44,11 @@
           </li>
         </ul>
       </div>
+      {{#if_and show_email_token subscribed}}
+      <div>
+          <p><b>Email address</b>: <tt>{{email_address}}</tt></p>
+      </div>
+      {{/if_and}}
       {{#render_subscribers}}
       <div class="subscriber_list_settings">
         <span class="sub_settings_title">Members</span>

@@ -210,8 +210,9 @@ exports.show_settings_for = function (stream_name) {
 };
 
 function add_sub_to_table(sub) {
-    $('#create_stream_row').after(
-        templates.render('subscription', sub));
+    $('#create_stream_row').after(templates.render(
+        'subscription',
+        _.extend(sub, {'show_email_token': feature_flags.email_forwarding})));
     settings_for_sub(sub).collapse('show');
 }
 
@@ -363,7 +364,8 @@ function populate_subscriptions(subs, subscribed) {
         var stream_name = elem.name;
         var sub = create_sub(stream_name, {color: elem.color, in_home_view: elem.in_home_view,
                                            invite_only: elem.invite_only,
-                                           notifications: elem.notifications, subscribed: subscribed});
+                                           notifications: elem.notifications, subscribed: subscribed,
+                                           email_address: elem.email_address});
         sub_rows.push(sub);
     });
 
@@ -431,6 +433,9 @@ exports.setup_page = function () {
             var sub = exports.get(stream);
             if (!sub) {
                 sub = create_sub(stream, {subscribed: false});
+            }
+            if (feature_flags.email_forwarding) {
+                sub = _.extend(sub, {'show_email_token': feature_flags.email_forwarding});
             }
             sub_rows.push(sub);
         });

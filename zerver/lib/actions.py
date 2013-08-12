@@ -550,7 +550,8 @@ def notify_subscriptions_added(user_profile, sub_pairs, no_log=False):
     payload = [dict(name=stream.name,
                     in_home_view=subscription.in_home_view,
                     invite_only=stream.invite_only,
-                    color=subscription.color)
+                    color=subscription.color,
+                    email_address=encode_email_address(stream))
             for (subscription, stream) in sub_pairs]
     notice = dict(event=dict(type="subscriptions", op="add",
                              subscriptions=payload),
@@ -1070,18 +1071,19 @@ def gather_subscriptions(user_profile):
 
     stream_hash = {}
     for stream in Stream.objects.filter(id__in=stream_ids):
-        stream_hash[stream.id] = (stream.name, stream.invite_only)
+        stream_hash[stream.id] = stream
 
     subscribed = []
     unsubscribed = []
 
     for sub in subs:
-        (stream_name, invite_only) = stream_hash[sub.recipient.type_id]
-        stream = {'name': stream_name,
+        stream = stream_hash[sub.recipient.type_id]
+        stream = {'name': stream.name,
                   'in_home_view': sub.in_home_view,
-                  'invite_only': invite_only,
+                  'invite_only': stream.invite_only,
                   'color': sub.color,
-                  'notifications': sub.notifications}
+                  'notifications': sub.notifications,
+                  'email_address': encode_email_address(stream)}
         if sub.active:
             subscribed.append(stream)
         else:
