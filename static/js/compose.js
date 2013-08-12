@@ -145,6 +145,15 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     return opts;
 }
 
+function same_recipient_as_before(msg_type, opts) {
+    return (compose.composing() === msg_type) &&
+            ((msg_type === "stream" &&
+              opts.stream === compose.stream_name() &&
+              opts.subject === compose.subject()) ||
+             (msg_type === "private" &&
+              opts.private_message_recipient === compose.recipient()));
+}
+
 exports.start = function (msg_type, opts) {
     if (reload.is_in_progress()) {
         return;
@@ -156,12 +165,7 @@ exports.start = function (msg_type, opts) {
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
 
-    if (!(compose.composing() === msg_type &&
-          ((msg_type === "stream" &&
-            opts.stream === compose.stream_name() &&
-            opts.subject === compose.subject()) ||
-           (msg_type === "private" &&
-            opts.private_message_recipient === compose.recipient())))) {
+    if (!same_recipient_as_before(msg_type, opts)) {
         // Clear the compose box if the existing message is to a different recipient
         clear_box();
     }
