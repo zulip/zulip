@@ -1,8 +1,11 @@
 {{! User Presence rows }}
 {{#each users}}
-<li class="user_sidebar_entry user_{{type}}">
-<span class="user-status-indicator"></span>
-<a href="#" data-email="{{email}}" data-name="{{name}}" title="{{name}} {{type_desc}}"
- class="{{#if my_fullname}} my_fullname{{/if}}"><span class="count">(<span class="value"></span>) </span>{{name}}</a>
+<li data-email="{{email}}" class="user_sidebar_entry narrow-filter user_{{type}}">
+  <span class="selectable_sidebar_block">
+    <span class="user-status-indicator"></span>
+      <a href="#" data-email="{{email}}" data-name="{{name}}" title="{{name}} {{type_desc}}"
+         class="{{#if my_fullname}} my_fullname{{/if}}"><span class="count">(<span class="value"></span>) </span>{{name}}</a>
+  </span>
+  <span class="arrow"><i class="icon-vector-chevron-down"></i></span>
 </li>
 {{/each}}

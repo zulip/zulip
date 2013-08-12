@@ -159,7 +159,7 @@ exports.register_click_handlers = function () {
     });
 
 
-    $('body').on('click', '.user_sidebar_entry', function (e) {
+    $('#user_presences').on('click', 'span.arrow', function (e) {
         var last_sidebar_elem = current_user_sidebar_elem;
         popovers.hide_all();
 

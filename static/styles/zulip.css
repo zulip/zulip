@@ -304,8 +304,11 @@ a:hover code {
 }
 
 #stream_filters .narrow-filter {
-    display: block;
     padding-left: 1.5em;
+}
+
+.narrow-filter {
+    display: block;
     position: relative;
     padding-right: 10px;
 }
@@ -387,18 +390,6 @@ a:hover code {
 .user_idle .user-status-indicator {
     background-color: none;
     border-color: gray;
-}
-
-#user_presences .arrow {
-    font-size: 1em;
-    width: 2em;
-}
-#user_presences .arrow-real {
-    display: none;
-}
-#user_presences li:hover .arrow-real {
-    display: inline;
-    cursor: pointer;
 }
 
 #user_presences a {
@@ -1641,10 +1632,13 @@ table.floating_recipient {
 
 #stream_filters .subscription_block {
     padding-bottom: 4px;
-    display: inline-block;
     line-height: 12px;
-    width: 100%;
     padding-top: 4px;
+}
+
+.selectable_sidebar_block {
+    display: inline-block;
+    width: 100%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

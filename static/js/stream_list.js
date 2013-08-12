@@ -292,6 +292,10 @@ $(function () {
             rebuild_recent_subjects(op_stream[0], subject);
             process_visible_unread_messages();
         }
+        var op_pm = event.filter.operands('pm-with');
+        if (op_pm.length === 1) {
+            $("#user_presences li[data-email='" + op_pm[0] + "']").addClass('active-filter');
+        }
     });
 
     $(document).on('narrow_deactivated.zulip', function (event) {

@@ -1158,8 +1158,8 @@ $(function () {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    $('#user_presences').on('click', 'a', function (e) {
-        var email = $(e.target).closest('a').attr('data-email');
+    $('#user_presences').on('click', '.selectable_sidebar_block', function (e) {
+        var email = $(e.target).parents('li').attr('data-email');
         narrow.by('pm-with', email, {trigger: 'presence list'});
         compose.start('private', {private_message_recipient: email,
                                   trigger: 'presence list'});
