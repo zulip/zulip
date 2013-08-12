@@ -311,8 +311,6 @@ function compose_error(error_text, bad_input) {
 var send_options;
 
 function send_message() {
-    var send_status = $('#send-status');
-
     var request = create_message_object();
     exports.snapshot_message(request);
 
@@ -328,9 +326,8 @@ function send_message() {
         type: 'POST',
         data: request,
         success: function (resp, statusText, xhr) {
-            clear_box();
-            is_composing_message = false;
-            hide_box();
+            $("#new_message_content").val('').focus();
+            $("#send-status").hide(0);
             if (request.type === "private") {
                 onboarding.mark_checklist_step("sent_private_message");
             } else {
@@ -339,11 +336,6 @@ function send_message() {
             clear_message_snapshot();
             $("#compose-send-button").removeAttr('disabled');
             $("#sending-indicator").hide();
-
-            var new_msg = _.extend({replying_to_message: request},
-                                   request);
-            new_msg.content = "";
-            compose.start(new_msg.type, new_msg);
         },
         error: function (xhr, error_type) {
             if (error_type !== 'timeout' && reload.is_pending()) {
