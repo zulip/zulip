@@ -12,8 +12,6 @@ var recent_subjects = new Dict();
 var queued_mark_as_read = [];
 var queued_flag_timer;
 
-var respond_to_cursor = false;
-
 var get_updates_params = {
     pointer: -1
 };
@@ -887,10 +885,6 @@ function get_updates_success(data) {
             // If you send a message when narrowed to a recipient, move the
             // pointer to it.
 
-            // Save the state of respond_to_cursor, and reapply it every time
-            // we move the cursor.
-            var saved_respond_to_cursor = respond_to_cursor;
-
             var i;
             var selected_id = current_msg_list.selected_id();
 
@@ -908,8 +902,6 @@ function get_updates_success(data) {
                     break;
                 }
             }
-
-            respond_to_cursor = saved_respond_to_cursor;
         }
 
         process_visible_unread_messages();
@@ -1243,11 +1235,6 @@ function main() {
             && event.id > furthest_read)
         {
             furthest_read = event.id;
-        }
-
-        // If we move the pointer, we don't want to respond to what's at the pointer
-        if (event.previously_selected !== event.id) {
-            respond_to_cursor = false;
         }
 
         if (event.mark_read && event.previously_selected !== -1) {

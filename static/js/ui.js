@@ -1010,7 +1010,6 @@ $(function () {
             }
 
             current_msg_list.select_id(id);
-            respond_to_cursor = true;
             respond_to_message({trigger: 'message click'});
             e.stopPropagation();
             popovers.hide_all();

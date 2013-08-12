@@ -217,7 +217,6 @@ exports.cancel = function () {
         $('#restore-draft').show();
     }
     $(document).trigger($.Event('compose_canceled.zulip'));
-    respond_to_cursor = false;
 };
 
 exports.empty_subject_placeholder = function () {
