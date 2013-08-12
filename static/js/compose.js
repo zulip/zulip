@@ -154,6 +154,23 @@ function same_recipient_as_before(msg_type, opts) {
               opts.private_message_recipient === compose.recipient()));
 }
 
+function show_box_for_msg_type(msg_type, opts) {
+    var focus_area;
+
+    if (msg_type === 'stream' && opts.stream && ! opts.subject) {
+        focus_area = 'subject';
+    } else if ((msg_type === 'stream' && opts.stream)
+               || (msg_type === 'private' && opts.private_message_recipient)) {
+        focus_area = 'new_message_content';
+    }
+
+    if (msg_type === 'stream') {
+        show_box('stream', $("#" + (focus_area || 'stream')));
+    } else {
+        show_box('private', $("#" + (focus_area || 'private_message_recipient')));
+    }
+}
+
 exports.start = function (msg_type, opts) {
     if (reload.is_in_progress()) {
         return;
@@ -184,21 +201,10 @@ exports.start = function (msg_type, opts) {
 
     ui.change_tab_to("#home");
 
-    var focus_area;
-    if (msg_type === 'stream' && opts.stream && ! opts.subject) {
-        focus_area = 'subject';
-    } else if ((msg_type === 'stream' && opts.stream)
-               || (msg_type === 'private' && opts.private_message_recipient)) {
-        focus_area = 'new_message_content';
-    }
-
     is_composing_message = msg_type;
 
-    if (msg_type === 'stream') {
-        show_box('stream', $("#" + (focus_area || 'stream')));
-    } else {
-        show_box('private', $("#" + (focus_area || 'private_message_recipient')));
-    }
+    // Show either stream/topic fields or "You and" field.
+    show_box_for_msg_type(msg_type, opts);
 
     compose_fade.start_compose(msg_type);
 
