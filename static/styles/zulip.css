@@ -543,7 +543,7 @@ td.pointer {
 
 .message_time {
     position: absolute;
-    right: -26px;
+    right: -40px;
     top: 7px;
     display: inline-block;
     font-weight: normal;
@@ -556,7 +556,7 @@ td.pointer {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -63px;
+    right: -80px;
 }
 
 .message_data {
@@ -966,7 +966,7 @@ blockquote p {
 }
 
 .messagebox {
-    padding: 7px 70px 0px 7px;
+    padding: 7px 85px 0px 7px;
     word-wrap: break-word;
     cursor: pointer;
     vertical-align: top;
