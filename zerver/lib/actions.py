@@ -375,8 +375,8 @@ def extract_recipients(raw_recipients):
     return list(set(recipient for recipient in recipients if recipient))
 
 # check_send_message:
-# Returns None on success or the error message on error.
-# has same argspec as check_message
+# Returns the id of the sent message on success or the error message on error.
+# Has same argspec as check_message
 def check_send_message(*args, **kwargs):
     message = check_message(*args, **kwargs)
     if(type(message) != dict):
