@@ -69,7 +69,7 @@ function hide_box() {
     $('#private-message').hide();
     $(".new_message_textarea").css("min-height", "");
     notifications_bar.enable();
-    compose_fade.unfade_messages(true);
+    compose_fade.clear_compose();
     $('.message_comp').hide();
     $("#compose_controls").show();
 }
@@ -192,7 +192,7 @@ exports.start = function (msg_type, opts) {
         show_box('private', $("#" + (focus_area || 'private_message_recipient')));
     }
 
-    compose_fade.set_faded_messages(msg_type);
+    compose_fade.start_compose(msg_type);
 
     exports.decorate_stream_bar(opts.stream);
     $(document).trigger($.Event('compose_started.zulip', opts));
@@ -281,7 +281,7 @@ exports.restore_message = function () {
                                  snapshot_copy);
     }
     clear_message_snapshot();
-    compose_fade.unfade_messages(true);
+    compose_fade.clear_compose();
     compose.start(snapshot_copy.type, snapshot_copy);
 };
 

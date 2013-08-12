@@ -411,9 +411,6 @@ exports.activate = function (operators, opts) {
         opts.select_first_unread = false;
     }
 
-    // Unfade the home view before we switch tables.
-    compose_fade.unfade_messages();
-
     var was_narrowed_already = exports.active();
     var then_select_id = opts.then_select_id;
     var then_select_offset;
@@ -524,7 +521,7 @@ exports.activate = function (operators, opts) {
     $('#search_query').val(exports.unparse(operators));
     search.update_button_visibility();
     compose.update_recipient_on_narrow();
-    compose_fade.update_faded_messages();
+    compose_fade.update_message_list();
 
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: narrowed_msg_list,
                                                             filter: current_filter,
@@ -628,7 +625,7 @@ exports.deactivate = function () {
     }
 
     hashchange.save_narrow();
-    compose_fade.update_faded_messages();
+    compose_fade.update_message_list();
 
     $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
 };
