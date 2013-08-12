@@ -19,6 +19,13 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
 <div class="pitch">
     <hr/>
+
+{% ifequal company_name "customer3.invalid" %}
+    <p>
+    CUSTOMER3 is using Zulip for real-time chat during EVENT1.
+    </p>
+{% endifequal %}
+
     <p>You're almost there. We just need you to do one last thing.</p>
     <h3>Tell us a bit about yourself.</h3>
 </div>

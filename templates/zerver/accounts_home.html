@@ -6,11 +6,20 @@
 
 {% block portico_content %}
 <script type="text/javascript">
-autofocus('#email');
+$(function () {
+    autofocus('#email');
+
+    if (window.location.pathname.indexOf("customer3.invalid") !== -1) {
+        $("#customer3-pitch").show();
+    }
+});
 </script>
 
         <div class="pitch">
-            <p class="lead">Let's get started…</p>
+            <p class="lead">
+              <span id="customer3-pitch" style="display: none;">Participate in the real-time EVENT1 discussion using Zulip!</span>
+              Let's get started…
+            </p>
             <form class="form-inline" id="send_confirm" name="email_form"
                   action="{{ current_url }}" method="post">
                 {% csrf_token %}
