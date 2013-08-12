@@ -391,9 +391,9 @@ def check_message(sender, client, message_type_name, message_to,
                   forged_timestamp=None, forwarder_user_profile=None):
     stream = None
     if len(message_to) == 0:
-        return "Message must have recipients."
+        return "Message must have recipients"
     if len(message_content) > MAX_MESSAGE_LENGTH:
-        return "Message too long."
+        return "Message too long"
 
     if realm is None:
         realm = sender.realm
@@ -456,7 +456,7 @@ def check_message(sender, client, message_type_name, message_to,
     message.sending_client = client
 
     if not message.maybe_render_content():
-        return "We were unable to render your message"
+        return "Unable to render message"
 
     if client.name == "zephyr_mirror":
         id = already_sent_mirrored_message_id(message)
