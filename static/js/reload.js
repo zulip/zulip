@@ -85,6 +85,7 @@ $(function () {
     var pointer = parseInt(vars.pointer, 10);
 
     if (pointer) {
+        page_params.orig_initial_pointer = page_params.initial_pointer;
         page_params.initial_pointer = pointer;
     }
 
