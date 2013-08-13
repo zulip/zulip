@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from django.test import TestCase
 from django.test.simple import DjangoTestSuiteRunner
 from django.utils.timezone import now
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
@@ -14,11 +15,12 @@ from zerver.tornadoviews import json_get_updates, api_get_messages
 from zerver.decorator import RespondAsynchronously, RequestVariableConversionError, profiled
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import do_send_message, gather_subscriptions, \
-    create_stream_if_needed, do_add_subscription
+    create_stream_if_needed, do_add_subscription, compute_mit_user_fullname
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.rate_limiter import clear_user_history
+from zerver.forms import not_mit_mailing_list
 
 from django.conf import settings
 import os
@@ -1681,6 +1683,20 @@ class ChangeSettingsTest(AuthedTestCase):
         self.login("hamlet@zulip.com")
         result = self.post_with_params({"old_password": "bad_password"})
         self.assert_json_error(result, "Wrong password!")
+
+class MITNameTest(TestCase):
+    def test_valid_hesiod(self):
+        self.assertEquals(compute_mit_user_fullname("starnine@mit.edu"), "Athena Consulting Exchange User")
+        self.assertEquals(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
+    def test_invalid_hesiod(self):
+        self.assertEquals(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
+        self.assertEquals(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
+
+    def test_mailinglist(self):
+        self.assertRaises(ValidationError, not_mit_mailing_list, "1234567890@mit.edu")
+        self.assertRaises(ValidationError, not_mit_mailing_list, "ec-discuss@mit.edu")
+    def test_notmailinglist(self):
+        self.assertTrue(not_mit_mailing_list("sipbexch@mit.edu"))
 
 class S3Test(AuthedTestCase):
     test_uris = []
