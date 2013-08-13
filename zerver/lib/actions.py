@@ -306,6 +306,10 @@ def do_send_messages(messages):
                 data['stream_name'] = message['stream'].name
         tornado_callbacks.send_notification(data)
 
+    # Note that this does not preserve the order of message ids
+    # returned.  In practice, this shouldn't matter, as we only
+    # mirror single zephyr messages at a time and don't otherwise
+    # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
 
 def create_stream_if_needed(realm, stream_name, invite_only=False):
