@@ -28,6 +28,32 @@ exports.get_cleaned_pm_recipients = function (query_string) {
     return recipients;
 };
 
+function case_insensitive_find(term, array) {
+    var lowered_term = term.toLowerCase();
+    return _.filter(array, function (elt) {
+        return elt.toLowerCase() === lowered_term;
+    }).length !== 0;
+}
+
+var seen_topics = new Dict();
+
+exports.add_topic = function (stream, topic) {
+    if (! seen_topics.has(stream)) {
+        seen_topics.set(stream, []);
+    }
+    if (! case_insensitive_find(topic, seen_topics.get(stream))) {
+        seen_topics.get(stream).push(topic);
+        seen_topics.get(stream).sort();
+    }
+};
+
+exports.topics_seen_for = function (stream) {
+    if (seen_topics.has(stream)) {
+        return seen_topics.get(stream);
+    }
+    return [];
+};
+
 function get_last_recipient_in_pm(query_string) {
     var recipients = get_pm_recipients(query_string);
     return recipients[recipients.length-1];
@@ -202,11 +228,8 @@ exports.initialize = function () {
 
     $( "#subject" ).typeahead({
         source: function (query, process) {
-            var stream_name = $("#stream").val(), i;
-            if (subject_dict.has(stream_name)) {
-                return subject_dict.get(stream_name);
-            }
-            return [];
+            var stream_name = $("#stream").val();
+            return exports.topics_seen_for(stream_name);
         },
         items: 3,
         highlighter: composebox_typeahead_highlighter,

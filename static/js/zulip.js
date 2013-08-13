@@ -5,7 +5,6 @@ var home_msg_list = new MessageList('zhome',
 );
 var narrowed_msg_list;
 var current_msg_list = home_msg_list;
-var subject_dict = new Dict();
 var people_dict = new Dict();
 var recent_subjects = new Dict();
 
@@ -474,13 +473,6 @@ function unconditionally_send_pointer_update() {
     }
 }
 
-function case_insensitive_find(term, array) {
-    var lowered_term = term.toLowerCase();
-    return _.filter(array, function (elt) {
-        return elt.toLowerCase() === lowered_term;
-    }).length !== 0;
-}
-
 function process_message_for_recent_subjects(message, remove_message) {
     var current_timestamp = 0;
     var count = 0;
@@ -554,13 +546,7 @@ function add_message_metadata(message) {
     case 'stream':
         message.is_stream = true;
         message.stream = message.display_recipient;
-        if (! subject_dict.has(message.stream)) {
-            subject_dict.set(message.stream, []);
-        }
-        if (! case_insensitive_find(message.subject, subject_dict.get(message.stream))) {
-            subject_dict.get(message.stream).push(message.subject);
-            subject_dict.get(message.stream).sort();
-        }
+        composebox_typeahead.add_topic(message.stream, message.subject);
         message.reply_to = message.sender_email;
 
         process_message_for_recent_subjects(message);
