@@ -621,8 +621,17 @@ MessageList.prototype = {
             this.select_id(this._selected_id, {from_rendering: true});
         }
 
-        // Re-add the fading of messages that is lost when we re-render.
-        compose_fade.update_faded_messages();
+        if (this === current_msg_list) {
+            // We don't have a Message class, but we can at least hide the messy details
+            // of rows.js from compose_fade.  We provide a callback function to be lazy--
+            // compose_fade may not actually need the elements depending on its internal
+            // state.
+            var get_element = function (message) {
+                return rows.get(message.id, table_name);
+            };
+
+            compose_fade.update_rendered_messages(messages, get_element);
+        }
 
         if (this === current_msg_list && messages_are_new) {
             this._maybe_autoscroll(rendered_elems);

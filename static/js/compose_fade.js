@@ -110,6 +110,28 @@ exports.update_message_list = function () {
     }
 };
 
+exports.update_rendered_messages = function (messages, get_element) {
+    if (_want_normal_display()) {
+        return;
+    }
+
+    // This loop is superficially similar to some code in _fade_messages, but an
+    // important difference here is that we look at each message individually, whereas
+    // the other code takes advantage of blocks beneath recipient bars.
+    _.each(messages, function (message) {
+        var elt = get_element(message);
+        var should_fade_message = !util.same_recipient(focused_recipient, message);
+
+        if (should_fade_message) {
+            elt.removeClass("unfaded").addClass("faded");
+        } else {
+            elt.removeClass("faded").addClass("unfaded");
+        }
+    });
+
+    ui.update_floating_recipient_bar();
+};
+
 return exports;
 
 }());
