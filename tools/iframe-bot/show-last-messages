@@ -144,6 +144,9 @@ for msg in result['messages']:
     if msg['type'] != 'stream':
         # Don't show PMs the bot got
         continue
+    if msg['sender_full_name'] == 'TwitterBot':
+        # Don't put tweets in the iframe
+        continue
 
     uniwrite(f,'<div class="message">')
 
