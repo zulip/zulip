@@ -816,6 +816,24 @@ class MessagePOSTTest(AuthedTestCase):
                                                          "to": "starnine@mit.edu"})
         self.assert_json_success(result)
 
+    def test_duplicated_mirrored_huddle(self):
+        """
+        Sending two mirrored huddles in the row return the same ID
+        """
+        msg = {"type": "private",
+               "sender": "sipbtest@mit.edu",
+               "content": "Test message",
+               "client": "zephyr_mirror",
+               "to": ujson.dumps(["sipbcert@mit.edu",
+                                  "starnine@mit.edu"])}
+
+        self.login("starnine@mit.edu")
+        result1 = self.client.post("/json/send_message", msg)
+        self.login("sipbcert@mit.edu")
+        result2 = self.client.post("/json/send_message", msg)
+        self.assertEqual(ujson.loads(result1.content)['id'],
+                         ujson.loads(result2.content)['id'])
+
 class SubscriptionPropertiesTest(AuthedTestCase):
 
     def test_get_stream_color(self):
