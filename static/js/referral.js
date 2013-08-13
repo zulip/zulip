@@ -2,19 +2,12 @@ var referral = (function () {
 
 var exports = {};
 
-var placeholder_invitees = ['guglielmo@marconi.com',
-                            'heinrich@hertz.com',
-                            'nikola@tesla.com',
-                            'samuel@morse.com',
-                            'claude@shannon.com',
-                            'thomas@edison.com',
-                            'hedy@lamarr.com',
-                            'grace@hopper.com',
-                            'martha@coston.com',
-                            'ada@lovelace.com',
-                            'hanna@hammarstrom.com',
-                            'hertha@ayrton.com'
-                           ];
+var placeholder_invitees = ['nikola.tesla@example.com',
+                            'samuel.morse@example.com',
+                            'claude.shannon@example.com',
+                            'hedy.lamarr@example.com',
+                            'grace.hopper@example.com',
+                            'ada.lovelace@example.com'];
 
 var last_granted;
 var last_used;
