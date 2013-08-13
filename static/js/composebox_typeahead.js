@@ -38,6 +38,7 @@ function case_insensitive_find(term, array) {
 var seen_topics = new Dict();
 
 exports.add_topic = function (stream, topic) {
+    stream = stream.toLowerCase();
     if (! seen_topics.has(stream)) {
         seen_topics.set(stream, []);
     }
@@ -48,6 +49,7 @@ exports.add_topic = function (stream, topic) {
 };
 
 exports.topics_seen_for = function (stream) {
+    stream = stream.toLowerCase();
     if (seen_topics.has(stream)) {
         return seen_topics.get(stream);
     }
