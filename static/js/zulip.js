@@ -715,7 +715,6 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
             new_messages = _.map(new_messages, add_message_metadata);
             add_messages(new_messages, msg_list, messages_are_new);
             process_visible_unread_messages();
-            compose_fade.update_faded_messages();
         },
         error: function (xhr) {
             // We might want to be more clever here
@@ -773,7 +772,6 @@ function update_messages(events) {
     if (current_msg_list === narrowed_msg_list) {
         narrowed_msg_list.rerender();
     }
-    compose_fade.update_faded_messages();
     update_unread_counts();
     stream_list.update_streams_sidebar();
 }
@@ -906,7 +904,6 @@ function get_updates_success(data) {
 
         process_visible_unread_messages();
         notifications.received_messages(messages);
-        compose_fade.update_faded_messages();
         stream_list.update_streams_sidebar();
     }
 
