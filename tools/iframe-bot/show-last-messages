@@ -3,6 +3,11 @@
 
 # Copyright © 2013 Zulip, Inc.
 
+### NOTE: You must copy the emoji along with this script if you want
+### them to work properly
+### (to static/third/gemoji/images/)
+
+
 import sys
 sys.path.append('zulip')
 from os import path
@@ -121,6 +126,11 @@ p,ul,code,pre {
     width: 48px;
     height: 48px;
     margin-right: .75em;
+}
+
+.emoji {
+    width: 1.4em;
+    vertical-align: text-bottom;
 }
 </style>
 
