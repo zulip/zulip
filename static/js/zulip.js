@@ -1212,8 +1212,12 @@ function main() {
     activity.set_user_statuses(page_params.initial_presences,
                                page_params.initial_servertime);
 
-    furthest_read = page_params.initial_pointer;
     server_furthest_read = page_params.initial_pointer;
+    if (page_params.orig_initial_pointer !== undefined &&
+        page_params.orig_initial_pointer > server_furthest_read) {
+        server_furthest_read = page_params.orig_initial_pointer;
+    }
+    furthest_read = server_furthest_read;
 
     // Before trying to load messages: is this user way behind?
     consider_bankruptcy();
