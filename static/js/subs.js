@@ -42,7 +42,8 @@ exports.update_all_messages_link = function () {
     // the user has any subscriptions hidden from home view.
     var all_messages = $("#global_filters [data-name='all']")[0];
 
-    if (_.every(stream_info.values(), function (sub) { return sub.in_home_view; })) {
+    if (_.every(_.where(stream_info.values(), {subscribed: true}),
+                function (sub) { return sub.in_home_view; })) {
         $(all_messages).addClass('hidden-filter');
     } else {
         $(all_messages).removeClass('hidden-filter');
