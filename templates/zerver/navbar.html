@@ -1,12 +1,13 @@
-<div class="navbar navbar-fixed-top" id="top_navbar">
-  <div class="navbar-top">
-    <div class="container-fluid">
-      <div class="row-fluid position-relative">
-        <div class="span2 hidden-phone">
+<div class="header">
+<div class="header-main" id="top_navbar">
+  <div class="column-left">
+        <div>
           <a class="brand logo" href="#"><img src="/static/images/logo/zulip@2x.png" class="logoimage" alt="Zulip" content="Zulip"></a>
         </div>
-        <div class="span8" id="navbar-middle">
-          <a class="brand skinny-user-gravatar visible-phone" href="#"
+  </div>
+  <div class="column-middle" id="navbar-middle">
+    <div class="column-middle-inner">
+          <a class="brand skinny-user-gravatar screen-narrow-show" href="#"
              title="{{user_profile.full_name}} - {{user_profile.email}}">
             <div class="gravatar-profile"
                  style="background-image: url('{{ avatar_url }}&s=50');"></div>
@@ -22,8 +23,9 @@
               </div>
             </form>
           </div>{# /searchbox #}
-        </div>
-
+    </div>
+  </div>
+  <div class="column-right">
           <div id="navbar-buttons">
             <ul class="nav" role="navigation">
               <li class="dropdown actual-dropdown-menu" id="gear-menu">
@@ -94,8 +96,6 @@
               </li>
             </ul>
         </div>
-      </div>
-    </div>
   </div>
 </div>
-<div id="navbar-spacer"></div>
+</div>

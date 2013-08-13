@@ -38,13 +38,15 @@ var page_params = {{ page_params }};
 <div id="right-screen" class="screen"></div>
 <div id="clear-screen" class="screen"></div>
 
-<div class="container-fluid">
-    {% include "zerver/navbar.html" %}
-    <div class="row-fluid">
-        <div class="span2 hidden-phone">
+{% include "zerver/navbar.html" %}
+
+<div class="app">
+<div class="app-main">
+    <div class="column-left">
           {% include "zerver/left-sidebar.html" %}
-        </div><!--/left sidebar-->
-        <div class="span8 tab-content">
+    </div>
+    <div class="column-middle">
+        <div class="column-middle-inner tab-content">
             <div class="tab-pane active" id="home">
                 {% include "zerver/home.html" %}
             </div>
@@ -65,12 +67,12 @@ var page_params = {{ page_params }};
                 {% include "zerver/debug.html" %}
             </div>
             {% endif %}
-
         </div><!--/tab-content-->
-        <div class="span2 hidden-phone">
+    </div>
+    <div class="column-right">
           {% include "zerver/right-sidebar.html" %}
-        </div><!--/right sidebar-->
-    </div><!--/row-->
+    </div><!--/right sidebar-->
+</div><!--/row-->
     {% include "zerver/keyboard_shortcuts.html" %}
     {% include "zerver/markdown_help.html" %}
     {% include "zerver/invite_user.html" %}
