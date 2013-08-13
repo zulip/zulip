@@ -2162,7 +2162,7 @@ def patch_bot_backend(request, user_profile, email, full_name=REQ):
 @has_request_variables
 def regenerate_api_key(request, user_profile):
     user_profile.api_key = random_api_key()
-    user_profile.save()
+    user_profile.save(update_fields=["api_key"])
     json_result = dict(
         api_key = user_profile.api_key
     )
