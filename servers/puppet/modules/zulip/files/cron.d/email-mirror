@@ -1,0 +1,3 @@
+MAILTO=root
+
+* * * * *   root cd /home/humbug/humbug-deployments/current && python manage.py email-mirror

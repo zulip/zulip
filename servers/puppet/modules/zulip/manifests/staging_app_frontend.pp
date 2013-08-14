@@ -13,4 +13,11 @@ class zulip::staging_app_frontend {
     ensure => 'link',
     target => '/etc/nginx/sites-available/humbug-staging',
   }
+  file { "/etc/cron.d/email-mirror":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/files/cron.d/email-mirror",
+  }
 }
