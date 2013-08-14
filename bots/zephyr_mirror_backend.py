@@ -304,6 +304,55 @@ def parse_zephyr_body(zephyr_data):
         (zsig, body) = ("", zephyr_data)
     return (zsig, body)
 
+def decrypt_zephyr(zephyr_class, body):
+    have_key = False
+    try:
+        crypt_table = file(os.path.join(os.environ["HOME"], ".crypt-table"))
+    except IOError:
+        return body
+
+    for line in crypt_table.readlines():
+        if line.strip() == "":
+            # Ignore blank lines
+            continue
+        match = re.match("^crypt-(?P<class>[^:]+):\s+((?P<algorithm>(AES|DES)):\s+)?(?P<keypath>\S+)$", line)
+        if match is None:
+            # Malformed crypt_table line
+            logger.debug("Invalid crypt_table line!")
+            continue
+        groups = match.groupdict()
+        if groups['class'].lower() == zephyr_class and 'keypath' in groups and \
+                groups.get("algorithm") == "AES":
+            have_key = True
+            break
+    if not have_key:
+        # We can't decrypt it, so we just return the original body
+        return body
+
+    # Enable handling SIGCHLD briefly while we call into
+    # subprocess to avoid http://bugs.python.org/issue9127
+    signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+
+    # decrypt the message!
+    p = subprocess.Popen(["gpg",
+                          "--decrypt",
+                          "--no-options",
+                          "--no-default-keyring",
+                          "--keyring=/dev/null",
+                          "--secret-keyring=/dev/null",
+                          "--batch",
+                          "--quiet",
+                          "--no-use-agent",
+                          "--passphrase-file",
+                          groups['keypath']],
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    decrypted, _ = p.communicate(input=body)
+    # Restore our ignoring signals
+    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+    return decrypted
+
 def process_notice(notice, log):
     (zsig, body) = parse_zephyr_body(notice.message)
     is_personal = False
@@ -337,6 +386,9 @@ def process_notice(notice, log):
             if notice.sender not in huddle_recipients:
                 huddle_recipients.append(to_zulip_username(notice.sender))
             body = body.split("\n", 1)[1]
+
+    if options.forward_class_messages and notice.opcode.lower() == "crypt":
+        body = decrypt_zephyr(zephyr_class, body)
 
     zeph = { 'time'      : str(notice.time),
              'sender'    : notice.sender,
