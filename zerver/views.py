@@ -1304,10 +1304,15 @@ def get_public_streams_backend(request, user_profile):
     subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
     stream_ids = Recipient.objects.filter(
         type=Recipient.STREAM, id__in=subs_filter).values('type_id')
-    streams = sorted({"name": stream.name} for stream in
-                     Stream.objects.filter(id__in = stream_ids,
-                                           realm=user_profile.realm,
-                                           invite_only=False))
+    query = Stream.objects.filter(id__in = stream_ids, realm=user_profile.realm)
+    if not (user_profile.realm.domain == "mit.edu" and is_super_user_api(request)):
+        # We don't apply the `invite_only=False` filter when answering
+        # the mit.edu API superuser, because the list of streams is
+        # used as the list of all Zephyr classes to mirror, and we
+        # want to include invite-only streams (aka zcrypted classes) in that
+        query.filter(invite_only=False)
+
+    streams = sorted({"name": stream.name} for stream in query)
     return json_success({"streams": streams})
 
 @authenticated_api_view
