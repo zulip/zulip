@@ -98,3 +98,15 @@ var MessageList = require('js/message_list');
     assert.deepEqual(list.all(), []);
 
 }());
+
+(function test_nth_most_recent_id() {
+    var table;
+    var filter = {};
+
+    var list = new MessageList(table, filter);
+    list.append([{id:10}, {id:20}, {id:30}]);
+    assert.equal(list.nth_most_recent_id(1), 30);
+    assert.equal(list.nth_most_recent_id(2), 20);
+    assert.equal(list.nth_most_recent_id(3), 10);
+    assert.equal(list.nth_most_recent_id(4), -1);
+}());

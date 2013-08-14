@@ -82,6 +82,15 @@ MessageList.prototype = {
         return this._items[this._items.length - 1];
     },
 
+    nth_most_recent_id: function MessageList_nth_most_recent_id(n) {
+        var i = this._items.length - n;
+        if (i < 0) {
+            return -1;
+        } else {
+            return this._items[i].id;
+        }
+    },
+
     _clear_table: function MessageList__clear_table() {
         // We do not want to call .empty() because that also clears
         // jQuery data.  This does mean, however, that we need to be
