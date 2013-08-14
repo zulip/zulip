@@ -2,6 +2,7 @@ global._ = require('third/underscore/underscore.js');
 global.util = require('js/util.js');
 var Dict = require('js/dict.js');
 var assert = require('assert');
+var _ = global._;
 
 (function test_basic() {
     var d = new Dict();
@@ -63,4 +64,23 @@ var assert = require('assert');
     d3.del('foo');
     assert.deepEqual(d2.items(), [['foo', 'bar'], ['baz', 'qux']]);
     assert.deepEqual(d3.items(), [['baz', 'qux']]);
+}());
+
+(function test_each() {
+    var d = new Dict();
+    d.set('apple', 40);
+    d.set('banana', 50);
+    d.set('carrot', 60);
+
+    var unseen_keys = d.keys();
+
+    var cnt = 0;
+    d.each(function (v, k) {
+        assert.equal(v, d.get(k));
+        unseen_keys = _.without(unseen_keys, k);
+        cnt += 1;
+    });
+
+    assert.equal(cnt, d.keys().length);
+    assert.equal(unseen_keys.length, 0);
 }());

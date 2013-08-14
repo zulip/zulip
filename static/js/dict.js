@@ -62,6 +62,13 @@ Dict.prototype = _.object(_.map({
         return _.map(_.pairs(this._items), function (pair) {
             return [unmunge(pair[0]), pair[1]];
         });
+    },
+
+    // Iterates through the Dict calling f(value, key) for each (key, value) pair in the Dict
+    each: function Dict_each(f) {
+        return _.each(this._items, function (v, k) {
+            f(v, unmunge(k));
+        });
     }
 }, function (value, key) {
     return [key, util.enforce_arity(value)];
