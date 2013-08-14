@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# encoding: utf-8
 #
 # Copyright (C) 2010 Ksplice, Inc.
 #
@@ -15,6 +16,8 @@
 # limitations under the License.
 #
 # Author: Greg Price <price@ksplice.com>
+
+from __future__ import unicode_literals
 
 ## CC_EMAIL: All review requests will be CC'd here.
 CC_EMAIL = 'code-review@zulip.com'
@@ -62,39 +65,28 @@ default.
 """.strip() % CC_EMAIL
 
 
-def check_unicode(option, opt, value):
-  try:
-    return unicode(value, 'utf-8', 'strict')
-  except UnicodeDecodeError:
-    raise optparse.OptionValueError('option %s: invalid UTF-8 string' % opt)
-
-class MyOption(optparse.Option):
-  TYPES = optparse.Option.TYPES + ('unicode',)
-  TYPE_CHECKER = dict(optparse.Option.TYPE_CHECKER, unicode=check_unicode)
-
-
 def parse_options(args):
-  parser = optparse.OptionParser(usage, option_class=MyOption)
+  parser = optparse.OptionParser(usage)
   parser.add_option('--first-parent', action='store_true', dest='first_parent',
                     help='follow first parents only')
-  parser.add_option('-r', '--reviewer', type='unicode', dest='reviewers', action="append",
+  parser.add_option('-r', '--reviewer', type='string', dest='reviewers', action="append",
                     help='the person you are asking to do the review')
   parser.add_option('--stdout', action='store_true', dest='stdout',
                     help='send to standard output rather than send mail')
   parser.add_option('--format', type='choice', dest='format',
                     choices=['oneline', 'message', 'patch'],
                     help="'patch' (default for one commit), 'message' (default for more), or 'oneline'")
-  parser.add_option('-s', '--summary', type='unicode', dest='summary',
+  parser.add_option('-s', '--summary', type='string', dest='summary',
                     help='summary for subject line')
-  parser.add_option('-m', '--message', type='unicode', dest='message',
+  parser.add_option('-m', '--message', type='string', dest='message',
                     help='message for body of email')
-  parser.add_option('-t', '--testing', type='unicode', dest='testing',
+  parser.add_option('-t', '--testing', type='string', dest='testing',
                     help='extent and methods of testing employed')
   parser.add_option('-e', '--edit', action='store_true', dest='edit',
                     help='spawn $EDITOR and edit review request')
   parser.add_option('-T', '--run-tests', action='store_true', dest='run_tests',
                     help='run test before sending the review')
-  parser.add_option('--testing-tmp-directory', type='unicode', dest="tmp_dir", default="/tmp",
+  parser.add_option('--testing-tmp-directory', type='string', dest="tmp_dir", default="/tmp",
                     help="specify different temp directory for testing (default /tmp)")
 
   options, args = parser.parse_args(args)
@@ -121,7 +113,7 @@ def get_default_remote(repo):
     except TypeError:
       return 'origin'
     try:
-      return repo.git.config('--get', 'branch.%s.remote' % branch)
+      return repo.git.config('--get', ('branch.%s.remote' % unicode(str(branch), "utf-8")).encode("utf-8"))
     except git.exc.GitCommandError:
       return 'origin'
 
@@ -165,6 +157,7 @@ def make_header(repo, opts, revs):
   (sha, name) = repo.git.name_rev(revs[-1].hexsha,
                                   refs='refs/remotes/%s/*' % (remote,),
                                   always=True).split()
+  name = unicode(name, "utf-8")
   prefix = 'remotes/' + remote + "/"
   if name.startswith(prefix):
       name = name[len(prefix):]
@@ -173,6 +166,7 @@ def make_header(repo, opts, revs):
     (_, local_name) = repo.git.name_rev(revs[-1].hexsha,
                                         refs='refs/heads/*',
                                         always=True).split()
+    local_name = unicode(local_name, "utf-8")
     if local_name == "undefined":
       print >>sys.stderr, "ERROR: Can't find this commit in remote or identify local branch!"
       sys.exit(1)
@@ -196,10 +190,11 @@ def make_header(repo, opts, revs):
   summary = ('%s (%s)' % (opts.summary, objective_summary) if opts.summary
              else objective_summary)
 
-  return [('From', Header(me)),
-          ('To', Header(', '.join(opts.reviewers))),
-          ('Cc', Header(CC_EMAIL)),
-          ('Subject', Header('%s review: %s' % (reponame, summary)))]
+  return [('From', Header(me.encode("utf-8"), "utf-8")),
+          ('To', Header(', '.join(opts.reviewers), "utf-8")),
+          ('Cc', Header(CC_EMAIL, "utf-8")),
+          ('Subject', Header('%s review: %s' % (
+              reponame, summary), "utf-8"))]
 
 
 def write_template(target, repo, opts):
