@@ -22,10 +22,6 @@ exports.update_all_messages_link = function () {
     }
 };
 
-function should_render_subscribers() {
-    return page_params.domain !== 'mit.edu';
-}
-
 function should_list_all_streams() {
     return page_params.domain !== 'mit.edu';
 }
@@ -148,7 +144,7 @@ function create_sub(stream_name, attrs) {
     sub = _.defaults({}, attrs, {
         name: stream_name,
         id: next_sub_id++,
-        render_subscribers: should_render_subscribers(),
+        render_subscribers: page_params.domain !== 'mit.edu' || attrs.invite_only === true,
         subscribed: true,
         in_home_view: true,
         invite_only: false,
@@ -649,12 +645,6 @@ $(function () {
     $("#subscriptions_table").on("click", "#sub_setting_in_home_view", stream_home_view_clicked);
     $("#subscriptions_table").on("click", "#sub_setting_notifications", stream_notifications_clicked);
 
-    // From here down is only stuff that happens when we're rendering
-    // the subscriber settings
-    if (! should_render_subscribers()) {
-        return;
-    }
-
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
         var sub_row = $(e.target).closest('.subscription_row');
@@ -710,6 +700,10 @@ $(function () {
         var error_elem = sub_row.find('.subscriber_list_container .alert-error');
         var list = sub_row.find('.subscriber_list_container ul');
         var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
+
+        if (!exports.get(stream).render_subscribers) {
+            return;
+        }
 
         warning_elem.addClass('hide');
         error_elem.addClass('hide');

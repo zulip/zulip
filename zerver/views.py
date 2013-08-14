@@ -165,7 +165,6 @@ def principal_to_user_profile(agent, principal):
         principal_doesnt_exist = True
 
     if (principal_doesnt_exist
-        or agent.realm.domain == 'mit.edu'
         or agent.realm != principal_user_profile.realm):
         # We have to make sure we don't leak information about which users
         # are registered for Zulip in a different realm.  We could do
@@ -1415,6 +1414,8 @@ def add_subscriptions_backend(request, user_profile,
     streams = authorized_streams + created_streams
 
     if principals is not None:
+        if user_profile.realm.domain == 'mit.edu' and not all(stream.invite_only for stream in streams):
+            return json_error("You can only invite other mit.edu users to invite-only streams.")
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:
         subscribers = [user_profile]
@@ -1495,12 +1496,12 @@ def json_upload_file(request, user_profile):
 
 @has_request_variables
 def get_subscribers_backend(request, user_profile, stream_name=REQ('stream')):
-    if user_profile.realm.domain == "mit.edu":
-        return json_error("You cannot get subscribers in this realm")
-
     stream = get_stream(stream_name, user_profile.realm)
     if stream is None:
         return json_error("Stream does not exist: %s" % stream_name)
+
+    if user_profile.realm.domain == "mit.edu" and not stream.invite_only:
+        return json_error("You cannot get subscribers for public streams in this realm")
 
     if stream.invite_only and not subscribed_to_stream(user_profile, stream):
         return json_error("Unable to retrieve subscribers for invite-only stream")
