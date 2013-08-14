@@ -394,6 +394,7 @@ exports.deactivate = function () {
     if (feature_flags.summarize_read_while_narrowed) {
         // TODO: avoid a full re-render
         // Necessary to replace messages read in the narrow with summary blocks
+        current_msg_list.start_summary_exemption();
         current_msg_list.rerender();
     }
 

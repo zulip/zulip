@@ -26,6 +26,9 @@ function MessageList(table_name, filter, opts) {
     if (this.table_name === "zfilt") {
         this.narrowed = true;
     }
+
+    this.num_appends = 0;
+    this.min_id_exempted_from_summaries = -1;
     return this;
 }
 
@@ -239,6 +242,9 @@ MessageList.prototype = {
     _is_summarized_message: function (message) {
         if (!feature_flags.summarize_read_while_narrowed ||
             message === undefined || message.flags === undefined) {
+            return false;
+        }
+        if (message.id >= this.min_id_exempted_from_summaries) {
             return false;
         }
         if (this.summarize_read === 'home') {
@@ -769,8 +775,21 @@ MessageList.prototype = {
         }
     },
 
+    start_summary_exemption: function MessageList_start_summary_exemption() {
+        var num_exempt = 5;
+        this.min_id_exempted_from_summaries = this.nth_most_recent_id(num_exempt);
+    },
+
     append: function MessageList_append(messages, messages_are_new) {
         this._items = this._items.concat(messages);
+
+        if (this.num_appends === 0) {
+            // We can't figure out which messages need to be exempt from
+            // summarization until we get the first batch of messages.
+            this.start_summary_exemption();
+        }
+        this.num_appends += 1;
+
         this._add_to_hash(messages);
 
         var cur_window_size = this._render_win_end - this._render_win_start;
