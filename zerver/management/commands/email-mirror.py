@@ -101,6 +101,17 @@ def valid_stream(stream_name, token):
     except Stream.DoesNotExist:
         return False
 
+def extract_body(message):
+    # "Richly formatted" email are multi-part messages that include a
+    # plaintext version of the body. We only want to forward that
+    # plaintext version.
+    body = None
+    for part in message.walk():
+        if part.get_content_type() == "text/plain":
+            return part.get_payload(decode=True)
+    if not body:
+        raise ZulipEmailForwardError("Unable to find plaintext message body")
+
 def extract_and_validate(email):
     # Recipient is of the form
     # <stream name>+<regenerable stream token>@streams.zulip.com
@@ -144,9 +155,9 @@ def fetch(result, proto, mailboxes):
     for uid in message_uids:
         message = email.message_from_string(result[uid]["RFC822"])
         subject = decode_header(message.get("Subject", "(no subject)"))[0][0]
-        body = message.get_payload(decode=True)
 
         try:
+            body = extract_body(message)
             to = find_emailgateway_recipient(message)
             stream = extract_and_validate(to)
             send_zulip(stream, subject, body)
