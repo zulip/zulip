@@ -622,11 +622,13 @@ MessageList.prototype = {
         }
 
         if (this === current_msg_list) {
-            // We don't have a Message class, but we can at least hide the messy details
-            // of rows.js from compose_fade.  We provide a callback function to be lazy--
-            // compose_fade may not actually need the elements depending on its internal
-            // state.
+            // Update the fade.
+
             var get_elements = function (message) {
+                // We don't have a Message class, but we can at least hide the messy details
+                // of rows.js from compose_fade.  We provide a callback function to be lazy--
+                // compose_fade may not actually need the elements depending on its internal
+                // state.
                 var message_row = rows.get(message.id, table_name);
                 var lst = [message_row];
                 if (message.include_recipient) {
