@@ -2228,7 +2228,7 @@ def patch_bot_backend(request, user_profile, email, full_name=REQ):
         upload_avatar_image(user_file, user_profile, bot.email)
         avatar_source = UserProfile.AVATAR_FROM_USER
         bot.avatar_source = avatar_source
-        bot.save()
+        bot.save(update_fields=["avatar_source"])
         bot_avatar_url = avatar_url(bot)
     else:
         return json_error("You may only upload one file at a time")
@@ -2259,7 +2259,7 @@ def regenerate_bot_api_key(request, user_profile, email):
         return json_error('Insufficient permission')
 
     bot.api_key = random_api_key()
-    bot.save()
+    bot.save(update_fields=["api_key"])
     json_result = dict(
         api_key = bot.api_key
     )
