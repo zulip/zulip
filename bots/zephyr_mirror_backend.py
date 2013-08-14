@@ -213,7 +213,7 @@ def zephyr_bulk_subscribe(subs):
 
 def update_subscriptions():
     try:
-        f = file("/home/humbug/public_streams", "r")
+        f = file(options.stream_file_path, "r")
         public_streams = simplejson.loads(f.read())
         f.close()
     except:
@@ -800,6 +800,10 @@ def parse_args():
                       help=optparse.SUPPRESS_HELP)
     parser.add_option('--enable-log',
                       dest='log_path',
+                      help=optparse.SUPPRESS_HELP)
+    parser.add_option('--stream-file-path',
+                      dest='stream_file_path',
+                      default="/home/humbug/public_streams",
                       help=optparse.SUPPRESS_HELP)
     parser.add_option('--no-forward-personals',
                       dest='forward_personals',
