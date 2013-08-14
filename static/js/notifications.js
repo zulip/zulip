@@ -81,6 +81,20 @@ exports.initialize = function () {
     }
 };
 
+// For web pages, the initial favicon is the same as the favicon we
+// set for no unread messages and the initial page title is the same
+// as the page title we set for no unread messages.  However, for the
+// OS X app, the dock icon does not get its badge updated on initial
+// page load.  If the badge icon was wrong right before a reload and
+// we actually have no unread messages then we will never execute
+// bridge.updateCount() until the unread count changes.  Therefore,
+// we ensure that bridge.updateCount is always run at least once to
+// synchronize it with the page title.  This can be done before the
+// DOM is loaded.
+if (window.bridge !== undefined) {
+    window.bridge.updateCount(0);
+}
+
 exports.update_title_count = function (new_message_count) {
     // Update window title and favicon to reflect unread messages in current view
     var n;
