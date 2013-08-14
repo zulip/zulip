@@ -1,0 +1,85 @@
+#!/usr/bin/python
+
+"""
+Check that the email-mirror management command is running regularly.
+
+If old messages are in emailgateway@zulip.com's Inbox, the mirror must
+not be running or processing messages correctly.
+"""
+
+import email
+import time
+
+from twisted.internet import protocol, reactor, ssl
+from twisted.mail import imap4
+
+GATEWAY_EMAIL = "emailgateway@zulip.com"
+# Application-specific password.
+PASSWORD = "xxxxxxxxxxxxxxxx"
+
+SERVER = "imap.gmail.com"
+PORT = 993
+
+exit_code = 0
+
+def done(_):
+    reactor.stop()
+
+def check_for_old_messages(result):
+    if not result:
+        return 0, "OK: no unprocessed messages."
+
+    message_uids = result.keys()
+    if not message_uids:
+        return 0, "OK: no unprocessed old messages."
+    message_uids.sort()
+
+    oldest_message = email.message_from_string(result[message_uids[0]]["RFC822"])
+    receipt_time = time.mktime(email.utils.parsedate(oldest_message.get("Date")))
+    if time.time() - receipt_time > 60 * 5: # More than 5 minutes old.
+        return 2, "CRITICAL: email mirror has unprocessed old messages."
+    return 0, "OK: no unprocessed old messages."
+
+def print_nagios_status(result, proto):
+    status, message = check_for_old_messages(result)
+    print message
+
+    global exit_code
+    exit_code = status
+
+    return proto.logout()
+
+def examine_mailbox(result, proto, mailbox):
+    # Fetch messages from a particular mailbox.
+    return proto.fetchMessage("1:*", uid=True).addCallback(
+        print_nagios_status, proto)
+
+def select_mailbox(result, proto):
+    # Select which mailbox we care about.
+    mbox = filter(lambda x: "INBOX" in x[2], result)[0][2]
+    return proto.select(mbox).addCallback(examine_mailbox, proto, result)
+
+def list_mailboxes(res, proto):
+    # List all of the mailboxes for this account.
+    return proto.list("","*").addCallback(select_mailbox, proto)
+
+def login_failed(failure):
+    print "UNKNOWN: login to email gateway failed."
+    global exit_code
+    exit_code = 3
+
+def connected(proto):
+    d = proto.login(GATEWAY_EMAIL, PASSWORD)
+    d.addCallback(list_mailboxes, proto)
+    d.addErrback(login_failed)
+    return d
+
+def main():
+    imap_client = protocol.ClientCreator(reactor, imap4.IMAP4Client)
+    d = imap_client.connectSSL(SERVER, PORT, ssl.ClientContextFactory())
+    d.addCallbacks(connected, login_failed)
+    d.addBoth(done)
+
+reactor.callLater(0, main)
+reactor.run()
+exit(exit_code)
