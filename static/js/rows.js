@@ -44,23 +44,6 @@ var valid_table_names = {
     zfilt: true
 };
 
-exports.get = function (message_id, table_name) {
-    // Make sure message_id is just an int, because we build
-    // a jQuery selector using it.
-    message_id = parseInt(message_id, 10);
-    if (isNaN(message_id)) {
-        return $();
-    }
-
-    // To avoid attacks and bizarre errors, we have a whitelist
-    // of valid table names.
-    if (! valid_table_names.hasOwnProperty(table_name)) {
-        return $();
-    }
-
-    return $('#' + table_name + message_id + ', #' + table_name + ' [data-messages~=' + message_id + ']');
-};
-
 exports.get_table = function (table_name) {
     if (! valid_table_names.hasOwnProperty(table_name)) {
         return $();

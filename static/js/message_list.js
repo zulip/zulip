@@ -7,6 +7,7 @@ function MessageList(table_name, filter, opts) {
 
     this._items = [];
     this._hash = {};
+    this._rows = {};
     this.table_name = table_name;
     this.filter = filter;
     this._selected_id = -1;
@@ -86,6 +87,7 @@ MessageList.prototype = {
         // jQuery data.  This does mean, however, that we need to be
         // mindful of memory leaks.
         rows.get_table(this.table_name).children().detach();
+        this._rows = {};
     },
 
     _clear_rendering_state: function MessageList__clear_rendering_state(clear_table) {
@@ -538,6 +540,16 @@ MessageList.prototype = {
 
         _.each(rendered_elems, function (elem) {
             var row = $(elem);
+
+            // Save DOM elements by id into this._rows for O(1) lookup
+            if (row.hasClass('summary_row')) {
+                _.each(row.attr('data-messages').split(' '), function (id) {
+                    self._rows[id] = elem;
+                });
+            } else if (row.hasClass('message_row')) {
+                self._rows[row.attr('zid')] = elem;
+            }
+
             if (! row.hasClass('message_row')) {
                 return;
             }
@@ -837,7 +849,7 @@ MessageList.prototype = {
     },
 
     get_row: function (id) {
-        return rows.get(id, this.table_name);
+        return $(this._rows[id]);
     }
 };
 
