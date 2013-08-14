@@ -19,6 +19,7 @@ import email
 from os import path
 from email.header import decode_header
 import logging
+import re
 import sys
 
 from django.conf import settings
@@ -64,9 +65,25 @@ else:
     staging_client = prod_client = zulip.Client(
         site="http://localhost:9991/api", email=GATEWAY_EMAIL, api_key=api_key)
 
-def log_and_raise(error_msg):
-    logger.error(error_msg)
-    raise ZulipEmailForwardError(error_msg)
+def redact_stream(error_message):
+    stream_match = re.search("(\S+?)\+(\S+?)@streams.zulip.com", error_message)
+    if stream_match:
+        stream_name = stream_match.groups()[0]
+        return error_message.replace(stream_name, "X" * len(stream_name))
+    return error_message
+
+def report_to_zulip(email_message, error_message):
+    error_stream = Stream.objects.get(name="errors", realm__domain="zulip.com")
+    sender = email_message.get("From")
+    error_message = """~~~
+Sender: %s\nError message: %s
+~~~""" % (sender, error_message)
+    send_zulip(error_stream, "email mirror error", error_message)
+
+def log_and_report(email_message, error_message):
+    scrubbed_error = redact_stream(error_message)
+    logger.error(scrubbed_error)
+    report_to_zulip(email_message, scrubbed_error)
 
 ## Sending the Zulip ##
 
@@ -92,7 +109,7 @@ def send_zulip(stream, topic, content):
 
     response = api_client.send_message(message_data)
     if response["result"] != "success":
-        log_and_raise(response["msg"])
+        raise ZulipEmailForwardError(response["msg"])
 
 def valid_stream(stream_name, token):
     try:
@@ -119,10 +136,10 @@ def extract_and_validate(email):
         stream_name_and_token = decode_email_address(email).rsplit("@", 1)[0]
         stream_name, token = stream_name_and_token.rsplit("+", 1)
     except ValueError:
-        log_and_raise("Malformed email recipient " + email)
+        raise ZulipEmailForwardError("Malformed email recipient " + email)
 
     if not valid_stream(stream_name, token):
-        log_and_raise("Bad stream token from email recipient " + email)
+        raise ZulipEmailForwardError("Bad stream token from email recipient " + email)
 
     return Stream.objects.get(email_token=token)
 
@@ -161,9 +178,9 @@ def fetch(result, proto, mailboxes):
             to = find_emailgateway_recipient(message)
             stream = extract_and_validate(to)
             send_zulip(stream, subject, body)
-        except ZulipEmailForwardError:
+        except ZulipEmailForwardError, e:
             # TODO: notify sender of error, retry if appropriate.
-            pass
+            log_and_report(message, e.message)
 
     # Delete the processed messages from the Inbox.
     message_set = ",".join([result[key]["UID"] for key in message_uids])
