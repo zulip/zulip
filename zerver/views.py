@@ -284,7 +284,10 @@ def accounts_register(request):
 
             # FIXME: sanitize email addresses and fullname
             if mit_beta_user:
-                user_profile = get_user_profile_by_email(email)
+                try:
+                    user_profile = get_user_profile_by_email(email)
+                except UserProfile.DoesNotExist:
+                    user_profile = do_create_user(email, password, realm, full_name, short_name)
                 do_activate_user(user_profile)
                 do_change_password(user_profile, password)
                 do_change_full_name(user_profile, full_name)
