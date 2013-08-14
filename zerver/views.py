@@ -457,7 +457,9 @@ def handle_openid_errors(request, issue, openid_response=None):
                     # Split this so we only get the part after the /
                     Confirmation.objects.get_link_for_object(prereg_user).split("/", 3)[3],
                     '?gafyd_name=',
-                    urllib.quote_plus(full_name))))
+                    # urllib does not handle Unicode, so coerece to encoded byte string
+                    # Explanation: http://stackoverflow.com/a/5605354/90777
+                    urllib.quote_plus(full_name.encode('utf8')))))
             else:
                 return render_to_response('zerver/accounts_home.html', {'form': form})
     return default_render_failure(request, issue)
