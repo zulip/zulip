@@ -533,11 +533,11 @@ $(function () {
                 var links = _.map(files, function (file) { return '[' + file.name + '](' + file.link +')'; })
                              .join(' ') + ' ';
                 textbox.val(textbox.val() + links);
-
             },
             // Optional. A value of false (default) limits selection to a single file, while
             // true enables multiple file selection.
-            multiselect: true
+            multiselect: true,
+            iframe: true
         };
         Dropbox.choose(options);
     });
