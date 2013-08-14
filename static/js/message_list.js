@@ -626,11 +626,16 @@ MessageList.prototype = {
             // of rows.js from compose_fade.  We provide a callback function to be lazy--
             // compose_fade may not actually need the elements depending on its internal
             // state.
-            var get_element = function (message) {
-                return rows.get(message.id, table_name);
+            var get_elements = function (message) {
+                var message_row = rows.get(message.id, table_name);
+                var lst = [message_row];
+                if (message.include_recipient) {
+                    lst.unshift(message_row.prev('.recipient_row'));
+                }
+                return lst;
             };
 
-            compose_fade.update_rendered_messages(messages, get_element);
+            compose_fade.update_rendered_messages(messages, get_elements);
         }
 
         if (this === current_msg_list && messages_are_new) {

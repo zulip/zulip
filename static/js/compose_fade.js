@@ -107,7 +107,7 @@ exports.update_message_list = function () {
     }
 };
 
-exports.update_rendered_messages = function (messages, get_element) {
+exports.update_rendered_messages = function (messages, get_elements) {
     if (_want_normal_display()) {
         return;
     }
@@ -115,15 +115,21 @@ exports.update_rendered_messages = function (messages, get_element) {
     // This loop is superficially similar to some code in _fade_messages, but an
     // important difference here is that we look at each message individually, whereas
     // the other code takes advantage of blocks beneath recipient bars.
+    //
+    // get_elements() is plural, because we can get up to two elements:
+    //   the message (always)
+    //   the recipient bar (sometimes)
     _.each(messages, function (message) {
-        var elt = get_element(message);
+        var elts = get_elements(message);
         var should_fade_message = !util.same_recipient(focused_recipient, message);
 
-        if (should_fade_message) {
-            elt.removeClass("unfaded").addClass("faded");
-        } else {
-            elt.removeClass("faded").addClass("unfaded");
-        }
+        _.each(elts, function (elt) {
+            if (should_fade_message) {
+                elt.removeClass("unfaded").addClass("faded");
+            } else {
+                elt.removeClass("faded").addClass("unfaded");
+            }
+        });
     });
 };
 
