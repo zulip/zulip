@@ -28,30 +28,28 @@ exports.get_cleaned_pm_recipients = function (query_string) {
     return recipients;
 };
 
-function case_insensitive_find(term, array) {
-    var lowered_term = term.toLowerCase();
-    return _.filter(array, function (elt) {
-        return elt.toLowerCase() === lowered_term;
-    }).length !== 0;
-}
-
 var seen_topics = new Dict();
 
-exports.add_topic = function (stream, topic) {
-    stream = stream.toLowerCase();
+exports.add_topic = function (uc_stream, uc_topic) {
+    // For Denmark/FooBar, we set
+    // seen_topics['denmark']['foobar'] to 'FooBar',
+    // where seen_topics is a Dict of Dicts
+    var stream = uc_stream.toLowerCase();
+    var topic = uc_topic.toLowerCase();
+
     if (! seen_topics.has(stream)) {
-        seen_topics.set(stream, []);
+        seen_topics.set(stream, new Dict());
     }
-    if (! case_insensitive_find(topic, seen_topics.get(stream))) {
-        seen_topics.get(stream).push(topic);
-        seen_topics.get(stream).sort();
+    var topic_dict = seen_topics.get(stream);
+    if (! topic_dict.has(topic)) {
+        topic_dict.set(topic, uc_topic);
     }
 };
 
 exports.topics_seen_for = function (stream) {
     stream = stream.toLowerCase();
     if (seen_topics.has(stream)) {
-        return seen_topics.get(stream);
+        return seen_topics.get(stream).values().sort();
     }
     return [];
 };
