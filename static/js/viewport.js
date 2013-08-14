@@ -145,7 +145,7 @@ exports.visible_messages = function () {
     var height = bottom_of_feed.get() - top_of_feed.get();
 
     // Being simplistic about this, the smallest message is 25 px high.
-    var selected_row = rows.get(current_msg_list.selected_id(), current_msg_list.table_name);
+    var selected_row = current_msg_list.selected_row();
     var num_neighbors = Math.floor(height / 25);
 
     // We do this explicitly without merges and without recalculating

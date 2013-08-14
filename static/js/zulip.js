@@ -745,7 +745,7 @@ function update_messages(events) {
             process_message_for_recent_subjects(msg);
         }
 
-        var row = rows.get(event.message_id, current_msg_list.table_name);
+        var row = current_msg_list.get_row(event.message_id);
         if (row.length > 0) {
             message_edit.end(row);
         }

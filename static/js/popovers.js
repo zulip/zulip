@@ -318,7 +318,7 @@ exports.register_click_handlers = function () {
     });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
-        var row = rows.get(msgid, current_msg_list.table_name);
+        var row = current_msg_list.get_row(msgid);
         var message = current_msg_list.get(rows.id(row));
 
         popovers.hide_actions_popover();
@@ -334,7 +334,7 @@ exports.register_click_handlers = function () {
     });
     $('body').on('click', '.popover_edit_message', function (e) {
         var msgid = $(e.currentTarget).data('msgid');
-        var row = rows.get(msgid, current_msg_list.table_name);
+        var row = current_msg_list.get_row(msgid);
         popovers.hide_actions_popover();
         message_edit.start(row);
         e.stopPropagation();

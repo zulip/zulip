@@ -182,7 +182,7 @@ function copy_handler(e) {
         else {
 
             // Construct a div for what we want to copy (div)
-            for (row = rows.get(start_id, current_msg_list.table_name);
+            for (row = current_msg_list.get_row(start_id);
                  rows.id(row) <= end_id;
                  row = rows.next_visible(row))
             {
@@ -548,7 +548,7 @@ function toggle_star(row_id) {
         if (list === undefined) {
             return;
         }
-        var row = rows.get(row_id, list.table_name);
+        var row = list.get_row(row_id);
         if (row === undefined) {
             // The row may not exist, e.g. if you star a message in the all
             // messages table from a stream that isn't in your home view.
@@ -1138,7 +1138,7 @@ $(function () {
             // If the message list is empty, don't do anything
             return;
         }
-        var row = rows.get(event.id, event.msg_list.table_name);
+        var row = event.msg_list.get_row(event.id);
         $('.selected_message').removeClass('selected_message');
         row.addClass('selected_message');
 
@@ -1286,8 +1286,7 @@ $(function () {
     });
 
     $('body').on('click', '.edit_subject', function (e) {
-        var row = rows.get(rows.id($(this).closest(".recipient_row")),
-                           current_msg_list.table_name);
+        var row = current_msg_list.get_row(rows.id($(this).closest(".recipient_row")));
         message_edit.start(row);
         e.stopPropagation();
         popovers.hide_all();

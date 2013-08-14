@@ -201,8 +201,8 @@ exports.activate = function (operators, opts) {
     var was_narrowed_already = exports.active();
     var then_select_id = opts.then_select_id;
     var then_select_offset;
-    if (!opts.select_first_unread && rows.get(then_select_id, current_msg_list.table_name).length > 0) {
-        then_select_offset = rows.get(then_select_id, current_msg_list.table_name).offset().top -
+    if (!opts.select_first_unread && current_msg_list.get_row(then_select_id).length > 0) {
+        then_select_offset = current_msg_list.get_row(then_select_id).offset().top -
             viewport.scrollTop();
     }
 
@@ -253,7 +253,7 @@ exports.activate = function (operators, opts) {
                 // Scroll so that the selected message is in the same
                 // position in the viewport as it was prior to
                 // narrowing
-                viewport.scrollTop(rows.get(then_select_id, narrowed_msg_list.table_name).offset().top
+                viewport.scrollTop(narrowed_msg_list.get_row(then_select_id).offset().top
                                    - then_select_offset);
             }
         }

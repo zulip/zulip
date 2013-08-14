@@ -153,7 +153,7 @@ MessageList.prototype = {
     },
 
     selected_row: function MessageList_selected_row() {
-        return rows.get(this._selected_id, this.table_name);
+        return this.get_row(this._selected_id);
     },
 
     summary_is_selected: function () {
@@ -298,7 +298,7 @@ MessageList.prototype = {
         // scrolltop_offset is the number of pixels between the top of the
         // viewable window and the newly selected message
         var scrolltop_offset;
-        var selected_row = rows.get(this._selected_id, this.table_name);
+        var selected_row = this.selected_row();
         var selected_in_view = (selected_row.length > 0);
         if (selected_in_view) {
             scrolltop_offset = viewport.scrollTop() - selected_row.offset().top;
@@ -313,7 +313,8 @@ MessageList.prototype = {
         // same location as it would have been before we
         // re-rendered.
         if (selected_in_view) {
-            viewport.scrollTop(rows.get(this._selected_id, this.table_name).offset().top + scrolltop_offset);
+            // Must get this.selected_row() again since it is now a new DOM element
+            viewport.scrollTop(this.selected_row().offset().top + scrolltop_offset);
         }
     },
 
@@ -358,7 +359,7 @@ MessageList.prototype = {
             var top_group = this._message_groups[0];
             var top_messages = [];
             _.each(top_group, function (id) {
-                rows.get(id, table_name).remove();
+                self.get_row(id).remove();
                 // Remove any date row headers for these messages
                 $('.date_row[data-zid=' + id + ']').remove();
                 top_messages.push(self.get(id));
@@ -561,7 +562,7 @@ MessageList.prototype = {
         // If the previous message was part of the same block but
         // had a footer, we need to remove it.
         if (last_message_id !== undefined) {
-            var row = rows.get(last_message_id, table_name);
+            var row = this.get_row(last_message_id);
             if (ids_where_next_is_same_sender[last_message_id]) {
                 row.find('.messagebox').addClass("next_is_same_sender");
             }
@@ -629,7 +630,7 @@ MessageList.prototype = {
                 // of rows.js from compose_fade.  We provide a callback function to be lazy--
                 // compose_fade may not actually need the elements depending on its internal
                 // state.
-                var message_row = rows.get(message.id, table_name);
+                var message_row = self.get_row(message.id);
                 var lst = [message_row];
                 if (message.include_recipient) {
                     lst.unshift(message_row.prev('.recipient_row'));
@@ -810,7 +811,7 @@ MessageList.prototype = {
     },
 
     show_message_as_read: function (message, options) {
-        var row = rows.get(message.id, this.table_name);
+        var row = this.get_row(message.id);
         if (options.from === 'pointer' && feature_flags.mark_read_at_bottom) {
             row.find('.unread_marker').addClass('fast_fade');
         } else {
@@ -833,6 +834,10 @@ MessageList.prototype = {
 
     all: function MessageList_all() {
         return this._items;
+    },
+
+    get_row: function (id) {
+        return rows.get(id, this.table_name);
     }
 };
 
