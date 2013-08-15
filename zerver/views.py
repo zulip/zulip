@@ -2023,6 +2023,24 @@ def get_status_list(requesting_user_profile):
     return {'presences': get_status_dict(requesting_user_profile),
             'server_timestamp': time.time()}
 
+@authenticated_rest_api_view
+@has_request_variables
+def api_bitbucket_webhook(request, user_profile, payload=REQ(converter=json_to_dict)):
+    repository = payload['repository']
+    commits = [{'id': commit['raw_node'], 'message': commit['message'],
+                'url': '%s%scommits/%s' % (payload['canon_url'],
+                                           repository['absolute_url'],
+                                           commit['raw_node'])}
+               for commit in payload['commits']]
+
+    subject = repository['name']
+    content = build_commit_list_content(commits, payload['commits'][-1]['branch'],
+                                        None, payload['user'])
+
+    subject = elide_subject(subject)
+    check_send_message(user_profile, get_client("API"), "stream", ["commits"], subject, content)
+    return json_success()
+
 @authenticated_json_post_view
 @has_request_variables
 def json_update_active_status(request, user_profile, status=REQ):

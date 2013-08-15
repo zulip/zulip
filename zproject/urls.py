@@ -141,6 +141,7 @@ urlpatterns += patterns('zerver.views',
     url(r'^api/v1/external/jira$',          'api_jira_webhook'),
     url(r'^api/v1/external/pivotal$',       'api_pivotal_webhook'),
     url(r'^api/v1/external/newrelic$',      'api_newrelic_webhook'),
+    url(r'^api/v1/external/bitbucket$',     'api_bitbucket_webhook'),
 )
 
 v1_api_and_json_patterns = patterns('zerver.views',
