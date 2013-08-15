@@ -1943,7 +1943,6 @@ def beanstalk_decoder(view_func):
 
     return _wrapped_view_func
 
-@csrf_exempt
 @beanstalk_decoder
 @authenticated_rest_api_view
 @has_request_variables
