@@ -98,7 +98,8 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
     @param autocreate Whether we should create streams if they don't already exist
     @param invite_only Whether newly created streams should have the invite_only bit set
     """
-    streams = []
+    existing_streams = []
+    created_streams = []
     # Validate all streams, getting extant ones, then get-or-creating the rest.
     stream_set = set(stream_name.strip() for stream_name in streams_raw)
     rejects = []
@@ -115,7 +116,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
         if stream is None:
             rejects.append(stream_name)
         else:
-            streams.append(stream)
+            existing_streams.append(stream)
             # Verify we can access the stream.  Note that this part
             # does not use a bulk query, and thus will perform poorly
             # if a user queries a lot of invite-only streams.
@@ -124,13 +125,16 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
     if autocreate:
         for stream_name in rejects:
             stream, created = create_stream_if_needed(user_profile.realm,
-                                                 stream_name,
-                                                 invite_only=invite_only)
-            streams.append(stream)
+                                                      stream_name,
+                                                      invite_only=invite_only)
+            if created:
+                created_streams.append(stream)
+            else:
+                existing_streams.append(stream)
     elif rejects:
         raise JsonableError("Stream(s) (%s) do not exist" % ", ".join(rejects))
 
-    return streams
+    return existing_streams, created_streams
 
 def send_signup_message(sender, signups_stream, user_profile, internal=False):
     if internal:
@@ -1356,7 +1360,7 @@ def json_remove_subscriptions(request, user_profile):
 def remove_subscriptions_backend(request, user_profile,
                                  streams_raw = REQ("subscriptions", json_to_list)):
 
-    streams = list_to_streams(streams_raw, user_profile)
+    streams, _ = list_to_streams(streams_raw, user_profile)
 
     result = dict(removed=[], not_subscribed=[])
     (removed, not_subscribed) = bulk_remove_subscriptions([user_profile], streams)
@@ -1397,7 +1401,9 @@ def add_subscriptions_backend(request, user_profile,
     else:
         subscribers = [user_profile]
 
-    streams = list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
+    existing_streams, created_streams = \
+        list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
+    streams = existing_streams + created_streams
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers)
 
