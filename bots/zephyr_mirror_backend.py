@@ -675,18 +675,31 @@ def add_zulip_subscriptions(verbose):
         zephyr_subscriptions.add(cls)
 
     if len(zephyr_subscriptions) != 0:
-        res = zulip_client.add_subscriptions(list({"name": stream} for stream in zephyr_subscriptions))
+        res = zulip_client.add_subscriptions(list({"name": stream} for stream in zephyr_subscriptions),
+                                             authorization_errors_fatal=False)
         if res.get("result") != "success":
             logger.error("Error subscribing to streams:\n%s" % (res["msg"],))
             return
 
         already = res.get("already_subscribed")
         new = res.get("subscribed")
+        unauthorized = res.get("unauthorized")
         if verbose:
             if already is not None and len(already) > 0:
                 logger.info("\nAlready subscribed to: %s" % (", ".join(already.values()[0]),))
             if new is not None and len(new) > 0:
                 logger.info("\nSuccessfully subscribed to: %s" % (", ".join(new.values()[0]),))
+            if unauthorized is not None and len(unauthorized) > 0:
+                logger.info("\n" + "\n".join(textwrap.wrap("""\
+The following streams you have NOT been subscribed to,
+because they have been configured in Zulip as invitation-only streams.
+This was done at the request of users of these Zephyr classes, usually
+because traffic to those streams is sent within the Zephyr world encrypted
+via zcrypt (in Zulip, we achieve the same privacy goals through invitation-only streams).
+If you wish to read these streams in Zulip, you need to contact the people who are
+on these streams and already use Zulip.  They can subscribe you to them via the
+"streams" page in the Zulip web interface:
+""")) + "\n\n  %s" % (", ".join(unauthorized),))
 
     if len(skipped) > 0:
         if verbose:

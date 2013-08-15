@@ -273,8 +273,10 @@ class Client(object):
 
         self.call_on_each_event(event_callback, ['message'])
 
-def _mk_subs(streams):
-    return {'subscriptions': streams}
+def _mk_subs(streams, **kwargs):
+    result = kwargs
+    result['subscriptions'] = streams
+    return result
 
 def _mk_rm_subs(streams):
     return {'delete': streams}
@@ -293,6 +295,6 @@ Client._register('get_profile', method='GET', url='users/me')
 Client._register('get_public_streams', method='GET', url='streams')
 Client._register('get_members', method='GET', url='users')
 Client._register('list_subscriptions', method='GET', url='users/me/subscriptions')
-Client._register('add_subscriptions', url='users/me/subscriptions',    make_request=_mk_subs)
+Client._register('add_subscriptions', url='users/me/subscriptions', make_request=_mk_subs)
 Client._register('remove_subscriptions', method='PATCH', url='users/me/subscriptions', make_request=_mk_rm_subs)
 Client._register('render_message', method='GET', url='messages/render')
