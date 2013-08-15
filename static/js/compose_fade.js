@@ -32,6 +32,7 @@ function _display_messages_normally() {
                                                .removeClass("faded").removeClass("unfaded");
 
     normal_display = true;
+    ui.update_floating_recipient_bar();
 }
 
 function _fade_messages() {
@@ -55,6 +56,8 @@ function _fade_messages() {
             elt.removeClass("faded").addClass("unfaded");
         }
     }
+
+    ui.update_floating_recipient_bar();
 }
 
 function _want_normal_display() {
