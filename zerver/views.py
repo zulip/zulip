@@ -1389,9 +1389,10 @@ def filter_stream_authorization(user_profile, streams):
 
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
-                              streams_raw = REQ('subscriptions', json_to_list),
-                              invite_only = REQ('invite_only', json_to_bool, default=False),
-                              principals = REQ('principals', json_to_list, default=None),):
+                              streams_raw = REQ("subscriptions", json_to_list),
+                              invite_only = REQ(converter=json_to_bool, default=False),
+                              principals = REQ(converter=json_to_list, default=None),
+                              authorization_errors_fatal = REQ(converter=json_to_bool, default=True)):
 
     stream_names = []
     for stream in streams_raw:
@@ -1408,7 +1409,7 @@ def add_subscriptions_backend(request, user_profile,
         list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
     authorized_streams, unauthorized_streams = \
         filter_stream_authorization(user_profile, existing_streams)
-    if len(unauthorized_streams) > 0:
+    if len(unauthorized_streams) > 0 and authorization_errors_fatal:
         return json_error("Unable to access invite-only stream (%s)." % unauthorized_streams[0].name)
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
@@ -1459,6 +1460,8 @@ def add_subscriptions_backend(request, user_profile,
 
     result["subscribed"] = dict(result["subscribed"])
     result["already_subscribed"] = dict(result["already_subscribed"])
+    if not authorization_errors_fatal:
+        result["unauthorized"] = [stream.name for stream in unauthorized_streams]
     return json_success(result)
 
 @authenticated_api_view

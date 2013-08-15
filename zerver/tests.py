@@ -1989,12 +1989,24 @@ class InviteOnlyStreamTest(AuthedTestCase):
         result = self.common_subscribe_to_streams(email, ["Saxony"])
         self.assert_json_error(result, 'Unable to access invite-only stream (Saxony).')
 
+        # authorization_errors_fatal=False works
+        email = "othello@zulip.com"
+        self.login(email)
+        result = self.common_subscribe_to_streams(email, ["Saxony"],
+                                                  extra_post_data={'authorization_errors_fatal': ujson.dumps(False)})
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertEqual(json["unauthorized"], ['Saxony'])
+        self.assertEqual(json["subscribed"], {})
+        self.assertEqual(json["already_subscribed"], {})
+
         # Inviting another user to an invite-only stream is allowed
         email = 'hamlet@zulip.com'
         self.login(email)
         result = self.common_subscribe_to_streams(
             email, ["Saxony"],
             extra_post_data={'principals': ujson.dumps(["othello@zulip.com"])})
+        self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertEqual(json["subscribed"], {"othello@zulip.com": ['Saxony']})
         self.assertEqual(json["already_subscribed"], {})
