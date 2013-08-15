@@ -86,10 +86,10 @@ class Realm(models.Model):
 # "tabbott@test"@zulip.com
 # is valid email address
 def email_to_username(email):
-    return "@".join(email.split("@")[:-1])
+    return "@".join(email.split("@")[:-1]).lower()
 
 def email_to_domain(email):
-    return email.split("@")[-1]
+    return email.split("@")[-1].lower()
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Fields from models.AbstractUser minus last_name and first_name,
