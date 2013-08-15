@@ -8,6 +8,15 @@ exports.twenty_four_hour_time = _.contains([],
                                   page_params.email);
 exports.dropbox_integration = page_params.staging || _.contains(['dropbox.com'], page_params.domain);
 exports.email_forwarding = page_params.staging;
+
+
+exports.mandatory_topics = _.contains([
+    'zulip.com',
+    'customer7.invalid'
+    ],
+    page_params.domain
+);
+
 return exports;
 
 }());
