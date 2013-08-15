@@ -73,7 +73,7 @@ a {
 }
 
 .app-main, .header-main {
-    max-width: 1400px;
+    max-width: 1200px;
     min-width: 950px;
     margin: 0px auto;
     padding: 0px 5px 0px 5px;
@@ -2207,6 +2207,10 @@ div.edit_bot {
 #settings {
     margin-top: 45px;
     margin-left: 15px;
+}
+
+#home {
+    margin-top: 40px;
 }
 
 #settings-change-box .gravatar-profile {

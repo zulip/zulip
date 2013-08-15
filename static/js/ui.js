@@ -358,7 +358,6 @@ exports.resize_page_components = function () {
     var h = get_new_heights();
 
     $("#bottom_whitespace").height(h.bottom_whitespace_height);
-    $("#main_div").css('min-height', h.main_div_min_height);
     $(".bottom_sidebar").height(h.bottom_sidebar_height);
     $("#right-sidebar").height(h.right_sidebar_height);
     $("#stream_filters").css('max-height', h.stream_filters_max_height);
