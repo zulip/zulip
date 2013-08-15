@@ -108,10 +108,10 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
         if not valid_stream_name(stream_name):
             raise JsonableError("Invalid stream name (%s)." % (stream_name,))
 
-    existing_streams = bulk_get_streams(user_profile.realm, stream_set)
+    existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
     for stream_name in stream_set:
-        stream = existing_streams.get(stream_name.lower())
+        stream = existing_stream_map.get(stream_name.lower())
         if stream is None:
             rejects.append(stream_name)
         else:
