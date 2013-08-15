@@ -86,10 +86,6 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
     For each stream name, we validate it to ensure it meets our requirements for a proper
     stream name: that is, that it is shorter than 30 characters and passes valid_stream_name.
 
-    We also ensure the stream is visible to the user_profile who made the request; a call
-    to list_to_streams will fail if one of the streams is invite_only and user_profile
-    is not already on the stream.
-
     This function in autocreate mode should be atomic: either an exception will be raised
     during a precheck, or all the streams specified will have been created if applicable.
 
@@ -117,11 +113,6 @@ def list_to_streams(streams_raw, user_profile, autocreate=False, invite_only=Fal
             rejects.append(stream_name)
         else:
             existing_streams.append(stream)
-            # Verify we can access the stream.  Note that this part
-            # does not use a bulk query, and thus will perform poorly
-            # if a user queries a lot of invite-only streams.
-            if stream.invite_only and not subscribed_to_stream(user_profile, stream):
-                raise JsonableError("Unable to access invite-only stream (%s)." % stream.name)
     if autocreate:
         for stream_name in rejects:
             stream, created = create_stream_if_needed(user_profile.realm,
@@ -1379,6 +1370,24 @@ def api_add_subscriptions(request, user_profile):
 def json_add_subscriptions(request, user_profile):
     return add_subscriptions_backend(request, user_profile)
 
+def filter_stream_authorization(user_profile, streams):
+    streams_subscribed = set()
+    recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
+    subs = Subscription.objects.filter(user_profile=user_profile,
+                                       recipient__in=recipients_map.values(),
+                                       active=True)
+
+    for sub in subs:
+        streams_subscribed.add(sub.recipient.type_id)
+
+    unauthorized_streams = []
+    for stream in streams:
+        if stream.invite_only and not stream.id in streams_subscribed:
+            unauthorized_streams.append(stream)
+    streams = [stream for stream in streams if
+               stream.id not in set(stream.id for stream in unauthorized_streams)]
+    return streams, unauthorized_streams
+
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,
                               streams_raw = REQ('subscriptions', json_to_list),
@@ -1396,14 +1405,19 @@ def add_subscriptions_backend(request, user_profile,
             return json_error("Invalid stream name (%s)." % (stream_name,))
         stream_names.append(stream_name)
 
+    existing_streams, created_streams = \
+        list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
+    authorized_streams, unauthorized_streams = \
+        filter_stream_authorization(user_profile, existing_streams)
+    if len(unauthorized_streams) > 0:
+        return json_error("Unable to access invite-only stream (%s)." % unauthorized_streams[0].name)
+    # Newly created streams are also authorized for the creator
+    streams = authorized_streams + created_streams
+
     if principals is not None:
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:
         subscribers = [user_profile]
-
-    existing_streams, created_streams = \
-        list_to_streams(stream_names, user_profile, autocreate=True, invite_only=invite_only)
-    streams = existing_streams + created_streams
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(streams, subscribers)
 
