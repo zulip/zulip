@@ -105,6 +105,12 @@ $(function () {
         }
     });
 
+    $("#share-the-love-expand-collapse").click(function () {
+        $("#share-the-love-contents").toggle();
+        $("#share-the-love-expand-collapse .toggle").toggleClass('icon-vector-caret-right icon-vector-caret-down');
+        ui.resize_page_components();
+    });
+
     exports.update_state(page_params.referrals.granted, page_params.referrals.used);
 });
 

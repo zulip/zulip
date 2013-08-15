@@ -26,38 +26,40 @@
                         <ul id="stream_filters" class="filters scrolling_list"></ul>
                       </div>
                       <div id="share-the-love">
-                        <div>
-                          <h4 class="streams_title">SHARE THE LOVE</h4>
+                        <div id="share-the-love-expand-collapse">
+                          <i class="toggle icon-vector-caret-right"></i> <h4 class="streams_title">SHARE THE LOVE<span class="still-have-invites"> (<span class="invite-count">0</span>)</span></h4>
                         </div>
-                        <div id="tell-a-friend-success" class="alert alert-success">
-                          <strong>Thanks!</strong>
-                          <p>Our engineers will artisanally handcraft
-                          and send them an invitation.</p>
-                        </div>
-                        <div class="still-have-invites" id="encouraging-invite-message">
-                          <p>
-                            Know someone who would love Zulip for their company or group? Invite 'em!
-                          </p>
-                        </div>
-                        <div class="still-have-invites">
-                          {#  Many of these values are set by the initialization code in referral.js  #}
-                          <form id="referral-form">
-                            <input class="input-block-level required" type="email" name="email" />
-                            <label for="email" generated="true" class="text-error"></label>
-                          </form>
-                        </div>
-                        <div class="invite-count-area">
-                          <span id="invite-hearts"></span>
-                          <small class="pull-right"><span class="invite-count">0</span> invite<span class="invite-count-is-plural">s</span> remaining</small>
-                        </div>
-                        <div class="no-more-invites">
-                          <p>
-                            We'll have more invites for you soon, but
-                            for now, enjoy this <a target="_blank"
-                            href="http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s">song
-                            that expresses how we feel when you're
-                            logged out</a>.
-                          </p>
+                        <div id="share-the-love-contents">
+                          <div id="tell-a-friend-success" class="alert alert-success">
+                            <strong>Thanks!</strong>
+                            <p>Our engineers will artisanally handcraft
+                              and send them an invitation.</p>
+                          </div>
+                          <div class="still-have-invites" id="encouraging-invite-message">
+                            <p>
+                              Know someone who would love Zulip for their company or group? Invite 'em!
+                            </p>
+                          </div>
+                          <div class="still-have-invites">
+                            {#  Many of these values are set by the initialization code in referral.js  #}
+                            <form id="referral-form">
+                              <input class="input-block-level required" type="email" name="email" />
+                              <label for="email" generated="true" class="text-error"></label>
+                            </form>
+                          </div>
+                          <div class="invite-count-area">
+                            <span id="invite-hearts"></span>
+                            <small class="pull-right"><span class="invite-count">0</span> invite<span class="invite-count-is-plural">s</span> remaining</small>
+                          </div>
+                          <div class="no-more-invites">
+                            <p>
+                              We'll have more invites for you soon, but
+                              for now, enjoy this <a target="_blank"
+                                                     href="http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s">song
+                                that expresses how we feel when you're
+                                logged out</a>.
+                            </p>
+                          </div>
                         </div>
                       </div>
               </div>

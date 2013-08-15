@@ -2270,6 +2270,27 @@ div.edit_bot {
     display: none;
 }
 
+#share-the-love-contents {
+    display: none;
+}
+
+#share-the-love-expand-collapse {
+    position: relative;
+    cursor: pointer;
+}
+
+#share-the-love-expand-collapse h4 {
+    padding-left: 1em;
+}
+
+
+#share-the-love-expand-collapse .toggle {
+    position: absolute;
+    left: 0px;
+    top: 50%;
+    margin-top: -8px;
+}
+
 #share-the-love input, #share-the-love p {
     margin-top: 5px;
     margin-bottom: 5px;

@@ -327,7 +327,7 @@ function get_new_heights() {
     if ($("#share-the-love").is(":visible")) {
         res.stream_filters_max_height -=
             $("#share-the-love").outerHeight(true)
-            + 5;// share-the-love margin-bottom
+            + 20; // share-the-love margins + 10px of ??
     }
 
     // Don't let us crush the stream sidebar completely out of view
