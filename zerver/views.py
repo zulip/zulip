@@ -33,7 +33,7 @@ from zerver.lib.actions import do_remove_subscription, bulk_remove_subscriptions
     get_status_dict, do_change_enable_offline_email_notifications, \
     do_update_onboarding_steps, do_update_message, internal_prep_message, \
     do_send_messages, do_add_subscription, get_default_subs, do_deactivate, \
-    user_email_is_unique, do_invite_users, do_refer_friend
+    user_email_is_unique, do_invite_users, do_refer_friend, compute_mit_user_fullname
 from zerver.lib.create_user import random_api_key
 from zerver.forms import RegistrationForm, HomepageForm, ToSForm, CreateBotForm, \
     is_inactive, isnt_mit, not_mit_mailing_list
@@ -267,7 +267,12 @@ def accounts_register(request):
         return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' + urllib.quote_plus(email))
 
     if request.POST.get('from_confirmation'):
-        form = RegistrationForm()
+        if domain == "mit.edu":
+            hesiod_name = compute_mit_user_fullname(email)
+            form = RegistrationForm(
+                    initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
+        else:
+            form = RegistrationForm()
     else:
         form = RegistrationForm(request.POST)
         if form.is_valid():
