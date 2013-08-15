@@ -248,7 +248,7 @@ def accounts_register(request):
     # MitUsers can't be referred and don't have a referred_by field.
     if not mit_beta_user and prereg_user.referred_by:
         domain = prereg_user.referred_by.realm.domain
-    elif prereg_user.realm:
+    elif not mit_beta_user and prereg_user.realm:
         # You have a realm set, even though nobody referred you. This
         # happens if you sign up through a special URL for an open
         # realm.
@@ -512,8 +512,14 @@ def create_preregistration_user(email, request):
     domain = request.session.get("domain")
     if not completely_open(domain):
         domain = None
-    prereg_user = PreregistrationUser(email=email, realm=get_realm(domain))
-    prereg_user.save()
+    # MIT users who are not explicitly signing up for an open realm
+    # require special handling (They may already have an (inactive)
+    # account, for example)
+    if email_to_domain(email) == "mit.edu" and not domain:
+        prereg_user, created = MitUser.objects.get_or_create(email=email)
+    else:
+        prereg_user = PreregistrationUser(email=email, realm=get_realm(domain))
+        prereg_user.save()
 
     request.session["domain"] = None
 
