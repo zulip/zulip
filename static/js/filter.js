@@ -79,10 +79,6 @@ Filter.prototype = {
     _canonicalize_operators: function Filter__canonicalize_operators(operators_mixed_case) {
         return _.map(operators_mixed_case, function (operator) {
             // We may want to consider allowing mixed-case operators at some point
-
-            // TEMPORARY SHIM: back to narrow.js mid-refactoring
-
-
             return [Filter.canonicalize_operator(operator[0]),
                     subs.canonicalized_name(operator[1])];
         });
