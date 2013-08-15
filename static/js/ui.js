@@ -239,16 +239,30 @@ $(function () {
 
 var current_message_hover;
 function message_unhover() {
+    var message;
     if (current_message_hover === undefined) {
         return;
+    }
+    message = current_msg_list.get(rows.id(current_message_hover));
+    if (feature_flags.edit_appears_on_hover && message.sent_by_me) {
+        current_message_hover.find('.message_content').find('span.edit_content').remove();
     }
     current_message_hover.removeClass('message_hovered');
     current_message_hover = undefined;
 }
 
 function message_hover(message_row) {
+    var message;
+    var edit_content_button = '<span class="edit_content">&nbsp;&nbsp;&nbsp;<i class="icon-vector-pencil edit_content"></i></span>';
+    if (current_message_hover && message_row && current_message_hover.attr("zid") === message_row.attr("zid")) {
+        return;
+    }
+    message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
+    if (feature_flags.edit_appears_on_hover && message.sent_by_me) {
+        message_row.find('.message_content').find('p').append(edit_content_button);
+    }
     current_message_hover = message_row;
 }
 
@@ -989,7 +1003,8 @@ $(function () {
     $("#main_div").on("click", ".messagebox", function (e) {
         var target = $(e.target);
         if (target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
-            target.is("div.message_length_controller") || target.is("textarea") || target.is("input")) {
+            target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
+            target.is("i.edit_content")) {
             // If this click came from a hyperlink, don't trigger the
             // reply action.  The simple way of doing this is simply
             // to call e.stopPropagation() from within the link's
@@ -1023,11 +1038,11 @@ $(function () {
     $("#main_div").on("mousedown", ".messagebox", mousedown);
     $("#main_div").on("mousemove", ".messagebox", mousemove);
     $("#main_div").on("mouseover", ".message_row", function (e) {
-        var row = $(this);
+        var row = $(this).closest(".message_row");
         message_hover(row);
     });
 
-    $("#main_div").on("mouseout", ".message_row", function (e) {
+    $("#main_div").on("mouseleave", ".message_row", function (e) {
         message_unhover();
     });
 
@@ -1284,6 +1299,12 @@ $(function () {
         e.stopPropagation();
     });
 
+    $('body').on('click', '.edit_content', function (e) {
+        var row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
+        message_edit.start(row);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
     $('body').on('click', '.edit_subject', function (e) {
         var row = current_msg_list.get_row(rows.id($(this).closest(".recipient_row")));
         message_edit.start(row);
