@@ -896,6 +896,15 @@ td.pointer {
     opacity: 1.0;
 }
 
+.edit_content {
+    opacity: .5;
+}
+
+.edit_content:hover {
+    cursor: pointer;
+    opacity: 1.0;
+}
+
 /* Brighten text because of the dark background */
 .dark_background {
     color: #ffffff;
