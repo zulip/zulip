@@ -6,6 +6,10 @@ var blueslip = (function () {
 
 var exports = {};
 
+if (Error.stackTraceLimit !== undefined) {
+    Error.stackTraceLimit = 100000;
+}
+
 var console = (function () {
     if (window.console !== undefined) {
         return window.console;
