@@ -776,7 +776,7 @@ MessageList.prototype = {
     },
 
     start_summary_exemption: function MessageList_start_summary_exemption() {
-        var num_exempt = 5;
+        var num_exempt = 8;
         this.min_id_exempted_from_summaries = this.nth_most_recent_id(num_exempt);
     },
 
