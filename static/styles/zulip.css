@@ -1109,7 +1109,7 @@ blockquote p {
     display: none;
     position: absolute;
     right: 5px;
-    top: 10px;
+    top: 17px;
 }
 
 /* Like .nav-tabs > li > a */
@@ -1323,6 +1323,28 @@ input.recipient_box {
        thing which is basically 'give us as much space as we need'. */
     width: -moz-max-content;
 }
+
+.dropdown-menu {
+    left: -10px;
+    min-width: 180px;
+    -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-menu:after {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    top: -6px;
+    left: 11px;
+    display: inline-block;
+    border-right: 6px solid transparent;
+    border-bottom: 6px solid #fff;
+    border-left: 6px solid transparent;
+    content: '';
+}
+
 
 #navbar-buttons ul.nav .dropdown-toggle,
 #navbar-buttons ul.nav li.active .dropdown-toggle {
@@ -2365,6 +2387,18 @@ div.edit_bot {
         top: 3px;
     }
 
+    .dropdown-menu {
+        left: -160px;
+        min-width: 180px;
+        -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+        -moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+        box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dropdown-menu:after {
+        left: 160px;
+    }
+    
     .column-middle {
         margin-left:  -200px;
         margin-right: 0px;
@@ -2429,6 +2463,12 @@ div.edit_bot {
 
 }
 
+@media (max-width: 500px) {
+    .compose_stream_button_label, .compose_private_button_label {
+        display: none;
+    }
+}
+
 /*
 
 @media (max-width: 480px) {
@@ -2474,12 +2514,6 @@ div.edit_bot {
 @media (max-width: 480px) {
     .message_content {
         margin-right: 5px;
-    }
-}
-
-@media (max-width: 480px) {
-    .compose_stream_button_label, .compose_private_button_label {
-        display: none;
     }
 }
 
