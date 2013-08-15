@@ -1679,23 +1679,32 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
                       short_ref,
                       after[:7]))
     else:
-        content = ("%s [pushed](%s) to branch %s\n\n"
-                   % (pusher,
-                      url,
-                      short_ref))
-        num_commits = len(commits)
-        max_commits = 10
-        truncated_commits = commits[:max_commits]
-        for commit in truncated_commits:
-            short_id = commit['id'][:7]
-            (short_commit_msg, _, _) = commit['message'].partition("\n")
-            content += "* [%s](%s): %s\n" % (short_id, commit['url'],
-                                             short_commit_msg)
-        if (num_commits > max_commits):
-            content += ("\n[and %d more commits]"
-                        % (num_commits - max_commits,))
+        content = build_commit_list_content(commits, short_ref, url, pusher)
 
     return (subject, content)
+
+def build_commit_list_content(commits, branch, compare_url, pusher):
+    if compare_url is not None:
+        push_text = "[pushed](%s)" % (compare_url,)
+    else:
+        push_text = "pushed"
+    content = ("%s %s to branch %s\n\n"
+               % (pusher,
+                  push_text,
+                  branch))
+    num_commits = len(commits)
+    max_commits = 10
+    truncated_commits = commits[:max_commits]
+    for commit in truncated_commits:
+        short_id = commit['id'][:7]
+        (short_commit_msg, _, _) = commit['message'].partition("\n")
+        content += "* [%s](%s): %s\n" % (short_id, commit['url'],
+                                         short_commit_msg)
+    if (num_commits > max_commits):
+        content += ("\n[and %d more commits]"
+                    % (num_commits - max_commits,))
+
+    return content
 
 @authenticated_api_view
 @has_request_variables
