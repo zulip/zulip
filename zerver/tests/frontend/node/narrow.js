@@ -5,8 +5,7 @@ var assert = require('assert');
     global.util = require('js/util.js');
     global.Dict = require('js/dict.js');
     global.narrow = require('js/narrow.js');
-    global.$ = function () {}; // for subs.js
-    global.subs = require('js/subs.js');
+    global.stream_data = require('js/stream_data.js');
     global.Filter = require('js/filter.js');
 }());
 

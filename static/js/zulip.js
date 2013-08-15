@@ -476,8 +476,8 @@ function unconditionally_send_pointer_update() {
 function process_message_for_recent_subjects(message, remove_message) {
     var current_timestamp = 0;
     var count = 0;
-    var canon_stream = subs.canonicalized_name(message.stream);
-    var canon_subject = subs.canonicalized_name(message.subject);
+    var canon_stream = stream_data.canonicalized_name(message.stream);
+    var canon_subject = stream_data.canonicalized_name(message.subject);
 
     if (! recent_subjects.has(canon_stream)) {
         recent_subjects.set(canon_stream, []);

@@ -8,8 +8,8 @@ function update_subscription_checkboxes() {
     // checkboxes are saved from invocation to invocation (which is
     // nice if I want to invite a bunch of people at once)
     var streams = [];
-    _.each(subs.subscribed_streams(), function (value) {
-        streams.push({name: value, invite_only: subs.get_invite_only(value)});
+    _.each(stream_data.subscribed_streams(), function (value) {
+        streams.push({name: value, invite_only: stream_data.get_invite_only(value)});
     });
     $('#streams_to_add').html(templates.render('invite_subscription', {streams: streams}));
 }

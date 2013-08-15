@@ -5,11 +5,10 @@ var assert = require('assert');
 
     global.util = require('js/util.js');
     global.Dict = require('js/dict.js');
-    global.$ = function () {}; // for subs.js to load
-    global.subs = require('js/subs.js');
     global.page_params = {
         domain: 'zulip.com'
     };
+    global.stream_data = require('js/stream_data.js');
     global.Filter = require('js/filter.js');
 }());
 

@@ -7,7 +7,7 @@ var last_mention_count = 0;
 var previous_sort_order;
 
 exports.sort_narrow_list = function () {
-    var streams = subs.subscribed_streams();
+    var streams = stream_data.subscribed_streams();
     if (streams.length === 0) {
         return;
     }
@@ -37,7 +37,7 @@ exports.sort_narrow_list = function () {
 
     var elems = [];
     _.each(streams, function (stream) {
-        var li = $(subs.get(stream).sidebar_li);
+        var li = $(stream_data.get_sub(stream).sidebar_li);
         if (sort_recent) {
             if (! recent_subjects.has(stream)) {
                 li.addClass('inactive_stream');
@@ -94,9 +94,9 @@ function add_narrow_filter(name, type) {
     var args = {name: name,
                 id: subs.stream_id(name),
                 uri: narrow.by_stream_uri(name),
-                not_in_home_view: (subs.in_home_view(name) === false),
-                invite_only: subs.get(name).invite_only,
-                color: subs.get_color(name)};
+                not_in_home_view: (stream_data.in_home_view(name) === false),
+                invite_only: stream_data.get_sub(name).invite_only,
+                color: stream_data.get_color(name)};
     var list_item = $(templates.render('stream_sidebar_row', args));
     $("#" + type + "_filters").append(list_item);
     return list_item;
@@ -189,7 +189,7 @@ exports.update_streams_sidebar = function () {
         if (op_subject.length !== 0) {
             subject = op_subject[0];
         }
-        if (subs.is_subscribed(op_stream[0])) {
+        if (stream_data.is_subscribed(op_stream[0])) {
             rebuild_recent_subjects(op_stream[0], subject);
         }
     }
@@ -272,7 +272,7 @@ $(function () {
             }
         }
         var op_stream = event.filter.operands('stream');
-        if (op_stream.length !== 0 && subs.is_subscribed(op_stream[0])) {
+        if (op_stream.length !== 0 && stream_data.is_subscribed(op_stream[0])) {
             var stream_li = get_filter_li('stream', op_stream[0]);
             var op_subject = event.filter.operands('topic');
             var subject;

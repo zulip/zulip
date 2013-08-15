@@ -76,7 +76,7 @@ function hide_box() {
 
 function update_lock_icon_for_stream(stream_name) {
     var icon = $("#compose-lock-icon");
-    if (subs.get_invite_only(stream_name)) {
+    if (stream_data.get_invite_only(stream_name)) {
         icon.show();
     } else {
         icon.hide();
@@ -88,7 +88,7 @@ function update_lock_icon_for_stream(stream_name) {
 // (In particular, if there's a color associated with it,
 //  have that color be reflected here too.)
 exports.decorate_stream_bar = function (stream_name) {
-    var color = subs.get_color(stream_name);
+    var color = stream_data.get_color(stream_name);
     update_lock_icon_for_stream(stream_name);
     $("#stream-message .message_header_stream")
         .css('background-color', color)
@@ -449,7 +449,7 @@ function validate_stream_message() {
 
     var response;
 
-    if (!subs.is_subscribed(stream_name)) {
+    if (!stream_data.is_subscribed(stream_name)) {
         switch(check_stream_for_send(stream_name)) {
         case "does-not-exist":
             response = "<p>The stream <b>" +

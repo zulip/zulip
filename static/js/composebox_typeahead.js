@@ -211,7 +211,7 @@ exports.initialize = function () {
     // limit number of items so the list doesn't fall off the screen
     $( "#stream" ).typeahead({
         source: function (query, process) {
-            return subs.subscribed_streams();
+            return stream_data.subscribed_streams();
         },
         items: 3,
         highlighter: function (item) {

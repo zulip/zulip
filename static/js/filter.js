@@ -5,7 +5,7 @@ function message_in_home(message) {
         return true;
     }
 
-    return subs.in_home_view(message.stream);
+    return stream_data.in_home_view(message.stream);
 }
 
 function Filter(operators) {
@@ -80,7 +80,7 @@ Filter.prototype = {
         return _.map(operators_mixed_case, function (operator) {
             // We may want to consider allowing mixed-case operators at some point
             return [Filter.canonicalize_operator(operator[0]),
-                    subs.canonicalized_name(operator[1])];
+                    stream_data.canonicalized_name(operator[1])];
         });
     },
 

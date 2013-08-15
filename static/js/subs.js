@@ -2,37 +2,10 @@ var subs = (function () {
 
 var exports = {};
 
-var stream_info = new Dict(); // Maps lowercase stream name to stream properties object
-
 var next_sub_id = 0;
 
-function add_sub(stream_name, sub) {
-    stream_info.set(stream_name.toLowerCase(), sub);
-}
-
-function get_sub(stream_name) {
-    return stream_info.get(stream_name.toLowerCase());
-}
-
-exports.stream_info = function (new_stream_info) {
-    if (new_stream_info !== undefined) {
-        stream_info = new_stream_info;
-    } else {
-        return stream_info;
-    }
-};
-
-exports.subscribed_streams = function () {
-    return _.chain(stream_info.values())
-        .where({subscribed: true})
-        .pluck('name')
-        .value();
-};
-
 function get_color() {
-    var streams = _.values(stream_info);
-    var subscribed_streams = _.where(streams, {subscribed: true});
-    var used_colors = _.pluck(subscribed_streams, 'color');
+    var used_colors = stream_data.get_colors();
     var color = stream_color.pick_color(used_colors);
     return color;
 }
@@ -42,8 +15,7 @@ exports.update_all_messages_link = function () {
     // the user has any subscriptions hidden from home view.
     var all_messages = $("#global_filters [data-name='all']")[0];
 
-    if (_.every(_.where(stream_info.values(), {subscribed: true}),
-                function (sub) { return sub.in_home_view; })) {
+    if (stream_data.all_subscribed_streams_are_in_home_view()) {
         $(all_messages).addClass('hidden-filter');
     } else {
         $(all_messages).removeClass('hidden-filter');
@@ -59,16 +31,12 @@ function should_list_all_streams() {
 }
 
 exports.stream_id = function (stream_name) {
-    var sub = get_sub(stream_name);
+    var sub = stream_data.get_sub(stream_name);
     if (sub === undefined) {
         blueslip.error("Tried to get subs.stream_id for a stream user is not subscribed to!");
         return 0;
     }
     return parseInt(sub.id, 10);
-};
-
-exports.canonicalized_name = function (stream_name) {
-   return stream_name.toString().toLowerCase();
 };
 
 function set_stream_property(stream_name, property, value) {
@@ -144,7 +112,7 @@ function update_in_home_view(sub, value) {
 }
 
 exports.toggle_home = function (stream_name) {
-    var sub = get_sub(stream_name);
+    var sub = stream_data.get_sub(stream_name);
     update_in_home_view(sub, ! sub.in_home_view);
     set_stream_property(stream_name, 'in_home_view', sub.in_home_view);
 };
@@ -159,19 +127,19 @@ function stream_notifications_clicked(e) {
     var sub_row = $(e.target).closest('.subscription_row');
     var stream = sub_row.find('.subscription_name').text();
 
-    var sub = get_sub(stream);
+    var sub = stream_data.get_sub(stream);
     sub.notifications = ! sub.notifications;
     set_stream_property(stream, 'notifications', sub.notifications);
 }
 
 exports.set_color = function (stream_name, color) {
-    var sub = get_sub(stream_name);
+    var sub = stream_data.get_sub(stream_name);
     stream_color.update_stream_color(sub, stream_name, color, {update_historical: true});
     set_stream_property(stream_name, 'color', color);
 };
 
 function create_sub(stream_name, attrs) {
-    var sub = get_sub(stream_name);
+    var sub = stream_data.get_sub(stream_name);
     if (sub !== undefined) {
         // We've already created this subscription, no need to continue.
         return sub;
@@ -191,7 +159,7 @@ function create_sub(stream_name, attrs) {
         sub.color = get_color();
     }
 
-    add_sub(stream_name, sub);
+    stream_data.add_sub(stream_name, sub);
     $(document).trigger($.Event('sub_obj_created.zulip', {sub: sub}));
     return sub;
 }
@@ -207,7 +175,7 @@ function settings_for_sub(sub) {
 }
 
 exports.show_settings_for = function (stream_name) {
-    settings_for_sub(get_sub(stream_name)).collapse('show');
+    settings_for_sub(stream_data.get_sub(stream_name)).collapse('show');
 };
 
 function add_sub_to_table(sub) {
@@ -232,7 +200,7 @@ function add_to_member_list(ul, name, email) {
 }
 
 function mark_subscribed(stream_name, attrs) {
-    var sub = get_sub(stream_name);
+    var sub = stream_data.get_sub(stream_name);
 
     if (sub === undefined) {
         // Create a new stream.
@@ -278,7 +246,7 @@ function mark_subscribed(stream_name, attrs) {
 }
 
 function mark_unsubscribed(stream_name) {
-    var sub = get_sub(stream_name);
+    var sub = stream_data.get_sub(stream_name);
 
     if (sub === undefined) {
         // We don't know about this stream
@@ -332,24 +300,8 @@ $(function () {
     });
 });
 
-exports.get_color = function (stream_name) {
-    var sub = get_sub(stream_name);
-    if (sub === undefined) {
-        return stream_color.default_color;
-    }
-    return sub.color;
-};
-
-exports.get_invite_only = function (stream_name) {
-    var sub = get_sub(stream_name);
-    if (sub === undefined) {
-        return false;
-    }
-    return sub.invite_only;
-};
-
 exports.receives_notifications = function (stream_name) {
-    var sub = get_sub(stream_name);
+    var sub = stream_data.get_sub(stream_name);
     if (sub === undefined) {
         return false;
     }
@@ -387,7 +339,7 @@ exports.reload_subscriptions = function (opts) {
     }
 
     if (opts.clear_first) {
-        stream_info = new Dict();
+        stream_data.clear_subscriptions();
         stream_list.remove_all_narrow_filters();
     }
 
@@ -403,14 +355,14 @@ exports.reload_subscriptions = function (opts) {
 exports.setup_page = function () {
     util.make_loading_indicator($('#subs_page_loading_indicator'));
 
-    function populate_and_fill(stream_data, subscription_data) {
+    function populate_and_fill(data_for_streams, subscription_data) {
         var all_streams = [];
         var our_subs = [];
         var sub_rows = [];
 
         /* arguments are [ "success", statusText, jqXHR ] */
-        if (stream_data.length > 2 && stream_data[2]) {
-            var stream_response = JSON.parse(stream_data[2].responseText);
+        if (data_for_streams.length > 2 && data_for_streams[2]) {
+            var stream_response = JSON.parse(data_for_streams[2].responseText);
             _.each(stream_response.streams, function (stream) {
                 all_streams.push(stream.name);
             });
@@ -431,7 +383,7 @@ exports.setup_page = function () {
         populate_subscriptions(our_subs, true);
 
         all_streams.forEach(function (stream) {
-            var sub = exports.get(stream);
+            var sub = stream_data.get_sub(stream);
             if (!sub) {
                 sub = create_sub(stream, {subscribed: false});
             }
@@ -490,22 +442,8 @@ exports.setup_page = function () {
     $.when.apply(this, requests).then(populate_and_fill, failed_listing);
 };
 
-exports.get = function (stream_name) {
-    return get_sub(stream_name);
-};
-
-exports.in_home_view = function (stream_name) {
-    var sub = get_sub(stream_name);
-    return sub !== undefined && sub.in_home_view;
-};
-
-exports.is_subscribed = function (stream_name) {
-    var sub = get_sub(stream_name);
-    return sub !== undefined && sub.subscribed;
-};
-
 exports.update_subscription_properties = function (stream_name, property, value) {
-    var sub = get_sub(stream_name);
+    var sub = stream_data.get_sub(stream_name);
     switch(property) {
     case 'color':
         stream_color.update_stream_color(sub, stream_name, value, {update_historical: true});
@@ -667,7 +605,7 @@ $(function () {
         e.stopPropagation();
         var sub_row = $(e.target).closest('.subscription_row');
         var stream_name = sub_row.find('.subscription_name').text();
-        var sub = get_sub(stream_name);
+        var sub = stream_data.get_sub(stream_name);
 
         if (sub.subscribed) {
             ajaxUnsubscribe(stream_name);
@@ -680,7 +618,7 @@ $(function () {
         var subrow = $(e.target).closest('.subscription_row');
         var colorpicker = subrow.find('.colorpicker');
 
-        var color = exports.get_color(subrow.find('.subscription_name').text());
+        var color = stream_data.get_color(subrow.find('.subscription_name').text());
         stream_color.set_colorpicker_color(colorpicker, color);
 
         // To figure out the worst case for an expanded row's height, we do some math:
@@ -847,7 +785,7 @@ function focus_on_narrowed_stream() {
     if (stream_name === undefined) {
         return;
     }
-    var sub = get_sub(stream_name);
+    var sub = stream_data.get_sub(stream_name);
     if (sub !== undefined) {
         // This stream is in the list, so focus on it.
         $('html, body').animate({

@@ -20,7 +20,7 @@ function make_tab_data() {
 
         // Root breadcrumb item: Either Home or All Messages
         if ((filter.has_operator("stream") &&
-             !subs.in_home_view(filter.operands("stream")[0])) ||
+             !stream_data.in_home_view(filter.operands("stream")[0])) ||
             filter.has_operand("in", "all")) {
             tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
         } else {
@@ -101,7 +101,7 @@ exports.colorize_tab_bar = function () {
         }
         stream_name = stream_name.toString();
 
-        var stream_color = subs.get_color(stream_name);
+        var stream_color = stream_data.get_color(stream_name);
 
         if (!stream_tab.hasClass('active')) {
             stream_tab.css('border-color', stream_color);

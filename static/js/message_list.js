@@ -398,9 +398,9 @@ MessageList.prototype = {
 
         function set_template_properties(message) {
             if (message.is_stream) {
-                message.background_color = subs.get_color(message.stream);
+                message.background_color = stream_data.get_color(message.stream);
                 message.color_class = stream_color.get_color_class(message.background_color);
-                message.invite_only = subs.get_invite_only(message.stream);
+                message.invite_only = stream_data.get_invite_only(message.stream);
             }
         }
 
@@ -755,7 +755,7 @@ MessageList.prototype = {
         if (stream === undefined) {
             return;
         }
-        var trailing_bookend_content, subscribed = subs.is_subscribed(stream);
+        var trailing_bookend_content, subscribed = stream_data.is_subscribed(stream);
         if (subscribed) {
             if (this.last_message_historical) {
                 trailing_bookend_content = "--- Subscribed to stream " + stream + " ---";

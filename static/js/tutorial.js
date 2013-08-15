@@ -246,7 +246,7 @@ function finale() {
     current_msg_list.clear();
     // Force a check on new events before we re-render the message list.
     force_get_updates();
-    subs.stream_info(real_stream_info);
+    stream_data.set_stream_info(real_stream_info);
     util.show_first_run_message();
     current_msg_list.rerender();
     enable_event_handlers();
@@ -407,8 +407,8 @@ exports.start = function () {
     narrow.deactivate();
 
     // Set temporarly colors for the streams used in the tutorial.
-    real_stream_info = subs.stream_info();
-    subs.stream_info(tutorial_stream_info);
+    real_stream_info = stream_data.get_stream_info();
+    stream_data.set_stream_info(tutorial_stream_info);
     // Add the fake messages to the feed and get started.
     current_msg_list.add_and_rerender(fake_messages);
     disable_event_handlers();

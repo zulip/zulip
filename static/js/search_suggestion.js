@@ -112,7 +112,7 @@ function get_stream_suggestions(operators) {
         return [];
     }
 
-    var streams = subs.subscribed_streams();
+    var streams = stream_data.subscribed_streams();
 
     streams = _.filter(streams, function (stream) {
         return stream_matches_query(stream, query);
@@ -279,7 +279,7 @@ function get_topic_suggestions(query_operators) {
         return [];
     }
 
-    stream = subs.canonicalized_name(stream);
+    stream = stream_data.canonicalized_name(stream);
 
     var topics = recent_subjects.get(stream);
 

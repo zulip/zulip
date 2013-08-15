@@ -19,10 +19,6 @@ function set_up_dependencies() {
         email: 'bob@zulip.com'
     };
 
-    global.subs = {
-        canonicalized_name: function (name) { return name; }
-    };
-
     global.typeahead_helper = require('js/typeahead_helper.js');
 
     global.util = require('js/util.js');
@@ -30,6 +26,7 @@ function set_up_dependencies() {
     global.recent_subjects = new global.Dict();
 
     global.Filter = require('js/filter.js');
+    global.stream_data = require('js/stream_data.js');
 
     return search;
 }
@@ -39,7 +36,7 @@ var search = set_up_dependencies();
 (function test_basic_get_suggestions() {
     var query = 'fred';
 
-    global.subs.subscribed_streams = function () {
+    global.stream_data.subscribed_streams = function () {
         return [];
     };
 
@@ -58,7 +55,7 @@ var search = set_up_dependencies();
 (function test_empty_query_suggestions() {
     var query = '';
 
-    global.subs.subscribed_streams = function () {
+    global.stream_data.subscribed_streams = function () {
         return ['devel', 'office'];
     };
 
@@ -95,7 +92,7 @@ var search = set_up_dependencies();
 (function test_topic_suggestions() {
     var query = 'te';
 
-    global.subs.subscribed_streams = function () {
+    global.stream_data.subscribed_streams = function () {
         return ['office'];
     };
 
@@ -132,7 +129,7 @@ var search = set_up_dependencies();
 (function test_whitespace_glitch() {
     var query = 'stream:office '; // note trailing space
 
-    global.subs.subscribed_streams = function () {
+    global.stream_data.subscribed_streams = function () {
         return ['office'];
     };
 
@@ -154,7 +151,7 @@ var search = set_up_dependencies();
 (function test_people_suggestions() {
     var query = 'te';
 
-    global.subs.subscribed_streams = function () {
+    global.stream_data.subscribed_streams = function () {
         return [];
     };
 

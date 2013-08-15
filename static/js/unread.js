@@ -12,7 +12,7 @@ var unread_subjects = new Dict();
 function unread_hashkey(message) {
     var hashkey;
     if (message.type === 'stream') {
-        hashkey = subs.canonicalized_name(message.stream);
+        hashkey = stream_data.canonicalized_name(message.stream);
     } else {
         hashkey = message.reply_to;
     }
@@ -22,7 +22,7 @@ function unread_hashkey(message) {
     }
 
     if (message.type === 'stream') {
-        var canon_subject = subs.canonicalized_name(message.subject);
+        var canon_subject = stream_data.canonicalized_name(message.subject);
         if (! unread_subjects.has(hashkey)) {
             unread_subjects.set(hashkey, new Dict());
         }
@@ -43,14 +43,14 @@ exports.message_unread = function (message) {
 };
 
 exports.update_unread_subjects = function (msg, event) {
-    var canon_stream = subs.canonicalized_name(msg.stream);
-    var canon_subject = subs.canonicalized_name(msg.subject);
+    var canon_stream = stream_data.canonicalized_name(msg.stream);
+    var canon_subject = stream_data.canonicalized_name(msg.subject);
 
     if (event.subject !== undefined &&
         unread_subjects.has(canon_stream) &&
         unread_subjects.get(canon_stream).has(canon_subject) &&
         unread_subjects.get(canon_stream).get(canon_subject)[msg.id]) {
-        var new_canon_subject = subs.canonicalized_name(event.subject);
+        var new_canon_subject = stream_data.canonicalized_name(event.subject);
         // Move the unread subject count to the new subject
         delete unread_subjects.get(canon_stream).get(canon_subject)[msg.id];
         if (unread_subjects.get(canon_stream).get(canon_subject).length === 0) {
@@ -74,7 +74,7 @@ exports.process_loaded_messages = function (messages) {
         unread_counts[message.type].get(hashkey)[message.id] = true;
 
         if (message.type === 'stream') {
-            var canon_subject = subs.canonicalized_name(message.subject);
+            var canon_subject = stream_data.canonicalized_name(message.subject);
             unread_subjects.get(hashkey).get(canon_subject)[message.id] = true;
         }
 
@@ -88,8 +88,8 @@ exports.process_read_message = function (message) {
     var hashkey = unread_hashkey(message);
     delete unread_counts[message.type].get(hashkey)[message.id];
     if (message.type === 'stream') {
-        var canon_stream = subs.canonicalized_name(message.stream);
-        var canon_subject = subs.canonicalized_name(message.subject);
+        var canon_stream = stream_data.canonicalized_name(message.stream);
+        var canon_subject = stream_data.canonicalized_name(message.subject);
         delete unread_subjects.get(canon_stream).get(canon_subject)[message.id];
     }
     delete unread_mentioned[message.id];
@@ -131,14 +131,14 @@ exports.get_counts = function () {
     }
 
     unread_counts.stream.each(function (msgs, stream) {
-        if (! subs.is_subscribed(stream)) {
+        if (! stream_data.is_subscribed(stream)) {
             return true;
         }
 
         var count = Object.keys(msgs).length;
         res.stream_count.set(stream, count);
 
-        if (subs.in_home_view(stream)) {
+        if (stream_data.in_home_view(stream)) {
             res.home_unread_messages += only_in_home_view(Object.keys(msgs)).length;
         }
 

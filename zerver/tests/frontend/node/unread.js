@@ -10,6 +10,7 @@
 global._ = require('third/underscore/underscore.js');
 global.util = require('js/util.js');
 global.Dict = require('js/dict.js');
+var stream_data = global.stream_data = require('js/stream_data.js');
 var Dict = global.Dict;
 var unread = require('js/unread.js');
 var assert = require('assert');
@@ -22,13 +23,6 @@ global.current_msg_list = current_msg_list;
 
 var home_msg_list = {};
 global.home_msg_list = home_msg_list;
-
-var subs = {};
-global.subs = subs;
-
-subs.canonicalized_name = function (name) {
-    return name;
-};
 
 var zero_counts = {
     private_message_count: 0,
@@ -138,10 +132,10 @@ var zero_counts = {
     narrow.active = function () {
         return false;
     };
-    subs.is_subscribed = function () {
+    stream_data.is_subscribed = function () {
         return true;
     };
-    subs.in_home_view = function () {
+    stream_data.in_home_view = function () {
         return true;
     };
 
@@ -172,11 +166,8 @@ var zero_counts = {
     narrow.active = function () {
         return false;
     };
-    subs.is_subscribed = function () {
+    stream_data.is_subscribed = function () {
         return true;
-    };
-    subs.in_home_view = function () {
-        return false;
     };
 
     var counts = unread.get_counts();
@@ -201,11 +192,8 @@ var zero_counts = {
     narrow.active = function () {
         return false;
     };
-    subs.is_subscribed = function () {
+    stream_data.is_subscribed = function () {
         return true;
-    };
-    subs.in_home_view = function () {
-        return false;
     };
 
     var counts = unread.get_counts();

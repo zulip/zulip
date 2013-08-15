@@ -232,7 +232,7 @@ exports.register_click_handlers = function () {
 
         var ypos = $(elt).offset().top - viewport.scrollTop();
         $(elt).popover({
-            content:   templates.render('stream_sidebar_actions', {'stream': subs.get(stream)}),
+            content:   templates.render('stream_sidebar_actions', {'stream': stream_data.get_sub(stream)}),
             trigger:   "manual",
             fixed: true
         });
@@ -256,7 +256,7 @@ exports.register_click_handlers = function () {
         }
 
         $(elt).popover("show");
-        var popover = $('.streams_popover[data-id=' + subs.get(stream).id + ']');
+        var popover = $('.streams_popover[data-id=' + stream_data.get_sub(stream).id + ']');
         update_spectrum(popover, function (colorpicker) {
             colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
         });
