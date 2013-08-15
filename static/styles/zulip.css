@@ -1637,7 +1637,7 @@ table.floating_recipient {
 }
 
 .selectable_sidebar_block {
-    display: inline-block;
+    display: block;
     width: 100%;
     white-space: nowrap;
     overflow: hidden;
@@ -1879,7 +1879,7 @@ li.expanded_subject {
 }
 
 li.expanded_subject .subject_box {
-    display: inline-block;
+    display: block;
     width: 100%;
     text-overflow: ellipsis;
     overflow: hidden;
