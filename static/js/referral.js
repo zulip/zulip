@@ -3,8 +3,8 @@ var referral = (function () {
 var exports = {};
 
 var placeholder_invitees = ['nikola.tesla@example.com',
-                            'samuel.morse@example.com',
-                            'claude.shannon@example.com',
+                            'sam.morse@example.com',
+                            'c.shannon@example.com',
                             'hedy.lamarr@example.com',
                             'grace.hopper@example.com',
                             'ada.lovelace@example.com'];
