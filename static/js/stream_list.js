@@ -228,27 +228,19 @@ exports.update_dom_with_unread_counts = function (counts) {
     // Our job is to update some DOM elements.
 
     // counts.stream_count maps streams to counts
-    _.each(counts.stream_count.items(), function (item) {
-        var stream = item[0];
-        var count = item[1];
+    counts.stream_count.each(function (count, stream) {
         exports.set_count("stream", stream, count);
     });
 
     // counts.subject_count maps streams to hashes of subjects to counts
-    _.each(counts.subject_count.items(), function (item) {
-        var stream = item[0];
-        var subject_hash = item[1];
-        _.each(subject_hash.items(), function (item) {
-            var subject = item[0];
-            var count = item[1];
+    counts.subject_count.each(function (subject_hash, stream) {
+        subject_hash.each(function (count, subject) {
             exports.set_subject_count(stream, subject, count);
         });
     });
 
     // counts.pm_count maps people to counts
-    _.each(counts.pm_count.items(), function (item) {
-        var person = item[0];
-        var count = item[1];
+    counts.pm_count.each(function (count, person) {
         exports.set_count("private", person, count);
     });
 

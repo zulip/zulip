@@ -130,9 +130,7 @@ exports.get_counts = function () {
         });
     }
 
-    _.each(unread_counts.stream.items(), function (item) {
-        var stream = item[0];
-        var msgs = item[1];
+    unread_counts.stream.each(function (msgs, stream) {
         if (! subs.is_subscribed(stream)) {
             return true;
         }
@@ -146,9 +144,7 @@ exports.get_counts = function () {
 
         if (unread_subjects.has(stream)) {
             res.subject_count.set(stream, new Dict());
-            _.each(unread_subjects.get(stream).items(), function (item) {
-                var subject = item[0];
-                var msgs = item[1];
+            unread_subjects.get(stream).each(function (msgs, subject) {
                 res.subject_count.get(stream).set(subject, Object.keys(msgs).length);
             });
         }
@@ -156,9 +152,7 @@ exports.get_counts = function () {
     });
 
     var pm_count = 0;
-    _.each(unread_counts["private"].items(), function (item) {
-        var index = item[0];
-        var obj = item[1];
+    unread_counts["private"].each(function (obj, index) {
         var count = Object.keys(obj).length;
         res.pm_count.set(index, count);
         pm_count += count;
