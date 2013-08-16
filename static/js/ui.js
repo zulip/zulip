@@ -1330,7 +1330,7 @@ $(function () {
         popovers.hide_all();
     });
 
-    $("body").on('click', function (e) {
+    $(document).on('click', function (e) {
         // Dismiss popovers if the user has clicked outside them
         if ($('.popover-inner').has(e.target).length === 0) {
             popovers.hide_all();
