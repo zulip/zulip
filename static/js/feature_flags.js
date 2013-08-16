@@ -12,7 +12,6 @@ exports.edit_appears_on_hover = page_params.staging || _.contains(['customer7.in
 
 
 exports.mandatory_topics = _.contains([
-    'zulip.com',
     'customer7.invalid'
     ],
     page_params.domain
