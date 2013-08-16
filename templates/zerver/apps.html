@@ -69,18 +69,10 @@
         you're running:</p>
 
         <h3>Debian and Ubuntu</h3>
-        First, run the following:
+        We have an APT repository for Zulip, so adding and installing the app is easy:
         <div class="codehilite"><pre>wget https://apt.zulip.com/user.asc
-cat user.asc | sudo apt-key add -</pre></div>
-
-        Then, add the following line to <code>/etc/apt/sources.list</code>:
-        <div class="codehilight"><pre>deb http://apt.zulip.com/user/ <span class="k">your_distro_here</span> main
-</pre>
-</div>
-        <p>(Replace <b>your_distro_here</b> with one of <code>wheezy</code>, <code>precise</code>, <code>quantal</code>, or <code>raring</code>)</p>
-
-        Then run:
-<div class="codehilite"><pre>
+cat user.asc | sudo apt-key add -
+sudo apt-add-repository http://apt.zulip.com/user/
 sudo apt-get update
 sudo apt-get install zulip-desktop
 </pre></div>
