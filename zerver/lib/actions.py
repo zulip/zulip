@@ -394,6 +394,8 @@ def check_message(sender, client, message_type_name, message_to,
         raise JsonableError("Message must have recipients")
     if len(message_content) > MAX_MESSAGE_LENGTH:
         raise JsonableError("Message too long")
+    if len(message_content.strip()) == 0:
+        raise JsonableError("Message must not be empty")
 
     if realm is None:
         realm = sender.realm

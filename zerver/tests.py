@@ -793,6 +793,18 @@ class MessagePOSTTest(AuthedTestCase):
                                                          "to": "othello@zulip.com"})
         self.assert_json_error(result, "Invalid message type")
 
+    def test_empty_message(self):
+        """
+        Sending a message that is empty or only whitespace should fail
+        """
+        self.login("hamlet@zulip.com")
+        result = self.client.post("/json/send_message", {"type": "private",
+                                                         "content": " ",
+                                                         "client": "test suite",
+                                                         "to": "othello@zulip.com"})
+        self.assert_json_error(result, "Message must not be empty")
+
+
     def test_mirrored_huddle(self):
         """
         Sending a mirrored huddle message works
