@@ -70,11 +70,11 @@
 
         <h3>Debian and Ubuntu</h3>
         First, run the following:
-        <div class="codehilite"><pre>wget https://apt.humbughq.com/user.asc
+        <div class="codehilite"><pre>wget https://apt.zulip.com/user.asc
 cat user.asc | sudo apt-key add -</pre></div>
 
         Then, add the following line to <code>/etc/apt/sources.list</code>:
-        <div class="codehilight"><pre>deb https://apt.humbughq.com/user/ <span class="k">your_distro_here</span> main
+        <div class="codehilight"><pre>deb http://apt.zulip.com/user/ <span class="k">your_distro_here</span> main
 </pre>
 </div>
         <p>(Replace <b>your_distro_here</b> with one of <code>wheezy</code>, <code>precise</code>, <code>quantal</code>, or <code>raring</code>)</p>
