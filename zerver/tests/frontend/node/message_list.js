@@ -15,6 +15,7 @@ var assert = require('assert');
 
     global._ = require('third/underscore/underscore.js');
     global.util = require('js/util.js');
+    global.MessageListView = require('js/message_list_view.js');
     global.feature_flags = {};
 
 }());
@@ -93,7 +94,7 @@ var MessageList = require('js/message_list');
     assert.equal(list.last().id, 90);
 
 
-    list._clear_table = function () {};
+    list.view.clear_table = function () {};
     list.clear();
     assert.deepEqual(list.all(), []);
 

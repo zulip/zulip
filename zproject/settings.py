@@ -393,6 +393,7 @@ JS_SPECS = {
             'js/notifications.js',
             'js/hashchange.js',
             'js/invite.js',
+            'js/message_list_view.js',
             'js/message_list.js',
             'js/onboarding.js',
             'js/zulip.js',
