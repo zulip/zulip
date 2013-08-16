@@ -503,6 +503,15 @@ ul.filters .count {
 
 ul.filters i {
     padding-right: 0.25em;
+    /* Make filter icons the same width so labels line up. */
+    display: inline-block;
+    width: 13px;
+}
+
+li.actual-dropdown-menu i {
+    /* In gear menu, make icons the same width so labels line up. */
+    display: inline-block;
+    width: 14px;
 }
 
 ul.filters .arrow {
