@@ -8,6 +8,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext, loader
 from django.utils.timezone import now
+from django.utils.cache import patch_cache_control
 from django.core.exceptions import ValidationError
 from django.core import validators
 from django.contrib.auth.views import login as django_login_page, \
@@ -668,17 +669,19 @@ def home(request):
         (not user_profile.email.lower().endswith("@customer4.invalid"))):
         show_invites = False
 
-    return render_to_response('zerver/index.html',
-                              {'user_profile': user_profile,
-                               'page_params' : page_params,
-                               'avatar_url': avatar_url(user_profile),
-                               'nofontface': is_buggy_ua(request.META["HTTP_USER_AGENT"]),
-                               'show_debug':
-                                   settings.DEBUG and ('show_debug' in request.GET),
-                               'show_invites': show_invites,
-                               'show_admin': user_profile.show_admin,
-                               },
-                              context_instance=RequestContext(request))
+    response = render_to_response('zerver/index.html',
+                                  {'user_profile': user_profile,
+                                   'page_params' : page_params,
+                                   'avatar_url': avatar_url(user_profile),
+                                   'nofontface': is_buggy_ua(request.META["HTTP_USER_AGENT"]),
+                                   'show_debug':
+                                       settings.DEBUG and ('show_debug' in request.GET),
+                                   'show_invites': show_invites,
+                                   'show_admin': user_profile.show_admin,
+                                   },
+                                  context_instance=RequestContext(request))
+    patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
+    return response
 
 def is_buggy_ua(agent):
     """Discrimiate CSS served to clients based on User Agent
