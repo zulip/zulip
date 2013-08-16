@@ -1000,11 +1000,14 @@ $(function () {
         });
     }
 
-    $("#main_div").on("click", ".messagebox", function (e) {
-        var target = $(e.target);
-        if (target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
+    function is_clickable_message_element(target) {
+        return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
             target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
-            target.is("i.edit_content")) {
+            target.is("i.edit_content");
+    }
+
+    $("#main_div").on("click", ".messagebox", function (e) {
+        if (is_clickable_message_element($(e.target))) {
             // If this click came from a hyperlink, don't trigger the
             // reply action.  The simple way of doing this is simply
             // to call e.stopPropagation() from within the link's
@@ -1036,6 +1039,9 @@ $(function () {
     });
 
     $("#main_div").on("dblclick", ".messagebox", function (e) {
+        if (is_clickable_message_element($(e.target))) {
+            return;
+        }
         var selection = window.getSelection();
         var content = $(this).closest(".message_row").find(".message_content");
         selection.selectAllChildren(content[0]);
