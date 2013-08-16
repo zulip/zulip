@@ -213,11 +213,7 @@ img.screenshot{
     padding-bottom: 2em;
 }
 
-.landing-page h1 {
-    font-weight: 600;
-}
-
-.landing-page h2,h3,h4,h5 {
+.landing-page h2,h4 {
     font-weight: lighter;
 }
 
@@ -251,6 +247,16 @@ img.screenshot{
 
 .main-signup-button {
     margin: 1em;
+}
+
+
+.signup-button {
+    margin-top: 1em;
+    padding: 0.5em 2em;
+}
+
+.signup-button h2 {
+    font-weight: normal;
 }
 
 .shaded-background {
