@@ -1035,6 +1035,12 @@ $(function () {
         clicking = false;
     });
 
+    $("#main_div").on("dblclick", ".messagebox", function (e) {
+        var selection = window.getSelection();
+        var content = $(this).closest(".message_row").find(".message_content");
+        selection.selectAllChildren(content[0]);
+    });
+
     $("#main_div").on("mousedown", ".messagebox", mousedown);
     $("#main_div").on("mousemove", ".messagebox", mousemove);
     $("#main_div").on("mouseover", ".message_row", function (e) {
