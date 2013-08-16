@@ -1,10 +1,11 @@
 body, html {
     width: 100%;
+    overflow-x: hidden;
 }
 
 body {
     font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 /* Common background color */
@@ -2250,7 +2251,7 @@ div.edit_bot {
 }
 
 #home {
-    margin-top: 40px;
+    margin-top: 41px;
 }
 
 #settings-change-box .gravatar-profile {
@@ -2371,7 +2372,7 @@ div.edit_bot {
 }
 
 
-@media (max-width: 950px) { 
+@media (max-width: 975px) { 
 
     .screen-full-show {
         display: none !important;
@@ -2438,7 +2439,7 @@ div.edit_bot {
 
 }
 
-@media (max-width: 767px) {
+@media (max-width: 775px) {
 
     body {
        padding: 0px;
@@ -2454,10 +2455,6 @@ div.edit_bot {
 
     body, html, .app-main, .header-main {
         min-width: 350px;
-    }
-
-    body, html {
-        overflow-x: scroll;
     }
 
     .column-middle, .app-main .column-middle {
@@ -2484,6 +2481,12 @@ div.edit_bot {
 @media (max-width: 500px) {
     .compose_stream_button_label, .compose_private_button_label {
         display: none;
+    }
+}
+
+@media (max-width: 350px) {
+    html {
+        overflow-x: scroll;
     }
 }
 
