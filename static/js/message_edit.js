@@ -2,14 +2,17 @@ var message_edit = (function () {
 var exports = {};
 var currently_editing_messages = {};
 
+
+//returns true if the edit task should end.
 exports.save = function (row) {
     var msg_list = current_msg_list;
     var message = current_msg_list.get(rows.id(row));
-    var new_subject = row.find(".message_edit_subject").val();
+    var new_topic = row.find(".message_edit_topic").val();
     var new_content = row.find(".message_edit_content").val();
+
     var request = {message_id: message.id};
-    if (new_subject !== message.subject) {
-        request.subject = new_subject;
+    if (new_topic !== message.subject && new_topic.trim() !== "") {
+        request.subject = new_topic;
     }
     if (new_content !== message.raw_content) {
         request.content = new_content;
@@ -17,7 +20,7 @@ exports.save = function (row) {
     if (request.subject === undefined &&
         request.content === undefined) {
         // If they didn't change anything, just cancel it.
-        return message_edit.end(row);
+        return true;
     }
     $.ajax({
         type: 'POST',
@@ -26,12 +29,12 @@ exports.save = function (row) {
         dataType: 'json',
         success: function (data) {
             if (msg_list === current_msg_list) {
-                message_edit.end(row);
+                return true;
             }
         },
         error: function (xhr, error_type, xhn) {
             var message = util.xhr_error_message("Error saving edit", xhr);
-            row.find(".message_edit_error").text(message).show();
+            row.find(".edit_error").text(message).show();
         }
     });
     // The message will automatically get replaced when it arrives.
@@ -43,7 +46,13 @@ function handle_edit_keydown(e) {
     if (e.target.id === "message_edit_content" && code === 13 &&
         (e.metaKey || e.ctrlKey)) {
         row = $(".message_edit_content").filter(":focus").closest(".message_row");
-        message_edit.save(row);
+        if (message_edit.save(row) === true) {
+            message_edit.end(row);
+        }
+    } else if (e.target.id === "message_edit_topic" && code === 13) {
+        //hitting enter in topic field isn't so great.
+        e.stopPropagation();
+        e.preventDefault();
     }
 }
 
@@ -55,7 +64,7 @@ function edit_message (row, raw_content) {
     var edit_row = row.find(".message_edit");
     var form = $(templates.render('message_edit_form',
                                   {is_stream: message.is_stream,
-                                   subject: message.subject,
+                                   topic: message.subject,
                                    content: raw_content}));
 
     var edit_obj = {form: form, raw_content: raw_content};
@@ -65,7 +74,7 @@ function edit_message (row, raw_content) {
 
     currently_editing_messages[message.id] = edit_obj;
     if (message.subject === compose.empty_subject_placeholder()) {
-        edit_row.find(".message_edit_subject").focus();
+        edit_row.find(".message_edit_topic").focus();
     } else {
         edit_row.find(".message_edit_content").focus();
     }
@@ -94,6 +103,13 @@ exports.start = function (row) {
             }
         }
     });
+};
+
+exports.start_topic_edit = function (recipient_row) {
+    var form = $(templates.render('topic_edit_form'));
+    current_msg_list.show_edit_topic(recipient_row, form);
+    form.keydown(handle_edit_keydown);
+    form.find(".message_edit_topic").focus();
 };
 
 exports.is_editing = function (id) {

@@ -2214,6 +2214,10 @@ div.edit_bot {
     margin-bottom: 5px;
 }
 
+#topic_edit_form {
+    display: inline;
+}
+
 .message_edit_notice {
     font-size: 11px;
 }

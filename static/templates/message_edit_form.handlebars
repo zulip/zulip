@@ -3,9 +3,9 @@
 <form id="message_edit_form" class="form-horizontal">
 {{#if is_stream}}
     <div class="control-group">
-        <label class="control-label edit-control-label" for="message_edit_subject">Topic</label>
+        <label class="control-label edit-control-label" for="message_edit_topic">Topic</label>
         <div class="controls edit-controls">
-          <input type="text" value="{{subject}}" class="message_edit_subject" id="message_edit_subject">
+          <input type="text" value="{{topic}}" class="message_edit_topic" id="message_edit_topic">
         </div>
     </div>
 {{/if}}
@@ -16,9 +16,9 @@
     </div>
     <div class="control-group">
         <div class="controls edit-controls">
-            <button type="button" class="message_edit_save btn btn-primary btn-small">Save</a>
-            <button type="button" class="message_edit_cancel btn btn-small">Cancel</a>
+            <button type="button" class="message_edit_save btn btn-primary btn-small">Save</button>
+            <button type="button" class="message_edit_cancel btn btn-small">Cancel</button>
         </div>
     </div>
-    <div class="alert alert-error message_edit_error hide"></div>
+    <div class="alert alert-error edit_error hide"></div>
 </form>

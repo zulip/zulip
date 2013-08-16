@@ -963,7 +963,8 @@ def do_update_message(user_profile, message_id, subject, content):
     edit_history_event = {}
 
     if message.sender != user_profile:
-        raise JsonableError("Message was not sent by you")
+        if not (message.subject == "(no topic)" and content is None):
+            raise JsonableError("Message was not sent by you")
 
     # Set first_rendered_content to be the oldest version of the
     # rendered content recorded; which is the current version if the

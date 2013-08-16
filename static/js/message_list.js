@@ -295,6 +295,17 @@ MessageList.prototype = {
         row.find(".message_edit").hide();
     },
 
+    show_edit_topic: function MessageList_show_edit_topic(recipient_row, form) {
+        recipient_row.find(".topic_edit_form").empty().append(form);
+        recipient_row.find(".stream_topic").hide();
+        recipient_row.find(".topic_edit").show();
+    },
+
+    hide_edit_topic: function MessageList_hide_edit_topic(recipient_row) {
+        recipient_row.find(".stream_topic").show();
+        recipient_row.find(".topic_edit").hide();
+    },
+
     show_message_as_read: function (message, options) {
         var row = this.get_row(message.id);
         if (options.from === 'pointer' && feature_flags.mark_read_at_bottom) {

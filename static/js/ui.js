@@ -1318,14 +1318,30 @@ $(function () {
         popovers.hide_all();
     });
     $('body').on('click', '.edit_subject', function (e) {
-        var row = current_msg_list.get_row(rows.id($(this).closest(".recipient_row")));
-        message_edit.start(row);
+        var recipient_row = $(this).closest(".recipient_row");
+        message_edit.start_topic_edit(recipient_row);
+        e.stopPropagation();
+        popovers.hide_all();
+    });
+    $("body").on("click", ".topic_edit_save", function (e) {
+        var recipient_row = $(this).closest(".recipient_row");
+        if (message_edit.save(recipient_row) === true) {
+            current_msg_list.hide_edit_topic(recipient_row);
+        }
+        e.stopPropagation();
+        popovers.hide_all();
+    });
+    $("body").on("click", ".topic_edit_cancel", function (e) {
+        var recipient_row = $(this).closest(".recipient_row");
+        current_msg_list.hide_edit_topic(recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".message_edit_save", function (e) {
         var row = $(this).closest(".message_row");
-        message_edit.save(row);
+        if (message_edit.save(row) === true) {
+            message_edit.end(row);
+        }
         e.stopPropagation();
         popovers.hide_all();
     });
