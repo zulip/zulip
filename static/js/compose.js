@@ -488,7 +488,7 @@ exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
     $("#sending-indicator").show();
 
-    if (exports.message_content() === "") {
+    if (/^\s*$/.test(exports.message_content())) {
         compose_error("You have nothing to send!", $("#new_message_content"));
         return false;
     }
