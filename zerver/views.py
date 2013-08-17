@@ -1768,6 +1768,20 @@ def api_github_landing(request, user_profile, event=REQ,
                                                      payload['before'], payload['after'],
                                                      payload['compare'],
                                                      payload['pusher']['name'])
+    elif event == 'issues':
+        if user_profile.realm.domain not in ('zulip.com', 'customer5.invalid'):
+            return json_success()
+
+        issue = payload['issue']
+        subject = "%s: issue %d %s" % (repository['name'], issue['number'], payload['action'])
+        content = ("%s %s [issue %d](%s): %s\n\n> %s"
+                   % (issue['user']['login'],
+                      payload['action'],
+                      issue['number'],
+                      issue['html_url'],
+                      issue['title'],
+                      issue['body']))
+        stream = 'issues'
     else:
         # We don't handle other events even though we get notified
         # about them
