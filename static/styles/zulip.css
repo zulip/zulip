@@ -1399,7 +1399,7 @@ input.recipient_box {
 }
 
 .navbar-search {
-    margin-right: 5px;
+    margin-right: 10px;
     margin-left: 10px;
     width: auto;
     float: none;
@@ -2252,6 +2252,7 @@ div.edit_bot {
 
 #home {
     margin-top: 41px;
+    padding-right: 5px;
 }
 
 #settings-change-box .gravatar-profile {
@@ -2434,7 +2435,7 @@ div.edit_bot {
 
     .app-main .column-middle .column-middle-inner {
         margin-left:  200px;
-        margin-right: 15px;
+        margin-right: 10px;
     }
 
 }
