@@ -27,6 +27,12 @@ Filter.canonicalize_operator = function (operator) {
     }
 };
 
+Filter.canonicalize_tuple = function (tuple) {
+    // We may want to consider allowing mixed-case operators at some point
+    return [Filter.canonicalize_operator(tuple[0]),
+            stream_data.canonicalized_name(tuple[1])];
+};
+
 Filter.prototype = {
     predicate: function Filter_predicate() {
         if (this._predicate === undefined) {
@@ -77,10 +83,8 @@ Filter.prototype = {
     },
 
     _canonicalize_operators: function Filter__canonicalize_operators(operators_mixed_case) {
-        return _.map(operators_mixed_case, function (operator) {
-            // We may want to consider allowing mixed-case operators at some point
-            return [Filter.canonicalize_operator(operator[0]),
-                    stream_data.canonicalized_name(operator[1])];
+        return _.map(operators_mixed_case, function (tuple) {
+            return Filter.canonicalize_tuple(tuple);
         });
     },
 

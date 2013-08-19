@@ -46,5 +46,7 @@ var Filter = global.Filter;
     assert.equal(Filter.canonicalize_operator('Is'), 'is');
     assert.equal(Filter.canonicalize_operator('Stream'), 'stream');
     assert.equal(Filter.canonicalize_operator('Subject'), 'topic');
+
+    assert.deepEqual(Filter.canonicalize_tuple(['Stream', 'Denmark']), ['stream', 'denmark']);
 }());
 
