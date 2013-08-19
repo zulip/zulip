@@ -2065,8 +2065,15 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(converter=json_to_d
                for commit in payload['commits']]
 
     subject = repository['name']
-    content = build_commit_list_content(commits, payload['commits'][-1]['branch'],
-                                        None, payload['user'])
+    if len(commits) == 0:
+        # Bitbucket doesn't give us enough information to really give
+        # a useful message :/
+        content = ("%s [force pushed](%s)"
+                   % (payload['user'],
+                      payload['canon_url'] + repository['absolute_url']))
+    else:
+        content = build_commit_list_content(commits, payload['commits'][-1]['branch'],
+                                            None, payload['user'])
 
     subject = elide_subject(subject)
     check_send_message(user_profile, get_client("API"), "stream", ["commits"], subject, content)
