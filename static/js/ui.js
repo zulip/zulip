@@ -1382,6 +1382,10 @@ $(function () {
         compose.cancel();
     });
 
+    $(".bankruptcy_button").click(function (e) {
+        enable_unread_counts();
+    });
+
     $('#yes-bankrupt').click(function (e) {
         fast_forward_pointer();
         $("#yes-bankrupt").hide();

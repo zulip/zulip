@@ -33,6 +33,7 @@ var last_viewport_movement_direction = 1;
 var furthest_read = -1;
 var server_furthest_read = -1;
 var pointer_update_in_flight = false;
+var suppress_unread_counts = true;
 
 var events_stored_during_tutorial = [];
 
@@ -301,6 +302,10 @@ var send_summarize_in_stream = batched_flag_updater('summarize_in_stream', 'add'
 var send_summarize_in_home = batched_flag_updater('summarize_in_home', 'add');
 
 function update_unread_counts() {
+    if (suppress_unread_counts) {
+        return;
+    }
+
     // Pure computation:
     var res = unread.get_counts();
 
@@ -311,6 +316,11 @@ function update_unread_counts() {
     notifications.update_title_count(res.home_unread_messages);
     notifications.update_pm_count(res.private_message_count);
     notifications_bar.update(res.home_unread_messages);
+}
+
+function enable_unread_counts() {
+    suppress_unread_counts = false;
+    update_unread_counts();
 }
 
 function mark_all_as_read(cont) {
@@ -1164,8 +1174,14 @@ function fast_forward_pointer() {
 }
 
 function consider_bankruptcy() {
+    // Until we've handled possibly declaring bankruptcy, don't show
+    // unread counts since they only consider messages that are loaded
+    // client side and may be different from the numbers reported by
+    // the server.
+
     if (!page_params.furthest_read_time) {
         // We've never read a message.
+        enable_unread_counts();
         return;
     }
 
@@ -1176,6 +1192,8 @@ function consider_bankruptcy() {
                                            {"unread_count": page_params.unread_count});
         $('#bankruptcy-unread-count').html(unread_info);
         $('#bankruptcy').modal('show');
+    } else {
+        enable_unread_counts();
     }
 }
 

@@ -44,7 +44,7 @@ var globals =
     + ' keep_pointer_in_view'
     + ' respond_to_message recenter_view last_viewport_movement_direction'
     + ' scroll_to_selected get_private_message_recipient'
-    + ' load_old_messages'
+    + ' load_old_messages enable_unread_counts'
     + ' at_top_of_viewport at_bottom_of_viewport within_viewport'
     + ' process_visible_unread_messages viewport restart_get_updates force_get_updates'
     + ' load_more_messages reset_load_more_status have_scrolled_away_from_top'
