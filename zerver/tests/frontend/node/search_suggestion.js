@@ -108,7 +108,7 @@ var search = set_up_dependencies();
         return 'office';
     };
 
-    global.recent_subjects = new global.Dict({
+    global.recent_subjects = new global.Dict.from({
         office: [
             {subject: 'team'},
             {subject: 'ignore'},
@@ -178,7 +178,7 @@ var search = set_up_dependencies();
         }
     ];
 
-    global.recent_subjects = new global.Dict({
+    global.recent_subjects = new global.Dict.from({
         office: [
             {subject: 'team'},
             {subject: 'ignore'},

@@ -1,27 +1,38 @@
 /* Constructs a new Dict object.
  *
  * Dict() -> the new Dict will be empty
- * Dict(otherdict) -> create a shallow copy of otherdict
- * Dict(jsobj) -> create a Dict with keys corresponding to the properties of
- *                jsobj and values corresponding to the value of the appropriate
- *                property
  */
-function Dict(obj) {
+function Dict() {
     var self = this;
     this._items = {};
+}
+
+/* Constructs a new Dict object from another object.
+ *
+ * Dict.from(otherdict) -> create a shallow copy of otherdict
+ * Dict.from(jsobj) -> create a Dict with keys corresponding to the properties of
+ *                     jsobj and values corresponding to the value of the appropriate
+ *                     property
+ */
+Dict.from = function Dict_from(obj) {
+    var ret = new Dict();
 
     if (typeof obj === "object" && obj !== null) {
         if (obj instanceof Dict) {
             _.each(obj.items(), function (kv) {
-                self.set(kv[0], kv[1]);
+                ret.set(kv[0], kv[1]);
             });
         } else {
             _.each(obj, function (val, key) {
-                self.set(key, val);
+                ret.set(key, val);
             });
         }
+    } else {
+        throw new TypeError("Cannot convert argument to Dict");
     }
-}
+
+    return ret;
+};
 
 (function () {
 

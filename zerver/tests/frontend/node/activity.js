@@ -19,7 +19,7 @@ var activity = global.activity;
     };
 
 
-    global.people_dict = new global.Dict({
+    global.people_dict = new global.Dict.from({
         'alice@zulip.com': 'Alice Smith',
         'fred@zulip.com': 'Fred Flintstone',
         'jill@zulip.com': 'Jill Hill'
