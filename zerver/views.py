@@ -716,6 +716,14 @@ def update_pointer_backend(request, user_profile,
     if pointer <= user_profile.pointer:
         return json_success()
 
+    try:
+        UserMessage.objects.get(
+            user_profile=user_profile,
+            message__id=pointer
+        )
+    except UserMessage.DoesNotExist:
+        raise JsonableError("Invalid message ID")
+
     prev_pointer = user_profile.pointer
     user_profile.pointer = pointer
     user_profile.save(update_fields=["pointer"])

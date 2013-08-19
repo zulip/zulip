@@ -665,9 +665,10 @@ class PointerTest(AuthedTestCase):
         """
         self.login("hamlet@zulip.com")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
-        result = self.client.post("/json/update_pointer", {"pointer": 1})
+        msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM).id
+        result = self.client.post("/json/update_pointer", {"pointer": msg_id})
         self.assert_json_success(result)
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, 1)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, msg_id)
 
     def test_api_update_pointer(self):
         """
@@ -676,11 +677,12 @@ class PointerTest(AuthedTestCase):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         self.assertEqual(get_user_profile_by_email(email).pointer, -1)
+        msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM).id
         result = self.client.post("/api/v1/update_pointer", {"email": email,
                                                              "api-key": api_key,
-                                                             "pointer": 1})
+                                                             "pointer": msg_id})
         self.assert_json_success(result)
-        self.assertEqual(get_user_profile_by_email(email).pointer, 1)
+        self.assertEqual(get_user_profile_by_email(email).pointer, msg_id)
 
     def test_missing_pointer(self):
         """
@@ -1877,7 +1879,7 @@ class GetProfileTest(AuthedTestCase):
 
     def common_update_pointer(self, email, pointer):
         self.login(email)
-        result = self.client.post("/json/update_pointer", {"pointer": 1})
+        result = self.client.post("/json/update_pointer", {"pointer": pointer})
         self.assert_json_success(result)
 
     def common_get_profile(self, email):
@@ -1910,15 +1912,22 @@ class GetProfileTest(AuthedTestCase):
         """
         Ensure get_profile returns a proper pointer id after the pointer is updated
         """
+
+        id1 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM).id
+        id2 = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM).id
+
         json = self.common_get_profile("hamlet@zulip.com")
 
-        self.common_update_pointer("hamlet@zulip.com", 1)
+        self.common_update_pointer("hamlet@zulip.com", id2)
         json = self.common_get_profile("hamlet@zulip.com")
-        self.assertEqual(json["pointer"], 1)
+        self.assertEqual(json["pointer"], id2)
 
-        self.common_update_pointer("hamlet@zulip.com", 0)
+        self.common_update_pointer("hamlet@zulip.com", id1)
         json = self.common_get_profile("hamlet@zulip.com")
-        self.assertEqual(json["pointer"], 1)
+        self.assertEqual(json["pointer"], id2) # pointer does not move backwards
+
+        result = self.client.post("/json/update_pointer", {"pointer": 99999999})
+        self.assert_json_error(result, "Invalid message ID")
 
 class GetPublicStreamsTest(AuthedTestCase):
 
