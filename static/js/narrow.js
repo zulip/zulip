@@ -113,7 +113,7 @@ exports.set_compose_defaults = function (opts) {
     // uniquely specified in the narrow view.
 
     if (single.has('stream')) {
-        opts.stream = single.get('stream');
+        opts.stream = stream_data.get_name(single.get('stream'));
     }
 
     if (single.has('topic')) {

@@ -11,6 +11,7 @@ var assert = require('assert');
 
 var narrow = global.narrow;
 var Filter = global.Filter;
+var stream_data = global.stream_data;
 
 (function test_parse_and_unparse() {
     var string ='stream:Foo topic:Bar yo';
@@ -45,4 +46,12 @@ var Filter = global.Filter;
     narrow.set_compose_defaults(opts);
     assert.equal(opts.stream, 'foo');
     assert.equal(opts.subject, 'bar');
+
+    stream_data.add_sub('ROME', {name: 'ROME'});
+    operators = [['stream', 'rome']];
+    narrow._set_current_filter(new Filter(operators));
+
+    opts = {};
+    narrow.set_compose_defaults(opts);
+    assert.equal(opts.stream, 'ROME');
 }());
