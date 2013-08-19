@@ -23,8 +23,15 @@ class zulip::zmirror {
     notify => Service["supervisor"],
   }
 
+  file { "/etc/cron.d/zephyr-mirror":
+    ensure => file,
+    owner  => "root",
+    group  => "root",
+    mode => 644,
+    source => "puppet:///modules/zulip/cron.d/zephyr-mirror",
+  }
+
   # TODO: Do the rest of our setup, which includes at least:
   # Building python-zephyr after cloning it from https://github.com/ebroder/python-zephyr
   # Putting tabbott/extra's keytab on the system at /home/humbug/tabbott.extra.keytab
-  # Setting api/bots/zephyr-mirror-crontab to be the humbug user's crontab
 }
