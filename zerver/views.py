@@ -618,8 +618,14 @@ def home(request):
     if user_profile.pointer == -1:
         latest_read = None
     else:
-        latest_read = UserMessage.objects.get(user_profile=user_profile,
-                                              message__id=user_profile.pointer)
+        try:
+            latest_read = UserMessage.objects.get(user_profile=user_profile,
+                                                  message__id=user_profile.pointer)
+        except UserMessage.DoesNotExist:
+            # Don't completely fail if your saved pointer ID is invalid
+            logging.warning("%s has invalid pointer %s" % (user_profile.email, user_profile.pointer))
+            latest_read = None
+
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
