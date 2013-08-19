@@ -18,6 +18,6 @@ class zulip::staging_app_frontend {
     owner  => "root",
     group  => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/files/cron.d/email-mirror",
+    source => "puppet:///modules/zulip/cron.d/email-mirror",
   }
 }
