@@ -75,6 +75,19 @@ exports.get_invite_only = function (stream_name) {
     return sub.invite_only;
 };
 
+exports.get_name = function (stream_name) {
+    // This returns the actual name of a stream if we are subscribed to
+    // it (i.e "Denmark" vs. "denmark"), while falling thru to
+    // stream_name if we don't have a subscription.  (Stream names
+    // are case-insensitive, but we try to display the actual name
+    // when we know it.)
+    var sub = exports.get_sub(stream_name);
+    if (sub === undefined) {
+        return stream_name;
+    }
+    return sub.name;
+};
+
 return exports;
 
 }());
