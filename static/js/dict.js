@@ -19,9 +19,7 @@ Dict.from = function Dict_from(obj) {
 
     if (typeof obj === "object" && obj !== null) {
         if (obj instanceof Dict) {
-            _.each(obj.items(), function (kv) {
-                ret.set(kv[0], kv[1]);
-            });
+            ret._items = _.clone(obj._items);
         } else {
             _.each(obj, function (val, key) {
                 ret.set(key, val);
