@@ -937,7 +937,7 @@ if __name__ == "__main__":
 
     # The 'api' directory needs to go first, so that 'import zulip' won't pick
     # up some other directory named 'humbug'.
-    pyzephyr_lib_path = "python-zephyr/build/lib.linux-" + os.uname()[4] + "-2.6/"
+    pyzephyr_lib_path = "python-zephyr/build/lib.linux-%s-%s/" % (os.uname()[4], sys.version[0:3])
     sys.path[:0] = [os.path.join(options.root_path, 'api'),
                     options.root_path,
                     os.path.join(options.root_path, "python-zephyr"),
