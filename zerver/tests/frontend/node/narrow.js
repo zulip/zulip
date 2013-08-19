@@ -36,3 +36,13 @@ var Filter = global.Filter;
 
     assert.deepEqual(narrow.operators(), canonical_operators);
 }());
+
+(function test_set_compose_defaults() {
+    var operators = [['stream', 'Foo'], ['topic', 'Bar']];
+    narrow._set_current_filter(new Filter(operators));
+
+    var opts = {};
+    narrow.set_compose_defaults(opts);
+    assert.equal(opts.stream, 'foo');
+    assert.equal(opts.subject, 'bar');
+}());
