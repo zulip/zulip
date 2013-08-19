@@ -23,7 +23,7 @@ function set_up_dependencies() {
 
     global.util = require('js/util.js');
     global.Dict = require('js/dict.js');
-    global.recent_subjects = new global.Dict();
+    global.recent_subjects = new global.Dict({fold_case: true});
 
     global.Filter = require('js/filter.js');
     global.stream_data = require('js/stream_data.js');
@@ -114,7 +114,7 @@ var search = set_up_dependencies();
             {subject: 'ignore'},
             {subject: 'test'}
         ]
-    });
+    }, {fold_case: true});
 
     var suggestions = search.get_suggestions(query);
 
@@ -145,7 +145,7 @@ var search = set_up_dependencies();
         return;
     };
 
-    global.recent_subjects = new global.Dict();
+    global.recent_subjects = new global.Dict({fold_case: true});
 
     var suggestions = search.get_suggestions(query);
 
@@ -184,7 +184,7 @@ var search = set_up_dependencies();
             {subject: 'ignore'},
             {subject: 'test'}
         ]
-    });
+    }, {fold_case: true});
 
     var suggestions = search.get_suggestions(query);
 

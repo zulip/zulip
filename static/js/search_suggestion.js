@@ -279,11 +279,6 @@ function get_topic_suggestions(query_operators) {
         return [];
     }
 
-    // We need the canonicalized_name to do a proper lookup
-    // in recent_subjects, at least until we convert it to
-    // use Dict's case-folding option.
-    stream = stream_data.canonicalized_name(stream);
-
     var topics = recent_subjects.get(stream);
 
     stream = stream_data.get_name(stream);

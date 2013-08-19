@@ -6,7 +6,7 @@ var home_msg_list = new MessageList('zhome',
 var narrowed_msg_list;
 var current_msg_list = home_msg_list;
 var people_dict = new Dict();
-var recent_subjects = new Dict();
+var recent_subjects = new Dict({fold_case: true});
 
 var queued_mark_as_read = [];
 var queued_flag_timer;
@@ -486,14 +486,14 @@ function unconditionally_send_pointer_update() {
 function process_message_for_recent_subjects(message, remove_message) {
     var current_timestamp = 0;
     var count = 0;
-    var canon_stream = stream_data.canonicalized_name(message.stream);
+    var stream = message.stream;
     var canon_subject = stream_data.canonicalized_name(message.subject);
 
-    if (! recent_subjects.has(canon_stream)) {
-        recent_subjects.set(canon_stream, []);
+    if (! recent_subjects.has(stream)) {
+        recent_subjects.set(stream, []);
     } else {
-        recent_subjects.set(canon_stream,
-                            _.filter(recent_subjects.get(canon_stream), function (item) {
+        recent_subjects.set(stream,
+                            _.filter(recent_subjects.get(stream), function (item) {
                                 var is_duplicate = (item.canon_subject.toLowerCase() === canon_subject.toLowerCase());
                                 if (is_duplicate) {
                                     current_timestamp = item.timestamp;
@@ -504,7 +504,7 @@ function process_message_for_recent_subjects(message, remove_message) {
                             }));
     }
 
-    var recents = recent_subjects.get(canon_stream);
+    var recents = recent_subjects.get(stream);
 
     if (remove_message !== undefined) {
         count = count - 1;
@@ -523,7 +523,7 @@ function process_message_for_recent_subjects(message, remove_message) {
         return b.timestamp - a.timestamp;
     });
 
-    recent_subjects.set(canon_stream, recents);
+    recent_subjects.set(stream, recents);
 }
 
 var msg_metadata_cache = {};
