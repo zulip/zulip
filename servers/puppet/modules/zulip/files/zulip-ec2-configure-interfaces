@@ -84,7 +84,6 @@ for device in macs.values():
                 ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
                     address_of(device_number), '-j', 'MARK', '--set-mark', str(device_number)])
 
-
     to_configure.remove(address_of(device_number))
 
     for (count, ip) in enumerate(to_configure):
@@ -92,3 +91,8 @@ for device in macs.values():
         device = "eth%i:%i" % (device_number, count)
         log.info("Configuring %s with IP %s" % (device, ip))
         subprocess.check_call(['/sbin/ifconfig', device, ip])
+
+    for throwaway in range(2):
+        # Don't freak out if this doens't work.
+        subprocess.call(
+            ['/sbin/ip', 'route', 'del', '10.0.0.0/8'])
