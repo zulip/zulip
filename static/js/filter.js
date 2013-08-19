@@ -28,9 +28,14 @@ Filter.canonicalize_operator = function (operator) {
 };
 
 Filter.canonicalize_tuple = function (tuple) {
+    var operator = tuple[0];
+    var operand = tuple[1];
+
+    operator = Filter.canonicalize_operator(operator);
+    operand = stream_data.canonicalized_name(operand);
+
     // We may want to consider allowing mixed-case operators at some point
-    return [Filter.canonicalize_operator(tuple[0]),
-            stream_data.canonicalized_name(tuple[1])];
+    return [operator, operand];
 };
 
 Filter.prototype = {
