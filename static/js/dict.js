@@ -29,17 +29,17 @@ function munge(k) {
     return ':' + k;
 }
 
-function unmunge(k) {
-    return k.substr(1);
-}
-
 Dict.prototype = _.object(_.map({
     get: function Dict_get(key) {
-        return this._items[munge(key)];
+        var mapping = this._items[munge(key)];
+        if (mapping === undefined) {
+            return undefined;
+        }
+        return mapping.v;
     },
 
     set: function Dict_set(key, value) {
-        return (this._items[munge(key)] = value);
+        return (this._items[munge(key)] = {k: key, v: value});
     },
 
     has: function Dict_has(key) {
@@ -51,23 +51,23 @@ Dict.prototype = _.object(_.map({
     },
 
     keys: function Dict_keys() {
-        return _.map(_.keys(this._items), unmunge);
+        return _.pluck(_.values(this._items), 'k');
     },
 
     values: function Dict_values() {
-        return _.values(this._items);
+        return _.pluck(_.values(this._items), 'v');
     },
 
     items: function Dict_items() {
-        return _.map(_.pairs(this._items), function (pair) {
-            return [unmunge(pair[0]), pair[1]];
+        return _.map(_.values(this._items), function (mapping) {
+            return [mapping.k, mapping.v];
         });
     },
 
     // Iterates through the Dict calling f(value, key) for each (key, value) pair in the Dict
     each: function Dict_each(f) {
-        return _.each(this._items, function (v, k) {
-            f(v, unmunge(k));
+        return _.each(this._items, function (mapping) {
+            f(mapping.v, mapping.k);
         });
     }
 }, function (value, key) {
