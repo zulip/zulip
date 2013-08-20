@@ -12,7 +12,6 @@ function set_up_dependencies() {
     var _ = global._ = require('third/underscore/underscore.js');
     global.Handlebars = require('handlebars');
 
-    var actual_narrow = require('js/narrow.js');
     var search = require('js/search_suggestion.js');
     global.narrow = require('js/narrow.js');
 
