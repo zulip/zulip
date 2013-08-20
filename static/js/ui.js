@@ -1463,7 +1463,7 @@ exports.set_presence_list = function (users, presence_info) {
     var my_info = {
         name: page_params.fullname,
         email: page_params.email,
-        type: 'active',
+        type: (activity.has_focus) ? activity.ACTIVE : activity.IDLE,
         type_desc: presence_descriptions.active,
         my_fullname: true
     };

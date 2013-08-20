@@ -14,10 +14,10 @@ var ACTIVE_PING_INTERVAL_MS = 60 * 1000;
 var OFFLINE_THRESHOLD_SECS = 70;
 
 /* Keep in sync with views.py:json_update_active_status() */
-var ACTIVE = "active";
-var IDLE = "idle";
+exports.ACTIVE = "active";
+exports.IDLE = "idle";
 
-var has_focus = true;
+exports.has_focus = true;
 
 var user_info = {};
 
@@ -55,11 +55,11 @@ function sort_users(users, user_info) {
 exports._sort_users = sort_users;
 
 function focus_lost() {
-    if (!has_focus) {
+    if (!exports.has_focus) {
         return false;
     }
 
-    has_focus = false;
+    exports.has_focus = false;
 }
 
 function update_users() {
@@ -83,7 +83,7 @@ function status_from_timestamp(baseline_time, presence) {
 
 function focus_ping() {
     $.post('/json/update_active_status',
-            {status: (has_focus) ? ACTIVE : IDLE}, function (data) {
+            {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE}, function (data) {
         if (data === undefined || data.presences === undefined) {
             // We sometimes receive no data even on successful
             // requests; we should figure out why but this will
@@ -111,8 +111,8 @@ function focus_ping() {
 }
 
 function focus_gained() {
-    if (!has_focus) {
-        has_focus = true;
+    if (!exports.has_focus) {
+        exports.has_focus = true;
 
         focus_ping();
     }
