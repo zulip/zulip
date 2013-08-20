@@ -16,29 +16,20 @@ function Dict(opts) {
 
 /* Constructs a new Dict object from another object.
  *
- * Dict.from(otherdict) -> create a shallow copy of otherdict
  * Dict.from(jsobj, opts) -> create a Dict with keys corresponding to the
  *                           properties of jsobj and values corresponding to
  *                           the value of the appropriate property.  `opts` is
  *                           passed to the Dict constructor.
  */
 Dict.from = function Dict_from(obj, opts) {
-    var ret;
-
-    if (typeof obj === "object" && obj !== null) {
-        if (obj instanceof Dict) {
-            ret = new Dict(obj._opts);
-            ret._items = _.clone(obj._items);
-        } else {
-            ret = new Dict(opts);
-            _.each(obj, function (val, key) {
-                ret.set(key, val);
-            });
-        }
-    } else {
+    if (typeof obj !== "object" || obj === null) {
         throw new TypeError("Cannot convert argument to Dict");
     }
 
+    var ret = new Dict(opts);
+    _.each(obj, function (val, key) {
+        ret.set(key, val);
+    });
     return ret;
 };
 
@@ -49,6 +40,12 @@ Dict.prototype = _.object(_.map({
             k = k.toLowerCase();
         }
         return ':' + k;
+    },
+
+    clone: function Dict_clone() {
+        var ret = new Dict(this._opts);
+        ret._items = _.clone(this._items);
+        return ret;
     },
 
     get: function Dict_get(key) {

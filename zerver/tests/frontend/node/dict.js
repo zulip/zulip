@@ -60,7 +60,7 @@ var _ = global._;
     var d2 = Dict.from({foo: 'bar', baz: 'qux'});
     assert.deepEqual(d2.items(), [['foo', 'bar'], ['baz', 'qux']]);
 
-    var d3 = Dict.from(d2);
+    var d3 = d2.clone();
     d3.del('foo');
     assert.deepEqual(d2.items(), [['foo', 'bar'], ['baz', 'qux']]);
     assert.deepEqual(d3.items(), [['baz', 'qux']]);
