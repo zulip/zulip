@@ -126,6 +126,13 @@ class zulip::base {
     group      => "nagios",
     mode       => 600,
   }
+  file { '/var/lib/nagios_state/':
+    ensure     => directory,
+    require    => User['nagios'],
+    owner      => "nagios",
+    group      => "nagios",
+    mode       => 777,
+  }
   file { '/var/lib/nagios/.ssh':
     ensure     => directory,
     require    => File['/var/lib/nagios/'],

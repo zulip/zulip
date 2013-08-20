@@ -23,4 +23,4 @@ SHELL=/bin/bash
 #
 # m h  dom mon dow   command
 35 * * * * humbug /home/humbug/humbug/bots/zmirror-renew-kerberos
-*/2 * * * * humbug /home/humbug/humbug/bots/check-mirroring --sharded &> /var/run/nagios/check-mirroring-results-tmp; mv /var/run/nagios/check-mirroring-results-tmp /var/run/nagios/check-mirroring-results
+*/2 * * * * humbug /home/humbug/humbug/bots/check-mirroring --sharded &> /var/lib/nagios_state/check-mirroring-results-tmp; mv /var/lib/nagios_state/check-mirroring-results-tmp /var/lib/nagios_state/check-mirroring-results

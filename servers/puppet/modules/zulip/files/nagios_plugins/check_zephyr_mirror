@@ -12,7 +12,7 @@ See bots/zephyr-mirror-crontab for the crontab details.
 import os
 import time
 
-RESULTS_FILE = "/var/run/nagios/check-mirroring-results"
+RESULTS_FILE = "/var/lib/nagios_state/check-mirroring-results"
 
 states = {
     "OK": 0,
