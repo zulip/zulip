@@ -304,12 +304,11 @@ def parse_zephyr_body(zephyr_data):
         (zsig, body) = ("", zephyr_data)
     return (zsig, body)
 
-def decrypt_zephyr(zephyr_class, body):
-    have_key = False
+def parse_crypt_table(zephyr_class, instance):
     try:
         crypt_table = file(os.path.join(os.environ["HOME"], ".crypt-table"))
     except IOError:
-        return body
+        return None
 
     for line in crypt_table.readlines():
         if line.strip() == "":
@@ -323,9 +322,12 @@ def decrypt_zephyr(zephyr_class, body):
         groups = match.groupdict()
         if groups['class'].lower() == zephyr_class and 'keypath' in groups and \
                 groups.get("algorithm") == "AES":
-            have_key = True
-            break
-    if not have_key:
+            return groups["keypath"]
+    return None
+
+def decrypt_zephyr(zephyr_class, instance, body):
+    keypath = parse_crypt_table(zephyr_class, instance)
+    if keypath is None:
         # We can't decrypt it, so we just return the original body
         return body
 
@@ -344,7 +346,7 @@ def decrypt_zephyr(zephyr_class, body):
                           "--quiet",
                           "--no-use-agent",
                           "--passphrase-file",
-                          groups['keypath']],
+                          keypath],
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
@@ -388,7 +390,7 @@ def process_notice(notice, log):
             body = body.split("\n", 1)[1]
 
     if options.forward_class_messages and notice.opcode.lower() == "crypt":
-        body = decrypt_zephyr(zephyr_class, body)
+        body = decrypt_zephyr(zephyr_class, notice.instance.lower(), body)
 
     zeph = { 'time'      : str(notice.time),
              'sender'    : notice.sender,
@@ -552,6 +554,31 @@ def send_authed_zephyr(zwrite_args, content):
 def send_unauthed_zephyr(zwrite_args, content):
     return send_zephyr(zwrite_args + ["-d"], content)
 
+def zcrypt_encrypt_content(zephyr_class, instance, content):
+    keypath = parse_crypt_table(zephyr_class, instance)
+    if keypath is None:
+        return content
+
+    # encrypt the message!
+    p = subprocess.Popen(["gpg",
+                          "--symmetric",
+                          "--no-options",
+                          "--no-default-keyring",
+                          "--keyring=/dev/null",
+                          "--secret-keyring=/dev/null",
+                          "--batch",
+                          "--quiet",
+                          "--no-use-agent",
+                          "--armor",
+                          "--cipher-algo", "AES",
+                          "--passphrase-file",
+                          keypath],
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    encrypted, _ = p.communicate(input=content)
+    return encrypted
+
 def forward_to_zephyr(message):
     wrapper = textwrap.TextWrapper(break_long_words=False, break_on_hyphens=False)
     wrapped_content = "\n".join("\n".join(wrapper.wrap(line))
@@ -598,6 +625,9 @@ def forward_to_zephyr(message):
                           for user in message["display_recipient"]]
         logger.info("Forwarding message to %s" % (recipients,))
         zwrite_args.extend(recipients)
+
+    if message['type'] == "stream":
+        wrapped_content = zcrypt_encrypt_content(zephyr_class, instance, wrapped_content)
 
     if options.test_mode:
         logger.debug("Would have forwarded: %s\n%s" %
