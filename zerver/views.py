@@ -1307,7 +1307,7 @@ def get_public_streams_backend(request, user_profile):
         # the mit.edu API superuser, because the list of streams is
         # used as the list of all Zephyr classes to mirror, and we
         # want to include invite-only streams (aka zcrypted classes) in that
-        query.filter(invite_only=False)
+        query = query.filter(invite_only=False)
 
     streams = sorted({"name": stream.name} for stream in query)
     return json_success({"streams": streams})
