@@ -1,18 +1,10 @@
 #!/bin/bash -e
 
-cd "$(dirname "$0")"/../zerver/tests/frontend/node
+cd "$(dirname "$0")"/..
 
-STATIC_DIR=`python -c 'import os;print os.path.realpath("../../../../static")'`
+export NODE_PATH=static
 
-export NODE_PATH=$STATIC_DIR
-
+# Run the index.js test runner, which runs all the other tests.
+INDEX_JS=zerver/tests/frontend/node/index.js
 NODEJS=$(which nodejs || which node)
-
-# Run all the JS scripts in our test directory.  The order that the scripts run in now
-# is fairly arbitrary, as they run isolated from each other, and none of them are
-# particularly slow.
-for js_file in *.js
-do
-    echo $js_file
-    $NODEJS $js_file
-done
+$NODEJS $INDEX_JS
