@@ -73,7 +73,11 @@ def validate_api_key(email, api_key):
     except UserProfile.DoesNotExist:
         raise JsonableError("Invalid user: %s" % (email,))
     if api_key != user_profile.api_key:
-        raise JsonableError("Invalid API key for user '%s'" % (email,))
+        if len(api_key) != 32:
+            reason = "Incorrect API key length (keys should be 32 characters long)"
+        else:
+            reason = "Invalid API key"
+        raise JsonableError(reason + " for user '%s'" % (email,))
     if not user_profile.is_active:
         raise JsonableError("User account is not active")
     return user_profile
