@@ -1,8 +1,7 @@
 var fs = require('fs');
 
-// Run all the JS scripts in our test directory.  The order that the scripts
-// run in now is fairly arbitrary, as they run isolated from each other, and
-// none of them are particularly slow.
+// Run all the JS scripts in our test directory.  Tests do NOT run
+// in isolation.
 
 var tests = fs.readdirSync(__dirname)
     .filter(function (filename) { return (/\.js$/i).test(filename); })
