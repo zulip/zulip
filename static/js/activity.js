@@ -5,21 +5,19 @@ var exports = {};
     Helpers for detecting user activity and managing user idle states
 */
 
-/* After this amount of no activity, mark you idle regardless of your focus */
-var DEFAULT_IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+/* Broadcast "idle" to server after 5 minutes of local inactivity */
+var DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 /* Time between keep-alive pings */
 var ACTIVE_PING_INTERVAL_MS = 60 * 1000;
 
-/* Timeouts for away and idle state */
-var AWAY_THRESHOLD_SECS = 10 * 60;
-var IDLE_THRESHOLD_SECS = DEFAULT_IDLE_TIMEOUT_MS / 1000;
+/* Mark users as offline after 70 seconds since their last checkin */
+var OFFLINE_THRESHOLD_SECS = 70;
 
 /* Keep in sync with views.py:json_update_active_status() */
 var ACTIVE = "active";
 var IDLE = "idle";
 
 var has_focus = true;
-var ping_timer;
 
 var user_info = {};
 
@@ -32,9 +30,9 @@ function sort_users(users, user_info) {
             return 1;
         }
 
-        if (user_info[a] === 'away' && user_info[b] !== 'away') {
+        if (user_info[a] === 'idle' && user_info[b] !== 'idle') {
             return -1;
-        } else if (user_info[b] === 'away' && user_info[a] !== 'away') {
+        } else if (user_info[b] === 'idle' && user_info[a] !== 'idle') {
             return 1;
         }
 
@@ -62,12 +60,6 @@ function focus_lost() {
     }
 
     has_focus = false;
-
-    clearInterval(ping_timer);
-    ping_timer = undefined;
-
-    $.post('/json/update_active_status', {status: IDLE});
-
 }
 
 function update_users() {
@@ -77,28 +69,21 @@ function update_users() {
 
 function status_from_timestamp(baseline_time, presence) {
     if (presence.website === undefined) {
-        return 'idle';
+        return 'offline';
     }
 
     var age = baseline_time - presence.website.timestamp;
 
-    var status = 'idle';
-    if (presence.website.status === ACTIVE && age >= 0) {
-        if (age < AWAY_THRESHOLD_SECS) {
-            status = 'active';
-        } else if (age < IDLE_THRESHOLD_SECS) {
-            status = 'away';
-        }
+    var status = 'offline';
+    if (age < OFFLINE_THRESHOLD_SECS) {
+        status = presence.website.status;
     }
     return status;
 }
 
 function focus_ping() {
-    if (!has_focus) {
-        return;
-    }
-
-    $.post('/json/update_active_status', {status: ACTIVE}, function (data) {
+    $.post('/json/update_active_status',
+            {status: (has_focus) ? ACTIVE : IDLE}, function (data) {
         if (data === undefined || data.presences === undefined) {
             // We sometimes receive no data even on successful
             // requests; we should figure out why but this will
@@ -128,7 +113,6 @@ function focus_ping() {
 function focus_gained() {
     if (!has_focus) {
         has_focus = true;
-        ping_timer = setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
 
         focus_ping();
     }
@@ -141,7 +125,7 @@ exports.initialize = function () {
                 onActive: focus_gained,
                 keepTracking: true});
 
-    ping_timer = setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
+    setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
 
     focus_ping();
 };

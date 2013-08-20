@@ -874,7 +874,7 @@ def do_update_user_presence(user_profile, client, log_time, status):
                                             client = client)
         created = False
 
-    stale_status = (log_time - presence.timestamp) > datetime.timedelta(minutes=10)
+    stale_status = (log_time - presence.timestamp) > datetime.timedelta(minutes=1, seconds=10)
     was_idle = presence.status == UserPresence.IDLE
     became_online = (status == UserPresence.ACTIVE) and (stale_status or was_idle)
 
