@@ -27,12 +27,12 @@ var stream_data = global.stream_data;
     var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
     narrow._set_current_filter(new Filter(operators));
 
-    assert.equal(narrow.stream(), 'foo');
+    assert.equal(narrow.stream(), 'Foo');
 }());
 
 (function test_operators() {
-    var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
-    var canonical_operators = [['stream', 'foo'], ['topic', 'bar'], ['search', 'yo']];
+    var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']];
+    var canonical_operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
     narrow._set_current_filter(new Filter(operators));
 
     assert.deepEqual(narrow.operators(), canonical_operators);
@@ -44,8 +44,8 @@ var stream_data = global.stream_data;
 
     var opts = {};
     narrow.set_compose_defaults(opts);
-    assert.equal(opts.stream, 'foo');
-    assert.equal(opts.subject, 'bar');
+    assert.equal(opts.stream, 'Foo');
+    assert.equal(opts.subject, 'Bar');
 
     stream_data.add_sub('ROME', {name: 'ROME'});
     operators = [['stream', 'rome']];

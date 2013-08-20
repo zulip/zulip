@@ -32,7 +32,16 @@ Filter.canonicalize_tuple = function (tuple) {
     var operand = tuple[1];
 
     operator = Filter.canonicalize_operator(operator);
-    operand = stream_data.canonicalized_name(operand);
+
+    switch (operator) {
+    case 'stream':
+        operand = stream_data.get_name(operand);
+        break;
+    case 'topic':
+        break;
+    default:
+        operand = operand.toString().toLowerCase();
+    }
 
     // We may want to consider allowing mixed-case operators at some point
     return [operator, operand];
@@ -147,6 +156,7 @@ Filter.prototype = {
                         return false;
                     }
 
+                    operand = operand.toLowerCase();
                     if (page_params.domain === "mit.edu") {
                         // MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
                         // (unsocial, ununsocial, social.d, etc)
@@ -170,6 +180,7 @@ Filter.prototype = {
                         return false;
                     }
 
+                    operand = operand.toLowerCase();
                     if (page_params.domain === "mit.edu") {
                         // MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
                         // (foo, foo.d, foo.d.d, etc)
