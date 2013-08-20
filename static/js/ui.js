@@ -718,17 +718,11 @@ exports.expand_summary_row = function (row) {
         return all_msg_list.get(id);
     });
 
-    function remove_flag(flag) {
-        _.each(messages, function (msg){
-            msg.flags = _.without(msg.flags, flag);
-        });
-        update_message_flag(messages, flag, false);
-    }
+    _.each(messages, function (msg){
+        msg.flags.push('force_expand');
+    });
+    update_message_flag(messages, 'force_expand', true);
 
-    remove_flag('summarize_in_stream');
-    if (!narrow.active()) {
-        remove_flag('summarize_in_home');
-    }
 
     //TODO: Avoid a full re-render
     home_msg_list.rerender();

@@ -156,7 +156,17 @@ MessageListView.prototype = {
                 finish_summary();
             }
 
-            if (list.is_summarized_message(message)) {
+            var summary_adjective;
+
+            if (!_.contains(message.flags, 'force_expand')) {
+                if (muting.is_topic_muted(message.stream, message.subject)) {
+                    summary_adjective = 'muted';
+                } else if (list.is_summarized_message(message)) {
+                    summary_adjective = 'read';
+                }
+            }
+
+            if (summary_adjective) {
                 if (prev) {
                     prev.include_footer = true;
                 }
@@ -176,6 +186,7 @@ MessageListView.prototype = {
                         include_footer: false,
                         include_bookend: false,
                         first_message_id: message.id,
+                        summary_adjective: summary_adjective,
                         messages: [message]
                     });
                 } else {
@@ -248,12 +259,13 @@ MessageListView.prototype = {
         if (prev) {
             prev.include_footer = true;
         }
-        if (messages_to_render.length === 0) {
-            return;
-        }
 
         if (has_summary) {
             finish_summary();
+        }
+
+        if (messages_to_render.length === 0) {
+            return;
         }
 
         if (current_group.length > 0) {

@@ -37,9 +37,9 @@
     <td class="message_header message_header_stream right_part">
         <span class="message_label_clickable"><i class="icon-vector-expand-alt"></i>
           {{#if is_stream}}
-            {{display_recipient}} &nbsp;<i class="icon-vector-narrow icon-vector-small"></i><span class="copy-paste-text">&gt;</span> &nbsp;{{subject}} ({{count}} read)
+            {{display_recipient}} &nbsp;<i class="icon-vector-narrow icon-vector-small"></i><span class="copy-paste-text">&gt;</span> &nbsp;{{subject}} ({{count}} {{summary_adjective}})
           {{else}}
-            You and {{display_reply_to}} ({{count}} read)
+            You and {{display_reply_to}} ({{count}} {{summary_adjective}})
           {{/if}}
         </span>
     </td>
