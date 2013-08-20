@@ -47,7 +47,7 @@ if options.sync_subscriptions:
 
 if options.forward_class_messages and not options.noshard:
     sys.path.append("/home/humbug/humbug")
-    from zephyr.lib.parallel import run_parallel
+    from zerver.lib.parallel import run_parallel
     print "Starting parallel zephyr class mirroring bot"
     jobs = list("0123456789abcdef")
     def run_job(shard):
