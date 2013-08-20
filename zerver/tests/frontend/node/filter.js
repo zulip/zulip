@@ -19,11 +19,6 @@ var Filter = global.Filter;
     var filter = new Filter(operators);
 
     assert.deepEqual(filter.operators(), operators);
-
-    var predicate = filter.predicate();
-    assert(predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
-    assert(!predicate({type: 'stream', stream: 'foo', subject: 'whatever'}));
-
     assert.deepEqual(filter.operands('stream'), ['foo']);
 
     assert(filter.has_operator('stream'));
@@ -49,4 +44,15 @@ var Filter = global.Filter;
 
     assert.deepEqual(Filter.canonicalize_tuple(['Stream', 'Denmark']), ['stream', 'denmark']);
 }());
+
+(function test_predicates() {
+    var operators = [['stream', 'Foo'], ['topic', 'Bar']];
+    var filter = new Filter(operators);
+
+    var predicate = filter.predicate();
+    assert(predicate({type: 'stream', stream: 'foo', subject: 'bar'}));
+    assert(!predicate({type: 'stream', stream: 'foo', subject: 'whatever'}));
+}());
+
+
 
