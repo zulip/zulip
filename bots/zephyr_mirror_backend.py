@@ -890,6 +890,9 @@ def parse_args():
     parser.add_option('--site',
                       default=DEFAULT_SITE,
                       help=optparse.SUPPRESS_HELP)
+    parser.add_option('--on-startup-command',
+                      default=None,
+                      help=optparse.SUPPRESS_HELP)
     parser.add_option('--user',
                       default=os.environ["USER"],
                       help=optparse.SUPPRESS_HELP)

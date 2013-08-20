@@ -47,6 +47,8 @@ if options.sync_subscriptions:
 
 if options.forward_class_messages and not options.noshard:
     sys.path.append("/home/humbug/humbug")
+    if options.on_startup_command is not None:
+        subprocess.call([options.on_startup_command])
     from zerver.lib.parallel import run_parallel
     print "Starting parallel zephyr class mirroring bot"
     jobs = list("0123456789abcdef")
