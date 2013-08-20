@@ -19,7 +19,7 @@ var stream_data = global.stream_data;
 
     assert.deepEqual(narrow.parse(string), operators);
 
-    string = 'stream:foo topic:bar yo';
+    string = 'stream:Foo topic:Bar yo';
     assert.deepEqual(narrow.unparse(operators), string);
 }());
 

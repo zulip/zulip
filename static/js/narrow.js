@@ -73,7 +73,7 @@ exports.unparse = function (operators) {
             // a colon are glued together to form a search term.
             return elem[1];
         } else {
-            return elem[0] + ':' + encodeOperand(elem[1].toString().toLowerCase());
+            return elem[0] + ':' + encodeOperand(elem[1]);
         }
     });
     return parts.join(' ');
