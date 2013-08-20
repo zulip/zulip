@@ -68,10 +68,14 @@ def process_client(request, user_profile, default):
     update_user_activity(request, user_profile)
 
 def validate_api_key(email, api_key):
+    # Remove whitespace to protect users from trivial errors.
+    email, api_key = email.strip(), api_key.strip()
+
     try:
         user_profile = get_user_profile_by_email(email)
     except UserProfile.DoesNotExist:
         raise JsonableError("Invalid user: %s" % (email,))
+
     if api_key != user_profile.api_key:
         if len(api_key) != 32:
             reason = "Incorrect API key length (keys should be 32 characters long)"
