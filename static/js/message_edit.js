@@ -7,18 +7,23 @@ var currently_editing_messages = {};
 exports.save = function (row) {
     var msg_list = current_msg_list;
     var message = current_msg_list.get(rows.id(row));
-    var new_topic = row.find(".message_edit_topic").val();
-    var new_content = row.find(".message_edit_content").val();
+    var changed = false;
 
     var request = {message_id: message.id};
-    if (new_topic !== message.subject && new_topic.trim() !== "") {
-        request.subject = new_topic;
+    if (message.type === "stream") {
+        var new_topic = row.find(".message_edit_topic").val();
+        if (new_topic !== message.subject && new_topic.trim() !== "") {
+            request.subject = new_topic;
+            changed = true;
+        }
     }
+
+    var new_content = row.find(".message_edit_content").val();
     if (new_content !== message.raw_content) {
         request.content = new_content;
+        changed = true;
     }
-    if (request.subject === undefined &&
-        request.content === undefined) {
+    if (!changed) {
         // If they didn't change anything, just cancel it.
         return true;
     }
