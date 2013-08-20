@@ -88,3 +88,17 @@ var _ = global._;
     assert.equal(cnt, d.keys().length);
     assert.equal(unseen_keys.length, 0);
 }());
+
+(function test_setdefault() {
+    var d = new Dict();
+    var val = ['foo'];
+    var res = d.setdefault('foo', val);
+    assert.equal(res, val);
+    assert.equal(d.has('foo'), true);
+    assert.equal(d.get('foo'), val);
+
+    var val2 = ['foo2'];
+    res = d.setdefault('foo', val2);
+    assert.equal(res, val);
+    assert.equal(d.get('foo'), val);
+}());

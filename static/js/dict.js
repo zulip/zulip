@@ -61,6 +61,17 @@ Dict.prototype = _.object(_.map({
         return value;
     },
 
+    // If `key` exists in the Dict, return its value.  Otherwise
+    // insert `key` with a value of `value` and return `value`.
+    setdefault: function Dict_setdefault(key, value) {
+        var ret;
+        var mapping = this._items[this._munge(key)];
+        if (mapping === undefined) {
+            return this.set(key, value);
+        }
+        return mapping.v;
+    },
+
     has: function Dict_has(key) {
         return _.has(this._items, this._munge(key));
     },
