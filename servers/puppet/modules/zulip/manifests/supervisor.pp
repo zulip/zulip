@@ -20,4 +20,10 @@ class zulip::supervisor {
     hasrestart => true,
     restart => "supervisorctl reload"
   }
+
+  exec { "fix_supervisor_socket_permissions":
+    command => "chown humbug:humbug /var/run/supervisor.sock",
+    unless => "bash -c 'ls -ld /var/run/supervisor.sock | cut -f 3-4 -d\" \"  | grep -q \"^humbug humbug$\"'",
+    require => Service["supervisor"],
+  }
 }
