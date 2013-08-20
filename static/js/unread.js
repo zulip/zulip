@@ -124,12 +124,6 @@ exports.get_counts = function () {
     res.subject_count = new Dict(); // hash of hashes (stream, then subject -> count)
     res.pm_count = new Dict(); // Hash by email -> count
 
-    function only_in_home_view(msgids) {
-        return _.filter(msgids, function (msgid) {
-            return home_msg_list.get(msgid) !== undefined;
-        });
-    }
-
     unread_counts.stream.each(function (msgs, stream) {
         if (! stream_data.is_subscribed(stream)) {
             return true;
@@ -139,7 +133,7 @@ exports.get_counts = function () {
         res.stream_count.set(stream, count);
 
         if (stream_data.in_home_view(stream)) {
-            res.home_unread_messages += only_in_home_view(Object.keys(msgs)).length;
+            res.home_unread_messages += Object.keys(msgs).length;
         }
 
         if (unread_subjects.has(stream)) {
