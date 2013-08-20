@@ -318,6 +318,7 @@ function get_new_heights() {
     var res = {};
     var viewport_height = viewport.height();
     var top_navbar_height = $("#top_navbar").outerHeight(true);
+    var invite_user_link_height = $("#invite-user-link").outerHeight(true) || 0;
 
     res.bottom_whitespace_height = viewport_height * 0.4;
 
@@ -348,7 +349,7 @@ function get_new_heights() {
     res.stream_filters_max_height = Math.max(40, res.stream_filters_max_height);
 
     res.user_presences_max_height =
-        res.right_sidebar_height * 0.90;
+        res.right_sidebar_height * 0.90 - invite_user_link_height;
 
     return res;
 }
