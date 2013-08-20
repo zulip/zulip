@@ -57,7 +57,8 @@ Dict.prototype = _.object(_.map({
     },
 
     set: function Dict_set(key, value) {
-        return (this._items[this._munge(key)] = {k: key, v: value});
+        this._items[this._munge(key)] = {k: key, v: value};
+        return value;
     },
 
     has: function Dict_has(key) {

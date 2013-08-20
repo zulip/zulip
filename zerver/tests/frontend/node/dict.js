@@ -31,6 +31,10 @@ var _ = global._;
     assert.strictEqual(d.get('bar'), undefined);
 
     assert.deepEqual(d.keys(), ['foo']);
+
+    var val = ['foo'];
+    var res = d.set('abc', val);
+    assert.equal(val, res);
 }());
 
 (function test_restricted_keys() {
