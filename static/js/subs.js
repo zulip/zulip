@@ -701,7 +701,7 @@ $(function () {
         var list = sub_row.find('.subscriber_list_container ul');
         var indicator_elem = sub_row.find('.subscriber_list_loading_indicator');
 
-        if (!exports.get(stream).render_subscribers) {
+        if (!stream_data.get_sub(stream).render_subscribers) {
             return;
         }
 
