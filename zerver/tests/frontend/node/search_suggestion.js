@@ -6,6 +6,7 @@
 // dependencies.
 
 var assert = require('assert');
+var clean_up;
 
 function set_up_dependencies() {
     var _ = global._ = require('third/underscore/underscore.js');
@@ -27,6 +28,14 @@ function set_up_dependencies() {
 
     global.Filter = require('js/filter.js');
     global.stream_data = require('js/stream_data.js');
+
+
+    var narrow_stream = global.narrow.stream;
+    var stream_data_subscribed_streams = global.stream_data.subscribed_streams;
+    clean_up = function () {
+        global.narrow.stream = narrow_stream;
+        global.stream_data.subscribed_streams = stream_data_subscribed_streams;
+    };
 
     return search;
 }
@@ -205,3 +214,6 @@ var search = set_up_dependencies();
 
     assert.deepEqual(suggestions.strings, expected);
 }());
+
+clean_up();
+
