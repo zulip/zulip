@@ -16,3 +16,4 @@ zerver/fixtures/test_data1.json
 .kdev4
 humbug.kdev4
 memcached_prefix
+coverage/
