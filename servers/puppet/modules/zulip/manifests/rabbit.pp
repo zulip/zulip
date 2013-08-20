@@ -10,7 +10,7 @@ class zulip::rabbit {
     mode => 644,
     source => "puppet:///modules/zulip/cron.d/rabbitmq-queuesize",
   }
-  file { "/etc/cron.d/rabbitmq-numconsumner":
+  file { "/etc/cron.d/rabbitmq-numconsumers":
     require => Package[rabbitmq-server],
     ensure => file,
     owner  => "root",
