@@ -1764,6 +1764,17 @@ def api_github_landing(request, user_profile, event=REQ,
     # TODO: this should all be moved to an external bot
     repository = payload['repository']
 
+    # Special hook for capturing event data
+    try:
+        if (repository['owner']['login'] == 'zbenjamin'
+            and repository['name'] == 'zulip-test'
+            and payload['sender']['login'] == 'zbenjamin'):
+            with open('/var/log/humbug/github-payloads', 'a') as f:
+                f.write(ujson.dumps({'event': event, 'payload': payload}))
+                f.write("\n")
+    except Exception:
+        logging.error("Error while capturing Github event")
+
     if not stream:
         stream = 'commits'
 
