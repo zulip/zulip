@@ -177,6 +177,11 @@ exports.wait_for_receive = function (step) {
     }, step);
 };
 
+// Wait until the loading spinner goes away (helpful just after logging in).
+exports.wait_for_load = function (step) {
+    casper.waitWhileVisible('.loading_indicator_spinner', step);
+};
+
 // innerText sometimes gives us non-breaking space characters, and occasionally
 // a different number of spaces than we expect.
 exports.normalize_spaces = function (str) {
