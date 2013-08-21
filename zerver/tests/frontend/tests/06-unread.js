@@ -1,9 +1,5 @@
 var common = require('../common.js').common;
 
-// NOTE this test will fail if run standalone, because
-// other tests send a message before this one is run,
-// changing the unread counts. uncomment line 43 to run
-// standalone
 // Silence jslint errors about the global
 /*global keep_pointer_in_view: true */
 /*global process_visible_unread_messages: true */
