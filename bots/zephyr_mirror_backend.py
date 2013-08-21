@@ -557,7 +557,7 @@ def send_unauthed_zephyr(zwrite_args, content):
 def zcrypt_encrypt_content(zephyr_class, instance, content):
     keypath = parse_crypt_table(zephyr_class, instance)
     if keypath is None:
-        return content
+        return None
 
     # encrypt the message!
     p = subprocess.Popen(["gpg",
@@ -627,7 +627,10 @@ def forward_to_zephyr(message):
         zwrite_args.extend(recipients)
 
     if message['type'] == "stream":
-        wrapped_content = zcrypt_encrypt_content(zephyr_class, instance, wrapped_content)
+        result = zcrypt_encrypt_content(zephyr_class, instance, wrapped_content)
+        if result is not None:
+            wrapped_content = result
+            zwrite_args.extend(["-O", "crypt"])
 
     if options.test_mode:
         logger.debug("Would have forwarded: %s\n%s" %
