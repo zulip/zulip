@@ -214,6 +214,7 @@ exports.initialize = function () {
             return stream_data.subscribed_streams();
         },
         items: 3,
+        fixed: true,
         highlighter: function (item) {
             var query = this.query;
             return typeahead_helper.highlight_query_in_phrase(query, item);
@@ -232,6 +233,7 @@ exports.initialize = function () {
             return exports.topics_seen_for(stream_name);
         },
         items: 3,
+        fixed: true,
         highlighter: composebox_typeahead_highlighter,
         sorter: function (items) {
             var sorted = typeahead_helper.sorter(this.query, items, function (x){return x;});
@@ -246,6 +248,7 @@ exports.initialize = function () {
         source: page_params.people_list,
         items: 5,
         dropup: true,
+        fixed: true,
         highlighter: function (item) {
             var query = get_last_recipient_in_pm(this.query);
             var item_formatted = typeahead_helper.render_person(item);
@@ -339,6 +342,7 @@ exports.initialize = function () {
             }
         },
         dropup: true,
+        fixed: true,
         matcher: function (item) {
             if (this.completing === 'emoji') {
                 return query_matches_emoji(this.token, item);

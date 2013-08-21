@@ -52,6 +52,7 @@ exports.initialize = function () {
             search_object = suggestions.lookup_table;
             return suggestions.strings;
         },
+        fixed: true,
         items: 30,
         helpOnEmptyStrings: true,
         naturalSearch: true,

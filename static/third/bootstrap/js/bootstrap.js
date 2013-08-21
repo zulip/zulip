@@ -1826,6 +1826,11 @@
     this.source = this.options.source
     this.shown = false
     this.dropup = this.options.dropup
+    this.fixed = this.options.fixed || false;
+
+    if (this.fixed) {
+      this.$menu.css('position', 'fixed');
+    }
     // The naturalSearch option causes arrow keys to immediately
     // update the search box with the underlying values from the
     // search suggestions.
@@ -1854,7 +1859,16 @@
     }
 
   , show: function () {
-      var pos = $.extend({}, this.$element.offset(), {
+      var pos;
+
+      if (this.fixed) {
+        // Relative to screen instead of to page
+        pos = this.$element[0].getBoundingClientRect();
+      } else {
+        pos = this.$element.offset();
+      }
+
+      pos = $.extend({}, pos, {
         height: this.$element[0].offsetHeight
       })
 
