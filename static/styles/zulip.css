@@ -9,7 +9,7 @@ body {
 }
 
 /* Common background color */
-body, #tab_bar, #tab_bar_underpadding, .message_list, .message_comp {
+body, #tab_bar, #tab_bar_underpadding, .message_list, .message_comp, .compose-content {
     background-color: #f4f5f4;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
@@ -18,7 +18,7 @@ body, #tab_bar, #tab_bar_underpadding, .message_list, .message_comp {
    transition: background-color 200ms linear;
 }
 
-body.narrowed_view, .narrowed_view #tab_bar, .narrowed_view #tab_bar_underpadding, .narrowed_view .message_list {
+body.narrowed_view, .narrowed_view #tab_bar, .narrowed_view #tab_bar_underpadding, .narrowed_view .message_list, .narrowed_view .compose-content {
     background-color: #f0f8ff;
    -webkit-transition: background-color 200ms linear;
    -moz-transition: background-color 200ms linear;
@@ -27,6 +27,9 @@ body.narrowed_view, .narrowed_view #tab_bar, .narrowed_view #tab_bar_underpaddin
    transition: background-color 200ms linear;
 }
 
+.narrowed_view .message_comp.compose-content {
+    background-color: #ffffff;
+}
 
 input, button, select, textarea {
     font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -98,6 +101,7 @@ a {
     position: fixed;
     margin-top: 50px;
     width: 200px;
+    z-index:3;
 }
 
 .app-main .column-right .right-sidebar {
@@ -556,14 +560,9 @@ ul.filters li.out_of_home_view {
     display: none;
 }
 
-.message_comp,
-#compose_controls {
-    border: 1px solid #EEE;
-    background-color: white;
+.message_comp {
+    background-color: #ffffff;
     padding: 8px 20px 8px 10px;
-    box-shadow: 0px 3px 7px rgba(0, 0, 0, 0.3);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
 }
 
 #compose_buttons {
@@ -1121,14 +1120,30 @@ blockquote p {
 #compose {
     position: fixed;
     bottom: 0px;
+    left: 0px;
     z-index: 1;
+    width: 100%;
+}
+
+#compose-container {
+    width: 100%;
+    max-width: 1210px;
+    margin: auto;
+}
+
+.compose-content {
+    border-top: 1px solid #bbbbbb;
+    padding: 8px 20px;
+    margin-left: 210px;
+    margin-right: 200px;
+    position: relative;
 }
 
 #compose_close {
     display: none;
     position: absolute;
     right: 5px;
-    top: 17px;
+    top: 7px;
 }
 
 /* Like .nav-tabs > li > a */
@@ -1511,6 +1526,8 @@ input.recipient_box {
     /* If zhome has opacity on it, it suddenly starts getting drawn on top
        of top_statusbar -- unless we specify a z-index.  */
     z-index: 2;
+    margin-right: 210px;
+    max-width: 795px;
 }
 
 table.floating_recipient {
@@ -2411,6 +2428,14 @@ div.edit_bot {
         top: 3px;
     }
 
+    #floating_recipient_bar {
+        margin-right: 20px;
+    }
+
+    .compose-content {
+        margin-right: 10px;
+    }
+
     .nav .dropdown-menu {
         left: -160px;
         min-width: 180px;
@@ -2481,6 +2506,16 @@ div.edit_bot {
         margin-left: 38px;
     }
 
+    #floating_recipient_bar {
+        margin-right: 25px;
+        min-width: 330px;
+    }
+
+    .compose-content {
+        margin-right:15px;
+        margin-left: 10px;
+    }
+
 }
 
 @media (max-width: 500px) {
@@ -2491,7 +2526,7 @@ div.edit_bot {
 
 @media (max-width: 350px) {
     html {
-        overflow-x: scroll;
+        overflow-x: hidden;
     }
 }
 

@@ -365,8 +365,6 @@ exports.resize_page_components = function () {
     } else {
         desired_width = $("#main_div").outerWidth();
     }
-    composebox.width(desired_width);
-    floating_recipient_bar.width(desired_width);
     tab_bar.width(desired_width);
     tab_bar_under.width(desired_width);
 
