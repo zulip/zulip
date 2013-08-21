@@ -6,7 +6,6 @@
 // dependencies.
 
 var assert = require('assert');
-var clean_up;
 
 add_dependencies({
     _: 'third/underscore/underscore.js',
@@ -19,29 +18,23 @@ add_dependencies({
     narrow: 'js/narrow.js'
 });
 
-function set_up_dependencies() {
-    var search = require('js/search_suggestion.js');
+var search = require('js/search_suggestion.js');
 
-    set_global('page_params', {
-        email: 'bob@zulip.com'
-    });
-    set_global('recent_subjects', new global.Dict({fold_case: true}));
+set_global('page_params', {
+    email: 'bob@zulip.com'
+});
+set_global('recent_subjects', new global.Dict({fold_case: true}));
 
-    var narrow = global.narrow;
-    var stream_data = global.stream_data;
+var stream_data = require('js/stream_data.js');
+set_global('stream_data', {
+    get_name: stream_data.get_name
+});
 
-    var narrow_stream = narrow.stream;
-    var stream_data_subscribed_streams = stream_data.subscribed_streams;
-    clean_up = function () {
-        narrow.stream = narrow_stream;
-        stream_data.subscribed_streams = stream_data_subscribed_streams;
-        delete global.recent_subjects;
-    };
-
-    return search;
-}
-
-var search = set_up_dependencies();
+var narrow = require('js/narrow.js');
+set_global('narrow', {
+    parse: narrow.parse,
+    unparse: narrow.unparse
+});
 
 (function test_basic_get_suggestions() {
     var query = 'fred';
@@ -215,6 +208,3 @@ var search = set_up_dependencies();
 
     assert.deepEqual(suggestions.strings, expected);
 }());
-
-clean_up();
-
