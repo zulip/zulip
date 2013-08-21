@@ -8,10 +8,10 @@ var exports = {};
 /* Broadcast "idle" to server after 5 minutes of local inactivity */
 var DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 /* Time between keep-alive pings */
-var ACTIVE_PING_INTERVAL_MS = 60 * 1000;
+var ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 
-/* Mark users as offline after 70 seconds since their last checkin */
-var OFFLINE_THRESHOLD_SECS = 70;
+/* Mark users as offline after 140 seconds since their last checkin */
+var OFFLINE_THRESHOLD_SECS = 140;
 
 /* Keep in sync with views.py:json_update_active_status() */
 exports.ACTIVE = "active";
