@@ -119,6 +119,22 @@ function update_stream_notifications(sub, value) {
     sub.notifications = value;
 }
 
+function update_stream_name(sub, new_name) {
+    // Rename the stream internally.
+    var old_name = sub.name;
+    stream_data.delete_sub(old_name);
+    sub.name = new_name;
+    stream_data.add_sub(new_name, sub);
+
+    // Update the stream sidebar.
+    exports.reload_subscriptions({clear_first: true});
+
+    // Update the message feed.
+    _.each([home_msg_list, current_msg_list, all_msg_list], function (list) {
+        list.change_display_recipient(old_name, new_name);
+    });
+}
+
 function stream_notifications_clicked(e) {
     var sub_row = $(e.target).closest('.subscription_row');
     var stream = sub_row.find('.subscription_name').text();
@@ -449,6 +465,9 @@ exports.update_subscription_properties = function (stream_name, property, value)
         break;
     case 'notifications':
         update_stream_notifications(sub, value);
+        break;
+    case 'name':
+        update_stream_name(sub, value);
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,

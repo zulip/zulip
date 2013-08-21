@@ -13,6 +13,10 @@ exports.get_sub = function (stream_name) {
     return stream_info.get(stream_name.toLowerCase());
 };
 
+exports.delete_sub = function (stream_name) {
+    stream_info.del(stream_name.toLowerCase());
+};
+
 exports.set_stream_info = function (new_stream_info) {
     stream_info = new_stream_info;
 };
