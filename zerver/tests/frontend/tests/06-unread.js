@@ -101,5 +101,5 @@ casper.then(function () {
 
 // Run the above queued actions.
 casper.run(function () {
-    casper.test.done(3);
+    casper.test.done();
 });
