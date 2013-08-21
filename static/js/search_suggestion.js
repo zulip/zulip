@@ -124,7 +124,7 @@ function get_stream_suggestions(operators) {
         var prefix = 'Narrow to stream';
         var highlighted_stream = typeahead_helper.highlight_query_in_phrase(query, stream);
         var description = prefix + ' ' + highlighted_stream;
-        var search_string = narrow.unparse([['stream', stream]]);
+        var search_string = Filter.unparse([['stream', stream]]);
         return {description: description, search_string: search_string};
     });
 
@@ -178,7 +178,7 @@ function get_private_suggestions(all_people, operators) {
     var suggestions = _.map(people, function (person) {
         var name = highlight_person(query, person);
         var description = 'Narrow to private messages with ' + name;
-        var search_string = narrow.unparse([['pm-with', person.email]]);
+        var search_string = Filter.unparse([['pm-with', person.email]]);
         return {description: description, search_string: search_string};
     });
 
@@ -214,7 +214,7 @@ function get_person_suggestions(all_people, query, prefix, operator) {
 function get_default_suggestion(operators) {
     // Here we return the canonical suggestion for the full query that the
     // user typed.  (The caller passes us the parsed query as "operators".)
-    var search_string = narrow.unparse(operators);
+    var search_string = Filter.unparse(operators);
     var description = describe(operators);
     description = Handlebars.Utils.escapeExpression(description);
     return {description: description, search_string: search_string};
@@ -244,7 +244,7 @@ function get_topic_suggestions(query_operators) {
 
     // If somebody explicitly types search:, then we might
     // not want to suggest topics, but I feel this is a very
-    // minor issue, and narrow.parse() is currently lossy
+    // minor issue, and Filter.parse() is currently lossy
     // in terms of telling us whether they provided the operator,
     // i.e. "foo" and "search:foo" both become [['search', 'foo']].
     switch (operator) {
@@ -312,7 +312,7 @@ function get_topic_suggestions(query_operators) {
     return _.map(topics, function (topic) {
         var topic_operator = ['topic', topic];
         var operators = query_operators.concat([topic_operator]);
-        var search_string = narrow.unparse(operators);
+        var search_string = Filter.unparse(operators);
         var description = describe(operators);
         return {description: description, search_string: search_string};
     });
@@ -331,7 +331,7 @@ function get_operator_subset_suggestions(query, operators) {
 
     for (i = operators.length - 1; i >= 1; --i) {
         var subset = operators.slice(0, i);
-        var search_string = narrow.unparse(subset);
+        var search_string = Filter.unparse(subset);
         var description = describe(subset);
         var suggestion = {description: description, search_string: search_string};
         suggestions.push(suggestion);
@@ -400,7 +400,7 @@ exports.get_suggestions = function (query) {
     var suggestions;
 
     // Add an entry for narrow by operators.
-    var operators = narrow.parse(query);
+    var operators = Filter.parse(query);
     suggestion = get_default_suggestion(operators);
     result = [suggestion];
 

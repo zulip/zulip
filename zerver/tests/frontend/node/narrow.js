@@ -12,16 +12,6 @@ var narrow = require('js/narrow.js');
 var Filter = global.Filter;
 var stream_data = global.stream_data;
 
-(function test_parse_and_unparse() {
-    var string ='stream:Foo topic:Bar yo';
-    var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
-
-    assert.deepEqual(narrow.parse(string), operators);
-
-    string = 'stream:Foo topic:Bar yo';
-    assert.deepEqual(narrow.unparse(operators), string);
-}());
-
 (function test_stream() {
     var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
     narrow._set_current_filter(new Filter(operators));

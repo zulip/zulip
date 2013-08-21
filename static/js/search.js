@@ -5,7 +5,7 @@ var exports = {};
 function narrow_or_search_for_term(search_string) {
     var search_query_box = $("#search_query");
     ui.change_tab_to('#home');
-    var operators = narrow.parse(search_string);
+    var operators = Filter.parse(search_string);
     narrow.activate(operators, {trigger: 'search'});
 
     // It's sort of annoying that this is not in a position to
@@ -90,7 +90,7 @@ exports.initialize = function () {
             // operators.  (The reason the other actions don't call
             // this codepath is that they first all blur the box to
             // indicate that they've done what they need to do)
-            narrow.activate(narrow.parse(search_query_box.val()));
+            narrow.activate(Filter.parse(search_query_box.val()));
             search_query_box.blur();
             update_buttons_with_focus(false);
         }

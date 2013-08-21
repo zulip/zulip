@@ -47,6 +47,81 @@ Filter.canonicalize_tuple = function (tuple) {
     return [operator, operand];
 };
 
+
+
+/* We use a variant of URI encoding which looks reasonably
+   nice and still handles unambiguously cases such as
+   spaces in operands.
+
+   This is just for the search bar, not for saving the
+   narrow in the URL fragment.  There we do use full
+   URI encoding to avoid problematic characters. */
+function encodeOperand(operand) {
+    return operand.replace(/%/g,  '%25')
+                  .replace(/\+/g, '%2B')
+                  .replace(/ /g,  '+');
+}
+
+function decodeOperand(encoded) {
+    return util.robust_uri_decode(encoded.replace(/\+/g, ' '));
+}
+
+// Parse a string into a list of operators (see below).
+Filter.parse = function (str) {
+    var operators   = [];
+    var search_term = [];
+    var matches = str.match(/"[^"]+"|\S+/g);
+    if (matches === null) {
+        return operators;
+    }
+    _.each(matches, function (token) {
+        var parts, operator;
+        if (token.length === 0) {
+            return;
+        }
+        parts = token.split(':');
+        if (token[0] === '"' || parts.length === 1) {
+            // Looks like a normal search term.
+            search_term.push(token);
+        } else {
+            // Looks like an operator.
+            // FIXME: Should we skip unknown operator names here?
+            operator = parts.shift();
+            operators.push([operator, decodeOperand(parts.join(':'))]);
+        }
+    });
+    // NB: Callers of 'parse' can assume that the 'search' operator is last.
+    if (search_term.length > 0) {
+        operators.push(['search', search_term.join(' ')]);
+    }
+    return operators;
+};
+
+/* Convert a list of operators to a string.
+   Each operator is a key-value pair like
+
+       ['subject', 'my amazing subject']
+
+   These are not keys in a JavaScript object, because we
+   might need to support multiple operators of the same type.
+*/
+Filter.unparse = function (operators) {
+    var parts = _.map(operators, function (elem) {
+        var operator = elem[0];
+        if (operator === 'search') {
+            // Search terms are the catch-all case.
+            // All tokens that don't start with a known operator and
+            // a colon are glued together to form a search term.
+            return elem[1];
+        } else {
+            return elem[0] + ':' + encodeOperand(elem[1]);
+        }
+    });
+    return parts.join(' ');
+};
+
+
+
 Filter.prototype = {
     predicate: function Filter_predicate() {
         if (this._predicate === undefined) {

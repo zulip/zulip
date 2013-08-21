@@ -30,11 +30,7 @@ set_global('stream_data', {
     get_name: stream_data.get_name
 });
 
-var narrow = require('js/narrow.js');
-set_global('narrow', {
-    parse: narrow.parse,
-    unparse: narrow.unparse
-});
+set_global('narrow', {});
 
 (function test_basic_get_suggestions() {
     var query = 'fred';

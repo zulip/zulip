@@ -53,5 +53,15 @@ var Filter = require('js/filter.js');
     assert(!predicate({type: 'stream', stream: 'foo', subject: 'whatever'}));
 }());
 
+(function test_parse_and_unparse() {
+    var string ='stream:Foo topic:Bar yo';
+    var operators = [['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']];
+
+    assert.deepEqual(Filter.parse(string), operators);
+
+    string = 'stream:Foo topic:Bar yo';
+    assert.deepEqual(Filter.unparse(operators), string);
+}());
+
 
 
