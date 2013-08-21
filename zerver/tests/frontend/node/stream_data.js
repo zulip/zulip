@@ -1,7 +1,11 @@
 var assert = require('assert');
-global._ = require('third/underscore/underscore.js');
-global.util = require('js/util.js');
-global.Dict = require('js/dict.js');
+
+add_dependencies({
+    _: 'third/underscore/underscore.js',
+    util: 'js/util.js',
+    Dict: 'js/dict.js'
+});
+
 var stream_data = require('js/stream_data.js');
 
 (function test_basics() {

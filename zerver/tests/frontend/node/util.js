@@ -1,10 +1,11 @@
 var assert = require('assert');
 
-(function set_up_dependencies () {
-    global._ = require('third/underscore/underscore.js');
-    global.util = require('js/util.js');
-    global.$ = {};
-}());
+add_dependencies({
+    _: 'third/underscore/underscore.js',
+    util: 'js/util.js'
+});
+
+set_global('$', {});
 
 var util = global.util;
 

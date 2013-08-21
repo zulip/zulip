@@ -1,13 +1,12 @@
 var assert = require('assert');
 
-(function set_up_dependencies () {
-    global._ = require('third/underscore/underscore.js');
-    global.activity = require('js/activity.js');
-    global.util = require('js/util.js');
-    global.Dict = require('js/dict.js');
-}());
+add_dependencies({
+    _: 'third/underscore/underscore.js',
+    util: 'js/util.js',
+    Dict: 'js/dict.js'
+});
 
-var activity = global.activity;
+var activity = require('js/activity.js');
 
 (function test_sort_users() {
     var users = ['alice@zulip.com', 'fred@zulip.com', 'jill@zulip.com'];
@@ -19,11 +18,11 @@ var activity = global.activity;
     };
 
 
-    global.people_dict = new global.Dict.from({
+    set_global('people_dict', new global.Dict.from({
         'alice@zulip.com': 'Alice Smith',
         'fred@zulip.com': 'Fred Flintstone',
         'jill@zulip.com': 'Jill Hill'
-    });
+    }));
 
     activity._sort_users(users, user_info);
 

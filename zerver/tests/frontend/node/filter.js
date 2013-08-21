@@ -1,18 +1,17 @@
 var assert = require('assert');
 
-(function set_up_dependencies () {
-    global._ = require('third/underscore/underscore.js');
+add_dependencies({
+    _: 'third/underscore/underscore.js',
+    util: 'js/util.js',
+    Dict: 'js/dict.js',
+    stream_data: 'js/stream_data.js'
+});
 
-    global.util = require('js/util.js');
-    global.Dict = require('js/dict.js');
-    global.page_params = {
-        domain: 'zulip.com'
-    };
-    global.stream_data = require('js/stream_data.js');
-    global.Filter = require('js/filter.js');
-}());
+set_global('page_params', {
+    domain: 'zulip.com'
+});
 
-var Filter = global.Filter;
+var Filter = require('js/filter.js');
 
 (function test_basics() {
     var operators = [['stream', 'foo'], ['topic', 'bar']];

@@ -1,15 +1,14 @@
 var assert = require('assert');
 
-(function set_up_dependencies () {
-    global._ = require('third/underscore/underscore.js');
-    global.util = require('js/util.js');
-    global.Dict = require('js/dict.js');
-    global.narrow = require('js/narrow.js');
-    global.stream_data = require('js/stream_data.js');
-    global.Filter = require('js/filter.js');
-}());
+add_dependencies({
+    _: 'third/underscore/underscore.js',
+    util: 'js/util.js',
+    Dict: 'js/dict.js',
+    stream_data: 'js/stream_data.js',
+    Filter: 'js/filter.js'
+});
 
-var narrow = global.narrow;
+var narrow = require('js/narrow.js');
 var Filter = global.Filter;
 var stream_data = global.stream_data;
 

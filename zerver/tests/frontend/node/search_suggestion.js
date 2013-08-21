@@ -8,32 +8,34 @@
 var assert = require('assert');
 var clean_up;
 
+add_dependencies({
+    _: 'third/underscore/underscore.js',
+    util: 'js/util.js',
+    Dict: 'js/dict.js',
+    Handlebars: 'handlebars',
+    Filter: 'js/filter.js',
+    typeahead_helper: 'js/typeahead_helper.js',
+    stream_data: 'js/stream_data.js',
+    narrow: 'js/narrow.js'
+});
+
 function set_up_dependencies() {
-    var _ = global._ = require('third/underscore/underscore.js');
-    global.Handlebars = require('handlebars');
-
     var search = require('js/search_suggestion.js');
-    global.narrow = require('js/narrow.js');
 
-    global.page_params = {
+    set_global('page_params', {
         email: 'bob@zulip.com'
-    };
+    });
+    set_global('recent_subjects', new global.Dict({fold_case: true}));
 
-    global.typeahead_helper = require('js/typeahead_helper.js');
+    var narrow = global.narrow;
+    var stream_data = global.stream_data;
 
-    global.util = require('js/util.js');
-    global.Dict = require('js/dict.js');
-    global.recent_subjects = new global.Dict({fold_case: true});
-
-    global.Filter = require('js/filter.js');
-    global.stream_data = require('js/stream_data.js');
-
-
-    var narrow_stream = global.narrow.stream;
-    var stream_data_subscribed_streams = global.stream_data.subscribed_streams;
+    var narrow_stream = narrow.stream;
+    var stream_data_subscribed_streams = stream_data.subscribed_streams;
     clean_up = function () {
-        global.narrow.stream = narrow_stream;
-        global.stream_data.subscribed_streams = stream_data_subscribed_streams;
+        narrow.stream = narrow_stream;
+        stream_data.subscribed_streams = stream_data_subscribed_streams;
+        delete global.recent_subjects;
     };
 
     return search;

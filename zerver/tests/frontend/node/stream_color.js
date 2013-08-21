@@ -1,12 +1,12 @@
 var assert = require('assert');
 
-(function set_up_dependencies () {
-    global._ = require('third/underscore/underscore.js');
-    global.$ = function (f) {};
-    global.stream_color = require('js/stream_color.js');
-}());
+add_dependencies({
+    _: 'third/underscore/underscore.js'
+});
 
-var stream_color = global.stream_color;
+set_global('$', function (f) {});
+
+var stream_color = require('js/stream_color.js');
 
 (function test_pick_color () {
     var used_colors = ["#76ce90", "#fae589"];

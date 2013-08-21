@@ -4,21 +4,22 @@
 
 var assert = require('assert');
 
-(function set_up_dependencies () {
-    global.document = null;
-    global.$ = function () {
-        return {
-            on: function () {},
-            trigger: function () {}
-        };
+add_dependencies({
+    _: 'third/underscore/underscore.js',
+    util: 'js/util.js',
+    MessageListView: 'js/message_list_view.js'
+});
+
+
+set_global('document', null);
+set_global('$', function () {
+    return {
+        on: function () {},
+        trigger: function () {}
     };
+});
 
-    global._ = require('third/underscore/underscore.js');
-    global.util = require('js/util.js');
-    global.MessageListView = require('js/message_list_view.js');
-    global.feature_flags = {};
-
-}());
+set_global('feature_flags', {});
 
 var MessageList = require('js/message_list');
 

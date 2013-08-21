@@ -1,9 +1,11 @@
 var assert = require('assert');
 
-global._ = require('third/underscore/underscore.js');
-global.util = require('js/util.js');
-global.Dict = require('js/dict.js');
-var ct = global.composebox_typeahead = require('js/composebox_typeahead.js');
+add_dependencies({
+    _: 'third/underscore/underscore.js',
+    Dict: 'js/dict.js'
+});
+
+var ct = require('js/composebox_typeahead.js');
 
 (function test_add_topic () {
     ct.add_topic('Denmark', 'civil fears');

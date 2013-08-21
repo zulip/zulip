@@ -7,10 +7,14 @@
 // clean up after themselves, and they should explicitly stub all
 // dependencies (except _).
 
-global._ = require('third/underscore/underscore.js');
-global.util = require('js/util.js');
-global.Dict = require('js/dict.js');
-var stream_data = global.stream_data = require('js/stream_data.js');
+add_dependencies({
+    _: 'third/underscore/underscore.js',
+    util: 'js/util.js',
+    Dict: 'js/dict.js',
+    stream_data: 'js/stream_data.js'
+});
+
+var stream_data = global.stream_data;
 var Dict = global.Dict;
 var unread = require('js/unread.js');
 var assert = require('assert');

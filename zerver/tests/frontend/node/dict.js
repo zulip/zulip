@@ -1,8 +1,10 @@
-global._ = require('third/underscore/underscore.js');
-global.util = require('js/util.js');
+add_dependencies({
+    _: 'third/underscore/underscore.js'
+});
+
+var _ = global._;
 var Dict = require('js/dict.js');
 var assert = require('assert');
-var _ = global._;
 
 (function test_basic() {
     var d = new Dict();
