@@ -1483,6 +1483,10 @@ exports.set_presence_list = function (users, presence_info) {
     var user_info = [my_info].concat(_.map(user_emails, info_for));
 
     $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
+    // FIXME: This should probably be rendered in the template directly, but
+    // currently we have to update unread counts after rendering the template
+    // or they get blown away.
+    update_unread_counts();
 };
 
 // Save the compose content cursor position and restore when we

@@ -64,7 +64,7 @@ function get_filter_li(type, name) {
     if (type === 'stream') {
         return $("#stream_sidebar_" + subs.stream_id(name));
     } else if (type === "private") {
-        return $(".user_sidebar_entry > a[data-email='" + name + "']");
+        return $("li.user_sidebar_entry[data-email='" + name + "']");
     }
     return iterate_to_find("#" + type + "_filters > li", name);
 }
