@@ -8,6 +8,9 @@ var tests = fs.readdirSync(__dirname)
     .filter(function (filename) { return (/\.js$/i).test(filename); })
     .map(function (filename) { return filename.replace(/\.js$/i, ''); });
 
+
+tests.sort();
+
 var dependencies = [];
 
 global.set_global = function (name, val) {
