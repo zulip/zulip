@@ -9,6 +9,16 @@ from os import path
 from twisted.internet import reactor
 from twisted.web      import proxy, server, resource
 
+# Monkey-patch twisted.web.http to avoid request.finish exceptions
+# https://trac.humbughq.com/ticket/1728
+from twisted.web.http import Request
+orig_finish = Request.finish
+def patched_finish(self):
+    if self._disconnected:
+        return
+    return orig_finish(self)
+Request.finish = patched_finish
+
 parser = optparse.OptionParser(r"""
 
 Starts the app listening on localhost, for local development.
