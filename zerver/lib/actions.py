@@ -387,6 +387,14 @@ def check_send_message(*args, **kwargs):
     message = check_message(*args, **kwargs)
     return do_send_messages([message])[0]
 
+def check_stream_name(stream_name):
+    if stream_name == "":
+        raise JsonableError("Stream can't be empty")
+    if len(stream_name) > Stream.MAX_NAME_LENGTH:
+        raise JsonableError("Stream name too long")
+    if not valid_stream_name(stream_name):
+        raise JsonableError("Invalid stream name")
+
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(sender, client, message_type_name, message_to,
@@ -408,12 +416,7 @@ def check_message(sender, client, message_type_name, message_to,
             raise JsonableError("Cannot send to multiple streams")
 
         stream_name = message_to[0].strip()
-        if stream_name == "":
-            raise JsonableError("Stream can't be empty")
-        if len(stream_name) > Stream.MAX_NAME_LENGTH:
-            raise JsonableError("Stream name too long")
-        if not valid_stream_name(stream_name):
-            raise JsonableError("Invalid stream name")
+        check_stream_name(stream_name)
 
         if subject_name is None:
             raise JsonableError("Missing topic")
