@@ -150,6 +150,12 @@ def cache_set_many(items, cache_name=None, timeout=None):
     memcached_stats_finish()
     return ret
 
+def cache_delete_many(items, cache_name=None):
+    memcached_stats_start()
+    get_cache_backend(cache_name).delete_many(
+        KEY_PREFIX + item for item in items)
+    memcached_stats_finish()
+
 # Required Arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
