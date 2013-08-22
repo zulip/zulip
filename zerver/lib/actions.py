@@ -70,13 +70,16 @@ def log_event(event):
         with open(template % ('events',), 'a') as log:
             log.write(ujson.dumps(event) + '\n')
 
+def active_user_ids(realm):
+    return [up.id for up in
+            UserProfile.objects.select_related().filter(
+            realm=realm, is_active=True)]
+
 def notify_created_user(user_profile):
     notice = dict(event=dict(type="realm_user", op="add",
                              person=dict(email=user_profile.email,
                                          full_name=user_profile.full_name)),
-                  users=[up.id for up in
-                         UserProfile.objects.select_related().filter(realm=user_profile.realm,
-                                                                     is_active=True)])
+                  users=active_user_ids(user_profile.realm))
     tornado_callbacks.send_notification(notice)
 
 def do_create_user(email, password, realm, full_name, short_name,
@@ -140,9 +143,7 @@ def do_deactivate(user_profile, log=True, _cascade=True):
     notice = dict(event=dict(type="realm_user", op="remove",
                              person=dict(email=user_profile.email,
                                          full_name=user_profile.full_name)),
-                  users=[up.id for up in
-                         UserProfile.objects.select_related().filter(realm=user_profile.realm,
-                                                                     is_active=True)])
+                  users=active_user_ids(user_profile.realm))
     tornado_callbacks.send_notification(notice)
 
     if _cascade:
@@ -763,11 +764,8 @@ def do_change_full_name(user_profile, full_name, log=True):
     notice = dict(event=dict(type="realm_user", op="update",
                              person=dict(email=user_profile.email,
                                          full_name=user_profile.full_name)),
-                  users=[up.id for up in
-                         UserProfile.objects.select_related().filter(realm=user_profile.realm,
-                                                                     is_active=True)])
+                  users=active_user_ids(user_profile.realm))
     tornado_callbacks.send_notification(notice)
-
 
 def do_create_realm(domain, restricted_to_domain=True):
     realm = get_realm(domain)
@@ -855,10 +853,7 @@ def send_presence_changed(user_profile, presence):
     notice = dict(event=dict(type="presence", email=user_profile.email,
                              server_timestamp=time.time(),
                              presence={presence_dict['client']: presence.to_dict()}),
-                  users=[up.id for up in
-                         UserProfile.objects.select_related()
-                                            .filter(realm=user_profile.realm,
-                                                    is_active=True)])
+                  users=active_user_ids(user_profile.realm))
     tornado_callbacks.send_notification(notice)
 
 @statsd_increment('user_presence')
