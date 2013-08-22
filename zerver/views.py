@@ -181,6 +181,24 @@ from zerver.tornadoviews import get_events_backend, get_updates_backend
 
 @csrf_exempt
 def rest_dispatch(request, **kwargs):
+    """Dispatch to a REST API endpoint.
+
+    This calls the function named in kwargs[request.method], if that request
+    method is supported, and after wrapping that function to:
+
+        * protect against CSRF (if the user is already authenticated through
+          a Django session)
+        * authenticate via an API key (otherwise)
+        * coerce PUT/PATCH/DELETE into having POST-like semantics for
+          retrieving variables
+
+    Any keyword args that are *not* HTTP methods are passed through to the
+    target function.
+
+    Note that we search views.py globals for the function to call, so never
+    make a urls.py pattern put user input into a variable called GET, POST,
+    etc.
+    """
     supported_methods = {}
     # duplicate kwargs so we can mutate the original as we go
     for arg in list(kwargs):
