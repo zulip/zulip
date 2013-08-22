@@ -1166,6 +1166,8 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         # There's no initial data for message flag updates, client will
         # get any updates during a session from get_events()
         pass
+    if event_types is None or "realm_emoji" in event_types:
+        ret['realm_emoji'] = user_profile.realm.get_emoji()
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
@@ -1216,6 +1218,8 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
         elif event['type'] == "update_message_flags":
             # The client will get the message with the updated flags directly
             pass
+        elif event['type'] == "realm_emoji":
+            ret['realm_emoji'] = event['realm_emoji']
         else:
             raise ValueError("Unexpected event type %s" % (event['type'],))
 
@@ -1497,8 +1501,18 @@ Referred: %s""" % (user_profile.full_name, user_profile.email, user_profile.real
 
     send_referral_event(user_profile)
 
+def notify_realm_emoji(realm):
+    notice = dict(event=dict(type="realm_emoji", op="update",
+                             realm_emoji=realm.get_emoji()),
+                  users=[up.id for up in
+                         UserProfile.objects.select_related().filter(realm=realm,
+                                                                     is_active=True)])
+    tornado_callbacks.send_notification(notice)
+
 def do_add_realm_emoji(realm, name, img_url):
     RealmEmoji(realm=realm, name=name, img_url=img_url).save()
+    notify_realm_emoji(realm)
 
 def do_remove_realm_emoji(realm, name):
     RealmEmoji.objects.get(realm=realm, name=name).delete()
+    notify_realm_emoji(realm)

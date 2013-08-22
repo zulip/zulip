@@ -638,6 +638,7 @@ def home(request):
         domain                = user_profile.realm.domain,
         enter_sends           = user_profile.enter_sends,
         referrals             = register_ret['referrals'],
+        realm_emoji           = register_ret['realm_emoji'],
         needs_tutorial        = needs_tutorial,
         desktop_notifications_enabled =
             user_profile.enable_desktop_notifications,

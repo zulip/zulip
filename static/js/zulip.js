@@ -838,6 +838,9 @@ function get_updates_success(data) {
         case 'referral':
             referral.update_state(event.referrals.granted, event.referrals.used);
             break;
+        case 'realm_emoji':
+            emoji.update_emojis(event.realm_emoji);
+            break;
         }
     });
 
