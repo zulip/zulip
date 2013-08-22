@@ -36,6 +36,10 @@ def get_display_recipient(recipient):
         recipient_cache[recipient.id] = get_display_recipient_memcached(recipient)
     return recipient_cache[recipient.id]
 
+def flush_recipient_cache():
+    global recipient_cache
+    recipient_cache = {}
+
 @cache_with_key(lambda self: display_recipient_cache_key(self.id),
                 timeout=3600*24*7)
 def get_display_recipient_memcached(recipient):
