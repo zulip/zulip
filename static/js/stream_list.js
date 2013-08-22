@@ -117,11 +117,11 @@ function update_count_in_dom(count_span, value_span, count) {
     value_span.text(count);
 }
 
-exports.set_count = function (type, name, count) {
+function set_count(type, name, count) {
     var count_span = get_filter_li(type, name).find('.count');
     var value_span = count_span.find('.value');
     update_count_in_dom(count_span, value_span, count);
-};
+}
 
 exports.set_subject_count = function (stream, subject, count) {
     var subject_li = get_subject_filter_li(stream, subject);
@@ -227,7 +227,7 @@ function animate_mention_changes(new_mention_count) {
 exports.set_presence_list_counts = function (count_dict) {
     // count_dict maps people (emails, actually) to counts
     count_dict.each(function (count, person) {
-        exports.set_count("private", person, count);
+        set_count("private", person, count);
     });
 };
 
@@ -237,7 +237,7 @@ exports.update_dom_with_unread_counts = function (counts) {
 
     // counts.stream_count maps streams to counts
     counts.stream_count.each(function (count, stream) {
-        exports.set_count("stream", stream, count);
+        set_count("stream", stream, count);
     });
 
     // counts.subject_count maps streams to hashes of subjects to counts
@@ -250,9 +250,9 @@ exports.update_dom_with_unread_counts = function (counts) {
     exports.set_presence_list_counts(counts.pm_count);
 
     // integer counts
-    exports.set_count("global", "private", counts.private_message_count);
-    exports.set_count("global", "mentioned", counts.mentioned_message_count);
-    exports.set_count("global", "home", counts.home_unread_messages);
+    set_count("global", "private", counts.private_message_count);
+    set_count("global", "mentioned", counts.mentioned_message_count);
+    set_count("global", "home", counts.home_unread_messages);
 
     animate_private_message_changes(counts.private_message_count);
     animate_mention_changes(counts.mentioned_message_count);
