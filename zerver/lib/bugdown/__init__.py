@@ -340,9 +340,9 @@ path_to_emoji = os.path.join(os.path.dirname(__file__), '..', '..', '..',
                              'static', 'third', 'gemoji', 'images', 'emoji', '*.png')
 emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_emoji)]
 
-def make_emoji(emoji_name, display_string):
+def make_emoji(emoji_name, src, display_string):
     elt = markdown.util.etree.Element('img')
-    elt.set('src', 'static/third/gemoji/images/emoji/%s.png' % (emoji_name,))
+    elt.set('src', src)
     elt.set('class', 'emoji')
     elt.set("alt", display_string)
     elt.set("title", display_string)
@@ -352,9 +352,17 @@ class Emoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
-        if name not in emoji_list:
+
+        if current_message:
+            realm_emoji = current_message.get_realm().get_emoji()
+
+        if current_message and name in realm_emoji:
+            return make_emoji(name, realm_emoji[name], orig_syntax)
+        elif name in emoji_list:
+            src = 'static/third/gemoji/images/emoji/%s.png' % (name)
+            return make_emoji(name, src, orig_syntax)
+        else:
             return orig_syntax
-        return make_emoji(name, orig_syntax)
 
 def fixup_link(link, target_blank=True):
     """Set certain attributes we want on every link."""
