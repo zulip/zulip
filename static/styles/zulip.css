@@ -1386,6 +1386,26 @@ input.recipient_box {
     width: -moz-max-content;
 }
 
+#userlist-toggle {
+    display: none;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    text-align: center;
+    vertical-align: middle;
+    border-left: 1px solid #777;
+}
+
+#userlist-toggle-button {
+    text-decoration: none;
+    color: #ffffff;
+    display: block;
+    background-color: rgba(255,255,255,0.2);
+    width: 40px;
+    padding-top: 12px;
+    padding-bottom: 9px;
+}
+
 .nav .dropdown-menu {
     left: -10px;
     min-width: 180px;
@@ -2457,20 +2477,41 @@ div.edit_bot {
         display: none;
     }
 
+    .column-right.expanded {
+        display: block;
+        position: absolute;
+        float: none;
+        right: 15px;
+        top: 0px;
+    }
+
+    .column-right.expanded .right-sidebar {
+        background: rgba(255,255,255,0.9);
+        box-shadow: 0px -2px 3px 0px rgba(0,0,0,0.1);
+        border-left: 1px solid #dddddd;
+        margin-top: 40px;
+        padding-top: 10px;
+    }
+
     .header-main .column-right {
         display: inline-block;
         width: 30px;
     }
 
     .navbar-search {
-        margin-right: 30px;
+        margin-right: 60px;
     }
 
     #navbar-buttons {
         margin-left: 0px;
         margin-top: 0px;
         position: absolute;
+        right: 45px;
         top: 3px;
+    }
+
+    #userlist-toggle {
+        display: block;
     }
 
     #floating_recipient_bar {

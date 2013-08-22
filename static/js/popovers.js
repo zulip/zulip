@@ -114,7 +114,9 @@ exports.hide_message_info_popover = function () {
     }
 };
 
-
+exports.hide_userlist_sidebar = function () {
+    $(".app-main .column-right").removeClass("expanded");
+};
 
 var current_stream_sidebar_elem;
 var current_user_sidebar_elem;
@@ -390,6 +392,7 @@ exports.hide_all = function () {
     popovers.hide_message_info_popover();
     popovers.hide_stream_sidebar_popover();
     popovers.hide_user_sidebar_popover();
+    popovers.hide_userlist_sidebar();
 };
 
 return exports;

@@ -1111,6 +1111,18 @@ $(function () {
         }
     });
 
+    $("#userlist-toggle-button").on("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if ($(".app-main .column-right").hasClass("expanded")) {
+            popovers.hide_all();
+        }
+        else {
+            popovers.hide_all();
+            $(".app-main .column-right").toggleClass("expanded");
+        }
+    });
+
     $("#subscriptions_table").on("mouseover", ".subscription_header", function (e) {
         $(this).addClass("active");
     });
@@ -1122,13 +1134,13 @@ $(function () {
     $("#stream").on('blur', function () { compose.decorate_stream_bar(this.value); });
 
     // Capture both the left-sidebar Home click and the tab breadcrumb Home
-    $(document).on('click', "li[data-name='home']", function () {
+    $(document).on('click', "li[data-name='home']", function (e) {
         ui.change_tab_to('#home');
         narrow.deactivate();
         // We need to maybe scroll to the selected message
         // once we have the proper viewport set up
         setTimeout(maybe_scroll_to_selected, 0);
-        return false;
+        e.preventDefault();
     });
 
     $(".brand").on('click', function (e) {
@@ -1242,24 +1254,22 @@ $(function () {
 
     $('.compose_stream_button').click(function (e) {
         compose.start('stream');
-        return false;
     });
     $('.compose_private_button').click(function (e) {
         compose.start('private');
-        return false;
     });
 
     $('.empty_feed_compose_stream').click(function (e) {
         compose.start('stream', {trigger: 'empty feed message'});
-        return false;
+        e.preventDefault();
     });
     $('.empty_feed_compose_private').click(function (e) {
         compose.start('private', {trigger: 'empty feed message'});
-        return false;
+        e.preventDefault();
     });
     $('.empty_feed_join').click(function (e) {
         subs.show_and_focus_on_narrow();
-        return false;
+        e.preventDefault();
     });
 
     // Keep these 2 feedback bot triggers separate because they have to
@@ -1369,6 +1379,8 @@ $(function () {
         if (!$(e.target).is("a")) {
             e.stopPropagation();
         }
+        // Still hide the popovers, however
+        popovers.hide_all();
     });
 
     $("#compose_close").click(function (e) {
