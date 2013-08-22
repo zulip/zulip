@@ -500,10 +500,10 @@ ul.filters {
     padding-right: 10px;
 }
 
-ul#stream_filters .count {
+#stream_filters .count,
+#global_filters .count {
     margin-left: 0.5em;
     display: none;
-
 }
 
 ul.filters i {
