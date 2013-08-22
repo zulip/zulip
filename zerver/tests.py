@@ -10,13 +10,14 @@ from django.db.models import Q
 from zerver.models import Message, UserProfile, Stream, Recipient, Subscription, \
     get_display_recipient, Realm, Client, \
     PreregistrationUser, UserMessage, \
-    get_user_profile_by_email, email_to_domain
+    get_user_profile_by_email, email_to_domain, get_realm
 from zerver.tornadoviews import json_get_updates, api_get_messages
 from zerver.decorator import RespondAsynchronously, \
     RequestVariableConversionError, profiled, JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import check_send_message, gather_subscriptions, \
-    create_stream_if_needed, do_add_subscription, compute_mit_user_fullname
+    create_stream_if_needed, do_add_subscription, compute_mit_user_fullname, \
+    do_add_realm_emoji, do_remove_realm_emoji
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib import bugdown
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -2677,6 +2678,23 @@ xxxxxxx</strong></p>\n<p>xxxxxxx xxxxx xxxx xxxxx:<br>\n<code>xxxxxx</code>: xxx
             '; ' +
             emoji_img(':smile:') +
             '</p>')
+
+    def test_realm_emoji(self):
+        def emoji_img(name, url):
+            return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, url, name)
+
+        zulip_realm = get_realm('zulip.com')
+        url = "https://zulip.com/test_realm_emoji.png"
+        do_add_realm_emoji(zulip_realm, "test", url)
+
+        # Needs to mock an actual message because that's how bugdown obtains the realm
+        msg = Message(sender=get_user_profile_by_email("hamlet@zulip.com"))
+        converted = bugdown.convert(":test:", "zulip.com", msg)
+        self.assertEqual(converted, '<p>%s</p>' %(emoji_img(':test:', url)))
+
+        do_remove_realm_emoji(zulip_realm, 'test')
+        converted = bugdown.convert(":test:", "zulip.com", msg)
+        self.assertEqual(converted, '<p>:test:</p>')
 
     def test_multiline_strong(self):
         msg = "Welcome to **the jungle**"
