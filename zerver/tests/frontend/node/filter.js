@@ -61,6 +61,14 @@ var Filter = require('js/filter.js');
 
     string = 'stream:Foo topic:Bar yo';
     assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [['id', 50]];
+    string = 'id:50';
+    assert.deepEqual(Filter.unparse(operators), string);
+
+    operators = [['near', 150]];
+    string = 'near:150';
+    assert.deepEqual(Filter.unparse(operators), string);
 }());
 
 
