@@ -149,6 +149,12 @@ MessageListView.prototype = {
             prev = _.pick(prev, 'timestamp', 'historical');
         }
 
+        function finish_group() {
+            if (current_group.length > 0) {
+                new_message_groups.push(current_group);
+            }
+        }
+
         _.each(messages, function (message) {
             message.include_recipient = false;
             message.include_bookend   = false;
@@ -209,9 +215,7 @@ MessageListView.prototype = {
                 // prev is no longer the last element in this block
                 prev.include_footer = false;
             } else {
-                if (current_group.length > 0) {
-                    new_message_groups.push(current_group);
-                }
+                finish_group();
                 current_group = [message.id];
 
                 // Add a space to the table, but not for the first element.
@@ -272,9 +276,7 @@ MessageListView.prototype = {
             return;
         }
 
-        if (current_group.length > 0) {
-            new_message_groups.push(current_group);
-        }
+        finish_group();
 
         if (where === 'top') {
             self._message_groups = new_message_groups.concat(self._message_groups);
