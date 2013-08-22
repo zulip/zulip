@@ -1300,9 +1300,11 @@ def get_streams_backend(request, user_profile,
                         include_public=REQ(converter=json_to_bool, default=True),
                         include_subscribed=REQ(converter=json_to_bool, default=True),
                         include_all_active=REQ(converter=json_to_bool, default=False)):
-    if include_all_active or (include_public and user_profile.realm.domain == "mit.edu"):
-        if not is_super_user_api(request):
+    if include_all_active and not is_super_user_api(request):
             return json_error("User not authorized for this query")
+
+    # Listing public streams are disabled for the mit.edu realm.
+    include_public = include_public and not user_profile.realm.domain == "mit.edu"
 
     # Only get streams someone is currently subscribed to
     subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
