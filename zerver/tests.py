@@ -22,6 +22,7 @@ from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.rate_limiter import clear_user_history
 from zerver.forms import not_mit_mailing_list
 
+import base64
 from django.conf import settings
 import os
 import random
@@ -135,6 +136,12 @@ class AuthedTestCase(TestCase):
         if email not in API_KEYS:
             API_KEYS[email] =  get_user_profile_by_email(email).api_key
         return API_KEYS[email]
+
+    def api_auth(self, email):
+        credentials = "%s:%s" % (email, self.get_api_key(email))
+        return {
+            'HTTP_AUTHORIZATION': 'Basic ' + base64.b64encode(credentials)
+            }
 
     def get_streams(self, email):
         """
@@ -1950,14 +1957,52 @@ class GetPublicStreamsTest(AuthedTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
 
-        api_key = self.get_api_key(email)
-        result = self.client.post("/json/get_public_streams", {'email': email, 'api-key': api_key})
+        result = self.client.post("/json/get_public_streams")
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)
 
         self.assertIn("streams", json)
         self.assertIsInstance(json["streams"], list)
+
+    def test_public_streams_api(self):
+        """
+        Ensure that get_public_streams successfully returns a list of streams
+        """
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        # Check it correctly lists the user's subs with include_public=false
+        result = self.client.get("/api/v1/streams?include_public=false", **self.api_auth(email))
+        result2 = self.client.post("/json/subscriptions/list", {})
+
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+
+        self.assertIn("streams", json)
+        self.assertIsInstance(json["streams"], list)
+
+        self.assert_json_success(result2)
+        json2 = ujson.loads(result2.content)
+
+        self.assertEqual(sorted([s["name"] for s in json["streams"]]),
+                         sorted([s["name"] for s in json2["subscriptions"]]))
+
+        # Check it correctly lists all public streams with include_subscribed=false
+        result = self.client.get("/api/v1/streams?include_public=true&include_subscribed=false",
+                                 **self.api_auth(email))
+        self.assert_json_success(result)
+
+        json = ujson.loads(result.content)
+        all_streams = [stream.name for stream in
+                       Stream.objects.filter(realm=get_user_profile_by_email(email).realm)]
+        self.assertEqual(sorted(s["name"] for s in json["streams"]),
+                         sorted(all_streams))
+
+        # Check non-superuser can't use include_all_active
+        result = self.client.get("/api/v1/streams?include_all_active=true",
+                                 **self.api_auth(email))
+        self.assertEqual(result.status_code, 400)
 
 class InviteOnlyStreamTest(AuthedTestCase):
 

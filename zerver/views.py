@@ -1293,24 +1293,51 @@ def api_get_public_streams(request, user_profile):
 def json_get_public_streams(request, user_profile):
     return get_public_streams_backend(request, user_profile)
 
-def get_public_streams_backend(request, user_profile):
-    if user_profile.realm.domain == "mit.edu" and not is_super_user_api(request):
-        return json_error("User not authorized for this query")
+# By default, lists all streams that the user has access to --
+# i.e. public streams plus invite-only streams that the user is on
+@has_request_variables
+def get_streams_backend(request, user_profile,
+                        include_public=REQ(converter=json_to_bool, default=True),
+                        include_subscribed=REQ(converter=json_to_bool, default=True),
+                        include_all_active=REQ(converter=json_to_bool, default=False)):
+    if include_all_active or (include_public and user_profile.realm.domain == "mit.edu"):
+        if not is_super_user_api(request):
+            return json_error("User not authorized for this query")
 
     # Only get streams someone is currently subscribed to
     subs_filter = Subscription.objects.filter(active=True).values('recipient_id')
     stream_ids = Recipient.objects.filter(
         type=Recipient.STREAM, id__in=subs_filter).values('type_id')
+
+    # Start out with all active streams in the realm
     query = Stream.objects.filter(id__in = stream_ids, realm=user_profile.realm)
-    if not (user_profile.realm.domain == "mit.edu" and is_super_user_api(request)):
-        # We don't apply the `invite_only=False` filter when answering
-        # the mit.edu API superuser, because the list of streams is
-        # used as the list of all Zephyr classes to mirror, and we
-        # want to include invite-only streams (aka zcrypted classes) in that
-        query = query.filter(invite_only=False)
+
+    if not include_all_active:
+        user_subs = Subscription.objects.select_related("recipient").filter(
+            active=True, user_profile=user_profile,
+            recipient__type=Recipient.STREAM)
+
+        if include_subscribed:
+            recipient_check = Q(id__in=[sub.recipient.type_id for sub in user_subs])
+        if include_public:
+            invite_only_check = Q(invite_only=False)
+
+        if include_subscribed and include_public:
+            query = query.filter(recipient_check | invite_only_check)
+        elif include_public:
+            query = query.filter(invite_only_check)
+        elif include_subscribed:
+            query = query.filter(recipient_check)
+        else:
+            # We're including nothing, so don't bother hitting the DB.
+            query = []
 
     streams = sorted({"name": stream.name} for stream in query)
     return json_success({"streams": streams})
+
+def get_public_streams_backend(request, user_profile):
+    return get_streams_backend(request, user_profile, include_public=True,
+                               include_subscribed=False, include_all_active=False)
 
 @authenticated_api_view
 def api_list_subscriptions(request, user_profile):

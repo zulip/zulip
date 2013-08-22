@@ -156,7 +156,7 @@ v1_api_and_json_patterns = patterns('zerver.views',
     url(r'^messages/flags$', 'rest_dispatch',
             {'POST':  'update_message_flags'}),
     url(r'^streams$', 'rest_dispatch',
-            {'GET':  'get_public_streams_backend'}),
+            {'GET':  'get_streams_backend'}),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
     url(r'^streams/(?P<stream_name>.*)/members$', 'rest_dispatch',
             {'GET': 'get_subscribers_backend'}),

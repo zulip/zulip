@@ -16,7 +16,7 @@ def fetch_public_streams():
     public_streams = set()
 
     try:
-        res = zulip_client.get_public_streams()
+        res = zulip_client.get_streams(include_all_active=True)
         if res.get("result") == "success":
             streams = res["streams"]
         else:

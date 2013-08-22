@@ -43,4 +43,4 @@ parser.add_option_group(zulip.generate_option_group(parser))
 
 client = zulip.init_from_options(options)
 
-print client.get_public_streams()
+print client.get_streams(include_public=True, include_subscribed=False)

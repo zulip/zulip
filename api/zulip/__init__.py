@@ -286,13 +286,16 @@ def _mk_events(event_types=None):
         return dict()
     return dict(event_types=event_types)
 
+def _kwargs_to_dict(**kwargs):
+    return kwargs
+
 Client._register('send_message', url='messages', make_request=(lambda request: request))
 Client._register('update_message', method='PATCH', url='messages', make_request=(lambda request: request))
 Client._register('get_messages', method='GET', url='messages/latest', longpolling=True)
 Client._register('get_events', url='events', method='GET', longpolling=True, make_request=(lambda **kwargs: kwargs))
 Client._register('register', make_request=_mk_events)
 Client._register('get_profile', method='GET', url='users/me')
-Client._register('get_public_streams', method='GET', url='streams')
+Client._register('get_streams', method='GET', url='streams', make_request=_kwargs_to_dict)
 Client._register('get_members', method='GET', url='users')
 Client._register('list_subscriptions', method='GET', url='users/me/subscriptions')
 Client._register('add_subscriptions', url='users/me/subscriptions', make_request=_mk_subs)
